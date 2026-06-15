@@ -20,14 +20,12 @@ Este documento define o fluxo seguro inicial para variaveis de ambiente e secret
 
 ## Variaveis obrigatorias atuais
 
-| Variavel | Obrigatoria | Exemplo seguro | Uso |
-| --- | --- | --- | --- |
-| `NODE_ENV` | Sim | `development` | Define ambiente de execucao local/teste/producao. |
-| `POSTGRES_DB` | Sim | `solverfin` | Nome do banco local usado pelo Docker Compose. |
-| `POSTGRES_USER` | Sim | `solverfin` | Usuario local ficticio do PostgreSQL. |
-| `POSTGRES_PASSWORD` | Sim | `solverfin_dev_password` | Senha local ficticia do PostgreSQL. |
-| `POSTGRES_PORT` | Sim | `5432` | Porta publicada na maquina local. |
-| `DATABASE_URL` | Sim | `postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public` | String de conexao local para Prisma/API quando existirem. |
+- `NODE_ENV`: obrigatoria. Exemplo seguro: `development`. Define ambiente de execucao local, teste ou producao.
+- `POSTGRES_DB`: obrigatoria. Exemplo seguro: `solverfin`. Nome do banco local usado pelo Docker Compose.
+- `POSTGRES_USER`: obrigatoria. Exemplo seguro: `solverfin`. Usuario local ficticio do PostgreSQL.
+- `POSTGRES_PASSWORD`: obrigatoria. Exemplo seguro: `solverfin_dev_password`. Senha local ficticia do PostgreSQL.
+- `POSTGRES_PORT`: obrigatoria. Exemplo seguro: `5432`. Porta publicada na maquina local.
+- `DATABASE_URL`: obrigatoria. Exemplo seguro: `postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public`. String de conexao local para Prisma/API quando existirem.
 
 ## Setup local
 
@@ -67,7 +65,7 @@ Quando uma issue futura precisar de secrets no GitHub Actions:
 
 Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` quando passarem a consumir variaveis obrigatorias.
 
-A validacao retorna apenas variaveis aprovadas e lança `EnvironmentValidationError` quando algo estiver ausente ou invalido. As mensagens citam nomes de variaveis, mas nao valores sensiveis.
+A validacao retorna apenas variaveis aprovadas e lanca `EnvironmentValidationError` quando algo estiver ausente ou invalido. As mensagens citam nomes de variaveis, mas nao valores sensiveis.
 
 ## Fora do escopo atual
 
