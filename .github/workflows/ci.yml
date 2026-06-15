@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Check environment example
+        run: npm run env:check
+
       - name: Check formatting
         run: npm run format:check
 
