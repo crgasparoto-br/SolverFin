@@ -6,7 +6,7 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 ## Status do repositorio
 
-Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, e os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier. Apps, API, Docker, CI e testes reais ainda serao configurados nas proximas issues de bootstrap.
+Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier, e o ambiente local ja possui Docker Compose para PostgreSQL. Apps executaveis, API real, CI e testes reais ainda serao configurados nas proximas issues de bootstrap.
 
 ## Stack inicial planejada
 
@@ -30,7 +30,8 @@ Frameworks concretos de frontend/backend, autenticacao, runtime e provedores de 
 Requisitos locais:
 
 - Node.js 22 ou superior;
-- npm 10 ou superior.
+- npm 10 ou superior;
+- Docker com Docker Compose v2 para o banco local.
 
 Instalar dependencias:
 
@@ -62,6 +63,50 @@ Nesta etapa, `format`, `lint`, `typecheck` e `build` ja apontam para Prettier, E
 
 Se `npm install` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint e Prettier e atualizar o lockfile.
 
+## Ambiente local com PostgreSQL
+
+O ambiente de desenvolvimento usa `docker-compose.yml` para subir um PostgreSQL local com dados persistidos no volume `solverfin-postgres-data`.
+
+Crie o arquivo local de ambiente a partir do exemplo seguro:
+
+```bash
+cp .env.example .env
+```
+
+Subir o banco:
+
+```bash
+docker compose up -d postgres
+```
+
+Verificar o estado do servico:
+
+```bash
+docker compose ps
+```
+
+Parar o banco mantendo os dados locais:
+
+```bash
+docker compose down
+```
+
+Resetar o banco local apagando o volume de desenvolvimento:
+
+```bash
+docker compose down -v
+```
+
+Atencao: o reset remove os dados locais de desenvolvimento. Use apenas quando quiser recriar o banco do zero.
+
+A string local padrao fica documentada em `.env.example`:
+
+```bash
+DATABASE_URL=postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+```
+
+A porta padrao e `5432`. Se ela estiver ocupada, altere `POSTGRES_PORT` no seu `.env`, por exemplo `POSTGRES_PORT=5433`, e ajuste a `DATABASE_URL` local para a mesma porta.
+
 ## Documentos principais
 
 Leia estes documentos antes de implementar qualquer issue:
@@ -90,6 +135,8 @@ Leia estes documentos antes de implementar qualquer issue:
 .
 |-- AGENTS.md
 |-- README.md
+|-- .env.example
+|-- docker-compose.yml
 |-- package.json
 |-- tsconfig.base.json
 |-- eslint.config.mjs
