@@ -1,0 +1,12 @@
+{
+  "name": "@solverfin/ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Abstracoes de IA, schemas estruturados e politicas de uso seguro.",
+  "scripts": {
+    "lint": "echo \"@solverfin/ai: lint ainda sera configurado em B02\"",
+    "typecheck": "echo \"@solverfin/ai: typecheck ainda sera configurado em B02\"",
+    "test": "echo \"@solverfin/ai: testes ainda serao configurados em B02\"",
+    "build": "echo \"@solverfin/ai: build ainda sera configurado em B02\""
+  }
+}
