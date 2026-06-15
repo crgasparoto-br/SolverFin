@@ -1,0 +1,554 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "./generated/client"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum FinancialContextKind {
+  PERSONAL
+  FAMILY
+  MEI
+  BUSINESS
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum RecordStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum CardStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
+}
+
+enum AccountKind {
+  CHECKING
+  SAVINGS
+  CASH
+  INVESTMENT
+  OTHER
+}
+
+enum CategoryKind {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum TransactionKind {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum TransactionStatus {
+  PLANNED
+  POSTED
+  RECONCILED
+  SUGGESTED
+  VOIDED
+}
+
+enum TransactionSource {
+  MANUAL
+  RECURRENCE
+  INSTALLMENT
+  IMPORT
+  AI_SUGGESTION
+}
+
+enum RecurrenceFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum RecurrenceStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  COMPLETED
+}
+
+enum InstallmentStatus {
+  PLANNED
+  POSTED
+  RECONCILED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  OPEN
+  CLOSED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum ImportSourceKind {
+  CSV
+  OFX
+  BANK_MESSAGE
+  MANUAL
+}
+
+enum ImportStatus {
+  RECEIVED
+  PARSED
+  REVIEWING
+  COMPLETED
+  FAILED
+  DISCARDED
+}
+
+enum AiSuggestionKind {
+  TRANSACTION_EXTRACTION
+  CATEGORIZATION
+  DEDUPLICATION
+  RECONCILIATION
+  INSIGHT
+}
+
+enum AiSuggestionStatus {
+  PENDING_REVIEW
+  APPROVED
+  EDITED
+  REJECTED
+  EXPIRED
+}
+
+enum AttachmentKind {
+  RECEIPT
+  INVOICE
+  STATEMENT
+  MESSAGE
+  OTHER
+}
+
+enum AttachmentStatus {
+  ACTIVE
+  REDACTED
+  DELETED
+}
+
+enum AuditActorKind {
+  USER
+  SYSTEM
+  AI
+  IMPORT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  ARCHIVE
+  RESTORE
+  SOFT_DELETE
+  RECONCILE
+  UNRECONCILE
+  APPROVE
+  REJECT
+}
+
+enum AuditEntityKind {
+  ACCOUNT
+  CARD
+  CATEGORY
+  TRANSACTION
+  RECURRENCE
+  INSTALLMENT
+  INVOICE
+  BUDGET
+  IMPORT_BATCH
+  AI_SUGGESTION
+  ATTACHMENT
+}
+
+enum LinkedEntityKind {
+  TRANSACTION
+  INVOICE
+  IMPORT_BATCH
+  AI_SUGGESTION
+}
+
+model User {
+  id          String     @id @default(uuid()) @db.Uuid
+  email       String     @unique @db.VarChar(320)
+  displayName String     @db.VarChar(160)
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  ownedOrganizations Organization[]     @relation("OrganizationOwner")
+  ownedProfiles      FinancialProfile[] @relation("FinancialProfileOwner")
+
+  @@index([status])
+}
+
+model Organization {
+  id          String   @id @default(uuid()) @db.Uuid
+  ownerUserId String   @db.Uuid
+  name        String   @db.VarChar(160)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner    User               @relation("OrganizationOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  profiles FinancialProfile[]
+
+  @@index([ownerUserId])
+}
+
+model FinancialProfile {
+  id             String               @id @default(uuid()) @db.Uuid
+  organizationId String               @db.Uuid
+  ownerUserId    String               @db.Uuid
+  name           String               @db.VarChar(160)
+  kind           FinancialContextKind
+  status         RecordStatus         @default(ACTIVE)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  owner         User            @relation("FinancialProfileOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  accounts      Account[]
+  cards         Card[]
+  categories    Category[]
+  transactions  Transaction[]
+  recurrences   Recurrence[]
+  installments  Installment[]
+  invoices      Invoice[]
+  budgets       Budget[]
+  importBatches ImportBatch[]
+  aiSuggestions AiSuggestion[]
+  attachments   Attachment[]
+  auditLogs     AuditLogEntry[]
+
+  @@unique([id, organizationId])
+  @@index([organizationId, ownerUserId])
+  @@index([organizationId, status])
+}
+
+model Account {
+  id                  String       @id @default(uuid()) @db.Uuid
+  organizationId      String       @db.Uuid
+  financialProfileId  String       @db.Uuid
+  name                String       @db.VarChar(160)
+  kind                AccountKind
+  status              RecordStatus @default(ACTIVE)
+  currency            String       @default("BRL") @db.Char(3)
+  openingBalanceMinor Int          @default(0)
+  maskedIdentifier    String?      @db.VarChar(80)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  transactions     Transaction[]    @relation("TransactionAccount")
+  incomingTransfers Transaction[]    @relation("TransactionDestinationAccount")
+  paymentCards     Card[]           @relation("CardPaymentAccount")
+  recurrences      Recurrence[]
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, status])
+  @@index([organizationId, financialProfileId, kind])
+}
+
+model Card {
+  id                 String     @id @default(uuid()) @db.Uuid
+  organizationId     String     @db.Uuid
+  financialProfileId String     @db.Uuid
+  paymentAccountId   String?    @db.Uuid
+  name               String     @db.VarChar(160)
+  status             CardStatus @default(ACTIVE)
+  closingDay         Int
+  dueDay             Int
+  creditLimitMinor   Int?
+  maskedIdentifier   String?    @db.VarChar(80)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  paymentAccount   Account?         @relation("CardPaymentAccount", fields: [paymentAccountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  transactions     Transaction[]    @relation("TransactionCard")
+  invoices         Invoice[]
+  installments     Installment[]
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, status])
+}
+
+model Category {
+  id                 String       @id @default(uuid()) @db.Uuid
+  organizationId     String       @db.Uuid
+  financialProfileId String       @db.Uuid
+  parentCategoryId   String?      @db.Uuid
+  name               String       @db.VarChar(160)
+  kind               CategoryKind
+  status             RecordStatus @default(ACTIVE)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  parentCategory   Category?        @relation("CategoryTree", fields: [parentCategoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  childCategories  Category[]       @relation("CategoryTree")
+  transactions     Transaction[]
+  recurrences      Recurrence[]
+  budgets          Budget[]
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, kind, status])
+  @@index([organizationId, financialProfileId, parentCategoryId])
+}
+
+model Transaction {
+  id                   String            @id @default(uuid()) @db.Uuid
+  organizationId       String            @db.Uuid
+  financialProfileId   String            @db.Uuid
+  accountId            String?           @db.Uuid
+  destinationAccountId String?           @db.Uuid
+  categoryId           String?           @db.Uuid
+  cardId               String?           @db.Uuid
+  invoiceId            String?           @db.Uuid
+  recurrenceId         String?           @db.Uuid
+  installmentId        String?           @db.Uuid
+  importBatchId        String?           @db.Uuid
+  aiSuggestionId       String?           @db.Uuid
+  transferGroupId      String?           @db.Uuid
+  kind                 TransactionKind
+  status               TransactionStatus @default(PLANNED)
+  source               TransactionSource @default(MANUAL)
+  amountMinor          Int
+  currency             String            @default("BRL") @db.Char(3)
+  occurredOn           DateTime          @db.Date
+  description          String            @db.VarChar(240)
+  reconciledAt         DateTime?
+  voidedAt             DateTime?
+  createdByUserId      String?           @db.Uuid
+  updatedByUserId      String?           @db.Uuid
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  financialProfile   FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  account            Account?         @relation("TransactionAccount", fields: [accountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  destinationAccount Account?         @relation("TransactionDestinationAccount", fields: [destinationAccountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  category           Category?        @relation(fields: [categoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  card               Card?            @relation("TransactionCard", fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  invoice            Invoice?         @relation("InvoiceTransactions", fields: [invoiceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  recurrence         Recurrence?      @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  installment        Installment?     @relation(fields: [installmentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  importBatch        ImportBatch?     @relation(fields: [importBatchId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  aiSuggestion       AiSuggestion?    @relation(fields: [aiSuggestionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  paidInvoice        Invoice?         @relation("InvoicePaymentTransaction")
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, occurredOn])
+  @@index([organizationId, financialProfileId, status, occurredOn])
+  @@index([organizationId, financialProfileId, accountId, occurredOn])
+  @@index([organizationId, financialProfileId, cardId, occurredOn])
+  @@index([organizationId, financialProfileId, categoryId, occurredOn])
+  @@index([organizationId, financialProfileId, importBatchId])
+  @@index([organizationId, financialProfileId, transferGroupId])
+}
+
+model Recurrence {
+  id                 String              @id @default(uuid()) @db.Uuid
+  organizationId     String              @db.Uuid
+  financialProfileId String              @db.Uuid
+  accountId          String              @db.Uuid
+  categoryId         String?             @db.Uuid
+  status             RecurrenceStatus    @default(ACTIVE)
+  frequency          RecurrenceFrequency
+  startOn            DateTime            @db.Date
+  endOn              DateTime?           @db.Date
+  amountMinor        Int
+  currency           String              @default("BRL") @db.Char(3)
+  description        String              @db.VarChar(240)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  account          Account          @relation(fields: [accountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  category         Category?        @relation(fields: [categoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  transactions     Transaction[]
+  installments     Installment[]
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, status])
+  @@index([organizationId, financialProfileId, startOn])
+}
+
+model Installment {
+  id                 String            @id @default(uuid()) @db.Uuid
+  organizationId     String            @db.Uuid
+  financialProfileId String            @db.Uuid
+  recurrenceId       String?           @db.Uuid
+  cardId             String?           @db.Uuid
+  status             InstallmentStatus @default(PLANNED)
+  sequenceNumber     Int
+  totalInstallments  Int
+  dueOn              DateTime          @db.Date
+  amountMinor        Int
+  currency           String            @default("BRL") @db.Char(3)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  recurrence       Recurrence?      @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  card             Card?            @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  transactions     Transaction[]
+
+  @@unique([id, organizationId, financialProfileId])
+  @@unique([organizationId, financialProfileId, recurrenceId, sequenceNumber])
+  @@index([organizationId, financialProfileId, dueOn])
+  @@index([organizationId, financialProfileId, status])
+}
+
+model Invoice {
+  id                   String        @id @default(uuid()) @db.Uuid
+  organizationId       String        @db.Uuid
+  financialProfileId   String        @db.Uuid
+  cardId               String        @db.Uuid
+  paymentTransactionId String?       @unique @db.Uuid
+  status               InvoiceStatus @default(OPEN)
+  periodStartOn        DateTime      @db.Date
+  periodEndOn          DateTime      @db.Date
+  dueOn                DateTime      @db.Date
+  totalAmountMinor     Int           @default(0)
+  currency             String        @default("BRL") @db.Char(3)
+  paidAt               DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  financialProfile   FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  card               Card             @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  transactions       Transaction[]    @relation("InvoiceTransactions")
+  paymentTransaction Transaction?     @relation("InvoicePaymentTransaction", fields: [paymentTransactionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+
+  @@unique([id, organizationId, financialProfileId])
+  @@unique([paymentTransactionId, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, cardId, dueOn])
+  @@index([organizationId, financialProfileId, status])
+}
+
+model Budget {
+  id                    String       @id @default(uuid()) @db.Uuid
+  organizationId        String       @db.Uuid
+  financialProfileId    String       @db.Uuid
+  categoryId            String       @db.Uuid
+  status                RecordStatus @default(ACTIVE)
+  periodStartOn         DateTime     @db.Date
+  periodEndOn           DateTime     @db.Date
+  plannedAmountMinor    Int
+  currency              String       @default("BRL") @db.Char(3)
+  alertThresholdPercent Int?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  category         Category         @relation(fields: [categoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+
+  @@unique([id, organizationId, financialProfileId])
+  @@unique([organizationId, financialProfileId, categoryId, periodStartOn, periodEndOn])
+  @@index([organizationId, financialProfileId, periodStartOn, periodEndOn])
+}
+
+model ImportBatch {
+  id                 String           @id @default(uuid()) @db.Uuid
+  organizationId     String           @db.Uuid
+  financialProfileId String           @db.Uuid
+  sourceKind         ImportSourceKind
+  status             ImportStatus     @default(RECEIVED)
+  originalFileName   String?          @db.VarChar(240)
+  sourceHash         String           @db.VarChar(128)
+  receivedAt         DateTime         @default(now())
+  completedAt        DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  transactions     Transaction[]
+
+  @@unique([id, organizationId, financialProfileId])
+  @@unique([organizationId, financialProfileId, sourceHash])
+  @@index([organizationId, financialProfileId, sourceKind, status])
+  @@index([organizationId, financialProfileId, receivedAt])
+}
+
+model AiSuggestion {
+  id                 String             @id @default(uuid()) @db.Uuid
+  organizationId     String             @db.Uuid
+  financialProfileId String             @db.Uuid
+  kind               AiSuggestionKind
+  status             AiSuggestionStatus @default(PENDING_REVIEW)
+  sourceEntityId     String?            @db.Uuid
+  targetEntityId     String?            @db.Uuid
+  confidence         Decimal            @db.Decimal(5, 4)
+  explanation        String             @db.VarChar(500)
+  provider           String?            @db.VarChar(80)
+  model              String?            @db.VarChar(120)
+  reviewedByUserId   String?            @db.Uuid
+  reviewedAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  transactions     Transaction[]
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, status, kind])
+  @@index([organizationId, financialProfileId, sourceEntityId])
+  @@index([organizationId, financialProfileId, targetEntityId])
+}
+
+model Attachment {
+  id                 String           @id @default(uuid()) @db.Uuid
+  organizationId     String           @db.Uuid
+  financialProfileId String           @db.Uuid
+  kind               AttachmentKind
+  status             AttachmentStatus @default(ACTIVE)
+  fileName           String           @db.VarChar(240)
+  mimeType           String           @db.VarChar(120)
+  storageKey         String           @db.VarChar(500)
+  linkedEntityId     String           @db.Uuid
+  linkedEntityKind   LinkedEntityKind
+  redactedAt         DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, linkedEntityKind, linkedEntityId])
+  @@index([organizationId, financialProfileId, status])
+}
+
+model AuditLogEntry {
+  id                 String          @id @default(uuid()) @db.Uuid
+  organizationId     String          @db.Uuid
+  financialProfileId String          @db.Uuid
+  occurredAt         DateTime        @default(now())
+  actorKind          AuditActorKind
+  actorId            String?         @db.Uuid
+  action             AuditAction
+  entityKind         AuditEntityKind
+  entityId           String          @db.Uuid
+  correlationId      String?         @db.VarChar(120)
+  reason             String?         @db.VarChar(240)
+  redactedChanges    Json?
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  @@index([organizationId, financialProfileId, occurredAt])
+  @@index([organizationId, financialProfileId, entityKind, entityId])
+  @@index([organizationId, financialProfileId, correlationId])
+}
