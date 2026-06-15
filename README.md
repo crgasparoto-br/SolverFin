@@ -10,11 +10,27 @@ Este repositorio esta na fase de fundacao documental e bootstrap. Ainda nao ha a
 
 A primeira etapa e alinhar produto, arquitetura, decisoes, regras para agentes de IA e templates de trabalho antes de iniciar a implementacao tecnica.
 
+## Stack inicial planejada
+
+A stack inicial registrada em `docs/ARCHITECTURE.md` e `docs/adr/0001-stack-inicial.md` e:
+
+- TypeScript;
+- monorepo para frontend, backend e pacotes compartilhados;
+- frontend web/PWA mobile-first;
+- backend API modular;
+- PostgreSQL;
+- Prisma para ORM e migrations;
+- testes automatizados por camada;
+- GitHub Actions para CI quando o bootstrap tecnico existir;
+- camada propria para IA com schemas estruturados, validacao e logs seguros.
+
+Frameworks concretos de frontend/backend, autenticacao, runtime e provedores de IA serao definidos em issues de bootstrap ou ADRs complementares.
+
 ## Documentos principais
 
 Leia estes documentos antes de implementar qualquer issue:
 
-- `docs/PRODUCT.md`: visao de produto, personas, escopo MVP e limites.
+- `docs/PRODUCT.md`: visao de produto, personas, jornadas, escopo MVP, fases e limites.
 - `docs/ARCHITECTURE.md`: arquitetura inicial, stack-alvo e regras tecnicas.
 - `docs/BRAND.md`: identidade visual, tom e direcao de interface.
 - `docs/adr/README.md`: processo de ADRs.
