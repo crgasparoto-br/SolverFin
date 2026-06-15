@@ -6,15 +6,14 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 ## Status do repositorio
 
-Este repositorio esta na fase de fundacao documental e bootstrap. Ainda nao ha aplicacao executavel, API, banco ou comandos tecnicos obrigatorios definidos.
-
-A primeira etapa e alinhar produto, arquitetura, decisoes, regras para agentes de IA e templates de trabalho antes de iniciar a implementacao tecnica.
+Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, e os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier. Apps, API, Docker, CI e testes reais ainda serao configurados nas proximas issues de bootstrap.
 
 ## Stack inicial planejada
 
 A stack inicial registrada em `docs/ARCHITECTURE.md` e `docs/adr/0001-stack-inicial.md` e:
 
 - TypeScript;
+- npm workspaces;
 - monorepo para frontend, backend e pacotes compartilhados;
 - frontend web/PWA mobile-first;
 - backend API modular;
@@ -26,6 +25,43 @@ A stack inicial registrada em `docs/ARCHITECTURE.md` e `docs/adr/0001-stack-inic
 
 Frameworks concretos de frontend/backend, autenticacao, runtime e provedores de IA serao definidos em issues de bootstrap ou ADRs complementares.
 
+## Comandos atuais
+
+Requisitos locais:
+
+- Node.js 22 ou superior;
+- npm 10 ou superior.
+
+Instalar dependencias:
+
+```bash
+npm install
+```
+
+Executar validacao raiz:
+
+```bash
+npm run validate
+```
+
+Comandos disponiveis:
+
+```bash
+npm run dev
+npm run format
+npm run format:check
+npm run lint
+npm run lint:fix
+npm run typecheck
+npm run test
+npm run build
+npm run validate
+```
+
+Nesta etapa, `format`, `lint`, `typecheck` e `build` ja apontam para Prettier, ESLint e TypeScript. Os testes ainda sao placeholders controlados ate a estrategia de testes ser implementada.
+
+Se `npm install` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint e Prettier e atualizar o lockfile.
+
 ## Documentos principais
 
 Leia estes documentos antes de implementar qualquer issue:
@@ -33,6 +69,7 @@ Leia estes documentos antes de implementar qualquer issue:
 - `docs/PRODUCT.md`: visao de produto, personas, jornadas, escopo MVP, fases e limites.
 - `docs/ARCHITECTURE.md`: arquitetura inicial, stack-alvo e regras tecnicas.
 - `docs/BRAND.md`: identidade visual, tom e direcao de interface.
+- `docs/CONVENTIONS.md`: convencoes de TypeScript, lint, formatacao e organizacao.
 - `docs/adr/README.md`: processo de ADRs.
 - `docs/adr/0001-stack-inicial.md`: decisao inicial de stack e arquitetura.
 - `AGENTS.md`: regras globais para agentes de IA.
@@ -47,26 +84,51 @@ Leia estes documentos antes de implementar qualquer issue:
 5. Atualize documentacao quando alterar produto, arquitetura, contrato, modelo de dados, fluxo ou decisao relevante.
 6. Execute as validacoes disponiveis no repositorio e registre o resultado na PR.
 
-## Validacao atual
-
-Como ainda nao existe stack tecnica instalada, a validacao nesta fase e documental:
-
-- revisar links internos entre README, PRODUCT, ARCHITECTURE, AGENTS, Copilot e ADRs;
-- confirmar que os documentos nao se contradizem;
-- garantir que templates de issue e PR pedem contexto, escopo, validacao, riscos e dados de privacidade;
-- evitar exemplos com dados financeiros reais ou sensiveis.
-
-Quando o bootstrap tecnico for implementado, esta secao deve ser atualizada com comandos reais de instalacao, lint, typecheck, testes, build, banco e CI.
-
 ## Estrutura inicial
 
 ```text
 .
 |-- AGENTS.md
 |-- README.md
+|-- package.json
+|-- tsconfig.base.json
+|-- eslint.config.mjs
+|-- apps/
+|   |-- api/
+|   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/
+|   |       `-- index.ts
+|   `-- web/
+|       |-- package.json
+|       |-- tsconfig.json
+|       `-- src/
+|           `-- index.ts
+|-- packages/
+|   |-- ai/
+|   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/index.ts
+|   |-- config/
+|   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/index.ts
+|   |-- domain/
+|   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/index.ts
+|   `-- shared/
+|       |-- package.json
+|       |-- tsconfig.json
+|       `-- src/index.ts
+|-- prisma/
+|   `-- README.md
+|-- scripts/
+|   `-- README.md
 |-- docs/
 |   |-- ARCHITECTURE.md
 |   |-- BRAND.md
+|   |-- CONVENTIONS.md
 |   |-- PRODUCT.md
 |   `-- adr/
 |       |-- README.md
@@ -80,6 +142,17 @@ Quando o bootstrap tecnico for implementado, esta secao deve ser atualizada com 
 |-- issues.json
 `-- issue-bodies/
 ```
+
+## Responsabilidades dos workspaces
+
+- `apps/web`: aplicacao web/PWA mobile-first.
+- `apps/api`: API backend modular.
+- `packages/domain`: regras e entidades do dominio financeiro, sem acoplamento direto a UI, banco ou IA.
+- `packages/shared`: tipos, utilitarios e contratos compartilhados.
+- `packages/ai`: abstracoes de IA, schemas estruturados e politicas de uso seguro.
+- `packages/config`: configuracoes compartilhadas de ferramentas.
+- `prisma`: schema, migrations e seeds quando a persistencia for implementada.
+- `scripts`: automacoes auxiliares seguras do repositorio.
 
 ## Privacidade e seguranca
 

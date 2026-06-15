@@ -1,0 +1,14 @@
+{
+  "name": "@solverfin/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Regras e entidades do dominio financeiro, isoladas de infraestrutura.",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"@solverfin/domain: testes ainda serao configurados em issue propria\"",
+    "build": "tsc --noEmit"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@solverfin/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Configuracoes compartilhadas de ferramentas do monorepo.",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"@solverfin/config: testes ainda serao configurados em issue propria\"",
+    "build": "tsc --noEmit"
+  }
+}

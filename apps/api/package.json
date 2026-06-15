@@ -1,0 +1,15 @@
+{
+  "name": "@solverfin/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "API backend modular do SolverFin.",
+  "scripts": {
+    "dev": "echo \"@solverfin/api: dev ainda sera configurado na issue de backend/bootstrap\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"@solverfin/api: testes ainda serao configurados em issue propria\"",
+    "build": "tsc --noEmit"
+  }
+}

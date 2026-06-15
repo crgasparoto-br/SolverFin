@@ -1,0 +1,15 @@
+{
+  "name": "@solverfin/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aplicacao web/PWA mobile-first do SolverFin.",
+  "scripts": {
+    "dev": "echo \"@solverfin/web: dev ainda sera configurado na issue de frontend/bootstrap\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"@solverfin/web: testes ainda serao configurados em issue propria\"",
+    "build": "tsc --noEmit"
+  }
+}

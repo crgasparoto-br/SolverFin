@@ -1,0 +1,14 @@
+{
+  "name": "@solverfin/ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Abstracoes de IA, schemas estruturados e politicas de uso seguro.",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"@solverfin/ai: testes ainda serao configurados em issue propria\"",
+    "build": "tsc --noEmit"
+  }
+}

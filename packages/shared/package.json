@@ -1,0 +1,14 @@
+{
+  "name": "@solverfin/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tipos, utilitarios e contratos compartilhados entre apps e pacotes.",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"@solverfin/shared: testes ainda serao configurados em issue propria\"",
+    "build": "tsc --noEmit"
+  }
+}
