@@ -36,6 +36,28 @@ Precisa registrar receitas por atendimento, servico ou cliente, controlar custos
 
 Precisa de uma visao simples de fluxo financeiro, contas, recebiveis, categorias e pendencias sem complexidade de ERP.
 
+## Jornadas principais do MVP
+
+### Organizar base financeira
+
+O usuario cria contas, cartoes, categorias, contexto financeiro e preferencias basicas para separar vida pessoal, familia, MEI ou negocio.
+
+### Registrar e revisar movimentacoes
+
+O usuario registra receitas, despesas e transferencias manualmente ou por importacao. Sugestoes automaticas ficam pendentes de revisao quando houver incerteza.
+
+### Importar e conciliar
+
+O usuario importa CSV/OFX ou cola textos de mensagens bancarias. SolverFin normaliza dados, identifica possiveis duplicidades e sugere conciliacao com lancamentos previstos.
+
+### Acompanhar rotina mensal
+
+O usuario acompanha saldo, proximos vencimentos, faturas, contas a pagar/receber, orcamentos, metas e alertas basicos.
+
+### Usar IA com controle
+
+O usuario recebe sugestoes de extracao, classificacao, conciliacao e insights, sempre com explicacao, origem e estado de revisao.
+
 ## Principios de produto
 
 - **Clareza antes de automacao:** uma automacao so e boa se o usuario entende e consegue revisar.
@@ -65,6 +87,20 @@ O MVP deve permitir:
 - separacao por usuario, tenant ou perfil financeiro;
 - consentimento, auditoria e mascaramento de dados sensiveis.
 
+## Fases futuras
+
+### Fase 1 - Core financeiro
+
+Implementar dominio, persistencia, autenticacao, multi-tenant, APIs essenciais e PWA com fluxos principais.
+
+### Fase 2 - Automacao e IA aplicada
+
+Evoluir importacao, deduplicacao, conciliacao, inbox, regras automaticas, schemas de IA e fila de revisao.
+
+### Fase 3 - Operacao e integracoes
+
+Adicionar observabilidade, acessibilidade, performance, troubleshooting para agentes, integracoes SolverIT e exportacoes profissionais/MEI.
+
 ## Fora do MVP inicial
 
 - Integracao bancaria direta via Open Finance sem ADR e estudo tecnico.
@@ -73,6 +109,13 @@ O MVP deve permitir:
 - Funcionalidades de ERP avancado, folha, estoque ou contabilidade completa.
 - Recomendacoes de investimento, credito ou consultoria financeira regulada.
 - Uso de dados reais em exemplos, seeds, fixtures ou demonstracoes publicas.
+
+## Perguntas abertas de produto
+
+- Qual persona tera prioridade no primeiro corte utilizavel do MVP?
+- Quais operacoes exigirao revisao humana obrigatoria antes de persistir efeitos financeiros?
+- Por quanto tempo mensagens bancarias brutas poderao ser mantidas apos normalizacao?
+- Quais relatorios MEI serao essenciais antes de integracoes com contador?
 
 ## Regras para IA no produto
 
