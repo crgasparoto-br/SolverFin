@@ -6,7 +6,7 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 ## Status do repositorio
 
-Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier, e o ambiente local ja possui Docker Compose para PostgreSQL. Apps executaveis, API real, CI e testes reais ainda serao configurados nas proximas issues de bootstrap.
+Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier, o ambiente local ja possui Docker Compose para PostgreSQL e o CI inicial valida os checks basicos em pull requests e pushes para `main`. Apps executaveis, API real e testes reais ainda serao configurados nas proximas issues de bootstrap.
 
 ## Stack inicial planejada
 
@@ -62,6 +62,32 @@ npm run validate
 Nesta etapa, `format`, `lint`, `typecheck` e `build` ja apontam para Prettier, ESLint e TypeScript. Os testes ainda sao placeholders controlados ate a estrategia de testes ser implementada.
 
 Se `npm install` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint e Prettier e atualizar o lockfile.
+
+## CI inicial
+
+O workflow `.github/workflows/ci.yml` roda em `pull_request` e em `push` para `main`.
+
+Ele executa os checks basicos em etapas separadas para deixar claro qual comando falhou:
+
+```bash
+npm install --no-audit --no-fund
+npm run format:check
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+Para reproduzir localmente o mesmo conjunto de checks, rode:
+
+```bash
+npm install
+npm run validate
+```
+
+O CI inicial nao depende de Docker, banco local ou secrets. Validacoes com PostgreSQL, Prisma e migrations devem entrar quando o schema e os testes de persistencia forem implementados.
+
+Como ainda nao ha `package-lock.json` versionado, o CI usa `npm install` em vez de `npm ci` e nao habilita cache de dependencias. Quando o lockfile for adotado, o workflow deve ser ajustado para instalacao reprodutivel com cache seguro.
 
 ## Ambiente local com PostgreSQL
 
@@ -181,6 +207,8 @@ Leia estes documentos antes de implementar qualquer issue:
 |       |-- README.md
 |       `-- 0001-stack-inicial.md
 |-- .github/
+|   |-- workflows/
+|   |   `-- ci.yml
 |   |-- copilot-instructions.md
 |   |-- ISSUE_TEMPLATE/
 |   |   `-- ai_task.yml
