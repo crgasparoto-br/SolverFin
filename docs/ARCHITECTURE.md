@@ -8,7 +8,9 @@ Ele nao substitui ADRs. Decisoes duradouras, mudancas de stack, integracoes exte
 
 ## Estado atual
 
-O repositorio esta em fase documental. Ainda nao existe aplicacao, monorepo tecnico, banco de dados, CI ou comandos obrigatorios.
+O repositorio esta em fase de bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja existe, os workspaces possuem configuracoes iniciais de TypeScript, ESLint e Prettier, e ha um Docker Compose para PostgreSQL local.
+
+Ainda nao existe aplicacao executavel, API real, schema Prisma, migrations, CI ou testes automatizados reais. Esses itens devem ser implementados em issues especificas de bootstrap, dominio, persistencia e qualidade.
 
 A decisao inicial de stack esta registrada em `docs/adr/0001-stack-inicial.md` e deve orientar as proximas issues de bootstrap.
 
@@ -28,6 +30,23 @@ Stack-alvo inicial:
 - Provedores de IA acessados por abstracao propria, com schemas estruturados e logs seguros.
 
 Frameworks concretos de frontend/backend, runtime, autenticacao e provedor de IA ainda devem ser definidos em issues de bootstrap ou ADRs complementares.
+
+## Ambiente local de banco
+
+O banco relacional local usa PostgreSQL via `docker-compose.yml`, com variaveis documentadas em `.env.example`.
+
+Comandos principais:
+
+```bash
+docker compose up -d postgres
+docker compose ps
+docker compose down
+docker compose down -v
+```
+
+O comando `docker compose down -v` apaga o volume local de desenvolvimento e deve ser usado apenas para resetar o banco.
+
+A aplicacao e o Prisma devem usar `DATABASE_URL` quando o schema e as migrations forem implementados. Nenhum segredo real deve ser colocado em `.env.example`; valores ali sao placeholders seguros para desenvolvimento.
 
 ## Diagrama textual de componentes
 
