@@ -8,9 +8,9 @@ Ele nao substitui ADRs. Decisoes duradouras, mudancas de stack, integracoes exte
 
 ## Estado atual
 
-O repositorio esta em fase de bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja existe, os workspaces possuem configuracoes iniciais de TypeScript, ESLint e Prettier, e ha um Docker Compose para PostgreSQL local.
+O repositorio esta em fase de bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja existe, os workspaces possuem configuracoes iniciais de TypeScript, ESLint e Prettier, ha um Docker Compose para PostgreSQL local e o CI inicial roda checks basicos em pull requests e pushes para `main`.
 
-Ainda nao existe aplicacao executavel, API real, schema Prisma, migrations, CI ou testes automatizados reais. Esses itens devem ser implementados em issues especificas de bootstrap, dominio, persistencia e qualidade.
+Ainda nao existe aplicacao executavel, API real, schema Prisma, migrations ou testes automatizados reais. Esses itens devem ser implementados em issues especificas de bootstrap, dominio, persistencia e qualidade.
 
 A decisao inicial de stack esta registrada em `docs/adr/0001-stack-inicial.md` e deve orientar as proximas issues de bootstrap.
 
@@ -30,6 +30,27 @@ Stack-alvo inicial:
 - Provedores de IA acessados por abstracao propria, com schemas estruturados e logs seguros.
 
 Frameworks concretos de frontend/backend, runtime, autenticacao e provedor de IA ainda devem ser definidos em issues de bootstrap ou ADRs complementares.
+
+## CI inicial
+
+O workflow `.github/workflows/ci.yml` roda em `pull_request` e `push` para `main`, sem depender de banco, Docker ou secrets.
+
+Checks executados:
+
+```bash
+npm install --no-audit --no-fund
+npm run format:check
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+Os comandos ficam separados no workflow para que a falha mostre claramente se o problema esta em instalacao, formatacao, lint, tipos, testes ou build.
+
+Como ainda nao ha `package-lock.json` versionado, o CI usa `npm install` e nao habilita cache de dependencias. Quando o lockfile for adotado, o workflow deve migrar para instalacao reprodutivel e cache seguro.
+
+Validacoes com PostgreSQL, Prisma, migrations e seeds devem entrar em workflows ou jobs futuros quando a persistencia existir.
 
 ## Ambiente local de banco
 
