@@ -16,7 +16,7 @@ Leia, nesta ordem:
 
 ## Escopo
 
-- Faça mudancas pequenas e vinculadas a issue.
+- Faca mudancas pequenas e vinculadas a issue.
 - Nao implemente funcionalidades financeiras fora da issue.
 - Nao crie integracoes externas sem ADR ou issue dedicada.
 - Nao altere stack, arquitetura, contratos publicos ou modelo de dados sem atualizar documentacao e ADR quando aplicavel.
