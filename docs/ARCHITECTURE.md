@@ -12,7 +12,7 @@ O repositorio esta em fase documental. Ainda nao existe aplicacao, monorepo tecn
 
 A decisao inicial de stack esta registrada em `docs/adr/0001-stack-inicial.md` e deve orientar as proximas issues de bootstrap.
 
-## Direcao de stack
+## Stack inicial
 
 Stack-alvo inicial:
 
@@ -20,11 +20,38 @@ Stack-alvo inicial:
 - Monorepo para frontend, backend e pacotes compartilhados.
 - Frontend web/PWA mobile-first.
 - Backend API modular.
-- Banco relacional com migrations versionadas.
+- PostgreSQL como banco relacional inicial.
+- Prisma como ORM e ferramenta de migrations inicial.
+- Testes automatizados organizados por dominio, API, UI e integracoes.
+- CI no GitHub Actions para instalar dependencias, lint, typecheck, testes e build quando o bootstrap existir.
 - Camada de dominio financeiro isolada de frameworks e provedores externos sempre que possivel.
 - Provedores de IA acessados por abstracao propria, com schemas estruturados e logs seguros.
 
-A stack concreta deve ser criada em issues de bootstrap e detalhada por ADR quando houver escolha de frameworks, ferramentas e provedores.
+Frameworks concretos de frontend/backend, runtime, autenticacao e provedor de IA ainda devem ser definidos em issues de bootstrap ou ADRs complementares.
+
+## Diagrama textual de componentes
+
+```text
+Usuario
+  -> Web/PWA
+    -> API backend
+      -> Dominio financeiro
+      -> Servicos de importacao e conciliacao
+      -> Servicos de IA explicavel
+      -> Prisma
+        -> PostgreSQL
+
+Web/PWA
+  -> revisa sugestoes, lancamentos, faturas, alertas e relatorios
+
+Dominio financeiro
+  -> valida regras de contas, categorias, lancamentos, recorrencias, faturas, orcamentos e conciliacao
+
+Servicos de IA
+  -> recebem dados minimizados
+  -> retornam sugestoes estruturadas
+  -> registram origem, confianca, explicacao e estado de revisao
+```
 
 ## Boundaries iniciais
 
@@ -49,6 +76,12 @@ Regras de dominio nao devem depender diretamente de detalhes de UI, banco, fila,
 Responsavel por usuario, organizacao, perfil financeiro, permissoes e isolamento de dados.
 
 Todo dado financeiro persistente deve ter vinculo claro com usuario, tenant ou perfil financeiro.
+
+### Persistencia
+
+Responsavel por schemas Prisma, migrations, seeds seguros, consultas e transacoes.
+
+Persistencia nao deve conter regra de produto que possa viver no dominio financeiro. Seeds e fixtures devem ser ficticios e minimizados.
 
 ### Importacao e conciliacao
 
@@ -96,7 +129,7 @@ Diretrizes iniciais:
 
 Enquanto nao houver bootstrap tecnico, validacao documental e suficiente para issues documentais.
 
-Quando a stack existir, novas PRs devem executar validacoes compatíveis com a mudanca:
+Quando a stack existir, novas PRs devem executar validacoes compativeis com a mudanca:
 
 - dominio financeiro: testes unitarios e casos de borda;
 - APIs: testes de contrato, autorizacao e tenant;
@@ -127,7 +160,6 @@ Essa estrutura nao deve ser criada fora de uma issue de bootstrap tecnico, salvo
 ## Perguntas abertas
 
 - Qual framework web/backend sera escolhido no bootstrap tecnico?
-- Qual banco relacional sera adotado no ambiente inicial?
 - Qual provedor de autenticacao sera usado?
 - Quais dados brutos de importacao podem ser descartados apos normalizacao?
 - Quais operacoes exigirao revisao humana obrigatoria antes de persistir efeitos financeiros?
