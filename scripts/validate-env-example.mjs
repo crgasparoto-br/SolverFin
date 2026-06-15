@@ -1,7 +1,14 @@
 import { readFileSync } from "node:fs";
 
 const envExamplePath = ".env.example";
-const requiredKeys = ["NODE_ENV", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_PORT", "DATABASE_URL"];
+const requiredKeys = [
+  "NODE_ENV",
+  "POSTGRES_DB",
+  "POSTGRES_USER",
+  "POSTGRES_PASSWORD",
+  "POSTGRES_PORT",
+  "DATABASE_URL",
+];
 
 const sensitiveKeyPattern = /(PASSWORD|TOKEN|SECRET|KEY|DATABASE_URL)/i;
 const unsafeValuePatterns = [
@@ -45,7 +52,9 @@ function validateEnvExample(entries) {
   const missingKeys = requiredKeys.filter((key) => !entries.has(key));
 
   if (missingKeys.length > 0) {
-    throw new Error(`Missing required environment keys in .env.example: ${missingKeys.join(", ")}`);
+    throw new Error(
+      `Missing required environment keys in .env.example: ${missingKeys.join(", ")}`,
+    );
   }
 
   for (const key of requiredKeys) {
