@@ -13,6 +13,12 @@ coverage/
 .env
 .env.*
 !.env.example
+.envrc
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
 
 # Logs
 *.log
