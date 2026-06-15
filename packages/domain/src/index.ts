@@ -26,7 +26,12 @@ export type CategoryStatus = "active" | "archived";
 
 export type TransactionKind = "income" | "expense" | "transfer";
 export type TransactionStatus = "planned" | "posted" | "reconciled" | "suggested" | "voided";
-export type TransactionSource = "manual" | "recurrence" | "installment" | "import" | "ai_suggestion";
+export type TransactionSource =
+  | "manual"
+  | "recurrence"
+  | "installment"
+  | "import"
+  | "ai_suggestion";
 
 export type RecurrenceFrequency = "daily" | "weekly" | "monthly" | "yearly";
 export type RecurrenceStatus = "active" | "paused" | "cancelled" | "completed";
@@ -36,7 +41,13 @@ export type InvoiceStatus = "open" | "closed" | "paid" | "overdue" | "cancelled"
 export type BudgetStatus = "active" | "archived";
 
 export type ImportSourceKind = "csv" | "ofx" | "bank_message" | "manual";
-export type ImportStatus = "received" | "parsed" | "reviewing" | "completed" | "failed" | "discarded";
+export type ImportStatus =
+  | "received"
+  | "parsed"
+  | "reviewing"
+  | "completed"
+  | "failed"
+  | "discarded";
 
 export type AiSuggestionKind =
   | "transaction_extraction"
