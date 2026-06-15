@@ -11,3 +11,6 @@ issues.json
 
 # Long-form brand prompt reference keeps manual line breaks for prompt readability.
 docs/BRAND.md
+
+# Executed directly by env:check; keep formatting changes from obscuring validation edits.
+scripts/validate-env-example.mjs
