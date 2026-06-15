@@ -6,7 +6,7 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 ## Status do repositorio
 
-Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier, o ambiente local ja possui Docker Compose para PostgreSQL e o CI inicial valida os checks basicos em pull requests e pushes para `main`. Apps executaveis, API real e testes reais ainda serao configurados nas proximas issues de bootstrap.
+Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier, o ambiente local ja possui Docker Compose para PostgreSQL, ha politica inicial de ambientes/secrets e o CI inicial valida os checks basicos em pull requests e pushes para `main`. Apps executaveis, API real e testes reais ainda serao configurados nas proximas issues de bootstrap.
 
 ## Stack inicial planejada
 
@@ -49,6 +49,7 @@ Comandos disponiveis:
 
 ```bash
 npm run dev
+npm run env:check
 npm run format
 npm run format:check
 npm run lint
@@ -59,7 +60,7 @@ npm run build
 npm run validate
 ```
 
-Nesta etapa, `format`, `lint`, `typecheck` e `build` ja apontam para Prettier, ESLint e TypeScript. Os testes ainda sao placeholders controlados ate a estrategia de testes ser implementada.
+Nesta etapa, `env:check`, `format`, `lint`, `typecheck` e `build` ja apontam para validacoes reais. Os testes ainda sao placeholders controlados ate a estrategia de testes ser implementada.
 
 Se `npm install` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint e Prettier e atualizar o lockfile.
 
@@ -71,6 +72,7 @@ Ele executa os checks basicos em etapas separadas para deixar claro qual comando
 
 ```bash
 npm install --no-audit --no-fund
+npm run env:check
 npm run format:check
 npm run lint
 npm run typecheck
@@ -85,9 +87,29 @@ npm install
 npm run validate
 ```
 
-O CI inicial nao depende de Docker, banco local ou secrets. Validacoes com PostgreSQL, Prisma e migrations devem entrar quando o schema e os testes de persistencia forem implementados.
+O CI inicial nao depende de Docker, banco local ou secrets reais. Validacoes com PostgreSQL, Prisma e migrations devem entrar quando o schema e os testes de persistencia forem implementados.
 
 Como ainda nao ha `package-lock.json` versionado, o CI usa `npm install` em vez de `npm ci` e nao habilita cache de dependencias. Quando o lockfile for adotado, o workflow deve ser ajustado para instalacao reprodutivel com cache seguro.
+
+## Ambientes e secrets
+
+O contrato de variaveis e a politica de secrets ficam em `docs/ENVIRONMENT.md`.
+
+Regras principais:
+
+- nunca commite secrets reais, tokens, chaves privadas ou credenciais de producao;
+- use `.env.example` apenas com placeholders ficticios e seguros;
+- crie `.env` local a partir de `.env.example`;
+- configure secrets reais apenas no ambiente que precisa deles, como GitHub Actions, preview, producao ou gerenciador externo futuro;
+- erros de ambiente devem citar o nome da variavel ausente ou invalida, nunca o valor recebido.
+
+Validar `.env.example`:
+
+```bash
+npm run env:check
+```
+
+Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` quando passarem a consumir variaveis obrigatorias em runtime.
 
 ## Ambiente local com PostgreSQL
 
@@ -141,6 +163,7 @@ Leia estes documentos antes de implementar qualquer issue:
 - `docs/ARCHITECTURE.md`: arquitetura inicial, stack-alvo e regras tecnicas.
 - `docs/BRAND.md`: identidade visual, tom e direcao de interface.
 - `docs/CONVENTIONS.md`: convencoes de TypeScript, lint, formatacao e organizacao.
+- `docs/ENVIRONMENT.md`: variaveis de ambiente, secrets e validacao segura.
 - `docs/adr/README.md`: processo de ADRs.
 - `docs/adr/0001-stack-inicial.md`: decisao inicial de stack e arquitetura.
 - `AGENTS.md`: regras globais para agentes de IA.
@@ -185,7 +208,9 @@ Leia estes documentos antes de implementar qualquer issue:
 |   |-- config/
 |   |   |-- package.json
 |   |   |-- tsconfig.json
-|   |   `-- src/index.ts
+|   |   `-- src/
+|   |       |-- env.ts
+|   |       `-- index.ts
 |   |-- domain/
 |   |   |-- package.json
 |   |   |-- tsconfig.json
@@ -197,11 +222,13 @@ Leia estes documentos antes de implementar qualquer issue:
 |-- prisma/
 |   `-- README.md
 |-- scripts/
-|   `-- README.md
+|   |-- README.md
+|   `-- validate-env-example.mjs
 |-- docs/
 |   |-- ARCHITECTURE.md
 |   |-- BRAND.md
 |   |-- CONVENTIONS.md
+|   |-- ENVIRONMENT.md
 |   |-- PRODUCT.md
 |   `-- adr/
 |       |-- README.md
@@ -225,7 +252,7 @@ Leia estes documentos antes de implementar qualquer issue:
 - `packages/domain`: regras e entidades do dominio financeiro, sem acoplamento direto a UI, banco ou IA.
 - `packages/shared`: tipos, utilitarios e contratos compartilhados.
 - `packages/ai`: abstracoes de IA, schemas estruturados e politicas de uso seguro.
-- `packages/config`: configuracoes compartilhadas de ferramentas.
+- `packages/config`: configuracoes compartilhadas e contratos de ambiente.
 - `prisma`: schema, migrations e seeds quando a persistencia for implementada.
 - `scripts`: automacoes auxiliares seguras do repositorio.
 
