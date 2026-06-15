@@ -2,11 +2,13 @@
   "name": "@solverfin/config",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Configuracoes compartilhadas de ferramentas do monorepo.",
   "scripts": {
-    "lint": "echo \"@solverfin/config: lint ainda sera configurado em B02\"",
-    "typecheck": "echo \"@solverfin/config: typecheck ainda sera configurado em B02\"",
-    "test": "echo \"@solverfin/config: testes ainda serao configurados em B02\"",
-    "build": "echo \"@solverfin/config: build ainda sera configurado em B02\""
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"@solverfin/config: testes ainda serao configurados em issue propria\"",
+    "build": "tsc --noEmit"
   }
 }

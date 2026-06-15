@@ -2,12 +2,14 @@
   "name": "@solverfin/web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Aplicacao web/PWA mobile-first do SolverFin.",
   "scripts": {
     "dev": "echo \"@solverfin/web: dev ainda sera configurado na issue de frontend/bootstrap\"",
-    "lint": "echo \"@solverfin/web: lint ainda sera configurado em B02\"",
-    "typecheck": "echo \"@solverfin/web: typecheck ainda sera configurado em B02\"",
-    "test": "echo \"@solverfin/web: testes ainda serao configurados em B02\"",
-    "build": "echo \"@solverfin/web: build ainda sera configurado no bootstrap do app\""
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"@solverfin/web: testes ainda serao configurados em issue propria\"",
+    "build": "tsc --noEmit"
   }
 }

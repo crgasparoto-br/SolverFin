@@ -6,7 +6,7 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 ## Status do repositorio
 
-Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, mas os apps e pacotes ainda possuem scripts placeholder ate as proximas issues de configuracao TypeScript, lint, testes, apps, Docker e CI.
+Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, e os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier. Apps, API, Docker, CI e testes reais ainda serao configurados nas proximas issues de bootstrap.
 
 ## Stack inicial planejada
 
@@ -48,14 +48,19 @@ Comandos disponiveis:
 
 ```bash
 npm run dev
+npm run format
+npm run format:check
 npm run lint
+npm run lint:fix
 npm run typecheck
 npm run test
 npm run build
 npm run validate
 ```
 
-Nesta etapa, os comandos chamam scripts dos workspaces com placeholders controlados. As configuracoes reais de TypeScript, lint, testes e build entram nas proximas subissues de bootstrap.
+Nesta etapa, `format`, `lint`, `typecheck` e `build` ja apontam para Prettier, ESLint e TypeScript. Os testes ainda sao placeholders controlados ate a estrategia de testes ser implementada.
+
+Se `npm install` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint e Prettier e atualizar o lockfile.
 
 ## Documentos principais
 
@@ -64,6 +69,7 @@ Leia estes documentos antes de implementar qualquer issue:
 - `docs/PRODUCT.md`: visao de produto, personas, jornadas, escopo MVP, fases e limites.
 - `docs/ARCHITECTURE.md`: arquitetura inicial, stack-alvo e regras tecnicas.
 - `docs/BRAND.md`: identidade visual, tom e direcao de interface.
+- `docs/CONVENTIONS.md`: convencoes de TypeScript, lint, formatacao e organizacao.
 - `docs/adr/README.md`: processo de ADRs.
 - `docs/adr/0001-stack-inicial.md`: decisao inicial de stack e arquitetura.
 - `AGENTS.md`: regras globais para agentes de IA.
@@ -85,20 +91,36 @@ Leia estes documentos antes de implementar qualquer issue:
 |-- AGENTS.md
 |-- README.md
 |-- package.json
+|-- tsconfig.base.json
+|-- eslint.config.mjs
 |-- apps/
 |   |-- api/
-|   |   `-- package.json
+|   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/
+|   |       `-- index.ts
 |   `-- web/
-|       `-- package.json
+|       |-- package.json
+|       |-- tsconfig.json
+|       `-- src/
+|           `-- index.ts
 |-- packages/
 |   |-- ai/
-|   |   `-- package.json
+|   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/index.ts
 |   |-- config/
-|   |   `-- package.json
+|   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/index.ts
 |   |-- domain/
-|   |   `-- package.json
+|   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/index.ts
 |   `-- shared/
-|       `-- package.json
+|       |-- package.json
+|       |-- tsconfig.json
+|       `-- src/index.ts
 |-- prisma/
 |   `-- README.md
 |-- scripts/
@@ -106,6 +128,7 @@ Leia estes documentos antes de implementar qualquer issue:
 |-- docs/
 |   |-- ARCHITECTURE.md
 |   |-- BRAND.md
+|   |-- CONVENTIONS.md
 |   |-- PRODUCT.md
 |   `-- adr/
 |       |-- README.md
