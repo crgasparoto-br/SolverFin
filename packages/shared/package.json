@@ -1,0 +1,12 @@
+{
+  "name": "@solverfin/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tipos, utilitarios e contratos compartilhados entre apps e pacotes.",
+  "scripts": {
+    "lint": "echo \"@solverfin/shared: lint ainda sera configurado em B02\"",
+    "typecheck": "echo \"@solverfin/shared: typecheck ainda sera configurado em B02\"",
+    "test": "echo \"@solverfin/shared: testes ainda serao configurados em B02\"",
+    "build": "echo \"@solverfin/shared: build ainda sera configurado em B02\""
+  }
+}

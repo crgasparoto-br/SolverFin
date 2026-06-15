@@ -1,0 +1,12 @@
+{
+  "name": "@solverfin/domain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Regras e entidades do dominio financeiro, isoladas de infraestrutura.",
+  "scripts": {
+    "lint": "echo \"@solverfin/domain: lint ainda sera configurado em B02\"",
+    "typecheck": "echo \"@solverfin/domain: typecheck ainda sera configurado em B02\"",
+    "test": "echo \"@solverfin/domain: testes ainda serao configurados em B02\"",
+    "build": "echo \"@solverfin/domain: build ainda sera configurado em B02\""
+  }
+}

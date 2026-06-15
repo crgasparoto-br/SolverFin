@@ -1,0 +1,13 @@
+{
+  "name": "@solverfin/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API backend modular do SolverFin.",
+  "scripts": {
+    "dev": "echo \"@solverfin/api: dev ainda sera configurado na issue de backend/bootstrap\"",
+    "lint": "echo \"@solverfin/api: lint ainda sera configurado em B02\"",
+    "typecheck": "echo \"@solverfin/api: typecheck ainda sera configurado em B02\"",
+    "test": "echo \"@solverfin/api: testes ainda serao configurados em B02\"",
+    "build": "echo \"@solverfin/api: build ainda sera configurado no bootstrap da API\""
+  }
+}
