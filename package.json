@@ -2,6 +2,7 @@
   "name": "solverfin",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Controle financeiro inteligente da SolverIT para pessoas, MEIs, autonomos e pequenos negocios.",
   "packageManager": "npm@11.6.2",
   "workspaces": [
@@ -11,21 +12,33 @@
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
     "env:check": "node scripts/validate-env-example.mjs",
+    "prisma:validate": "prisma validate",
+    "prisma:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "lint": "npm run lint --workspaces --if-present",
-    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "lint:fix": "eslint . --fix",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "validate": "npm run env:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
+    "validate": "npm run env:check && npm run prisma:validate && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "dotenv": "^17.2.3",
     "eslint": "^9.39.1",
+    "prisma": "^7.8.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "pg": "^8.16.3"
   },
   "engines": {
     "node": ">=22.0.0",
