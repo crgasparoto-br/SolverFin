@@ -41,6 +41,9 @@ jobs:
       - name: Check environment example
         run: npm run env:check
 
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
       - name: Check formatting
         run: npm run format:check
 
