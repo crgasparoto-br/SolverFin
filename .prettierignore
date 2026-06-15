@@ -3,3 +3,11 @@ dist/
 build/
 coverage/
 package-lock.json
+
+# Generated backlog snapshots are tracked as source material, not formatted docs.
+issue-bodies/
+issues.md
+issues.json
+
+# Long-form brand prompt reference keeps manual line breaks for prompt readability.
+docs/BRAND.md
