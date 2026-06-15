@@ -27,7 +27,7 @@ Direcao inicial:
 - pacote ou camada dedicada para IA, com schemas estruturados, validacao e provedores substituiveis;
 - documentacao e ADRs como parte obrigatoria do fluxo de mudanca.
 
-A escolha concreta de frameworks, banco, ORM, autenticação, runtime e ferramentas de CI sera feita em issues de bootstrap e pode gerar ADRs complementares.
+A escolha concreta de frameworks, banco, ORM, autenticacao, runtime e ferramentas de CI sera feita em issues de bootstrap e pode gerar ADRs complementares.
 
 ## Consequencias
 
