@@ -1,0 +1,39 @@
+# SolverFin - Arquitetura Inicial
+
+## Principios
+- Monorepo organizado por apps e packages.
+- TypeScript como linguagem principal.
+- Dominio financeiro isolado de infraestrutura e UI.
+- PostgreSQL como banco relacional principal.
+- Prisma para schema, migrations e acesso a dados.
+- APIs validadas por schemas tipados.
+- IA isolada atras de provider/adapter.
+- Dados financeiros sempre filtrados por tenant/perfil.
+
+## Estrutura sugerida
+```text
+apps/
+  web/              # Frontend web/PWA
+  api/              # Backend HTTP/API
+packages/
+  domain/           # Entidades, tipos e regras financeiras puras
+  shared/           # Tipos compartilhados, validadores e utils
+prisma/             # Schema, migrations e seed
+docs/               # Produto, arquitetura, ADRs, integracoes e IA
+.github/            # Templates, workflows e instrucoes Copilot
+```
+
+## Componentes
+- Web/PWA: telas, forms, dashboard e fila de revisao.
+- API: autenticacao, autorizacao, casos de uso e contratos HTTP.
+- Domain: regras financeiras, status, categorizacao e conciliacao.
+- Data: Prisma/PostgreSQL, migrations, auditoria e soft delete.
+- AI Adapter: extracao, classificacao, insights e assistente.
+- Importers: CSV, OFX, mensagens, Open Finance futuro.
+
+## Regras arquiteturais
+- UI nao acessa banco diretamente.
+- Casos de uso nao devem depender de framework de UI.
+- Sugestoes de IA nunca viram lancamento definitivo sem regra de confianca ou aprovacao.
+- Toda integracao externa deve ser idempotente.
+- Toda chamada sensivel deve registrar auditoria sem vazar dados sensiveis.

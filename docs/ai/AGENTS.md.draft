@@ -1,0 +1,28 @@
+# AGENTS.md - SolverFin
+
+## Contexto do produto
+SolverFin e o controle financeiro inteligente da SolverIT para pessoas, MEIs, autonomos e pequenos negocios. O objetivo e reduzir ao maximo o lancamento manual por meio de importacao, regras, IA explicavel, conciliacao e assistente financeiro.
+
+## Regras obrigatorias para agentes de IA
+1. Leia esta documentacao antes de implementar: `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/adr/*` e a issue em andamento.
+2. Implemente apenas o escopo da issue. Nao antecipe funcionalidades futuras sem ADR ou issue dedicada.
+3. Prefira PRs pequenos, com testes e documentacao atualizada.
+4. Nao exponha dados financeiros, chaves, tokens, numeros completos de cartao/conta ou mensagens bancarias sensiveis em logs, seeds, fixtures ou screenshots.
+5. Toda entidade financeira deve respeitar tenant/perfil financeiro.
+6. Toda sugestao de IA deve ter origem, score de confianca, explicacao e estado de revisao.
+7. Use tipos explicitos, validacao de entrada e erros padronizados.
+8. Antes de finalizar, execute lint, typecheck, testes e build conforme README.
+
+## Padrao de trabalho
+- Planeje a mudanca antes de editar muitos arquivos.
+- Localize arquivos relacionados antes de criar novos.
+- Evite duplicar logica de dominio.
+- Atualize ADRs quando houver decisao arquitetural.
+- Se houver ambiguidade de produto, preserve comportamento simples e documente a decisao no PR.
+
+## Checklist final do agente
+- [ ] Issue atendida integralmente.
+- [ ] Testes adicionados/atualizados.
+- [ ] Documentacao atualizada.
+- [ ] Sem dados sensiveis expostos.
+- [ ] Sem mudancas fora do escopo.

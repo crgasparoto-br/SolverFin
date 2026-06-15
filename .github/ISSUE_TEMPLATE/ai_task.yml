@@ -1,0 +1,55 @@
+name: Tarefa para implementacao por IA
+description: Issue estruturada para agentes de IA implementarem com seguranca
+title: "[AI TASK] "
+labels: ["ai-ready"]
+body:
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto
+      description: Explique o problema, produto, regra de negocio e documentos relacionados.
+    validations:
+      required: true
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: O que deve ser entregue?
+    validations:
+      required: true
+  - type: textarea
+    id: escopo
+    attributes:
+      label: Escopo
+      description: Liste exatamente o que entra na entrega.
+    validations:
+      required: true
+  - type: textarea
+    id: fora_escopo
+    attributes:
+      label: Fora de escopo
+      description: Liste o que a IA nao deve alterar ou implementar.
+    validations:
+      required: true
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Criterios de aceite
+      description: Checklist objetivo e testavel.
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: validacao
+    attributes:
+      label: Validacao obrigatoria
+      value: |
+        - [ ] Testes adicionados/atualizados
+        - [ ] Lint/typecheck/build executados
+        - [ ] Documentacao atualizada
+        - [ ] Sem dados sensiveis expostos
+    validations:
+      required: true
