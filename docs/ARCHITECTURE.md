@@ -8,7 +8,7 @@ Ele nao substitui ADRs. Decisoes duradouras, mudancas de stack, integracoes exte
 
 ## Estado atual
 
-O repositorio esta em fase de bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja existe, os workspaces possuem configuracoes iniciais de TypeScript, ESLint e Prettier, ha um Docker Compose para PostgreSQL local e o CI inicial roda checks basicos em pull requests e pushes para `main`.
+O repositorio esta em fase de bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja existe, os workspaces possuem configuracoes iniciais de TypeScript, ESLint e Prettier, ha um Docker Compose para PostgreSQL local, ha politica inicial de ambientes/secrets e o CI inicial roda checks basicos em pull requests e pushes para `main`.
 
 Ainda nao existe aplicacao executavel, API real, schema Prisma, migrations ou testes automatizados reais. Esses itens devem ser implementados em issues especificas de bootstrap, dominio, persistencia e qualidade.
 
@@ -33,12 +33,13 @@ Frameworks concretos de frontend/backend, runtime, autenticacao e provedor de IA
 
 ## CI inicial
 
-O workflow `.github/workflows/ci.yml` roda em `pull_request` e `push` para `main`, sem depender de banco, Docker ou secrets.
+O workflow `.github/workflows/ci.yml` roda em `pull_request` e `push` para `main`, sem depender de banco, Docker ou secrets reais.
 
 Checks executados:
 
 ```bash
 npm install --no-audit --no-fund
+npm run env:check
 npm run format:check
 npm run lint
 npm run typecheck
@@ -46,11 +47,24 @@ npm run test
 npm run build
 ```
 
-Os comandos ficam separados no workflow para que a falha mostre claramente se o problema esta em instalacao, formatacao, lint, tipos, testes ou build.
+Os comandos ficam separados no workflow para que a falha mostre claramente se o problema esta em ambiente, instalacao, formatacao, lint, tipos, testes ou build.
 
 Como ainda nao ha `package-lock.json` versionado, o CI usa `npm install` e nao habilita cache de dependencias. Quando o lockfile for adotado, o workflow deve migrar para instalacao reprodutivel e cache seguro.
 
 Validacoes com PostgreSQL, Prisma, migrations e seeds devem entrar em workflows ou jobs futuros quando a persistencia existir.
+
+## Ambientes e secrets
+
+A politica inicial de ambientes fica em `docs/ENVIRONMENT.md`.
+
+Direcao tecnica atual:
+
+- `.env.example` documenta variaveis obrigatorias com placeholders seguros.
+- `.env`, `.env.*`, `.envrc`, certificados e chaves locais ficam ignorados pelo Git.
+- `npm run env:check` valida o exemplo versionado e evita padroes aparentes de secrets reais.
+- `packages/config` exporta `validateRuntimeEnvironment` para apps falharem claramente quando variaveis obrigatorias estiverem ausentes ou invalidas.
+- Mensagens de erro devem citar nomes de variaveis, nunca valores sensiveis.
+- Secrets reais devem ser configurados apenas nos ambientes que precisam deles, como GitHub Actions, preview, producao ou gerenciador externo futuro.
 
 ## Ambiente local de banco
 
