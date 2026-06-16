@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"@solverfin/ai: testes ainda serao configurados em issue propria\"",
+    "test": "rm -rf ../../.tmp-tests/ai && tsc -p tsconfig.test.json && node ../../.tmp-tests/ai/index.test.js",
     "build": "tsc --noEmit"
   }
 }
