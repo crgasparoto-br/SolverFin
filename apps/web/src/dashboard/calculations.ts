@@ -57,7 +57,9 @@ export function calculateDashboardSummary(
   dataSet: DashboardDataSet,
   entries: readonly DashboardEntry[] = filterEntriesByContext(dataSet.entries, dataSet.context),
 ): DashboardSummary {
-  const periodEntries = entries.filter((entry) => isDateWithinPeriod(entry.postedOn, dataSet.period));
+  const periodEntries = entries.filter((entry) =>
+    isDateWithinPeriod(entry.postedOn, dataSet.period),
+  );
   const incomeInCents = sumEntryAmounts(periodEntries, "income");
   const expenseInCents = sumEntryAmounts(periodEntries, "expense");
   const resultInCents = incomeInCents - expenseInCents;
@@ -81,7 +83,10 @@ export function calculateCategoryExpenses(
 
   for (const entry of expenseEntries) {
     const categoryName = entry.categoryName ?? "Sem categoria";
-    groupedExpenses.set(categoryName, (groupedExpenses.get(categoryName) ?? 0) + entry.amountInCents);
+    groupedExpenses.set(
+      categoryName,
+      (groupedExpenses.get(categoryName) ?? 0) + entry.amountInCents,
+    );
   }
 
   return [...groupedExpenses.entries()]
@@ -157,7 +162,8 @@ export function filterEntriesByContext(
 ): DashboardEntry[] {
   return entries.filter(
     (entry) =>
-      entry.tenantId === context.tenantId && entry.financialProfileId === context.financialProfileId,
+      entry.tenantId === context.tenantId &&
+      entry.financialProfileId === context.financialProfileId,
   );
 }
 
