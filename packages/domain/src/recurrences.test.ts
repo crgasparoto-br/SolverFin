@@ -18,12 +18,14 @@ const now = "2026-06-15T10:00:00.000Z";
 const tenantA: TenantContext = {
   organizationId: "org-a",
   financialProfileId: "profile-a",
+  financialProfileKind: "personal",
   userId: "user-a",
 };
 
 const tenantB: TenantContext = {
   organizationId: "org-b",
   financialProfileId: "profile-b",
+  financialProfileKind: "personal",
   userId: "user-b",
 };
 
