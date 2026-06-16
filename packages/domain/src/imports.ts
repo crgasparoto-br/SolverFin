@@ -290,7 +290,9 @@ function buildBatchDraft(
   suggestions: readonly ImportTransactionSuggestion[],
   problems: readonly ImportProblem[],
 ): ImportBatchDraft {
-  const duplicateRows = suggestions.filter((suggestion) => suggestion.status === "duplicate").length;
+  const duplicateRows = suggestions.filter(
+    (suggestion) => suggestion.status === "duplicate",
+  ).length;
   const errorRows = new Set(
     problems.filter((problem) => problem.severity === "error").map((problem) => problem.rowNumber),
   );
@@ -314,7 +316,9 @@ function validateParsedRow(row: ParsedImportRow): ImportProblem[] {
   const problems: ImportProblem[] = [];
 
   if (row.occurredOn === undefined) {
-    problems.push(buildRowError(row.rowNumber, "IMPORT_ROW_DATE_INVALID", "Informe uma data valida."));
+    problems.push(
+      buildRowError(row.rowNumber, "IMPORT_ROW_DATE_INVALID", "Informe uma data valida."),
+    );
   }
 
   if (row.description === undefined) {
@@ -383,7 +387,10 @@ interface CsvColumnIndexes {
   categoryIndex: number | undefined;
 }
 
-function resolveCsvColumns(header: readonly string[], mapping: CsvImportMapping | undefined): CsvColumnIndexes {
+function resolveCsvColumns(
+  header: readonly string[],
+  mapping: CsvImportMapping | undefined,
+): CsvColumnIndexes {
   const dateIndex = requireCsvColumn(header, mapping?.date ?? "date");
   const descriptionIndex = requireCsvColumn(header, mapping?.description ?? "description");
   const amountIndex = requireCsvColumn(header, mapping?.amount ?? "amount");
@@ -455,7 +462,10 @@ function readCsvValue(values: readonly string[], index: number): string | undefi
   return normalizeDescription(values[index]);
 }
 
-function readOptionalCsvValue(values: readonly string[], index: number | undefined): string | undefined {
+function readOptionalCsvValue(
+  values: readonly string[],
+  index: number | undefined,
+): string | undefined {
   if (index === undefined) {
     return undefined;
   }
@@ -470,7 +480,9 @@ function normalizeHeaderName(value: string): string {
 function normalizeDescription(value: string | undefined): string | undefined {
   const normalizedValue = value?.trim();
 
-  return normalizedValue === undefined || normalizedValue.length === 0 ? undefined : normalizedValue;
+  return normalizedValue === undefined || normalizedValue.length === 0
+    ? undefined
+    : normalizedValue;
 }
 
 function normalizeDate(value: string | undefined): ISODate | undefined {
@@ -536,11 +548,19 @@ function parseTransactionKind(
 ): TransactionKind | undefined {
   const normalizedValue = normalizeDescription(value)?.toLowerCase();
 
-  if (normalizedValue === "income" || normalizedValue === "receita" || normalizedValue === "credit") {
+  if (
+    normalizedValue === "income" ||
+    normalizedValue === "receita" ||
+    normalizedValue === "credit"
+  ) {
     return "income";
   }
 
-  if (normalizedValue === "expense" || normalizedValue === "despesa" || normalizedValue === "debit") {
+  if (
+    normalizedValue === "expense" ||
+    normalizedValue === "despesa" ||
+    normalizedValue === "debit"
+  ) {
     return "expense";
   }
 
