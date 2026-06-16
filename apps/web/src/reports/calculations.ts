@@ -23,7 +23,10 @@ export function buildReportsViewModel(
     return buildUnavailableReports(state);
   }
 
-  const scopedTransactions = filterReportTransactionsByContext(dataSet.transactions, dataSet.context);
+  const scopedTransactions = filterReportTransactionsByContext(
+    dataSet.transactions,
+    dataSet.context,
+  );
   const scopedBudgets = filterBudgetsByContext(dataSet.budgets, dataSet.context);
   const periodTransactions = filterTransactionsByPeriod(scopedTransactions, dataSet.period);
   const filteredTransactions = applyReportFilters(periodTransactions, dataSet);
@@ -34,7 +37,8 @@ export function buildReportsViewModel(
     return {
       state: "empty",
       title: "Sem dados para o periodo",
-      description: "Ajuste o periodo ou registre lancamentos e orcamentos para montar os relatorios.",
+      description:
+        "Ajuste o periodo ou registre lancamentos e orcamentos para montar os relatorios.",
       context: dataSet.context,
       period: dataSet.period,
       filters: dataSet.filters,
@@ -64,7 +68,9 @@ export function buildReportsViewModel(
 export function calculateReportsSummary(
   transactions: readonly TransactionRecord[],
 ): ReportsSummary {
-  const activeTransactions = transactions.filter((transaction) => transaction.status !== "archived");
+  const activeTransactions = transactions.filter(
+    (transaction) => transaction.status !== "archived",
+  );
   const incomeInCents = sumTransactions(activeTransactions, "income");
   const expenseInCents = sumTransactions(activeTransactions, "expense");
 
@@ -188,7 +194,8 @@ export function filterBudgetsByContext(
 ): BudgetTarget[] {
   return budgets.filter(
     (budget) =>
-      budget.tenantId === context.tenantId && budget.financialProfileId === context.financialProfileId,
+      budget.tenantId === context.tenantId &&
+      budget.financialProfileId === context.financialProfileId,
   );
 }
 
@@ -197,11 +204,17 @@ function applyReportFilters(
   dataSet: ReportDataSet,
 ): TransactionRecord[] {
   return transactions.filter((transaction) => {
-    if (dataSet.filters.categoryId !== undefined && transaction.categoryId !== dataSet.filters.categoryId) {
+    if (
+      dataSet.filters.categoryId !== undefined &&
+      transaction.categoryId !== dataSet.filters.categoryId
+    ) {
       return false;
     }
 
-    if (dataSet.filters.accountId !== undefined && transaction.accountId !== dataSet.filters.accountId) {
+    if (
+      dataSet.filters.accountId !== undefined &&
+      transaction.accountId !== dataSet.filters.accountId
+    ) {
       return false;
     }
 
