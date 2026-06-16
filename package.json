@@ -21,7 +21,7 @@
     "db:seed:check": "node --check scripts/seed-demo.mjs",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
-    "format:check": "prettier packages/domain/src/bank-message-inbox.ts --write && git diff -- packages/domain/src/bank-message-inbox.ts && exit 1",
+    "format:check": "prettier . --check",
     "lint": "npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
