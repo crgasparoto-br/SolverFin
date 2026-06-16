@@ -38,9 +38,7 @@ const CARD_NUMBER_PATTERN = /\b(?:\d[ -]*?){13,19}\b/g;
 const DOCUMENT_PATTERN = /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g;
 const MONEY_PATTERN = /R\$\s?\d{1,3}(?:\.\d{3})*,\d{2}/g;
 
-export function createInboxItemFromShareTarget(
-  request: ShareTargetRequest,
-): ShareTargetResult {
+export function createInboxItemFromShareTarget(request: ShareTargetRequest): ShareTargetResult {
   const authError = validateShareTargetAuth(request);
 
   if (authError) {
