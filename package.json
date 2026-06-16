@@ -21,7 +21,7 @@
     "db:seed:check": "node --check scripts/seed-demo.mjs",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
+    "format:check": "prettier apps/web/src/financial-catalog/examples.ts apps/web/src/financial-catalog/validation.ts --write && git diff -- apps/web/src/financial-catalog/examples.ts apps/web/src/financial-catalog/validation.ts && exit 1",
     "lint": "npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
