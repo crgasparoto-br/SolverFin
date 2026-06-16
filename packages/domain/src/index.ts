@@ -1,5 +1,6 @@
 export * from "./accounts.js";
 export * from "./categories.js";
+export * from "./category-learning.js";
 export * from "./transactions.js";
 export * from "./recurrences.js";
 export * from "./cards.js";
