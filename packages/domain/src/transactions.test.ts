@@ -113,13 +113,22 @@ function testCreateTransferTransaction(): void {
   assertEqual(result.movements[0]?.direction, "debit", "transfer source movement");
   assertEqual(result.movements[0]?.accountId, sourceAccount.id, "transfer source account");
   assertEqual(result.movements[1]?.direction, "credit", "transfer destination movement");
-  assertEqual(result.movements[1]?.accountId, destinationAccount.id, "transfer destination account");
+  assertEqual(
+    result.movements[1]?.accountId,
+    destinationAccount.id,
+    "transfer destination account",
+  );
 }
 
 function testValidations(): void {
   const account = createAccountFixture(tenantA, "account-validation", "active");
   const archivedAccount = createAccountFixture(tenantA, "account-archived", "archived");
-  const expenseCategory = createCategoryFixture(tenantA, "category-validation", "expense", "active");
+  const expenseCategory = createCategoryFixture(
+    tenantA,
+    "category-validation",
+    "expense",
+    "active",
+  );
 
   assertTransactionError(
     () =>
@@ -194,9 +203,19 @@ function testValidations(): void {
 
 function testListAndUpdateTransactions(): void {
   const account = createAccountFixture(tenantA, "account-list", "active");
-  const expense = createTransactionFixture(tenantA, "transaction-list-expense", "expense", account.id);
+  const expense = createTransactionFixture(
+    tenantA,
+    "transaction-list-expense",
+    "expense",
+    account.id,
+  );
   const income = createTransactionFixture(tenantA, "transaction-list-income", "income", account.id);
-  const otherTenant = createTransactionFixture(tenantB, "transaction-list-other", "income", "other");
+  const otherTenant = createTransactionFixture(
+    tenantB,
+    "transaction-list-other",
+    "income",
+    "other",
+  );
   const listed = listTransactions(tenantA, [expense, income, otherTenant], {
     kind: "expense",
     accountId: account.id,
@@ -235,7 +254,12 @@ function testTenantIsolation(): void {
 }
 
 function testVoidTransaction(): void {
-  const transaction = createTransactionFixture(tenantA, "transaction-void", "expense", "account-void");
+  const transaction = createTransactionFixture(
+    tenantA,
+    "transaction-void",
+    "expense",
+    "account-void",
+  );
   const result = voidTransaction(tenantA, transaction, "2026-06-15T12:00:00.000Z");
 
   assertEqual(result.transaction.status, "voided", "void status");
