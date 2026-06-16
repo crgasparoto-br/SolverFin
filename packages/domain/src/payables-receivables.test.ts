@@ -84,7 +84,11 @@ function runCreatesReceivable(): void {
   });
 
   assertEqual(result.payableReceivable.kind, "receivable", "receivable kind");
-  assertEqual(result.payableReceivable.accountId, undefined, "account should be optional before settlement");
+  assertEqual(
+    result.payableReceivable.accountId,
+    undefined,
+    "account should be optional before settlement",
+  );
 }
 
 function runRejectsArchivedAccountAndWrongCategory(): void {
@@ -125,7 +129,12 @@ function runRejectsArchivedAccountAndWrongCategory(): void {
 
 function runListsAndUpdatesPayablesReceivables(): void {
   const payable = createBillFixture("payable-list", "payable", "2026-06-20", expenseCategory);
-  const receivable = createBillFixture("receivable-list", "receivable", "2026-07-05", incomeCategory);
+  const receivable = createBillFixture(
+    "receivable-list",
+    "receivable",
+    "2026-07-05",
+    incomeCategory,
+  );
   const otherTenant = createPayableReceivable({
     id: "payable-other-tenant",
     context: tenantB,
@@ -214,7 +223,11 @@ function runSettlesReceivableWithExistingTransaction(): void {
     },
   });
 
-  assertEqual(result.transaction.id, existingTransaction.id, "existing transaction should be linked");
+  assertEqual(
+    result.transaction.id,
+    existingTransaction.id,
+    "existing transaction should be linked",
+  );
   assertEqual(result.payableReceivable.status, "settled", "receivable should be settled");
 }
 
@@ -274,7 +287,12 @@ function runCancelsPendingAndRejectsSettledCancellation(): void {
   const settled = settlePayableReceivable({
     transactionId: "transaction-cancel-settled",
     context: tenantA,
-    payableReceivable: createBillFixture("payable-cancel-settled", "payable", "2026-06-20", expenseCategory),
+    payableReceivable: createBillFixture(
+      "payable-cancel-settled",
+      "payable",
+      "2026-06-20",
+      expenseCategory,
+    ),
     now,
     account,
     payload: {
