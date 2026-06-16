@@ -24,13 +24,16 @@ function spendingIncreaseHasNumericEvidence(): void {
     ],
   });
 
-  const insight = insights.find((item) => item.kind === "category_spending_increase");
+  const insight = insights.find((item) => {
+    return item.kind === "category_spending_increase";
+  });
+  const includesCurrentSource = insight?.sources.includes("jun-market-a");
 
   assert.equal(insight?.evidence.label, "market");
   assert.equal(insight?.evidence.currentAmountMinor, 16000);
   assert.equal(insight?.evidence.previousAmountMinor, 10000);
   assert.equal(insight?.evidence.percentChange, 60);
-  assert.equal(insight?.sources.includes("jun-market-a"), true);
+  assert.equal(includesCurrentSource, true);
 }
 
 function probableSubscriptionUsesRepeatedMerchant(): void {
@@ -46,7 +49,9 @@ function probableSubscriptionUsesRepeatedMerchant(): void {
     ],
   });
 
-  const insight = insights.find((item) => item.kind === "probable_subscription");
+  const insight = insights.find((item) => {
+    return item.kind === "probable_subscription";
+  });
 
   assert.equal(insight?.confidence, "medium");
   assert.equal(insight?.evidence.label, "streaming-demo");
@@ -117,9 +122,19 @@ function budgetAndNegativeBalanceInsightsAreGenerated(): void {
     transactions: [tx("jun-market", "2026-06-10", 18000, "market")],
   });
 
-  assert.equal(insights.some((item) => item.kind === "negative_balance_risk"), true);
-  assert.equal(insights.some((item) => item.kind === "budget_exceeded"), true);
-  assert.equal(insights.some((item) => item.kind === "monthly_summary"), true);
+  const hasNegativeBalance = insights.some((item) => {
+    return item.kind === "negative_balance_risk";
+  });
+  const hasBudgetExceeded = insights.some((item) => {
+    return item.kind === "budget_exceeded";
+  });
+  const hasMonthlySummary = insights.some((item) => {
+    return item.kind === "monthly_summary";
+  });
+
+  assert.equal(hasNegativeBalance, true);
+  assert.equal(hasBudgetExceeded, true);
+  assert.equal(hasMonthlySummary, true);
 }
 
 function tx(
