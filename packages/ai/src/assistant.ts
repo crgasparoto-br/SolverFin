@@ -16,17 +16,18 @@ export type FinancialAssistantIntent =
   | "monthly_summary"
   | "out_of_scope";
 export type FinancialAssistantConfidence = "high" | "medium" | "low";
+export type AvailabilityComponentKind =
+  | "balance"
+  | "income"
+  | "known_expense"
+  | "card"
+  | "inferred"
+  | "reserve"
+  | "ignored";
 
 export interface AvailabilityComponent {
   label: string;
-  kind:
-    | "balance"
-    | "income"
-    | "known_expense"
-    | "card"
-    | "inferred"
-    | "reserve"
-    | "ignored";
+  kind: AvailabilityComponentKind;
   amountMinor: number;
   confidence?: FinancialAssistantConfidence;
   source: string;
@@ -160,12 +161,11 @@ export async function answerFinancialQuestion(
 
 export function classifyFinancialAssistantIntent(question: string): FinancialAssistantIntent {
   const normalized = normalizeQuestion(question);
+  const asksAvailability =
+    /quanto\s+(eu\s+)?posso\s+gastar\s+hoje/.test(normalized) ||
+    /disponivel\s+hoje|disponibilidade/.test(normalized);
 
-  if (
-    /quanto\s+(eu\s+)?posso\s+gastar\s+hoje|disponivel\s+hoje|disponibilidade/.test(
-      normalized,
-    )
-  ) {
+  if (asksAvailability) {
     return "daily_availability";
   }
 
@@ -202,35 +202,32 @@ function answerDailyAvailability(
   }
 
   const currency = availability.currency;
-  const components = availability.components
-    .filter((component) => component.kind !== "ignored")
-    .map((component) => `${component.label}: ${formatMoney(component.amountMinor, currency)}`);
-  const ignored = availability.components.filter((component) => component.kind === "ignored");
-  const limitations = [
-    ...availability.limitations,
-    ...(ignored.length > 0
-      ? [`${ignored.length} item(ns) foram ignorados conforme premissas do calculo.`]
-      : []),
-  ];
+  const availableText = formatMoney(availability.availableTodayMinor, currency);
+  const components = buildComponentTexts(availability.components, currency);
+  const ignoredCount = availability.components.filter((item) => item.kind === "ignored").length;
+  const limitations = buildAvailabilityLimitations(availability.limitations, ignoredCount);
+  const componentsText =
+    components.length > 0
+      ? `Principais componentes: ${components.join("; ")}.`
+      : "Nao ha componentes detalhados no calculo.";
+  const assumptionsText =
+    availability.assumptions.length > 0
+      ? `Premissas: ${availability.assumptions.join("; ")}.`
+      : "Nenhuma premissa adicional foi informada.";
+  const limitationsText =
+    limitations.length > 0
+      ? `Limitacoes: ${limitations.join("; ")}.`
+      : "Sem limitacoes informadas.";
 
   return {
     status: availability.confidence === "low" ? "needs_review" : "answered",
     intent: "daily_availability",
     confidence: availability.confidence,
     answer: [
-      `Voce pode gastar hoje ${formatMoney(
-        availability.availableTodayMinor,
-        currency,
-      )} com base no calculo estruturado de disponibilidade.`,
-      components.length > 0
-        ? `Principais componentes: ${components.join("; ")}.`
-        : "Nao ha componentes detalhados no calculo.",
-      availability.assumptions.length > 0
-        ? `Premissas: ${availability.assumptions.join("; ")}.`
-        : "Nenhuma premissa adicional foi informada.",
-      limitations.length > 0
-        ? `Limitacoes: ${limitations.join("; ")}.`
-        : "Sem limitacoes informadas.",
+      `Voce pode gastar hoje ${availableText} com base no calculo estruturado de disponibilidade.`,
+      componentsText,
+      assumptionsText,
+      limitationsText,
     ].join(" "),
     period: {
       startOn: availability.horizonStartOn,
@@ -241,6 +238,29 @@ function answerDailyAvailability(
     limitations,
     safeLogCode: "ASSISTANT_AVAILABILITY_ANSWERED",
   };
+}
+
+function buildComponentTexts(
+  components: readonly AvailabilityComponent[],
+  currency: string,
+): string[] {
+  return components
+    .filter((component) => component.kind !== "ignored")
+    .map((component) => `${component.label}: ${formatMoney(component.amountMinor, currency)}`);
+}
+
+function buildAvailabilityLimitations(
+  limitations: readonly string[],
+  ignoredCount: number,
+): string[] {
+  if (ignoredCount === 0) {
+    return [...limitations];
+  }
+
+  return [
+    ...limitations,
+    `${ignoredCount} item(ns) foram ignorados conforme premissas do calculo.`,
+  ];
 }
 
 function buildFallbackAnswer(input: {
