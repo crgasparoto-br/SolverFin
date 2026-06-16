@@ -57,13 +57,16 @@ export function buildFinancialCatalogViewModel(
   };
 
   if (state === "success") {
-    viewModel.feedbackMessage = "Alteracao salva. Seus cadastros ja podem ser usados nos lancamentos.";
+    viewModel.feedbackMessage =
+      "Alteracao salva. Seus cadastros ja podem ser usados nos lancamentos.";
   }
 
   return viewModel;
 }
 
-export function validateAccountForm(input: FinancialAccountFormInput): FinancialCatalogValidationResult {
+export function validateAccountForm(
+  input: FinancialAccountFormInput,
+): FinancialCatalogValidationResult {
   const issues: FinancialCatalogValidationIssue[] = [];
 
   addRequiredTextIssue(issues, "name", input.name, "Informe o nome da conta.");
@@ -108,7 +111,10 @@ export function validateCategoryForm(
   addRequiredTextIssue(issues, "name", input.name, "Informe o nome da categoria.");
 
   if (input.type === "") {
-    issues.push({ field: "type", message: "Escolha se a categoria e de receita, despesa ou transferencia." });
+    issues.push({
+      field: "type",
+      message: "Escolha se a categoria e de receita, despesa ou transferencia.",
+    });
   }
 
   addColorIssue(issues, input.color);
@@ -180,7 +186,12 @@ function buildSectionSummaries(
   return [
     buildSectionSummary("account", "Contas", "Contas usadas para saldo e lancamentos.", accounts),
     buildSectionSummary("card", "Cartoes", "Cartoes e faturas para compras recorrentes.", cards),
-    buildSectionSummary("category", "Categorias", "Classificacao de receitas e despesas.", categories),
+    buildSectionSummary(
+      "category",
+      "Categorias",
+      "Classificacao de receitas e despesas.",
+      categories,
+    ),
   ];
 }
 
