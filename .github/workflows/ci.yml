@@ -50,12 +50,7 @@ jobs:
         run: npm run db:seed:check
 
       - name: Check formatting
-        run: |
-          npm run format:check || (
-            npm run format
-            git diff -- docs/ai/providers.md packages/ai/src/index.ts packages/ai/src/index.test.ts
-            exit 1
-          )
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
