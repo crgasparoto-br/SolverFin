@@ -121,11 +121,7 @@ export interface ListTransactionsFilters {
   occurredTo?: ISODate;
 }
 
-const ALLOWED_TRANSACTION_KINDS: readonly TransactionKind[] = [
-  "income",
-  "expense",
-  "transfer",
-];
+const ALLOWED_TRANSACTION_KINDS: readonly TransactionKind[] = ["income", "expense", "transfer"];
 const ALLOWED_TRANSACTION_STATUSES: readonly TransactionStatus[] = [
   "planned",
   "posted",
@@ -192,12 +188,7 @@ export function listTransactions(
       filters.occurredTo === undefined || transaction.occurredOn <= filters.occurredTo;
 
     return (
-      statusMatches &&
-      kindMatches &&
-      accountMatches &&
-      categoryMatches &&
-      fromMatches &&
-      toMatches
+      statusMatches && kindMatches && accountMatches && categoryMatches && fromMatches && toMatches
     );
   });
 }
@@ -564,10 +555,7 @@ function normalizeCurrency(currency: string): string {
 
 function requireAccountId(accountId: EntityId | undefined): EntityId {
   if (!accountId) {
-    throw new TransactionError(
-      "TRANSACTION_ACCOUNT_REQUIRED",
-      "Transaction account is required.",
-    );
+    throw new TransactionError("TRANSACTION_ACCOUNT_REQUIRED", "Transaction account is required.");
   }
 
   return accountId;
