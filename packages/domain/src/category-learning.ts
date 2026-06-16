@@ -12,7 +12,12 @@ import { getTenantScopedResource, listTenantScopedResources } from "./tenant-aut
 
 export type CategoryLearningStatus = "active" | "ignored" | "reverted";
 export type CategorySuggestionStatus = "suggested" | "needs_review";
-export type CategorySuggestionSource = "learning" | "merchant_rule" | "history" | "ai" | "none";
+export type CategoryLearningSuggestionSource =
+  | "learning"
+  | "merchant_rule"
+  | "history"
+  | "ai"
+  | "none";
 
 export interface CategoryLearningEntry extends Traceable, TenantScoped {
   merchantKey: string;
@@ -52,7 +57,7 @@ export interface AiCategorySuggestion {
 
 export interface CategorySuggestionResult {
   status: CategorySuggestionStatus;
-  source: CategorySuggestionSource;
+  source: CategoryLearningSuggestionSource;
   categoryId?: EntityId;
   confidence: number;
   reason: string;
