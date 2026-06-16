@@ -1,0 +1,214 @@
+# API de recorrencias e parcelamentos
+
+## Objetivo
+
+Este contrato descreve a API inicial para contas recorrentes, assinaturas e compras parceladas do SolverFin. Como o framework HTTP ainda nao foi escolhido por ADR, a regra executavel fica no servico de dominio `packages/domain/src/recurrences.ts`.
+
+A futura API HTTP deve chamar esse contrato para gerar previsoes sem duplicar, pausar ou cancelar recorrencias e manter tenant/contexto consistente.
+
+## Modelo
+
+Recorrencia representa uma regra de geracao futura com:
+
+- `id`;
+- `organizationId`;
+- `financialProfileId`;
+- `status`;
+- `frequency`;
+- `startOn`;
+- `endOn` opcional;
+- `amountMinor`;
+- `currency`;
+- `description`;
+- `accountId`;
+- `categoryId` opcional.
+
+Parcela representa uma previsao gerada ou uma compra parcelada com:
+
+- `id`;
+- `organizationId`;
+- `financialProfileId`;
+- `status`;
+- `sequenceNumber`;
+- `totalInstallments`;
+- `dueOn`;
+- `amountMinor`;
+- `currency`;
+- `recurrenceId` opcional;
+- `cardId` opcional.
+
+## Frequencias e status
+
+Frequencias aceitas:
+
+```text
+daily
+weekly
+monthly
+yearly
+```
+
+Status de recorrencia:
+
+```text
+active
+paused
+cancelled
+completed
+```
+
+Status de parcela:
+
+```text
+planned
+posted
+reconciled
+cancelled
+```
+
+## Tenant
+
+Toda operacao deve receber um `TenantContext` resolvido no servidor.
+
+O cliente nao deve escolher `organizationId` ou `financialProfileId` para criar recorrencias. O servidor aplica o contexto ativo com `applyTenantScope`.
+
+Leitura, edicao, pausa ou cancelamento de recorrencia de outro tenant devem retornar:
+
+```text
+404 TENANT_RESOURCE_NOT_FOUND
+```
+
+Listagens filtram silenciosamente apenas itens do tenant ativo.
+
+## Endpoints HTTP pretendidos
+
+Quando a API HTTP existir, os endpoints devem seguir este comportamento:
+
+```http
+GET /recurrences
+GET /recurrences/:recurrenceId
+POST /recurrences
+PATCH /recurrences/:recurrenceId
+POST /recurrences/:recurrenceId/pause
+POST /recurrences/:recurrenceId/resume
+POST /recurrences/:recurrenceId/cancel
+POST /recurrences/:recurrenceId/generate-installments
+POST /installment-schedules
+POST /installments/cancel-future
+```
+
+### POST /recurrences
+
+Payload:
+
+```json
+{
+  "frequency": "monthly",
+  "startOn": "2026-06-10",
+  "endOn": "2026-12-10",
+  "amountMinor": 4990,
+  "description": "Assinatura ficticia",
+  "accountId": "account-demo",
+  "categoryId": "category-demo"
+}
+```
+
+Padroes:
+
+- `status`: `active`;
+- `currency`: moeda da conta, ou `BRL` quando a moeda nao for informada em contratos auxiliares.
+
+### Geracao sem duplicidade
+
+`generateRecurrenceInstallments` gera apenas parcelas planejadas que ainda nao existem para a combinacao `recurrenceId + sequenceNumber`.
+
+Reexecutar a geracao com a mesma janela nao deve duplicar parcelas ja existentes.
+
+Por padrao, recorrencias sem `endOn` geram no maximo 36 ocorrencias por chamada. O chamador pode informar `maxOccurrences` menor ou maior quando houver uma politica operacional explicita.
+
+### Datas inexistentes no mes
+
+Recorrencia mensal iniciada em um dia inexistente em meses posteriores deve usar o ultimo dia valido do mes.
+
+Exemplo:
+
+```text
+2026-01-31 -> 2026-02-28 -> 2026-03-31
+```
+
+### Edicao
+
+Edicao da recorrencia altera a regra para novas geracoes e parcelas futuras ainda nao baixadas.
+
+Parcelas ja `posted` ou `reconciled` nao devem ser alteradas automaticamente por edicao da regra. Ajustes historicos devem ser operacoes explicitas em issues futuras.
+
+### Pausa e cancelamento
+
+- `paused`: interrompe novas geracoes enquanto pausada.
+- `cancelled`: encerra a regra e tambem impede novas geracoes.
+- `cancelFutureInstallments`: cancela apenas parcelas futuras com status `planned`; parcelas `posted` ou `reconciled` permanecem inalteradas.
+
+### Compras parceladas
+
+`generateInstallmentSchedule` cria uma sequencia mensal fixa para compras parceladas.
+
+Payload conceitual:
+
+```json
+{
+  "firstDueOn": "2026-06-30",
+  "totalInstallments": 3,
+  "amountMinor": 3333,
+  "currency": "BRL",
+  "cardId": "card-demo"
+}
+```
+
+Cada parcela recebe `sequenceNumber` de 1 ate `totalInstallments`.
+
+## Erros de validacao
+
+Erros controlados do contrato de dominio:
+
+```text
+400 RECURRENCE_FREQUENCY_REQUIRED
+400 RECURRENCE_FREQUENCY_INVALID
+400 RECURRENCE_STATUS_INVALID
+400 RECURRENCE_AMOUNT_INVALID
+400 RECURRENCE_DATE_REQUIRED
+400 RECURRENCE_END_BEFORE_START
+400 RECURRENCE_DESCRIPTION_REQUIRED
+400 RECURRENCE_ACCOUNT_REQUIRED
+400 RECURRENCE_ACCOUNT_INVALID
+400 RECURRENCE_ACCOUNT_ARCHIVED
+400 RECURRENCE_CATEGORY_INVALID
+400 RECURRENCE_CATEGORY_ARCHIVED
+400 RECURRENCE_GENERATION_WINDOW_INVALID
+400 INSTALLMENT_TOTAL_INVALID
+400 INSTALLMENT_SEQUENCE_INVALID
+400 INSTALLMENT_STATUS_INVALID
+404 TENANT_RESOURCE_NOT_FOUND
+403 TENANT_PAYLOAD_SCOPE_FORBIDDEN
+```
+
+## Auditoria
+
+Criacao, edicao, pausa, retomada e cancelamento retornam `AuditLogEntryDraft` redigido para a entidade `recurrence`.
+
+O contrato nao grava payload financeiro completo em logs; apenas marca campos como adicionados, alterados ou removidos.
+
+## Testes
+
+O pacote `@solverfin/domain` cobre:
+
+- criacao de recorrencia;
+- conta arquivada;
+- geracao mensal sem duplicar;
+- data mensal inexistente;
+- pausa e cancelamento;
+- edicao de regra futura;
+- compra parcelada fixa;
+- cancelamento apenas de parcelas futuras planejadas;
+- isolamento por tenant.
+
+Todos os exemplos usam dados ficticios.
