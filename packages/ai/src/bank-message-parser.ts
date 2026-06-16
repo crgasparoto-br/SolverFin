@@ -94,7 +94,7 @@ export async function parseBankMessage(
     };
   }
 
-  const aiResult = await runAiTask({
+  const aiTaskInput: Parameters<typeof runAiTask>[0] = {
     provider: input.provider,
     task: "extraction",
     context: input.context,
@@ -105,8 +105,13 @@ export async function parseBankMessage(
         message: normalizedText,
       },
     },
-    logger: input.logger,
-  });
+  };
+
+  if (input.logger !== undefined) {
+    aiTaskInput.logger = input.logger;
+  }
+
+  const aiResult = await runAiTask(aiTaskInput);
 
   if (aiResult.status === "blocked") {
     return {
