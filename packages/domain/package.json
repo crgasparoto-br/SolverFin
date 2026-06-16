@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "rm -rf ../../.tmp-tests/domain && tsc -p tsconfig.test.json && node ../../.tmp-tests/domain/audit.test.js && node ../../.tmp-tests/domain/tenant.test.js && node ../../.tmp-tests/domain/tenant-authorization.test.js && node ../../.tmp-tests/domain/accounts.test.js && node ../../.tmp-tests/domain/categories.test.js && node ../../.tmp-tests/domain/transactions.test.js && node ../../.tmp-tests/domain/recurrences.test.js && node ../../.tmp-tests/domain/cards.test.js && node ../../.tmp-tests/domain/budgets.test.js && node ../../.tmp-tests/domain/payables-receivables.test.js && node ../../.tmp-tests/domain/imports.test.js",
+    "test": "rm -rf ../../.tmp-tests/domain && tsc -p tsconfig.test.json && node ../../.tmp-tests/domain/audit.test.js && node ../../.tmp-tests/domain/tenant.test.js && node ../../.tmp-tests/domain/tenant-authorization.test.js && node ../../.tmp-tests/domain/accounts.test.js && node ../../.tmp-tests/domain/categories.test.js && node ../../.tmp-tests/domain/transactions.test.js && node ../../.tmp-tests/domain/recurrences.test.js && node ../../.tmp-tests/domain/cards.test.js && node ../../.tmp-tests/domain/budgets.test.js && node ../../.tmp-tests/domain/payables-receivables.test.js && node ../../.tmp-tests/domain/imports.test.js && node ../../.tmp-tests/domain/bank-message-inbox.test.js",
     "build": "tsc --noEmit"
   }
 }
