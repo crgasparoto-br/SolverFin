@@ -72,7 +72,11 @@ export function validateTransactionForm(input: TransactionFormInput): Transactio
     issues.push({ field: "type", message: "Escolha receita, despesa ou transferencia." });
   }
 
-  if (input.amountInCents === undefined || !Number.isInteger(input.amountInCents) || input.amountInCents <= 0) {
+  if (
+    input.amountInCents === undefined ||
+    !Number.isInteger(input.amountInCents) ||
+    input.amountInCents <= 0
+  ) {
     issues.push({ field: "amountInCents", message: "Informe um valor maior que zero." });
   }
 
@@ -81,12 +85,21 @@ export function validateTransactionForm(input: TransactionFormInput): Transactio
   }
 
   if (input.type === "transfer") {
-    if (input.destinationAccountId === undefined || input.destinationAccountId.trim().length === 0) {
+    if (
+      input.destinationAccountId === undefined ||
+      input.destinationAccountId.trim().length === 0
+    ) {
       issues.push({ field: "destinationAccountId", message: "Escolha a conta de destino." });
     }
 
-    if (input.destinationAccountId !== undefined && input.destinationAccountId === input.accountId) {
-      issues.push({ field: "destinationAccountId", message: "A conta de destino deve ser diferente da origem." });
+    if (
+      input.destinationAccountId !== undefined &&
+      input.destinationAccountId === input.accountId
+    ) {
+      issues.push({
+        field: "destinationAccountId",
+        message: "A conta de destino deve ser diferente da origem.",
+      });
     }
   }
 
@@ -168,7 +181,8 @@ function buildUnavailableTransactions(state: TransactionStateKind): TransactionV
 
   return {
     state,
-    title: state === "error" ? "Nao foi possivel carregar os lancamentos" : "Carregando lancamentos",
+    title:
+      state === "error" ? "Nao foi possivel carregar os lancamentos" : "Carregando lancamentos",
     description:
       state === "error"
         ? "Tente novamente para registrar e acompanhar seus movimentos."
@@ -211,10 +225,12 @@ function buildTransactionFilterOptions(
 }
 
 function buildUniqueOptions(values: readonly (string | undefined)[], labelPrefix: string) {
-  return [...new Set(values.filter((value): value is string => value !== undefined))].map((value) => ({
-    value,
-    label: `${labelPrefix} ${value}`,
-  }));
+  return [...new Set(values.filter((value): value is string => value !== undefined))].map(
+    (value) => ({
+      value,
+      label: `${labelPrefix} ${value}`,
+    }),
+  );
 }
 
 function sortTransactions(transactions: readonly TransactionRecord[]): TransactionRecord[] {
@@ -225,7 +241,10 @@ function matchesAccountFilter(transaction: TransactionRecord, accountId: string)
   return transaction.accountId === accountId || transaction.destinationAccountId === accountId;
 }
 
-function sumTransactions(transactions: readonly TransactionRecord[], type: TransactionType): number {
+function sumTransactions(
+  transactions: readonly TransactionRecord[],
+  type: TransactionType,
+): number {
   return transactions
     .filter((transaction) => transaction.type === type && transaction.status !== "archived")
     .reduce((total, transaction) => total + transaction.amountInCents, 0);
@@ -242,7 +261,9 @@ function addRequiredTextIssue(
   }
 }
 
-function toValidationResult(issues: readonly TransactionValidationIssue[]): TransactionValidationResult {
+function toValidationResult(
+  issues: readonly TransactionValidationIssue[],
+): TransactionValidationResult {
   return {
     valid: issues.length === 0,
     issues,
