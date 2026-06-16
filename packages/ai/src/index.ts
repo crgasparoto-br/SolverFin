@@ -1,3 +1,4 @@
+export * from "./bank-message-parser.js";
 export * from "./extraction.js";
 
 export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
@@ -193,7 +194,7 @@ export async function runAiTask(input: {
           status: "failed",
           code: "AI_PROVIDER_ERROR",
           sanitized,
-          attempts: attempt,
+          attempts,
         };
       }
     }
