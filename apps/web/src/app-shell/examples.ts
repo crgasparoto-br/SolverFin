@@ -67,7 +67,9 @@ export const shellStateExamples = [
   },
 ] as const satisfies readonly ShellStateExample[];
 
-export function evaluateShellStateExample(example: ShellStateExample): ReturnType<typeof evaluateShellRouteAccess> {
+export function evaluateShellStateExample(
+  example: ShellStateExample,
+): ReturnType<typeof evaluateShellRouteAccess> {
   const route = requireShellRoute(example.path);
 
   return evaluateShellRouteAccess(route, example.context);
