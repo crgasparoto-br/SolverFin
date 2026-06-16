@@ -9,6 +9,7 @@ export * from "./imports.js";
 export * from "./bank-message-inbox.js";
 export * from "./deduplication.js";
 export * from "./reconciliation.js";
+export * from "./automation-rules.js";
 export * from "./tenant.js";
 export * from "./tenant-authorization.js";
 
