@@ -8,6 +8,8 @@ import {
 } from "./tenant.js";
 import type { Account, FinancialProfile, User } from "./index.js";
 
+type AccountScope = Pick<Account, "organizationId" | "financialProfileId">;
+
 const activeUser: User = {
   id: "user-demo-1",
   email: "demo@solverfin.example.invalid",
@@ -48,31 +50,11 @@ testOtherUserProfileIsNotAccessible();
 testMultipleProfilesRequireExplicitContext();
 
 function testCreateOrganizationAndFinancialProfile(): void {
-  assertEqual(
-    organization.name,
-    "Organizacao Demo",
-    "organization name should be normalized",
-  );
-  assertEqual(
-    organization.ownerUserId,
-    activeUser.id,
-    "organization should keep the owner user id",
-  );
-  assertEqual(
-    personalProfile.name,
-    "Pessoal",
-    "financial profile name should be normalized",
-  );
-  assertEqual(
-    personalProfile.organizationId,
-    organization.id,
-    "financial profile should belong to the organization",
-  );
-  assertEqual(
-    personalProfile.ownerUserId,
-    activeUser.id,
-    "financial profile should keep owner",
-  );
+  assertEqual(organization.name, "Organizacao Demo", "org name");
+  assertEqual(organization.ownerUserId, activeUser.id, "org owner");
+  assertEqual(personalProfile.name, "Pessoal", "profile name");
+  assertEqual(personalProfile.organizationId, organization.id, "profile org");
+  assertEqual(personalProfile.ownerUserId, activeUser.id, "profile owner");
 }
 
 function testResolveSingleActiveContext(): void {
@@ -81,17 +63,9 @@ function testResolveSingleActiveContext(): void {
     profiles: [personalProfile],
   });
 
-  assertEqual(context.userId, activeUser.id, "context should keep user id");
-  assertEqual(
-    context.organizationId,
-    organization.id,
-    "context should keep organization id",
-  );
-  assertEqual(
-    context.financialProfileId,
-    personalProfile.id,
-    "context should keep financial profile id",
-  );
+  assertEqual(context.userId, activeUser.id, "context user");
+  assertEqual(context.organizationId, organization.id, "context org");
+  assertEqual(context.financialProfileId, personalProfile.id, "context profile");
 }
 
 function testResolveRequestedContextWhenUserHasMultipleProfiles(): void {
@@ -110,16 +84,8 @@ function testResolveRequestedContextWhenUserHasMultipleProfiles(): void {
     requestedFinancialProfileId: meiProfile.id,
   });
 
-  assertEqual(
-    context.financialProfileId,
-    meiProfile.id,
-    "requested active context should be selected",
-  );
-  assertEqual(
-    context.financialProfileKind,
-    "mei",
-    "context should expose profile kind",
-  );
+  assertEqual(context.financialProfileId, meiProfile.id, "requested context");
+  assertEqual(context.financialProfileKind, "mei", "context kind");
 }
 
 function testEntityWithoutTenantIsRejected(): void {
@@ -127,11 +93,9 @@ function testEntityWithoutTenantIsRejected(): void {
     user: activeUser,
     profiles: [personalProfile],
   });
+  const action = () => assertTenantScopedEntity(context, {});
 
-  assertTenantError(
-    () => assertTenantScopedEntity(context, {}),
-    "TENANT_SCOPE_REQUIRED",
-  );
+  assertTenantError(action, "TENANT_SCOPE_REQUIRED");
 }
 
 function testOtherTenantEntityIsRejected(): void {
@@ -143,16 +107,10 @@ function testOtherTenantEntityIsRejected(): void {
     organizationId: "org-demo-2",
     financialProfileId: personalProfile.id,
   });
+  const action = () => assertTenantScopedEntity(context, account);
 
-  assertTenantError(
-    () => assertTenantScopedEntity(context, account),
-    "TENANT_ACCESS_DENIED",
-  );
-  assertEqual(
-    isTenantScopedTo(context, account),
-    false,
-    "tenant helper should detect mismatch",
-  );
+  assertTenantError(action, "TENANT_ACCESS_DENIED");
+  assertEqual(isTenantScopedTo(context, account), false, "tenant mismatch");
 }
 
 function testOtherUserProfileIsNotAccessible(): void {
@@ -170,16 +128,14 @@ function testOtherUserProfileIsNotAccessible(): void {
     kind: "business",
     now,
   });
+  const action = () =>
+    resolveTenantContext({
+      user: activeUser,
+      profiles: [personalProfile, otherProfile],
+      requestedFinancialProfileId: otherProfile.id,
+    });
 
-  assertTenantError(
-    () =>
-      resolveTenantContext({
-        user: activeUser,
-        profiles: [personalProfile, otherProfile],
-        requestedFinancialProfileId: otherProfile.id,
-      }),
-    "TENANT_ACCESS_DENIED",
-  );
+  assertTenantError(action, "TENANT_ACCESS_DENIED");
 }
 
 function testMultipleProfilesRequireExplicitContext(): void {
@@ -189,20 +145,16 @@ function testMultipleProfilesRequireExplicitContext(): void {
     name: "Negocio Demo",
     kind: "business",
   };
+  const action = () =>
+    resolveTenantContext({
+      user: activeUser,
+      profiles: [personalProfile, businessProfile],
+    });
 
-  assertTenantError(
-    () =>
-      resolveTenantContext({
-        user: activeUser,
-        profiles: [personalProfile, businessProfile],
-      }),
-    "TENANT_CONTEXT_REQUIRED",
-  );
+  assertTenantError(action, "TENANT_CONTEXT_REQUIRED");
 }
 
-function createAccountFixture(
-  scope: Pick<Account, "organizationId" | "financialProfileId">,
-): Account {
+function createAccountFixture(scope: AccountScope): Account {
   return {
     id: "account-demo-1",
     organizationId: scope.organizationId,
