@@ -11,7 +11,8 @@ export interface ComponentExample {
 export const solverFinDesignSystemExamples = [
   {
     name: "Primary action button",
-    purpose: "Confirmar acoes financeiras revisaveis, como salvar uma conta ou registrar um lancamento.",
+    purpose:
+      "Confirmar acoes financeiras revisaveis, como salvar uma conta ou registrar um lancamento.",
     recipeKey: "button",
     markup: `<button class="sf-button sf-button-primary sf-focus-ring" type="button">Salvar alteracoes</button>`,
     notes: [
@@ -28,10 +29,7 @@ export const solverFinDesignSystemExamples = [
   <input class="sf-control sf-focus-ring" aria-describedby="account-name-help" name="accountName" />
   <span class="sf-help-text" id="account-name-help">Use um nome facil de reconhecer.</span>
 </label>`,
-    notes: [
-      "Nao substitua label por placeholder.",
-      "Mensagens de erro devem orientar a correcao.",
-    ],
+    notes: ["Nao substitua label por placeholder.", "Mensagens de erro devem orientar a correcao."],
   },
   {
     name: "Empty table",
