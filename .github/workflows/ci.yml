@@ -46,6 +46,9 @@ jobs:
       - name: Validate Prisma schema
         run: npm run prisma:validate
 
+      - name: Check demo seed script
+        run: npm run db:seed:check
+
       - name: Check formatting
         run: npm run format:check
 
