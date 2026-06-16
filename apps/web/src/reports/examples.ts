@@ -45,8 +45,7 @@ export function isReportsMockConsistent(): boolean {
     reportsReadyExample.budgetSummary.remainingAmountInCents ===
       reportsExpectedTotals.remainingAmountInCents &&
     reportsReadyExample.budgetSummary.spentPercent === reportsExpectedTotals.spentPercent &&
-    reportsReadyExample.budgetSummary.overBudgetCount ===
-      reportsExpectedTotals.overBudgetCount &&
+    reportsReadyExample.budgetSummary.overBudgetCount === reportsExpectedTotals.overBudgetCount &&
     reportsReadyExample.categorySpending.length === reportsExpectedTotals.categorySpendingCount &&
     reportsReadyExample.monthlyEvolution.length === reportsExpectedTotals.monthlyEvolutionCount &&
     reportsFoodFilterExample.summary.expenseInCents ===
