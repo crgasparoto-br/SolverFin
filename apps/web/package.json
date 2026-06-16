@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"@solverfin/web: testes ainda serao configurados em issue propria\"",
+    "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../.tmp-tests/web/pwa/manifest.test.js && node ../../.tmp-tests/web/inbox/share-target.test.js",
     "build": "tsc --noEmit"
   }
 }
