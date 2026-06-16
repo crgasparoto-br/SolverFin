@@ -344,7 +344,7 @@ function buildMonthlySummary(
       label: "resumo_mensal",
       currentAmountMinor: currentIncome - currentExpense,
       previousAmountMinor: previousExpense,
-      percentChange,
+      ...(percentChange === undefined ? {} : { percentChange }),
       count: current.length,
       periodStartOn: input.currentPeriod.startOn,
       periodEndOn: input.currentPeriod.endOn,
