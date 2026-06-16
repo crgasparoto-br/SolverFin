@@ -111,7 +111,11 @@ const oneDayInMs = 24 * 60 * 60 * 1000;
 export function previewReconciliation(input: PreviewReconciliationInput): ReconciliationPreview {
   const source = getTenantScopedResource(input.context, input.source);
   const transaction = getTenantScopedResource(input.context, input.transaction);
-  const conflicts = buildConflicts(source, transaction, input.dateToleranceDays ?? defaultDateToleranceDays);
+  const conflicts = buildConflicts(
+    source,
+    transaction,
+    input.dateToleranceDays ?? defaultDateToleranceDays,
+  );
 
   return {
     organizationId: input.context.organizationId,
