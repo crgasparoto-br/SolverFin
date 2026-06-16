@@ -1,11 +1,42 @@
-import type { DailyAvailabilityResult, FinancialAvailabilityConfidence } from "@solverfin/domain";
-
+export type FinancialAvailabilityConfidence = "high" | "medium" | "low";
+export type AvailabilityComponentKind =
+  | "balance"
+  | "income"
+  | "known_expense"
+  | "card"
+  | "registered_recurrence"
+  | "inferred"
+  | "reserve"
+  | "safety_margin"
+  | "ignored";
 export type AvailabilityCardState = "loading" | "empty" | "ready" | "low_confidence" | "error";
 export type AvailabilityReviewAction =
   | "open_details"
   | "edit_assumptions"
   | "review_inferred_recurrences"
   | "retry";
+
+export interface DailyAvailabilityComponent {
+  label: string;
+  kind: AvailabilityComponentKind;
+  amountMinor: number;
+  confidence: FinancialAvailabilityConfidence;
+  source: string;
+}
+
+export interface DailyAvailabilityResult {
+  availableTodayMinor: number;
+  projectedBalanceMinor: number;
+  currency: string;
+  horizonStartOn: string;
+  horizonEndOn: string;
+  confidence: FinancialAvailabilityConfidence;
+  components: readonly DailyAvailabilityComponent[];
+  assumptions: readonly string[];
+  appliedAssumptionIds: readonly string[];
+  limitations: readonly string[];
+  calculatedAt: string;
+}
 
 export interface AvailabilityDashboardCard {
   state: AvailabilityCardState;
