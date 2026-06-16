@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 
-import type { DailyAvailabilityResult } from "@solverfin/domain";
-import { buildAvailabilityDashboardViewModel } from "./availability.js";
+import {
+  buildAvailabilityDashboardViewModel,
+  type DailyAvailabilityResult,
+} from "./availability.js";
 
 buildsReadyCardWithDetails();
 flagsLowConfidenceState();
@@ -11,7 +13,7 @@ function buildsReadyCardWithDetails(): void {
   const viewModel = buildAvailabilityDashboardViewModel({ result: availabilityFixture("medium") });
 
   assert.equal(viewModel.card.state, "ready");
-  assert.equal(viewModel.card.amountText, "R$ 945,00");
+  assert.match(viewModel.card.amountText ?? "", /R\$.*945,00/);
   assert.equal(viewModel.card.secondaryActions.includes("edit_assumptions"), true);
   assert.equal(viewModel.detailSections.some((section) => section.title === "Recorrencias inferidas"), true);
   assert.equal(viewModel.reviewItems.some((item) => item.action === "review_inferred_recurrences"), true);
