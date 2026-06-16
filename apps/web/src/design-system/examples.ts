@@ -14,7 +14,10 @@ export const solverFinDesignSystemExamples = [
     purpose: "Confirmar acoes financeiras revisaveis, como salvar uma conta ou registrar um lancamento.",
     recipeKey: "button",
     markup: `<button class="sf-button sf-button-primary sf-focus-ring" type="button">Salvar alteracoes</button>`,
-    notes: ["Use texto direto sobre a acao.", "Durante envio, mantenha largura estavel e exponha estado ocupado."],
+    notes: [
+      "Use texto direto sobre a acao.",
+      "Durante envio, mantenha largura estavel e exponha estado ocupado.",
+    ],
   },
   {
     name: "Input with validation",
@@ -25,7 +28,10 @@ export const solverFinDesignSystemExamples = [
   <input class="sf-control sf-focus-ring" aria-describedby="account-name-help" name="accountName" />
   <span class="sf-help-text" id="account-name-help">Use um nome facil de reconhecer.</span>
 </label>`,
-    notes: ["Nao substitua label por placeholder.", "Mensagens de erro devem orientar a correcao."],
+    notes: [
+      "Nao substitua label por placeholder.",
+      "Mensagens de erro devem orientar a correcao.",
+    ],
   },
   {
     name: "Empty table",
@@ -35,7 +41,10 @@ export const solverFinDesignSystemExamples = [
   <strong>Nenhuma categoria cadastrada</strong>
   <span>Crie categorias para organizar receitas e despesas.</span>
 </section>`,
-    notes: ["Explique o que a pessoa pode fazer em seguida.", "Nao use exemplos com dados financeiros reais."],
+    notes: [
+      "Explique o que a pessoa pode fazer em seguida.",
+      "Nao use exemplos com dados financeiros reais.",
+    ],
   },
   {
     name: "Responsive data table",
@@ -47,13 +56,19 @@ export const solverFinDesignSystemExamples = [
     <tbody><tr><td>Alimentacao</td><td>Ativa</td></tr></tbody>
   </table>
 </div>`,
-    notes: ["Use tabela apenas para dados tabulares.", "Mantenha scroll horizontal controlado em mobile."],
+    notes: [
+      "Use tabela apenas para dados tabulares.",
+      "Mantenha scroll horizontal controlado em mobile.",
+    ],
   },
   {
     name: "Toast feedback",
     purpose: "Confirmar resultado de uma acao sem interromper o fluxo principal.",
     recipeKey: "toast",
     markup: `<aside role="status" aria-live="polite">Categoria salva com sucesso.</aside>`,
-    notes: ["Use linguagem curta.", "Erros bloqueantes devem ficar junto ao formulario quando possivel."],
+    notes: [
+      "Use linguagem curta.",
+      "Erros bloqueantes devem ficar junto ao formulario quando possivel.",
+    ],
   },
 ] as const satisfies readonly ComponentExample[];
