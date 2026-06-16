@@ -4,6 +4,11 @@ Este documento registra o primeiro contrato de dominio para o assistente finance
 
 A entrega cobre as issues #56 e #57 sem integrar provider real, API HTTP ou UI final. O repositorio ainda esta em bootstrap de aplicacao, entao a implementacao fica no pacote `@solverfin/ai`, com funcoes puras e testaveis.
 
+## Escopo rastreado
+
+- #56: assistente financeiro de perguntas e respostas, incluindo disponibilidade de hoje.
+- #57: insights, anomalias e resumo mensal com evidencia numerica.
+
 ## Assistente financeiro
 
 O assistente usa `answerFinancialQuestion` para classificar a pergunta e responder apenas quando existe base autorizada.
