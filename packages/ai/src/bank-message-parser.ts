@@ -149,7 +149,7 @@ export async function parseBankMessage(
     };
   }
 
-  return {
+  const result: BankMessageParserResult = {
     status: validation.status === "valid" ? "suggested" : "needs_review",
     sourceKind: "ai",
     normalizedText,
@@ -164,8 +164,13 @@ export async function parseBankMessage(
     },
     reviewReasons: validation.problems.map((problem) => problem.message),
     problems: validation.problems,
-    code: validation.status === "valid" ? undefined : "BANK_MESSAGE_AI_INVALID_OUTPUT",
   };
+
+  if (validation.status !== "valid") {
+    result.code = "BANK_MESSAGE_AI_INVALID_OUTPUT";
+  }
+
+  return result;
 }
 
 export function normalizeBankMessageText(text: string): string {
@@ -196,7 +201,7 @@ function buildRuleResult(
     };
   }
 
-  return {
+  const result: BankMessageParserResult = {
     status: validation.status === "valid" ? "suggested" : "needs_review",
     sourceKind: "rule",
     normalizedText,
@@ -210,8 +215,13 @@ function buildRuleResult(
     },
     reviewReasons: validation.problems.map((problem) => problem.message),
     problems: validation.problems,
-    code: validation.status === "valid" ? undefined : "BANK_MESSAGE_RULE_NEEDS_REVIEW",
   };
+
+  if (validation.status !== "valid") {
+    result.code = "BANK_MESSAGE_RULE_NEEDS_REVIEW";
+  }
+
+  return result;
 }
 
 function matchBankMessageRule(text: string): RuleMatch | undefined {
