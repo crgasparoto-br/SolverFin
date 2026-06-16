@@ -6,20 +6,20 @@ O schema fica em `@solverfin/ai` e deve ser usado antes de qualquer sugestao aut
 
 ## Campos aceitos
 
-| Campo | Obrigatorio | Regra |
-| --- | --- | --- |
-| `amount` | Sim, quando `amountMinor` nao vier | Numero positivo em reais/unidade cheia ou texto localizado, como `1.234,56`. |
-| `amountMinor` | Sim, quando `amount` nao vier | Inteiro positivo em centavos/unidade minoritaria. |
-| `currency` | Sim | Codigo de 3 letras. O valor e normalizado para maiusculas, como `BRL`. |
-| `occurredOn` ou `date` | Sim | Data em `YYYY-MM-DD`, data/hora ISO ou `DD/MM/YYYY`. O valor e normalizado para `YYYY-MM-DD`. |
-| `type` | Sim | `income`, `expense`, `transfer` ou `unknown`. O valor e normalizado para minusculas. |
-| `merchant` | Nao | Texto curto do estabelecimento ou contraparte. |
-| `accountHint` | Nao | Pista de conta, banco ou carteira. |
-| `cardHint` | Nao | Pista de cartao, como final ou apelido. |
-| `categorySuggestion` | Nao | Categoria sugerida para revisao. |
-| `confidence` | Sim | Numero entre `0` e `1`. Abaixo de `0.7`, a sugestao precisa de revisao. |
-| `source` | Sim | `bank_message`, `shared_text`, `import` ou `manual_note`. |
-| `reasons` | Sim | Lista com pelo menos uma justificativa textual nao vazia. |
+| Campo                  | Obrigatorio                        | Regra                                                                                         |
+| ---------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| `amount`               | Sim, quando `amountMinor` nao vier | Numero positivo em reais/unidade cheia ou texto localizado, como `1.234,56`.                  |
+| `amountMinor`          | Sim, quando `amount` nao vier      | Inteiro positivo em centavos/unidade minoritaria.                                             |
+| `currency`             | Sim                                | Codigo de 3 letras. O valor e normalizado para maiusculas, como `BRL`.                        |
+| `occurredOn` ou `date` | Sim                                | Data em `YYYY-MM-DD`, data/hora ISO ou `DD/MM/YYYY`. O valor e normalizado para `YYYY-MM-DD`. |
+| `type`                 | Sim                                | `income`, `expense`, `transfer` ou `unknown`. O valor e normalizado para minusculas.          |
+| `merchant`             | Nao                                | Texto curto do estabelecimento ou contraparte.                                                |
+| `accountHint`          | Nao                                | Pista de conta, banco ou carteira.                                                            |
+| `cardHint`             | Nao                                | Pista de cartao, como final ou apelido.                                                       |
+| `categorySuggestion`   | Nao                                | Categoria sugerida para revisao.                                                              |
+| `confidence`           | Sim                                | Numero entre `0` e `1`. Abaixo de `0.7`, a sugestao precisa de revisao.                       |
+| `source`               | Sim                                | `bank_message`, `shared_text`, `import` ou `manual_note`.                                     |
+| `reasons`              | Sim                                | Lista com pelo menos uma justificativa textual nao vazia.                                     |
 
 Qualquer campo fora da lista e tratado como inesperado. Isso evita que respostas livres do provedor sejam aceitas como contrato publico.
 
