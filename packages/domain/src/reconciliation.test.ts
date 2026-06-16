@@ -123,7 +123,11 @@ function testUndoReconciliation(): void {
   });
 
   assertEqual(undone.transaction.status, "posted", "transaction status after undo");
-  assertEqual(undone.transaction.reconciledAt, undefined, "transaction reconciliation timestamp removed");
+  assertEqual(
+    undone.transaction.reconciledAt,
+    undefined,
+    "transaction reconciliation timestamp removed",
+  );
   assertEqual(undone.link.status, "undone", "link status after undo");
   assertEqual(undone.link.undoneAt, later, "link undo timestamp");
   assertEqual(undone.movements.length, 1, "undo movement count");
