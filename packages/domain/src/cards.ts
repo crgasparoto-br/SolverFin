@@ -278,9 +278,7 @@ export function listInvoices(
 ): Invoice[] {
   return listTenantScopedResources(context, invoices).filter((invoice) => {
     const statusMatches =
-      filters.status === undefined ||
-      filters.status === "all" ||
-      invoice.status === filters.status;
+      filters.status === undefined || filters.status === "all" || invoice.status === filters.status;
     const cardMatches = filters.cardId === undefined || invoice.cardId === filters.cardId;
     const dueFromMatches = filters.dueFrom === undefined || invoice.dueOn >= filters.dueFrom;
     const dueToMatches = filters.dueTo === undefined || invoice.dueOn <= filters.dueTo;
@@ -293,7 +291,10 @@ export function getInvoice(context: TenantContext, invoice: Invoice | undefined)
   return getTenantScopedResource(context, invoice);
 }
 
-export function calculateInvoicePeriod(card: Pick<Card, "closingDay" | "dueDay">, purchaseOn: ISODate): InvoicePeriod {
+export function calculateInvoicePeriod(
+  card: Pick<Card, "closingDay" | "dueDay">,
+  purchaseOn: ISODate,
+): InvoicePeriod {
   const purchaseDate = validateDate(purchaseOn, "CARD_PURCHASE_DATE_REQUIRED");
   const [purchaseYear, purchaseMonth, purchaseDay] = parseDateParts(purchaseDate);
   const closingDay = validateStatementDay(card.closingDay, "CARD_CLOSING_DAY_INVALID");
@@ -556,7 +557,13 @@ function resolveInvoiceForPurchase(input: {
 
   return {
     invoice,
-    auditEntry: buildInvoiceAuditEntry("create", input.context.userId, input.now, undefined, invoice),
+    auditEntry: buildInvoiceAuditEntry(
+      "create",
+      input.context.userId,
+      input.now,
+      undefined,
+      invoice,
+    ),
   };
 }
 
@@ -652,10 +659,7 @@ function assertOptionalPaymentAccount(
   const paymentAccount = assertPaymentAccount(context, account);
 
   if (paymentAccount.id !== accountId) {
-    throw new CardError(
-      "CARD_PAYMENT_ACCOUNT_INVALID",
-      "Payment account id does not match.",
-    );
+    throw new CardError("CARD_PAYMENT_ACCOUNT_INVALID", "Payment account id does not match.");
   }
 
   return paymentAccount;
@@ -665,10 +669,7 @@ function assertPaymentAccount(context: TenantContext, account: Account | undefin
   const paymentAccount = getTenantScopedResource(context, account);
 
   if (paymentAccount.status !== "active") {
-    throw new CardError(
-      "CARD_PAYMENT_ACCOUNT_ARCHIVED",
-      "Payment account must be active.",
-    );
+    throw new CardError("CARD_PAYMENT_ACCOUNT_ARCHIVED", "Payment account must be active.");
   }
 
   return paymentAccount;
@@ -723,10 +724,7 @@ function validateStatementDay(day: number, code: CardErrorCode): number {
 
 function validateCreditLimit(creditLimitMinor: number): number {
   if (!Number.isInteger(creditLimitMinor) || creditLimitMinor < 0) {
-    throw new CardError(
-      "CARD_LIMIT_INVALID",
-      "Card limit must be an integer minor-unit amount.",
-    );
+    throw new CardError("CARD_LIMIT_INVALID", "Card limit must be an integer minor-unit amount.");
   }
 
   return creditLimitMinor;
