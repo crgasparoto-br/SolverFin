@@ -295,6 +295,7 @@ function runCancelsPendingAndRejectsSettledCancellation(): void {
     ),
     now,
     account,
+    category: expenseCategory,
     payload: {
       settledOn: "2026-06-20",
       accountId: account.id,
