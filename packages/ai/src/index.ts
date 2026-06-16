@@ -194,7 +194,7 @@ export async function runAiTask(input: {
           status: "failed",
           code: "AI_PROVIDER_ERROR",
           sanitized,
-          attempts,
+          attempts: attempt,
         };
       }
     }
