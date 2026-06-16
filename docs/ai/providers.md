@@ -1,13 +1,16 @@
 # Politica de provedores de IA
 
 **Issue:** #51
-**Status:** base tecnica inicial para providers substituiveis, testes com fake provider e politicas de uso seguro.
+**Status:** base tecnica inicial para providers substituiveis, testes com fake provider e
+politicas de uso seguro.
 
 ## Objetivo
 
-O pacote `@solverfin/ai` centraliza a chamada a provedores de IA para manter o dominio financeiro desacoplado de fornecedores, modelos e prompts especificos.
+O pacote `@solverfin/ai` centraliza a chamada a provedores de IA para manter o
+dominio financeiro desacoplado de fornecedores, modelos e prompts especificos.
 
-A regra inicial e simples: nenhum fluxo deve chamar IA sem consentimento ativo, proposito declarado, payload minimizado e logs seguros.
+A regra inicial e simples: nenhum fluxo deve chamar IA sem consentimento ativo,
+proposito declarado, payload minimizado e logs seguros.
 
 ## Superficie publica inicial
 
@@ -16,9 +19,11 @@ O pacote exporta:
 - `AiProvider`: contrato substituivel para providers reais ou fake.
 - `FakeAiProvider`: provider deterministico para testes.
 - `runAiTask`: orquestra consentimento, sanitizacao, retry e chamada ao provider.
-- `sanitizeAiPayload`: remove campos nao permitidos e mascara identificadores sensiveis.
+- `sanitizeAiPayload`: remove campos nao permitidos e mascara identificadores
+  sensiveis.
 - `maskSensitiveText`: mascara documentos, cartoes e numeros longos.
-- `defaultAiUsagePolicy`: politica-base que deve ser especializada por finalidade.
+- `defaultAiUsagePolicy`: politica-base que deve ser especializada por
+  finalidade.
 
 Tarefas suportadas no contrato inicial:
 
@@ -49,11 +54,13 @@ A chamada deve enviar apenas dados necessarios para a finalidade.
 Regras iniciais:
 
 - campos fora de `allowedFieldNames` sao omitidos;
-- campos com nomes de conta, cartao, documento, payload bruto, mensagem bruta, token ou segredo sao bloqueados pela politica padrao;
+- campos com nomes de conta, cartao, documento, payload bruto, mensagem bruta,
+  token ou segredo sao bloqueados pela politica padrao;
 - documentos ficticios no formato CPF sao substituidos por `***documento***`;
 - cartoes de 16 digitos sao substituidos por `**** **** **** ****`;
 - numeros longos preservam apenas os ultimos 4 digitos;
-- logs recebem apenas metadados seguros, como provider, modelo, task, tenant e correlation id.
+- logs recebem apenas metadados seguros, como provider, modelo, task, tenant e
+  correlation id.
 
 ## Timeouts, retries e erros
 
@@ -66,7 +73,9 @@ Regras iniciais:
 - resposta sem texto utilizavel: retorna `AI_PROVIDER_INVALID_RESPONSE`;
 - falha final do provider: retorna `AI_PROVIDER_ERROR`.
 
-O timeout real deve ser aplicado pelo provider concreto. A abstracao ja propaga `timeoutMs` em `SafeAiProviderRequest` para manter o contrato testavel sem acoplar o pacote a runtime, HTTP client ou SDK especifico.
+O timeout real deve ser aplicado pelo provider concreto. A abstracao ja propaga
+`timeoutMs` em `SafeAiProviderRequest` para manter o contrato testavel sem
+acoplar o pacote a runtime, HTTP client ou SDK especifico.
 
 ## Como adicionar um provider real
 
@@ -75,8 +84,10 @@ O timeout real deve ser aplicado pelo provider concreto. A abstracao ja propaga 
 3. Converter `SafeAiProviderRequest` para o formato do SDK/API externo.
 4. Respeitar `timeoutMs` e retornar erro controlado quando o limite estourar.
 5. Nunca logar `prompt`, `fields` ou resposta bruta do provider.
-6. Cobrir o provider com testes usando payload ficticio e sem chamadas externas reais.
-7. Registrar ADR se o provider criar dependencia duradoura, custo relevante ou mudanca arquitetural.
+6. Cobrir o provider com testes usando payload ficticio e sem chamadas externas
+   reais.
+7. Registrar ADR se o provider criar dependencia duradoura, custo relevante ou
+   mudanca arquitetural.
 
 ## Exemplo de uso em teste
 
@@ -104,7 +115,8 @@ const result = await runAiTask({
 - O pacote ainda nao escolhe provider real.
 - Schemas finais de extracao ficam para a issue #52.
 - Parser de mensagens e fallback por regras ficam para a issue #53.
-- Modelo completo de consentimento fica para a issue #61; ate la, o fluxo recebe o estado de consentimento como entrada.
+- Modelo completo de consentimento fica para a issue #61; ate la, o fluxo recebe
+  o estado de consentimento como entrada.
 - Mascaramento amplo entre backend e frontend fica para a issue #62.
 
 ## Validacao
@@ -118,4 +130,5 @@ npm run lint --workspace @solverfin/ai
 npm run validate
 ```
 
-Use apenas fixtures ficticias. Nao inclua mensagens bancarias, cartoes, documentos, tokens ou payloads reais em testes, logs ou exemplos.
+Use apenas fixtures ficticias. Nao inclua mensagens bancarias, cartoes,
+documentos, tokens ou payloads reais em testes, logs ou exemplos.
