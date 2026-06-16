@@ -1,3 +1,4 @@
+export * from "./accessibility.js";
 export * from "./app-shell/index.js";
 export * from "./dashboard/index.js";
 export * from "./design-system/index.js";
