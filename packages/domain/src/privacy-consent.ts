@@ -114,12 +114,17 @@ export function summarizePrivacyPreferences(
       return { purpose, status: "missing" };
     }
 
-    return {
+    const summary: PrivacyPreferenceSummary = {
       purpose,
       status: latest.status,
-      termsVersion: latest.termsVersion,
       updatedAt: latest.updatedAt,
     };
+
+    if (latest.termsVersion !== undefined) {
+      summary.termsVersion = latest.termsVersion;
+    }
+
+    return summary;
   });
 }
 
