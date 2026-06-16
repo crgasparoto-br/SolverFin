@@ -193,9 +193,7 @@ export function listFinancialAssumptions(
 ): FinancialAssumption[] {
   return listTenantScopedResources(context, assumptions).filter((assumption) => {
     const statusMatches =
-      filters.status === undefined ||
-      filters.status === "all" ||
-      assumption.status === filters.status;
+      filters.status === "all" || assumption.status === (filters.status ?? "active");
     const kindMatches = filters.kind === undefined || assumption.kind === filters.kind;
     const scopeMatches = filters.scopeKind === undefined || assumption.scope.kind === filters.scopeKind;
     const activeOnMatches =
