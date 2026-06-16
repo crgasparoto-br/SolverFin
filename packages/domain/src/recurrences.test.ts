@@ -165,7 +165,11 @@ function runUpdatesFutureRule(): void {
 
   assertEqual(updated.amountMinor, 9900, "update should change future amount");
   assertEqual(updated.endOn, "2026-08-01", "update should set end date");
-  assertEqual(updated.description, "Assinatura atualizada ficticia", "update should change description");
+  assertEqual(
+    updated.description,
+    "Assinatura atualizada ficticia",
+    "update should change description",
+  );
 }
 
 function runGeneratesFixedInstallmentSchedule(): void {
@@ -188,19 +192,17 @@ function runGeneratesFixedInstallmentSchedule(): void {
 }
 
 function runCancelsOnlyFuturePlannedInstallments(): void {
-  const recurrence = createRecurrenceFixture({ id: "recurrence-cancel-future", startOn: "2026-06-01" });
+  const recurrence = createRecurrenceFixture({
+    id: "recurrence-cancel-future",
+    startOn: "2026-06-01",
+  });
   const installments = [
     createInstallmentFixture(recurrence, 1, "2026-06-01", "posted"),
     createInstallmentFixture(recurrence, 2, "2026-07-01", "planned"),
     createInstallmentFixture(recurrence, 3, "2026-08-01", "planned"),
   ];
 
-  const cancelledInstallments = cancelFutureInstallments(
-    tenantA,
-    installments,
-    now,
-    "2026-07-01",
-  );
+  const cancelledInstallments = cancelFutureInstallments(tenantA, installments, now, "2026-07-01");
 
   assertEqual(cancelledInstallments[0]?.status, "posted", "posted installment should stay posted");
   assertEqual(cancelledInstallments[1]?.status, "cancelled", "future planned should cancel");
@@ -210,7 +212,11 @@ function runCancelsOnlyFuturePlannedInstallments(): void {
 function runTenantIsolation(): void {
   const recurrence = createRecurrenceFixture({ id: "recurrence-tenant", startOn: "2026-06-01" });
 
-  assertEqual(listRecurrences(tenantB, [recurrence]).length, 0, "other tenant list should be empty");
+  assertEqual(
+    listRecurrences(tenantB, [recurrence]).length,
+    0,
+    "other tenant list should be empty",
+  );
   assertTenantError(() => pauseRecurrence(tenantB, recurrence, now));
 }
 
