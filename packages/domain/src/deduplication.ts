@@ -13,7 +13,13 @@ import type { ImportTransactionSuggestion } from "./imports.js";
 import type { BankMessageInboxItem } from "./bank-message-inbox.js";
 
 export type DeduplicationCandidateKind = "transaction" | "import_suggestion" | "bank_message";
-export type DeduplicationSourceKind = "manual" | "import" | "bank_message" | "ai_suggestion";
+export type DeduplicationSourceKind =
+  | "manual"
+  | "recurrence"
+  | "installment"
+  | "import"
+  | "bank_message"
+  | "ai_suggestion";
 export type DeduplicationReviewStatus = "needs_review" | "not_duplicate";
 export type DeduplicationReasonCode =
   | "DEDUP_EXACT_SOURCE_HASH"
@@ -130,7 +136,7 @@ export function buildTransactionDeduplicationCandidate(
     organizationId: transaction.organizationId,
     financialProfileId: transaction.financialProfileId,
     candidateKind: "transaction",
-    sourceKind: transaction.source === "ai_suggestion" ? "ai_suggestion" : transaction.source,
+    sourceKind: transaction.source,
     kind: transaction.kind,
     amountMinor: transaction.amountMinor,
     currency: transaction.currency,
