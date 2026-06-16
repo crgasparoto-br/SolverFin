@@ -23,21 +23,21 @@ O dataset mockado usa apenas valores ficticios. Ele inclui propositalmente um la
 
 Contexto ativo do mock:
 
-| Campo | Valor |
-| --- | --- |
-| Tenant | `tenant-demo` |
+| Campo             | Valor                   |
+| ----------------- | ----------------------- |
+| Tenant            | `tenant-demo`           |
 | Perfil financeiro | `profile-personal-demo` |
-| Periodo | Junho de 2026 |
+| Periodo           | Junho de 2026           |
 
 Valores esperados do exemplo pronto:
 
-| Indicador | Valor em centavos |
-| --- | ---: |
-| Saldo | 582250 |
-| Receitas | 700000 |
-| Despesas | 357750 |
-| Resultado | 342250 |
-| Disponivel hoje | 14320 |
+| Indicador       | Valor em centavos |
+| --------------- | ----------------: |
+| Saldo           |            582250 |
+| Receitas        |            700000 |
+| Despesas        |            357750 |
+| Resultado       |            342250 |
+| Disponivel hoje |             14320 |
 
 O percentual de despesas esperado e `51.11`.
 
