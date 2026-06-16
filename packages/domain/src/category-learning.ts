@@ -324,27 +324,26 @@ function suggestFromAi(
   minConfidence: number,
 ): CategorySuggestionResult {
   const category = activeCategories.find((item) => item.id === suggestion.categoryId);
-
-  if (category === undefined || suggestion.confidence < minConfidence) {
-    return {
-      status: "needs_review",
-      source: "ai",
-      confidence: suggestion.confidence,
-      reason: suggestion.reason,
-      provider: suggestion.provider,
-      model: suggestion.model,
-    };
-  }
-
-  return {
-    status: "suggested",
+  const result: CategorySuggestionResult = {
+    status: category === undefined || suggestion.confidence < minConfidence ? "needs_review" : "suggested",
     source: "ai",
-    categoryId: suggestion.categoryId,
     confidence: suggestion.confidence,
     reason: suggestion.reason,
-    provider: suggestion.provider,
-    model: suggestion.model,
   };
+
+  if (result.status === "suggested") {
+    result.categoryId = suggestion.categoryId;
+  }
+
+  if (suggestion.provider !== undefined) {
+    result.provider = suggestion.provider;
+  }
+
+  if (suggestion.model !== undefined) {
+    result.model = suggestion.model;
+  }
+
+  return result;
 }
 
 function compareLearningEntries(left: CategoryLearningEntry, right: CategoryLearningEntry): number {
