@@ -10,7 +10,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present",
+    "dev": "npm run dev:web",
+    "dev:web": "npm run dev --workspace @solverfin/web",
     "env:check": "node scripts/validate-env-example.mjs",
     "prisma:validate": "prisma validate",
     "prisma:generate": "prisma generate",
