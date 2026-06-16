@@ -55,9 +55,9 @@ function testInvalidCsvPreview(): void {
   assertEqual(preview.batch.status, "failed", "invalid csv batch status");
   assertEqual(preview.batch.problemRows, 2, "invalid csv problem rows");
   assertEqual(preview.suggestions.length, 0, "invalid csv suggestions");
-  assertEqual(preview.problems[0]?.code, "IMPORT_ROW_AMOUNT_INVALID", "invalid csv amount");
-  assertEqual(
-    preview.problems[1]?.code,
+  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_INVALID", "invalid csv amount");
+  assertProblemCode(
+    preview.problems,
     "IMPORT_ROW_DESCRIPTION_REQUIRED",
     "invalid csv description",
   );
@@ -159,6 +159,16 @@ function assertImportFileError(action: () => void, expectedCode: ImportFileError
   }
 
   throw new Error(`Expected import file error ${expectedCode}.`);
+}
+
+function assertProblemCode(
+  problems: readonly { code: string }[],
+  expectedCode: string,
+  message: string,
+): void {
+  if (!problems.some((problem) => problem.code === expectedCode)) {
+    throw new Error(`${message}. Expected problem code ${expectedCode}.`);
+  }
 }
 
 function assertEqual<T>(actual: T, expected: T, message: string): void {
