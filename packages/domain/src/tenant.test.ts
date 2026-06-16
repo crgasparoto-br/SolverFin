@@ -48,19 +48,31 @@ testOtherUserProfileIsNotAccessible();
 testMultipleProfilesRequireExplicitContext();
 
 function testCreateOrganizationAndFinancialProfile(): void {
-  assertEqual(organization.name, "Organizacao Demo", "organization name should be normalized");
+  assertEqual(
+    organization.name,
+    "Organizacao Demo",
+    "organization name should be normalized",
+  );
   assertEqual(
     organization.ownerUserId,
     activeUser.id,
     "organization should keep the owner user id",
   );
-  assertEqual(personalProfile.name, "Pessoal", "financial profile name should be normalized");
+  assertEqual(
+    personalProfile.name,
+    "Pessoal",
+    "financial profile name should be normalized",
+  );
   assertEqual(
     personalProfile.organizationId,
     organization.id,
     "financial profile should belong to the organization",
   );
-  assertEqual(personalProfile.ownerUserId, activeUser.id, "financial profile should keep owner");
+  assertEqual(
+    personalProfile.ownerUserId,
+    activeUser.id,
+    "financial profile should keep owner",
+  );
 }
 
 function testResolveSingleActiveContext(): void {
@@ -70,7 +82,11 @@ function testResolveSingleActiveContext(): void {
   });
 
   assertEqual(context.userId, activeUser.id, "context should keep user id");
-  assertEqual(context.organizationId, organization.id, "context should keep organization id");
+  assertEqual(
+    context.organizationId,
+    organization.id,
+    "context should keep organization id",
+  );
   assertEqual(
     context.financialProfileId,
     personalProfile.id,
@@ -99,7 +115,11 @@ function testResolveRequestedContextWhenUserHasMultipleProfiles(): void {
     meiProfile.id,
     "requested active context should be selected",
   );
-  assertEqual(context.financialProfileKind, "mei", "context should expose profile kind");
+  assertEqual(
+    context.financialProfileKind,
+    "mei",
+    "context should expose profile kind",
+  );
 }
 
 function testEntityWithoutTenantIsRejected(): void {
@@ -128,7 +148,11 @@ function testOtherTenantEntityIsRejected(): void {
     () => assertTenantScopedEntity(context, account),
     "TENANT_ACCESS_DENIED",
   );
-  assertEqual(isTenantScopedTo(context, account), false, "tenant helper should detect mismatch");
+  assertEqual(
+    isTenantScopedTo(context, account),
+    false,
+    "tenant helper should detect mismatch",
+  );
 }
 
 function testOtherUserProfileIsNotAccessible(): void {
@@ -176,7 +200,9 @@ function testMultipleProfilesRequireExplicitContext(): void {
   );
 }
 
-function createAccountFixture(scope: Pick<Account, "organizationId" | "financialProfileId">): Account {
+function createAccountFixture(
+  scope: Pick<Account, "organizationId" | "financialProfileId">,
+): Account {
   return {
     id: "account-demo-1",
     organizationId: scope.organizationId,
