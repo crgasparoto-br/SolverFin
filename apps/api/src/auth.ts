@@ -77,10 +77,10 @@ export function createAuthService(options: AuthServiceOptions) {
   const sessionStore = options.sessionStore ?? createInMemoryAuthSessionStore();
   const now = options.now ?? (() => new Date());
   const sessionTtlMs = options.sessionTtlMs ?? DEFAULT_SESSION_TTL_MS;
-  const usersByEmail = new Map(
+  const usersByEmail = new Map<string, AuthUserCredentials>(
     options.users.map((credentials) => [normalizeEmail(credentials.user.email), credentials]),
   );
-  const usersById = new Map(
+  const usersById = new Map<string, AuthenticatedUser>(
     options.users.map((credentials) => [credentials.user.id, credentials.user]),
   );
 
