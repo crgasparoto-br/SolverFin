@@ -36,16 +36,16 @@ Tarefas suportadas no contrato inicial:
 
 Cada chamada deve informar:
 
-| Campo | Uso |
-| --- | --- |
-| `consent` | Deve estar como `granted`; valores `missing` ou `revoked` bloqueiam a chamada. |
-| `purpose` | Explica a finalidade, como `transaction extraction review`. |
-| `maxPromptChars` | Limita tamanho do prompt sanitizado. |
-| `maxRetries` | Define novas tentativas apos falha controlada do provider. |
-| `timeoutMs` | Informa o limite operacional esperado para o provider concreto. |
-| `allowRawFinancialText` | Deve ficar `false` por padrao; `true` exige justificativa especifica. |
-| `allowedFieldNames` | Lista positiva recomendada para cada finalidade. |
-| `blockedFieldNamePatterns` | Lista de padroes bloqueados quando nao houver lista positiva. |
+| Campo                      | Uso                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| `consent`                  | Deve estar como `granted`; valores `missing` ou `revoked` bloqueiam a chamada. |
+| `purpose`                  | Explica a finalidade, como `transaction extraction review`.                    |
+| `maxPromptChars`           | Limita tamanho do prompt sanitizado.                                           |
+| `maxRetries`               | Define novas tentativas apos falha controlada do provider.                     |
+| `timeoutMs`                | Informa o limite operacional esperado para o provider concreto.                |
+| `allowRawFinancialText`    | Deve ficar `false` por padrao; `true` exige justificativa especifica.          |
+| `allowedFieldNames`        | Lista positiva recomendada para cada finalidade.                               |
+| `blockedFieldNamePatterns` | Lista de padroes bloqueados quando nao houver lista positiva.                  |
 
 ## Minimizacao e mascaramento
 
