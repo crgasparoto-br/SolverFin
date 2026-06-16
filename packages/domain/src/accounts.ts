@@ -112,7 +112,11 @@ export function getAccount(context: TenantContext, account: Account | undefined)
 
 export function updateAccount(input: UpdateAccountInput): Account {
   const currentAccount = updateTenantScopedResource(input.context, input.account, input.payload);
-  const nextOpeningBalance = getNextOpeningBalance(currentAccount, input.payload, input.hasTransactions);
+  const nextOpeningBalance = getNextOpeningBalance(
+    currentAccount,
+    input.payload,
+    input.hasTransactions,
+  );
 
   return {
     ...currentAccount,
