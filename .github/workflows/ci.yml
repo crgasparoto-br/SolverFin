@@ -50,12 +50,7 @@ jobs:
         run: npm run db:seed:check
 
       - name: Check formatting
-        run: |
-          npm run format:check || {
-            npx prettier docs/ai/bank-message-parser.md packages/ai/src/bank-message-parser.ts packages/ai/src/bank-message-parser.test.ts packages/ai/src/index.ts packages/ai/package.json --write
-            git diff -- docs/ai/bank-message-parser.md packages/ai/src/bank-message-parser.ts packages/ai/src/bank-message-parser.test.ts packages/ai/src/index.ts packages/ai/package.json
-            exit 1
-          }
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
