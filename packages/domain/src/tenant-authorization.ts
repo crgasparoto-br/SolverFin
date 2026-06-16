@@ -9,11 +9,7 @@ export class TenantAuthorizationError extends Error {
   readonly code: TenantAuthorizationErrorCode;
   readonly statusCode: 403 | 404;
 
-  constructor(
-    code: TenantAuthorizationErrorCode,
-    message: string,
-    statusCode: 403 | 404,
-  ) {
+  constructor(code: TenantAuthorizationErrorCode, message: string, statusCode: 403 | 404) {
     super(message);
     this.name = "TenantAuthorizationError";
     this.code = code;
@@ -64,10 +60,7 @@ export function assertPayloadTenantScope(
   context: TenantContext,
   payload: Partial<TenantScoped>,
 ): void {
-  if (
-    payload.organizationId !== undefined &&
-    payload.organizationId !== context.organizationId
-  ) {
+  if (payload.organizationId !== undefined && payload.organizationId !== context.organizationId) {
     throw payloadScopeError();
   }
 
