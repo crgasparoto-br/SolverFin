@@ -40,15 +40,31 @@ function testCreateAudit(): void {
   });
 
   assertEqual(audit.entityKind, "transaction", "create audit should target transactions");
-  assertEqual(audit.entityId, baseTransaction.id, "create audit should reference the transaction id");
-  assertEqual(audit.organizationId, baseTransaction.organizationId, "create audit should keep organization scope");
+  assertEqual(
+    audit.entityId,
+    baseTransaction.id,
+    "create audit should reference the transaction id",
+  );
+  assertEqual(
+    audit.organizationId,
+    baseTransaction.organizationId,
+    "create audit should keep organization scope",
+  );
   assertEqual(
     audit.financialProfileId,
     baseTransaction.financialProfileId,
     "create audit should keep financial profile scope",
   );
-  assertEqual(audit.redactedChanges?.amountMinor, "added", "create audit should mark amount as added");
-  assertEqual(audit.redactedChanges?.description, "added", "create audit should mark description as added");
+  assertEqual(
+    audit.redactedChanges?.amountMinor,
+    "added",
+    "create audit should mark amount as added",
+  );
+  assertEqual(
+    audit.redactedChanges?.description,
+    "added",
+    "create audit should mark description as added",
+  );
 }
 
 function testUpdateAudit(): void {
@@ -66,7 +82,11 @@ function testUpdateAudit(): void {
   assertEqual(changes?.amountMinor, "changed", "update audit should mark amount changes");
   assertEqual(changes?.categoryId, "changed", "update audit should mark category changes");
   assertEqual(changes?.status, "changed", "update audit should mark status changes");
-  assertEqual(changes?.reconciledAt, "added", "update audit should mark reconciliation date as added");
+  assertEqual(
+    changes?.reconciledAt,
+    "added",
+    "update audit should mark reconciliation date as added",
+  );
 }
 
 function testSoftDeleteAudit(): void {
@@ -87,8 +107,16 @@ function testSoftDeleteAudit(): void {
     reason: "Teste ficticio de exclusao logica",
   });
 
-  assertEqual(audit.redactedChanges?.status, "changed", "soft delete audit should mark status changes");
-  assertEqual(audit.redactedChanges?.voidedAt, "added", "soft delete audit should mark voided timestamp");
+  assertEqual(
+    audit.redactedChanges?.status,
+    "changed",
+    "soft delete audit should mark status changes",
+  );
+  assertEqual(
+    audit.redactedChanges?.voidedAt,
+    "added",
+    "soft delete audit should mark voided timestamp",
+  );
 }
 
 function testTenantIsolation(): void {
@@ -129,8 +157,16 @@ function testSensitivePayloadIsNotStored(): void {
 
   const serializedChanges = JSON.stringify(audit.redactedChanges);
 
-  assertEqual(audit.redactedChanges?.amountMinor, "changed", "audit should mark amount without the value");
-  assertEqual(audit.redactedChanges?.description, "changed", "audit should mark description without text");
+  assertEqual(
+    audit.redactedChanges?.amountMinor,
+    "changed",
+    "audit should mark amount without the value",
+  );
+  assertEqual(
+    audit.redactedChanges?.description,
+    "changed",
+    "audit should mark description without text",
+  );
   assert(!serializedChanges.includes("999999"), "audit must not store raw amount values");
   assert(!serializedChanges.includes("Texto financeiro"), "audit must not store raw descriptions");
 }
