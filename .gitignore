@@ -8,6 +8,7 @@ build/
 .next/
 .turbo/
 coverage/
+.tmp-tests/
 
 # Local environment
 .env
