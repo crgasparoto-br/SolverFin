@@ -74,8 +74,22 @@ function tenantIsolationFiltersForeignTransactions(): void {
     currentPeriod,
     previousPeriod,
     transactions: [
-      tx("foreign-current", "2026-06-10", 50000, "market", "mercado-demo", "org-other"),
-      tx("foreign-previous", "2026-05-10", 1000, "market", "mercado-demo", "org-other"),
+      tx(
+        "foreign-current",
+        "2026-06-10",
+        50000,
+        "market",
+        "mercado-demo",
+        "org-other",
+      ),
+      tx(
+        "foreign-previous",
+        "2026-05-10",
+        1000,
+        "market",
+        "mercado-demo",
+        "org-other",
+      ),
     ],
   });
 
