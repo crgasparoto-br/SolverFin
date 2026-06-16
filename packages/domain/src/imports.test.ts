@@ -1,9 +1,5 @@
 import type { TenantContext } from "./tenant.js";
-import {
-  buildStableImportHash,
-  ImportFileError,
-  previewImportedStatement,
-} from "./imports.js";
+import { buildStableImportHash, ImportFileError, previewImportedStatement } from "./imports.js";
 
 const tenantA: TenantContext = {
   userId: "user-import-a",
@@ -50,11 +46,9 @@ function testInvalidCsvPreview(): void {
     context: tenantA,
     now,
     originalFileName: "extrato-invalido.csv",
-    content: [
-      "date,description,amount",
-      "2026-06-10,Compra sem valor,abc",
-      "2026-06-11,,10",
-    ].join("\n"),
+    content: ["date,description,amount", "2026-06-10,Compra sem valor,abc", "2026-06-11,,10"].join(
+      "\n",
+    ),
   });
 
   assertEqual(preview.state, "blocked", "invalid csv blocked");
