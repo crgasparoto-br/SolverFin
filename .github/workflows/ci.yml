@@ -50,10 +50,7 @@ jobs:
         run: npm run db:seed:check
 
       - name: Check formatting
-        run: |
-          npx prettier . --write
-          git diff -- packages/domain/src/ai-review-queue.ts packages/domain/src/ai-review-queue.test.ts packages/domain/package.json packages/domain/src/index.ts docs/ai/review-queue.md
-          git diff --exit-code
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
