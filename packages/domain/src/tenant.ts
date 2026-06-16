@@ -60,7 +60,11 @@ export function createOrganization(input: CreateOrganizationInput): Organization
 
   return {
     id: input.id,
-    name: normalizeRequiredName(input.name, "Organization name is required."),
+    name: normalizeRequiredName(
+      input.name,
+      "TENANT_ORGANIZATION_REQUIRED",
+      "Organization name is required.",
+    ),
     ownerUserId: input.owner.id,
     createdAt: input.now,
     updatedAt: input.now,
@@ -83,7 +87,11 @@ export function createFinancialProfile(input: CreateFinancialProfileInput): Fina
     id: input.id,
     organizationId: input.organization.id,
     ownerUserId: input.owner.id,
-    name: normalizeRequiredName(input.name, "Financial profile name is required."),
+    name: normalizeRequiredName(
+      input.name,
+      "TENANT_PROFILE_REQUIRED",
+      "Financial profile name is required.",
+    ),
     kind: input.kind,
     status: "active",
     createdAt: input.now,
@@ -158,23 +166,29 @@ function assertActiveUser(user: Pick<User, "status">): void {
   }
 }
 
-function normalizeRequiredName(value: string, message: string): string {
+function normalizeRequiredName(
+  value: string,
+  code: Extract<TenantErrorCode, "TENANT_ORGANIZATION_REQUIRED" | "TENANT_PROFILE_REQUIRED">,
+  message: string,
+): string {
   const normalizedValue = value.trim();
 
   if (!normalizedValue) {
-    throw new TenantError("TENANT_ORGANIZATION_REQUIRED", message);
+    throw new TenantError(code, message);
   }
 
   return normalizedValue;
 }
 
 function selectOnlyActiveProfile(profiles: readonly FinancialProfile[]): FinancialProfile {
-  if (profiles.length !== 1) {
+  const [profile] = profiles;
+
+  if (profiles.length !== 1 || !profile) {
     throw new TenantError(
       "TENANT_CONTEXT_REQUIRED",
       "Active financial profile must be selected when the user has multiple profiles.",
     );
   }
 
-  return profiles[0];
+  return profile;
 }
