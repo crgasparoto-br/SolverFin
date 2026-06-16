@@ -10,6 +10,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../.tmp-tests/web/pwa/manifest.test.js && node ../../.tmp-tests/web/inbox/share-target.test.js",
-    "build": "tsc --noEmit"
+    "build": "tsc --noEmit",
+    "format:diagnose": "prettier ../../apps/web/src/inbox/share-target.test.ts ../../apps/web/src/inbox/share-target.ts ../../apps/web/src/pwa/manifest.test.ts ../../apps/web/src/pwa/manifest.ts --write && git diff -- ../../apps/web/src/inbox/share-target.test.ts ../../apps/web/src/inbox/share-target.ts ../../apps/web/src/pwa/manifest.test.ts ../../apps/web/src/pwa/manifest.ts && git diff --exit-code -- ../../apps/web/src/inbox/share-target.test.ts ../../apps/web/src/inbox/share-target.ts ../../apps/web/src/pwa/manifest.test.ts ../../apps/web/src/pwa/manifest.ts"
   }
 }
