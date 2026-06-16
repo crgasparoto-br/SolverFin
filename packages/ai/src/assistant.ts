@@ -134,7 +134,7 @@ export async function answerFinancialQuestion(
         intent,
       },
     },
-    logger: input.logger,
+    ...(input.logger ? { logger: input.logger } : {}),
   });
 
   if (aiResult.status !== "completed") {
