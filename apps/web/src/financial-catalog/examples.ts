@@ -67,10 +67,11 @@ export function isFinancialCatalogMockConsistent(): boolean {
   );
 
   return (
+    accountSummary !== undefined &&
     financialCatalogReadyExample.accounts.length === financialCatalogExpectedCounts.accounts &&
     financialCatalogReadyExample.cards.length === financialCatalogExpectedCounts.cards &&
     financialCatalogReadyExample.categories.length === financialCatalogExpectedCounts.categories &&
-    accountSummary?.activeCount === financialCatalogExpectedCounts.activeAccounts &&
+    accountSummary.activeCount === financialCatalogExpectedCounts.activeAccounts &&
     accountSummary.archivedCount === financialCatalogExpectedCounts.archivedAccounts &&
     invalidAccountExample.valid === false &&
     validAccountExample.valid === true &&
