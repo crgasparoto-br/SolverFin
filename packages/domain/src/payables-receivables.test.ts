@@ -1,4 +1,5 @@
 import type { Account, Category, Transaction } from "./index.js";
+import type { PayableReceivable } from "./payables-receivables.js";
 import type { TenantContext } from "./tenant.js";
 import { CategoryError } from "./categories.js";
 import {
@@ -6,7 +7,6 @@ import {
   createPayableReceivable,
   getPayableReceivable,
   listPayableReceivables,
-  PayableReceivable,
   PayableReceivableError,
   settlePayableReceivable,
   updatePayableReceivable,
