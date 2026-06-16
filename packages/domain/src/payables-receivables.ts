@@ -151,11 +151,7 @@ export interface SettlePayableReceivablePayload {
 }
 
 const ALLOWED_KINDS: readonly PayableReceivableKind[] = ["payable", "receivable"];
-const ALLOWED_STATUSES: readonly PayableReceivableStatus[] = [
-  "pending",
-  "settled",
-  "cancelled",
-];
+const ALLOWED_STATUSES: readonly PayableReceivableStatus[] = ["pending", "settled", "cancelled"];
 
 export function createPayableReceivable(
   input: CreatePayableReceivableInput,
@@ -385,7 +381,12 @@ function buildSettlementTransaction(
   const accountId = input.payload.accountId ?? payableReceivable.accountId;
   const categoryId = input.payload.categoryId ?? payableReceivable.categoryId;
   const account = assertRequiredAccount(input.context, input.account, accountId);
-  const category = assertOptionalCategory(input.context, input.category, categoryId, payableReceivable.kind);
+  const category = assertOptionalCategory(
+    input.context,
+    input.category,
+    categoryId,
+    payableReceivable.kind,
+  );
   const transaction: Transaction = {
     id: input.transactionId,
     organizationId: input.context.organizationId,
@@ -627,7 +628,9 @@ function normalizeCurrency(currency = "BRL"): string {
   return normalizedCurrency;
 }
 
-function toTransactionKind(kind: PayableReceivableKind): Extract<TransactionKind, "income" | "expense"> {
+function toTransactionKind(
+  kind: PayableReceivableKind,
+): Extract<TransactionKind, "income" | "expense"> {
   return kind === "receivable" ? "income" : "expense";
 }
 
