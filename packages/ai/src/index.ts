@@ -1,3 +1,5 @@
+export * from "./extraction.js";
+
 export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
 export type AiConsentState = "granted" | "revoked" | "missing";
 export type AiLogLevel = "info" | "warn" | "error";
