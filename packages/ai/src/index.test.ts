@@ -51,23 +51,14 @@ async function testConsentBlocksProviderCall(): Promise<void> {
 
   assertEqual(result.status, "blocked", "revoked consent blocks request");
   assertEqual(result.code, "AI_CONSENT_REQUIRED", "revoked consent code");
-  assertEqual(
-    events[0]?.code,
-    "AI_CONSENT_REQUIRED",
-    "safe consent log code",
-  );
-  assertEqual(
-    events[0]?.correlationId,
-    context.correlationId,
-    "safe consent correlation id",
-  );
+  assertEqual(events[0]?.code, "AI_CONSENT_REQUIRED", "safe consent log code");
+  assertEqual(events[0]?.correlationId, context.correlationId, "safe consent correlation id");
 }
 
 async function testSanitizationAndAllowedFields(): Promise<void> {
   const sanitized = sanitizeAiPayload(
     {
-      prompt:
-        "Cartao 4111111111111111 conta 123456789 documento 123.456.789-09",
+      prompt: "Cartao 4111111111111111 conta 123456789 documento 123.456.789-09",
       fields: {
         merchant: "Loja Demo 987654321",
         amountMinor: 2590,
@@ -78,37 +69,15 @@ async function testSanitizationAndAllowedFields(): Promise<void> {
     grantedPolicy,
   );
 
-  assertEqual(
-    sanitized.prompt.includes("4111111111111111"),
-    false,
-    "card masked in prompt",
-  );
-  assertEqual(
-    sanitized.prompt.includes("123.456.789-09"),
-    false,
-    "document masked in prompt",
-  );
-  assertEqual(
-    sanitized.fields.merchant,
-    "Loja Demo *****4321",
-    "merchant digits masked",
-  );
-  assertEqual(
-    sanitized.omittedFieldNames[0],
-    "rawMessage",
-    "raw message omitted",
-  );
-  assertEqual(
-    Object.hasOwn(sanitized.fields, "amountMinor"),
-    true,
-    "amount kept",
-  );
+  assertEqual(sanitized.prompt.includes("4111111111111111"), false, "card masked in prompt");
+  assertEqual(sanitized.prompt.includes("123.456.789-09"), false, "document masked in prompt");
+  assertEqual(sanitized.fields.merchant, "Loja Demo *****4321", "merchant digits masked");
+  assertEqual(sanitized.omittedFieldNames[0], "rawMessage", "raw message omitted");
+  assertEqual(Object.hasOwn(sanitized.fields, "amountMinor"), true, "amount kept");
 }
 
 async function testProviderCanBeFaked(): Promise<void> {
-  const provider = new FakeAiProvider([
-    { text: "Sugestao criada", confidence: 0.91 },
-  ]);
+  const provider = new FakeAiProvider([{ text: "Sugestao criada", confidence: 0.91 }]);
   const result = await runAiTask({
     provider,
     task: "classification",
@@ -175,24 +144,12 @@ async function testInvalidProviderResponse(): Promise<void> {
   });
 
   assertEqual(result.status, "failed", "blank provider response fails");
-  assertEqual(
-    result.code,
-    "AI_PROVIDER_INVALID_RESPONSE",
-    "invalid response code",
-  );
+  assertEqual(result.code, "AI_PROVIDER_INVALID_RESPONSE", "invalid response code");
 }
 
 function testMaskSensitiveText(): void {
-  assertEqual(
-    maskSensitiveText("Conta 123456789"),
-    "Conta *****6789",
-    "long number mask",
-  );
-  assertEqual(
-    maskSensitiveText("CPF 12345678909"),
-    "CPF ***documento***",
-    "document mask",
-  );
+  assertEqual(maskSensitiveText("Conta 123456789"), "Conta *****6789", "long number mask");
+  assertEqual(maskSensitiveText("CPF 12345678909"), "CPF ***documento***", "document mask");
   assertEqual(
     maskSensitiveText("Cartao 4111 1111 1111 1111"),
     "Cartao **** **** **** ****",
@@ -230,8 +187,6 @@ class FlakyAiProvider implements AiProvider {
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {
   if (actual !== expected) {
-    throw new Error(
-      `${label}: expected ${String(expected)}, got ${String(actual)}`,
-    );
+    throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
   }
 }
