@@ -107,11 +107,7 @@ export const buttonRecipe: ButtonRecipe = {
       "color: var(--sf-color-primary)",
       "border: 1px solid transparent",
     ],
-    danger: [
-      "background: var(--sf-color-danger)",
-      "color: white",
-      "border: 1px solid transparent",
-    ],
+    danger: ["background: var(--sf-color-danger)", "color: white", "border: 1px solid transparent"],
   },
   sizes: {
     sm: ["min-height: 2rem", "padding: 0 0.75rem", "font-size: 0.875rem"],
@@ -119,12 +115,7 @@ export const buttonRecipe: ButtonRecipe = {
     lg: ["min-height: 3rem", "padding: 0 1.25rem", "font-size: 1rem"],
   },
   states: {
-    base: [
-      "display: inline-flex",
-      "align-items: center",
-      "justify-content: center",
-      "gap: 0.5rem",
-    ],
+    base: ["display: inline-flex", "align-items: center", "justify-content: center", "gap: 0.5rem"],
     focusVisible: ["outline: none", "box-shadow: var(--sf-shadow-focus)"],
     disabled: ["opacity: 0.56", "cursor: not-allowed"],
     loading: ["cursor: progress"],
@@ -155,17 +146,10 @@ export const inputRecipe: FieldRecipe = {
       "border-color: var(--sf-color-accent)",
       "box-shadow: var(--sf-shadow-focus)",
     ],
-    disabled: [
-      "background: var(--sf-color-background)",
-      "cursor: not-allowed",
-      "opacity: 0.7",
-    ],
+    disabled: ["background: var(--sf-color-background)", "cursor: not-allowed", "opacity: 0.7"],
     error: ["border-color: var(--sf-color-danger)"],
   },
-  accessibility: [
-    "Inputs need visible labels.",
-    "Error text must be associated with the field.",
-  ],
+  accessibility: ["Inputs need visible labels.", "Error text must be associated with the field."],
 };
 
 export const selectRecipe: FieldRecipe = {
@@ -185,12 +169,7 @@ export const dialogRecipe: DialogRecipe = {
   ],
   title: ["font-size: 1.25rem", "font-weight: 700", "color: var(--sf-color-text)"],
   description: ["color: var(--sf-color-muted-text)", "line-height: 1.5"],
-  actions: [
-    "display: flex",
-    "gap: 0.75rem",
-    "justify-content: flex-end",
-    "flex-wrap: wrap",
-  ],
+  actions: ["display: flex", "gap: 0.75rem", "justify-content: flex-end", "flex-wrap: wrap"],
   accessibility: [
     "Dialog must trap focus while open.",
     "Escape and close button should dismiss non-blocking dialogs.",
@@ -242,12 +221,7 @@ export const emptyStateRecipe: EmptyStateRecipe = {
   ],
   title: ["font-size: 1rem", "font-weight: 700", "color: var(--sf-color-text)"],
   description: ["max-width: 28rem", "color: var(--sf-color-muted-text)"],
-  actionArea: [
-    "display: flex",
-    "gap: 0.75rem",
-    "flex-wrap: wrap",
-    "justify-content: center",
-  ],
+  actionArea: ["display: flex", "gap: 0.75rem", "flex-wrap: wrap", "justify-content: center"],
 };
 
 export const loadingRecipe: LoadingRecipe = {
@@ -294,12 +268,7 @@ export const formPatternRecipe: FormPatternRecipe = {
   component: "FormPattern",
   layout: ["display: grid", "gap: 1rem"],
   fieldGroup: ["display: grid", "gap: 0.75rem"],
-  actions: [
-    "display: flex",
-    "gap: 0.75rem",
-    "justify-content: flex-end",
-    "flex-wrap: wrap",
-  ],
+  actions: ["display: flex", "gap: 0.75rem", "justify-content: flex-end", "flex-wrap: wrap"],
   validation: [
     "Show errors close to the field.",
     "Keep submit errors above actions and written for end users.",
