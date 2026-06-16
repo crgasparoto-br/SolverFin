@@ -21,8 +21,10 @@ export type AvailabilityComponentKind =
   | "income"
   | "known_expense"
   | "card"
+  | "registered_recurrence"
   | "inferred"
   | "reserve"
+  | "safety_margin"
   | "ignored";
 
 export interface AvailabilityComponent {
@@ -35,12 +37,14 @@ export interface AvailabilityComponent {
 
 export interface AvailabilityCalculationResult {
   availableTodayMinor: number;
+  projectedBalanceMinor?: number;
   currency: string;
   horizonStartOn: string;
   horizonEndOn: string;
   confidence: FinancialAssistantConfidence;
   components: readonly AvailabilityComponent[];
   assumptions: readonly string[];
+  appliedAssumptionIds?: readonly string[];
   limitations: readonly string[];
   calculatedAt: string;
 }
