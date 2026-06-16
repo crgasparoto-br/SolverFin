@@ -102,9 +102,27 @@ function runSummarizesNormalUsage(): void {
   const budget = createBudgetFixture("budget-food-normal", foodCategory, 100000, 80);
   const transactions = [
     createTransactionFixture("transaction-food-1", foodCategory.id, "2026-06-03", 30000, "posted"),
-    createTransactionFixture("transaction-food-2", foodCategory.id, "2026-06-12", 50000, "reconciled"),
-    createTransactionFixture("transaction-food-planned", foodCategory.id, "2026-06-20", 9000, "planned"),
-    createTransactionFixture("transaction-food-outside", foodCategory.id, "2026-07-01", 7000, "posted"),
+    createTransactionFixture(
+      "transaction-food-2",
+      foodCategory.id,
+      "2026-06-12",
+      50000,
+      "reconciled",
+    ),
+    createTransactionFixture(
+      "transaction-food-planned",
+      foodCategory.id,
+      "2026-06-20",
+      9000,
+      "planned",
+    ),
+    createTransactionFixture(
+      "transaction-food-outside",
+      foodCategory.id,
+      "2026-07-01",
+      7000,
+      "posted",
+    ),
   ];
   const summary = summarizeBudgetUsage({ context: tenantA, budget, transactions });
 
@@ -126,7 +144,13 @@ function runSummarizesNoData(): void {
 function runSummarizesZeroBudget(): void {
   const budget = createBudgetFixture("budget-zero", foodCategory, 0, 80);
   const transactions = [
-    createTransactionFixture("transaction-zero-budget", foodCategory.id, "2026-06-10", 1000, "posted"),
+    createTransactionFixture(
+      "transaction-zero-budget",
+      foodCategory.id,
+      "2026-06-10",
+      1000,
+      "posted",
+    ),
   ];
   const summary = summarizeBudgetUsage({ context: tenantA, budget, transactions });
 
@@ -138,7 +162,13 @@ function runSummarizesZeroBudget(): void {
 function runSummarizesDashboardWithUnbudgetedCategory(): void {
   const budget = createBudgetFixture("budget-food-dashboard", foodCategory, 100000, 80);
   const transactions = [
-    createTransactionFixture("transaction-food-dashboard", foodCategory.id, "2026-06-10", 20000, "posted"),
+    createTransactionFixture(
+      "transaction-food-dashboard",
+      foodCategory.id,
+      "2026-06-10",
+      20000,
+      "posted",
+    ),
     createTransactionFixture(
       "transaction-transport-dashboard",
       transportCategory.id,
@@ -147,7 +177,14 @@ function runSummarizesDashboardWithUnbudgetedCategory(): void {
       "posted",
     ),
     createTransactionFixture("transaction-no-category", undefined, "2026-06-11", 15000, "posted"),
-    createTransactionFixture("transaction-other-tenant", foodCategory.id, "2026-06-11", 99999, "posted", tenantB),
+    createTransactionFixture(
+      "transaction-other-tenant",
+      foodCategory.id,
+      "2026-06-11",
+      99999,
+      "posted",
+      tenantB,
+    ),
   ];
   const summaries = summarizeBudgetDashboard({
     context: tenantA,
@@ -160,7 +197,11 @@ function runSummarizesDashboardWithUnbudgetedCategory(): void {
 
   assertEqual(summaries.length, 2, "dashboard should include budgeted and unbudgeted categories");
   assertEqual(foodSummary?.actualAmountMinor, 20000, "budgeted category should use its total");
-  assertEqual(transportSummary?.plannedAmountMinor, 0, "unbudgeted category should have no planned amount");
+  assertEqual(
+    transportSummary?.plannedAmountMinor,
+    0,
+    "unbudgeted category should have no planned amount",
+  );
   assertEqual(transportSummary?.status, "unbudgeted", "unbudgeted category should be explicit");
 }
 
