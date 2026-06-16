@@ -5,7 +5,6 @@ import {
   ignoreCategoryLearning,
   recordCategoryCorrection,
   suggestCategory,
-  type CategoryLearningEntry,
   type MerchantCategoryRule,
 } from "./category-learning.js";
 
