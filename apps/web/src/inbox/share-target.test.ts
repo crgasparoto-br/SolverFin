@@ -36,7 +36,10 @@ function missingAuthenticationIsRejected(): void {
   });
 
   assert.equal(result.accepted, false);
-  assert.equal(result.errorMessage, "Entre no SolverFin antes de compartilhar uma mensagem financeira.");
+  assert.equal(
+    result.errorMessage,
+    "Entre no SolverFin antes de compartilhar uma mensagem financeira.",
+  );
 }
 
 function emptyPayloadIsRejected(): void {
