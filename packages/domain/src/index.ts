@@ -1,4 +1,5 @@
 export * from "./accounts.js";
+export * from "./categories.js";
 export * from "./tenant.js";
 export * from "./tenant-authorization.js";
 
