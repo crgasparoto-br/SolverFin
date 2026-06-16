@@ -157,7 +157,8 @@ export function listBankMessageInboxItems(
     const statusMatches =
       filters.status === undefined || filters.status === "all" || item.status === filters.status;
     const originMatches = filters.origin === undefined || item.origin === filters.origin;
-    const fromMatches = filters.receivedFrom === undefined || item.receivedAt >= filters.receivedFrom;
+    const fromMatches =
+      filters.receivedFrom === undefined || item.receivedAt >= filters.receivedFrom;
     const toMatches = filters.receivedTo === undefined || item.receivedAt <= filters.receivedTo;
 
     return statusMatches && originMatches && fromMatches && toMatches;
@@ -251,9 +252,15 @@ export function buildBankMessageSourceHash(context: TenantContext, rawText: stri
 
 export function maskBankMessageText(text: string): string {
   return text
-    .replace(/\b\d{4,}\b/g, (value) => `${"*".repeat(Math.max(0, value.length - 4))}${value.slice(-4)}`)
+    .replace(
+      /\b\d{4,}\b/g,
+      (value) => `${"*".repeat(Math.max(0, value.length - 4))}${value.slice(-4)}`,
+    )
     .replace(/([A-Z0-9._%+-])[A-Z0-9._%+-]*(@[A-Z0-9.-]+\.[A-Z]{2,})/gi, "$1***$2")
-    .replace(/\b(ag(?:encia)?|conta|cartao|cpf|cnpj)\s*[:\-]?\s*([\d.\-\/]+)/gi, (_match, label) => `${label}: ****`);
+    .replace(
+      /\b(ag(?:encia)?|conta|cartao|cpf|cnpj)\s*[:\-]?\s*([\d.\-\/]+)/gi,
+      (_match, label) => `${label}: ****`,
+    );
 }
 
 function validateOrigin(origin: BankMessageInboxOrigin): BankMessageInboxOrigin {
@@ -271,10 +278,7 @@ function normalizeRawText(text: string, maxTextLength = defaultMaxTextLength): s
   const normalizedText = text.trim().replace(/\r\n/g, "\n");
 
   if (normalizedText.length === 0) {
-    throw new BankMessageInboxError(
-      "BANK_MESSAGE_TEXT_EMPTY",
-      "Mensagem bancaria vazia.",
-    );
+    throw new BankMessageInboxError("BANK_MESSAGE_TEXT_EMPTY", "Mensagem bancaria vazia.");
   }
 
   if (normalizedText.length > maxTextLength) {
@@ -344,7 +348,9 @@ function buildBankMessageInboxAuditEntry(
   return auditEntry;
 }
 
-export function assertBankMessageInboxStatus(status: BankMessageInboxStatus): BankMessageInboxStatus {
+export function assertBankMessageInboxStatus(
+  status: BankMessageInboxStatus,
+): BankMessageInboxStatus {
   if (!allowedStatuses.includes(status)) {
     throw new BankMessageInboxError(
       "BANK_MESSAGE_STATUS_INVALID",
