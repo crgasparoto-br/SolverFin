@@ -1,7 +1,7 @@
 # Estudo tecnico: Open Finance via parceiro
 
-**Issue:** #50  
-**Data:** 2026-06-16  
+**Issue:** #50
+**Data:** 2026-06-16
 **Status:** estudo para decisao futura, sem implementacao de integracao real.
 
 ## Resumo executivo
