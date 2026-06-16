@@ -17,6 +17,9 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma migrate reset",
+    "db:seed": "node scripts/seed-demo.mjs",
+    "db:seed:check": "node --check scripts/seed-demo.mjs",
+    "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "lint": "npm run lint --workspaces --if-present",
@@ -24,7 +27,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "validate": "npm run env:check && npm run prisma:validate && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
+    "validate": "npm run env:check && npm run prisma:validate && npm run db:seed:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
