@@ -1,9 +1,9 @@
-import { solverFinComponentRecipes } from "./components.js";
+import type { SolverFinComponentRecipes } from "./components.js";
 
 export interface ComponentExample {
   name: string;
   purpose: string;
-  recipeKey: keyof typeof solverFinComponentRecipes;
+  recipeKey: keyof SolverFinComponentRecipes;
   markup: string;
   notes: readonly string[];
 }
