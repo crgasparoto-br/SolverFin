@@ -17,13 +17,9 @@ function buildCssVariables(): string {
     .map(([name, value]) => `  --sf-motion-${name}: ${value};`)
     .join("\n");
 
-  return [
-    colorVariables,
-    spacingVariables,
-    radiusVariables,
-    shadowVariables,
-    motionVariables,
-  ].join("\n");
+  return [colorVariables, spacingVariables, radiusVariables, shadowVariables, motionVariables].join(
+    "\n",
+  );
 }
 
 function toKebabCase(value: string): string {
