@@ -130,7 +130,9 @@ const ALLOWED_BUDGET_STATUSES: readonly BudgetStatus[] = ["active", "archived"];
 const DEFAULT_ALERT_THRESHOLD_PERCENT = 80;
 const REALIZED_TRANSACTION_STATUSES = ["posted", "reconciled"] as const;
 
-export function getMonthlyBudgetPeriod(month: string): Pick<Budget, "periodStartOn" | "periodEndOn"> {
+export function getMonthlyBudgetPeriod(
+  month: string,
+): Pick<Budget, "periodStartOn" | "periodEndOn"> {
   if (!/^\d{4}-\d{2}$/.test(month)) {
     throw new BudgetError("BUDGET_PERIOD_INVALID", "Budget month must use YYYY-MM format.");
   }
@@ -185,7 +187,8 @@ export function listBudgets(
   return listTenantScopedResources(context, budgets).filter((budget) => {
     const statusMatches =
       filters.status === undefined || filters.status === "all" || budget.status === filters.status;
-    const categoryMatches = filters.categoryId === undefined || budget.categoryId === filters.categoryId;
+    const categoryMatches =
+      filters.categoryId === undefined || budget.categoryId === filters.categoryId;
     const activeOnMatches =
       filters.activeOn === undefined ||
       (budget.periodStartOn <= filters.activeOn && budget.periodEndOn >= filters.activeOn);
@@ -194,13 +197,7 @@ export function listBudgets(
     const periodEndMatches =
       filters.periodEndOn === undefined || budget.periodStartOn <= filters.periodEndOn;
 
-    return (
-      statusMatches &&
-      categoryMatches &&
-      activeOnMatches &&
-      periodStartMatches &&
-      periodEndMatches
-    );
+    return statusMatches && categoryMatches && activeOnMatches && periodStartMatches && periodEndMatches;
   });
 }
 
@@ -269,7 +266,9 @@ export function summarizeBudgetUsage(input: SummarizeBudgetUsageInput): BudgetUs
   return buildBudgetUsageSummary(budget, actualAmountMinor);
 }
 
-export function summarizeBudgetDashboard(input: SummarizeBudgetDashboardInput): BudgetUsageSummary[] {
+export function summarizeBudgetDashboard(
+  input: SummarizeBudgetDashboardInput,
+): BudgetUsageSummary[] {
   const period = normalizePeriod(input.periodStartOn, input.periodEndOn);
   const scopedBudgets = listBudgets(input.context, input.budgets, {
     status: "active",
@@ -351,7 +350,11 @@ function buildBudgetUsageSummary(budget: Budget, actualAmountMinor: number): Bud
     remainingAmountMinor: budget.plannedAmountMinor - actualAmountMinor,
     usedPercent,
     alertThresholdPercent,
-    status: getBudgetUsageStatus(actualAmountMinor, budget.plannedAmountMinor, alertThresholdPercent),
+    status: getBudgetUsageStatus(
+      actualAmountMinor,
+      budget.plannedAmountMinor,
+      alertThresholdPercent,
+    ),
     currency: budget.currency,
   };
 }
@@ -421,7 +424,10 @@ function sumUnbudgetedActualAmounts(
       continue;
     }
 
-    totals.set(transaction.categoryId, (totals.get(transaction.categoryId) ?? 0) + transaction.amountMinor);
+    totals.set(
+      transaction.categoryId,
+      (totals.get(transaction.categoryId) ?? 0) + transaction.amountMinor,
+    );
   }
 
   return totals;
@@ -434,7 +440,9 @@ function isBudgetTransaction(
 ): boolean {
   return (
     transaction.kind === "expense" &&
-    REALIZED_TRANSACTION_STATUSES.includes(transaction.status as (typeof REALIZED_TRANSACTION_STATUSES)[number]) &&
+    REALIZED_TRANSACTION_STATUSES.includes(
+      transaction.status as (typeof REALIZED_TRANSACTION_STATUSES)[number],
+    ) &&
     transaction.occurredOn >= periodStartOn &&
     transaction.occurredOn <= periodEndOn
   );
