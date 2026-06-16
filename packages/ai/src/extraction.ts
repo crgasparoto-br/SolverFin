@@ -266,13 +266,21 @@ function readDate(
   const isoMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
 
   if (isoMatch) {
-    return normalizeDateParts(isoMatch[1], isoMatch[2], isoMatch[3], problems);
+    const [, year, month, day] = isoMatch;
+
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      return normalizeDateParts(year, month, day, problems);
+    }
   }
 
   const brMatch = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
 
   if (brMatch) {
-    return normalizeDateParts(brMatch[3], brMatch[2], brMatch[1], problems);
+    const [, day, month, year] = brMatch;
+
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      return normalizeDateParts(year, month, day, problems);
+    }
   }
 
   problems.push({
