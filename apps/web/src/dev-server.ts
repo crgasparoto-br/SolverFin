@@ -98,7 +98,7 @@ function renderHomePage(): string {
                   <div class="row">
                     <div>
                       <strong>${escapeHtml(row.label)}</strong>
-                      <span>${escapeHtml(row.source)} · confianca ${escapeHtml(row.confidence)}</span>
+                      <span>${escapeHtml(row.source)} - confianca ${escapeHtml(row.confidence)}</span>
                     </div>
                     <strong>${escapeHtml(row.amountText)}</strong>
                   </div>
