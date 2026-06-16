@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../.tmp-tests/api/auth.test.js",
+    "test": "rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../.tmp-tests/api/auth.test.js && node ../../.tmp-tests/api/errors.test.js",
     "build": "tsc --noEmit"
   }
 }
