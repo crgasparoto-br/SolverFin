@@ -1,63 +1,74 @@
 # Prisma
 
-Esta pasta concentra schema, migrations e futuramente seeds do SolverFin.
+Esta pasta concentra a definicao inicial do banco relacional do SolverFin.
 
-## Estado atual
+## Arquivos
 
-- PostgreSQL e Prisma foram definidos como direcao inicial em `docs/adr/0001-stack-inicial.md`.
-- O banco local de desenvolvimento pode ser iniciado com `docker compose up -d postgres`.
-- A conexao local padrao fica em `.env.example` como `DATABASE_URL`.
-- `schema.prisma` materializa o modelo financeiro inicial descrito em `docs/DOMAIN_MODEL.md`.
-- A migration inicial fica em `prisma/migrations/20260615205000_initial_financial_domain/`.
-- Seeds futuros devem usar apenas dados ficticios, minimizados e seguros.
+- `schema.prisma`: modelos, enums, relacoes e indices iniciais do dominio financeiro.
+- `migrations/`: historico de migrations versionadas para evolucao do schema.
+- `prisma.config.ts`: configuracao do Prisma 7, com carregamento explicito do `.env`.
 
 ## Comandos
 
-Validar o schema sem conectar no banco:
+Validar o schema:
 
-```bash
+```sh
 npm run prisma:validate
 ```
 
-Gerar Prisma Client localmente:
+Gerar o Prisma Client:
 
-```bash
+```sh
 npm run prisma:generate
 ```
 
-Subir o PostgreSQL local:
+Criar/aplicar migrations em ambiente local:
 
-```bash
-docker compose up -d postgres
-```
-
-Aplicar migrations em desenvolvimento:
-
-```bash
+```sh
 npm run db:migrate
 ```
 
-Aplicar migrations em ambiente ja provisionado:
+Aplicar migrations em ambientes controlados:
 
-```bash
+```sh
 npm run db:deploy
 ```
 
-Resetar o banco local e reaplicar migrations:
+Aplicar dados ficticios de demonstracao local:
 
-```bash
+```sh
+npm run db:seed
+```
+
+Preparar uma base local com migrations e seed:
+
+```sh
+npm run db:setup
+```
+
+Resetar uma base local e reaplicar migrations:
+
+```sh
 npm run db:reset
 ```
 
-Atencao: `npm run db:reset` apaga os dados locais do banco configurado em
-`DATABASE_URL`. Use apenas em ambiente de desenvolvimento.
+Depois do reset, rode `npm run db:seed` se quiser recriar os dados ficticios de demonstracao.
 
-## Notas de modelagem
+## Seed de demonstracao
 
-- Entidades financeiras carregam `organizationId` e `financialProfileId`.
-- Indices iniciais priorizam tenant/contexto, datas, status, conta, cartao,
-  categoria e origem de importacao.
-- Constraints de banco cobrem valores positivos, periodos validos, dias de
-  cartao e transferencias com contas de origem/destino diferentes.
-- Anexos e auditoria usam referencia polimorfica por `entityKind`/`entityId`;
-  regras de autorizacao devem validar tenant/contexto na camada de aplicacao.
+O seed fica em `scripts/seed-demo.mjs` e cria uma organizacao, usuario, perfis financeiros, contas, categorias, orcamentos e transacoes com dados ficticios para validar telas e dashboards iniciais.
+
+Ele e idempotente para os registros demo porque usa identificadores fixos e `ON CONFLICT`. Pode ser executado novamente para restaurar os valores esperados dos dados de demonstracao.
+
+Por seguranca, o seed:
+
+- exige `DATABASE_URL`;
+- bloqueia execucao quando `NODE_ENV=production`, a menos que `SOLVERFIN_ALLOW_DEMO_SEED=true` seja informado explicitamente;
+- nao deve conter dados reais, sensiveis, bancarios, fiscais ou de clientes.
+
+## Observacoes
+
+- Valores monetarios usam centavos em campos `*Minor`, mantendo `currency` como codigo ISO, por exemplo `BRL`.
+- Entidades principais incluem `organizationId` para preservar isolamento multi-tenant.
+- `Transaction` suporta lancamentos manuais, importados e sugeridos, alem de status planejado, efetivado, cancelado e conciliado.
+- A primeira migration foi criada para capturar o modelo inicial; novas alteracoes devem entrar em migrations adicionais.
