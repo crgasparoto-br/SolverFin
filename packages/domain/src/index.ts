@@ -12,6 +12,7 @@ export * from "./bank-message-inbox.js";
 export * from "./deduplication.js";
 export * from "./reconciliation.js";
 export * from "./automation-rules.js";
+export * from "./privacy-controls.js";
 export * from "./tenant.js";
 export * from "./tenant-authorization.js";
 
