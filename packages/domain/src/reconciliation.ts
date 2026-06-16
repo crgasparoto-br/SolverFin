@@ -127,7 +127,9 @@ export function previewReconciliation(input: PreviewReconciliationInput): Reconc
   };
 }
 
-export function reconcileTransaction(input: ReconcileTransactionInput): ReconciliationMutationResult {
+export function reconcileTransaction(
+  input: ReconcileTransactionInput,
+): ReconciliationMutationResult {
   const preview = previewReconciliation(input);
 
   if (preview.status === "conflict" && input.allowConflicts !== true) {
@@ -175,7 +177,12 @@ export function reconcileTransaction(input: ReconcileTransactionInput): Reconcil
     movements: buildTransactionMovements(transaction),
     auditEntries: [
       buildReconciliationAuditEntry(input.context, "reconcile", link.id, input.now),
-      buildTransactionReconciliationAuditEntry(input.context, "reconcile", transaction.id, input.now),
+      buildTransactionReconciliationAuditEntry(
+        input.context,
+        "reconcile",
+        transaction.id,
+        input.now,
+      ),
     ],
   };
 }
@@ -214,7 +221,12 @@ export function undoReconciliation(input: UndoReconciliationInput): Reconciliati
     movements: buildTransactionMovements(transaction),
     auditEntries: [
       buildReconciliationAuditEntry(input.context, "unreconcile", link.id, input.now),
-      buildTransactionReconciliationAuditEntry(input.context, "unreconcile", transaction.id, input.now),
+      buildTransactionReconciliationAuditEntry(
+        input.context,
+        "unreconcile",
+        transaction.id,
+        input.now,
+      ),
     ],
   };
 }
