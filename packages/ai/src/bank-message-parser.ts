@@ -187,7 +187,9 @@ function buildRuleResult(
   maskedText: string,
   minConfidenceForSuggestion = DEFAULT_MIN_CONFIDENCE,
 ): BankMessageParserResult {
-  const validation = validateTransactionExtraction(ruleMatch.output, { minConfidenceForSuggestion });
+  const validation = validateTransactionExtraction(ruleMatch.output, {
+    minConfidenceForSuggestion,
+  });
 
   if (!validation.suggestion) {
     return {
@@ -270,7 +272,10 @@ function matchPixReceived(text: string): RuleMatch | undefined {
     return undefined;
   }
 
-  const merchant = extractMerchant(text, /\bpix\s+recebido\s+de\s+(.+?)(?:\s+em\s+|\s+no\s+valor|\s+valor|$)/i);
+  const merchant = extractMerchant(
+    text,
+    /\bpix\s+recebido\s+de\s+(.+?)(?:\s+em\s+|\s+no\s+valor|\s+valor|$)/i,
+  );
 
   return {
     id: "pix_received_v1",
