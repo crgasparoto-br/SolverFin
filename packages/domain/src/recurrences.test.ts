@@ -155,6 +155,7 @@ function runUpdatesFutureRule(): void {
     recurrence,
     now,
     account: activeAccount,
+    category,
     payload: {
       amountMinor: 9900,
       endOn: "2026-08-01",
@@ -209,7 +210,7 @@ function runCancelsOnlyFuturePlannedInstallments(): void {
 function runTenantIsolation(): void {
   const recurrence = createRecurrenceFixture({ id: "recurrence-tenant", startOn: "2026-06-01" });
 
-  assertTenantError(() => listRecurrences(tenantB, [recurrence]));
+  assertEqual(listRecurrences(tenantB, [recurrence]).length, 0, "other tenant list should be empty");
   assertTenantError(() => pauseRecurrence(tenantB, recurrence, now));
 }
 
@@ -254,24 +255,37 @@ function createRecurrenceFixture(input: {
   startOn: string;
   endOn?: string;
 }): Recurrence {
-  const recurrence = createRecurrence({
+  const payload = {
+    frequency: "monthly" as const,
+    startOn: input.startOn,
+    amountMinor: 4500,
+    description: "Recorrencia ficticia",
+    accountId: activeAccount.id,
+    categoryId: category.id,
+  };
+
+  if (input.endOn !== undefined) {
+    return createRecurrence({
+      id: input.id,
+      context: tenantA,
+      now,
+      account: activeAccount,
+      category,
+      payload: {
+        ...payload,
+        endOn: input.endOn,
+      },
+    }).recurrence;
+  }
+
+  return createRecurrence({
     id: input.id,
     context: tenantA,
     now,
     account: activeAccount,
     category,
-    payload: {
-      frequency: "monthly",
-      startOn: input.startOn,
-      endOn: input.endOn,
-      amountMinor: 4500,
-      description: "Recorrencia ficticia",
-      accountId: activeAccount.id,
-      categoryId: category.id,
-    },
+    payload,
   }).recurrence;
-
-  return recurrence;
 }
 
 function createInstallmentFixture(
