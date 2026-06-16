@@ -8,7 +8,10 @@ import {
 export const transactionReadyExample = buildTransactionViewModel(transactionMockDataSet);
 export const transactionLoadingExample = buildTransactionViewModel(undefined, "loading");
 export const transactionErrorExample = buildTransactionViewModel(undefined, "error");
-export const transactionSuccessExample = buildTransactionViewModel(transactionMockDataSet, "success");
+export const transactionSuccessExample = buildTransactionViewModel(
+  transactionMockDataSet,
+  "success",
+);
 export const transactionEmptyExample = buildTransactionViewModel({
   context: transactionMockDataSet.context,
   filters: {},
@@ -47,7 +50,9 @@ export const invalidTransferExample = validateTransactionForm({
   destinationAccountId: "account-checking-demo",
 });
 
-export const archivedTransactionExample = archiveTransaction(transactionMockDataSet.transactions[1]);
+export const archivedTransactionExample = archiveTransaction(
+  transactionMockDataSet.transactions[1],
+);
 
 export const transactionExpectedTotals = {
   filteredCount: 5,
@@ -65,7 +70,8 @@ export function isTransactionMockConsistent(): boolean {
     transactionReadyExample.summary.expenseInCents === transactionExpectedTotals.expenseInCents &&
     transactionReadyExample.summary.transferInCents === transactionExpectedTotals.transferInCents &&
     transactionReadyExample.summary.resultInCents === transactionExpectedTotals.resultInCents &&
-    transactionExpenseFilterExample.transactions.length === transactionExpectedTotals.expenseFilterCount &&
+    transactionExpenseFilterExample.transactions.length ===
+      transactionExpectedTotals.expenseFilterCount &&
     invalidTransactionExample.valid === false &&
     validExpenseExample.valid === true &&
     invalidTransferExample.valid === false &&
