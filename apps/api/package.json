@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"@solverfin/api: testes ainda serao configurados em issue propria\"",
+    "test": "rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../.tmp-tests/api/auth.test.js",
     "build": "tsc --noEmit"
   }
 }
