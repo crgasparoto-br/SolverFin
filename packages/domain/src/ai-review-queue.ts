@@ -123,9 +123,9 @@ export function approveAiSuggestion(input: ApproveAiSuggestionInput): AiSuggesti
     id: input.transactionId,
     context: input.context,
     now: input.now,
-    account: input.account,
-    destinationAccount: input.destinationAccount,
-    category: input.category,
+    ...(input.account !== undefined ? { account: input.account } : {}),
+    ...(input.destinationAccount !== undefined ? { destinationAccount: input.destinationAccount } : {}),
+    ...(input.category !== undefined ? { category: input.category } : {}),
     payload: {
       ...payload,
       source: "ai_suggestion",
