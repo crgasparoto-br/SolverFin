@@ -19,7 +19,14 @@ export type FinancialAssistantConfidence = "high" | "medium" | "low";
 
 export interface AvailabilityComponent {
   label: string;
-  kind: "balance" | "income" | "known_expense" | "card" | "inferred" | "reserve" | "ignored";
+  kind:
+    | "balance"
+    | "income"
+    | "known_expense"
+    | "card"
+    | "inferred"
+    | "reserve"
+    | "ignored";
   amountMinor: number;
   confidence?: FinancialAssistantConfidence;
   source: string;
@@ -154,7 +161,11 @@ export async function answerFinancialQuestion(
 export function classifyFinancialAssistantIntent(question: string): FinancialAssistantIntent {
   const normalized = normalizeQuestion(question);
 
-  if (/quanto\s+(eu\s+)?posso\s+gastar\s+hoje|disponivel\s+hoje|disponibilidade/.test(normalized)) {
+  if (
+    /quanto\s+(eu\s+)?posso\s+gastar\s+hoje|disponivel\s+hoje|disponibilidade/.test(
+      normalized,
+    )
+  ) {
     return "daily_availability";
   }
 
@@ -207,12 +218,19 @@ function answerDailyAvailability(
     intent: "daily_availability",
     confidence: availability.confidence,
     answer: [
-      `Voce pode gastar hoje ${formatMoney(availability.availableTodayMinor, currency)} com base no calculo estruturado de disponibilidade.`,
-      components.length > 0 ? `Principais componentes: ${components.join("; ")}.` : "Nao ha componentes detalhados no calculo.",
+      `Voce pode gastar hoje ${formatMoney(
+        availability.availableTodayMinor,
+        currency,
+      )} com base no calculo estruturado de disponibilidade.`,
+      components.length > 0
+        ? `Principais componentes: ${components.join("; ")}.`
+        : "Nao ha componentes detalhados no calculo.",
       availability.assumptions.length > 0
         ? `Premissas: ${availability.assumptions.join("; ")}.`
         : "Nenhuma premissa adicional foi informada.",
-      limitations.length > 0 ? `Limitacoes: ${limitations.join("; ")}.` : "Sem limitacoes informadas.",
+      limitations.length > 0
+        ? `Limitacoes: ${limitations.join("; ")}.`
+        : "Sem limitacoes informadas.",
     ].join(" "),
     period: {
       startOn: availability.horizonStartOn,
