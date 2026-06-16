@@ -47,14 +47,17 @@ export function softDeleteEntity<TEntity extends SoftDeletableEntity>(
   input: SoftDeleteInput<TEntity>,
 ): SoftDeleteResult<TEntity> {
   const entity = getTenantScopedResource(input.context, input.entity);
-  const deleted = {
+  const deleted: SoftDeleted<TEntity> = {
     ...entity,
     updatedAt: input.now,
     updatedByUserId: input.context.userId,
     deletedAt: input.now,
     deletedByUserId: input.context.userId,
-    ...(input.reason ? { deletionReason: input.reason } : {}),
-  } satisfies SoftDeleted<TEntity>;
+  };
+
+  if (input.reason !== undefined && input.reason.trim()) {
+    deleted.deletionReason = input.reason;
+  }
 
   return {
     entity: deleted,
