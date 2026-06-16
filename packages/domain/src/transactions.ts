@@ -341,10 +341,10 @@ interface BuildTransactionInput {
   payload: CreateTransactionPayload;
   kind: TransactionKind;
   existingTransaction: Transaction | undefined;
-  account?: Account;
-  destinationAccount?: Account;
-  category?: Category;
-  transferGroupId?: EntityId;
+  account: Account | undefined;
+  destinationAccount: Account | undefined;
+  category: Category | undefined;
+  transferGroupId: EntityId | undefined;
 }
 
 function buildTransaction(input: BuildTransactionInput): Transaction {
