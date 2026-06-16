@@ -16,6 +16,22 @@ export type AuditAction =
   | "approve"
   | "reject";
 
+export type AuditEntityKind =
+  | "account"
+  | "card"
+  | "category"
+  | "transaction"
+  | "recurrence"
+  | "installment"
+  | "invoice"
+  | "budget"
+  | "import_batch"
+  | "ai_suggestion"
+  | "attachment";
+
+export type AuditChangeMarker = "changed" | "added" | "removed";
+export type RedactedAuditChanges = Record<string, AuditChangeMarker>;
+
 export type AccountKind = "checking" | "savings" | "cash" | "investment" | "other";
 export type AccountStatus = "active" | "archived";
 
@@ -133,7 +149,7 @@ export interface Transaction extends Traceable, TenantScoped {
   invoiceId?: EntityId;
   recurrenceId?: EntityId;
   installmentId?: EntityId;
-  importItemId?: EntityId;
+  importBatchId?: EntityId;
   aiSuggestionId?: EntityId;
   transferGroupId?: EntityId;
   reconciledAt?: ISODateTime;
@@ -225,23 +241,47 @@ export interface AuditLogEntry extends TenantScoped {
   actorKind: AuditActorKind;
   actorId?: EntityId;
   action: AuditAction;
-  entityKind:
-    | "account"
-    | "card"
-    | "category"
-    | "transaction"
-    | "recurrence"
-    | "installment"
-    | "invoice"
-    | "budget"
-    | "import_batch"
-    | "ai_suggestion"
-    | "attachment";
+  entityKind: AuditEntityKind;
   entityId: EntityId;
   correlationId?: string;
   reason?: string;
-  redactedChanges?: Record<string, "changed" | "added" | "removed">;
+  redactedChanges?: RedactedAuditChanges;
 }
+
+export type AuditLogEntryDraft = Omit<AuditLogEntry, "id">;
+
+export interface TransactionAuditInput {
+  action: Extract<AuditAction, "create" | "update" | "soft_delete" | "reconcile" | "unreconcile">;
+  actorKind: AuditActorKind;
+  actorId?: EntityId;
+  before?: Transaction;
+  after?: Transaction;
+  occurredAt: ISODateTime;
+  correlationId?: string;
+  reason?: string;
+}
+
+const AUDITED_TRANSACTION_FIELDS = [
+  "kind",
+  "status",
+  "source",
+  "amountMinor",
+  "currency",
+  "occurredOn",
+  "description",
+  "accountId",
+  "destinationAccountId",
+  "categoryId",
+  "cardId",
+  "invoiceId",
+  "recurrenceId",
+  "installmentId",
+  "importBatchId",
+  "aiSuggestionId",
+  "transferGroupId",
+  "reconciledAt",
+  "voidedAt",
+] as const satisfies readonly (keyof Transaction)[];
 
 export function isTransfer(transaction: Pick<Transaction, "kind">): boolean {
   return transaction.kind === "transfer";
@@ -270,5 +310,94 @@ export function assertTransactionInvariant(transaction: Transaction): void {
 
   if (transaction.destinationAccountId) {
     throw new Error("Only transfer transactions can define a destination account.");
+  }
+}
+
+export function buildRedactedTransactionChanges(
+  before: Transaction | undefined,
+  after: Transaction | undefined,
+): RedactedAuditChanges | undefined {
+  if (!before && !after) {
+    return undefined;
+  }
+
+  const changes: RedactedAuditChanges = {};
+
+  for (const field of AUDITED_TRANSACTION_FIELDS) {
+    const beforeValue = before?.[field];
+    const afterValue = after?.[field];
+
+    if (beforeValue === afterValue) {
+      continue;
+    }
+
+    if (beforeValue === undefined) {
+      changes[field] = "added";
+      continue;
+    }
+
+    if (afterValue === undefined) {
+      changes[field] = "removed";
+      continue;
+    }
+
+    changes[field] = "changed";
+  }
+
+  return Object.keys(changes).length > 0 ? changes : undefined;
+}
+
+export function buildTransactionAuditEntry(input: TransactionAuditInput): AuditLogEntryDraft {
+  const transaction = input.after ?? input.before;
+
+  if (!transaction) {
+    throw new Error("Transaction audit requires a before or after transaction snapshot.");
+  }
+
+  if (input.before && input.after) {
+    assertSameTenant(input.before, input.after);
+
+    if (input.before.id !== input.after.id) {
+      throw new Error("Transaction audit snapshots must reference the same transaction.");
+    }
+  }
+
+  const entry: AuditLogEntryDraft = {
+    organizationId: transaction.organizationId,
+    financialProfileId: transaction.financialProfileId,
+    occurredAt: input.occurredAt,
+    actorKind: input.actorKind,
+    action: input.action,
+    entityKind: "transaction",
+    entityId: transaction.id,
+  };
+
+  if (input.actorId !== undefined) {
+    entry.actorId = input.actorId;
+  }
+
+  if (input.correlationId !== undefined) {
+    entry.correlationId = input.correlationId;
+  }
+
+  if (input.reason !== undefined) {
+    entry.reason = input.reason;
+  }
+
+  const redactedChanges = buildRedactedTransactionChanges(input.before, input.after);
+
+  if (redactedChanges !== undefined) {
+    entry.redactedChanges = redactedChanges;
+  }
+
+  return entry;
+}
+
+function assertSameTenant(before: TenantScoped, after: TenantScoped): void {
+  if (
+    before.organizationId !== after.organizationId ||
+    before.financialProfileId !== after.financialProfileId
+  ) {
+    throw new Error("Audit snapshots must belong to the same tenant and financial profile.");
   }
 }
