@@ -14,6 +14,9 @@ export * from "./reconciliation.js";
 export * from "./automation-rules.js";
 export * from "./tenant.js";
 export * from "./tenant-authorization.js";
+export * from "./privacy-consent.js";
+export * from "./soft-delete.js";
+export * from "./accountant-export.js";
 
 export type EntityId = string;
 export type ISODate = string;
@@ -47,6 +50,7 @@ export type AuditEntityKind =
   | "deduplication_review"
   | "reconciliation_link"
   | "ai_suggestion"
+  | "privacy_consent"
   | "attachment";
 
 export type AuditChangeMarker = "changed" | "added" | "removed";
