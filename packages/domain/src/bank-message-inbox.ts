@@ -258,7 +258,7 @@ export function maskBankMessageText(text: string): string {
     )
     .replace(/([A-Z0-9._%+-])[A-Z0-9._%+-]*(@[A-Z0-9.-]+\.[A-Z]{2,})/gi, "$1***$2")
     .replace(
-      /\b(ag(?:encia)?|conta|cartao|cpf|cnpj)\s*[:\-]?\s*([\d.\-\/]+)/gi,
+      /\b(ag(?:encia)?|conta|cartao|cpf|cnpj)\s*[:-]?\s*([\d./-]+)/gi,
       (_match, label) => `${label}: ****`,
     );
 }
