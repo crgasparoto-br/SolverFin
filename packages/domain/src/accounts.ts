@@ -209,7 +209,10 @@ function normalizeCurrency(currency = "BRL"): string {
   const normalizedCurrency = currency.trim().toUpperCase();
 
   if (!/^[A-Z]{3}$/.test(normalizedCurrency)) {
-    throw new AccountError("ACCOUNT_CURRENCY_INVALID", "Account currency must use ISO 4217 format.");
+    throw new AccountError(
+      "ACCOUNT_CURRENCY_INVALID",
+      "Account currency must use ISO 4217 format.",
+    );
   }
 
   return normalizedCurrency;
