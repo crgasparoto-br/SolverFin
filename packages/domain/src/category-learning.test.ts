@@ -28,7 +28,13 @@ const later = "2026-06-16T13:00:00.000Z";
 const foodCategory = buildCategory(tenantA, "cat-food", "Alimentacao", "expense", "active");
 const healthCategory = buildCategory(tenantA, "cat-health", "Saude", "expense", "active");
 const archivedCategory = buildCategory(tenantA, "cat-old", "Antiga", "expense", "archived");
-const meiFoodCategory = buildCategory(tenantB, "cat-mei-food", "Alimentacao MEI", "expense", "active");
+const meiFoodCategory = buildCategory(
+  tenantB,
+  "cat-mei-food",
+  "Alimentacao MEI",
+  "expense",
+  "active",
+);
 
 testCorrectionImprovesFutureSuggestion();
 testLearningDoesNotCrossTenantContext();
