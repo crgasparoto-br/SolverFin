@@ -198,11 +198,7 @@ export function listBudgets(
       filters.periodEndOn === undefined || budget.periodStartOn <= filters.periodEndOn;
 
     return (
-      statusMatches &&
-      categoryMatches &&
-      activeOnMatches &&
-      periodStartMatches &&
-      periodEndMatches
+      statusMatches && categoryMatches && activeOnMatches && periodStartMatches && periodEndMatches
     );
   });
 }
