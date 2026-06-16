@@ -90,9 +90,7 @@ export function buildSolverFinWebManifest(): SolverFinWebManifest {
   return solverFinWebManifest;
 }
 
-export function validatePwaInstallability(
-  manifest: SolverFinWebManifest,
-): PwaInstallabilityCheck {
+export function validatePwaInstallability(manifest: SolverFinWebManifest): PwaInstallabilityCheck {
   const missing: string[] = [];
   const warnings: string[] = [];
 
