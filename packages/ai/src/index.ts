@@ -1,3 +1,4 @@
+export * from "./bank-message-parser.js";
 export * from "./extraction.js";
 
 export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
