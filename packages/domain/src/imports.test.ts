@@ -56,11 +56,7 @@ function testInvalidCsvPreview(): void {
   assertEqual(preview.batch.problemRows, 2, "invalid csv problem rows");
   assertEqual(preview.suggestions.length, 0, "invalid csv suggestions");
   assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_INVALID", "invalid csv amount");
-  assertProblemCode(
-    preview.problems,
-    "IMPORT_ROW_DESCRIPTION_REQUIRED",
-    "invalid csv description",
-  );
+  assertProblemCode(preview.problems, "IMPORT_ROW_DESCRIPTION_REQUIRED", "invalid csv description");
 }
 
 function testBasicOfxPreview(): void {
