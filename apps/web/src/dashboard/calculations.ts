@@ -143,17 +143,21 @@ export function buildAvailabilityCard(
     availability.confidence === "low"
       ? "Valor estimado com baixa confianca. Revise as premissas antes de decidir."
       : "Valor informado pelo contrato de disponibilidade financeira.";
-
-  return {
+  const availabilityCard: DashboardAvailabilityCard = {
     state: "available",
     title: "Disponivel hoje",
     description,
     amountInCents: availability.availableTodayInCents,
     confidence: availability.confidence,
-    detailPath: availability.detailPath,
     assumptions: availability.assumptions,
     limitations: availability.limitations,
   };
+
+  if (availability.detailPath !== undefined) {
+    availabilityCard.detailPath = availability.detailPath;
+  }
+
+  return availabilityCard;
 }
 
 export function filterEntriesByContext(
