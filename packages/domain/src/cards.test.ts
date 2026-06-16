@@ -84,11 +84,23 @@ function runCalculatesInvoicePeriodAroundClosingDay(): void {
   const beforeClosing = calculateInvoicePeriod(card, "2026-06-15");
   const afterClosing = calculateInvoicePeriod(card, "2026-06-21");
 
-  assertEqual(beforeClosing.periodStartOn, "2026-05-21", "period should start after previous closing");
-  assertEqual(beforeClosing.periodEndOn, "2026-06-20", "purchase before closing should close in same month");
+  assertEqual(
+    beforeClosing.periodStartOn,
+    "2026-05-21",
+    "period should start after previous closing",
+  );
+  assertEqual(
+    beforeClosing.periodEndOn,
+    "2026-06-20",
+    "purchase before closing should close in same month",
+  );
   assertEqual(beforeClosing.dueOn, "2026-07-10", "due date should be after closing");
   assertEqual(afterClosing.periodStartOn, "2026-06-21", "next period should start after closing");
-  assertEqual(afterClosing.periodEndOn, "2026-07-20", "purchase after closing should go to next invoice");
+  assertEqual(
+    afterClosing.periodEndOn,
+    "2026-07-20",
+    "purchase after closing should go to next invoice",
+  );
   assertEqual(afterClosing.dueOn, "2026-08-10", "next invoice should be due after closing");
 }
 
@@ -113,13 +125,23 @@ function runRegistersPurchaseAndCreatesInvoice(): void {
   assertEqual(result.invoice.totalAmountMinor, 12345, "invoice should receive purchase total");
   assertEqual(result.invoice.currency, "BRL", "invoice currency should normalize");
   assertEqual(result.transaction.cardId, card.id, "transaction should reference card");
-  assertEqual(result.transaction.invoiceId, result.invoice.id, "transaction should reference invoice");
+  assertEqual(
+    result.transaction.invoiceId,
+    result.invoice.id,
+    "transaction should reference invoice",
+  );
   assertEqual(result.installments.length, 0, "single purchase should not create installments");
 }
 
 function runUpdatesExistingOpenInvoice(): void {
   const card = createCardFixture();
-  const existingInvoice = createInvoiceFixture(card, "2026-05-21", "2026-06-20", "2026-07-10", 5000);
+  const existingInvoice = createInvoiceFixture(
+    card,
+    "2026-05-21",
+    "2026-06-20",
+    "2026-07-10",
+    5000,
+  );
   const result = registerCardPurchase({
     transactionId: "transaction-pharmacy",
     context: tenantA,
@@ -157,10 +179,22 @@ function runRegistersInstallmentPurchase(): void {
   });
 
   assertEqual(result.installments.length, 3, "installment purchase should create schedule");
-  assertEqual(result.installments[0]?.amountMinor, 3334, "first installment should receive remainder");
+  assertEqual(
+    result.installments[0]?.amountMinor,
+    3334,
+    "first installment should receive remainder",
+  );
   assertEqual(result.installments[1]?.amountMinor, 3333, "second installment should split amount");
-  assertEqual(result.installments[2]?.dueOn, "2026-09-10", "installments should follow invoice due day monthly");
-  assertEqual(result.installments[0]?.transactionId, result.transaction.id, "installment should reference purchase");
+  assertEqual(
+    result.installments[2]?.dueOn,
+    "2026-09-10",
+    "installments should follow invoice due day monthly",
+  );
+  assertEqual(
+    result.installments[0]?.transactionId,
+    result.transaction.id,
+    "installment should reference purchase",
+  );
 }
 
 function runPaysInvoiceFromAccount(): void {
@@ -180,9 +214,21 @@ function runPaysInvoiceFromAccount(): void {
   });
 
   assertEqual(result.invoice.status, "paid", "payment should mark invoice paid");
-  assertEqual(result.invoice.paymentTransactionId, result.transaction.id, "invoice should link payment");
-  assertEqual(result.transaction.accountId, paymentAccount.id, "payment should affect source account");
-  assertEqual(result.transaction.amountMinor, invoice.totalAmountMinor, "payment amount should match invoice");
+  assertEqual(
+    result.invoice.paymentTransactionId,
+    result.transaction.id,
+    "invoice should link payment",
+  );
+  assertEqual(
+    result.transaction.accountId,
+    paymentAccount.id,
+    "payment should affect source account",
+  );
+  assertEqual(
+    result.transaction.amountMinor,
+    invoice.totalAmountMinor,
+    "payment amount should match invoice",
+  );
 }
 
 function runRejectsPartialPaymentInMvp(): void {
