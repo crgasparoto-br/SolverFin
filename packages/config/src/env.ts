@@ -3,6 +3,7 @@ export type EnvironmentName = "development" | "test" | "production";
 export type RuntimeEnvironment = {
   NODE_ENV: EnvironmentName;
   DATABASE_URL: string;
+  AUTH_SESSION_TTL_MINUTES: number;
 };
 
 export type RawEnvironment = Record<string, string | undefined>;
@@ -15,10 +16,16 @@ export class EnvironmentValidationError extends Error {
 }
 
 const allowedNodeEnvs: readonly EnvironmentName[] = ["development", "test", "production"];
+const DEFAULT_AUTH_SESSION_TTL_MINUTES = 60;
 
 export function validateRuntimeEnvironment(rawEnv: RawEnvironment): RuntimeEnvironment {
   const nodeEnv = getRequiredEnv(rawEnv, "NODE_ENV");
   const databaseUrl = getRequiredEnv(rawEnv, "DATABASE_URL");
+  const authSessionTtlMinutes = getOptionalPositiveIntegerEnv(
+    rawEnv,
+    "AUTH_SESSION_TTL_MINUTES",
+    DEFAULT_AUTH_SESSION_TTL_MINUTES,
+  );
 
   if (!isEnvironmentName(nodeEnv)) {
     throw new EnvironmentValidationError(
@@ -33,10 +40,11 @@ export function validateRuntimeEnvironment(rawEnv: RawEnvironment): RuntimeEnvir
   return {
     NODE_ENV: nodeEnv,
     DATABASE_URL: databaseUrl,
+    AUTH_SESSION_TTL_MINUTES: authSessionTtlMinutes,
   };
 }
 
-function getRequiredEnv(rawEnv: RawEnvironment, key: keyof RuntimeEnvironment): string {
+function getRequiredEnv(rawEnv: RawEnvironment, key: "NODE_ENV" | "DATABASE_URL"): string {
   const value = rawEnv[key];
 
   if (!value) {
@@ -44,6 +52,26 @@ function getRequiredEnv(rawEnv: RawEnvironment, key: keyof RuntimeEnvironment): 
   }
 
   return value;
+}
+
+function getOptionalPositiveIntegerEnv(
+  rawEnv: RawEnvironment,
+  key: string,
+  defaultValue: number,
+): number {
+  const value = rawEnv[key];
+
+  if (!value) {
+    return defaultValue;
+  }
+
+  const parsedValue = Number(value);
+
+  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
+    throw new EnvironmentValidationError(`${key} must be a positive integer.`);
+  }
+
+  return parsedValue;
 }
 
 function isEnvironmentName(value: string): value is EnvironmentName {
