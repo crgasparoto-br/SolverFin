@@ -13,11 +13,11 @@ O parser de mensagens bancarias transforma textos colados ou compartilhados em s
 
 ## Regras iniciais
 
-| Regra              | Exemplo ficticio suportado                         | Tipo gerado |
-| ------------------ | -------------------------------------------------- | ----------- |
+| Regra              | Exemplo ficticio suportado                          | Tipo gerado |
+| ------------------ | --------------------------------------------------- | ----------- |
 | `card_purchase_v1` | Compra aprovada no cartao em estabelecimento com R$ | `expense`   |
-| `pix_received_v1` | Pix recebido de uma contraparte com R$              | `income`    |
-| `pix_sent_v1`     | Pix enviado ou transferencia enviada com R$         | `expense`   |
+| `pix_received_v1`  | Pix recebido de uma contraparte com R$              | `income`    |
+| `pix_sent_v1`      | Pix enviado ou transferencia enviada com R$         | `expense`   |
 
 As regras exigem valor em reais e data reconhecivel para gerar sugestao automatica. Se a mensagem tiver valor, mas nao tiver data clara, o parser retorna `needs_review` com problema de data obrigatoria.
 
