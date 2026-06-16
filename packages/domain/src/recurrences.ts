@@ -193,7 +193,13 @@ export function createRecurrence(input: CreateRecurrenceInput): RecurrenceMutati
 
   return {
     recurrence,
-    auditEntry: buildRecurrenceAuditEntry("create", input.context.userId, input.now, undefined, recurrence),
+    auditEntry: buildRecurrenceAuditEntry(
+      "create",
+      input.context.userId,
+      input.now,
+      undefined,
+      recurrence,
+    ),
   };
 }
 
@@ -207,7 +213,8 @@ export function listRecurrences(
       filters.status === undefined ||
       filters.status === "all" ||
       recurrence.status === filters.status;
-    const accountMatches = filters.accountId === undefined || recurrence.accountId === filters.accountId;
+    const accountMatches =
+      filters.accountId === undefined || recurrence.accountId === filters.accountId;
     const categoryMatches =
       filters.categoryId === undefined || recurrence.categoryId === filters.categoryId;
     const activeOnMatches =
@@ -234,7 +241,11 @@ export function updateRecurrence(input: UpdateRecurrenceInput): RecurrenceMutati
   );
   const nextAccountId = input.payload.accountId ?? currentRecurrence.accountId;
   const account = assertAccount(input.context, input.account, nextAccountId);
-  assertCategory(input.context, input.category, input.payload.categoryId ?? currentRecurrence.categoryId);
+  assertCategory(
+    input.context,
+    input.category,
+    input.payload.categoryId ?? currentRecurrence.categoryId,
+  );
 
   const updatedRecurrence: Recurrence = {
     ...currentRecurrence,
@@ -356,7 +367,9 @@ export function generateRecurrenceInstallments(
   return installments;
 }
 
-export function generateInstallmentSchedule(input: GenerateInstallmentScheduleInput): Installment[] {
+export function generateInstallmentSchedule(
+  input: GenerateInstallmentScheduleInput,
+): Installment[] {
   const totalInstallments = validateTotalInstallments(input.totalInstallments);
   const firstDueOn = validateDate(input.firstDueOn);
   const existingSequences = new Set(
@@ -429,7 +442,8 @@ function buildOptionalRecurrenceUpdate(
   currentStartOn: ISODate,
 ): Partial<Recurrence> {
   const update: Partial<Recurrence> = {};
-  const nextStartOn = payload.startOn !== undefined ? validateDate(payload.startOn) : currentStartOn;
+  const nextStartOn =
+    payload.startOn !== undefined ? validateDate(payload.startOn) : currentStartOn;
 
   if (payload.frequency !== undefined) {
     update.frequency = validateFrequency(payload.frequency);
@@ -506,7 +520,10 @@ function assertAccount(
   const scopedAccount = getTenantScopedResource(context, account);
 
   if (scopedAccount.id !== accountId) {
-    throw new RecurrenceError("RECURRENCE_ACCOUNT_INVALID", "Recurrence account id does not match.");
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_INVALID",
+      "Recurrence account id does not match.",
+    );
   }
 
   if (scopedAccount.status !== "active") {
@@ -528,11 +545,17 @@ function assertCategory(
   const scopedCategory = getTenantScopedResource(context, category);
 
   if (scopedCategory.id !== categoryId) {
-    throw new RecurrenceError("RECURRENCE_CATEGORY_INVALID", "Recurrence category id does not match.");
+    throw new RecurrenceError(
+      "RECURRENCE_CATEGORY_INVALID",
+      "Recurrence category id does not match.",
+    );
   }
 
   if (scopedCategory.status !== "active") {
-    throw new RecurrenceError("RECURRENCE_CATEGORY_ARCHIVED", "Recurrence category must be active.");
+    throw new RecurrenceError(
+      "RECURRENCE_CATEGORY_ARCHIVED",
+      "Recurrence category must be active.",
+    );
   }
 }
 
@@ -542,7 +565,10 @@ function validateFrequency(frequency: RecurrenceFrequency | undefined): Recurren
   }
 
   if (!ALLOWED_RECURRENCE_FREQUENCIES.includes(frequency)) {
-    throw new RecurrenceError("RECURRENCE_FREQUENCY_INVALID", "Recurrence frequency is not supported.");
+    throw new RecurrenceError(
+      "RECURRENCE_FREQUENCY_INVALID",
+      "Recurrence frequency is not supported.",
+    );
   }
 
   return frequency;
