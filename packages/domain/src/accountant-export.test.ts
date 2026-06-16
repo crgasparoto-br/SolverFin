@@ -69,7 +69,10 @@ function returnsHeaderForEmptyPeriod(): void {
   });
 
   assert.equal(result.rows.length, 0);
-  assert.equal(result.csv, "periodo_inicio;periodo_fim;data_lancamento;tipo;categoria;descricao;valor_centavos;moeda;contexto_financeiro;status\n");
+  assert.equal(
+    result.csv,
+    "periodo_inicio;periodo_fim;data_lancamento;tipo;categoria;descricao;valor_centavos;moeda;contexto_financeiro;status\n",
+  );
 }
 
 function rejectsInvalidPeriod(): void {
@@ -95,7 +98,7 @@ function buildTransaction(
   occurredOn: string,
   categoryId?: string,
 ): Transaction {
-  return {
+  const transaction: Transaction = {
     id,
     organizationId: tenant.organizationId,
     financialProfileId: tenant.financialProfileId,
@@ -107,8 +110,13 @@ function buildTransaction(
     occurredOn,
     description: `Lancamento ${id}`,
     accountId: "account-export-demo",
-    categoryId,
     createdAt: "2026-06-01T00:00:00.000Z",
     updatedAt: "2026-06-01T00:00:00.000Z",
   };
+
+  if (categoryId !== undefined) {
+    transaction.categoryId = categoryId;
+  }
+
+  return transaction;
 }
