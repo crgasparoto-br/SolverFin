@@ -83,8 +83,16 @@ export function generateFinancialInsights(
       transaction.financialProfileId === input.financialProfileId &&
       transaction.status !== "voided",
   );
-  const current = filterByPeriod(transactions, input.currentPeriod.startOn, input.currentPeriod.endOn);
-  const previous = filterByPeriod(transactions, input.previousPeriod.startOn, input.previousPeriod.endOn);
+  const current = filterByPeriod(
+    transactions,
+    input.currentPeriod.startOn,
+    input.currentPeriod.endOn,
+  );
+  const previous = filterByPeriod(
+    transactions,
+    input.previousPeriod.startOn,
+    input.previousPeriod.endOn,
+  );
   const insights = [
     ...buildSpendingIncreaseInsights(input, current, previous),
     ...buildSubscriptionInsights(input, transactions),
@@ -122,12 +130,30 @@ function buildSpendingIncreaseInsights(
   previous: readonly InsightTransaction[],
 ): FinancialInsight[] {
   const threshold = input.increaseThresholdPercent ?? DEFAULT_INCREASE_THRESHOLD_PERCENT;
-  const byCategory = compareExpenseGroups(current, previous, (transaction) => transaction.categoryId);
-  const byMerchant = compareExpenseGroups(current, previous, (transaction) => transaction.merchantKey);
+  const byCategory = compareExpenseGroups(
+    current,
+    previous,
+    (transaction) => transaction.categoryId,
+  );
+  const byMerchant = compareExpenseGroups(
+    current,
+    previous,
+    (transaction) => transaction.merchantKey,
+  );
 
   return [
-    ...buildIncreaseInsightsForGroup(input, byCategory, threshold, "category_spending_increase"),
-    ...buildIncreaseInsightsForGroup(input, byMerchant, threshold, "merchant_spending_increase"),
+    ...buildIncreaseInsightsForGroup(
+      input,
+      byCategory,
+      threshold,
+      "category_spending_increase",
+    ),
+    ...buildIncreaseInsightsForGroup(
+      input,
+      byMerchant,
+      threshold,
+      "merchant_spending_increase",
+    ),
   ];
 }
 
@@ -135,7 +161,10 @@ function buildIncreaseInsightsForGroup(
   input: GenerateFinancialInsightsInput,
   groups: ReadonlyMap<string, GroupComparison>,
   threshold: number,
-  kind: Extract<FinancialInsightKind, "category_spending_increase" | "merchant_spending_increase">,
+  kind: Extract<
+    FinancialInsightKind,
+    "category_spending_increase" | "merchant_spending_increase"
+  >,
 ): FinancialInsight[] {
   const insights: FinancialInsight[] = [];
 
@@ -198,7 +227,9 @@ function buildSubscriptionInsights(
   const insights: FinancialInsight[] = [];
 
   for (const [merchantKey, group] of groups) {
-    const distinctMonths = new Set(group.map((transaction) => transaction.occurredOn.slice(0, 7)));
+    const distinctMonths = new Set(
+      group.map((transaction) => transaction.occurredOn.slice(0, 7)),
+    );
 
     if (distinctMonths.size < minOccurrences) {
       continue;
@@ -304,14 +335,20 @@ function buildMonthlySummary(
   const currentIncome = sumByKind(current, "income");
   const currentExpense = sumByKind(current, "expense");
   const previousExpense = sumByKind(previous, "expense");
-  const percentChange = previousExpense > 0 ? Math.round(((currentExpense - previousExpense) / previousExpense) * 100) : undefined;
+  const percentChange =
+    previousExpense > 0
+      ? Math.round(((currentExpense - previousExpense) / previousExpense) * 100)
+      : undefined;
 
   return {
     kind: "monthly_summary",
     severity: "info",
     confidence: current.length > 0 ? "high" : "low",
     title: "Resumo financeiro do periodo",
-    explanation: `O periodo teve receitas de ${formatMoney(currentIncome, input.currency ?? "BRL")} e despesas de ${formatMoney(currentExpense, input.currency ?? "BRL")}.`,
+    explanation: `O periodo teve receitas de ${formatMoney(
+      currentIncome,
+      input.currency ?? "BRL",
+    )} e despesas de ${formatMoney(currentExpense, input.currency ?? "BRL")}.`,
     evidence: {
       label: "resumo_mensal",
       currentAmountMinor: currentIncome - currentExpense,
@@ -389,20 +426,29 @@ function filterByPeriod(
   );
 }
 
-function sumByKind(transactions: readonly InsightTransaction[], kind: InsightTransaction["kind"]): number {
+function sumByKind(
+  transactions: readonly InsightTransaction[],
+  kind: InsightTransaction["kind"],
+): number {
   return transactions
     .filter((transaction) => transaction.kind === kind)
     .reduce((sum, transaction) => sum + transaction.amountMinor, 0);
 }
 
 function firstDate(transactions: readonly InsightTransaction[]): string {
-  return [...transactions].sort((left, right) => left.occurredOn.localeCompare(right.occurredOn))[0]
-    ?.occurredOn ?? "";
+  return (
+    [...transactions].sort((left, right) =>
+      left.occurredOn.localeCompare(right.occurredOn),
+    )[0]?.occurredOn ?? ""
+  );
 }
 
 function lastDate(transactions: readonly InsightTransaction[]): string {
-  return [...transactions].sort((left, right) => right.occurredOn.localeCompare(left.occurredOn))[0]
-    ?.occurredOn ?? "";
+  return (
+    [...transactions].sort((left, right) =>
+      right.occurredOn.localeCompare(left.occurredOn),
+    )[0]?.occurredOn ?? ""
+  );
 }
 
 function formatMoney(amountMinor: number, currency: string): string {
