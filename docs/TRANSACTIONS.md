@@ -96,4 +96,6 @@ Enquanto nao houver app executavel, a validacao automatica esperada para este co
 - testes placeholders existentes;
 - `build`.
 
+Essas validacoes verificam o contrato TypeScript/CSS e a consistencia dos exemplos exportados.
+
 Quando o app web tiver runtime, esta documentacao deve ser revisitada para incluir screenshots mobile/desktop, testes de formulario, testes de filtro em UI e validacao integrada com APIs reais.
