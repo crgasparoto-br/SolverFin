@@ -33,7 +33,7 @@ export const solverFinShellRoutes = [
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
-    status: "placeholder",
+    status: "available",
   },
   {
     id: "transactions",
