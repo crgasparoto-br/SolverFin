@@ -50,8 +50,16 @@ function testListPendingSuggestions(): void {
   assertEqual(visible[0]?.id, reviewSuggestion.suggestion.id, "visible suggestion id");
   assertEqual(visible[0]?.origin, "ai", "origin is exposed");
   assertEqual(visible[0]?.confidence, 0.91, "confidence is exposed");
-  assertEqual(visible[0]?.explanation, "Merchant recorrente identificado.", "explanation is exposed");
-  assertEqual(visible[0]?.maskedSummary, "Compra em MERCADO *** no cartao final 1234", "masked summary");
+  assertEqual(
+    visible[0]?.explanation,
+    "Merchant recorrente identificado.",
+    "explanation is exposed",
+  );
+  assertEqual(
+    visible[0]?.maskedSummary,
+    "Compra em MERCADO *** no cartao final 1234",
+    "masked summary",
+  );
 
   const withLowConfidence = listPendingAiSuggestionReviews(tenantA, [lowConfidence], {
     includeLowConfidence: true,
@@ -79,7 +87,11 @@ function testApproveSuggestionCreatesAuditedTransaction(): void {
     "transaction links suggestion",
   );
   assertEqual(result.transactionResult.auditEntry.action, "create", "transaction audit action");
-  assertEqual(result.transactionResult.auditEntry.redactedChanges?.aiSuggestionId, "added", "audit redacts link");
+  assertEqual(
+    result.transactionResult.auditEntry.redactedChanges?.aiSuggestionId,
+    "added",
+    "audit redacts link",
+  );
   assertEqual(result.auditEntries[0]?.action, "approve", "suggestion audit action");
 }
 
@@ -110,10 +122,18 @@ function testAdjustSuggestionIsAudited(): void {
 
   assertEqual(result.suggestion.status, "edited", "suggestion edited");
   assertEqual(result.reviewItem?.proposedTransaction.amountMinor, 6789, "adjusted amount");
-  assertEqual(result.reviewItem?.proposedTransaction.description, "Compra ajustada", "adjusted description");
+  assertEqual(
+    result.reviewItem?.proposedTransaction.description,
+    "Compra ajustada",
+    "adjusted description",
+  );
   assertEqual(result.auditEntry.action, "update", "adjust audit action");
   assertEqual(result.auditEntry.redactedChanges?.amountMinor, "changed", "amount redacted change");
-  assertEqual(result.auditEntry.redactedChanges?.description, "changed", "description redacted change");
+  assertEqual(
+    result.auditEntry.redactedChanges?.description,
+    "changed",
+    "description redacted change",
+  );
 }
 
 function testTenantIsolation(): void {
