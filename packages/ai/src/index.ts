@@ -1,4 +1,8 @@
-export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
+export type AiTaskKind =
+  | "extraction"
+  | "classification"
+  | "summary"
+  | "assistant";
 export type AiConsentState = "granted" | "revoked" | "missing";
 export type AiLogLevel = "info" | "warn" | "error";
 
@@ -22,7 +26,9 @@ export interface AiUsageContext {
 
 export interface AiTaskPayload {
   prompt: string;
-  fields?: Readonly<Record<string, string | number | boolean | null | undefined>>;
+  fields?: Readonly<
+    Record<string, string | number | boolean | null | undefined>
+  >;
 }
 
 export interface SafeAiProviderRequest {
@@ -71,7 +77,10 @@ export type AiTaskResult =
     }
   | {
       status: "blocked";
-      code: "AI_CONSENT_REQUIRED" | "AI_PAYLOAD_TOO_LARGE" | "AI_PAYLOAD_EMPTY";
+      code:
+        | "AI_CONSENT_REQUIRED"
+        | "AI_PAYLOAD_TOO_LARGE"
+        | "AI_PAYLOAD_EMPTY";
       sanitized?: SanitizedAiPayload;
     }
   | {
@@ -96,7 +105,9 @@ export class FakeAiProvider implements AiProvider {
 
   private readonly responses: AiProviderResult[];
 
-  constructor(responses: readonly AiProviderResult[] = [{ text: "ok", confidence: 1 }]) {
+  constructor(
+    responses: readonly AiProviderResult[] = [{ text: "ok", confidence: 1 }],
+  ) {
     this.responses = [...responses];
   }
 
@@ -146,7 +157,10 @@ export async function runAiTask(input: {
 
   const sanitized = sanitizeAiPayload(input.payload, input.policy);
 
-  if (sanitized.prompt.length === 0 && Object.keys(sanitized.fields).length === 0) {
+  if (
+    sanitized.prompt.length === 0 &&
+    Object.keys(sanitized.fields).length === 0
+  ) {
     logSafe(input, "warn", "AI_PAYLOAD_EMPTY");
     return { status: "blocked", code: "AI_PAYLOAD_EMPTY", sanitized };
   }
@@ -161,12 +175,22 @@ export async function runAiTask(input: {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       logSafe(input, "info", "AI_PROVIDER_CALL_STARTED", attempt);
-      const request = buildProviderRequest(input.task, input.context, input.policy, sanitized);
+      const request = buildProviderRequest(
+        input.task,
+        input.context,
+        input.policy,
+        sanitized,
+      );
       const result = await input.provider.complete(request);
 
       if (!isValidProviderResult(result)) {
         logSafe(input, "error", "AI_PROVIDER_INVALID_RESPONSE", attempt);
-        return { status: "failed", code: "AI_PROVIDER_INVALID_RESPONSE", sanitized, attempts: attempt };
+        return {
+          status: "failed",
+          code: "AI_PROVIDER_INVALID_RESPONSE",
+          sanitized,
+          attempts: attempt,
+        };
       }
 
       logSafe(input, "info", "AI_PROVIDER_CALL_COMPLETED", attempt);
@@ -182,17 +206,32 @@ export async function runAiTask(input: {
       logSafe(input, "warn", "AI_PROVIDER_CALL_FAILED", attempt);
 
       if (attempt === maxAttempts) {
-        return { status: "failed", code: "AI_PROVIDER_ERROR", sanitized, attempts: attempt };
+        return {
+          status: "failed",
+          code: "AI_PROVIDER_ERROR",
+          sanitized,
+          attempts: attempt,
+        };
       }
     }
   }
 
-  return { status: "failed", code: "AI_PROVIDER_ERROR", sanitized, attempts: maxAttempts };
+  return {
+    status: "failed",
+    code: "AI_PROVIDER_ERROR",
+    sanitized,
+    attempts: maxAttempts,
+  };
 }
 
-export function sanitizeAiPayload(payload: AiTaskPayload, policy: AiUsagePolicy): SanitizedAiPayload {
+export function sanitizeAiPayload(
+  payload: AiTaskPayload,
+  policy: AiUsagePolicy,
+): SanitizedAiPayload {
   const originalPrompt = payload.prompt.trim();
-  const prompt = policy.allowRawFinancialText ? originalPrompt : maskSensitiveText(originalPrompt);
+  const prompt = policy.allowRawFinancialText
+    ? originalPrompt
+    : maskSensitiveText(originalPrompt);
   const fields: Record<string, string | number | boolean | null> = {};
   const redactedFieldNames: string[] = [];
   const omittedFieldNames: string[] = [];
@@ -234,8 +273,14 @@ export function sanitizeAiPayload(payload: AiTaskPayload, policy: AiUsagePolicy)
 export function maskSensitiveText(value: string): string {
   return value
     .replace(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g, "***documento***")
-    .replace(/\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b/g, "**** **** **** ****")
-    .replace(/\b\d{5,}\b/g, (match) => `${"*".repeat(Math.max(0, match.length - 4))}${match.slice(-4)}`);
+    .replace(
+      /\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b/g,
+      "**** **** **** ****",
+    )
+    .replace(
+      /\b\d{5,}\b/g,
+      (match) => `${"*".repeat(Math.max(0, match.length - 4))}${match.slice(-4)}`,
+    );
 }
 
 function buildProviderRequest(
@@ -264,7 +309,9 @@ function isAllowedFieldName(name: string, policy: AiUsagePolicy): boolean {
     return policy.allowedFieldNames.includes(name);
   }
 
-  return !(policy.blockedFieldNamePatterns ?? []).some((pattern) => pattern.test(name));
+  return !(policy.blockedFieldNamePatterns ?? []).some((pattern) =>
+    pattern.test(name),
+  );
 }
 
 function isValidProviderResult(result: AiProviderResult): boolean {
