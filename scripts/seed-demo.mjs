@@ -23,17 +23,72 @@ const cards = {
 };
 
 const categories = [
-  ["66666666-6666-4666-8666-666666666601", profiles.personal, "Salario demo", "INCOME"],
-  ["66666666-6666-4666-8666-666666666602", profiles.personal, "Moradia demo", "EXPENSE"],
-  ["66666666-6666-4666-8666-666666666603", profiles.personal, "Alimentacao demo", "EXPENSE"],
-  ["66666666-6666-4666-8666-666666666604", profiles.personal, "Transporte demo", "EXPENSE"],
-  ["66666666-6666-4666-8666-666666666605", profiles.personal, "Transferencias demo", "TRANSFER"],
-  ["66666666-6666-4666-8666-666666666621", profiles.mei, "Receita de servicos demo", "INCOME"],
-  ["66666666-6666-4666-8666-666666666622", profiles.mei, "Ferramentas demo", "EXPENSE"],
-  ["66666666-6666-4666-8666-666666666623", profiles.mei, "Impostos demo", "EXPENSE"],
-  ["66666666-6666-4666-8666-666666666641", profiles.business, "Vendas demo", "INCOME"],
-  ["66666666-6666-4666-8666-666666666642", profiles.business, "Fornecedores demo", "EXPENSE"],
-  ["66666666-6666-4666-8666-666666666643", profiles.business, "Operacao demo", "EXPENSE"],
+  [
+    "66666666-6666-4666-8666-666666666601",
+    profiles.personal,
+    "Salario demo",
+    "INCOME",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666602",
+    profiles.personal,
+    "Moradia demo",
+    "EXPENSE",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666603",
+    profiles.personal,
+    "Alimentacao demo",
+    "EXPENSE",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666604",
+    profiles.personal,
+    "Transporte demo",
+    "EXPENSE",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666605",
+    profiles.personal,
+    "Transferencias demo",
+    "TRANSFER",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666621",
+    profiles.mei,
+    "Receita de servicos demo",
+    "INCOME",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666622",
+    profiles.mei,
+    "Ferramentas demo",
+    "EXPENSE",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666623",
+    profiles.mei,
+    "Impostos demo",
+    "EXPENSE",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666641",
+    profiles.business,
+    "Vendas demo",
+    "INCOME",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666642",
+    profiles.business,
+    "Fornecedores demo",
+    "EXPENSE",
+  ],
+  [
+    "66666666-6666-4666-8666-666666666643",
+    profiles.business,
+    "Operacao demo",
+    "EXPENSE",
+  ],
 ];
 
 const budgets = [
@@ -176,7 +231,9 @@ function assertSafeEnvironment() {
     process.env.NODE_ENV === "production" &&
     process.env.SOLVERFIN_ALLOW_DEMO_SEED !== "true"
   ) {
-    throw new Error("Demo seed is blocked in production unless SOLVERFIN_ALLOW_DEMO_SEED=true.");
+    throw new Error(
+      "Demo seed is blocked in production unless SOLVERFIN_ALLOW_DEMO_SEED=true.",
+    );
   }
 }
 
@@ -229,9 +286,27 @@ async function upsertDemoProfiles(client) {
 
 async function upsertDemoAccounts(client) {
   const rows = [
-    [accounts.personalChecking, profiles.personal, "Conta pessoal demo", "CHECKING", 125000],
-    [accounts.meiChecking, profiles.mei, "Conta MEI demo", "CHECKING", 85000],
-    [accounts.businessChecking, profiles.business, "Conta negocio demo", "CHECKING", 320000],
+    [
+      accounts.personalChecking,
+      profiles.personal,
+      "Conta pessoal demo",
+      "CHECKING",
+      125000,
+    ],
+    [
+      accounts.meiChecking,
+      profiles.mei,
+      "Conta MEI demo",
+      "CHECKING",
+      85000,
+    ],
+    [
+      accounts.businessChecking,
+      profiles.business,
+      "Conta negocio demo",
+      "CHECKING",
+      320000,
+    ],
   ];
 
   for (const [id, financialProfileId, name, kind, openingBalanceMinor] of rows) {
