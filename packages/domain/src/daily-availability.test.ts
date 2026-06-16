@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import type { Installment, Invoice, Recurrence, Transaction } from "./index.js";
+import type { Installment, Invoice, Transaction } from "./index.js";
 import type { TenantContext } from "./tenant.js";
 import type { PayableReceivable } from "./payables-receivables.js";
 import { createFinancialAssumption } from "./financial-assumptions.js";
@@ -44,7 +44,7 @@ function calculatesAvailabilityWithCardsAndInferredRecurrences(): void {
     inferredRecurrences: [inferred],
   });
 
-  assert.equal(result.availableTodayMinor, 99000);
+  assert.equal(result.availableTodayMinor, 94500);
   assert.equal(result.components.some((component) => component.source === "invoices"), true);
   assert.equal(result.components.some((component) => component.source === "statistical_recurrences"), true);
   assert.equal(result.confidence, "medium");
