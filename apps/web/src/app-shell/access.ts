@@ -69,7 +69,8 @@ export function evaluateShellRouteAccess(
     return {
       state: "error",
       title: "Nao foi possivel carregar sua area",
-      description: context.errorMessage ?? "Tente novamente para continuar acompanhando seus dados.",
+      description:
+        context.errorMessage ?? "Tente novamente para continuar acompanhando seus dados.",
       actionLabel: "Tentar novamente",
     };
   }
