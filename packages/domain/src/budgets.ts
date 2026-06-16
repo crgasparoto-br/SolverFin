@@ -197,7 +197,13 @@ export function listBudgets(
     const periodEndMatches =
       filters.periodEndOn === undefined || budget.periodStartOn <= filters.periodEndOn;
 
-    return statusMatches && categoryMatches && activeOnMatches && periodStartMatches && periodEndMatches;
+    return (
+      statusMatches &&
+      categoryMatches &&
+      activeOnMatches &&
+      periodStartMatches &&
+      periodEndMatches
+    );
   });
 }
 
@@ -558,7 +564,11 @@ function getLastDayOfMonth(year: number, month: number): number {
 }
 
 function formatDateParts(year: number, month: number, day: number): ISODate {
-  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  const formattedYear = String(year).padStart(4, "0");
+  const formattedMonth = String(month).padStart(2, "0");
+  const formattedDay = String(day).padStart(2, "0");
+
+  return `${formattedYear}-${formattedMonth}-${formattedDay}`;
 }
 
 function buildBudgetAuditEntry(
