@@ -5,6 +5,7 @@ Este documento registra o escopo MVP da experiencia mobile-first do SolverFin en
 ## Decisoes implementadas
 
 - O PWA usa `display: standalone`, `start_url` em `/app?source=pwa`, escopo `/` e icones de 192px, 512px e 512px maskable.
+- O manifest estatico fica em `apps/web/public/manifest.webmanifest` e o mesmo contrato fica tipado em `apps/web/src/pwa/manifest.ts`.
 - O manifest declara Web Share Target em `/app/inbox/compartilhar`, via `POST` e `application/x-www-form-urlencoded`.
 - A navegacao mobile mantem como rotas primarias: Resumo, Lancamentos, Revisao e Configuracoes.
 - O modelo de readiness mobile valida viewport mobile, barra inferior, rotas principais e estados loading, vazio, erro e pronto.
@@ -49,5 +50,6 @@ Quando a stack visual estiver pronta, esta validacao deve ser complementada com 
 
 - Offline completo e sincronizacao local permanecem fora do escopo.
 - Suporte real a Web Share Target depende do navegador, sistema operacional e instalacao do PWA.
+- Os arquivos PNG finais dos icones declarados dependem do pipeline de assets publico do frontend renderizavel.
 - Anexos e comprovantes com imagem devem entrar em fluxo futuro de OCR/anexos.
 - A persistencia definitiva do item de inbox depende do backend/handler da inbox.
