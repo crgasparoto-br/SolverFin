@@ -154,7 +154,9 @@ export async function answerFinancialQuestion(
     answer: aiResult.result.text.trim(),
     assumptions: ["Resposta gerada por IA com payload minimizado."],
     sources: ["provider", aiResult.providerId, aiResult.model],
-    limitations: ["A resposta deve ser revisada quando os dados financeiros estiverem incompletos."],
+    limitations: [
+      "A resposta deve ser revisada quando os dados financeiros estiverem incompletos.",
+    ],
     safeLogCode: "ASSISTANT_PROVIDER_ANSWERED",
   };
 }
