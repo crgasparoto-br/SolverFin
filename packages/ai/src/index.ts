@@ -183,7 +183,7 @@ export async function runAiTask(input: {
         sanitized,
         attempts: attempt,
       };
-    } catch (_error) {
+    } catch {
       logSafe(input, "warn", "AI_PROVIDER_CALL_FAILED", attempt);
 
       if (attempt === maxAttempts) {
