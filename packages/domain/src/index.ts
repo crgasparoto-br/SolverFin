@@ -8,6 +8,7 @@ export * from "./payables-receivables.js";
 export * from "./imports.js";
 export * from "./bank-message-inbox.js";
 export * from "./deduplication.js";
+export * from "./reconciliation.js";
 export * from "./tenant.js";
 export * from "./tenant-authorization.js";
 
@@ -41,6 +42,7 @@ export type AuditEntityKind =
   | "import_batch"
   | "bank_message"
   | "deduplication_review"
+  | "reconciliation_link"
   | "ai_suggestion"
   | "attachment";
 
