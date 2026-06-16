@@ -67,14 +67,18 @@ export function logApiError(input: {
   }
 
   const apiError = normalizeApiError(input.error);
-
-  input.logger({
+  const event: ApiLogEvent = {
     level: apiError.statusCode >= 500 ? "error" : "warn",
     code: apiError.code,
     correlationId: input.correlationId,
-    route: input.route,
     statusCode: apiError.statusCode,
-  });
+  };
+
+  if (input.route !== undefined) {
+    event.route = input.route;
+  }
+
+  input.logger(event);
 }
 
 function normalizeApiError(
