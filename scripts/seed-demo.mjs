@@ -37,9 +37,33 @@ const categories = [
 ];
 
 const budgets = [
-  ["77777777-7777-4777-8777-777777777701", profiles.personal, categories[2][0], "2026-06-01", "2026-06-30", 120000, 80],
-  ["77777777-7777-4777-8777-777777777702", profiles.mei, categories[6][0], "2026-06-01", "2026-06-30", 35000, 80],
-  ["77777777-7777-4777-8777-777777777703", profiles.business, categories[10][0], "2026-06-01", "2026-06-30", 180000, 85],
+  [
+    "77777777-7777-4777-8777-777777777701",
+    profiles.personal,
+    categories[2][0],
+    "2026-06-01",
+    "2026-06-30",
+    120000,
+    80,
+  ],
+  [
+    "77777777-7777-4777-8777-777777777702",
+    profiles.mei,
+    categories[6][0],
+    "2026-06-01",
+    "2026-06-30",
+    35000,
+    80,
+  ],
+  [
+    "77777777-7777-4777-8777-777777777703",
+    profiles.business,
+    categories[10][0],
+    "2026-06-01",
+    "2026-06-30",
+    180000,
+    85,
+  ],
 ];
 
 const transactions = [
@@ -148,7 +172,10 @@ function assertSafeEnvironment() {
     throw new Error("DATABASE_URL is required to run the demo seed.");
   }
 
-  if (process.env.NODE_ENV === "production" && process.env.SOLVERFIN_ALLOW_DEMO_SEED !== "true") {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.SOLVERFIN_ALLOW_DEMO_SEED !== "true"
+  ) {
     throw new Error("Demo seed is blocked in production unless SOLVERFIN_ALLOW_DEMO_SEED=true.");
   }
 }
@@ -218,7 +245,14 @@ async function upsertDemoAccounts(client) {
          "status" = EXCLUDED."status",
          "openingBalanceMinor" = EXCLUDED."openingBalanceMinor",
          "updatedAt" = CURRENT_TIMESTAMP`,
-      [id, DEMO_ORGANIZATION_ID, financialProfileId, name, kind, openingBalanceMinor],
+      [
+        id,
+        DEMO_ORGANIZATION_ID,
+        financialProfileId,
+        name,
+        kind,
+        openingBalanceMinor,
+      ],
     );
   }
 }
@@ -237,7 +271,12 @@ async function upsertDemoCards(client) {
        "creditLimitMinor" = EXCLUDED."creditLimitMinor",
        "maskedIdentifier" = EXCLUDED."maskedIdentifier",
        "updatedAt" = CURRENT_TIMESTAMP`,
-    [cards.personalCard, DEMO_ORGANIZATION_ID, profiles.personal, accounts.personalChecking],
+    [
+      cards.personalCard,
+      DEMO_ORGANIZATION_ID,
+      profiles.personal,
+      accounts.personalChecking,
+    ],
   );
 }
 
@@ -258,7 +297,15 @@ async function upsertDemoCategories(client) {
 }
 
 async function upsertDemoBudgets(client) {
-  for (const [id, financialProfileId, categoryId, periodStartOn, periodEndOn, plannedAmountMinor, threshold] of budgets) {
+  for (const [
+    id,
+    financialProfileId,
+    categoryId,
+    periodStartOn,
+    periodEndOn,
+    plannedAmountMinor,
+    threshold,
+  ] of budgets) {
     await client.query(
       `INSERT INTO "Budget"
        ("id", "organizationId", "financialProfileId", "categoryId", "status", "periodStartOn", "periodEndOn", "plannedAmountMinor", "currency", "alertThresholdPercent", "createdAt", "updatedAt")
@@ -271,7 +318,16 @@ async function upsertDemoBudgets(client) {
          "plannedAmountMinor" = EXCLUDED."plannedAmountMinor",
          "alertThresholdPercent" = EXCLUDED."alertThresholdPercent",
          "updatedAt" = CURRENT_TIMESTAMP`,
-      [id, DEMO_ORGANIZATION_ID, financialProfileId, categoryId, periodStartOn, periodEndOn, plannedAmountMinor, threshold],
+      [
+        id,
+        DEMO_ORGANIZATION_ID,
+        financialProfileId,
+        categoryId,
+        periodStartOn,
+        periodEndOn,
+        plannedAmountMinor,
+        threshold,
+      ],
     );
   }
 }
