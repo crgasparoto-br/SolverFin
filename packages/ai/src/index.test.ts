@@ -29,14 +29,6 @@ const grantedPolicy = {
   allowedFieldNames: ["merchant", "amountMinor", "currency", "occurredOn"],
 };
 
-await testConsentBlocksProviderCall();
-await testSanitizationAndAllowedFields();
-await testProviderCanBeFaked();
-await testRetryAndSafeLogs();
-await testInvalidProviderResponse();
-
-testMaskSensitiveText();
-
 async function testConsentBlocksProviderCall(): Promise<void> {
   const events: SafeAiLogEvent[] = [];
   const provider = new FakeAiProvider([{ text: "never used" }]);
@@ -196,3 +188,11 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
     throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
   }
 }
+
+await testConsentBlocksProviderCall();
+await testSanitizationAndAllowedFields();
+await testProviderCanBeFaked();
+await testRetryAndSafeLogs();
+await testInvalidProviderResponse();
+
+testMaskSensitiveText();
