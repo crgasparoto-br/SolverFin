@@ -30,7 +30,7 @@ export function evaluateMobileViewportReadiness(
   const bottomNavigationVisible = input.navigation.mode === "mobile" && isMobileViewport;
   const primaryRoutesReachable = input.navigation.items
     .filter((item) => PRIMARY_ROUTE_IDS.has(item.route.id))
-    .every((item) => !item.isCollapsedOnMobile || item.route.id === "settings");
+    .every((item) => !item.isCollapsedOnMobile);
 
   if (!bottomNavigationVisible) {
     issues.push("A navegacao inferior deve ficar disponivel em viewport mobile.");
