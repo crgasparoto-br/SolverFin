@@ -3,6 +3,7 @@ export * from "./categories.js";
 export * from "./transactions.js";
 export * from "./recurrences.js";
 export * from "./cards.js";
+export * from "./budgets.js";
 export * from "./tenant.js";
 export * from "./tenant-authorization.js";
 
