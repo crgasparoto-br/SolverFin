@@ -87,7 +87,11 @@ function maskingCoversFinancialIdentifiersAndPayloads(): void {
 }
 
 function softDeleteHidesDefaultListsAndBuildsSafeAudit(): void {
-  const active = buildResource("resource-active", context.organizationId, context.financialProfileId);
+  const active = buildResource(
+    "resource-active",
+    context.organizationId,
+    context.financialProfileId,
+  );
   const deleted = softDeleteResource({
     context,
     resource: buildResource("resource-delete", context.organizationId, context.financialProfileId),
@@ -107,7 +111,10 @@ function softDeleteHidesDefaultListsAndBuildsSafeAudit(): void {
 
   assert.equal(deleted.deletedByUserId, context.userId);
   assert.equal(deleted.deletionReason?.includes("4111"), false);
-  assert.deepEqual(visible.map((item) => item.id), ["resource-active"]);
+  assert.deepEqual(
+    visible.map((item) => item.id),
+    ["resource-active"],
+  );
   assert.equal(audit.action, "soft_delete");
   assert.equal(audit.reason?.includes("4111"), false);
   assert.equal(audit.redactedChanges?.deletedAt, "added");
