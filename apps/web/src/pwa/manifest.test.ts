@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 
 import { buildShellNavigation } from "../app-shell/navigation.js";
-import { buildSolverFinWebManifest, evaluateMobileViewportReadiness, validatePwaInstallability } from "./index.js";
+import {
+  buildSolverFinWebManifest,
+  evaluateMobileViewportReadiness,
+  validatePwaInstallability,
+} from "./index.js";
 
 manifestIsInstallableAndAcceptsSharedText();
 mobileNavigationKeepsPrimaryRoutesReachable();
@@ -61,6 +65,12 @@ function mobileEmptyAndErrorStatesNeedClearActions(): void {
 
   assert.equal(emptyReadiness.mobileFirst, false);
   assert.equal(errorReadiness.mobileFirst, false);
-  assert.equal(emptyReadiness.issues.some((issue) => issue.includes("Estado vazio")), true);
-  assert.equal(errorReadiness.issues.some((issue) => issue.includes("Estado de erro")), true);
+  assert.equal(
+    emptyReadiness.issues.some((issue) => issue.includes("Estado vazio")),
+    true,
+  );
+  assert.equal(
+    errorReadiness.issues.some((issue) => issue.includes("Estado de erro")),
+    true,
+  );
 }
