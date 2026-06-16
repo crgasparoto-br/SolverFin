@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Aplicacao web/PWA mobile-first do SolverFin.",
   "scripts": {
-    "dev": "echo \"@solverfin/web: dev ainda sera configurado na issue de frontend/bootstrap\"",
+    "dev": "tsc -p tsconfig.json && node dist/dev-server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
