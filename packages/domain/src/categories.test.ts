@@ -145,14 +145,18 @@ function testCategoryKindValidation(): void {
     "CATEGORY_TRANSACTION_KIND_INVALID",
   );
 
-  const categories = listCategories(tenantA, [
-    expenseCategory,
-    createCategoryFixture(tenantA, "category-income", "income", "active"),
-    createCategoryFixture(tenantA, "category-archived", "expense", "archived"),
-    createCategoryFixture(tenantB, "category-other-tenant", "expense", "active"),
-  ], {
-    kind: "expense",
-  });
+  const categories = listCategories(
+    tenantA,
+    [
+      expenseCategory,
+      createCategoryFixture(tenantA, "category-income", "income", "active"),
+      createCategoryFixture(tenantA, "category-archived", "expense", "archived"),
+      createCategoryFixture(tenantB, "category-other-tenant", "expense", "active"),
+    ],
+    {
+      kind: "expense",
+    },
+  );
 
   assertEqual(categories.length, 1, "category list filters kind tenant and active status");
   assertEqual(categories[0]?.id, expenseCategory.id, "filtered category id");

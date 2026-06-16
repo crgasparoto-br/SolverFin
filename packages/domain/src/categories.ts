@@ -28,7 +28,11 @@ export class CategoryError extends Error {
   }
 }
 
-export type CategorySuggestionSource = "system_default" | "user_created" | "ai_suggested" | "imported";
+export type CategorySuggestionSource =
+  | "system_default"
+  | "user_created"
+  | "ai_suggested"
+  | "imported";
 
 export interface DefaultCategorySuggestion {
   name: string;
@@ -131,10 +135,12 @@ export function listCategories(
   const scopedCategories = listTenantScopedResources(context, categories);
 
   return scopedCategories.filter((category) => {
-    const statusMatches = filters.status === "all" || category.status === (filters.status ?? "active");
+    const statusMatches =
+      filters.status === "all" || category.status === (filters.status ?? "active");
     const kindMatches = filters.kind === undefined || category.kind === filters.kind;
     const parentMatches =
-      filters.parentCategoryId === undefined || category.parentCategoryId === filters.parentCategoryId;
+      filters.parentCategoryId === undefined ||
+      category.parentCategoryId === filters.parentCategoryId;
 
     return statusMatches && kindMatches && parentMatches;
   });
@@ -146,9 +152,16 @@ export function getCategory(context: TenantContext, category: Category | undefin
 
 export function updateCategory(input: UpdateCategoryInput): Category {
   const currentCategory = updateTenantScopedResource(input.context, input.category, input.payload);
-  const nextKind = input.payload.kind ? validateCategoryKind(input.payload.kind) : currentCategory.kind;
+  const nextKind = input.payload.kind
+    ? validateCategoryKind(input.payload.kind)
+    : currentCategory.kind;
 
-  assertParentCategory(input.context, input.parentCategory, input.payload.parentCategoryId, nextKind);
+  assertParentCategory(
+    input.context,
+    input.parentCategory,
+    input.payload.parentCategoryId,
+    nextKind,
+  );
 
   return {
     ...currentCategory,
@@ -199,7 +212,10 @@ export function replaceCategory(input: ReplaceCategoryInput): CategoryReplacemen
     );
   }
 
-  if (currentCategory.id === replacementCategory.id || currentCategory.kind !== replacementCategory.kind) {
+  if (
+    currentCategory.id === replacementCategory.id ||
+    currentCategory.kind !== replacementCategory.kind
+  ) {
     throw new CategoryError(
       "CATEGORY_REPLACEMENT_INVALID",
       "Replacement category must be a different category with the same kind.",
