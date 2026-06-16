@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"@solverfin/shared: testes ainda serao configurados em issue propria\"",
+    "test": "rm -rf ../../.tmp-tests/shared && tsc -p tsconfig.test.json && node ../../.tmp-tests/shared/masking.test.js",
     "build": "tsc --noEmit"
   }
 }
