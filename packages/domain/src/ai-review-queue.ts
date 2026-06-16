@@ -124,7 +124,9 @@ export function approveAiSuggestion(input: ApproveAiSuggestionInput): AiSuggesti
     context: input.context,
     now: input.now,
     ...(input.account !== undefined ? { account: input.account } : {}),
-    ...(input.destinationAccount !== undefined ? { destinationAccount: input.destinationAccount } : {}),
+    ...(input.destinationAccount !== undefined
+      ? { destinationAccount: input.destinationAccount }
+      : {}),
     ...(input.category !== undefined ? { category: input.category } : {}),
     payload: {
       ...payload,
