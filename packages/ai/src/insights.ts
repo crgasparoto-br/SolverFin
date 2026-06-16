@@ -9,6 +9,11 @@ export type FinancialInsightKind =
 export type FinancialInsightSeverity = "info" | "warning" | "critical";
 export type FinancialInsightConfidence = "high" | "medium" | "low";
 
+type SpendingIncreaseInsightKind = Extract<
+  FinancialInsightKind,
+  "category_spending_increase" | "merchant_spending_increase"
+>;
+
 export interface InsightTransaction {
   id: string;
   organizationId: string;
@@ -129,7 +134,8 @@ function buildSpendingIncreaseInsights(
   current: readonly InsightTransaction[],
   previous: readonly InsightTransaction[],
 ): FinancialInsight[] {
-  const threshold = input.increaseThresholdPercent ?? DEFAULT_INCREASE_THRESHOLD_PERCENT;
+  const threshold =
+    input.increaseThresholdPercent ?? DEFAULT_INCREASE_THRESHOLD_PERCENT;
   const byCategory = compareExpenseGroups(
     current,
     previous,
@@ -161,20 +167,20 @@ function buildIncreaseInsightsForGroup(
   input: GenerateFinancialInsightsInput,
   groups: ReadonlyMap<string, GroupComparison>,
   threshold: number,
-  kind: Extract<
-    FinancialInsightKind,
-    "category_spending_increase" | "merchant_spending_increase"
-  >,
+  kind: SpendingIncreaseInsightKind,
 ): FinancialInsight[] {
   const insights: FinancialInsight[] = [];
 
   for (const [label, group] of groups) {
-    if (group.previousAmountMinor <= 0 || group.currentAmountMinor <= group.previousAmountMinor) {
+    const hasIncrease = group.currentAmountMinor > group.previousAmountMinor;
+
+    if (group.previousAmountMinor <= 0 || !hasIncrease) {
       continue;
     }
 
-    const percentChange = Math.round(
-      ((group.currentAmountMinor - group.previousAmountMinor) / group.previousAmountMinor) * 100,
+    const percentChange = calculatePercentChange(
+      group.currentAmountMinor,
+      group.previousAmountMinor,
     );
 
     if (percentChange < threshold) {
@@ -183,13 +189,10 @@ function buildIncreaseInsightsForGroup(
 
     insights.push({
       kind,
-      severity: percentChange >= threshold * 2 ? "warning" : "info",
+      severity: buildIncreaseSeverity(percentChange, threshold),
       confidence: group.currentCount >= 2 ? "high" : "medium",
-      title:
-        kind === "category_spending_increase"
-          ? `Gasto maior na categoria ${label}`
-          : `Gasto maior com ${label}`,
-      explanation: `O gasto subiu ${percentChange}% em relacao ao periodo anterior comparavel.`,
+      title: buildIncreaseTitle(kind, label),
+      explanation: buildIncreaseExplanation(percentChange),
       evidence: {
         label,
         currentAmountMinor: group.currentAmountMinor,
@@ -211,7 +214,8 @@ function buildSubscriptionInsights(
   input: GenerateFinancialInsightsInput,
   transactions: readonly InsightTransaction[],
 ): FinancialInsight[] {
-  const minOccurrences = input.minRecurringOccurrences ?? DEFAULT_MIN_RECURRING_OCCURRENCES;
+  const minOccurrences =
+    input.minRecurringOccurrences ?? DEFAULT_MIN_RECURRING_OCCURRENCES;
   const groups = new Map<string, InsightTransaction[]>();
 
   for (const transaction of transactions) {
@@ -227,15 +231,16 @@ function buildSubscriptionInsights(
   const insights: FinancialInsight[] = [];
 
   for (const [merchantKey, group] of groups) {
-    const distinctMonths = new Set(
-      group.map((transaction) => transaction.occurredOn.slice(0, 7)),
-    );
+    const months = group.map((transaction) => transaction.occurredOn.slice(0, 7));
+    const distinctMonths = new Set(months);
 
     if (distinctMonths.size < minOccurrences) {
       continue;
     }
 
-    const total = group.reduce((sum, transaction) => sum + transaction.amountMinor, 0);
+    const total = group.reduce((sum, transaction) => {
+      return sum + transaction.amountMinor;
+    }, 0);
     const average = Math.round(total / group.length);
 
     insights.push({
@@ -243,7 +248,7 @@ function buildSubscriptionInsights(
       severity: "info",
       confidence: distinctMonths.size >= minOccurrences + 1 ? "high" : "medium",
       title: `Possivel recorrencia em ${merchantKey}`,
-      explanation: `Foram encontradas despesas em ${distinctMonths.size} meses diferentes para o mesmo merchant.`,
+      explanation: buildSubscriptionExplanation(distinctMonths.size),
       evidence: {
         label: merchantKey,
         currentAmountMinor: average,
@@ -258,7 +263,9 @@ function buildSubscriptionInsights(
   return insights;
 }
 
-function buildNegativeBalanceInsight(input: GenerateFinancialInsightsInput): FinancialInsight[] {
+function buildNegativeBalanceInsight(
+  input: GenerateFinancialInsightsInput,
+): FinancialInsight[] {
   if (input.projectedBalanceMinor === undefined || input.projectedBalanceMinor >= 0) {
     return [];
   }
@@ -295,11 +302,15 @@ function buildBudgetInsights(
 
   for (const budget of budgets) {
     const spent = current
-      .filter(
-        (transaction) =>
-          transaction.kind === "expense" && transaction.categoryId === budget.categoryId,
-      )
-      .reduce((sum, transaction) => sum + transaction.amountMinor, 0);
+      .filter((transaction) => {
+        return (
+          transaction.kind === "expense" &&
+          transaction.categoryId === budget.categoryId
+        );
+      })
+      .reduce((sum, transaction) => {
+        return sum + transaction.amountMinor;
+      }, 0);
 
     if (spent <= budget.plannedAmountMinor) {
       continue;
@@ -310,13 +321,16 @@ function buildBudgetInsights(
       severity: "warning",
       confidence: "high",
       title: `Orcamento excedido em ${budget.categoryId}`,
-      explanation: "O total realizado ultrapassou o valor planejado para a categoria no periodo.",
+      explanation:
+        "O total realizado ultrapassou o valor planejado para a categoria no periodo.",
       evidence: {
         label: budget.categoryId,
         currentAmountMinor: spent,
         previousAmountMinor: budget.plannedAmountMinor,
         deltaAmountMinor: spent - budget.plannedAmountMinor,
-        percentChange: Math.round((spent / Math.max(1, budget.plannedAmountMinor)) * 100),
+        percentChange: Math.round(
+          (spent / Math.max(1, budget.plannedAmountMinor)) * 100,
+        ),
         periodStartOn: budget.periodStartOn,
         periodEndOn: budget.periodEndOn,
       },
@@ -332,23 +346,23 @@ function buildMonthlySummary(
   current: readonly InsightTransaction[],
   previous: readonly InsightTransaction[],
 ): FinancialInsight {
+  const currency = input.currency ?? "BRL";
   const currentIncome = sumByKind(current, "income");
   const currentExpense = sumByKind(current, "expense");
   const previousExpense = sumByKind(previous, "expense");
-  const percentChange =
-    previousExpense > 0
-      ? Math.round(((currentExpense - previousExpense) / previousExpense) * 100)
-      : undefined;
+  const percentChange = calculateOptionalPercentChange(
+    currentExpense,
+    previousExpense,
+  );
+  const incomeText = formatMoney(currentIncome, currency);
+  const expenseText = formatMoney(currentExpense, currency);
 
   return {
     kind: "monthly_summary",
     severity: "info",
     confidence: current.length > 0 ? "high" : "low",
     title: "Resumo financeiro do periodo",
-    explanation: `O periodo teve receitas de ${formatMoney(
-      currentIncome,
-      input.currency ?? "BRL",
-    )} e despesas de ${formatMoney(currentExpense, input.currency ?? "BRL")}.`,
+    explanation: `O periodo teve receitas de ${incomeText} e despesas de ${expenseText}.`,
     evidence: {
       label: "resumo_mensal",
       currentAmountMinor: currentIncome - currentExpense,
@@ -421,9 +435,9 @@ function filterByPeriod(
   startOn: string,
   endOn: string,
 ): InsightTransaction[] {
-  return transactions.filter(
-    (transaction) => transaction.occurredOn >= startOn && transaction.occurredOn <= endOn,
-  );
+  return transactions.filter((transaction) => {
+    return transaction.occurredOn >= startOn && transaction.occurredOn <= endOn;
+  });
 }
 
 function sumByKind(
@@ -436,19 +450,60 @@ function sumByKind(
 }
 
 function firstDate(transactions: readonly InsightTransaction[]): string {
-  return (
-    [...transactions].sort((left, right) =>
-      left.occurredOn.localeCompare(right.occurredOn),
-    )[0]?.occurredOn ?? ""
-  );
+  const sorted = [...transactions].sort((left, right) => {
+    return left.occurredOn.localeCompare(right.occurredOn);
+  });
+
+  return sorted[0]?.occurredOn ?? "";
 }
 
 function lastDate(transactions: readonly InsightTransaction[]): string {
-  return (
-    [...transactions].sort((left, right) =>
-      right.occurredOn.localeCompare(left.occurredOn),
-    )[0]?.occurredOn ?? ""
-  );
+  const sorted = [...transactions].sort((left, right) => {
+    return right.occurredOn.localeCompare(left.occurredOn);
+  });
+
+  return sorted[0]?.occurredOn ?? "";
+}
+
+function calculatePercentChange(current: number, previous: number): number {
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+function calculateOptionalPercentChange(
+  current: number,
+  previous: number,
+): number | undefined {
+  if (previous <= 0) {
+    return undefined;
+  }
+
+  return calculatePercentChange(current, previous);
+}
+
+function buildIncreaseSeverity(
+  percentChange: number,
+  threshold: number,
+): FinancialInsightSeverity {
+  return percentChange >= threshold * 2 ? "warning" : "info";
+}
+
+function buildIncreaseTitle(
+  kind: SpendingIncreaseInsightKind,
+  label: string,
+): string {
+  if (kind === "category_spending_increase") {
+    return `Gasto maior na categoria ${label}`;
+  }
+
+  return `Gasto maior com ${label}`;
+}
+
+function buildIncreaseExplanation(percentChange: number): string {
+  return `O gasto subiu ${percentChange}% em relacao ao periodo anterior comparavel.`;
+}
+
+function buildSubscriptionExplanation(distinctMonths: number): string {
+  return `Foram encontradas despesas em ${distinctMonths} meses diferentes para o mesmo merchant.`;
 }
 
 function formatMoney(amountMinor: number, currency: string): string {
