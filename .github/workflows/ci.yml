@@ -49,12 +49,6 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
-      - name: Print seed formatting diff
-        run: |
-          npm run format
-          git diff -- scripts/seed-demo.mjs
-          git diff --exit-code -- scripts/seed-demo.mjs
-
       - name: Check formatting
         run: npm run format:check
 
