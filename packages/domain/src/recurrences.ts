@@ -128,6 +128,20 @@ export interface GenerateInstallmentScheduleInput {
   existingInstallments?: readonly Installment[];
 }
 
+interface BuildInstallmentInput {
+  id: EntityId;
+  context: TenantContext;
+  now: ISODateTime;
+  status: InstallmentStatus;
+  sequenceNumber: number;
+  totalInstallments: number;
+  dueOn: ISODate;
+  amountMinor: number;
+  currency: string;
+  cardId?: EntityId;
+  recurrenceId?: EntityId;
+}
+
 const ALLOWED_RECURRENCE_FREQUENCIES: readonly RecurrenceFrequency[] = [
   "daily",
   "weekly",
@@ -358,22 +372,27 @@ export function generateInstallmentSchedule(input: GenerateInstallmentScheduleIn
     }
 
     const dueOn = addMonths(firstDueOn, sequenceNumber - 1);
+    const installmentInput: BuildInstallmentInput = {
+      id: input.makeInstallmentId(sequenceNumber, dueOn),
+      context: input.context,
+      now: input.now,
+      status: "planned",
+      sequenceNumber,
+      totalInstallments,
+      dueOn,
+      amountMinor: input.amountMinor,
+      currency: normalizeCurrency(input.currency),
+    };
 
-    installments.push(
-      buildInstallment({
-        id: input.makeInstallmentId(sequenceNumber, dueOn),
-        context: input.context,
-        now: input.now,
-        status: "planned",
-        sequenceNumber,
-        totalInstallments,
-        dueOn,
-        amountMinor: input.amountMinor,
-        currency: normalizeCurrency(input.currency),
-        cardId: input.cardId,
-        recurrenceId: input.recurrenceId,
-      }),
-    );
+    if (input.cardId !== undefined) {
+      installmentInput.cardId = input.cardId;
+    }
+
+    if (input.recurrenceId !== undefined) {
+      installmentInput.recurrenceId = input.recurrenceId;
+    }
+
+    installments.push(buildInstallment(installmentInput));
   }
 
   return installments;
@@ -447,19 +466,7 @@ function buildOptionalRecurrenceUpdate(
   return update;
 }
 
-function buildInstallment(input: {
-  id: EntityId;
-  context: TenantContext;
-  now: ISODateTime;
-  status: InstallmentStatus;
-  sequenceNumber: number;
-  totalInstallments: number;
-  dueOn: ISODate;
-  amountMinor: number;
-  currency: string;
-  cardId?: EntityId;
-  recurrenceId?: EntityId;
-}): Installment {
+function buildInstallment(input: BuildInstallmentInput): Installment {
   const installment: Installment = {
     id: input.id,
     organizationId: input.context.organizationId,
