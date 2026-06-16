@@ -53,7 +53,7 @@ export const solverFinShellRoutes = [
     navigationGroup: "manage",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
-    status: "placeholder",
+    status: "available",
   },
   {
     id: "cards",
@@ -63,7 +63,7 @@ export const solverFinShellRoutes = [
     navigationGroup: "manage",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
-    status: "placeholder",
+    status: "available",
   },
   {
     id: "categories",
@@ -73,7 +73,7 @@ export const solverFinShellRoutes = [
     navigationGroup: "manage",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
-    status: "placeholder",
+    status: "available",
   },
   {
     id: "budgets",
