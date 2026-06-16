@@ -88,7 +88,11 @@ const DEFAULT_MIN_CONFIDENCE = 0.7;
 export function recordCategoryCorrection(
   input: RecordCategoryCorrectionInput,
 ): CategoryLearningEntry {
-  const category = assertUsableCategory(input.context, input.correctedCategory, input.target.transactionKind);
+  const category = assertUsableCategory(
+    input.context,
+    input.correctedCategory,
+    input.target.transactionKind,
+  );
   const merchantKey = buildCategoryLearningKey(input.target);
   const existingLearning = input.existingLearning
     ? getTenantScopedResource(input.context, input.existingLearning)
@@ -190,7 +194,12 @@ export function suggestCategory(input: SuggestCategoryInput): CategorySuggestion
     return ruleSuggestion;
   }
 
-  const historySuggestion = suggestFromHistory(input.context, target, input.history ?? [], activeCategories);
+  const historySuggestion = suggestFromHistory(
+    input.context,
+    target,
+    input.history ?? [],
+    activeCategories,
+  );
 
   if (historySuggestion !== undefined) {
     return historySuggestion;
@@ -208,7 +217,9 @@ export function suggestCategory(input: SuggestCategoryInput): CategorySuggestion
   };
 }
 
-export function buildCategoryLearningKey(target: Pick<CategorySuggestionTarget, "merchant" | "description">): string {
+export function buildCategoryLearningKey(
+  target: Pick<CategorySuggestionTarget, "merchant" | "description">,
+): string {
   return normalizeCategoryText(target.merchant ?? target.description);
 }
 
@@ -303,7 +314,8 @@ function suggestFromHistory(
     counts.set(transaction.categoryId, (counts.get(transaction.categoryId) ?? 0) + 1);
   }
 
-  const [categoryId, count] = [...counts.entries()].sort((left, right) => right[1] - left[1])[0] ?? [];
+  const [categoryId, count] =
+    [...counts.entries()].sort((left, right) => right[1] - left[1])[0] ?? [];
 
   if (categoryId === undefined || count === undefined) {
     return undefined;
@@ -314,7 +326,8 @@ function suggestFromHistory(
     source: "history",
     categoryId,
     confidence: Math.min(0.82, 0.62 + count * 0.08),
-    reason: "Historico do mesmo contexto financeiro usa esta categoria para lancamentos semelhantes.",
+    reason:
+      "Historico do mesmo contexto financeiro usa esta categoria para lancamentos semelhantes.",
   };
 }
 
@@ -325,7 +338,10 @@ function suggestFromAi(
 ): CategorySuggestionResult {
   const category = activeCategories.find((item) => item.id === suggestion.categoryId);
   const result: CategorySuggestionResult = {
-    status: category === undefined || suggestion.confidence < minConfidence ? "needs_review" : "suggested",
+    status:
+      category === undefined || suggestion.confidence < minConfidence
+        ? "needs_review"
+        : "suggested",
     source: "ai",
     confidence: suggestion.confidence,
     reason: suggestion.reason,
