@@ -333,10 +333,7 @@ function createTransactionFixture(
   };
 }
 
-function assertTransactionError(
-  action: () => void,
-  expectedCode: TransactionError["code"],
-): void {
+function assertTransactionError(action: () => void, expectedCode: TransactionError["code"]): void {
   try {
     action();
   } catch (error) {
