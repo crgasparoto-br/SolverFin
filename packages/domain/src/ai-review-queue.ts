@@ -105,7 +105,11 @@ export function listPendingAiSuggestionReviews(
   return listTenantScopedResources(context, suggestions)
     .filter((item) => item.suggestion.status === "pending_review")
     .filter((item) => filters.kind === undefined || item.suggestion.kind === filters.kind)
-    .filter((item) => filters.includeLowConfidence === true || item.suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD)
+    .filter(
+      (item) =>
+        filters.includeLowConfidence === true ||
+        item.suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD,
+    )
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
     .map(buildReviewListItem);
 }
@@ -132,6 +136,13 @@ export function approveAiSuggestion(input: ApproveAiSuggestionInput): AiSuggesti
     ...baseTransactionResult.transaction,
     aiSuggestionId: reviewItem.suggestion.id,
   };
+  const transactionAuditEntry: AuditLogEntryDraft = {
+    ...baseTransactionResult.auditEntry,
+    redactedChanges: {
+      ...(baseTransactionResult.auditEntry.redactedChanges ?? {}),
+      aiSuggestionId: "added",
+    },
+  };
   const approvedSuggestion = markSuggestionReviewed(
     input.context,
     reviewItem.suggestion,
@@ -152,15 +163,9 @@ export function approveAiSuggestion(input: ApproveAiSuggestionInput): AiSuggesti
     transactionResult: {
       ...baseTransactionResult,
       transaction,
-      auditEntry: {
-        ...baseTransactionResult.auditEntry,
-        redactedChanges: {
-          ...(baseTransactionResult.auditEntry.redactedChanges ?? {}),
-          aiSuggestionId: "added",
-        },
-      },
+      auditEntry: transactionAuditEntry,
     },
-    auditEntries: [suggestionAuditEntry, baseTransactionResult.auditEntry],
+    auditEntries: [suggestionAuditEntry, transactionAuditEntry],
   };
 }
 
@@ -210,7 +215,10 @@ export function adjustAiSuggestion(input: AdjustAiSuggestionInput): AiSuggestion
       suggestion: adjustedSuggestion,
       occurredAt: input.now,
       reason: input.reason ?? "Sugestao ajustada antes da aprovacao.",
-      redactedChanges: buildRedactedProposalChanges(reviewItem.proposedTransaction, adjustedReviewItem.proposedTransaction),
+      redactedChanges: buildRedactedProposalChanges(
+        reviewItem.proposedTransaction,
+        adjustedReviewItem.proposedTransaction,
+      ),
     }),
   };
 }
@@ -219,7 +227,7 @@ function buildReviewListItem(item: ReviewableAiSuggestion): AiSuggestionReviewLi
   return {
     id: item.suggestion.id,
     kind: item.suggestion.kind,
-    status: item.suggestion.status,
+    status: "pending_review",
     origin: item.origin,
     confidence: item.suggestion.confidence,
     explanation: item.suggestion.explanation,
