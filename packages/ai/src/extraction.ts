@@ -263,13 +263,13 @@ function readDate(
   const isoMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
 
   if (isoMatch) {
-    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    return normalizeDateParts(isoMatch[1], isoMatch[2], isoMatch[3], problems);
   }
 
   const brMatch = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
 
   if (brMatch) {
-    return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+    return normalizeDateParts(brMatch[3], brMatch[2], brMatch[1], problems);
   }
 
   problems.push({
@@ -399,7 +399,9 @@ function readReasons(
     return undefined;
   }
 
-  const reasons = value.filter((item): item is string => typeof item === "string" && item.trim().length > 0).map((item) => item.trim());
+  const reasons = value
+    .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    .map((item) => item.trim());
 
   if (reasons.length === 0) {
     problems.push({
@@ -411,6 +413,27 @@ function readReasons(
   }
 
   return reasons;
+}
+
+function normalizeDateParts(
+  year: string,
+  month: string,
+  day: string,
+  problems: TransactionExtractionValidationProblem[],
+): string | undefined {
+  const isoDate = `${year}-${month}-${day}`;
+  const parsed = new Date(`${isoDate}T00:00:00.000Z`);
+
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== isoDate) {
+    problems.push({
+      code: "EXTRACTION_DATE_INVALID",
+      field: "occurredOn",
+      message: "Extraction date must be a real calendar date.",
+    });
+    return undefined;
+  }
+
+  return isoDate;
 }
 
 function parseLocalizedAmount(value: unknown): number | undefined {
@@ -429,8 +452,25 @@ function assignOptionalString(
   field: "merchant" | "accountHint" | "cardHint" | "categorySuggestion",
   value: unknown,
 ): void {
-  if (typeof value === "string" && value.trim().length > 0) {
-    suggestion[field] = value.trim();
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return;
+  }
+
+  const normalized = value.trim();
+
+  switch (field) {
+    case "merchant":
+      suggestion.merchant = normalized;
+      break;
+    case "accountHint":
+      suggestion.accountHint = normalized;
+      break;
+    case "cardHint":
+      suggestion.cardHint = normalized;
+      break;
+    case "categorySuggestion":
+      suggestion.categorySuggestion = normalized;
+      break;
   }
 }
 
