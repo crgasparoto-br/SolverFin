@@ -128,7 +128,9 @@ export function validateTransactionExtraction(
     });
   }
 
-  const hasBlockingProblem = problems.some((problem) => problem.code !== "EXTRACTION_LOW_CONFIDENCE");
+  const hasBlockingProblem = problems.some(
+    (problem) => problem.code !== "EXTRACTION_LOW_CONFIDENCE",
+  );
 
   if (
     hasBlockingProblem ||
@@ -182,7 +184,8 @@ function readAmountMinor(
     return undefined;
   }
 
-  const amount = typeof value.amount === "number" ? value.amount : parseLocalizedAmount(value.amount);
+  const amount =
+    typeof value.amount === "number" ? value.amount : parseLocalizedAmount(value.amount);
 
   if (amount === undefined || amount <= 0) {
     problems.push({
