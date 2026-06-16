@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "rm -rf ../../.tmp-tests/domain && tsc -p tsconfig.test.json && node ../../.tmp-tests/domain/audit.test.js && node ../../.tmp-tests/domain/tenant.test.js && node ../../.tmp-tests/domain/tenant-authorization.test.js",
+    "test": "rm -rf ../../.tmp-tests/domain && tsc -p tsconfig.test.json && node ../../.tmp-tests/domain/audit.test.js && node ../../.tmp-tests/domain/tenant.test.js && node ../../.tmp-tests/domain/tenant-authorization.test.js && node ../../.tmp-tests/domain/accounts.test.js",
     "build": "tsc --noEmit"
   }
 }
