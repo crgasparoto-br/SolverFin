@@ -134,8 +134,7 @@ function buildSpendingIncreaseInsights(
   current: readonly InsightTransaction[],
   previous: readonly InsightTransaction[],
 ): FinancialInsight[] {
-  const threshold =
-    input.increaseThresholdPercent ?? DEFAULT_INCREASE_THRESHOLD_PERCENT;
+  const threshold = input.increaseThresholdPercent ?? DEFAULT_INCREASE_THRESHOLD_PERCENT;
   const byCategory = compareExpenseGroups(
     current,
     previous,
@@ -148,18 +147,8 @@ function buildSpendingIncreaseInsights(
   );
 
   return [
-    ...buildIncreaseInsightsForGroup(
-      input,
-      byCategory,
-      threshold,
-      "category_spending_increase",
-    ),
-    ...buildIncreaseInsightsForGroup(
-      input,
-      byMerchant,
-      threshold,
-      "merchant_spending_increase",
-    ),
+    ...buildIncreaseInsightsForGroup(input, byCategory, threshold, "category_spending_increase"),
+    ...buildIncreaseInsightsForGroup(input, byMerchant, threshold, "merchant_spending_increase"),
   ];
 }
 
@@ -214,8 +203,7 @@ function buildSubscriptionInsights(
   input: GenerateFinancialInsightsInput,
   transactions: readonly InsightTransaction[],
 ): FinancialInsight[] {
-  const minOccurrences =
-    input.minRecurringOccurrences ?? DEFAULT_MIN_RECURRING_OCCURRENCES;
+  const minOccurrences = input.minRecurringOccurrences ?? DEFAULT_MIN_RECURRING_OCCURRENCES;
   const groups = new Map<string, InsightTransaction[]>();
 
   for (const transaction of transactions) {
@@ -263,9 +251,7 @@ function buildSubscriptionInsights(
   return insights;
 }
 
-function buildNegativeBalanceInsight(
-  input: GenerateFinancialInsightsInput,
-): FinancialInsight[] {
+function buildNegativeBalanceInsight(input: GenerateFinancialInsightsInput): FinancialInsight[] {
   if (input.projectedBalanceMinor === undefined || input.projectedBalanceMinor >= 0) {
     return [];
   }
@@ -303,10 +289,7 @@ function buildBudgetInsights(
   for (const budget of budgets) {
     const spent = current
       .filter((transaction) => {
-        return (
-          transaction.kind === "expense" &&
-          transaction.categoryId === budget.categoryId
-        );
+        return transaction.kind === "expense" && transaction.categoryId === budget.categoryId;
       })
       .reduce((sum, transaction) => {
         return sum + transaction.amountMinor;
@@ -321,16 +304,13 @@ function buildBudgetInsights(
       severity: "warning",
       confidence: "high",
       title: `Orcamento excedido em ${budget.categoryId}`,
-      explanation:
-        "O total realizado ultrapassou o valor planejado para a categoria no periodo.",
+      explanation: "O total realizado ultrapassou o valor planejado para a categoria no periodo.",
       evidence: {
         label: budget.categoryId,
         currentAmountMinor: spent,
         previousAmountMinor: budget.plannedAmountMinor,
         deltaAmountMinor: spent - budget.plannedAmountMinor,
-        percentChange: Math.round(
-          (spent / Math.max(1, budget.plannedAmountMinor)) * 100,
-        ),
+        percentChange: Math.round((spent / Math.max(1, budget.plannedAmountMinor)) * 100),
         periodStartOn: budget.periodStartOn,
         periodEndOn: budget.periodEndOn,
       },
@@ -350,10 +330,7 @@ function buildMonthlySummary(
   const currentIncome = sumByKind(current, "income");
   const currentExpense = sumByKind(current, "expense");
   const previousExpense = sumByKind(previous, "expense");
-  const percentChange = calculateOptionalPercentChange(
-    currentExpense,
-    previousExpense,
-  );
+  const percentChange = calculateOptionalPercentChange(currentExpense, previousExpense);
   const incomeText = formatMoney(currentIncome, currency);
   const expenseText = formatMoney(currentExpense, currency);
 
@@ -469,10 +446,7 @@ function calculatePercentChange(current: number, previous: number): number {
   return Math.round(((current - previous) / previous) * 100);
 }
 
-function calculateOptionalPercentChange(
-  current: number,
-  previous: number,
-): number | undefined {
+function calculateOptionalPercentChange(current: number, previous: number): number | undefined {
   if (previous <= 0) {
     return undefined;
   }
@@ -480,17 +454,11 @@ function calculateOptionalPercentChange(
   return calculatePercentChange(current, previous);
 }
 
-function buildIncreaseSeverity(
-  percentChange: number,
-  threshold: number,
-): FinancialInsightSeverity {
+function buildIncreaseSeverity(percentChange: number, threshold: number): FinancialInsightSeverity {
   return percentChange >= threshold * 2 ? "warning" : "info";
 }
 
-function buildIncreaseTitle(
-  kind: SpendingIncreaseInsightKind,
-  label: string,
-): string {
+function buildIncreaseTitle(kind: SpendingIncreaseInsightKind, label: string): string {
   if (kind === "category_spending_increase") {
     return `Gasto maior na categoria ${label}`;
   }
