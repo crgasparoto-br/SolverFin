@@ -49,7 +49,10 @@ async function testConsentBlocksProviderCall(): Promise<void> {
     logger: (event) => events.push(event),
   });
 
-  assertEqual(result.status, "blocked", "revoked consent blocks request");
+  if (result.status !== "blocked") {
+    throw new Error(`Expected blocked result, got ${result.status}.`);
+  }
+
   assertEqual(result.code, "AI_CONSENT_REQUIRED", "revoked consent code");
   assertEqual(events[0]?.code, "AI_CONSENT_REQUIRED", "safe consent log code");
   assertEqual(events[0]?.correlationId, context.correlationId, "safe consent correlation id");
@@ -143,7 +146,10 @@ async function testInvalidProviderResponse(): Promise<void> {
     payload: { prompt: "Resuma dados ficticios" },
   });
 
-  assertEqual(result.status, "failed", "blank provider response fails");
+  if (result.status !== "failed") {
+    throw new Error(`Expected failed result, got ${result.status}.`);
+  }
+
   assertEqual(result.code, "AI_PROVIDER_INVALID_RESPONSE", "invalid response code");
 }
 
