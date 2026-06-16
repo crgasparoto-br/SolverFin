@@ -7,7 +7,9 @@ import {
   validateCategoryForm,
 } from "./validation.js";
 
-export const financialCatalogReadyExample = buildFinancialCatalogViewModel(financialCatalogMockDataSet);
+export const financialCatalogReadyExample = buildFinancialCatalogViewModel(
+  financialCatalogMockDataSet,
+);
 export const financialCatalogLoadingExample = buildFinancialCatalogViewModel(undefined, "loading");
 export const financialCatalogErrorExample = buildFinancialCatalogViewModel(undefined, "error");
 export const financialCatalogSuccessExample = buildFinancialCatalogViewModel(
@@ -47,7 +49,9 @@ export const validCategoryExample = validateCategoryForm({
   color: "#F59E0B",
 });
 
-export const systemCategoryArchiveExample = canArchiveCategory(financialCatalogMockDataSet.categories[0]);
+export const systemCategoryArchiveExample = canArchiveCategory(
+  financialCatalogMockDataSet.categories[0],
+);
 
 export const financialCatalogExpectedCounts = {
   accounts: 2,
