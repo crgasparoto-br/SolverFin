@@ -1,5 +1,7 @@
+export * from "./assistant.js";
 export * from "./bank-message-parser.js";
 export * from "./extraction.js";
+export * from "./insights.js";
 
 export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
 export type AiConsentState = "granted" | "revoked" | "missing";
