@@ -11,13 +11,13 @@ import type {
   TransactionStatus,
 } from "./index.js";
 import type { TenantContext } from "./tenant.js";
-import { assertCategorySupportsTransactionKind } from "./categories.js";
 import {
   applyTenantScope,
   getTenantScopedResource,
   listTenantScopedResources,
   updateTenantScopedResource,
 } from "./tenant-authorization.js";
+import { assertCategorySupportsTransactionKind } from "./categories.js";
 
 export type TransactionErrorCode =
   | "TRANSACTION_KIND_REQUIRED"
@@ -188,9 +188,17 @@ export function listTransactions(
       filters.categoryId === undefined || transaction.categoryId === filters.categoryId;
     const fromMatches =
       filters.occurredFrom === undefined || transaction.occurredOn >= filters.occurredFrom;
-    const toMatches = filters.occurredTo === undefined || transaction.occurredOn <= filters.occurredTo;
+    const toMatches =
+      filters.occurredTo === undefined || transaction.occurredOn <= filters.occurredTo;
 
-    return statusMatches && kindMatches && accountMatches && categoryMatches && fromMatches && toMatches;
+    return (
+      statusMatches &&
+      kindMatches &&
+      accountMatches &&
+      categoryMatches &&
+      fromMatches &&
+      toMatches
+    );
   });
 }
 
@@ -208,7 +216,32 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
     input.payload,
   );
   const kind = validateTransactionKind(input.payload.kind ?? currentTransaction.kind);
-  const payload = buildUpdatePayload(kind, currentTransaction, input.payload);
+  const payload: CreateTransactionPayload = {
+    kind,
+    status: input.payload.status ?? currentTransaction.status,
+    source: input.payload.source ?? currentTransaction.source,
+    amountMinor: input.payload.amountMinor ?? currentTransaction.amountMinor,
+    currency: input.payload.currency ?? currentTransaction.currency,
+    occurredOn: input.payload.occurredOn ?? currentTransaction.occurredOn,
+    description: input.payload.description ?? currentTransaction.description,
+    accountId: input.payload.accountId ?? requireAccountId(currentTransaction.accountId),
+    organizationId: currentTransaction.organizationId,
+    financialProfileId: currentTransaction.financialProfileId,
+  };
+
+  const nextDestinationAccountId =
+    input.payload.destinationAccountId ??
+    (kind === "transfer" ? currentTransaction.destinationAccountId : undefined);
+  const nextCategoryId = input.payload.categoryId ?? currentTransaction.categoryId;
+
+  if (nextDestinationAccountId !== undefined) {
+    payload.destinationAccountId = nextDestinationAccountId;
+  }
+
+  if (nextCategoryId !== undefined) {
+    payload.categoryId = nextCategoryId;
+  }
+
   const transaction = buildTransaction({
     id: currentTransaction.id,
     context: input.context,
@@ -241,13 +274,13 @@ export function voidTransaction(
   now: ISODateTime,
 ): TransactionMutationResult {
   const currentTransaction = getTenantScopedResource(context, transaction);
-  const voidedTransaction: Transaction = {
+  const voidedTransaction = {
     ...currentTransaction,
     status: "voided",
     updatedAt: now,
     updatedByUserId: context.userId,
     voidedAt: now,
-  };
+  } satisfies Transaction;
 
   return {
     transaction: voidedTransaction,
@@ -273,20 +306,40 @@ export function buildTransactionMovements(
   }
 
   if (transaction.kind === "income") {
-    return [buildMovement(transaction, requireAccountId(transaction.accountId), "credit")];
+    return [
+      {
+        transactionId: transaction.id,
+        accountId: requireAccountId(transaction.accountId),
+        direction: "credit",
+        amountMinor: transaction.amountMinor,
+      },
+    ];
   }
 
   if (transaction.kind === "expense") {
-    return [buildMovement(transaction, requireAccountId(transaction.accountId), "debit")];
+    return [
+      {
+        transactionId: transaction.id,
+        accountId: requireAccountId(transaction.accountId),
+        direction: "debit",
+        amountMinor: transaction.amountMinor,
+      },
+    ];
   }
 
   return [
-    buildMovement(transaction, requireAccountId(transaction.accountId), "debit"),
-    buildMovement(
-      transaction,
-      requireDestinationAccountId(transaction.destinationAccountId),
-      "credit",
-    ),
+    {
+      transactionId: transaction.id,
+      accountId: requireAccountId(transaction.accountId),
+      direction: "debit",
+      amountMinor: transaction.amountMinor,
+    },
+    {
+      transactionId: transaction.id,
+      accountId: requireDestinationAccountId(transaction.destinationAccountId),
+      direction: "credit",
+      amountMinor: transaction.amountMinor,
+    },
   ];
 }
 
@@ -303,42 +356,11 @@ interface BuildTransactionInput {
   transferGroupId?: EntityId;
 }
 
-function buildUpdatePayload(
-  kind: TransactionKind,
-  currentTransaction: Transaction,
-  payload: UpdateTransactionPayload,
-): CreateTransactionPayload {
-  const nextPayload: CreateTransactionPayload = {
-    kind,
-    status: payload.status ?? currentTransaction.status,
-    source: payload.source ?? currentTransaction.source,
-    amountMinor: payload.amountMinor ?? currentTransaction.amountMinor,
-    currency: payload.currency ?? currentTransaction.currency,
-    occurredOn: payload.occurredOn ?? currentTransaction.occurredOn,
-    description: payload.description ?? currentTransaction.description,
-    accountId: payload.accountId ?? requireAccountId(currentTransaction.accountId),
-    organizationId: currentTransaction.organizationId,
-    financialProfileId: currentTransaction.financialProfileId,
-  };
-  const destinationAccountId =
-    payload.destinationAccountId ??
-    (kind === "transfer" ? currentTransaction.destinationAccountId : undefined);
-  const categoryId = payload.categoryId ?? currentTransaction.categoryId;
-
-  if (destinationAccountId !== undefined) {
-    nextPayload.destinationAccountId = destinationAccountId;
-  }
-
-  if (categoryId !== undefined) {
-    nextPayload.categoryId = categoryId;
-  }
-
-  return nextPayload;
-}
-
 function buildTransaction(input: BuildTransactionInput): Transaction {
   const account = assertAccount(input.context, input.account, input.payload.accountId);
   const destinationAccount = assertDestinationAccount(input);
+  assertCategory(input.context, input.category, input.payload.categoryId, input.kind);
+
   const status = validateTransactionStatus(input.payload.status ?? "posted");
   const transaction: Transaction = {
     id: input.id,
@@ -357,8 +379,6 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
     createdByUserId: input.existingTransaction?.createdByUserId ?? input.context.userId,
     updatedByUserId: input.context.userId,
   };
-
-  assertCategory(input.context, input.category, input.payload.categoryId, input.kind);
 
   if (input.kind === "transfer") {
     transaction.destinationAccountId = destinationAccount.id;
@@ -381,19 +401,6 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
   return transaction;
 }
 
-function buildMovement(
-  transaction: Pick<Transaction, "id" | "amountMinor">,
-  accountId: EntityId,
-  direction: TransactionMovementDirection,
-): TransactionMovement {
-  return {
-    transactionId: transaction.id,
-    accountId,
-    direction,
-    amountMinor: transaction.amountMinor,
-  };
-}
-
 function assertAccount(
   context: TenantContext,
   account: Account | undefined,
@@ -402,11 +409,17 @@ function assertAccount(
   const scopedAccount = getTenantScopedResource(context, account);
 
   if (scopedAccount.id !== accountId) {
-    throw new TransactionError("TRANSACTION_ACCOUNT_INVALID", "Transaction account id does not match.");
+    throw new TransactionError(
+      "TRANSACTION_ACCOUNT_INVALID",
+      "Transaction account id does not match.",
+    );
   }
 
   if (scopedAccount.status !== "active") {
-    throw new TransactionError("TRANSACTION_ACCOUNT_ARCHIVED", "Transaction account must be active.");
+    throw new TransactionError(
+      "TRANSACTION_ACCOUNT_ARCHIVED",
+      "Transaction account must be active.",
+    );
   }
 
   return scopedAccount;
@@ -479,7 +492,10 @@ function assertCategory(
   }
 
   if (scopedCategory.status !== "active") {
-    throw new TransactionError("TRANSACTION_CATEGORY_ARCHIVED", "Transaction category must be active.");
+    throw new TransactionError(
+      "TRANSACTION_CATEGORY_ARCHIVED",
+      "Transaction category must be active.",
+    );
   }
 
   assertCategorySupportsTransactionKind(scopedCategory, kind);
@@ -499,7 +515,10 @@ function validateTransactionKind(kind: TransactionKind | undefined): Transaction
 
 function validateTransactionStatus(status: TransactionStatus): TransactionStatus {
   if (!ALLOWED_TRANSACTION_STATUSES.includes(status)) {
-    throw new TransactionError("TRANSACTION_STATUS_INVALID", "Transaction status is not supported.");
+    throw new TransactionError(
+      "TRANSACTION_STATUS_INVALID",
+      "Transaction status is not supported.",
+    );
   }
 
   return status;
@@ -507,7 +526,10 @@ function validateTransactionStatus(status: TransactionStatus): TransactionStatus
 
 function validateTransactionSource(source: TransactionSource): TransactionSource {
   if (!ALLOWED_TRANSACTION_SOURCES.includes(source)) {
-    throw new TransactionError("TRANSACTION_SOURCE_INVALID", "Transaction source is not supported.");
+    throw new TransactionError(
+      "TRANSACTION_SOURCE_INVALID",
+      "Transaction source is not supported.",
+    );
   }
 
   return source;
@@ -542,7 +564,10 @@ function normalizeCurrency(currency: string): string {
 
 function requireAccountId(accountId: EntityId | undefined): EntityId {
   if (!accountId) {
-    throw new TransactionError("TRANSACTION_ACCOUNT_REQUIRED", "Transaction account is required.");
+    throw new TransactionError(
+      "TRANSACTION_ACCOUNT_REQUIRED",
+      "Transaction account is required.",
+    );
   }
 
   return accountId;
@@ -582,6 +607,7 @@ function buildTransactionMutationAuditEntry(input: {
     entityKind: "transaction",
     entityId: transaction.id,
   };
+
   const redactedChanges = buildRedactedTransactionChanges(input.before, input.after);
 
   if (redactedChanges !== undefined) {
