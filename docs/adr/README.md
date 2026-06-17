@@ -32,3 +32,4 @@ Cada ADR deve ter:
 ## Lista
 
 - `0001-stack-inicial.md` - Stack inicial e arquitetura de alto nivel.
+- `0002-mvp-web-runtime-and-session.md` - Runtime web e sessao local do MVP.
