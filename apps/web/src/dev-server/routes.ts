@@ -2,14 +2,14 @@ export type RouteKind = "login" | "dashboard" | "placeholder" | "not-found";
 
 export const privateRoutes = new Map<string, string>([
   ["/dashboard", "Dashboard"],
-  ["/lancamentos", "Lancamentos"],
+  ["/lancamentos", "Lançamentos"],
   ["/contas", "Contas"],
   ["/categorias", "Categorias"],
-  ["/cartoes", "Cartoes"],
-  ["/orcamentos", "Orcamentos"],
+  ["/cartoes", "Cartões"],
+  ["/orcamentos", "Orçamentos"],
   ["/inbox", "Inbox"],
-  ["/relatorios", "Relatorios"],
-  ["/configuracoes", "Configuracoes"],
+  ["/relatorios", "Relatórios"],
+  ["/configuracoes", "Configurações"],
 ]);
 
 export const implementedRoutes = new Set([
