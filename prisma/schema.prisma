@@ -392,7 +392,6 @@ model Recurrence {
   installments     Installment[]
 
   @@unique([id, organizationId, financialProfileId])
-  @@unique([organizationId, financialProfileId, recurrenceId, sequenceNumber])
   @@index([organizationId, financialProfileId, status])
   @@index([organizationId, financialProfileId, startOn])
 }
