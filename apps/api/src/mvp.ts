@@ -1,10 +1,10 @@
 import { AuthError, type AuthenticatedUser } from "./auth.js";
-import { auth } from "./auth-service.js";
+import { auth, authenticateUser, registerUser } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 
 export interface MvpApiRequest {
   method: "GET" | "POST" | "DELETE";
-  path: "/api/session" | "/api/me" | "/api/financial-summary";
+  path: "/api/session" | "/api/users" | "/api/me" | "/api/financial-summary";
   headers?: Readonly<Record<string, string | undefined>>;
   body?: unknown;
 }
@@ -40,12 +40,16 @@ export interface FinancialSummaryResponse {
   generatedAt: string;
 }
 
-export function handleMvpApiRequest(request: MvpApiRequest): MvpApiResponse {
+export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpApiResponse> {
   const correlationId = resolveCorrelationId(request.headers ?? {});
 
   try {
     if (request.method === "POST" && request.path === "/api/session") {
-      return createSession(request.body);
+      return await createSession(request.body);
+    }
+
+    if (request.method === "POST" && request.path === "/api/users") {
+      return await createUser(request.body);
     }
 
     if (request.method === "DELETE" && request.path === "/api/session") {
@@ -129,20 +133,28 @@ export function buildDemoFinancialSummary(): FinancialSummaryResponse {
   };
 }
 
-function createSession(body: unknown): MvpApiResponse {
+async function createSession(body: unknown): Promise<MvpApiResponse> {
   if (!isLoginBody(body)) {
     throw new AuthError("AUTH_INVALID_CREDENTIALS", "Invalid email or password.");
   }
 
-  const result = auth.login(body);
+  const result = await authenticateUser(body);
 
-  return jsonResponse(201, {
-    user: serializeUser(result.user),
-    session: {
-      token: result.session.id,
-      expiresAt: result.session.expiresAt.toISOString(),
-    },
-  });
+  return jsonResponse(201, serializeLoginResult(result));
+}
+
+async function createUser(body: unknown): Promise<MvpApiResponse> {
+  if (!isRegisterBody(body)) {
+    throw new AuthError(
+      "AUTH_INVALID_REGISTRATION",
+      "Informe nome, email valido e senha com pelo menos 8 caracteres.",
+      400,
+    );
+  }
+
+  const result = await registerUser(body);
+
+  return jsonResponse(201, serializeLoginResult(result));
 }
 
 function requireBearerSession(authorization: string | undefined): string {
@@ -157,6 +169,19 @@ function requireBearerSession(authorization: string | undefined): string {
 
 function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
   return authorization === undefined ? {} : { authorization };
+}
+
+function serializeLoginResult(result: {
+  user: AuthenticatedUser;
+  session: { id: string; expiresAt: Date };
+}) {
+  return {
+    user: serializeUser(result.user),
+    session: {
+      token: result.session.id,
+      expiresAt: result.session.expiresAt.toISOString(),
+    },
+  };
 }
 
 function serializeUser(user: AuthenticatedUser) {
@@ -175,6 +200,18 @@ function isLoginBody(body: unknown): body is { email: string; password: string }
     "password" in body &&
     typeof body.email === "string" &&
     typeof body.password === "string"
+  );
+}
+
+function isRegisterBody(body: unknown): body is {
+  displayName: string;
+  email: string;
+  password: string;
+} {
+  return (
+    isLoginBody(body) &&
+    "displayName" in body &&
+    typeof body.displayName === "string"
   );
 }
 

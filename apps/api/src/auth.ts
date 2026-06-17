@@ -54,9 +54,11 @@ export interface AuthServiceOptions {
 
 export type AuthErrorCode =
   | "AUTH_INVALID_CREDENTIALS"
+  | "AUTH_INVALID_REGISTRATION"
   | "AUTH_SESSION_REQUIRED"
   | "AUTH_SESSION_INVALID"
   | "AUTH_SESSION_EXPIRED"
+  | "AUTH_USER_ALREADY_EXISTS"
   | "AUTH_USER_DISABLED";
 
 export class AuthError extends Error {
@@ -77,12 +79,17 @@ export function createAuthService(options: AuthServiceOptions) {
   const sessionStore = options.sessionStore ?? createInMemoryAuthSessionStore();
   const now = options.now ?? (() => new Date());
   const sessionTtlMs = options.sessionTtlMs ?? DEFAULT_SESSION_TTL_MS;
-  const usersByEmail = new Map<string, AuthUserCredentials>(
-    options.users.map((credentials) => [normalizeEmail(credentials.user.email), credentials]),
-  );
-  const usersById = new Map<string, AuthenticatedUser>(
-    options.users.map((credentials) => [credentials.user.id, credentials.user]),
-  );
+  const usersByEmail = new Map<string, AuthUserCredentials>();
+  const usersById = new Map<string, AuthenticatedUser>();
+
+  for (const credentials of options.users) {
+    upsertUserCredentials(credentials);
+  }
+
+  function upsertUserCredentials(credentials: AuthUserCredentials): void {
+    usersByEmail.set(normalizeEmail(credentials.user.email), credentials);
+    usersById.set(credentials.user.id, credentials.user);
+  }
 
   function getAuthenticatedUser(sessionId: string): AuthenticatedUser {
     const session = sessionStore.get(sessionId);
@@ -110,6 +117,8 @@ export function createAuthService(options: AuthServiceOptions) {
   }
 
   return {
+    upsertUserCredentials,
+
     login(input: LoginInput): LoginResult {
       const credentials = usersByEmail.get(normalizeEmail(input.email));
 

@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 
 import { buildDemoFinancialSummary, handleMvpApiRequest } from "./mvp.js";
 
-loginCreatesSessionAndAllowsPrivateContracts();
-invalidCredentialsUseSafeError();
-privateContractsRequireSession();
+await loginCreatesSessionAndAllowsPrivateContracts();
+await invalidCredentialsUseSafeError();
+await privateContractsRequireSession();
 summaryUsesDemoDataInMinorUnits();
 
-function loginCreatesSessionAndAllowsPrivateContracts(): void {
-  const login = handleMvpApiRequest({
+async function loginCreatesSessionAndAllowsPrivateContracts(): Promise<void> {
+  const login = await handleMvpApiRequest({
     method: "POST",
     path: "/api/session",
     body: {
@@ -20,7 +20,7 @@ function loginCreatesSessionAndAllowsPrivateContracts(): void {
   assert.equal(login.statusCode, 201);
 
   const token = readToken(login.body);
-  const me = handleMvpApiRequest({
+  const me = await handleMvpApiRequest({
     method: "GET",
     path: "/api/me",
     headers: {
@@ -31,7 +31,7 @@ function loginCreatesSessionAndAllowsPrivateContracts(): void {
   assert.equal(me.statusCode, 200);
   assert.equal(JSON.stringify(me.body).includes("SolverFinDemo!2026"), false);
 
-  const logout = handleMvpApiRequest({
+  const logout = await handleMvpApiRequest({
     method: "DELETE",
     path: "/api/session",
     headers: {
@@ -42,8 +42,8 @@ function loginCreatesSessionAndAllowsPrivateContracts(): void {
   assert.equal(logout.statusCode, 204);
 }
 
-function invalidCredentialsUseSafeError(): void {
-  const response = handleMvpApiRequest({
+async function invalidCredentialsUseSafeError(): Promise<void> {
+  const response = await handleMvpApiRequest({
     method: "POST",
     path: "/api/session",
     body: {
@@ -57,8 +57,8 @@ function invalidCredentialsUseSafeError(): void {
   assert.equal(JSON.stringify(response.body).includes("senha-incorreta"), false);
 }
 
-function privateContractsRequireSession(): void {
-  const response = handleMvpApiRequest({
+async function privateContractsRequireSession(): Promise<void> {
+  const response = await handleMvpApiRequest({
     method: "GET",
     path: "/api/financial-summary",
   });

@@ -41,6 +41,7 @@ const auth = createAuthService({
 
 testPublicRouteAllowsAnonymousUser();
 testLoginAndPrivateRoute();
+testPersistedCredentialsCanBeAdded();
 testLogoutInvalidatesSession();
 testInvalidCredentialsAreControlled();
 testDisabledUserCannotLogin();
@@ -74,6 +75,25 @@ function testLoginAndPrivateRoute(): void {
   });
 
   assertEqual(privateUser.id, activeUser.id, "private route should resolve the active user");
+}
+
+function testPersistedCredentialsCanBeAdded(): void {
+  auth.upsertUserCredentials({
+    user: {
+      id: "user-db-1",
+      email: "nova@solverfin.example.invalid",
+      displayName: "Nova Pessoa",
+      status: "active",
+    },
+    passwordHash: "senha-cadastrada",
+  });
+
+  const result = auth.login({
+    email: " NOVA@solverfin.example.invalid ",
+    password: "senha-cadastrada",
+  });
+
+  assertEqual(result.user.id, "user-db-1", "login should use added persisted credentials");
 }
 
 function testLogoutInvalidatesSession(): void {
