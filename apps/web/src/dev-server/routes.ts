@@ -1,0 +1,49 @@
+export type RouteKind = "login" | "dashboard" | "placeholder" | "not-found";
+
+export const privateRoutes = new Map<string, string>([
+  ["/dashboard", "Dashboard"],
+  ["/lancamentos", "Lancamentos"],
+  ["/contas", "Contas"],
+  ["/categorias", "Categorias"],
+  ["/cartoes", "Cartoes"],
+  ["/orcamentos", "Orcamentos"],
+  ["/inbox", "Inbox"],
+  ["/relatorios", "Relatorios"],
+  ["/configuracoes", "Configuracoes"],
+]);
+
+export const implementedRoutes = new Set([
+  "/dashboard",
+  "/contas",
+  "/categorias",
+  "/lancamentos",
+  "/cartoes",
+  "/orcamentos",
+]);
+
+export function resolveRoute(
+  pathname: string,
+  hasSession: boolean,
+): { statusCode: number; kind: RouteKind; location?: string } {
+  if (pathname === "/") {
+    return {
+      statusCode: 302,
+      kind: hasSession ? "dashboard" : "login",
+      location: hasSession ? "/dashboard" : "/login",
+    };
+  }
+
+  if (pathname === "/login") {
+    return hasSession
+      ? { statusCode: 302, kind: "dashboard", location: "/dashboard" }
+      : { statusCode: 200, kind: "login" };
+  }
+
+  if (privateRoutes.has(pathname)) {
+    return hasSession
+      ? { statusCode: 200, kind: pathname === "/dashboard" ? "dashboard" : "placeholder" }
+      : { statusCode: 302, kind: "login", location: "/login" };
+  }
+
+  return { statusCode: 404, kind: "not-found" };
+}
