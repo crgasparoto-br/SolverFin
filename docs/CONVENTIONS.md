@@ -29,6 +29,14 @@
 - Use aspas duplas, ponto e virgula e trailing comma onde aplicavel.
 - Rode `npm run format:check` antes de abrir PR.
 
+## Formatacao de localidade
+
+- A localidade padrao do produto e `pt-BR`.
+- A moeda padrao para valores financeiros e `BRL`.
+- Sempre que criar um novo objeto de formatacao (`Intl.NumberFormat`, `Intl.DateTimeFormat` ou equivalente), use a configuracao compartilhada de `@solverfin/shared` em vez de instanciar `Intl` diretamente com literais locais.
+- Use `formatMinorCurrency`, `formatDateOnly`, `createSolverFinCurrencyFormatter` ou `createSolverFinDateFormatter` de `@solverfin/shared` para manter telas, assistente, insights e novos fluxos consistentes.
+- Datas somente de calendario devem usar o fuso configurado em `SOLVERFIN_FORMATTING_CONFIG.dateTimeZone` para evitar deslocamento de dia ao renderizar datas ISO sem horario.
+
 ## Lint
 
 - ESLint e o lint padrao.
