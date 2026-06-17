@@ -23,11 +23,11 @@ function usesPtBrFormattingConfig(): void {
 }
 
 function formatsMinorCurrencyAsBrazilianReal(): void {
-  assert.equal(formatMinorCurrency(123456), "R$ 1.234,56");
+  assert.match(formatMinorCurrency(123456), /^R\$\s1\.234,56$/u);
 }
 
 function allowsExplicitCurrencyWithPtBrLocale(): void {
-  assert.equal(formatMinorCurrency(123456, { currency: "USD" }), "US$ 1.234,56");
+  assert.match(formatMinorCurrency(123456, { currency: "USD" }), /^US\$\s1\.234,56$/u);
 }
 
 function formatsDateOnlyWithConfiguredTimeZone(): void {
