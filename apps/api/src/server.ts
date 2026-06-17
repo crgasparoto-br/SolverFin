@@ -7,7 +7,7 @@ import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.API_PORT ?? 4000);
-const MVP_PATHS = new Set(["/api/session", "/api/me"]);
+const MVP_PATHS = new Set(["/api/session", "/api/users", "/api/me"]);
 const MAX_BODY_BYTES = 1_000_000;
 
 const server = createServer((request, response) => {
@@ -27,8 +27,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     const body = await readJsonBody(request);
     const method = request.method ?? "GET";
 
-    if (url.pathname === "/api/session" || (method === "GET" && MVP_PATHS.has(url.pathname))) {
-      const legacyResult = dispatchLegacyRoute(method, url.pathname, headers, body);
+    if (MVP_PATHS.has(url.pathname)) {
+      const legacyResult = await dispatchLegacyRoute(method, url.pathname, headers, body);
 
       if (legacyResult) {
         writeResponse(response, legacyResult);
@@ -75,13 +75,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 }
 
-function dispatchLegacyRoute(
+async function dispatchLegacyRoute(
   method: string,
   pathname: string,
   headers: Readonly<Record<string, string | undefined>>,
   body: unknown,
-): ApiResponse | undefined {
-  if (!MVP_PATHS.has(pathname) && pathname !== "/api/session") {
+): Promise<ApiResponse | undefined> {
+  if (!MVP_PATHS.has(pathname)) {
     return undefined;
   }
 
@@ -92,7 +92,7 @@ function dispatchLegacyRoute(
     body,
   } as MvpApiRequest;
 
-  const mvpResponse = handleMvpApiRequest(mvpRequest);
+  const mvpResponse = await handleMvpApiRequest(mvpRequest);
 
   return {
     statusCode: mvpResponse.statusCode,
