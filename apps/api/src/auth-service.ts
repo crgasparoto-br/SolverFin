@@ -56,7 +56,13 @@ export async function authenticateUser(input: LoginInput): Promise<LoginResult> 
     }
   }
 
-  const credentials = await findUserCredentialsByEmail(input.email);
+  const email = normalizeEmail(input.email);
+
+  if (email === demoUser.email) {
+    throw invalidCredentialsError();
+  }
+
+  const credentials = await findUserCredentialsByEmail(email);
 
   if (!credentials) {
     throw invalidCredentialsError();

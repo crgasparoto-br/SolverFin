@@ -1,3 +1,5 @@
+import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
+
 import { apiGet } from "./api.js";
 import { implementedRoutes, privateRoutes } from "./routes.js";
 
@@ -507,15 +509,11 @@ export function renderNotFoundPage(): string {
 }
 
 function formatMoney(amountMinor: number): string {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    amountMinor / 100,
-  );
+  return formatMinorCurrency(amountMinor);
 }
 
 function formatDate(date: string): string {
-  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(
-    new Date(`${date}T00:00:00.000Z`),
-  );
+  return formatDateOnly(date);
 }
 
 function escapeHtml(value: string): string {

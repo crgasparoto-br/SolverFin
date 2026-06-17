@@ -1,3 +1,5 @@
+import { formatMinorCurrency } from "@solverfin/shared";
+
 export type FinancialInsightKind =
   | "category_spending_increase"
   | "merchant_spending_increase"
@@ -475,8 +477,5 @@ function buildSubscriptionExplanation(distinctMonths: number): string {
 }
 
 function formatMoney(amountMinor: number, currency: string): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency,
-  }).format(amountMinor / 100);
+  return formatMinorCurrency(amountMinor, { currency });
 }

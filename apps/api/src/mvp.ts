@@ -208,11 +208,7 @@ function isRegisterBody(body: unknown): body is {
   email: string;
   password: string;
 } {
-  return (
-    isLoginBody(body) &&
-    "displayName" in body &&
-    typeof body.displayName === "string"
-  );
+  return isLoginBody(body) && "displayName" in body && typeof body.displayName === "string";
 }
 
 function jsonResponse(statusCode: number, body: unknown): MvpApiResponse {

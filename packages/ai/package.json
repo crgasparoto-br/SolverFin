@@ -10,5 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "rm -rf ../../.tmp-tests/ai && tsc -p tsconfig.test.json && node ../../.tmp-tests/ai/index.test.js && node ../../.tmp-tests/ai/extraction.test.js && node ../../.tmp-tests/ai/bank-message-parser.test.js && node ../../.tmp-tests/ai/assistant.test.js && node ../../.tmp-tests/ai/insights.test.js",
     "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@solverfin/shared": "*"
   }
 }

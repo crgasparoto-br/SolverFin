@@ -28,17 +28,15 @@ if (!hasNonEmptyEnvValue(envContent, "DATABASE_URL")) {
 }
 
 function hasNonEmptyEnvValue(content, key) {
-  return content
-    .split(/\r?\n/u)
-    .some((line) => {
-      const trimmedLine = line.trim();
+  return content.split(/\r?\n/u).some((line) => {
+    const trimmedLine = line.trim();
 
-      if (!trimmedLine || trimmedLine.startsWith("#")) {
-        return false;
-      }
+    if (!trimmedLine || trimmedLine.startsWith("#")) {
+      return false;
+    }
 
-      const [name, ...valueParts] = trimmedLine.split("=");
+    const [name, ...valueParts] = trimmedLine.split("=");
 
-      return name.trim() === key && valueParts.join("=").trim() !== "";
-    });
+    return name.trim() === key && valueParts.join("=").trim() !== "";
+  });
 }

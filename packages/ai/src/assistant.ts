@@ -1,3 +1,5 @@
+import { formatMinorCurrency } from "@solverfin/shared";
+
 import {
   type AiProvider,
   type AiUsageContext,
@@ -307,8 +309,5 @@ function normalizeQuestion(question: string): string {
 }
 
 function formatMoney(amountMinor: number, currency: string): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency,
-  }).format(amountMinor / 100);
+  return formatMinorCurrency(amountMinor, { currency });
 }
