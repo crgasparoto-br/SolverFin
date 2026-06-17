@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - codex/format-repo-prettier-2
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -16,6 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
