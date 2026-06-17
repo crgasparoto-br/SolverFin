@@ -58,6 +58,7 @@ npm run lint
 npm run lint:fix
 npm run typecheck
 npm run test
+npm run test:integration
 npm run build
 npm run validate
 ```
@@ -76,6 +77,34 @@ Login demo: `demo@solverfin.example.invalid` / `SolverFinDemo!2026`.
 `env:check`, `format`, `lint`, `typecheck`, `test` e `build` apontam para validacoes reais, incluindo o build dos pacotes de dominio/config/shared como pre-requisito (`build:packages`).
 
 Se `npm ci` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint, Prettier, Prisma e demais dependencias travadas no lockfile.
+
+## Testes de integracao API + PostgreSQL
+
+A suite de integracao da API usa PostgreSQL real, aplica migrations com Prisma, reaplica o seed demo seguro e exercita as rotas persistidas de contas, categorias e lancamentos com isolamento por perfil financeiro.
+
+Antes de rodar, garanta que `.env` exista com a `DATABASE_URL` local e suba o banco:
+
+```bash
+cp .env.example .env
+docker compose up -d postgres
+```
+
+Executar a suite de integracao:
+
+```bash
+npm run test:integration
+```
+
+Esse comando executa, em ordem:
+
+```bash
+npm run build:packages
+npm run db:deploy
+npm run db:seed
+npm run test:integration --workspace @solverfin/api
+```
+
+O teste cria dados ficticios adicionais no banco configurado em `DATABASE_URL`. Use uma base local ou efemera de teste. Para recriar a base local do zero, rode `docker compose down -v` e depois repita o preparo acima.
 
 ## CI inicial
 
@@ -102,7 +131,7 @@ npm ci
 npm run validate
 ```
 
-O CI inicial nao depende de Docker, banco local ou secrets reais. Validacoes com PostgreSQL, Prisma e migrations devem entrar quando o schema e os testes de persistencia forem implementados.
+O CI inicial nao depende de Docker, banco local ou secrets reais. Validacoes com PostgreSQL, Prisma e migrations devem entrar quando o schema e os testes de persistencia exigirem banco real.
 
 Como o `package-lock.json` esta versionado, o CI usa `npm ci` para instalacao reprodutivel e habilita cache de npm baseado nesse lockfile.
 
