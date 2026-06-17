@@ -1,3 +1,5 @@
+import "./load-env.js";
+
 import { Pool, type QueryResultRow } from "pg";
 
 let pool: Pool | undefined;
