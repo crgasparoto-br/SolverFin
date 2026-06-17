@@ -29,7 +29,7 @@ Stack-alvo inicial:
 - PostgreSQL como banco relacional inicial.
 - Prisma como ORM e ferramenta de migrations inicial.
 - Testes automatizados organizados por dominio, API, UI e integracoes.
-- CI no GitHub Actions para instalar dependencias, lint, typecheck, testes e build quando o bootstrap existir.
+- CI no GitHub Actions para instalar dependencias de forma reprodutivel, lint, typecheck, testes e build quando o bootstrap existir.
 - Camada de dominio financeiro isolada de frameworks e provedores externos sempre que possivel.
 - Provedores de IA acessados por abstracao propria, com schemas estruturados e logs seguros.
 
@@ -42,8 +42,10 @@ O workflow `.github/workflows/ci.yml` roda em `pull_request` e `push` para `main
 Checks executados:
 
 ```bash
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run env:check
+npm run prisma:validate
+npm run db:seed:check
 npm run format:check
 npm run lint
 npm run typecheck
@@ -51,11 +53,11 @@ npm run test
 npm run build
 ```
 
-Os comandos ficam separados no workflow para que a falha mostre claramente se o problema esta em ambiente, instalacao, formatacao, lint, tipos, testes ou build.
+Os comandos ficam separados no workflow para que a falha mostre claramente se o problema esta em ambiente, instalacao, schema Prisma, seed, formatacao, lint, tipos, testes ou build.
 
-Como ainda nao ha `package-lock.json` versionado, o CI usa `npm install` e nao habilita cache de dependencias. Quando o lockfile for adotado, o workflow deve migrar para instalacao reprodutivel e cache seguro.
+Como o `package-lock.json` esta versionado, o CI usa `npm ci` para instalacao reprodutivel e habilita cache de npm baseado nesse lockfile.
 
-Validacoes com PostgreSQL, Prisma, migrations e seeds devem entrar em workflows ou jobs futuros quando a persistencia existir.
+Validacoes com PostgreSQL, Prisma migrations e seeds completos devem entrar em workflows ou jobs futuros quando os testes de persistencia exigirem banco real.
 
 ## Ambientes e secrets
 
