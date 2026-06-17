@@ -1,3 +1,5 @@
+import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
+
 export type FinancialAvailabilityConfidence = "high" | "medium" | "low";
 export type AvailabilityComponentKind =
   | "balance"
@@ -217,14 +219,9 @@ function buildDetailRow(
 }
 
 function formatMoney(amountMinor: number, currency: string): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency,
-  }).format(amountMinor / 100);
+  return formatMinorCurrency(amountMinor, { currency });
 }
 
 function formatDate(date: string): string {
-  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(
-    new Date(`${date}T00:00:00.000Z`),
-  );
+  return formatDateOnly(date);
 }
