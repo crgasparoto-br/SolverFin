@@ -80,13 +80,23 @@ function summaryUsesDemoDataInMinorUnits(): void {
 }
 
 function readToken(body: unknown): string {
-  assert.equal(typeof body, "object");
-  assert.notEqual(body, null);
-  assert.equal("session" in body, true);
+  if (!isSessionBody(body)) {
+    throw new Error("Expected session token in login response.");
+  }
 
-  const session = (body as { session: { token?: unknown } }).session;
+  return body.session.token;
+}
 
-  assert.equal(typeof session.token, "string");
+function isSessionBody(body: unknown): body is { session: { token: string } } {
+  if (typeof body !== "object" || body === null || !("session" in body)) {
+    return false;
+  }
 
-  return session.token;
+  const session = (body as { session?: unknown }).session;
+
+  if (typeof session !== "object" || session === null || !("token" in session)) {
+    return false;
+  }
+
+  return typeof (session as { token?: unknown }).token === "string";
 }
