@@ -3,7 +3,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { handleApiRequest } from "./dev-server/api.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
-import { renderLoginPage, renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
+import { renderLoginPage } from "./dev-server/login-page.js";
+import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
 
@@ -13,9 +14,9 @@ export {
   renderCardsPage,
   renderCategoriesPage,
   renderDashboardPage,
-  renderLoginPage,
   renderTransactionsPage,
 } from "./dev-server/pages.js";
+export { renderLoginPage } from "./dev-server/login-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
 
 const host = process.env.HOST ?? "0.0.0.0";
@@ -62,11 +63,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (route.kind === "login") {
-    sendHtml(
-      response,
-      200,
-      renderLoginPage(url.searchParams.has("erro") ? "Credenciais invalidas." : undefined),
-    );
+    const message = url.searchParams.get("erro");
+    sendHtml(response, 200, renderLoginPage(message ? decodeURIComponent(message) : undefined));
     return;
   }
 
