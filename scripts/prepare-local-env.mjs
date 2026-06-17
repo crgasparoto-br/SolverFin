@@ -7,7 +7,9 @@ const envPath = resolve(repoRoot, ".env");
 const envExamplePath = resolve(repoRoot, ".env.example");
 
 if (!existsSync(envExamplePath)) {
-  console.error("Nao foi possivel preparar o ambiente local: .env.example nao foi encontrado.");
+  console.error(
+    "Nao foi possivel preparar o ambiente local: .env.example nao foi encontrado.",
+  );
   process.exit(1);
 }
 
@@ -28,17 +30,15 @@ if (!hasNonEmptyEnvValue(envContent, "DATABASE_URL")) {
 }
 
 function hasNonEmptyEnvValue(content, key) {
-  return content
-    .split(/\r?\n/u)
-    .some((line) => {
-      const trimmedLine = line.trim();
+  return content.split(/\r?\n/u).some((line) => {
+    const trimmedLine = line.trim();
 
-      if (!trimmedLine || trimmedLine.startsWith("#")) {
-        return false;
-      }
+    if (!trimmedLine || trimmedLine.startsWith("#")) {
+      return false;
+    }
 
-      const [name, ...valueParts] = trimmedLine.split("=");
+    const [name, ...valueParts] = trimmedLine.split("=");
 
-      return name.trim() === key && valueParts.join("=").trim() !== "";
-    });
+    return name.trim() === key && valueParts.join("=").trim() !== "";
+  });
 }
