@@ -28,9 +28,7 @@ async function main(): Promise<void> {
   await assertUnknownProfileIsRejected(token);
 }
 
-async function createPersonalFinancialFlow(
-  token: string,
-): Promise<PersonalFixtures> {
+async function createPersonalFinancialFlow(token: string): Promise<PersonalFixtures> {
   const suffix = Date.now().toString(36);
 
   const accountResponse = await apiRequest(token, "POST", "/api/accounts", {
@@ -49,29 +47,21 @@ async function createPersonalFinancialFlow(
     kind: "expense",
   });
   assert.equal(categoryResponse.statusCode, 201);
-  const category = readBody<{ category: ApiCategory }>(categoryResponse)
-    .category;
+  const category = readBody<{ category: ApiCategory }>(categoryResponse).category;
 
   assert.equal(category.financialProfileId, PERSONAL_PROFILE_ID);
   assert.equal(category.kind, "expense");
 
-  const transactionResponse = await apiRequest(
-    token,
-    "POST",
-    "/api/transactions",
-    {
-      kind: "expense",
-      amountMinor: 9876,
-      occurredOn: "2026-06-17",
-      accountId: account.id,
-      categoryId: category.id,
-      description: `Lancamento integracao ${suffix}`,
-    },
-  );
+  const transactionResponse = await apiRequest(token, "POST", "/api/transactions", {
+    kind: "expense",
+    amountMinor: 9876,
+    occurredOn: "2026-06-17",
+    accountId: account.id,
+    categoryId: category.id,
+    description: `Lancamento integracao ${suffix}`,
+  });
   assert.equal(transactionResponse.statusCode, 201);
-  const transaction = readBody<{ transaction: ApiTransaction }>(
-    transactionResponse,
-  ).transaction;
+  const transaction = readBody<{ transaction: ApiTransaction }>(transactionResponse).transaction;
 
   assert.equal(transaction.financialProfileId, PERSONAL_PROFILE_ID);
   assert.equal(transaction.accountId, account.id);
@@ -84,27 +74,12 @@ async function assertPersonalProfileListsOnlyPersonalData(
   token: string,
   fixtures: PersonalFixtures,
 ): Promise<void> {
-  const accountsResponse = await apiRequest(
-    token,
-    "GET",
-    "/api/accounts?status=all",
-  );
-  const categoriesResponse = await apiRequest(
-    token,
-    "GET",
-    "/api/categories?status=all",
-  );
-  const transactionsResponse = await apiRequest(
-    token,
-    "GET",
-    "/api/transactions?status=all",
-  );
+  const accountsResponse = await apiRequest(token, "GET", "/api/accounts?status=all");
+  const categoriesResponse = await apiRequest(token, "GET", "/api/categories?status=all");
+  const transactionsResponse = await apiRequest(token, "GET", "/api/transactions?status=all");
 
-  const accounts = readBody<{ accounts: ApiAccount[] }>(accountsResponse)
-    .accounts;
-  const categories = readBody<{ categories: ApiCategory[] }>(
-    categoriesResponse,
-  ).categories;
+  const accounts = readBody<{ accounts: ApiAccount[] }>(accountsResponse).accounts;
+  const categories = readBody<{ categories: ApiCategory[] }>(categoriesResponse).categories;
   const transactions = readBody<{ transactions: ApiTransaction[] }>(
     transactionsResponse,
   ).transactions;
@@ -132,9 +107,7 @@ async function assertMeiProfileDoesNotExposePersonalData(
     `/api/transactions?status=all&profileId=${MEI_PROFILE_ID}`,
   );
 
-  const meiAccounts = readBody<{ accounts: ApiAccount[] }>(
-    meiAccountsResponse,
-  ).accounts;
+  const meiAccounts = readBody<{ accounts: ApiAccount[] }>(meiAccountsResponse).accounts;
   const meiTransactions = readBody<{ transactions: ApiTransaction[] }>(
     meiTransactionsResponse,
   ).transactions;
@@ -157,11 +130,7 @@ async function assertMeiProfileDoesNotExposePersonalData(
 }
 
 async function assertUnknownProfileIsRejected(token: string): Promise<void> {
-  const response = await apiRequest(
-    token,
-    "GET",
-    `/api/accounts?profileId=${UNKNOWN_PROFILE_ID}`,
-  );
+  const response = await apiRequest(token, "GET", `/api/accounts?profileId=${UNKNOWN_PROFILE_ID}`);
 
   assert.equal(response.statusCode, 403);
   assert.equal(readErrorCode(response), "TENANT_ACCESS_DENIED");
