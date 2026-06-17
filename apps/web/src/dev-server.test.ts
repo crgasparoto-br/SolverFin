@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 
 import { renderLoginPage, resolveRoute } from "./dev-server.js";
+import { privateRoutes } from "./dev-server/routes.js";
 
 loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
+sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
 rootRouteRedirectsBasedOnSession();
 
@@ -35,6 +37,14 @@ function privateRouteAllowsSessionAndIdentifiesDashboardRoute(): void {
 
   assert.equal(authenticatedRoute.statusCode, 200);
   assert.equal(authenticatedRoute.kind, "placeholder");
+}
+
+function sidebarMenuUsesPtBrLabels(): void {
+  assert.equal(privateRoutes.get("/lancamentos"), "Lançamentos");
+  assert.equal(privateRoutes.get("/cartoes"), "Cartões");
+  assert.equal(privateRoutes.get("/orcamentos"), "Orçamentos");
+  assert.equal(privateRoutes.get("/relatorios"), "Relatórios");
+  assert.equal(privateRoutes.get("/configuracoes"), "Configurações");
 }
 
 function dashboardDoesNotRenderOnUnknownRoute(): void {
