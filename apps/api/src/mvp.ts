@@ -78,15 +78,15 @@ export function handleMvpApiRequest(request: MvpApiRequest): MvpApiResponse {
     }
 
     if (request.method === "GET" && request.path === "/api/me") {
-      const user = auth.requireAuthenticatedRequest({
-        authorization: request.headers?.authorization,
-      });
+      const user = auth.requireAuthenticatedRequest(
+        buildAuthHeaders(request.headers?.authorization),
+      );
 
       return jsonResponse(200, { user: serializeUser(user) });
     }
 
     if (request.method === "GET" && request.path === "/api/financial-summary") {
-      auth.requireAuthenticatedRequest({ authorization: request.headers?.authorization });
+      auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers?.authorization));
 
       return jsonResponse(200, buildDemoFinancialSummary());
     }
@@ -175,6 +175,10 @@ function requireBearerSession(authorization: string | undefined): string {
   }
 
   return token;
+}
+
+function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
+  return authorization === undefined ? {} : { authorization };
 }
 
 function serializeUser(user: AuthenticatedUser) {
