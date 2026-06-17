@@ -25,7 +25,7 @@
     "db:seed:check": "node --check scripts/seed-demo.mjs",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
+    "format:check": "prettier . --check || (prettier . --write && git --no-pager diff -- apps/api/src/api-persistence.integration.test.ts && exit 1)",
     "lint": "npm run build:packages && npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
