@@ -23,36 +23,11 @@ export async function handleApiRequest(
 ): Promise<void> {
   const correlationId = resolveCorrelationId(request);
 
-  if (request.method === "POST" && url.pathname === "/api/session") {
-    const body = await readJsonBody(request);
-    let loginResult: Response;
-
-    try {
-      loginResult = await fetch(`${apiBaseUrl}/api/session`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body ?? {}),
-      });
-    } catch {
-      sendJson(
-        response,
-        502,
-        apiError("API_UNREACHABLE", "Nao foi possivel conectar com a API.", correlationId),
-      );
-      return;
-    }
-
-    const loginBody = (await loginResult.json()) as {
-      session?: { token: string; expiresAt: string };
-    };
-
-    if (!loginResult.ok || !loginBody.session) {
-      sendJson(response, loginResult.status, loginBody);
-      return;
-    }
-
-    response.setHeader("set-cookie", serializeSessionCookie(loginBody.session));
-    sendJson(response, loginResult.status, loginBody);
+  if (
+    request.method === "POST" &&
+    (url.pathname === "/api/session" || url.pathname === "/api/users")
+  ) {
+    await handleSessionCreatingRequest(request, response, url.pathname, correlationId);
     return;
   }
 
@@ -142,4 +117,41 @@ export async function apiGet<T>(token: string, path: string): Promise<ApiSuccess
   } catch {
     return { ok: false, error: "Nao foi possivel conectar com a API." };
   }
+}
+
+async function handleSessionCreatingRequest(
+  request: IncomingMessage,
+  response: ServerResponse,
+  pathname: string,
+  correlationId: string,
+): Promise<void> {
+  const body = await readJsonBody(request);
+  let upstreamResult: Response;
+
+  try {
+    upstreamResult = await fetch(`${apiBaseUrl}${pathname}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body ?? {}),
+    });
+  } catch {
+    sendJson(
+      response,
+      502,
+      apiError("API_UNREACHABLE", "Nao foi possivel conectar com a API.", correlationId),
+    );
+    return;
+  }
+
+  const resultBody = (await upstreamResult.json()) as {
+    session?: { token: string; expiresAt: string };
+  };
+
+  if (!upstreamResult.ok || !resultBody.session) {
+    sendJson(response, upstreamResult.status, resultBody);
+    return;
+  }
+
+  response.setHeader("set-cookie", serializeSessionCookie(resultBody.session));
+  sendJson(response, upstreamResult.status, resultBody);
 }
