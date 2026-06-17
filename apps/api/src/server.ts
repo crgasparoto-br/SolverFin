@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-env.js";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
