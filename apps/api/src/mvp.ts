@@ -4,11 +4,7 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 
 export interface MvpApiRequest {
   method: "GET" | "POST" | "DELETE";
-  path:
-    | "/api/session"
-    | "/api/users"
-    | "/api/me"
-    | "/api/financial-summary";
+  path: "/api/session" | "/api/users" | "/api/me" | "/api/financial-summary";
   headers?: Readonly<Record<string, string | undefined>>;
   body?: unknown;
 }
@@ -44,9 +40,7 @@ export interface FinancialSummaryResponse {
   generatedAt: string;
 }
 
-export async function handleMvpApiRequest(
-  request: MvpApiRequest,
-): Promise<MvpApiResponse> {
+export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpApiResponse> {
   const correlationId = resolveCorrelationId(request.headers ?? {});
 
   try {
