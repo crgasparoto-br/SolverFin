@@ -7,9 +7,7 @@ const envPath = resolve(repoRoot, ".env");
 const envExamplePath = resolve(repoRoot, ".env.example");
 
 if (!existsSync(envExamplePath)) {
-  console.error(
-    "Nao foi possivel preparar o ambiente local: .env.example nao foi encontrado.",
-  );
+  console.error("Nao foi possivel preparar o ambiente local: .env.example nao foi encontrado.");
   process.exit(1);
 }
 
