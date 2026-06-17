@@ -28,11 +28,7 @@ async function main(): Promise<void> {
   await assertUnknownProfileIsRejected(token);
 }
 
-async function createPersonalFinancialFlow(token: string): Promise<{
-  account: ApiAccount;
-  category: ApiCategory;
-  transaction: ApiTransaction;
-}> {
+async function createPersonalFinancialFlow(token: string): Promise<PersonalFixtures> {
   const suffix = Date.now().toString(36);
 
   const accountResponse = await apiRequest(token, "POST", "/api/accounts", {
@@ -76,49 +72,51 @@ async function createPersonalFinancialFlow(token: string): Promise<{
 
 async function assertPersonalProfileListsOnlyPersonalData(
   token: string,
-  fixtures: { account: ApiAccount; category: ApiCategory; transaction: ApiTransaction },
+  fixtures: PersonalFixtures,
 ): Promise<void> {
-  const accounts = readBody<{ accounts: ApiAccount[] }>(
-    await apiRequest(token, "GET", "/api/accounts?status=all"),
-  ).accounts;
-  const categories = readBody<{ categories: ApiCategory[] }>(
-    await apiRequest(token, "GET", "/api/categories?status=all"),
-  ).categories;
+  const accountsResponse = await apiRequest(token, "GET", "/api/accounts?status=all");
+  const categoriesResponse = await apiRequest(token, "GET", "/api/categories?status=all");
+  const transactionsResponse = await apiRequest(token, "GET", "/api/transactions?status=all");
+
+  const accounts = readBody<{ accounts: ApiAccount[] }>(accountsResponse).accounts;
+  const categories = readBody<{ categories: ApiCategory[] }>(categoriesResponse).categories;
   const transactions = readBody<{ transactions: ApiTransaction[] }>(
-    await apiRequest(token, "GET", "/api/transactions?status=all"),
+    transactionsResponse,
   ).transactions;
 
-  assert.ok(accounts.some((account) => account.id === fixtures.account.id));
-  assert.ok(categories.some((category) => category.id === fixtures.category.id));
-  assert.ok(transactions.some((transaction) => transaction.id === fixtures.transaction.id));
-  assert.ok(accounts.every((account) => account.financialProfileId === PERSONAL_PROFILE_ID));
-  assert.ok(categories.every((category) => category.financialProfileId === PERSONAL_PROFILE_ID));
-  assert.ok(
-    transactions.every((transaction) => transaction.financialProfileId === PERSONAL_PROFILE_ID),
-  );
+  assert.equal(hasId(accounts, fixtures.account.id), true);
+  assert.equal(hasId(categories, fixtures.category.id), true);
+  assert.equal(hasId(transactions, fixtures.transaction.id), true);
+  assertEveryProfile(accounts, PERSONAL_PROFILE_ID);
+  assertEveryProfile(categories, PERSONAL_PROFILE_ID);
+  assertEveryProfile(transactions, PERSONAL_PROFILE_ID);
 }
 
 async function assertMeiProfileDoesNotExposePersonalData(
   token: string,
-  fixtures: { account: ApiAccount; transaction: ApiTransaction },
+  fixtures: MeiIsolationFixtures,
 ): Promise<void> {
-  const meiAccounts = readBody<{ accounts: ApiAccount[] }>(
-    await apiRequest(token, "GET", `/api/accounts?status=all&profileId=${MEI_PROFILE_ID}`),
-  ).accounts;
+  const meiAccountsResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/accounts?status=all&profileId=${MEI_PROFILE_ID}`,
+  );
+  const meiTransactionsResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/transactions?status=all&profileId=${MEI_PROFILE_ID}`,
+  );
+
+  const meiAccounts = readBody<{ accounts: ApiAccount[] }>(meiAccountsResponse).accounts;
   const meiTransactions = readBody<{ transactions: ApiTransaction[] }>(
-    await apiRequest(token, "GET", `/api/transactions?status=all&profileId=${MEI_PROFILE_ID}`),
+    meiTransactionsResponse,
   ).transactions;
 
-  assert.ok(meiAccounts.every((account) => account.financialProfileId === MEI_PROFILE_ID));
-  assert.ok(
-    meiTransactions.every((transaction) => transaction.financialProfileId === MEI_PROFILE_ID),
-  );
-  assert.equal(meiAccounts.some((account) => account.id === fixtures.account.id), false);
-  assert.equal(
-    meiTransactions.some((transaction) => transaction.id === fixtures.transaction.id),
-    false,
-  );
-  assert.ok(meiAccounts.some((account) => account.name === "Conta MEI demo"));
+  assertEveryProfile(meiAccounts, MEI_PROFILE_ID);
+  assertEveryProfile(meiTransactions, MEI_PROFILE_ID);
+  assert.equal(hasId(meiAccounts, fixtures.account.id), false);
+  assert.equal(hasId(meiTransactions, fixtures.transaction.id), false);
+  assert.equal(hasAccountNamed(meiAccounts, "Conta MEI demo"), true);
 
   const crossProfileUpdate = await apiRequest(
     token,
@@ -132,11 +130,7 @@ async function assertMeiProfileDoesNotExposePersonalData(
 }
 
 async function assertUnknownProfileIsRejected(token: string): Promise<void> {
-  const response = await apiRequest(
-    token,
-    "GET",
-    `/api/accounts?profileId=${UNKNOWN_PROFILE_ID}`,
-  );
+  const response = await apiRequest(token, "GET", `/api/accounts?profileId=${UNKNOWN_PROFILE_ID}`);
 
   assert.equal(response.statusCode, 403);
   assert.equal(readErrorCode(response), "TENANT_ACCESS_DENIED");
@@ -188,12 +182,38 @@ function readErrorCode(response: ApiResponse): string | undefined {
   return readBody<{ error?: { code?: string } }>(response).error?.code;
 }
 
+function hasId(items: Array<{ id: string }>, id: string): boolean {
+  return items.some((item) => item.id === id);
+}
+
+function hasAccountNamed(accounts: ApiAccount[], name: string): boolean {
+  return accounts.some((account) => account.name === name);
+}
+
+function assertEveryProfile(
+  items: Array<{ financialProfileId: string }>,
+  financialProfileId: string,
+): void {
+  assert.equal(
+    items.every((item) => item.financialProfileId === financialProfileId),
+    true,
+  );
+}
+
 function assertIntegrationDatabaseConfigured(): void {
   assert.ok(
     process.env.DATABASE_URL,
     "DATABASE_URL is required. Run `docker compose up -d postgres` before `npm run test:integration`.",
   );
 }
+
+interface PersonalFixtures {
+  account: ApiAccount;
+  category: ApiCategory;
+  transaction: ApiTransaction;
+}
+
+type MeiIsolationFixtures = Pick<PersonalFixtures, "account" | "transaction">;
 
 interface ApiAccount {
   id: string;

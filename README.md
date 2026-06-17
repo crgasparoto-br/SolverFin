@@ -74,6 +74,8 @@ npm run dev:web    # Web SSR em http://localhost:5173, consumindo a API real
 
 Login demo: `demo@solverfin.example.invalid` / `SolverFinDemo!2026`.
 
+Esse login pertence exclusivamente a autenticacao demo local. A API bloqueia essa autenticacao fora de `NODE_ENV=development`, `NODE_ENV=local` ou `NODE_ENV=test`, salvo `AUTH_ALLOW_DEMO=true` para uma demonstracao nao produtiva explicitamente autorizada. Nao use essa camada como autenticacao de producao.
+
 `env:check`, `format`, `lint`, `typecheck`, `test` e `build` apontam para validacoes reais, incluindo o build dos pacotes de dominio/config/shared como pre-requisito (`build:packages`).
 
 Se `npm ci` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint, Prettier, Prisma e demais dependencias travadas no lockfile.

@@ -4,6 +4,7 @@ import {
   getBearerSessionId,
   type AuthenticatedUser,
 } from "./auth.js";
+import { assertDemoAuthAllowed, isDemoAuthAllowed } from "./auth-service.js";
 
 const activeUser: AuthenticatedUser = {
   id: "user-demo-1",
@@ -45,6 +46,9 @@ testInvalidCredentialsAreControlled();
 testDisabledUserCannotLogin();
 testExpiredSessionIsRejected();
 testBearerParser();
+testDemoAuthAllowsLocalEnvironments();
+testDemoAuthBlocksProductionWithoutExplicitOptIn();
+testDemoAuthRequiresExplicitOptInValue();
 
 function testPublicRouteAllowsAnonymousUser(): void {
   const user = auth.getOptionalAuthenticatedRequest({});
@@ -160,6 +164,33 @@ function testBearerParser(): void {
   );
 }
 
+function testDemoAuthAllowsLocalEnvironments(): void {
+  assertEqual(isDemoAuthAllowed({ NODE_ENV: "development" }), true, "demo auth should allow dev");
+  assertEqual(isDemoAuthAllowed({ NODE_ENV: "local" }), true, "demo auth should allow local");
+  assertEqual(isDemoAuthAllowed({ NODE_ENV: "test" }), true, "demo auth should allow test");
+}
+
+function testDemoAuthBlocksProductionWithoutExplicitOptIn(): void {
+  assertThrows(
+    () => assertDemoAuthAllowed({ NODE_ENV: "production" }),
+    /Demo authentication is blocked/,
+    "demo auth should block production by default",
+  );
+}
+
+function testDemoAuthRequiresExplicitOptInValue(): void {
+  assertEqual(
+    isDemoAuthAllowed({ AUTH_ALLOW_DEMO: "false", NODE_ENV: "production" }),
+    false,
+    "demo auth should reject false opt-in",
+  );
+  assertEqual(
+    isDemoAuthAllowed({ AUTH_ALLOW_DEMO: "true", NODE_ENV: "production" }),
+    true,
+    "demo auth should allow explicit opt-in",
+  );
+}
+
 function assertAuthError(action: () => void, expectedCode: AuthError["code"]): void {
   try {
     action();
@@ -172,6 +203,20 @@ function assertAuthError(action: () => void, expectedCode: AuthError["code"]): v
   }
 
   throw new Error(`Expected auth error ${expectedCode}.`);
+}
+
+function assertThrows(action: () => void, pattern: RegExp, message: string): void {
+  try {
+    action();
+  } catch (error) {
+    if (error instanceof Error && pattern.test(error.message)) {
+      return;
+    }
+
+    throw error;
+  }
+
+  throw new Error(message);
 }
 
 function assertEqual<T>(actual: T, expected: T, message: string): void {

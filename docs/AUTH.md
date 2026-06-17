@@ -24,16 +24,39 @@ Essa abordagem evita escolher provider externo, biblioteca gerenciada ou
 framework HTTP antes da decisao tecnica formal. Quando a API real existir, a
 camada pode ser conectada a banco, cookies seguros, headers ou provider externo.
 
+## Fronteira da autenticacao demo
+
+O modulo `apps/api/src/auth-service.ts` registra um unico usuario demo com senha
+ficticia, hash SHA-256 simples e sessoes em memoria. Essa configuracao existe
+exclusivamente para desenvolvimento local, testes automatizados e demonstracoes
+nao produtivas explicitamente autorizadas.
+
+A API bloqueia a autenticacao demo fora de ambientes locais por padrao. O servico
+so carrega quando `NODE_ENV` e `development`, `local` ou `test`. Em qualquer
+outro ambiente, como `production`, `staging` ou `preview`, o processo falha cedo
+a menos que `AUTH_ALLOW_DEMO=true` tenha sido configurado de forma deliberada
+para uma demonstracao nao produtiva.
+
+`AUTH_ALLOW_DEMO=true` nao torna essa camada adequada para producao. Ela apenas
+remove o bloqueio operacional para um ambiente controlado e temporario. Para uso
+produtivo com usuarios reais, a decisao definitiva de autenticacao deve seguir a
+ADR `docs/adr/0004-autenticacao-produtiva.md`.
+
 ## Variaveis locais
 
 `.env.example` inclui:
 
 ```env
 AUTH_SESSION_TTL_MINUTES=60
+AUTH_ALLOW_DEMO=false
 ```
 
-A variavel e opcional. Quando ausente, o contrato de ambiente usa 60 minutos.
-Ela nao e segredo e deve conter apenas um inteiro positivo.
+`AUTH_SESSION_TTL_MINUTES` e opcional. Quando ausente, o contrato de ambiente usa
+60 minutos. Ela nao e segredo e deve conter apenas um inteiro positivo.
+
+`AUTH_ALLOW_DEMO` tambem nao e segredo. Mantenha `false` em desenvolvimento local
+padrao. Use `true` apenas quando uma demonstracao nao produtiva precisar carregar
+a autenticacao demo fora de `development`, `local` ou `test`.
 
 ## Login
 
@@ -101,6 +124,7 @@ O pacote `@solverfin/api` cobre:
 - credenciais invalidas;
 - usuario desabilitado;
 - sessao expirada;
-- parsing de header `Bearer`.
+- parsing de header `Bearer`;
+- bloqueio da autenticacao demo fora de ambiente local/teste sem opt-in explicito.
 
 Todos os testes usam usuarios ficticios e nao dependem de segredos reais.
