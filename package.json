@@ -11,7 +11,9 @@
   ],
   "scripts": {
     "dev": "npm run dev:web",
-    "dev:web": "npm run dev --workspace @solverfin/web",
+    "dev:web": "npm run build:packages && npm run dev --workspace @solverfin/web",
+    "dev:api": "npm run build:packages && npm run dev --workspace @solverfin/api",
+    "build:packages": "npm run build --workspace @solverfin/shared --workspace @solverfin/config --workspace @solverfin/domain --workspace @solverfin/ai",
     "env:check": "node scripts/validate-env-example.mjs",
     "prisma:validate": "prisma validate",
     "prisma:generate": "prisma generate",
@@ -23,11 +25,11 @@
     "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "lint": "npm run lint --workspaces --if-present",
+    "lint": "npm run build:packages && npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
+    "test": "npm run build:packages && npm run test --workspaces --if-present",
+    "build": "npm run build:packages && npm run build --workspace @solverfin/api --workspace @solverfin/web",
     "validate": "npm run env:check && npm run prisma:validate && npm run db:seed:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {

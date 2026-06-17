@@ -6,7 +6,7 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 ## Status do repositorio
 
-Este repositorio esta na fase de fundacao documental e bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja esta definida, os workspaces ja possuem configuracoes iniciais de TypeScript, ESLint e Prettier, o ambiente local ja possui Docker Compose para PostgreSQL, ha politica inicial de ambientes/secrets e o CI inicial valida os checks basicos em pull requests e pushes para `main`. Apps executaveis, API real e testes reais ainda serao configurados nas proximas issues de bootstrap.
+O MVP core esta navegavel de ponta a ponta com persistencia real: `apps/api` roda um servidor HTTP (Node `http`, sem framework) que aplica as regras de `packages/domain` e persiste em PostgreSQL via `pg`, e `apps/web` roda um servidor SSR que consome essa API real (autenticacao, dashboard, contas, categorias, lancamentos, cartoes/faturas e orcamentos). Recorrencias/parcelas e contas a pagar/receber tem regras de dominio prontas; parcelas ja tem API, contas a pagar/receber ainda nao tem tabela no schema (ver `docs/ARCHITECTURE.md`). Importacao, conciliacao, automacao e IA financeira ainda nao tem persistencia/API ligadas.
 
 ## Stack inicial planejada
 
@@ -49,6 +49,8 @@ Comandos disponiveis:
 
 ```bash
 npm run dev
+npm run dev:api
+npm run dev:web
 npm run env:check
 npm run format
 npm run format:check
@@ -60,7 +62,18 @@ npm run build
 npm run validate
 ```
 
-Nesta etapa, `env:check`, `format`, `lint`, `typecheck` e `build` ja apontam para validacoes reais. Os testes ainda sao placeholders controlados ate a estrategia de testes ser implementada.
+Para rodar o MVP navegavel localmente, com banco real:
+
+```bash
+docker compose up -d postgres
+npm run db:setup
+npm run dev:api    # API real em http://localhost:4000
+npm run dev:web    # Web SSR em http://localhost:5173, consumindo a API real
+```
+
+Login demo: `demo@solverfin.example.invalid` / `SolverFinDemo!2026`.
+
+`env:check`, `format`, `lint`, `typecheck`, `test` e `build` apontam para validacoes reais, incluindo o build dos pacotes de dominio/config/shared como pre-requisito (`build:packages`).
 
 Se `npm install` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint e Prettier e atualizar o lockfile.
 

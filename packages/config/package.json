@@ -4,11 +4,16 @@
   "private": true,
   "type": "module",
   "description": "Configuracoes compartilhadas de ferramentas do monorepo.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "echo \"@solverfin/config: testes ainda serao configurados em issue propria\"",
-    "build": "tsc --noEmit"
+    "build": "tsc -p tsconfig.json"
   }
 }

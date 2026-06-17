@@ -5,11 +5,21 @@
   "type": "module",
   "description": "API backend modular do SolverFin.",
   "scripts": {
-    "dev": "echo \"@solverfin/api: dev ainda sera configurado na issue de backend/bootstrap\"",
+    "dev": "tsc -p tsconfig.json && node dist/server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../.tmp-tests/api/auth.test.js && node ../../.tmp-tests/api/errors.test.js && node ../../.tmp-tests/api/mvp.test.js",
-    "build": "tsc --noEmit"
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@solverfin/config": "*",
+    "@solverfin/domain": "*",
+    "@solverfin/shared": "*",
+    "dotenv": "^17.2.3",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.6"
   }
 }

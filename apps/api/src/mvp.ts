@@ -1,6 +1,5 @@
-import { createHash, randomUUID } from "node:crypto";
-
-import { AuthError, createAuthService, type AuthenticatedUser } from "./auth.js";
+import { AuthError, type AuthenticatedUser } from "./auth.js";
+import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 
 export interface MvpApiRequest {
@@ -40,27 +39,6 @@ export interface FinancialSummaryResponse {
   reviewNotes: readonly string[];
   generatedAt: string;
 }
-
-const DEMO_PASSWORD_HASH = "c3fe12298b006ad7e54d9dac3006a98f406506a78e3100ca831c0f96c43f5b60";
-
-const demoUser: AuthenticatedUser = {
-  id: "11111111-1111-4111-8111-111111111111",
-  email: "demo@solverfin.example.invalid",
-  displayName: "Usuario Demo SolverFin",
-  status: "active",
-};
-
-const auth = createAuthService({
-  users: [
-    {
-      user: demoUser,
-      passwordHash: DEMO_PASSWORD_HASH,
-    },
-  ],
-  verifyPassword: ({ password, passwordHash }) => hashPassword(password) === passwordHash,
-  createSessionId: () => `sf_${randomUUID()}`,
-  sessionTtlMs: resolveSessionTtlMs(),
-});
 
 export function handleMvpApiRequest(request: MvpApiRequest): MvpApiResponse {
   const correlationId = resolveCorrelationId(request.headers ?? {});
@@ -208,18 +186,4 @@ function jsonResponse(statusCode: number, body: unknown): MvpApiResponse {
     },
     body,
   };
-}
-
-function hashPassword(password: string): string {
-  return createHash("sha256").update(password).digest("hex");
-}
-
-function resolveSessionTtlMs(): number {
-  const ttlMinutes = Number(process.env.AUTH_SESSION_TTL_MINUTES ?? 60);
-
-  if (!Number.isFinite(ttlMinutes) || ttlMinutes <= 0) {
-    return 60 * 60 * 1000;
-  }
-
-  return ttlMinutes * 60 * 1000;
 }

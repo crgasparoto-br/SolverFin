@@ -1,43 +1,33 @@
-import { createHash, randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 
 type RouteKind = "login" | "dashboard" | "placeholder" | "not-found";
 
-interface DemoSession {
-  id: string;
-  expiresAt: number;
-}
-
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.PORT ?? 5173);
+const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000";
 const manifest = buildSolverFinWebManifest();
-const sessions = new Map<string, DemoSession>();
-const sessionCookieName = "sf_demo_session";
-const demoPasswordHash = "c3fe12298b006ad7e54d9dac3006a98f406506a78e3100ca831c0f96c43f5b60";
+const sessionCookieName = "sf_session_token";
 const privateRoutes = new Map<string, string>([
   ["/dashboard", "Dashboard"],
   ["/lancamentos", "Lancamentos"],
   ["/contas", "Contas"],
   ["/categorias", "Categorias"],
+  ["/cartoes", "Cartoes"],
+  ["/orcamentos", "Orcamentos"],
   ["/inbox", "Inbox"],
   ["/relatorios", "Relatorios"],
   ["/configuracoes", "Configuracoes"],
 ]);
-
-const demoSummary = {
-  profileName: "Pessoal Demo",
-  availableBalanceMinor: 631150,
-  incomeMinor: 520000,
-  expensesMinor: 8650,
-  plannedCommitmentsMinor: 4200,
-  recentItems: [
-    ["Receita mensal ficticia", "Receita", 520000, "2026-06-05"],
-    ["Compra de mercado ficticia", "Despesa", -8650, "2026-06-07"],
-    ["Transporte previsto ficticio", "Previsto", -4200, "2026-06-18"],
-  ] as const,
-};
+const implementedRoutes = new Set([
+  "/dashboard",
+  "/contas",
+  "/categorias",
+  "/lancamentos",
+  "/cartoes",
+  "/orcamentos",
+]);
 
 const server = createServer((request, response) => {
   void handleRequest(request, response);
@@ -111,7 +101,7 @@ export function renderLoginPage(errorMessage?: string): string {
   });
 }
 
-export function renderDashboardPage(pathname = "/dashboard"): string {
+export async function renderDashboardPage(token: string, pathname = "/dashboard"): Promise<string> {
   const currentLabel = privateRoutes.get(pathname) ?? "Dashboard";
 
   if (pathname !== "/dashboard") {
@@ -128,51 +118,340 @@ export function renderDashboardPage(pathname = "/dashboard"): string {
     });
   }
 
+  const summary = await apiGet<FinancialSummary>(token, "/api/financial-summary");
+
+  if (!summary.ok) {
+    return renderApiErrorPage(pathname, currentLabel, summary.error);
+  }
+
   return renderAuthenticatedPage({
     pathname,
     currentLabel,
     content: `
       <section class="dashboard-heading">
         <div>
-          <p class="eyebrow">Perfil ativo: ${escapeHtml(demoSummary.profileName)}</p>
-          <h1>Resumo financeiro inicial</h1>
-          <p class="muted">Dados ficticios para validar a experiencia navegavel local.</p>
+          <p class="eyebrow">Perfil pessoal demo</p>
+          <h1>Resumo financeiro</h1>
+          <p class="muted">Dados reais do banco local de desenvolvimento.</p>
         </div>
         <span class="demo-pill">Demo seguro</span>
       </section>
       <section class="summary-grid" aria-label="Indicadores principais">
-        ${renderMetricCard("Disponivel estimado", demoSummary.availableBalanceMinor, "Saldo demonstrativo do periodo")}
-        ${renderMetricCard("Receitas", demoSummary.incomeMinor, "Entradas postadas no perfil demo")}
-        ${renderMetricCard("Despesas", demoSummary.expensesMinor, "Saidas postadas no perfil demo")}
-        ${renderMetricCard("Compromissos previstos", demoSummary.plannedCommitmentsMinor, "Lancamentos planejados")}
+        ${renderMetricCard("Disponivel estimado", summary.data.availableBalanceMinor, "Saldo das contas ativas")}
+        ${renderMetricCard("Receitas do mes", summary.data.incomeMinor, "Entradas postadas no mes atual")}
+        ${renderMetricCard("Despesas do mes", summary.data.expensesMinor, "Saidas postadas no mes atual")}
+        ${renderMetricCard("Compromissos previstos", summary.data.plannedCommitmentsMinor, "Lancamentos planejados no mes")}
       </section>
       <section class="panel">
         <h2>Itens recentes</h2>
         <p class="muted">Valores em BRL, calculados a partir de unidades menores.</p>
         <div class="rows">
-          ${demoSummary.recentItems
-            .map(
-              ([description, label, amountMinor, date]) => `
+          ${
+            summary.data.recentItems
+              .map(
+                (item) => `
                 <article class="row">
-                  <div><strong>${escapeHtml(description)}</strong><span>${escapeHtml(label)} - ${formatDate(date)}</span></div>
-                  <strong>${formatMoney(amountMinor)}</strong>
+                  <div><strong>${escapeHtml(item.description)}</strong><span>${escapeHtml(item.kind)} - ${escapeHtml(item.status)} - ${formatDate(item.occurredOn)}</span></div>
+                  <strong>${formatMoney(item.amountMinor)}</strong>
                 </article>
               `,
-            )
-            .join("")}
+              )
+              .join("") || `<p class="muted">Nenhum lancamento ainda.</p>`
+          }
         </div>
       </section>
       <section class="panel review-note">
         <h2>Pendencias de revisao</h2>
-        <p class="muted">As sugestoes deste MVP sao demonstrativas. Revise qualquer previsao antes de usar como apoio para decisoes financeiras.</p>
+        <p class="muted">Revise qualquer previsao antes de usar como apoio para decisoes financeiras.</p>
       </section>
+    `,
+  });
+}
+
+export async function renderAccountsPage(token: string): Promise<string> {
+  const accounts = await apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts?status=all");
+
+  if (!accounts.ok) {
+    return renderApiErrorPage("/contas", "Contas", accounts.error);
+  }
+
+  return renderAuthenticatedPage({
+    pathname: "/contas",
+    currentLabel: "Contas",
+    content: `
+      <section class="panel">
+        <h1>Contas</h1>
+        <p class="muted">Cadastre contas correntes, poupanca, carteira ou investimento.</p>
+        <div class="rows">
+          ${
+            accounts.data.accounts
+              .map(
+                (account) => `
+                <article class="row">
+                  <div><strong>${escapeHtml(account.name)}</strong><span>${escapeHtml(account.kind)} - ${escapeHtml(account.status)}</span></div>
+                  <strong>${formatMoney(account.openingBalanceMinor)}</strong>
+                </article>
+              `,
+              )
+              .join("") || `<p class="muted">Nenhuma conta cadastrada.</p>`
+          }
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Nova conta</h2>
+        <form data-api-form data-api-path="/api/accounts">
+          <label>Nome<input name="name" required /></label>
+          <label>Tipo
+            <select name="kind" required>
+              <option value="checking">Conta corrente</option>
+              <option value="savings">Poupanca</option>
+              <option value="cash">Carteira</option>
+              <option value="investment">Investimento</option>
+              <option value="other">Outro</option>
+            </select>
+          </label>
+          <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money type="text" inputmode="decimal" placeholder="0,00" /></label>
+          <button type="submit">Criar conta</button>
+        </form>
+      </section>
+      ${apiFormScript()}
+    `,
+  });
+}
+
+export async function renderCategoriesPage(token: string): Promise<string> {
+  const categories = await apiGet<{ categories: CategoryRecord[] }>(
+    token,
+    "/api/categories?status=all",
+  );
+
+  if (!categories.ok) {
+    return renderApiErrorPage("/categorias", "Categorias", categories.error);
+  }
+
+  return renderAuthenticatedPage({
+    pathname: "/categorias",
+    currentLabel: "Categorias",
+    content: `
+      <section class="panel">
+        <h1>Categorias</h1>
+        <p class="muted">Classifique receitas, despesas e transferencias.</p>
+        <div class="rows">
+          ${
+            categories.data.categories
+              .map(
+                (category) => `
+                <article class="row">
+                  <div><strong>${escapeHtml(category.name)}</strong><span>${escapeHtml(category.kind)} - ${escapeHtml(category.status)}</span></div>
+                </article>
+              `,
+              )
+              .join("") || `<p class="muted">Nenhuma categoria cadastrada.</p>`
+          }
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Nova categoria</h2>
+        <form data-api-form data-api-path="/api/categories">
+          <label>Nome<input name="name" required /></label>
+          <label>Tipo
+            <select name="kind" required>
+              <option value="income">Receita</option>
+              <option value="expense">Despesa</option>
+              <option value="transfer">Transferencia</option>
+            </select>
+          </label>
+          <button type="submit">Criar categoria</button>
+        </form>
+      </section>
+      ${apiFormScript()}
+    `,
+  });
+}
+
+export async function renderTransactionsPage(token: string): Promise<string> {
+  const [transactions, accounts, categories] = await Promise.all([
+    apiGet<{ transactions: TransactionRecord[] }>(token, "/api/transactions?status=all"),
+    apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
+    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories"),
+  ]);
+
+  if (!transactions.ok) {
+    return renderApiErrorPage("/lancamentos", "Lancamentos", transactions.error);
+  }
+
+  const accountOptions = accounts.ok ? accounts.data.accounts : [];
+  const categoryOptions = categories.ok ? categories.data.categories : [];
+
+  return renderAuthenticatedPage({
+    pathname: "/lancamentos",
+    currentLabel: "Lancamentos",
+    content: `
+      <section class="panel">
+        <h1>Lancamentos</h1>
+        <p class="muted">Receitas, despesas e transferencias do perfil ativo.</p>
+        <div class="rows">
+          ${
+            transactions.data.transactions
+              .map(
+                (transaction) => `
+                <article class="row">
+                  <div><strong>${escapeHtml(transaction.description || "(sem descricao)")}</strong><span>${escapeHtml(transaction.kind)} - ${escapeHtml(transaction.status)} - ${formatDate(transaction.occurredOn)}</span></div>
+                  <strong>${formatMoney(transaction.amountMinor)}</strong>
+                </article>
+              `,
+              )
+              .join("") || `<p class="muted">Nenhum lancamento ainda.</p>`
+          }
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Novo lancamento</h2>
+        <form data-api-form data-api-path="/api/transactions">
+          <label>Tipo
+            <select name="kind" required>
+              <option value="expense">Despesa</option>
+              <option value="income">Receita</option>
+              <option value="transfer">Transferencia</option>
+            </select>
+          </label>
+          <label>Valor (R$)<input name="amountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
+          <label>Data<input name="occurredOn" type="date" required /></label>
+          <label>Conta
+            <select name="accountId" required>
+              ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
+            </select>
+          </label>
+          <label>Conta de destino (transferencias)
+            <select name="destinationAccountId">
+              <option value="">-</option>
+              ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
+            </select>
+          </label>
+          <label>Categoria
+            <select name="categoryId">
+              <option value="">-</option>
+              ${categoryOptions.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("")}
+            </select>
+          </label>
+          <label>Descricao<input name="description" /></label>
+          <button type="submit">Criar lancamento</button>
+        </form>
+      </section>
+      ${apiFormScript()}
+    `,
+  });
+}
+
+export async function renderCardsPage(token: string): Promise<string> {
+  const [cards, accounts] = await Promise.all([
+    apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
+    apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
+  ]);
+
+  if (!cards.ok) {
+    return renderApiErrorPage("/cartoes", "Cartoes", cards.error);
+  }
+
+  const accountOptions = accounts.ok ? accounts.data.accounts : [];
+
+  return renderAuthenticatedPage({
+    pathname: "/cartoes",
+    currentLabel: "Cartoes",
+    content: `
+      <section class="panel">
+        <h1>Cartoes</h1>
+        <p class="muted">Cartoes de credito, dias de fechamento e vencimento.</p>
+        <div class="rows">
+          ${
+            cards.data.cards
+              .map(
+                (card) => `
+                <article class="row">
+                  <div><strong>${escapeHtml(card.name)}</strong><span>Fecha dia ${card.closingDay}, vence dia ${card.dueDay} - ${escapeHtml(card.status)}</span></div>
+                </article>
+              `,
+              )
+              .join("") || `<p class="muted">Nenhum cartao cadastrado.</p>`
+          }
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Novo cartao</h2>
+        <form data-api-form data-api-path="/api/cards">
+          <label>Nome<input name="name" required /></label>
+          <label>Dia de fechamento<input name="closingDay" type="number" min="1" max="31" required /></label>
+          <label>Dia de vencimento<input name="dueDay" type="number" min="1" max="31" required /></label>
+          <label>Conta de pagamento
+            <select name="paymentAccountId">
+              <option value="">-</option>
+              ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
+            </select>
+          </label>
+          <button type="submit">Criar cartao</button>
+        </form>
+      </section>
+      ${apiFormScript()}
+    `,
+  });
+}
+
+export async function renderBudgetsPage(token: string): Promise<string> {
+  const [budgets, categories] = await Promise.all([
+    apiGet<{ budgets: BudgetRecord[] }>(token, "/api/budgets?status=all"),
+    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?kind=expense"),
+  ]);
+
+  if (!budgets.ok) {
+    return renderApiErrorPage("/orcamentos", "Orcamentos", budgets.error);
+  }
+
+  const categoryOptions = categories.ok ? categories.data.categories : [];
+
+  return renderAuthenticatedPage({
+    pathname: "/orcamentos",
+    currentLabel: "Orcamentos",
+    content: `
+      <section class="panel">
+        <h1>Orcamentos</h1>
+        <p class="muted">Limites mensais planejados por categoria de despesa.</p>
+        <div class="rows">
+          ${
+            budgets.data.budgets
+              .map(
+                (budget) => `
+                <article class="row">
+                  <div><strong>${formatDate(budget.periodStartOn)} - ${formatDate(budget.periodEndOn)}</strong><span>${escapeHtml(budget.status)}</span></div>
+                  <strong>${formatMoney(budget.plannedAmountMinor)}</strong>
+                </article>
+              `,
+              )
+              .join("") || `<p class="muted">Nenhum orcamento cadastrado.</p>`
+          }
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Novo orcamento</h2>
+        <form data-api-form data-api-path="/api/budgets">
+          <label>Categoria
+            <select name="categoryId" required>
+              ${categoryOptions.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("")}
+            </select>
+          </label>
+          <label>Inicio do periodo<input name="periodStartOn" type="date" required /></label>
+          <label>Fim do periodo<input name="periodEndOn" type="date" required /></label>
+          <label>Valor planejado (R$)<input name="plannedAmountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
+          <button type="submit">Criar orcamento</button>
+        </form>
+      </section>
+      ${apiFormScript()}
     `,
   });
 }
 
 async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
-  const session = getSessionFromRequest(request);
+  const token = getSessionTokenFromRequest(request);
 
   if (url.pathname === "/manifest.webmanifest") {
     sendJson(response, 200, manifest, "application/manifest+json; charset=utf-8");
@@ -185,11 +464,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname.startsWith("/api/")) {
-    await handleApiRequest(request, response, url, session);
+    await handleApiRequest(request, response, url, token);
     return;
   }
 
-  const route = resolveRoute(url.pathname, session !== undefined);
+  const route = resolveRoute(url.pathname, token !== undefined);
 
   if (route.statusCode === 302 && route.location) {
     response.writeHead(302, { location: route.location });
@@ -206,45 +485,65 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     return;
   }
 
-  if (route.kind === "dashboard" || route.kind === "placeholder") {
-    sendHtml(response, 200, renderDashboardPage(url.pathname));
+  if ((route.kind === "dashboard" || route.kind === "placeholder") && token) {
+    sendHtml(response, 200, await renderPrivatePage(url.pathname, token));
     return;
   }
 
   sendHtml(response, 404, renderNotFoundPage());
 }
 
+async function renderPrivatePage(pathname: string, token: string): Promise<string> {
+  if (!implementedRoutes.has(pathname) || pathname === "/dashboard") {
+    return renderDashboardPage(token, pathname);
+  }
+
+  if (pathname === "/contas") return renderAccountsPage(token);
+  if (pathname === "/categorias") return renderCategoriesPage(token);
+  if (pathname === "/lancamentos") return renderTransactionsPage(token);
+  if (pathname === "/cartoes") return renderCardsPage(token);
+  if (pathname === "/orcamentos") return renderBudgetsPage(token);
+
+  return renderDashboardPage(token, pathname);
+}
+
 async function handleApiRequest(
   request: IncomingMessage,
   response: ServerResponse,
   url: URL,
-  session: DemoSession | undefined,
+  token: string | undefined,
 ): Promise<void> {
   const correlationId = resolveCorrelationId(request);
 
   if (request.method === "POST" && url.pathname === "/api/session") {
     const body = await readJsonBody(request);
+    const loginResult = await fetch(`${apiBaseUrl}/api/session`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body ?? {}),
+    });
+    const loginBody = (await loginResult.json()) as {
+      session?: { token: string; expiresAt: string };
+    };
 
-    if (isValidLogin(body)) {
-      const createdSession = createDemoSession();
-      response.setHeader("set-cookie", serializeSessionCookie(createdSession));
-      sendJson(response, 201, {
-        user: serializeDemoUser(),
-        session: { expiresAt: new Date(createdSession.expiresAt).toISOString() },
-      });
+    if (!loginResult.ok || !loginBody.session) {
+      sendJson(response, loginResult.status, loginBody);
       return;
     }
 
-    sendJson(
-      response,
-      401,
-      apiError("AUTH_INVALID_CREDENTIALS", "Credenciais invalidas.", correlationId),
-    );
+    response.setHeader("set-cookie", serializeSessionCookie(loginBody.session));
+    sendJson(response, loginResult.status, loginBody);
     return;
   }
 
   if (request.method === "DELETE" && url.pathname === "/api/session") {
-    if (session) sessions.delete(session.id);
+    if (token) {
+      await fetch(`${apiBaseUrl}/api/session`, {
+        method: "DELETE",
+        headers: { authorization: `Bearer ${token}` },
+      }).catch(() => undefined);
+    }
+
     response.writeHead(204, {
       "set-cookie": `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`,
     });
@@ -252,7 +551,7 @@ async function handleApiRequest(
     return;
   }
 
-  if (!session) {
+  if (!token) {
     sendJson(
       response,
       401,
@@ -261,35 +560,78 @@ async function handleApiRequest(
     return;
   }
 
-  if (request.method === "GET" && url.pathname === "/api/me") {
-    sendJson(response, 200, { user: serializeDemoUser() });
-    return;
-  }
+  await proxyToApi(request, response, url, token);
+}
 
-  if (request.method === "GET" && url.pathname === "/api/financial-summary") {
-    sendJson(response, 200, {
-      profile: {
-        id: "33333333-3333-4333-8333-333333333331",
-        name: demoSummary.profileName,
-        kind: "personal",
-      },
-      currency: "BRL",
-      availableBalanceMinor: demoSummary.availableBalanceMinor,
-      incomeMinor: demoSummary.incomeMinor,
-      expensesMinor: demoSummary.expensesMinor,
-      plannedCommitmentsMinor: demoSummary.plannedCommitmentsMinor,
-      recentItems: demoSummary.recentItems,
-      reviewNotes: ["Dados demonstrativos do MVP local."],
-      generatedAt: new Date().toISOString(),
+async function proxyToApi(
+  request: IncomingMessage,
+  response: ServerResponse,
+  url: URL,
+  token: string,
+): Promise<void> {
+  const body = await readJsonBody(request);
+  const upstreamResponse = await fetch(`${apiBaseUrl}${url.pathname}${url.search}`, {
+    method: request.method ?? "GET",
+    headers: {
+      authorization: `Bearer ${token}`,
+      ...(body !== undefined ? { "content-type": "application/json" } : {}),
+    },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  const text = await upstreamResponse.text();
+
+  response.writeHead(upstreamResponse.status, {
+    "content-type":
+      upstreamResponse.headers.get("content-type") ?? "application/json; charset=utf-8",
+  });
+  response.end(text);
+}
+
+interface ApiSuccess<T> {
+  ok: true;
+  data: T;
+}
+
+interface ApiFailure {
+  ok: false;
+  error: string;
+}
+
+async function apiGet<T>(token: string, path: string): Promise<ApiSuccess<T> | ApiFailure> {
+  try {
+    const upstreamResponse = await fetch(`${apiBaseUrl}${path}`, {
+      headers: { authorization: `Bearer ${token}` },
     });
-    return;
-  }
 
-  sendJson(
-    response,
-    404,
-    apiError("API_ROUTE_NOT_FOUND", "Rota de API nao encontrada.", correlationId),
-  );
+    if (!upstreamResponse.ok) {
+      const errorBody = (await upstreamResponse.json().catch(() => undefined)) as
+        | { error?: { message?: string } }
+        | undefined;
+
+      return {
+        ok: false,
+        error: errorBody?.error?.message ?? "Nao foi possivel carregar os dados.",
+      };
+    }
+
+    return { ok: true, data: (await upstreamResponse.json()) as T };
+  } catch {
+    return { ok: false, error: "Nao foi possivel conectar com a API." };
+  }
+}
+
+function renderApiErrorPage(pathname: string, currentLabel: string, error: string): string {
+  return renderAuthenticatedPage({
+    pathname,
+    currentLabel,
+    content: `
+      <section class="panel placeholder-state">
+        <p class="eyebrow">Erro ao carregar dados</p>
+        <h1>${escapeHtml(currentLabel)}</h1>
+        <p class="error" role="alert">${escapeHtml(error)}</p>
+      </section>
+    `,
+  });
 }
 
 function renderAuthenticatedPage(input: {
@@ -330,6 +672,39 @@ function renderAuthenticatedPage(input: {
   });
 }
 
+function apiFormScript(): string {
+  return `
+    <script>
+      document.querySelectorAll("[data-api-form]").forEach((form) => {
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const payload = {};
+          new FormData(form).forEach((value, key) => {
+            if (value === "") return;
+            const field = form.querySelector('[name="' + key + '"]');
+            if (field && field.dataset.money !== undefined) {
+              payload[key] = Math.round(parseFloat(String(value).replace(",", ".")) * 100);
+            } else {
+              payload[key] = value;
+            }
+          });
+          const response = await fetch(form.dataset.apiPath, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            const body = await response.json().catch(() => ({}));
+            alert((body.error && body.error.message) || "Nao foi possivel salvar.");
+          }
+        });
+      });
+    </script>
+  `;
+}
+
 function renderPage(input: { title: string; body: string }): string {
   return `<!doctype html>
 <html lang="pt-BR">
@@ -355,54 +730,17 @@ function renderNotFoundPage(): string {
   });
 }
 
-function createDemoSession(): DemoSession {
-  const session = { id: `sf_${randomUUID()}`, expiresAt: Date.now() + resolveSessionTtlMs() };
-  sessions.set(session.id, session);
-  return session;
+function getSessionTokenFromRequest(request: IncomingMessage): string | undefined {
+  return parseCookies(request.headers.cookie ?? "")[sessionCookieName];
 }
 
-function getSessionFromRequest(request: IncomingMessage): DemoSession | undefined {
-  const sessionId = parseCookies(request.headers.cookie ?? "")[sessionCookieName];
-  const session = sessionId ? sessions.get(sessionId) : undefined;
-
-  if (!session) return undefined;
-  if (session.expiresAt <= Date.now()) {
-    sessions.delete(session.id);
-    return undefined;
-  }
-
-  return session;
-}
-
-function isValidLogin(body: unknown): boolean {
-  if (
-    typeof body !== "object" ||
-    body === null ||
-    !("email" in body) ||
-    !("password" in body) ||
-    typeof body.email !== "string" ||
-    typeof body.password !== "string"
-  ) {
-    return false;
-  }
-
-  return (
-    body.email.trim().toLowerCase() === "demo@solverfin.example.invalid" &&
-    createHash("sha256").update(body.password).digest("hex") === demoPasswordHash
+function serializeSessionCookie(session: { token: string; expiresAt: string }): string {
+  const maxAgeSeconds = Math.max(
+    1,
+    Math.floor((new Date(session.expiresAt).getTime() - Date.now()) / 1000),
   );
-}
 
-function serializeDemoUser() {
-  return {
-    id: "11111111-1111-4111-8111-111111111111",
-    email: "demo@solverfin.example.invalid",
-    displayName: "Usuario Demo SolverFin",
-  };
-}
-
-function serializeSessionCookie(session: DemoSession): string {
-  const maxAgeSeconds = Math.max(1, Math.floor((session.expiresAt - Date.now()) / 1000));
-  return `${sessionCookieName}=${session.id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}`;
+  return `${sessionCookieName}=${session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}`;
 }
 
 function parseCookies(cookieHeader: string): Record<string, string> {
@@ -461,11 +799,6 @@ function resolveCorrelationId(request: IncomingMessage): string {
   return `corr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function resolveSessionTtlMs(): number {
-  const ttlMinutes = Number(process.env.AUTH_SESSION_TTL_MINUTES ?? 60);
-  return Number.isFinite(ttlMinutes) && ttlMinutes > 0 ? ttlMinutes * 60 * 1000 : 60 * 60 * 1000;
-}
-
 function formatMoney(amountMinor: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
     amountMinor / 100,
@@ -487,6 +820,59 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+interface FinancialSummaryItem {
+  description: string;
+  kind: string;
+  amountMinor: number;
+  occurredOn: string;
+  status: string;
+}
+
+interface FinancialSummary {
+  availableBalanceMinor: number;
+  incomeMinor: number;
+  expensesMinor: number;
+  plannedCommitmentsMinor: number;
+  recentItems: FinancialSummaryItem[];
+}
+
+interface AccountRecord {
+  id: string;
+  name: string;
+  kind: string;
+  status: string;
+  openingBalanceMinor: number;
+}
+
+interface CategoryRecord {
+  id: string;
+  name: string;
+  kind: string;
+  status: string;
+}
+
+interface TransactionRecord {
+  description: string;
+  kind: string;
+  status: string;
+  amountMinor: number;
+  occurredOn: string;
+}
+
+interface CardRecord {
+  name: string;
+  status: string;
+  closingDay: number;
+  dueDay: number;
+}
+
+interface BudgetRecord {
+  status: string;
+  periodStartOn: string;
+  periodEndOn: string;
+  plannedAmountMinor: number;
+}
+
 function baseCss(): string {
   return `
     :root { color-scheme: light; --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --muted: #64748b; --line: #dbe3ee; --primary: #0f3d4c; --cyan: #0891b2; --danger: #dc2626; }
@@ -497,7 +883,7 @@ function baseCss(): string {
     .panel, .placeholder-state, .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
     .login-shell .panel { display: grid; gap: 18px; margin: 0 auto; max-width: 460px; width: 100%; }
     .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .muted { color: var(--muted); }
-    form, label { display: grid; gap: 10px; } label { font-weight: 700; } input { border: 1px solid var(--line); border-radius: 8px; font: inherit; min-height: 44px; padding: 0 12px; }
+    form, label { display: grid; gap: 10px; } label { font-weight: 700; } input, select { border: 1px solid var(--line); border-radius: 8px; font: inherit; min-height: 44px; padding: 0 12px; }
     button, .button-link { align-items: center; background: var(--primary); border: 0; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; text-decoration: none; }
     .error { background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }
     .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; }

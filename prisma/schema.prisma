@@ -249,6 +249,8 @@ model Account {
   currency            String       @default("BRL") @db.Char(3)
   openingBalanceMinor Int          @default(0)
   maskedIdentifier    String?      @db.VarChar(80)
+  createdByUserId     String?      @db.Uuid
+  updatedByUserId     String?      @db.Uuid
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -274,6 +276,8 @@ model Card {
   dueDay             Int
   creditLimitMinor   Int?
   maskedIdentifier   String?    @db.VarChar(80)
+  createdByUserId    String?    @db.Uuid
+  updatedByUserId    String?    @db.Uuid
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
@@ -295,6 +299,8 @@ model Category {
   name               String       @db.VarChar(160)
   kind               CategoryKind
   status             RecordStatus @default(ACTIVE)
+  createdByUserId    String?      @db.Uuid
+  updatedByUserId    String?      @db.Uuid
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -373,6 +379,8 @@ model Recurrence {
   amountMinor        Int
   currency           String              @default("BRL") @db.Char(3)
   description        String              @db.VarChar(240)
+  createdByUserId    String?             @db.Uuid
+  updatedByUserId    String?             @db.Uuid
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
@@ -399,6 +407,8 @@ model Installment {
   dueOn              DateTime          @db.Date
   amountMinor        Int
   currency           String            @default("BRL") @db.Char(3)
+  createdByUserId    String?           @db.Uuid
+  updatedByUserId    String?           @db.Uuid
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
@@ -426,6 +436,8 @@ model Invoice {
   totalAmountMinor     Int           @default(0)
   currency             String        @default("BRL") @db.Char(3)
   paidAt               DateTime?
+  createdByUserId      String?       @db.Uuid
+  updatedByUserId      String?       @db.Uuid
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
 
@@ -451,6 +463,8 @@ model Budget {
   plannedAmountMinor    Int
   currency              String       @default("BRL") @db.Char(3)
   alertThresholdPercent Int?
+  createdByUserId       String?      @db.Uuid
+  updatedByUserId       String?      @db.Uuid
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
 

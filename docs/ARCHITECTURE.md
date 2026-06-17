@@ -8,11 +8,15 @@ Ele nao substitui ADRs. Decisoes duradouras, mudancas de stack, integracoes exte
 
 ## Estado atual
 
-O repositorio esta em fase de bootstrap tecnico. A estrutura inicial de monorepo com npm workspaces ja existe, os workspaces possuem configuracoes iniciais de TypeScript, ESLint e Prettier, ha um Docker Compose para PostgreSQL local, ha politica inicial de ambientes/secrets e o CI inicial roda checks basicos em pull requests e pushes para `main`.
+O nucleo financeiro do MVP esta ligado de ponta a ponta com persistencia real:
 
-Ainda nao existe aplicacao executavel, API real, schema Prisma, migrations ou testes automatizados reais. Esses itens devem ser implementados em issues especificas de bootstrap, dominio, persistencia e qualidade.
+- `apps/api` e um servidor HTTP em Node `http` puro (sem framework) que resolve sessao/tenant, chama `packages/domain` para validar regras e persiste via `pg` (SQL parametrizado) em PostgreSQL. Cobre contas, categorias, lancamentos, recorrencias/parcelas, cartoes/faturas e orcamentos, incluindo trilha de auditoria (`AuditLogEntry`).
+- `apps/web` e um servidor SSR em Node `http` puro que autentica contra a API real (token guardado em cookie HttpOnly) e renderiza dashboard, contas, categorias, lancamentos, cartoes e orcamentos com dados reais; demais rotas do menu ainda sao placeholder.
+- Nao ha API real nem persistencia para contas a pagar/receber (`packages/domain/src/payables-receivables.ts` existe, mas falta o modelo `PayableReceivable` no `prisma/schema.prisma`).
+- Importacao (CSV/OFX/mensagens bancarias), deduplicacao, conciliacao, regras de automacao e a camada de IA tem dominio implementado e testado, mas ainda sem repositorio/API/UI ligados a banco real.
+- Auth e tenant continuam no formato MVP descrito em `docs/AUTH.md`/`docs/TENANT.md` (usuario/organizacao/perfis fixos via seed, sem cadastro de novos usuarios).
 
-A decisao inicial de stack esta registrada em `docs/adr/0001-stack-inicial.md` e deve orientar as proximas issues de bootstrap.
+A decisao inicial de stack esta registrada em `docs/adr/0001-stack-inicial.md`. Node `http` puro foi mantido tanto na API quanto no Web para nao antecipar uma escolha de framework (Express, React etc.) sem ADR dedicada.
 
 ## Stack inicial
 

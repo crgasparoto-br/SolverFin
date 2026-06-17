@@ -1,19 +1,18 @@
 import assert from "node:assert/strict";
 
-import { renderDashboardPage, renderLoginPage, resolveRoute } from "./dev-server.js";
+import { renderLoginPage, resolveRoute } from "./dev-server.js";
 
 loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
-privatePlaceholderRouteRequiresSessionAndRendersActiveMenu();
+privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 dashboardDoesNotRenderOnUnknownRoute();
-authenticatedNavigationRendersDashboardAndMenu();
+rootRouteRedirectsBasedOnSession();
 
 function loginRouteIsRealPage(): void {
   const login = renderLoginPage();
 
   assert.match(login, /Entrar no SolverFin/);
   assert.match(login, /<form id="login-form"/);
-  assert.equal(login.includes("Disponibilidade de hoje"), false);
 }
 
 function privateRouteRedirectsWithoutSession(): void {
@@ -23,20 +22,16 @@ function privateRouteRedirectsWithoutSession(): void {
   assert.equal(route.location, "/login");
 }
 
-function privatePlaceholderRouteRequiresSessionAndRendersActiveMenu(): void {
+function privateRouteAllowsSessionAndIdentifiesDashboardRoute(): void {
   const anonymousRoute = resolveRoute("/contas", false);
 
   assert.equal(anonymousRoute.statusCode, 302);
   assert.equal(anonymousRoute.location, "/login");
 
   const authenticatedRoute = resolveRoute("/contas", true);
-  const page = renderDashboardPage("/contas");
 
   assert.equal(authenticatedRoute.statusCode, 200);
   assert.equal(authenticatedRoute.kind, "placeholder");
-  assert.match(page, /Funcionalidade em preparacao/);
-  assert.match(page, /<h1>Contas<\/h1>/);
-  assert.match(page, /href="\/contas" aria-current="page"/);
 }
 
 function dashboardDoesNotRenderOnUnknownRoute(): void {
@@ -46,13 +41,10 @@ function dashboardDoesNotRenderOnUnknownRoute(): void {
   assert.equal(route.kind, "not-found");
 }
 
-function authenticatedNavigationRendersDashboardAndMenu(): void {
-  const route = resolveRoute("/", true);
-  const dashboard = renderDashboardPage("/dashboard");
+function rootRouteRedirectsBasedOnSession(): void {
+  const authenticated = resolveRoute("/", true);
+  const anonymous = resolveRoute("/", false);
 
-  assert.equal(route.location, "/dashboard");
-  assert.match(dashboard, /Resumo financeiro inicial/);
-  assert.match(dashboard, /Pessoal Demo/);
-  assert.match(dashboard, /href="\/lancamentos"/);
-  assert.match(dashboard, /data-logout/);
+  assert.equal(authenticated.location, "/dashboard");
+  assert.equal(anonymous.location, "/login");
 }
