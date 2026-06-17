@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../.tmp-tests/web/accessibility.test.js && node ../../.tmp-tests/web/dashboard/availability.test.js && node ../../.tmp-tests/web/pwa/manifest.test.js && node ../../.tmp-tests/web/inbox/share-target.test.js",
+    "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../.tmp-tests/web/accessibility.test.js && node ../../.tmp-tests/web/dashboard/availability.test.js && node ../../.tmp-tests/web/pwa/manifest.test.js && node ../../.tmp-tests/web/inbox/share-target.test.js && node ../../.tmp-tests/web/dev-server.test.js",
     "build": "tsc --noEmit"
   }
 }
