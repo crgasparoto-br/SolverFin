@@ -98,6 +98,7 @@ npm run test:integration
 Esse comando executa, em ordem:
 
 ```bash
+npm run build:packages
 npm run db:deploy
 npm run db:seed
 npm run test:integration --workspace @solverfin/api
