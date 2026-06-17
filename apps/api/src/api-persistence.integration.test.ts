@@ -51,8 +51,9 @@ async function createPersonalFinancialFlow(token: string): Promise<{
     kind: "expense",
   });
   assert.equal(categoryResponse.statusCode, 201);
-  const category = readBody<{ category: ApiCategory }>(categoryResponse)
-    .category;
+  const category = readBody<{ category: ApiCategory }>(
+    categoryResponse,
+  ).category;
 
   assert.equal(category.financialProfileId, PERSONAL_PROFILE_ID);
   assert.equal(category.kind, "expense");
