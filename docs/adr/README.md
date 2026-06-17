@@ -34,3 +34,4 @@ Cada ADR deve ter:
 - `0001-stack-inicial.md` - Stack inicial e arquitetura de alto nivel.
 - `0002-mvp-web-runtime-and-session.md` - Runtime web e sessao local do MVP.
 - `0003-epic-133-mvp-consolidation.md` - Consolidacao do MVP navegavel da epica #133.
+- `0004-autenticacao-produtiva.md` - Autenticacao produtiva definitiva.
