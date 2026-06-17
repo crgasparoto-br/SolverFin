@@ -51,21 +51,29 @@ async function createPersonalFinancialFlow(token: string): Promise<{
     kind: "expense",
   });
   assert.equal(categoryResponse.statusCode, 201);
-  const category = readBody<{ category: ApiCategory }>(categoryResponse).category;
+  const category = readBody<{ category: ApiCategory }>(categoryResponse)
+    .category;
 
   assert.equal(category.financialProfileId, PERSONAL_PROFILE_ID);
   assert.equal(category.kind, "expense");
 
-  const transactionResponse = await apiRequest(token, "POST", "/api/transactions", {
-    kind: "expense",
-    amountMinor: 9876,
-    occurredOn: "2026-06-17",
-    accountId: account.id,
-    categoryId: category.id,
-    description: `Lancamento integracao ${suffix}`,
-  });
+  const transactionResponse = await apiRequest(
+    token,
+    "POST",
+    "/api/transactions",
+    {
+      kind: "expense",
+      amountMinor: 9876,
+      occurredOn: "2026-06-17",
+      accountId: account.id,
+      categoryId: category.id,
+      description: `Lancamento integracao ${suffix}`,
+    },
+  );
   assert.equal(transactionResponse.statusCode, 201);
-  const transaction = readBody<{ transaction: ApiTransaction }>(transactionResponse).transaction;
+  const transaction = readBody<{ transaction: ApiTransaction }>(
+    transactionResponse,
+  ).transaction;
 
   assert.equal(transaction.financialProfileId, PERSONAL_PROFILE_ID);
   assert.equal(transaction.accountId, account.id);
@@ -76,7 +84,11 @@ async function createPersonalFinancialFlow(token: string): Promise<{
 
 async function assertPersonalProfileListsOnlyPersonalData(
   token: string,
-  fixtures: { account: ApiAccount; category: ApiCategory; transaction: ApiTransaction },
+  fixtures: {
+    account: ApiAccount;
+    category: ApiCategory;
+    transaction: ApiTransaction;
+  },
 ): Promise<void> {
   const accounts = readBody<{ accounts: ApiAccount[] }>(
     await apiRequest(token, "GET", "/api/accounts?status=all"),
@@ -89,12 +101,28 @@ async function assertPersonalProfileListsOnlyPersonalData(
   ).transactions;
 
   assert.ok(accounts.some((account) => account.id === fixtures.account.id));
-  assert.ok(categories.some((category) => category.id === fixtures.category.id));
-  assert.ok(transactions.some((transaction) => transaction.id === fixtures.transaction.id));
-  assert.ok(accounts.every((account) => account.financialProfileId === PERSONAL_PROFILE_ID));
-  assert.ok(categories.every((category) => category.financialProfileId === PERSONAL_PROFILE_ID));
   assert.ok(
-    transactions.every((transaction) => transaction.financialProfileId === PERSONAL_PROFILE_ID),
+    categories.some((category) => category.id === fixtures.category.id),
+  );
+  assert.ok(
+    transactions.some(
+      (transaction) => transaction.id === fixtures.transaction.id,
+    ),
+  );
+  assert.ok(
+    accounts.every(
+      (account) => account.financialProfileId === PERSONAL_PROFILE_ID,
+    ),
+  );
+  assert.ok(
+    categories.every(
+      (category) => category.financialProfileId === PERSONAL_PROFILE_ID,
+    ),
+  );
+  assert.ok(
+    transactions.every(
+      (transaction) => transaction.financialProfileId === PERSONAL_PROFILE_ID,
+    ),
   );
 }
 
@@ -103,19 +131,38 @@ async function assertMeiProfileDoesNotExposePersonalData(
   fixtures: { account: ApiAccount; transaction: ApiTransaction },
 ): Promise<void> {
   const meiAccounts = readBody<{ accounts: ApiAccount[] }>(
-    await apiRequest(token, "GET", `/api/accounts?status=all&profileId=${MEI_PROFILE_ID}`),
+    await apiRequest(
+      token,
+      "GET",
+      `/api/accounts?status=all&profileId=${MEI_PROFILE_ID}`,
+    ),
   ).accounts;
   const meiTransactions = readBody<{ transactions: ApiTransaction[] }>(
-    await apiRequest(token, "GET", `/api/transactions?status=all&profileId=${MEI_PROFILE_ID}`),
+    await apiRequest(
+      token,
+      "GET",
+      `/api/transactions?status=all&profileId=${MEI_PROFILE_ID}`,
+    ),
   ).transactions;
 
-  assert.ok(meiAccounts.every((account) => account.financialProfileId === MEI_PROFILE_ID));
   assert.ok(
-    meiTransactions.every((transaction) => transaction.financialProfileId === MEI_PROFILE_ID),
+    meiAccounts.every(
+      (account) => account.financialProfileId === MEI_PROFILE_ID,
+    ),
   );
-  assert.equal(meiAccounts.some((account) => account.id === fixtures.account.id), false);
+  assert.ok(
+    meiTransactions.every(
+      (transaction) => transaction.financialProfileId === MEI_PROFILE_ID,
+    ),
+  );
   assert.equal(
-    meiTransactions.some((transaction) => transaction.id === fixtures.transaction.id),
+    meiAccounts.some((account) => account.id === fixtures.account.id),
+    false,
+  );
+  assert.equal(
+    meiTransactions.some(
+      (transaction) => transaction.id === fixtures.transaction.id,
+    ),
     false,
   );
   assert.ok(meiAccounts.some((account) => account.name === "Conta MEI demo"));
