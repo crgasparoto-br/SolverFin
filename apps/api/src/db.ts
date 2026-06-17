@@ -47,6 +47,15 @@ export async function withTransaction<TResult>(
   }
 }
 
+export async function closePool(): Promise<void> {
+  if (!pool) {
+    return;
+  }
+
+  await pool.end();
+  pool = undefined;
+}
+
 function requireDatabaseUrl(): string {
   const databaseUrl = process.env.DATABASE_URL;
 
