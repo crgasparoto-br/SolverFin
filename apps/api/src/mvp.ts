@@ -41,8 +41,7 @@ export interface FinancialSummaryResponse {
   generatedAt: string;
 }
 
-const DEMO_PASSWORD_HASH =
-  "c3fe12298b006ad7e54d9dac3006a98f406506a78e3100ca831c0f96c43f5b60";
+const DEMO_PASSWORD_HASH = "c3fe12298b006ad7e54d9dac3006a98f406506a78e3100ca831c0f96c43f5b60";
 
 const demoUser: AuthenticatedUser = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -79,7 +78,9 @@ export function handleMvpApiRequest(request: MvpApiRequest): MvpApiResponse {
     }
 
     if (request.method === "GET" && request.path === "/api/me") {
-      const user = auth.requireAuthenticatedRequest({ authorization: request.headers?.authorization });
+      const user = auth.requireAuthenticatedRequest({
+        authorization: request.headers?.authorization,
+      });
 
       return jsonResponse(200, { user: serializeUser(user) });
     }

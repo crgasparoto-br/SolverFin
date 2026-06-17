@@ -123,11 +123,7 @@ export const defaultAvailabilityAssumptions: AvailabilityAssumptionValues = {
   ],
 };
 
-const ALLOWED_STATUSES: readonly FinancialAssumptionStatus[] = [
-  "active",
-  "inactive",
-  "archived",
-];
+const ALLOWED_STATUSES: readonly FinancialAssumptionStatus[] = ["active", "inactive", "archived"];
 const ALLOWED_KINDS: readonly FinancialAssumptionKind[] = [
   "horizon_days",
   "reserve_amount",
@@ -195,7 +191,8 @@ export function listFinancialAssumptions(
     const statusMatches =
       filters.status === "all" || assumption.status === (filters.status ?? "active");
     const kindMatches = filters.kind === undefined || assumption.kind === filters.kind;
-    const scopeMatches = filters.scopeKind === undefined || assumption.scope.kind === filters.scopeKind;
+    const scopeMatches =
+      filters.scopeKind === undefined || assumption.scope.kind === filters.scopeKind;
     const activeOnMatches =
       filters.activeOn === undefined ||
       (assumption.effectiveFrom <= filters.activeOn &&

@@ -87,13 +87,31 @@ export function calculateDailyAvailability(
   const currency = normalizeCurrency(input.currency);
 
   appendTransactionComponents(input, horizonEndOn, ignoredCategoryIds, seenEntityIds, components);
-  appendPayableReceivableComponents(input, horizonEndOn, ignoredCategoryIds, seenEntityIds, components);
+  appendPayableReceivableComponents(
+    input,
+    horizonEndOn,
+    ignoredCategoryIds,
+    seenEntityIds,
+    components,
+  );
   appendInvoiceComponents(input, horizonEndOn, seenEntityIds, components);
   appendInstallmentComponents(input, horizonEndOn, seenEntityIds, components);
-  appendRegisteredRecurrenceComponents(input, horizonEndOn, ignoredCategoryIds, seenEntityIds, components);
+  appendRegisteredRecurrenceComponents(
+    input,
+    horizonEndOn,
+    ignoredCategoryIds,
+    seenEntityIds,
+    components,
+  );
 
   if (resolvedAssumptions.includeInferredRecurrences) {
-    appendInferredRecurrenceComponents(input, horizonEndOn, ignoredCategoryIds, seenEntityIds, components);
+    appendInferredRecurrenceComponents(
+      input,
+      horizonEndOn,
+      ignoredCategoryIds,
+      seenEntityIds,
+      components,
+    );
   } else {
     limitations.push("Recorrencias inferidas foram desativadas nas premissas.");
   }
@@ -159,7 +177,11 @@ function appendTransactionComponents(
   components: DailyAvailabilityComponent[],
 ): void {
   for (const transaction of listTenantScopedResources(input.context, input.transactions ?? [])) {
-    if (transaction.status === "voided" || transaction.occurredOn < input.today || transaction.occurredOn > horizonEndOn) {
+    if (
+      transaction.status === "voided" ||
+      transaction.occurredOn < input.today ||
+      transaction.occurredOn > horizonEndOn
+    ) {
       continue;
     }
 
@@ -170,7 +192,14 @@ function appendTransactionComponents(
     seenEntityIds.add(transaction.id);
 
     if (transaction.categoryId !== undefined && ignoredCategoryIds.has(transaction.categoryId)) {
-      components.push(buildIgnoredComponent("Lancamento ignorado", transaction.amountMinor, "transactions", transaction.id));
+      components.push(
+        buildIgnoredComponent(
+          "Lancamento ignorado",
+          transaction.amountMinor,
+          "transactions",
+          transaction.id,
+        ),
+      );
       continue;
     }
 
@@ -218,7 +247,9 @@ function appendPayableReceivableComponents(
     seenEntityIds.add(item.id);
 
     if (item.categoryId !== undefined && ignoredCategoryIds.has(item.categoryId)) {
-      components.push(buildIgnoredComponent("Conta ignorada", item.amountMinor, "payables_receivables", item.id));
+      components.push(
+        buildIgnoredComponent("Conta ignorada", item.amountMinor, "payables_receivables", item.id),
+      );
       continue;
     }
 
@@ -299,12 +330,21 @@ function appendRegisteredRecurrenceComponents(
   seenEntityIds: Set<EntityId>,
   components: DailyAvailabilityComponent[],
 ): void {
-  for (const recurrence of listTenantScopedResources(input.context, input.registeredRecurrences ?? [])) {
+  for (const recurrence of listTenantScopedResources(
+    input.context,
+    input.registeredRecurrences ?? [],
+  )) {
     if (recurrence.status !== "active") {
       continue;
     }
 
-    const nextDueOn = nextDueOnWithinWindow(recurrence.startOn, recurrence.frequency, input.today, horizonEndOn, recurrence.endOn);
+    const nextDueOn = nextDueOnWithinWindow(
+      recurrence.startOn,
+      recurrence.frequency,
+      input.today,
+      horizonEndOn,
+      recurrence.endOn,
+    );
 
     if (nextDueOn === undefined || seenEntityIds.has(recurrence.id)) {
       continue;
@@ -313,7 +353,14 @@ function appendRegisteredRecurrenceComponents(
     seenEntityIds.add(recurrence.id);
 
     if (recurrence.categoryId !== undefined && ignoredCategoryIds.has(recurrence.categoryId)) {
-      components.push(buildIgnoredComponent("Recorrencia ignorada", recurrence.amountMinor, "recurrences", recurrence.id));
+      components.push(
+        buildIgnoredComponent(
+          "Recorrencia ignorada",
+          recurrence.amountMinor,
+          "recurrences",
+          recurrence.id,
+        ),
+      );
       continue;
     }
 
@@ -335,7 +382,10 @@ function appendInferredRecurrenceComponents(
   seenEntityIds: Set<EntityId>,
   components: DailyAvailabilityComponent[],
 ): void {
-  for (const recurrence of listTenantScopedResources(input.context, input.inferredRecurrences ?? [])) {
+  for (const recurrence of listTenantScopedResources(
+    input.context,
+    input.inferredRecurrences ?? [],
+  )) {
     if (
       recurrence.status === "ignored" ||
       recurrence.status === "disabled" ||
@@ -349,7 +399,14 @@ function appendInferredRecurrenceComponents(
     seenEntityIds.add(recurrence.id);
 
     if (recurrence.categoryId !== undefined && ignoredCategoryIds.has(recurrence.categoryId)) {
-      components.push(buildIgnoredComponent("Recorrencia inferida ignorada", recurrence.averageAmountMinor, "statistical_recurrences", recurrence.id));
+      components.push(
+        buildIgnoredComponent(
+          "Recorrencia inferida ignorada",
+          recurrence.averageAmountMinor,
+          "statistical_recurrences",
+          recurrence.id,
+        ),
+      );
       continue;
     }
 
@@ -421,7 +478,11 @@ function resolveConfidence(
   return "high";
 }
 
-function addFrequency(startOn: ISODate, frequency: Recurrence["frequency"], offset: number): ISODate {
+function addFrequency(
+  startOn: ISODate,
+  frequency: Recurrence["frequency"],
+  offset: number,
+): ISODate {
   if (frequency === "daily") {
     return addDays(startOn, offset);
   }

@@ -98,7 +98,13 @@ export function revokePrivacyConsent(input: RevokeConsentInput): ConsentMutation
 
   return {
     consent: revokedConsent,
-    auditEntry: buildConsentAuditEntry(input.context, input.now, "update", revokedConsent, input.reason),
+    auditEntry: buildConsentAuditEntry(
+      input.context,
+      input.now,
+      "update",
+      revokedConsent,
+      input.reason,
+    ),
   };
 }
 

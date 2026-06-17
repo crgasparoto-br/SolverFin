@@ -198,7 +198,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (route.kind === "login") {
-    sendHtml(response, 200, renderLoginPage(url.searchParams.has("erro") ? "Credenciais invalidas." : undefined));
+    sendHtml(
+      response,
+      200,
+      renderLoginPage(url.searchParams.has("erro") ? "Credenciais invalidas." : undefined),
+    );
     return;
   }
 
@@ -231,7 +235,11 @@ async function handleApiRequest(
       return;
     }
 
-    sendJson(response, 401, apiError("AUTH_INVALID_CREDENTIALS", "Credenciais invalidas.", correlationId));
+    sendJson(
+      response,
+      401,
+      apiError("AUTH_INVALID_CREDENTIALS", "Credenciais invalidas.", correlationId),
+    );
     return;
   }
 
@@ -245,7 +253,11 @@ async function handleApiRequest(
   }
 
   if (!session) {
-    sendJson(response, 401, apiError("AUTH_SESSION_REQUIRED", "Entre para continuar.", correlationId));
+    sendJson(
+      response,
+      401,
+      apiError("AUTH_SESSION_REQUIRED", "Entre para continuar.", correlationId),
+    );
     return;
   }
 
@@ -256,7 +268,11 @@ async function handleApiRequest(
 
   if (request.method === "GET" && url.pathname === "/api/financial-summary") {
     sendJson(response, 200, {
-      profile: { id: "33333333-3333-4333-8333-333333333331", name: demoSummary.profileName, kind: "personal" },
+      profile: {
+        id: "33333333-3333-4333-8333-333333333331",
+        name: demoSummary.profileName,
+        kind: "personal",
+      },
       currency: "BRL",
       availableBalanceMinor: demoSummary.availableBalanceMinor,
       incomeMinor: demoSummary.incomeMinor,
@@ -269,10 +285,18 @@ async function handleApiRequest(
     return;
   }
 
-  sendJson(response, 404, apiError("API_ROUTE_NOT_FOUND", "Rota de API nao encontrada.", correlationId));
+  sendJson(
+    response,
+    404,
+    apiError("API_ROUTE_NOT_FOUND", "Rota de API nao encontrada.", correlationId),
+  );
 }
 
-function renderAuthenticatedPage(input: { pathname: string; currentLabel: string; content: string }): string {
+function renderAuthenticatedPage(input: {
+  pathname: string;
+  currentLabel: string;
+  content: string;
+}): string {
   return renderPage({
     title: `${input.currentLabel} - SolverFin`,
     body: `
@@ -282,7 +306,8 @@ function renderAuthenticatedPage(input: { pathname: string; currentLabel: string
           <nav aria-label="Menu principal">
             ${Array.from(privateRoutes.entries())
               .map(
-                ([path, label]) => `<a href="${path}" ${path === input.pathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
+                ([path, label]) =>
+                  `<a href="${path}" ${path === input.pathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
               )
               .join("")}
           </nav>
@@ -442,7 +467,9 @@ function resolveSessionTtlMs(): number {
 }
 
 function formatMoney(amountMinor: number): string {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amountMinor / 100);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+    amountMinor / 100,
+  );
 }
 
 function formatDate(date: string): string {
