@@ -517,11 +517,23 @@ async function handleApiRequest(
 
   if (request.method === "POST" && url.pathname === "/api/session") {
     const body = await readJsonBody(request);
-    const loginResult = await fetch(`${apiBaseUrl}/api/session`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body ?? {}),
-    });
+    let loginResult: Response;
+
+    try {
+      loginResult = await fetch(`${apiBaseUrl}/api/session`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body ?? {}),
+      });
+    } catch {
+      sendJson(
+        response,
+        502,
+        apiError("API_UNREACHABLE", "Nao foi possivel conectar com a API.", correlationId),
+      );
+      return;
+    }
+
     const loginBody = (await loginResult.json()) as {
       session?: { token: string; expiresAt: string };
     };
@@ -570,14 +582,30 @@ async function proxyToApi(
   token: string,
 ): Promise<void> {
   const body = await readJsonBody(request);
-  const upstreamResponse = await fetch(`${apiBaseUrl}${url.pathname}${url.search}`, {
-    method: request.method ?? "GET",
-    headers: {
-      authorization: `Bearer ${token}`,
-      ...(body !== undefined ? { "content-type": "application/json" } : {}),
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
+  let upstreamResponse: Response;
+
+  try {
+    upstreamResponse = await fetch(`${apiBaseUrl}${url.pathname}${url.search}`, {
+      method: request.method ?? "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        ...(body !== undefined ? { "content-type": "application/json" } : {}),
+      },
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    });
+  } catch {
+    sendJson(
+      response,
+      502,
+      apiError(
+        "API_UNREACHABLE",
+        "Nao foi possivel conectar com a API.",
+        resolveCorrelationId(request),
+      ),
+    );
+    return;
+  }
+
   const text = await upstreamResponse.text();
 
   response.writeHead(upstreamResponse.status, {

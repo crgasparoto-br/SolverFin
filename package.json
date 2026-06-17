@@ -13,6 +13,7 @@
     "dev": "npm run dev:web",
     "dev:web": "npm run build:packages && npm run dev --workspace @solverfin/web",
     "dev:api": "npm run build:packages && npm run dev --workspace @solverfin/api",
+    "dev:all": "node scripts/dev-all.mjs",
     "build:packages": "npm run build --workspace @solverfin/shared --workspace @solverfin/config --workspace @solverfin/domain --workspace @solverfin/ai",
     "env:check": "node scripts/validate-env-example.mjs",
     "prisma:validate": "prisma validate",
