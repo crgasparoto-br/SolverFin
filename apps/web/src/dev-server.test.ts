@@ -4,6 +4,7 @@ import { renderDashboardPage, renderLoginPage, resolveRoute } from "./dev-server
 
 loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
+privatePlaceholderRouteRequiresSessionAndRendersActiveMenu();
 dashboardDoesNotRenderOnUnknownRoute();
 authenticatedNavigationRendersDashboardAndMenu();
 
@@ -20,6 +21,22 @@ function privateRouteRedirectsWithoutSession(): void {
 
   assert.equal(route.statusCode, 302);
   assert.equal(route.location, "/login");
+}
+
+function privatePlaceholderRouteRequiresSessionAndRendersActiveMenu(): void {
+  const anonymousRoute = resolveRoute("/contas", false);
+
+  assert.equal(anonymousRoute.statusCode, 302);
+  assert.equal(anonymousRoute.location, "/login");
+
+  const authenticatedRoute = resolveRoute("/contas", true);
+  const page = renderDashboardPage("/contas");
+
+  assert.equal(authenticatedRoute.statusCode, 200);
+  assert.equal(authenticatedRoute.kind, "placeholder");
+  assert.match(page, /Funcionalidade em preparacao/);
+  assert.match(page, /<h1>Contas<\/h1>/);
+  assert.match(page, /href="\/contas" aria-current="page"/);
 }
 
 function dashboardDoesNotRenderOnUnknownRoute(): void {
