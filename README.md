@@ -33,10 +33,10 @@ Requisitos locais:
 - npm 10 ou superior;
 - Docker com Docker Compose v2 para o banco local.
 
-Instalar dependencias:
+Instalar dependencias de forma reprodutivel a partir do `package-lock.json` versionado:
 
 ```bash
-npm install
+npm ci
 ```
 
 Executar validacao raiz:
@@ -75,7 +75,7 @@ Login demo: `demo@solverfin.example.invalid` / `SolverFinDemo!2026`.
 
 `env:check`, `format`, `lint`, `typecheck`, `test` e `build` apontam para validacoes reais, incluindo o build dos pacotes de dominio/config/shared como pre-requisito (`build:packages`).
 
-Se `npm install` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint e Prettier e atualizar o lockfile.
+Se `npm ci` nao conseguir baixar dependencias por bloqueio de rede, registre o erro na PR. O ambiente precisa acessar o npm registry para instalar TypeScript, ESLint, Prettier, Prisma e demais dependencias travadas no lockfile.
 
 ## CI inicial
 
@@ -84,8 +84,10 @@ O workflow `.github/workflows/ci.yml` roda em `pull_request` e em `push` para `m
 Ele executa os checks basicos em etapas separadas para deixar claro qual comando falhou:
 
 ```bash
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run env:check
+npm run prisma:validate
+npm run db:seed:check
 npm run format:check
 npm run lint
 npm run typecheck
@@ -96,13 +98,13 @@ npm run build
 Para reproduzir localmente o mesmo conjunto de checks, rode:
 
 ```bash
-npm install
+npm ci
 npm run validate
 ```
 
 O CI inicial nao depende de Docker, banco local ou secrets reais. Validacoes com PostgreSQL, Prisma e migrations devem entrar quando o schema e os testes de persistencia forem implementados.
 
-Como ainda nao ha `package-lock.json` versionado, o CI usa `npm install` em vez de `npm ci` e nao habilita cache de dependencias. Quando o lockfile for adotado, o workflow deve ser ajustado para instalacao reprodutivel com cache seguro.
+Como o `package-lock.json` esta versionado, o CI usa `npm ci` para instalacao reprodutivel e habilita cache de npm baseado nesse lockfile.
 
 ## Ambientes e secrets
 
