@@ -11,18 +11,18 @@ A exportacao inicial usa CSV para apoiar revisao contabil, acompanhamento MEI e 
 
 ## Cabecalhos
 
-| Campo | Descricao |
-| --- | --- |
-| `periodo_inicio` | Inicio do periodo solicitado. |
-| `periodo_fim` | Fim do periodo solicitado. |
-| `data_lancamento` | Data do lancamento. |
-| `tipo` | `income`, `expense` ou `transfer`. |
-| `categoria` | Nome da categoria ou `Sem categoria`. |
-| `descricao` | Descricao do lancamento. |
-| `valor_centavos` | Valor em centavos; despesas saem negativas. |
-| `moeda` | Moeda ISO 4217. |
-| `contexto_financeiro` | Perfil financeiro do contexto autenticado. |
-| `status` | Status do lancamento. |
+| Campo                 | Descricao                                   |
+| --------------------- | ------------------------------------------- |
+| `periodo_inicio`      | Inicio do periodo solicitado.               |
+| `periodo_fim`         | Fim do periodo solicitado.                  |
+| `data_lancamento`     | Data do lancamento.                         |
+| `tipo`                | `income`, `expense` ou `transfer`.          |
+| `categoria`           | Nome da categoria ou `Sem categoria`.       |
+| `descricao`           | Descricao do lancamento.                    |
+| `valor_centavos`      | Valor em centavos; despesas saem negativas. |
+| `moeda`               | Moeda ISO 4217.                             |
+| `contexto_financeiro` | Perfil financeiro do contexto autenticado.  |
+| `status`              | Status do lancamento.                       |
 
 ## Delimitador
 

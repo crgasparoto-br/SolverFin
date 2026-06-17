@@ -1,4 +1,11 @@
-import type { Category, EntityId, FinancialContextKind, ISODate, TenantScoped, Transaction } from "./index.js";
+import type {
+  Category,
+  EntityId,
+  FinancialContextKind,
+  ISODate,
+  TenantScoped,
+  Transaction,
+} from "./index.js";
 import type { TenantContext } from "./tenant.js";
 import { listTenantScopedResources } from "./tenant-authorization.js";
 
@@ -74,7 +81,11 @@ export function generateAccountantCsvExport(input: {
     .filter((transaction) => transaction.status !== "voided")
     .filter((transaction) => transaction.occurredOn >= input.filters.periodStartOn)
     .filter((transaction) => transaction.occurredOn <= input.filters.periodEndOn)
-    .filter(() => input.filters.financialProfileKind === undefined || input.context.financialProfileKind === input.filters.financialProfileKind)
+    .filter(
+      () =>
+        input.filters.financialProfileKind === undefined ||
+        input.context.financialProfileKind === input.filters.financialProfileKind,
+    )
     .sort((a, b) => a.occurredOn.localeCompare(b.occurredOn) || a.id.localeCompare(b.id))
     .map((transaction) => buildRow(input.context, transaction, categoryNames, input.filters));
 
@@ -97,19 +108,27 @@ function buildRow(
     periodo_fim: filters.periodEndOn,
     data_lancamento: transaction.occurredOn,
     tipo: transaction.kind,
-    categoria: transaction.categoryId ? categoryNames.get(transaction.categoryId) ?? "Sem categoria" : "Sem categoria",
+    categoria: transaction.categoryId
+      ? (categoryNames.get(transaction.categoryId) ?? "Sem categoria")
+      : "Sem categoria",
     descricao: transaction.description,
-    valor_centavos: transaction.kind === "expense" ? -transaction.amountMinor : transaction.amountMinor,
+    valor_centavos:
+      transaction.kind === "expense" ? -transaction.amountMinor : transaction.amountMinor,
     moeda: transaction.currency,
     contexto_financeiro: context.financialProfileKind,
     status: transaction.status,
   };
 }
 
-function serializeCsv(rows: readonly AccountantExportRow[], delimiter: AccountantExportDelimiter): string {
+function serializeCsv(
+  rows: readonly AccountantExportRow[],
+  delimiter: AccountantExportDelimiter,
+): string {
   const lines = [
     CSV_HEADERS.join(delimiter),
-    ...rows.map((row) => CSV_HEADERS.map((header) => escapeCsvCell(row[header], delimiter)).join(delimiter)),
+    ...rows.map((row) =>
+      CSV_HEADERS.map((header) => escapeCsvCell(row[header], delimiter)).join(delimiter),
+    ),
   ];
 
   return `${lines.join("\n")}\n`;

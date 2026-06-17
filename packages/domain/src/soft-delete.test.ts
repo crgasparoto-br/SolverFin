@@ -2,7 +2,12 @@ import { strict as assert } from "node:assert";
 
 import type { Account } from "./index.js";
 import type { TenantContext } from "./tenant.js";
-import { assertHardDeleteAllowed, listAuditVisibleEntities, listVisibleEntities, softDeleteEntity } from "./soft-delete.js";
+import {
+  assertHardDeleteAllowed,
+  listAuditVisibleEntities,
+  listVisibleEntities,
+  softDeleteEntity,
+} from "./soft-delete.js";
 
 const context: TenantContext = {
   userId: "user-soft-delete-demo",

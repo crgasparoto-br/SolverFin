@@ -27,7 +27,9 @@ const DEFAULT_ERROR_MESSAGE = "Nao foi possivel concluir a acao. Tente novamente
 const UNEXPECTED_ERROR_CODE = "API_UNEXPECTED_ERROR";
 const CORRELATION_ID_HEADER = "x-correlation-id";
 
-export function resolveCorrelationId(headers: Readonly<Record<string, string | undefined>>): string {
+export function resolveCorrelationId(
+  headers: Readonly<Record<string, string | undefined>>,
+): string {
   const incoming = headers[CORRELATION_ID_HEADER]?.trim();
 
   if (incoming && /^[a-zA-Z0-9._:-]{8,120}$/.test(incoming)) {
@@ -105,7 +107,12 @@ function isApiErrorLike(error: unknown): error is ApiErrorLike {
 }
 
 function normalizeStatusCode(statusCode: number | undefined): number {
-  if (statusCode === undefined || !Number.isInteger(statusCode) || statusCode < 400 || statusCode > 599) {
+  if (
+    statusCode === undefined ||
+    !Number.isInteger(statusCode) ||
+    statusCode < 400 ||
+    statusCode > 599
+  ) {
     return 500;
   }
 

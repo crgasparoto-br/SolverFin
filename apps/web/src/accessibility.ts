@@ -67,10 +67,13 @@ export function evaluateViewReadiness(check: ViewReadinessCheck): ViewReadinessR
   }
 
   const performant =
-    (check.estimatedListItems ?? 0) <= LARGE_LIST_THRESHOLD || check.virtualizedOrPaginated === true;
+    (check.estimatedListItems ?? 0) <= LARGE_LIST_THRESHOLD ||
+    check.virtualizedOrPaginated === true;
 
   if (!performant) {
-    issues.push("Listas grandes precisam de paginacao, virtualizacao ou limite inicial documentado.");
+    issues.push(
+      "Listas grandes precisam de paginacao, virtualizacao ou limite inicial documentado.",
+    );
   }
 
   return {

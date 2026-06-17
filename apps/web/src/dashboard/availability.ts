@@ -224,5 +224,7 @@ function formatMoney(amountMinor: number, currency: string): string {
 }
 
 function formatDate(date: string): string {
-  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(`${date}T00:00:00.000Z`));
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(
+    new Date(`${date}T00:00:00.000Z`),
+  );
 }

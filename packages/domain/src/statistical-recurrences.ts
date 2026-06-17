@@ -1,9 +1,21 @@
-import type { EntityId, ISODate, ISODateTime, Recurrence, TenantScoped, Transaction } from "./index.js";
+import type {
+  EntityId,
+  ISODate,
+  ISODateTime,
+  Recurrence,
+  TenantScoped,
+  Transaction,
+} from "./index.js";
 import type { TenantContext } from "./tenant.js";
 import { listTenantScopedResources } from "./tenant-authorization.js";
 
 export type InferredRecurrenceFrequency = "weekly" | "monthly" | "yearly";
-export type InferredRecurrenceStatus = "suggested" | "accepted" | "ignored" | "adjusted" | "disabled";
+export type InferredRecurrenceStatus =
+  | "suggested"
+  | "accepted"
+  | "ignored"
+  | "adjusted"
+  | "disabled";
 export type RecurrenceOrigin = "registered" | "confirmed" | "inferred";
 
 export interface InferredRecurringExpense extends TenantScoped {
@@ -102,7 +114,12 @@ export function detectRecurringExpenses(
     const amounts = ordered.map((transaction) => transaction.amountMinor);
     const averageAmountMinor = Math.round(average(amounts));
     const varianceMinor = Math.round(variance(amounts, averageAmountMinor));
-    const confidence = calculateConfidence(ordered.length, amounts, varianceMinor, averageAmountMinor);
+    const confidence = calculateConfidence(
+      ordered.length,
+      amounts,
+      varianceMinor,
+      averageAmountMinor,
+    );
 
     if (confidence < 0.55) {
       continue;
@@ -267,7 +284,8 @@ function calculateConfidence(
   averageAmountMinor: number,
 ): number {
   const countScore = Math.min(0.45, occurrenceCount * 0.1);
-  const variationRatio = averageAmountMinor === 0 ? 1 : Math.sqrt(varianceMinor) / averageAmountMinor;
+  const variationRatio =
+    averageAmountMinor === 0 ? 1 : Math.sqrt(varianceMinor) / averageAmountMinor;
   const amountScore = Math.max(0.15, 0.45 - variationRatio);
   const stabilityScore = new Set(amounts).size === 1 ? 0.1 : 0.05;
 
