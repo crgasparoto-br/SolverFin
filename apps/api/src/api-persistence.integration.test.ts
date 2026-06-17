@@ -20,7 +20,7 @@ void main()
 async function main(): Promise<void> {
   assertIntegrationDatabaseConfigured();
 
-  const token = loginAndReadToken();
+  const token = await loginAndReadToken();
   const fixtures = await createPersonalFinancialFlow(token);
 
   await assertPersonalProfileListsOnlyPersonalData(token, fixtures);
@@ -136,8 +136,8 @@ async function assertUnknownProfileIsRejected(token: string): Promise<void> {
   assert.equal(readErrorCode(response), "TENANT_ACCESS_DENIED");
 }
 
-function loginAndReadToken(): string {
-  const response = handleMvpApiRequest({
+async function loginAndReadToken(): Promise<string> {
+  const response = await handleMvpApiRequest({
     method: "POST",
     path: "/api/session",
     body: {
