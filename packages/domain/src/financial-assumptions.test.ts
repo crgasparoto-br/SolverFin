@@ -101,13 +101,27 @@ function deactivatedAndArchivedAssumptionsAreExcluded(): void {
     includeInferred,
     "2026-06-16T14:00:00.000Z",
   ).assumption;
-  const archived = archiveFinancialAssumption(tenantA, deactivated, "2026-06-16T15:00:00.000Z").assumption;
-  const restored = restoreFinancialAssumption(tenantA, archived, "2026-06-16T16:00:00.000Z").assumption;
+  const archived = archiveFinancialAssumption(
+    tenantA,
+    deactivated,
+    "2026-06-16T15:00:00.000Z",
+  ).assumption;
+  const restored = restoreFinancialAssumption(
+    tenantA,
+    archived,
+    "2026-06-16T16:00:00.000Z",
+  ).assumption;
 
-  assert.equal(resolveAvailabilityAssumptions(tenantA, [deactivated], "2026-06-16").includeInferredRecurrences, true);
+  assert.equal(
+    resolveAvailabilityAssumptions(tenantA, [deactivated], "2026-06-16").includeInferredRecurrences,
+    true,
+  );
   assert.equal(listFinancialAssumptions(tenantA, [archived]).length, 0);
   assert.equal(restored.status, "active");
-  assert.equal(resolveAvailabilityAssumptions(tenantA, [restored], "2026-06-16").includeInferredRecurrences, false);
+  assert.equal(
+    resolveAvailabilityAssumptions(tenantA, [restored], "2026-06-16").includeInferredRecurrences,
+    false,
+  );
 }
 
 function tenantIsolationIsEnforced(): void {

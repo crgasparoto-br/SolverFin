@@ -45,8 +45,14 @@ function calculatesAvailabilityWithCardsAndInferredRecurrences(): void {
   });
 
   assert.equal(result.availableTodayMinor, 94500);
-  assert.equal(result.components.some((component) => component.source === "invoices"), true);
-  assert.equal(result.components.some((component) => component.source === "statistical_recurrences"), true);
+  assert.equal(
+    result.components.some((component) => component.source === "invoices"),
+    true,
+  );
+  assert.equal(
+    result.components.some((component) => component.source === "statistical_recurrences"),
+    true,
+  );
   assert.equal(result.confidence, "medium");
 }
 
@@ -73,7 +79,13 @@ function changedAssumptionChangesResult(): void {
       effectiveFrom: "2026-06-01",
     },
   }).assumption;
-  const expense = transactionFixture("expense-ignored", "expense", 15000, "2026-06-18", "cat-ignore");
+  const expense = transactionFixture(
+    "expense-ignored",
+    "expense",
+    15000,
+    "2026-06-18",
+    "cat-ignore",
+  );
 
   const result = calculateDailyAvailability({
     context: tenantA,
@@ -85,7 +97,10 @@ function changedAssumptionChangesResult(): void {
   });
 
   assert.equal(result.availableTodayMinor, 30000);
-  assert.equal(result.components.some((component) => component.kind === "ignored"), true);
+  assert.equal(
+    result.components.some((component) => component.kind === "ignored"),
+    true,
+  );
   assert.equal(result.appliedAssumptionIds.length, 2);
 }
 
@@ -99,7 +114,10 @@ function emptyHistoryProducesLowConfidenceLimitation(): void {
   });
 
   assert.equal(result.confidence, "low");
-  assert.equal(result.limitations.some((limitation) => limitation.includes("Historico")), true);
+  assert.equal(
+    result.limitations.some((limitation) => limitation.includes("Historico")),
+    true,
+  );
 }
 
 function tenantIsolationIsApplied(): void {
@@ -110,7 +128,11 @@ function tenantIsolationIsApplied(): void {
     currentBalanceMinor: 10000,
     transactions: [
       transactionFixture("expense-a", "expense", 2000, "2026-06-18"),
-      { ...transactionFixture("expense-b", "expense", 9000, "2026-06-18"), organizationId: tenantB.organizationId, financialProfileId: tenantB.financialProfileId },
+      {
+        ...transactionFixture("expense-b", "expense", 9000, "2026-06-18"),
+        organizationId: tenantB.organizationId,
+        financialProfileId: tenantB.financialProfileId,
+      },
     ],
   });
 

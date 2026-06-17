@@ -13,22 +13,22 @@ Esta politica orienta implementacoes do MVP do SolverFin. Ela nao substitui vali
 
 ## Categorias de dados
 
-| Categoria | Finalidade | Retencao proposta | Exportavel | Exclusao/anonimizacao | Observacoes |
-| --- | --- | --- | --- | --- | --- |
-| Usuario | Identidade, sessao e titularidade | Enquanto conta ativa e periodo operacional posterior | Sim | Anonimizar dados pessoais apos encerramento quando permitido | Email e nome devem ser tratados como dados pessoais. |
-| Organizacao | Agrupar perfis financeiros | Enquanto existir conta/tenant | Sim | Soft delete, depois expurgo planejado | Mantem relacao com auditoria. |
-| Perfil financeiro | Separar pessoal, familia, MEI e negocio | Enquanto ativo ou auditavel | Sim | Soft delete | Base de isolamento por contexto. |
-| Contas | Registrar saldos e movimentacoes | Enquanto houver historico financeiro relevante | Sim | Soft delete | Identificadores devem ficar mascarados. |
-| Cartoes | Faturas, compras e conciliacao | Enquanto houver faturas/lancamentos vinculados | Sim | Soft delete/bloqueio | Nunca exibir numero completo. |
-| Categorias | Classificacao financeira | Enquanto usadas por lancamentos | Sim | Arquivar/substituir | Evitar apagar historico classificado. |
-| Lancamentos | Historico financeiro | Conforme necessidade do usuario, auditoria e requisitos fiscais | Sim | Soft delete; hard delete apenas por expurgo autorizado | Lancamento excluido nao aparece por padrao. |
-| Anexos | Comprovantes e documentos de apoio | Pelo menor periodo necessario | Opcional | Redigir, remover storage e manter metadados minimos | Anexos podem conter dados sensiveis de terceiros. |
-| Importacoes | Rastrear origem e deduplicacao | Metadados enquanto necessarios; payload bruto pelo menor prazo | Parcial | Descartar payload bruto apos normalizacao quando possivel | Hash pode permanecer para deduplicacao. |
-| Mensagens brutas | Extracao por regras/IA | Temporaria e minimizada | Preferencialmente nao | Descartar ou anonimizar apos gerar sugestao | Requer consentimento e mascaramento. |
-| Sugestoes de IA | Revisao e explicabilidade | Enquanto pendentes; revisadas por prazo definido | Sim, com dados minimizados | Expirar/anonimizar detalhes sensiveis | Deve manter origem, confianca e decisao. |
-| Logs | Diagnostico e seguranca | Curto prazo operacional | Nao, salvo relatorio tecnico | Rotacao e expurgo | Nunca conter payload financeiro bruto. |
-| Auditoria | Rastreabilidade | Prazo maior que logs operacionais | Parcial | Preservar metadados, nao payload completo | Guardar quem, quando, entidade, acao e mudancas redigidas. |
-| Backups | Recuperacao operacional | Conforme politica de infraestrutura | Nao direto | Expurgo por ciclo de backup | Exclusao pode persistir em backup ate rotacao. |
+| Categoria         | Finalidade                              | Retencao proposta                                               | Exportavel                   | Exclusao/anonimizacao                                        | Observacoes                                                |
+| ----------------- | --------------------------------------- | --------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
+| Usuario           | Identidade, sessao e titularidade       | Enquanto conta ativa e periodo operacional posterior            | Sim                          | Anonimizar dados pessoais apos encerramento quando permitido | Email e nome devem ser tratados como dados pessoais.       |
+| Organizacao       | Agrupar perfis financeiros              | Enquanto existir conta/tenant                                   | Sim                          | Soft delete, depois expurgo planejado                        | Mantem relacao com auditoria.                              |
+| Perfil financeiro | Separar pessoal, familia, MEI e negocio | Enquanto ativo ou auditavel                                     | Sim                          | Soft delete                                                  | Base de isolamento por contexto.                           |
+| Contas            | Registrar saldos e movimentacoes        | Enquanto houver historico financeiro relevante                  | Sim                          | Soft delete                                                  | Identificadores devem ficar mascarados.                    |
+| Cartoes           | Faturas, compras e conciliacao          | Enquanto houver faturas/lancamentos vinculados                  | Sim                          | Soft delete/bloqueio                                         | Nunca exibir numero completo.                              |
+| Categorias        | Classificacao financeira                | Enquanto usadas por lancamentos                                 | Sim                          | Arquivar/substituir                                          | Evitar apagar historico classificado.                      |
+| Lancamentos       | Historico financeiro                    | Conforme necessidade do usuario, auditoria e requisitos fiscais | Sim                          | Soft delete; hard delete apenas por expurgo autorizado       | Lancamento excluido nao aparece por padrao.                |
+| Anexos            | Comprovantes e documentos de apoio      | Pelo menor periodo necessario                                   | Opcional                     | Redigir, remover storage e manter metadados minimos          | Anexos podem conter dados sensiveis de terceiros.          |
+| Importacoes       | Rastrear origem e deduplicacao          | Metadados enquanto necessarios; payload bruto pelo menor prazo  | Parcial                      | Descartar payload bruto apos normalizacao quando possivel    | Hash pode permanecer para deduplicacao.                    |
+| Mensagens brutas  | Extracao por regras/IA                  | Temporaria e minimizada                                         | Preferencialmente nao        | Descartar ou anonimizar apos gerar sugestao                  | Requer consentimento e mascaramento.                       |
+| Sugestoes de IA   | Revisao e explicabilidade               | Enquanto pendentes; revisadas por prazo definido                | Sim, com dados minimizados   | Expirar/anonimizar detalhes sensiveis                        | Deve manter origem, confianca e decisao.                   |
+| Logs              | Diagnostico e seguranca                 | Curto prazo operacional                                         | Nao, salvo relatorio tecnico | Rotacao e expurgo                                            | Nunca conter payload financeiro bruto.                     |
+| Auditoria         | Rastreabilidade                         | Prazo maior que logs operacionais                               | Parcial                      | Preservar metadados, nao payload completo                    | Guardar quem, quando, entidade, acao e mudancas redigidas. |
+| Backups           | Recuperacao operacional                 | Conforme politica de infraestrutura                             | Nao direto                   | Expurgo por ciclo de backup                                  | Exclusao pode persistir em backup ate rotacao.             |
 
 ## Exportacao de dados
 

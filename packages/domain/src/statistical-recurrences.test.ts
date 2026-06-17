@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 
 import type { Recurrence, Transaction } from "./index.js";
 import type { TenantContext } from "./tenant.js";
-import { detectRecurringExpenses, updateInferredRecurrenceDecision } from "./statistical-recurrences.js";
+import {
+  detectRecurringExpenses,
+  updateInferredRecurrenceDecision,
+} from "./statistical-recurrences.js";
 
 const now = "2026-06-16T12:00:00.000Z";
 const tenantA: TenantContext = {
@@ -52,8 +55,14 @@ function ignoresFalsePositiveAndInsufficientHistory(): void {
     expense("i2", "2026-06-10", 4000, "Academia"),
   ];
 
-  assert.equal(detectRecurringExpenses({ context: tenantA, transactions: falsePositive, now }).length, 0);
-  assert.equal(detectRecurringExpenses({ context: tenantA, transactions: insufficient, now }).length, 0);
+  assert.equal(
+    detectRecurringExpenses({ context: tenantA, transactions: falsePositive, now }).length,
+    0,
+  );
+  assert.equal(
+    detectRecurringExpenses({ context: tenantA, transactions: insufficient, now }).length,
+    0,
+  );
 }
 
 function doesNotDuplicateRegisteredRecurrence(): void {
@@ -79,8 +88,12 @@ function doesNotDuplicateRegisteredRecurrence(): void {
   };
 
   assert.equal(
-    detectRecurringExpenses({ context: tenantA, transactions, registeredRecurrences: [registered], now })
-      .length,
+    detectRecurringExpenses({
+      context: tenantA,
+      transactions,
+      registeredRecurrences: [registered],
+      now,
+    }).length,
     0,
   );
 }
@@ -120,7 +133,11 @@ function tenantIsolationIsApplied(): void {
     expense("t1", "2026-04-05", 9000, "Curso"),
     expense("t2", "2026-05-05", 9000, "Curso"),
     expense("t3", "2026-06-05", 9000, "Curso"),
-    { ...expense("other", "2026-04-05", 9000, "Curso"), organizationId: tenantB.organizationId, financialProfileId: tenantB.financialProfileId },
+    {
+      ...expense("other", "2026-04-05", 9000, "Curso"),
+      organizationId: tenantB.organizationId,
+      financialProfileId: tenantB.financialProfileId,
+    },
   ];
 
   const inferred = detectRecurringExpenses({ context: tenantA, transactions, now });

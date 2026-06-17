@@ -71,7 +71,11 @@ function blocksMissingOrRevokedConsent(): void {
     consent: granted.consent,
     now: "2026-06-16T12:00:00.000Z",
   });
-  const result = requireActiveConsent(context, [granted.consent, revoked.consent], "import_processing");
+  const result = requireActiveConsent(
+    context,
+    [granted.consent, revoked.consent],
+    "import_processing",
+  );
 
   assert.equal(result.allowed, false);
   assert.equal(result.status, "revoked");
@@ -85,7 +89,11 @@ function keepsConsentScopedToTenant(): void {
     purpose: "accountant_export",
     source: "settings",
   });
-  const summary = summarizePrivacyPreferences(otherContext, [granted.consent], ["accountant_export"]);
+  const summary = summarizePrivacyPreferences(
+    otherContext,
+    [granted.consent],
+    ["accountant_export"],
+  );
 
   assert.equal(summary[0]?.status, "missing");
 }

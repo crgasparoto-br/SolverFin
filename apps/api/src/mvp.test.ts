@@ -73,7 +73,10 @@ function summaryUsesDemoDataInMinorUnits(): void {
   assert.equal(summary.currency, "BRL");
   assert.equal(Number.isInteger(summary.availableBalanceMinor), true);
   assert.equal(summary.profile.name, "Pessoal Demo");
-  assert.equal(summary.recentItems.some((item) => item.status === "planned"), true);
+  assert.equal(
+    summary.recentItems.some((item) => item.status === "planned"),
+    true,
+  );
 }
 
 function readToken(body: unknown): string {

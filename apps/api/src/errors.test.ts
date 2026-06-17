@@ -1,6 +1,11 @@
 import { strict as assert } from "node:assert";
 
-import { buildApiErrorResponse, logApiError, resolveCorrelationId, type ApiLogEvent } from "./errors.js";
+import {
+  buildApiErrorResponse,
+  logApiError,
+  resolveCorrelationId,
+  type ApiLogEvent,
+} from "./errors.js";
 
 returnsControlledErrorContract();
 propagatesOrCreatesCorrelationId();
