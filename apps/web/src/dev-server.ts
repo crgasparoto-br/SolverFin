@@ -63,8 +63,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (route.kind === "login") {
-    const message = url.searchParams.get("erro");
-    sendHtml(response, 200, renderLoginPage(message ? decodeURIComponent(message) : undefined));
+    sendHtml(response, 200, renderLoginPage(url.searchParams.get("erro") ?? undefined));
     return;
   }
 
