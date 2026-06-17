@@ -15,8 +15,14 @@ function buildsReadyCardWithDetails(): void {
   assert.equal(viewModel.card.state, "ready");
   assert.match(viewModel.card.amountText ?? "", /R\$.*945,00/);
   assert.equal(viewModel.card.secondaryActions.includes("edit_assumptions"), true);
-  assert.equal(viewModel.detailSections.some((section) => section.title === "Recorrencias inferidas"), true);
-  assert.equal(viewModel.reviewItems.some((item) => item.action === "review_inferred_recurrences"), true);
+  assert.equal(
+    viewModel.detailSections.some((section) => section.title === "Recorrencias inferidas"),
+    true,
+  );
+  assert.equal(
+    viewModel.reviewItems.some((item) => item.action === "review_inferred_recurrences"),
+    true,
+  );
 }
 
 function flagsLowConfidenceState(): void {
@@ -24,7 +30,10 @@ function flagsLowConfidenceState(): void {
 
   assert.equal(viewModel.card.state, "low_confidence");
   assert.match(viewModel.card.subtitle, /Confira as premissas/);
-  assert.equal(viewModel.reviewItems.some((item) => item.id === "limitations"), true);
+  assert.equal(
+    viewModel.reviewItems.some((item) => item.id === "limitations"),
+    true,
+  );
 }
 
 function handlesLoadingEmptyAndErrorStates(): void {
@@ -37,7 +46,9 @@ function handlesLoadingEmptyAndErrorStates(): void {
   );
 }
 
-function availabilityFixture(confidence: DailyAvailabilityResult["confidence"]): DailyAvailabilityResult {
+function availabilityFixture(
+  confidence: DailyAvailabilityResult["confidence"],
+): DailyAvailabilityResult {
   return {
     availableTodayMinor: 94500,
     projectedBalanceMinor: 94500,

@@ -61,7 +61,13 @@ export function softDeleteEntity<TEntity extends SoftDeletableEntity>(
 
   return {
     entity: deleted,
-    auditEntry: buildDeletionAuditEntry(input.context, deleted, input.entityKind, input.now, input.reason),
+    auditEntry: buildDeletionAuditEntry(
+      input.context,
+      deleted,
+      input.entityKind,
+      input.now,
+      input.reason,
+    ),
   };
 }
 
@@ -69,7 +75,9 @@ export function listVisibleEntities<TEntity extends SoftDeletableEntity & SoftDe
   context: TenantContext,
   entities: readonly TEntity[],
 ): TEntity[] {
-  return listTenantScopedResources(context, entities).filter((entity) => entity.deletedAt === undefined);
+  return listTenantScopedResources(context, entities).filter(
+    (entity) => entity.deletedAt === undefined,
+  );
 }
 
 export function listAuditVisibleEntities<TEntity extends SoftDeletableEntity & SoftDeleteMetadata>(
@@ -79,7 +87,10 @@ export function listAuditVisibleEntities<TEntity extends SoftDeletableEntity & S
   return listTenantScopedResources(context, entities);
 }
 
-export function assertHardDeleteAllowed(entityKind: AuditEntityKind, allowHardDelete = false): void {
+export function assertHardDeleteAllowed(
+  entityKind: AuditEntityKind,
+  allowHardDelete = false,
+): void {
   if (allowHardDelete) {
     return;
   }

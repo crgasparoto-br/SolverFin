@@ -50,8 +50,14 @@ function flagsMissingLabelsAndFocus(): void {
   });
 
   assert.equal(result.accessible, false);
-  assert.equal(result.issues.some((issue) => issue.includes("nome acessivel")), true);
-  assert.equal(result.issues.some((issue) => issue.includes("recuperacao")), true);
+  assert.equal(
+    result.issues.some((issue) => issue.includes("nome acessivel")),
+    true,
+  );
+  assert.equal(
+    result.issues.some((issue) => issue.includes("recuperacao")),
+    true,
+  );
 }
 
 function flagsLargeListsWithoutPagination(): void {
@@ -67,5 +73,8 @@ function flagsLargeListsWithoutPagination(): void {
   });
 
   assert.equal(result.performant, false);
-  assert.equal(result.issues.some((issue) => issue.includes("Listas grandes")), true);
+  assert.equal(
+    result.issues.some((issue) => issue.includes("Listas grandes")),
+    true,
+  );
 }

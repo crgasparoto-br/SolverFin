@@ -4,13 +4,13 @@ Esta estrategia orienta humanos e agentes ao adicionar ou revisar funcionalidade
 
 ## Camadas
 
-| Camada | Quando usar | Exemplos atuais | Comando |
-| --- | --- | --- | --- |
-| Unitario de dominio | Regras financeiras puras, tenant, privacidade, exportacao e calculos | `packages/domain/src/*.test.ts` | `npm run test --workspace @solverfin/domain` |
-| API/contrato | Autenticacao, erros, correlation id e autorizacao | `apps/api/src/*.test.ts` | `npm run test --workspace @solverfin/api` |
-| UI/PWA | Manifest, share target, acessibilidade e estados | `apps/web/src/**/*.test.ts` | `npm run test --workspace @solverfin/web` |
-| Compartilhado | Utilitarios usados por mais de uma camada | `packages/shared/src/*.test.ts` | `npm run test --workspace @solverfin/shared` |
-| Integracao/e2e | Fluxos com banco, navegador ou servicos reais | Pendente ate bootstrap da stack executavel | A definir em issue futura |
+| Camada              | Quando usar                                                          | Exemplos atuais                            | Comando                                      |
+| ------------------- | -------------------------------------------------------------------- | ------------------------------------------ | -------------------------------------------- |
+| Unitario de dominio | Regras financeiras puras, tenant, privacidade, exportacao e calculos | `packages/domain/src/*.test.ts`            | `npm run test --workspace @solverfin/domain` |
+| API/contrato        | Autenticacao, erros, correlation id e autorizacao                    | `apps/api/src/*.test.ts`                   | `npm run test --workspace @solverfin/api`    |
+| UI/PWA              | Manifest, share target, acessibilidade e estados                     | `apps/web/src/**/*.test.ts`                | `npm run test --workspace @solverfin/web`    |
+| Compartilhado       | Utilitarios usados por mais de uma camada                            | `packages/shared/src/*.test.ts`            | `npm run test --workspace @solverfin/shared` |
+| Integracao/e2e      | Fluxos com banco, navegador ou servicos reais                        | Pendente ate bootstrap da stack executavel | A definir em issue futura                    |
 
 ## Comandos padrao
 

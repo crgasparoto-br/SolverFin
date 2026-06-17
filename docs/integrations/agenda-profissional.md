@@ -4,13 +4,13 @@ Este documento define um contrato conceitual para eventos de agenda gerarem cont
 
 ## Eventos suportados
 
-| Evento | Efeito esperado no SolverFin |
-| --- | --- |
-| `appointment.created` | Criar conta a receber prevista, pendente de conciliacao. |
-| `appointment.rescheduled` | Atualizar vencimento/competencia se ainda nao conciliado. |
-| `appointment.completed` | Marcar recebivel como confirmado quando aplicavel. |
-| `appointment.cancelled` | Cancelar recebivel ainda nao pago ou criar ajuste se ja conciliado. |
-| `appointment.paid` | Criar/atualizar receita recebida e reconciliar com pagamento. |
+| Evento                    | Efeito esperado no SolverFin                                        |
+| ------------------------- | ------------------------------------------------------------------- |
+| `appointment.created`     | Criar conta a receber prevista, pendente de conciliacao.            |
+| `appointment.rescheduled` | Atualizar vencimento/competencia se ainda nao conciliado.           |
+| `appointment.completed`   | Marcar recebivel como confirmado quando aplicavel.                  |
+| `appointment.cancelled`   | Cancelar recebivel ainda nao pago ou criar ajuste se ja conciliado. |
+| `appointment.paid`        | Criar/atualizar receita recebida e reconciliar com pagamento.       |
 
 ## Payload minimo
 

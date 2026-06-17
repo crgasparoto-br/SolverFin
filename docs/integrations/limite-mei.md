@@ -21,29 +21,29 @@ Nao entram por padrao:
 
 ## Competencia e recebimento
 
-| Situacao | Tratamento proposto |
-| --- | --- |
-| Receita recebida no mesmo mes da competencia | Considerar no mes informado. |
-| Receita recebida em mes diferente | Registrar competencia e recebimento; relatorio deve deixar criterio claro. |
-| Receita prevista sem pagamento | Nao contar como realizada; pode aparecer como previsao. |
-| Receita cancelada | Remover do acumulado a partir da competencia afetada. |
-| Estorno parcial | Registrar ajuste negativo vinculado a receita original. |
-| Ajuste manual | Exigir motivo e auditoria. |
+| Situacao                                     | Tratamento proposto                                                        |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| Receita recebida no mesmo mes da competencia | Considerar no mes informado.                                               |
+| Receita recebida em mes diferente            | Registrar competencia e recebimento; relatorio deve deixar criterio claro. |
+| Receita prevista sem pagamento               | Nao contar como realizada; pode aparecer como previsao.                    |
+| Receita cancelada                            | Remover do acumulado a partir da competencia afetada.                      |
+| Estorno parcial                              | Registrar ajuste negativo vinculado a receita original.                    |
+| Ajuste manual                                | Exigir motivo e auditoria.                                                 |
 
 ## Campos recomendados para contrato futuro
 
-| Campo | Obrigatorio | Observacao |
-| --- | --- | --- |
-| `transactionId` | Sim | ID do lancamento no SolverFin. |
-| `tenantId` | Sim | Organizacao/tenant autorizado. |
-| `financialProfileId` | Sim | Perfil MEI. |
-| `competenceMonth` | Sim | `YYYY-MM`. |
-| `receivedOn` | Opcional | Obrigatorio para receita realizada. |
-| `amountMinor` | Sim | Centavos, positivo para receita, negativo para ajuste. |
-| `currency` | Sim | Moeda ISO 4217. |
-| `status` | Sim | prevista, recebida, cancelada, estornada ou ajustada. |
-| `source` | Sim | manual, importacao, agenda ou ajuste. |
-| `reconciliationStatus` | Opcional | pendente, conciliado ou conflitante. |
+| Campo                  | Obrigatorio | Observacao                                             |
+| ---------------------- | ----------- | ------------------------------------------------------ |
+| `transactionId`        | Sim         | ID do lancamento no SolverFin.                         |
+| `tenantId`             | Sim         | Organizacao/tenant autorizado.                         |
+| `financialProfileId`   | Sim         | Perfil MEI.                                            |
+| `competenceMonth`      | Sim         | `YYYY-MM`.                                             |
+| `receivedOn`           | Opcional    | Obrigatorio para receita realizada.                    |
+| `amountMinor`          | Sim         | Centavos, positivo para receita, negativo para ajuste. |
+| `currency`             | Sim         | Moeda ISO 4217.                                        |
+| `status`               | Sim         | prevista, recebida, cancelada, estornada ou ajustada.  |
+| `source`               | Sim         | manual, importacao, agenda ou ajuste.                  |
+| `reconciliationStatus` | Opcional    | pendente, conciliado ou conflitante.                   |
 
 ## Exemplos
 
