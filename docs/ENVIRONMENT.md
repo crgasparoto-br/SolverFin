@@ -10,6 +10,19 @@ Este documento define o fluxo seguro inicial para variaveis de ambiente e secret
 - Configure secrets reais apenas no ambiente onde serao usados, como GitHub Actions, provedor de deploy ou gerenciador dedicado futuro.
 - Erros de validacao devem citar o nome da variavel ausente ou invalida, nunca o valor recebido.
 
+## Privacidade de dados financeiros
+
+A politica inicial de consentimento, retencao, minimizacao e mascaramento fica em `docs/PRIVACY.md`.
+
+Ela deve ser usada como contrato para importacao, inbox de mensagens bancarias, deduplicacao, conciliacao, automacoes e IA financeira.
+
+Regras praticas para ambientes:
+
+- `.env.example`, logs de CI e exemplos versionados nao podem conter dados financeiros reais ou mensagens bancarias reais.
+- Secrets de provedores de IA, identidade, banco ou storage devem existir apenas no ambiente que precisa deles.
+- Respostas brutas de provedores externos nao devem ser copiadas para logs, fixtures ou documentacao.
+- Quando uma validacao falhar, a mensagem deve citar nomes de variaveis ou codigos de erro, nunca valores sensiveis recebidos.
+
 ## Arquivos
 
 - `.env.example`: contrato publico de variaveis esperadas, com valores ficticios.

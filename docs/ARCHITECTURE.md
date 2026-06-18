@@ -62,7 +62,7 @@ Validacoes com PostgreSQL, Prisma migrations e seeds completos devem entrar em w
 
 ## Ambientes e secrets
 
-A politica inicial de ambientes fica em `docs/ENVIRONMENT.md`.
+A politica inicial de ambientes fica em `docs/ENVIRONMENT.md`. A politica inicial de privacidade, consentimento, retencao e mascaramento fica em `docs/PRIVACY.md`.
 
 Direcao tecnica atual:
 
@@ -73,6 +73,7 @@ Direcao tecnica atual:
 - Mensagens de erro devem citar nomes de variaveis, nunca valores sensiveis.
 - Secrets reais devem ser configurados apenas nos ambientes que precisam deles, como GitHub Actions, preview, producao ou gerenciador externo futuro.
 - Variaveis produtivas de autenticacao devem seguir a ADR 0004 e ficar ausentes de logs, fixtures e exemplos com valores reais.
+- Dados financeiros brutos, mensagens bancarias e respostas de IA devem seguir minimizacao, retencao e mascaramento definidos em `docs/PRIVACY.md`.
 
 ## Ambiente local de banco
 
@@ -121,12 +122,13 @@ Servicos de IA
 
 ### Produto e documentacao
 
-Responsavel por visao, escopo, personas, tom, criterios e regras de produto.
+Responsavel por visao, escopo, personas, tom, criterios, privacidade e regras de produto.
 
 Arquivos principais:
 
 - `docs/PRODUCT.md`
 - `docs/BRAND.md`
+- `docs/PRIVACY.md`
 - `README.md`
 
 ### Dominio financeiro
@@ -153,13 +155,13 @@ Persistencia nao deve conter regra de produto que possa viver no dominio finance
 
 Responsavel por receber CSV, OFX, textos de mensagens bancarias e outras origens autorizadas, normalizar dados, detectar duplicidades e sugerir conciliacao.
 
-Dados brutos sensiveis devem ser minimizados e protegidos.
+Dados brutos sensiveis devem ser minimizados, protegidos e descartados ou retidos conforme `docs/PRIVACY.md`.
 
 ### IA financeira
 
 Responsavel por extracao, classificacao, explicacao, sugestoes, insights e assistente financeiro.
 
-A IA deve produzir saidas estruturadas, revisaveis e auditaveis. Regras deterministicas devem ser preferidas quando forem suficientes.
+A IA deve produzir saidas estruturadas, revisaveis e auditaveis. Regras deterministicas devem ser preferidas quando forem suficientes. Dados enviados a provedores devem ser minimizados conforme `docs/PRIVACY.md`.
 
 ### Interface web/PWA
 
@@ -178,19 +180,28 @@ A interface deve ser mobile-first, acessivel, clara e coerente com `docs/BRAND.m
 - Preferir exclusao logica para dados financeiros.
 - Proteger tenant/perfil financeiro em consultas, comandos e testes.
 - Evitar fixtures com dados reais ou identificaveis.
+- Aplicar `docs/PRIVACY.md` antes de persistir dado bruto, processar mensagens bancarias ou enviar dados a IA.
 - Documentar novos contratos publicos e migracoes relevantes.
 
 ## Dados e privacidade
 
 Dados financeiros, mensagens bancarias, identificadores de conta/cartao, documentos, tokens e chaves devem ser tratados como sensiveis.
 
+A politica operacional inicial fica em `docs/PRIVACY.md` e diferencia:
+
+- dado bruto, como arquivo original, mensagem bancaria integral, anexo, resposta de provedor ou segredo;
+- dado normalizado, como valor, data, descricao minimizada, hash de origem e status;
+- sugestao revisavel, com origem, explicacao, confianca, estado de revisao e trilha de aceite, edicao ou rejeicao.
+
 Diretrizes iniciais:
 
 - persistir apenas o necessario;
+- descartar dado bruto apos normalizacao por padrao;
 - mascarar identificadores em logs e telas quando o valor completo nao for indispensavel;
-- auditar alteracoes financeiras relevantes;
+- auditar alteracoes financeiras relevantes com mudancas redigidas;
 - registrar consentimento para importacoes, captura de mensagens e uso de IA;
-- permitir rastrear origem e revisao de sugestoes automatizadas.
+- permitir rastrear origem e revisao de sugestoes automatizadas;
+- usar apenas dados ficticios e minimizados em seeds, fixtures, prints e documentacao.
 
 ## Validacao esperada por tipo de mudanca
 
@@ -228,7 +239,7 @@ Essa estrutura nao deve ser criada fora de uma issue de bootstrap tecnico, salvo
 
 - Qual framework web/backend sera escolhido no bootstrap tecnico?
 - Qual provider gerenciado sera contratado para cumprir a ADR 0004?
-- Quais dados brutos de importacao podem ser descartados apos normalizacao?
+- Quais excecoes de retencao de dados brutos exigirao ADR, consentimento adicional ou contrato de suporte?
 - Quais operacoes exigirao revisao humana obrigatoria antes de persistir efeitos financeiros?
 
 Essas respostas devem ser resolvidas por issues especificas e ADRs.
