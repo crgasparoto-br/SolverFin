@@ -52,10 +52,7 @@ jobs:
         run: npm run db:seed:check
 
       - name: Check formatting
-        run: |
-          npm run format
-          git diff -- apps/api/src/payables-receivables-router.ts apps/api/src/repositories/payables-receivables.ts
-          git diff --exit-code
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
