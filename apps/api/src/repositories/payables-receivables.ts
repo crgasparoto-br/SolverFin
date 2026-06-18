@@ -169,10 +169,7 @@ export async function updatePayableReceivableForContext(
   payableReceivableId: EntityId,
   payload: UpdatePayableReceivablePayload,
 ): Promise<PayableReceivable> {
-  const currentPayableReceivable = await findPayableReceivableRow(
-    context,
-    payableReceivableId,
-  );
+  const currentPayableReceivable = await findPayableReceivableRow(context, payableReceivableId);
   const accountId = payload.accountId ?? currentPayableReceivable?.accountId;
   const categoryId = payload.categoryId ?? currentPayableReceivable?.categoryId;
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
@@ -223,10 +220,7 @@ export async function settlePayableReceivableForContext(
   payableReceivableId: EntityId,
   payload: SettlePayableReceivablePayload,
 ): Promise<{ payableReceivable: PayableReceivable; transaction: Transaction }> {
-  const currentPayableReceivable = await findPayableReceivableRow(
-    context,
-    payableReceivableId,
-  );
+  const currentPayableReceivable = await findPayableReceivableRow(context, payableReceivableId);
   const accountId = payload.accountId ?? currentPayableReceivable?.accountId;
   const categoryId = payload.categoryId ?? currentPayableReceivable?.categoryId;
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
