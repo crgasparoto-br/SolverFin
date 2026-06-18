@@ -38,8 +38,8 @@ export const solverFinShellRoutes = [
   {
     id: "transactions",
     path: "/app/lancamentos",
-    label: "Lancamentos",
-    description: "Registre, revise e filtre receitas, despesas e transferencias.",
+    label: "Extrato da conta",
+    description: "Acompanhe saldo, filtros e movimentacoes por conta.",
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,

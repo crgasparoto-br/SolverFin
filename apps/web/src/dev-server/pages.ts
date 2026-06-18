@@ -253,75 +253,135 @@ export async function renderTransactionsPage(token: string): Promise<string> {
   ]);
 
   if (!transactions.ok) {
-    return renderApiErrorPage("/lancamentos", "Lançamentos", transactions.error);
+    return renderApiErrorPage("/lancamentos", "Extrato da conta", transactions.error);
   }
 
+  const transactionItems = transactions.data.transactions;
   const accountOptions = accounts.ok ? accounts.data.accounts : [];
   const categoryOptions = categories.ok ? categories.data.categories : [];
+  const selectedAccount = accountOptions[0];
+  const selectedAccountName = selectedAccount?.name ?? "Todas as contas";
+  const statement = summarizeStatement(transactionItems, accountOptions, selectedAccount?.id);
+  const groupedTransactions = groupTransactionsByDate(transactionItems);
 
   return renderAuthenticatedPage({
     pathname: "/lancamentos",
-    currentLabel: "Lançamentos",
+    currentLabel: "Extrato da conta",
     content: `
-      ${renderPageHeading({
-        eyebrow: "Rotina financeira",
-        title: "Lançamentos",
-        description: "Receitas, despesas e transferências do perfil ativo.",
-      })}
-      <section class="workspace-grid wide-form">
-        <section class="panel list-panel">
-          <div class="section-heading">
-            <h2>Movimentações</h2>
-            <span>${transactions.data.transactions.length} itens</span>
-          </div>
-          <div class="rows">
-            ${
-              transactions.data.transactions
-                .map(
-                  (transaction) => `
-                  <article class="row">
-                    <div><strong>${escapeHtml(transaction.description || "(sem descrição)")}</strong><span>${escapeHtml(transaction.kind)} - ${escapeHtml(transaction.status)} - ${formatDate(transaction.occurredOn)}</span></div>
-                    <strong>${formatMoney(transaction.amountMinor)}</strong>
-                  </article>
-                `,
-                )
-                .join("") || renderEmptyState("Nenhum lançamento ainda.", "Registre a primeira movimentação para atualizar o resumo.")
-            }
-          </div>
-        </section>
-        <section class="panel form-panel">
-          <h2>Novo lançamento</h2>
-          <form data-api-form data-api-path="/api/transactions">
-            <label>Tipo
-              <select name="kind" required>
-                <option value="expense">Despesa</option>
-                <option value="income">Receita</option>
-                <option value="transfer">Transferência</option>
-              </select>
-            </label>
-            <label>Valor (R$)<input name="amountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
-            <label>Data<input name="occurredOn" type="date" required /></label>
-            <label>Conta
-              <select name="accountId" required>
-                ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
-              </select>
-            </label>
-            <label>Conta de destino (transferências)
-              <select name="destinationAccountId">
-                <option value="">-</option>
-                ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
-              </select>
-            </label>
-            <label>Categoria
-              <select name="categoryId">
-                <option value="">-</option>
-                ${categoryOptions.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("")}
-              </select>
-            </label>
-            <label class="full-span">Descrição<input name="description" /></label>
-            <button type="submit">Criar lançamento</button>
-          </form>
-        </section>
+      <section class="statement-heading">
+        <div>
+          <p class="eyebrow">Rotina financeira</p>
+          <h1>Extrato da conta</h1>
+          <p class="muted">Acompanhe saldos, entradas, saídas e transferências do perfil ativo.</p>
+        </div>
+        <a class="button-link" href="#novo-lancamento">Novo lançamento</a>
+      </section>
+      <section class="statement-layout">
+        <aside class="statement-sidebar" aria-label="Resumo da conta">
+          <section class="panel account-period-panel">
+            <div class="account-switcher">
+              <div>
+                <span>Conta</span>
+                <strong>${escapeHtml(selectedAccountName)}</strong>
+              </div>
+              <span class="account-code">${escapeHtml(selectedAccount?.kind ?? "perfil")}</span>
+            </div>
+            <div class="period-control" aria-label="Período do extrato">
+              <span aria-hidden="true">‹</span>
+              <strong>Mês atual</strong>
+              <span aria-hidden="true">›</span>
+            </div>
+          </section>
+          <section class="panel statement-summary-panel">
+            <div class="section-heading compact-heading">
+              <h2>Situação do período</h2>
+              <span>${transactionItems.length} itens</span>
+            </div>
+            <dl class="statement-totals">
+              <div><dt>Saldo inicial</dt><dd>${formatMoney(statement.openingBalanceMinor)}</dd></div>
+              <div><dt>Receitas</dt><dd class="amount-credit">${formatMoney(statement.incomeMinor)}</dd></div>
+              <div><dt>Despesas</dt><dd class="amount-debit">${formatMoney(-statement.expenseMinor)}</dd></div>
+              <div><dt>Transferências</dt><dd>${formatMoney(statement.transferMinor)}</dd></div>
+              <div class="total-line"><dt>Saldo estimado</dt><dd class="${statement.estimatedBalanceMinor < 0 ? "amount-debit" : "amount-credit"}">${formatMoney(statement.estimatedBalanceMinor)}</dd></div>
+            </dl>
+            <div class="reconciliation-note">
+              <span>Conciliação</span>
+              <strong>${statement.confirmedCount} confirmados</strong>
+              <p class="muted">${statement.pendingCount} itens ainda precisam de revisão ou confirmação.</p>
+            </div>
+          </section>
+        </aside>
+        <div class="statement-workspace">
+          <section class="panel statement-panel">
+            <div class="statement-toolbar">
+              <div>
+                <h2>Movimentações</h2>
+                <p class="muted">Valores em BRL, com despesas destacadas em vermelho e entradas em verde.</p>
+              </div>
+              <div class="status-chips" aria-label="Filtros de status">
+                ${renderStatusChip("Todos", transactionItems.length, "all")}
+                ${renderStatusChip("Pendentes", statement.pendingCount, "pending")}
+                ${renderStatusChip("Confirmados", statement.confirmedCount, "confirmed")}
+                ${renderStatusChip("Transferências", statement.transferCount, "transfer")}
+              </div>
+            </div>
+            <div class="statement-list">
+              ${
+                groupedTransactions
+                  .map(
+                    (group) => `
+                    <section class="statement-day" aria-label="${escapeHtml(formatDate(group.date))}">
+                      <header>
+                        <time datetime="${escapeHtml(group.date)}">${formatDate(group.date)}</time>
+                        <strong class="${group.totalMinor < 0 ? "amount-debit" : "amount-credit"}">${formatMoney(group.totalMinor)}</strong>
+                      </header>
+                      <div class="statement-day-rows">
+                        ${group.transactions.map((transaction) => renderStatementRow(transaction, selectedAccount?.id)).join("")}
+                      </div>
+                    </section>
+                  `,
+                  )
+                  .join("") || renderEmptyState("Nenhuma movimentação no extrato.", "Registre a primeira movimentação para acompanhar o saldo desta conta.")
+              }
+            </div>
+          </section>
+          <section id="novo-lancamento" class="panel form-panel statement-form-panel">
+            <div>
+              <p class="eyebrow">Atualizar extrato</p>
+              <h2>Novo lançamento</h2>
+            </div>
+            <form data-api-form data-api-path="/api/transactions">
+              <label>Tipo
+                <select name="kind" required>
+                  <option value="expense">Despesa</option>
+                  <option value="income">Receita</option>
+                  <option value="transfer">Transferência</option>
+                </select>
+              </label>
+              <label>Valor (R$)<input name="amountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
+              <label>Data<input name="occurredOn" type="date" required /></label>
+              <label>Conta
+                <select name="accountId" required>
+                  ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
+                </select>
+              </label>
+              <label>Conta de destino
+                <select name="destinationAccountId">
+                  <option value="">Apenas para transferências</option>
+                  ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
+                </select>
+              </label>
+              <label>Categoria
+                <select name="categoryId">
+                  <option value="">Sem categoria</option>
+                  ${categoryOptions.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("")}
+                </select>
+              </label>
+              <label class="full-span">Descrição<input name="description" placeholder="Ex.: Energia elétrica, salário, transferência" /></label>
+              <button type="submit">Adicionar ao extrato</button>
+            </form>
+          </section>
+        </div>
       </section>
       ${apiFormScript()}
     `,
@@ -592,6 +652,27 @@ function renderMetricCard(title: string, amountMinor: number, subtitle: string):
   return `<article class="metric-card"><span>${escapeHtml(title)}</span><strong>${formatMoney(amountMinor)}</strong><p>${escapeHtml(subtitle)}</p></article>`;
 }
 
+function renderStatusChip(label: string, count: number, tone: string): string {
+  return `<span class="status-chip status-chip-${escapeHtml(tone)}"><strong>${count}</strong>${escapeHtml(label)}</span>`;
+}
+
+function renderStatementRow(transaction: TransactionRecord, selectedAccountId: string | undefined): string {
+  const amountMinor = getSignedTransactionAmount(transaction, selectedAccountId);
+  const amountClass = amountMinor < 0 ? "amount-debit" : amountMinor > 0 ? "amount-credit" : "amount-neutral";
+  const description = transaction.description || "(sem descrição)";
+
+  return `
+    <article class="statement-row">
+      <span class="transaction-dot transaction-dot-${escapeHtml(transaction.kind)}" aria-hidden="true"></span>
+      <div class="statement-row-main">
+        <strong>${escapeHtml(description)}</strong>
+        <span>${escapeHtml(formatTransactionKind(transaction.kind))} - ${escapeHtml(formatTransactionStatus(transaction.status))}</span>
+      </div>
+      <strong class="statement-amount ${amountClass}">${formatMoney(amountMinor)}</strong>
+    </article>
+  `;
+}
+
 function renderEmptyState(title: string, description: string): string {
   return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
 }
@@ -609,6 +690,103 @@ function formatMoney(amountMinor: number): string {
 
 function formatDate(date: string): string {
   return formatDateOnly(date);
+}
+
+function getSignedTransactionAmount(
+  transaction: TransactionRecord,
+  selectedAccountId: string | undefined,
+): number {
+  if (transaction.kind === "income") return transaction.amountMinor;
+  if (transaction.kind === "expense") return -transaction.amountMinor;
+
+  if (transaction.kind === "transfer") {
+    if (selectedAccountId && transaction.destinationAccountId === selectedAccountId) {
+      return transaction.amountMinor;
+    }
+
+    if (selectedAccountId && transaction.accountId === selectedAccountId) {
+      return -transaction.amountMinor;
+    }
+  }
+
+  return 0;
+}
+
+function summarizeStatement(
+  transactions: TransactionRecord[],
+  accounts: AccountRecord[],
+  selectedAccountId: string | undefined,
+): StatementSummary {
+  const openingBalanceMinor = selectedAccountId
+    ? (accounts.find((account) => account.id === selectedAccountId)?.openingBalanceMinor ?? 0)
+    : accounts.reduce((total, account) => total + account.openingBalanceMinor, 0);
+
+  return transactions.reduce<StatementSummary>(
+    (summary, transaction) => {
+      const signedAmountMinor = getSignedTransactionAmount(transaction, selectedAccountId);
+
+      if (transaction.kind === "income") summary.incomeMinor += transaction.amountMinor;
+      if (transaction.kind === "expense") summary.expenseMinor += transaction.amountMinor;
+      if (transaction.kind === "transfer") {
+        summary.transferMinor += signedAmountMinor;
+        summary.transferCount += 1;
+      }
+
+      if (transaction.status === "posted" || transaction.status === "reconciled") {
+        summary.confirmedCount += 1;
+      } else {
+        summary.pendingCount += 1;
+      }
+
+      summary.estimatedBalanceMinor += signedAmountMinor;
+      return summary;
+    },
+    {
+      openingBalanceMinor,
+      incomeMinor: 0,
+      expenseMinor: 0,
+      transferMinor: 0,
+      estimatedBalanceMinor: openingBalanceMinor,
+      confirmedCount: 0,
+      pendingCount: 0,
+      transferCount: 0,
+    },
+  );
+}
+
+function groupTransactionsByDate(transactions: TransactionRecord[]): StatementDayGroup[] {
+  const groups = new Map<string, TransactionRecord[]>();
+
+  transactions
+    .slice()
+    .sort((left, right) => left.occurredOn.localeCompare(right.occurredOn))
+    .forEach((transaction) => {
+      const current = groups.get(transaction.occurredOn) ?? [];
+      current.push(transaction);
+      groups.set(transaction.occurredOn, current);
+    });
+
+  return Array.from(groups.entries()).map(([date, dayTransactions]) => ({
+    date,
+    transactions: dayTransactions,
+    totalMinor: dayTransactions.reduce((total, transaction) => total + getSignedTransactionAmount(transaction, undefined), 0),
+  }));
+}
+
+function formatTransactionKind(kind: string): string {
+  if (kind === "income") return "Receita";
+  if (kind === "expense") return "Despesa";
+  if (kind === "transfer") return "Transferência";
+  return kind;
+}
+
+function formatTransactionStatus(status: string): string {
+  if (status === "planned") return "Agendado";
+  if (status === "posted") return "Confirmado";
+  if (status === "reconciled") return "Conciliado";
+  if (status === "suggested") return "Pendente";
+  if (status === "voided") return "Cancelado";
+  return status;
 }
 
 function escapeHtml(value: string): string {
@@ -657,6 +835,26 @@ interface TransactionRecord {
   status: string;
   amountMinor: number;
   occurredOn: string;
+  accountId?: string;
+  destinationAccountId?: string;
+  categoryId?: string;
+}
+
+interface StatementSummary {
+  openingBalanceMinor: number;
+  incomeMinor: number;
+  expenseMinor: number;
+  transferMinor: number;
+  estimatedBalanceMinor: number;
+  confirmedCount: number;
+  pendingCount: number;
+  transferCount: number;
+}
+
+interface StatementDayGroup {
+  date: string;
+  transactions: TransactionRecord[];
+  totalMinor: number;
 }
 
 interface CardRecord {
@@ -675,7 +873,7 @@ interface BudgetRecord {
 
 function baseCss(): string {
   return `
-    :root { color-scheme: light; --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --muted: #475569; --line: #cbd5e1; --primary: #0f3d4c; --primary-soft: #e8f3f6; --cyan: #0891b2; --success: #166534; --success-bg: #dcfce7; --danger: #dc2626; --danger-bg: #fee2e2; --warning-bg: #fef3c7; }
+    :root { color-scheme: light; --bg: #f8fafc; --surface: #ffffff; --surface-soft: #eef5f8; --text: #0f172a; --muted: #475569; --line: #cbd5e1; --primary: #0f3d4c; --primary-soft: #e8f3f6; --cyan: #0891b2; --success: #166534; --success-bg: #dcfce7; --danger: #dc2626; --danger-bg: #fee2e2; --warning: #b45309; --warning-bg: #fef3c7; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     h1, h2, p { margin: 0; } h1 { font-size: clamp(1.6rem, 4vw, 2rem); line-height: 1.15; } h2 { font-size: 1rem; line-height: 1.3; } a { color: inherit; }
@@ -694,15 +892,28 @@ function baseCss(): string {
     .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; }
     .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; min-height: 44px; text-decoration: none; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; }
     .logout { background: rgba(255,255,255,.12); margin-top: auto; } .main-area { min-width: 0; } .topbar { align-items: center; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; min-height: 64px; padding: 0 24px; position: sticky; top: 0; z-index: 5; } .topbar div { display: grid; gap: 2px; } .topbar span { color: var(--muted); font-size: .875rem; }
-    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1180px; padding: 24px; width: 100%; } .dashboard-heading, .page-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .page-heading { align-items: start; display: grid; max-width: 760px; } .demo-pill { background: var(--success-bg); border-radius: 999px; color: var(--success); font-weight: 800; padding: 8px 12px; white-space: nowrap; }
+    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1180px; padding: 24px; width: 100%; } .dashboard-heading, .page-heading, .statement-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .page-heading { align-items: start; display: grid; max-width: 760px; } .statement-heading { align-items: center; } .statement-heading > div { display: grid; gap: 6px; max-width: 760px; }
+    .demo-pill { background: var(--success-bg); border-radius: 999px; color: var(--success); font-weight: 800; padding: 8px 12px; white-space: nowrap; }
     .summary-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); } .metric-card { display: grid; gap: 8px; min-width: 0; } .metric-card span { color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .metric-card strong { color: var(--primary); font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; } .metric-card p { color: var(--muted); line-height: 1.45; }
     .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(19rem, .45fr); } .workspace-grid.wide-form { grid-template-columns: minmax(0, .95fr) minmax(22rem, .6fr); }
+    .statement-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(17rem, .42fr) minmax(0, 1fr); } .statement-sidebar, .statement-workspace { display: grid; gap: 18px; min-width: 0; }
+    .account-period-panel { background: var(--primary); border-color: rgba(15, 61, 76, .3); color: white; } .account-switcher, .period-control { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .account-switcher div { display: grid; gap: 4px; min-width: 0; } .account-switcher span, .period-control span { color: rgba(255,255,255,.68); font-weight: 800; } .account-switcher strong { overflow-wrap: anywhere; } .account-code { background: rgba(255,255,255,.12); border-radius: 999px; padding: 6px 10px; white-space: nowrap; } .period-control { border-top: 1px solid rgba(255,255,255,.18); padding-top: 14px; }
+    .statement-summary-panel { align-content: start; } .compact-heading { align-items: start; } .statement-totals { display: grid; gap: 10px; margin: 0; } .statement-totals div { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .statement-totals dt { color: var(--muted); } .statement-totals dd { font-weight: 900; margin: 0; text-align: right; } .statement-totals .total-line { border-top: 1px solid var(--line); padding-top: 12px; }
+    .reconciliation-note { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 6px; padding: 12px; } .reconciliation-note span { color: var(--cyan); font-size: .76rem; font-weight: 900; text-transform: uppercase; }
+    .statement-panel { padding: 0; overflow: hidden; } .statement-toolbar { align-items: start; border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 18px; } .statement-toolbar > div:first-child { display: grid; gap: 4px; min-width: 0; }
+    .status-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; } .status-chip { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); display: inline-flex; gap: 6px; font-size: .8rem; font-weight: 800; min-height: 32px; padding: 6px 10px; white-space: nowrap; } .status-chip strong { color: inherit; }
+    .status-chip-pending { background: var(--warning-bg); border-color: #fde68a; color: var(--warning); } .status-chip-confirmed { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); } .status-chip-transfer { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
+    .statement-list { display: grid; } .statement-day { display: grid; } .statement-day header { align-items: center; background: #f1f7fa; border-bottom: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; min-height: 44px; padding: 0 18px; } .statement-day time { color: var(--primary); font-weight: 900; } .statement-day-rows { display: grid; }
+    .statement-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto; min-width: 0; padding: 13px 18px; } .statement-row-main { display: grid; gap: 4px; min-width: 0; } .statement-row-main strong { overflow-wrap: anywhere; } .statement-row-main span { color: var(--muted); font-size: .88rem; line-height: 1.35; } .statement-amount { text-align: right; white-space: nowrap; }
+    .transaction-dot { border-radius: 999px; height: 10px; width: 10px; } .transaction-dot-income { background: var(--success); } .transaction-dot-expense { background: var(--danger); } .transaction-dot-transfer { background: var(--cyan); }
+    .amount-credit { color: var(--success); } .amount-debit { color: var(--danger); } .amount-neutral { color: var(--muted); }
+    .statement-form-panel form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
     .rows { display: grid; gap: 10px; } .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; min-width: 0; padding-top: 10px; } .row:first-child { border-top: 0; padding-top: 0; } .row div { display: grid; gap: 4px; min-width: 0; } .row span { color: var(--muted); line-height: 1.45; } .row strong { overflow-wrap: anywhere; } .row > strong { text-align: right; white-space: nowrap; }
     .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
-    .form-panel form { grid-template-columns: 1fr; } .wide-form .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wide-form .form-panel button, .wide-form .full-span { grid-column: 1 / -1; }
+    .form-panel form { grid-template-columns: 1fr; } .wide-form .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wide-form .form-panel button, .wide-form .full-span, .statement-form-panel button, .statement-form-panel .full-span { grid-column: 1 / -1; }
     .review-note { background: #f0fdf4; border-color: #bbf7d0; }
-    @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid, .workspace-grid.wide-form { grid-template-columns: 1fr; } .wide-form .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .summary-grid, .wide-form .form-panel form { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } }
+    @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid, .workspace-grid.wide-form, .statement-layout { grid-template-columns: 1fr; } .wide-form .form-panel form, .statement-form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .statement-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar { align-items: stretch; display: grid; } .statement-heading .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .row > strong { text-align: left; white-space: normal; } }
   `;
 }
