@@ -178,7 +178,7 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   const value = match[name];
 
   if (!value) {
-    throw new AuthError("AUTH_SESSION_REQUIRED", `Missing required path parameter: ${name}.", 400);
+    throw new AuthError("AUTH_SESSION_REQUIRED", `Missing required path parameter: ${name}.`, 400);
   }
 
   return value;
