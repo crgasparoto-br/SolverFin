@@ -82,7 +82,7 @@ Se `npm ci` nao conseguir baixar dependencias por bloqueio de rede, registre o e
 
 ## Testes de integracao API + PostgreSQL
 
-A suite de integracao da API usa PostgreSQL real, aplica migrations com Prisma, reaplica o seed demo seguro e exercita as rotas persistidas de contas, categorias e lancamentos com isolamento por perfil financeiro.
+A suite de integracao da API usa PostgreSQL real, aplica migrations com Prisma, reaplica o seed demo seguro e exercita as rotas persistidas com isolamento por perfil financeiro.
 
 Antes de rodar, garanta que `.env` exista com a `DATABASE_URL` local e suba o banco:
 
@@ -108,11 +108,11 @@ npm run test:integration --workspace @solverfin/api
 
 O teste cria dados ficticios adicionais no banco configurado em `DATABASE_URL`. Use uma base local ou efemera de teste. Para recriar a base local do zero, rode `docker compose down -v` e depois repita o preparo acima.
 
-## CI inicial
+## CI
 
-O workflow `.github/workflows/ci.yml` roda em `pull_request` e em `push` para `main`.
+O workflow `.github/workflows/ci.yml` roda em `pull_request` e em `push` para `main` com dois jobs isolados.
 
-Ele executa os checks basicos em etapas separadas para deixar claro qual comando falhou:
+O job `Validate monorepo` continua sem depender de Docker, banco local ou secrets reais. Ele executa os checks basicos em etapas separadas para deixar claro qual comando falhou:
 
 ```bash
 npm ci --no-audit --no-fund
@@ -126,16 +126,33 @@ npm run test
 npm run build
 ```
 
-Para reproduzir localmente o mesmo conjunto de checks, rode:
+Para reproduzir localmente o mesmo conjunto de checks rapidos, rode:
 
 ```bash
 npm ci
 npm run validate
 ```
 
-O CI inicial nao depende de Docker, banco local ou secrets reais. Validacoes com PostgreSQL, Prisma e migrations devem entrar quando o schema e os testes de persistencia exigirem banco real.
+O job `Integration API + PostgreSQL` sobe um PostgreSQL 16 efemero no GitHub Actions com valores ficticios de teste e usa `DATABASE_URL=postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public`. Ele separa migrations, seed e testes de integracao para facilitar diagnostico:
 
-Como o `package-lock.json` esta versionado, o CI usa `npm ci` para instalacao reprodutivel e habilita cache de npm baseado nesse lockfile.
+```bash
+npm ci --no-audit --no-fund
+npm run prisma:generate
+npm run build:packages
+npm run db:deploy
+npm run db:seed
+npm run test:integration --workspace @solverfin/api
+```
+
+Para reproduzir localmente o job de integracao, use Docker/PostgreSQL e rode:
+
+```bash
+cp .env.example .env
+docker compose up -d postgres
+npm run test:integration
+```
+
+Como o `package-lock.json` esta versionado, os dois jobs usam `npm ci` para instalacao reprodutivel e habilitam cache de npm baseado nesse lockfile.
 
 ## Ambientes e secrets
 
