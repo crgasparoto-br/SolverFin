@@ -142,23 +142,16 @@ export async function renderAccountsPage(token: string): Promise<string> {
         title: "Contas",
         description: "Cadastre contas correntes, poupança, carteira ou investimento.",
       })}
-      <section class="workspace-grid">
+      <section class="workspace-grid wide-form">
         <section class="panel list-panel">
           <div class="section-heading">
             <h2>Contas cadastradas</h2>
             <span>${accounts.data.accounts.length} itens</span>
           </div>
-          <div class="rows">
+          <div class="rows maintenance-rows">
             ${
               accounts.data.accounts
-                .map(
-                  (account) => `
-                  <article class="row">
-                    <div><strong>${escapeHtml(account.name)}</strong><span>${escapeHtml(account.kind)} - ${escapeHtml(account.status)}</span></div>
-                    <strong>${formatMoney(account.openingBalanceMinor)}</strong>
-                  </article>
-                `,
-                )
+                .map(renderAccountRow)
                 .join("") || renderEmptyState("Nenhuma conta cadastrada.", "Crie a primeira conta para conectar saldos e lançamentos.")
             }
           </div>
@@ -169,11 +162,7 @@ export async function renderAccountsPage(token: string): Promise<string> {
             <label>Nome<input name="name" required /></label>
             <label>Tipo
               <select name="kind" required>
-                <option value="checking">Conta corrente</option>
-                <option value="savings">Poupança</option>
-                <option value="cash">Carteira</option>
-                <option value="investment">Investimento</option>
-                <option value="other">Outro</option>
+                ${renderAccountKindOptions()}
               </select>
             </label>
             <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money type="text" inputmode="decimal" placeholder="0,00" /></label>
@@ -205,22 +194,16 @@ export async function renderCategoriesPage(token: string): Promise<string> {
         title: "Categorias",
         description: "Classifique receitas, despesas e transferências com consistência.",
       })}
-      <section class="workspace-grid">
+      <section class="workspace-grid wide-form">
         <section class="panel list-panel">
           <div class="section-heading">
             <h2>Categorias cadastradas</h2>
             <span>${categories.data.categories.length} itens</span>
           </div>
-          <div class="rows">
+          <div class="rows maintenance-rows">
             ${
               categories.data.categories
-                .map(
-                  (category) => `
-                  <article class="row">
-                    <div><strong>${escapeHtml(category.name)}</strong><span>${escapeHtml(category.kind)} - ${escapeHtml(category.status)}</span></div>
-                  </article>
-                `,
-                )
+                .map(renderCategoryRow)
                 .join("") || renderEmptyState("Nenhuma categoria cadastrada.", "Crie categorias para organizar receitas e despesas.")
             }
           </div>
@@ -231,9 +214,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
             <label>Nome<input name="name" required /></label>
             <label>Tipo
               <select name="kind" required>
-                <option value="income">Receita</option>
-                <option value="expense">Despesa</option>
-                <option value="transfer">Transferência</option>
+                ${renderCategoryKindOptions()}
               </select>
             </label>
             <button type="submit">Criar categoria</button>
@@ -336,7 +317,11 @@ export async function renderTransactionsPage(token: string): Promise<string> {
                         <strong class="${group.totalMinor < 0 ? "amount-debit" : "amount-credit"}">${formatMoney(group.totalMinor)}</strong>
                       </header>
                       <div class="statement-day-rows">
-                        ${group.transactions.map((transaction) => renderStatementRow(transaction, selectedAccount?.id)).join("")}
+                        ${group.transactions
+                          .map((transaction) =>
+                            renderStatementRow(transaction, selectedAccount?.id, accountOptions, categoryOptions),
+                          )
+                          .join("")}
                       </div>
                     </section>
                   `,
@@ -353,28 +338,26 @@ export async function renderTransactionsPage(token: string): Promise<string> {
             <form data-api-form data-api-path="/api/transactions">
               <label>Tipo
                 <select name="kind" required>
-                  <option value="expense">Despesa</option>
-                  <option value="income">Receita</option>
-                  <option value="transfer">Transferência</option>
+                  ${renderTransactionKindOptions()}
                 </select>
               </label>
               <label>Valor (R$)<input name="amountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
               <label>Data<input name="occurredOn" type="date" required /></label>
               <label>Conta
                 <select name="accountId" required>
-                  ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
+                  ${renderAccountOptions(accountOptions)}
                 </select>
               </label>
               <label>Conta de destino
                 <select name="destinationAccountId">
                   <option value="">Apenas para transferências</option>
-                  ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
+                  ${renderAccountOptions(accountOptions)}
                 </select>
               </label>
               <label>Categoria
                 <select name="categoryId">
                   <option value="">Sem categoria</option>
-                  ${categoryOptions.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("")}
+                  ${renderCategoryOptions(categoryOptions)}
                 </select>
               </label>
               <label class="full-span">Descrição<input name="description" placeholder="Ex.: Energia elétrica, salário, transferência" /></label>
@@ -389,9 +372,10 @@ export async function renderTransactionsPage(token: string): Promise<string> {
 }
 
 export async function renderCardsPage(token: string): Promise<string> {
-  const [cards, accounts] = await Promise.all([
+  const [cards, accounts, categories] = await Promise.all([
     apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
+    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?kind=expense"),
   ]);
 
   if (!cards.ok) {
@@ -399,6 +383,7 @@ export async function renderCardsPage(token: string): Promise<string> {
   }
 
   const accountOptions = accounts.ok ? accounts.data.accounts : [];
+  const categoryOptions = categories.ok ? categories.data.categories : [];
 
   return renderAuthenticatedPage({
     pathname: "/cartoes",
@@ -409,22 +394,16 @@ export async function renderCardsPage(token: string): Promise<string> {
         title: "Cartões",
         description: "Organize cartões de crédito, dias de fechamento e vencimento.",
       })}
-      <section class="workspace-grid">
+      <section class="workspace-grid wide-form">
         <section class="panel list-panel">
           <div class="section-heading">
             <h2>Cartões cadastrados</h2>
             <span>${cards.data.cards.length} itens</span>
           </div>
-          <div class="rows">
+          <div class="rows maintenance-rows">
             ${
               cards.data.cards
-                .map(
-                  (card) => `
-                  <article class="row">
-                    <div><strong>${escapeHtml(card.name)}</strong><span>Fecha dia ${card.closingDay}, vence dia ${card.dueDay} - ${escapeHtml(card.status)}</span></div>
-                  </article>
-                `,
-                )
+                .map((card) => renderCardRow(card, accountOptions, categoryOptions))
                 .join("") || renderEmptyState("Nenhum cartão cadastrado.", "Cadastre cartões para acompanhar faturas e vencimentos.")
             }
           </div>
@@ -438,7 +417,7 @@ export async function renderCardsPage(token: string): Promise<string> {
             <label>Conta de pagamento
               <select name="paymentAccountId">
                 <option value="">-</option>
-                ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
+                ${renderAccountOptions(accountOptions)}
               </select>
             </label>
             <button type="submit">Criar cartão</button>
@@ -471,23 +450,16 @@ export async function renderBudgetsPage(token: string): Promise<string> {
         title: "Orçamentos",
         description: "Acompanhe limites planejados por categoria de despesa.",
       })}
-      <section class="workspace-grid">
+      <section class="workspace-grid wide-form">
         <section class="panel list-panel">
           <div class="section-heading">
             <h2>Limites planejados</h2>
             <span>${budgets.data.budgets.length} itens</span>
           </div>
-          <div class="rows">
+          <div class="rows maintenance-rows">
             ${
               budgets.data.budgets
-                .map(
-                  (budget) => `
-                  <article class="row">
-                    <div><strong>${formatDate(budget.periodStartOn)} - ${formatDate(budget.periodEndOn)}</strong><span>${escapeHtml(budget.status)}</span></div>
-                    <strong>${formatMoney(budget.plannedAmountMinor)}</strong>
-                  </article>
-                `,
-                )
+                .map((budget) => renderBudgetRow(budget, categoryOptions))
                 .join("") || renderEmptyState("Nenhum orçamento cadastrado.", "Crie limites mensais para acompanhar categorias de despesa.")
             }
           </div>
@@ -497,7 +469,7 @@ export async function renderBudgetsPage(token: string): Promise<string> {
           <form data-api-form data-api-path="/api/budgets">
             <label>Categoria
               <select name="categoryId" required>
-                ${categoryOptions.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("")}
+                ${renderCategoryOptions(categoryOptions)}
               </select>
             </label>
             <label>Início do período<input name="periodStartOn" type="date" required /></label>
@@ -510,6 +482,151 @@ export async function renderBudgetsPage(token: string): Promise<string> {
       ${apiFormScript()}
     `,
   });
+}
+
+function renderAccountRow(account: AccountRecord): string {
+  return `
+    <article class="maintenance-item">
+      <div class="maintenance-summary">
+        <div><strong>${escapeHtml(account.name)}</strong><span>${escapeHtml(formatAccountKind(account.kind))} - ${escapeHtml(formatGenericStatus(account.status))}</span></div>
+        <strong>${formatMoney(account.openingBalanceMinor)}</strong>
+      </div>
+      <div class="maintenance-actions" aria-label="Ações da conta ${escapeHtml(account.name)}">
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/accounts/${escapeHtml(account.id)}">Abrir detalhe</button>
+        <form data-api-form data-api-method="PATCH" data-api-path="/api/accounts/${escapeHtml(account.id)}" class="inline-edit-form">
+          <label>Nome<input name="name" value="${escapeHtml(account.name)}" required /></label>
+          <label>Tipo<select name="kind">${renderAccountKindOptions(account.kind)}</select></label>
+          <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor)}" inputmode="decimal" /></label>
+          <button type="submit">Salvar edição</button>
+        </form>
+        ${account.status === "active" ? renderActionButton("Arquivar conta", `/api/accounts/${account.id}/archive`, "Arquivar esta conta? Ela deixará de aparecer nas operações ativas.") : ""}
+      </div>
+    </article>
+  `;
+}
+
+function renderCategoryRow(category: CategoryRecord): string {
+  const isArchived = category.status === "archived";
+
+  return `
+    <article class="maintenance-item">
+      <div class="maintenance-summary">
+        <div><strong>${escapeHtml(category.name)}</strong><span>${escapeHtml(formatCategoryKind(category.kind))} - ${escapeHtml(formatGenericStatus(category.status))}</span></div>
+      </div>
+      <div class="maintenance-actions" aria-label="Ações da categoria ${escapeHtml(category.name)}">
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/categories/${escapeHtml(category.id)}">Abrir detalhe</button>
+        <form data-api-form data-api-method="PATCH" data-api-path="/api/categories/${escapeHtml(category.id)}" class="inline-edit-form">
+          <label>Nome<input name="name" value="${escapeHtml(category.name)}" required /></label>
+          <label>Tipo<select name="kind">${renderCategoryKindOptions(category.kind)}</select></label>
+          <button type="submit">Salvar edição</button>
+        </form>
+        ${isArchived ? renderActionButton("Restaurar categoria", `/api/categories/${category.id}/restore`) : renderActionButton("Arquivar categoria", `/api/categories/${category.id}/archive`, "Arquivar esta categoria? Novos lançamentos não devem usá-la.")}
+      </div>
+    </article>
+  `;
+}
+
+function renderStatementRow(
+  transaction: TransactionRecord,
+  selectedAccountId: string | undefined,
+  accounts: AccountRecord[],
+  categories: CategoryRecord[],
+): string {
+  const amountMinor = getSignedTransactionAmount(transaction, selectedAccountId);
+  const amountClass = amountMinor < 0 ? "amount-debit" : amountMinor > 0 ? "amount-credit" : "amount-neutral";
+  const description = transaction.description || "(sem descrição)";
+
+  return `
+    <article class="statement-row statement-row-with-actions">
+      <span class="transaction-dot transaction-dot-${escapeHtml(transaction.kind)}" aria-hidden="true"></span>
+      <div class="statement-row-main">
+        <strong>${escapeHtml(description)}</strong>
+        <span>${escapeHtml(formatTransactionKind(transaction.kind))} - ${escapeHtml(formatTransactionStatus(transaction.status))}</span>
+      </div>
+      <strong class="statement-amount ${amountClass}">${formatMoney(amountMinor)}</strong>
+      <div class="statement-actions" aria-label="Ações do lançamento ${escapeHtml(description)}">
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/transactions/${escapeHtml(transaction.id)}">Abrir detalhe</button>
+        <form data-api-form data-api-method="PATCH" data-api-path="/api/transactions/${escapeHtml(transaction.id)}" class="inline-edit-form statement-edit-form">
+          <label>Descrição<input name="description" value="${escapeHtml(description)}" /></label>
+          <label>Status<select name="status">${renderTransactionStatusOptions(transaction.status)}</select></label>
+          <label>Conta<select name="accountId">${renderAccountOptions(accounts, transaction.accountId)}</select></label>
+          <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories, transaction.categoryId)}</select></label>
+          <button type="submit">Salvar edição</button>
+        </form>
+        ${transaction.status === "voided" ? "" : renderActionButton("Cancelar lançamento", `/api/transactions/${transaction.id}/void`, "Cancelar ou estornar este lançamento financeiro?")}
+      </div>
+    </article>
+  `;
+}
+
+function renderCardRow(
+  card: CardRecord,
+  accounts: AccountRecord[],
+  categories: CategoryRecord[],
+): string {
+  const canMutate = card.status === "active";
+
+  return `
+    <article class="maintenance-item">
+      <div class="maintenance-summary">
+        <div><strong>${escapeHtml(card.name)}</strong><span>Fecha dia ${card.closingDay}, vence dia ${card.dueDay} - ${escapeHtml(formatGenericStatus(card.status))}</span></div>
+      </div>
+      <div class="maintenance-actions" aria-label="Ações do cartão ${escapeHtml(card.name)}">
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/cards/${escapeHtml(card.id)}">Abrir detalhe</button>
+        <form data-api-form data-api-method="PATCH" data-api-path="/api/cards/${escapeHtml(card.id)}" class="inline-edit-form">
+          <label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label>
+          <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label>
+          <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
+          <label>Conta de pagamento<select name="paymentAccountId"><option value="">-</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
+          <button type="submit">Salvar edição</button>
+        </form>
+        ${canMutate ? renderActionButton("Bloquear cartão", `/api/cards/${card.id}/block`, "Bloquear este cartão?") : ""}
+        ${canMutate ? renderActionButton("Arquivar cartão", `/api/cards/${card.id}/archive`, "Arquivar este cartão?") : ""}
+        ${canMutate ? renderCardPurchaseForm(card, categories) : ""}
+      </div>
+    </article>
+  `;
+}
+
+function renderCardPurchaseForm(card: CardRecord, categories: CategoryRecord[]): string {
+  return `
+    <form data-api-form data-api-path="/api/cards/${escapeHtml(card.id)}/purchases" class="inline-edit-form">
+      <label>Compra em<input name="occurredOn" type="date" required /></label>
+      <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
+      <label>Descrição<input name="description" placeholder="Compra no cartão" required /></label>
+      <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
+      <button type="submit">Registrar compra</button>
+    </form>
+  `;
+}
+
+function renderBudgetRow(budget: BudgetRecord, categories: CategoryRecord[]): string {
+  const isArchived = budget.status === "archived";
+
+  return `
+    <article class="maintenance-item">
+      <div class="maintenance-summary">
+        <div><strong>${formatDate(budget.periodStartOn)} - ${formatDate(budget.periodEndOn)}</strong><span>${escapeHtml(formatGenericStatus(budget.status))}</span></div>
+        <strong>${formatMoney(budget.plannedAmountMinor)}</strong>
+      </div>
+      <div class="maintenance-actions" aria-label="Ações do orçamento">
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${escapeHtml(budget.id)}">Abrir detalhe</button>
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${escapeHtml(budget.id)}/usage">Consultar uso</button>
+        <form data-api-form data-api-method="PATCH" data-api-path="/api/budgets/${escapeHtml(budget.id)}" class="inline-edit-form">
+          <label>Categoria<select name="categoryId">${renderCategoryOptions(categories, budget.categoryId)}</select></label>
+          <label>Início<input name="periodStartOn" type="date" value="${escapeHtml(budget.periodStartOn)}" required /></label>
+          <label>Fim<input name="periodEndOn" type="date" value="${escapeHtml(budget.periodEndOn)}" required /></label>
+          <label>Valor (R$)<input name="plannedAmountMinor" data-money value="${formatMoneyInput(budget.plannedAmountMinor)}" inputmode="decimal" required /></label>
+          <button type="submit">Salvar edição</button>
+        </form>
+        ${isArchived ? "" : renderActionButton("Arquivar orçamento", `/api/budgets/${budget.id}/archive`, "Arquivar este orçamento?")}
+      </div>
+    </article>
+  `;
+}
+
+function renderActionButton(label: string, path: string, confirmation?: string): string {
+  return `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(path)}"${confirmation ? ` data-api-confirm="${escapeHtml(confirmation)}"` : ""}>${escapeHtml(label)}</button>`;
 }
 
 function renderApiErrorPage(pathname: string, currentLabel: string, error: string): string {
@@ -563,52 +680,92 @@ function renderAuthenticatedPage(input: {
 function apiFormScript(): string {
   return `
     <script>
-      document.querySelectorAll("[data-api-form]").forEach((form) => {
-        let status = form.querySelector("[data-form-status]");
+      function ensureStatus(container) {
+        let status = container.querySelector(":scope > [data-form-status]");
         if (!status) {
           status = document.createElement("p");
           status.className = "form-status muted";
           status.setAttribute("data-form-status", "");
           status.setAttribute("aria-live", "polite");
-          form.appendChild(status);
+          container.appendChild(status);
         }
+        return status;
+      }
+
+      function buildPayload(form) {
+        const payload = {};
+        new FormData(form).forEach((value, key) => {
+          if (value === "") return;
+          const field = form.querySelector('[name="' + key + '"]');
+          if (field && field.dataset.money !== undefined) {
+            payload[key] = Math.round(parseFloat(String(value).replace(",", ".")) * 100);
+          } else if (field && field.type === "number") {
+            payload[key] = Number(value);
+          } else {
+            payload[key] = value;
+          }
+        });
+        return payload;
+      }
+
+      async function readApiMessage(response) {
+        const body = await response.json().catch(() => ({}));
+        if (response.ok) return "Ação concluída. Atualizando a tela...";
+        return (body.error && body.error.message) || "Não foi possível concluir a ação.";
+      }
+
+      document.querySelectorAll("[data-api-form]").forEach((form) => {
+        const status = ensureStatus(form);
 
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
-          const payload = {};
           const submitButton = form.querySelector('button[type="submit"]');
-
-          new FormData(form).forEach((value, key) => {
-            if (value === "") return;
-            const field = form.querySelector('[name="' + key + '"]');
-            if (field && field.dataset.money !== undefined) {
-              payload[key] = Math.round(parseFloat(String(value).replace(",", ".")) * 100);
-            } else {
-              payload[key] = value;
-            }
-          });
+          const method = form.dataset.apiMethod || "POST";
+          const payload = buildPayload(form);
 
           if (submitButton) submitButton.disabled = true;
           status.className = "form-status muted";
           status.textContent = "Salvando...";
 
           const response = await fetch(form.dataset.apiPath, {
-            method: "POST",
+            method,
             headers: { "content-type": "application/json" },
             body: JSON.stringify(payload),
           });
 
+          status.className = response.ok ? "form-status success" : "form-status error";
+          status.textContent = await readApiMessage(response);
           if (response.ok) {
-            status.className = "form-status success";
-            status.textContent = "Salvo. Atualizando a tela...";
             window.setTimeout(() => window.location.reload(), 450);
             return;
           }
-
-          const body = await response.json().catch(() => ({}));
-          status.className = "form-status error";
-          status.textContent = (body.error && body.error.message) || "Não foi possível salvar.";
           if (submitButton) submitButton.disabled = false;
+        });
+      });
+
+      document.querySelectorAll("[data-api-action]").forEach((button) => {
+        const container = button.closest(".maintenance-actions, .statement-actions") || button.parentElement;
+        const status = ensureStatus(container);
+
+        button.addEventListener("click", async () => {
+          const confirmation = button.dataset.apiConfirm;
+          if (confirmation && !window.confirm(confirmation)) return;
+          button.disabled = true;
+          status.className = "form-status muted";
+          status.textContent = "Enviando...";
+
+          const response = await fetch(button.dataset.apiPath, {
+            method: button.dataset.apiMethod || "POST",
+            headers: { "content-type": "application/json" },
+          });
+
+          status.className = response.ok ? "form-status success" : "form-status error";
+          status.textContent = await readApiMessage(response);
+          if (response.ok && button.dataset.apiMethod !== "GET") {
+            window.setTimeout(() => window.location.reload(), 450);
+            return;
+          }
+          button.disabled = false;
         });
       });
     </script>
@@ -656,23 +813,6 @@ function renderStatusChip(label: string, count: number, tone: string): string {
   return `<span class="status-chip status-chip-${escapeHtml(tone)}"><strong>${count}</strong>${escapeHtml(label)}</span>`;
 }
 
-function renderStatementRow(transaction: TransactionRecord, selectedAccountId: string | undefined): string {
-  const amountMinor = getSignedTransactionAmount(transaction, selectedAccountId);
-  const amountClass = amountMinor < 0 ? "amount-debit" : amountMinor > 0 ? "amount-credit" : "amount-neutral";
-  const description = transaction.description || "(sem descrição)";
-
-  return `
-    <article class="statement-row">
-      <span class="transaction-dot transaction-dot-${escapeHtml(transaction.kind)}" aria-hidden="true"></span>
-      <div class="statement-row-main">
-        <strong>${escapeHtml(description)}</strong>
-        <span>${escapeHtml(formatTransactionKind(transaction.kind))} - ${escapeHtml(formatTransactionStatus(transaction.status))}</span>
-      </div>
-      <strong class="statement-amount ${amountClass}">${formatMoney(amountMinor)}</strong>
-    </article>
-  `;
-}
-
 function renderEmptyState(title: string, description: string): string {
   return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
 }
@@ -684,8 +824,73 @@ export function renderNotFoundPage(): string {
   });
 }
 
+function renderAccountKindOptions(selected?: string): string {
+  return [
+    ["checking", "Conta corrente"],
+    ["savings", "Poupança"],
+    ["cash", "Carteira"],
+    ["investment", "Investimento"],
+    ["other", "Outro"],
+  ]
+    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .join("");
+}
+
+function renderCategoryKindOptions(selected?: string): string {
+  return [
+    ["income", "Receita"],
+    ["expense", "Despesa"],
+    ["transfer", "Transferência"],
+  ]
+    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .join("");
+}
+
+function renderTransactionKindOptions(selected?: string): string {
+  return [
+    ["expense", "Despesa"],
+    ["income", "Receita"],
+    ["transfer", "Transferência"],
+  ]
+    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .join("");
+}
+
+function renderTransactionStatusOptions(selected?: string): string {
+  return [
+    ["planned", "Agendado"],
+    ["posted", "Confirmado"],
+    ["reconciled", "Conciliado"],
+    ["suggested", "Pendente"],
+  ]
+    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .join("");
+}
+
+function renderAccountOptions(accounts: AccountRecord[], selected?: string): string {
+  return accounts
+    .map(
+      (account) =>
+        `<option value="${escapeHtml(account.id)}"${selected === account.id ? " selected" : ""}>${escapeHtml(account.name)}</option>`,
+    )
+    .join("");
+}
+
+function renderCategoryOptions(categories: CategoryRecord[], selected?: string): string {
+  return categories
+    .map(
+      (category) =>
+        `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
+    )
+    .join("");
+}
+
 function formatMoney(amountMinor: number): string {
   return formatMinorCurrency(amountMinor);
+}
+
+function formatMoneyInput(amountMinor: number): string {
+  return (amountMinor / 100).toFixed(2).replace(".", ",");
 }
 
 function formatDate(date: string): string {
@@ -769,8 +974,26 @@ function groupTransactionsByDate(transactions: TransactionRecord[]): StatementDa
   return Array.from(groups.entries()).map(([date, dayTransactions]) => ({
     date,
     transactions: dayTransactions,
-    totalMinor: dayTransactions.reduce((total, transaction) => total + getSignedTransactionAmount(transaction, undefined), 0),
+    totalMinor: dayTransactions.reduce(
+      (total, transaction) => total + getSignedTransactionAmount(transaction, undefined),
+      0,
+    ),
   }));
+}
+
+function formatAccountKind(kind: string): string {
+  if (kind === "checking") return "Conta corrente";
+  if (kind === "savings") return "Poupança";
+  if (kind === "cash") return "Carteira";
+  if (kind === "investment") return "Investimento";
+  return kind;
+}
+
+function formatCategoryKind(kind: string): string {
+  if (kind === "income") return "Receita";
+  if (kind === "expense") return "Despesa";
+  if (kind === "transfer") return "Transferência";
+  return kind;
 }
 
 function formatTransactionKind(kind: string): string {
@@ -786,6 +1009,16 @@ function formatTransactionStatus(status: string): string {
   if (status === "reconciled") return "Conciliado";
   if (status === "suggested") return "Pendente";
   if (status === "voided") return "Cancelado";
+  return status;
+}
+
+function formatGenericStatus(status: string): string {
+  if (status === "active") return "Ativo";
+  if (status === "archived") return "Arquivado";
+  if (status === "blocked") return "Bloqueado";
+  if (status === "pending") return "Pendente";
+  if (status === "cancelled") return "Cancelado";
+  if (status === "closed") return "Fechado";
   return status;
 }
 
@@ -830,6 +1063,7 @@ interface CategoryRecord {
 }
 
 interface TransactionRecord {
+  id: string;
   description: string;
   kind: string;
   status: string;
@@ -858,14 +1092,18 @@ interface StatementDayGroup {
 }
 
 interface CardRecord {
+  id: string;
   name: string;
   status: string;
   closingDay: number;
   dueDay: number;
+  paymentAccountId?: string;
 }
 
 interface BudgetRecord {
+  id: string;
   status: string;
+  categoryId: string;
   periodStartOn: string;
   periodEndOn: string;
   plannedAmountMinor: number;
@@ -886,6 +1124,8 @@ function baseCss(): string {
     form, label { display: grid; gap: 10px; } label { color: var(--text); font-weight: 700; } input, select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: inherit; min-height: 44px; padding: 0 12px; width: 100%; }
     button, .button-link { align-items: center; background: var(--primary); border: 0; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; text-decoration: none; }
     button:disabled { cursor: not-allowed; opacity: .58; }
+    .secondary-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); }
+    .danger-action { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
     .error { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }
     .success { background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: 8px; color: var(--success); padding: 10px 12px; }
     .form-status { grid-column: 1 / -1; }
@@ -904,16 +1144,20 @@ function baseCss(): string {
     .status-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; } .status-chip { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); display: inline-flex; gap: 6px; font-size: .8rem; font-weight: 800; min-height: 32px; padding: 6px 10px; white-space: nowrap; } .status-chip strong { color: inherit; }
     .status-chip-pending { background: var(--warning-bg); border-color: #fde68a; color: var(--warning); } .status-chip-confirmed { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); } .status-chip-transfer { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
     .statement-list { display: grid; } .statement-day { display: grid; } .statement-day header { align-items: center; background: #f1f7fa; border-bottom: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; min-height: 44px; padding: 0 18px; } .statement-day time { color: var(--primary); font-weight: 900; } .statement-day-rows { display: grid; }
-    .statement-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto; min-width: 0; padding: 13px 18px; } .statement-row-main { display: grid; gap: 4px; min-width: 0; } .statement-row-main strong { overflow-wrap: anywhere; } .statement-row-main span { color: var(--muted); font-size: .88rem; line-height: 1.35; } .statement-amount { text-align: right; white-space: nowrap; }
-    .transaction-dot { border-radius: 999px; height: 10px; width: 10px; } .transaction-dot-income { background: var(--success); } .transaction-dot-expense { background: var(--danger); } .transaction-dot-transfer { background: var(--cyan); }
+    .statement-row { align-items: start; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto; min-width: 0; padding: 13px 18px; } .statement-row-main { display: grid; gap: 4px; min-width: 0; } .statement-row-main strong { overflow-wrap: anywhere; } .statement-row-main span { color: var(--muted); font-size: .88rem; line-height: 1.35; } .statement-amount { text-align: right; white-space: nowrap; }
+    .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr) auto; } .statement-actions { border-top: 1px solid var(--line); display: grid; gap: 10px; grid-column: 2 / -1; padding-top: 10px; }
+    .transaction-dot { border-radius: 999px; height: 10px; margin-top: 6px; width: 10px; } .transaction-dot-income { background: var(--success); } .transaction-dot-expense { background: var(--danger); } .transaction-dot-transfer { background: var(--cyan); }
     .amount-credit { color: var(--success); } .amount-debit { color: var(--danger); } .amount-neutral { color: var(--muted); }
     .statement-form-panel form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
     .rows { display: grid; gap: 10px; } .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; min-width: 0; padding-top: 10px; } .row:first-child { border-top: 0; padding-top: 0; } .row div { display: grid; gap: 4px; min-width: 0; } .row span { color: var(--muted); line-height: 1.45; } .row strong { overflow-wrap: anywhere; } .row > strong { text-align: right; white-space: nowrap; }
+    .maintenance-rows { gap: 14px; } .maintenance-item { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .maintenance-item:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; } .maintenance-summary > strong { text-align: right; white-space: nowrap; }
+    .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; padding: 12px; }
+    .inline-edit-form { align-items: end; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .inline-edit-form button, .inline-edit-form .form-status { grid-column: 1 / -1; } .statement-edit-form { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
     .form-panel form { grid-template-columns: 1fr; } .wide-form .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wide-form .form-panel button, .wide-form .full-span, .statement-form-panel button, .statement-form-panel .full-span { grid-column: 1 / -1; }
     .review-note { background: #f0fdf4; border-color: #bbf7d0; }
-    @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid, .workspace-grid.wide-form, .statement-layout { grid-template-columns: 1fr; } .wide-form .form-panel form, .statement-form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .statement-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar { align-items: stretch; display: grid; } .statement-heading .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .row > strong { text-align: left; white-space: normal; } }
+    @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid, .workspace-grid.wide-form, .statement-layout { grid-template-columns: 1fr; } .wide-form .form-panel form, .statement-form-panel form, .statement-edit-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .statement-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar, .inline-edit-form, .statement-edit-form { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar, .maintenance-summary { align-items: stretch; display: grid; } .statement-heading .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row, .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .statement-actions { grid-column: 1 / -1; } .row > strong, .maintenance-summary > strong { text-align: left; white-space: normal; } }
   `;
 }
