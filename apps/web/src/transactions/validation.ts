@@ -31,8 +31,8 @@ export function buildTransactionViewModel(
   if (!hasTransactions && state === "ready") {
     return {
       state: "empty",
-      title: "Registre seu primeiro lancamento",
-      description: "Adicione receitas, despesas ou transferencias para acompanhar sua rotina.",
+      title: "Registre seu primeiro lançamento",
+      description: "Adicione receitas, despesas ou transferências para acompanhar sua rotina.",
       context: dataSet.context,
       filters: dataSet.filters,
       summary: calculateTransactionSummary([]),
@@ -43,8 +43,8 @@ export function buildTransactionViewModel(
 
   const viewModel: TransactionViewModel = {
     state,
-    title: "Lancamentos",
-    description: "Registre, filtre e acompanhe receitas, despesas e transferencias.",
+    title: "Lançamentos",
+    description: "Registre, filtre e acompanhe receitas, despesas e transferências.",
     context: dataSet.context,
     filters: dataSet.filters,
     summary: calculateTransactionSummary(sortedTransactions),
@@ -53,7 +53,7 @@ export function buildTransactionViewModel(
   };
 
   if (state === "success") {
-    viewModel.feedbackMessage = "Lancamento salvo. O resumo ja considera a alteracao.";
+    viewModel.feedbackMessage = "Lançamento salvo. O resumo já considera a alteração.";
   }
 
   return viewModel;
@@ -62,14 +62,14 @@ export function buildTransactionViewModel(
 export function validateTransactionForm(input: TransactionFormInput): TransactionValidationResult {
   const issues: TransactionValidationIssue[] = [];
 
-  addRequiredTextIssue(issues, "description", input.description, "Informe uma descricao.");
+  addRequiredTextIssue(issues, "description", input.description, "Informe uma descrição.");
 
   if (!isoDatePattern.test(input.date)) {
-    issues.push({ field: "date", message: "Informe uma data valida no formato AAAA-MM-DD." });
+    issues.push({ field: "date", message: "Informe uma data válida no formato AAAA-MM-DD." });
   }
 
   if (input.type === "") {
-    issues.push({ field: "type", message: "Escolha receita, despesa ou transferencia." });
+    issues.push({ field: "type", message: "Escolha receita, despesa ou transferência." });
   }
 
   if (
@@ -182,7 +182,7 @@ function buildUnavailableTransactions(state: TransactionStateKind): TransactionV
   return {
     state,
     title:
-      state === "error" ? "Nao foi possivel carregar os lancamentos" : "Carregando lancamentos",
+      state === "error" ? "Não foi possível carregar os lançamentos" : "Carregando lançamentos",
     description:
       state === "error"
         ? "Tente novamente para registrar e acompanhar seus movimentos."
@@ -219,7 +219,7 @@ function buildTransactionFilterOptions(
     types: [
       { value: "income", label: "Receita" },
       { value: "expense", label: "Despesa" },
-      { value: "transfer", label: "Transferencia" },
+      { value: "transfer", label: "Transferência" },
     ],
   };
 }
