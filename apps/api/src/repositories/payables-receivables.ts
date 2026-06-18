@@ -154,7 +154,10 @@ export async function createPayableReceivableForContext(
   });
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(buildInsertPayableReceivableSql(), buildPayableReceivableParams(result.payableReceivable));
+    await executeQuery(
+      buildInsertPayableReceivableSql(),
+      buildPayableReceivableParams(result.payableReceivable),
+    );
     await insertAuditLogEntry(executeQuery, result.auditEntry);
   });
 
@@ -166,7 +169,10 @@ export async function updatePayableReceivableForContext(
   payableReceivableId: EntityId,
   payload: UpdatePayableReceivablePayload,
 ): Promise<PayableReceivable> {
-  const currentPayableReceivable = await findPayableReceivableRow(context, payableReceivableId);
+  const currentPayableReceivable = await findPayableReceivableRow(
+    context,
+    payableReceivableId,
+  );
   const accountId = payload.accountId ?? currentPayableReceivable?.accountId;
   const categoryId = payload.categoryId ?? currentPayableReceivable?.categoryId;
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
@@ -181,7 +187,10 @@ export async function updatePayableReceivableForContext(
   });
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(buildUpdatePayableReceivableSql(), buildPayableReceivableParams(result.payableReceivable));
+    await executeQuery(
+      buildUpdatePayableReceivableSql(),
+      buildPayableReceivableParams(result.payableReceivable),
+    );
     await insertAuditLogEntry(executeQuery, result.auditEntry);
   });
 
@@ -199,7 +208,10 @@ export async function cancelPayableReceivableForContext(
   );
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(buildUpdatePayableReceivableSql(), buildPayableReceivableParams(result.payableReceivable));
+    await executeQuery(
+      buildUpdatePayableReceivableSql(),
+      buildPayableReceivableParams(result.payableReceivable),
+    );
     await insertAuditLogEntry(executeQuery, result.auditEntry);
   });
 
@@ -211,7 +223,10 @@ export async function settlePayableReceivableForContext(
   payableReceivableId: EntityId,
   payload: SettlePayableReceivablePayload,
 ): Promise<{ payableReceivable: PayableReceivable; transaction: Transaction }> {
-  const currentPayableReceivable = await findPayableReceivableRow(context, payableReceivableId);
+  const currentPayableReceivable = await findPayableReceivableRow(
+    context,
+    payableReceivableId,
+  );
   const accountId = payload.accountId ?? currentPayableReceivable?.accountId;
   const categoryId = payload.categoryId ?? currentPayableReceivable?.categoryId;
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
@@ -235,7 +250,10 @@ export async function settlePayableReceivableForContext(
       await executeQuery(buildInsertTransactionSql(), buildTransactionParams(result.transaction));
     }
 
-    await executeQuery(buildUpdatePayableReceivableSql(), buildPayableReceivableParams(result.payableReceivable));
+    await executeQuery(
+      buildUpdatePayableReceivableSql(),
+      buildPayableReceivableParams(result.payableReceivable),
+    );
 
     for (const auditEntry of result.auditEntries) {
       await insertAuditLogEntry(executeQuery, auditEntry);
@@ -341,7 +359,9 @@ async function findAccountRow(
   );
   const row = rows[0];
 
-  if (!row) return undefined;
+  if (!row) {
+    return undefined;
+  }
 
   const account: Account = {
     id: row.id,
@@ -356,7 +376,9 @@ async function findAccountRow(
     updatedAt: row.updatedAt.toISOString(),
   };
 
-  if (row.maskedIdentifier !== null) account.maskedIdentifier = row.maskedIdentifier;
+  if (row.maskedIdentifier !== null) {
+    account.maskedIdentifier = row.maskedIdentifier;
+  }
 
   return account;
 }
@@ -373,7 +395,9 @@ async function findCategoryRow(
   );
   const row = rows[0];
 
-  if (!row) return undefined;
+  if (!row) {
+    return undefined;
+  }
 
   const category: Category = {
     id: row.id,
@@ -386,7 +410,9 @@ async function findCategoryRow(
     updatedAt: row.updatedAt.toISOString(),
   };
 
-  if (row.parentCategoryId !== null) category.parentCategoryId = row.parentCategoryId;
+  if (row.parentCategoryId !== null) {
+    category.parentCategoryId = row.parentCategoryId;
+  }
 
   return category;
 }
@@ -419,14 +445,33 @@ function mapPayableReceivableRow(row: PayableReceivableRow): PayableReceivable {
     updatedAt: row.updatedAt.toISOString(),
   };
 
-  if (row.accountId !== null) payableReceivable.accountId = row.accountId;
-  if (row.categoryId !== null) payableReceivable.categoryId = row.categoryId;
-  if (row.settlementTransactionId !== null)
+  if (row.accountId !== null) {
+    payableReceivable.accountId = row.accountId;
+  }
+
+  if (row.categoryId !== null) {
+    payableReceivable.categoryId = row.categoryId;
+  }
+
+  if (row.settlementTransactionId !== null) {
     payableReceivable.settlementTransactionId = row.settlementTransactionId;
-  if (row.settledAt !== null) payableReceivable.settledAt = row.settledAt.toISOString();
-  if (row.cancelledAt !== null) payableReceivable.cancelledAt = row.cancelledAt.toISOString();
-  if (row.createdByUserId !== null) payableReceivable.createdByUserId = row.createdByUserId;
-  if (row.updatedByUserId !== null) payableReceivable.updatedByUserId = row.updatedByUserId;
+  }
+
+  if (row.settledAt !== null) {
+    payableReceivable.settledAt = row.settledAt.toISOString();
+  }
+
+  if (row.cancelledAt !== null) {
+    payableReceivable.cancelledAt = row.cancelledAt.toISOString();
+  }
+
+  if (row.createdByUserId !== null) {
+    payableReceivable.createdByUserId = row.createdByUserId;
+  }
+
+  if (row.updatedByUserId !== null) {
+    payableReceivable.updatedByUserId = row.updatedByUserId;
+  }
 
   return payableReceivable;
 }
@@ -447,20 +492,61 @@ function mapTransactionRow(row: TransactionRow): Transaction {
     updatedAt: row.updatedAt.toISOString(),
   };
 
-  if (row.accountId !== null) transaction.accountId = row.accountId;
-  if (row.destinationAccountId !== null) transaction.destinationAccountId = row.destinationAccountId;
-  if (row.categoryId !== null) transaction.categoryId = row.categoryId;
-  if (row.cardId !== null) transaction.cardId = row.cardId;
-  if (row.invoiceId !== null) transaction.invoiceId = row.invoiceId;
-  if (row.recurrenceId !== null) transaction.recurrenceId = row.recurrenceId;
-  if (row.installmentId !== null) transaction.installmentId = row.installmentId;
-  if (row.importBatchId !== null) transaction.importBatchId = row.importBatchId;
-  if (row.aiSuggestionId !== null) transaction.aiSuggestionId = row.aiSuggestionId;
-  if (row.transferGroupId !== null) transaction.transferGroupId = row.transferGroupId;
-  if (row.reconciledAt !== null) transaction.reconciledAt = row.reconciledAt.toISOString();
-  if (row.voidedAt !== null) transaction.voidedAt = row.voidedAt.toISOString();
-  if (row.createdByUserId !== null) transaction.createdByUserId = row.createdByUserId;
-  if (row.updatedByUserId !== null) transaction.updatedByUserId = row.updatedByUserId;
+  if (row.accountId !== null) {
+    transaction.accountId = row.accountId;
+  }
+
+  if (row.destinationAccountId !== null) {
+    transaction.destinationAccountId = row.destinationAccountId;
+  }
+
+  if (row.categoryId !== null) {
+    transaction.categoryId = row.categoryId;
+  }
+
+  if (row.cardId !== null) {
+    transaction.cardId = row.cardId;
+  }
+
+  if (row.invoiceId !== null) {
+    transaction.invoiceId = row.invoiceId;
+  }
+
+  if (row.recurrenceId !== null) {
+    transaction.recurrenceId = row.recurrenceId;
+  }
+
+  if (row.installmentId !== null) {
+    transaction.installmentId = row.installmentId;
+  }
+
+  if (row.importBatchId !== null) {
+    transaction.importBatchId = row.importBatchId;
+  }
+
+  if (row.aiSuggestionId !== null) {
+    transaction.aiSuggestionId = row.aiSuggestionId;
+  }
+
+  if (row.transferGroupId !== null) {
+    transaction.transferGroupId = row.transferGroupId;
+  }
+
+  if (row.reconciledAt !== null) {
+    transaction.reconciledAt = row.reconciledAt.toISOString();
+  }
+
+  if (row.voidedAt !== null) {
+    transaction.voidedAt = row.voidedAt.toISOString();
+  }
+
+  if (row.createdByUserId !== null) {
+    transaction.createdByUserId = row.createdByUserId;
+  }
+
+  if (row.updatedByUserId !== null) {
+    transaction.updatedByUserId = row.updatedByUserId;
+  }
 
   return transaction;
 }
