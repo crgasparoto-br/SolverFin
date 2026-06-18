@@ -13,11 +13,11 @@ export function renderLoginPage(errorMessage?: string): string {
       <section class="panel" aria-labelledby="login-title">
         <p class="eyebrow">Acesso SolverFin</p>
         <h1 id="login-title">Entrar no SolverFin</h1>
-        <p class="muted">Entre com uma conta cadastrada ou crie um usuario para salvar o acesso no banco local.</p>
+        <p class="muted">Entre com uma conta cadastrada ou crie um usuário para salvar o acesso no banco local.</p>
         ${errorMessage ? `<p class="error" role="alert">${escapeHtml(errorMessage)}</p>` : ""}
-        <div class="auth-tabs" role="tablist" aria-label="Opcao de acesso">
+        <div class="auth-tabs" role="tablist" aria-label="Opção de acesso">
           <button type="button" class="tab active" data-auth-tab="login">Entrar</button>
-          <button type="button" class="tab" data-auth-tab="register">Criar usuario</button>
+          <button type="button" class="tab" data-auth-tab="register">Criar usuário</button>
         </div>
         <form id="login-form" data-auth-panel="login" method="post" action="/api/session">
           <label>Email<input name="email" type="email" autocomplete="username" value="demo@solverfin.example.invalid" required /></label>
@@ -27,8 +27,8 @@ export function renderLoginPage(errorMessage?: string): string {
         <form id="register-form" data-auth-panel="register" method="post" action="/api/users" hidden>
           <label>Nome<input name="displayName" autocomplete="name" placeholder="Seu nome" required /></label>
           <label>Email<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" required /></label>
-          <label>Senha<input name="password" type="password" autocomplete="new-password" minlength="8" placeholder="No minimo 8 caracteres" required /></label>
-          <button type="submit">Criar usuario</button>
+          <label>Senha<input name="password" type="password" autocomplete="new-password" minlength="8" placeholder="No mínimo 8 caracteres" required /></label>
+          <button type="submit">Criar usuário</button>
         </form>
       </section>
     </main>
@@ -81,7 +81,7 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
