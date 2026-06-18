@@ -36,11 +36,11 @@ Stack-alvo inicial:
 
 Frameworks concretos de frontend/backend, runtime e provedores de IA ainda devem ser definidos em issues de bootstrap ou ADRs complementares.
 
-## CI inicial
+## CI
 
-O workflow `.github/workflows/ci.yml` roda em `pull_request` e `push` para `main`, sem depender de banco, Docker ou secrets reais.
+O workflow `.github/workflows/ci.yml` roda em `pull_request` e `push` para `main` com jobs separados para validacoes rapidas e integracao com banco.
 
-Checks executados:
+O job `Validate monorepo` nao depende de banco, Docker ou secrets reais. Checks executados:
 
 ```bash
 npm ci --no-audit --no-fund
@@ -54,11 +54,18 @@ npm run test
 npm run build
 ```
 
-Os comandos ficam separados no workflow para que a falha mostre claramente se o problema esta em ambiente, instalacao, schema Prisma, seed, formatacao, lint, tipos, testes ou build.
+O job `Integration API + PostgreSQL` sobe um PostgreSQL 16 efemero como service do GitHub Actions e usa apenas valores ficticios de teste na `DATABASE_URL`. Ele separa as etapas de preparacao e validacao para que falhas de migrations, seed e testes aparecam de forma independente:
 
-Como o `package-lock.json` esta versionado, o CI usa `npm ci` para instalacao reprodutivel e habilita cache de npm baseado nesse lockfile.
+```bash
+npm ci --no-audit --no-fund
+npm run prisma:generate
+npm run build:packages
+npm run db:deploy
+npm run db:seed
+npm run test:integration --workspace @solverfin/api
+```
 
-Validacoes com PostgreSQL, Prisma migrations e seeds completos devem entrar em workflows ou jobs futuros quando os testes de persistencia exigirem banco real.
+Como o `package-lock.json` esta versionado, os jobs usam `npm ci` para instalacao reprodutivel e habilitam cache de npm baseado nesse lockfile.
 
 ## Ambientes e secrets
 
