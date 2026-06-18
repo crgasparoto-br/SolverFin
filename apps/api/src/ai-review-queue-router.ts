@@ -34,6 +34,7 @@ interface AiReviewQueueRoute {
 }
 
 const BASE_PATH = "/api/ai-review-queue";
+const ALLOWED_TRANSACTION_KINDS = new Set(["income", "expense", "transfer"]);
 const routes: AiReviewQueueRoute[] = [];
 
 route("GET", BASE_PATH, listAiReviewQueueHandler);
@@ -240,8 +241,8 @@ function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | und
   const input = value as Record<string, unknown>;
   const payload: Partial<AiSuggestedTransactionDraft> = {};
 
-  if (input.kind !== undefined) payload.kind = input.kind as AiSuggestedTransactionDraft["kind"];
-  if (input.amountMinor !== undefined) payload.amountMinor = Number(input.amountMinor);
+  if (input.kind !== undefined) payload.kind = readTransactionKind(input.kind);
+  if (input.amountMinor !== undefined) payload.amountMinor = readAmountMinor(input.amountMinor);
   if (input.occurredOn !== undefined) payload.occurredOn = String(input.occurredOn);
   if (input.accountId !== undefined) payload.accountId = String(input.accountId);
   if (input.description !== undefined) payload.description = String(input.description);
@@ -251,6 +252,32 @@ function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | und
     payload.destinationAccountId = String(input.destinationAccountId);
 
   return payload;
+}
+
+function readTransactionKind(value: unknown): AiSuggestedTransactionDraft["kind"] {
+  const kind = String(value);
+
+  if (!ALLOWED_TRANSACTION_KINDS.has(kind)) {
+    throw new AiReviewQueueError(
+      "AI_REVIEW_KIND_INVALID",
+      "Tipo de lancamento informado na revisao nao e valido.",
+    );
+  }
+
+  return kind as AiSuggestedTransactionDraft["kind"];
+}
+
+function readAmountMinor(value: unknown): number {
+  const amountMinor = Number(value);
+
+  if (!Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
+    throw new AiReviewQueueError(
+      "AI_REVIEW_AMOUNT_INVALID",
+      "Valor informado na revisao precisa ser um inteiro positivo em centavos.",
+    );
+  }
+
+  return amountMinor;
 }
 
 function requireParam(match: Readonly<Record<string, string>>, name: string): string {
