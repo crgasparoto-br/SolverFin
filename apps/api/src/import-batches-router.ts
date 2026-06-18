@@ -163,7 +163,10 @@ async function getImportBatchHandler(
   context: TenantContext,
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
-  return json(200, await getImportBatchDetailForContext(context, requireParam(match, "importBatchId")));
+  return json(
+    200,
+    await getImportBatchDetailForContext(context, requireParam(match, "importBatchId")),
+  );
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
@@ -178,7 +181,7 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   const value = match[name];
 
   if (!value) {
-    throw new AuthError("AUTH_SESSION_REQUIRED", `Missing required path parameter: ${name}.`, 400);
+    throw new AuthError("AUTH_SESSION_REQUIRED", `Missing required path parameter: ${name}.", 400);
   }
 
   return value;
