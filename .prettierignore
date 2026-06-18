@@ -17,3 +17,6 @@ docs/integrations/open-finance.md
 
 # Executed directly by env:check; keep formatting changes from obscuring validation edits.
 scripts/validate-env-example.mjs
+
+# SSR page templates contain large inline HTML/CSS strings that are easier to review manually.
+apps/web/src/dev-server/pages.ts
