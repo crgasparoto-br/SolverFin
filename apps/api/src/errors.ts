@@ -23,7 +23,7 @@ export interface ApiLogEvent {
 
 export type ApiLogger = (event: ApiLogEvent) => void;
 
-const DEFAULT_ERROR_MESSAGE = "Nao foi possivel concluir a acao. Tente novamente.";
+const DEFAULT_ERROR_MESSAGE = "Não foi possível concluir a ação. Tente novamente.";
 const UNEXPECTED_ERROR_CODE = "API_UNEXPECTED_ERROR";
 const CORRELATION_ID_HEADER = "x-correlation-id";
 
