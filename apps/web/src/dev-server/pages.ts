@@ -11,11 +11,11 @@ export function renderLoginPage(errorMessage?: string): string {
         <section class="panel" aria-labelledby="login-title">
           <p class="eyebrow">Ambiente local de desenvolvimento</p>
           <h1 id="login-title">Entrar no SolverFin</h1>
-          <p class="muted">Use a conta demo ficticia para acessar o dashboard navegavel do MVP.</p>
+          <p class="muted">Use a conta demo fictícia para acessar o dashboard navegável do MVP.</p>
           ${errorMessage ? `<p class="error" role="alert">${escapeHtml(errorMessage)}</p>` : ""}
           <form id="login-form" method="post" action="/api/session">
             <label>Email<input name="email" type="email" autocomplete="username" value="demo@solverfin.example.invalid" required /></label>
-            <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha demo ficticia" required /></label>
+            <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha demo fictícia" required /></label>
             <button type="submit">Entrar</button>
           </form>
         </section>
@@ -59,14 +59,14 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
       currentLabel,
       content: `
         ${renderPageHeading({
-          eyebrow: "Funcionalidade em preparacao",
+          eyebrow: "Funcionalidade em preparação",
           title: currentLabel,
           description:
-            "Esta area ja faz parte da navegacao do MVP, mas ainda nao simula operacoes financeiras.",
+            "Esta área já faz parte da navegação do MVP, mas ainda não simula operações financeiras.",
         })}
         <section class="panel placeholder-state">
-          <h2>Proximo passo</h2>
-          <p class="muted">Quando a API desta area estiver conectada, esta tela deve seguir o mesmo padrao de lista, estado vazio e formulario das telas ja navegaveis.</p>
+          <h2>Próximo passo</h2>
+          <p class="muted">Quando a API desta área estiver conectada, esta tela deve seguir o mesmo padrão de lista, estado vazio e formulário das telas já navegáveis.</p>
         </section>
       `,
     });
@@ -86,15 +86,15 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
         <div>
           <p class="eyebrow">Perfil pessoal demo</p>
           <h1>Resumo financeiro</h1>
-          <p class="muted">Dados ficticios do banco local de desenvolvimento.</p>
+          <p class="muted">Dados fictícios do banco local de desenvolvimento.</p>
         </div>
         <span class="demo-pill">Demo seguro</span>
       </section>
       <section class="summary-grid" aria-label="Indicadores principais">
-        ${renderMetricCard("Disponivel estimado", summary.data.availableBalanceMinor, "Saldo das contas ativas")}
-        ${renderMetricCard("Receitas do mes", summary.data.incomeMinor, "Entradas postadas no mes atual")}
-        ${renderMetricCard("Despesas do mes", summary.data.expensesMinor, "Saidas postadas no mes atual")}
-        ${renderMetricCard("Compromissos previstos", summary.data.plannedCommitmentsMinor, "Lancamentos planejados no mes")}
+        ${renderMetricCard("Disponível estimado", summary.data.availableBalanceMinor, "Saldo das contas ativas")}
+        ${renderMetricCard("Receitas do mês", summary.data.incomeMinor, "Entradas postadas no mês atual")}
+        ${renderMetricCard("Despesas do mês", summary.data.expensesMinor, "Saídas postadas no mês atual")}
+        ${renderMetricCard("Compromissos previstos", summary.data.plannedCommitmentsMinor, "Lançamentos planejados no mês")}
       </section>
       <section class="panel list-panel">
         <div class="section-heading">
@@ -114,13 +114,13 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
                 </article>
               `,
               )
-              .join("") || renderEmptyState("Nenhum lancamento ainda.", "Crie lancamentos para acompanhar a rotina financeira deste perfil.")
+              .join("") || renderEmptyState("Nenhum lançamento ainda.", "Crie lançamentos para acompanhar a rotina financeira deste perfil.")
           }
         </div>
       </section>
       <section class="panel review-note">
-        <h2>Pendencias de revisao</h2>
-        <p class="muted">Revise qualquer previsao antes de usar como apoio para decisoes financeiras.</p>
+        <h2>Pendências de revisão</h2>
+        <p class="muted">Revise qualquer previsão antes de usar como apoio para decisões financeiras.</p>
       </section>
     `,
   });
@@ -140,7 +140,7 @@ export async function renderAccountsPage(token: string): Promise<string> {
       ${renderPageHeading({
         eyebrow: "Organizar base financeira",
         title: "Contas",
-        description: "Cadastre contas correntes, poupanca, carteira ou investimento.",
+        description: "Cadastre contas correntes, poupança, carteira ou investimento.",
       })}
       <section class="workspace-grid">
         <section class="panel list-panel">
@@ -159,7 +159,7 @@ export async function renderAccountsPage(token: string): Promise<string> {
                   </article>
                 `,
                 )
-                .join("") || renderEmptyState("Nenhuma conta cadastrada.", "Crie a primeira conta para conectar saldos e lancamentos.")
+                .join("") || renderEmptyState("Nenhuma conta cadastrada.", "Crie a primeira conta para conectar saldos e lançamentos.")
             }
           </div>
         </section>
@@ -170,7 +170,7 @@ export async function renderAccountsPage(token: string): Promise<string> {
             <label>Tipo
               <select name="kind" required>
                 <option value="checking">Conta corrente</option>
-                <option value="savings">Poupanca</option>
+                <option value="savings">Poupança</option>
                 <option value="cash">Carteira</option>
                 <option value="investment">Investimento</option>
                 <option value="other">Outro</option>
@@ -201,9 +201,9 @@ export async function renderCategoriesPage(token: string): Promise<string> {
     currentLabel: "Categorias",
     content: `
       ${renderPageHeading({
-        eyebrow: "Padronizar classificacao",
+        eyebrow: "Padronizar classificação",
         title: "Categorias",
-        description: "Classifique receitas, despesas e transferencias com consistencia.",
+        description: "Classifique receitas, despesas e transferências com consistência.",
       })}
       <section class="workspace-grid">
         <section class="panel list-panel">
@@ -233,7 +233,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
               <select name="kind" required>
                 <option value="income">Receita</option>
                 <option value="expense">Despesa</option>
-                <option value="transfer">Transferencia</option>
+                <option value="transfer">Transferência</option>
               </select>
             </label>
             <button type="submit">Criar categoria</button>
@@ -253,7 +253,7 @@ export async function renderTransactionsPage(token: string): Promise<string> {
   ]);
 
   if (!transactions.ok) {
-    return renderApiErrorPage("/lancamentos", "Lancamentos", transactions.error);
+    return renderApiErrorPage("/lancamentos", "Lançamentos", transactions.error);
   }
 
   const accountOptions = accounts.ok ? accounts.data.accounts : [];
@@ -261,17 +261,17 @@ export async function renderTransactionsPage(token: string): Promise<string> {
 
   return renderAuthenticatedPage({
     pathname: "/lancamentos",
-    currentLabel: "Lancamentos",
+    currentLabel: "Lançamentos",
     content: `
       ${renderPageHeading({
         eyebrow: "Rotina financeira",
-        title: "Lancamentos",
-        description: "Receitas, despesas e transferencias do perfil ativo.",
+        title: "Lançamentos",
+        description: "Receitas, despesas e transferências do perfil ativo.",
       })}
       <section class="workspace-grid wide-form">
         <section class="panel list-panel">
           <div class="section-heading">
-            <h2>Movimentacoes</h2>
+            <h2>Movimentações</h2>
             <span>${transactions.data.transactions.length} itens</span>
           </div>
           <div class="rows">
@@ -280,23 +280,23 @@ export async function renderTransactionsPage(token: string): Promise<string> {
                 .map(
                   (transaction) => `
                   <article class="row">
-                    <div><strong>${escapeHtml(transaction.description || "(sem descricao)")}</strong><span>${escapeHtml(transaction.kind)} - ${escapeHtml(transaction.status)} - ${formatDate(transaction.occurredOn)}</span></div>
+                    <div><strong>${escapeHtml(transaction.description || "(sem descrição)")}</strong><span>${escapeHtml(transaction.kind)} - ${escapeHtml(transaction.status)} - ${formatDate(transaction.occurredOn)}</span></div>
                     <strong>${formatMoney(transaction.amountMinor)}</strong>
                   </article>
                 `,
                 )
-                .join("") || renderEmptyState("Nenhum lancamento ainda.", "Registre a primeira movimentacao para atualizar o resumo.")
+                .join("") || renderEmptyState("Nenhum lançamento ainda.", "Registre a primeira movimentação para atualizar o resumo.")
             }
           </div>
         </section>
         <section class="panel form-panel">
-          <h2>Novo lancamento</h2>
+          <h2>Novo lançamento</h2>
           <form data-api-form data-api-path="/api/transactions">
             <label>Tipo
               <select name="kind" required>
                 <option value="expense">Despesa</option>
                 <option value="income">Receita</option>
-                <option value="transfer">Transferencia</option>
+                <option value="transfer">Transferência</option>
               </select>
             </label>
             <label>Valor (R$)<input name="amountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
@@ -306,7 +306,7 @@ export async function renderTransactionsPage(token: string): Promise<string> {
                 ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
               </select>
             </label>
-            <label>Conta de destino (transferencias)
+            <label>Conta de destino (transferências)
               <select name="destinationAccountId">
                 <option value="">-</option>
                 ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
@@ -318,8 +318,8 @@ export async function renderTransactionsPage(token: string): Promise<string> {
                 ${categoryOptions.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("")}
               </select>
             </label>
-            <label class="full-span">Descricao<input name="description" /></label>
-            <button type="submit">Criar lancamento</button>
+            <label class="full-span">Descrição<input name="description" /></label>
+            <button type="submit">Criar lançamento</button>
           </form>
         </section>
       </section>
@@ -335,24 +335,24 @@ export async function renderCardsPage(token: string): Promise<string> {
   ]);
 
   if (!cards.ok) {
-    return renderApiErrorPage("/cartoes", "Cartoes", cards.error);
+    return renderApiErrorPage("/cartoes", "Cartões", cards.error);
   }
 
   const accountOptions = accounts.ok ? accounts.data.accounts : [];
 
   return renderAuthenticatedPage({
     pathname: "/cartoes",
-    currentLabel: "Cartoes",
+    currentLabel: "Cartões",
     content: `
       ${renderPageHeading({
-        eyebrow: "Credito com previsibilidade",
-        title: "Cartoes",
-        description: "Organize cartoes de credito, dias de fechamento e vencimento.",
+        eyebrow: "Crédito com previsibilidade",
+        title: "Cartões",
+        description: "Organize cartões de crédito, dias de fechamento e vencimento.",
       })}
       <section class="workspace-grid">
         <section class="panel list-panel">
           <div class="section-heading">
-            <h2>Cartoes cadastrados</h2>
+            <h2>Cartões cadastrados</h2>
             <span>${cards.data.cards.length} itens</span>
           </div>
           <div class="rows">
@@ -365,12 +365,12 @@ export async function renderCardsPage(token: string): Promise<string> {
                   </article>
                 `,
                 )
-                .join("") || renderEmptyState("Nenhum cartao cadastrado.", "Cadastre cartoes para acompanhar faturas e vencimentos.")
+                .join("") || renderEmptyState("Nenhum cartão cadastrado.", "Cadastre cartões para acompanhar faturas e vencimentos.")
             }
           </div>
         </section>
         <section class="panel form-panel">
-          <h2>Novo cartao</h2>
+          <h2>Novo cartão</h2>
           <form data-api-form data-api-path="/api/cards">
             <label>Nome<input name="name" required /></label>
             <label>Dia de fechamento<input name="closingDay" type="number" min="1" max="31" required /></label>
@@ -381,7 +381,7 @@ export async function renderCardsPage(token: string): Promise<string> {
                 ${accountOptions.map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join("")}
               </select>
             </label>
-            <button type="submit">Criar cartao</button>
+            <button type="submit">Criar cartão</button>
           </form>
         </section>
       </section>
@@ -397,18 +397,18 @@ export async function renderBudgetsPage(token: string): Promise<string> {
   ]);
 
   if (!budgets.ok) {
-    return renderApiErrorPage("/orcamentos", "Orcamentos", budgets.error);
+    return renderApiErrorPage("/orcamentos", "Orçamentos", budgets.error);
   }
 
   const categoryOptions = categories.ok ? categories.data.categories : [];
 
   return renderAuthenticatedPage({
     pathname: "/orcamentos",
-    currentLabel: "Orcamentos",
+    currentLabel: "Orçamentos",
     content: `
       ${renderPageHeading({
         eyebrow: "Planejamento mensal",
-        title: "Orcamentos",
+        title: "Orçamentos",
         description: "Acompanhe limites planejados por categoria de despesa.",
       })}
       <section class="workspace-grid">
@@ -428,22 +428,22 @@ export async function renderBudgetsPage(token: string): Promise<string> {
                   </article>
                 `,
                 )
-                .join("") || renderEmptyState("Nenhum orcamento cadastrado.", "Crie limites mensais para acompanhar categorias de despesa.")
+                .join("") || renderEmptyState("Nenhum orçamento cadastrado.", "Crie limites mensais para acompanhar categorias de despesa.")
             }
           </div>
         </section>
         <section class="panel form-panel">
-          <h2>Novo orcamento</h2>
+          <h2>Novo orçamento</h2>
           <form data-api-form data-api-path="/api/budgets">
             <label>Categoria
               <select name="categoryId" required>
                 ${categoryOptions.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("")}
               </select>
             </label>
-            <label>Inicio do periodo<input name="periodStartOn" type="date" required /></label>
-            <label>Fim do periodo<input name="periodEndOn" type="date" required /></label>
+            <label>Início do período<input name="periodStartOn" type="date" required /></label>
+            <label>Fim do período<input name="periodEndOn" type="date" required /></label>
             <label>Valor planejado (R$)<input name="plannedAmountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
-            <button type="submit">Criar orcamento</button>
+            <button type="submit">Criar orçamento</button>
           </form>
         </section>
       </section>
@@ -484,7 +484,7 @@ function renderAuthenticatedPage(input: {
           <button class="logout" type="button" data-logout>Sair</button>
         </aside>
         <div class="main-area">
-          <header class="topbar"><div><strong>${escapeHtml(input.currentLabel)}</strong><span>Usuario Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
+          <header class="topbar"><div><strong>${escapeHtml(input.currentLabel)}</strong><span>Usuário Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
           <main>${input.content}</main>
         </div>
       </div>
@@ -547,7 +547,7 @@ function apiFormScript(): string {
 
           const body = await response.json().catch(() => ({}));
           status.className = "form-status error";
-          status.textContent = (body.error && body.error.message) || "Nao foi possivel salvar.";
+          status.textContent = (body.error && body.error.message) || "Não foi possível salvar.";
           if (submitButton) submitButton.disabled = false;
         });
       });
@@ -598,8 +598,8 @@ function renderEmptyState(title: string, description: string): string {
 
 export function renderNotFoundPage(): string {
   return renderPage({
-    title: "Pagina nao encontrada - SolverFin",
-    body: `<main class="placeholder-state"><p class="eyebrow">404</p><h1>Pagina nao encontrada</h1><p class="muted">Esta rota nao faz parte do MVP navegavel atual.</p><a class="button-link" href="/login">Voltar para entrada</a></main>`,
+    title: "Página não encontrada - SolverFin",
+    body: `<main class="placeholder-state"><p class="eyebrow">404</p><h1>Página não encontrada</h1><p class="muted">Esta rota não faz parte do MVP navegável atual.</p><a class="button-link" href="/login">Voltar para entrada</a></main>`,
   });
 }
 
