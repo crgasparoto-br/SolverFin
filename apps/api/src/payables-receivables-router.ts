@@ -17,8 +17,8 @@ import {
   settlePayableReceivableForContext,
   updatePayableReceivableForContext,
 } from "./repositories/payables-receivables.js";
-import { resolveRequestTenantContext } from "./tenant-context.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
+import { resolveRequestTenantContext } from "./tenant-context.js";
 
 type PayableReceivableHandler = (
   request: ApiRequest,
@@ -38,10 +38,26 @@ const routes: PayableReceivableRoute[] = [];
 
 route("GET", PAYABLE_RECEIVABLE_BASE_PATH, listPayableReceivablesHandler);
 route("POST", PAYABLE_RECEIVABLE_BASE_PATH, createPayableReceivableHandler);
-route("GET", `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId`, getPayableReceivableHandler);
-route("PATCH", `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId`, updatePayableReceivableHandler);
-route("POST", `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId/settle`, settlePayableReceivableHandler);
-route("POST", `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId/cancel`, cancelPayableReceivableHandler);
+route(
+  "GET",
+  `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId`,
+  getPayableReceivableHandler,
+);
+route(
+  "PATCH",
+  `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId`,
+  updatePayableReceivableHandler,
+);
+route(
+  "POST",
+  `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId/settle`,
+  settlePayableReceivableHandler,
+);
+route(
+  "POST",
+  `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId/cancel`,
+  cancelPayableReceivableHandler,
+);
 
 export async function handlePayablesReceivablesApiRequest(
   request: ApiRequest,
@@ -107,18 +123,24 @@ function findRoute(
   pathname: string,
 ): { route: PayableReceivableRoute; params: Record<string, string> } | undefined {
   for (const candidate of routes) {
-    if (candidate.method !== method) continue;
+    if (candidate.method !== method) {
+      continue;
+    }
 
     const result = candidate.pattern.exec(pathname);
 
-    if (!result) continue;
+    if (!result) {
+      continue;
+    }
 
     const params: Record<string, string> = {};
 
     candidate.paramNames.forEach((name, index) => {
       const value = result[index + 1];
 
-      if (value !== undefined) params[name] = value;
+      if (value !== undefined) {
+        params[name] = value;
+      }
     });
 
     return { route: candidate, params };
