@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { closePool } from "./db.js";
+import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
@@ -24,9 +25,20 @@ async function main(): Promise<void> {
   const token = await loginAndReadToken();
   const fixtures = await createPersonalFinancialFlow(token);
   const payablesReceivables = await createPersonalPayablesReceivablesFlow(token, fixtures);
+  const importBatch = await createPersonalCsvImportFlow(token, fixtures);
 
-  await assertPersonalProfileListsOnlyPersonalData(token, fixtures, payablesReceivables);
-  await assertMeiProfileDoesNotExposePersonalData(token, fixtures, payablesReceivables);
+  await assertPersonalProfileListsOnlyPersonalData(
+    token,
+    fixtures,
+    payablesReceivables,
+    importBatch,
+  );
+  await assertMeiProfileDoesNotExposePersonalData(
+    token,
+    fixtures,
+    payablesReceivables,
+    importBatch,
+  );
   await assertUnknownProfileIsRejected(token);
 }
 
@@ -143,10 +155,67 @@ async function createPersonalPayablesReceivablesFlow(
   return { payable: settled.payableReceivable, receivable: cancelled };
 }
 
+async function createPersonalCsvImportFlow(
+  token: string,
+  fixtures: Pick<PersonalFixtures, "account" | "category">,
+): Promise<ImportFixtures> {
+  const suffix = Date.now().toString(36);
+  const csvContent = [
+    "date,description,amount,kind,accountId,categoryId",
+    `2026-06-18,Compra mercado integracao ${suffix},-123.45,expense,${fixtures.account.id},${fixtures.category.id}`,
+    `19/06/2026,Receita integracao ${suffix},2500.00,income,${fixtures.account.id},`,
+  ].join("\n");
+
+  const importResponse = await apiRequest(token, "POST", "/api/import-batches/csv", {
+    originalFileName: `extrato-${suffix}.csv`,
+    content: csvContent,
+  });
+  assert.equal(importResponse.statusCode, 201);
+  const imported = readBody<{
+    importBatch: ApiImportBatch;
+    suggestions: ApiAiSuggestion[];
+    problems: ApiImportProblem[];
+  }>(importResponse);
+
+  assert.equal(imported.importBatch.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(imported.importBatch.sourceKind, "csv");
+  assert.equal(imported.importBatch.status, "reviewing");
+  assert.equal(imported.suggestions.length, 2);
+  assert.equal(imported.problems.length, 0);
+  assertEveryProfile(imported.suggestions, PERSONAL_PROFILE_ID);
+  assert.equal(
+    imported.suggestions.every((suggestion) => suggestion.sourceEntityId === imported.importBatch.id),
+    true,
+  );
+
+  const detailResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/import-batches/${imported.importBatch.id}`,
+  );
+  assert.equal(detailResponse.statusCode, 200);
+  const detail = readBody<{ importBatch: ApiImportBatch; suggestions: ApiAiSuggestion[] }>(
+    detailResponse,
+  );
+
+  assert.equal(detail.importBatch.id, imported.importBatch.id);
+  assert.equal(detail.suggestions.length, 2);
+
+  const invalidResponse = await apiRequest(token, "POST", "/api/import-batches/csv", {
+    originalFileName: `extrato-invalido-${suffix}.csv`,
+    content: "data,valor\n2026-06-18,10.00",
+  });
+  assert.equal(invalidResponse.statusCode, 400);
+  assert.equal(readErrorCode(invalidResponse), "IMPORT_CSV_HEADER_INVALID");
+
+  return { batch: imported.importBatch };
+}
+
 async function assertPersonalProfileListsOnlyPersonalData(
   token: string,
   fixtures: PersonalFixtures,
   payablesReceivables: PayablesReceivablesFixtures,
+  importFixtures: ImportFixtures,
 ): Promise<void> {
   const accountsResponse = await apiRequest(token, "GET", "/api/accounts?status=all");
   const categoriesResponse = await apiRequest(token, "GET", "/api/categories?status=all");
@@ -156,6 +225,7 @@ async function assertPersonalProfileListsOnlyPersonalData(
     "GET",
     "/api/payables-receivables?status=all",
   );
+  const importBatchesResponse = await apiRequest(token, "GET", "/api/import-batches?status=all");
 
   const accounts = readBody<{ accounts: ApiAccount[] }>(accountsResponse).accounts;
   const categories = readBody<{ categories: ApiCategory[] }>(categoriesResponse).categories;
@@ -165,22 +235,28 @@ async function assertPersonalProfileListsOnlyPersonalData(
   const listedPayablesReceivables = readBody<{
     payablesReceivables: ApiPayableReceivable[];
   }>(payablesReceivablesResponse).payablesReceivables;
+  const importBatches = readBody<{ importBatches: ApiImportBatch[] }>(
+    importBatchesResponse,
+  ).importBatches;
 
   assert.equal(hasId(accounts, fixtures.account.id), true);
   assert.equal(hasId(categories, fixtures.category.id), true);
   assert.equal(hasId(transactions, fixtures.transaction.id), true);
   assert.equal(hasId(listedPayablesReceivables, payablesReceivables.payable.id), true);
   assert.equal(hasId(listedPayablesReceivables, payablesReceivables.receivable.id), true);
+  assert.equal(hasId(importBatches, importFixtures.batch.id), true);
   assertEveryProfile(accounts, PERSONAL_PROFILE_ID);
   assertEveryProfile(categories, PERSONAL_PROFILE_ID);
   assertEveryProfile(transactions, PERSONAL_PROFILE_ID);
   assertEveryProfile(listedPayablesReceivables, PERSONAL_PROFILE_ID);
+  assertEveryProfile(importBatches, PERSONAL_PROFILE_ID);
 }
 
 async function assertMeiProfileDoesNotExposePersonalData(
   token: string,
   fixtures: MeiIsolationFixtures,
   payablesReceivables: PayablesReceivablesFixtures,
+  importFixtures: ImportFixtures,
 ): Promise<void> {
   const meiAccountsResponse = await apiRequest(
     token,
@@ -197,6 +273,11 @@ async function assertMeiProfileDoesNotExposePersonalData(
     "GET",
     `/api/payables-receivables?status=all&profileId=${MEI_PROFILE_ID}`,
   );
+  const meiImportBatchesResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/import-batches?status=all&profileId=${MEI_PROFILE_ID}`,
+  );
 
   const meiAccounts = readBody<{ accounts: ApiAccount[] }>(meiAccountsResponse).accounts;
   const meiTransactions = readBody<{ transactions: ApiTransaction[] }>(
@@ -205,13 +286,18 @@ async function assertMeiProfileDoesNotExposePersonalData(
   const meiPayablesReceivables = readBody<{
     payablesReceivables: ApiPayableReceivable[];
   }>(meiPayablesReceivablesResponse).payablesReceivables;
+  const meiImportBatches = readBody<{ importBatches: ApiImportBatch[] }>(
+    meiImportBatchesResponse,
+  ).importBatches;
 
   assertEveryProfile(meiAccounts, MEI_PROFILE_ID);
   assertEveryProfile(meiTransactions, MEI_PROFILE_ID);
   assertEveryProfile(meiPayablesReceivables, MEI_PROFILE_ID);
+  assertEveryProfile(meiImportBatches, MEI_PROFILE_ID);
   assert.equal(hasId(meiAccounts, fixtures.account.id), false);
   assert.equal(hasId(meiTransactions, fixtures.transaction.id), false);
   assert.equal(hasId(meiPayablesReceivables, payablesReceivables.payable.id), false);
+  assert.equal(hasId(meiImportBatches, importFixtures.batch.id), false);
   assert.equal(hasAccountNamed(meiAccounts, "Conta MEI demo"), true);
 
   const crossProfileUpdate = await apiRequest(
@@ -232,6 +318,15 @@ async function assertMeiProfileDoesNotExposePersonalData(
 
   assert.equal(crossProfilePayable.statusCode, 404);
   assert.equal(readErrorCode(crossProfilePayable), "TENANT_RESOURCE_NOT_FOUND");
+
+  const crossProfileImportBatch = await apiRequest(
+    token,
+    "GET",
+    `/api/import-batches/${importFixtures.batch.id}?profileId=${MEI_PROFILE_ID}`,
+  );
+
+  assert.equal(crossProfileImportBatch.statusCode, 404);
+  assert.equal(readErrorCode(crossProfileImportBatch), "TENANT_RESOURCE_NOT_FOUND");
 }
 
 async function assertUnknownProfileIsRejected(token: string): Promise<void> {
@@ -270,7 +365,9 @@ async function apiRequest(
     headers: { authorization: `Bearer ${token}` },
     body,
   };
-  const payablesReceivablesResponse = await handlePayablesReceivablesApiRequest(request);
+  const importBatchesResponse = await handleImportBatchesApiRequest(request);
+  const payablesReceivablesResponse =
+    importBatchesResponse ?? (await handlePayablesReceivablesApiRequest(request));
   const response = payablesReceivablesResponse ?? (await handleApiRequest(request));
 
   assert.ok(response, `${method} ${path} should be handled by the API router`);
@@ -325,6 +422,10 @@ interface PayablesReceivablesFixtures {
   receivable: ApiPayableReceivable;
 }
 
+interface ImportFixtures {
+  batch: ApiImportBatch;
+}
+
 type MeiIsolationFixtures = Pick<PersonalFixtures, "account" | "transaction">;
 
 interface ApiAccount {
@@ -358,4 +459,29 @@ interface ApiPayableReceivable {
   categoryId?: string;
   settlementTransactionId?: string;
   cancelledAt?: string;
+}
+
+interface ApiImportBatch {
+  id: string;
+  financialProfileId: string;
+  sourceKind: string;
+  status: string;
+  originalFileName?: string;
+  sourceHash: string;
+}
+
+interface ApiAiSuggestion {
+  id: string;
+  financialProfileId: string;
+  kind: string;
+  status: string;
+  sourceEntityId?: string;
+  explanation: string;
+}
+
+interface ApiImportProblem {
+  rowNumber: number;
+  severity: string;
+  code: string;
+  message: string;
 }
