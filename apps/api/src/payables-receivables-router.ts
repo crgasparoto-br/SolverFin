@@ -38,11 +38,7 @@ const routes: PayableReceivableRoute[] = [];
 
 route("GET", PAYABLE_RECEIVABLE_BASE_PATH, listPayableReceivablesHandler);
 route("POST", PAYABLE_RECEIVABLE_BASE_PATH, createPayableReceivableHandler);
-route(
-  "GET",
-  `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId`,
-  getPayableReceivableHandler,
-);
+route("GET", `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId`, getPayableReceivableHandler);
 route(
   "PATCH",
   `${PAYABLE_RECEIVABLE_BASE_PATH}/:payableReceivableId`,
