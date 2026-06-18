@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
+import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 const host = process.env.HOST ?? "0.0.0.0";
@@ -44,6 +45,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       headers,
       body,
     };
+
+    const payablesReceivablesResult = await handlePayablesReceivablesApiRequest(apiRequest);
+
+    if (payablesReceivablesResult) {
+      writeResponse(response, payablesReceivablesResult);
+
+      return;
+    }
 
     const result = await handleApiRequest(apiRequest);
 

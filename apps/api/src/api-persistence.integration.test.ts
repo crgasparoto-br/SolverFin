@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 
 import { closePool } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import { handleApiRequest, type ApiResponse } from "./router.js";
+import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
+import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const MEI_PROFILE_ID = "33333333-3333-4333-8333-333333333332";
@@ -22,9 +23,10 @@ async function main(): Promise<void> {
 
   const token = await loginAndReadToken();
   const fixtures = await createPersonalFinancialFlow(token);
+  const payablesReceivables = await createPersonalPayablesReceivablesFlow(token, fixtures);
 
-  await assertPersonalProfileListsOnlyPersonalData(token, fixtures);
-  await assertMeiProfileDoesNotExposePersonalData(token, fixtures);
+  await assertPersonalProfileListsOnlyPersonalData(token, fixtures, payablesReceivables);
+  await assertMeiProfileDoesNotExposePersonalData(token, fixtures, payablesReceivables);
   await assertUnknownProfileIsRejected(token);
 }
 
@@ -70,31 +72,115 @@ async function createPersonalFinancialFlow(token: string): Promise<PersonalFixtu
   return { account, category, transaction };
 }
 
+async function createPersonalPayablesReceivablesFlow(
+  token: string,
+  fixtures: Pick<PersonalFixtures, "account" | "category">,
+): Promise<PayablesReceivablesFixtures> {
+  const suffix = Date.now().toString(36);
+  const payableResponse = await apiRequest(token, "POST", "/api/payables-receivables", {
+    kind: "payable",
+    amountMinor: 24680,
+    dueOn: "2026-06-25",
+    accountId: fixtures.account.id,
+    categoryId: fixtures.category.id,
+    description: `Conta a pagar integracao ${suffix}`,
+  });
+  assert.equal(payableResponse.statusCode, 201);
+  const payable = readBody<{ payableReceivable: ApiPayableReceivable }>(
+    payableResponse,
+  ).payableReceivable;
+
+  assert.equal(payable.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(payable.kind, "payable");
+  assert.equal(payable.status, "pending");
+
+  const settledResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/payables-receivables/${payable.id}/settle`,
+    {
+      settledOn: "2026-06-26",
+      accountId: fixtures.account.id,
+      categoryId: fixtures.category.id,
+      description: `Pagamento integracao ${suffix}`,
+    },
+  );
+  assert.equal(settledResponse.statusCode, 200);
+  const settled = readBody<{
+    payableReceivable: ApiPayableReceivable;
+    transaction: ApiTransaction;
+  }>(settledResponse);
+
+  assert.equal(settled.payableReceivable.status, "settled");
+  assert.equal(settled.payableReceivable.settlementTransactionId, settled.transaction.id);
+  assert.equal(settled.transaction.kind, "expense");
+
+  const receivableResponse = await apiRequest(token, "POST", "/api/payables-receivables", {
+    kind: "receivable",
+    amountMinor: 13579,
+    dueOn: "2026-06-27",
+    accountId: fixtures.account.id,
+    description: `Conta a receber integracao ${suffix}`,
+  });
+  assert.equal(receivableResponse.statusCode, 201);
+  const receivable = readBody<{ payableReceivable: ApiPayableReceivable }>(
+    receivableResponse,
+  ).payableReceivable;
+
+  const cancelledResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/payables-receivables/${receivable.id}/cancel`,
+  );
+  assert.equal(cancelledResponse.statusCode, 200);
+  const cancelled = readBody<{ payableReceivable: ApiPayableReceivable }>(
+    cancelledResponse,
+  ).payableReceivable;
+
+  assert.equal(cancelled.status, "cancelled");
+  assert.ok(cancelled.cancelledAt);
+
+  return { payable: settled.payableReceivable, receivable: cancelled };
+}
+
 async function assertPersonalProfileListsOnlyPersonalData(
   token: string,
   fixtures: PersonalFixtures,
+  payablesReceivables: PayablesReceivablesFixtures,
 ): Promise<void> {
   const accountsResponse = await apiRequest(token, "GET", "/api/accounts?status=all");
   const categoriesResponse = await apiRequest(token, "GET", "/api/categories?status=all");
   const transactionsResponse = await apiRequest(token, "GET", "/api/transactions?status=all");
+  const payablesReceivablesResponse = await apiRequest(
+    token,
+    "GET",
+    "/api/payables-receivables?status=all",
+  );
 
   const accounts = readBody<{ accounts: ApiAccount[] }>(accountsResponse).accounts;
   const categories = readBody<{ categories: ApiCategory[] }>(categoriesResponse).categories;
   const transactions = readBody<{ transactions: ApiTransaction[] }>(
     transactionsResponse,
   ).transactions;
+  const listedPayablesReceivables = readBody<{
+    payablesReceivables: ApiPayableReceivable[];
+  }>(payablesReceivablesResponse).payablesReceivables;
 
   assert.equal(hasId(accounts, fixtures.account.id), true);
   assert.equal(hasId(categories, fixtures.category.id), true);
   assert.equal(hasId(transactions, fixtures.transaction.id), true);
+  assert.equal(hasId(listedPayablesReceivables, payablesReceivables.payable.id), true);
+  assert.equal(hasId(listedPayablesReceivables, payablesReceivables.receivable.id), true);
   assertEveryProfile(accounts, PERSONAL_PROFILE_ID);
   assertEveryProfile(categories, PERSONAL_PROFILE_ID);
   assertEveryProfile(transactions, PERSONAL_PROFILE_ID);
+  assertEveryProfile(listedPayablesReceivables, PERSONAL_PROFILE_ID);
 }
 
 async function assertMeiProfileDoesNotExposePersonalData(
   token: string,
   fixtures: MeiIsolationFixtures,
+  payablesReceivables: PayablesReceivablesFixtures,
 ): Promise<void> {
   const meiAccountsResponse = await apiRequest(
     token,
@@ -106,16 +192,26 @@ async function assertMeiProfileDoesNotExposePersonalData(
     "GET",
     `/api/transactions?status=all&profileId=${MEI_PROFILE_ID}`,
   );
+  const meiPayablesReceivablesResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/payables-receivables?status=all&profileId=${MEI_PROFILE_ID}`,
+  );
 
   const meiAccounts = readBody<{ accounts: ApiAccount[] }>(meiAccountsResponse).accounts;
   const meiTransactions = readBody<{ transactions: ApiTransaction[] }>(
     meiTransactionsResponse,
   ).transactions;
+  const meiPayablesReceivables = readBody<{
+    payablesReceivables: ApiPayableReceivable[];
+  }>(meiPayablesReceivablesResponse).payablesReceivables;
 
   assertEveryProfile(meiAccounts, MEI_PROFILE_ID);
   assertEveryProfile(meiTransactions, MEI_PROFILE_ID);
+  assertEveryProfile(meiPayablesReceivables, MEI_PROFILE_ID);
   assert.equal(hasId(meiAccounts, fixtures.account.id), false);
   assert.equal(hasId(meiTransactions, fixtures.transaction.id), false);
+  assert.equal(hasId(meiPayablesReceivables, payablesReceivables.payable.id), false);
   assert.equal(hasAccountNamed(meiAccounts, "Conta MEI demo"), true);
 
   const crossProfileUpdate = await apiRequest(
@@ -127,6 +223,15 @@ async function assertMeiProfileDoesNotExposePersonalData(
 
   assert.equal(crossProfileUpdate.statusCode, 404);
   assert.equal(readErrorCode(crossProfileUpdate), "TENANT_RESOURCE_NOT_FOUND");
+
+  const crossProfilePayable = await apiRequest(
+    token,
+    "GET",
+    `/api/payables-receivables/${payablesReceivables.payable.id}?profileId=${MEI_PROFILE_ID}`,
+  );
+
+  assert.equal(crossProfilePayable.statusCode, 404);
+  assert.equal(readErrorCode(crossProfilePayable), "TENANT_RESOURCE_NOT_FOUND");
 }
 
 async function assertUnknownProfileIsRejected(token: string): Promise<void> {
@@ -158,13 +263,15 @@ async function apiRequest(
   body?: unknown,
 ): Promise<ApiResponse> {
   const url = new URL(path, "http://solverfin.integration.test");
-  const response = await handleApiRequest({
+  const request: ApiRequest = {
     method,
     pathname: url.pathname,
     query: url.searchParams,
     headers: { authorization: `Bearer ${token}` },
     body,
-  });
+  };
+  const payablesReceivablesResponse = await handlePayablesReceivablesApiRequest(request);
+  const response = payablesReceivablesResponse ?? (await handleApiRequest(request));
 
   assert.ok(response, `${method} ${path} should be handled by the API router`);
 
@@ -213,6 +320,11 @@ interface PersonalFixtures {
   transaction: ApiTransaction;
 }
 
+interface PayablesReceivablesFixtures {
+  payable: ApiPayableReceivable;
+  receivable: ApiPayableReceivable;
+}
+
 type MeiIsolationFixtures = Pick<PersonalFixtures, "account" | "transaction">;
 
 interface ApiAccount {
@@ -234,4 +346,16 @@ interface ApiTransaction {
   financialProfileId: string;
   accountId?: string;
   categoryId?: string;
+  kind?: string;
+}
+
+interface ApiPayableReceivable {
+  id: string;
+  financialProfileId: string;
+  kind: string;
+  status: string;
+  accountId?: string;
+  categoryId?: string;
+  settlementTransactionId?: string;
+  cancelledAt?: string;
 }
