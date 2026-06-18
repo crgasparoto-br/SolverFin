@@ -86,7 +86,7 @@ function route(method: string, path: string, handler: ImportBatchHandler): void 
         return "([^/]+)";
       }
 
-      return segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return segment;
     })
     .join("/");
 
@@ -181,7 +181,7 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   const value = match[name];
 
   if (!value) {
-    throw new AuthError("AUTH_SESSION_REQUIRED", `Missing required path parameter: ${name}.", 400);
+    throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
   }
 
   return value;
