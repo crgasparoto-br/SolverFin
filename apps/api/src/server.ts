@@ -2,6 +2,7 @@ import "./load-env.js";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
@@ -52,6 +53,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (importBatchesResult) {
       writeResponse(response, importBatchesResult);
+
+      return;
+    }
+
+    const aiReviewQueueResult = await handleAiReviewQueueApiRequest(apiRequest);
+
+    if (aiReviewQueueResult) {
+      writeResponse(response, aiReviewQueueResult);
 
       return;
     }
