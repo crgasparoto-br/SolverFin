@@ -12,7 +12,7 @@ export interface ShellStateExample {
 
 export const shellStateExamples = [
   {
-    name: "Carregando sessao",
+    name: "Carregando sessão",
     path: "/app",
     context: {
       sessionState: "loading",
@@ -20,7 +20,7 @@ export const shellStateExamples = [
     expectedState: "loading",
   },
   {
-    name: "Usuario nao autenticado em rota privada",
+    name: "Usuário não autenticado em rota privada",
     path: "/app/lancamentos",
     context: {
       sessionState: "unauthenticated",
@@ -28,7 +28,7 @@ export const shellStateExamples = [
     expectedState: "redirect",
   },
   {
-    name: "Usuario autenticado sem perfil financeiro",
+    name: "Usuário autenticado sem perfil financeiro",
     path: "/app",
     context: {
       sessionState: "authenticated",
@@ -44,7 +44,7 @@ export const shellStateExamples = [
     path: "/app",
     context: {
       sessionState: "error",
-      errorMessage: "Nao conseguimos carregar seus dados agora.",
+      errorMessage: "Não conseguimos carregar seus dados agora.",
     },
     expectedState: "error",
   },

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Controle financeiro inteligente da SolverIT para pessoas, MEIs, autonomos e pequenos negocios.",
+  "description": "Controle financeiro inteligente da SolverIT para pessoas, MEIs, autônomos e pequenos negócios.",
   "packageManager": "npm@11.6.2",
   "workspaces": [
     "apps/*",

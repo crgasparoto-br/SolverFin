@@ -15,7 +15,7 @@ function loginRouteIsRealPage(): void {
 
   assert.match(login, /Entrar no SolverFin/);
   assert.match(login, /<form id="login-form"/);
-  assert.match(login, /Criar usuario/);
+  assert.match(login, /Criar usuário/);
   assert.match(login, /<form id="register-form"/);
   assert.match(login, /\/api\/users/);
 }
