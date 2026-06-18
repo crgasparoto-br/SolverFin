@@ -2,6 +2,7 @@ import "./load-env.js";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
@@ -51,6 +52,15 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (importBatchesResult) {
       writeResponse(response, importBatchesResult);
+
+      return;
+    }
+
+    const deduplicationReconciliationResult =
+      await handleDeduplicationReconciliationApiRequest(apiRequest);
+
+    if (deduplicationReconciliationResult) {
+      writeResponse(response, deduplicationReconciliationResult);
 
       return;
     }
