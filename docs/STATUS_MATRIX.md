@@ -30,45 +30,280 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 
 ## Matriz por area
 
-| Area | Dominio | Schema/migration | Seed | Repository | API | UI | Testes unitarios | Testes de integracao | Documentacao |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Contas | Feito | Feito | Feito | Feito | Feito | Parcial | Parcial | Feito | Parcial |
-| Categorias | Feito | Feito | Feito | Feito | Feito | Parcial | Parcial | Feito | Parcial |
-| Lancamentos / Extrato | Feito | Feito | Feito | Feito | Feito | Parcial | Parcial | Feito | Parcial |
-| Recorrencias | Feito | Feito | Parcial | Feito | Feito | Pendente | Parcial | Parcial | Parcial |
-| Parcelas | Feito | Feito | Parcial | Parcial | Parcial | Pendente | Parcial | Parcial | Parcial |
-| Cartoes / Faturas | Feito | Feito | Feito | Feito | Feito | Parcial | Parcial | Parcial | Parcial |
-| Orcamentos | Feito | Feito | Feito | Feito | Feito | Parcial | Parcial | Parcial | Parcial |
-| Contas a pagar/receber | Feito | Feito | Parcial | Feito | Feito | Pendente | Parcial | Feito | Feito |
-| Importacao CSV/OFX | Feito | Parcial | Pendente | Pendente | Pendente | Pendente | Parcial | Pendente | Parcial |
-| Deduplicacao | Feito | Pendente | Pendente | Pendente | Pendente | Pendente | Parcial | Pendente | Parcial |
-| Conciliacao | Feito | Parcial | Pendente | Pendente | Pendente | Parcial | Parcial | Pendente | Parcial |
-| Regras automaticas | Feito | Pendente | Pendente | Pendente | Pendente | Pendente | Parcial | Pendente | Parcial |
-| IA / sugestoes revisaveis | Feito | Parcial | Pendente | Pendente | Pendente | Pendente | Parcial | Pendente | Parcial |
+### Contas
 
-### Notas da matriz por area
+- Dominio: Feito.
+- Schema/migration: Feito.
+- Seed: Feito.
+- Repository: Feito.
+- API: Feito.
+- UI: Parcial.
+- Testes unitarios: Parcial.
+- Testes de integracao: Feito.
+- Documentacao: Parcial.
+- Nota: a web lista e cria contas, mas ainda nao expõe detalhe, edicao ou arquivamento.
 
-- Contas, categorias e lancamentos ja possuem persistencia, repository e rotas CRUD principais. A web, porem, ainda expõe principalmente listagem e criacao.
-- Lancamentos devem continuar registrados como **Extrato da conta**. A tela atual mostra resumo do periodo, agrupamento por data, chips de status e formulario "Adicionar ao extrato".
-- Recorrencias possuem API para listar, criar, atualizar, pausar, retomar, cancelar e gerar parcelas. Ainda nao existe rota web implementada para a operacao.
-- Parcelas aparecem como entidade persistente e como efeito da geracao de recorrencias ou compras parceladas, mas ainda nao ha tela propria nem API direta de manutencao de parcelas.
-- Cartoes possuem API de manutencao e acoes especificas. Faturas possuem rotas de listagem, detalhe e pagamento, mas a web atual ainda mostra apenas cadastro/listagem basica de cartoes.
-- Contas a pagar/receber possuem backend persistido e documentado em `docs/PAYABLES_RECEIVABLES.md`; a UI esta pendente na issue #185.
-- Importacao tem dominio para preview CSV/OFX, hash, sugestoes e problemas. Falta ligar lote persistido, repository, API e UI.
-- Deduplicacao, conciliacao, regras automaticas e fila de IA existem como regras de dominio, mas ainda nao como fluxo operacional completo com persistencia/API/UI.
+### Categorias
+
+- Dominio: Feito.
+- Schema/migration: Feito.
+- Seed: Feito.
+- Repository: Feito.
+- API: Feito.
+- UI: Parcial.
+- Testes unitarios: Parcial.
+- Testes de integracao: Feito.
+- Documentacao: Parcial.
+- Nota: a API suporta restauracao, mas a UI ainda mostra principalmente listagem e criacao.
+
+### Lancamentos / Extrato
+
+- Dominio: Feito.
+- Schema/migration: Feito.
+- Seed: Feito.
+- Repository: Feito.
+- API: Feito.
+- UI: Parcial.
+- Testes unitarios: Parcial.
+- Testes de integracao: Feito.
+- Documentacao: Parcial.
+- Nota: a tela atual deve permanecer como **Extrato da conta**, com resumo, agrupamento por data, chips de status e formulario "Adicionar ao extrato".
+
+### Recorrencias
+
+- Dominio: Feito.
+- Schema/migration: Feito.
+- Seed: Parcial.
+- Repository: Feito.
+- API: Feito.
+- UI: Pendente.
+- Testes unitarios: Parcial.
+- Testes de integracao: Parcial.
+- Documentacao: Parcial.
+- Nota: existem rotas para listar, criar, atualizar, pausar, retomar, cancelar e gerar parcelas, mas nao existe rota web implementada.
+
+### Parcelas
+
+- Dominio: Feito.
+- Schema/migration: Feito.
+- Seed: Parcial.
+- Repository: Parcial.
+- API: Parcial.
+- UI: Pendente.
+- Testes unitarios: Parcial.
+- Testes de integracao: Parcial.
+- Documentacao: Parcial.
+- Nota: parcelas aparecem como entidade persistente e como efeito da geracao de recorrencias ou compras parceladas, mas ainda nao ha tela propria nem API direta de manutencao.
+
+### Cartoes / Faturas
+
+- Dominio: Feito.
+- Schema/migration: Feito.
+- Seed: Feito.
+- Repository: Feito.
+- API: Feito.
+- UI: Parcial.
+- Testes unitarios: Parcial.
+- Testes de integracao: Parcial.
+- Documentacao: Parcial.
+- Nota: a web lista e cria cartoes; faturas e acoes como bloquear, registrar compra e pagar fatura ainda nao aparecem na UI.
+
+### Orcamentos
+
+- Dominio: Feito.
+- Schema/migration: Feito.
+- Seed: Feito.
+- Repository: Feito.
+- API: Feito.
+- UI: Parcial.
+- Testes unitarios: Parcial.
+- Testes de integracao: Parcial.
+- Documentacao: Parcial.
+- Nota: a web lista e cria orcamentos; edicao, arquivamento e consulta de uso ainda nao aparecem na UI.
+
+### Contas a pagar/receber
+
+- Dominio: Feito.
+- Schema/migration: Feito.
+- Seed: Parcial.
+- Repository: Feito.
+- API: Feito.
+- UI: Pendente.
+- Testes unitarios: Parcial.
+- Testes de integracao: Feito.
+- Documentacao: Feito.
+- Nota: o backend esta documentado em `docs/PAYABLES_RECEIVABLES.md`; a tela web esta pendente na issue #185.
+
+### Importacao CSV/OFX
+
+- Dominio: Feito.
+- Schema/migration: Parcial.
+- Seed: Pendente.
+- Repository: Pendente.
+- API: Pendente.
+- UI: Pendente.
+- Testes unitarios: Parcial.
+- Testes de integracao: Pendente.
+- Documentacao: Parcial.
+- Nota: o dominio faz preview, hash, sugestoes e problemas; falta lote persistido operacional, repository, API e UI.
+
+### Deduplicacao
+
+- Dominio: Feito.
+- Schema/migration: Pendente.
+- Seed: Pendente.
+- Repository: Pendente.
+- API: Pendente.
+- UI: Pendente.
+- Testes unitarios: Parcial.
+- Testes de integracao: Pendente.
+- Documentacao: Parcial.
+- Nota: existem regras deterministicas no dominio, mas ainda nao ha fluxo persistido de revisao.
+
+### Conciliacao
+
+- Dominio: Feito.
+- Schema/migration: Parcial.
+- Seed: Pendente.
+- Repository: Pendente.
+- API: Pendente.
+- UI: Parcial.
+- Testes unitarios: Parcial.
+- Testes de integracao: Pendente.
+- Documentacao: Parcial.
+- Nota: a UI tem indicadores de status no extrato, mas nao executa conciliacao operacional.
+
+### Regras automaticas
+
+- Dominio: Feito.
+- Schema/migration: Pendente.
+- Seed: Pendente.
+- Repository: Pendente.
+- API: Pendente.
+- UI: Pendente.
+- Testes unitarios: Parcial.
+- Testes de integracao: Pendente.
+- Documentacao: Parcial.
+- Nota: existem regras aplicaveis no dominio, mas ainda nao ha cadastro, persistencia nem fila operacional.
+
+### IA / sugestoes revisaveis
+
+- Dominio: Feito.
+- Schema/migration: Parcial.
+- Seed: Pendente.
+- Repository: Pendente.
+- API: Pendente.
+- UI: Pendente.
+- Testes unitarios: Parcial.
+- Testes de integracao: Pendente.
+- Documentacao: Parcial.
+- Nota: `AiSuggestion` existe no schema e ha fila de revisao no dominio, mas faltam repository, API e UI.
 
 ## Matriz de operacoes visiveis na UI
 
-| Tela / fluxo | Listar | Detalhe | Criar | Editar | Arquivar/inativar | Restaurar/reativar | Cancelar/estornar | Excluir | Acoes especificas visiveis | Lacuna diante da API |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Contas (`/contas`) | Sim, lista em cards/linhas | Nao | Sim, formulario "Nova conta" | Nao | Nao | Nao aplicavel | Nao aplicavel | Nao | Nao | API ja tem detalhe, `PATCH` e `archive`; UI nao mostra botoes, links ou menu para essas acoes. |
-| Categorias (`/categorias`) | Sim, lista em cards/linhas | Nao | Sim, formulario "Nova categoria" | Nao | Nao | Nao | Nao aplicavel | Nao | Nao | API ja tem detalhe, `PATCH`, `archive` e `restore`; UI nao expõe essas acoes. |
-| Extrato da conta (`/lancamentos`) | Sim, agrupado por data | Nao | Sim, formulario "Novo lancamento" / "Adicionar ao extrato" | Nao | Nao aplicavel | Nao aplicavel | Nao | Nao | Chips de status visiveis, mas sem comportamento de filtro confirmado | API ja tem detalhe, `PATCH` e `void`; linhas do extrato nao expõem abrir detalhe, editar ou cancelar/estornar. |
-| Cartoes (`/cartoes`) | Sim, lista em cards/linhas | Nao | Sim, formulario "Novo cartao" | Nao | Nao | Nao aplicavel | Nao aplicavel | Nao | Nao | API ja tem detalhe, `PATCH`, `archive`, `block`, compras, faturas e pagamento de fatura; UI nao expõe manutencao nem faturas. |
-| Orcamentos (`/orcamentos`) | Sim, lista em cards/linhas | Nao | Sim, formulario "Novo orcamento" | Nao | Nao | Nao aplicavel | Nao aplicavel | Nao | Nao | API ja tem detalhe, `PATCH`, `archive` e `usage`; UI nao expõe edicao, arquivamento ou consulta de uso. |
-| Contas a pagar/receber | Nao ha rota web | Nao | Nao | Nao | Nao aplicavel | Nao aplicavel | Nao | Nao | Nao | API ja tem listar, criar, detalhe, editar, concluir e cancelar; falta UI completa (#185). |
-| Recorrencias / parcelas | Nao ha rota web | Nao | Nao | Nao | Nao aplicavel | Nao | Nao | Nao | Nao | API de recorrencias ja existe; falta visibilidade operacional na web (#184). |
-| Inbox, relatorios e configuracoes | Placeholder | Nao | Nao | Nao | Nao | Nao | Nao | Nao | Nao | Rotas existem na navegacao, mas renderizam estado de preparacao. |
+### Contas (`/contas`)
+
+- Listar: Sim, em cards/linhas.
+- Visualizar detalhe: Nao.
+- Criar: Sim, formulario "Nova conta".
+- Editar: Nao.
+- Arquivar/inativar: Nao.
+- Restaurar/reativar: Nao aplicavel.
+- Cancelar/estornar: Nao aplicavel.
+- Excluir: Nao.
+- Acoes especificas: Nao.
+- Lacuna diante da API: API ja tem detalhe, `PATCH` e `archive`; UI nao mostra botoes, links ou menu para essas acoes.
+
+### Categorias (`/categorias`)
+
+- Listar: Sim, em cards/linhas.
+- Visualizar detalhe: Nao.
+- Criar: Sim, formulario "Nova categoria".
+- Editar: Nao.
+- Arquivar/inativar: Nao.
+- Restaurar/reativar: Nao.
+- Cancelar/estornar: Nao aplicavel.
+- Excluir: Nao.
+- Acoes especificas: Nao.
+- Lacuna diante da API: API ja tem detalhe, `PATCH`, `archive` e `restore`; UI nao expõe essas acoes.
+
+### Extrato da conta (`/lancamentos`)
+
+- Listar: Sim, agrupado por data.
+- Visualizar detalhe: Nao.
+- Criar: Sim, formulario "Novo lancamento" / "Adicionar ao extrato".
+- Editar: Nao.
+- Arquivar/inativar: Nao aplicavel.
+- Restaurar/reativar: Nao aplicavel.
+- Cancelar/estornar: Nao.
+- Excluir: Nao.
+- Acoes especificas: chips de status visiveis, mas sem comportamento de filtro confirmado.
+- Lacuna diante da API: API ja tem detalhe, `PATCH` e `void`; linhas do extrato nao expõem abrir detalhe, editar ou cancelar/estornar.
+
+### Cartoes (`/cartoes`)
+
+- Listar: Sim, em cards/linhas.
+- Visualizar detalhe: Nao.
+- Criar: Sim, formulario "Novo cartao".
+- Editar: Nao.
+- Arquivar/inativar: Nao.
+- Restaurar/reativar: Nao aplicavel.
+- Cancelar/estornar: Nao aplicavel.
+- Excluir: Nao.
+- Acoes especificas: Nao.
+- Lacuna diante da API: API ja tem detalhe, `PATCH`, `archive`, `block`, compras, faturas e pagamento de fatura; UI nao expõe manutencao nem faturas.
+
+### Orcamentos (`/orcamentos`)
+
+- Listar: Sim, em cards/linhas.
+- Visualizar detalhe: Nao.
+- Criar: Sim, formulario "Novo orcamento".
+- Editar: Nao.
+- Arquivar/inativar: Nao.
+- Restaurar/reativar: Nao aplicavel.
+- Cancelar/estornar: Nao aplicavel.
+- Excluir: Nao.
+- Acoes especificas: Nao.
+- Lacuna diante da API: API ja tem detalhe, `PATCH`, `archive` e `usage`; UI nao expõe edicao, arquivamento ou consulta de uso.
+
+### Contas a pagar/receber
+
+- Listar: Nao ha rota web.
+- Visualizar detalhe: Nao.
+- Criar: Nao.
+- Editar: Nao.
+- Arquivar/inativar: Nao aplicavel.
+- Restaurar/reativar: Nao aplicavel.
+- Cancelar/estornar: Nao.
+- Excluir: Nao.
+- Acoes especificas: Nao.
+- Lacuna diante da API: API ja tem listar, criar, detalhe, editar, concluir e cancelar; falta UI completa (#185).
+
+### Recorrencias / parcelas
+
+- Listar: Nao ha rota web.
+- Visualizar detalhe: Nao.
+- Criar: Nao.
+- Editar: Nao.
+- Arquivar/inativar: Nao aplicavel.
+- Restaurar/reativar: Nao.
+- Cancelar/estornar: Nao.
+- Excluir: Nao.
+- Acoes especificas: Nao.
+- Lacuna diante da API: API de recorrencias ja existe; falta visibilidade operacional na web (#184).
+
+### Inbox, relatorios e configuracoes
+
+- Listar: placeholder.
+- Visualizar detalhe: Nao.
+- Criar: Nao.
+- Editar: Nao.
+- Arquivar/inativar: Nao.
+- Restaurar/reativar: Nao.
+- Cancelar/estornar: Nao.
+- Excluir: Nao.
+- Acoes especificas: Nao.
+- Lacuna diante da API: rotas existem na navegacao, mas renderizam estado de preparacao.
 
 ## Comparacao API x UI por recurso principal
 
