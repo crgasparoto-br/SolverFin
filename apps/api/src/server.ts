@@ -2,6 +2,7 @@ import "./load-env.js";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
@@ -45,6 +46,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       headers,
       body,
     };
+
+    const importBatchesResult = await handleImportBatchesApiRequest(apiRequest);
+
+    if (importBatchesResult) {
+      writeResponse(response, importBatchesResult);
+
+      return;
+    }
 
     const payablesReceivablesResult = await handlePayablesReceivablesApiRequest(apiRequest);
 
