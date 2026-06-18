@@ -27,6 +27,32 @@ Este documento define o fluxo seguro inicial para variaveis de ambiente e secret
 - `POSTGRES_PORT`: obrigatoria. Exemplo seguro: `5432`. Porta publicada na maquina local.
 - `DATABASE_URL`: obrigatoria. Exemplo seguro: `postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public`. String de conexao local para Prisma/API quando existirem.
 
+## Autenticacao produtiva
+
+A ADR `docs/adr/0004-autenticacao-produtiva.md` define que producao deve usar
+provider gerenciado compativel com OIDC/OAuth2, com credenciais delegadas e
+sessao propria persistente no SolverFin.
+
+A issue de implementacao deve adicionar variaveis especificas do provider e da
+sessao produtiva. Nomes esperados, ainda nao obrigatorios no MVP local:
+
+- `AUTH_PROVIDER_ISSUER_URL`: URL do issuer confiavel.
+- `AUTH_PROVIDER_CLIENT_ID`: identificador publico da aplicacao no provider.
+- `AUTH_PROVIDER_CLIENT_SECRET`: segredo do cliente quando o fluxo escolhido
+  exigir segredo no backend.
+- `AUTH_PROVIDER_JWKS_URL`: endpoint de chaves publicas quando nao derivado do
+  issuer.
+- `AUTH_PROVIDER_REDIRECT_URI`: callback autorizado para o ambiente.
+- `AUTH_SESSION_SECRET`: segredo usado para assinatura/derivacao operacional de
+  sessao, quando aplicavel.
+- `AUTH_SESSION_IDLE_TIMEOUT_MINUTES`: timeout por inatividade.
+- `AUTH_SESSION_ABSOLUTE_TIMEOUT_MINUTES`: timeout absoluto.
+
+Essas variaveis devem usar placeholders ficticios em exemplos versionados e
+secrets reais apenas nos ambientes que precisam deles. O processo produtivo deve
+falhar cedo se variaveis obrigatorias do provider estiverem ausentes ou
+incoerentes.
+
 ## Setup local
 
 Crie seu ambiente local a partir do exemplo:
