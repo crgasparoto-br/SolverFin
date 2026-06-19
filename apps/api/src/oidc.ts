@@ -1,4 +1,4 @@
-import { createPublicKey, createVerify, timingSafeEqual } from "node:crypto";
+import { createPublicKey, createVerify, timingSafeEqual, type JsonWebKey } from "node:crypto";
 
 import { AuthError } from "./auth.js";
 
