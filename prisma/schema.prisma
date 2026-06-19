@@ -266,6 +266,7 @@ model Account {
   currency            String       @default("BRL") @db.Char(3)
   openingBalanceMinor Int          @default(0)
   maskedIdentifier    String?      @db.VarChar(80)
+  institutionKey      String?      @db.VarChar(80)
   createdByUserId     String?      @db.Uuid
   updatedByUserId     String?      @db.Uuid
   createdAt           DateTime     @default(now())
@@ -281,6 +282,7 @@ model Account {
   @@unique([id, organizationId, financialProfileId])
   @@index([organizationId, financialProfileId, status])
   @@index([organizationId, financialProfileId, kind])
+  @@index([organizationId, financialProfileId, institutionKey])
 }
 
 model Card {
@@ -294,6 +296,8 @@ model Card {
   dueDay             Int
   creditLimitMinor   Int?
   maskedIdentifier   String?    @db.VarChar(80)
+  institutionKey     String?    @db.VarChar(80)
+  brandKey           String?    @db.VarChar(80)
   createdByUserId    String?    @db.Uuid
   updatedByUserId    String?    @db.Uuid
   createdAt          DateTime   @default(now())
@@ -307,6 +311,8 @@ model Card {
 
   @@unique([id, organizationId, financialProfileId])
   @@index([organizationId, financialProfileId, status])
+  @@index([organizationId, financialProfileId, institutionKey])
+  @@index([organizationId, financialProfileId, brandKey])
 }
 
 model Category {
@@ -369,7 +375,7 @@ model Transaction {
   category                 Category?          @relation(fields: [categoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   card                     Card?              @relation("TransactionCard", fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   invoice                  Invoice?           @relation("InvoiceTransactions", fields: [invoiceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
-  recurrence               Recurrence?        @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  recurrence               Recurrence?        @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId], onDelete: Restrict)
   installment              Installment?       @relation(fields: [installmentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   importBatch              ImportBatch?       @relation(fields: [importBatchId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   aiSuggestion             AiSuggestion?      @relation(fields: [aiSuggestionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
