@@ -19,6 +19,7 @@ export const implementedRoutes = new Set([
   "/lancamentos",
   "/cartoes",
   "/orcamentos",
+  "/configuracoes",
 ]);
 
 export function resolveRoute(
