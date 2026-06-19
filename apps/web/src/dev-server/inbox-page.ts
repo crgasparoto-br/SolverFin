@@ -1,4 +1,4 @@
-import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
+import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
 import { privateRoutes } from "./routes.js";
