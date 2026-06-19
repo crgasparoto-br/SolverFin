@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
+import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { handleApiRequest } from "./dev-server/api.js";
 import { renderCardsPage } from "./dev-server/cards-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
@@ -13,6 +14,7 @@ import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
 
+export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 export {
   renderAccountsPage,
   renderBudgetsPage,
@@ -73,6 +75,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (route.kind === "login") {
     sendHtml(response, 200, renderLoginPage(url.searchParams.get("erro") ?? undefined));
+    return;
+  }
+
+  if (url.pathname === "/contas-cartoes" && token) {
+    sendHtml(response, 200, await renderAccountsCardsPage(token));
     return;
   }
 
