@@ -4,7 +4,7 @@
 
 O backend possui contrato MVP para contas a pagar e a receber com persistencia PostgreSQL, isolamento por organizacao/perfil financeiro e auditoria de mudancas financeiras relevantes.
 
-A interface web completa ainda nao esta implementada na `main`. A rota `/pagar-receber` aparece na navegacao autenticada e nas rotas conhecidas do servidor web, mas `apps/web/src/dev-server/pages.ts` ainda nao despacha essa rota para uma tela propria; no estado atual ela renderiza o estado de preparacao do MVP.
+A interface web inicial esta disponivel na rota `/pagar-receber`. Ela e despachada diretamente por `apps/web/src/dev-server.ts`, consome os endpoints abaixo e permite listar, criar, editar, concluir e cancelar contas a pagar/receber sem expor exclusao fisica, archive ou restore.
 
 ## Modelo
 
@@ -141,17 +141,7 @@ Cancelamento e a exclusao logica do MVP para este dominio. Nao ha exclusao fisic
 
 ## Web
 
-No estado atual da `main`, a web ainda nao oferece manutencao operacional para contas a pagar/receber.
-
-Estado verificado:
-
-- `/pagar-receber` existe na navegacao autenticada;
-- `/pagar-receber` esta listado em `implementedRoutes`;
-- a renderizacao de paginas privadas ainda nao chama uma pagina propria para `/pagar-receber`;
-- a rota exibe o estado generico de preparacao do MVP;
-- nenhuma lista, formulario ou acao de concluir/cancelar esta disponivel na web atual.
-
-A tela web pendente deve consumir os endpoints acima para oferecer:
+A rota `/pagar-receber` oferece:
 
 - resumo de pendentes, a pagar, a receber e concluidas;
 - listagem por status `pending`, `settled` e `cancelled`;
@@ -161,7 +151,7 @@ A tela web pendente deve consumir os endpoints acima para oferecer:
 - cancelamento com confirmacao simples;
 - mensagens de estado vazio, sucesso e erro sem detalhes tecnicos.
 
-Itens concluidos e cancelados devem permanecer em modo consulta para preservar o contrato atual. A UI nao deve mostrar archive, restore nem exclusao fisica enquanto essas operacoes nao existirem neste contrato.
+Itens concluidos e cancelados ficam em modo consulta para preservar o contrato atual. A UI nao mostra archive, restore nem exclusao fisica.
 
 ## Regras de tenant e auditoria
 
