@@ -17,6 +17,7 @@ export * from "./tenant-authorization.js";
 export * from "./privacy-consent.js";
 export * from "./soft-delete.js";
 export * from "./accountant-export.js";
+export * from "./visual-identities.js";
 
 export type EntityId = string;
 export type ISODate = string;
@@ -139,6 +140,7 @@ export interface Account extends Traceable, TenantScoped {
   currency: string;
   openingBalanceMinor: number;
   maskedIdentifier?: string;
+  institutionKey?: FinancialInstitutionKey;
 }
 
 export interface Card extends Traceable, TenantScoped {
@@ -148,6 +150,8 @@ export interface Card extends Traceable, TenantScoped {
   dueDay: number;
   creditLimitMinor?: number;
   maskedIdentifier?: string;
+  institutionKey?: FinancialInstitutionKey;
+  brandKey?: CardBrandKey;
   paymentAccountId?: EntityId;
 }
 
