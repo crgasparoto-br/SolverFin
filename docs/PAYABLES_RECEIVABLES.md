@@ -4,7 +4,7 @@
 
 O backend possui contrato MVP para contas a pagar e a receber com persistencia PostgreSQL, isolamento por organizacao/perfil financeiro e auditoria de mudancas financeiras relevantes.
 
-A interface web completa fica fora deste incremento. A tela futura deve consumir os endpoints abaixo e expor acoes equivalentes para listar, criar, editar, concluir e cancelar.
+A interface web inicial esta disponivel na rota `/pagar-receber`. Ela consome os endpoints abaixo para listar, criar, editar, concluir e cancelar contas a pagar/receber sem expor exclusao fisica, archive ou restore.
 
 ## Modelo
 
@@ -139,13 +139,23 @@ POST /api/payables-receivables/:payableReceivableId/cancel
 
 Cancelamento e a exclusao logica do MVP para este dominio. Nao ha exclusao fisica, arquivamento separado ou restauracao/reativacao neste contrato inicial.
 
+## Web
+
+A rota `/pagar-receber` oferece:
+
+- resumo de pendentes, a pagar, a receber e concluidas;
+- listagem por status `pending`, `settled` e `cancelled`;
+- cadastro de conta a pagar ou receber;
+- edicao apenas de itens pendentes;
+- conclusao com confirmacao simples, gerando ou associando lancamento conforme o backend;
+- cancelamento com confirmacao simples;
+- mensagens de estado vazio, sucesso e erro sem detalhes tecnicos.
+
+Itens concluidos e cancelados ficam em modo consulta para preservar o contrato atual. A UI nao mostra archive, restore nem exclusao fisica.
+
 ## Regras de tenant e auditoria
 
 - Toda consulta filtra por `organizationId` e `financialProfileId`.
 - Tentativas de acesso cruzado retornam erro controlado.
 - Criacao, edicao, conclusao e cancelamento registram auditoria com mudancas redigidas.
 - Dados financeiros nao devem aparecer completos em logs, fixtures ou mensagens de erro.
-
-## Pendencia de frontend
-
-A tela de cadastro/manutencao deve ser implementada em issue propria depois deste contrato backend, expondo acoes visiveis para listar, criar, editar, concluir e cancelar contas a pagar/receber.
