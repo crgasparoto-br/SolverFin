@@ -284,6 +284,7 @@ async function createAccountHandler(
     ...(body.maskedIdentifier !== undefined
       ? { maskedIdentifier: String(body.maskedIdentifier) }
       : {}),
+    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
   });
 
   return json(201, { account });
@@ -316,6 +317,7 @@ async function updateAccountHandler(
     ...(body.maskedIdentifier !== undefined
       ? { maskedIdentifier: String(body.maskedIdentifier) }
       : {}),
+    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
   });
 
   return json(200, { account });
@@ -656,6 +658,8 @@ async function createCardHandler(
     ...(body.maskedIdentifier !== undefined
       ? { maskedIdentifier: String(body.maskedIdentifier) }
       : {}),
+    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
+    ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
     ...(body.paymentAccountId !== undefined
       ? { paymentAccountId: String(body.paymentAccountId) }
       : {}),
@@ -689,6 +693,8 @@ async function updateCardHandler(
     ...(body.maskedIdentifier !== undefined
       ? { maskedIdentifier: String(body.maskedIdentifier) }
       : {}),
+    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
+    ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
     ...(body.paymentAccountId !== undefined
       ? { paymentAccountId: String(body.paymentAccountId) }
       : {}),
