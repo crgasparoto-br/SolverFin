@@ -5,7 +5,8 @@ export const privateRoutes = new Map<string, string>([
   ["/lancamentos", "Extrato da conta"],
   ["/recorrencias", "Recorrências"],
   ["/pagar-receber", "Pagar e receber"],
-  ["/contas", "Contas"],
+  ["/contas-cartoes", "Contas e Cartões"],
+  ["/contas", "Contas e Cartões"],
   ["/categorias", "Categorias"],
   ["/cartoes", "Cartões"],
   ["/orcamentos", "Orçamentos"],
@@ -43,6 +44,12 @@ export function resolveRoute(
     return hasSession
       ? { statusCode: 302, kind: "dashboard", location: "/dashboard" }
       : { statusCode: 200, kind: "login" };
+  }
+
+  if (pathname === "/contas-cartoes") {
+    return hasSession
+      ? { statusCode: 302, kind: "placeholder", location: "/contas" }
+      : { statusCode: 302, kind: "login", location: "/login" };
   }
 
   if (privateRoutes.has(pathname)) {

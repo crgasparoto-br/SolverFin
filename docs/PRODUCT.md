@@ -42,6 +42,12 @@ Precisa de uma visao simples de fluxo financeiro, contas, recebiveis, categorias
 
 O usuario cria contas, cartoes, categorias, contexto financeiro e preferencias basicas para separar vida pessoal, familia, MEI ou negocio.
 
+A area **Contas e Cartoes** e o cadastro mestre de instrumentos financeiros. Ela concentra contas bancarias, dinheiro, aplicacoes, contas de pagamento e cartoes usados nos lancamentos.
+
+A area **Cartoes** fica reservada para a rotina operacional: compras, faturas, fechamento e pagamento de cartao. Cadastro de novos cartoes nao deve ser a acao principal dessa area.
+
+No MVP local, `/contas-cartoes` e a rota final planejada para o cadastro mestre. Enquanto a tela completa da issue #212 nao substitui a tela atual, essa rota redireciona para `/contas`, preservando compatibilidade com a navegacao existente.
+
 ### Registrar e revisar movimentacoes
 
 O usuario registra receitas, despesas e transferencias manualmente ou por importacao. Sugestoes automaticas ficam pendentes de revisao quando houver incerteza.
@@ -71,11 +77,11 @@ O usuario recebe sugestoes de extracao, classificacao, conciliacao e insights, s
 
 O MVP deve permitir:
 
-- cadastro e manutencao de contas financeiras;
+- cadastro e manutencao de contas financeiras e cartoes em **Contas e Cartoes**;
 - categorias e subcategorias;
 - receitas, despesas e transferencias;
 - recorrencias e parcelamentos;
-- cartoes de credito e faturas;
+- rotina operacional de cartoes de credito e faturas em **Cartoes**;
 - contas a pagar e a receber;
 - orcamentos, metas e alertas basicos;
 - importacao inicial por CSV/OFX;

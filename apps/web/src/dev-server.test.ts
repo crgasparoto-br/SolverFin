@@ -6,6 +6,7 @@ import { privateRoutes } from "./dev-server/routes.js";
 loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
+accountsCardsRouteKeepsLegacyAccountsPageCompatible();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
 rootRouteRedirectsBasedOnSession();
@@ -39,10 +40,24 @@ function privateRouteAllowsSessionAndIdentifiesDashboardRoute(): void {
   assert.equal(authenticatedRoute.kind, "placeholder");
 }
 
+function accountsCardsRouteKeepsLegacyAccountsPageCompatible(): void {
+  const anonymousRoute = resolveRoute("/contas-cartoes", false);
+
+  assert.equal(anonymousRoute.statusCode, 302);
+  assert.equal(anonymousRoute.location, "/login");
+
+  const authenticatedRoute = resolveRoute("/contas-cartoes", true);
+
+  assert.equal(authenticatedRoute.statusCode, 302);
+  assert.equal(authenticatedRoute.location, "/contas");
+}
+
 function sidebarMenuUsesPtBrLabels(): void {
   assert.equal(privateRoutes.get("/lancamentos"), "Extrato da conta");
   assert.equal(privateRoutes.get("/recorrencias"), "Recorrências");
   assert.equal(privateRoutes.get("/pagar-receber"), "Pagar e receber");
+  assert.equal(privateRoutes.get("/contas-cartoes"), "Contas e Cartões");
+  assert.equal(privateRoutes.get("/contas"), "Contas e Cartões");
   assert.equal(privateRoutes.get("/cartoes"), "Cartões");
   assert.equal(privateRoutes.get("/orcamentos"), "Orçamentos");
   assert.equal(privateRoutes.get("/relatorios"), "Relatórios");
