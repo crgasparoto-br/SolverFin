@@ -31,10 +31,10 @@ organizacao e um perfil financeiro pessoal padrao em uma transacao. A rota
 `POST /api/session` primeiro tenta o usuario demo em memoria e, quando as
 credenciais nao batem, consulta o usuario persistido no banco pelo email.
 
-Essa abordagem existe para desenvolvimento local e validacao do MVP. Ela nao e o
-modelo produtivo aceito. Em producao, o SolverFin nao deve armazenar senha nem
-hash de senha produtivo; deve mapear um usuario local ao `subject` externo do
-provider e criar sessao propria da aplicacao apos validar a identidade externa.
+A rota produtiva `POST /api/session/oidc` recebe a resposta validada do fluxo
+OIDC/OAuth2 do cliente, confere `state`, valida o `idToken` contra JWKS do
+provider e troca a identidade externa por uma sessao local do SolverFin. Esse
+fluxo nao recebe, armazena nem verifica senha produtiva.
 
 ## Fronteira da autenticacao demo
 
@@ -49,24 +49,69 @@ outro ambiente, como `production`, `staging` ou `preview`, o processo falha cedo
 a menos que `AUTH_ALLOW_DEMO=true` tenha sido configurado de forma deliberada
 para uma demonstracao nao produtiva e sem dados reais.
 
+Em ambientes nao locais, a aplicacao tambem pode carregar quando a autenticacao
+produtiva OIDC estiver configurada com `OIDC_ISSUER_URL`, `OIDC_AUDIENCE` e
+`OIDC_JWKS_URI`.
+
 `AUTH_ALLOW_DEMO=true` nao torna essa camada adequada para producao. Ela apenas
 remove o bloqueio operacional para um ambiente controlado e temporario.
 
-## Contrato produtivo aceito
+## Contrato produtivo implementado
 
-A implementacao produtiva deve seguir estes principios:
+A implementacao produtiva atual segue estes principios:
 
 - credenciais de usuarios reais ficam delegadas ao provider gerenciado;
-- o SolverFin valida tokens/assertions do provider antes de criar sessao local;
-- o usuario local e vinculado ao identificador externo do provider;
-- organizacao e perfil financeiro continuam sendo resolvidos no banco do
-  SolverFin;
-- sessoes da aplicacao devem ser persistentes, revogaveis e auditaveis;
-- tokens de sessao devem ser opacos e armazenados como hash no banco;
-- logout deve revogar a sessao ativa;
-- eventos de seguranca devem ser auditados sem registrar senha, token bruto ou
-  resposta sensivel do provider;
-- erros de autenticacao devem permanecer genericos e seguros.
+- o SolverFin valida issuer, audience, assinatura RS256 via JWKS, expiracao,
+  `nbf`, `iat`, `subject` e `state` antes de criar sessao local;
+- o usuario local e vinculado ao par `externalAuthProvider` +
+  `externalAuthSubject`;
+- o primeiro acesso cria uma organizacao e um perfil financeiro pessoal quando o
+  usuario ainda nao tem perfil ativo;
+- usuarios desabilitados sao rejeitados com erro controlado;
+- respostas invalidas do provider usam erro generico seguro;
+- usuarios produtivos podem ter `passwordHash` nulo, porque o SolverFin nao
+  armazena senha nem hash de senha produtivo.
+
+A sessao criada por esse fluxo ainda usa o armazenamento de sessao atual. A
+persistencia, revogacao auditavel e timeout por inatividade pertencem a issue
+separada de sessoes persistentes derivada da ADR 0004.
+
+## Endpoint produtivo
+
+```http
+POST /api/session/oidc
+Content-Type: application/json
+```
+
+```json
+{
+  "idToken": "<jwt-oidc>",
+  "state": "<state-retornado-pelo-provider>",
+  "expectedState": "<state-gerado-antes-do-redirecionamento>"
+}
+```
+
+Resposta de sucesso:
+
+```json
+{
+  "user": {
+    "id": "...",
+    "email": "pessoa@example.invalid",
+    "displayName": "Pessoa"
+  },
+  "session": {
+    "token": "sf_...",
+    "expiresAt": "2026-06-18T13:00:00.000Z"
+  }
+}
+```
+
+O cliente deve enviar o token de sessao local nas rotas privadas:
+
+```http
+Authorization: Bearer <session-token>
+```
 
 ## Variaveis locais
 
@@ -75,6 +120,9 @@ A implementacao produtiva deve seguir estes principios:
 ```env
 AUTH_SESSION_TTL_MINUTES=60
 AUTH_ALLOW_DEMO=false
+OIDC_ISSUER_URL=https://identity.example.invalid/solverfin
+OIDC_AUDIENCE=solverfin-api
+OIDC_JWKS_URI=https://identity.example.invalid/solverfin/.well-known/jwks.json
 ```
 
 `AUTH_SESSION_TTL_MINUTES` e opcional. Quando ausente, o contrato de ambiente usa
@@ -84,9 +132,9 @@ AUTH_ALLOW_DEMO=false
 padrao. Use `true` apenas quando uma demonstracao nao produtiva precisar carregar
 a autenticacao demo fora de `development`, `local` ou `test`.
 
-Variaveis produtivas do provider, como issuer, client id, client secret, JWKS,
-redirect URI e segredo de sessao, devem ser adicionadas pela issue de
-implementacao e configuradas apenas nos ambientes que precisarem delas.
+As variaveis `OIDC_ISSUER_URL`, `OIDC_AUDIENCE` e `OIDC_JWKS_URI` configuram o
+provider gerenciado. O arquivo `.env.example` usa hosts `example.invalid`; valores
+reais devem existir somente nos ambientes protegidos correspondentes.
 
 ## Cadastro
 
@@ -144,7 +192,7 @@ fluxo escolhido.
 Rotas privadas devem chamar `requireAuthenticatedRequest` com o header
 `Authorization`.
 
-Formato aceito no MVP local:
+Formato aceito no MVP local e no fluxo OIDC atual:
 
 ```http
 Authorization: Bearer <session-id>
@@ -176,6 +224,8 @@ renovacao controlada e revogacao explicita.
 - O hash SHA-256 simples permanece adequado apenas ao MVP local.
 - As sessoes atuais continuam em memoria; reiniciar a API encerra sessoes
   abertas, mas o usuario cadastrado permanece no banco e pode entrar novamente.
+- A sessao persistente, revogavel e auditavel esta planejada em issue separada
+  derivada da ADR 0004.
 - MFA, recuperacao de senha, confirmacao de email e protecoes contra abuso ficam
   sob responsabilidade do provider produtivo definido pela ADR 0004.
 - Auditoria produtiva de eventos de seguranca ainda precisa ser implementada.
@@ -193,6 +243,9 @@ O pacote `@solverfin/api` cobre:
 - usuario desabilitado;
 - sessao expirada;
 - parsing de header `Bearer`;
-- bloqueio da autenticacao demo fora de ambiente local/teste sem opt-in explicito.
+- bloqueio da autenticacao demo fora de ambiente local/teste sem opt-in explicito;
+- configuracao OIDC produtiva para ambientes nao locais;
+- validacao de JWT OIDC assinado, audience invalida, token expirado e `state`
+  invalido.
 
 Todos os testes usam usuarios ficticios e nao dependem de segredos reais.
