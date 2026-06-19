@@ -28,6 +28,7 @@ interface AccountRow {
   currency: string;
   openingBalanceMinor: number;
   maskedIdentifier: string | null;
+  institutionKey: string | null;
   createdAt: Date;
   updatedAt: Date;
   createdByUserId: string | null;
@@ -35,7 +36,7 @@ interface AccountRow {
 }
 
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "name", "kind", "status",
-  "currency", "openingBalanceMinor", "maskedIdentifier", "createdAt", "updatedAt",
+  "currency", "openingBalanceMinor", "maskedIdentifier", "institutionKey", "createdAt", "updatedAt",
   "createdByUserId", "updatedByUserId"`;
 
 export async function listAccountsForContext(
@@ -75,8 +76,8 @@ export async function createAccountForContext(
   await query(
     `insert into "Account"
       ("id", "organizationId", "financialProfileId", "name", "kind", "status", "currency",
-       "openingBalanceMinor", "maskedIdentifier", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+       "openingBalanceMinor", "maskedIdentifier", "institutionKey", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
     [
       account.id,
       account.organizationId,
@@ -87,6 +88,7 @@ export async function createAccountForContext(
       account.currency,
       account.openingBalanceMinor,
       account.maskedIdentifier ?? null,
+      account.institutionKey ?? null,
       account.createdAt,
       account.updatedAt,
       account.createdByUserId ?? null,
@@ -133,7 +135,7 @@ async function persistAccountUpdate(account: Account): Promise<void> {
   await query(
     `update "Account" set
       "name" = $2, "kind" = $3, "status" = $4, "currency" = $5, "openingBalanceMinor" = $6,
-      "maskedIdentifier" = $7, "updatedAt" = $8, "updatedByUserId" = $9
+      "maskedIdentifier" = $7, "institutionKey" = $8, "updatedAt" = $9, "updatedByUserId" = $10
      where "id" = $1`,
     [
       account.id,
@@ -143,6 +145,7 @@ async function persistAccountUpdate(account: Account): Promise<void> {
       account.currency,
       account.openingBalanceMinor,
       account.maskedIdentifier ?? null,
+      account.institutionKey ?? null,
       account.updatedAt,
       account.updatedByUserId ?? null,
     ],
@@ -194,6 +197,10 @@ function mapAccountRow(row: AccountRow): Account {
 
   if (row.maskedIdentifier !== null) {
     account.maskedIdentifier = row.maskedIdentifier;
+  }
+
+  if (row.institutionKey !== null) {
+    account.institutionKey = row.institutionKey as Account["institutionKey"];
   }
 
   if (row.createdByUserId !== null) {
