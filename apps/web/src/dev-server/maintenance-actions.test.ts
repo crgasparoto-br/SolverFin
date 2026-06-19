@@ -33,7 +33,7 @@ async function main(): Promise<void> {
   await accountsExposeEditAndArchiveActions();
   await categoriesExposeRestoreAction();
   await transactionsKeepStatementAndExposeMaintenanceActions();
-  await cardsExposeBlockArchiveAndPurchaseActions();
+  await cardsExposeBlockArchivePurchaseAndInvoiceActions();
   await budgetsExposeUsageAndArchiveActions();
 }
 
@@ -62,13 +62,17 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
   assert.match(html, /Cancelar lançamento/);
 }
 
-async function cardsExposeBlockArchiveAndPurchaseActions(): Promise<void> {
+async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void> {
   const html = await renderCardsPage("token");
 
   assert.match(html, /Bloquear cartão/);
   assert.match(html, /Arquivar cartão/);
   assert.match(html, /Registrar compra/);
   assert.match(html, /\/api\/cards\/card-1\/purchases/);
+  assert.match(html, /<h2>Faturas<\/h2>/);
+  assert.match(html, /Abrir detalhe da fatura/);
+  assert.match(html, /data-api-path="\/api\/invoices\/invoice-1\/pay"/);
+  assert.match(html, /Pagar fatura/);
 }
 
 async function budgetsExposeUsageAndArchiveActions(): Promise<void> {
@@ -132,6 +136,22 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
           closingDay: 10,
           dueDay: 20,
           paymentAccountId: "account-1",
+        },
+      ],
+    };
+  }
+
+  if (pathname === "/api/invoices") {
+    return {
+      invoices: [
+        {
+          id: "invoice-1",
+          cardId: "card-1",
+          status: "open",
+          periodStartOn: "2026-06-01",
+          periodEndOn: "2026-06-30",
+          dueOn: "2026-07-10",
+          totalAmountMinor: 45000,
         },
       ],
     };
