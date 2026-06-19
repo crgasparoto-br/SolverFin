@@ -15,11 +15,16 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - [`README.md`](../README.md)
 - [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md)
 - [`docs/PAYABLES_RECEIVABLES.md`](./PAYABLES_RECEIVABLES.md)
+- [`docs/RECURRENCES_INSTALLMENTS_WEB.md`](./RECURRENCES_INSTALLMENTS_WEB.md)
+- [`docs/WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md)
 - [`prisma/schema.prisma`](../prisma/schema.prisma)
 - [`apps/api/src/router.ts`](../apps/api/src/router.ts)
 - [`apps/api/src/payables-receivables-router.ts`](../apps/api/src/payables-receivables-router.ts)
 - [`apps/api/src/api-persistence.integration.test.ts`](../apps/api/src/api-persistence.integration.test.ts)
+- [`apps/web/src/dev-server.ts`](../apps/web/src/dev-server.ts)
 - [`apps/web/src/dev-server/pages.ts`](../apps/web/src/dev-server/pages.ts)
+- [`apps/web/src/dev-server/payables-receivables-page.ts`](../apps/web/src/dev-server/payables-receivables-page.ts)
+- [`apps/web/src/dev-server/recurrences-page.ts`](../apps/web/src/dev-server/recurrences-page.ts)
 - [`apps/web/src/dev-server/routes.ts`](../apps/web/src/dev-server/routes.ts)
 - [`packages/domain/src/index.ts`](../packages/domain/src/index.ts)
 - [`packages/domain/src/imports.ts`](../packages/domain/src/imports.ts)
@@ -30,280 +35,110 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 
 ## Matriz por area
 
-### Contas
-
-- Dominio: Feito.
-- Schema/migration: Feito.
-- Seed: Feito.
-- Repository: Feito.
-- API: Feito.
-- UI: Parcial.
-- Testes unitarios: Parcial.
-- Testes de integracao: Feito.
-- Documentacao: Parcial.
-- Nota: a web lista e cria contas, mas ainda nao expõe detalhe, edicao ou arquivamento.
-
-### Categorias
-
-- Dominio: Feito.
-- Schema/migration: Feito.
-- Seed: Feito.
-- Repository: Feito.
-- API: Feito.
-- UI: Parcial.
-- Testes unitarios: Parcial.
-- Testes de integracao: Feito.
-- Documentacao: Parcial.
-- Nota: a API suporta restauracao, mas a UI ainda mostra principalmente listagem e criacao.
-
-### Lancamentos / Extrato
-
-- Dominio: Feito.
-- Schema/migration: Feito.
-- Seed: Feito.
-- Repository: Feito.
-- API: Feito.
-- UI: Parcial.
-- Testes unitarios: Parcial.
-- Testes de integracao: Feito.
-- Documentacao: Parcial.
-- Nota: a tela atual deve permanecer como **Extrato da conta**, com resumo, agrupamento por data, chips de status e formulario "Adicionar ao extrato".
-
-### Recorrencias
-
-- Dominio: Feito.
-- Schema/migration: Feito.
-- Seed: Parcial.
-- Repository: Feito.
-- API: Feito.
-- UI: Pendente.
-- Testes unitarios: Parcial.
-- Testes de integracao: Parcial.
-- Documentacao: Parcial.
-- Nota: existem rotas para listar, criar, atualizar, pausar, retomar, cancelar e gerar parcelas, mas nao existe rota web implementada.
-
-### Parcelas
-
-- Dominio: Feito.
-- Schema/migration: Feito.
-- Seed: Parcial.
-- Repository: Parcial.
-- API: Parcial.
-- UI: Pendente.
-- Testes unitarios: Parcial.
-- Testes de integracao: Parcial.
-- Documentacao: Parcial.
-- Nota: parcelas aparecem como entidade persistente e como efeito da geracao de recorrencias ou compras parceladas, mas ainda nao ha tela propria nem API direta de manutencao.
-
-### Cartoes / Faturas
-
-- Dominio: Feito.
-- Schema/migration: Feito.
-- Seed: Feito.
-- Repository: Feito.
-- API: Feito.
-- UI: Parcial.
-- Testes unitarios: Parcial.
-- Testes de integracao: Parcial.
-- Documentacao: Parcial.
-- Nota: a web lista e cria cartoes; faturas e acoes como bloquear, registrar compra e pagar fatura ainda nao aparecem na UI.
-
-### Orcamentos
-
-- Dominio: Feito.
-- Schema/migration: Feito.
-- Seed: Feito.
-- Repository: Feito.
-- API: Feito.
-- UI: Parcial.
-- Testes unitarios: Parcial.
-- Testes de integracao: Parcial.
-- Documentacao: Parcial.
-- Nota: a web lista e cria orcamentos; edicao, arquivamento e consulta de uso ainda nao aparecem na UI.
-
-### Contas a pagar/receber
-
-- Dominio: Feito.
-- Schema/migration: Feito.
-- Seed: Parcial.
-- Repository: Feito.
-- API: Feito.
-- UI: Pendente.
-- Testes unitarios: Parcial.
-- Testes de integracao: Feito.
-- Documentacao: Feito.
-- Nota: o backend esta documentado em `docs/PAYABLES_RECEIVABLES.md`; a tela web esta pendente na issue #185.
-
-### Importacao CSV/OFX
-
-- Dominio: Feito.
-- Schema/migration: Parcial.
-- Seed: Pendente.
-- Repository: Pendente.
-- API: Pendente.
-- UI: Pendente.
-- Testes unitarios: Parcial.
-- Testes de integracao: Pendente.
-- Documentacao: Parcial.
-- Nota: o dominio faz preview, hash, sugestoes e problemas; falta lote persistido operacional, repository, API e UI.
-
-### Deduplicacao
-
-- Dominio: Feito.
-- Schema/migration: Pendente.
-- Seed: Pendente.
-- Repository: Pendente.
-- API: Pendente.
-- UI: Pendente.
-- Testes unitarios: Parcial.
-- Testes de integracao: Pendente.
-- Documentacao: Parcial.
-- Nota: existem regras deterministicas no dominio, mas ainda nao ha fluxo persistido de revisao.
-
-### Conciliacao
-
-- Dominio: Feito.
-- Schema/migration: Parcial.
-- Seed: Pendente.
-- Repository: Pendente.
-- API: Pendente.
-- UI: Parcial.
-- Testes unitarios: Parcial.
-- Testes de integracao: Pendente.
-- Documentacao: Parcial.
-- Nota: a UI tem indicadores de status no extrato, mas nao executa conciliacao operacional.
-
-### Regras automaticas
-
-- Dominio: Feito.
-- Schema/migration: Pendente.
-- Seed: Pendente.
-- Repository: Pendente.
-- API: Pendente.
-- UI: Pendente.
-- Testes unitarios: Parcial.
-- Testes de integracao: Pendente.
-- Documentacao: Parcial.
-- Nota: existem regras aplicaveis no dominio, mas ainda nao ha cadastro, persistencia nem fila operacional.
-
-### IA / sugestoes revisaveis
-
-- Dominio: Feito.
-- Schema/migration: Parcial.
-- Seed: Pendente.
-- Repository: Pendente.
-- API: Pendente.
-- UI: Pendente.
-- Testes unitarios: Parcial.
-- Testes de integracao: Pendente.
-- Documentacao: Parcial.
-- Nota: `AiSuggestion` existe no schema e ha fila de revisao no dominio, mas faltam repository, API e UI.
+| Area | Dominio | Schema/migration | Seed | Repository | API | UI | Testes | Documentacao | Nota |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Contas | Feito | Feito | Feito | Feito | Feito | Parcial | Integracao feito; unitarios parcial | Parcial | Web lista, cria, abre detalhe via acao, edita e arquiva; ainda nao ha tela dedicada de detalhe. |
+| Categorias | Feito | Feito | Feito | Feito | Feito | Parcial | Integracao feito; unitarios parcial | Parcial | Web lista, cria, abre detalhe via acao, edita, arquiva e restaura; ainda nao ha tela dedicada de detalhe. |
+| Lancamentos / Extrato | Feito | Feito | Feito | Feito | Feito | Parcial | Integracao feito; unitarios parcial | Parcial | Web preserva Extrato da conta com resumo, agrupamento por data, criacao, detalhe via acao, edicao e cancelamento/estorno. Chips seguem como indicadores. |
+| Recorrencias | Feito | Feito | Parcial | Feito | Feito | Feito | Web parcial; integracao parcial | Feito | `/recorrencias` lista, cria, edita, pausa, retoma, cancela e gera parcelas pelo contrato existente. |
+| Parcelas | Feito | Feito | Parcial | Parcial | Parcial | Parcial | Parcial | Parcial | Parcelas aparecem no fluxo de geracao de recorrencias; ainda nao ha rota dedicada para reler historico nem manutencao direta. |
+| Cartoes / Faturas | Feito | Feito | Feito | Feito | Feito | Parcial | Parcial | Parcial | Web lista/cria/edita cartoes, bloqueia, arquiva e registra compra; listagem e pagamento de faturas ainda nao aparecem na UI. |
+| Orcamentos | Feito | Feito | Feito | Feito | Feito | Parcial | Parcial | Parcial | Web lista, cria, abre detalhe via acao, edita, consulta uso e arquiva; ainda nao ha tela dedicada de detalhe. |
+| Contas a pagar/receber | Feito | Feito | Parcial | Feito | Feito | Feito | Integracao feito; unitarios parcial | Feito | `/pagar-receber` lista, cria, edita pendentes, conclui e cancela conforme contrato MVP. |
+| Importacao CSV/OFX | Feito | Parcial | Pendente | Pendente | Pendente | Pendente | Parcial | Parcial | Dominio faz preview, hash, sugestoes e problemas; falta lote persistido operacional, repository, API e UI. |
+| Deduplicacao | Feito | Pendente | Pendente | Pendente | Pendente | Pendente | Parcial | Parcial | Existem regras deterministicas no dominio, mas ainda nao ha fluxo persistido de revisao. |
+| Conciliacao | Feito | Parcial | Pendente | Pendente | Pendente | Parcial | Parcial | Parcial | A UI tem indicadores de status no extrato, mas nao executa conciliacao operacional. |
+| Regras automaticas | Feito | Pendente | Pendente | Pendente | Pendente | Pendente | Parcial | Parcial | Existem regras aplicaveis no dominio, mas ainda nao ha cadastro, persistencia nem fila operacional. |
+| IA / sugestoes revisaveis | Feito | Parcial | Pendente | Pendente | Pendente | Pendente | Parcial | Parcial | `AiSuggestion` existe no schema e ha fila de revisao no dominio, mas faltam repository, API e UI. |
 
 ## Matriz de operacoes visiveis na UI
 
 ### Contas (`/contas`)
 
 - Listar: Sim, em cards/linhas.
-- Visualizar detalhe: Nao.
+- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
 - Criar: Sim, formulario "Nova conta".
-- Editar: Nao.
-- Arquivar/inativar: Nao.
-- Restaurar/reativar: Nao aplicavel.
-- Cancelar/estornar: Nao aplicavel.
+- Editar: Sim, formulario inline.
+- Arquivar/inativar: Sim, para conta ativa.
+- Restaurar/reativar: Nao aplicavel no contrato atual da UI.
 - Excluir: Nao.
-- Acoes especificas: Nao.
-- Lacuna diante da API: API ja tem detalhe, `PATCH` e `archive`; UI nao mostra botoes, links ou menu para essas acoes.
+- Lacuna restante: tela dedicada de detalhe e restauracao, se o contrato evoluir nessa direcao.
 
 ### Categorias (`/categorias`)
 
 - Listar: Sim, em cards/linhas.
-- Visualizar detalhe: Nao.
+- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
 - Criar: Sim, formulario "Nova categoria".
-- Editar: Nao.
-- Arquivar/inativar: Nao.
-- Restaurar/reativar: Nao.
-- Cancelar/estornar: Nao aplicavel.
+- Editar: Sim, formulario inline.
+- Arquivar/inativar: Sim, para categoria ativa.
+- Restaurar/reativar: Sim, para categoria arquivada.
 - Excluir: Nao.
-- Acoes especificas: Nao.
-- Lacuna diante da API: API ja tem detalhe, `PATCH`, `archive` e `restore`; UI nao expõe essas acoes.
+- Lacuna restante: tela dedicada de detalhe.
 
 ### Extrato da conta (`/lancamentos`)
 
 - Listar: Sim, agrupado por data.
-- Visualizar detalhe: Nao.
+- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
 - Criar: Sim, formulario "Novo lancamento" / "Adicionar ao extrato".
-- Editar: Nao.
-- Arquivar/inativar: Nao aplicavel.
-- Restaurar/reativar: Nao aplicavel.
-- Cancelar/estornar: Nao.
+- Editar: Sim, formulario inline.
+- Cancelar/estornar: Sim, para lancamento nao cancelado.
 - Excluir: Nao.
-- Acoes especificas: chips de status visiveis, mas sem comportamento de filtro confirmado.
-- Lacuna diante da API: API ja tem detalhe, `PATCH` e `void`; linhas do extrato nao expõem abrir detalhe, editar ou cancelar/estornar.
+- Acoes especificas: chips de status visiveis, ainda como indicadores.
+- Lacuna restante: confirmar se chips de status viram filtros interativos em iteracao futura.
+
+### Recorrencias (`/recorrencias`)
+
+- Listar: Sim.
+- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
+- Criar: Sim.
+- Editar: Sim, formulario inline.
+- Pausar: Sim, quando ativa.
+- Retomar: Sim, quando pausada.
+- Cancelar: Sim, quando ainda nao cancelada ou concluida.
+- Gerar parcelas: Sim, com formulario de periodo e limite.
+- Parcelas: Sim, como retorno imediato da geracao, com sequencia, vencimento, valor e status.
+- Lacuna restante: nao ha rota dedicada para reler historico de parcelas ja geradas.
 
 ### Cartoes (`/cartoes`)
 
 - Listar: Sim, em cards/linhas.
-- Visualizar detalhe: Nao.
+- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
 - Criar: Sim, formulario "Novo cartao".
-- Editar: Nao.
-- Arquivar/inativar: Nao.
-- Restaurar/reativar: Nao aplicavel.
-- Cancelar/estornar: Nao aplicavel.
+- Editar: Sim, formulario inline.
+- Arquivar/inativar: Sim, para cartao ativo.
+- Bloquear: Sim, para cartao ativo.
+- Registrar compra: Sim.
+- Faturas: Nao ha listagem/pagamento na UI atual.
 - Excluir: Nao.
-- Acoes especificas: Nao.
-- Lacuna diante da API: API ja tem detalhe, `PATCH`, `archive`, `block`, compras, faturas e pagamento de fatura; UI nao expõe manutencao nem faturas.
+- Lacuna restante: listar faturas e pagar fatura.
 
 ### Orcamentos (`/orcamentos`)
 
 - Listar: Sim, em cards/linhas.
-- Visualizar detalhe: Nao.
+- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
 - Criar: Sim, formulario "Novo orcamento".
-- Editar: Nao.
-- Arquivar/inativar: Nao.
-- Restaurar/reativar: Nao aplicavel.
-- Cancelar/estornar: Nao aplicavel.
+- Editar: Sim, formulario inline.
+- Arquivar/inativar: Sim, para orcamento ativo.
+- Consultar uso: Sim, por acao da API.
 - Excluir: Nao.
-- Acoes especificas: Nao.
-- Lacuna diante da API: API ja tem detalhe, `PATCH`, `archive` e `usage`; UI nao expõe edicao, arquivamento ou consulta de uso.
+- Lacuna restante: tela dedicada de detalhe/uso.
 
-### Contas a pagar/receber
+### Contas a pagar/receber (`/pagar-receber`)
 
-- Listar: Nao ha rota web.
-- Visualizar detalhe: Nao.
-- Criar: Nao.
-- Editar: Nao.
-- Arquivar/inativar: Nao aplicavel.
-- Restaurar/reativar: Nao aplicavel.
-- Cancelar/estornar: Nao.
-- Excluir: Nao.
-- Acoes especificas: Nao.
-- Lacuna diante da API: API ja tem listar, criar, detalhe, editar, concluir e cancelar; falta UI completa (#185).
-
-### Recorrencias / parcelas
-
-- Listar: Nao ha rota web.
-- Visualizar detalhe: Nao.
-- Criar: Nao.
-- Editar: Nao.
-- Arquivar/inativar: Nao aplicavel.
-- Restaurar/reativar: Nao.
-- Cancelar/estornar: Nao.
-- Excluir: Nao.
-- Acoes especificas: Nao.
-- Lacuna diante da API: API de recorrencias ja existe; falta visibilidade operacional na web (#184).
+- Listar: Sim, agrupado por pendentes, concluidas e canceladas.
+- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
+- Criar: Sim.
+- Editar: Sim, apenas pendentes.
+- Concluir pagamento/recebimento: Sim, com confirmacao e geracao/associacao de lancamento conforme backend.
+- Cancelar: Sim, apenas pendentes.
+- Arquivar/restaurar/excluir: Nao aplicavel ao contrato MVP atual.
+- Lacuna restante: detalhes dedicados e eventual evolucao de manutencao direta se o contrato mudar.
 
 ### Inbox, relatorios e configuracoes
 
-- Listar: placeholder.
-- Visualizar detalhe: Nao.
-- Criar: Nao.
-- Editar: Nao.
-- Arquivar/inativar: Nao.
-- Restaurar/reativar: Nao.
-- Cancelar/estornar: Nao.
-- Excluir: Nao.
-- Acoes especificas: Nao.
-- Lacuna diante da API: rotas existem na navegacao, mas renderizam estado de preparacao.
+- Inbox: rota implementada para fluxo inicial de entrada/revisao conforme arquivos dedicados.
+- Configuracoes: rota implementada para estado/configuracao inicial conforme arquivo dedicado.
+- Relatorios: ainda aparece como placeholder.
 
 ## Comparacao API x UI por recurso principal
 
@@ -319,15 +154,11 @@ API disponivel:
 
 UI disponivel:
 
-- lista contas em `/contas`;
-- cria conta via formulario.
+- lista, cria, consulta detalhe via acao, edita e arquiva em `/contas`.
 
 Lacunas:
 
-- abrir detalhe;
-- editar conta;
-- arquivar/inativar conta;
-- indicar acao por linha com botao, link ou menu.
+- tela dedicada de detalhe.
 
 ### Categorias
 
@@ -342,16 +173,11 @@ API disponivel:
 
 UI disponivel:
 
-- lista categorias em `/categorias`;
-- cria categoria via formulario.
+- lista, cria, consulta detalhe via acao, edita, arquiva e restaura em `/categorias`.
 
 Lacunas:
 
-- abrir detalhe;
-- editar categoria;
-- arquivar/inativar categoria;
-- restaurar categoria arquivada;
-- indicar acoes por linha.
+- tela dedicada de detalhe.
 
 ### Lancamentos / Extrato da conta
 
@@ -369,15 +195,35 @@ UI disponivel:
 - resumo lateral do periodo;
 - agrupamento por data;
 - chips de status visiveis;
-- formulario "Adicionar ao extrato".
+- formulario "Adicionar ao extrato";
+- detalhe via acao, edicao e cancelamento/estorno.
 
 Lacunas:
 
-- abrir detalhe da movimentacao;
-- editar movimentacao;
-- cancelar/estornar movimentacao;
-- confirmar se chips de status serao filtros interativos ou apenas indicadores;
-- manter o desenho de extrato ao adicionar as acoes, sem voltar para lista simples.
+- tela dedicada de detalhe;
+- confirmar se chips de status serao filtros interativos ou apenas indicadores.
+
+### Recorrencias e parcelas
+
+API disponivel:
+
+- `GET /api/recurrences`
+- `POST /api/recurrences`
+- `GET /api/recurrences/:recurrenceId`
+- `PATCH /api/recurrences/:recurrenceId`
+- `POST /api/recurrences/:recurrenceId/pause`
+- `POST /api/recurrences/:recurrenceId/resume`
+- `POST /api/recurrences/:recurrenceId/cancel`
+- `POST /api/recurrences/:recurrenceId/generate-installments`
+
+UI disponivel:
+
+- rota `/recorrencias` com listagem, criacao, edicao, pausa, retomada, cancelamento e geracao de parcelas.
+
+Lacunas:
+
+- consulta historica dedicada de parcelas ja geradas;
+- manutencao direta de parcelas.
 
 ### Cartoes e faturas
 
@@ -396,17 +242,13 @@ API disponivel:
 
 UI disponivel:
 
-- lista cartoes em `/cartoes`;
-- cria cartao via formulario.
+- lista, cria, consulta detalhe via acao, edita, bloqueia, arquiva e registra compra em `/cartoes`.
 
 Lacunas:
 
-- editar cartao;
-- arquivar/inativar cartao;
-- bloquear cartao;
-- registrar compra;
 - listar faturas;
-- pagar fatura.
+- pagar fatura;
+- tela dedicada de detalhe.
 
 ### Orcamentos
 
@@ -421,15 +263,11 @@ API disponivel:
 
 UI disponivel:
 
-- lista orcamentos em `/orcamentos`;
-- cria orcamento via formulario.
+- lista, cria, consulta detalhe/uso via acao, edita e arquiva em `/orcamentos`.
 
 Lacunas:
 
-- abrir detalhe;
-- editar orcamento;
-- arquivar/inativar orcamento;
-- consultar uso do orcamento.
+- tela dedicada de detalhe/uso.
 
 ### Contas a pagar/receber
 
@@ -444,32 +282,26 @@ API disponivel:
 
 UI disponivel:
 
-- nenhuma rota implementada no web atual.
+- rota `/pagar-receber` com resumo, listagem por status, criacao, edicao de pendentes, conclusao e cancelamento.
 
 Lacunas:
 
-- listar pendentes, concluidas e canceladas;
-- criar conta a pagar/receber;
-- editar pendentes;
-- concluir pagamento/recebimento;
-- cancelar pendentes;
-- confirmar acoes financeiras relevantes.
+- tela dedicada de detalhe;
+- manutencao direta para estados futuros se o contrato evoluir.
 
 ## Ambiguidades e encaminhamentos
 
 - Exclusao fisica de dados financeiros nao aparece como padrao atual; a arquitetura favorece exclusao logica, arquivamento, inativacao ou cancelamento auditavel. A politica de retencao/mascaramento deve ser consolidada na issue #177.
-- A forma visual das acoes por item, botoes diretos ou menu compacto, fica para implementacao da issue #181.
-- Faturas, recorrencias e parcelas ainda precisam de decisao de UX: tela propria ou subfluxo dentro de cartoes/extrato. Isso esta coberto pelas issues #181 e #184.
+- Faturas ainda precisam de decisao de UX: tela propria ou subfluxo dentro de cartoes.
 - Os chips de status do Extrato da conta existem visualmente, mas ainda precisam ser confirmados como filtros interativos ou indicadores em uma proxima iteracao.
 - Autenticacao produtiva segue dependente da ADR da issue #174.
 - Selecao e gestao operacional de perfis financeiros segue na issue #182.
-- CI com PostgreSQL real segue na issue #179.
 - Importacao, deduplicacao, conciliacao e IA devem avancar em ordem que preserve revisao humana, auditoria e privacidade: #175, #176, #178 e #183.
 
 ## Proximas implementacoes sugeridas
 
-1. #181 para completar a manutencao das telas ja navegaveis sem quebrar o desenho de Extrato da conta.
-2. #185 para expor contas a pagar/receber na web consumindo o contrato backend existente.
-3. #184 para dar visibilidade a recorrencias e parcelas.
-4. #177 antes de ampliar importacao, inbox e IA com dados sensiveis.
-5. #175, #176 e #178 para ligar importacao, deduplicacao/conciliacao e fila revisavel em fluxo operacional.
+1. Expor faturas na UI de cartoes, incluindo listagem e pagamento.
+2. Adicionar consulta historica dedicada de parcelas por recorrencia.
+3. Evoluir telas dedicadas de detalhe para contas, categorias, lancamentos, cartoes, orcamentos e contas a pagar/receber.
+4. Consolidar politica de retencao/mascaramento antes de ampliar importacao, inbox e IA com dados sensiveis.
+5. Ligar importacao, deduplicacao/conciliacao e fila revisavel em fluxo operacional.
