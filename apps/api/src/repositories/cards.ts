@@ -45,6 +45,8 @@ interface CardRow {
   dueDay: number;
   creditLimitMinor: number | null;
   maskedIdentifier: string | null;
+  institutionKey: string | null;
+  brandKey: string | null;
   createdAt: Date;
   updatedAt: Date;
   createdByUserId: string | null;
@@ -69,8 +71,8 @@ interface InvoiceRow {
 }
 
 const CARD_COLUMNS = `"id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status",
-  "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "createdAt", "updatedAt",
-  "createdByUserId", "updatedByUserId"`;
+  "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey",
+  "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 const INVOICE_COLUMNS = `"id", "organizationId", "financialProfileId", "cardId", "paymentTransactionId",
   "status", "periodStartOn", "periodEndOn", "dueOn", "totalAmountMinor", "currency", "paidAt",
@@ -387,12 +389,13 @@ async function persistCardMutation(result: CardMutationResult): Promise<void> {
     await executeQuery(
       `insert into "Card"
         ("id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status", "closingDay",
-         "dueDay", "creditLimitMinor", "maskedIdentifier", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
        on conflict ("id") do update set
          "paymentAccountId" = excluded."paymentAccountId", "name" = excluded."name",
          "status" = excluded."status", "closingDay" = excluded."closingDay", "dueDay" = excluded."dueDay",
          "creditLimitMinor" = excluded."creditLimitMinor", "maskedIdentifier" = excluded."maskedIdentifier",
+         "institutionKey" = excluded."institutionKey", "brandKey" = excluded."brandKey",
          "updatedAt" = excluded."updatedAt", "updatedByUserId" = excluded."updatedByUserId"`,
       [
         result.card.id,
@@ -405,6 +408,8 @@ async function persistCardMutation(result: CardMutationResult): Promise<void> {
         result.card.dueDay,
         result.card.creditLimitMinor ?? null,
         result.card.maskedIdentifier ?? null,
+        result.card.institutionKey ?? null,
+        result.card.brandKey ?? null,
         result.card.createdAt,
         result.card.updatedAt,
         result.card.createdByUserId ?? null,
@@ -506,6 +511,8 @@ function mapCardRow(row: CardRow): Card {
   if (row.paymentAccountId !== null) card.paymentAccountId = row.paymentAccountId;
   if (row.creditLimitMinor !== null) card.creditLimitMinor = row.creditLimitMinor;
   if (row.maskedIdentifier !== null) card.maskedIdentifier = row.maskedIdentifier;
+  if (row.institutionKey !== null) card.institutionKey = row.institutionKey as Card["institutionKey"];
+  if (row.brandKey !== null) card.brandKey = row.brandKey as Card["brandKey"];
   if (row.createdByUserId !== null) card.createdByUserId = row.createdByUserId;
   if (row.updatedByUserId !== null) card.updatedByUserId = row.updatedByUserId;
 

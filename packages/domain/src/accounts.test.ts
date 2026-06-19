@@ -28,8 +28,11 @@ const now = "2026-06-15T10:00:00.000Z";
 
 testCreateAccount();
 testCreateAccountValidation();
+testCreateAccountWithInstitutionKey();
+testRejectsInvalidInstitutionKey();
 testListAccountsFiltersByTenantAndStatus();
 testUpdateAccount();
+testUpdateAccountInstitutionKey();
 testArchiveAccount();
 testOtherTenantAccessIsRejected();
 testOpeningBalanceIsLockedWhenTransactionsExist();
@@ -87,6 +90,38 @@ function testCreateAccountValidation(): void {
   );
 }
 
+function testCreateAccountWithInstitutionKey(): void {
+  const account = createAccount({
+    id: "account-with-institution",
+    context: tenantA,
+    now,
+    payload: {
+      name: "Conta com instituicao",
+      kind: "checking",
+      institutionKey: " Inter ",
+    },
+  });
+
+  assertEqual(account.institutionKey, "inter", "institution key should normalize");
+}
+
+function testRejectsInvalidInstitutionKey(): void {
+  assertAccountError(
+    () =>
+      createAccount({
+        id: "account-invalid-institution",
+        context: tenantA,
+        now,
+        payload: {
+          name: "Conta com chave invalida",
+          kind: "checking",
+          institutionKey: "logo-livre",
+        },
+      }),
+    "ACCOUNT_INSTITUTION_KEY_INVALID",
+  );
+}
+
 function testListAccountsFiltersByTenantAndStatus(): void {
   const activeAccount = createAccountFixture(tenantA, "account-active", "active");
   const archivedAccount = createAccountFixture(tenantA, "account-archived", "archived");
@@ -119,6 +154,20 @@ function testUpdateAccount(): void {
   assertEqual(updatedAccount.kind, "investment", "updated kind");
   assertEqual(updatedAccount.openingBalanceMinor, 5000, "updated opening balance");
   assertEqual(updatedAccount.updatedByUserId, tenantA.userId, "updated actor");
+}
+
+function testUpdateAccountInstitutionKey(): void {
+  const account = createAccountFixture(tenantA, "account-update-institution", "active");
+  const updatedAccount = updateAccount({
+    context: tenantA,
+    account,
+    now: "2026-06-15T11:00:00.000Z",
+    payload: {
+      institutionKey: "caixa",
+    },
+  });
+
+  assertEqual(updatedAccount.institutionKey, "caixa", "updated institution key");
 }
 
 function testArchiveAccount(): void {

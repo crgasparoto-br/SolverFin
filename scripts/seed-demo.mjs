@@ -226,23 +226,24 @@ async function upsertDemoProfiles(client) {
 
 async function upsertDemoAccounts(client) {
   const rows = [
-    [accounts.personalChecking, profiles.personal, "Conta pessoal demo", "CHECKING", 125000],
-    [accounts.meiChecking, profiles.mei, "Conta MEI demo", "CHECKING", 85000],
-    [accounts.businessChecking, profiles.business, "Conta negocio demo", "CHECKING", 320000],
+    [accounts.personalChecking, profiles.personal, "Conta pessoal demo", "CHECKING", 125000, "solverfin_demo"],
+    [accounts.meiChecking, profiles.mei, "Conta MEI demo", "CHECKING", 85000, "solverfin_demo"],
+    [accounts.businessChecking, profiles.business, "Conta negocio demo", "CHECKING", 320000, "solverfin_demo"],
   ];
 
-  for (const [id, financialProfileId, name, kind, openingBalanceMinor] of rows) {
+  for (const [id, financialProfileId, name, kind, openingBalanceMinor, institutionKey] of rows) {
     await client.query(
       `INSERT INTO "Account"
-       ("id", "organizationId", "financialProfileId", "name", "kind", "status", "currency", "openingBalanceMinor", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, 'ACTIVE', 'BRL', $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       ("id", "organizationId", "financialProfileId", "name", "kind", "status", "currency", "openingBalanceMinor", "institutionKey", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, 'ACTIVE', 'BRL', $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        ON CONFLICT ("id") DO UPDATE SET
          "name" = EXCLUDED."name",
          "kind" = EXCLUDED."kind",
          "status" = EXCLUDED."status",
          "openingBalanceMinor" = EXCLUDED."openingBalanceMinor",
+         "institutionKey" = EXCLUDED."institutionKey",
          "updatedAt" = CURRENT_TIMESTAMP`,
-      [id, DEMO_ORGANIZATION_ID, financialProfileId, name, kind, openingBalanceMinor],
+      [id, DEMO_ORGANIZATION_ID, financialProfileId, name, kind, openingBalanceMinor, institutionKey],
     );
   }
 }
@@ -250,8 +251,8 @@ async function upsertDemoAccounts(client) {
 async function upsertDemoCards(client) {
   await client.query(
     `INSERT INTO "Card"
-     ("id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status", "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "createdAt", "updatedAt")
-     VALUES ($1, $2, $3, $4, 'Cartao demo', 'ACTIVE', 20, 10, 250000, 'final 4242 ficticio', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+     ("id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status", "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt")
+     VALUES ($1, $2, $3, $4, 'Cartao demo', 'ACTIVE', 20, 10, 250000, 'final 4242 ficticio', 'solverfin_demo', 'solverfin_demo', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
      ON CONFLICT ("id") DO UPDATE SET
        "paymentAccountId" = EXCLUDED."paymentAccountId",
        "name" = EXCLUDED."name",
@@ -260,6 +261,8 @@ async function upsertDemoCards(client) {
        "dueDay" = EXCLUDED."dueDay",
        "creditLimitMinor" = EXCLUDED."creditLimitMinor",
        "maskedIdentifier" = EXCLUDED."maskedIdentifier",
+       "institutionKey" = EXCLUDED."institutionKey",
+       "brandKey" = EXCLUDED."brandKey",
        "updatedAt" = CURRENT_TIMESTAMP`,
     [cards.personalCard, DEMO_ORGANIZATION_ID, profiles.personal, accounts.personalChecking],
   );
