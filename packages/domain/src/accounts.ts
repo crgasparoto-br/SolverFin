@@ -1,5 +1,16 @@
-import type { Account, AccountKind, AccountStatus, EntityId, ISODateTime } from "./index.js";
+import type {
+  Account,
+  AccountKind,
+  AccountStatus,
+  EntityId,
+  FinancialInstitutionKey,
+  ISODateTime,
+} from "./index.js";
 import type { TenantContext } from "./tenant.js";
+import {
+  isFinancialInstitutionKey,
+  normalizeOptionalCatalogKey,
+} from "./visual-identities.js";
 import {
   applyTenantScope,
   getTenantScopedResource,
@@ -13,7 +24,8 @@ export type AccountErrorCode =
   | "ACCOUNT_KIND_INVALID"
   | "ACCOUNT_CURRENCY_INVALID"
   | "ACCOUNT_OPENING_BALANCE_INVALID"
-  | "ACCOUNT_OPENING_BALANCE_LOCKED";
+  | "ACCOUNT_OPENING_BALANCE_LOCKED"
+  | "ACCOUNT_INSTITUTION_KEY_INVALID";
 
 export class AccountError extends Error {
   readonly code: AccountErrorCode;
@@ -39,6 +51,7 @@ export interface CreateAccountPayload {
   openingBalanceMinor?: number;
   currency?: string;
   maskedIdentifier?: string;
+  institutionKey?: string;
 }
 
 export interface UpdateAccountInput {
@@ -56,6 +69,7 @@ export interface UpdateAccountPayload {
   openingBalanceMinor?: number;
   currency?: string;
   maskedIdentifier?: string;
+  institutionKey?: string;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
 }
@@ -74,8 +88,7 @@ const ALLOWED_ACCOUNT_KINDS: readonly AccountKind[] = [
 
 export function createAccount(input: CreateAccountInput): Account {
   const payload = applyTenantScope(input.context, input.payload);
-
-  return {
+  const account: Account = {
     id: input.id,
     organizationId: payload.organizationId,
     financialProfileId: payload.financialProfileId,
@@ -90,6 +103,13 @@ export function createAccount(input: CreateAccountInput): Account {
     updatedByUserId: input.context.userId,
     ...(payload.maskedIdentifier ? { maskedIdentifier: payload.maskedIdentifier.trim() } : {}),
   };
+  const institutionKey = validateOptionalInstitutionKey(payload.institutionKey);
+
+  if (institutionKey !== undefined) {
+    account.institutionKey = institutionKey;
+  }
+
+  return account;
 }
 
 export function listAccounts(
@@ -165,6 +185,10 @@ function buildOptionalAccountUpdate(payload: UpdateAccountPayload): Partial<Acco
     update.maskedIdentifier = payload.maskedIdentifier.trim();
   }
 
+  if (payload.institutionKey !== undefined) {
+    update.institutionKey = validateOptionalInstitutionKey(payload.institutionKey);
+  }
+
   return update;
 }
 
@@ -231,4 +255,21 @@ function validateOpeningBalance(openingBalanceMinor: number): number {
   }
 
   return openingBalanceMinor;
+}
+
+function validateOptionalInstitutionKey(value: string | undefined): FinancialInstitutionKey | undefined {
+  const normalizedValue = normalizeOptionalCatalogKey(value);
+
+  if (normalizedValue === undefined) {
+    return undefined;
+  }
+
+  if (!isFinancialInstitutionKey(normalizedValue)) {
+    throw new AccountError(
+      "ACCOUNT_INSTITUTION_KEY_INVALID",
+      "Account institution key is not supported.",
+    );
+  }
+
+  return normalizedValue;
 }
