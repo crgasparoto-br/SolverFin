@@ -3,8 +3,11 @@ import { formatMinorCurrency } from "@solverfin/shared";
 import { apiGet } from "./api.js";
 import { privateRoutes } from "./routes.js";
 
+const fallbackInstitution = { key: "", label: "Sem instituição", shortLabel: "SF" } as const;
+const fallbackCardBrand = { key: "", label: "Sem bandeira", shortLabel: "--" } as const;
+
 const institutions = [
-  { key: "", label: "Sem instituição", shortLabel: "SF" },
+  fallbackInstitution,
   { key: "bradesco", label: "Bradesco", shortLabel: "BR" },
   { key: "inter", label: "Inter", shortLabel: "IN" },
   { key: "c6", label: "C6 Bank", shortLabel: "C6" },
@@ -14,7 +17,7 @@ const institutions = [
 ] as const;
 
 const cardBrands = [
-  { key: "", label: "Sem bandeira", shortLabel: "--" },
+  fallbackCardBrand,
   { key: "visa", label: "Visa", shortLabel: "VI" },
   { key: "mastercard", label: "Mastercard", shortLabel: "MC" },
   { key: "elo", label: "Elo", shortLabel: "EL" },
@@ -352,7 +355,7 @@ function masterPageScript(): string {
 
         visiblePanel.querySelectorAll("[data-master-item]").forEach((item) => {
           const itemStatus = item.dataset.status;
-          const matchesSearch = !term || item.dataset.search.includes(term);
+          const matchesSearch = !term || String(item.dataset.search || "").includes(term);
           const matchesStatus = status === "all" || (status === "active" ? itemStatus === "active" : itemStatus !== "active");
           item.hidden = !(matchesSearch && matchesStatus);
         });
@@ -371,7 +374,8 @@ function masterPageScript(): string {
 
       document.querySelectorAll("[data-open-dialog]").forEach((button) => {
         button.addEventListener("click", () => {
-          const dialog = document.getElementById(button.dataset.openDialog);
+          const dialogId = button.dataset.openDialog;
+          const dialog = dialogId ? document.getElementById(dialogId) : undefined;
           if (dialog && typeof dialog.showModal === "function") dialog.showModal();
         });
       });
@@ -453,11 +457,11 @@ function renderAccountOptions(accounts: AccountRecord[], selected?: string): str
 }
 
 function findInstitution(key: string | undefined) {
-  return institutions.find((item) => item.key === key) ?? institutions[0];
+  return institutions.find((item) => item.key === key) ?? fallbackInstitution;
 }
 
 function findCardBrand(key: string | undefined) {
-  return cardBrands.find((item) => item.key === key) ?? cardBrands[0];
+  return cardBrands.find((item) => item.key === key) ?? fallbackCardBrand;
 }
 
 function countActive(items: Array<{ status: string }>): number {
@@ -493,7 +497,7 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
