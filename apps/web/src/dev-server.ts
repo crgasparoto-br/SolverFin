@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { handleApiRequest } from "./dev-server/api.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
+import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolveRoute } from "./dev-server/routes.js";
@@ -17,6 +18,7 @@ export {
   renderDashboardPage,
   renderTransactionsPage,
 } from "./dev-server/pages.js";
+export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
 export { renderSettingsPage } from "./dev-server/settings-page.js";
@@ -66,6 +68,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (route.kind === "login") {
     sendHtml(response, 200, renderLoginPage(url.searchParams.get("erro") ?? undefined));
+    return;
+  }
+
+  if (url.pathname === "/inbox" && token) {
+    sendHtml(response, 200, await renderInboxPage(token));
     return;
   }
 

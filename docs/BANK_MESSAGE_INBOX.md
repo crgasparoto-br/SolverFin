@@ -1,63 +1,51 @@
 # Inbox de mensagens bancarias
 
-Este documento registra o escopo entregue para a issue #46: uma base de dominio para receber mensagens bancarias coladas ou compartilhadas, preservar origem e preparar processamento posterior em sugestoes de lancamento.
-
 ## Objetivo
 
-A inbox deve aceitar textos bancarios ficticios ou reais informados pelo usuario, manter rastreabilidade por tenant/contexto e impedir que mensagens sensiveis sejam exibidas integralmente em superficies de revisao.
+O inbox recebe textos de mensagens bancarias ficticias ou autorizadas e transforma o conteudo em uma sugestao revisavel. O fluxo nao cria lancamento financeiro final automaticamente.
 
-## Contratos adicionados
+## Contrato de entrada
 
-O modulo `packages/domain/src/bank-message-inbox.ts` expoe:
+`POST /api/bank-message-inbox`
 
-- `createBankMessageInboxItem`, para criar uma mensagem pendente;
-- `listBankMessageInboxItems`, para listar mensagens somente do tenant ativo;
-- `getBankMessageInboxItem`, para recuperar uma mensagem isolada por tenant;
-- `markBankMessageInboxItemProcessed`, para vincular a mensagem a uma sugestao;
-- `markBankMessageInboxItemError`, para registrar falha controlada de processamento;
-- `discardBankMessageInboxItem`, para descartar mensagem sem apagar historico;
-- `buildBankMessageSourceHash`, para deduplicacao inicial por tenant/contexto;
-- `maskBankMessageText`, para exibir texto mascarado quando adequado.
+Campos aceitos:
 
-## Estados
+- `text`: texto colado ou compartilhado.
+- `origin`: `pasted` ou `shared`; quando omitido pela tela inicial, usa `pasted`.
+- `consentAccepted`: deve ser `true` antes de qualquer processamento.
+- `accountId`: opcional, usado para deixar a sugestao mais pronta para revisao.
+- `categoryId`: opcional, usado como categoria inicial da sugestao.
 
-A inbox trabalha com os estados:
+A API exige sessao, organizacao e perfil financeiro resolvidos pelo tenant atual.
 
-- `pending`: mensagem recebida e aguardando processamento/revisao;
-- `processed`: mensagem vinculada a uma sugestao de lancamento;
-- `error`: mensagem nao processada por falha controlada;
-- `discarded`: mensagem descartada com auditoria.
+## Retencao e minimizacao
 
-## Origens aceitas
+O texto bruto e usado apenas durante a requisicao para normalizacao, mascaramento e calculo de hash. Ele nao e persistido no banco.
 
-- `pasted`: usuario colou o texto manualmente;
-- `shared`: texto veio de fluxo de compartilhamento, quando a camada PWA/API estiver disponivel.
+Persistimos somente:
 
-## Privacidade e seguranca
+- `ImportBatch` com `sourceKind = BANK_MESSAGE`, status operacional e `sourceHash` para deduplicacao.
+- `AiSuggestion` com `kind = TRANSACTION_EXTRACTION`, status `PENDING_REVIEW`, explicacao segura e metadados do parser deterministico.
+- auditoria redigida para lote e sugestao.
 
-- O contrato preserva `rawText` para vinculo posterior com sugestoes, mas tambem gera `maskedText` para superficies de UI.
-- A auditoria usa marcadores redigidos e nao copia o conteudo bruto da mensagem.
-- A deduplicacao usa hash deterministico com `organizationId` e `financialProfileId`.
-- Listagem, consulta e transicoes respeitam tenant/contexto.
-- Nenhuma mensagem gera lancamento definitivo automaticamente.
+A explicacao e o resumo exibido usam texto mascarado e nao devem conter mensagem bancaria integral.
 
-## Erros controlados
+## Revisao
 
-O modulo lanca `BankMessageInboxError` para:
+A sugestao criada fica pendente de revisao. Quando a mensagem inclui valor e a pessoa seleciona uma conta, a explicacao segue o formato ja entendido pela fila de revisao de IA para permitir aprovacao posterior. Ainda assim, o lancamento final so nasce quando a pessoa aprovar a sugestao.
 
-- origem invalida;
-- texto vazio;
-- texto acima do limite configurado;
-- mensagem duplicada;
-- status invalido;
-- tentativa de marcar como processada sem sugestao vinculada.
+Mensagens incompletas ou incertas continuam como sugestoes de baixa confianca e precisam ser completadas na revisao antes de qualquer efeito financeiro.
 
-## Limites desta entrega
+## Endpoints
 
-Ainda nao ha rota HTTP, armazenamento real, tela de inbox nem integracao Web Share Target. Esses pontos dependem das proximas camadas de backend/frontend e devem reutilizar este contrato de dominio.
+- `GET /api/bank-message-inbox?status=all`: lista mensagens do perfil financeiro ativo.
+- `POST /api/bank-message-inbox`: registra mensagem com consentimento explicito.
+- `POST /api/bank-message-inbox/:messageId/discard`: descarta o lote e expira sugestao pendente quando aplicavel.
 
-Perguntas que seguem abertas:
+## Tela inicial
 
-- por quanto tempo o texto bruto sera retido;
-- se o usuario podera editar o texto antes do processamento;
-- qual parser deterministico ou IA sera aplicado primeiro sobre a inbox.
+A rota `/inbox` permite colar uma mensagem, confirmar consentimento e selecionar conta/categoria opcionais. A lista mostra status de revisao, origem, data, confianca e explicacao mascarada.
+
+## Relacao com o contrato de dominio
+
+`packages/domain/src/bank-message-inbox.ts` continua sendo a base para normalizar texto, gerar hash por tenant/perfil, detectar duplicidade e mascarar conteudo. A camada de API usa esse contrato, mas descarta o texto bruto apos criar o lote e a sugestao revisavel.
