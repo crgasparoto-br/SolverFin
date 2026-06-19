@@ -17,6 +17,7 @@ export const privateRoutes = new Map<string, string>([
 
 export const implementedRoutes = new Set([
   "/dashboard",
+  "/contas-cartoes",
   "/contas",
   "/categorias",
   "/lancamentos",
@@ -44,12 +45,6 @@ export function resolveRoute(
     return hasSession
       ? { statusCode: 302, kind: "dashboard", location: "/dashboard" }
       : { statusCode: 200, kind: "login" };
-  }
-
-  if (pathname === "/contas-cartoes") {
-    return hasSession
-      ? { statusCode: 302, kind: "placeholder", location: "/contas" }
-      : { statusCode: 302, kind: "login", location: "/login" };
   }
 
   if (privateRoutes.has(pathname)) {
