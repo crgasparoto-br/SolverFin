@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import {
   AuthError,
   createAuthService,
+  getBearerSessionId,
   type AuthUserCredentials,
   type AuthenticatedUser,
   type LoginInput,
@@ -20,6 +21,8 @@ import {
 const DEMO_PASSWORD_HASH = "c3fe12298b006ad7e54d9dac3006a98f406506a78e3100ca831c0f96c43f5b60";
 const LOCAL_DEMO_ENVIRONMENTS = new Set(["development", "local", "test"]);
 const MIN_PASSWORD_LENGTH = 8;
+const DEFAULT_SESSION_TTL_MINUTES = 60;
+const DEFAULT_SESSION_IDLE_TIMEOUT_MINUTES = 30;
 
 export const demoUser: AuthenticatedUser = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -43,6 +46,19 @@ interface ExternalUserRow {
   status: string;
   externalAuthProvider: string | null;
   externalAuthSubject: string | null;
+}
+
+interface PersistedSessionRow {
+  id: string;
+  userId: string;
+  createdAt: Date;
+  lastSeenAt: Date;
+  expiresAt: Date;
+  revokedAt: Date | null;
+  revocationReason: string | null;
+  email: string;
+  displayName: string;
+  status: string;
 }
 
 export interface RegisterUserInput extends LoginInput {
@@ -80,7 +96,7 @@ export const auth = createAuthService({
 
 export async function authenticateUser(input: LoginInput): Promise<LoginResult> {
   try {
-    return auth.login(input);
+    return await persistLoginSession(auth.login(input), "login_success");
   } catch (error) {
     if (!(error instanceof AuthError) || error.code !== "AUTH_INVALID_CREDENTIALS") {
       throw error;
@@ -90,18 +106,28 @@ export async function authenticateUser(input: LoginInput): Promise<LoginResult> 
   const email = normalizeEmail(input.email);
 
   if (email === demoUser.email) {
+    await auditSecurityEvent({ action: "login_failure", result: "denied" });
     throw invalidCredentialsError();
   }
 
   const credentials = await findUserCredentialsByEmail(email);
 
   if (!credentials) {
+    await auditSecurityEvent({ action: "login_failure", result: "denied" });
     throw invalidCredentialsError();
   }
 
   auth.upsertUserCredentials(credentials);
 
-  return auth.login(input);
+  try {
+    return await persistLoginSession(auth.login(input), "login_success");
+  } catch (error) {
+    if (error instanceof AuthError && error.code === "AUTH_INVALID_CREDENTIALS") {
+      await auditSecurityEvent({ action: "login_failure", result: "denied" });
+    }
+
+    throw error;
+  }
 }
 
 export async function authenticateProductiveUser(
@@ -188,7 +214,113 @@ export async function registerUser(input: RegisterUserInput): Promise<LoginResul
     passwordHash,
   });
 
-  return auth.login({ email, password });
+  return persistLoginSession(auth.login({ email, password }), "login_success");
+}
+
+export async function requireAuthenticatedRequest(
+  headers: Readonly<Record<string, string | undefined>>,
+): Promise<AuthenticatedUser> {
+  const token = getBearerSessionId(headers.authorization);
+
+  if (!token) {
+    await auditSecurityEvent({ action: "session_missing", result: "denied" });
+    throw new AuthError("AUTH_SESSION_REQUIRED", "Authentication session is required.", 401);
+  }
+
+  const persisted = await findPersistedSession(token);
+
+  if (!persisted) {
+    return auth.requireAuthenticatedRequest(headers);
+  }
+
+  return validatePersistedSession(token, persisted);
+}
+
+export async function logoutSession(sessionToken: string): Promise<void> {
+  auth.logout(sessionToken);
+
+  if (!process.env.DATABASE_URL) {
+    return;
+  }
+
+  const tokenHash = hashSessionToken(sessionToken);
+  const now = new Date();
+
+  try {
+    const rows = await query<{ id: string; userId: string }>(
+      `update "ApplicationSession"
+       set "revokedAt" = coalesce("revokedAt", $2),
+           "revocationReason" = coalesce("revocationReason", 'logout')
+       where "tokenHash" = $1
+       returning "id", "userId"`,
+      [tokenHash, now],
+    );
+    const row = rows[0];
+
+    if (row) {
+      await auditSecurityEvent({
+        action: "logout",
+        result: "success",
+        userId: row.userId,
+        sessionId: row.id,
+      });
+    }
+  } catch (error) {
+    if (!isMissingPersistentSessionStorage(error)) {
+      throw error;
+    }
+  }
+}
+
+export async function revokeAllUserSessions(
+  userId: string,
+  reason = "user_revocation",
+): Promise<number> {
+  if (!process.env.DATABASE_URL) {
+    return 0;
+  }
+
+  const now = new Date();
+
+  try {
+    const rows = await query<{ id: string }>(
+      `update "ApplicationSession"
+       set "revokedAt" = $2,
+           "revocationReason" = $3
+       where "userId" = $1 and "revokedAt" is null
+       returning "id"`,
+      [userId, now, reason],
+    );
+
+    await auditSecurityEvent({
+      action: "sessions_revoked",
+      result: "success",
+      userId,
+      metadata: { count: rows.length, reason },
+    });
+
+    return rows.length;
+  } catch (error) {
+    if (isMissingPersistentSessionStorage(error)) {
+      return 0;
+    }
+
+    throw error;
+  }
+}
+
+export async function auditProfileAccessDenied(options: {
+  userId?: string;
+  correlationId?: string;
+  reason?: string;
+}): Promise<void> {
+  await auditSecurityEvent({
+    action: "profile_access_denied",
+    result: "denied",
+    userId: options.userId,
+    correlationId: options.correlationId,
+    metadata: options.reason ? { reason: options.reason } : undefined,
+  });
 }
 
 export function assertDemoAuthAllowed(
@@ -231,6 +363,178 @@ export function isProductiveOidcAuthConfigured(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): boolean {
   return Boolean(readEnv(env, "OIDC_ISSUER_URL") && readEnv(env, "OIDC_AUDIENCE") && readEnv(env, "OIDC_JWKS_URI"));
+}
+
+export function hashSessionToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+export function isSessionInactive(lastSeenAt: Date, now = new Date()): boolean {
+  return now.getTime() - lastSeenAt.getTime() >= resolveSessionIdleTimeoutMs();
+}
+
+async function persistLoginSession(
+  result: LoginResult,
+  auditAction: "login_success",
+): Promise<LoginResult> {
+  if (!process.env.DATABASE_URL) {
+    return result;
+  }
+
+  const sessionId = randomUUID();
+  const now = new Date();
+
+  try {
+    await query(
+      `insert into "ApplicationSession"
+       ("id", "userId", "tokenHash", "createdAt", "lastSeenAt", "expiresAt")
+       values ($1, $2, $3, $4, $4, $5)`,
+      [sessionId, result.user.id, hashSessionToken(result.session.id), now, result.session.expiresAt],
+    );
+    await auditSecurityEvent({
+      action: auditAction,
+      result: "success",
+      userId: result.user.id,
+      sessionId,
+    });
+  } catch (error) {
+    if (!isMissingPersistentSessionStorage(error) && !isForeignKeyViolation(error)) {
+      throw error;
+    }
+  }
+
+  return result;
+}
+
+async function findPersistedSession(token: string): Promise<PersistedSessionRow | undefined> {
+  if (!process.env.DATABASE_URL) {
+    return undefined;
+  }
+
+  try {
+    const rows = await query<PersistedSessionRow>(
+      `select s."id", s."userId", s."createdAt", s."lastSeenAt", s."expiresAt",
+              s."revokedAt", s."revocationReason",
+              u."email", u."displayName", u."status"
+       from "ApplicationSession" s
+       inner join "User" u on u."id" = s."userId"
+       where s."tokenHash" = $1
+       limit 1`,
+      [hashSessionToken(token)],
+    );
+
+    return rows[0];
+  } catch (error) {
+    if (isMissingPersistentSessionStorage(error)) {
+      return undefined;
+    }
+
+    throw error;
+  }
+}
+
+async function validatePersistedSession(
+  token: string,
+  session: PersistedSessionRow,
+): Promise<AuthenticatedUser> {
+  const now = new Date();
+  const user = mapPersistedSessionUser(session);
+
+  if (session.revokedAt !== null) {
+    await auditSecurityEvent({
+      action: "session_revoked_rejected",
+      result: "denied",
+      userId: session.userId,
+      sessionId: session.id,
+      metadata: session.revocationReason ? { reason: session.revocationReason } : undefined,
+    });
+    throw new AuthError("AUTH_SESSION_INVALID", "Authentication session is invalid.", 401);
+  }
+
+  if (session.expiresAt.getTime() <= now.getTime()) {
+    await revokeSession(token, "expired");
+    await auditSecurityEvent({
+      action: "session_expired",
+      result: "denied",
+      userId: session.userId,
+      sessionId: session.id,
+    });
+    throw new AuthError("AUTH_SESSION_EXPIRED", "Authentication session expired.", 401);
+  }
+
+  if (isSessionInactive(session.lastSeenAt, now)) {
+    await revokeSession(token, "idle_timeout");
+    await auditSecurityEvent({
+      action: "session_idle_timeout",
+      result: "denied",
+      userId: session.userId,
+      sessionId: session.id,
+    });
+    throw new AuthError("AUTH_SESSION_EXPIRED", "Authentication session expired.", 401);
+  }
+
+  if (user.status === "disabled") {
+    await auditSecurityEvent({
+      action: "user_disabled",
+      result: "denied",
+      userId: session.userId,
+      sessionId: session.id,
+    });
+    throw new AuthError("AUTH_USER_DISABLED", "User is not active.", 403);
+  }
+
+  await query(
+    `update "ApplicationSession"
+     set "lastSeenAt" = $2
+     where "id" = $1 and "revokedAt" is null`,
+    [session.id, now],
+  );
+
+  return user;
+}
+
+async function revokeSession(token: string, reason: string): Promise<void> {
+  await query(
+    `update "ApplicationSession"
+     set "revokedAt" = coalesce("revokedAt", $2),
+         "revocationReason" = coalesce("revocationReason", $3)
+     where "tokenHash" = $1`,
+    [hashSessionToken(token), new Date(), reason],
+  );
+}
+
+async function auditSecurityEvent(options: {
+  action: string;
+  result: string;
+  userId?: string;
+  sessionId?: string;
+  correlationId?: string;
+  metadata?: Readonly<Record<string, unknown>>;
+}): Promise<void> {
+  if (!process.env.DATABASE_URL) {
+    return;
+  }
+
+  try {
+    await query(
+      `insert into "SecurityAuditEvent"
+       ("id", "userId", "sessionId", "occurredAt", "action", "result", "correlationId", "metadata")
+       values ($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7)`,
+      [
+        randomUUID(),
+        options.userId ?? null,
+        options.sessionId ?? null,
+        options.action,
+        options.result,
+        options.correlationId ?? null,
+        options.metadata ? JSON.stringify(options.metadata) : null,
+      ],
+    );
+  } catch (error) {
+    if (!isMissingPersistentSessionStorage(error) && !isForeignKeyViolation(error)) {
+      throw error;
+    }
+  }
 }
 
 async function signInExternalIdentity(identity: OidcIdentity): Promise<LoginResult> {
@@ -305,7 +609,7 @@ async function signInExternalIdentity(identity: OidcIdentity): Promise<LoginResu
   const externalPassword = createExternalPasswordSentinel(user.id);
   auth.upsertUserCredentials({ user, passwordHash: hashPassword(externalPassword) });
 
-  return auth.login({ email: user.email, password: externalPassword });
+  return persistLoginSession(auth.login({ email: user.email, password: externalPassword }), "login_success");
 }
 
 async function updateExternalUserSnapshot(
@@ -403,6 +707,15 @@ function mapExternalUserRow(row: ExternalUserRow): AuthenticatedUser {
   };
 }
 
+function mapPersistedSessionUser(row: PersistedSessionRow): AuthenticatedUser {
+  return {
+    id: row.userId,
+    email: row.email,
+    displayName: row.displayName,
+    status: row.status.toLowerCase() === "disabled" ? "disabled" : "active",
+  };
+}
+
 function assertExternalUserIsActive(row: ExternalUserRow): void {
   if (row.status.toLowerCase() === "disabled") {
     throw new AuthError("AUTH_USER_DISABLED", "User is not active.", 403);
@@ -454,14 +767,44 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
-function resolveSessionTtlMs(): number {
-  const ttlMinutes = Number(process.env.AUTH_SESSION_TTL_MINUTES ?? 60);
+function isForeignKeyViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "23503"
+  );
+}
 
-  if (!Number.isFinite(ttlMinutes) || ttlMinutes <= 0) {
-    return 60 * 60 * 1000;
+function isMissingPersistentSessionStorage(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "42P01"
+  );
+}
+
+function resolveSessionTtlMs(): number {
+  return resolvePositiveMinutes("AUTH_SESSION_TTL_MINUTES", DEFAULT_SESSION_TTL_MINUTES) * 60 * 1000;
+}
+
+function resolveSessionIdleTimeoutMs(): number {
+  return (
+    resolvePositiveMinutes("AUTH_SESSION_IDLE_TIMEOUT_MINUTES", DEFAULT_SESSION_IDLE_TIMEOUT_MINUTES) *
+    60 *
+    1000
+  );
+}
+
+function resolvePositiveMinutes(key: string, fallback: number): number {
+  const value = Number(process.env[key] ?? fallback);
+
+  if (!Number.isFinite(value) || value <= 0) {
+    return fallback;
   }
 
-  return ttlMinutes * 60 * 1000;
+  return value;
 }
 
 function readEnv(env: Readonly<Record<string, string | undefined>>, key: string): string | undefined {
