@@ -61,6 +61,15 @@ interface PersistedSessionRow {
   status: string;
 }
 
+interface SecurityAuditEventInput {
+  action: string;
+  result: string;
+  userId?: string | undefined;
+  sessionId?: string | undefined;
+  correlationId?: string | undefined;
+  metadata?: Readonly<Record<string, unknown>> | undefined;
+}
+
 export interface RegisterUserInput extends LoginInput {
   displayName: string;
 }
@@ -83,12 +92,7 @@ export interface ProductiveAuthOptions extends OidcValidationOptions {
 assertAuthenticationModeConfigured();
 
 export const auth = createAuthService({
-  users: [
-    {
-      user: demoUser,
-      passwordHash: DEMO_PASSWORD_HASH,
-    },
-  ],
+  users: [{ user: demoUser, passwordHash: DEMO_PASSWORD_HASH }],
   verifyPassword: ({ password, passwordHash }) => hashPassword(password) === passwordHash,
   createSessionId: () => `sf_${randomUUID()}`,
   sessionTtlMs: resolveSessionTtlMs(),
@@ -141,13 +145,8 @@ export async function authenticateProductiveUser(
   const validateIdToken = options.validateIdToken ?? validateOidcIdToken;
   const validationOptions: OidcValidationOptions = {};
 
-  if (options.now) {
-    validationOptions.now = options.now;
-  }
-
-  if (options.fetchJwks) {
-    validationOptions.fetchJwks = options.fetchJwks;
-  }
+  if (options.now) validationOptions.now = options.now;
+  if (options.fetchJwks) validationOptions.fetchJwks = options.fetchJwks;
 
   const identity = await validateIdToken(input.idToken, config, validationOptions);
 
@@ -190,13 +189,10 @@ export async function registerUser(input: RegisterUserInput): Promise<LoginResul
          values ($1, $2, $3, 'ACTIVE', $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
         [userId, email, displayName, passwordHash],
       );
-
       await createInitialFinancialProfile(executeQuery, userId, displayName);
     });
   } catch (error) {
-    if (error instanceof AuthError) {
-      throw error;
-    }
+    if (error instanceof AuthError) throw error;
 
     if (isUniqueViolation(error)) {
       throw new AuthError(
@@ -239,12 +235,7 @@ export async function requireAuthenticatedRequest(
 export async function logoutSession(sessionToken: string): Promise<void> {
   auth.logout(sessionToken);
 
-  if (!process.env.DATABASE_URL) {
-    return;
-  }
-
-  const tokenHash = hashSessionToken(sessionToken);
-  const now = new Date();
+  if (!process.env.DATABASE_URL) return;
 
   try {
     const rows = await query<{ id: string; userId: string }>(
@@ -253,7 +244,7 @@ export async function logoutSession(sessionToken: string): Promise<void> {
            "revocationReason" = coalesce("revocationReason", 'logout')
        where "tokenHash" = $1
        returning "id", "userId"`,
-      [tokenHash, now],
+      [hashSessionToken(sessionToken), new Date()],
     );
     const row = rows[0];
 
@@ -266,9 +257,7 @@ export async function logoutSession(sessionToken: string): Promise<void> {
       });
     }
   } catch (error) {
-    if (!isMissingPersistentSessionStorage(error)) {
-      throw error;
-    }
+    if (!isMissingPersistentSessionStorage(error)) throw error;
   }
 }
 
@@ -276,11 +265,7 @@ export async function revokeAllUserSessions(
   userId: string,
   reason = "user_revocation",
 ): Promise<number> {
-  if (!process.env.DATABASE_URL) {
-    return 0;
-  }
-
-  const now = new Date();
+  if (!process.env.DATABASE_URL) return 0;
 
   try {
     const rows = await query<{ id: string }>(
@@ -289,7 +274,7 @@ export async function revokeAllUserSessions(
            "revocationReason" = $3
        where "userId" = $1 and "revokedAt" is null
        returning "id"`,
-      [userId, now, reason],
+      [userId, new Date(), reason],
     );
 
     await auditSecurityEvent({
@@ -301,10 +286,7 @@ export async function revokeAllUserSessions(
 
     return rows.length;
   } catch (error) {
-    if (isMissingPersistentSessionStorage(error)) {
-      return 0;
-    }
-
+    if (isMissingPersistentSessionStorage(error)) return 0;
     throw error;
   }
 }
@@ -326,9 +308,7 @@ export async function auditProfileAccessDenied(options: {
 export function assertDemoAuthAllowed(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): void {
-  if (isDemoAuthAllowed(env)) {
-    return;
-  }
+  if (isDemoAuthAllowed(env)) return;
 
   throw new Error(
     "Demo authentication is blocked outside local/test environments. Configure production authentication or set AUTH_ALLOW_DEMO=true only for an explicit non-production demo.",
@@ -338,9 +318,7 @@ export function assertDemoAuthAllowed(
 export function assertAuthenticationModeConfigured(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): void {
-  if (isDemoAuthAllowed(env) || isProductiveOidcAuthConfigured(env)) {
-    return;
-  }
+  if (isDemoAuthAllowed(env) || isProductiveOidcAuthConfigured(env)) return;
 
   throw new Error(
     "Authentication is not configured for this environment. Configure OIDC_ISSUER_URL, OIDC_AUDIENCE and OIDC_JWKS_URI, or set AUTH_ALLOW_DEMO=true only for an explicit non-production demo.",
@@ -352,9 +330,7 @@ export function isDemoAuthAllowed(
 ): boolean {
   const nodeEnv = (env.NODE_ENV ?? "development").trim().toLowerCase();
 
-  if (LOCAL_DEMO_ENVIRONMENTS.has(nodeEnv)) {
-    return true;
-  }
+  if (LOCAL_DEMO_ENVIRONMENTS.has(nodeEnv)) return true;
 
   return (env.AUTH_ALLOW_DEMO ?? "").trim().toLowerCase() === "true";
 }
@@ -377,9 +353,7 @@ async function persistLoginSession(
   result: LoginResult,
   auditAction: "login_success",
 ): Promise<LoginResult> {
-  if (!process.env.DATABASE_URL) {
-    return result;
-  }
+  if (!process.env.DATABASE_URL) return result;
 
   const sessionId = randomUUID();
   const now = new Date();
@@ -398,18 +372,14 @@ async function persistLoginSession(
       sessionId,
     });
   } catch (error) {
-    if (!isMissingPersistentSessionStorage(error) && !isForeignKeyViolation(error)) {
-      throw error;
-    }
+    if (!isMissingPersistentSessionStorage(error) && !isForeignKeyViolation(error)) throw error;
   }
 
   return result;
 }
 
 async function findPersistedSession(token: string): Promise<PersistedSessionRow | undefined> {
-  if (!process.env.DATABASE_URL) {
-    return undefined;
-  }
+  if (!process.env.DATABASE_URL) return undefined;
 
   try {
     const rows = await query<PersistedSessionRow>(
@@ -425,10 +395,7 @@ async function findPersistedSession(token: string): Promise<PersistedSessionRow 
 
     return rows[0];
   } catch (error) {
-    if (isMissingPersistentSessionStorage(error)) {
-      return undefined;
-    }
-
+    if (isMissingPersistentSessionStorage(error)) return undefined;
     throw error;
   }
 }
@@ -490,6 +457,9 @@ async function validatePersistedSession(
     [session.id, now],
   );
 
+  auth.upsertUserCredentials({ user, passwordHash: hashPassword(`persisted:${user.id}`) });
+  auth.rememberSession({ id: token, userId: user.id, createdAt: session.createdAt, expiresAt: session.expiresAt });
+
   return user;
 }
 
@@ -503,17 +473,8 @@ async function revokeSession(token: string, reason: string): Promise<void> {
   );
 }
 
-async function auditSecurityEvent(options: {
-  action: string;
-  result: string;
-  userId?: string;
-  sessionId?: string;
-  correlationId?: string;
-  metadata?: Readonly<Record<string, unknown>>;
-}): Promise<void> {
-  if (!process.env.DATABASE_URL) {
-    return;
-  }
+async function auditSecurityEvent(options: SecurityAuditEventInput): Promise<void> {
+  if (!process.env.DATABASE_URL) return;
 
   try {
     await query(
@@ -531,9 +492,7 @@ async function auditSecurityEvent(options: {
       ],
     );
   } catch (error) {
-    if (!isMissingPersistentSessionStorage(error) && !isForeignKeyViolation(error)) {
-      throw error;
-    }
+    if (!isMissingPersistentSessionStorage(error) && !isForeignKeyViolation(error)) throw error;
   }
 }
 
@@ -541,9 +500,7 @@ async function signInExternalIdentity(identity: OidcIdentity): Promise<LoginResu
   const email = identity.email ? normalizeEmail(identity.email) : "";
   const displayName = normalizeDisplayName(identity.displayName ?? email);
 
-  if (!isValidEmail(email) || displayName.length === 0) {
-    throw invalidCredentialsError();
-  }
+  if (!isValidEmail(email) || displayName.length === 0) throw invalidCredentialsError();
 
   const user = await withTransaction(async (executeQuery) => {
     const userByExternalIdentity = await executeQuery<ExternalUserRow>(
@@ -640,9 +597,7 @@ async function ensureInitialFinancialProfile(
     [userId],
   );
 
-  if (activeProfiles.length > 0) {
-    return;
-  }
+  if (activeProfiles.length > 0) return;
 
   await createInitialFinancialProfile(executeQuery, userId, displayName);
 }
@@ -670,9 +625,7 @@ async function createInitialFinancialProfile(
 }
 
 async function findUserCredentialsByEmail(email: string): Promise<AuthUserCredentials | undefined> {
-  if (!process.env.DATABASE_URL) {
-    return undefined;
-  }
+  if (!process.env.DATABASE_URL) return undefined;
 
   const rows = await query<UserCredentialsRow>(
     `select "id", "email", "displayName", "status", "passwordHash"
@@ -759,29 +712,23 @@ function invalidCredentialsError(): AuthError {
 }
 
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: unknown }).code === "23505"
-  );
+  return hasPgCode(error, "23505");
 }
 
 function isForeignKeyViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: unknown }).code === "23503"
-  );
+  return hasPgCode(error, "23503");
 }
 
 function isMissingPersistentSessionStorage(error: unknown): boolean {
+  return hasPgCode(error, "42P01");
+}
+
+function hasPgCode(error: unknown, code: string): boolean {
   return (
     typeof error === "object" &&
     error !== null &&
     "code" in error &&
-    (error as { code?: unknown }).code === "42P01"
+    (error as { code?: unknown }).code === code
   );
 }
 
@@ -800,11 +747,7 @@ function resolveSessionIdleTimeoutMs(): number {
 function resolvePositiveMinutes(key: string, fallback: number): number {
   const value = Number(process.env[key] ?? fallback);
 
-  if (!Number.isFinite(value) || value <= 0) {
-    return fallback;
-  }
-
-  return value;
+  return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
 function readEnv(env: Readonly<Record<string, string | undefined>>, key: string): string | undefined {
