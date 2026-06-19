@@ -8,6 +8,9 @@ const requiredKeys = [
   "POSTGRES_PASSWORD",
   "POSTGRES_PORT",
   "DATABASE_URL",
+  "OIDC_ISSUER_URL",
+  "OIDC_AUDIENCE",
+  "OIDC_JWKS_URI",
 ];
 
 const sensitiveKeyPattern = /(PASSWORD|TOKEN|SECRET|KEY|DATABASE_URL)/i;
@@ -81,6 +84,17 @@ function validateEnvExample(entries) {
 
   if (!databaseUrl.startsWith("postgresql://")) {
     throw new Error("DATABASE_URL in .env.example must use the postgresql:// scheme.");
+  }
+
+  const oidcIssuer = entries.get("OIDC_ISSUER_URL");
+  const oidcJwksUri = entries.get("OIDC_JWKS_URI");
+
+  if (!oidcIssuer.startsWith("https://") || !oidcJwksUri.startsWith("https://")) {
+    throw new Error("OIDC issuer and JWKS URI placeholders must use https:// URLs.");
+  }
+
+  if (!oidcIssuer.includes("example.invalid") || !oidcJwksUri.includes("example.invalid")) {
+    throw new Error("OIDC placeholders in .env.example must use example.invalid hosts.");
   }
 
   for (const [key, value] of entries) {

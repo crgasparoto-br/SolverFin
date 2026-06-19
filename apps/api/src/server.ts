@@ -13,7 +13,7 @@ import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.API_PORT ?? 4000);
-const MVP_PATHS = new Set(["/api/session", "/api/users", "/api/me"]);
+const MVP_PATHS = new Set(["/api/session", "/api/session/oidc", "/api/users", "/api/me"]);
 const MAX_BODY_BYTES = 1_000_000;
 
 const server = createServer((request, response) => {

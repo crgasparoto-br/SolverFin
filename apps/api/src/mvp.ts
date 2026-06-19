@@ -1,10 +1,15 @@
 import { AuthError, type AuthenticatedUser } from "./auth.js";
-import { auth, authenticateUser, registerUser } from "./auth-service.js";
+import { auth, authenticateProductiveUser, authenticateUser, registerUser } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 
 export interface MvpApiRequest {
   method: "GET" | "POST" | "DELETE";
-  path: "/api/session" | "/api/users" | "/api/me" | "/api/financial-summary";
+  path:
+    | "/api/session"
+    | "/api/session/oidc"
+    | "/api/users"
+    | "/api/me"
+    | "/api/financial-summary";
   headers?: Readonly<Record<string, string | undefined>>;
   body?: unknown;
 }
@@ -46,6 +51,10 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
   try {
     if (request.method === "POST" && request.path === "/api/session") {
       return await createSession(request.body);
+    }
+
+    if (request.method === "POST" && request.path === "/api/session/oidc") {
+      return await createOidcSession(request.body);
     }
 
     if (request.method === "POST" && request.path === "/api/users") {
@@ -143,6 +152,16 @@ async function createSession(body: unknown): Promise<MvpApiResponse> {
   return jsonResponse(201, serializeLoginResult(result));
 }
 
+async function createOidcSession(body: unknown): Promise<MvpApiResponse> {
+  if (!isOidcSessionBody(body)) {
+    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Invalid authentication provider response.");
+  }
+
+  const result = await authenticateProductiveUser(body);
+
+  return jsonResponse(201, serializeLoginResult(result));
+}
+
 async function createUser(body: unknown): Promise<MvpApiResponse> {
   if (!isRegisterBody(body)) {
     throw new AuthError(
@@ -200,6 +219,23 @@ function isLoginBody(body: unknown): body is { email: string; password: string }
     "password" in body &&
     typeof body.email === "string" &&
     typeof body.password === "string"
+  );
+}
+
+function isOidcSessionBody(body: unknown): body is {
+  idToken: string;
+  state: string;
+  expectedState: string;
+} {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "idToken" in body &&
+    "state" in body &&
+    "expectedState" in body &&
+    typeof body.idToken === "string" &&
+    typeof body.state === "string" &&
+    typeof body.expectedState === "string"
   );
 }
 

@@ -4,7 +4,12 @@ import {
   getBearerSessionId,
   type AuthenticatedUser,
 } from "./auth.js";
-import { assertDemoAuthAllowed, isDemoAuthAllowed } from "./auth-service.js";
+import {
+  assertAuthenticationModeConfigured,
+  assertDemoAuthAllowed,
+  isDemoAuthAllowed,
+  isProductiveOidcAuthConfigured,
+} from "./auth-service.js";
 
 const activeUser: AuthenticatedUser = {
   id: "user-demo-1",
@@ -50,6 +55,8 @@ testBearerParser();
 testDemoAuthAllowsLocalEnvironments();
 testDemoAuthBlocksProductionWithoutExplicitOptIn();
 testDemoAuthRequiresExplicitOptInValue();
+testProductiveOidcConfigurationAllowsNonLocalEnvironment();
+testAuthenticationModeRequiresDemoOrProductiveOidc();
 
 function testPublicRouteAllowsAnonymousUser(): void {
   const user = auth.getOptionalAuthenticatedRequest({});
@@ -208,6 +215,30 @@ function testDemoAuthRequiresExplicitOptInValue(): void {
     isDemoAuthAllowed({ AUTH_ALLOW_DEMO: "true", NODE_ENV: "production" }),
     true,
     "demo auth should allow explicit opt-in",
+  );
+}
+
+function testProductiveOidcConfigurationAllowsNonLocalEnvironment(): void {
+  const env = {
+    NODE_ENV: "production",
+    OIDC_ISSUER_URL: "https://identity.example.invalid/solverfin",
+    OIDC_AUDIENCE: "solverfin-api",
+    OIDC_JWKS_URI: "https://identity.example.invalid/solverfin/.well-known/jwks.json",
+  };
+
+  assertEqual(
+    isProductiveOidcAuthConfigured(env),
+    true,
+    "OIDC config should enable productive auth mode",
+  );
+  assertAuthenticationModeConfigured(env);
+}
+
+function testAuthenticationModeRequiresDemoOrProductiveOidc(): void {
+  assertThrows(
+    () => assertAuthenticationModeConfigured({ NODE_ENV: "production" }),
+    /Authentication is not configured/,
+    "production should require OIDC config or explicit demo opt-in",
   );
 }
 
