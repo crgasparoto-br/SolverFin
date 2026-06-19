@@ -91,6 +91,10 @@ export function createAuthService(options: AuthServiceOptions) {
     usersById.set(credentials.user.id, credentials.user);
   }
 
+  function rememberSession(session: AuthSession): void {
+    sessionStore.create(session);
+  }
+
   function getAuthenticatedUser(sessionId: string): AuthenticatedUser {
     const session = sessionStore.get(sessionId);
 
@@ -118,6 +122,7 @@ export function createAuthService(options: AuthServiceOptions) {
 
   return {
     upsertUserCredentials,
+    rememberSession,
 
     login(input: LoginInput): LoginResult {
       const credentials = usersByEmail.get(normalizeEmail(input.email));
