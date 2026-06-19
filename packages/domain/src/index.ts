@@ -1,3 +1,5 @@
+import type { CardBrandKey, FinancialInstitutionKey } from "./visual-identities.js";
+
 export * from "./accounts.js";
 export * from "./categories.js";
 export * from "./category-learning.js";
