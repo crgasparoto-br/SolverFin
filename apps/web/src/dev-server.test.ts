@@ -41,6 +41,7 @@ function privateRouteAllowsSessionAndIdentifiesDashboardRoute(): void {
 
 function sidebarMenuUsesPtBrLabels(): void {
   assert.equal(privateRoutes.get("/lancamentos"), "Extrato da conta");
+  assert.equal(privateRoutes.get("/recorrencias"), "Recorrências");
   assert.equal(privateRoutes.get("/cartoes"), "Cartões");
   assert.equal(privateRoutes.get("/orcamentos"), "Orçamentos");
   assert.equal(privateRoutes.get("/relatorios"), "Relatórios");
