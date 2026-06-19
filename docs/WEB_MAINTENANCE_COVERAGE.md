@@ -17,11 +17,10 @@ Este documento registra quais acoes de manutencao ficam visiveis nas telas naveg
 | Contas | Listar, criar, abrir detalhe, editar nome/tipo/saldo inicial e arquivar conta ativa. |
 | Categorias | Listar, criar, abrir detalhe, editar nome/tipo, arquivar categoria ativa e restaurar categoria arquivada. |
 | Extrato da conta | Listar movimentacoes agrupadas por data, criar novo lancamento, abrir detalhe, editar descricao/status/conta/categoria e cancelar/estornar lancamento nao cancelado. |
-| Cartoes | Listar, criar, abrir detalhe, editar dados principais, bloquear cartao ativo, arquivar cartao ativo e registrar compra no cartao. |
+| Cartoes e faturas | Listar e criar cartoes, abrir detalhe, editar dados principais, bloquear cartao ativo, arquivar cartao ativo, registrar compra no cartao, listar faturas, abrir detalhe de fatura e pagar fatura nao paga/cancelada com confirmacao. |
 | Orcamentos | Listar, criar, abrir detalhe, editar categoria/periodo/valor, consultar uso e arquivar orcamento ativo. |
 
 ## Pendencias intencionais
 
-- Faturas continuam sem tela propria nesta issue; pagamento de fatura pode ser exposto em fluxo dedicado de cartoes quando a experiencia de faturas for desenhada.
 - Recorrencias, parcelas e contas a pagar/receber ficam para issues especificas, para evitar misturar novos fluxos com a manutencao das telas ja navegaveis.
 - A UI nao implementa exclusao fisica de dados financeiros; o comportamento esperado segue arquivamento, cancelamento, bloqueio ou restauracao conforme o dominio.
