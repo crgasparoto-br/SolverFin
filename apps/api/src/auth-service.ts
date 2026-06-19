@@ -113,10 +113,17 @@ export async function authenticateProductiveUser(
   const env = options.env ?? process.env;
   const config = resolveOidcProviderConfig(env);
   const validateIdToken = options.validateIdToken ?? validateOidcIdToken;
-  const identity = await validateIdToken(input.idToken, config, {
-    now: options.now,
-    fetchJwks: options.fetchJwks,
-  });
+  const validationOptions: OidcValidationOptions = {};
+
+  if (options.now) {
+    validationOptions.now = options.now;
+  }
+
+  if (options.fetchJwks) {
+    validationOptions.fetchJwks = options.fetchJwks;
+  }
+
+  const identity = await validateIdToken(input.idToken, config, validationOptions);
 
   return signInExternalIdentity(identity);
 }
