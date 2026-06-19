@@ -7,6 +7,7 @@ import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
+import { renderSettingsPage } from "./dev-server/settings-page.js";
 
 export {
   renderAccountsPage,
@@ -18,6 +19,7 @@ export {
 } from "./dev-server/pages.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
+export { renderSettingsPage } from "./dev-server/settings-page.js";
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.PORT ?? 5173);
@@ -64,6 +66,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (route.kind === "login") {
     sendHtml(response, 200, renderLoginPage(url.searchParams.get("erro") ?? undefined));
+    return;
+  }
+
+  if (url.pathname === "/configuracoes" && token) {
+    sendHtml(response, 200, await renderSettingsPage(token));
     return;
   }
 
