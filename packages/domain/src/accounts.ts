@@ -78,6 +78,10 @@ export interface ListAccountsFilters {
   status?: AccountStatus | "all";
 }
 
+type AccountUpdate = Partial<Omit<Account, "institutionKey">> & {
+  institutionKey?: FinancialInstitutionKey | undefined;
+};
+
 const ALLOWED_ACCOUNT_KINDS: readonly AccountKind[] = [
   "checking",
   "savings",
@@ -162,8 +166,8 @@ export function archiveAccount(
   };
 }
 
-function buildOptionalAccountUpdate(payload: UpdateAccountPayload): Partial<Account> {
-  const update: Partial<Account> = {};
+function buildOptionalAccountUpdate(payload: UpdateAccountPayload): AccountUpdate {
+  const update: AccountUpdate = {};
 
   if (payload.name !== undefined) {
     update.name = normalizeAccountName(payload.name);
