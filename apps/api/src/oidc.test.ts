@@ -1,10 +1,5 @@
 import assert from "node:assert/strict";
-import {
-  createSign,
-  generateKeyPairSync,
-  type JsonWebKey,
-  type KeyObject,
-} from "node:crypto";
+import { createSign, generateKeyPairSync, type KeyObject } from "node:crypto";
 
 import { AuthError } from "./auth.js";
 import {
@@ -13,6 +8,12 @@ import {
   type OidcProviderConfig,
 } from "./oidc.js";
 
+interface TestJwk {
+  kid: string;
+  alg: string;
+  [key: string]: unknown;
+}
+
 const now = new Date("2026-06-18T12:00:00.000Z");
 const nowSeconds = Math.floor(now.getTime() / 1000);
 const issuer = "https://identity.example.invalid/solverfin";
@@ -20,7 +21,7 @@ const audience = "solverfin-api";
 const jwksUri = "https://identity.example.invalid/solverfin/.well-known/jwks.json";
 const config: OidcProviderConfig = { issuer, audience, jwksUri };
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
-const jwk = publicKey.export({ format: "jwk" }) as JsonWebKey & { kid: string; alg: string };
+const jwk = publicKey.export({ format: "jwk" }) as TestJwk;
 jwk.kid = "test-key-1";
 jwk.alg = "RS256";
 
