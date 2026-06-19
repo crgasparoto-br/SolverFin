@@ -142,7 +142,7 @@ export interface Account extends Traceable, TenantScoped {
   currency: string;
   openingBalanceMinor: number;
   maskedIdentifier?: string;
-  institutionKey?: FinancialInstitutionKey;
+  institutionKey?: FinancialInstitutionKey | undefined;
 }
 
 export interface Card extends Traceable, TenantScoped {
@@ -152,8 +152,8 @@ export interface Card extends Traceable, TenantScoped {
   dueDay: number;
   creditLimitMinor?: number;
   maskedIdentifier?: string;
-  institutionKey?: FinancialInstitutionKey;
-  brandKey?: CardBrandKey;
+  institutionKey?: FinancialInstitutionKey | undefined;
+  brandKey?: CardBrandKey | undefined;
   paymentAccountId?: EntityId;
 }
 
@@ -375,59 +375,4 @@ export function buildRedactedTransactionChanges(
   }
 
   return Object.keys(changes).length > 0 ? changes : undefined;
-}
-
-export function buildTransactionAuditEntry(input: TransactionAuditInput): AuditLogEntryDraft {
-  const transaction = input.after ?? input.before;
-
-  if (!transaction) {
-    throw new Error("Transaction audit requires a before or after transaction snapshot.");
-  }
-
-  if (input.before && input.after) {
-    assertSameTenant(input.before, input.after);
-
-    if (input.before.id !== input.after.id) {
-      throw new Error("Transaction audit snapshots must reference the same transaction.");
-    }
-  }
-
-  const entry: AuditLogEntryDraft = {
-    organizationId: transaction.organizationId,
-    financialProfileId: transaction.financialProfileId,
-    occurredAt: input.occurredAt,
-    actorKind: input.actorKind,
-    action: input.action,
-    entityKind: "transaction",
-    entityId: transaction.id,
-  };
-
-  if (input.actorId !== undefined) {
-    entry.actorId = input.actorId;
-  }
-
-  if (input.correlationId !== undefined) {
-    entry.correlationId = input.correlationId;
-  }
-
-  if (input.reason !== undefined) {
-    entry.reason = input.reason;
-  }
-
-  const redactedChanges = buildRedactedTransactionChanges(input.before, input.after);
-
-  if (redactedChanges !== undefined) {
-    entry.redactedChanges = redactedChanges;
-  }
-
-  return entry;
-}
-
-function assertSameTenant(before: TenantScoped, after: TenantScoped): void {
-  if (
-    before.organizationId !== after.organizationId ||
-    before.financialProfileId !== after.financialProfileId
-  ) {
-    throw new Error("Audit snapshots must belong to the same tenant and financial profile.");
-  }
 }
