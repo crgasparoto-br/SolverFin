@@ -208,6 +208,7 @@ function mapClaimsToIdentity(claims: JwtClaims, provider: string): OidcIdentity 
     typeof claims.preferred_username === "string"
       ? normalizeOptional(claims.preferred_username)
       : undefined;
+  const displayName = name ?? preferredUsername;
   const identity: OidcIdentity = {
     provider,
     subject: String(claims.sub).trim(),
@@ -217,8 +218,8 @@ function mapClaimsToIdentity(claims: JwtClaims, provider: string): OidcIdentity 
     identity.email = email;
   }
 
-  if (name ?? preferredUsername) {
-    identity.displayName = name ?? preferredUsername;
+  if (displayName) {
+    identity.displayName = displayName;
   }
 
   return identity;
