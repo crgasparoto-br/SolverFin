@@ -136,8 +136,6 @@ export async function registerUser(input: RegisterUserInput): Promise<LoginResul
 
   const passwordHash = hashPassword(password);
   const userId = randomUUID();
-  const organizationId = randomUUID();
-  const financialProfileId = randomUUID();
 
   try {
     await withTransaction(async (executeQuery) => {
@@ -297,9 +295,10 @@ async function signInExternalIdentity(identity: OidcIdentity): Promise<LoginResu
     return { id: userId, email, displayName, status: "active" as const };
   });
 
-  auth.upsertUserCredentials({ user, passwordHash: createExternalPasswordSentinel(user.id) });
+  const externalPassword = createExternalPasswordSentinel(user.id);
+  auth.upsertUserCredentials({ user, passwordHash: hashPassword(externalPassword) });
 
-  return auth.login({ email: user.email, password: createExternalPasswordSentinel(user.id) });
+  return auth.login({ email: user.email, password: externalPassword });
 }
 
 async function updateExternalUserSnapshot(
