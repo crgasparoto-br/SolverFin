@@ -270,6 +270,10 @@ Leia estes documentos antes de implementar qualquer issue:
 |   |   `-- src/index.ts
 |   |-- config/
 |   |   |-- package.json
+|   |   |-- tsconfig.json
+|   |   `-- src/
+|   |       |-- env.ts
+|   |       `-- index.ts
 |   |-- domain/
 |   |   |-- package.json
 |   |   |-- tsconfig.json
