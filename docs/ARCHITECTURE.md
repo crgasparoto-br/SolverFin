@@ -10,9 +10,9 @@ Ele nao substitui ADRs. Decisoes duradouras, mudancas de stack, integracoes exte
 
 O nucleo financeiro do MVP esta ligado de ponta a ponta com persistencia real:
 
-- `apps/api` e um servidor HTTP em Node `http` puro (sem framework) que resolve sessao/tenant, chama `packages/domain` para validar regras e persiste via `pg` (SQL parametrizado) em PostgreSQL. Cobre contas, categorias, lancamentos, recorrencias/parcelas, cartoes/faturas e orcamentos, incluindo trilha de auditoria (`AuditLogEntry`).
-- `apps/web` e um servidor SSR em Node `http` puro que autentica contra a API real (token guardado em cookie HttpOnly) e renderiza dashboard, contas, categorias, lancamentos, cartoes e orcamentos com dados reais; demais rotas do menu ainda sao placeholder.
-- Nao ha API real nem persistencia para contas a pagar/receber (`packages/domain/src/payables-receivables.ts` existe, mas falta o modelo `PayableReceivable` no `prisma/schema.prisma`).
+- `apps/api` e um servidor HTTP em Node `http` puro (sem framework) que resolve sessao/tenant, chama `packages/domain` para validar regras e persiste via `pg` (SQL parametrizado) em PostgreSQL. Cobre contas, categorias, lancamentos, recorrencias/parcelas, cartoes/faturas, orcamentos e contas a pagar/receber, incluindo trilha de auditoria (`AuditLogEntry`).
+- `apps/web` e um servidor SSR em Node `http` puro que autentica contra a API real (token guardado em cookie HttpOnly) e renderiza dashboard, contas, categorias, lancamentos, cartoes e orcamentos com dados reais; demais rotas do menu ainda sao placeholder. A rota `/pagar-receber` ja aparece na navegacao, mas ainda renderiza o estado de preparacao porque nao ha pagina propria ligada em `pages.ts` na `main`.
+- Contas a pagar/receber possuem dominio, schema Prisma, migration, repository SQL, API dedicada em `/api/payables-receivables` e cobertura de integracao para criacao, listagem, conclusao, cancelamento e isolamento por perfil financeiro. O seed demo nao cria registros desse dominio no estado atual.
 - Importacao (CSV/OFX/mensagens bancarias), deduplicacao, conciliacao, regras de automacao e a camada de IA tem dominio implementado e testado, mas ainda sem repositorio/API/UI ligados a banco real.
 - Auth e tenant continuam no formato MVP descrito em `docs/AUTH.md`/`docs/TENANT.md` para execucao local. A autenticacao produtiva definitiva esta aceita na ADR `docs/adr/0004-autenticacao-produtiva.md`: provider gerenciado OIDC/OAuth2, credenciais delegadas e sessao propria persistente/revogavel no SolverFin.
 
@@ -208,7 +208,7 @@ Diretrizes iniciais:
 - auditar alteracoes financeiras relevantes com mudancas redigidas;
 - registrar consentimento para importacoes, captura de mensagens e uso de IA;
 - permitir rastrear origem e revisao de sugestoes automatizadas;
-- usar apenas dados ficticios e minimizados em seeds, fixtures, prints e documentacao.
+- usar apenas dados ficticios e minimizados em seeds, fixtures e documentacao.
 
 ## Validacao esperada por tipo de mudanca
 
