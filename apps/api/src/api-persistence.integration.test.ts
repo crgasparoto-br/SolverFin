@@ -49,12 +49,26 @@ async function createPersonalFinancialFlow(token: string): Promise<PersonalFixtu
     name: `Conta integracao ${suffix}`,
     kind: "checking",
     openingBalanceMinor: 12345,
+    institutionKey: "inter",
   });
   assert.equal(accountResponse.statusCode, 201);
-  const account = readBody<{ account: ApiAccount }>(accountResponse).account;
+  const createdAccount = readBody<{ account: ApiAccount }>(accountResponse).account;
 
-  assert.equal(account.financialProfileId, PERSONAL_PROFILE_ID);
-  assert.equal(account.openingBalanceMinor, 12345);
+  assert.equal(createdAccount.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(createdAccount.openingBalanceMinor, 12345);
+  assert.equal(createdAccount.institutionKey, "inter");
+
+  const accountUpdateResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/accounts/${createdAccount.id}`,
+    { institutionKey: "caixa" },
+  );
+  assert.equal(accountUpdateResponse.statusCode, 200);
+  const account = readBody<{ account: ApiAccount }>(accountUpdateResponse).account;
+
+  assert.equal(account.id, createdAccount.id);
+  assert.equal(account.institutionKey, "caixa");
 
   const categoryResponse = await apiRequest(token, "POST", "/api/categories", {
     name: `Categoria integracao ${suffix}`,
@@ -65,6 +79,32 @@ async function createPersonalFinancialFlow(token: string): Promise<PersonalFixtu
 
   assert.equal(category.financialProfileId, PERSONAL_PROFILE_ID);
   assert.equal(category.kind, "expense");
+
+  const cardResponse = await apiRequest(token, "POST", "/api/cards", {
+    name: `Cartao integracao ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 100000,
+    paymentAccountId: account.id,
+    institutionKey: "porto_bank",
+    brandKey: "visa",
+  });
+  assert.equal(cardResponse.statusCode, 201);
+  const createdCard = readBody<{ card: ApiCard }>(cardResponse).card;
+
+  assert.equal(createdCard.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(createdCard.paymentAccountId, account.id);
+  assert.equal(createdCard.institutionKey, "porto_bank");
+  assert.equal(createdCard.brandKey, "visa");
+
+  const cardUpdateResponse = await apiRequest(token, "PATCH", `/api/cards/${createdCard.id}`, {
+    brandKey: "mastercard",
+  });
+  assert.equal(cardUpdateResponse.statusCode, 200);
+  const card = readBody<{ card: ApiCard }>(cardUpdateResponse).card;
+
+  assert.equal(card.id, createdCard.id);
+  assert.equal(card.brandKey, "mastercard");
 
   const transactionResponse = await apiRequest(token, "POST", "/api/transactions", {
     kind: "expense",
@@ -81,7 +121,7 @@ async function createPersonalFinancialFlow(token: string): Promise<PersonalFixtu
   assert.equal(transaction.accountId, account.id);
   assert.equal(transaction.categoryId, category.id);
 
-  return { account, category, transaction };
+  return { account, card, category, transaction };
 }
 
 async function createPersonalPayablesReceivablesFlow(
@@ -218,6 +258,7 @@ async function assertPersonalProfileListsOnlyPersonalData(
   importFixtures: ImportFixtures,
 ): Promise<void> {
   const accountsResponse = await apiRequest(token, "GET", "/api/accounts?status=all");
+  const cardsResponse = await apiRequest(token, "GET", "/api/cards?status=all");
   const categoriesResponse = await apiRequest(token, "GET", "/api/categories?status=all");
   const transactionsResponse = await apiRequest(token, "GET", "/api/transactions?status=all");
   const payablesReceivablesResponse = await apiRequest(
@@ -228,6 +269,7 @@ async function assertPersonalProfileListsOnlyPersonalData(
   const importBatchesResponse = await apiRequest(token, "GET", "/api/import-batches?status=all");
 
   const accounts = readBody<{ accounts: ApiAccount[] }>(accountsResponse).accounts;
+  const cards = readBody<{ cards: ApiCard[] }>(cardsResponse).cards;
   const categories = readBody<{ categories: ApiCategory[] }>(categoriesResponse).categories;
   const transactions = readBody<{ transactions: ApiTransaction[] }>(
     transactionsResponse,
@@ -239,13 +281,21 @@ async function assertPersonalProfileListsOnlyPersonalData(
     importBatchesResponse,
   ).importBatches;
 
+  const listedAccount = accounts.find((account) => account.id === fixtures.account.id);
+  const listedCard = cards.find((card) => card.id === fixtures.card.id);
+
   assert.equal(hasId(accounts, fixtures.account.id), true);
+  assert.equal(hasId(cards, fixtures.card.id), true);
   assert.equal(hasId(categories, fixtures.category.id), true);
   assert.equal(hasId(transactions, fixtures.transaction.id), true);
   assert.equal(hasId(listedPayablesReceivables, payablesReceivables.payable.id), true);
   assert.equal(hasId(listedPayablesReceivables, payablesReceivables.receivable.id), true);
   assert.equal(hasId(importBatches, importFixtures.batch.id), true);
+  assert.equal(listedAccount?.institutionKey, "caixa");
+  assert.equal(listedCard?.institutionKey, "porto_bank");
+  assert.equal(listedCard?.brandKey, "mastercard");
   assertEveryProfile(accounts, PERSONAL_PROFILE_ID);
+  assertEveryProfile(cards, PERSONAL_PROFILE_ID);
   assertEveryProfile(categories, PERSONAL_PROFILE_ID);
   assertEveryProfile(transactions, PERSONAL_PROFILE_ID);
   assertEveryProfile(listedPayablesReceivables, PERSONAL_PROFILE_ID);
@@ -262,6 +312,11 @@ async function assertMeiProfileDoesNotExposePersonalData(
     token,
     "GET",
     `/api/accounts?status=all&profileId=${MEI_PROFILE_ID}`,
+  );
+  const meiCardsResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/cards?status=all&profileId=${MEI_PROFILE_ID}`,
   );
   const meiTransactionsResponse = await apiRequest(
     token,
@@ -280,6 +335,7 @@ async function assertMeiProfileDoesNotExposePersonalData(
   );
 
   const meiAccounts = readBody<{ accounts: ApiAccount[] }>(meiAccountsResponse).accounts;
+  const meiCards = readBody<{ cards: ApiCard[] }>(meiCardsResponse).cards;
   const meiTransactions = readBody<{ transactions: ApiTransaction[] }>(
     meiTransactionsResponse,
   ).transactions;
@@ -291,10 +347,12 @@ async function assertMeiProfileDoesNotExposePersonalData(
   ).importBatches;
 
   assertEveryProfile(meiAccounts, MEI_PROFILE_ID);
+  assertEveryProfile(meiCards, MEI_PROFILE_ID);
   assertEveryProfile(meiTransactions, MEI_PROFILE_ID);
   assertEveryProfile(meiPayablesReceivables, MEI_PROFILE_ID);
   assertEveryProfile(meiImportBatches, MEI_PROFILE_ID);
   assert.equal(hasId(meiAccounts, fixtures.account.id), false);
+  assert.equal(hasId(meiCards, fixtures.card.id), false);
   assert.equal(hasId(meiTransactions, fixtures.transaction.id), false);
   assert.equal(hasId(meiPayablesReceivables, payablesReceivables.payable.id), false);
   assert.equal(hasId(meiImportBatches, importFixtures.batch.id), false);
@@ -309,6 +367,15 @@ async function assertMeiProfileDoesNotExposePersonalData(
 
   assert.equal(crossProfileUpdate.statusCode, 404);
   assert.equal(readErrorCode(crossProfileUpdate), "TENANT_RESOURCE_NOT_FOUND");
+
+  const crossProfileCard = await apiRequest(
+    token,
+    "GET",
+    `/api/cards/${fixtures.card.id}?profileId=${MEI_PROFILE_ID}`,
+  );
+
+  assert.equal(crossProfileCard.statusCode, 404);
+  assert.equal(readErrorCode(crossProfileCard), "TENANT_RESOURCE_NOT_FOUND");
 
   const crossProfilePayable = await apiRequest(
     token,
@@ -413,6 +480,7 @@ function assertIntegrationDatabaseConfigured(): void {
 
 interface PersonalFixtures {
   account: ApiAccount;
+  card: ApiCard;
   category: ApiCategory;
   transaction: ApiTransaction;
 }
@@ -426,13 +494,23 @@ interface ImportFixtures {
   batch: ApiImportBatch;
 }
 
-type MeiIsolationFixtures = Pick<PersonalFixtures, "account" | "transaction">;
+type MeiIsolationFixtures = Pick<PersonalFixtures, "account" | "card" | "transaction">;
 
 interface ApiAccount {
   id: string;
   financialProfileId: string;
   name: string;
   openingBalanceMinor: number;
+  institutionKey?: string;
+}
+
+interface ApiCard {
+  id: string;
+  financialProfileId: string;
+  name: string;
+  paymentAccountId?: string;
+  institutionKey?: string;
+  brandKey?: string;
 }
 
 interface ApiCategory {
