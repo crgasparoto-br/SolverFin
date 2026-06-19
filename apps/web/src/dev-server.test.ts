@@ -6,7 +6,7 @@ import { privateRoutes } from "./dev-server/routes.js";
 loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
-accountsCardsRouteKeepsLegacyAccountsPageCompatible();
+accountsCardsRouteRendersMasterPage();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
 rootRouteRedirectsBasedOnSession();
@@ -40,7 +40,7 @@ function privateRouteAllowsSessionAndIdentifiesDashboardRoute(): void {
   assert.equal(authenticatedRoute.kind, "placeholder");
 }
 
-function accountsCardsRouteKeepsLegacyAccountsPageCompatible(): void {
+function accountsCardsRouteRendersMasterPage(): void {
   const anonymousRoute = resolveRoute("/contas-cartoes", false);
 
   assert.equal(anonymousRoute.statusCode, 302);
@@ -48,8 +48,8 @@ function accountsCardsRouteKeepsLegacyAccountsPageCompatible(): void {
 
   const authenticatedRoute = resolveRoute("/contas-cartoes", true);
 
-  assert.equal(authenticatedRoute.statusCode, 302);
-  assert.equal(authenticatedRoute.location, "/contas");
+  assert.equal(authenticatedRoute.statusCode, 200);
+  assert.equal(authenticatedRoute.kind, "placeholder");
 }
 
 function sidebarMenuUsesPtBrLabels(): void {
