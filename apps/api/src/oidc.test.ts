@@ -7,7 +7,11 @@ import {
 } from "node:crypto";
 
 import { AuthError } from "./auth.js";
-import { validateOidcIdToken, validateOidcState, type OidcProviderConfig } from "./oidc.js";
+import {
+  validateOidcIdToken,
+  validateOidcState,
+  type OidcProviderConfig,
+} from "./oidc.js";
 
 const now = new Date("2026-06-18T12:00:00.000Z");
 const nowSeconds = Math.floor(now.getTime() / 1000);
