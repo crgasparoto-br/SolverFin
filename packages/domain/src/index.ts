@@ -376,3 +376,35 @@ export function buildRedactedTransactionChanges(
 
   return Object.keys(changes).length > 0 ? changes : undefined;
 }
+
+export function buildTransactionAuditEntry(input: TransactionAuditInput): AuditLogEntryDraft {
+  const reference = input.after ?? input.before;
+
+  if (!reference) {
+    throw new Error("Transaction audit entries require a before or after transaction.");
+  }
+
+  if (
+    input.before &&
+    input.after &&
+    input.before.organizationId !== input.after.organizationId
+  ) {
+    throw new Error("Transaction audit entries must reference the same tenant.");
+  }
+
+  const redactedChanges = buildRedactedTransactionChanges(input.before, input.after);
+
+  return {
+    organizationId: reference.organizationId,
+    financialProfileId: reference.financialProfileId,
+    occurredAt: input.occurredAt,
+    actorKind: input.actorKind,
+    action: input.action,
+    entityKind: "transaction",
+    entityId: reference.id,
+    ...(input.actorId !== undefined ? { actorId: input.actorId } : {}),
+    ...(input.correlationId !== undefined ? { correlationId: input.correlationId } : {}),
+    ...(input.reason !== undefined ? { reason: input.reason } : {}),
+    ...(redactedChanges !== undefined ? { redactedChanges } : {}),
+  };
+}
