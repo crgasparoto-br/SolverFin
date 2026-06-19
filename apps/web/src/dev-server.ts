@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { handleApiRequest } from "./dev-server/api.js";
+import { renderCardsPage } from "./dev-server/cards-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
@@ -15,11 +16,11 @@ import { renderSettingsPage } from "./dev-server/settings-page.js";
 export {
   renderAccountsPage,
   renderBudgetsPage,
-  renderCardsPage,
   renderCategoriesPage,
   renderDashboardPage,
   renderTransactionsPage,
 } from "./dev-server/pages.js";
+export { renderCardsPage } from "./dev-server/cards-page.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
 export { renderPayablesReceivablesPage } from "./dev-server/payables-receivables-page.js";
@@ -72,6 +73,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (route.kind === "login") {
     sendHtml(response, 200, renderLoginPage(url.searchParams.get("erro") ?? undefined));
+    return;
+  }
+
+  if (url.pathname === "/cartoes" && token) {
+    sendHtml(response, 200, await renderCardsPage(token));
     return;
   }
 
