@@ -26,18 +26,21 @@ async function main(): Promise<void> {
   const fixtures = await createPersonalFinancialFlow(token);
   const payablesReceivables = await createPersonalPayablesReceivablesFlow(token, fixtures);
   const importBatch = await createPersonalCsvImportFlow(token, fixtures);
+  const cardInvoice = await createPersonalCardInvoiceFlow(token, fixtures);
 
   await assertPersonalProfileListsOnlyPersonalData(
     token,
     fixtures,
     payablesReceivables,
     importBatch,
+    cardInvoice,
   );
   await assertMeiProfileDoesNotExposePersonalData(
     token,
     fixtures,
     payablesReceivables,
     importBatch,
+    cardInvoice,
   );
   await assertUnknownProfileIsRejected(token);
 }
@@ -251,11 +254,117 @@ async function createPersonalCsvImportFlow(
   return { batch: imported.importBatch };
 }
 
+async function createPersonalCardInvoiceFlow(
+  token: string,
+  fixtures: Pick<PersonalFixtures, "account" | "card" | "category">,
+): Promise<CardInvoiceFixtures> {
+  const suffix = Date.now().toString(36);
+  const purchaseResponse = await apiRequest(token, "POST", `/api/cards/${fixtures.card.id}/purchases`, {
+    occurredOn: "2026-06-19",
+    amountMinor: 3210,
+    description: `Compra cartao integracao ${suffix}`,
+    categoryId: fixtures.category.id,
+  });
+  assert.equal(purchaseResponse.statusCode, 201);
+  const purchaseResult = readBody<{
+    transaction: ApiTransaction;
+    invoice: ApiInvoice;
+    installments: unknown[];
+  }>(purchaseResponse);
+
+  assert.equal(purchaseResult.transaction.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(purchaseResult.transaction.cardId, fixtures.card.id);
+  assert.equal(purchaseResult.transaction.invoiceId, purchaseResult.invoice.id);
+  assert.equal(purchaseResult.transaction.amountMinor, 3210);
+  assert.equal(purchaseResult.invoice.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(purchaseResult.invoice.cardId, fixtures.card.id);
+  assert.equal(purchaseResult.invoice.totalAmountMinor, 3210);
+  assert.equal(purchaseResult.invoice.status, "open");
+
+  const summaryResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/invoices/${purchaseResult.invoice.id}/summary`,
+  );
+  assert.equal(summaryResponse.statusCode, 200);
+  const summary = readBody<{ summary: ApiInvoiceSummary }>(summaryResponse).summary;
+
+  assert.equal(summary.invoiceId, purchaseResult.invoice.id);
+  assert.equal(summary.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(summary.cardId, fixtures.card.id);
+  assert.equal(summary.status, "open");
+  assert.equal(summary.totalExpensesMinor, 3210);
+  assert.equal(summary.totalPaidMinor, 0);
+  assert.equal(summary.amountDueMinor, 3210);
+  assert.equal(summary.unreconciledExpensesMinor, 3210);
+  assert.equal(summary.purchasesCount, 1);
+  assert.equal(summary.cardTotals.length, 1);
+  assert.equal(summary.cardTotals[0]?.limitTotalMinor, 100000);
+  assert.equal(summary.cardTotals[0]?.limitUsedMinor, 3210);
+  assert.equal(summary.cardTotals[0]?.limitAvailableMinor, 96790);
+
+  const invoicePurchasesResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/invoices/${purchaseResult.invoice.id}/purchases?search=cartao&reconciliation=unreconciled`,
+  );
+  assert.equal(invoicePurchasesResponse.statusCode, 200);
+  const invoicePurchases = readBody<{ purchases: ApiCardPurchase[] }>(
+    invoicePurchasesResponse,
+  ).purchases;
+
+  assert.equal(hasId(invoicePurchases, purchaseResult.transaction.id), true);
+  assertEveryProfile(invoicePurchases, PERSONAL_PROFILE_ID);
+  assert.equal(invoicePurchases[0]?.invoiceId, purchaseResult.invoice.id);
+
+  const periodPurchasesResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/card-purchases?cardId=${fixtures.card.id}&occurredFrom=2026-06-01&occurredTo=2026-06-30`,
+  );
+  assert.equal(periodPurchasesResponse.statusCode, 200);
+  const periodPurchases = readBody<{ purchases: ApiCardPurchase[] }>(
+    periodPurchasesResponse,
+  ).purchases;
+
+  assert.equal(hasId(periodPurchases, purchaseResult.transaction.id), true);
+  assertEveryProfile(periodPurchases, PERSONAL_PROFILE_ID);
+
+  const closeResponse = await apiRequest(token, "POST", `/api/invoices/${purchaseResult.invoice.id}/close`);
+  assert.equal(closeResponse.statusCode, 200);
+  const closedSummary = readBody<{ summary: ApiInvoiceSummary }>(closeResponse).summary;
+
+  assert.equal(closedSummary.status, "closed");
+  assert.equal(closedSummary.amountDueMinor, 3210);
+
+  const payResponse = await apiRequest(token, "POST", `/api/invoices/${purchaseResult.invoice.id}/pay`, {
+    paymentAccountId: fixtures.account.id,
+    paidOn: "2026-07-10",
+    amountMinor: 3210,
+    description: `Pagamento fatura integracao ${suffix}`,
+  });
+  assert.equal(payResponse.statusCode, 200);
+  const paid = readBody<{ invoice: ApiInvoice; transaction: ApiTransaction }>(payResponse);
+
+  assert.equal(paid.invoice.status, "paid");
+  assert.equal(paid.transaction.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(paid.transaction.accountId, fixtures.account.id);
+  assert.equal(paid.transaction.invoiceId, purchaseResult.invoice.id);
+  assert.equal(paid.transaction.amountMinor, 3210);
+
+  return {
+    invoice: paid.invoice,
+    payment: paid.transaction,
+    purchase: purchaseResult.transaction,
+  };
+}
+
 async function assertPersonalProfileListsOnlyPersonalData(
   token: string,
   fixtures: PersonalFixtures,
   payablesReceivables: PayablesReceivablesFixtures,
   importFixtures: ImportFixtures,
+  cardInvoice: CardInvoiceFixtures,
 ): Promise<void> {
   const accountsResponse = await apiRequest(token, "GET", "/api/accounts?status=all");
   const cardsResponse = await apiRequest(token, "GET", "/api/cards?status=all");
@@ -267,6 +376,7 @@ async function assertPersonalProfileListsOnlyPersonalData(
     "/api/payables-receivables?status=all",
   );
   const importBatchesResponse = await apiRequest(token, "GET", "/api/import-batches?status=all");
+  const cardPurchasesResponse = await apiRequest(token, "GET", "/api/card-purchases");
 
   const accounts = readBody<{ accounts: ApiAccount[] }>(accountsResponse).accounts;
   const cards = readBody<{ cards: ApiCard[] }>(cardsResponse).cards;
@@ -280,6 +390,7 @@ async function assertPersonalProfileListsOnlyPersonalData(
   const importBatches = readBody<{ importBatches: ApiImportBatch[] }>(
     importBatchesResponse,
   ).importBatches;
+  const cardPurchases = readBody<{ purchases: ApiCardPurchase[] }>(cardPurchasesResponse).purchases;
 
   const listedAccount = accounts.find((account) => account.id === fixtures.account.id);
   const listedCard = cards.find((card) => card.id === fixtures.card.id);
@@ -288,6 +399,9 @@ async function assertPersonalProfileListsOnlyPersonalData(
   assert.equal(hasId(cards, fixtures.card.id), true);
   assert.equal(hasId(categories, fixtures.category.id), true);
   assert.equal(hasId(transactions, fixtures.transaction.id), true);
+  assert.equal(hasId(transactions, cardInvoice.purchase.id), true);
+  assert.equal(hasId(transactions, cardInvoice.payment.id), true);
+  assert.equal(hasId(cardPurchases, cardInvoice.purchase.id), true);
   assert.equal(hasId(listedPayablesReceivables, payablesReceivables.payable.id), true);
   assert.equal(hasId(listedPayablesReceivables, payablesReceivables.receivable.id), true);
   assert.equal(hasId(importBatches, importFixtures.batch.id), true);
@@ -298,6 +412,7 @@ async function assertPersonalProfileListsOnlyPersonalData(
   assertEveryProfile(cards, PERSONAL_PROFILE_ID);
   assertEveryProfile(categories, PERSONAL_PROFILE_ID);
   assertEveryProfile(transactions, PERSONAL_PROFILE_ID);
+  assertEveryProfile(cardPurchases, PERSONAL_PROFILE_ID);
   assertEveryProfile(listedPayablesReceivables, PERSONAL_PROFILE_ID);
   assertEveryProfile(importBatches, PERSONAL_PROFILE_ID);
 }
@@ -307,6 +422,7 @@ async function assertMeiProfileDoesNotExposePersonalData(
   fixtures: MeiIsolationFixtures,
   payablesReceivables: PayablesReceivablesFixtures,
   importFixtures: ImportFixtures,
+  cardInvoice: CardInvoiceFixtures,
 ): Promise<void> {
   const meiAccountsResponse = await apiRequest(
     token,
@@ -333,6 +449,11 @@ async function assertMeiProfileDoesNotExposePersonalData(
     "GET",
     `/api/import-batches?status=all&profileId=${MEI_PROFILE_ID}`,
   );
+  const meiCardPurchasesResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/card-purchases?profileId=${MEI_PROFILE_ID}`,
+  );
 
   const meiAccounts = readBody<{ accounts: ApiAccount[] }>(meiAccountsResponse).accounts;
   const meiCards = readBody<{ cards: ApiCard[] }>(meiCardsResponse).cards;
@@ -345,15 +466,22 @@ async function assertMeiProfileDoesNotExposePersonalData(
   const meiImportBatches = readBody<{ importBatches: ApiImportBatch[] }>(
     meiImportBatchesResponse,
   ).importBatches;
+  const meiCardPurchases = readBody<{ purchases: ApiCardPurchase[] }>(
+    meiCardPurchasesResponse,
+  ).purchases;
 
   assertEveryProfile(meiAccounts, MEI_PROFILE_ID);
   assertEveryProfile(meiCards, MEI_PROFILE_ID);
   assertEveryProfile(meiTransactions, MEI_PROFILE_ID);
   assertEveryProfile(meiPayablesReceivables, MEI_PROFILE_ID);
   assertEveryProfile(meiImportBatches, MEI_PROFILE_ID);
+  assertEveryProfile(meiCardPurchases, MEI_PROFILE_ID);
   assert.equal(hasId(meiAccounts, fixtures.account.id), false);
   assert.equal(hasId(meiCards, fixtures.card.id), false);
   assert.equal(hasId(meiTransactions, fixtures.transaction.id), false);
+  assert.equal(hasId(meiTransactions, cardInvoice.purchase.id), false);
+  assert.equal(hasId(meiTransactions, cardInvoice.payment.id), false);
+  assert.equal(hasId(meiCardPurchases, cardInvoice.purchase.id), false);
   assert.equal(hasId(meiPayablesReceivables, payablesReceivables.payable.id), false);
   assert.equal(hasId(meiImportBatches, importFixtures.batch.id), false);
   assert.equal(hasAccountNamed(meiAccounts, "Conta MEI demo"), true);
@@ -394,6 +522,15 @@ async function assertMeiProfileDoesNotExposePersonalData(
 
   assert.equal(crossProfileImportBatch.statusCode, 404);
   assert.equal(readErrorCode(crossProfileImportBatch), "TENANT_RESOURCE_NOT_FOUND");
+
+  const crossProfileInvoice = await apiRequest(
+    token,
+    "GET",
+    `/api/invoices/${cardInvoice.invoice.id}/summary?profileId=${MEI_PROFILE_ID}`,
+  );
+
+  assert.equal(crossProfileInvoice.statusCode, 404);
+  assert.equal(readErrorCode(crossProfileInvoice), "TENANT_RESOURCE_NOT_FOUND");
 }
 
 async function assertUnknownProfileIsRejected(token: string): Promise<void> {
@@ -494,6 +631,12 @@ interface ImportFixtures {
   batch: ApiImportBatch;
 }
 
+interface CardInvoiceFixtures {
+  invoice: ApiInvoice;
+  payment: ApiTransaction;
+  purchase: ApiTransaction;
+}
+
 type MeiIsolationFixtures = Pick<PersonalFixtures, "account" | "card" | "transaction">;
 
 interface ApiAccount {
@@ -524,8 +667,53 @@ interface ApiTransaction {
   id: string;
   financialProfileId: string;
   accountId?: string;
+  amountMinor?: number;
+  cardId?: string;
   categoryId?: string;
+  invoiceId?: string;
   kind?: string;
+  status?: string;
+}
+
+interface ApiInvoice {
+  id: string;
+  financialProfileId: string;
+  cardId: string;
+  status: string;
+  totalAmountMinor: number;
+}
+
+interface ApiInvoiceSummary {
+  invoiceId: string;
+  financialProfileId: string;
+  cardId: string;
+  status: string;
+  totalExpensesMinor: number;
+  totalPaidMinor: number;
+  amountDueMinor: number;
+  reconciledExpensesMinor: number;
+  unreconciledExpensesMinor: number;
+  purchasesCount: number;
+  cardTotals: ApiInvoiceCardTotal[];
+}
+
+interface ApiInvoiceCardTotal {
+  cardId: string;
+  limitTotalMinor: number;
+  limitUsedMinor: number;
+  limitAvailableMinor: number;
+  invoiceTotalMinor: number;
+  invoiceAmountDueMinor: number;
+}
+
+interface ApiCardPurchase {
+  id: string;
+  financialProfileId: string;
+  cardId: string;
+  invoiceId?: string;
+  status: string;
+  amountMinor: number;
+  occurredOn: string;
 }
 
 interface ApiPayableReceivable {
