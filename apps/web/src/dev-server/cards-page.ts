@@ -11,19 +11,12 @@ export async function renderCardsPage(token: string): Promise<string> {
     apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?kind=expense"),
   ]);
 
-  if (!cards.ok) {
-    return renderApiErrorPage("/cartoes", "Cartões", cards.error);
-  }
+  if (!cards.ok) return renderApiErrorPage("/cartoes", "Cartões", cards.error);
+  if (!invoices.ok) return renderApiErrorPage("/cartoes", "Cartões", invoices.error);
 
-  if (!invoices.ok) {
-    return renderApiErrorPage("/cartoes", "Cartões", invoices.error);
-  }
-
-  const cardItems = cards.data.cards;
-  const invoiceItems = invoices.data.invoices;
   const accountOptions = accounts.ok ? accounts.data.accounts : [];
   const categoryOptions = categories.ok ? categories.data.categories : [];
-  const cardNames = new Map(cardItems.map((card) => [card.id, card.name]));
+  const cardNames = new Map(cards.data.cards.map((card) => [card.id, card.name]));
 
   return renderAuthenticatedPage({
     pathname: "/cartoes",
@@ -39,14 +32,16 @@ export async function renderCardsPage(token: string): Promise<string> {
           <section class="panel list-panel">
             <div class="section-heading">
               <h2>Cartões cadastrados</h2>
-              <span>${cardItems.length} itens</span>
+              <span>${cards.data.cards.length} itens</span>
             </div>
             <div class="rows maintenance-rows">
-              ${
-                cardItems
-                  .map((card) => renderCardRow(card, accountOptions, categoryOptions))
-                  .join("") || renderEmptyState("Nenhum cartão cadastrado.", "Cadastre cartões para acompanhar faturas e vencimentos.")
-              }
+              ${cards.data.cards
+                .map((card) => renderCardRow(card, accountOptions, categoryOptions))
+                .join("") ||
+              renderEmptyState(
+                "Nenhum cartão cadastrado.",
+                "Cadastre cartões para acompanhar faturas e vencimentos.",
+              )}
             </div>
           </section>
           <section class="panel list-panel">
@@ -55,14 +50,16 @@ export async function renderCardsPage(token: string): Promise<string> {
                 <h2>Faturas</h2>
                 <p class="muted">Consulte detalhes e pague faturas usando uma conta ativa.</p>
               </div>
-              <span>${invoiceItems.length} itens</span>
+              <span>${invoices.data.invoices.length} itens</span>
             </div>
             <div class="rows maintenance-rows">
-              ${
-                invoiceItems
-                  .map((invoice) => renderInvoiceRow(invoice, cardNames, accountOptions))
-                  .join("") || renderEmptyState("Nenhuma fatura encontrada.", "Registre compras no cartão para gerar faturas automaticamente.")
-              }
+              ${invoices.data.invoices
+                .map((invoice) => renderInvoiceRow(invoice, cardNames, accountOptions))
+                .join("") ||
+              renderEmptyState(
+                "Nenhuma fatura encontrada.",
+                "Registre compras no cartão para gerar faturas automaticamente.",
+              )}
             </div>
           </section>
         </div>
@@ -72,12 +69,7 @@ export async function renderCardsPage(token: string): Promise<string> {
             <label>Nome<input name="name" required /></label>
             <label>Dia de fechamento<input name="closingDay" type="number" min="1" max="31" required /></label>
             <label>Dia de vencimento<input name="dueDay" type="number" min="1" max="31" required /></label>
-            <label>Conta de pagamento
-              <select name="paymentAccountId">
-                <option value="">-</option>
-                ${renderAccountOptions(accountOptions)}
-              </select>
-            </label>
+            <label>Conta de pagamento<select name="paymentAccountId"><option value="">-</option>${renderAccountOptions(accountOptions)}</select></label>
             <button type="submit">Criar cartão</button>
           </form>
         </section>
@@ -180,9 +172,7 @@ function renderAuthenticatedPage(input: {
       <div class="app-shell">
         <aside class="sidebar">
           <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin">SolverFin</a>
-          <nav aria-label="Menu principal">
-            ${renderNavigation(input.pathname)}
-          </nav>
+          <nav aria-label="Menu principal">${renderNavigation(input.pathname)}</nav>
           <button class="logout" type="button" data-logout>Sair</button>
         </aside>
         <div class="main-area">
@@ -256,7 +246,6 @@ function apiFormScript(): string {
 
       document.querySelectorAll("[data-api-form]").forEach((form) => {
         const status = ensureStatus(form);
-
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
           const confirmation = form.dataset.apiConfirm;
@@ -288,7 +277,6 @@ function apiFormScript(): string {
       document.querySelectorAll("[data-api-action]").forEach((button) => {
         const container = button.closest(".maintenance-actions") || button.parentElement;
         const status = ensureStatus(container);
-
         button.addEventListener("click", async () => {
           const confirmation = button.dataset.apiConfirm;
           if (confirmation && !window.confirm(confirmation)) return;
@@ -330,10 +318,7 @@ function renderPage(input: { title: string; body: string }): string {
 
 function renderNavigation(activePathname: string): string {
   return Array.from(privateRoutes.entries())
-    .map(
-      ([path, label]) =>
-        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
-    )
+    .map(([path, label]) => `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`)
     .join("");
 }
 
@@ -353,19 +338,13 @@ function renderEmptyState(title: string, description: string): string {
 
 function renderAccountOptions(accounts: AccountRecord[], selected?: string): string {
   return accounts
-    .map(
-      (account) =>
-        `<option value="${escapeHtml(account.id)}"${selected === account.id ? " selected" : ""}>${escapeHtml(account.name)}</option>`,
-    )
+    .map((account) => `<option value="${escapeHtml(account.id)}"${selected === account.id ? " selected" : ""}>${escapeHtml(account.name)}</option>`)
     .join("");
 }
 
 function renderCategoryOptions(categories: CategoryRecord[], selected?: string): string {
   return categories
-    .map(
-      (category) =>
-        `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
-    )
+    .map((category) => `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`)
     .join("");
 }
 
@@ -398,7 +377,7 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
@@ -443,12 +422,8 @@ function baseCss(): string {
     .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; } .muted { color: var(--muted); line-height: 1.5; }
     form, label { display: grid; gap: 10px; } label { color: var(--text); font-weight: 700; } input, select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: inherit; min-height: 44px; padding: 0 12px; width: 100%; }
     button, .button-link { align-items: center; background: var(--primary); border: 0; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; text-decoration: none; }
-    button:disabled { cursor: not-allowed; opacity: .58; }
-    .secondary-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); }
-    .danger-action { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
-    .error { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }
-    .success { background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: 8px; color: var(--success); padding: 10px 12px; }
-    .form-status { grid-column: 1 / -1; }
+    button:disabled { cursor: not-allowed; opacity: .58; } .secondary-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); } .danger-action { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
+    .error { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; } .success { background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: 8px; color: var(--success); padding: 10px 12px; } .form-status { grid-column: 1 / -1; }
     .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; }
     .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; min-height: 44px; text-decoration: none; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; }
     .logout { background: rgba(255,255,255,.12); margin-top: auto; } .main-area { min-width: 0; } .topbar { align-items: center; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; min-height: 64px; padding: 0 24px; position: sticky; top: 0; z-index: 5; } .topbar div { display: grid; gap: 2px; } .topbar span { color: var(--muted); font-size: .875rem; }
@@ -456,10 +431,8 @@ function baseCss(): string {
     .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, .95fr) minmax(22rem, .6fr); } .stacked-panels { display: grid; gap: 18px; min-width: 0; }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
     .rows { display: grid; gap: 10px; } .maintenance-rows { gap: 14px; } .maintenance-item { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .maintenance-item:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; } .maintenance-summary > strong { text-align: right; white-space: nowrap; }
-    .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; padding: 12px; }
-    .inline-edit-form { align-items: end; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .inline-edit-form button, .inline-edit-form .form-status { grid-column: 1 / -1; }
-    .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
-    .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form-panel button { grid-column: 1 / -1; }
+    .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; padding: 12px; } .inline-edit-form { align-items: end; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .inline-edit-form button, .inline-edit-form .form-status { grid-column: 1 / -1; }
+    .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; } .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form-panel button { grid-column: 1 / -1; }
     @media (max-width: 1024px) { .workspace-grid { grid-template-columns: 1fr; } }
     @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .form-panel form, .inline-edit-form { grid-template-columns: 1fr; } .section-heading, .maintenance-summary { align-items: stretch; display: grid; } .maintenance-summary > strong { text-align: left; white-space: normal; } }
   `;
