@@ -142,7 +142,7 @@ export interface Account extends Traceable, TenantScoped {
   currency: string;
   openingBalanceMinor: number;
   maskedIdentifier?: string;
-  institutionKey?: FinancialInstitutionKey;
+  institutionKey?: FinancialInstitutionKey | undefined;
 }
 
 export interface Card extends Traceable, TenantScoped {
