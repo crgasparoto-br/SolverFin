@@ -4,7 +4,7 @@
 
 O backend possui contrato MVP para contas a pagar e a receber com persistencia PostgreSQL, isolamento por organizacao/perfil financeiro e auditoria de mudancas financeiras relevantes.
 
-A interface web inicial esta disponivel na rota `/pagar-receber`. Ela consome os endpoints abaixo para listar, criar, editar, concluir e cancelar contas a pagar/receber sem expor exclusao fisica, archive ou restore.
+A interface web completa ainda nao esta implementada na `main`. A rota `/pagar-receber` aparece na navegacao autenticada e nas rotas conhecidas do servidor web, mas `apps/web/src/dev-server/pages.ts` ainda nao despacha essa rota para uma tela propria; no estado atual ela renderiza o estado de preparacao do MVP.
 
 ## Modelo
 
@@ -141,7 +141,17 @@ Cancelamento e a exclusao logica do MVP para este dominio. Nao ha exclusao fisic
 
 ## Web
 
-A rota `/pagar-receber` oferece:
+No estado atual da `main`, a web ainda nao oferece manutencao operacional para contas a pagar/receber.
+
+Estado verificado:
+
+- `/pagar-receber` existe na navegacao autenticada;
+- `/pagar-receber` esta listado em `implementedRoutes`;
+- a renderizacao de paginas privadas ainda nao chama uma pagina propria para `/pagar-receber`;
+- a rota exibe o estado generico de preparacao do MVP;
+- nenhuma lista, formulario ou acao de concluir/cancelar esta disponivel na web atual.
+
+A tela web pendente deve consumir os endpoints acima para oferecer:
 
 - resumo de pendentes, a pagar, a receber e concluidas;
 - listagem por status `pending`, `settled` e `cancelled`;
@@ -151,7 +161,7 @@ A rota `/pagar-receber` oferece:
 - cancelamento com confirmacao simples;
 - mensagens de estado vazio, sucesso e erro sem detalhes tecnicos.
 
-Itens concluidos e cancelados ficam em modo consulta para preservar o contrato atual. A UI nao mostra archive, restore nem exclusao fisica.
+Itens concluidos e cancelados devem permanecer em modo consulta para preservar o contrato atual. A UI nao deve mostrar archive, restore nem exclusao fisica enquanto essas operacoes nao existirem neste contrato.
 
 ## Regras de tenant e auditoria
 

@@ -6,7 +6,7 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 ## Status do repositorio
 
-O MVP core esta navegavel de ponta a ponta com persistencia real: `apps/api` roda um servidor HTTP (Node `http`, sem framework) que aplica as regras de `packages/domain` e persiste em PostgreSQL via `pg`, e `apps/web` roda um servidor SSR que consome essa API real (autenticacao, dashboard, contas, categorias, lancamentos, cartoes/faturas e orcamentos). Recorrencias/parcelas e contas a pagar/receber tem regras de dominio prontas; parcelas ja tem API, contas a pagar/receber ainda nao tem tabela no schema (ver `docs/ARCHITECTURE.md`). Importacao, conciliacao, automacao e IA financeira ainda nao tem persistencia/API ligadas.
+O MVP core esta navegavel de ponta a ponta com persistencia real: `apps/api` roda um servidor HTTP (Node `http`, sem framework) que aplica as regras de `packages/domain` e persiste em PostgreSQL via `pg`, e `apps/web` roda um servidor SSR que consome essa API real (autenticacao, dashboard, contas, categorias, lancamentos, cartoes/faturas e orcamentos). Recorrencias/parcelas e contas a pagar/receber tem regras de dominio prontas; contas a pagar/receber tambem ja possuem schema, repository, API e testes de integracao, mas a rota web `/pagar-receber` ainda renderiza apenas o estado de preparacao do MVP na `main`. Importacao, conciliacao, automacao e IA financeira ainda nao tem persistencia/API ligadas.
 
 ## Stack inicial planejada
 
