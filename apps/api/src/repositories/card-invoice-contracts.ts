@@ -33,6 +33,7 @@ export interface InvoiceSummaryContract {
   financialProfileId: EntityId;
   cardId: EntityId;
   cardName: string;
+  cardMaskedIdentifier?: string;
   status: string;
   periodStartOn: string;
   closingOn: string;
@@ -50,6 +51,7 @@ export interface InvoiceSummaryContract {
 export interface InvoiceCardTotalContract {
   cardId: EntityId;
   cardName: string;
+  maskedIdentifier?: string;
   limitTotalMinor: number;
   limitUsedMinor: number;
   limitAvailableMinor: number;
@@ -78,6 +80,7 @@ interface CardContractRow {
   organizationId: string;
   financialProfileId: string;
   name: string;
+  maskedIdentifier: string | null;
   creditLimitMinor: number | null;
 }
 
@@ -141,6 +144,7 @@ export async function summarizeInvoiceForContext(
     financialProfileId: invoice.financialProfileId,
     cardId: invoice.cardId,
     cardName: card.name,
+    ...(card.maskedIdentifier !== null ? { cardMaskedIdentifier: card.maskedIdentifier } : {}),
     status: invoice.status.toLowerCase(),
     periodStartOn: toDateOnly(invoice.periodStartOn),
     closingOn: toDateOnly(invoice.periodEndOn),
@@ -156,6 +160,7 @@ export async function summarizeInvoiceForContext(
       {
         cardId: card.id,
         cardName: card.name,
+        ...(card.maskedIdentifier !== null ? { maskedIdentifier: card.maskedIdentifier } : {}),
         limitTotalMinor,
         limitUsedMinor,
         limitAvailableMinor: Math.max(0, limitTotalMinor - limitUsedMinor),
@@ -276,7 +281,7 @@ async function findInvoice(
 
 async function findCard(context: TenantContext, cardId: EntityId): Promise<CardContractRow> {
   const rows = await query<CardContractRow>(
-    `select "id", "organizationId", "financialProfileId", "name", "creditLimitMinor"
+    `select "id", "organizationId", "financialProfileId", "name", "maskedIdentifier", "creditLimitMinor"
        from "Card"
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
     [cardId, context.organizationId, context.financialProfileId],
