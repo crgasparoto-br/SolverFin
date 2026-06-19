@@ -2,8 +2,10 @@ import type {
   Account,
   AuditLogEntryDraft,
   Card,
+  CardBrandKey,
   CardStatus,
   EntityId,
+  FinancialInstitutionKey,
   Installment,
   Invoice,
   InvoiceStatus,
@@ -12,6 +14,11 @@ import type {
   Transaction,
 } from "./index.js";
 import type { TenantContext } from "./tenant.js";
+import {
+  isCardBrandKey,
+  isFinancialInstitutionKey,
+  normalizeOptionalCatalogKey,
+} from "./visual-identities.js";
 import {
   applyTenantScope,
   getTenantScopedResource,
@@ -26,6 +33,8 @@ export type CardErrorCode =
   | "CARD_DUE_DAY_INVALID"
   | "CARD_LIMIT_INVALID"
   | "CARD_IDENTIFIER_UNSAFE"
+  | "CARD_INSTITUTION_KEY_INVALID"
+  | "CARD_BRAND_KEY_INVALID"
   | "CARD_PAYMENT_ACCOUNT_INVALID"
   | "CARD_PAYMENT_ACCOUNT_ARCHIVED"
   | "CARD_NOT_ACTIVE"
@@ -87,6 +96,8 @@ export interface CreateCardPayload {
   dueDay: number;
   creditLimitMinor?: number;
   maskedIdentifier?: string;
+  institutionKey?: string;
+  brandKey?: string;
   paymentAccountId?: EntityId;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
@@ -107,6 +118,8 @@ export interface UpdateCardPayload {
   dueDay?: number;
   creditLimitMinor?: number;
   maskedIdentifier?: string;
+  institutionKey?: string;
+  brandKey?: string;
   paymentAccountId?: EntityId;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
@@ -188,6 +201,8 @@ export function createCard(input: CreateCardInput): CardMutationResult {
     createdByUserId: input.context.userId,
     updatedByUserId: input.context.userId,
   };
+  const institutionKey = validateOptionalInstitutionKey(payload.institutionKey);
+  const brandKey = validateOptionalBrandKey(payload.brandKey);
 
   if (payload.creditLimitMinor !== undefined) {
     card.creditLimitMinor = validateCreditLimit(payload.creditLimitMinor);
@@ -195,6 +210,14 @@ export function createCard(input: CreateCardInput): CardMutationResult {
 
   if (payload.maskedIdentifier !== undefined) {
     card.maskedIdentifier = normalizeMaskedIdentifier(payload.maskedIdentifier);
+  }
+
+  if (institutionKey !== undefined) {
+    card.institutionKey = institutionKey;
+  }
+
+  if (brandKey !== undefined) {
+    card.brandKey = brandKey;
   }
 
   if (paymentAccount !== undefined) {
@@ -495,6 +518,14 @@ function buildOptionalCardUpdate(payload: UpdateCardPayload): Partial<Card> {
     update.maskedIdentifier = normalizeMaskedIdentifier(payload.maskedIdentifier);
   }
 
+  if (payload.institutionKey !== undefined) {
+    update.institutionKey = validateOptionalInstitutionKey(payload.institutionKey);
+  }
+
+  if (payload.brandKey !== undefined) {
+    update.brandKey = validateOptionalBrandKey(payload.brandKey);
+  }
+
   return update;
 }
 
@@ -760,6 +791,37 @@ function normalizeMaskedIdentifier(maskedIdentifier: string): string {
   return normalizedIdentifier;
 }
 
+function validateOptionalInstitutionKey(value: string | undefined): FinancialInstitutionKey | undefined {
+  const normalizedValue = normalizeOptionalCatalogKey(value);
+
+  if (normalizedValue === undefined) {
+    return undefined;
+  }
+
+  if (!isFinancialInstitutionKey(normalizedValue)) {
+    throw new CardError(
+      "CARD_INSTITUTION_KEY_INVALID",
+      "Card institution key is not supported.",
+    );
+  }
+
+  return normalizedValue;
+}
+
+function validateOptionalBrandKey(value: string | undefined): CardBrandKey | undefined {
+  const normalizedValue = normalizeOptionalCatalogKey(value);
+
+  if (normalizedValue === undefined) {
+    return undefined;
+  }
+
+  if (!isCardBrandKey(normalizedValue)) {
+    throw new CardError("CARD_BRAND_KEY_INVALID", "Card brand key is not supported.");
+  }
+
+  return normalizedValue;
+}
+
 function normalizeCurrency(currency = "BRL"): string {
   return currency.trim().toUpperCase();
 }
@@ -847,6 +909,8 @@ function buildCardAuditEntry(
     "dueDay",
     "creditLimitMinor",
     "maskedIdentifier",
+    "institutionKey",
+    "brandKey",
     "paymentAccountId",
   ] as const);
 
