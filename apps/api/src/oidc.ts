@@ -1,4 +1,9 @@
-import { createPublicKey, createVerify, timingSafeEqual, type JsonWebKey } from "node:crypto";
+import {
+  createPublicKey,
+  createVerify,
+  timingSafeEqual,
+  type JsonWebKey,
+} from "node:crypto";
 
 import { AuthError } from "./auth.js";
 
@@ -84,7 +89,12 @@ export function validateOidcState(receivedState: string, expectedState: string):
   }
 }
 
-function parseJwt(idToken: string): { header: JwtHeader; claims: JwtClaims; signingInput: string; signature: Buffer } {
+function parseJwt(idToken: string): {
+  header: JwtHeader;
+  claims: JwtClaims;
+  signingInput: string;
+  signature: Buffer;
+} {
   const parts = idToken.split(".");
 
   if (parts.length !== 3 || parts.some((part) => part.length === 0)) {
@@ -179,11 +189,17 @@ function validateClaims(claims: JwtClaims, config: OidcProviderConfig, now: () =
     throw invalidProviderTokenError();
   }
 
-  if (claims.nbf !== undefined && (!isNumericDate(claims.nbf) || claims.nbf > currentSeconds + skewSeconds)) {
+  if (
+    claims.nbf !== undefined &&
+    (!isNumericDate(claims.nbf) || claims.nbf > currentSeconds + skewSeconds)
+  ) {
     throw invalidProviderTokenError();
   }
 
-  if (claims.iat !== undefined && (!isNumericDate(claims.iat) || claims.iat > currentSeconds + skewSeconds)) {
+  if (
+    claims.iat !== undefined &&
+    (!isNumericDate(claims.iat) || claims.iat > currentSeconds + skewSeconds)
+  ) {
     throw invalidProviderTokenError();
   }
 }
@@ -192,7 +208,9 @@ function mapClaimsToIdentity(claims: JwtClaims, provider: string): OidcIdentity 
   const email = typeof claims.email === "string" ? normalizeOptional(claims.email) : undefined;
   const name = typeof claims.name === "string" ? normalizeOptional(claims.name) : undefined;
   const preferredUsername =
-    typeof claims.preferred_username === "string" ? normalizeOptional(claims.preferred_username) : undefined;
+    typeof claims.preferred_username === "string"
+      ? normalizeOptional(claims.preferred_username)
+      : undefined;
 
   return {
     provider,
