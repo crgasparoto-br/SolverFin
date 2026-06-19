@@ -7,8 +7,10 @@ import {
 import {
   assertAuthenticationModeConfigured,
   assertDemoAuthAllowed,
+  hashSessionToken,
   isDemoAuthAllowed,
   isProductiveOidcAuthConfigured,
+  isSessionInactive,
 } from "./auth-service.js";
 
 const activeUser: AuthenticatedUser = {
@@ -52,6 +54,8 @@ testInvalidCredentialsAreControlled();
 testDisabledUserCannotLogin();
 testExpiredSessionIsRejected();
 testBearerParser();
+testSessionTokenHashNeverStoresRawToken();
+testSessionInactivityTimeout();
 testDemoAuthAllowsLocalEnvironments();
 testDemoAuthBlocksProductionWithoutExplicitOptIn();
 testDemoAuthRequiresExplicitOptInValue();
@@ -191,6 +195,45 @@ function testBearerParser(): void {
   );
 }
 
+function testSessionTokenHashNeverStoresRawToken(): void {
+  const token = "sf_test-session-token";
+  const hash = hashSessionToken(token);
+
+  assertEqual(hash.length, 64, "session token hash should use sha256 hex output");
+  assertNotEqual(hash, token, "session token hash should not store the raw token");
+  assertEqual(hashSessionToken(token), hash, "session token hash should be deterministic");
+}
+
+function testSessionInactivityTimeout(): void {
+  const previousIdleTimeout = process.env.AUTH_SESSION_IDLE_TIMEOUT_MINUTES;
+  process.env.AUTH_SESSION_IDLE_TIMEOUT_MINUTES = "30";
+
+  try {
+    assertEqual(
+      isSessionInactive(
+        new Date("2026-06-15T10:00:00.000Z"),
+        new Date("2026-06-15T10:29:59.000Z"),
+      ),
+      false,
+      "session should remain active before inactivity timeout",
+    );
+    assertEqual(
+      isSessionInactive(
+        new Date("2026-06-15T10:00:00.000Z"),
+        new Date("2026-06-15T10:30:00.000Z"),
+      ),
+      true,
+      "session should expire at inactivity timeout",
+    );
+  } finally {
+    if (previousIdleTimeout === undefined) {
+      delete process.env.AUTH_SESSION_IDLE_TIMEOUT_MINUTES;
+    } else {
+      process.env.AUTH_SESSION_IDLE_TIMEOUT_MINUTES = previousIdleTimeout;
+    }
+  }
+}
+
 function testDemoAuthAllowsLocalEnvironments(): void {
   assertEqual(isDemoAuthAllowed({ NODE_ENV: "development" }), true, "demo auth should allow dev");
   assertEqual(isDemoAuthAllowed({ NODE_ENV: "local" }), true, "demo auth should allow local");
@@ -273,5 +316,11 @@ function assertThrows(action: () => void, pattern: RegExp, message: string): voi
 function assertEqual<T>(actual: T, expected: T, message: string): void {
   if (actual !== expected) {
     throw new Error(`${message}. Expected ${String(expected)}, received ${String(actual)}.`);
+  }
+}
+
+function assertNotEqual<T>(actual: T, expected: T, message: string): void {
+  if (actual === expected) {
+    throw new Error(`${message}. Expected values to differ.`);
   }
 }

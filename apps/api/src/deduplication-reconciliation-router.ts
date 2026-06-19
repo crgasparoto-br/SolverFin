@@ -9,7 +9,7 @@ import {
 } from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
-import { auth } from "./auth-service.js";
+import { requireAuthenticatedRequest } from "./auth-service.js";
 import { query, withTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
@@ -89,7 +89,7 @@ export async function handleDeduplicationReconciliationApiRequest(
   }
 
   try {
-    const user = auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -315,7 +315,9 @@ function parseImportSuggestion(
     amountMinor: Number(match[4]),
     currency: "BRL",
     ...(details.accountId !== undefined ? { accountId: details.accountId } : {}),
-    ...(details.categoryId !== undefined ? { categoryId: details.categoryId } : {}),
+    ...(details.categoryId !== undefined
+      ? { categoryId: details.categoryId }
+      : {}),
   };
 }
 

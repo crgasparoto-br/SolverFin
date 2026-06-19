@@ -1,5 +1,11 @@
 import { AuthError, type AuthenticatedUser } from "./auth.js";
-import { auth, authenticateProductiveUser, authenticateUser, registerUser } from "./auth-service.js";
+import {
+  authenticateProductiveUser,
+  authenticateUser,
+  logoutSession,
+  registerUser,
+  requireAuthenticatedRequest,
+} from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 
 export interface MvpApiRequest {
@@ -63,13 +69,13 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
 
     if (request.method === "DELETE" && request.path === "/api/session") {
       const sessionId = requireBearerSession(request.headers?.authorization);
-      auth.logout(sessionId);
+      await logoutSession(sessionId);
 
       return jsonResponse(204, undefined);
     }
 
     if (request.method === "GET" && request.path === "/api/me") {
-      const user = auth.requireAuthenticatedRequest(
+      const user = await requireAuthenticatedRequest(
         buildAuthHeaders(request.headers?.authorization),
       );
 
@@ -77,7 +83,7 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
     }
 
     if (request.method === "GET" && request.path === "/api/financial-summary") {
-      auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers?.authorization));
+      await requireAuthenticatedRequest(buildAuthHeaders(request.headers?.authorization));
 
       return jsonResponse(200, buildDemoFinancialSummary());
     }

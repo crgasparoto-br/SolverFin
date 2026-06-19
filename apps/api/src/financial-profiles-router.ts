@@ -1,6 +1,6 @@
 import { TenantAuthorizationError, TenantError, type FinancialContextKind } from "@solverfin/domain";
 
-import { auth } from "./auth-service.js";
+import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   archiveFinancialProfileForUser,
@@ -115,7 +115,7 @@ function findRoute(
 }
 
 async function listFinancialProfilesHandler(request: ApiRequest): Promise<ApiResponse> {
-  const user = auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+  const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
   const profiles = await listFinancialProfilesForUser(user.id);
 
   return json(200, {
@@ -125,7 +125,7 @@ async function listFinancialProfilesHandler(request: ApiRequest): Promise<ApiRes
 }
 
 async function createFinancialProfileHandler(request: ApiRequest): Promise<ApiResponse> {
-  const user = auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+  const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
   const body = requireObjectBody(request.body);
   const profile = await createFinancialProfileForUser(user, {
     name: String(body.name ?? ""),
@@ -139,7 +139,7 @@ async function updateFinancialProfileHandler(
   request: ApiRequest,
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
-  const user = auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+  const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
   const body = requireObjectBody(request.body);
   const profile = await updateFinancialProfileForUser(user, requireParam(match, "profileId"), {
     ...(body.name !== undefined ? { name: String(body.name) } : {}),
@@ -153,7 +153,7 @@ async function archiveFinancialProfileHandler(
   request: ApiRequest,
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
-  const user = auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+  const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
   const profile = await archiveFinancialProfileForUser(user, requireParam(match, "profileId"));
 
   return json(200, { profile: serializeFinancialProfile(profile) });

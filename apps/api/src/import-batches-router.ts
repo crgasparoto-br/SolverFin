@@ -9,7 +9,7 @@ import {
 } from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
-import { auth } from "./auth-service.js";
+import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   createCsvImportBatchForContext,
@@ -54,7 +54,7 @@ export async function handleImportBatchesApiRequest(
   }
 
   try {
-    const user = auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
