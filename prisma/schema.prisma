@@ -375,7 +375,7 @@ model Transaction {
   category                 Category?          @relation(fields: [categoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   card                     Card?              @relation("TransactionCard", fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   invoice                  Invoice?           @relation("InvoiceTransactions", fields: [invoiceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
-  recurrence               Recurrence?        @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId], onDelete: Restrict)
+  recurrence               Recurrence?        @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   installment              Installment?       @relation(fields: [installmentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   importBatch              ImportBatch?       @relation(fields: [importBatchId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   aiSuggestion             AiSuggestion?      @relation(fields: [aiSuggestionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
