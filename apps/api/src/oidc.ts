@@ -1,9 +1,4 @@
-import {
-  createPublicKey,
-  createVerify,
-  timingSafeEqual,
-  type JsonWebKey,
-} from "node:crypto";
+import { createPublicKey, createVerify, timingSafeEqual } from "node:crypto";
 
 import { AuthError } from "./auth.js";
 
@@ -48,9 +43,11 @@ interface JsonWebKeySet {
   keys?: unknown;
 }
 
-interface JwkWithKid extends JsonWebKey {
+interface JwkWithKid {
+  kty?: string;
   kid?: string;
   alg?: string;
+  [key: string]: unknown;
 }
 
 const DEFAULT_CLOCK_SKEW_SECONDS = 60;
@@ -152,7 +149,7 @@ function selectSigningKey(jwks: JsonWebKeySet, kid: string, alg: string): JwkWit
 
 function verifyJwtSignature(idToken: string, key: JwkWithKid, alg: string): boolean {
   const { signingInput, signature } = parseJwt(idToken);
-  const publicKey = createPublicKey({ key, format: "jwk" });
+  const publicKey = createPublicKey({ key: key as never, format: "jwk" });
   const verifier = createVerify(signatureAlgorithm(alg));
 
   verifier.update(signingInput);
@@ -211,13 +208,20 @@ function mapClaimsToIdentity(claims: JwtClaims, provider: string): OidcIdentity 
     typeof claims.preferred_username === "string"
       ? normalizeOptional(claims.preferred_username)
       : undefined;
-
-  return {
+  const identity: OidcIdentity = {
     provider,
     subject: String(claims.sub).trim(),
-    ...(email ? { email } : {}),
-    ...(name || preferredUsername ? { displayName: name ?? preferredUsername } : {}),
   };
+
+  if (email) {
+    identity.email = email;
+  }
+
+  if (name ?? preferredUsername) {
+    identity.displayName = name ?? preferredUsername;
+  }
+
+  return identity;
 }
 
 function audienceIncludes(audience: unknown, expectedAudience: string): boolean {
