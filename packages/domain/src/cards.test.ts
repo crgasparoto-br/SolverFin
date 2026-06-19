@@ -8,6 +8,7 @@ import {
   listCards,
   payInvoice,
   registerCardPurchase,
+  updateCard,
 } from "./cards.js";
 import { TenantAuthorizationError } from "./tenant-authorization.js";
 
@@ -30,6 +31,9 @@ const tenantB: TenantContext = {
 const paymentAccount = createAccountFixture(tenantA, "account-payment", "active");
 
 runCreatesCardWithMaskedIdentifier();
+runCreatesCardWithVisualKeys();
+runUpdatesCardVisualKeys();
+runRejectsInvalidVisualKeys();
 runRejectsUnsafeCardIdentifier();
 runCalculatesInvoicePeriodAroundClosingDay();
 runRegistersPurchaseAndCreatesInvoice();
@@ -59,6 +63,74 @@ function runCreatesCardWithMaskedIdentifier(): void {
   assertEqual(result.card.status, "active", "card should start active");
   assertEqual(result.card.paymentAccountId, paymentAccount.id, "card should keep payment account");
   assertEqual(result.auditEntry.entityKind, "card", "audit should target card");
+}
+
+function runCreatesCardWithVisualKeys(): void {
+  const result = createCard({
+    id: "card-visual",
+    context: tenantA,
+    now,
+    payload: {
+      name: "Cartao visual",
+      closingDay: 20,
+      dueDay: 10,
+      institutionKey: " Porto_Bank ",
+      brandKey: " Mastercard ",
+    },
+  });
+
+  assertEqual(result.card.institutionKey, "porto_bank", "institution key should normalize");
+  assertEqual(result.card.brandKey, "mastercard", "brand key should normalize");
+}
+
+function runUpdatesCardVisualKeys(): void {
+  const card = createCardFixture();
+  const result = updateCard({
+    context: tenantA,
+    card,
+    now,
+    payload: {
+      institutionKey: "c6",
+      brandKey: "elo",
+    },
+  });
+
+  assertEqual(result.card.institutionKey, "c6", "institution key should update");
+  assertEqual(result.card.brandKey, "elo", "brand key should update");
+}
+
+function runRejectsInvalidVisualKeys(): void {
+  assertCardError(
+    () =>
+      createCard({
+        id: "card-invalid-institution",
+        context: tenantA,
+        now,
+        payload: {
+          name: "Cartao instituicao invalida",
+          closingDay: 20,
+          dueDay: 10,
+          institutionKey: "banco-livre",
+        },
+      }),
+    "CARD_INSTITUTION_KEY_INVALID",
+  );
+
+  assertCardError(
+    () =>
+      createCard({
+        id: "card-invalid-brand",
+        context: tenantA,
+        now,
+        payload: {
+          name: "Cartao bandeira invalida",
+          closingDay: 20,
+          dueDay: 10,
+          brandKey: "bandeira-livre",
+        },
+      }),
+    "CARD_BRAND_KEY_INVALID",
+  );
 }
 
 function runRejectsUnsafeCardIdentifier(): void {
