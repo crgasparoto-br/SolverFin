@@ -148,6 +148,7 @@ function renderCardOperationSection(input: {
   const selectedInvoiceId =
     sortedInvoices.find((operation) => operation.invoice.status === "open")?.invoice.id ??
     sortedInvoices[0]?.invoice.id;
+  const canMutateCard = input.card.status === "active";
 
   return `
     <section class="card-operation" data-card-section="${escapeHtml(input.card.id)}"${input.isSelected ? "" : " hidden"}>
@@ -163,6 +164,12 @@ function renderCardOperationSection(input: {
         </div>
       </div>
 
+      <div class="card-actions" aria-label="Ações do cartão ${escapeHtml(input.card.name)}">
+        ${canMutateCard ? renderActionButton("Bloquear cartão", `/api/cards/${input.card.id}/block`, "Bloquear este cartão?") : ""}
+        ${canMutateCard ? renderActionButton("Arquivar cartão", `/api/cards/${input.card.id}/archive`, "Arquivar este cartão?") : ""}
+      </div>
+
+      <h2>Faturas</h2>
       <div class="invoice-tabs" role="tablist" aria-label="Faturas do cartão">
         ${
           sortedInvoices
@@ -179,6 +186,7 @@ function renderCardOperationSection(input: {
           .map((operation) =>
             renderInvoiceView({
               operation,
+              card: input.card,
               accounts: input.accounts,
               categories: input.categories,
               isSelected: operation.invoice.id === selectedInvoiceId,
@@ -201,6 +209,7 @@ function renderInvoiceTab(operation: InvoiceOperation, isSelected: boolean): str
 
 function renderInvoiceView(input: {
   operation: InvoiceOperation;
+  card: CardRecord;
   accounts: AccountRecord[];
   categories: CategoryRecord[];
   isSelected: boolean;
@@ -213,6 +222,11 @@ function renderInvoiceView(input: {
   return `
     <section class="invoice-view" data-invoice-view="${escapeHtml(invoice.id)}"${input.isSelected ? "" : " hidden"}>
       <div class="invoice-main">
+        <details class="purchase-form-panel" id="nova-compra">
+          <summary>Nova compra</summary>
+          ${renderCardPurchaseForm(input.card, input.categories)}
+        </details>
+
         <section class="invoice-toolbar" aria-label="Filtros de compras">
           <label>Buscar<input type="search" data-purchase-search placeholder="Descrição ou categoria" /></label>
           <label>Status
@@ -248,6 +262,7 @@ function renderInvoiceView(input: {
           </div>
           <strong>${formatMoney(summary.amountDueMinor)}</strong>
         </div>
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/invoices/${escapeHtml(invoice.id)}">Abrir detalhe da fatura</button>
         ${input.operation.summaryError ? `<p class="error" role="alert">${escapeHtml(input.operation.summaryError)}</p>` : ""}
         <dl class="summary-grid">
           ${renderSummaryItem("Saldo anterior", summary.previousBalanceMinor)}
@@ -358,7 +373,7 @@ function renderInvoicePaymentForm(
 ): string {
   return `
     <details class="payment-panel">
-      <summary>Lançar pagamento</summary>
+      <summary>Pagar fatura</summary>
       <form data-api-form data-api-path="/api/invoices/${escapeHtml(invoice.id)}/pay" data-api-confirm="Registrar o pagamento desta fatura?" class="compact-form">
         <label>Conta<select name="paymentAccountId" required>${renderAccountOptions(accounts)}</select></label>
         <label>Pago em<input name="paidOn" type="date" required /></label>
@@ -761,13 +776,13 @@ function baseCss(): string {
     .cards-workspace { align-items: start; display: grid; gap: 18px; grid-template-columns: 280px minmax(0, 1fr); } .card-selector, .invoice-summary { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 14px; padding: 16px; }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; } .compact-heading h2 { font-size: .95rem; }
     .card-tabs { display: grid; gap: 10px; } .card-tab { background: transparent; border: 1px solid var(--line); color: var(--text); display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; justify-content: stretch; min-height: 76px; padding: 12px; text-align: left; } .card-tab[aria-selected="true"] { background: var(--primary-soft); border-color: #a5cbd6; } .card-tab span { display: grid; gap: 3px; min-width: 0; } .card-tab small { color: var(--muted); font-weight: 700; line-height: 1.35; } .card-tab-meta { text-align: right; }
-    .invoice-area, .card-operation { display: grid; gap: 14px; min-width: 0; } .operation-topline { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: flex; gap: 16px; justify-content: space-between; padding: 16px; } .operation-topline > div:first-child { display: grid; gap: 4px; }
+    .invoice-area, .card-operation { display: grid; gap: 14px; min-width: 0; } .operation-topline { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: flex; gap: 16px; justify-content: space-between; padding: 16px; } .operation-topline > div:first-child { display: grid; gap: 4px; } .card-actions { display: flex; gap: 8px; }
     .period-controls, .invoice-tabs { display: flex; gap: 8px; } .invoice-tabs { overflow-x: auto; padding-bottom: 2px; } .invoice-tab { background: var(--surface); border: 1px solid var(--line); color: var(--text); display: grid; gap: 2px; min-width: 128px; padding: 10px 12px; } .invoice-tab[aria-selected="true"] { background: var(--primary); color: white; } .invoice-tab[aria-selected="true"] span { color: rgba(255,255,255,.78); } .invoice-tab span { color: var(--muted); font-size: .82rem; font-weight: 800; }
     .invoice-view { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) 340px; } .invoice-main { display: grid; gap: 14px; min-width: 0; } .invoice-toolbar { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) 190px; padding: 14px; }
-    .purchase-list { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 0; min-width: 0; overflow: hidden; } .purchase-row { align-items: center; border-top: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: 92px minmax(0, 1fr) auto 88px; padding: 14px; } .purchase-row:first-child { border-top: 0; } .purchase-row time, .purchase-row span { color: var(--muted); font-size: .9rem; } .purchase-row div { display: grid; gap: 4px; min-width: 0; } .purchase-row > strong { white-space: nowrap; } .item-actions summary, .payment-panel summary { color: var(--primary); cursor: pointer; font-weight: 800; }
+    .purchase-list { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 0; min-width: 0; overflow: hidden; } .purchase-row { align-items: center; border-top: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: 92px minmax(0, 1fr) auto 88px; padding: 14px; } .purchase-row:first-child { border-top: 0; } .purchase-row time, .purchase-row span { color: var(--muted); font-size: .9rem; } .purchase-row div { display: grid; gap: 4px; min-width: 0; } .purchase-row > strong { white-space: nowrap; } .item-actions summary, .payment-panel summary, .purchase-form-panel summary { color: var(--primary); cursor: pointer; font-weight: 800; }
     .invoice-summary { align-content: start; position: sticky; top: 84px; } .summary-title { align-items: start; display: flex; gap: 12px; justify-content: space-between; } .summary-title > div { display: grid; gap: 4px; } .summary-title > strong { font-size: 1.15rem; white-space: nowrap; } .summary-grid, .limit-values { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .summary-grid div, .limit-values div { background: var(--surface-soft); border-radius: 8px; display: grid; gap: 4px; padding: 10px; } dt { color: var(--muted); font-size: .78rem; font-weight: 800; } dd { font-weight: 900; }
     .limit-box { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .limit-box > div:first-child { display: grid; gap: 4px; } .limit-box span { color: var(--muted); } .limit-meter { background: #dbeafe; border-radius: 999px; height: 10px; overflow: hidden; } .limit-meter span { background: var(--cyan); display: block; height: 100%; }
-    .invoice-actions, .compact-form { display: grid; gap: 10px; } .compact-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .compact-form button, .compact-form .form-status { grid-column: 1 / -1; } .payment-panel { border-top: 1px solid var(--line); padding-top: 12px; }
+    .invoice-actions, .compact-form { display: grid; gap: 10px; } .compact-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .compact-form button, .compact-form .form-status { grid-column: 1 / -1; } .payment-panel { border-top: 1px solid var(--line); padding-top: 12px; } .purchase-form-panel { border-bottom: 1px solid var(--line); padding-bottom: 14px; }
     .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
     @media (max-width: 1080px) { .cards-workspace, .invoice-view { grid-template-columns: 1fr; } .invoice-summary { position: static; } .card-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .cards-heading, .operation-topline { align-items: stretch; display: grid; } .card-tabs, .invoice-toolbar, .compact-form, .summary-grid, .limit-values { grid-template-columns: 1fr; } .card-tab { grid-template-columns: 1fr; } .card-tab-meta { text-align: left; } .purchase-row { align-items: start; grid-template-columns: 1fr; } }

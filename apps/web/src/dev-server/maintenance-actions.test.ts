@@ -157,6 +157,33 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
     };
   }
 
+  if (pathname === "/api/invoices/invoice-1/summary") {
+    return {
+      summary: {
+        invoiceId: "invoice-1",
+        financialProfileId: "profile-1",
+        cardId: "card-1",
+        cardName: "Cartão principal",
+        status: "open",
+        periodStartOn: "2026-06-01",
+        closingOn: "2026-06-10",
+        dueOn: "2026-07-10",
+        previousBalanceMinor: 0,
+        totalExpensesMinor: 45000,
+        totalPaidMinor: 0,
+        amountDueMinor: 45000,
+        reconciledExpensesMinor: 0,
+        unreconciledExpensesMinor: 45000,
+        purchasesCount: 0,
+        cardTotals: [],
+      },
+    };
+  }
+
+  if (pathname === "/api/invoices/invoice-1/purchases") {
+    return { purchases: [] };
+  }
+
   if (pathname === "/api/budgets") {
     return {
       budgets: [
