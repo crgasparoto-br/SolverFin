@@ -6,7 +6,6 @@ export const privateRoutes = new Map<string, string>([
   ["/recorrencias", "Recorrências"],
   ["/pagar-receber", "Pagar e receber"],
   ["/contas-cartoes", "Contas e Cartões"],
-  ["/contas", "Contas e Cartões"],
   ["/categorias", "Categorias"],
   ["/cartoes", "Cartões"],
   ["/orcamentos", "Orçamentos"],
@@ -18,7 +17,6 @@ export const privateRoutes = new Map<string, string>([
 export const implementedRoutes = new Set([
   "/dashboard",
   "/contas-cartoes",
-  "/contas",
   "/categorias",
   "/lancamentos",
   "/recorrencias",
