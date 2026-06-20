@@ -26,6 +26,12 @@ import {
   updateAccountForContext,
 } from "./repositories/accounts.js";
 import {
+  closeInvoiceForContext,
+  listCardPurchasesForContext,
+  summarizeInvoiceForContext,
+  type PurchaseReconciliationFilter,
+} from "./repositories/card-invoice-contracts.js";
+import {
   archiveCategoryForContext,
   createCategoryForContext,
   getCategoryForContext,
@@ -134,6 +140,7 @@ route("POST", "/api/recurrences/:recurrenceId/resume", resumeRecurrenceHandler);
 route("POST", "/api/recurrences/:recurrenceId/cancel", cancelRecurrenceHandler);
 route("POST", "/api/recurrences/:recurrenceId/generate-installments", generateInstallmentsHandler);
 
+route("GET", "/api/card-purchases", listCardPurchasesHandler);
 route("GET", "/api/cards", listCardsHandler);
 route("POST", "/api/cards", createCardHandler);
 route("GET", "/api/cards/:cardId", getCardHandler);
@@ -144,6 +151,9 @@ route("POST", "/api/cards/:cardId/purchases", registerCardPurchaseHandler);
 
 route("GET", "/api/invoices", listInvoicesHandler);
 route("GET", "/api/invoices/:invoiceId", getInvoiceHandler);
+route("GET", "/api/invoices/:invoiceId/summary", getInvoiceSummaryHandler);
+route("GET", "/api/invoices/:invoiceId/purchases", listInvoicePurchasesHandler);
+route("POST", "/api/invoices/:invoiceId/close", closeInvoiceHandler);
 route("POST", "/api/invoices/:invoiceId/pay", payInvoiceHandler);
 
 route("GET", "/api/budgets", listBudgetsHandler);
@@ -637,6 +647,15 @@ function defaultGenerationWindow(): string {
   return date.toISOString().slice(0, 10);
 }
 
+async function listCardPurchasesHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const purchases = await listCardPurchasesForContext(context, readCardPurchaseFilters(request));
+
+  return json(200, { purchases });
+}
+
 async function listCardsHandler(request: ApiRequest, context: TenantContext): Promise<ApiResponse> {
   const status = request.query.get("status") as CardStatus | "all" | null;
 
@@ -764,6 +783,39 @@ async function getInvoiceHandler(
   });
 }
 
+async function getInvoiceSummaryHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  return json(200, {
+    summary: await summarizeInvoiceForContext(context, requireParam(match, "invoiceId")),
+  });
+}
+
+async function listInvoicePurchasesHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const purchases = await listCardPurchasesForContext(context, {
+    ...readCardPurchaseFilters(request),
+    invoiceId: requireParam(match, "invoiceId"),
+  });
+
+  return json(200, { purchases });
+}
+
+async function closeInvoiceHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  return json(200, {
+    summary: await closeInvoiceForContext(context, requireParam(match, "invoiceId")),
+  });
+}
+
 async function payInvoiceHandler(
   request: ApiRequest,
   context: TenantContext,
@@ -867,6 +919,31 @@ async function getBudgetUsageHandler(
   const usage = await summarizeBudgetUsageForContext(context, requireParam(match, "budgetId"));
 
   return json(200, { usage });
+}
+
+function readCardPurchaseFilters(request: ApiRequest) {
+  const reconciliation = readReconciliationFilter(request.query.get("reconciliation"));
+
+  return {
+    ...(request.query.get("invoiceId") ? { invoiceId: String(request.query.get("invoiceId")) } : {}),
+    ...(request.query.get("cardId") ? { cardId: String(request.query.get("cardId")) } : {}),
+    ...(request.query.get("occurredFrom")
+      ? { occurredFrom: String(request.query.get("occurredFrom")) }
+      : {}),
+    ...(request.query.get("occurredTo")
+      ? { occurredTo: String(request.query.get("occurredTo")) }
+      : {}),
+    ...(reconciliation ? { reconciliation } : {}),
+    ...(request.query.get("search") ? { search: String(request.query.get("search")) } : {}),
+  };
+}
+
+function readReconciliationFilter(value: string | null): PurchaseReconciliationFilter | undefined {
+  if (value === "all" || value === "reconciled" || value === "unreconciled") {
+    return value;
+  }
+
+  return undefined;
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
