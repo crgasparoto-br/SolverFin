@@ -116,7 +116,7 @@ function renderAccountItem(account: AccountRecord): string {
 
   return `
     <article class="master-item" data-master-item data-status="${escapeHtml(account.status)}" data-search="${escapeHtml(search)}">
-      <div class="identity-mark" aria-hidden="true">${escapeHtml(institution.shortLabel)}</div>
+      <div class="identity-mark" aria-hidden="true">${renderInstitutionIcon(institution.key)}</div>
       <div class="item-main">
         <div class="item-title-row">
           <strong>${escapeHtml(account.name)}</strong>
@@ -152,7 +152,7 @@ function renderCardItem(card: CardRecord, accounts: AccountRecord[]): string {
 
   return `
     <article class="master-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(search)}">
-      <div class="identity-mark card-mark" aria-hidden="true">${escapeHtml(brand.shortLabel)}</div>
+      <div class="identity-mark card-mark" aria-hidden="true">${renderCardBrandIcon(brand.key)}</div>
       <div class="item-main">
         <div class="item-title-row">
           <strong>${escapeHtml(card.name)}</strong>
@@ -464,6 +464,44 @@ function findCardBrand(key: string | undefined) {
   return cardBrands.find((item) => item.key === key) ?? fallbackCardBrand;
 }
 
+function renderInstitutionIcon(key: string): string {
+  if (key === "bradesco") {
+    return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><circle cx="22" cy="22" r="18" fill="#cc092f"/><path d="M14 24c2.2-6 7.9-9.6 14.8-9.6 1.5 0 2.9.2 4.2.6-2.8 1.2-4.9 3.4-6.2 6.4 3 .4 5.4 1.9 7.2 4.4-2.4-.7-4.8-.8-7-.2-1.8.5-3.4 1.6-4.7 3.2-1.7-3-4.7-4.7-8.3-4.8z" fill="#fff"/></svg>`;
+  }
+  if (key === "inter") {
+    return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><circle cx="22" cy="22" r="18" fill="#ff7a00"/><rect x="14" y="11" width="5" height="22" rx="2.5" fill="#fff"/><path d="M22 14h4.5c4.3 0 7.5 3.2 7.5 8s-3.2 8-7.5 8H22V14zm5 11c1.6 0 2.8-1.2 2.8-3S28.6 19 27 19h-.4v6h.4z" fill="#fff"/></svg>`;
+  }
+  if (key === "c6") {
+    return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><rect x="7" y="7" width="30" height="30" rx="9" fill="#111827"/><path d="M27 16.2c-1.3-1.2-3-1.9-5.1-1.9-4.5 0-7.8 3.3-7.8 7.7s3.3 7.7 7.8 7.7c2.2 0 4-.8 5.3-2.1l-2.7-3c-.6.7-1.5 1.1-2.6 1.1-2 0-3.3-1.5-3.3-3.7s1.3-3.7 3.3-3.7c1 0 1.8.4 2.5 1l2.6-3.1z" fill="#fff"/><circle cx="30" cy="28" r="3" fill="#22d3ee"/></svg>`;
+  }
+  if (key === "caixa") {
+    return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><rect x="7" y="9" width="30" height="26" rx="7" fill="#005ca9"/><path d="M13 29 25.8 15h5.5L18.5 29H13z" fill="#f59e0b"/><path d="M14 15h6l6.5 7-3.1 3.4L14 15zm15.5 8.4L36 29h-6.1l-3.6-3.1 3.2-2.5z" fill="#fff"/></svg>`;
+  }
+  if (key === "porto_bank") {
+    return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><path d="M22 6 36 12v9.5c0 8.5-5.8 13.8-14 16.5-8.2-2.7-14-8-14-16.5V12l14-6z" fill="#0b66c3"/><path d="M17 15h7.2c4.2 0 7 2.6 7 6.4s-2.8 6.4-7 6.4h-2.9V33H17V15zm6.8 8.9c1.7 0 2.8-.9 2.8-2.5s-1.1-2.5-2.8-2.5h-2.5v5h2.5z" fill="#fff"/></svg>`;
+  }
+  if (key === "solverfin_demo") {
+    return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><rect x="7" y="7" width="30" height="30" rx="9" fill="#0f3d4c"/><path d="M14 27.5c4.1 0 4.1-11 8.2-11s4.1 11 8.8 11" fill="none" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/><circle cx="31" cy="27.5" r="3" fill="#fff"/></svg>`;
+  }
+  return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><rect x="7" y="15" width="30" height="21" rx="4" fill="#0f3d4c"/><path d="M9 15 22 8l13 7H9z" fill="#22d3ee"/><path d="M14 19h4v12h-4V19zm6 0h4v12h-4V19zm6 0h4v12h-4V19z" fill="#fff"/></svg>`;
+}
+
+function renderCardBrandIcon(key: string): string {
+  if (key === "visa") {
+    return `<svg class="brand-icon card-brand-icon" viewBox="0 0 44 44" role="img"><rect x="6" y="11" width="32" height="22" rx="6" fill="#fff"/><path d="M11 26h5.2l3.1-8h-4.2l-1.4 4.8-1.5-4.8H8l3 8zm10.2 0h4l1.4-8h-4l-1.4 8zm6.1 0h8.8l.7-3.1h-4.7l4.1-4.9h-8.4l-.7 3.1h4.1L27.3 26z" fill="#1a1f71"/><path d="M31.7 15h5.7l-1 2.5h-5.7l1-2.5z" fill="#f7b600"/></svg>`;
+  }
+  if (key === "mastercard") {
+    return `<svg class="brand-icon card-brand-icon" viewBox="0 0 44 44" role="img"><rect x="6" y="11" width="32" height="22" rx="6" fill="#fff"/><circle cx="19" cy="22" r="8" fill="#eb001b"/><circle cx="25" cy="22" r="8" fill="#f79e1b" fill-opacity=".92"/><path d="M22 15.8a8 8 0 0 1 0 12.4 8 8 0 0 1 0-12.4z" fill="#ff5f00"/></svg>`;
+  }
+  if (key === "elo") {
+    return `<svg class="brand-icon card-brand-icon" viewBox="0 0 44 44" role="img"><rect x="6" y="11" width="32" height="22" rx="6" fill="#fff"/><circle cx="15" cy="22" r="4" fill="#111827"/><path d="M24 16a6 6 0 1 0 5.7 7.9h-4.2a2.2 2.2 0 1 1 0-3.8h4.2A6 6 0 0 0 24 16z" fill="#111827"/><circle cx="32" cy="17" r="2.2" fill="#f59e0b"/><circle cx="34" cy="22" r="2.2" fill="#22c55e"/><circle cx="32" cy="27" r="2.2" fill="#2563eb"/></svg>`;
+  }
+  if (key === "solverfin_demo") {
+    return `<svg class="brand-icon card-brand-icon" viewBox="0 0 44 44" role="img"><rect x="6" y="11" width="32" height="22" rx="6" fill="#0f3d4c"/><path d="M13 25c3.7 0 3.7-7 7.4-7s3.7 7 8.6 7" fill="none" stroke="#22d3ee" stroke-width="3.4" stroke-linecap="round"/><circle cx="31" cy="25" r="2.7" fill="#fff"/></svg>`;
+  }
+  return `<svg class="brand-icon card-brand-icon" viewBox="0 0 44 44" role="img"><rect x="6" y="11" width="32" height="22" rx="6" fill="#fff"/><rect x="10" y="17" width="24" height="4" rx="2" fill="#0f3d4c"/><rect x="10" y="25" width="10" height="3" rx="1.5" fill="#22d3ee"/></svg>`;
+}
+
 function countActive(items: Array<{ status: string }>): number {
   return items.filter((item) => item.status === "active").length;
 }
@@ -548,7 +586,8 @@ function baseCss(): string {
     .filter-row { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(12rem, .25fr); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading > div { display: grid; gap: 4px; }
     .master-list { display: grid; gap: 12px; } .master-item { align-items: start; border-top: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 44px minmax(0, 1fr) auto; padding-top: 14px; } .master-item:first-child { border-top: 0; padding-top: 0; }
-    .identity-mark { align-items: center; background: var(--primary); border-radius: 8px; color: white; display: flex; font-weight: 900; height: 44px; justify-content: center; width: 44px; } .card-mark { background: var(--cyan); }
+    .identity-mark { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: white; display: flex; height: 44px; justify-content: center; overflow: hidden; width: 44px; } .card-mark { background: #f8fafc; }
+    .brand-icon { display: block; height: 44px; width: 44px; } .card-brand-icon { filter: drop-shadow(0 1px 2px rgba(15,23,42,.14)); }
     .item-main { display: grid; gap: 5px; min-width: 0; } .item-main p { color: var(--muted); line-height: 1.45; } .item-title-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; } .amount-text { text-align: right; white-space: nowrap; }
     .edit-panel { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; grid-column: 1 / -1; padding: 12px; } .edit-panel summary { cursor: pointer; font-weight: 800; min-height: 32px; } .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
     .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
