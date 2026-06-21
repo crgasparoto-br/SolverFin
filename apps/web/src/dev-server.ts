@@ -144,12 +144,12 @@ function accountsCardsTabsFallbackScript(): string {
 
             const style = document.createElement("style");
             style.id = "accounts-cards-active-filter-style";
-            style.textContent = `
-              .active-filter-toggle { align-items: center; background: transparent; border: 0; color: var(--text); display: inline-flex; font: inherit; font-weight: 800; gap: 10px; justify-content: flex-start; min-height: 44px; padding: 0; text-align: left; }
-              .active-filter-toggle .toggle-track { align-items: center; background: #111827; border-radius: 999px; display: inline-flex; height: 22px; padding: 3px; transition: background .18s ease; width: 42px; }
-              .active-filter-toggle .toggle-thumb { background: #94a3b8; border-radius: 999px; display: block; height: 16px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 16px; }
-              .active-filter-toggle[aria-pressed="true"] .toggle-thumb { background: #3b82f6; transform: translateX(20px); }
-            `;
+            style.textContent = [
+              ".active-filter-toggle { align-items: center; background: transparent; border: 0; color: var(--text); display: inline-flex; font: inherit; font-weight: 800; gap: 10px; justify-content: flex-start; min-height: 44px; padding: 0; text-align: left; }",
+              ".active-filter-toggle .toggle-track { align-items: center; background: #111827; border-radius: 999px; display: inline-flex; height: 22px; padding: 3px; transition: background .18s ease; width: 42px; }",
+              ".active-filter-toggle .toggle-thumb { background: #94a3b8; border-radius: 999px; display: block; height: 16px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 16px; }",
+              ".active-filter-toggle[aria-pressed=\"true\"] .toggle-thumb { background: #3b82f6; transform: translateX(20px); }",
+            ].join("");
             document.head.appendChild(style);
           }
 
@@ -166,7 +166,7 @@ function accountsCardsTabsFallbackScript(): string {
             toggle.className = "active-filter-toggle";
             toggle.dataset.activeFilter = "";
             toggle.setAttribute("aria-pressed", "false");
-            toggle.innerHTML = `<span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span>Exibir apenas contas ativas</span>`;
+            toggle.innerHTML = '<span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span>Exibir apenas contas ativas</span>';
 
             if (statusLabel) {
               statusLabel.replaceWith(toggle);
