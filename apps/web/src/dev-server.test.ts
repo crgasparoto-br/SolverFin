@@ -62,6 +62,7 @@ function accountsCardsTabsFallbackIsInjectedOnce(): void {
   assert.match(enhanced, /data-accounts-cards-tabs-fallback/);
   assert.match(enhanced, /document\.addEventListener\("click"/);
   assert.match(enhanced, /activateTab\(button\.dataset\.tab\)/);
+  assert.match(enhanced, /button\.tabIndex = 0/);
   assert.match(enhanced, /panel\.setAttribute\("hidden", ""\)/);
   assert.equal((enhancedAgain.match(/data-accounts-cards-tabs-fallback/g) ?? []).length, 1);
 }
