@@ -131,7 +131,7 @@ export function enhanceAccountsCardsTabs(html: string): string {
               <strong>Cartões adicionais</strong>
               <p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p>
             </div>
-            <button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button>
+            <button type="button" class="additional-card-add" data-additional-card-add onclick="window.__solverFinAddAdditionalCard && window.__solverFinAddAdditionalCard(this); return false;">+ adicional</button>
           </div>
           <div class="additional-card-list" data-additional-card-list></div>
         </section>`;
@@ -308,6 +308,12 @@ function accountsCardsTabsFallbackScript(): string {
             row.querySelector("input")?.focus();
           }
 
+          window.__solverFinAddAdditionalCard = (button) => {
+            const section = button ? button.closest(".additional-card-section") : null;
+            const list = section ? section.querySelector("[data-additional-card-list]") : null;
+            appendAdditionalCardRow(list);
+          };
+
           function enhanceAdditionalCardCreation() {
             const forms = Array.from(
               document.querySelectorAll('#new-card-dialog form[data-api-path="/api/cards"], form[data-api-method="PATCH"][data-api-path^="/api/cards/"]'),
@@ -329,7 +335,7 @@ function accountsCardsTabsFallbackScript(): string {
               section = document.createElement("section");
               section.className = "additional-card-section";
               section.setAttribute("aria-label", "Cartões adicionais");
-              section.innerHTML = '<div class="additional-card-heading"><div><strong>Cartões adicionais</strong><p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p></div><button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button></div><div class="additional-card-list" data-additional-card-list></div>';
+              section.innerHTML = '<div class="additional-card-heading"><div><strong>Cartões adicionais</strong><p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p></div><button type="button" class="additional-card-add" data-additional-card-add onclick="window.__solverFinAddAdditionalCard && window.__solverFinAddAdditionalCard(this); return false;">+ adicional</button></div><div class="additional-card-list" data-additional-card-list></div>';
 
               if (submitButton) {
                 form.insertBefore(section, submitButton);
@@ -342,6 +348,7 @@ function accountsCardsTabsFallbackScript(): string {
             const addButton = section.querySelector("[data-additional-card-add]");
 
             addButton?.addEventListener("click", (event) => {
+              if (event.defaultPrevented) return;
               event.preventDefault();
               event.stopPropagation();
               appendAdditionalCardRow(list);
@@ -456,7 +463,7 @@ function accountsCardsTabsFallbackScript(): string {
           document.addEventListener("click", (event) => {
             const target = event.target instanceof Element ? event.target : null;
             const addButton = target ? target.closest("[data-additional-card-add]") : null;
-            if (!addButton) return;
+            if (!addButton || event.defaultPrevented) return;
 
             const section = addButton.closest(".additional-card-section");
             const list = section ? section.querySelector("[data-additional-card-list]") : null;
