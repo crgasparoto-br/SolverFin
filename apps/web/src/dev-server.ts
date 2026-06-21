@@ -121,10 +121,11 @@ export function enhanceAccountsCardsTabs(html: string): string {
     return html;
   }
 
-  const activeFilterToggleHtml = `          <button type="button" class="active-filter-toggle" data-active-filter aria-pressed="false">
+  const activeFilterToggleHtml = `          <label class="active-filter-switch" data-active-filter aria-pressed="false">
+            <input type="checkbox" class="active-filter-input" data-active-filter-input />
             <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
             <span>Exibir apenas contas ativas</span>
-          </button>`;
+          </label>`;
   const additionalCardSectionHtml = `        <section class="additional-card-section" aria-label="Cartões adicionais">
           <div class="additional-card-heading">
             <div>
@@ -185,11 +186,13 @@ function accountsCardsTabsFallbackScript(): string {
             const style = document.createElement("style");
             style.id = "accounts-cards-enhancement-style";
             style.textContent = [
-              ".active-filter-toggle { align-items: center; align-self: end; background: #0b1220; border: 1px solid rgba(148, 163, 184, .22); border-radius: 6px; color: #ffffff; display: inline-flex; font: inherit; font-size: .86rem; font-weight: 700; gap: 8px; justify-content: flex-start; min-height: 34px; padding: 6px 10px; text-align: left; width: fit-content; }",
-              ".active-filter-toggle .toggle-track { align-items: center; background: #263348; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 18px; padding: 2px; transition: background .18s ease; width: 36px; }",
-              ".active-filter-toggle .toggle-thumb { background: #94a3b8; border-radius: 999px; box-shadow: 0 1px 2px rgba(15, 23, 42, .28); display: block; height: 14px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 14px; }",
-              ".active-filter-toggle[aria-pressed=\"true\"] .toggle-track { background: #1e293b; }",
-              ".active-filter-toggle[aria-pressed=\"true\"] .toggle-thumb { background: #3b82f6; transform: translateX(18px); }",
+              ".active-filter-switch { align-items: center; align-self: end; color: var(--text); cursor: pointer; display: inline-flex; font: inherit; font-size: .9rem; font-weight: 800; gap: 8px; justify-content: flex-start; min-height: 34px; text-align: left; user-select: none; width: fit-content; }",
+              ".active-filter-input { border: 0; height: 1px; margin: 0; opacity: 0; padding: 0; position: absolute; width: 1px; }",
+              ".active-filter-switch .toggle-track { align-items: center; background: #263348; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 18px; padding: 2px; transition: background .18s ease; width: 36px; }",
+              ".active-filter-switch .toggle-thumb { background: #94a3b8; border-radius: 999px; box-shadow: 0 1px 2px rgba(15, 23, 42, .28); display: block; height: 14px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 14px; }",
+              ".active-filter-switch[aria-pressed=\"true\"] .toggle-track { background: #1e293b; }",
+              ".active-filter-switch[aria-pressed=\"true\"] .toggle-thumb { background: #3b82f6; transform: translateX(18px); }",
+              ".active-filter-switch:focus-within .toggle-track { box-shadow: 0 0 0 3px rgba(59, 130, 246, .24); }",
               ".additional-card-section { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; grid-column: 1 / -1; padding: 12px; }",
               ".additional-card-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }",
               ".additional-card-add { background: transparent; color: var(--primary); min-height: 36px; padding: 0 10px; }",
@@ -212,12 +215,11 @@ function accountsCardsTabsFallbackScript(): string {
             ensureAccountsCardsStyles();
 
             const statusLabel = statusControl.closest("label");
-            const toggle = document.createElement("button");
-            toggle.type = "button";
-            toggle.className = "active-filter-toggle";
+            const toggle = document.createElement("label");
+            toggle.className = "active-filter-switch";
             toggle.dataset.activeFilter = "";
             toggle.setAttribute("aria-pressed", "false");
-            toggle.innerHTML = '<span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span>Exibir apenas contas ativas</span>';
+            toggle.innerHTML = '<input type="checkbox" class="active-filter-input" data-active-filter-input /><span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span>Exibir apenas contas ativas</span>';
 
             if (statusLabel) {
               statusLabel.replaceWith(toggle);
@@ -246,7 +248,14 @@ function accountsCardsTabsFallbackScript(): string {
 
           function setActiveFilterState(activeOnly) {
             if (!activeFilterButton) return;
+            const input = activeFilterButton.querySelector("[data-active-filter-input]");
             activeFilterButton.setAttribute("aria-pressed", String(activeOnly));
+            if (input) input.checked = activeOnly;
+          }
+
+          function readActiveFilterState() {
+            const input = activeFilterButton ? activeFilterButton.querySelector("[data-active-filter-input]") : null;
+            return input ? input.checked === true : false;
           }
 
           function resolveRequestedTab(tab) {
@@ -255,7 +264,7 @@ function accountsCardsTabsFallbackScript(): string {
 
           function applyFilters() {
             const term = String((searchInput && searchInput.value) || "").trim().toLowerCase();
-            const activeOnly = activeFilterButton ? activeFilterButton.getAttribute("aria-pressed") === "true" : false;
+            const activeOnly = readActiveFilterState();
             const visiblePanel = panels.find((panel) => panel.hidden === false);
             if (!visiblePanel) return;
 
@@ -460,6 +469,16 @@ function accountsCardsTabsFallbackScript(): string {
           setActiveFilterState(readActiveOnlyPreference());
           enhanceAdditionalCardCreation();
 
+          const activeFilterInput = activeFilterButton ? activeFilterButton.querySelector("[data-active-filter-input]") : null;
+          if (activeFilterInput) {
+            activeFilterInput.addEventListener("change", () => {
+              const activeOnly = activeFilterInput.checked === true;
+              setActiveFilterState(activeOnly);
+              saveActiveOnlyPreference(activeOnly);
+              applyFilters();
+            });
+          }
+
           document.addEventListener("click", (event) => {
             const target = event.target instanceof Element ? event.target : null;
             const addButton = target ? target.closest("[data-additional-card-add]") : null;
@@ -480,15 +499,6 @@ function accountsCardsTabsFallbackScript(): string {
             event.preventDefault();
             activateTab(button.dataset.tab);
           });
-
-          if (activeFilterButton) {
-            activeFilterButton.addEventListener("click", () => {
-              const activeOnly = activeFilterButton.getAttribute("aria-pressed") !== "true";
-              setActiveFilterState(activeOnly);
-              saveActiveOnlyPreference(activeOnly);
-              applyFilters();
-            });
-          }
 
           if (searchInput) {
             searchInput.addEventListener("input", applyFilters);
