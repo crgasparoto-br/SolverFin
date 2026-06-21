@@ -543,6 +543,7 @@ function baseCss(): string {
     main { display: grid; gap: 18px; margin: 0 auto; max-width: 1180px; padding: 24px; width: 100%; }
     .master-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .master-heading > div:first-child { display: grid; gap: 6px; max-width: 720px; } .master-actions { display: flex; flex-wrap: wrap; gap: 10px; }
     .master-toolbar, .master-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 16px; padding: 16px; }
+    [hidden] { display: none !important; }
     .tab-list { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: flex; gap: 6px; padding: 6px; } .tab-button { background: transparent; color: var(--primary); flex: 1 1 0; gap: 8px; min-width: 0; } .tab-button[aria-selected="true"] { background: var(--surface); border: 1px solid #d4e6ec; color: var(--text); } .tab-button span, .section-heading > span, .status-pill { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 5px 9px; white-space: nowrap; }
     .filter-row { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(12rem, .25fr); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading > div { display: grid; gap: 4px; }
