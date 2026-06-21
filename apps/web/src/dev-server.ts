@@ -162,7 +162,7 @@ function accountsCardsTabsFallbackScript(): string {
               const isActive = button.dataset.tab === activeTab;
               button.setAttribute("aria-selected", String(isActive));
               button.classList.toggle("is-active", isActive);
-              button.tabIndex = isActive ? 0 : -1;
+              button.tabIndex = 0;
             });
 
             panels.forEach((panel) => {
