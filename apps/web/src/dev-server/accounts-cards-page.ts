@@ -24,6 +24,8 @@ const cardBrands = [
   { key: "solverfin_demo", label: "SolverFin Demo", shortLabel: "SF" },
 ] as const;
 
+const accountCurrencies = ["BRL", "USD", "EUR"] as const;
+
 export async function renderAccountsCardsPage(token: string): Promise<string> {
   const [accounts, cards] = await Promise.all([
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts?status=all"),
@@ -131,7 +133,7 @@ function renderAccountItem(account: AccountRecord): string {
           <label>Nome<input name="name" value="${escapeHtml(account.name)}" required /></label>
           <label>Tipo<select name="kind">${renderAccountKindOptions(account.kind)}</select></label>
           <label>Instituição<select name="institutionKey">${renderInstitutionOptions(account.institutionKey)}</select></label>
-          <label>Moeda<input name="currency" value="${escapeHtml(account.currency ?? "BRL")}" maxlength="3" /></label>
+          <label>Moeda<select name="currency">${renderCurrencyOptions(account.currency)}</select></label>
           <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor ?? 0)}" inputmode="decimal" /></label>
           <label>Identificador mascarado<input name="maskedIdentifier" value="${escapeHtml(account.maskedIdentifier ?? "")}" placeholder="Ex.: final 1234" /></label>
           <label>Status<select name="status">${renderAccountStatusOptions(account.status)}</select></label>
@@ -193,7 +195,7 @@ function renderAccountDialog(): string {
         <label>Nome<input name="name" required /></label>
         <label>Tipo<select name="kind" required>${renderAccountKindOptions()}</select></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions()}</select></label>
-        <label>Moeda<input name="currency" value="BRL" maxlength="3" /></label>
+        <label>Moeda<select name="currency">${renderCurrencyOptions()}</select></label>
         <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 1234" /></label>
         <button type="submit">Criar conta</button>
@@ -416,6 +418,12 @@ function renderInstitutionOptions(selected?: string): string {
 function renderCardBrandOptions(selected?: string): string {
   return cardBrands
     .map((item) => `<option value="${escapeHtml(item.key)}"${selected === item.key ? " selected" : ""}>${escapeHtml(item.label)}</option>`)
+    .join("");
+}
+
+function renderCurrencyOptions(selected = "BRL"): string {
+  return accountCurrencies
+    .map((currency) => `<option value="${currency}"${selected === currency ? " selected" : ""}>${currency}</option>`)
     .join("");
 }
 
