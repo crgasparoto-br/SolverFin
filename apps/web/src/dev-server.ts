@@ -131,11 +131,72 @@ function accountsCardsTabsFallbackScript(): string {
           if (window.__solverFinAccountsCardsTabs === true) return;
           window.__solverFinAccountsCardsTabs = true;
 
+          const activeFilterStorageKey = "solverfin.accountsCards.activeOnly";
           const panels = Array.from(document.querySelectorAll("[data-tab-panel]"));
           const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
           const searchInput = document.querySelector("[data-master-search]");
           const statusSelect = document.querySelector("[data-master-status]");
+          const activeFilterButton = buildActiveFilterToggle(statusSelect);
           const knownTabs = new Set(panels.map((panel) => panel.dataset.tabPanel).filter(Boolean));
+
+          function ensureActiveFilterStyles() {
+            if (document.getElementById("accounts-cards-active-filter-style")) return;
+
+            const style = document.createElement("style");
+            style.id = "accounts-cards-active-filter-style";
+            style.textContent = `
+              .active-filter-toggle { align-items: center; background: transparent; border: 0; color: var(--text); display: inline-flex; font: inherit; font-weight: 800; gap: 10px; justify-content: flex-start; min-height: 44px; padding: 0; text-align: left; }
+              .active-filter-toggle .toggle-track { align-items: center; background: #111827; border-radius: 999px; display: inline-flex; height: 22px; padding: 3px; transition: background .18s ease; width: 42px; }
+              .active-filter-toggle .toggle-thumb { background: #94a3b8; border-radius: 999px; display: block; height: 16px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 16px; }
+              .active-filter-toggle[aria-pressed="true"] .toggle-thumb { background: #3b82f6; transform: translateX(20px); }
+            `;
+            document.head.appendChild(style);
+          }
+
+          function buildActiveFilterToggle(statusControl) {
+            const existingToggle = document.querySelector("[data-active-filter]");
+            if (existingToggle) return existingToggle;
+            if (!statusControl) return null;
+
+            ensureActiveFilterStyles();
+
+            const statusLabel = statusControl.closest("label");
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "active-filter-toggle";
+            toggle.dataset.activeFilter = "";
+            toggle.setAttribute("aria-pressed", "false");
+            toggle.innerHTML = `<span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span>Exibir apenas contas ativas</span>`;
+
+            if (statusLabel) {
+              statusLabel.replaceWith(toggle);
+            } else {
+              statusControl.replaceWith(toggle);
+            }
+
+            return toggle;
+          }
+
+          function readActiveOnlyPreference() {
+            try {
+              return window.localStorage.getItem(activeFilterStorageKey) === "true";
+            } catch (_error) {
+              return false;
+            }
+          }
+
+          function saveActiveOnlyPreference(activeOnly) {
+            try {
+              window.localStorage.setItem(activeFilterStorageKey, String(activeOnly));
+            } catch (_error) {
+              // Prefer keeping the filter working for the current session if storage is unavailable.
+            }
+          }
+
+          function setActiveFilterState(activeOnly) {
+            if (!activeFilterButton) return;
+            activeFilterButton.setAttribute("aria-pressed", String(activeOnly));
+          }
 
           function resolveRequestedTab(tab) {
             return knownTabs.has(tab) ? tab : "accounts";
@@ -143,14 +204,14 @@ function accountsCardsTabsFallbackScript(): string {
 
           function applyFilters() {
             const term = String((searchInput && searchInput.value) || "").trim().toLowerCase();
-            const status = String((statusSelect && statusSelect.value) || "all");
+            const activeOnly = activeFilterButton ? activeFilterButton.getAttribute("aria-pressed") === "true" : false;
             const visiblePanel = panels.find((panel) => panel.hidden === false);
             if (!visiblePanel) return;
 
             visiblePanel.querySelectorAll("[data-master-item]").forEach((item) => {
               const itemStatus = item.dataset.status;
               const matchesSearch = !term || String(item.dataset.search || "").includes(term);
-              const matchesStatus = status === "all" || (status === "active" ? itemStatus === "active" : itemStatus !== "active");
+              const matchesStatus = !activeOnly || itemStatus === "active";
               item.hidden = !(matchesSearch && matchesStatus);
             });
           }
@@ -185,6 +246,8 @@ function accountsCardsTabsFallbackScript(): string {
             }
           }
 
+          setActiveFilterState(readActiveOnlyPreference());
+
           document.addEventListener("click", (event) => {
             const target = event.target instanceof Element ? event.target : null;
             const button = target ? target.closest("[data-tab]") : null;
@@ -193,11 +256,19 @@ function accountsCardsTabsFallbackScript(): string {
             activateTab(button.dataset.tab);
           });
 
-          [searchInput, statusSelect].forEach((control) => {
-            if (!control) return;
-            control.addEventListener("input", applyFilters);
-            control.addEventListener("change", applyFilters);
-          });
+          if (activeFilterButton) {
+            activeFilterButton.addEventListener("click", () => {
+              const activeOnly = activeFilterButton.getAttribute("aria-pressed") !== "true";
+              setActiveFilterState(activeOnly);
+              saveActiveOnlyPreference(activeOnly);
+              applyFilters();
+            });
+          }
+
+          if (searchInput) {
+            searchInput.addEventListener("input", applyFilters);
+            searchInput.addEventListener("change", applyFilters);
+          }
 
           window.addEventListener("hashchange", () => activateTab(window.location.hash.slice(1), { updateHash: false }));
 
