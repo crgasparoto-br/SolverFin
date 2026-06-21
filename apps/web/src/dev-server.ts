@@ -297,6 +297,17 @@ function accountsCardsTabsFallbackScript(): string {
             }
           }
 
+          function appendAdditionalCardRow(list) {
+            if (!list) return;
+
+            const row = document.createElement("div");
+            row.className = "additional-card-row";
+            row.innerHTML = '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="button" class="additional-card-remove">Remover</button>';
+            row.querySelector("button")?.addEventListener("click", () => row.remove());
+            list.appendChild(row);
+            row.querySelector("input")?.focus();
+          }
+
           function enhanceAdditionalCardCreation() {
             const forms = Array.from(
               document.querySelectorAll('#new-card-dialog form[data-api-path="/api/cards"], form[data-api-method="PATCH"][data-api-path^="/api/cards/"]'),
@@ -330,18 +341,11 @@ function accountsCardsTabsFallbackScript(): string {
             const list = section.querySelector("[data-additional-card-list]");
             const addButton = section.querySelector("[data-additional-card-add]");
 
-            function createAdditionalRow() {
-              if (!list) return;
-
-              const row = document.createElement("div");
-              row.className = "additional-card-row";
-              row.innerHTML = '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="button" class="additional-card-remove">Remover</button>';
-              row.querySelector("button")?.addEventListener("click", () => row.remove());
-              list.appendChild(row);
-              row.querySelector("input")?.focus();
-            }
-
-            addButton?.addEventListener("click", createAdditionalRow);
+            addButton?.addEventListener("click", (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              appendAdditionalCardRow(list);
+            });
             form.addEventListener(
               "submit",
               (event) => {
@@ -448,6 +452,19 @@ function accountsCardsTabsFallbackScript(): string {
 
           setActiveFilterState(readActiveOnlyPreference());
           enhanceAdditionalCardCreation();
+
+          document.addEventListener("click", (event) => {
+            const target = event.target instanceof Element ? event.target : null;
+            const addButton = target ? target.closest("[data-additional-card-add]") : null;
+            if (!addButton) return;
+
+            const section = addButton.closest(".additional-card-section");
+            const list = section ? section.querySelector("[data-additional-card-list]") : null;
+            if (!list) return;
+
+            event.preventDefault();
+            appendAdditionalCardRow(list);
+          });
 
           document.addEventListener("click", (event) => {
             const target = event.target instanceof Element ? event.target : null;
