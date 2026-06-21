@@ -121,11 +121,11 @@ export function enhanceAccountsCardsTabs(html: string): string {
     return html;
   }
 
-  const htmlWithAdditionalCardFields = html.replace(
-    `        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
-        <button type="submit">Criar cartão</button>`,
-    `        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
-        <section class="additional-card-section" aria-label="Cartões adicionais">
+  const activeFilterToggleHtml = `          <button type="button" class="active-filter-toggle" data-active-filter aria-pressed="false">
+            <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+            <span>Exibir apenas contas ativas</span>
+          </button>`;
+  const additionalCardSectionHtml = `        <section class="additional-card-section" aria-label="Cartões adicionais">
           <div class="additional-card-heading">
             <div>
               <strong>Cartões adicionais</strong>
@@ -134,11 +134,34 @@ export function enhanceAccountsCardsTabs(html: string): string {
             <button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button>
           </div>
           <div class="additional-card-list" data-additional-card-list></div>
-        </section>
+        </section>`;
+
+  const htmlWithActiveFilter = html.replace(
+    `          <label>Status
+            <select data-master-status>
+              <option value="all">Todos</option>
+              <option value="active">Ativos</option>
+              <option value="inactive">Inativos</option>
+            </select>
+          </label>`,
+    activeFilterToggleHtml,
+  );
+
+  const htmlWithNewCardAdditions = htmlWithActiveFilter.replace(
+    `        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
+        <button type="submit">Criar cartão</button>`,
+    `        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
+${additionalCardSectionHtml}
         <button type="submit">Criar cartão</button>`,
   );
 
-  return htmlWithAdditionalCardFields.replace("</body>", `${accountsCardsTabsFallbackScript()}</body>`);
+  const htmlWithEditCardAdditions = htmlWithNewCardAdditions.replace(
+    /(<form data-api-form data-api-method="PATCH" data-api-path="\/api\/cards\/[^"]+" class="edit-grid">[\s\S]*?<label>Identificador mascarado<input name="maskedIdentifier"[^>]*><\/label>\n)\s*<button type="submit">Salvar cartão<\/button>/g,
+    `$1${additionalCardSectionHtml}
+        <button type="submit">Salvar cartão</button>`,
+  );
+
+  return htmlWithEditCardAdditions.replace("</body>", `${accountsCardsTabsFallbackScript()}</body>`);
 }
 
 function accountsCardsTabsFallbackScript(): string {
@@ -179,7 +202,10 @@ function accountsCardsTabsFallbackScript(): string {
 
           function buildActiveFilterToggle(statusControl) {
             const existingToggle = document.querySelector("[data-active-filter]");
-            if (existingToggle) return existingToggle;
+            if (existingToggle) {
+              ensureAccountsCardsStyles();
+              return existingToggle;
+            }
             if (!statusControl) return null;
 
             ensureAccountsCardsStyles();
@@ -271,7 +297,14 @@ function accountsCardsTabsFallbackScript(): string {
           }
 
           function enhanceAdditionalCardCreation() {
-            const form = document.querySelector('#new-card-dialog form[data-api-path="/api/cards"]');
+            const forms = Array.from(
+              document.querySelectorAll('#new-card-dialog form[data-api-path="/api/cards"], form[data-api-method="PATCH"][data-api-path^="/api/cards/"]'),
+            );
+
+            forms.forEach((form) => enhanceAdditionalCardForm(form));
+          }
+
+          function enhanceAdditionalCardForm(form) {
             if (!form || form.dataset.additionalCardsEnhanced === "true") return;
 
             ensureAccountsCardsStyles();
@@ -361,6 +394,14 @@ function accountsCardsTabsFallbackScript(): string {
             return status;
           }
 
+          async function sendCardPayload(path, method, payload) {
+            return fetch(path, {
+              method,
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+          }
+
           async function submitCardBatch(event, form) {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -369,24 +410,26 @@ function accountsCardsTabsFallbackScript(): string {
             const status = ensureStatus(form);
             const basePayload = readFormPayload(form);
             const additionalCards = readAdditionalCards(form);
-            const payloads = [
-              basePayload,
-              ...additionalCards.map((card) => ({
-                ...basePayload,
-                name: card.name,
-                ...(card.maskedIdentifier ? { maskedIdentifier: card.maskedIdentifier } : {}),
-              })),
-            ];
+            const method = form.dataset.apiMethod || "POST";
+            const isEdit = method.toUpperCase() === "PATCH";
 
             if (submitButton) submitButton.disabled = true;
             status.className = "form-status muted";
-            status.textContent = additionalCards.length > 0 ? "Criando cartões..." : "Salvando...";
+            status.textContent = additionalCards.length > 0 ? "Salvando cartões..." : "Salvando...";
 
-            for (const payload of payloads) {
-              const response = await fetch(form.dataset.apiPath, {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(payload),
+            const baseResponse = await sendCardPayload(form.dataset.apiPath, method, basePayload);
+            if (!baseResponse.ok) {
+              status.className = "form-status error";
+              status.textContent = await readApiMessage(baseResponse);
+              if (submitButton) submitButton.disabled = false;
+              return;
+            }
+
+            for (const card of additionalCards) {
+              const response = await sendCardPayload("/api/cards", "POST", {
+                ...basePayload,
+                name: card.name,
+                ...(card.maskedIdentifier ? { maskedIdentifier: card.maskedIdentifier } : {}),
               });
 
               if (!response.ok) {
@@ -398,7 +441,7 @@ function accountsCardsTabsFallbackScript(): string {
             }
 
             status.className = "form-status success";
-            status.textContent = "Cartões criados. Atualizando a tela...";
+            status.textContent = isEdit || additionalCards.length > 0 ? "Cartões salvos. Atualizando a tela..." : "Cartão criado. Atualizando a tela...";
             window.setTimeout(() => window.location.reload(), 450);
           }
 
