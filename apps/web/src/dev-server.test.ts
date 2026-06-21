@@ -7,6 +7,7 @@ loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
+legacyAccountsRouteDoesNotAppearAsPrivateRoute();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
 rootRouteRedirectsBasedOnSession();
@@ -29,12 +30,12 @@ function privateRouteRedirectsWithoutSession(): void {
 }
 
 function privateRouteAllowsSessionAndIdentifiesDashboardRoute(): void {
-  const anonymousRoute = resolveRoute("/contas", false);
+  const anonymousRoute = resolveRoute("/categorias", false);
 
   assert.equal(anonymousRoute.statusCode, 302);
   assert.equal(anonymousRoute.location, "/login");
 
-  const authenticatedRoute = resolveRoute("/contas", true);
+  const authenticatedRoute = resolveRoute("/categorias", true);
 
   assert.equal(authenticatedRoute.statusCode, 200);
   assert.equal(authenticatedRoute.kind, "placeholder");
@@ -52,12 +53,23 @@ function accountsCardsRouteRendersMasterPage(): void {
   assert.equal(authenticatedRoute.kind, "placeholder");
 }
 
+function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
+  const authenticatedRoute = resolveRoute("/contas", true);
+
+  assert.equal(authenticatedRoute.statusCode, 404);
+  assert.equal(privateRoutes.has("/contas"), false);
+}
+
 function sidebarMenuUsesPtBrLabels(): void {
   assert.equal(privateRoutes.get("/lancamentos"), "Extrato da conta");
   assert.equal(privateRoutes.get("/recorrencias"), "Recorrências");
   assert.equal(privateRoutes.get("/pagar-receber"), "Pagar e receber");
   assert.equal(privateRoutes.get("/contas-cartoes"), "Contas e Cartões");
-  assert.equal(privateRoutes.get("/contas"), "Contas e Cartões");
+  assert.equal(privateRoutes.has("/contas"), false);
+  assert.equal(
+    Array.from(privateRoutes.values()).filter((label) => label === "Contas e Cartões").length,
+    1,
+  );
   assert.equal(privateRoutes.get("/cartoes"), "Cartões");
   assert.equal(privateRoutes.get("/orcamentos"), "Orçamentos");
   assert.equal(privateRoutes.get("/relatorios"), "Relatórios");
