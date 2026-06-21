@@ -197,9 +197,9 @@ function buildUpdateTransactionSql(): string {
   return `update "Transaction" set
       "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6, "transferGroupId" = $7,
       "kind" = $8, "status" = $9, "source" = $10, "amountMinor" = $11, "currency" = $12,
-      "occurredOn" = $13, "description" = $14, "reconciledAt" = $15, "voidedAt" = $16, "updatedAt" = $18,
-      "updatedByUserId" = $20
-    where "id" = $1`;
+      "occurredOn" = $13, "description" = $14, "reconciledAt" = $15, "voidedAt" = $16,
+      "createdAt" = $17, "updatedAt" = $18, "createdByUserId" = $19, "updatedByUserId" = $20
+    where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
 function buildTransactionParams(transaction: Transaction): unknown[] {

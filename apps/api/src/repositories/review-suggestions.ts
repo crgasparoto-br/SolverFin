@@ -499,9 +499,9 @@ function buildInsertAiSuggestionSql(): string {
 
 function buildUpdateAiSuggestionSql(): string {
   return `update "AiSuggestion" set
-    "status" = $5, "targetEntityId" = $7, "confidence" = $8, "explanation" = $9,
-    "provider" = $10, "model" = $11, "reviewedByUserId" = $12, "reviewedAt" = $13,
-    "updatedAt" = $15
+    "kind" = $4, "status" = $5, "sourceEntityId" = $6, "targetEntityId" = $7, "confidence" = $8,
+    "explanation" = $9, "provider" = $10, "model" = $11, "reviewedByUserId" = $12, "reviewedAt" = $13,
+    "createdAt" = $14, "updatedAt" = $15
    where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
