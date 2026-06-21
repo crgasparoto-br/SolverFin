@@ -121,7 +121,24 @@ export function enhanceAccountsCardsTabs(html: string): string {
     return html;
   }
 
-  return html.replace("</body>", `${accountsCardsTabsFallbackScript()}</body>`);
+  const htmlWithAdditionalCardFields = html.replace(
+    `        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
+        <button type="submit">Criar cartão</button>`,
+    `        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
+        <section class="additional-card-section" aria-label="Cartões adicionais">
+          <div class="additional-card-heading">
+            <div>
+              <strong>Cartões adicionais</strong>
+              <p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p>
+            </div>
+            <button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button>
+          </div>
+          <div class="additional-card-list" data-additional-card-list></div>
+        </section>
+        <button type="submit">Criar cartão</button>`,
+  );
+
+  return htmlWithAdditionalCardFields.replace("</body>", `${accountsCardsTabsFallbackScript()}</body>`);
 }
 
 function accountsCardsTabsFallbackScript(): string {
@@ -261,15 +278,19 @@ function accountsCardsTabsFallbackScript(): string {
             form.dataset.additionalCardsEnhanced = "true";
 
             const submitButton = form.querySelector('button[type="submit"]');
-            const section = document.createElement("section");
-            section.className = "additional-card-section";
-            section.setAttribute("aria-label", "Cartões adicionais");
-            section.innerHTML = '<div class="additional-card-heading"><div><strong>Cartões adicionais</strong><p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p></div><button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button></div><div class="additional-card-list" data-additional-card-list></div>';
+            let section = form.querySelector(".additional-card-section");
 
-            if (submitButton) {
-              form.insertBefore(section, submitButton);
-            } else {
-              form.appendChild(section);
+            if (!section) {
+              section = document.createElement("section");
+              section.className = "additional-card-section";
+              section.setAttribute("aria-label", "Cartões adicionais");
+              section.innerHTML = '<div class="additional-card-heading"><div><strong>Cartões adicionais</strong><p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p></div><button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button></div><div class="additional-card-list" data-additional-card-list></div>';
+
+              if (submitButton) {
+                form.insertBefore(section, submitButton);
+              } else {
+                form.appendChild(section);
+              }
             }
 
             const list = section.querySelector("[data-additional-card-list]");
