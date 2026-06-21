@@ -79,7 +79,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/contas-cartoes" && token) {
-    sendHtml(response, 200, await renderAccountsCardsPage(token));
+    sendHtml(response, 200, enhanceAccountsCardsTabs(await renderAccountsCardsPage(token)));
     return;
   }
 
@@ -114,4 +114,96 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   sendHtml(response, 404, renderNotFoundPage());
+}
+
+export function enhanceAccountsCardsTabs(html: string): string {
+  if (!html.includes('data-tab-panel="accounts"') || html.includes("data-accounts-cards-tabs-fallback")) {
+    return html;
+  }
+
+  return html.replace("</body>", `${accountsCardsTabsFallbackScript()}</body>`);
+}
+
+function accountsCardsTabsFallbackScript(): string {
+  return `
+      <script data-accounts-cards-tabs-fallback>
+        (() => {
+          if (window.__solverFinAccountsCardsTabs === true) return;
+          window.__solverFinAccountsCardsTabs = true;
+
+          const panels = Array.from(document.querySelectorAll("[data-tab-panel]"));
+          const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
+          const searchInput = document.querySelector("[data-master-search]");
+          const statusSelect = document.querySelector("[data-master-status]");
+          const knownTabs = new Set(panels.map((panel) => panel.dataset.tabPanel).filter(Boolean));
+
+          function resolveRequestedTab(tab) {
+            return knownTabs.has(tab) ? tab : "accounts";
+          }
+
+          function applyFilters() {
+            const term = String((searchInput && searchInput.value) || "").trim().toLowerCase();
+            const status = String((statusSelect && statusSelect.value) || "all");
+            const visiblePanel = panels.find((panel) => panel.hidden === false);
+            if (!visiblePanel) return;
+
+            visiblePanel.querySelectorAll("[data-master-item]").forEach((item) => {
+              const itemStatus = item.dataset.status;
+              const matchesSearch = !term || String(item.dataset.search || "").includes(term);
+              const matchesStatus = status === "all" || (status === "active" ? itemStatus === "active" : itemStatus !== "active");
+              item.hidden = !(matchesSearch && matchesStatus);
+            });
+          }
+
+          function activateTab(tab, options) {
+            const activeTab = resolveRequestedTab(tab);
+
+            tabButtons.forEach((button) => {
+              const isActive = button.dataset.tab === activeTab;
+              button.setAttribute("aria-selected", String(isActive));
+              button.classList.toggle("is-active", isActive);
+              button.tabIndex = 0;
+            });
+
+            panels.forEach((panel) => {
+              const isActive = panel.dataset.tabPanel === activeTab;
+              if (isActive) {
+                panel.removeAttribute("hidden");
+                panel.setAttribute("aria-hidden", "false");
+              } else {
+                panel.setAttribute("hidden", "");
+                panel.setAttribute("aria-hidden", "true");
+              }
+            });
+
+            applyFilters();
+
+            if (!options || options.updateHash !== false) {
+              const nextHash = activeTab === "accounts" ? "" : "#" + activeTab;
+              const nextUrl = window.location.pathname + window.location.search + nextHash;
+              if (window.history && window.location.hash !== nextHash) window.history.replaceState(null, "", nextUrl);
+            }
+          }
+
+          document.addEventListener("click", (event) => {
+            const target = event.target instanceof Element ? event.target : null;
+            const button = target ? target.closest("[data-tab]") : null;
+            if (!button) return;
+            event.preventDefault();
+            activateTab(button.dataset.tab);
+          });
+
+          [searchInput, statusSelect].forEach((control) => {
+            if (!control) return;
+            control.addEventListener("input", applyFilters);
+            control.addEventListener("change", applyFilters);
+          });
+
+          window.addEventListener("hashchange", () => activateTab(window.location.hash.slice(1), { updateHash: false }));
+
+          const selectedButton = tabButtons.find((button) => button.getAttribute("aria-selected") === "true");
+          const initialTab = window.location.hash ? window.location.hash.slice(1) : selectedButton && selectedButton.dataset.tab;
+          activateTab(initialTab, { updateHash: !window.location.hash });
+        })();
+      </script>`;
 }
