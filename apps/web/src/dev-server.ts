@@ -185,10 +185,11 @@ function accountsCardsTabsFallbackScript(): string {
             const style = document.createElement("style");
             style.id = "accounts-cards-enhancement-style";
             style.textContent = [
-              ".active-filter-toggle { align-items: center; background: transparent; border: 0; color: var(--text); display: inline-flex; font: inherit; font-weight: 800; gap: 10px; justify-content: flex-start; min-height: 44px; padding: 0; text-align: left; }",
-              ".active-filter-toggle .toggle-track { align-items: center; background: #111827; border-radius: 999px; display: inline-flex; height: 22px; padding: 3px; transition: background .18s ease; width: 42px; }",
-              ".active-filter-toggle .toggle-thumb { background: #94a3b8; border-radius: 999px; display: block; height: 16px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 16px; }",
-              ".active-filter-toggle[aria-pressed=\"true\"] .toggle-thumb { background: #3b82f6; transform: translateX(20px); }",
+              ".active-filter-toggle { align-items: center; align-self: end; background: #0b1220; border: 1px solid rgba(148, 163, 184, .22); border-radius: 6px; color: #ffffff; display: inline-flex; font: inherit; font-size: .86rem; font-weight: 700; gap: 8px; justify-content: flex-start; min-height: 34px; padding: 6px 10px; text-align: left; width: fit-content; }",
+              ".active-filter-toggle .toggle-track { align-items: center; background: #263348; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 18px; padding: 2px; transition: background .18s ease; width: 36px; }",
+              ".active-filter-toggle .toggle-thumb { background: #94a3b8; border-radius: 999px; box-shadow: 0 1px 2px rgba(15, 23, 42, .28); display: block; height: 14px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 14px; }",
+              ".active-filter-toggle[aria-pressed=\"true\"] .toggle-track { background: #1e293b; }",
+              ".active-filter-toggle[aria-pressed=\"true\"] .toggle-thumb { background: #3b82f6; transform: translateX(18px); }",
               ".additional-card-section { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; grid-column: 1 / -1; padding: 12px; }",
               ".additional-card-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }",
               ".additional-card-add { background: transparent; color: var(--primary); min-height: 36px; padding: 0 10px; }",
