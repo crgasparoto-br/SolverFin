@@ -139,16 +139,23 @@ function accountsCardsTabsFallbackScript(): string {
           const activeFilterButton = buildActiveFilterToggle(statusSelect);
           const knownTabs = new Set(panels.map((panel) => panel.dataset.tabPanel).filter(Boolean));
 
-          function ensureActiveFilterStyles() {
-            if (document.getElementById("accounts-cards-active-filter-style")) return;
+          function ensureAccountsCardsStyles() {
+            if (document.getElementById("accounts-cards-enhancement-style")) return;
 
             const style = document.createElement("style");
-            style.id = "accounts-cards-active-filter-style";
+            style.id = "accounts-cards-enhancement-style";
             style.textContent = [
               ".active-filter-toggle { align-items: center; background: transparent; border: 0; color: var(--text); display: inline-flex; font: inherit; font-weight: 800; gap: 10px; justify-content: flex-start; min-height: 44px; padding: 0; text-align: left; }",
               ".active-filter-toggle .toggle-track { align-items: center; background: #111827; border-radius: 999px; display: inline-flex; height: 22px; padding: 3px; transition: background .18s ease; width: 42px; }",
               ".active-filter-toggle .toggle-thumb { background: #94a3b8; border-radius: 999px; display: block; height: 16px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 16px; }",
               ".active-filter-toggle[aria-pressed=\"true\"] .toggle-thumb { background: #3b82f6; transform: translateX(20px); }",
+              ".additional-card-section { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; grid-column: 1 / -1; padding: 12px; }",
+              ".additional-card-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }",
+              ".additional-card-add { background: transparent; color: var(--primary); min-height: 36px; padding: 0 10px; }",
+              ".additional-card-list { display: grid; gap: 10px; }",
+              ".additional-card-row { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr) auto; }",
+              ".additional-card-remove { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); min-height: 44px; padding: 0 12px; }",
+              "@media (max-width: 760px) { .additional-card-row { grid-template-columns: 1fr; } .additional-card-heading { align-items: stretch; display: grid; } }",
             ].join("");
             document.head.appendChild(style);
           }
@@ -158,7 +165,7 @@ function accountsCardsTabsFallbackScript(): string {
             if (existingToggle) return existingToggle;
             if (!statusControl) return null;
 
-            ensureActiveFilterStyles();
+            ensureAccountsCardsStyles();
 
             const statusLabel = statusControl.closest("label");
             const toggle = document.createElement("button");
@@ -246,7 +253,136 @@ function accountsCardsTabsFallbackScript(): string {
             }
           }
 
+          function enhanceAdditionalCardCreation() {
+            const form = document.querySelector('#new-card-dialog form[data-api-path="/api/cards"]');
+            if (!form || form.dataset.additionalCardsEnhanced === "true") return;
+
+            ensureAccountsCardsStyles();
+            form.dataset.additionalCardsEnhanced = "true";
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            const section = document.createElement("section");
+            section.className = "additional-card-section";
+            section.setAttribute("aria-label", "Cartões adicionais");
+            section.innerHTML = '<div class="additional-card-heading"><div><strong>Cartões adicionais</strong><p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p></div><button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button></div><div class="additional-card-list" data-additional-card-list></div>';
+
+            if (submitButton) {
+              form.insertBefore(section, submitButton);
+            } else {
+              form.appendChild(section);
+            }
+
+            const list = section.querySelector("[data-additional-card-list]");
+            const addButton = section.querySelector("[data-additional-card-add]");
+
+            function createAdditionalRow() {
+              if (!list) return;
+
+              const row = document.createElement("div");
+              row.className = "additional-card-row";
+              row.innerHTML = '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="button" class="additional-card-remove">Remover</button>';
+              row.querySelector("button")?.addEventListener("click", () => row.remove());
+              list.appendChild(row);
+              row.querySelector("input")?.focus();
+            }
+
+            addButton?.addEventListener("click", createAdditionalRow);
+            form.addEventListener(
+              "submit",
+              (event) => {
+                void submitCardBatch(event, form);
+              },
+              true,
+            );
+          }
+
+          function readFormPayload(form) {
+            const payload = {};
+            new FormData(form).forEach((value, key) => {
+              if (value === "") return;
+              const field = form.querySelector('[name="' + key + '"]');
+              if (field && field.dataset.money !== undefined) {
+                payload[key] = Math.round(parseFloat(String(value).replace(",", ".")) * 100);
+              } else if (field && field.type === "number") {
+                payload[key] = Number(value);
+              } else {
+                payload[key] = value;
+              }
+            });
+            return payload;
+          }
+
+          function readAdditionalCards(form) {
+            return Array.from(form.querySelectorAll(".additional-card-row"))
+              .map((row) => {
+                const name = String(row.querySelector("[data-additional-card-name]")?.value || "").trim();
+                const maskedIdentifier = String(row.querySelector("[data-additional-card-identifier]")?.value || "").trim();
+                return { name, maskedIdentifier };
+              })
+              .filter((card) => card.name.length > 0);
+          }
+
+          async function readApiMessage(response) {
+            const body = await response.json().catch(() => ({}));
+            if (response.ok) return "Ação concluída. Atualizando a tela...";
+            return (body.error && body.error.message) || "Não foi possível concluir a ação.";
+          }
+
+          function ensureStatus(container) {
+            let status = container.querySelector(":scope > [data-form-status]");
+            if (!status) {
+              status = document.createElement("p");
+              status.className = "form-status muted";
+              status.setAttribute("data-form-status", "");
+              status.setAttribute("aria-live", "polite");
+              container.appendChild(status);
+            }
+            return status;
+          }
+
+          async function submitCardBatch(event, form) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            const status = ensureStatus(form);
+            const basePayload = readFormPayload(form);
+            const additionalCards = readAdditionalCards(form);
+            const payloads = [
+              basePayload,
+              ...additionalCards.map((card) => ({
+                ...basePayload,
+                name: card.name,
+                ...(card.maskedIdentifier ? { maskedIdentifier: card.maskedIdentifier } : {}),
+              })),
+            ];
+
+            if (submitButton) submitButton.disabled = true;
+            status.className = "form-status muted";
+            status.textContent = additionalCards.length > 0 ? "Criando cartões..." : "Salvando...";
+
+            for (const payload of payloads) {
+              const response = await fetch(form.dataset.apiPath, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+
+              if (!response.ok) {
+                status.className = "form-status error";
+                status.textContent = await readApiMessage(response);
+                if (submitButton) submitButton.disabled = false;
+                return;
+              }
+            }
+
+            status.className = "form-status success";
+            status.textContent = "Cartões criados. Atualizando a tela...";
+            window.setTimeout(() => window.location.reload(), 450);
+          }
+
           setActiveFilterState(readActiveOnlyPreference());
+          enhanceAdditionalCardCreation();
 
           document.addEventListener("click", (event) => {
             const target = event.target instanceof Element ? event.target : null;
