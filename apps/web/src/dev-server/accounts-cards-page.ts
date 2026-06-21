@@ -115,6 +115,8 @@ function renderAccountItem(account: AccountRecord): string {
   const search = [account.name, institution.label, account.maskedIdentifier ?? "", account.kind, account.status]
     .join(" ")
     .toLowerCase();
+  const editDialogId = `edit-account-dialog-${account.id}`;
+  const isArchived = account.status === "archived";
 
   return `
     <article class="master-item" data-master-item data-status="${escapeHtml(account.status)}" data-search="${escapeHtml(search)}">
@@ -127,19 +129,13 @@ function renderAccountItem(account: AccountRecord): string {
         <p>${escapeHtml(formatAccountKind(account.kind))} · ${escapeHtml(institution.label)} · ${escapeHtml(account.currency ?? "BRL")}${account.maskedIdentifier ? ` · ${escapeHtml(account.maskedIdentifier)}` : ""}</p>
       </div>
       <strong class="amount-text">${formatMoney(account.openingBalanceMinor ?? 0)}</strong>
-      <details class="edit-panel">
-        <summary>Editar cadastro</summary>
-        <form data-api-form data-api-method="PATCH" data-api-path="/api/accounts/${escapeHtml(account.id)}" class="edit-grid">
-          <label>Nome<input name="name" value="${escapeHtml(account.name)}" required /></label>
-          <label>Tipo<select name="kind">${renderAccountKindOptions(account.kind)}</select></label>
-          <label>Instituição<select name="institutionKey">${renderInstitutionOptions(account.institutionKey)}</select></label>
-          <label>Moeda<select name="currency">${renderCurrencyOptions(account.currency)}</select></label>
-          <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor ?? 0)}" inputmode="decimal" /></label>
-          <label>Identificador mascarado<input name="maskedIdentifier" value="${escapeHtml(account.maskedIdentifier ?? "")}" placeholder="Ex.: final 1234" /></label>
-          <label>Status<select name="status">${renderAccountStatusOptions(account.status)}</select></label>
-          <button type="submit">Salvar conta</button>
+      <div class="item-actions" aria-label="Ações de ${escapeHtml(account.name)}">
+        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar cadastro de ${escapeHtml(account.name)}">${renderEditIcon()}</button>
+        <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" class="inline-action-form">
+          <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(account.name)}"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
         </form>
-      </details>
+      </div>
+      ${renderAccountEditDialog(account, editDialogId)}
     </article>
   `;
 }
@@ -151,6 +147,8 @@ function renderCardItem(card: CardRecord, accounts: AccountRecord[]): string {
   const search = [card.name, institution.label, brand.label, card.maskedIdentifier ?? "", card.status]
     .join(" ")
     .toLowerCase();
+  const editDialogId = `edit-card-dialog-${card.id}`;
+  const isArchived = card.status === "archived";
 
   return `
     <article class="master-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(search)}">
@@ -164,22 +162,62 @@ function renderCardItem(card: CardRecord, accounts: AccountRecord[]): string {
         <p class="muted">Conta de pagamento: ${escapeHtml(paymentAccount?.name ?? "não vinculada")}</p>
       </div>
       <strong class="amount-text">${formatMoney(card.creditLimitMinor ?? 0)}</strong>
-      <details class="edit-panel">
-        <summary>Editar cadastro</summary>
-        <form data-api-form data-api-method="PATCH" data-api-path="/api/cards/${escapeHtml(card.id)}" class="edit-grid">
-          <label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label>
-          <label>Instituição<select name="institutionKey">${renderInstitutionOptions(card.institutionKey)}</select></label>
-          <label>Bandeira<select name="brandKey">${renderCardBrandOptions(card.brandKey)}</select></label>
-          <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label>
-          <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
-          <label>Limite (R$)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
-          <label>Conta de pagamento<select name="paymentAccountId"><option value="">Não vinculada</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
-          <label>Identificador mascarado<input name="maskedIdentifier" value="${escapeHtml(card.maskedIdentifier ?? "")}" placeholder="Ex.: final 9876" /></label>
-          <label>Status<select name="status">${renderCardStatusOptions(card.status)}</select></label>
-          <button type="submit">Salvar cartão</button>
+      <div class="item-actions" aria-label="Ações de ${escapeHtml(card.name)}">
+        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar cadastro de ${escapeHtml(card.name)}">${renderEditIcon()}</button>
+        <form data-api-form data-api-path="/api/cards/${escapeHtml(card.id)}/archive" class="inline-action-form">
+          <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(card.name)}"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
         </form>
-      </details>
+      </div>
+      ${renderCardEditDialog(card, accounts, editDialogId)}
     </article>
+  `;
+}
+
+function renderAccountEditDialog(account: AccountRecord, dialogId: string): string {
+  const titleId = `${dialogId}-title`;
+
+  return `
+    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Editar cadastro</p>
+        <h2 id="${escapeHtml(titleId)}">${escapeHtml(account.name)}</h2>
+      </div>
+      <form data-api-form data-api-method="PATCH" data-api-path="/api/accounts/${escapeHtml(account.id)}" class="edit-grid">
+        <label>Nome<input name="name" value="${escapeHtml(account.name)}" required /></label>
+        <label>Tipo<select name="kind">${renderAccountKindOptions(account.kind)}</select></label>
+        <label>Instituição<select name="institutionKey">${renderInstitutionOptions(account.institutionKey)}</select></label>
+        <label>Moeda<select name="currency">${renderCurrencyOptions(account.currency)}</select></label>
+        <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor ?? 0)}" inputmode="decimal" /></label>
+        <label>Identificador mascarado<input name="maskedIdentifier" value="${escapeHtml(account.maskedIdentifier ?? "")}" placeholder="Ex.: final 1234" /></label>
+        <button type="submit">Salvar conta</button>
+      </form>
+    </dialog>
+  `;
+}
+
+function renderCardEditDialog(card: CardRecord, accounts: AccountRecord[], dialogId: string): string {
+  const titleId = `${dialogId}-title`;
+
+  return `
+    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Editar cadastro</p>
+        <h2 id="${escapeHtml(titleId)}">${escapeHtml(card.name)}</h2>
+      </div>
+      <form data-api-form data-api-method="PATCH" data-api-path="/api/cards/${escapeHtml(card.id)}" class="edit-grid">
+        <label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label>
+        <label>Instituição<select name="institutionKey">${renderInstitutionOptions(card.institutionKey)}</select></label>
+        <label>Bandeira<select name="brandKey">${renderCardBrandOptions(card.brandKey)}</select></label>
+        <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label>
+        <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
+        <label>Limite (R$)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
+        <label>Conta de pagamento<select name="paymentAccountId"><option value="">Não vinculada</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
+        <label>Identificador mascarado<input name="maskedIdentifier" value="${escapeHtml(card.maskedIdentifier ?? "")}" placeholder="Ex.: final 9876" /></label>
+        <button type="submit">Salvar cartão</button>
+      </form>
+    </dialog>
   `;
 }
 
@@ -187,7 +225,7 @@ function renderAccountDialog(): string {
   return `
     <dialog id="new-account-dialog" class="master-dialog" aria-labelledby="new-account-title">
       <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div>
+      <div class="dialog-heading">
         <p class="eyebrow">Novo cadastro</p>
         <h2 id="new-account-title">Nova conta</h2>
       </div>
@@ -208,7 +246,7 @@ function renderCardDialog(accounts: AccountRecord[]): string {
   return `
     <dialog id="new-card-dialog" class="master-dialog" aria-labelledby="new-card-title">
       <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div>
+      <div class="dialog-heading">
         <p class="eyebrow">Novo cadastro</p>
         <h2 id="new-card-title">Novo cartão</h2>
       </div>
@@ -439,25 +477,6 @@ function renderAccountKindOptions(selected?: string): string {
     .join("");
 }
 
-function renderAccountStatusOptions(selected?: string): string {
-  return [
-    ["active", "Ativa"],
-    ["archived", "Arquivada"],
-  ]
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
-    .join("");
-}
-
-function renderCardStatusOptions(selected?: string): string {
-  return [
-    ["active", "Ativo"],
-    ["blocked", "Bloqueado"],
-    ["archived", "Arquivado"],
-  ]
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
-    .join("");
-}
-
 function renderAccountOptions(accounts: AccountRecord[], selected?: string): string {
   return accounts
     .map((account) => `<option value="${escapeHtml(account.id)}"${selected === account.id ? " selected" : ""}>${escapeHtml(account.name)}</option>`)
@@ -470,6 +489,14 @@ function findInstitution(key: string | undefined) {
 
 function findCardBrand(key: string | undefined) {
   return cardBrands.find((item) => item.key === key) ?? fallbackCardBrand;
+}
+
+function renderEditIcon(): string {
+  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
+}
+
+function renderArchiveIcon(): string {
+  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M5 5h14v4H5V5zm2 6h10v8H7v-8zm2 2v4h6v-4H9zM7 7v1h10V7H7z" fill="currentColor"/></svg>`;
 }
 
 function renderInstitutionIcon(key: string): string {
@@ -543,7 +570,7 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
@@ -593,14 +620,15 @@ function baseCss(): string {
     .tab-list { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: flex; gap: 6px; padding: 6px; } .tab-button { background: transparent; color: var(--primary); flex: 1 1 0; gap: 8px; min-width: 0; } .tab-button[aria-selected="true"] { background: var(--surface); border: 1px solid #d4e6ec; color: var(--text); } .tab-button span, .section-heading > span, .status-pill { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 5px 9px; white-space: nowrap; }
     .filter-row { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(12rem, .25fr); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading > div { display: grid; gap: 4px; }
-    .master-list { display: grid; gap: 12px; } .master-item { align-items: start; border-top: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 44px minmax(0, 1fr) auto; padding-top: 14px; } .master-item:first-child { border-top: 0; padding-top: 0; }
+    .master-list { display: grid; gap: 12px; } .master-item { align-items: start; border-top: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 44px minmax(0, 1fr) auto auto; padding-top: 14px; } .master-item:first-child { border-top: 0; padding-top: 0; }
     .identity-mark { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: white; display: flex; height: 44px; justify-content: center; overflow: hidden; width: 44px; } .card-mark { background: #f8fafc; }
     .brand-icon { display: block; height: 44px; width: 44px; } .card-brand-icon { filter: drop-shadow(0 1px 2px rgba(15,23,42,.14)); }
     .item-main { display: grid; gap: 5px; min-width: 0; } .item-main p { color: var(--muted); line-height: 1.45; } .item-title-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; } .amount-text { text-align: right; white-space: nowrap; }
-    .edit-panel { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; grid-column: 1 / -1; padding: 12px; } .edit-panel summary { cursor: pointer; font-weight: 800; min-height: 32px; } .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
+    .item-actions { display: flex; gap: 8px; justify-content: flex-end; } .inline-action-form { display: block; gap: 0; } .icon-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 44px; padding: 0; width: 44px; } .danger-icon-button { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 20px; width: 20px; }
+    .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
     .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
-    .master-dialog { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 760px; padding: 20px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.38); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+    .master-dialog { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 760px; padding: 20px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.38); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 12px; } .dialog-heading { display: grid; gap: 4px; }
     @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .master-heading { align-items: stretch; display: grid; } }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading { display: grid; grid-template-columns: 1fr; } .amount-text { text-align: left; white-space: normal; } }
+    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading { display: grid; grid-template-columns: 1fr; } .item-actions { justify-content: flex-start; } .amount-text { text-align: left; white-space: normal; } }
   `;
 }
