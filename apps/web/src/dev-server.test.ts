@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 
-import { renderLoginPage, resolveRoute } from "./dev-server.js";
+import { enhanceAccountsCardsTabs, renderLoginPage, resolveRoute } from "./dev-server.js";
 import { privateRoutes } from "./dev-server/routes.js";
 
 loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
+accountsCardsTabsFallbackIsInjectedOnce();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
 rootRouteRedirectsBasedOnSession();
@@ -50,6 +51,18 @@ function accountsCardsRouteRendersMasterPage(): void {
 
   assert.equal(authenticatedRoute.statusCode, 200);
   assert.equal(authenticatedRoute.kind, "placeholder");
+}
+
+function accountsCardsTabsFallbackIsInjectedOnce(): void {
+  const html = '<html><body><button data-tab="cards" aria-selected="false">Cartões</button><section data-tab-panel="accounts"></section><section data-tab-panel="cards" hidden></section></body></html>';
+  const enhanced = enhanceAccountsCardsTabs(html);
+  const enhancedAgain = enhanceAccountsCardsTabs(enhanced);
+
+  assert.match(enhanced, /data-accounts-cards-tabs-fallback/);
+  assert.match(enhanced, /document\.addEventListener\("click"/);
+  assert.match(enhanced, /activateTab\(button\.dataset\.tab\)/);
+  assert.match(enhanced, /panel\.setAttribute\("hidden", ""\)/);
+  assert.equal((enhancedAgain.match(/data-accounts-cards-tabs-fallback/g) ?? []).length, 1);
 }
 
 function sidebarMenuUsesPtBrLabels(): void {
