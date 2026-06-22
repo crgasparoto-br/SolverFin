@@ -94,7 +94,7 @@ function accountsCardsAdditionalButtonUsesScriptListener(): void {
   assert.match(enhanced, /additional-card-saved-list/);
   assert.match(enhanced, /loadSavedAdditionalCards\(\)/);
   assert.match(enhanced, /fetch\("\/api\/cards\?status=all"\)/);
-  assert.match(enhanced, /primaryCardStoragePrefix/);
+  assert.match(enhanced, /cardLinksApiPath = "\/api\/card-additional-links"/);
   assert.match(enhanced, /Definir principal/);
   assert.match(enhanced, /additional-card-primary-marker/);
   assert.match(enhanced, /Nome do cartão principal \*/);
@@ -116,9 +116,11 @@ function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
   assert.match(enhanced, />\+ adicional<\/button>/);
   assert.match(enhanced, /type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional/);
   assert.match(enhanced, /additional-card-group-row/);
-  assert.match(enhanced, /isSavedAdditionalForForm\(form, card\)/);
-  assert.match(enhanced, /savePrimaryCardId\(input\.groupKey, input\.card\.id\)/);
-  assert.match(enhanced, /renderSavedAdditionalCards\(input\.form, input\.cards\)/);
+  assert.match(enhanced, /linksForBaseCard\(baseCard\.id\)/);
+  assert.match(enhanced, /sendJsonPayload\(cardLinksApiPath \+ "\/" \+ input\.groupKey \+ "\/primary", "PATCH", \{ cardId: input\.card\.id \}\)/);
+  assert.match(enhanced, /linkAdditionalCard\(groupCardId, additionalCard\.id\)/);
+  assert.match(enhanced, /status\.textContent = isEdit \? "Cartão salvo\." : "Cartão criado\. Atualizando a tela\.\.\."/);
+  assert.match(enhanced, /await loadSavedAdditionalCards\(\)/);
   assert.match(enhanced, /const target = getEventElement\(event\);\n            const addButton = target \? target\.closest\("\[data-additional-card-add\]"\) : null;/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
   assert.match(enhanced, /\}, true\);/);
