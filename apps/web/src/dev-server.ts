@@ -163,11 +163,12 @@ function injectAdditionalCardSections(html: string, additionalCardSectionHtml: s
 }
 
 function renderAdditionalCardSectionHtml(): string {
+  const additionalCardRowHtml = "<label>Nome do cartão adicional<input data-additional-card-name placeholder=&quot;Ex.: Virtual - 0322&quot; /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder=&quot;Ex.: final 0322&quot; /></label><button type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional</button><button type=&quot;button&quot; class=&quot;additional-card-remove&quot;>Remover</button>";
   const addAction = [
     "var section=this.closest('.additional-card-section');",
     "var list=section&&section.querySelector('[data-additional-card-list]');",
     "if(list){var row=document.createElement('div');row.className='additional-card-row';",
-    "row.innerHTML='<label>Nome do cartão adicional<input data-additional-card-name placeholder=&quot;Ex.: Virtual - 0322&quot; /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder=&quot;Ex.: final 0322&quot; /></label><button type=&quot;button&quot; class=&quot;additional-card-remove&quot;>Remover</button>';",
+    `row.innerHTML='${additionalCardRowHtml}';`,
     "list.appendChild(row);var remove=row.querySelector('.additional-card-remove');if(remove)remove.onclick=function(){row.remove();};var input=row.querySelector('input');if(input&&input.focus)input.focus();}",
     "return false;",
   ].join("");
@@ -225,7 +226,8 @@ function accountsCardsTabsFallbackScript(): string {
               ".additional-card-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }",
               ".additional-card-add { background: transparent; color: var(--primary); min-height: 36px; padding: 0 10px; }",
               ".additional-card-list { display: grid; gap: 10px; }",
-              ".additional-card-row { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr) auto; }",
+              ".additional-card-row { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr) auto auto; }",
+              ".additional-card-save { background: var(--primary); color: white; min-height: 44px; padding: 0 12px; }",
               ".additional-card-remove { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); min-height: 44px; padding: 0 12px; }",
               "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .active-filter-switch > span:last-child { max-width: none; } .additional-card-row { grid-template-columns: 1fr; } .additional-card-heading { align-items: stretch; display: grid; } }",
             ].join("");
@@ -349,7 +351,7 @@ function accountsCardsTabsFallbackScript(): string {
           }
 
           function additionalCardRowHtml() {
-            return '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="button" class="additional-card-remove">Remover</button>';
+            return '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="submit" class="additional-card-save">Salvar adicional</button><button type="button" class="additional-card-remove">Remover</button>';
           }
 
           function appendAdditionalCardRowFromButton(button) {
