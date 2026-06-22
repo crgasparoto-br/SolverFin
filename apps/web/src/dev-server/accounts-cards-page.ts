@@ -49,8 +49,8 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
           <p class="muted">Mantenha contas, dinheiro, investimentos e cartões em um único cadastro mestre.</p>
         </div>
         <div class="master-actions" aria-label="Ações principais">
-          <button type="button" data-open-dialog="new-account-dialog">Nova conta</button>
-          <button type="button" data-open-dialog="new-card-dialog">Novo cartão</button>
+          <button type="button" data-open-dialog="new-account-dialog">Adicionar conta</button>
+          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>
         </div>
       </section>
 
@@ -434,6 +434,32 @@ function masterPageScript(): string {
         if (!options || options.focus !== false) button.focus();
       }
 
+      function openDialog(button) {
+        const dialogId = button.dataset.openDialog;
+        const dialog = dialogId ? document.getElementById(dialogId) : null;
+        if (!dialog) return;
+
+        if (typeof dialog.showModal === "function") {
+          if (!dialog.open) dialog.showModal();
+        } else {
+          dialog.setAttribute("open", "");
+        }
+
+        const firstField = dialog.querySelector("input, select, button");
+        if (firstField && typeof firstField.focus === "function") firstField.focus();
+      }
+
+      function closeDialog(form) {
+        const dialog = form.closest("dialog");
+        if (!dialog) return;
+
+        if (typeof dialog.close === "function") {
+          dialog.close();
+        } else {
+          dialog.removeAttribute("open");
+        }
+      }
+
       tabButtons.forEach((button, index) => {
         button.tabIndex = button.getAttribute("aria-selected") === "true" ? 0 : -1;
         button.addEventListener("click", () => activateTab(button, { focus: false }));
@@ -450,13 +476,13 @@ function masterPageScript(): string {
       [statusSelect, activeFilter].forEach((control) => control && control.addEventListener("change", applyFilters));
 
       document.querySelectorAll("[data-open-dialog]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const dialogId = button.dataset.openDialog;
-          const dialog = dialogId ? document.getElementById(dialogId) : undefined;
-          if (!dialog || typeof dialog.showModal !== "function") return;
-          dialog.showModal();
-          const firstField = dialog.querySelector("input, select, button");
-          if (firstField) firstField.focus();
+        button.addEventListener("click", () => openDialog(button));
+      });
+
+      document.querySelectorAll(".dialog-close-form").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          closeDialog(form);
         });
       });
 
