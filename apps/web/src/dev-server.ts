@@ -199,12 +199,13 @@ function accountsCardsTabsFallbackScript(): string {
             const style = document.createElement("style");
             style.id = "accounts-cards-enhancement-style";
             style.textContent = [
-              ".active-filter-switch { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); cursor: pointer; display: inline-flex; font: inherit; font-size: .9rem; font-weight: 800; gap: 8px; justify-content: center; min-height: 44px; padding: 0 12px; text-align: left; user-select: none; width: fit-content; }",
+              ".active-filter-switch { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); cursor: pointer; display: inline-flex; font: inherit; font-size: .84rem; font-weight: 800; gap: 10px; justify-content: center; line-height: 1.15; min-height: 44px; padding: 0 14px; text-align: left; user-select: none; width: fit-content; }",
+              ".active-filter-switch > span:last-child { max-width: 12rem; }",
               ".active-filter-input { border: 0; height: 1px; margin: 0; opacity: 0; padding: 0; position: absolute; width: 1px; }",
-              ".active-filter-switch .toggle-track { align-items: center; background: #263348; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 18px; padding: 2px; transition: background .18s ease; width: 36px; }",
-              ".active-filter-switch .toggle-thumb { background: #94a3b8; border-radius: 999px; box-shadow: 0 1px 2px rgba(15, 23, 42, .28); display: block; height: 14px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 14px; }",
-              ".active-filter-switch[aria-pressed=\"true\"] .toggle-track { background: #1e293b; }",
-              ".active-filter-switch[aria-pressed=\"true\"] .toggle-thumb { background: #3b82f6; transform: translateX(18px); }",
+              ".active-filter-switch .toggle-track { align-items: center; background: #cbd5e1; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 20px; padding: 2px; transition: background .18s ease; width: 38px; }",
+              ".active-filter-switch .toggle-thumb { background: #fff; border-radius: 999px; box-shadow: 0 1px 3px rgba(15, 23, 42, .24); display: block; height: 16px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 16px; }",
+              ".active-filter-switch[aria-pressed=\"true\"] .toggle-track { background: var(--primary); }",
+              ".active-filter-switch[aria-pressed=\"true\"] .toggle-thumb { background: #22d3ee; transform: translateX(18px); }",
               ".active-filter-switch:focus-within { box-shadow: 0 0 0 3px rgba(59, 130, 246, .24); }",
               ".additional-card-section { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; grid-column: 1 / -1; padding: 12px; }",
               ".additional-card-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }",
@@ -212,7 +213,7 @@ function accountsCardsTabsFallbackScript(): string {
               ".additional-card-list { display: grid; gap: 10px; }",
               ".additional-card-row { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr) auto; }",
               ".additional-card-remove { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); min-height: 44px; padding: 0 12px; }",
-              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .additional-card-row { grid-template-columns: 1fr; } .additional-card-heading { align-items: stretch; display: grid; } }",
+              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .active-filter-switch > span:last-child { max-width: none; } .additional-card-row { grid-template-columns: 1fr; } .additional-card-heading { align-items: stretch; display: grid; } }",
             ].join("");
             document.head.appendChild(style);
           }
