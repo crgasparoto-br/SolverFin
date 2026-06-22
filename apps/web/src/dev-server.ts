@@ -180,6 +180,13 @@ function accountsCardsTabsFallbackScript(): string {
           const activeFilterButton = buildActiveFilterToggle(statusSelect);
           const knownTabs = new Set(panels.map((panel) => panel.dataset.tabPanel).filter(Boolean));
 
+          function getEventElement(event) {
+            const target = event.target;
+            if (target instanceof Element) return target;
+            if (target && target.parentElement instanceof Element) return target.parentElement;
+            return null;
+          }
+
           function ensureAccountsCardsStyles() {
             if (document.getElementById("accounts-cards-enhancement-style")) return;
 
@@ -345,9 +352,11 @@ function accountsCardsTabsFallbackScript(): string {
             const row = document.createElement("div");
             row.className = "additional-card-row";
             row.innerHTML = '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="button" class="additional-card-remove">Remover</button>';
-            row.querySelector("button")?.addEventListener("click", () => row.remove());
+            const removeButton = row.querySelector("button");
+            if (removeButton) removeButton.addEventListener("click", () => row.remove());
             list.appendChild(row);
-            row.querySelector("input")?.focus();
+            const firstInput = row.querySelector("input");
+            if (firstInput && typeof firstInput.focus === "function") firstInput.focus();
           }
 
           window.__solverFinAddAdditionalCard = (button) => {
@@ -414,8 +423,10 @@ function accountsCardsTabsFallbackScript(): string {
           function readAdditionalCards(form) {
             return Array.from(form.querySelectorAll(".additional-card-row"))
               .map((row) => {
-                const name = String(row.querySelector("[data-additional-card-name]")?.value || "").trim();
-                const maskedIdentifier = String(row.querySelector("[data-additional-card-identifier]")?.value || "").trim();
+                const nameField = row.querySelector("[data-additional-card-name]");
+                const identifierField = row.querySelector("[data-additional-card-identifier]");
+                const name = String(nameField ? nameField.value : "").trim();
+                const maskedIdentifier = String(identifierField ? identifierField.value : "").trim();
                 return { name, maskedIdentifier };
               })
               .filter((card) => card.name.length > 0);
@@ -504,7 +515,7 @@ function accountsCardsTabsFallbackScript(): string {
           }
 
           document.addEventListener("click", (event) => {
-            const target = event.target instanceof Element ? event.target : null;
+            const target = getEventElement(event);
             const addButton = target ? target.closest("[data-additional-card-add]") : null;
             if (!addButton) return;
 
@@ -518,7 +529,7 @@ function accountsCardsTabsFallbackScript(): string {
           }, true);
 
           document.addEventListener("click", (event) => {
-            const target = event.target instanceof Element ? event.target : null;
+            const target = getEventElement(event);
             const button = target ? target.closest("[data-open-dialog]") : null;
             if (!button) return;
 
@@ -526,14 +537,15 @@ function accountsCardsTabsFallbackScript(): string {
           });
 
           document.addEventListener("submit", (event) => {
-            const form = event.target instanceof Element ? event.target.closest(".dialog-close-form") : null;
+            const target = getEventElement(event);
+            const form = target ? target.closest(".dialog-close-form") : null;
             if (!form) return;
 
             if (closeAccountsCardsDialog(form)) event.preventDefault();
           });
 
           document.addEventListener("click", (event) => {
-            const target = event.target instanceof Element ? event.target : null;
+            const target = getEventElement(event);
             const button = target ? target.closest("[data-tab]") : null;
             if (!button) return;
             event.preventDefault();
