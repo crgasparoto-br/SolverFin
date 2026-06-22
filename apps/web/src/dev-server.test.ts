@@ -24,6 +24,7 @@ function loginRouteIsRealPage(): void {
   assert.match(login, /Criar usuário/);
   assert.match(login, /<form id="register-form"/);
   assert.match(login, /\/api\/users/);
+  assert.doesNotMatch(login, /demo@solverfin\.example\.invalid/);
 }
 
 function privateRouteRedirectsWithoutSession(): void {

@@ -20,7 +20,7 @@ export function renderLoginPage(errorMessage?: string): string {
           <button type="button" class="tab" data-auth-tab="register">Criar usuário</button>
         </div>
         <form id="login-form" data-auth-panel="login" method="post" action="/api/session">
-          <label>Email<input name="email" type="email" autocomplete="username" value="demo@solverfin.example.invalid" required /></label>
+          <label>Email<input name="email" type="email" autocomplete="username" placeholder="voce@email.com" required /></label>
           <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha cadastrada" required /></label>
           <button type="submit">Entrar</button>
         </form>
@@ -81,7 +81,7 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
