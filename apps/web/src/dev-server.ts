@@ -262,6 +262,39 @@ function accountsCardsTabsFallbackScript(): string {
             return knownTabs.has(tab) ? tab : "accounts";
           }
 
+          function focusFirstDialogField(dialog) {
+            const firstField = dialog.querySelector("input, select, textarea, button");
+            if (firstField && typeof firstField.focus === "function") firstField.focus();
+          }
+
+          function openAccountsCardsDialog(button) {
+            const dialogId = button ? button.dataset.openDialog : undefined;
+            const dialog = dialogId ? document.getElementById(dialogId) : null;
+            if (!dialog) return false;
+
+            if (typeof dialog.showModal === "function") {
+              if (!dialog.open) dialog.showModal();
+            } else {
+              dialog.setAttribute("open", "");
+            }
+
+            focusFirstDialogField(dialog);
+            return true;
+          }
+
+          function closeAccountsCardsDialog(form) {
+            const dialog = form ? form.closest("dialog") : null;
+            if (!dialog) return false;
+
+            if (typeof dialog.close === "function") {
+              dialog.close();
+            } else {
+              dialog.removeAttribute("open");
+            }
+
+            return true;
+          }
+
           function applyFilters() {
             const term = String((searchInput && searchInput.value) || "").trim().toLowerCase();
             const activeOnly = readActiveFilterState();
@@ -478,6 +511,21 @@ function accountsCardsTabsFallbackScript(): string {
               applyFilters();
             });
           }
+
+          document.addEventListener("click", (event) => {
+            const target = event.target instanceof Element ? event.target : null;
+            const button = target ? target.closest("[data-open-dialog]") : null;
+            if (!button) return;
+
+            if (openAccountsCardsDialog(button)) event.preventDefault();
+          });
+
+          document.addEventListener("submit", (event) => {
+            const form = event.target instanceof Element ? event.target.closest(".dialog-close-form") : null;
+            if (!form) return;
+
+            if (closeAccountsCardsDialog(form)) event.preventDefault();
+          });
 
           document.addEventListener("click", (event) => {
             const target = event.target instanceof Element ? event.target : null;
