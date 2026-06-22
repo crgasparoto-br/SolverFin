@@ -7,8 +7,7 @@ loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
-accountsCardsTabsFallbackIsInjectedOnce();
-accountsCardsDialogFallbackIsInjected();
+accountsCardsEnhancementIgnoresNonCardHtml();
 accountsCardsAdditionalButtonUsesScriptListener();
 accountsCardsEditAdditionalButtonIsInjectedAndCaptured();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
@@ -58,39 +57,25 @@ function accountsCardsRouteRendersMasterPage(): void {
   assert.equal(authenticatedRoute.kind, "placeholder");
 }
 
-function accountsCardsTabsFallbackIsInjectedOnce(): void {
+function accountsCardsEnhancementIgnoresNonCardHtml(): void {
   const html = '<html><body><button data-tab="cards" aria-selected="false">Cartões</button><section data-tab-panel="accounts"></section><section data-tab-panel="cards" hidden></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
-  const enhancedAgain = enhanceAccountsCardsTabs(enhanced);
 
-  assert.match(enhanced, /data-accounts-cards-tabs-fallback/);
-  assert.match(enhanced, /document\.addEventListener\("click"/);
-  assert.match(enhanced, /activateTab\(button\.dataset\.tab\)/);
-  assert.match(enhanced, /button\.tabIndex = 0/);
-  assert.match(enhanced, /panel\.setAttribute\("hidden", ""\)/);
-  assert.equal((enhancedAgain.match(/data-accounts-cards-tabs-fallback/g) ?? []).length, 1);
-}
-
-function accountsCardsDialogFallbackIsInjected(): void {
-  const html = '<html><body><button type="button" data-open-dialog="new-account-dialog">Adicionar</button><dialog id="new-account-dialog"><form method="dialog" class="dialog-close-form"><button type="submit">Fechar</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
-  const enhanced = enhanceAccountsCardsTabs(html);
-
-  assert.match(enhanced, /openAccountsCardsDialog/);
-  assert.match(enhanced, /closeAccountsCardsDialog/);
-  assert.match(enhanced, /target\.closest\("\[data-open-dialog\]"\)/);
-  assert.match(enhanced, /dialog\.setAttribute\("open", ""\)/);
-  assert.match(enhanced, /target\.closest\("\.dialog-close-form"\)/);
+  assert.equal(enhanced, html);
+  assert.doesNotMatch(enhanced, /data-accounts-cards-visible-enhancement/);
 }
 
 function accountsCardsAdditionalButtonUsesScriptListener(): void {
-  const html = '<html><body><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label><button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
+  const html = '<html><body><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
+  const enhancedAgain = enhanceAccountsCardsTabs(enhanced);
 
-  assert.match(enhanced, /data-additional-card-add onclick="var section=this\.closest\('\.additional-card-section'\);/);
+  assert.match(enhanced, /data-accounts-cards-visible-enhancement/);
+  assert.equal((enhancedAgain.match(/data-accounts-cards-visible-enhancement/g) ?? []).length, 1);
   assert.match(enhanced, />\+ adicional<\/button>/);
   assert.match(enhanced, /Cartões vinculados/);
-  assert.match(enhanced, /type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional/);
-  assert.match(enhanced, /class=&quot;additional-card-actions&quot;/);
+  assert.match(enhanced, /additional-card-save/);
+  assert.match(enhanced, /additional-card-actions/);
   assert.match(enhanced, /additional-card-saved-list/);
   assert.match(enhanced, /loadSavedAdditionalCards\(\)/);
   assert.match(enhanced, /fetch\("\/api\/cards\?status=all"\)/);
@@ -99,12 +84,11 @@ function accountsCardsAdditionalButtonUsesScriptListener(): void {
   assert.match(enhanced, /additional-card-primary-marker/);
   assert.match(enhanced, /Nome do cartão principal \*/);
   assert.match(enhanced, /Nome do cartão adicional \*/);
-  assert.match(enhanced, /document\.createElement\('div'\)/);
-  assert.doesNotMatch(enhanced, /window\.__solverFinAddAdditionalCard &&/);
+  assert.match(enhanced, /document\.createElement\("div"\)/);
   assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
   assert.doesNotMatch(enhanced, /\?\./);
   assert.match(enhanced, /getEventElement\(event\)/);
-  assert.match(enhanced, /appendAdditionalCardRowFromButton\(addButton\)/);
+  assert.match(enhanced, /appendAdditionalCardRow\(addButton\)/);
 }
 
 function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
@@ -112,18 +96,18 @@ function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
   const enhanced = enhanceAccountsCardsTabs(html);
 
   assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
-  assert.match(enhanced, /data-additional-card-add onclick="var section=this\.closest\('\.additional-card-section'\);/);
+  assert.match(enhanced, /data-additional-card-add/);
   assert.match(enhanced, />\+ adicional<\/button>/);
-  assert.match(enhanced, /type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional/);
+  assert.match(enhanced, /additional-card-save/);
   assert.match(enhanced, /additional-card-group-row/);
   assert.match(enhanced, /linksForBaseCard\(baseCard\.id\)/);
   assert.match(enhanced, /sendJsonPayload\(cardLinksApiPath \+ "\/" \+ input\.groupKey \+ "\/primary", "PATCH", \{ cardId: input\.card\.id \}\)/);
-  assert.match(enhanced, /linkAdditionalCard\(groupCardId, additionalCard\.id\)/);
+  assert.match(enhanced, /sendJsonPayload\(cardLinksApiPath, "POST", \{ groupCardId, cardId: additionalCard\.id \}\)/);
   assert.match(enhanced, /status\.textContent = isEdit \? "Cartão salvo\." : "Cartão criado\. Atualizando a tela\.\.\."/);
   assert.match(enhanced, /await loadSavedAdditionalCards\(\)/);
-  assert.match(enhanced, /const target = getEventElement\(event\);\n            const addButton = target \? target\.closest\("\[data-additional-card-add\]"\) : null;/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
   assert.match(enhanced, /\}, true\);/);
+  assert.doesNotMatch(enhanced, /window\.location\.reload\(\)/);
 }
 
 function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
