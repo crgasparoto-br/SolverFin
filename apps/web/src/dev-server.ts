@@ -132,7 +132,7 @@ export function enhanceAccountsCardsTabs(html: string): string {
               <strong>Cartões adicionais</strong>
               <p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p>
             </div>
-            <button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button>
+            <button type="button" class="additional-card-add" data-additional-card-add onclick="window.__solverFinAddAdditionalCard && window.__solverFinAddAdditionalCard(this); return false;">+ adicional</button>
           </div>
           <div class="additional-card-list" data-additional-card-list></div>
         </section>`;
@@ -393,7 +393,7 @@ function accountsCardsTabsFallbackScript(): string {
               section = document.createElement("section");
               section.className = "additional-card-section";
               section.setAttribute("aria-label", "Cartões adicionais");
-              section.innerHTML = '<div class="additional-card-heading"><div><strong>Cartões adicionais</strong><p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p></div><button type="button" class="additional-card-add" data-additional-card-add>+ adicional</button></div><div class="additional-card-list" data-additional-card-list></div>';
+              section.innerHTML = '<div class="additional-card-heading"><div><strong>Cartões adicionais</strong><p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p></div><button type="button" class="additional-card-add" data-additional-card-add onclick="window.__solverFinAddAdditionalCard && window.__solverFinAddAdditionalCard(this); return false;">+ adicional</button></div><div class="additional-card-list" data-additional-card-list></div>';
 
               if (submitButton) {
                 form.insertBefore(section, submitButton);
