@@ -10,6 +10,7 @@ accountsCardsRouteRendersMasterPage();
 accountsCardsTabsFallbackIsInjectedOnce();
 accountsCardsDialogFallbackIsInjected();
 accountsCardsAdditionalButtonUsesScriptListener();
+accountsCardsEditAdditionalButtonIsInjectedAndCaptured();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
@@ -88,6 +89,17 @@ function accountsCardsAdditionalButtonUsesScriptListener(): void {
   assert.doesNotMatch(enhanced, /onclick="window\.__solverFinAddAdditionalCard/);
   assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
   assert.match(enhanced, /appendAdditionalCardRow\(list\)/);
+}
+
+function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
+  const html = '<html><body><dialog id="edit-card-dialog-card-1"><form data-api-form data-api-method="PATCH" data-api-path="/api/cards/card-1" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" value="final 1234" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Salvar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
+  const enhanced = enhanceAccountsCardsTabs(html);
+
+  assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
+  assert.match(enhanced, /data-additional-card-add>\+ adicional/);
+  assert.match(enhanced, /document\.addEventListener\("click", \(event\) => \{\n            const target = event\.target instanceof Element \? event\.target : null;\n            const addButton = target \? target\.closest\("\[data-additional-card-add\]"\) : null;/);
+  assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
+  assert.match(enhanced, /\}, true\);/);
 }
 
 function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
