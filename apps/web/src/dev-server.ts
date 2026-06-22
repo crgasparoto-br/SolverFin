@@ -137,7 +137,7 @@ export function enhanceAccountsCardsTabs(html: string): string {
           <div class="additional-card-list" data-additional-card-list></div>
         </section>`;
 
-  const htmlWithActiveFilter = html.replace(
+  const htmlWithoutStatusFilter = html.replace(
     `          <label>Status
             <select data-master-status>
               <option value="all">Todos</option>
@@ -145,7 +145,13 @@ export function enhanceAccountsCardsTabs(html: string): string {
               <option value="inactive">Inativos</option>
             </select>
           </label>`,
-    activeFilterToggleHtml,
+    "",
+  );
+
+  const htmlWithActiveFilter = htmlWithoutStatusFilter.replace(
+    `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>`,
+    `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>
+${activeFilterToggleHtml}`,
   );
 
   const htmlWithNewCardAdditions = htmlWithActiveFilter.replace(
@@ -193,20 +199,20 @@ function accountsCardsTabsFallbackScript(): string {
             const style = document.createElement("style");
             style.id = "accounts-cards-enhancement-style";
             style.textContent = [
-              ".active-filter-switch { align-items: center; align-self: end; color: var(--text); cursor: pointer; display: inline-flex; font: inherit; font-size: .9rem; font-weight: 800; gap: 8px; justify-content: flex-start; min-height: 34px; text-align: left; user-select: none; width: fit-content; }",
+              ".active-filter-switch { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); cursor: pointer; display: inline-flex; font: inherit; font-size: .9rem; font-weight: 800; gap: 8px; justify-content: center; min-height: 44px; padding: 0 12px; text-align: left; user-select: none; width: fit-content; }",
               ".active-filter-input { border: 0; height: 1px; margin: 0; opacity: 0; padding: 0; position: absolute; width: 1px; }",
               ".active-filter-switch .toggle-track { align-items: center; background: #263348; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 18px; padding: 2px; transition: background .18s ease; width: 36px; }",
               ".active-filter-switch .toggle-thumb { background: #94a3b8; border-radius: 999px; box-shadow: 0 1px 2px rgba(15, 23, 42, .28); display: block; height: 14px; transform: translateX(0); transition: background .18s ease, transform .18s ease; width: 14px; }",
               ".active-filter-switch[aria-pressed=\"true\"] .toggle-track { background: #1e293b; }",
               ".active-filter-switch[aria-pressed=\"true\"] .toggle-thumb { background: #3b82f6; transform: translateX(18px); }",
-              ".active-filter-switch:focus-within .toggle-track { box-shadow: 0 0 0 3px rgba(59, 130, 246, .24); }",
+              ".active-filter-switch:focus-within { box-shadow: 0 0 0 3px rgba(59, 130, 246, .24); }",
               ".additional-card-section { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; grid-column: 1 / -1; padding: 12px; }",
               ".additional-card-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }",
               ".additional-card-add { background: transparent; color: var(--primary); min-height: 36px; padding: 0 10px; }",
               ".additional-card-list { display: grid; gap: 10px; }",
               ".additional-card-row { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr) auto; }",
               ".additional-card-remove { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); min-height: 44px; padding: 0 12px; }",
-              "@media (max-width: 760px) { .additional-card-row { grid-template-columns: 1fr; } .additional-card-heading { align-items: stretch; display: grid; } }",
+              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .additional-card-row { grid-template-columns: 1fr; } .additional-card-heading { align-items: stretch; display: grid; } }",
             ].join("");
             document.head.appendChild(style);
           }
