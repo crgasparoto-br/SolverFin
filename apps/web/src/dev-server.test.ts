@@ -9,6 +9,7 @@ privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
 accountsCardsTabsFallbackIsInjectedOnce();
 accountsCardsDialogFallbackIsInjected();
+accountsCardsAdditionalButtonUsesScriptListener();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
@@ -77,6 +78,16 @@ function accountsCardsDialogFallbackIsInjected(): void {
   assert.match(enhanced, /target\.closest\("\[data-open-dialog\]"\)/);
   assert.match(enhanced, /dialog\.setAttribute\("open", ""\)/);
   assert.match(enhanced, /target\.closest\("\.dialog-close-form"\)/);
+}
+
+function accountsCardsAdditionalButtonUsesScriptListener(): void {
+  const html = '<html><body><dialog id="new-card-dialog"><form data-api-path="/api/cards"><label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label><button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
+  const enhanced = enhanceAccountsCardsTabs(html);
+
+  assert.match(enhanced, /data-additional-card-add>\+ adicional/);
+  assert.doesNotMatch(enhanced, /onclick="window\.__solverFinAddAdditionalCard/);
+  assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
+  assert.match(enhanced, /appendAdditionalCardRow\(list\)/);
 }
 
 function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
