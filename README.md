@@ -72,6 +72,8 @@ npm run dev:api    # API real em http://localhost:4000
 npm run dev:web    # Web SSR em http://localhost:5173, consumindo a API real
 ```
 
+Durante `npm run dev:web`, a aplicacao web compila em modo watch e o servidor local reinicia automaticamente quando os arquivos TypeScript geram uma nova saida em `apps/web/dist`. Depois de alterar uma tela, basta recarregar o navegador em `http://localhost:5173`; nao e necessario matar e subir o processo novamente.
+
 Login demo: `demo@solverfin.example.invalid` / `SolverFinDemo!2026`.
 
 Esse login pertence exclusivamente a autenticacao demo local. A API bloqueia essa autenticacao fora de `NODE_ENV=development`, `NODE_ENV=local` ou `NODE_ENV=test`, salvo `AUTH_ALLOW_DEMO=true` para uma demonstracao nao produtiva explicitamente autorizada. Nao use essa camada como autenticacao de producao.
