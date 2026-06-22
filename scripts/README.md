@@ -13,6 +13,7 @@ Regras:
 
 - `validate-env-example.mjs`: valida se `.env.example` contem as variaveis obrigatorias com placeholders seguros e sem padroes aparentes de secrets reais. Rode via `npm run env:check`.
 - `seed-demo.mjs`: aplica dados ficticios e seguros para demonstracao local, incluindo perfis pessoal, MEI e negocio, categorias, contas, orcamentos e transacoes coerentes para dashboards. Rode via `npm run db:seed` depois de aplicar as migrations.
+- `dev-web.mjs`: compila a aplicacao web uma vez, mantem o TypeScript em modo watch e reinicia o servidor local com o watch nativo do Node quando `apps/web/dist` muda. Rode via `npm run dev:web`.
 
 ## Seed de demonstracao
 
