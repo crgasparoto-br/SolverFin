@@ -88,6 +88,8 @@ function accountsCardsAdditionalButtonUsesScriptListener(): void {
 
   assert.match(enhanced, /data-additional-card-add onclick="var section=this\.closest\('\.additional-card-section'\);/);
   assert.match(enhanced, />\+ adicionar<\/button>/);
+  assert.match(enhanced, /type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional/);
+  assert.match(enhanced, /additional-card-save/);
   assert.match(enhanced, /document\.createElement\('div'\)/);
   assert.doesNotMatch(enhanced, /window\.__solverFinAddAdditionalCard &&/);
   assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
@@ -103,6 +105,7 @@ function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
   assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
   assert.match(enhanced, /data-additional-card-add onclick="var section=this\.closest\('\.additional-card-section'\);/);
   assert.match(enhanced, />\+ adicionar<\/button>/);
+  assert.match(enhanced, /type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional/);
   assert.match(enhanced, /const target = getEventElement\(event\);\n            const addButton = target \? target\.closest\("\[data-additional-card-add\]"\) : null;/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
   assert.match(enhanced, /\}, true\);/);
