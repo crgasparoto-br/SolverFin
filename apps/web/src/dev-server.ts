@@ -81,7 +81,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/contas-cartoes" && token) {
-    sendHtml(response, 200, enhanceAccountsCardsTabs(await renderAccountsCardsPage(token)));
+    const accountsCardsHtml = await renderAccountsCardsPage(token);
+    sendHtml(response, 200, enhanceAccountsCardsTabs(stabilizeAccountsCardsAdditionalForms(accountsCardsHtml)));
     return;
   }
 
@@ -116,4 +117,49 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   sendHtml(response, 404, renderNotFoundPage());
+}
+
+function stabilizeAccountsCardsAdditionalForms(html: string): string {
+  if (html.includes("data-accounts-cards-additional-stability")) return html;
+
+  return html.replace(
+    "      <script>\n      function ensureStatus(container)",
+    `${accountsCardsAdditionalStabilityScript()}
+      <script>
+      function ensureStatus(container)`,
+  );
+}
+
+function accountsCardsAdditionalStabilityScript(): string {
+  return `
+      <script data-accounts-cards-additional-stability>
+        (() => {
+          const nativeAddEventListener = EventTarget.prototype.addEventListener;
+
+          function isEnhancedCardForm(target) {
+            if (!(target instanceof HTMLFormElement)) return false;
+            const apiPath = String(target.dataset.apiPath || "");
+            const apiMethod = String(target.dataset.apiMethod || "POST").toUpperCase();
+            return apiPath === "/api/cards" || (apiMethod === "PATCH" && apiPath.indexOf("/api/cards/") === 0);
+          }
+
+          EventTarget.prototype.addEventListener = function patchedAddEventListener(type, listener, options) {
+            if (type === "submit" && isEnhancedCardForm(this)) return;
+            return nativeAddEventListener.call(this, type, listener, options);
+          };
+
+          const style = document.createElement("style");
+          style.id = "accounts-cards-additional-stability-style";
+          style.textContent = [
+            ".additional-card-row { align-items: end !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }",
+            ".additional-card-actions { grid-column: 1 / -1 !important; justify-content: flex-start !important; }",
+            ".additional-card-save, .additional-card-remove { flex: 0 0 auto !important; min-width: 10rem !important; }",
+            ".additional-card-group-row { grid-template-columns: 28px minmax(0, 1fr) !important; }",
+            ".additional-card-group-actions { grid-column: 2 !important; justify-content: flex-start !important; }",
+            ".additional-card-primary-action, .additional-card-edit-action { min-width: 9rem !important; }",
+            "@media (max-width: 760px) { .additional-card-row { grid-template-columns: 1fr !important; } .additional-card-actions, .additional-card-group-actions { display: grid !important; grid-template-columns: 1fr !important; } .additional-card-save, .additional-card-remove, .additional-card-primary-action, .additional-card-edit-action { width: 100% !important; } }",
+          ].join("");
+          document.head.appendChild(style);
+        })();
+      </script>`;
 }
