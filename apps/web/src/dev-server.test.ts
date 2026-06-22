@@ -87,13 +87,18 @@ function accountsCardsAdditionalButtonUsesScriptListener(): void {
   const enhanced = enhanceAccountsCardsTabs(html);
 
   assert.match(enhanced, /data-additional-card-add onclick="var section=this\.closest\('\.additional-card-section'\);/);
-  assert.match(enhanced, />\+ adicionar<\/button>/);
+  assert.match(enhanced, />\+ adicional<\/button>/);
+  assert.match(enhanced, /Cartões vinculados/);
   assert.match(enhanced, /type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional/);
   assert.match(enhanced, /class=&quot;additional-card-actions&quot;/);
   assert.match(enhanced, /additional-card-saved-list/);
   assert.match(enhanced, /loadSavedAdditionalCards\(\)/);
   assert.match(enhanced, /fetch\("\/api\/cards\?status=all"\)/);
-  assert.match(enhanced, /Adicionais salvos/);
+  assert.match(enhanced, /primaryCardStoragePrefix/);
+  assert.match(enhanced, /Definir principal/);
+  assert.match(enhanced, /additional-card-primary-marker/);
+  assert.match(enhanced, /Nome do cartão principal \*/);
+  assert.match(enhanced, /Nome do cartão adicional \*/);
   assert.match(enhanced, /document\.createElement\('div'\)/);
   assert.doesNotMatch(enhanced, /window\.__solverFinAddAdditionalCard &&/);
   assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
@@ -108,11 +113,12 @@ function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
 
   assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
   assert.match(enhanced, /data-additional-card-add onclick="var section=this\.closest\('\.additional-card-section'\);/);
-  assert.match(enhanced, />\+ adicionar<\/button>/);
+  assert.match(enhanced, />\+ adicional<\/button>/);
   assert.match(enhanced, /type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional/);
-  assert.match(enhanced, /additional-card-saved-row/);
+  assert.match(enhanced, /additional-card-group-row/);
   assert.match(enhanced, /isSavedAdditionalForForm\(form, card\)/);
-  assert.match(enhanced, /editButton\.dataset\.openDialog = "edit-card-dialog-" \+ card\.id/);
+  assert.match(enhanced, /savePrimaryCardId\(input\.groupKey, input\.card\.id\)/);
+  assert.match(enhanced, /renderSavedAdditionalCards\(input\.form, input\.cards\)/);
   assert.match(enhanced, /const target = getEventElement\(event\);\n            const addButton = target \? target\.closest\("\[data-additional-card-add\]"\) : null;/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
   assert.match(enhanced, /\}, true\);/);
