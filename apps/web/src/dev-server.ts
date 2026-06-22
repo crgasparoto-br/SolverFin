@@ -122,12 +122,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 function stabilizeAccountsCardsAdditionalForms(html: string): string {
   if (html.includes("data-accounts-cards-additional-stability")) return html;
 
-  return html.replace(
-    "      <script>\n      function ensureStatus(container)",
-    `${accountsCardsAdditionalStabilityScript()}
-      <script>
-      function ensureStatus(container)`,
-  );
+  const stabilityScript = accountsCardsAdditionalStabilityScript();
+
+  if (html.includes("<body>")) {
+    return html.replace("<body>", `<body>${stabilityScript}`);
+  }
+
+  return `${stabilityScript}${html}`;
 }
 
 function accountsCardsAdditionalStabilityScript(): string {
@@ -464,7 +465,11 @@ function accountsCardsAdditionalStabilityScript(): string {
           ].join("");
           document.head.appendChild(style);
 
-          void loadSavedAdditionalCards();
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => { void loadSavedAdditionalCards(); });
+          } else {
+            void loadSavedAdditionalCards();
+          }
         })();
       </script>`;
 }
