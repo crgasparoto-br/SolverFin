@@ -126,17 +126,14 @@ export function enhanceAccountsCardsTabs(html: string): string {
             <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
             <span>Exibir apenas contas ativas</span>
           </label>`;
-  const additionalCardSectionHtml = `        <section class="additional-card-section" aria-label="Cartões adicionais">
-          <div class="additional-card-heading">
-            <div>
-              <strong>Cartões adicionais</strong>
-              <p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p>
-            </div>
-            <button type="button" class="additional-card-add" data-additional-card-add onclick="window.__solverFinAddAdditionalCard && window.__solverFinAddAdditionalCard(this); return false;">+ adicional</button>
-          </div>
-          <div class="additional-card-list" data-additional-card-list></div>
-        </section>`;
+  const additionalCardSectionHtml = renderAdditionalCardSectionHtml();
+  const htmlWithActiveFilter = replaceStatusFilterWithActiveToggle(html, activeFilterToggleHtml);
+  const htmlWithAdditionalCards = injectAdditionalCardSections(htmlWithActiveFilter, additionalCardSectionHtml);
 
+  return htmlWithAdditionalCards.replace("</body>", `${accountsCardsTabsFallbackScript()}</body>`);
+}
+
+function replaceStatusFilterWithActiveToggle(html: string, activeFilterToggleHtml: string): string {
   const htmlWithoutStatusFilter = html.replace(
     `          <label>Status
             <select data-master-status>
@@ -148,27 +145,44 @@ export function enhanceAccountsCardsTabs(html: string): string {
     "",
   );
 
-  const htmlWithActiveFilter = htmlWithoutStatusFilter.replace(
+  return htmlWithoutStatusFilter.replace(
     `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>`,
     `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>
 ${activeFilterToggleHtml}`,
   );
+}
 
-  const htmlWithNewCardAdditions = htmlWithActiveFilter.replace(
-    `        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
-        <button type="submit">Criar cartão</button>`,
-    `        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
-${additionalCardSectionHtml}
-        <button type="submit">Criar cartão</button>`,
+function injectAdditionalCardSections(html: string, additionalCardSectionHtml: string): string {
+  return html.replace(
+    /(<form[^>]*data-api-path="\/api\/cards(?:\/[^"]+)?"[^>]*class="edit-grid"[^>]*>[\s\S]*?)(\s*<button type="submit">(?:Criar|Salvar) cartão<\/button>)/g,
+    (match, formBeforeSubmit: string, submitButton: string) => {
+      if (formBeforeSubmit.includes("additional-card-section")) return match;
+      return `${formBeforeSubmit}${additionalCardSectionHtml}${submitButton}`;
+    },
   );
+}
 
-  const htmlWithEditCardAdditions = htmlWithNewCardAdditions.replace(
-    /(<form data-api-form data-api-method="PATCH" data-api-path="\/api\/cards\/[^"]+" class="edit-grid">[\s\S]*?<label>Identificador mascarado<input name="maskedIdentifier"[^>]*><\/label>\n)\s*<button type="submit">Salvar cartão<\/button>/g,
-    `$1${additionalCardSectionHtml}
-        <button type="submit">Salvar cartão</button>`,
-  );
+function renderAdditionalCardSectionHtml(): string {
+  const addAction = [
+    "var section=this.closest('.additional-card-section');",
+    "var list=section&&section.querySelector('[data-additional-card-list]');",
+    "if(list){var row=document.createElement('div');row.className='additional-card-row';",
+    "row.innerHTML='<label>Nome do cartão adicional<input data-additional-card-name placeholder=&quot;Ex.: Virtual - 0322&quot; /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder=&quot;Ex.: final 0322&quot; /></label><button type=&quot;button&quot; class=&quot;additional-card-remove&quot;>Remover</button>';",
+    "list.appendChild(row);var remove=row.querySelector('.additional-card-remove');if(remove)remove.onclick=function(){row.remove();};var input=row.querySelector('input');if(input&&input.focus)input.focus();}",
+    "return false;",
+  ].join("");
 
-  return htmlWithEditCardAdditions.replace("</body>", `${accountsCardsTabsFallbackScript()}</body>`);
+  return `
+        <section class="additional-card-section" aria-label="Cartões adicionais">
+          <div class="additional-card-heading">
+            <div>
+              <strong>Cartões adicionais</strong>
+              <p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p>
+            </div>
+            <button type="button" class="additional-card-add" data-additional-card-add onclick="${addAction}">+ adicionar</button>
+          </div>
+          <div class="additional-card-list" data-additional-card-list></div>
+        </section>`;
 }
 
 function accountsCardsTabsFallbackScript(): string {
@@ -183,7 +197,7 @@ function accountsCardsTabsFallbackScript(): string {
           const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
           const searchInput = document.querySelector("[data-master-search]");
           const statusSelect = document.querySelector("[data-master-status]");
-          const activeFilterButton = buildActiveFilterToggle(statusSelect);
+          const activeFilterButton = document.querySelector("[data-active-filter]");
           const knownTabs = new Set(panels.map((panel) => panel.dataset.tabPanel).filter(Boolean));
 
           function getEventElement(event) {
@@ -218,32 +232,6 @@ function accountsCardsTabsFallbackScript(): string {
             document.head.appendChild(style);
           }
 
-          function buildActiveFilterToggle(statusControl) {
-            const existingToggle = document.querySelector("[data-active-filter]");
-            if (existingToggle) {
-              ensureAccountsCardsStyles();
-              return existingToggle;
-            }
-            if (!statusControl) return null;
-
-            ensureAccountsCardsStyles();
-
-            const statusLabel = statusControl.closest("label");
-            const toggle = document.createElement("label");
-            toggle.className = "active-filter-switch";
-            toggle.dataset.activeFilter = "";
-            toggle.setAttribute("aria-pressed", "false");
-            toggle.innerHTML = '<input type="checkbox" class="active-filter-input" data-active-filter-input /><span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span>Exibir apenas contas ativas</span>';
-
-            if (statusLabel) {
-              statusLabel.replaceWith(toggle);
-            } else {
-              statusControl.replaceWith(toggle);
-            }
-
-            return toggle;
-          }
-
           function readActiveOnlyPreference() {
             try {
               return window.localStorage.getItem(activeFilterStorageKey) === "true";
@@ -256,7 +244,7 @@ function accountsCardsTabsFallbackScript(): string {
             try {
               window.localStorage.setItem(activeFilterStorageKey, String(activeOnly));
             } catch (_error) {
-              // Prefer keeping the filter working for the current session if storage is unavailable.
+              // Keep the filter working for the current session if storage is unavailable.
             }
           }
 
@@ -269,7 +257,8 @@ function accountsCardsTabsFallbackScript(): string {
 
           function readActiveFilterState() {
             const input = activeFilterButton ? activeFilterButton.querySelector("[data-active-filter-input]") : null;
-            return input ? input.checked === true : false;
+            if (input) return input.checked === true;
+            return String(statusSelect && statusSelect.value || "all") === "active";
           }
 
           function resolveRequestedTab(tab) {
@@ -315,12 +304,18 @@ function accountsCardsTabsFallbackScript(): string {
             const visiblePanel = panels.find((panel) => panel.hidden === false);
             if (!visiblePanel) return;
 
+            let visibleItems = 0;
             visiblePanel.querySelectorAll("[data-master-item]").forEach((item) => {
               const itemStatus = item.dataset.status;
               const matchesSearch = !term || String(item.dataset.search || "").includes(term);
               const matchesStatus = !activeOnly || itemStatus === "active";
-              item.hidden = !(matchesSearch && matchesStatus);
+              const isVisible = matchesSearch && matchesStatus;
+              item.hidden = !isVisible;
+              if (isVisible) visibleItems += 1;
             });
+
+            const emptyState = visiblePanel.querySelector("[data-filter-empty]");
+            if (emptyState) emptyState.hidden = visibleItems > 0 || visiblePanel.querySelectorAll("[data-master-item]").length === 0;
           }
 
           function activateTab(tab, options) {
@@ -353,63 +348,27 @@ function accountsCardsTabsFallbackScript(): string {
             }
           }
 
-          function appendAdditionalCardRow(list) {
-            if (!list) return;
+          function additionalCardRowHtml() {
+            return '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="button" class="additional-card-remove">Remover</button>';
+          }
+
+          function appendAdditionalCardRowFromButton(button) {
+            const section = button ? button.closest(".additional-card-section") : null;
+            const list = section ? section.querySelector("[data-additional-card-list]") : null;
+            if (!list) return false;
 
             const row = document.createElement("div");
             row.className = "additional-card-row";
-            row.innerHTML = '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="button" class="additional-card-remove">Remover</button>';
-            const removeButton = row.querySelector("button");
+            row.innerHTML = additionalCardRowHtml();
+            const removeButton = row.querySelector(".additional-card-remove");
             if (removeButton) removeButton.addEventListener("click", () => row.remove());
             list.appendChild(row);
             const firstInput = row.querySelector("input");
             if (firstInput && typeof firstInput.focus === "function") firstInput.focus();
+            return true;
           }
 
-          window.__solverFinAddAdditionalCard = (button) => {
-            const section = button ? button.closest(".additional-card-section") : null;
-            const list = section ? section.querySelector("[data-additional-card-list]") : null;
-            appendAdditionalCardRow(list);
-          };
-
-          function enhanceAdditionalCardCreation() {
-            const forms = Array.from(
-              document.querySelectorAll('#new-card-dialog form[data-api-path="/api/cards"], form[data-api-method="PATCH"][data-api-path^="/api/cards/"]'),
-            );
-
-            forms.forEach((form) => enhanceAdditionalCardForm(form));
-          }
-
-          function enhanceAdditionalCardForm(form) {
-            if (!form || form.dataset.additionalCardsEnhanced === "true") return;
-
-            ensureAccountsCardsStyles();
-            form.dataset.additionalCardsEnhanced = "true";
-
-            const submitButton = form.querySelector('button[type="submit"]');
-            let section = form.querySelector(".additional-card-section");
-
-            if (!section) {
-              section = document.createElement("section");
-              section.className = "additional-card-section";
-              section.setAttribute("aria-label", "Cartões adicionais");
-              section.innerHTML = '<div class="additional-card-heading"><div><strong>Cartões adicionais</strong><p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p></div><button type="button" class="additional-card-add" data-additional-card-add onclick="window.__solverFinAddAdditionalCard && window.__solverFinAddAdditionalCard(this); return false;">+ adicional</button></div><div class="additional-card-list" data-additional-card-list></div>';
-
-              if (submitButton) {
-                form.insertBefore(section, submitButton);
-              } else {
-                form.appendChild(section);
-              }
-            }
-
-            form.addEventListener(
-              "submit",
-              (event) => {
-                void submitCardBatch(event, form);
-              },
-              true,
-            );
-          }
+          window.__solverFinAddAdditionalCard = appendAdditionalCardRowFromButton;
 
           function readFormPayload(form) {
             const payload = {};
@@ -465,6 +424,12 @@ function accountsCardsTabsFallbackScript(): string {
             });
           }
 
+          function isCardMutationForm(form) {
+            if (!form || !form.dataset || !form.dataset.apiPath) return false;
+            if (form.dataset.apiPath === "/api/cards") return true;
+            return form.dataset.apiMethod === "PATCH" && form.dataset.apiPath.indexOf("/api/cards/") === 0;
+          }
+
           async function submitCardBatch(event, form) {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -508,8 +473,8 @@ function accountsCardsTabsFallbackScript(): string {
             window.setTimeout(() => window.location.reload(), 450);
           }
 
+          ensureAccountsCardsStyles();
           setActiveFilterState(readActiveOnlyPreference());
-          enhanceAdditionalCardCreation();
 
           const activeFilterInput = activeFilterButton ? activeFilterButton.querySelector("[data-active-filter-input]") : null;
           if (activeFilterInput) {
@@ -526,13 +491,25 @@ function accountsCardsTabsFallbackScript(): string {
             const addButton = target ? target.closest("[data-additional-card-add]") : null;
             if (!addButton) return;
 
-            const section = addButton.closest(".additional-card-section");
-            const list = section ? section.querySelector("[data-additional-card-list]") : null;
-            if (!list) return;
+            if (appendAdditionalCardRowFromButton(addButton)) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+            }
+          }, true);
 
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            appendAdditionalCardRow(list);
+          document.addEventListener("click", (event) => {
+            const target = getEventElement(event);
+            const removeButton = target ? target.closest(".additional-card-remove") : null;
+            if (!removeButton) return;
+            const row = removeButton.closest(".additional-card-row");
+            if (row) row.remove();
+          });
+
+          document.addEventListener("submit", (event) => {
+            const target = getEventElement(event);
+            const form = target ? target.closest("form") : null;
+            if (!isCardMutationForm(form)) return;
+            void submitCardBatch(event, form);
           }, true);
 
           document.addEventListener("click", (event) => {
