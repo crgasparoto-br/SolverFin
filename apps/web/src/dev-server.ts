@@ -174,13 +174,13 @@ function renderAdditionalCardSectionHtml(): string {
   ].join("");
 
   return `
-        <section class="additional-card-section" aria-label="Cartões adicionais">
+        <section class="additional-card-section" aria-label="Cartões vinculados">
           <div class="additional-card-heading">
             <div>
-              <strong>Cartões adicionais</strong>
-              <p class="muted">Inclua cartões físicos, virtuais ou de outras pessoas vinculados a este cadastro.</p>
+              <strong>Cartões vinculados</strong>
+              <p class="muted">Revise o cartão principal e os adicionais deste cadastro.</p>
             </div>
-            <button type="button" class="additional-card-add" data-additional-card-add onclick="${addAction}">+ adicionar</button>
+            <button type="button" class="additional-card-add" data-additional-card-add onclick="${addAction}">+ adicional</button>
           </div>
           <div class="additional-card-saved-list" data-additional-card-saved-list hidden></div>
           <div class="additional-card-list" data-additional-card-list></div>
@@ -195,6 +195,7 @@ function accountsCardsTabsFallbackScript(): string {
           window.__solverFinAccountsCardsTabs = true;
 
           const activeFilterStorageKey = "solverfin.accountsCards.activeOnly";
+          const primaryCardStoragePrefix = "solverfin.accountsCards.primaryCard.";
           const panels = Array.from(document.querySelectorAll("[data-tab-panel]"));
           const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
           const searchInput = document.querySelector("[data-master-search]");
@@ -231,9 +232,19 @@ function accountsCardsTabsFallbackScript(): string {
               ".additional-card-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }",
               ".additional-card-save { background: var(--primary); color: white; min-height: 44px; min-width: 9.25rem; padding: 0 12px; white-space: nowrap; }",
               ".additional-card-remove { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); min-height: 44px; min-width: 7rem; padding: 0 12px; white-space: nowrap; }",
-              ".additional-card-saved-row { align-items: center; background: var(--surface); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; padding: 10px; }",
-              ".additional-card-saved-row span { color: var(--muted); font-size: .88rem; }",
-              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .active-filter-switch > span:last-child { max-width: none; } .additional-card-row, .additional-card-saved-row { grid-template-columns: 1fr; } .additional-card-actions { display: grid; grid-template-columns: 1fr; justify-content: stretch; } .additional-card-heading { align-items: stretch; display: grid; } }",
+              ".additional-card-group-list { display: grid; gap: 8px; }",
+              ".additional-card-group-row { align-items: center; border-top: 1px solid #d8e7ec; display: grid; gap: 12px; grid-template-columns: 32px minmax(0, 1fr) auto; padding: 8px 0; }",
+              ".additional-card-group-row:first-of-type { border-top: 0; }",
+              ".additional-card-primary-marker { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; color: var(--muted); display: inline-flex; font-size: 1rem; font-weight: 900; height: 22px; justify-content: center; line-height: 1; width: 22px; }",
+              ".additional-card-primary-marker.is-primary { background: var(--primary); border-color: var(--primary); color: white; }",
+              ".additional-card-group-main { display: grid; gap: 3px; min-width: 0; }",
+              ".additional-card-group-main label { color: var(--muted); font-size: .72rem; gap: 0; line-height: 1.2; }",
+              ".additional-card-group-main strong { border-bottom: 1px solid #d8e7ec; color: var(--text); display: block; font-size: .94rem; overflow-wrap: anywhere; padding-bottom: 5px; }",
+              ".additional-card-group-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }",
+              ".additional-card-primary-action { background: transparent; border: 0; color: var(--primary); min-height: 36px; padding: 0 8px; white-space: nowrap; }",
+              ".additional-card-primary-action.is-primary { color: var(--muted); cursor: default; }",
+              ".additional-card-saved-row { display: contents; }",
+              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .active-filter-switch > span:last-child { max-width: none; } .additional-card-row, .additional-card-group-row { grid-template-columns: 28px minmax(0, 1fr); } .additional-card-actions { display: grid; grid-template-columns: 1fr; justify-content: stretch; } .additional-card-group-actions { grid-column: 2; justify-content: stretch; } .additional-card-primary-action { width: 100%; } .additional-card-heading { align-items: stretch; display: grid; } }",
             ].join("");
             document.head.appendChild(style);
           }
@@ -461,6 +472,34 @@ function accountsCardsTabsFallbackScript(): string {
               && sameNumber(base.creditLimitMinor, card.creditLimitMinor);
           }
 
+          function readPrimaryCardId(groupKey, fallbackId) {
+            try {
+              return window.localStorage.getItem(primaryCardStoragePrefix + groupKey) || fallbackId;
+            } catch (_error) {
+              return fallbackId;
+            }
+          }
+
+          function savePrimaryCardId(groupKey, cardId) {
+            try {
+              window.localStorage.setItem(primaryCardStoragePrefix + groupKey, cardId);
+            } catch (_error) {
+              // The UI still updates for the current render if storage is unavailable.
+            }
+          }
+
+          function readBaseCardFromForm(form) {
+            const payload = readFormPayload(form);
+            const id = cardIdFromPath(form.dataset.apiPath);
+            const nameField = form.querySelector('[name="name"]');
+            return {
+              ...payload,
+              id,
+              name: String(nameField ? nameField.value : "Cartão principal"),
+              maskedIdentifier: String(payload.maskedIdentifier || ""),
+            };
+          }
+
           function ensureSavedAdditionalList(form) {
             const section = form.querySelector(".additional-card-section");
             if (!section) return null;
@@ -476,40 +515,81 @@ function accountsCardsTabsFallbackScript(): string {
             return savedList;
           }
 
-          function renderSavedAdditionalCards(form, cards) {
-            const savedList = ensureSavedAdditionalList(form);
-            if (!savedList) return;
-            const additions = cards.filter((card) => isSavedAdditionalForForm(form, card));
-            savedList.replaceChildren();
-            savedList.hidden = additions.length === 0;
-            if (additions.length === 0) return;
+          function renderCardGroupRow(input) {
+            const row = document.createElement("div");
+            row.className = "additional-card-group-row";
 
-            const title = document.createElement("strong");
-            title.textContent = "Adicionais salvos";
-            savedList.appendChild(title);
+            const marker = document.createElement("span");
+            marker.className = input.isPrimary ? "additional-card-primary-marker is-primary" : "additional-card-primary-marker";
+            marker.textContent = "★";
+            marker.setAttribute("aria-label", input.isPrimary ? "Cartão principal" : "Cartão adicional");
 
-            additions.forEach((card) => {
-              const row = document.createElement("div");
-              row.className = "additional-card-saved-row";
+            const text = document.createElement("div");
+            text.className = "additional-card-group-main";
+            const label = document.createElement("label");
+            label.textContent = input.isPrimary ? "Nome do cartão principal *" : "Nome do cartão adicional *";
+            const name = document.createElement("strong");
+            name.textContent = input.card.name || (input.isPrimary ? "Cartão principal" : "Cartão adicional");
+            const meta = document.createElement("span");
+            meta.textContent = input.card.maskedIdentifier ? input.card.maskedIdentifier : "Identificador não informado";
+            label.appendChild(name);
+            text.appendChild(label);
+            text.appendChild(meta);
 
-              const text = document.createElement("div");
-              const name = document.createElement("strong");
-              name.textContent = card.name || "Cartão adicional";
-              const meta = document.createElement("span");
-              meta.textContent = card.maskedIdentifier ? card.maskedIdentifier : "Identificador não informado";
-              text.appendChild(name);
-              text.appendChild(meta);
+            const actions = document.createElement("div");
+            actions.className = "additional-card-group-actions";
+            const primaryButton = document.createElement("button");
+            primaryButton.type = "button";
+            primaryButton.className = input.isPrimary ? "additional-card-primary-action is-primary" : "additional-card-primary-action";
+            primaryButton.textContent = input.isPrimary ? "Principal" : "Definir principal";
+            primaryButton.disabled = input.isPrimary;
+            primaryButton.addEventListener("click", () => {
+              savePrimaryCardId(input.groupKey, input.card.id);
+              renderSavedAdditionalCards(input.form, input.cards);
+            });
+            actions.appendChild(primaryButton);
 
+            if (!input.isBase) {
               const editButton = document.createElement("button");
               editButton.type = "button";
               editButton.className = "secondary-button";
-              editButton.dataset.openDialog = "edit-card-dialog-" + card.id;
+              editButton.dataset.openDialog = "edit-card-dialog-" + input.card.id;
               editButton.textContent = "Editar";
+              actions.appendChild(editButton);
+            }
 
-              row.appendChild(text);
-              row.appendChild(editButton);
-              savedList.appendChild(row);
+            row.appendChild(marker);
+            row.appendChild(text);
+            row.appendChild(actions);
+            return row;
+          }
+
+          function renderSavedAdditionalCards(form, cards) {
+            const savedList = ensureSavedAdditionalList(form);
+            if (!savedList) return;
+            const baseCard = readBaseCardFromForm(form);
+            const additions = cards.filter((card) => isSavedAdditionalForForm(form, card));
+            const linkedCards = [baseCard, ...additions];
+            const groupKey = baseCard.id;
+            const primaryId = readPrimaryCardId(groupKey, baseCard.id);
+
+            savedList.replaceChildren();
+            savedList.hidden = linkedCards.length === 0;
+            if (linkedCards.length === 0) return;
+
+            const group = document.createElement("div");
+            group.className = "additional-card-group-list";
+            linkedCards.forEach((card) => {
+              group.appendChild(renderCardGroupRow({
+                card,
+                cards,
+                form,
+                groupKey,
+                isBase: card.id === baseCard.id,
+                isPrimary: card.id === primaryId,
+              }));
             });
+            savedList.appendChild(group);
           }
 
           async function loadSavedAdditionalCards() {
