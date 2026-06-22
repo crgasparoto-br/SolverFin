@@ -163,7 +163,7 @@ function injectAdditionalCardSections(html: string, additionalCardSectionHtml: s
 }
 
 function renderAdditionalCardSectionHtml(): string {
-  const additionalCardRowHtml = "<label>Nome do cartão adicional<input data-additional-card-name placeholder=&quot;Ex.: Virtual - 0322&quot; /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder=&quot;Ex.: final 0322&quot; /></label><button type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional</button><button type=&quot;button&quot; class=&quot;additional-card-remove&quot;>Remover</button>";
+  const additionalCardRowHtml = "<label>Nome do cartão adicional<input data-additional-card-name placeholder=&quot;Ex.: Virtual - 0322&quot; /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder=&quot;Ex.: final 0322&quot; /></label><div class=&quot;additional-card-actions&quot;><button type=&quot;submit&quot; class=&quot;additional-card-save&quot;>Salvar adicional</button><button type=&quot;button&quot; class=&quot;additional-card-remove&quot;>Remover</button></div>";
   const addAction = [
     "var section=this.closest('.additional-card-section');",
     "var list=section&&section.querySelector('[data-additional-card-list]');",
@@ -182,6 +182,7 @@ function renderAdditionalCardSectionHtml(): string {
             </div>
             <button type="button" class="additional-card-add" data-additional-card-add onclick="${addAction}">+ adicionar</button>
           </div>
+          <div class="additional-card-saved-list" data-additional-card-saved-list hidden></div>
           <div class="additional-card-list" data-additional-card-list></div>
         </section>`;
 }
@@ -225,11 +226,14 @@ function accountsCardsTabsFallbackScript(): string {
               ".additional-card-section { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; grid-column: 1 / -1; padding: 12px; }",
               ".additional-card-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }",
               ".additional-card-add { background: transparent; color: var(--primary); min-height: 36px; padding: 0 10px; }",
-              ".additional-card-list { display: grid; gap: 10px; }",
-              ".additional-card-row { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr) auto auto; }",
-              ".additional-card-save { background: var(--primary); color: white; min-height: 44px; padding: 0 12px; }",
-              ".additional-card-remove { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); min-height: 44px; padding: 0 12px; }",
-              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .active-filter-switch > span:last-child { max-width: none; } .additional-card-row { grid-template-columns: 1fr; } .additional-card-heading { align-items: stretch; display: grid; } }",
+              ".additional-card-list, .additional-card-saved-list { display: grid; gap: 10px; }",
+              ".additional-card-row { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr) minmax(12rem, auto); }",
+              ".additional-card-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }",
+              ".additional-card-save { background: var(--primary); color: white; min-height: 44px; min-width: 9.25rem; padding: 0 12px; white-space: nowrap; }",
+              ".additional-card-remove { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); min-height: 44px; min-width: 7rem; padding: 0 12px; white-space: nowrap; }",
+              ".additional-card-saved-row { align-items: center; background: var(--surface); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; padding: 10px; }",
+              ".additional-card-saved-row span { color: var(--muted); font-size: .88rem; }",
+              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .active-filter-switch > span:last-child { max-width: none; } .additional-card-row, .additional-card-saved-row { grid-template-columns: 1fr; } .additional-card-actions { display: grid; grid-template-columns: 1fr; justify-content: stretch; } .additional-card-heading { align-items: stretch; display: grid; } }",
             ].join("");
             document.head.appendChild(style);
           }
@@ -351,7 +355,7 @@ function accountsCardsTabsFallbackScript(): string {
           }
 
           function additionalCardRowHtml() {
-            return '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><button type="submit" class="additional-card-save">Salvar adicional</button><button type="button" class="additional-card-remove">Remover</button>';
+            return '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><div class="additional-card-actions"><button type="submit" class="additional-card-save">Salvar adicional</button><button type="button" class="additional-card-remove">Remover</button></div>';
           }
 
           function appendAdditionalCardRowFromButton(button) {
@@ -432,6 +436,93 @@ function accountsCardsTabsFallbackScript(): string {
             return form.dataset.apiMethod === "PATCH" && form.dataset.apiPath.indexOf("/api/cards/") === 0;
           }
 
+          function cardIdFromPath(path) {
+            const match = String(path || "").match(/^\/api\/cards\/([^/]+)$/);
+            return match ? match[1] : "";
+          }
+
+          function sameText(left, right) {
+            return String(left || "") === String(right || "");
+          }
+
+          function sameNumber(left, right) {
+            return Number(left || 0) === Number(right || 0);
+          }
+
+          function isSavedAdditionalForForm(form, card) {
+            const base = readFormPayload(form);
+            const baseId = cardIdFromPath(form.dataset.apiPath);
+            if (!baseId || !card || card.id === baseId) return false;
+            return sameText(base.institutionKey, card.institutionKey)
+              && sameText(base.brandKey, card.brandKey)
+              && sameText(base.paymentAccountId, card.paymentAccountId)
+              && sameNumber(base.closingDay, card.closingDay)
+              && sameNumber(base.dueDay, card.dueDay)
+              && sameNumber(base.creditLimitMinor, card.creditLimitMinor);
+          }
+
+          function ensureSavedAdditionalList(form) {
+            const section = form.querySelector(".additional-card-section");
+            if (!section) return null;
+            let savedList = section.querySelector("[data-additional-card-saved-list]");
+            if (!savedList) {
+              savedList = document.createElement("div");
+              savedList.className = "additional-card-saved-list";
+              savedList.setAttribute("data-additional-card-saved-list", "");
+              savedList.hidden = true;
+              const newList = section.querySelector("[data-additional-card-list]");
+              section.insertBefore(savedList, newList || null);
+            }
+            return savedList;
+          }
+
+          function renderSavedAdditionalCards(form, cards) {
+            const savedList = ensureSavedAdditionalList(form);
+            if (!savedList) return;
+            const additions = cards.filter((card) => isSavedAdditionalForForm(form, card));
+            savedList.replaceChildren();
+            savedList.hidden = additions.length === 0;
+            if (additions.length === 0) return;
+
+            const title = document.createElement("strong");
+            title.textContent = "Adicionais salvos";
+            savedList.appendChild(title);
+
+            additions.forEach((card) => {
+              const row = document.createElement("div");
+              row.className = "additional-card-saved-row";
+
+              const text = document.createElement("div");
+              const name = document.createElement("strong");
+              name.textContent = card.name || "Cartão adicional";
+              const meta = document.createElement("span");
+              meta.textContent = card.maskedIdentifier ? card.maskedIdentifier : "Identificador não informado";
+              text.appendChild(name);
+              text.appendChild(meta);
+
+              const editButton = document.createElement("button");
+              editButton.type = "button";
+              editButton.className = "secondary-button";
+              editButton.dataset.openDialog = "edit-card-dialog-" + card.id;
+              editButton.textContent = "Editar";
+
+              row.appendChild(text);
+              row.appendChild(editButton);
+              savedList.appendChild(row);
+            });
+          }
+
+          async function loadSavedAdditionalCards() {
+            const forms = Array.from(document.querySelectorAll('form[data-api-method="PATCH"][data-api-path^="/api/cards/"]'));
+            if (forms.length === 0) return;
+
+            const response = await fetch("/api/cards?status=all").catch(() => null);
+            if (!response || !response.ok) return;
+            const body = await response.json().catch(() => ({}));
+            const cards = Array.isArray(body.cards) ? body.cards : [];
+            forms.forEach((form) => renderSavedAdditionalCards(form, cards));
+          }
+
           async function submitCardBatch(event, form) {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -477,6 +568,7 @@ function accountsCardsTabsFallbackScript(): string {
 
           ensureAccountsCardsStyles();
           setActiveFilterState(readActiveOnlyPreference());
+          void loadSavedAdditionalCards();
 
           const activeFilterInput = activeFilterButton ? activeFilterButton.querySelector("[data-active-filter-input]") : null;
           if (activeFilterInput) {
