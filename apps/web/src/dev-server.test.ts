@@ -88,6 +88,8 @@ function accountsCardsAdditionalButtonUsesScriptListener(): void {
   assert.match(enhanced, /data-additional-card-add>\+ adicional/);
   assert.doesNotMatch(enhanced, /onclick="window\.__solverFinAddAdditionalCard/);
   assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
+  assert.doesNotMatch(enhanced, /\?\./);
+  assert.match(enhanced, /getEventElement\(event\)/);
   assert.match(enhanced, /appendAdditionalCardRow\(list\)/);
 }
 
@@ -97,7 +99,7 @@ function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
 
   assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
   assert.match(enhanced, /data-additional-card-add>\+ adicional/);
-  assert.match(enhanced, /document\.addEventListener\("click", \(event\) => \{\n            const target = event\.target instanceof Element \? event\.target : null;\n            const addButton = target \? target\.closest\("\[data-additional-card-add\]"\) : null;/);
+  assert.match(enhanced, /const target = getEventElement\(event\);\n            const addButton = target \? target\.closest\("\[data-additional-card-add\]"\) : null;/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
   assert.match(enhanced, /\}, true\);/);
 }
