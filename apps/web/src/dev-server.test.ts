@@ -85,8 +85,7 @@ function accountsCardsAdditionalButtonUsesScriptListener(): void {
   const html = '<html><body><dialog id="new-card-dialog"><form data-api-path="/api/cards"><label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label><button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
 
-  assert.match(enhanced, /data-additional-card-add>\+ adicional/);
-  assert.doesNotMatch(enhanced, /onclick="window\.__solverFinAddAdditionalCard/);
+  assert.match(enhanced, /data-additional-card-add onclick="window\.__solverFinAddAdditionalCard && window\.__solverFinAddAdditionalCard\(this\); return false;">\+ adicional/);
   assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
   assert.doesNotMatch(enhanced, /\?\./);
   assert.match(enhanced, /getEventElement\(event\)/);
@@ -98,7 +97,7 @@ function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
   const enhanced = enhanceAccountsCardsTabs(html);
 
   assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
-  assert.match(enhanced, /data-additional-card-add>\+ adicional/);
+  assert.match(enhanced, /data-additional-card-add onclick="window\.__solverFinAddAdditionalCard && window\.__solverFinAddAdditionalCard\(this\); return false;">\+ adicional/);
   assert.match(enhanced, /const target = getEventElement\(event\);\n            const addButton = target \? target\.closest\("\[data-additional-card-add\]"\) : null;/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
   assert.match(enhanced, /\}, true\);/);
