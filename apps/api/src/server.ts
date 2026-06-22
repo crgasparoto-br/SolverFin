@@ -4,6 +4,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js";
+import { handleCardAdditionalLinksApiRequest } from "./card-additional-links-router.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
@@ -96,6 +97,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (payablesReceivablesResult) {
       writeResponse(response, payablesReceivablesResult);
+
+      return;
+    }
+
+    const cardAdditionalLinksResult = await handleCardAdditionalLinksApiRequest(apiRequest);
+
+    if (cardAdditionalLinksResult) {
+      writeResponse(response, cardAdditionalLinksResult);
 
       return;
     }
