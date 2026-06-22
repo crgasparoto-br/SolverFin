@@ -8,10 +8,9 @@ privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
 accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
-accountsCardsTabsFallbackIsInjectedOnce();
-accountsCardsDialogFallbackIsInjected();
-accountsCardsAdditionalButtonUsesScriptListener();
-accountsCardsEditAdditionalButtonIsInjectedAndCaptured();
+accountsCardsDirectEnhancementIsInjectedOnce();
+accountsCardsAdditionalButtonUsesDirectController();
+accountsCardsEditAdditionalSubmitIsCapturedDirectly();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
@@ -64,73 +63,51 @@ function accountsCardsEnhancementIgnoresNonAccountsCardsHtml(): void {
   const enhanced = enhanceAccountsCardsTabs(html);
 
   assert.equal(enhanced, html);
-  assert.doesNotMatch(enhanced, /data-accounts-cards-tabs-fallback/);
+  assert.doesNotMatch(enhanced, /data-accounts-cards-direct-enhancement/);
 }
 
-function accountsCardsTabsFallbackIsInjectedOnce(): void {
+function accountsCardsDirectEnhancementIsInjectedOnce(): void {
   const html = '<html><body><button data-tab="cards" aria-selected="false">Cartões</button><section data-tab-panel="accounts"></section><section data-tab-panel="cards" hidden></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
   const enhancedAgain = enhanceAccountsCardsTabs(enhanced);
 
-  assert.match(enhanced, /data-accounts-cards-tabs-fallback/);
-  assert.equal((enhancedAgain.match(/data-accounts-cards-tabs-fallback/g) ?? []).length, 1);
-  assert.match(enhanced, /activateTab\(button\.dataset\.tab\)/);
-  assert.match(enhanced, /window\.addEventListener\("hashchange"/);
-  assert.match(enhanced, /applyFilters\(\)/);
+  assert.match(enhanced, /data-accounts-cards-direct-enhancement/);
+  assert.equal((enhancedAgain.match(/data-accounts-cards-direct-enhancement/g) ?? []).length, 1);
+  assert.match(enhanced, /installCardFormHandlers\(\)/);
+  assert.match(enhanced, /form\.onsubmit = \(event\) =>/);
+  assert.match(enhanced, /document\.addEventListener\("submit"/);
 }
 
-function accountsCardsDialogFallbackIsInjected(): void {
-  const html = '<html><body><button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button><dialog id="new-card-dialog"><form method="dialog" class="dialog-close-form"><button type="submit">Cancelar</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
-  const enhanced = enhanceAccountsCardsTabs(html);
-
-  assert.match(enhanced, /openAccountsCardsDialog\(button\)/);
-  assert.match(enhanced, /closeAccountsCardsDialog\(form\)/);
-  assert.match(enhanced, /focusFirstDialogField\(dialog\)/);
-  assert.match(enhanced, /data-active-filter/);
-}
-
-function accountsCardsAdditionalButtonUsesScriptListener(): void {
+function accountsCardsAdditionalButtonUsesDirectController(): void {
   const html = '<html><body><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
-  const enhancedAgain = enhanceAccountsCardsTabs(enhanced);
 
-  assert.match(enhanced, /data-accounts-cards-tabs-fallback/);
-  assert.equal((enhancedAgain.match(/data-accounts-cards-tabs-fallback/g) ?? []).length, 1);
   assert.match(enhanced, />\+ adicional<\/button>/);
   assert.match(enhanced, /Cartões vinculados/);
   assert.match(enhanced, /additional-card-save/);
   assert.match(enhanced, /additional-card-actions/);
   assert.match(enhanced, /additional-card-saved-list/);
-  assert.match(enhanced, /loadSavedAdditionalCards\(\)/);
-  assert.match(enhanced, /fetch\("\/api\/cards\?status=all"\)/);
   assert.match(enhanced, /cardLinksApiPath = "\/api\/card-additional-links"/);
   assert.match(enhanced, /Definir principal/);
   assert.match(enhanced, /additional-card-primary-marker/);
-  assert.match(enhanced, /Nome do cartão principal \*/);
-  assert.match(enhanced, /Nome do cartão adicional \*/);
-  assert.match(enhanced, /document\.createElement\("div"\)/);
+  assert.match(enhanced, /addAdditionalRow\(addButton\)/);
+  assert.match(enhanced, /loadSavedCards\(\)/);
   assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
   assert.doesNotMatch(enhanced, /\?\./);
-  assert.match(enhanced, /getEventElement\(event\)/);
-  assert.match(enhanced, /appendAdditionalCardRowFromButton\(addButton\)/);
 }
 
-function accountsCardsEditAdditionalButtonIsInjectedAndCaptured(): void {
+function accountsCardsEditAdditionalSubmitIsCapturedDirectly(): void {
   const html = '<html><body><dialog id="edit-card-dialog-card-1"><form data-api-form data-api-method="PATCH" data-api-path="/api/cards/card-1" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" value="final 1234" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Salvar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
 
   assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
   assert.match(enhanced, /data-additional-card-add/);
-  assert.match(enhanced, />\+ adicional<\/button>/);
-  assert.match(enhanced, /additional-card-save/);
-  assert.match(enhanced, /additional-card-group-row/);
-  assert.match(enhanced, /linksForBaseCard\(baseCard\.id\)/);
-  assert.match(enhanced, /sendJsonPayload\(cardLinksApiPath \+ "\/" \+ input\.groupKey \+ "\/primary", "PATCH", \{ cardId: input\.card\.id \}\)/);
-  assert.match(enhanced, /linkAdditionalCard\(groupCardId, additionalCard\.id\)/);
+  assert.match(enhanced, /form\.addEventListener\("submit", \(event\) =>/);
+  assert.match(enhanced, /submitCardForm\(event, form\)/);
+  assert.match(enhanced, /sendJson\(cardLinksApiPath, "POST", \{ groupCardId, cardId: additionalCard\.id \}\)/);
   assert.match(enhanced, /status\.textContent = isEdit \? "Cartão salvo\." : "Cartão criado\. Atualizando a tela\.\.\."/);
-  assert.match(enhanced, /await loadSavedAdditionalCards\(\)/);
+  assert.match(enhanced, /await loadSavedCards\(\)/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
-  assert.match(enhanced, /\}, true\);/);
   assert.doesNotMatch(enhanced, /window\.location\.reload\(\)/);
 }
 
