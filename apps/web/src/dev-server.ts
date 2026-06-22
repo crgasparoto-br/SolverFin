@@ -386,14 +386,6 @@ function accountsCardsTabsFallbackScript(): string {
               }
             }
 
-            const list = section.querySelector("[data-additional-card-list]");
-            const addButton = section.querySelector("[data-additional-card-add]");
-
-            addButton?.addEventListener("click", (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              appendAdditionalCardRow(list);
-            });
             form.addEventListener(
               "submit",
               (event) => {
@@ -513,6 +505,20 @@ function accountsCardsTabsFallbackScript(): string {
 
           document.addEventListener("click", (event) => {
             const target = event.target instanceof Element ? event.target : null;
+            const addButton = target ? target.closest("[data-additional-card-add]") : null;
+            if (!addButton) return;
+
+            const section = addButton.closest(".additional-card-section");
+            const list = section ? section.querySelector("[data-additional-card-list]") : null;
+            if (!list) return;
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            appendAdditionalCardRow(list);
+          }, true);
+
+          document.addEventListener("click", (event) => {
+            const target = event.target instanceof Element ? event.target : null;
             const button = target ? target.closest("[data-open-dialog]") : null;
             if (!button) return;
 
@@ -524,19 +530,6 @@ function accountsCardsTabsFallbackScript(): string {
             if (!form) return;
 
             if (closeAccountsCardsDialog(form)) event.preventDefault();
-          });
-
-          document.addEventListener("click", (event) => {
-            const target = event.target instanceof Element ? event.target : null;
-            const addButton = target ? target.closest("[data-additional-card-add]") : null;
-            if (!addButton) return;
-
-            const section = addButton.closest(".additional-card-section");
-            const list = section ? section.querySelector("[data-additional-card-list]") : null;
-            if (!list) return;
-
-            event.preventDefault();
-            appendAdditionalCardRow(list);
           });
 
           document.addEventListener("click", (event) => {
