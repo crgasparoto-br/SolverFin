@@ -8,6 +8,7 @@ privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
 accountsCardsTabsFallbackIsInjectedOnce();
+accountsCardsDialogFallbackIsInjected();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
@@ -65,6 +66,17 @@ function accountsCardsTabsFallbackIsInjectedOnce(): void {
   assert.match(enhanced, /button\.tabIndex = 0/);
   assert.match(enhanced, /panel\.setAttribute\("hidden", ""\)/);
   assert.equal((enhancedAgain.match(/data-accounts-cards-tabs-fallback/g) ?? []).length, 1);
+}
+
+function accountsCardsDialogFallbackIsInjected(): void {
+  const html = '<html><body><button type="button" data-open-dialog="new-account-dialog">Adicionar</button><dialog id="new-account-dialog"><form method="dialog" class="dialog-close-form"><button type="submit">Fechar</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
+  const enhanced = enhanceAccountsCardsTabs(html);
+
+  assert.match(enhanced, /openAccountsCardsDialog/);
+  assert.match(enhanced, /closeAccountsCardsDialog/);
+  assert.match(enhanced, /target\.closest\("\[data-open-dialog\]"\)/);
+  assert.match(enhanced, /dialog\.setAttribute\("open", ""\)/);
+  assert.match(enhanced, /target\.closest\("\.dialog-close-form"\)/);
 }
 
 function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
