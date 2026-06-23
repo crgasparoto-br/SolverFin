@@ -63,8 +63,9 @@ export async function createCategoryForContext(
   context: TenantContext,
   payload: CreateCategoryPayload,
 ): Promise<Category> {
-  const parentCategory = payload.parentCategoryId
-    ? await findCategoryRow(context, payload.parentCategoryId)
+  const normalizedPayload = normalizeCategoryParentPayload(payload);
+  const parentCategory = normalizedPayload.parentCategoryId
+    ? await findCategoryRow(context, normalizedPayload.parentCategoryId)
     : undefined;
   const ancestorCategories = parentCategory
     ? await listCategoryAncestors(context, parentCategory)
@@ -73,7 +74,7 @@ export async function createCategoryForContext(
     id: randomUUID(),
     context,
     now: new Date().toISOString(),
-    payload,
+    payload: normalizedPayload,
     ancestorCategories,
     ...(parentCategory ? { parentCategory } : {}),
   });
@@ -106,11 +107,12 @@ export async function updateCategoryForContext(
   categoryId: EntityId,
   payload: UpdateCategoryPayload,
 ): Promise<Category> {
+  const normalizedPayload = normalizeCategoryParentPayload(payload);
   const currentCategory = await findCategoryRow(context, categoryId);
   const nextParentCategoryId =
-    payload.parentCategoryId === undefined
+    normalizedPayload.parentCategoryId === undefined
       ? currentCategory?.parentCategoryId
-      : payload.parentCategoryId;
+      : normalizedPayload.parentCategoryId;
   const parentCategory = nextParentCategoryId
     ? await findCategoryRow(context, nextParentCategoryId)
     : undefined;
@@ -121,7 +123,7 @@ export async function updateCategoryForContext(
     context,
     category: currentCategory,
     now: new Date().toISOString(),
-    payload,
+    payload: normalizedPayload,
     ancestorCategories,
     ...(parentCategory ? { parentCategory } : {}),
   });
@@ -212,6 +214,35 @@ async function listCategoryAncestors(
   }
 
   return ancestors;
+}
+
+function normalizeCategoryParentPayload<T extends CreateCategoryPayload | UpdateCategoryPayload>(
+  payload: T,
+): T {
+  if (payload.parentCategoryId === undefined) {
+    return payload;
+  }
+
+  const parentCategoryId = normalizeParentCategoryId(payload.parentCategoryId);
+
+  return {
+    ...payload,
+    parentCategoryId,
+  };
+}
+
+function normalizeParentCategoryId(parentCategoryId: EntityId | null | undefined): EntityId | null {
+  if (parentCategoryId === null || parentCategoryId === undefined) {
+    return null;
+  }
+
+  const normalizedParentCategoryId = parentCategoryId.trim();
+
+  if (!normalizedParentCategoryId || normalizedParentCategoryId === "null") {
+    return null;
+  }
+
+  return normalizedParentCategoryId;
 }
 
 function mapCategoryRow(row: CategoryRow): Category {
