@@ -107,7 +107,10 @@ export async function updateCategoryForContext(
   payload: UpdateCategoryPayload,
 ): Promise<Category> {
   const currentCategory = await findCategoryRow(context, categoryId);
-  const nextParentCategoryId = payload.parentCategoryId ?? currentCategory?.parentCategoryId;
+  const nextParentCategoryId =
+    payload.parentCategoryId === undefined
+      ? currentCategory?.parentCategoryId
+      : payload.parentCategoryId;
   const parentCategory = nextParentCategoryId
     ? await findCategoryRow(context, nextParentCategoryId)
     : undefined;
