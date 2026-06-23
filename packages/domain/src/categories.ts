@@ -13,6 +13,7 @@ export type CategoryErrorCode =
   | "CATEGORY_KIND_INVALID"
   | "CATEGORY_PARENT_INVALID"
   | "CATEGORY_PARENT_KIND_MISMATCH"
+  | "CATEGORY_PARENT_CYCLE"
   | "CATEGORY_REPLACEMENT_REQUIRED"
   | "CATEGORY_REPLACEMENT_INVALID"
   | "CATEGORY_TRANSACTION_KIND_INVALID";
@@ -38,6 +39,7 @@ export interface DefaultCategorySuggestion {
   name: string;
   kind: CategoryKind;
   source: Extract<CategorySuggestionSource, "system_default">;
+  parentName?: string;
 }
 
 export interface CreateCategoryInput {
@@ -46,12 +48,13 @@ export interface CreateCategoryInput {
   now: ISODateTime;
   payload: CreateCategoryPayload;
   parentCategory?: Category;
+  ancestorCategories?: readonly Category[];
 }
 
 export interface CreateCategoryPayload {
   name: string;
   kind: CategoryKind;
-  parentCategoryId?: EntityId;
+  parentCategoryId?: EntityId | null;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
 }
@@ -62,13 +65,14 @@ export interface UpdateCategoryInput {
   now: ISODateTime;
   payload: UpdateCategoryPayload;
   parentCategory?: Category;
+  ancestorCategories?: readonly Category[];
 }
 
 export interface UpdateCategoryPayload {
   name?: string;
   kind?: CategoryKind;
   status?: CategoryStatus;
-  parentCategoryId?: EntityId;
+  parentCategoryId?: EntityId | null;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
 }
@@ -95,10 +99,19 @@ export interface ListCategoriesFilters {
 const ALLOWED_CATEGORY_KINDS: readonly CategoryKind[] = ["income", "expense", "transfer"];
 
 const DEFAULT_CATEGORY_SUGGESTIONS: readonly DefaultCategorySuggestion[] = [
-  { name: "Receitas", kind: "income", source: "system_default" },
+  { name: "Trabalho", kind: "income", source: "system_default" },
+  { name: "Salario", kind: "income", source: "system_default", parentName: "Trabalho" },
+  { name: "Freelance", kind: "income", source: "system_default", parentName: "Trabalho" },
   { name: "Moradia", kind: "expense", source: "system_default" },
+  { name: "Aluguel", kind: "expense", source: "system_default", parentName: "Moradia" },
+  { name: "Agua", kind: "expense", source: "system_default", parentName: "Moradia" },
+  { name: "Energia eletrica", kind: "expense", source: "system_default", parentName: "Moradia" },
   { name: "Alimentacao", kind: "expense", source: "system_default" },
+  { name: "Mercado", kind: "expense", source: "system_default", parentName: "Alimentacao" },
+  { name: "Restaurante", kind: "expense", source: "system_default", parentName: "Alimentacao" },
   { name: "Transporte", kind: "expense", source: "system_default" },
+  { name: "Combustivel", kind: "expense", source: "system_default", parentName: "Transporte" },
+  { name: "Aplicativos de transporte", kind: "expense", source: "system_default", parentName: "Transporte" },
   { name: "Transferencias", kind: "transfer", source: "system_default" },
 ];
 
@@ -109,8 +122,10 @@ export function getDefaultCategorySuggestions(): readonly DefaultCategorySuggest
 export function createCategory(input: CreateCategoryInput): Category {
   const payload = applyTenantScope(input.context, input.payload);
   const kind = validateCategoryKind(payload.kind);
+  const parentCategoryId = normalizeOptionalParentCategoryId(payload.parentCategoryId);
 
-  assertParentCategory(input.context, input.parentCategory, payload.parentCategoryId, kind);
+  assertParentCategory(input.context, input.parentCategory, parentCategoryId, kind);
+  assertCategoryHierarchyDoesNotCycle(input.context, undefined, input.ancestorCategories ?? []);
 
   return {
     id: input.id,
@@ -119,7 +134,7 @@ export function createCategory(input: CreateCategoryInput): Category {
     name: normalizeCategoryName(payload.name),
     kind,
     status: "active",
-    ...(payload.parentCategoryId ? { parentCategoryId: payload.parentCategoryId } : {}),
+    ...(parentCategoryId ? { parentCategoryId } : {}),
     createdAt: input.now,
     updatedAt: input.now,
     createdByUserId: input.context.userId,
@@ -140,7 +155,9 @@ export function listCategories(
     const kindMatches = filters.kind === undefined || category.kind === filters.kind;
     const parentMatches =
       filters.parentCategoryId === undefined ||
-      category.parentCategoryId === filters.parentCategoryId;
+      (filters.parentCategoryId === null
+        ? category.parentCategoryId === undefined
+        : category.parentCategoryId === filters.parentCategoryId);
 
     return statusMatches && kindMatches && parentMatches;
   });
@@ -155,17 +172,22 @@ export function updateCategory(input: UpdateCategoryInput): Category {
   const nextKind = input.payload.kind
     ? validateCategoryKind(input.payload.kind)
     : currentCategory.kind;
+  const nextParentCategoryId =
+    input.payload.parentCategoryId === undefined
+      ? currentCategory.parentCategoryId
+      : normalizeOptionalParentCategoryId(input.payload.parentCategoryId);
 
-  assertParentCategory(
+  assertParentCategory(input.context, input.parentCategory, nextParentCategoryId, nextKind);
+  assertCategoryHierarchyDoesNotCycle(
     input.context,
-    input.parentCategory,
-    input.payload.parentCategoryId,
-    nextKind,
+    currentCategory.id,
+    input.ancestorCategories ?? [],
   );
 
   return {
     ...currentCategory,
     ...buildOptionalCategoryUpdate(input.payload),
+    ...(nextParentCategoryId ? { parentCategoryId: nextParentCategoryId } : { parentCategoryId: undefined }),
     updatedAt: input.now,
     updatedByUserId: input.context.userId,
   };
@@ -255,10 +277,6 @@ function buildOptionalCategoryUpdate(payload: UpdateCategoryPayload): Partial<Ca
     update.status = payload.status;
   }
 
-  if (payload.parentCategoryId !== undefined) {
-    update.parentCategoryId = payload.parentCategoryId;
-  }
-
   return update;
 }
 
@@ -290,6 +308,34 @@ function assertParentCategory(
   }
 }
 
+function assertCategoryHierarchyDoesNotCycle(
+  context: TenantContext,
+  categoryId: EntityId | undefined,
+  ancestorCategories: readonly Category[],
+): void {
+  const visitedCategoryIds = new Set<EntityId>();
+
+  for (const ancestorCategory of ancestorCategories) {
+    const scopedAncestor = getTenantScopedResource(context, ancestorCategory);
+
+    if (categoryId !== undefined && scopedAncestor.id === categoryId) {
+      throw new CategoryError(
+        "CATEGORY_PARENT_CYCLE",
+        "Category hierarchy cannot reference itself as an ancestor.",
+      );
+    }
+
+    if (visitedCategoryIds.has(scopedAncestor.id)) {
+      throw new CategoryError(
+        "CATEGORY_PARENT_CYCLE",
+        "Category hierarchy cannot contain cycles.",
+      );
+    }
+
+    visitedCategoryIds.add(scopedAncestor.id);
+  }
+}
+
 function normalizeCategoryName(name: string): string {
   const normalizedName = name.trim();
 
@@ -298,6 +344,14 @@ function normalizeCategoryName(name: string): string {
   }
 
   return normalizedName;
+}
+
+function normalizeOptionalParentCategoryId(parentCategoryId: EntityId | null | undefined): EntityId | undefined {
+  if (parentCategoryId === null || parentCategoryId === undefined) {
+    return undefined;
+  }
+
+  return parentCategoryId;
 }
 
 function validateCategoryKind(kind: CategoryKind | undefined): CategoryKind {
