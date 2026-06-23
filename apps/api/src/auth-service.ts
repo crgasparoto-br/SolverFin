@@ -338,7 +338,11 @@ export function isDemoAuthAllowed(
 export function isProductiveOidcAuthConfigured(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): boolean {
-  return Boolean(readEnv(env, "OIDC_ISSUER_URL") && readEnv(env, "OIDC_AUDIENCE") && readEnv(env, "OIDC_JWKS_URI"));
+  return Boolean(
+    readEnv(env, "OIDC_ISSUER_URL") &&
+    readEnv(env, "OIDC_AUDIENCE") &&
+    readEnv(env, "OIDC_JWKS_URI"),
+  );
 }
 
 export function hashSessionToken(token: string): string {
@@ -363,7 +367,13 @@ async function persistLoginSession(
       `insert into "ApplicationSession"
        ("id", "userId", "tokenHash", "createdAt", "lastSeenAt", "expiresAt")
        values ($1, $2, $3, $4, $4, $5)`,
-      [sessionId, result.user.id, hashSessionToken(result.session.id), now, result.session.expiresAt],
+      [
+        sessionId,
+        result.user.id,
+        hashSessionToken(result.session.id),
+        now,
+        result.session.expiresAt,
+      ],
     );
     await auditSecurityEvent({
       action: auditAction,
@@ -458,7 +468,12 @@ async function validatePersistedSession(
   );
 
   auth.upsertUserCredentials({ user, passwordHash: hashPassword(`persisted:${user.id}`) });
-  auth.rememberSession({ id: token, userId: user.id, createdAt: session.createdAt, expiresAt: session.expiresAt });
+  auth.rememberSession({
+    id: token,
+    userId: user.id,
+    createdAt: session.createdAt,
+    expiresAt: session.expiresAt,
+  });
 
   return user;
 }
@@ -566,7 +581,10 @@ async function signInExternalIdentity(identity: OidcIdentity): Promise<LoginResu
   const externalPassword = createExternalPasswordSentinel(user.id);
   auth.upsertUserCredentials({ user, passwordHash: hashPassword(externalPassword) });
 
-  return persistLoginSession(auth.login({ email: user.email, password: externalPassword }), "login_success");
+  return persistLoginSession(
+    auth.login({ email: user.email, password: externalPassword }),
+    "login_success",
+  );
 }
 
 async function updateExternalUserSnapshot(
@@ -675,13 +693,17 @@ function assertExternalUserIsActive(row: ExternalUserRow): void {
   }
 }
 
-function resolveOidcProviderConfig(env: Readonly<Record<string, string | undefined>>): OidcProviderConfig {
+function resolveOidcProviderConfig(
+  env: Readonly<Record<string, string | undefined>>,
+): OidcProviderConfig {
   const issuer = readEnv(env, "OIDC_ISSUER_URL");
   const audience = readEnv(env, "OIDC_AUDIENCE");
   const jwksUri = readEnv(env, "OIDC_JWKS_URI");
 
   if (!issuer || !audience || !jwksUri) {
-    throw new Error("OIDC_ISSUER_URL, OIDC_AUDIENCE and OIDC_JWKS_URI are required for productive authentication.");
+    throw new Error(
+      "OIDC_ISSUER_URL, OIDC_AUDIENCE and OIDC_JWKS_URI are required for productive authentication.",
+    );
   }
 
   return { issuer, audience, jwksUri };
@@ -733,12 +755,17 @@ function hasPgCode(error: unknown, code: string): boolean {
 }
 
 function resolveSessionTtlMs(): number {
-  return resolvePositiveMinutes("AUTH_SESSION_TTL_MINUTES", DEFAULT_SESSION_TTL_MINUTES) * 60 * 1000;
+  return (
+    resolvePositiveMinutes("AUTH_SESSION_TTL_MINUTES", DEFAULT_SESSION_TTL_MINUTES) * 60 * 1000
+  );
 }
 
 function resolveSessionIdleTimeoutMs(): number {
   return (
-    resolvePositiveMinutes("AUTH_SESSION_IDLE_TIMEOUT_MINUTES", DEFAULT_SESSION_IDLE_TIMEOUT_MINUTES) *
+    resolvePositiveMinutes(
+      "AUTH_SESSION_IDLE_TIMEOUT_MINUTES",
+      DEFAULT_SESSION_IDLE_TIMEOUT_MINUTES,
+    ) *
     60 *
     1000
   );
@@ -750,7 +777,10 @@ function resolvePositiveMinutes(key: string, fallback: number): number {
   return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
-function readEnv(env: Readonly<Record<string, string | undefined>>, key: string): string | undefined {
+function readEnv(
+  env: Readonly<Record<string, string | undefined>>,
+  key: string,
+): string | undefined {
   const value = env[key]?.trim();
 
   return value ? value : undefined;

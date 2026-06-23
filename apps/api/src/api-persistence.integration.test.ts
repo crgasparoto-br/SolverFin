@@ -227,7 +227,9 @@ async function createPersonalCsvImportFlow(
   assert.equal(imported.problems.length, 0);
   assertEveryProfile(imported.suggestions, PERSONAL_PROFILE_ID);
   assert.equal(
-    imported.suggestions.every((suggestion) => suggestion.sourceEntityId === imported.importBatch.id),
+    imported.suggestions.every(
+      (suggestion) => suggestion.sourceEntityId === imported.importBatch.id,
+    ),
     true,
   );
 
@@ -259,12 +261,17 @@ async function createPersonalCardInvoiceFlow(
   fixtures: Pick<PersonalFixtures, "account" | "card" | "category">,
 ): Promise<CardInvoiceFixtures> {
   const suffix = Date.now().toString(36);
-  const purchaseResponse = await apiRequest(token, "POST", `/api/cards/${fixtures.card.id}/purchases`, {
-    occurredOn: "2026-06-19",
-    amountMinor: 3210,
-    description: `Compra cartao integracao ${suffix}`,
-    categoryId: fixtures.category.id,
-  });
+  const purchaseResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/cards/${fixtures.card.id}/purchases`,
+    {
+      occurredOn: "2026-06-19",
+      amountMinor: 3210,
+      description: `Compra cartao integracao ${suffix}`,
+      categoryId: fixtures.category.id,
+    },
+  );
   assert.equal(purchaseResponse.statusCode, 201);
   const purchaseResult = readBody<{
     transaction: ApiTransaction;
@@ -330,19 +337,28 @@ async function createPersonalCardInvoiceFlow(
   assert.equal(hasId(periodPurchases, purchaseResult.transaction.id), true);
   assertEveryProfile(periodPurchases, PERSONAL_PROFILE_ID);
 
-  const closeResponse = await apiRequest(token, "POST", `/api/invoices/${purchaseResult.invoice.id}/close`);
+  const closeResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/invoices/${purchaseResult.invoice.id}/close`,
+  );
   assert.equal(closeResponse.statusCode, 200);
   const closedSummary = readBody<{ summary: ApiInvoiceSummary }>(closeResponse).summary;
 
   assert.equal(closedSummary.status, "closed");
   assert.equal(closedSummary.amountDueMinor, 3210);
 
-  const payResponse = await apiRequest(token, "POST", `/api/invoices/${purchaseResult.invoice.id}/pay`, {
-    paymentAccountId: fixtures.account.id,
-    paidOn: "2026-07-10",
-    amountMinor: 3210,
-    description: `Pagamento fatura integracao ${suffix}`,
-  });
+  const payResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/invoices/${purchaseResult.invoice.id}/pay`,
+    {
+      paymentAccountId: fixtures.account.id,
+      paidOn: "2026-07-10",
+      amountMinor: 3210,
+      description: `Pagamento fatura integracao ${suffix}`,
+    },
+  );
   assert.equal(payResponse.statusCode, 200);
   const paid = readBody<{ invoice: ApiInvoice; transaction: ApiTransaction }>(payResponse);
 

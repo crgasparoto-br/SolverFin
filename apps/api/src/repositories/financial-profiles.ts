@@ -48,9 +48,7 @@ const ALLOWED_PROFILE_KINDS = new Set<FinancialContextKind>([
   "business",
 ]);
 
-export async function listFinancialProfilesForUser(
-  userId: EntityId,
-): Promise<FinancialProfile[]> {
+export async function listFinancialProfilesForUser(userId: EntityId): Promise<FinancialProfile[]> {
   const rows = await query<FinancialProfileRow>(
     `select "id", "organizationId", "ownerUserId", "name", "kind", "status", "createdAt", "updatedAt"
      from "FinancialProfile"
@@ -104,7 +102,10 @@ export async function updateFinancialProfileForUser(
   const current = await findOwnedFinancialProfile(user.id, profileId);
 
   if (current === undefined) {
-    throw new TenantError("TENANT_ACCESS_DENIED", "Perfil financeiro nao encontrado para este usuario.");
+    throw new TenantError(
+      "TENANT_ACCESS_DENIED",
+      "Perfil financeiro nao encontrado para este usuario.",
+    );
   }
 
   const name = payload.name === undefined ? current.name : normalizeProfileName(payload.name);
@@ -129,7 +130,10 @@ export async function archiveFinancialProfileForUser(
   const current = await findOwnedFinancialProfile(user.id, profileId);
 
   if (current === undefined) {
-    throw new TenantError("TENANT_ACCESS_DENIED", "Perfil financeiro nao encontrado para este usuario.");
+    throw new TenantError(
+      "TENANT_ACCESS_DENIED",
+      "Perfil financeiro nao encontrado para este usuario.",
+    );
   }
 
   const activeProfiles = await listFinancialProfilesForUser(user.id);
@@ -184,7 +188,13 @@ async function resolveWritableOrganizationForUser(
     await executeQuery(
       `insert into "Organization" ("id", "ownerUserId", "name", "createdAt", "updatedAt")
        values ($1, $2, $3, $4, $5)`,
-      [organization.id, organization.ownerUserId, organization.name, organization.createdAt, organization.updatedAt],
+      [
+        organization.id,
+        organization.ownerUserId,
+        organization.name,
+        organization.createdAt,
+        organization.updatedAt,
+      ],
     );
   });
 
@@ -243,7 +253,10 @@ function requireRow(rows: readonly FinancialProfileRow[]): FinancialProfileRow {
   const row = rows[0];
 
   if (row === undefined) {
-    throw new TenantError("TENANT_ACCESS_DENIED", "Perfil financeiro nao encontrado para este usuario.");
+    throw new TenantError(
+      "TENANT_ACCESS_DENIED",
+      "Perfil financeiro nao encontrado para este usuario.",
+    );
   }
 
   return row;

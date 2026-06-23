@@ -7,10 +7,7 @@ import type {
   ISODateTime,
 } from "./index.js";
 import type { TenantContext } from "./tenant.js";
-import {
-  isFinancialInstitutionKey,
-  normalizeOptionalCatalogKey,
-} from "./visual-identities.js";
+import { isFinancialInstitutionKey, normalizeOptionalCatalogKey } from "./visual-identities.js";
 import {
   applyTenantScope,
   getTenantScopedResource,
@@ -261,7 +258,9 @@ function validateOpeningBalance(openingBalanceMinor: number): number {
   return openingBalanceMinor;
 }
 
-function validateOptionalInstitutionKey(value: string | undefined): FinancialInstitutionKey | undefined {
+function validateOptionalInstitutionKey(
+  value: string | undefined,
+): FinancialInstitutionKey | undefined {
   const normalizedValue = normalizeOptionalCatalogKey(value);
 
   if (normalizedValue === undefined) {

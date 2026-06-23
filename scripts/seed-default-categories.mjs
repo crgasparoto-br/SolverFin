@@ -60,7 +60,13 @@ const DEFAULT_CATEGORY_TREE = [
       },
       {
         name: "Compras",
-        children: ["Vestuario", "Eletronicos", "Casa e decoracao", "Presentes", "Cuidados pessoais"],
+        children: [
+          "Vestuario",
+          "Eletronicos",
+          "Casa e decoracao",
+          "Presentes",
+          "Cuidados pessoais",
+        ],
       },
       {
         name: "Servicos financeiros",
@@ -85,7 +91,15 @@ const DEFAULT_CATEGORY_TREE = [
     roots: [
       {
         name: "Trabalho",
-        children: ["Salario", "Pro-labore", "Bonus", "Comissoes", "Freelance", "13o salario", "Ferias"],
+        children: [
+          "Salario",
+          "Pro-labore",
+          "Bonus",
+          "Comissoes",
+          "Freelance",
+          "13o salario",
+          "Ferias",
+        ],
       },
       {
         name: "Negocios",
@@ -113,7 +127,9 @@ function assertSafeEnvironment() {
   }
 
   if (process.env.NODE_ENV === "production" && process.env.SOLVERFIN_ALLOW_DEMO_SEED !== "true") {
-    throw new Error("Default category seed is blocked in production unless SOLVERFIN_ALLOW_DEMO_SEED=true.");
+    throw new Error(
+      "Default category seed is blocked in production unless SOLVERFIN_ALLOW_DEMO_SEED=true.",
+    );
   }
 }
 

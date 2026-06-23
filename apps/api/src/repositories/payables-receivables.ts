@@ -272,8 +272,9 @@ function buildUpdatePayableReceivableSql(): string {
   return `update "PayableReceivable" set
       "accountId" = $4, "categoryId" = $5, "settlementTransactionId" = $6, "kind" = $7,
       "status" = $8, "amountMinor" = $9, "currency" = $10, "dueOn" = $11, "description" = $12,
-      "settledAt" = $13, "cancelledAt" = $14, "updatedByUserId" = $16, "updatedAt" = $18
-    where "id" = $1`;
+      "settledAt" = $13, "cancelledAt" = $14, "createdByUserId" = $15, "updatedByUserId" = $16,
+      "createdAt" = $17, "updatedAt" = $18
+    where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
 function buildPayableReceivableParams(payableReceivable: PayableReceivable): unknown[] {

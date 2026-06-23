@@ -511,7 +511,8 @@ function mapCardRow(row: CardRow): Card {
   if (row.paymentAccountId !== null) card.paymentAccountId = row.paymentAccountId;
   if (row.creditLimitMinor !== null) card.creditLimitMinor = row.creditLimitMinor;
   if (row.maskedIdentifier !== null) card.maskedIdentifier = row.maskedIdentifier;
-  if (row.institutionKey !== null) card.institutionKey = row.institutionKey as Card["institutionKey"];
+  if (row.institutionKey !== null)
+    card.institutionKey = row.institutionKey as Card["institutionKey"];
   if (row.brandKey !== null) card.brandKey = row.brandKey as Card["brandKey"];
   if (row.createdByUserId !== null) card.createdByUserId = row.createdByUserId;
   if (row.updatedByUserId !== null) card.updatedByUserId = row.updatedByUserId;

@@ -12,13 +12,13 @@ Este documento registra quais acoes de manutencao ficam visiveis nas telas naveg
 
 ## Cobertura por tela
 
-| Tela | Acoes visiveis |
-| --- | --- |
-| Contas | Listar, criar, abrir detalhe, editar nome/tipo/saldo inicial e arquivar conta ativa. |
-| Categorias | Listar, criar, abrir detalhe, editar nome/tipo, arquivar categoria ativa e restaurar categoria arquivada. |
-| Extrato da conta | Listar movimentacoes agrupadas por data, criar novo lancamento, abrir detalhe, editar descricao/status/conta/categoria e cancelar/estornar lancamento nao cancelado. |
+| Tela              | Acoes visiveis                                                                                                                                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Contas            | Listar, criar, abrir detalhe, editar nome/tipo/saldo inicial e arquivar conta ativa.                                                                                                                                                 |
+| Categorias        | Listar, criar, abrir detalhe, editar nome/tipo, arquivar categoria ativa e restaurar categoria arquivada.                                                                                                                            |
+| Extrato da conta  | Listar movimentacoes agrupadas por data, criar novo lancamento, abrir detalhe, editar descricao/status/conta/categoria e cancelar/estornar lancamento nao cancelado.                                                                 |
 | Cartoes e faturas | Listar e criar cartoes, abrir detalhe, editar dados principais, bloquear cartao ativo, arquivar cartao ativo, registrar compra no cartao, listar faturas, abrir detalhe de fatura e pagar fatura nao paga/cancelada com confirmacao. |
-| Orcamentos | Listar, criar, abrir detalhe, editar categoria/periodo/valor, consultar uso e arquivar orcamento ativo. |
+| Orcamentos        | Listar, criar, abrir detalhe, editar categoria/periodo/valor, consultar uso e arquivar orcamento ativo.                                                                                                                              |
 
 ## Pendencias intencionais
 

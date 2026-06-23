@@ -379,7 +379,10 @@ function renderFrequencyOptions(selected?: string): string {
     ["monthly", "Mensal"],
     ["yearly", "Anual"],
   ]
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
     .join("");
 }
 

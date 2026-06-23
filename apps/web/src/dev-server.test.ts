@@ -67,7 +67,8 @@ function accountsCardsEnhancementIgnoresNonAccountsCardsHtml(): void {
 }
 
 function accountsCardsDirectEnhancementIsInjectedOnce(): void {
-  const html = '<html><body><button data-tab="cards" aria-selected="false">Cartões</button><section data-tab-panel="accounts"></section><section data-tab-panel="cards" hidden></section></body></html>';
+  const html =
+    '<html><body><button data-tab="cards" aria-selected="false">Cartões</button><section data-tab-panel="accounts"></section><section data-tab-panel="cards" hidden></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
   const enhancedAgain = enhanceAccountsCardsTabs(enhanced);
 
@@ -79,7 +80,8 @@ function accountsCardsDirectEnhancementIsInjectedOnce(): void {
 }
 
 function accountsCardsAdditionalButtonUsesDirectController(): void {
-  const html = '<html><body><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
+  const html =
+    '<html><body><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
 
   assert.match(enhanced, />\+ adicional<\/button>/);
@@ -97,15 +99,22 @@ function accountsCardsAdditionalButtonUsesDirectController(): void {
 }
 
 function accountsCardsEditAdditionalSubmitIsCapturedDirectly(): void {
-  const html = '<html><body><dialog id="edit-card-dialog-card-1"><form data-api-form data-api-method="PATCH" data-api-path="/api/cards/card-1" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" value="final 1234" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Salvar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
+  const html =
+    '<html><body><dialog id="edit-card-dialog-card-1"><form data-api-form data-api-method="PATCH" data-api-path="/api/cards/card-1" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" value="final 1234" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Salvar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
 
   assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
   assert.match(enhanced, /data-additional-card-add/);
   assert.match(enhanced, /form\.addEventListener\("submit", \(event\) =>/);
   assert.match(enhanced, /submitCardForm\(event, form\)/);
-  assert.match(enhanced, /sendJson\(cardLinksApiPath, "POST", \{ groupCardId, cardId: additionalCard\.id \}\)/);
-  assert.match(enhanced, /status\.textContent = isEdit \? "Cartão salvo\." : "Cartão criado\. Atualizando a tela\.\.\."/);
+  assert.match(
+    enhanced,
+    /sendJson\(cardLinksApiPath, "POST", \{ groupCardId, cardId: additionalCard\.id \}\)/,
+  );
+  assert.match(
+    enhanced,
+    /status\.textContent = isEdit \? "Cartão salvo\." : "Cartão criado\. Atualizando a tela\.\.\."/,
+  );
   assert.match(enhanced, /await loadSavedCards\(\)/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
   assert.doesNotMatch(enhanced, /window\.location\.reload\(\)/);

@@ -1,4 +1,8 @@
-import { TenantAuthorizationError, TenantError, type FinancialContextKind } from "@solverfin/domain";
+import {
+  TenantAuthorizationError,
+  TenantError,
+  type FinancialContextKind,
+} from "@solverfin/domain";
 
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";

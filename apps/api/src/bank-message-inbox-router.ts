@@ -146,7 +146,10 @@ async function createBankMessageInboxHandler(
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
   const origin = readOrigin(body.origin);
-  const consentAccepted = body.consentAccepted === true || body.consentAccepted === "true" || body.consentAccepted === "on";
+  const consentAccepted =
+    body.consentAccepted === true ||
+    body.consentAccepted === "true" ||
+    body.consentAccepted === "on";
 
   return json(201, {
     message: await createBankMessageInboxForContext(context, {

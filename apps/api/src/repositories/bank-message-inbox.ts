@@ -98,7 +98,9 @@ export async function listBankMessageInboxForContext(
   );
 
   return rows.map(mapRow).filter((item) => {
-    return filters.status === undefined || filters.status === "all" || item.status === filters.status;
+    return (
+      filters.status === undefined || filters.status === "all" || item.status === filters.status
+    );
   });
 }
 

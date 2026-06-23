@@ -48,7 +48,11 @@ export async function renderSettingsPage(token: string): Promise<string> {
             ${
               profiles.data.profiles
                 .map((profile) => renderProfileRow(profile, profiles.data.activeProfileId))
-                .join("") || renderEmptyState("Nenhum perfil financeiro.", "Crie um perfil para começar a operar dados financeiros.")
+                .join("") ||
+              renderEmptyState(
+                "Nenhum perfil financeiro.",
+                "Crie um perfil para começar a operar dados financeiros.",
+              )
             }
           </div>
         </section>
@@ -70,7 +74,10 @@ export async function renderSettingsPage(token: string): Promise<string> {
   );
 }
 
-function renderProfileRow(profile: FinancialProfileRecord, activeProfileId: string | undefined): string {
+function renderProfileRow(
+  profile: FinancialProfileRecord,
+  activeProfileId: string | undefined,
+): string {
   const isActive = profile.status === "active";
   const isSelected = profile.id === activeProfileId;
   const profileQuery = `profileId=${encodeURIComponent(profile.id)}`;
@@ -237,7 +244,10 @@ function renderProfileKindOptions(selected?: string): string {
     ["mei", "MEI"],
     ["business", "Negócio"],
   ]
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
     .join("");
 }
 

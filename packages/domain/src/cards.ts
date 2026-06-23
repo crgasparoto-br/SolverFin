@@ -791,7 +791,9 @@ function normalizeMaskedIdentifier(maskedIdentifier: string): string {
   return normalizedIdentifier;
 }
 
-function validateOptionalInstitutionKey(value: string | undefined): FinancialInstitutionKey | undefined {
+function validateOptionalInstitutionKey(
+  value: string | undefined,
+): FinancialInstitutionKey | undefined {
   const normalizedValue = normalizeOptionalCatalogKey(value);
 
   if (normalizedValue === undefined) {
@@ -799,10 +801,7 @@ function validateOptionalInstitutionKey(value: string | undefined): FinancialIns
   }
 
   if (!isFinancialInstitutionKey(normalizedValue)) {
-    throw new CardError(
-      "CARD_INSTITUTION_KEY_INVALID",
-      "Card institution key is not supported.",
-    );
+    throw new CardError("CARD_INSTITUTION_KEY_INVALID", "Card institution key is not supported.");
   }
 
   return normalizedValue;

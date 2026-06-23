@@ -49,7 +49,8 @@ export const solverFinShellRoutes = [
     id: "accounts",
     path: "/app/contas-cartoes",
     label: "Contas e Cartoes",
-    description: "Cadastre contas, bancos, dinheiro, aplicacoes e cartoes usados na rotina financeira.",
+    description:
+      "Cadastre contas, bancos, dinheiro, aplicacoes e cartoes usados na rotina financeira.",
     navigationGroup: "manage",
     requiresAuthentication: true,
     requiresFinancialProfile: true,

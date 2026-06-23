@@ -84,7 +84,10 @@ async function assertProfileCanBeUpdatedAndArchived(
   });
 
   assert.equal(updateResponse.statusCode, 200);
-  assert.equal(readBody<{ profile: ApiFinancialProfile }>(updateResponse).profile.name, "Familia atualizada");
+  assert.equal(
+    readBody<{ profile: ApiFinancialProfile }>(updateResponse).profile.name,
+    "Familia atualizada",
+  );
 
   const archiveResponse = await apiRequest(
     token,
@@ -93,7 +96,10 @@ async function assertProfileCanBeUpdatedAndArchived(
   );
 
   assert.equal(archiveResponse.statusCode, 200);
-  assert.equal(readBody<{ profile: ApiFinancialProfile }>(archiveResponse).profile.status, "archived");
+  assert.equal(
+    readBody<{ profile: ApiFinancialProfile }>(archiveResponse).profile.status,
+    "archived",
+  );
 }
 
 async function loginAndReadToken(): Promise<string> {

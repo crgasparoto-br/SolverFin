@@ -126,9 +126,7 @@ export function calculateCategorySpending(
   }
 
   for (const transaction of expenseTransactions) {
-    const category = transaction.categoryId
-      ? categoryIndex.get(transaction.categoryId)
-      : undefined;
+    const category = transaction.categoryId ? categoryIndex.get(transaction.categoryId) : undefined;
     const parentCategory = transaction.categoryId
       ? resolveTopLevelCategory(transaction.categoryId, categoryIndex)
       : undefined;

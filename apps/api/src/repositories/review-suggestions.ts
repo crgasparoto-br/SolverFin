@@ -499,9 +499,9 @@ function buildInsertAiSuggestionSql(): string {
 
 function buildUpdateAiSuggestionSql(): string {
   return `update "AiSuggestion" set
-    "status" = $5, "targetEntityId" = $7, "confidence" = $8, "explanation" = $9,
-    "provider" = $10, "model" = $11, "reviewedByUserId" = $12, "reviewedAt" = $13,
-    "updatedAt" = $15
+    "kind" = $4, "status" = $5, "sourceEntityId" = $6, "targetEntityId" = $7, "confidence" = $8,
+    "explanation" = $9, "provider" = $10, "model" = $11, "reviewedByUserId" = $12, "reviewedAt" = $13,
+    "createdAt" = $14, "updatedAt" = $15
    where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
@@ -617,7 +617,8 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   };
 
   if (row.accountId !== null) transaction.accountId = row.accountId;
-  if (row.destinationAccountId !== null) transaction.destinationAccountId = row.destinationAccountId;
+  if (row.destinationAccountId !== null)
+    transaction.destinationAccountId = row.destinationAccountId;
   if (row.categoryId !== null) transaction.categoryId = row.categoryId;
   if (row.cardId !== null) transaction.cardId = row.cardId;
   if (row.invoiceId !== null) transaction.invoiceId = row.invoiceId;

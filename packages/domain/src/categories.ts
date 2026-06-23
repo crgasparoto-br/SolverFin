@@ -111,7 +111,12 @@ const DEFAULT_CATEGORY_SUGGESTIONS: readonly DefaultCategorySuggestion[] = [
   { name: "Restaurante", kind: "expense", source: "system_default", parentName: "Alimentacao" },
   { name: "Transporte", kind: "expense", source: "system_default" },
   { name: "Combustivel", kind: "expense", source: "system_default", parentName: "Transporte" },
-  { name: "Aplicativos de transporte", kind: "expense", source: "system_default", parentName: "Transporte" },
+  {
+    name: "Aplicativos de transporte",
+    kind: "expense",
+    source: "system_default",
+    parentName: "Transporte",
+  },
   { name: "Transferencias", kind: "transfer", source: "system_default" },
 ];
 
@@ -333,10 +338,7 @@ function assertCategoryHierarchyDoesNotCycle(
     }
 
     if (visitedCategoryIds.has(scopedAncestor.id)) {
-      throw new CategoryError(
-        "CATEGORY_PARENT_CYCLE",
-        "Category hierarchy cannot contain cycles.",
-      );
+      throw new CategoryError("CATEGORY_PARENT_CYCLE", "Category hierarchy cannot contain cycles.");
     }
 
     visitedCategoryIds.add(scopedAncestor.id);
@@ -353,7 +355,9 @@ function normalizeCategoryName(name: string): string {
   return normalizedName;
 }
 
-function normalizeOptionalParentCategoryId(parentCategoryId: EntityId | null | undefined): EntityId | undefined {
+function normalizeOptionalParentCategoryId(
+  parentCategoryId: EntityId | null | undefined,
+): EntityId | undefined {
   if (parentCategoryId === null || parentCategoryId === undefined) {
     return undefined;
   }

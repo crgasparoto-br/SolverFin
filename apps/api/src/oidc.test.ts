@@ -2,11 +2,7 @@ import assert from "node:assert/strict";
 import { createSign, generateKeyPairSync, type KeyObject } from "node:crypto";
 
 import { AuthError } from "./auth.js";
-import {
-  validateOidcIdToken,
-  validateOidcState,
-  type OidcProviderConfig,
-} from "./oidc.js";
+import { validateOidcIdToken, validateOidcState, type OidcProviderConfig } from "./oidc.js";
 
 interface TestJwk {
   kid: string;

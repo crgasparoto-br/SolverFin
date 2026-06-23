@@ -925,7 +925,9 @@ function readCardPurchaseFilters(request: ApiRequest) {
   const reconciliation = readReconciliationFilter(request.query.get("reconciliation"));
 
   return {
-    ...(request.query.get("invoiceId") ? { invoiceId: String(request.query.get("invoiceId")) } : {}),
+    ...(request.query.get("invoiceId")
+      ? { invoiceId: String(request.query.get("invoiceId")) }
+      : {}),
     ...(request.query.get("cardId") ? { cardId: String(request.query.get("cardId")) } : {}),
     ...(request.query.get("occurredFrom")
       ? { occurredFrom: String(request.query.get("occurredFrom")) }

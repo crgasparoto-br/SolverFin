@@ -100,12 +100,13 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
 
   if (pathname === "/api/categories") {
     return {
-      categories: searchParams.get("status") === "all"
-        ? [
-            { id: "category-1", name: "Mercado", kind: "expense", status: "active" },
-            { id: "category-2", name: "Antiga", kind: "expense", status: "archived" },
-          ]
-        : [{ id: "category-1", name: "Mercado", kind: "expense", status: "active" }],
+      categories:
+        searchParams.get("status") === "all"
+          ? [
+              { id: "category-1", name: "Mercado", kind: "expense", status: "active" },
+              { id: "category-2", name: "Antiga", kind: "expense", status: "archived" },
+            ]
+          : [{ id: "category-1", name: "Mercado", kind: "expense", status: "active" }],
     };
   }
 

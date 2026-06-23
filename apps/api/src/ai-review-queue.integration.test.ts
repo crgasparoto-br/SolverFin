@@ -100,11 +100,7 @@ async function assertListsPendingSuggestions(
 }
 
 async function assertApproveCreatesTransaction(token: string, suggestionId: string): Promise<void> {
-  const response = await apiRequest(
-    token,
-    "POST",
-    `/api/ai-review-queue/${suggestionId}/approve`,
-  );
+  const response = await apiRequest(token, "POST", `/api/ai-review-queue/${suggestionId}/approve`);
   assert.equal(response.statusCode, 200);
   const result = readBody<{ suggestion: ApiAiSuggestion; transaction: ApiTransaction }>(response);
 
@@ -161,7 +157,10 @@ async function assertMeiProfileDoesNotExposePersonalSuggestions(
   const queue = readBody<{ suggestions: ApiReviewQueueItem[] }>(response).suggestions;
 
   for (const suggestion of personalSuggestions) {
-    assert.equal(queue.some((item) => item.id === suggestion.id), false);
+    assert.equal(
+      queue.some((item) => item.id === suggestion.id),
+      false,
+    );
   }
 }
 

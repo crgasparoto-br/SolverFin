@@ -53,7 +53,9 @@ async function payablesReceivablesPageExposesMainMaintenanceFlow(): Promise<void
 
     if (url.pathname === "/api/accounts") {
       return jsonResponse({
-        accounts: [{ id: "account-1", name: "Conta principal", kind: "checking", status: "active" }],
+        accounts: [
+          { id: "account-1", name: "Conta principal", kind: "checking", status: "active" },
+        ],
       });
     }
 

@@ -103,8 +103,7 @@ export async function listAiReviewQueueForContext(
     .filter((suggestion) => matchesFilters(suggestion, filters))
     .filter(
       (suggestion) =>
-        filters.includeLowConfidence === true ||
-        suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD,
+        filters.includeLowConfidence === true || suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD,
     )
     .map(buildQueueItem);
 }
@@ -275,7 +274,9 @@ function matchesFilters(suggestion: AiSuggestion, filters: AiReviewQueueListFilt
 
 function buildQueueItem(suggestion: AiSuggestion): AiReviewQueueItem {
   const proposedTransaction =
-    suggestion.kind === "transaction_extraction" ? tryParseProposedTransaction(suggestion) : undefined;
+    suggestion.kind === "transaction_extraction"
+      ? tryParseProposedTransaction(suggestion)
+      : undefined;
   const item: AiReviewQueueItem = {
     id: suggestion.id,
     kind: suggestion.kind,
@@ -343,9 +344,10 @@ function parseProposedTransaction(suggestion: AiSuggestion): AiSuggestedTransact
 function tryParseProposedTransaction(
   suggestion: AiSuggestion,
 ): AiSuggestedTransactionDraft | undefined {
-  const match = /^CSV linha (\d+): ([0-9-]+); ([a-z_]+); (\d+) centavos; (.*)\. Revise antes de criar o lancamento final\.$/.exec(
-    suggestion.explanation,
-  );
+  const match =
+    /^CSV linha (\d+): ([0-9-]+); ([a-z_]+); (\d+) centavos; (.*)\. Revise antes de criar o lancamento final\.$/.exec(
+      suggestion.explanation,
+    );
 
   if (match === null) {
     return undefined;
@@ -381,9 +383,7 @@ function parseDescriptionDetails(value: string): {
   return {
     description,
     ...(accountPart !== undefined ? { accountId: accountPart.slice("conta ".length) } : {}),
-    ...(categoryPart !== undefined
-      ? { categoryId: categoryPart.slice("categoria ".length) }
-      : {}),
+    ...(categoryPart !== undefined ? { categoryId: categoryPart.slice("categoria ".length) } : {}),
   };
 }
 
@@ -450,9 +450,9 @@ function markSuggestionReviewed(
 
 function buildUpdateAiSuggestionSql(): string {
   return `update "AiSuggestion" set
-      "status" = $5, "sourceEntityId" = $6, "targetEntityId" = $7, "confidence" = $8,
+      "kind" = $4, "status" = $5, "sourceEntityId" = $6, "targetEntityId" = $7, "confidence" = $8,
       "explanation" = $9, "provider" = $10, "model" = $11, "reviewedByUserId" = $12,
-      "reviewedAt" = $13, "updatedAt" = $15
+      "reviewedAt" = $13, "createdAt" = $14, "updatedAt" = $15
     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 

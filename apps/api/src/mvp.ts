@@ -10,12 +10,7 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 
 export interface MvpApiRequest {
   method: "GET" | "POST" | "DELETE";
-  path:
-    | "/api/session"
-    | "/api/session/oidc"
-    | "/api/users"
-    | "/api/me"
-    | "/api/financial-summary";
+  path: "/api/session" | "/api/session/oidc" | "/api/users" | "/api/me" | "/api/financial-summary";
   headers?: Readonly<Record<string, string | undefined>>;
   body?: unknown;
 }

@@ -94,7 +94,12 @@ function testCreateSubcategory(): void {
 }
 
 function testRejectParentKindMismatch(): void {
-  const parentCategory = createCategoryFixture(tenantA, "category-income-parent", "income", "active");
+  const parentCategory = createCategoryFixture(
+    tenantA,
+    "category-income-parent",
+    "income",
+    "active",
+  );
 
   assertCategoryError(
     () =>
@@ -114,8 +119,19 @@ function testRejectParentKindMismatch(): void {
 }
 
 function testRejectHierarchyCycleOnUpdate(): void {
-  const parentCategory = createCategoryFixture(tenantA, "category-parent-cycle", "expense", "active");
-  const childCategory = createCategoryFixture(tenantA, "category-child-cycle", "expense", "active", parentCategory.id);
+  const parentCategory = createCategoryFixture(
+    tenantA,
+    "category-parent-cycle",
+    "expense",
+    "active",
+  );
+  const childCategory = createCategoryFixture(
+    tenantA,
+    "category-child-cycle",
+    "expense",
+    "active",
+    parentCategory.id,
+  );
 
   assertCategoryError(
     () =>
@@ -134,8 +150,19 @@ function testRejectHierarchyCycleOnUpdate(): void {
 }
 
 function testCanClearParentCategory(): void {
-  const parentCategory = createCategoryFixture(tenantA, "category-parent-clear", "expense", "active");
-  const childCategory = createCategoryFixture(tenantA, "category-child-clear", "expense", "active", parentCategory.id);
+  const parentCategory = createCategoryFixture(
+    tenantA,
+    "category-parent-clear",
+    "expense",
+    "active",
+  );
+  const childCategory = createCategoryFixture(
+    tenantA,
+    "category-child-clear",
+    "expense",
+    "active",
+    parentCategory.id,
+  );
   const updatedCategory = updateCategory({
     context: tenantA,
     category: childCategory,

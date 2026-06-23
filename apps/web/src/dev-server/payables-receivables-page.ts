@@ -377,7 +377,10 @@ function renderKindOptions(selected?: string): string {
     ["payable", "Conta a pagar"],
     ["receivable", "Conta a receber"],
   ]
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
     .join("");
 }
 

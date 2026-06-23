@@ -69,7 +69,9 @@ export async function renderCardsPage(token: string): Promise<string> {
               .map((card) =>
                 renderCardOperationSection({
                   card,
-                  invoices: invoiceOperations.filter((operation) => operation.invoice.cardId === card.id),
+                  invoices: invoiceOperations.filter(
+                    (operation) => operation.invoice.cardId === card.id,
+                  ),
                   accounts: accountOptions,
                   categories: categoryOptions,
                   isSelected: selectedCardId === card.id,
@@ -119,7 +121,10 @@ function renderCardSelector(
 ): string {
   const cardInvoices = operations.filter((operation) => operation.invoice.cardId === card.id);
   const openInvoice = cardInvoices.find((operation) => operation.invoice.status === "open");
-  const totalDue = cardInvoices.reduce((sum, operation) => sum + operation.summary.amountDueMinor, 0);
+  const totalDue = cardInvoices.reduce(
+    (sum, operation) => sum + operation.summary.amountDueMinor,
+    0,
+  );
 
   return `
     <button type="button" class="card-tab" data-card-tab="${escapeHtml(card.id)}" aria-selected="${isSelected ? "true" : "false"}">
@@ -176,8 +181,7 @@ function renderCardOperationSection(input: {
             .map((operation) =>
               renderInvoiceTab(operation, operation.invoice.id === selectedInvoiceId),
             )
-            .join("") ||
-          `<span class="muted">Nenhuma fatura gerada para este cartão.</span>`
+            .join("") || `<span class="muted">Nenhuma fatura gerada para este cartão.</span>`
         }
       </div>
 
@@ -242,9 +246,7 @@ function renderInvoiceView(input: {
           ${
             input.operation.purchasesError
               ? `<p class="error" role="alert">${escapeHtml(input.operation.purchasesError)}</p>`
-              : purchases
-                  .map((purchase) => renderPurchaseRow(purchase, categoryNames))
-                  .join("") ||
+              : purchases.map((purchase) => renderPurchaseRow(purchase, categoryNames)).join("") ||
                 renderEmptyState(
                   "Nenhuma compra nesta fatura.",
                   "Registre uma compra para acompanhar valor, categoria e conciliação.",
@@ -288,7 +290,9 @@ function renderPurchaseRow(
 ): string {
   const categoryName = purchase.categoryId ? categoryNames.get(purchase.categoryId) : undefined;
   const reconciliation = purchase.status === "reconciled" ? "reconciled" : "unreconciled";
-  const search = [purchase.description, categoryName ?? "", purchase.status].join(" ").toLowerCase();
+  const search = [purchase.description, categoryName ?? "", purchase.status]
+    .join(" ")
+    .toLowerCase();
 
   return `
     <article class="purchase-row" data-purchase-item data-reconciliation="${reconciliation}" data-search="${escapeHtml(search)}">
@@ -330,9 +334,10 @@ function renderLimitSummary(summary: InvoiceSummaryRecord): string {
     return "";
   }
 
-  const usedPercent = total.limitTotalMinor > 0
-    ? Math.min(100, Math.round((total.limitUsedMinor / total.limitTotalMinor) * 100))
-    : 0;
+  const usedPercent =
+    total.limitTotalMinor > 0
+      ? Math.min(100, Math.round((total.limitUsedMinor / total.limitTotalMinor) * 100))
+      : 0;
 
   return `
     <section class="limit-box">
@@ -606,7 +611,10 @@ function renderPage(input: { title: string; body: string }): string {
 
 function renderNavigation(activePathname: string): string {
   return Array.from(privateRoutes.entries())
-    .map(([path, label]) => `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`)
+    .map(
+      ([path, label]) =>
+        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
+    )
     .join("");
 }
 
@@ -616,13 +624,19 @@ function renderEmptyState(title: string, description: string): string {
 
 function renderAccountOptions(accounts: AccountRecord[], selected?: string): string {
   return accounts
-    .map((account) => `<option value="${escapeHtml(account.id)}"${selected === account.id ? " selected" : ""}>${escapeHtml(account.name)}</option>`)
+    .map(
+      (account) =>
+        `<option value="${escapeHtml(account.id)}"${selected === account.id ? " selected" : ""}>${escapeHtml(account.name)}</option>`,
+    )
     .join("");
 }
 
 function renderCategoryOptions(categories: CategoryRecord[], selected?: string): string {
   return categories
-    .map((category) => `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`)
+    .map(
+      (category) =>
+        `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
+    )
     .join("");
 }
 
@@ -639,7 +653,8 @@ function fallbackSummary(invoice: InvoiceRecord): InvoiceSummaryRecord {
     previousBalanceMinor: 0,
     totalExpensesMinor: invoice.totalAmountMinor,
     totalPaidMinor: invoice.status === "paid" ? invoice.totalAmountMinor : 0,
-    amountDueMinor: invoice.status === "paid" || invoice.status === "cancelled" ? 0 : invoice.totalAmountMinor,
+    amountDueMinor:
+      invoice.status === "paid" || invoice.status === "cancelled" ? 0 : invoice.totalAmountMinor,
     reconciledExpensesMinor: 0,
     unreconciledExpensesMinor: invoice.totalAmountMinor,
     purchasesCount: 0,
@@ -679,7 +694,7 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 

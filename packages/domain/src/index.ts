@@ -384,11 +384,7 @@ export function buildTransactionAuditEntry(input: TransactionAuditInput): AuditL
     throw new Error("Transaction audit entries require a before or after transaction.");
   }
 
-  if (
-    input.before &&
-    input.after &&
-    input.before.organizationId !== input.after.organizationId
-  ) {
+  if (input.before && input.after && input.before.organizationId !== input.after.organizationId) {
     throw new Error("Transaction audit entries must reference the same tenant.");
   }
 

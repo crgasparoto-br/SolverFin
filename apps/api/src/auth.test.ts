@@ -210,18 +210,12 @@ function testSessionInactivityTimeout(): void {
 
   try {
     assertEqual(
-      isSessionInactive(
-        new Date("2026-06-15T10:00:00.000Z"),
-        new Date("2026-06-15T10:29:59.000Z"),
-      ),
+      isSessionInactive(new Date("2026-06-15T10:00:00.000Z"), new Date("2026-06-15T10:29:59.000Z")),
       false,
       "session should remain active before inactivity timeout",
     );
     assertEqual(
-      isSessionInactive(
-        new Date("2026-06-15T10:00:00.000Z"),
-        new Date("2026-06-15T10:30:00.000Z"),
-      ),
+      isSessionInactive(new Date("2026-06-15T10:00:00.000Z"), new Date("2026-06-15T10:30:00.000Z")),
       true,
       "session should expire at inactivity timeout",
     );

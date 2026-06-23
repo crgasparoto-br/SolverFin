@@ -228,10 +228,7 @@ export async function closeInvoiceForContext(
   const invoice = await findInvoice(context, invoiceId);
 
   if (invoice.status !== "OPEN") {
-    throw new InvoiceContractError(
-      "CARD_INVOICE_NOT_OPEN",
-      "Only open invoices can be closed.",
-    );
+    throw new InvoiceContractError("CARD_INVOICE_NOT_OPEN", "Only open invoices can be closed.");
   }
 
   const now = new Date().toISOString();

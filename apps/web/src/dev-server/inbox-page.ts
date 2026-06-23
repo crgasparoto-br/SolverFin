@@ -1,4 +1,4 @@
-import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
+import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
 import { privateRoutes } from "./routes.js";
@@ -181,13 +181,18 @@ function renderNavigation(activePathname: string): string {
 
 function renderAccountOptions(accounts: AccountRecord[]): string {
   return accounts
-    .map((account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`)
+    .map(
+      (account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`,
+    )
     .join("");
 }
 
 function renderCategoryOptions(categories: CategoryRecord[]): string {
   return categories
-    .map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`)
+    .map(
+      (category) =>
+        `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`,
+    )
     .join("");
 }
 

@@ -743,7 +743,13 @@ async function linkDemoInvoicePayments(client) {
     `UPDATE "Invoice"
      SET "paymentTransactionId" = $1, "updatedByUserId" = $5, "updatedAt" = CURRENT_TIMESTAMP
      WHERE "id" = $2 and "organizationId" = $3 and "financialProfileId" = $4`,
-    [cardPayments.personalCardPaid, invoices.personalCardPaid, DEMO_ORGANIZATION_ID, profiles.personal, DEMO_USER_ID],
+    [
+      cardPayments.personalCardPaid,
+      invoices.personalCardPaid,
+      DEMO_ORGANIZATION_ID,
+      profiles.personal,
+      DEMO_USER_ID,
+    ],
   );
 }
 

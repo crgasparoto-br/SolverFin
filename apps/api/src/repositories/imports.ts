@@ -138,7 +138,8 @@ export async function createCsvImportBatchForContext(
           rowNumber: 0,
           severity: "warning",
           code: "IMPORT_BATCH_DUPLICATE",
-          message: "Este CSV ja foi recebido neste perfil financeiro e nao foi importado novamente.",
+          message:
+            "Este CSV ja foi recebido neste perfil financeiro e nao foi importado novamente.",
         },
       ],
       duplicateBatch: true,
@@ -207,7 +208,10 @@ async function listImportSuggestionsForBatch(
   return rows.map(mapAiSuggestionRow);
 }
 
-function buildImportBatch(draft: Omit<ImportBatch, "id" | "createdAt" | "updatedAt">, now: string): ImportBatch {
+function buildImportBatch(
+  draft: Omit<ImportBatch, "id" | "createdAt" | "updatedAt">,
+  now: string,
+): ImportBatch {
   const importBatch: ImportBatch = {
     id: randomUUID(),
     organizationId: draft.organizationId,

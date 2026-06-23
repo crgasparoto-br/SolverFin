@@ -29,7 +29,10 @@ async function settingsPageRendersFinancialProfileManagement(): Promise<void> {
   assert.match(html, /Perfis financeiros/);
   assert.match(html, /Família \(selecionado\)/);
   assert.match(html, /data-api-path="\/api\/financial-profiles"/);
-  assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/financial-profiles\/profile-family"/);
+  assert.match(
+    html,
+    /data-api-method="PATCH" data-api-path="\/api\/financial-profiles\/profile-family"/,
+  );
   assert.match(html, /data-api-path="\/api\/financial-profiles\/profile-family\/archive"/);
   assert.match(html, /href="\/dashboard\?profileId=profile-family"/);
   assert.match(html, /href="\/contas\?profileId=profile-family"/);

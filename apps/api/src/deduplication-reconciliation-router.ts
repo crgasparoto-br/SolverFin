@@ -195,7 +195,9 @@ async function detectImportBatchDuplicatesHandler(
 
   if (existing.length > 0) {
     return json(200, {
-      deduplicationSuggestions: existing.filter((suggestion) => suggestion.kind === "deduplication"),
+      deduplicationSuggestions: existing.filter(
+        (suggestion) => suggestion.kind === "deduplication",
+      ),
       reconciliationSuggestions: existing.filter(
         (suggestion) => suggestion.kind === "reconciliation",
       ),
@@ -288,9 +290,10 @@ function parseImportSuggestion(
   row: AiSuggestionRow,
   context: TenantContext,
 ): ImportTransactionSuggestion {
-  const match = /^CSV linha (\d+): ([0-9-]+); ([a-z_]+); (\d+) centavos; (.*)\. Revise antes de criar o lancamento final\.$/.exec(
-    row.explanation,
-  );
+  const match =
+    /^CSV linha (\d+): ([0-9-]+); ([a-z_]+); (\d+) centavos; (.*)\. Revise antes de criar o lancamento final\.$/.exec(
+      row.explanation,
+    );
 
   if (match === null) {
     throw new ImportFileError(
@@ -315,9 +318,7 @@ function parseImportSuggestion(
     amountMinor: Number(match[4]),
     currency: "BRL",
     ...(details.accountId !== undefined ? { accountId: details.accountId } : {}),
-    ...(details.categoryId !== undefined
-      ? { categoryId: details.categoryId }
-      : {}),
+    ...(details.categoryId !== undefined ? { categoryId: details.categoryId } : {}),
   };
 }
 
@@ -334,9 +335,7 @@ function parseDescriptionDetails(value: string): {
   return {
     description,
     ...(accountPart !== undefined ? { accountId: accountPart.slice("conta ".length) } : {}),
-    ...(categoryPart !== undefined
-      ? { categoryId: categoryPart.slice("categoria ".length) }
-      : {}),
+    ...(categoryPart !== undefined ? { categoryId: categoryPart.slice("categoria ".length) } : {}),
   };
 }
 
