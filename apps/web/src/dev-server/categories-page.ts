@@ -501,22 +501,32 @@ function categoryPageScript(): string {
       });
 
       const filterButtons = Array.from(document.querySelectorAll("[data-category-filter]"));
-      const groups = Array.from(document.querySelectorAll("[data-category-kind]"));
-      const items = Array.from(document.querySelectorAll("[data-category-item]"));
+      const groups = Array.from(document.querySelectorAll(".category-kind-group"));
+
+      function matchesFilter(item, filter) {
+        return filter === "all" || item.dataset.categoryKind === filter || item.dataset.categoryStatus === filter;
+      }
+
+      function applyFilterToNode(item, filter) {
+        const children = Array.from(item.querySelectorAll(":scope > .category-tree-children > [data-category-item]"));
+        const childMatches = children.map((child) => applyFilterToNode(child, filter)).some(Boolean);
+        const visible = matchesFilter(item, filter) || childMatches;
+        item.hidden = !visible;
+        return visible;
+      }
+
+      function applyCategoryFilter(filter) {
+        filterButtons.forEach((candidate) => candidate.setAttribute("aria-pressed", String(candidate.dataset.categoryFilter === filter)));
+        groups.forEach((group) => {
+          const rootItems = Array.from(group.querySelectorAll(":scope > .category-tree-nodes > [data-category-item]"));
+          const hasVisibleItems = filter === "all" || rootItems.map((item) => applyFilterToNode(item, filter)).some(Boolean);
+          if (filter === "all") rootItems.forEach((item) => applyFilterToNode(item, filter));
+          group.hidden = !hasVisibleItems;
+        });
+      }
 
       filterButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const filter = button.dataset.categoryFilter;
-          filterButtons.forEach((candidate) => candidate.setAttribute("aria-pressed", String(candidate === button)));
-          items.forEach((item) => {
-            const matches = filter === "all" || item.dataset.categoryKind === filter || item.dataset.categoryStatus === filter;
-            item.hidden = !matches;
-          });
-          groups.forEach((group) => {
-            const visibleItems = Array.from(group.querySelectorAll("[data-category-item]")).some((item) => !item.hidden);
-            group.hidden = filter !== "all" && !visibleItems;
-          });
-        });
+        button.addEventListener("click", () => applyCategoryFilter(button.dataset.categoryFilter || "all"));
       });
     </script>
   `;
