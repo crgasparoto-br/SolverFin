@@ -77,6 +77,8 @@ export interface CreateTransactionPayload {
   amountMinor: number;
   occurredOn: ISODate;
   accountId: EntityId;
+  plannedOn?: ISODate;
+  effectiveOn?: ISODate | null;
   description?: string;
   status?: TransactionStatus;
   source?: TransactionSource;
@@ -104,6 +106,8 @@ export interface UpdateTransactionPayload {
   amountMinor?: number;
   currency?: string;
   occurredOn?: ISODate;
+  plannedOn?: ISODate;
+  effectiveOn?: ISODate | null;
   description?: string;
   accountId?: EntityId;
   destinationAccountId?: EntityId;
@@ -119,6 +123,10 @@ export interface ListTransactionsFilters {
   categoryId?: EntityId;
   occurredFrom?: ISODate;
   occurredTo?: ISODate;
+  plannedFrom?: ISODate;
+  plannedTo?: ISODate;
+  effectiveFrom?: ISODate;
+  effectiveTo?: ISODate;
 }
 
 const ALLOWED_TRANSACTION_KINDS: readonly TransactionKind[] = ["income", "expense", "transfer"];
@@ -186,9 +194,28 @@ export function listTransactions(
       filters.occurredFrom === undefined || transaction.occurredOn >= filters.occurredFrom;
     const toMatches =
       filters.occurredTo === undefined || transaction.occurredOn <= filters.occurredTo;
+    const plannedFromMatches =
+      filters.plannedFrom === undefined || transaction.plannedOn >= filters.plannedFrom;
+    const plannedToMatches =
+      filters.plannedTo === undefined || transaction.plannedOn <= filters.plannedTo;
+    const effectiveFromMatches =
+      filters.effectiveFrom === undefined ||
+      (transaction.effectiveOn !== undefined && transaction.effectiveOn >= filters.effectiveFrom);
+    const effectiveToMatches =
+      filters.effectiveTo === undefined ||
+      (transaction.effectiveOn !== undefined && transaction.effectiveOn <= filters.effectiveTo);
 
     return (
-      statusMatches && kindMatches && accountMatches && categoryMatches && fromMatches && toMatches
+      statusMatches &&
+      kindMatches &&
+      accountMatches &&
+      categoryMatches &&
+      fromMatches &&
+      toMatches &&
+      plannedFromMatches &&
+      plannedToMatches &&
+      effectiveFromMatches &&
+      effectiveToMatches
     );
   });
 }
@@ -207,13 +234,26 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
     input.payload,
   );
   const kind = validateTransactionKind(input.payload.kind ?? currentTransaction.kind);
+  const nextStatus = input.payload.status ?? currentTransaction.status;
+  const nextEffectiveOn =
+    input.payload.effectiveOn !== undefined
+      ? input.payload.effectiveOn
+      : nextStatus === "planned" || nextStatus === "suggested"
+        ? null
+        : currentTransaction.effectiveOn;
   const payload: CreateTransactionPayload = {
     kind,
-    status: input.payload.status ?? currentTransaction.status,
+    status: nextStatus,
     source: input.payload.source ?? currentTransaction.source,
     amountMinor: input.payload.amountMinor ?? currentTransaction.amountMinor,
     currency: input.payload.currency ?? currentTransaction.currency,
-    occurredOn: input.payload.occurredOn ?? currentTransaction.occurredOn,
+    occurredOn:
+      input.payload.occurredOn ??
+      input.payload.effectiveOn ??
+      input.payload.plannedOn ??
+      currentTransaction.occurredOn,
+    plannedOn: input.payload.plannedOn ?? currentTransaction.plannedOn,
+    effectiveOn: nextEffectiveOn,
     description: input.payload.description ?? currentTransaction.description,
     accountId: input.payload.accountId ?? requireAccountId(currentTransaction.accountId),
     organizationId: currentTransaction.organizationId,
@@ -353,6 +393,8 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
   assertCategory(input.context, input.category, input.payload.categoryId, input.kind);
 
   const status = validateTransactionStatus(input.payload.status ?? "posted");
+  const plannedOn = validateTransactionDate(input.payload.plannedOn ?? input.payload.occurredOn);
+  const effectiveOn = resolveEffectiveOn(status, input.payload.effectiveOn, input.payload.occurredOn);
   const transaction: Transaction = {
     id: input.id,
     organizationId: input.context.organizationId,
@@ -362,7 +404,8 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
     source: validateTransactionSource(input.payload.source ?? "manual"),
     amountMinor: validateAmount(input.payload.amountMinor),
     currency: normalizeCurrency(input.payload.currency ?? account.currency),
-    occurredOn: validateOccurredOn(input.payload.occurredOn),
+    occurredOn: effectiveOn ?? plannedOn,
+    plannedOn,
     description: normalizeDescription(input.payload.description),
     accountId: account.id,
     createdAt: input.existingTransaction?.createdAt ?? input.now,
@@ -370,6 +413,10 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
     createdByUserId: input.existingTransaction?.createdByUserId ?? input.context.userId,
     updatedByUserId: input.context.userId,
   };
+
+  if (effectiveOn !== undefined) {
+    transaction.effectiveOn = effectiveOn;
+  }
 
   if (input.kind === "transfer") {
     transaction.destinationAccountId = destinationAccount.id;
@@ -537,12 +584,32 @@ function validateAmount(amountMinor: number): number {
   return amountMinor;
 }
 
-function validateOccurredOn(occurredOn: ISODate): ISODate {
-  if (!occurredOn.trim()) {
+function validateTransactionDate(value: ISODate): ISODate {
+  if (!value.trim()) {
     throw new TransactionError("TRANSACTION_DATE_REQUIRED", "Transaction date is required.");
   }
 
-  return occurredOn;
+  return value;
+}
+
+function resolveEffectiveOn(
+  status: TransactionStatus,
+  effectiveOn: ISODate | null | undefined,
+  fallbackOccurredOn: ISODate,
+): ISODate | undefined {
+  if (effectiveOn === null) {
+    return undefined;
+  }
+
+  if (effectiveOn !== undefined) {
+    return validateTransactionDate(effectiveOn);
+  }
+
+  if (status === "planned" || status === "suggested") {
+    return undefined;
+  }
+
+  return validateTransactionDate(fallbackOccurredOn);
 }
 
 function normalizeDescription(description = ""): string {
@@ -616,6 +683,8 @@ function buildRedactedTransactionChanges(
     "amountMinor",
     "currency",
     "occurredOn",
+    "plannedOn",
+    "effectiveOn",
     "description",
     "accountId",
     "destinationAccountId",
