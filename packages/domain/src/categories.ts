@@ -184,13 +184,20 @@ export function updateCategory(input: UpdateCategoryInput): Category {
     input.ancestorCategories ?? [],
   );
 
-  return {
+  const updatedCategory: Category = {
     ...currentCategory,
     ...buildOptionalCategoryUpdate(input.payload),
-    ...(nextParentCategoryId ? { parentCategoryId: nextParentCategoryId } : { parentCategoryId: undefined }),
     updatedAt: input.now,
     updatedByUserId: input.context.userId,
   };
+
+  if (nextParentCategoryId) {
+    updatedCategory.parentCategoryId = nextParentCategoryId;
+  } else {
+    delete updatedCategory.parentCategoryId;
+  }
+
+  return updatedCategory;
 }
 
 export function archiveCategory(
