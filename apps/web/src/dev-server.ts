@@ -5,6 +5,7 @@ import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancemen
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { handleApiRequest } from "./dev-server/api.js";
 import { renderCardsPage } from "./dev-server/cards-page.js";
+import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
@@ -20,11 +21,11 @@ export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 export {
   renderAccountsPage,
   renderBudgetsPage,
-  renderCategoriesPage,
   renderDashboardPage,
   renderTransactionsPage,
 } from "./dev-server/pages.js";
 export { renderCardsPage } from "./dev-server/cards-page.js";
+export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
 export { renderPayablesReceivablesPage } from "./dev-server/payables-receivables-page.js";
@@ -82,6 +83,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/contas-cartoes" && token) {
     sendHtml(response, 200, enhanceAccountsCardsTabs(await renderAccountsCardsPage(token)));
+    return;
+  }
+
+  if (url.pathname === "/categorias" && token) {
+    sendHtml(response, 200, await renderCategoriesPage(token));
     return;
   }
 
