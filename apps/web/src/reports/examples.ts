@@ -10,6 +10,7 @@ export const reportsEmptyExample = buildReportsViewModel({
   filters: reportsMockDataSet.filters,
   transactions: [],
   budgets: [],
+  categories: [],
 });
 export const reportsFoodFilterExample = buildReportsViewModel({
   ...reportsMockDataSet,
@@ -31,9 +32,14 @@ export const reportsExpectedTotals = {
   categorySpendingCount: 4,
   monthlyEvolutionCount: 3,
   foodFilterExpenseInCents: 95000,
+  foodChildCategoryName: "Mercado",
 } as const;
 
 export function isReportsMockConsistent(): boolean {
+  const foodReport = reportsReadyExample.categorySpending.find(
+    (report) => report.categoryId === "category-food-demo",
+  );
+
   return (
     reportsReadyExample.summary.incomeInCents === reportsExpectedTotals.incomeInCents &&
     reportsReadyExample.summary.expenseInCents === reportsExpectedTotals.expenseInCents &&
@@ -50,6 +56,11 @@ export function isReportsMockConsistent(): boolean {
     reportsReadyExample.monthlyEvolution.length === reportsExpectedTotals.monthlyEvolutionCount &&
     reportsFoodFilterExample.summary.expenseInCents ===
       reportsExpectedTotals.foodFilterExpenseInCents &&
+    foodReport?.childCategories.some(
+      (childReport) =>
+        childReport.categoryName === reportsExpectedTotals.foodChildCategoryName &&
+        childReport.actualAmountInCents === reportsExpectedTotals.foodFilterExpenseInCents,
+    ) === true &&
     reportsEmptyExample.state === "empty" &&
     reportsLoadingExample.state === "loading" &&
     reportsErrorExample.state === "error"
