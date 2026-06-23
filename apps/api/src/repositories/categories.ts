@@ -17,7 +17,7 @@ import {
   type UpdateCategoryPayload,
 } from "@solverfin/domain";
 
-import { query } from "../db.js";
+import { query, withTransaction } from "../db.js";
 
 interface CategoryRow {
   id: string;
@@ -33,13 +33,55 @@ interface CategoryRow {
   updatedByUserId: string | null;
 }
 
+interface DefaultCategoryDefinition {
+  name: string;
+  kind: CategoryKind;
+  children?: readonly string[];
+}
+
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "parentCategoryId", "name",
   "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
+
+const DEFAULT_CATEGORIES: readonly DefaultCategoryDefinition[] = [
+  {
+    name: "Moradia",
+    kind: "expense",
+    children: ["Aluguel", "Condominio", "Energia", "Agua", "Internet"],
+  },
+  {
+    name: "Alimentacao",
+    kind: "expense",
+    children: ["Mercado", "Restaurantes", "Lanches"],
+  },
+  {
+    name: "Transporte",
+    kind: "expense",
+    children: ["Combustivel", "Aplicativos e taxi", "Manutencao"],
+  },
+  { name: "Saude", kind: "expense", children: ["Consultas", "Medicamentos", "Plano de saude"] },
+  { name: "Educacao", kind: "expense" },
+  { name: "Lazer", kind: "expense" },
+  { name: "Servicos", kind: "expense" },
+  { name: "Impostos e taxas", kind: "expense" },
+  { name: "Outros gastos", kind: "expense" },
+  { name: "Salario", kind: "income" },
+  { name: "Pro-labore", kind: "income" },
+  { name: "Vendas", kind: "income" },
+  { name: "Rendimentos", kind: "income" },
+  { name: "Reembolsos", kind: "income" },
+  { name: "Outros recebimentos", kind: "income" },
+  { name: "Transferencias entre contas", kind: "transfer" },
+  { name: "Investimentos", kind: "transfer" },
+  { name: "Resgate de investimentos", kind: "transfer" },
+  { name: "Pagamento de cartao", kind: "transfer" },
+];
 
 export async function listCategoriesForContext(
   context: TenantContext,
   filters: ListCategoriesFilters = {},
 ): Promise<Category[]> {
+  await ensureDefaultCategoriesForContext(context);
+
   const rows = await query<CategoryRow>(
     `select ${SELECT_COLUMNS} from "Category"
      where "organizationId" = $1 and "financialProfileId" = $2
@@ -163,6 +205,74 @@ export async function restoreCategoryForContext(
   await persistCategoryUpdate(restoredCategory);
 
   return restoredCategory;
+}
+
+async function ensureDefaultCategoriesForContext(context: TenantContext): Promise<void> {
+  await withTransaction(async (executeQuery) => {
+    const existingRows = await executeQuery<{ count: string }>(
+      `select count(*)::text as "count" from "Category"
+       where "organizationId" = $1 and "financialProfileId" = $2`,
+      [context.organizationId, context.financialProfileId],
+    );
+    const existingCount = Number(existingRows[0]?.count ?? 0);
+
+    if (existingCount > 0) {
+      return;
+    }
+
+    const now = new Date().toISOString();
+
+    for (const category of DEFAULT_CATEGORIES) {
+      const parentCategoryId = randomUUID();
+
+      await insertCategorySeed(executeQuery, context, {
+        id: parentCategoryId,
+        parentCategoryId: null,
+        name: category.name,
+        kind: category.kind,
+        now,
+      });
+
+      for (const childName of category.children ?? []) {
+        await insertCategorySeed(executeQuery, context, {
+          id: randomUUID(),
+          parentCategoryId,
+          name: childName,
+          kind: category.kind,
+          now,
+        });
+      }
+    }
+  });
+}
+
+async function insertCategorySeed(
+  executeQuery: typeof query,
+  context: TenantContext,
+  input: {
+    id: EntityId;
+    parentCategoryId: EntityId | null;
+    name: string;
+    kind: CategoryKind;
+    now: string;
+  },
+): Promise<void> {
+  await executeQuery(
+    `insert into "Category"
+      ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "kind", "status",
+       "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+     values ($1, $2, $3, $4, $5, $6, 'ACTIVE', $7, $7, $8, $8)`,
+    [
+      input.id,
+      context.organizationId,
+      context.financialProfileId,
+      input.parentCategoryId,
+      input.name,
+      input.kind.toUpperCase(),
+      input.now,
+      context.userId,
+    ],
+  );
 }
 
 async function persistCategoryUpdate(category: Category): Promise<void> {
