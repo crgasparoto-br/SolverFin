@@ -46,34 +46,34 @@ const DEFAULT_CATEGORIES: readonly DefaultCategoryDefinition[] = [
   {
     name: "Moradia",
     kind: "expense",
-    children: ["Aluguel", "Condominio", "Energia", "Agua", "Internet"],
+    children: ["Aluguel", "Condomínio", "Energia elétrica", "Água", "Internet"],
   },
   {
-    name: "Alimentacao",
+    name: "Alimentação",
     kind: "expense",
     children: ["Mercado", "Restaurantes", "Lanches"],
   },
   {
     name: "Transporte",
     kind: "expense",
-    children: ["Combustivel", "Aplicativos e taxi", "Manutencao"],
+    children: ["Combustível", "Aplicativos e táxi", "Manutenção"],
   },
-  { name: "Saude", kind: "expense", children: ["Consultas", "Medicamentos", "Plano de saude"] },
-  { name: "Educacao", kind: "expense" },
+  { name: "Saúde", kind: "expense", children: ["Consultas", "Medicamentos", "Plano de saúde"] },
+  { name: "Educação", kind: "expense" },
   { name: "Lazer", kind: "expense" },
-  { name: "Servicos", kind: "expense" },
+  { name: "Serviços", kind: "expense" },
   { name: "Impostos e taxas", kind: "expense" },
   { name: "Outros gastos", kind: "expense" },
-  { name: "Salario", kind: "income" },
-  { name: "Pro-labore", kind: "income" },
+  { name: "Salário", kind: "income" },
+  { name: "Pró-labore", kind: "income" },
   { name: "Vendas", kind: "income" },
   { name: "Rendimentos", kind: "income" },
   { name: "Reembolsos", kind: "income" },
   { name: "Outros recebimentos", kind: "income" },
-  { name: "Transferencias entre contas", kind: "transfer" },
+  { name: "Transferências entre contas", kind: "transfer" },
   { name: "Investimentos", kind: "transfer" },
   { name: "Resgate de investimentos", kind: "transfer" },
-  { name: "Pagamento de cartao", kind: "transfer" },
+  { name: "Pagamento de cartão", kind: "transfer" },
 ];
 
 export async function listCategoriesForContext(
@@ -348,7 +348,7 @@ function normalizeParentCategoryId(parentCategoryId: EntityId | null | undefined
 
   const normalizedParentCategoryId = parentCategoryId.trim();
 
-  if (!normalizedParentCategoryId || normalizedParentCategoryId === "null") {
+  if (!normalizedParentCategoryId || normalizedParentId === "null") {
     return null;
   }
 
