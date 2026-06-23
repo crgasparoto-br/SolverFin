@@ -32,6 +32,9 @@ const now = "2026-06-15T10:00:00.000Z";
 testDefaultSuggestionsAreEditablePayloads();
 testCreateAndEditCategory();
 testCreateSubcategory();
+testRejectParentKindMismatch();
+testRejectHierarchyCycleOnUpdate();
+testCanClearParentCategory();
 testArchiveAndRestoreCategory();
 testReplaceCategoryWithHistory();
 testCategoryInUseRequiresReplacement();
@@ -41,9 +44,11 @@ testCategoryKindValidation();
 function testDefaultSuggestionsAreEditablePayloads(): void {
   const suggestions = getDefaultCategorySuggestions();
   const expenseSuggestion = suggestions.find((suggestion) => suggestion.kind === "expense");
+  const detailedSuggestion = suggestions.find((suggestion) => suggestion.parentName === "Moradia");
 
   assertEqual(Boolean(expenseSuggestion), true, "expense suggestion exists");
   assertEqual(expenseSuggestion?.source, "system_default", "suggestion source");
+  assertEqual(Boolean(detailedSuggestion), true, "hierarchical suggestion exists");
 }
 
 function testCreateAndEditCategory(): void {
@@ -86,6 +91,61 @@ function testCreateSubcategory(): void {
   });
 
   assertEqual(subcategory.parentCategoryId, parentCategory.id, "subcategory parent");
+}
+
+function testRejectParentKindMismatch(): void {
+  const parentCategory = createCategoryFixture(tenantA, "category-income-parent", "income", "active");
+
+  assertCategoryError(
+    () =>
+      createCategory({
+        id: "category-expense-child",
+        context: tenantA,
+        now,
+        parentCategory,
+        payload: {
+          name: "Mercado",
+          kind: "expense",
+          parentCategoryId: parentCategory.id,
+        },
+      }),
+    "CATEGORY_PARENT_KIND_MISMATCH",
+  );
+}
+
+function testRejectHierarchyCycleOnUpdate(): void {
+  const parentCategory = createCategoryFixture(tenantA, "category-parent-cycle", "expense", "active");
+  const childCategory = createCategoryFixture(tenantA, "category-child-cycle", "expense", "active", parentCategory.id);
+
+  assertCategoryError(
+    () =>
+      updateCategory({
+        context: tenantA,
+        category: parentCategory,
+        now,
+        parentCategory: childCategory,
+        ancestorCategories: [childCategory, parentCategory],
+        payload: {
+          parentCategoryId: childCategory.id,
+        },
+      }),
+    "CATEGORY_PARENT_CYCLE",
+  );
+}
+
+function testCanClearParentCategory(): void {
+  const parentCategory = createCategoryFixture(tenantA, "category-parent-clear", "expense", "active");
+  const childCategory = createCategoryFixture(tenantA, "category-child-clear", "expense", "active", parentCategory.id);
+  const updatedCategory = updateCategory({
+    context: tenantA,
+    category: childCategory,
+    now,
+    payload: {
+      parentCategoryId: null,
+    },
+  });
+
+  assertEqual(updatedCategory.parentCategoryId, undefined, "parent category cleared");
 }
 
 function testArchiveAndRestoreCategory(): void {
@@ -167,6 +227,7 @@ function createCategoryFixture(
   id: string,
   kind: Category["kind"],
   status: Category["status"],
+  parentCategoryId?: string,
 ): Category {
   return {
     id,
@@ -175,6 +236,7 @@ function createCategoryFixture(
     name: `Categoria ${id}`,
     kind,
     status,
+    ...(parentCategoryId ? { parentCategoryId } : {}),
     createdAt: now,
     updatedAt: now,
     createdByUserId: context.userId,

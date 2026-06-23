@@ -14,6 +14,16 @@ export interface ReportPeriod {
   label: string;
 }
 
+export interface ReportCategory {
+  id: string;
+  tenantId: string;
+  financialProfileId: string;
+  name: string;
+  type: "income" | "expense" | "transfer";
+  status: "active" | "archived";
+  parentCategoryId?: string;
+}
+
 export interface BudgetTarget {
   id: string;
   tenantId: string;
@@ -31,6 +41,18 @@ export interface ReportDataSet {
   filters: TransactionFilters;
   transactions: readonly TransactionRecord[];
   budgets: readonly BudgetTarget[];
+  categories: readonly ReportCategory[];
+}
+
+export interface CategorySpendingChildReport {
+  categoryId: string;
+  categoryName: string;
+  actualAmountInCents: number;
+  plannedAmountInCents: number;
+  remainingAmountInCents: number;
+  spentPercent: number;
+  sharePercent: number;
+  state: BudgetComparisonState;
 }
 
 export interface CategorySpendingReport {
@@ -42,6 +64,7 @@ export interface CategorySpendingReport {
   spentPercent: number;
   sharePercent: number;
   state: BudgetComparisonState;
+  childCategories: readonly CategorySpendingChildReport[];
 }
 
 export interface MonthlyEvolutionReport {
