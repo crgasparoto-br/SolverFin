@@ -27,9 +27,10 @@ const cardBrands = [
 const accountCurrencies = ["BRL", "USD", "EUR"] as const;
 
 export async function renderAccountsCardsPage(token: string): Promise<string> {
-  const [accounts, cards] = await Promise.all([
+  const [accounts, cards, cardAdditionalLinks] = await Promise.all([
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts?status=all"),
     apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
+    apiGet<{ links: CardAdditionalLinkRecord[] }>(token, "/api/card-additional-links"),
   ]);
 
   if (!accounts.ok) return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", accounts.error);
@@ -37,6 +38,12 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
 
   const accountItems = accounts.data.accounts;
   const cardItems = cards.data.cards;
+  const links = cardAdditionalLinks.ok ? cardAdditionalLinks.data.links : [];
+  const additionalCardIds = new Set(
+    links.filter((link) => link.cardId !== link.groupCardId).map((link) => link.cardId),
+  );
+  const mainCardItems = cardItems.filter((card) => !additionalCardIds.has(card.id));
+  const additionalCardItems = cardItems.filter((card) => additionalCardIds.has(card.id));
 
   return renderAuthenticatedPage({
     pathname: "/contas-cartoes",
@@ -57,7 +64,7 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
       <section class="master-toolbar" aria-label="Filtros da lista">
         <div class="tab-list" role="tablist" aria-label="Tipo de cadastro">
           <button id="accounts-tab" type="button" role="tab" class="tab-button" data-tab="accounts" aria-controls="accounts-panel" aria-selected="true">Contas bancárias <span>${accountItems.length}</span></button>
-          <button id="cards-tab" type="button" role="tab" class="tab-button" data-tab="cards" aria-controls="cards-panel" aria-selected="false">Cartões de crédito <span>${cardItems.length}</span></button>
+          <button id="cards-tab" type="button" role="tab" class="tab-button" data-tab="cards" aria-controls="cards-panel" aria-selected="false">Cartões de crédito <span>${mainCardItems.length}</span></button>
           <button id="connections-tab" type="button" role="tab" class="tab-button" data-tab="connections" aria-controls="connections-panel" aria-selected="false">Conexões</button>
         </div>
         <div class="filter-row">
@@ -92,13 +99,14 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
             <h2>Cartões de crédito</h2>
             <p class="muted">Cadastre dados básicos do cartão sem misturar com compras e faturas.</p>
           </div>
-          <span>${countActive(cardItems)} ativos</span>
+          <span>${countActive(mainCardItems)} ativos</span>
         </div>
         <div class="master-list" data-master-list>
-          ${cardItems.map((card) => renderCardItem(card, accountItems)).join("") || renderEmptyState("Nenhum cartão cadastrado.", "Crie um cartão para vincular limite, vencimento e conta de pagamento.")}
+          ${mainCardItems.map((card) => renderCardItem(card, accountItems)).join("") || renderEmptyState("Nenhum cartão cadastrado.", "Crie um cartão para vincular limite, vencimento e conta de pagamento.")}
         </div>
         ${renderFilterEmptyState("Nenhum cartão encontrado.")}
       </section>
+      ${additionalCardItems.map((card) => renderCardEditDialog(card, accountItems, `edit-card-dialog-${card.id}`)).join("")}
 
       <section id="connections-panel" class="master-panel" data-tab-panel="connections" role="tabpanel" aria-labelledby="connections-tab" hidden>
         ${renderEmptyState("Conexões ficam para uma próxima etapa.", "Esta tela está preparada para receber integrações quando houver suporte, sem prometer automação bancária direta.")}
@@ -191,7 +199,7 @@ function renderAccountEditDialog(account: AccountRecord, dialogId: string): stri
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions(account.institutionKey)}</select></label>
         <label>Moeda<select name="currency">${renderCurrencyOptions(account.currency)}</select></label>
         <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor ?? 0)}" inputmode="decimal" /></label>
-        <label>Identificador mascarado<input name="maskedIdentifier" value="${escapeHtml(account.maskedIdentifier ?? "")}" placeholder="Ex.: final 1234" /></label>
+        <label>Nº Conta<input name="maskedIdentifier" value="${escapeHtml(account.maskedIdentifier ?? "")}" /></label>
         <button type="submit">Salvar conta</button>
       </form>
     </dialog>
@@ -216,7 +224,7 @@ function renderCardEditDialog(card: CardRecord, accounts: AccountRecord[], dialo
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
         <label>Limite (R$)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Não vinculada</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
-        <label>Identificador mascarado<input name="maskedIdentifier" value="${escapeHtml(card.maskedIdentifier ?? "")}" placeholder="Ex.: final 9876" /></label>
+        <label>Final do Cartão<input name="maskedIdentifier" value="${escapeHtml(card.maskedIdentifier ?? "")}" placeholder="Ex.: final 9876" /></label>
         <button type="submit">Salvar cartão</button>
       </form>
     </dialog>
@@ -237,7 +245,7 @@ function renderAccountDialog(): string {
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions()}</select></label>
         <label>Moeda<select name="currency">${renderCurrencyOptions()}</select></label>
         <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
-        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 1234" /></label>
+        <label>Nº Conta<input name="maskedIdentifier" /></label>
         <button type="submit">Criar conta</button>
       </form>
     </dialog>
@@ -260,7 +268,7 @@ function renderCardDialog(accounts: AccountRecord[]): string {
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" required /></label>
         <label>Limite (R$)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Não vinculada</option>${renderAccountOptions(accounts)}</select></label>
-        <label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
+        <label>Final do Cartão<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
         <button type="submit">Criar cartão</button>
       </form>
     </dialog>
@@ -334,7 +342,7 @@ function apiFormScript(): string {
           if (value === "") return;
           const field = form.querySelector('[name="' + key + '"]');
           if (field && field.dataset.money !== undefined) {
-            payload[key] = Math.round(parseFloat(String(value).replace(",", ".")) * 100);
+            payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);
           } else if (field && field.type === "number") {
             payload[key] = Number(value);
           } else {
@@ -391,6 +399,29 @@ function masterPageScript(): string {
       const activeFilter = document.querySelector("[data-active-filter-input]");
       const panels = Array.from(document.querySelectorAll("[data-tab-panel]"));
       const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
+
+      function maskMoneyValue(raw) {
+        const digits = String(raw || "").replace(/\\D/g, "").replace(/^0+(?=\\d)/, "");
+        if (digits.length === 0) return "";
+        const padded = digits.padStart(3, "0");
+        const cents = padded.slice(-2);
+        const intPart = padded.slice(0, -2).replace(/^0+(?=\\d)/, "") || "0";
+        const withThousands = intPart.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ".");
+        return withThousands + "," + cents;
+      }
+
+      function wireMoneyInputs() {
+        document.querySelectorAll("[data-money]").forEach((input) => {
+          if (input.dataset.moneyMaskInstalled === "true") return;
+          input.dataset.moneyMaskInstalled = "true";
+          if (input.value) input.value = maskMoneyValue(input.value);
+          input.addEventListener("input", () => {
+            input.value = maskMoneyValue(input.value);
+          });
+        });
+      }
+
+      wireMoneyInputs();
 
       function readStatusFilter() {
         if (activeFilter) return activeFilter.checked ? "active" : "all";
@@ -598,7 +629,10 @@ function formatMoney(amountMinor: number): string {
 }
 
 function formatMoneyInput(amountMinor: number): string {
-  return (amountMinor / 100).toFixed(2).replace(".", ",");
+  const sign = amountMinor < 0 ? "-" : "";
+  const [intPart, centsPart] = (Math.abs(amountMinor) / 100).toFixed(2).split(".") as [string, string];
+  const withThousands = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${sign}${withThousands},${centsPart}`;
 }
 
 function formatAccountKind(kind: string): string {
@@ -635,6 +669,12 @@ interface AccountRecord {
   currency?: string;
   maskedIdentifier?: string;
   institutionKey?: string;
+}
+
+interface CardAdditionalLinkRecord {
+  groupCardId: string;
+  cardId: string;
+  isPrimary: boolean;
 }
 
 interface CardRecord {

@@ -111,8 +111,8 @@ function accountsCardsDirectEnhancementScript(): string {
               ".active-filter-input { border: 0; height: 1px; margin: 0; opacity: 0; padding: 0; position: absolute; width: 1px; }",
               ".active-filter-switch .toggle-track { align-items: center; background: #cbd5e1; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 20px; padding: 2px; width: 38px; }",
               ".active-filter-switch .toggle-thumb { background: #fff; border-radius: 999px; box-shadow: 0 1px 3px rgba(15, 23, 42, .24); display: block; height: 16px; transform: translateX(0); transition: transform .18s ease; width: 16px; }",
-              ".active-filter-switch[aria-pressed=\"true\"] .toggle-track { background: var(--primary); }",
-              ".active-filter-switch[aria-pressed=\"true\"] .toggle-thumb { transform: translateX(18px); }",
+              ".active-filter-switch[aria-pressed=\\"true\\"] .toggle-track { background: var(--primary); }",
+              ".active-filter-switch[aria-pressed=\\"true\\"] .toggle-thumb { transform: translateX(18px); }",
               ".additional-card-section { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; grid-column: 1 / -1; padding: 12px; }",
               ".additional-card-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }",
               ".additional-card-add { background: transparent; color: var(--primary); min-height: 36px; padding: 0 10px; white-space: nowrap; }",
@@ -147,7 +147,7 @@ function accountsCardsDirectEnhancementScript(): string {
             new FormData(form).forEach((value, key) => {
               if (value === "") return;
               const field = form.querySelector('[name="' + key + '"]');
-              if (field && field.dataset.money !== undefined) payload[key] = Math.round(parseFloat(String(value).replace(",", ".")) * 100);
+              if (field && field.dataset.money !== undefined) payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);
               else if (field && field.type === "number") payload[key] = Number(value);
               else payload[key] = value;
             });
@@ -166,6 +166,10 @@ function accountsCardsDirectEnhancementScript(): string {
             return status;
           }
 
+          function goToCardsTab() {
+            window.location.assign("/contas-cartoes?_r=" + Date.now() + "#cards");
+          }
+
           async function sendJson(path, method, payload) {
             return fetch(path, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
           }
@@ -177,7 +181,7 @@ function accountsCardsDirectEnhancementScript(): string {
           }
 
           function additionalRowHtml() {
-            return '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Identificador mascarado<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><div class="additional-card-actions"><button type="submit" class="additional-card-save">Salvar adicional</button><button type="button" class="additional-card-remove">Remover</button></div>';
+            return '<label>Nome do cartão adicional<input data-additional-card-name placeholder="Ex.: Virtual - 0322" /></label><label>Final do Cartão<input data-additional-card-identifier placeholder="Ex.: final 0322" /></label><div class="additional-card-actions"><button type="submit" class="additional-card-save">Salvar adicional</button><button type="button" class="additional-card-remove">Remover</button></div>';
           }
 
           function addAdditionalRow(button) {
@@ -393,11 +397,11 @@ function accountsCardsDirectEnhancementScript(): string {
 
             if (isEdit) {
               await loadSavedCards();
-              if (submitButton) submitButton.disabled = false;
+              window.setTimeout(goToCardsTab, 450);
               return;
             }
 
-            window.setTimeout(() => window.location.assign("/contas-cartoes#cards"), 450);
+            window.setTimeout(goToCardsTab, 450);
           }
 
           function installCardFormHandlers() {
@@ -436,6 +440,7 @@ function accountsCardsDirectEnhancementScript(): string {
             try { activeOnly = window.localStorage.getItem(activeFilterStorageKey) === "true"; } catch (_error) { activeOnly = false; }
             input.checked = activeOnly;
             button.setAttribute("aria-pressed", String(activeOnly));
+            input.dispatchEvent(new Event("change", { bubbles: true }));
             input.addEventListener("change", () => {
               button.setAttribute("aria-pressed", String(input.checked === true));
               try { window.localStorage.setItem(activeFilterStorageKey, String(input.checked === true)); } catch (_error) {}
