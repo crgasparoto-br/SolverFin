@@ -348,7 +348,7 @@ function normalizeParentCategoryId(parentCategoryId: EntityId | null | undefined
 
   const normalizedParentCategoryId = parentCategoryId.trim();
 
-  if (!normalizedParentCategoryId || normalizedParentId === "null") {
+  if (!normalizedParentCategoryId || normalizedParentCategoryId === "null") {
     return null;
   }
 
