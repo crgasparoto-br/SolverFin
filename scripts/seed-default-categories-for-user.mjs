@@ -13,39 +13,39 @@ const DEFAULT_CATEGORY_TREE = [
         name: "Moradia",
         children: [
           "Aluguel",
-          "Condominio",
-          "Agua",
-          "Energia eletrica",
-          "Gas",
+          "Condomínio",
+          "Água",
+          "Energia elétrica",
+          "Gás",
           "Internet",
           "Telefone",
           "IPTU",
-          "Manutencao residencial",
+          "Manutenção residencial",
         ],
       },
       {
-        name: "Alimentacao",
+        name: "Alimentação",
         children: ["Mercado", "Feira", "Padaria", "Restaurante", "Delivery", "Lanches"],
       },
       {
         name: "Transporte",
         children: [
-          "Combustivel",
-          "Transporte publico",
+          "Combustível",
+          "Transporte público",
           "Aplicativos de transporte",
           "Estacionamento",
-          "Pedagio",
-          "Manutencao do veiculo",
-          "Seguro do veiculo",
+          "Pedágio",
+          "Manutenção do veículo",
+          "Seguro do veículo",
           "IPVA e licenciamento",
         ],
       },
       {
-        name: "Saude",
-        children: ["Plano de saude", "Consultas", "Exames", "Medicamentos", "Dentista", "Terapia"],
+        name: "Saúde",
+        children: ["Plano de saúde", "Consultas", "Exames", "Medicamentos", "Dentista", "Terapia"],
       },
       {
-        name: "Educacao",
+        name: "Educação",
         children: ["Escola ou faculdade", "Cursos", "Livros", "Material escolar"],
       },
       {
@@ -61,28 +61,28 @@ const DEFAULT_CATEGORY_TREE = [
       {
         name: "Compras",
         children: [
-          "Vestuario",
-          "Eletronicos",
-          "Casa e decoracao",
+          "Vestuário",
+          "Eletrônicos",
+          "Casa e decoração",
           "Presentes",
           "Cuidados pessoais",
         ],
       },
       {
-        name: "Servicos financeiros",
-        children: ["Tarifas bancarias", "Juros", "Multas", "Anuidade de cartao", "Seguros"],
+        name: "Serviços financeiros",
+        children: ["Tarifas bancárias", "Juros", "Multas", "Anuidade de cartão", "Seguros"],
       },
       {
-        name: "Familia e dependentes",
+        name: "Família e dependentes",
         children: ["Filhos", "Pets", "Ajuda familiar"],
       },
       {
         name: "Impostos e taxas",
-        children: ["Imposto de renda", "Taxas publicas", "Documentos e cartorio"],
+        children: ["Imposto de renda", "Taxas públicas", "Documentos e cartório"],
       },
       {
         name: "Outros",
-        children: ["Doacoes", "Diversos", "Ajustes"],
+        children: ["Doações", "Diversos", "Ajustes"],
       },
     ],
   },
@@ -92,22 +92,22 @@ const DEFAULT_CATEGORY_TREE = [
       {
         name: "Trabalho",
         children: [
-          "Salario",
-          "Pro-labore",
-          "Bonus",
-          "Comissoes",
+          "Salário",
+          "Pró-labore",
+          "Bônus",
+          "Comissões",
           "Freelance",
-          "13o salario",
-          "Ferias",
+          "13º salário",
+          "Férias",
         ],
       },
       {
-        name: "Negocios",
-        children: ["Vendas", "Prestacao de servicos", "Reembolsos de clientes"],
+        name: "Negócios",
+        children: ["Vendas", "Prestação de serviços", "Reembolsos de clientes"],
       },
       {
         name: "Investimentos",
-        children: ["Rendimentos", "Dividendos", "Juros", "Alugueis recebidos", "Venda de ativos"],
+        children: ["Rendimentos", "Dividendos", "Juros", "Aluguéis recebidos", "Venda de ativos"],
       },
       {
         name: "Reembolsos",
@@ -216,9 +216,9 @@ async function countLinkedCategoryReferences(client, profile) {
 
 function formatLinkedReferenceSummary(counts) {
   return [
-    ["lancamentos", counts.transactions],
-    ["recorrencias", counts.recurrences],
-    ["orcamentos", counts.budgets],
+    ["lançamentos", counts.transactions],
+    ["recorrências", counts.recurrences],
+    ["orçamentos", counts.budgets],
     ["contas a pagar/receber", counts.payablesReceivables],
   ]
     .filter(([, count]) => count > 0)
