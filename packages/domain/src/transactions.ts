@@ -253,12 +253,15 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
       input.payload.plannedOn ??
       currentTransaction.occurredOn,
     plannedOn: input.payload.plannedOn ?? currentTransaction.plannedOn,
-    effectiveOn: nextEffectiveOn,
     description: input.payload.description ?? currentTransaction.description,
     accountId: input.payload.accountId ?? requireAccountId(currentTransaction.accountId),
     organizationId: currentTransaction.organizationId,
     financialProfileId: currentTransaction.financialProfileId,
   };
+
+  if (nextEffectiveOn !== undefined) {
+    payload.effectiveOn = nextEffectiveOn;
+  }
 
   const nextDestinationAccountId =
     input.payload.destinationAccountId ??
