@@ -25,6 +25,8 @@ interface TransactionRecord {
   status: string;
   amountMinor: number;
   occurredOn: string;
+  plannedOn: string;
+  effectiveOn?: string;
   accountId?: string;
   destinationAccountId?: string;
   categoryId?: string;
@@ -123,7 +125,7 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
               ${metric("Entradas", summary.incomeMinor, "Créditos da conta")}
               ${metric("Saídas", -summary.expenseMinor, "Débitos da conta")}
               ${metric("Saldo previsto", summary.plannedBalanceMinor, "Inclui pendências")}
-              ${metric("Saldo efetivo", summary.effectiveBalanceMinor, "Efetivados e conciliados")}
+              ${metric("Saldo efetivo", summary.effectiveBalanceMinor, "Com data efetiva")}
               ${metric("Conciliado", summary.reconciledMinor, `${summary.reconciledCount} conferidos`)}
               ${metric("Não conciliado", summary.unreconciledMinor, `${summary.unreconciledCount} em aberto`)}
               ${metric("Pendentes", summary.pendingMinor, `${summary.pendingCount} sem data efetiva`)}
@@ -181,8 +183,8 @@ function buildTransactionQuery(filters: StatementFilters): string {
   return new URLSearchParams({
     status: "all",
     accountId: filters.accountId ?? "",
-    occurredFrom: filters.startsOn,
-    occurredTo: filters.endsOn,
+    plannedFrom: filters.startsOn,
+    plannedTo: filters.endsOn,
   }).toString();
 }
 
@@ -194,10 +196,10 @@ function buildRows(
 
   return transactions
     .filter((transaction) => transaction.status !== "voided")
-    .sort((left, right) => left.occurredOn.localeCompare(right.occurredOn))
+    .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))
     .map((transaction) => {
       const amountMinor = signedAmount(transaction, selectedAccount?.id);
-      const effective = transaction.status === "posted" || transaction.status === "reconciled";
+      const effective = transaction.effectiveOn !== undefined;
       if (effective) balance += amountMinor;
 
       return {
@@ -219,7 +221,7 @@ function summarize(rows: StatementRow[], selectedAccount: AccountRecord | undefi
       if (row.amountMinor < 0) summary.expenseMinor += absolute;
       summary.plannedBalanceMinor += row.amountMinor;
 
-      if (row.transaction.status === "planned" || row.transaction.status === "suggested") {
+      if (row.transaction.effectiveOn === undefined) {
         summary.pendingMinor += absolute;
         summary.pendingCount += 1;
         return summary;
@@ -275,21 +277,22 @@ function renderRow(
   const statusTone =
     transaction.status === "reconciled"
       ? "ok"
-      : transaction.status === "posted"
+      : transaction.effectiveOn !== undefined
         ? "posted"
         : "pending";
   const nextStatus = transaction.status === "reconciled" ? "posted" : "reconciled";
+  const date = statementDate(transaction);
 
   return `
     <article class="statement-row statement-body" role="row">
-      <time datetime="${escapeHtml(transaction.occurredOn)}">${formatDate(transaction.occurredOn)}</time>
+      <time datetime="${escapeHtml(date)}">${formatDate(date)}</time>
       <div class="description">
         <strong>${escapeHtml(transaction.description || "(sem descrição)")}</strong>
         ${renderTransferNote(transaction, selectedAccount, accounts)}
       </div>
       <span>${escapeHtml(categoryName)}</span>
       <span>${escapeHtml(formatKind(transaction.kind))}</span>
-      <span class="chip chip-${statusTone}">${escapeHtml(formatStatus(transaction.status))}</span>
+      <span class="chip chip-${statusTone}">${escapeHtml(formatStatus(transaction))}</span>
       <strong class="${row.amountMinor < 0 ? "debit" : "credit"}">${formatMoney(row.amountMinor)}</strong>
       <strong>${row.balanceAfterMinor === undefined ? "Previsto" : formatMoney(row.balanceAfterMinor)}</strong>
       <details class="actions">
@@ -389,6 +392,8 @@ function clientScript(): string {
           kind: String(data.get("kind")),
           amountMinor: moneyToMinor(data.get("amountMinor")),
           occurredOn: effectiveOn || plannedOn,
+          plannedOn,
+          effectiveOn: effectiveOn || null,
           accountId: String(data.get("accountId")),
           description: String(data.get("description") || "") + (total > 1 ? " " + (index + 1) + "/" + total : ""),
           status: effectiveOn ? String(data.get("status")) : "planned"
@@ -436,9 +441,9 @@ function clientScript(): string {
             form.dataset.method = clone ? "POST" : "PATCH";
             form.kind.value = transaction.kind;
             form.amountMinor.value = (transaction.amountMinor / 100).toFixed(2).replace(".", ",");
-            form.plannedOn.value = transaction.occurredOn;
-            form.effectiveOn.value = transaction.status === "planned" || transaction.status === "suggested" ? "" : transaction.occurredOn;
-            form.status.value = transaction.status === "reconciled" ? "reconciled" : transaction.status === "planned" ? "planned" : "posted";
+            form.plannedOn.value = transaction.plannedOn || transaction.occurredOn;
+            form.effectiveOn.value = transaction.effectiveOn || "";
+            form.status.value = transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned";
             form.destinationAccountId.value = transaction.destinationAccountId || "";
             form.categoryId.value = transaction.categoryId || "";
             form.description.value = clone ? "Cópia de " + transaction.description : transaction.description;
@@ -554,6 +559,10 @@ function signedAmount(transaction: TransactionRecord, selectedAccountId: string 
   return 0;
 }
 
+function statementDate(transaction: TransactionRecord): string {
+  return transaction.effectiveOn ?? transaction.plannedOn ?? transaction.occurredOn;
+}
+
 function metric(title: string, amountMinor: number, subtitle: string): string {
   return `<article class="metric"><span>${escapeHtml(title)}</span><strong class="${amountMinor < 0 ? "debit" : amountMinor > 0 ? "credit" : ""}">${formatMoney(amountMinor)}</strong><p>${escapeHtml(subtitle)}</p></article>`;
 }
@@ -573,12 +582,11 @@ function formatKind(kind: string): string {
   return kind;
 }
 
-function formatStatus(status: string): string {
-  if (status === "planned") return "Previsto";
-  if (status === "posted") return "Efetivado";
-  if (status === "reconciled") return "Conciliado";
-  if (status === "suggested") return "Pendente";
-  return status;
+function formatStatus(transaction: TransactionRecord): string {
+  if (transaction.status === "reconciled") return "Conciliado";
+  if (transaction.effectiveOn !== undefined) return "Efetivado";
+  if (transaction.status === "suggested") return "Pendente";
+  return "Previsto";
 }
 
 function formatMoney(amountMinor: number): string {
@@ -594,7 +602,7 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
