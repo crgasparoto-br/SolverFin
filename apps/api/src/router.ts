@@ -431,6 +431,10 @@ async function listTransactionsHandler(
   const categoryId = request.query.get("categoryId");
   const occurredFrom = request.query.get("occurredFrom");
   const occurredTo = request.query.get("occurredTo");
+  const plannedFrom = request.query.get("plannedFrom");
+  const plannedTo = request.query.get("plannedTo");
+  const effectiveFrom = request.query.get("effectiveFrom");
+  const effectiveTo = request.query.get("effectiveTo");
   const transactions = await listTransactionsForContext(context, {
     ...(status ? { status } : {}),
     ...(kind ? { kind } : {}),
@@ -438,6 +442,10 @@ async function listTransactionsHandler(
     ...(categoryId ? { categoryId } : {}),
     ...(occurredFrom ? { occurredFrom } : {}),
     ...(occurredTo ? { occurredTo } : {}),
+    ...(plannedFrom ? { plannedFrom } : {}),
+    ...(plannedTo ? { plannedTo } : {}),
+    ...(effectiveFrom ? { effectiveFrom } : {}),
+    ...(effectiveTo ? { effectiveTo } : {}),
   });
 
   return json(200, { transactions });
@@ -451,8 +459,10 @@ async function createTransactionHandler(
   const transaction = await createTransactionForContext(context, {
     kind: body.kind as TransactionKind,
     amountMinor: Number(body.amountMinor),
-    occurredOn: String(body.occurredOn ?? ""),
+    occurredOn: String(body.occurredOn ?? body.effectiveOn ?? body.plannedOn ?? ""),
     accountId: String(body.accountId ?? ""),
+    ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
+    ...(body.effectiveOn !== undefined ? { effectiveOn: readOptionalDate(body.effectiveOn) } : {}),
     ...(body.description !== undefined ? { description: String(body.description) } : {}),
     ...(body.status !== undefined ? { status: body.status as TransactionStatus } : {}),
     ...(body.destinationAccountId !== undefined
@@ -489,6 +499,8 @@ async function updateTransactionHandler(
       ...(body.status !== undefined ? { status: body.status as TransactionStatus } : {}),
       ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
       ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
+      ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
+      ...(body.effectiveOn !== undefined ? { effectiveOn: readOptionalDate(body.effectiveOn) } : {}),
       ...(body.description !== undefined ? { description: String(body.description) } : {}),
       ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
       ...(body.destinationAccountId !== undefined
@@ -946,6 +958,16 @@ function readReconciliationFilter(value: string | null): PurchaseReconciliationF
   }
 
   return undefined;
+}
+
+function readOptionalDate(value: unknown): string | null {
+  if (value === null) {
+    return null;
+  }
+
+  const text = String(value);
+
+  return text.trim() ? text : null;
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
