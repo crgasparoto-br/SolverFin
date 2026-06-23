@@ -42,6 +42,8 @@ interface TransactionRow {
   amountMinor: number;
   currency: string;
   occurredOn: Date;
+  plannedOn: Date;
+  effectiveOn: Date | null;
   description: string;
   reconciledAt: Date | null;
   voidedAt: Date | null;
@@ -79,8 +81,8 @@ interface CategoryRow {
 
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
   "categoryId", "cardId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
-  "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "description",
-  "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
+  "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
+  "effectiveOn", "description", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 export async function listTransactionsForContext(
   context: TenantContext,
@@ -89,7 +91,7 @@ export async function listTransactionsForContext(
   const rows = await query<TransactionRow>(
     `select ${SELECT_COLUMNS} from "Transaction"
      where "organizationId" = $1 and "financialProfileId" = $2
-     order by "occurredOn" desc, "createdAt" desc`,
+     order by "plannedOn" desc, "effectiveOn" desc nulls last, "createdAt" desc`,
     [context.organizationId, context.financialProfileId],
   );
 
@@ -188,17 +190,18 @@ export async function voidTransactionForContext(
 function buildInsertTransactionSql(): string {
   return `insert into "Transaction"
     ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "categoryId",
-     "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "description",
-     "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`;
+     "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
+     "effectiveOn", "description", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`;
 }
 
 function buildUpdateTransactionSql(): string {
   return `update "Transaction" set
       "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6, "transferGroupId" = $7,
       "kind" = $8, "status" = $9, "source" = $10, "amountMinor" = $11, "currency" = $12,
-      "occurredOn" = $13, "description" = $14, "reconciledAt" = $15, "voidedAt" = $16,
-      "createdAt" = $17, "updatedAt" = $18, "createdByUserId" = $19, "updatedByUserId" = $20
+      "occurredOn" = $13, "plannedOn" = $14, "effectiveOn" = $15, "description" = $16,
+      "reconciledAt" = $17, "voidedAt" = $18, "createdAt" = $19, "updatedAt" = $20,
+      "createdByUserId" = $21, "updatedByUserId" = $22
     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
@@ -217,6 +220,8 @@ function buildTransactionParams(transaction: Transaction): unknown[] {
     transaction.amountMinor,
     transaction.currency,
     transaction.occurredOn,
+    transaction.plannedOn,
+    transaction.effectiveOn ?? null,
     transaction.description,
     transaction.reconciledAt ?? null,
     transaction.voidedAt ?? null,
@@ -321,11 +326,13 @@ function mapTransactionRow(row: TransactionRow): Transaction {
     amountMinor: row.amountMinor,
     currency: row.currency,
     occurredOn: toDateOnly(row.occurredOn),
+    plannedOn: toDateOnly(row.plannedOn),
     description: row.description,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
 
+  if (row.effectiveOn !== null) transaction.effectiveOn = toDateOnly(row.effectiveOn);
   if (row.accountId !== null) transaction.accountId = row.accountId;
   if (row.destinationAccountId !== null)
     transaction.destinationAccountId = row.destinationAccountId;

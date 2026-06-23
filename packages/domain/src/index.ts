@@ -171,6 +171,8 @@ export interface Transaction extends Traceable, TenantScoped {
   amountMinor: number;
   currency: string;
   occurredOn: ISODate;
+  plannedOn: ISODate;
+  effectiveOn?: ISODate;
   description: string;
   accountId?: EntityId;
   destinationAccountId?: EntityId;
@@ -298,6 +300,8 @@ const AUDITED_TRANSACTION_FIELDS = [
   "amountMinor",
   "currency",
   "occurredOn",
+  "plannedOn",
+  "effectiveOn",
   "description",
   "accountId",
   "destinationAccountId",

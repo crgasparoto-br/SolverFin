@@ -361,6 +361,8 @@ model Transaction {
   amountMinor          Int
   currency             String            @default("BRL") @db.Char(3)
   occurredOn           DateTime          @db.Date
+  plannedOn            DateTime          @db.Date
+  effectiveOn          DateTime?         @db.Date
   description          String            @db.VarChar(240)
   reconciledAt         DateTime?
   voidedAt             DateTime?
@@ -386,6 +388,10 @@ model Transaction {
   @@index([organizationId, financialProfileId, occurredOn])
   @@index([organizationId, financialProfileId, status, occurredOn])
   @@index([organizationId, financialProfileId, accountId, occurredOn])
+  @@index([organizationId, financialProfileId, plannedOn])
+  @@index([organizationId, financialProfileId, status, plannedOn])
+  @@index([organizationId, financialProfileId, accountId, plannedOn])
+  @@index([organizationId, financialProfileId, effectiveOn])
   @@index([organizationId, financialProfileId, cardId, occurredOn])
   @@index([organizationId, financialProfileId, categoryId, occurredOn])
   @@index([organizationId, financialProfileId, importBatchId])

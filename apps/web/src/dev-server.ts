@@ -15,15 +15,11 @@ import { renderRecurrencesPage } from "./dev-server/recurrences-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
+import { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
 export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
-export {
-  renderAccountsPage,
-  renderBudgetsPage,
-  renderDashboardPage,
-  renderTransactionsPage,
-} from "./dev-server/pages.js";
+export { renderAccountsPage, renderBudgetsPage, renderDashboardPage } from "./dev-server/pages.js";
 export { renderCardsPage } from "./dev-server/cards-page.js";
 export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
@@ -32,6 +28,7 @@ export { renderPayablesReceivablesPage } from "./dev-server/payables-receivables
 export { renderRecurrencesPage } from "./dev-server/recurrences-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
 export { renderSettingsPage } from "./dev-server/settings-page.js";
+export { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.PORT ?? 5173);
@@ -93,6 +90,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/cartoes" && token) {
     sendHtml(response, 200, await renderCardsPage(token));
+    return;
+  }
+
+  if (url.pathname === "/lancamentos" && token) {
+    sendHtml(response, 200, await renderTransactionsPage(token, url));
     return;
   }
 
