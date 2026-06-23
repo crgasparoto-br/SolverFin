@@ -12,12 +12,12 @@ export function enhanceAccountsCardsTabs(html: string): string {
 }
 
 function injectActiveFilter(html: string): string {
-  if (html.includes("data-active-filter")) return html;
+  if (html.includes("active-filter-switch")) return html;
 
   const activeFilterToggleHtml = `          <label class="active-filter-switch" data-active-filter aria-pressed="false">
             <input type="checkbox" class="active-filter-input" data-active-filter-input />
             <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
-            <span>Exibir apenas contas ativas</span>
+            <span>Exibir apenas ativos</span>
           </label>`;
   const htmlWithoutStatusFilter = html.replace(
     `          <label>Status
@@ -97,8 +97,9 @@ function accountsCardsDirectEnhancementScript(): string {
           }
 
           function cardIdFromPath(path) {
-            const match = String(path || "").match(/^\/api\/cards\/([^/]+)$/);
-            return match ? match[1] : "";
+            const prefix = "/api/cards/";
+            const value = String(path || "");
+            return value.indexOf(prefix) === 0 ? value.slice(prefix.length) : "";
           }
 
           function ensureStyles() {
@@ -129,10 +130,14 @@ function accountsCardsDirectEnhancementScript(): string {
               ".additional-card-group-main label { color: var(--muted); font-size: .72rem; gap: 0; line-height: 1.2; }",
               ".additional-card-group-main strong { border-bottom: 1px solid #d8e7ec; color: var(--text); display: block; font-size: .94rem; overflow-wrap: anywhere; padding-bottom: 5px; }",
               ".additional-card-group-actions { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 2; justify-content: flex-start; }",
-              ".additional-card-primary-action, .additional-card-edit-action { min-height: 38px; min-width: 9rem; padding: 0 10px; white-space: nowrap; }",
+              ".additional-card-primary-action, .additional-card-edit-action, .additional-card-enable-action, .additional-card-disable-action { min-height: 38px; min-width: 9rem; padding: 0 10px; white-space: nowrap; }",
               ".additional-card-primary-action { background: transparent; border: 0; color: var(--primary); }",
-              ".additional-card-primary-action.is-primary { color: var(--muted); cursor: default; }",
-              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .additional-card-heading, .additional-card-row { grid-template-columns: 1fr; } .additional-card-actions, .additional-card-group-actions { display: grid; grid-template-columns: 1fr; } .additional-card-save, .additional-card-remove, .additional-card-primary-action, .additional-card-edit-action { width: 100%; } }",
+              ".additional-card-primary-action.is-primary, .additional-card-primary-action:disabled { color: var(--muted); cursor: default; }",
+              ".additional-card-disable-action { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); }",
+              ".additional-card-enable-action { background: var(--success-bg); border: 1px solid #bbf7d0; color: var(--success); }",
+              ".additional-card-group-row.is-disabled { opacity: .62; }",
+              ".additional-card-group-row.is-disabled .additional-card-group-main strong { text-decoration: line-through; }",
+              "@media (max-width: 760px) { .active-filter-switch, .additional-card-row { width: 100%; } .additional-card-heading, .additional-card-row { grid-template-columns: 1fr; } .additional-card-actions, .additional-card-group-actions { display: grid; grid-template-columns: 1fr; } .additional-card-save, .additional-card-remove, .additional-card-primary-action, .additional-card-edit-action, .additional-card-enable-action, .additional-card-disable-action { width: 100%; } }",
             ].join("");
             document.head.appendChild(style);
           }
@@ -225,8 +230,10 @@ function accountsCardsDirectEnhancementScript(): string {
           }
 
           function renderSavedRow(input) {
+            const isDisabled = input.card.status === "archived";
+
             const row = document.createElement("div");
-            row.className = "additional-card-group-row";
+            row.className = isDisabled ? "additional-card-group-row is-disabled" : "additional-card-group-row";
 
             const marker = document.createElement("span");
             marker.className = input.isPrimary ? "additional-card-primary-marker is-primary" : "additional-card-primary-marker";
@@ -240,7 +247,9 @@ function accountsCardsDirectEnhancementScript(): string {
             const name = document.createElement("strong");
             name.textContent = input.card.name || (input.isPrimary ? "Cartão principal" : "Cartão adicional");
             const meta = document.createElement("span");
-            meta.textContent = input.card.maskedIdentifier || "Identificador não informado";
+            meta.textContent = isDisabled
+              ? "Desabilitado"
+              : (input.card.maskedIdentifier || "Identificador não informado");
             label.appendChild(name);
             text.appendChild(label);
             text.appendChild(meta);
@@ -251,7 +260,7 @@ function accountsCardsDirectEnhancementScript(): string {
             primaryButton.type = "button";
             primaryButton.className = input.isPrimary ? "additional-card-primary-action is-primary" : "additional-card-primary-action";
             primaryButton.textContent = input.isPrimary ? "Principal" : "Definir principal";
-            primaryButton.disabled = input.isPrimary;
+            primaryButton.disabled = input.isPrimary || isDisabled;
             primaryButton.addEventListener("click", async () => {
               primaryButton.disabled = true;
               const response = await sendJson(cardLinksApiPath + "/" + input.groupKey + "/primary", "PATCH", { cardId: input.card.id });
@@ -260,13 +269,33 @@ function accountsCardsDirectEnhancementScript(): string {
             });
             actions.appendChild(primaryButton);
 
-            if (!input.isBase) {
-              const editButton = document.createElement("button");
-              editButton.type = "button";
-              editButton.className = "secondary-button additional-card-edit-action";
+            const editButton = document.createElement("button");
+            editButton.type = "button";
+            editButton.className = "secondary-button additional-card-edit-action";
+            editButton.textContent = "Editar nome";
+            if (input.isBase) {
+              editButton.dataset.focusPrimaryName = "true";
+            } else {
               editButton.dataset.openDialog = "edit-card-dialog-" + input.card.id;
-              editButton.textContent = "Editar";
-              actions.appendChild(editButton);
+            }
+            actions.appendChild(editButton);
+
+            if (!input.isBase) {
+              const toggleButton = document.createElement("button");
+              toggleButton.type = "button";
+              toggleButton.className = isDisabled
+                ? "secondary-button additional-card-enable-action"
+                : "secondary-button additional-card-disable-action";
+              toggleButton.textContent = isDisabled ? "Habilitar" : "Desabilitar";
+              toggleButton.addEventListener("click", async () => {
+                toggleButton.disabled = true;
+                const response = isDisabled
+                  ? await sendJson("/api/cards/" + input.card.id, "PATCH", { status: "active" })
+                  : await sendJson("/api/cards/" + input.card.id + "/archive", "POST", {});
+                if (response.ok) await loadSavedCards();
+                toggleButton.disabled = false;
+              });
+              actions.appendChild(toggleButton);
             }
 
             row.appendChild(marker);
@@ -432,6 +461,17 @@ function accountsCardsDirectEnhancementScript(): string {
 
             const openButton = target ? target.closest("[data-open-dialog]") : null;
             if (openButton && openDialog(openButton)) event.preventDefault();
+
+            const focusPrimaryButton = target ? target.closest("[data-focus-primary-name]") : null;
+            if (focusPrimaryButton) {
+              const form = focusPrimaryButton.closest("form");
+              const nameField = form ? form.querySelector('[name="name"]') : null;
+              if (nameField) {
+                nameField.scrollIntoView({ behavior: "smooth", block: "center" });
+                nameField.focus();
+              }
+              event.preventDefault();
+            }
           }, true);
 
           document.addEventListener("submit", (event) => {
