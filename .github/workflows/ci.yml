@@ -23,6 +23,21 @@ jobs:
     env:
       DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,6 +74,15 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed demo data
+        run: npm run db:seed
 
       - name: Test
         run: npm run test
