@@ -123,7 +123,13 @@ const DEFAULT_CATEGORY_TREE = [
 
 function assertSafeEnvironment() {
   if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is required to seed default categories for a user.");
+    throw new Error("DATABASE_URL is required to replace default categories for a user.");
+  }
+
+  if (process.env.SOLVERFIN_REPLACE_USER_CATEGORIES !== "true") {
+    throw new Error(
+      "This script deletes existing categories. Set SOLVERFIN_REPLACE_USER_CATEGORIES=true to confirm.",
+    );
   }
 
   if (process.env.NODE_ENV === "production" && process.env.SOLVERFIN_ALLOW_USER_SEED !== "true") {
@@ -173,15 +179,98 @@ async function listProfilesForUser(client, userId) {
   return result.rows;
 }
 
-async function hasExistingCategoryStructure(client, profile) {
+async function countCategories(client, profile) {
   const result = await client.query(
-    `select 1 from "Category"
-     where "organizationId" = $1 and "financialProfileId" = $2
-     limit 1`,
+    `select count(*)::int as "count"
+     from "Category"
+     where "organizationId" = $1 and "financialProfileId" = $2`,
     [profile.organizationId, profile.id],
   );
 
-  return result.rowCount > 0;
+  return result.rows[0]?.count ?? 0;
+}
+
+async function countLinkedCategoryReferences(client, profile) {
+  const result = await client.query(
+    `with profile_categories as (
+       select "id" from "Category"
+       where "organizationId" = $1 and "financialProfileId" = $2
+     )
+     select
+       (select count(*)::int from "Transaction" item inner join profile_categories category on category."id" = item."categoryId") as "transactions",
+       (select count(*)::int from "Recurrence" item inner join profile_categories category on category."id" = item."categoryId") as "recurrences",
+       (select count(*)::int from "Budget" item inner join profile_categories category on category."id" = item."categoryId") as "budgets",
+       (select count(*)::int from "PayableReceivable" item inner join profile_categories category on category."id" = item."categoryId") as "payablesReceivables"`,
+    [profile.organizationId, profile.id],
+  );
+
+  const counts = result.rows[0] ?? {};
+
+  return {
+    transactions: counts.transactions ?? 0,
+    recurrences: counts.recurrences ?? 0,
+    budgets: counts.budgets ?? 0,
+    payablesReceivables: counts.payablesReceivables ?? 0,
+  };
+}
+
+function formatLinkedReferenceSummary(counts) {
+  return [
+    ["lancamentos", counts.transactions],
+    ["recorrencias", counts.recurrences],
+    ["orcamentos", counts.budgets],
+    ["contas a pagar/receber", counts.payablesReceivables],
+  ]
+    .filter(([, count]) => count > 0)
+    .map(([label, count]) => `${count} ${label}`)
+    .join(", ");
+}
+
+async function assertCategoriesCanBeDeleted(client, profile) {
+  const linkedCounts = await countLinkedCategoryReferences(client, profile);
+  const linkedSummary = formatLinkedReferenceSummary(linkedCounts);
+
+  if (linkedSummary) {
+    throw new Error(
+      `Cannot replace categories for profile ${profile.name}. Existing categories are linked to ${linkedSummary}.`,
+    );
+  }
+}
+
+async function deleteExistingCategories(client, profile) {
+  await assertCategoriesCanBeDeleted(client, profile);
+
+  let deletedCount = 0;
+
+  while (true) {
+    const result = await client.query(
+      `delete from "Category" category
+       where category."organizationId" = $1
+         and category."financialProfileId" = $2
+         and not exists (
+           select 1 from "Category" child
+           where child."organizationId" = category."organizationId"
+             and child."financialProfileId" = category."financialProfileId"
+             and child."parentCategoryId" = category."id"
+         )
+       returning category."id"`,
+      [profile.organizationId, profile.id],
+    );
+
+    if (result.rowCount === 0) break;
+
+    deletedCount += result.rowCount;
+  }
+
+  const remainingCount = await countCategories(client, profile);
+
+  if (remainingCount > 0) {
+    throw new Error(
+      `Could not delete all categories for profile ${profile.name}. Remaining categories: ${remainingCount}.`,
+    );
+  }
+
+  return deletedCount;
 }
 
 async function insertCategory(client, profile, category) {
@@ -209,10 +298,7 @@ async function insertCategory(client, profile, category) {
 }
 
 async function seedProfileDefaultCategories(client, profile) {
-  if (await hasExistingCategoryStructure(client, profile)) {
-    return { createdCount: 0, skipped: true };
-  }
-
+  const deletedCount = await deleteExistingCategories(client, profile);
   let createdCount = 0;
 
   for (const group of DEFAULT_CATEGORY_TREE) {
@@ -252,7 +338,7 @@ async function seedProfileDefaultCategories(client, profile) {
     }
   }
 
-  return { createdCount, skipped: false };
+  return { createdCount, deletedCount };
 }
 
 async function main() {
@@ -278,18 +364,18 @@ async function main() {
     }
 
     let createdCount = 0;
-    let skippedProfiles = 0;
+    let deletedCount = 0;
 
     for (const profile of profiles) {
       const result = await seedProfileDefaultCategories(client, profile);
       createdCount += result.createdCount;
-      if (result.skipped) skippedProfiles += 1;
+      deletedCount += result.deletedCount;
     }
 
     await client.query("COMMIT");
-    console.log(`Default category seed applied for ${user.email}.`);
+    console.log(`Default category seed replaced categories for ${user.email}.`);
     console.log(`Active profiles checked: ${profiles.length}.`);
-    console.log(`Profiles skipped because they already had categories: ${skippedProfiles}.`);
+    console.log(`Categories deleted: ${deletedCount}.`);
     console.log(`Categories created or refreshed: ${createdCount}.`);
   } catch (error) {
     await client.query("ROLLBACK");
