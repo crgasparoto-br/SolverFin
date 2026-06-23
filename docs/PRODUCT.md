@@ -72,6 +72,8 @@ O usuario recebe sugestoes de extracao, classificacao, conciliacao e insights, s
 - **IA como assistente:** IA sugere, explica e acelera; nao deve tomar decisoes irreversiveis sozinha.
 - **Rotina mobile-first:** fluxos diarios devem funcionar bem no celular.
 - **MVP pragmatico:** priorizar controle financeiro essencial antes de integracoes sofisticadas.
+- **Interface enxuta:** telas devem priorizar dados, acoes e revisao, evitando textos longos e cards explicativos desnecessarios.
+- **CRUD rapido:** cadastros e edicoes devem usar pop-up/modal sempre que possivel, mantendo o usuario na tela atual.
 
 ## Escopo MVP
 
@@ -145,6 +147,10 @@ A IA nao deve:
 ## Experiencia esperada
 
 A experiencia deve ser direta, calma e orientada a acao. Textos visiveis devem explicar o que o usuario pode revisar, corrigir, confirmar ou acompanhar, sem jargao tecnico.
+
+A experiencia de manutencao de registros deve evitar trocas de pagina desnecessarias. Sempre que o escopo permitir, criar e editar contas, cartoes, categorias, lancamentos, recorrencias, contas a pagar/receber, orcamentos e cadastros auxiliares por modal ou pop-up contextual.
+
+Telas operacionais devem ser clean: listas, filtros, acoes rapidas, estados vazios compactos e icones acessiveis devem ter prioridade sobre cards explicativos, banners permanentes e blocos longos de texto.
 
 Exemplos de tom adequado:
 

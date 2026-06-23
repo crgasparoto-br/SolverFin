@@ -7,12 +7,12 @@ SolverFin e um produto financeiro para uso pessoal, familiar, MEI, profissional 
 Leia, nesta ordem:
 
 1. a issue em andamento;
-2. `README.md`;
-3. `AGENTS.md`;
-4. `docs/PRODUCT.md`;
-5. `docs/ARCHITECTURE.md`;
-6. ADRs em `docs/adr/` relacionadas a mudanca;
-7. `docs/BRAND.md` quando houver interface ou texto visivel.
+2. README.md;
+3. AGENTS.md;
+4. docs/PRODUCT.md;
+5. docs/ARCHITECTURE.md;
+6. ADRs em docs/adr/ relacionadas a mudanca;
+7. docs/BRAND.md quando houver interface ou texto visivel.
 
 ## Escopo
 
@@ -40,6 +40,13 @@ Nunca inclua em codigo, fixtures, logs, prints ou documentacao:
 - dados que identifiquem uma pessoa real.
 
 Use exemplos ficticios, minimizados e seguros.
+
+## Padroes de interface
+
+- Para criacao e edicao de registros, use pop-up ou modal sempre que possivel, evitando navegar para outra tela quando o formulario couber em fluxo contextual.
+- Mantenha telas limpas, com foco em dados e acoes; evite textos longos, banners permanentes e cards explicativos sem necessidade operacional.
+- Prefira icones para acoes recorrentes quando o contexto for claro, mantendo tooltip, nome acessivel ou texto equivalente.
+- Use pagina dedicada apenas para formularios longos, fluxos guiados, comparacoes amplas ou quando o contexto visual for indispensavel.
 
 ## Validacao
 

@@ -32,6 +32,8 @@ Se houver conflito entre issue, documentacao e codigo, explicite o conflito na P
 8. Nao remova dados financeiros de forma destrutiva sem requisito explicito; prefira exclusao logica e trilha de auditoria.
 9. Use validacao de entrada, tipos explicitos e erros padronizados quando houver codigo.
 10. Atualize documentacao e ADRs quando mudar arquitetura, modelo de dados, contrato publico, fluxo relevante ou decisao duradoura.
+11. Em telas com criacao ou edicao de registros, priorize pop-up/modal sempre que possivel, mantendo a listagem ou contexto atual visivel.
+12. Mantenha telas clean: poucos textos explicativos, poucos cards informativos permanentes e uso de icones acessiveis para acoes recorrentes quando o contexto for claro.
 
 ## Padrao de trabalho
 
