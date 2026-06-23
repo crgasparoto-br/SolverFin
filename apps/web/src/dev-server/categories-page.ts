@@ -85,7 +85,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
             <div class="category-toolbar">
               <div>
                 <h2>Categorias por hierarquia</h2>
-                <p class="sf-muted">Categorias arquivadas seguem visiveis para preservar historico financeiro.</p>
+                <p class="sf-muted">Clique em uma categoria para editar, arquivar ou restaurar.</p>
               </div>
               <div class="filter-chips" aria-label="Filtros locais de categorias">
                 ${renderFilterButton("Todas", "all", true)}
@@ -103,15 +103,15 @@ export async function renderCategoriesPage(token: string): Promise<string> {
 
         <section class="category-modal" data-category-modal hidden aria-hidden="true">
           <div class="category-modal-backdrop" data-close-category-modal></div>
-          <div class="category-dialog" role="dialog" aria-modal="true" aria-labelledby="new-category-title">
+          <div class="category-dialog" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
             <div class="category-dialog-header">
               <div>
-                <p class="sf-eyebrow">Novo cadastro</p>
-                <h2 id="new-category-title">Nova categoria</h2>
+                <p class="sf-eyebrow" data-category-modal-eyebrow>Novo cadastro</p>
+                <h2 id="category-modal-title" data-category-modal-title>Nova categoria</h2>
               </div>
               <button class="icon-button" type="button" data-close-category-modal aria-label="Fechar modal">x</button>
             </div>
-            <form class="category-create-form" data-api-form data-api-path="/api/categories">
+            <form class="category-form" data-api-form data-category-form data-api-path="/api/categories">
               <label>Nome<input name="name" autocomplete="off" required /></label>
               <label>Tipo
                 <select name="kind" required>
@@ -126,7 +126,8 @@ export async function renderCategoriesPage(token: string): Promise<string> {
               </label>
               <div class="dialog-actions">
                 <button class="sf-button secondary" type="button" data-close-category-modal>Cancelar</button>
-                <button class="sf-button" type="submit">Criar categoria</button>
+                <button class="secondary-button danger-action" type="button" data-category-status-action hidden></button>
+                <button class="sf-button" type="submit" data-category-submit>Criar categoria</button>
               </div>
             </form>
           </div>
@@ -212,30 +213,29 @@ function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRe
   const children = categories
     .filter((candidate) => candidate.parentCategoryId === category.id)
     .sort((left, right) => left.name.localeCompare(right.name));
-  const isArchived = category.status === "archived";
   const displayName = getCategoryDisplayName(category, categories);
 
   return `
     <article class="category-tree-node ${category.parentCategoryId ? "category-tree-child" : ""}" data-category-item data-category-kind="${escapeHtml(category.kind)}" data-category-status="${escapeHtml(category.status)}">
-      <div class="category-node-main">
+      <button
+        class="category-node-button"
+        type="button"
+        data-edit-category
+        data-category-id="${escapeHtml(category.id)}"
+        data-category-name="${escapeHtml(category.name)}"
+        data-category-kind-value="${escapeHtml(category.kind)}"
+        data-category-status-value="${escapeHtml(category.status)}"
+        data-category-parent-id="${escapeHtml(category.parentCategoryId ?? "")}"
+        aria-label="Editar categoria ${escapeHtml(category.name)}"
+      >
         <span class="category-dot category-dot-${escapeHtml(category.kind)}" aria-hidden="true"></span>
-        <div>
+        <span class="category-node-text">
           <strong>${escapeHtml(category.name)}</strong>
           <span>${category.parentCategoryId ? "Categoria detalhada" : "Categoria principal"} - ${escapeHtml(formatGenericStatus(category.status))}</span>
-        </div>
+        </span>
         <span class="category-path">${escapeHtml(displayName)}</span>
-      </div>
-      <details class="category-actions">
-        <summary>Acoes</summary>
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/categories/${escapeHtml(category.id)}">Abrir detalhe</button>
-        <form data-api-form data-api-method="PATCH" data-api-path="/api/categories/${escapeHtml(category.id)}" class="inline-edit-form">
-          <label>Nome<input name="name" value="${escapeHtml(category.name)}" required /></label>
-          <label>Tipo<select name="kind">${renderCategoryKindOptions(category.kind)}</select></label>
-          <label class="full-span">Categoria superior<select name="parentCategoryId"><option value="">Categoria principal</option>${renderCategoryParentOptions(categories, category)}</select></label>
-          <button type="submit">Salvar edicao</button>
-        </form>
-        ${isArchived ? renderActionButton("Restaurar categoria", `/api/categories/${category.id}/restore`) : renderActionButton("Arquivar categoria", `/api/categories/${category.id}/archive`, "Arquivar esta categoria? Novos lancamentos nao devem usa-la.")}
-      </details>
+        <span class="category-edit-icon" aria-hidden="true">...</span>
+      </button>
       ${children.length > 0 ? `<div class="category-tree-children">${children.map((child) => renderCategoryTreeNode(child, categories)).join("")}</div>` : ""}
     </article>
   `;
@@ -304,10 +304,6 @@ function formatGenericStatus(status: string): string {
   if (status === "active") return "Ativo";
   if (status === "archived") return "Arquivado";
   return status;
-}
-
-function renderActionButton(label: string, path: string, confirmation?: string): string {
-  return `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(path)}"${confirmation ? ` data-api-confirm="${escapeHtml(confirmation)}"` : ""}>${escapeHtml(label)}</button>`;
 }
 
 function renderEmptyState(title: string, description: string): string {
@@ -405,29 +401,6 @@ function apiFormScript(): string {
           if (submitButton) submitButton.disabled = false;
         });
       });
-
-      document.querySelectorAll("[data-api-action]").forEach((button) => {
-        const container = button.closest(".category-actions") || button.parentElement;
-        const status = ensureStatus(container);
-        button.addEventListener("click", async () => {
-          const confirmation = button.dataset.apiConfirm;
-          if (confirmation && !window.confirm(confirmation)) return;
-          button.disabled = true;
-          status.className = "form-status sf-muted";
-          status.textContent = "Enviando...";
-          const response = await fetch(button.dataset.apiPath, {
-            method: button.dataset.apiMethod || "POST",
-            headers: { "content-type": "application/json" },
-          });
-          status.className = response.ok ? "form-status success" : "form-status sf-error";
-          status.textContent = await readApiMessage(response);
-          if (response.ok && button.dataset.apiMethod !== "GET") {
-            window.setTimeout(() => window.location.reload(), 450);
-            return;
-          }
-          button.disabled = false;
-        });
-      });
     </script>
   `;
 }
@@ -436,16 +409,26 @@ function categoryPageScript(): string {
   return `
     <script>
       const modal = document.querySelector("[data-category-modal]");
+      const modalTitle = document.querySelector("[data-category-modal-title]");
+      const modalEyebrow = document.querySelector("[data-category-modal-eyebrow]");
+      const categoryForm = document.querySelector("[data-category-form]");
+      const submitButton = document.querySelector("[data-category-submit]");
+      const statusActionButton = document.querySelector("[data-category-status-action]");
       const openButton = document.querySelector("[data-open-category-modal]");
       const closeButtons = document.querySelectorAll("[data-close-category-modal]");
-      const firstField = modal?.querySelector("input, select, button");
+      let lastTrigger = openButton;
 
-      function openModal() {
+      function formStatus() {
+        return categoryForm ? ensureStatus(categoryForm) : null;
+      }
+
+      function openModal(trigger) {
         if (!modal) return;
+        lastTrigger = trigger || openButton;
         modal.hidden = false;
         modal.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
-        window.setTimeout(() => firstField?.focus(), 0);
+        window.setTimeout(() => categoryForm?.elements.name?.focus(), 0);
       }
 
       function closeModal() {
@@ -453,13 +436,79 @@ function categoryPageScript(): string {
         modal.hidden = true;
         modal.setAttribute("aria-hidden", "true");
         document.body.classList.remove("modal-open");
-        openButton?.focus();
+        lastTrigger?.focus();
       }
 
-      openButton?.addEventListener("click", openModal);
+      function resetStatus() {
+        const status = formStatus();
+        if (!status) return;
+        status.className = "form-status sf-muted";
+        status.textContent = "";
+      }
+
+      function openCreateModal(trigger) {
+        if (!categoryForm) return;
+        categoryForm.reset();
+        categoryForm.dataset.apiPath = "/api/categories";
+        delete categoryForm.dataset.apiMethod;
+        modalEyebrow.textContent = "Novo cadastro";
+        modalTitle.textContent = "Nova categoria";
+        submitButton.textContent = "Criar categoria";
+        statusActionButton.hidden = true;
+        resetStatus();
+        openModal(trigger);
+      }
+
+      function openEditModal(button) {
+        if (!categoryForm) return;
+        categoryForm.reset();
+        categoryForm.dataset.apiPath = "/api/categories/" + button.dataset.categoryId;
+        categoryForm.dataset.apiMethod = "PATCH";
+        categoryForm.elements.name.value = button.dataset.categoryName || "";
+        categoryForm.elements.kind.value = button.dataset.categoryKindValue || "expense";
+        categoryForm.elements.parentCategoryId.value = button.dataset.categoryParentId || "";
+        modalEyebrow.textContent = "Editar categoria";
+        modalTitle.textContent = button.dataset.categoryName || "Categoria";
+        submitButton.textContent = "Salvar edicao";
+        statusActionButton.hidden = false;
+        statusActionButton.textContent = button.dataset.categoryStatusValue === "archived" ? "Restaurar categoria" : "Arquivar categoria";
+        statusActionButton.dataset.apiPath = "/api/categories/" + button.dataset.categoryId + (button.dataset.categoryStatusValue === "archived" ? "/restore" : "/archive");
+        statusActionButton.dataset.apiConfirm = button.dataset.categoryStatusValue === "archived" ? "" : "Arquivar esta categoria? Novos lancamentos nao devem usa-la.";
+        resetStatus();
+        openModal(button);
+      }
+
+      openButton?.addEventListener("click", () => openCreateModal(openButton));
       closeButtons.forEach((button) => button.addEventListener("click", closeModal));
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && modal && !modal.hidden) closeModal();
+      });
+
+      document.querySelectorAll("[data-edit-category]").forEach((button) => {
+        button.addEventListener("click", () => openEditModal(button));
+      });
+
+      statusActionButton?.addEventListener("click", async () => {
+        const path = statusActionButton.dataset.apiPath;
+        if (!path) return;
+        const confirmation = statusActionButton.dataset.apiConfirm;
+        if (confirmation && !window.confirm(confirmation)) return;
+        const status = formStatus();
+        statusActionButton.disabled = true;
+        if (status) {
+          status.className = "form-status sf-muted";
+          status.textContent = "Enviando...";
+        }
+        const response = await fetch(path, { method: "POST", headers: { "content-type": "application/json" } });
+        if (status) {
+          status.className = response.ok ? "form-status success" : "form-status sf-error";
+          status.textContent = await readApiMessage(response);
+        }
+        if (response.ok) {
+          window.setTimeout(() => window.location.reload(), 450);
+          return;
+        }
+        statusActionButton.disabled = false;
       });
 
       const filterButtons = Array.from(document.querySelectorAll("[data-category-filter]"));
@@ -501,8 +550,8 @@ function renderPage(input: { title: string; body: string }): string {
 function pageCss(): string {
   return `
     :root { color-scheme: light; --bg: #f8fafc; --surface: #ffffff; --surface-soft: #eef5f8; --text: #0f172a; --muted: #475569; --line: #cbd5e1; --primary: #0f3d4c; --primary-soft: #e8f3f6; --cyan: #0891b2; --success: #166534; --success-bg: #dcfce7; --danger: #dc2626; --danger-bg: #fee2e2; --warning: #b45309; --warning-bg: #fef3c7; }
-    * { box-sizing: border-box; } body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; } body.modal-open { overflow: hidden; } h1, h2, h3, p { margin: 0; } h1 { font-size: clamp(1.65rem, 4vw, 2.15rem); line-height: 1.12; } h2 { font-size: 1rem; line-height: 1.3; } h3 { font-size: .95rem; line-height: 1.3; } a { color: inherit; }
-    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid rgba(34, 211, 238, .55); outline-offset: 2px; } input, select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: inherit; min-height: 44px; padding: 0 12px; width: 100%; } label { color: var(--text); display: grid; font-weight: 700; gap: 8px; }
+    * { box-sizing: border-box; } body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif; } body.modal-open { overflow: hidden; } h1, h2, h3, p { margin: 0; } h1 { font-size: clamp(1.65rem, 4vw, 2.15rem); line-height: 1.12; } h2 { font-size: 1rem; line-height: 1.3; } h3 { font-size: .95rem; line-height: 1.3; } a { color: inherit; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid rgba(34,211,238,.55); outline-offset: 2px; } input, select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: inherit; min-height: 44px; padding: 0 12px; width: 100%; } label { color: var(--text); display: grid; font-weight: 700; gap: 8px; }
     .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; } .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; min-height: 44px; text-decoration: none; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; } .logout { background: rgba(255,255,255,.12); margin-top: auto; }
     .main-area { min-width: 0; } .topbar { align-items: center; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; min-height: 64px; padding: 0 24px; position: sticky; top: 0; z-index: 5; } .topbar div { display: grid; gap: 2px; } .topbar span, .sf-muted { color: var(--muted); line-height: 1.5; } main { display: grid; gap: 20px; margin: 0 auto; max-width: 1180px; padding: 24px; width: 100%; }
     .sf-button, button, .secondary-button { align-items: center; border: 0; border-radius: 8px; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; text-decoration: none; } .sf-button, button { background: var(--primary); color: white; } button:disabled { cursor: not-allowed; opacity: .58; } .sf-button.secondary, .secondary-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); } .danger-action { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .icon-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 40px; padding: 0; width: 40px; }
@@ -511,11 +560,11 @@ function pageCss(): string {
     .categories-workspace { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(16rem, .38fr) minmax(0, 1fr); } .categories-insights { position: sticky; top: 88px; } .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading.compact { align-items: start; } .kind-meters { display: grid; gap: 14px; } .kind-meter { display: grid; gap: 8px; } .kind-meter div:first-child { align-items: center; display: flex; justify-content: space-between; gap: 12px; } .kind-meter span { color: var(--muted); font-size: .86rem; } .meter-track { background: var(--primary-soft); border-radius: 999px; height: 8px; overflow: hidden; } .meter-fill { border-radius: inherit; display: block; height: 100%; } .meter-expense { background: var(--danger); } .meter-income { background: var(--success); } .meter-transfer { background: var(--cyan); } .catalog-note { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 6px; padding: 12px; }
     .category-directory { padding: 0; overflow: hidden; } .category-toolbar { align-items: start; border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 18px; } .category-toolbar > div:first-child { display: grid; gap: 4px; min-width: 0; } .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; } .filter-chip { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 34px; padding: 0 12px; } .filter-chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: white; }
     .category-tree-list { display: grid; gap: 0; } .category-kind-group { border-bottom: 1px solid var(--line); display: grid; gap: 12px; padding: 18px; } .category-kind-group:last-child { border-bottom: 0; } .category-kind-group header { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .category-kind-group header > div { display: grid; gap: 4px; min-width: 0; } .kind-badge, .category-path { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; max-width: 100%; overflow-wrap: anywhere; padding: 6px 10px; } .kind-badge-expense { background: var(--danger-bg); color: var(--danger); } .kind-badge-income { background: var(--success-bg); color: var(--success); } .kind-badge-transfer { background: #e0f2fe; color: #0369a1; }
-    .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 18px; padding-left: 16px; } .category-tree-node { background: #fbfdfe; border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; padding: 12px; } .category-tree-child { background: var(--surface); } .category-node-main { align-items: start; display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto; } .category-node-main > div { display: grid; gap: 4px; min-width: 0; } .category-node-main strong { overflow-wrap: anywhere; } .category-node-main span:not(.category-path):not(.category-dot) { color: var(--muted); line-height: 1.45; } .category-dot { border-radius: 999px; height: 10px; margin-top: 7px; width: 10px; } .category-dot-expense { background: var(--danger); } .category-dot-income { background: var(--success); } .category-dot-transfer { background: var(--cyan); }
-    .category-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; padding: 12px; } .category-actions summary { color: var(--primary); cursor: pointer; font-weight: 900; } .inline-edit-form, .category-create-form { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .inline-edit-form button, .inline-edit-form .form-status, .full-span { grid-column: 1 / -1; } .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
-    .category-modal[hidden] { display: none; } .category-modal { inset: 0; position: fixed; z-index: 20; } .category-modal-backdrop { background: rgba(6, 25, 35, .48); inset: 0; position: absolute; } .category-dialog { background: var(--surface); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.24); display: grid; gap: 16px; left: 50%; max-height: calc(100svh - 32px); max-width: 560px; overflow: auto; padding: 18px; position: absolute; top: 50%; transform: translate(-50%, -50%); width: min(calc(100vw - 32px), 560px); } .category-dialog-header { align-items: start; display: flex; gap: 12px; justify-content: space-between; } .category-dialog-header > div { display: grid; gap: 4px; } .dialog-actions { display: flex; gap: 10px; grid-column: 1 / -1; justify-content: flex-end; }
+    .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 18px; padding-left: 16px; } .category-tree-node { background: #fbfdfe; border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; padding: 12px; } .category-tree-child { background: var(--surface); } .category-node-button { align-items: start; background: transparent; border: 0; color: inherit; display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto auto; justify-content: stretch; min-height: auto; padding: 0; text-align: left; width: 100%; } .category-node-button:hover .category-edit-icon, .category-node-button:focus-visible .category-edit-icon { background: var(--primary); color: white; } .category-node-text { display: grid; gap: 4px; min-width: 0; } .category-node-text strong { overflow-wrap: anywhere; } .category-node-text span { color: var(--muted); font-weight: 500; line-height: 1.45; } .category-edit-icon { align-items: center; align-self: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); display: inline-flex; font-weight: 900; justify-content: center; min-height: 32px; min-width: 32px; padding: 0 8px; } .category-dot { border-radius: 999px; height: 10px; margin-top: 7px; width: 10px; } .category-dot-expense { background: var(--danger); } .category-dot-income { background: var(--success); } .category-dot-transfer { background: var(--cyan); }
+    .category-form { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .category-form .form-status, .full-span { grid-column: 1 / -1; } .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
+    .category-modal[hidden] { display: none; } .category-modal { inset: 0; position: fixed; z-index: 20; } .category-modal-backdrop { background: rgba(6,25,35,.48); inset: 0; position: absolute; } .category-dialog { background: var(--surface); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.24); display: grid; gap: 16px; left: 50%; max-height: calc(100svh - 32px); max-width: 560px; overflow: auto; padding: 18px; position: absolute; top: 50%; transform: translate(-50%, -50%); width: min(calc(100vw - 32px), 560px); } .category-dialog-header { align-items: start; display: flex; gap: 12px; justify-content: space-between; } .category-dialog-header > div { display: grid; gap: 4px; } .dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; grid-column: 1 / -1; justify-content: flex-end; }
     @media (max-width: 1024px) { .category-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .categories-workspace { grid-template-columns: 1fr; } .categories-insights { position: static; } }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .categories-hero, .category-toolbar, .category-kind-group header, .section-heading, .category-node-main { align-items: stretch; display: grid; } .categories-hero .sf-button { width: 100%; } .filter-chips { justify-content: flex-start; } .category-summary-grid, .inline-edit-form, .category-create-form { grid-template-columns: 1fr; } .category-path { justify-self: start; } .dialog-actions { display: grid; } }
+    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .categories-hero, .category-toolbar, .category-kind-group header, .section-heading, .category-node-button { align-items: stretch; display: grid; } .category-node-button { grid-template-columns: auto minmax(0, 1fr) auto; } .category-path { grid-column: 2 / -1; justify-self: start; } .category-edit-icon { grid-column: 3; grid-row: 1; } .categories-hero .sf-button { width: 100%; } .filter-chips { justify-content: flex-start; } .category-summary-grid, .category-form { grid-template-columns: 1fr; } .dialog-actions { display: grid; } }
   `;
 }
 
