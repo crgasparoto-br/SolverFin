@@ -1,4 +1,5 @@
 import "dotenv/config";
+
 import { createHash } from "node:crypto";
 import pg from "pg";
 
@@ -61,16 +62,12 @@ async function listProfiles(client) {
   return result.rows;
 }
 
-async function hasSeededDefaultCategories(client, profile) {
+async function hasExistingCategoryStructure(client, profile) {
   const result = await client.query(
     `select 1 from "Category"
-     where "organizationId" = $1 and "financialProfileId" = $2 and "id" = $3
+     where "organizationId" = $1 and "financialProfileId" = $2
      limit 1`,
-    [
-      profile.organizationId,
-      profile.id,
-      buildDeterministicUuid([profile.organizationId, profile.id, "default-category", "EXPENSE", "Moradia"]),
-    ],
+    [profile.organizationId, profile.id],
   );
 
   return result.rowCount > 0;
@@ -79,7 +76,7 @@ async function hasSeededDefaultCategories(client, profile) {
 async function insertCategory(client, profile, category) {
   await client.query(
     `insert into "Category"
-       ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "kind", "status", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+     ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "kind", "status", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
      values ($1, $2, $3, $4, $5, $6, 'ACTIVE', $7, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
      on conflict ("id") do update set
        "parentCategoryId" = excluded."parentCategoryId",
@@ -101,7 +98,7 @@ async function insertCategory(client, profile, category) {
 }
 
 async function seedProfileDefaultCategories(client, profile) {
-  if (await hasSeededDefaultCategories(client, profile)) {
+  if (await hasExistingCategoryStructure(client, profile)) {
     return 0;
   }
 
@@ -164,7 +161,8 @@ async function main() {
     }
 
     await client.query("COMMIT");
-    console.log(`Default category seed applied. Categories created or refreshed: ${createdCount}.`);
+    console.log(`Default category seed applied.
+Categories created or refreshed: ${createdCount}.`);
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
