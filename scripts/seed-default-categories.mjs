@@ -9,14 +9,45 @@ const DEFAULT_CATEGORY_TREE = [
   {
     kind: "EXPENSE",
     roots: [
-      ["Moradia", ["Aluguel", "Condominio", "Agua", "Energia eletrica", "Gas", "Internet", "Telefone", "IPTU", "Manutencao residencial"]],
+      [
+        "Moradia",
+        [
+          "Aluguel",
+          "Condominio",
+          "Agua",
+          "Energia eletrica",
+          "Gas",
+          "Internet",
+          "Telefone",
+          "IPTU",
+          "Manutencao residencial",
+        ],
+      ],
       ["Alimentacao", ["Mercado", "Feira", "Padaria", "Restaurante", "Delivery", "Lanches"]],
-      ["Transporte", ["Combustivel", "Transporte publico", "Aplicativos de transporte", "Estacionamento", "Pedagio", "Manutencao do veiculo", "Seguro do veiculo", "IPVA e licenciamento"]],
+      [
+        "Transporte",
+        [
+          "Combustivel",
+          "Transporte publico",
+          "Aplicativos de transporte",
+          "Estacionamento",
+          "Pedagio",
+          "Manutencao do veiculo",
+          "Seguro do veiculo",
+          "IPVA e licenciamento",
+        ],
+      ],
       ["Saude", ["Plano de saude", "Consultas", "Exames", "Medicamentos", "Dentista", "Terapia"]],
       ["Educacao", ["Escola ou faculdade", "Cursos", "Livros", "Material escolar"]],
-      ["Lazer", ["Viagens", "Cinema e eventos", "Assinaturas e streaming", "Hobbies", "Bares e restaurantes"]],
+      [
+        "Lazer",
+        ["Viagens", "Cinema e eventos", "Assinaturas e streaming", "Hobbies", "Bares e restaurantes"],
+      ],
       ["Compras", ["Vestuario", "Eletronicos", "Casa e decoracao", "Presentes", "Cuidados pessoais"]],
-      ["Servicos financeiros", ["Tarifas bancarias", "Juros", "Multas", "Anuidade de cartao", "Seguros"]],
+      [
+        "Servicos financeiros",
+        ["Tarifas bancarias", "Juros", "Multas", "Anuidade de cartao", "Seguros"],
+      ],
       ["Familia e dependentes", ["Filhos", "Pets", "Ajuda familiar"]],
       ["Impostos e taxas", ["Imposto de renda", "Taxas publicas", "Documentos e cartorio"]],
       ["Outros", ["Doacoes", "Diversos", "Ajustes"]],
@@ -25,7 +56,10 @@ const DEFAULT_CATEGORY_TREE = [
   {
     kind: "INCOME",
     roots: [
-      ["Trabalho", ["Salario", "Pro-labore", "Bonus", "Comissoes", "Freelance", "13o salario", "Ferias"]],
+      [
+        "Trabalho",
+        ["Salario", "Pro-labore", "Bonus", "Comissoes", "Freelance", "13o salario", "Ferias"],
+      ],
       ["Negocios", ["Vendas", "Prestacao de servicos", "Reembolsos de clientes"]],
       ["Investimentos", ["Rendimentos", "Dividendos", "Juros", "Alugueis recebidos", "Venda de ativos"]],
       ["Reembolsos", ["Reembolso de despesas", "Estornos", "Cashback"]],
