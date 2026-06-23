@@ -11,11 +11,11 @@ export function renderLoginPage(errorMessage?: string): string {
         <section class="panel" aria-labelledby="login-title">
           <p class="eyebrow">Ambiente local de desenvolvimento</p>
           <h1 id="login-title">Entrar no SolverFin</h1>
-          <p class="muted">Use a conta demo fictícia para acessar o dashboard navegável do MVP.</p>
+          <p class="muted">Use a conta demo ficticia para acessar o dashboard navegavel do MVP.</p>
           ${errorMessage ? `<p class="error" role="alert">${escapeHtml(errorMessage)}</p>` : ""}
           <form id="login-form" method="post" action="/api/session">
             <label>Email<input name="email" type="email" autocomplete="username" value="demo@solverfin.example.invalid" required /></label>
-            <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha demo fictícia" required /></label>
+            <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha demo ficticia" required /></label>
             <button type="submit">Entrar</button>
           </form>
         </section>
@@ -59,14 +59,14 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
       currentLabel,
       content: `
         ${renderPageHeading({
-          eyebrow: "Funcionalidade em preparação",
+          eyebrow: "Funcionalidade em preparacao",
           title: currentLabel,
           description:
-            "Esta área já faz parte da navegação do MVP, mas ainda não simula operações financeiras.",
+            "Esta area ja faz parte da navegacao do MVP, mas ainda nao simula operacoes financeiras.",
         })}
         <section class="panel placeholder-state">
-          <h2>Próximo passo</h2>
-          <p class="muted">Quando a API desta área estiver conectada, esta tela deve seguir o mesmo padrão de lista, estado vazio e formulário das telas já navegáveis.</p>
+          <h2>Proximo passo</h2>
+          <p class="muted">Quando a API desta area estiver conectada, esta tela deve seguir o mesmo padrao de lista, estado vazio e formulario das telas ja navegaveis.</p>
         </section>
       `,
     });
@@ -86,15 +86,15 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
         <div>
           <p class="eyebrow">Perfil pessoal demo</p>
           <h1>Resumo financeiro</h1>
-          <p class="muted">Dados fictícios do banco local de desenvolvimento.</p>
+          <p class="muted">Dados ficticios do banco local de desenvolvimento.</p>
         </div>
         <span class="demo-pill">Demo seguro</span>
       </section>
       <section class="summary-grid" aria-label="Indicadores principais">
-        ${renderMetricCard("Disponível estimado", summary.data.availableBalanceMinor, "Saldo das contas ativas")}
-        ${renderMetricCard("Receitas do mês", summary.data.incomeMinor, "Entradas postadas no mês atual")}
-        ${renderMetricCard("Despesas do mês", summary.data.expensesMinor, "Saídas postadas no mês atual")}
-        ${renderMetricCard("Compromissos previstos", summary.data.plannedCommitmentsMinor, "Lançamentos planejados no mês")}
+        ${renderMetricCard("Disponivel estimado", summary.data.availableBalanceMinor, "Saldo das contas ativas")}
+        ${renderMetricCard("Receitas do mes", summary.data.incomeMinor, "Entradas postadas no mes atual")}
+        ${renderMetricCard("Despesas do mes", summary.data.expensesMinor, "Saidas postadas no mes atual")}
+        ${renderMetricCard("Compromissos previstos", summary.data.plannedCommitmentsMinor, "Lancamentos planejados no mes")}
       </section>
       <section class="panel list-panel">
         <div class="section-heading">
@@ -114,13 +114,13 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
                 </article>
               `,
               )
-              .join("") || renderEmptyState("Nenhum lançamento ainda.", "Crie lançamentos para acompanhar a rotina financeira deste perfil.")
+              .join("") || renderEmptyState("Nenhum lancamento ainda.", "Crie lancamentos para acompanhar a rotina financeira deste perfil.")
           }
         </div>
       </section>
       <section class="panel review-note">
-        <h2>Pendências de revisão</h2>
-        <p class="muted">Revise qualquer previsão antes de usar como apoio para decisões financeiras.</p>
+        <h2>Pendencias de revisao</h2>
+        <p class="muted">Revise qualquer previsao antes de usar como apoio para decisoes financeiras.</p>
       </section>
     `,
   });
@@ -140,7 +140,7 @@ export async function renderAccountsPage(token: string): Promise<string> {
       ${renderPageHeading({
         eyebrow: "Organizar base financeira",
         title: "Contas",
-        description: "Cadastre contas correntes, poupança, carteira ou investimento.",
+        description: "Cadastre contas correntes, poupanca, carteira ou investimento.",
       })}
       <section class="workspace-grid wide-form">
         <section class="panel list-panel">
@@ -152,7 +152,7 @@ export async function renderAccountsPage(token: string): Promise<string> {
             ${
               accounts.data.accounts
                 .map(renderAccountRow)
-                .join("") || renderEmptyState("Nenhuma conta cadastrada.", "Crie a primeira conta para conectar saldos e lançamentos.")
+                .join("") || renderEmptyState("Nenhuma conta cadastrada.", "Crie a primeira conta para conectar saldos e lancamentos.")
             }
           </div>
         </section>
@@ -160,11 +160,7 @@ export async function renderAccountsPage(token: string): Promise<string> {
           <h2>Nova conta</h2>
           <form data-api-form data-api-path="/api/accounts">
             <label>Nome<input name="name" required /></label>
-            <label>Tipo
-              <select name="kind" required>
-                ${renderAccountKindOptions()}
-              </select>
-            </label>
+            <label>Tipo<select name="kind" required>${renderAccountKindOptions()}</select></label>
             <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money type="text" inputmode="decimal" placeholder="0,00" /></label>
             <button type="submit">Criar conta</button>
           </form>
@@ -186,47 +182,60 @@ export async function renderCategoriesPage(token: string): Promise<string> {
   }
 
   const categoryItems = categories.data.categories;
+  const summary = summarizeCategories(categoryItems);
 
   return renderAuthenticatedPage({
     pathname: "/categorias",
     currentLabel: "Categorias",
     content: `
-      ${renderPageHeading({
-        eyebrow: "Padronizar classificação",
-        title: "Categorias",
-        description: "Organize receitas e despesas em categorias principais e detalhadas.",
-      })}
-      <section class="workspace-grid wide-form">
-        <section class="panel list-panel">
-          <div class="section-heading">
+      <section class="category-hero">
+        <div>
+          <p class="eyebrow">Padronizar classificacao</p>
+          <h1>Categorias</h1>
+          <p class="muted">Organize receitas, despesas e transferencias em uma estrutura clara para relatorios, orcamentos e revisoes futuras.</p>
+        </div>
+        <a class="button-link" href="#nova-categoria">Nova categoria</a>
+      </section>
+      <section class="category-summary-grid" aria-label="Resumo das categorias">
+        ${renderCategorySummaryCard("Total", categoryItems.length, "Itens cadastrados no perfil", "all")}
+        ${renderCategorySummaryCard("Ativas", summary.activeCount, "Disponiveis para novos lancamentos", "active")}
+        ${renderCategorySummaryCard("Arquivadas", summary.archivedCount, "Mantidas para preservar historico", "archived")}
+        ${renderCategorySummaryCard("Detalhadas", summary.childCount, "Subcategorias ligadas a uma principal", "child")}
+      </section>
+      <section class="category-workspace">
+        <section class="panel category-panel">
+          <div class="category-toolbar">
             <div>
               <h2>Categorias por hierarquia</h2>
-              <p class="muted">Categorias arquivadas permanecem visíveis aqui para preservar histórico.</p>
+              <p class="muted">Revise a estrutura por tipo financeiro. Caminhos completos aparecem em destaque para evitar classificacoes duplicadas.</p>
             </div>
-            <span>${categoryItems.length} itens</span>
+            <div class="status-chips" aria-label="Resumo por tipo">
+              ${renderStatusChip("Despesas", summary.expenseCount, "expense")}
+              ${renderStatusChip("Receitas", summary.incomeCount, "confirmed")}
+              ${renderStatusChip("Transferencias", summary.transferCount, "transfer")}
+            </div>
           </div>
           <div class="category-tree-list">
             ${renderCategoryTree(categoryItems)}
           </div>
         </section>
-        <section class="panel form-panel">
-          <h2>Nova categoria</h2>
+        <aside id="nova-categoria" class="panel form-panel category-create-panel">
+          <div>
+            <p class="eyebrow">Manter classificacao</p>
+            <h2>Nova categoria</h2>
+            <p class="muted">Use nomes curtos e escolha uma categoria superior quando precisar detalhar um grupo existente.</p>
+          </div>
           <form data-api-form data-api-path="/api/categories">
-            <label>Nome<input name="name" required /></label>
-            <label>Tipo
-              <select name="kind" required>
-                ${renderCategoryKindOptions()}
-              </select>
-            </label>
-            <label class="full-span">Categoria superior
-              <select name="parentCategoryId">
-                <option value="">Categoria principal</option>
-                ${renderCategoryParentOptions(categoryItems)}
-              </select>
-            </label>
+            <label class="full-span">Nome<input name="name" required placeholder="Ex.: Alimentacao, Salario, Pix entre contas" /></label>
+            <label>Tipo<select name="kind" required>${renderCategoryKindOptions()}</select></label>
+            <label>Categoria superior<select name="parentCategoryId"><option value="">Categoria principal</option>${renderCategoryParentOptions(categoryItems)}</select></label>
             <button type="submit">Criar categoria</button>
           </form>
-        </section>
+          <div class="category-guidance" aria-label="Boas praticas para categorias">
+            <strong>Boas praticas</strong>
+            <p class="muted">Categorias principais agrupam a rotina; categorias detalhadas ajudam relatorios sem poluir o cadastro.</p>
+          </div>
+        </aside>
       </section>
       ${apiFormScript()}
     `,
@@ -260,58 +269,33 @@ export async function renderTransactionsPage(token: string): Promise<string> {
         <div>
           <p class="eyebrow">Rotina financeira</p>
           <h1>Extrato da conta</h1>
-          <p class="muted">Acompanhe saldos, entradas, saídas e transferências do perfil ativo.</p>
+          <p class="muted">Acompanhe saldos, entradas, saidas e transferencias do perfil ativo.</p>
         </div>
-        <a class="button-link" href="#novo-lancamento">Novo lançamento</a>
+        <a class="button-link" href="#novo-lancamento">Novo lancamento</a>
       </section>
       <section class="statement-layout">
         <aside class="statement-sidebar" aria-label="Resumo da conta">
           <section class="panel account-period-panel">
-            <div class="account-switcher">
-              <div>
-                <span>Conta</span>
-                <strong>${escapeHtml(selectedAccountName)}</strong>
-              </div>
-              <span class="account-code">${escapeHtml(selectedAccount?.kind ?? "perfil")}</span>
-            </div>
-            <div class="period-control" aria-label="Período do extrato">
-              <span aria-hidden="true">‹</span>
-              <strong>Mês atual</strong>
-              <span aria-hidden="true">›</span>
-            </div>
+            <div class="account-switcher"><div><span>Conta</span><strong>${escapeHtml(selectedAccountName)}</strong></div><span class="account-code">${escapeHtml(selectedAccount?.kind ?? "perfil")}</span></div>
+            <div class="period-control" aria-label="Periodo do extrato"><span aria-hidden="true">‹</span><strong>Mes atual</strong><span aria-hidden="true">›</span></div>
           </section>
           <section class="panel statement-summary-panel">
-            <div class="section-heading compact-heading">
-              <h2>Situação do período</h2>
-              <span>${transactionItems.length} itens</span>
-            </div>
+            <div class="section-heading compact-heading"><h2>Situacao do periodo</h2><span>${transactionItems.length} itens</span></div>
             <dl class="statement-totals">
               <div><dt>Saldo inicial</dt><dd>${formatMoney(statement.openingBalanceMinor)}</dd></div>
               <div><dt>Receitas</dt><dd class="amount-credit">${formatMoney(statement.incomeMinor)}</dd></div>
               <div><dt>Despesas</dt><dd class="amount-debit">${formatMoney(-statement.expenseMinor)}</dd></div>
-              <div><dt>Transferências</dt><dd>${formatMoney(statement.transferMinor)}</dd></div>
+              <div><dt>Transferencias</dt><dd>${formatMoney(statement.transferMinor)}</dd></div>
               <div class="total-line"><dt>Saldo estimado</dt><dd class="${statement.estimatedBalanceMinor < 0 ? "amount-debit" : "amount-credit"}">${formatMoney(statement.estimatedBalanceMinor)}</dd></div>
             </dl>
-            <div class="reconciliation-note">
-              <span>Conciliação</span>
-              <strong>${statement.confirmedCount} confirmados</strong>
-              <p class="muted">${statement.pendingCount} itens ainda precisam de revisão ou confirmação.</p>
-            </div>
+            <div class="reconciliation-note"><span>Conciliacao</span><strong>${statement.confirmedCount} confirmados</strong><p class="muted">${statement.pendingCount} itens ainda precisam de revisao ou confirmacao.</p></div>
           </section>
         </aside>
         <div class="statement-workspace">
           <section class="panel statement-panel">
             <div class="statement-toolbar">
-              <div>
-                <h2>Movimentações</h2>
-                <p class="muted">Valores em BRL, com despesas destacadas em vermelho e entradas em verde.</p>
-              </div>
-              <div class="status-chips" aria-label="Filtros de status">
-                ${renderStatusChip("Todos", transactionItems.length, "all")}
-                ${renderStatusChip("Pendentes", statement.pendingCount, "pending")}
-                ${renderStatusChip("Confirmados", statement.confirmedCount, "confirmed")}
-                ${renderStatusChip("Transferências", statement.transferCount, "transfer")}
-              </div>
+              <div><h2>Movimentacoes</h2><p class="muted">Valores em BRL, com despesas destacadas em vermelho e entradas em verde.</p></div>
+              <div class="status-chips" aria-label="Filtros de status">${renderStatusChip("Todos", transactionItems.length, "all")}${renderStatusChip("Pendentes", statement.pendingCount, "pending")}${renderStatusChip("Confirmados", statement.confirmedCount, "confirmed")}${renderStatusChip("Transferencias", statement.transferCount, "transfer")}</div>
             </div>
             <div class="statement-list">
               ${
@@ -319,55 +303,25 @@ export async function renderTransactionsPage(token: string): Promise<string> {
                   .map(
                     (group) => `
                     <section class="statement-day" aria-label="${escapeHtml(formatDate(group.date))}">
-                      <header>
-                        <time datetime="${escapeHtml(group.date)}">${formatDate(group.date)}</time>
-                        <strong class="${group.totalMinor < 0 ? "amount-debit" : "amount-credit"}">${formatMoney(group.totalMinor)}</strong>
-                      </header>
-                      <div class="statement-day-rows">
-                        ${group.transactions
-                          .map((transaction) =>
-                            renderStatementRow(transaction, selectedAccount?.id, accountOptions, categoryOptions),
-                          )
-                          .join("")}
-                      </div>
+                      <header><time datetime="${escapeHtml(group.date)}">${formatDate(group.date)}</time><strong class="${group.totalMinor < 0 ? "amount-debit" : "amount-credit"}">${formatMoney(group.totalMinor)}</strong></header>
+                      <div class="statement-day-rows">${group.transactions.map((transaction) => renderStatementRow(transaction, selectedAccount?.id, accountOptions, categoryOptions)).join("")}</div>
                     </section>
                   `,
                   )
-                  .join("") || renderEmptyState("Nenhuma movimentação no extrato.", "Registre a primeira movimentação para acompanhar o saldo desta conta.")
+                  .join("") || renderEmptyState("Nenhuma movimentacao no extrato.", "Registre a primeira movimentacao para acompanhar o saldo desta conta.")
               }
             </div>
           </section>
           <section id="novo-lancamento" class="panel form-panel statement-form-panel">
-            <div>
-              <p class="eyebrow">Atualizar extrato</p>
-              <h2>Novo lançamento</h2>
-            </div>
+            <div><p class="eyebrow">Atualizar extrato</p><h2>Novo lancamento</h2></div>
             <form data-api-form data-api-path="/api/transactions">
-              <label>Tipo
-                <select name="kind" required>
-                  ${renderTransactionKindOptions()}
-                </select>
-              </label>
+              <label>Tipo<select name="kind" required>${renderTransactionKindOptions()}</select></label>
               <label>Valor (R$)<input name="amountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
               <label>Data<input name="occurredOn" type="date" required /></label>
-              <label>Conta
-                <select name="accountId" required>
-                  ${renderAccountOptions(accountOptions)}
-                </select>
-              </label>
-              <label>Conta de destino
-                <select name="destinationAccountId">
-                  <option value="">Apenas para transferências</option>
-                  ${renderAccountOptions(accountOptions)}
-                </select>
-              </label>
-              <label>Categoria
-                <select name="categoryId">
-                  <option value="">Sem categoria</option>
-                  ${renderCategoryOptions(categoryOptions)}
-                </select>
-              </label>
-              <label class="full-span">Descrição<input name="description" placeholder="Ex.: Energia elétrica, salário, transferência" /></label>
+              <label>Conta<select name="accountId" required>${renderAccountOptions(accountOptions)}</select></label>
+              <label>Conta de destino<select name="destinationAccountId"><option value="">Apenas para transferencias</option>${renderAccountOptions(accountOptions)}</select></label>
+              <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categoryOptions)}</select></label>
+              <label class="full-span">Descricao<input name="description" placeholder="Ex.: Energia eletrica, salario, transferencia" /></label>
               <button type="submit">Adicionar ao extrato</button>
             </form>
           </section>
@@ -386,7 +340,7 @@ export async function renderCardsPage(token: string): Promise<string> {
   ]);
 
   if (!cards.ok) {
-    return renderApiErrorPage("/cartoes", "Cartões", cards.error);
+    return renderApiErrorPage("/cartoes", "Cartoes", cards.error);
   }
 
   const accountOptions = accounts.ok ? accounts.data.accounts : [];
@@ -394,42 +348,12 @@ export async function renderCardsPage(token: string): Promise<string> {
 
   return renderAuthenticatedPage({
     pathname: "/cartoes",
-    currentLabel: "Cartões",
+    currentLabel: "Cartoes",
     content: `
-      ${renderPageHeading({
-        eyebrow: "Crédito com previsibilidade",
-        title: "Cartões",
-        description: "Organize cartões de crédito, dias de fechamento e vencimento.",
-      })}
+      ${renderPageHeading({ eyebrow: "Credito com previsibilidade", title: "Cartoes", description: "Organize cartoes de credito, dias de fechamento e vencimento." })}
       <section class="workspace-grid wide-form">
-        <section class="panel list-panel">
-          <div class="section-heading">
-            <h2>Cartões cadastrados</h2>
-            <span>${cards.data.cards.length} itens</span>
-          </div>
-          <div class="rows maintenance-rows">
-            ${
-              cards.data.cards
-                .map((card) => renderCardRow(card, accountOptions, categoryOptions))
-                .join("") || renderEmptyState("Nenhum cartão cadastrado.", "Cadastre cartões para acompanhar faturas e vencimentos.")
-            }
-          </div>
-        </section>
-        <section class="panel form-panel">
-          <h2>Novo cartão</h2>
-          <form data-api-form data-api-path="/api/cards">
-            <label>Nome<input name="name" required /></label>
-            <label>Dia de fechamento<input name="closingDay" type="number" min="1" max="31" required /></label>
-            <label>Dia de vencimento<input name="dueDay" type="number" min="1" max="31" required /></label>
-            <label>Conta de pagamento
-              <select name="paymentAccountId">
-                <option value="">-</option>
-                ${renderAccountOptions(accountOptions)}
-              </select>
-            </label>
-            <button type="submit">Criar cartão</button>
-          </form>
-        </section>
+        <section class="panel list-panel"><div class="section-heading"><h2>Cartoes cadastrados</h2><span>${cards.data.cards.length} itens</span></div><div class="rows maintenance-rows">${cards.data.cards.map((card) => renderCardRow(card, accountOptions, categoryOptions)).join("") || renderEmptyState("Nenhum cartao cadastrado.", "Cadastre cartoes para acompanhar faturas e vencimentos.")}</div></section>
+        <section class="panel form-panel"><h2>Novo cartao</h2><form data-api-form data-api-path="/api/cards"><label>Nome<input name="name" required /></label><label>Dia de fechamento<input name="closingDay" type="number" min="1" max="31" required /></label><label>Dia de vencimento<input name="dueDay" type="number" min="1" max="31" required /></label><label>Conta de pagamento<select name="paymentAccountId"><option value="">-</option>${renderAccountOptions(accountOptions)}</select></label><button type="submit">Criar cartao</button></form></section>
       </section>
       ${apiFormScript()}
     `,
@@ -443,48 +367,19 @@ export async function renderBudgetsPage(token: string): Promise<string> {
   ]);
 
   if (!budgets.ok) {
-    return renderApiErrorPage("/orcamentos", "Orçamentos", budgets.error);
+    return renderApiErrorPage("/orcamentos", "Orcamentos", budgets.error);
   }
 
   const categoryOptions = categories.ok ? categories.data.categories : [];
 
   return renderAuthenticatedPage({
     pathname: "/orcamentos",
-    currentLabel: "Orçamentos",
+    currentLabel: "Orcamentos",
     content: `
-      ${renderPageHeading({
-        eyebrow: "Planejamento mensal",
-        title: "Orçamentos",
-        description: "Acompanhe limites planejados por categoria de despesa.",
-      })}
+      ${renderPageHeading({ eyebrow: "Planejamento mensal", title: "Orcamentos", description: "Acompanhe limites planejados por categoria de despesa." })}
       <section class="workspace-grid wide-form">
-        <section class="panel list-panel">
-          <div class="section-heading">
-            <h2>Limites planejados</h2>
-            <span>${budgets.data.budgets.length} itens</span>
-          </div>
-          <div class="rows maintenance-rows">
-            ${
-              budgets.data.budgets
-                .map((budget) => renderBudgetRow(budget, categoryOptions))
-                .join("") || renderEmptyState("Nenhum orçamento cadastrado.", "Crie limites mensais para acompanhar categorias de despesa.")
-            }
-          </div>
-        </section>
-        <section class="panel form-panel">
-          <h2>Novo orçamento</h2>
-          <form data-api-form data-api-path="/api/budgets">
-            <label>Categoria
-              <select name="categoryId" required>
-                ${renderCategoryOptions(categoryOptions)}
-              </select>
-            </label>
-            <label>Início do período<input name="periodStartOn" type="date" required /></label>
-            <label>Fim do período<input name="periodEndOn" type="date" required /></label>
-            <label>Valor planejado (R$)<input name="plannedAmountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
-            <button type="submit">Criar orçamento</button>
-          </form>
-        </section>
+        <section class="panel list-panel"><div class="section-heading"><h2>Limites planejados</h2><span>${budgets.data.budgets.length} itens</span></div><div class="rows maintenance-rows">${budgets.data.budgets.map((budget) => renderBudgetRow(budget, categoryOptions)).join("") || renderEmptyState("Nenhum orcamento cadastrado.", "Crie limites mensais para acompanhar categorias de despesa.")}</div></section>
+        <section class="panel form-panel"><h2>Novo orcamento</h2><form data-api-form data-api-path="/api/budgets"><label>Categoria<select name="categoryId" required>${renderCategoryOptions(categoryOptions)}</select></label><label>Inicio do periodo<input name="periodStartOn" type="date" required /></label><label>Fim do periodo<input name="periodEndOn" type="date" required /></label><label>Valor planejado (R$)<input name="plannedAmountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label><button type="submit">Criar orcamento</button></form></section>
       </section>
       ${apiFormScript()}
     `,
@@ -494,19 +389,11 @@ export async function renderBudgetsPage(token: string): Promise<string> {
 function renderAccountRow(account: AccountRecord): string {
   return `
     <article class="maintenance-item">
-      <div class="maintenance-summary">
-        <div><strong>${escapeHtml(account.name)}</strong><span>${escapeHtml(formatAccountKind(account.kind))} - ${escapeHtml(formatGenericStatus(account.status))}</span></div>
-        <strong>${formatMoney(account.openingBalanceMinor)}</strong>
-      </div>
-      <div class="maintenance-actions" aria-label="Ações da conta ${escapeHtml(account.name)}">
+      <div class="maintenance-summary"><div><strong>${escapeHtml(account.name)}</strong><span>${escapeHtml(formatAccountKind(account.kind))} - ${escapeHtml(formatGenericStatus(account.status))}</span></div><strong>${formatMoney(account.openingBalanceMinor)}</strong></div>
+      <div class="maintenance-actions" aria-label="Acoes da conta ${escapeHtml(account.name)}">
         <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/accounts/${escapeHtml(account.id)}">Abrir detalhe</button>
-        <form data-api-form data-api-method="PATCH" data-api-path="/api/accounts/${escapeHtml(account.id)}" class="inline-edit-form">
-          <label>Nome<input name="name" value="${escapeHtml(account.name)}" required /></label>
-          <label>Tipo<select name="kind">${renderAccountKindOptions(account.kind)}</select></label>
-          <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor)}" inputmode="decimal" /></label>
-          <button type="submit">Salvar edição</button>
-        </form>
-        ${account.status === "active" ? renderActionButton("Arquivar conta", `/api/accounts/${account.id}/archive`, "Arquivar esta conta? Ela deixará de aparecer nas operações ativas.") : ""}
+        <form data-api-form data-api-method="PATCH" data-api-path="/api/accounts/${escapeHtml(account.id)}" class="inline-edit-form"><label>Nome<input name="name" value="${escapeHtml(account.name)}" required /></label><label>Tipo<select name="kind">${renderAccountKindOptions(account.kind)}</select></label><label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor)}" inputmode="decimal" /></label><button type="submit">Salvar edicao</button></form>
+        ${account.status === "active" ? renderActionButton("Arquivar conta", `/api/accounts/${account.id}/archive`, "Arquivar esta conta? Ela deixara de aparecer nas operacoes ativas.") : ""}
       </div>
     </article>
   `;
@@ -519,20 +406,12 @@ function renderCategoryTree(categories: CategoryRecord[]): string {
       const categoriesForKind = categories.filter((category) => category.kind === kind);
       const rootCategories = categoriesForKind.filter((category) => !category.parentCategoryId);
 
-      if (categoriesForKind.length === 0) {
-        return "";
-      }
+      if (categoriesForKind.length === 0) return "";
 
       return `
-        <section class="category-kind-group" aria-label="${escapeHtml(formatCategoryKind(kind))}">
-          <header><h3>${escapeHtml(formatCategoryKind(kind))}</h3><span>${categoriesForKind.length} categorias</span></header>
-          <div class="category-tree-nodes">
-            ${
-              rootCategories
-                .map((category) => renderCategoryTreeNode(category, categories))
-                .join("") || renderEmptyState("Nenhuma categoria principal.", "Crie uma categoria sem superior para começar este grupo.")
-            }
-          </div>
+        <section class="category-kind-group category-kind-${escapeHtml(kind)}" aria-label="${escapeHtml(formatCategoryKind(kind))}">
+          <header><div><span class="category-kind-dot" aria-hidden="true"></span><h3>${escapeHtml(formatCategoryKind(kind))}</h3></div><span>${categoriesForKind.length} categorias</span></header>
+          <div class="category-tree-nodes">${rootCategories.map((category) => renderCategoryTreeNode(category, categories)).join("") || renderEmptyState("Nenhuma categoria principal.", "Crie uma categoria sem superior para comecar este grupo.")}</div>
         </section>
       `;
     })
@@ -546,25 +425,24 @@ function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRe
     .filter((candidate) => candidate.parentCategoryId === category.id)
     .sort((left, right) => left.name.localeCompare(right.name));
   const isArchived = category.status === "archived";
+  const childLabel = `${children.length} ${children.length === 1 ? "detalhe" : "detalhes"}`;
 
   return `
-    <article class="category-tree-node ${category.parentCategoryId ? "category-tree-child" : ""}">
-      <div class="maintenance-summary">
-        <div>
-          <strong>${escapeHtml(category.name)}</strong>
-          <span>${category.parentCategoryId ? "Categoria detalhada" : "Categoria principal"} - ${escapeHtml(formatGenericStatus(category.status))}</span>
-        </div>
-        <span class="category-path">${escapeHtml(getCategoryDisplayName(category, categories))}</span>
+    <article class="category-tree-node category-card ${category.parentCategoryId ? "category-tree-child" : ""}">
+      <div class="category-card-header">
+        <div class="category-card-title"><span class="category-kind-dot category-kind-dot-${escapeHtml(category.kind)}" aria-hidden="true"></span><div><strong>${escapeHtml(category.name)}</strong><span>${category.parentCategoryId ? "Categoria detalhada" : "Categoria principal"}</span></div></div>
+        <div class="category-card-badges"><span class="status-chip status-chip-${isArchived ? "pending" : "confirmed"}">${escapeHtml(formatGenericStatus(category.status))}</span><span class="status-chip status-chip-all">${childLabel}</span></div>
       </div>
-      <div class="maintenance-actions" aria-label="Ações da categoria ${escapeHtml(category.name)}">
+      <p class="category-path">${escapeHtml(getCategoryDisplayName(category, categories))}</p>
+      <div class="maintenance-actions category-actions" aria-label="Acoes da categoria ${escapeHtml(category.name)}">
         <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/categories/${escapeHtml(category.id)}">Abrir detalhe</button>
         <form data-api-form data-api-method="PATCH" data-api-path="/api/categories/${escapeHtml(category.id)}" class="inline-edit-form">
           <label>Nome<input name="name" value="${escapeHtml(category.name)}" required /></label>
           <label>Tipo<select name="kind">${renderCategoryKindOptions(category.kind)}</select></label>
           <label>Categoria superior<select name="parentCategoryId"><option value="">Categoria principal</option>${renderCategoryParentOptions(categories, category)}</select></label>
-          <button type="submit">Salvar edição</button>
+          <button type="submit">Salvar edicao</button>
         </form>
-        ${isArchived ? renderActionButton("Restaurar categoria", `/api/categories/${category.id}/restore`) : renderActionButton("Arquivar categoria", `/api/categories/${category.id}/archive`, "Arquivar esta categoria? Novos lançamentos não devem usá-la.")}
+        ${isArchived ? renderActionButton("Restaurar categoria", `/api/categories/${category.id}/restore`) : renderActionButton("Arquivar categoria", `/api/categories/${category.id}/archive`, "Arquivar esta categoria? Novos lancamentos nao devem usa-la.")}
       </div>
       ${children.length > 0 ? `<div class="category-tree-children">${children.map((child) => renderCategoryTreeNode(child, categories)).join("")}</div>` : ""}
     </article>
@@ -579,70 +457,35 @@ function renderStatementRow(
 ): string {
   const amountMinor = getSignedTransactionAmount(transaction, selectedAccountId);
   const amountClass = amountMinor < 0 ? "amount-debit" : amountMinor > 0 ? "amount-credit" : "amount-neutral";
-  const description = transaction.description || "(sem descrição)";
+  const description = transaction.description || "(sem descricao)";
 
   return `
     <article class="statement-row statement-row-with-actions">
       <span class="transaction-dot transaction-dot-${escapeHtml(transaction.kind)}" aria-hidden="true"></span>
-      <div class="statement-row-main">
-        <strong>${escapeHtml(description)}</strong>
-        <span>${escapeHtml(formatTransactionKind(transaction.kind))} - ${escapeHtml(formatTransactionStatus(transaction.status))}</span>
-      </div>
+      <div class="statement-row-main"><strong>${escapeHtml(description)}</strong><span>${escapeHtml(formatTransactionKind(transaction.kind))} - ${escapeHtml(formatTransactionStatus(transaction.status))}</span></div>
       <strong class="statement-amount ${amountClass}">${formatMoney(amountMinor)}</strong>
-      <div class="statement-actions" aria-label="Ações do lançamento ${escapeHtml(description)}">
+      <div class="statement-actions" aria-label="Acoes do lancamento ${escapeHtml(description)}">
         <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/transactions/${escapeHtml(transaction.id)}">Abrir detalhe</button>
-        <form data-api-form data-api-method="PATCH" data-api-path="/api/transactions/${escapeHtml(transaction.id)}" class="inline-edit-form statement-edit-form">
-          <label>Descrição<input name="description" value="${escapeHtml(description)}" /></label>
-          <label>Status<select name="status">${renderTransactionStatusOptions(transaction.status)}</select></label>
-          <label>Conta<select name="accountId">${renderAccountOptions(accounts, transaction.accountId)}</select></label>
-          <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories, transaction.categoryId)}</select></label>
-          <button type="submit">Salvar edição</button>
-        </form>
-        ${transaction.status === "voided" ? "" : renderActionButton("Cancelar lançamento", `/api/transactions/${transaction.id}/void`, "Cancelar ou estornar este lançamento financeiro?")}
+        <form data-api-form data-api-method="PATCH" data-api-path="/api/transactions/${escapeHtml(transaction.id)}" class="inline-edit-form statement-edit-form"><label>Descricao<input name="description" value="${escapeHtml(description)}" /></label><label>Status<select name="status">${renderTransactionStatusOptions(transaction.status)}</select></label><label>Conta<select name="accountId">${renderAccountOptions(accounts, transaction.accountId)}</select></label><label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories, transaction.categoryId)}</select></label><button type="submit">Salvar edicao</button></form>
+        ${transaction.status === "voided" ? "" : renderActionButton("Cancelar lancamento", `/api/transactions/${transaction.id}/void`, "Cancelar ou estornar este lancamento financeiro?")}
       </div>
     </article>
   `;
 }
 
-function renderCardRow(
-  card: CardRecord,
-  accounts: AccountRecord[],
-  categories: CategoryRecord[],
-): string {
+function renderCardRow(card: CardRecord, accounts: AccountRecord[], categories: CategoryRecord[]): string {
   const canMutate = card.status === "active";
 
   return `
     <article class="maintenance-item">
-      <div class="maintenance-summary">
-        <div><strong>${escapeHtml(card.name)}</strong><span>Fecha dia ${card.closingDay}, vence dia ${card.dueDay} - ${escapeHtml(formatGenericStatus(card.status))}</span></div>
-      </div>
-      <div class="maintenance-actions" aria-label="Ações do cartão ${escapeHtml(card.name)}">
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/cards/${escapeHtml(card.id)}">Abrir detalhe</button>
-        <form data-api-form data-api-method="PATCH" data-api-path="/api/cards/${escapeHtml(card.id)}" class="inline-edit-form">
-          <label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label>
-          <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label>
-          <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
-          <label>Conta de pagamento<select name="paymentAccountId"><option value="">-</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
-          <button type="submit">Salvar edição</button>
-        </form>
-        ${canMutate ? renderActionButton("Bloquear cartão", `/api/cards/${card.id}/block`, "Bloquear este cartão?") : ""}
-        ${canMutate ? renderActionButton("Arquivar cartão", `/api/cards/${card.id}/archive`, "Arquivar este cartão?") : ""}
-        ${canMutate ? renderCardPurchaseForm(card, categories) : ""}
-      </div>
+      <div class="maintenance-summary"><div><strong>${escapeHtml(card.name)}</strong><span>Fecha dia ${card.closingDay}, vence dia ${card.dueDay} - ${escapeHtml(formatGenericStatus(card.status))}</span></div></div>
+      <div class="maintenance-actions" aria-label="Acoes do cartao ${escapeHtml(card.name)}"><button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/cards/${escapeHtml(card.id)}">Abrir detalhe</button><form data-api-form data-api-method="PATCH" data-api-path="/api/cards/${escapeHtml(card.id)}" class="inline-edit-form"><label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label><label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label><label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label><label>Conta de pagamento<select name="paymentAccountId"><option value="">-</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label><button type="submit">Salvar edicao</button></form>${canMutate ? renderActionButton("Bloquear cartao", `/api/cards/${card.id}/block`, "Bloquear este cartao?") : ""}${canMutate ? renderActionButton("Arquivar cartao", `/api/cards/${card.id}/archive`, "Arquivar este cartao?") : ""}${canMutate ? renderCardPurchaseForm(card, categories) : ""}</div>
     </article>
   `;
 }
 
 function renderCardPurchaseForm(card: CardRecord, categories: CategoryRecord[]): string {
-  return `
-    <form data-api-form data-api-path="/api/cards/${escapeHtml(card.id)}/purchases" class="inline-edit-form">
-      <label>Compra em<input name="occurredOn" type="date" required /></label>
-      <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
-      <label>Descrição<input name="description" placeholder="Compra no cartão" required /></label>
-      <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
-      <button type="submit">Registrar compra</button>
-    </form>
-  `;
+  return `<form data-api-form data-api-path="/api/cards/${escapeHtml(card.id)}/purchases" class="inline-edit-form"><label>Compra em<input name="occurredOn" type="date" required /></label><label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label>Descricao<input name="description" placeholder="Compra no cartao" required /></label><label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><button type="submit">Registrar compra</button></form>`;
 }
 
 function renderBudgetRow(budget: BudgetRecord, categories: CategoryRecord[]): string {
@@ -650,22 +493,8 @@ function renderBudgetRow(budget: BudgetRecord, categories: CategoryRecord[]): st
 
   return `
     <article class="maintenance-item">
-      <div class="maintenance-summary">
-        <div><strong>${formatDate(budget.periodStartOn)} - ${formatDate(budget.periodEndOn)}</strong><span>${escapeHtml(formatGenericStatus(budget.status))}</span></div>
-        <strong>${formatMoney(budget.plannedAmountMinor)}</strong>
-      </div>
-      <div class="maintenance-actions" aria-label="Ações do orçamento">
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${escapeHtml(budget.id)}">Abrir detalhe</button>
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${escapeHtml(budget.id)}/usage">Consultar uso</button>
-        <form data-api-form data-api-method="PATCH" data-api-path="/api/budgets/${escapeHtml(budget.id)}" class="inline-edit-form">
-          <label>Categoria<select name="categoryId">${renderCategoryOptions(categories, budget.categoryId)}</select></label>
-          <label>Início<input name="periodStartOn" type="date" value="${escapeHtml(budget.periodStartOn)}" required /></label>
-          <label>Fim<input name="periodEndOn" type="date" value="${escapeHtml(budget.periodEndOn)}" required /></label>
-          <label>Valor (R$)<input name="plannedAmountMinor" data-money value="${formatMoneyInput(budget.plannedAmountMinor)}" inputmode="decimal" required /></label>
-          <button type="submit">Salvar edição</button>
-        </form>
-        ${isArchived ? "" : renderActionButton("Arquivar orçamento", `/api/budgets/${budget.id}/archive`, "Arquivar este orçamento?")}
-      </div>
+      <div class="maintenance-summary"><div><strong>${formatDate(budget.periodStartOn)} - ${formatDate(budget.periodEndOn)}</strong><span>${escapeHtml(formatGenericStatus(budget.status))}</span></div><strong>${formatMoney(budget.plannedAmountMinor)}</strong></div>
+      <div class="maintenance-actions" aria-label="Acoes do orcamento"><button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${escapeHtml(budget.id)}">Abrir detalhe</button><button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${escapeHtml(budget.id)}/usage">Consultar uso</button><form data-api-form data-api-method="PATCH" data-api-path="/api/budgets/${escapeHtml(budget.id)}" class="inline-edit-form"><label>Categoria<select name="categoryId">${renderCategoryOptions(categories, budget.categoryId)}</select></label><label>Inicio<input name="periodStartOn" type="date" value="${escapeHtml(budget.periodStartOn)}" required /></label><label>Fim<input name="periodEndOn" type="date" value="${escapeHtml(budget.periodEndOn)}" required /></label><label>Valor (R$)<input name="plannedAmountMinor" data-money value="${formatMoneyInput(budget.plannedAmountMinor)}" inputmode="decimal" required /></label><button type="submit">Salvar edicao</button></form>${isArchived ? "" : renderActionButton("Arquivar orcamento", `/api/budgets/${budget.id}/archive`, "Arquivar este orcamento?")}</div>
     </article>
   `;
 }
@@ -678,14 +507,7 @@ function renderApiErrorPage(pathname: string, currentLabel: string, error: strin
   return renderAuthenticatedPage({
     pathname,
     currentLabel,
-    content: `
-      <section class="panel placeholder-state">
-        <p class="eyebrow">Erro ao carregar dados</p>
-        <h1>${escapeHtml(currentLabel)}</h1>
-        <p class="error" role="alert">${escapeHtml(error)}</p>
-        <a class="button-link" href="${escapeHtml(pathname)}">Tentar novamente</a>
-      </section>
-    `,
+    content: `<section class="panel placeholder-state"><p class="eyebrow">Erro ao carregar dados</p><h1>${escapeHtml(currentLabel)}</h1><p class="error" role="alert">${escapeHtml(error)}</p><a class="button-link" href="${escapeHtml(pathname)}">Tentar novamente</a></section>`,
   });
 }
 
@@ -700,13 +522,11 @@ function renderAuthenticatedPage(input: {
       <div class="app-shell">
         <aside class="sidebar">
           <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin">SolverFin</a>
-          <nav aria-label="Menu principal">
-            ${renderNavigation(input.pathname)}
-          </nav>
+          <nav aria-label="Menu principal">${renderNavigation(input.pathname)}</nav>
           <button class="logout" type="button" data-logout>Sair</button>
         </aside>
         <div class="main-area">
-          <header class="topbar"><div><strong>${escapeHtml(input.currentLabel)}</strong><span>Usuário Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
+          <header class="topbar"><div><strong>${escapeHtml(input.currentLabel)}</strong><span>Usuario Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
           <main>${input.content}</main>
         </div>
       </div>
@@ -758,8 +578,8 @@ function apiFormScript(): string {
 
       async function readApiMessage(response) {
         const body = await response.json().catch(() => ({}));
-        if (response.ok) return "Ação concluída. Atualizando a tela...";
-        return (body.error && body.error.message) || "Não foi possível concluir a ação.";
+        if (response.ok) return "Acao concluida. Atualizando a tela...";
+        return (body.error && body.error.message) || "Nao foi possivel concluir a acao.";
       }
 
       document.querySelectorAll("[data-api-form]").forEach((form) => {
@@ -844,17 +664,15 @@ function renderNavigation(activePathname: string): string {
 }
 
 function renderPageHeading(input: { eyebrow: string; title: string; description: string }): string {
-  return `
-    <section class="page-heading">
-      <p class="eyebrow">${escapeHtml(input.eyebrow)}</p>
-      <h1>${escapeHtml(input.title)}</h1>
-      <p class="muted">${escapeHtml(input.description)}</p>
-    </section>
-  `;
+  return `<section class="page-heading"><p class="eyebrow">${escapeHtml(input.eyebrow)}</p><h1>${escapeHtml(input.title)}</h1><p class="muted">${escapeHtml(input.description)}</p></section>`;
 }
 
 function renderMetricCard(title: string, amountMinor: number, subtitle: string): string {
   return `<article class="metric-card"><span>${escapeHtml(title)}</span><strong>${formatMoney(amountMinor)}</strong><p>${escapeHtml(subtitle)}</p></article>`;
+}
+
+function renderCategorySummaryCard(title: string, count: number, subtitle: string, tone: string): string {
+  return `<article class="category-summary-card category-summary-${escapeHtml(tone)}"><span>${escapeHtml(title)}</span><strong>${count}</strong><p>${escapeHtml(subtitle)}</p></article>`;
 }
 
 function renderStatusChip(label: string, count: number, tone: string): string {
@@ -867,15 +685,15 @@ function renderEmptyState(title: string, description: string): string {
 
 export function renderNotFoundPage(): string {
   return renderPage({
-    title: "Página não encontrada - SolverFin",
-    body: `<main class="placeholder-state"><p class="eyebrow">404</p><h1>Página não encontrada</h1><p class="muted">Esta rota não faz parte do MVP navegável atual.</p><a class="button-link" href="/login">Voltar para entrada</a></main>`,
+    title: "Pagina nao encontrada - SolverFin",
+    body: `<main class="placeholder-state"><p class="eyebrow">404</p><h1>Pagina nao encontrada</h1><p class="muted">Esta rota nao faz parte do MVP navegavel atual.</p><a class="button-link" href="/login">Voltar para entrada</a></main>`,
   });
 }
 
 function renderAccountKindOptions(selected?: string): string {
   return [
     ["checking", "Conta corrente"],
-    ["savings", "Poupança"],
+    ["savings", "Poupanca"],
     ["cash", "Carteira"],
     ["investment", "Investimento"],
     ["other", "Outro"],
@@ -888,7 +706,7 @@ function renderCategoryKindOptions(selected?: string): string {
   return [
     ["income", "Receita"],
     ["expense", "Despesa"],
-    ["transfer", "Transferência"],
+    ["transfer", "Transferencia"],
   ]
     .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
     .join("");
@@ -898,7 +716,7 @@ function renderTransactionKindOptions(selected?: string): string {
   return [
     ["expense", "Despesa"],
     ["income", "Receita"],
-    ["transfer", "Transferência"],
+    ["transfer", "Transferencia"],
   ]
     .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
     .join("");
@@ -924,10 +742,7 @@ function renderAccountOptions(accounts: AccountRecord[], selected?: string): str
     .join("");
 }
 
-function renderCategoryParentOptions(
-  categories: CategoryRecord[],
-  currentCategory?: CategoryRecord,
-): string {
+function renderCategoryParentOptions(categories: CategoryRecord[], currentCategory?: CategoryRecord): string {
   return categories
     .filter((category) => category.id !== currentCategory?.id)
     .sort((left, right) => getCategoryDisplayName(left, categories).localeCompare(getCategoryDisplayName(right, categories)))
@@ -956,15 +771,10 @@ function getCategoryDisplayName(category: CategoryRecord, categories: readonly C
   let parentCategoryId = category.parentCategoryId;
 
   while (parentCategoryId) {
-    if (visitedCategoryIds.has(parentCategoryId)) {
-      break;
-    }
+    if (visitedCategoryIds.has(parentCategoryId)) break;
 
     const parentCategory = categories.find((candidate) => candidate.id === parentCategoryId);
-
-    if (!parentCategory) {
-      break;
-    }
+    if (!parentCategory) break;
 
     path.unshift(parentCategory.name);
     visitedCategoryIds.add(parentCategory.id);
@@ -986,21 +796,13 @@ function formatDate(date: string): string {
   return formatDateOnly(date);
 }
 
-function getSignedTransactionAmount(
-  transaction: TransactionRecord,
-  selectedAccountId: string | undefined,
-): number {
+function getSignedTransactionAmount(transaction: TransactionRecord, selectedAccountId: string | undefined): number {
   if (transaction.kind === "income") return transaction.amountMinor;
   if (transaction.kind === "expense") return -transaction.amountMinor;
 
   if (transaction.kind === "transfer") {
-    if (selectedAccountId && transaction.destinationAccountId === selectedAccountId) {
-      return transaction.amountMinor;
-    }
-
-    if (selectedAccountId && transaction.accountId === selectedAccountId) {
-      return -transaction.amountMinor;
-    }
+    if (selectedAccountId && transaction.destinationAccountId === selectedAccountId) return transaction.amountMinor;
+    if (selectedAccountId && transaction.accountId === selectedAccountId) return -transaction.amountMinor;
   }
 
   return 0;
@@ -1026,11 +828,8 @@ function summarizeStatement(
         summary.transferCount += 1;
       }
 
-      if (transaction.status === "posted" || transaction.status === "reconciled") {
-        summary.confirmedCount += 1;
-      } else {
-        summary.pendingCount += 1;
-      }
+      if (transaction.status === "posted" || transaction.status === "reconciled") summary.confirmedCount += 1;
+      else summary.pendingCount += 1;
 
       summary.estimatedBalanceMinor += signedAmountMinor;
       return summary;
@@ -1043,6 +842,28 @@ function summarizeStatement(
       estimatedBalanceMinor: openingBalanceMinor,
       confirmedCount: 0,
       pendingCount: 0,
+      transferCount: 0,
+    },
+  );
+}
+
+function summarizeCategories(categories: CategoryRecord[]): CategorySummary {
+  return categories.reduce<CategorySummary>(
+    (summary, category) => {
+      if (category.kind === "expense") summary.expenseCount += 1;
+      if (category.kind === "income") summary.incomeCount += 1;
+      if (category.kind === "transfer") summary.transferCount += 1;
+      if (category.status === "archived") summary.archivedCount += 1;
+      else summary.activeCount += 1;
+      if (category.parentCategoryId) summary.childCount += 1;
+      return summary;
+    },
+    {
+      activeCount: 0,
+      archivedCount: 0,
+      childCount: 0,
+      expenseCount: 0,
+      incomeCount: 0,
       transferCount: 0,
     },
   );
@@ -1063,16 +884,13 @@ function groupTransactionsByDate(transactions: TransactionRecord[]): StatementDa
   return Array.from(groups.entries()).map(([date, dayTransactions]) => ({
     date,
     transactions: dayTransactions,
-    totalMinor: dayTransactions.reduce(
-      (total, transaction) => total + getSignedTransactionAmount(transaction, undefined),
-      0,
-    ),
+    totalMinor: dayTransactions.reduce((total, transaction) => total + getSignedTransactionAmount(transaction, undefined), 0),
   }));
 }
 
 function formatAccountKind(kind: string): string {
   if (kind === "checking") return "Conta corrente";
-  if (kind === "savings") return "Poupança";
+  if (kind === "savings") return "Poupanca";
   if (kind === "cash") return "Carteira";
   if (kind === "investment") return "Investimento";
   return kind;
@@ -1081,14 +899,14 @@ function formatAccountKind(kind: string): string {
 function formatCategoryKind(kind: string): string {
   if (kind === "income") return "Receita";
   if (kind === "expense") return "Despesa";
-  if (kind === "transfer") return "Transferência";
+  if (kind === "transfer") return "Transferencia";
   return kind;
 }
 
 function formatTransactionKind(kind: string): string {
   if (kind === "income") return "Receita";
   if (kind === "expense") return "Despesa";
-  if (kind === "transfer") return "Transferência";
+  if (kind === "transfer") return "Transferencia";
   return kind;
 }
 
@@ -1116,7 +934,7 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
@@ -1150,6 +968,15 @@ interface CategoryRecord {
   kind: string;
   status: string;
   parentCategoryId?: string;
+}
+
+interface CategorySummary {
+  activeCount: number;
+  archivedCount: number;
+  childCount: number;
+  expenseCount: number;
+  incomeCount: number;
+  transferCount: number;
 }
 
 interface TransactionRecord {
@@ -1207,7 +1034,7 @@ function baseCss(): string {
     h1, h2, h3, p { margin: 0; } h1 { font-size: clamp(1.6rem, 4vw, 2rem); line-height: 1.15; } h2 { font-size: 1rem; line-height: 1.3; } h3 { font-size: .95rem; line-height: 1.3; } a { color: inherit; }
     button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(34, 211, 238, .55); outline-offset: 2px; }
     .login-shell, .placeholder-state { align-items: center; display: grid; min-height: 100vh; padding: 24px; }
-    .panel, .placeholder-state, .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+    .panel, .placeholder-state, .metric-card, .category-summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
     .panel { display: grid; gap: 16px; min-width: 0; }
     .login-shell .panel { gap: 18px; margin: 0 auto; max-width: 460px; width: 100%; }
     .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; } .muted { color: var(--muted); line-height: 1.5; }
@@ -1222,33 +1049,36 @@ function baseCss(): string {
     .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; }
     .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; min-height: 44px; text-decoration: none; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; }
     .logout { background: rgba(255,255,255,.12); margin-top: auto; } .main-area { min-width: 0; } .topbar { align-items: center; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; min-height: 64px; padding: 0 24px; position: sticky; top: 0; z-index: 5; } .topbar div { display: grid; gap: 2px; } .topbar span { color: var(--muted); font-size: .875rem; }
-    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1180px; padding: 24px; width: 100%; } .dashboard-heading, .page-heading, .statement-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .page-heading { align-items: start; display: grid; max-width: 760px; } .statement-heading { align-items: center; } .statement-heading > div { display: grid; gap: 6px; max-width: 760px; }
+    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1180px; padding: 24px; width: 100%; } .dashboard-heading, .page-heading, .statement-heading, .category-hero { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .page-heading { align-items: start; display: grid; max-width: 760px; } .statement-heading, .category-hero { align-items: center; } .statement-heading > div, .category-hero > div { display: grid; gap: 6px; max-width: 760px; }
     .demo-pill { background: var(--success-bg); border-radius: 999px; color: var(--success); font-weight: 800; padding: 8px 12px; white-space: nowrap; }
-    .summary-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); } .metric-card { display: grid; gap: 8px; min-width: 0; } .metric-card span { color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .metric-card strong { color: var(--primary); font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; } .metric-card p { color: var(--muted); line-height: 1.45; }
-    .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(19rem, .45fr); } .workspace-grid.wide-form { grid-template-columns: minmax(0, .95fr) minmax(22rem, .6fr); }
+    .summary-grid, .category-summary-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); } .metric-card, .category-summary-card { display: grid; gap: 8px; min-width: 0; } .metric-card span, .category-summary-card span { color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .metric-card strong, .category-summary-card strong { color: var(--primary); font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; } .metric-card p, .category-summary-card p { color: var(--muted); line-height: 1.45; }
+    .category-summary-active { border-color: #bbf7d0; } .category-summary-active strong { color: var(--success); } .category-summary-archived { border-color: #fde68a; } .category-summary-child { background: #f1f7fa; }
+    .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(19rem, .45fr); } .workspace-grid.wide-form, .category-workspace { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, .95fr) minmax(22rem, .6fr); }
     .statement-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(17rem, .42fr) minmax(0, 1fr); } .statement-sidebar, .statement-workspace { display: grid; gap: 18px; min-width: 0; }
     .account-period-panel { background: var(--primary); border-color: rgba(15, 61, 76, .3); color: white; } .account-switcher, .period-control { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .account-switcher div { display: grid; gap: 4px; min-width: 0; } .account-switcher span, .period-control span { color: rgba(255,255,255,.68); font-weight: 800; } .account-switcher strong { overflow-wrap: anywhere; } .account-code { background: rgba(255,255,255,.12); border-radius: 999px; padding: 6px 10px; white-space: nowrap; } .period-control { border-top: 1px solid rgba(255,255,255,.18); padding-top: 14px; }
     .statement-summary-panel { align-content: start; } .compact-heading { align-items: start; } .statement-totals { display: grid; gap: 10px; margin: 0; } .statement-totals div { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .statement-totals dt { color: var(--muted); } .statement-totals dd { font-weight: 900; margin: 0; text-align: right; } .statement-totals .total-line { border-top: 1px solid var(--line); padding-top: 12px; }
-    .reconciliation-note { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 6px; padding: 12px; } .reconciliation-note span { color: var(--cyan); font-size: .76rem; font-weight: 900; text-transform: uppercase; }
-    .statement-panel { padding: 0; overflow: hidden; } .statement-toolbar { align-items: start; border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 18px; } .statement-toolbar > div:first-child { display: grid; gap: 4px; min-width: 0; }
+    .reconciliation-note, .category-guidance { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 6px; padding: 12px; } .reconciliation-note span { color: var(--cyan); font-size: .76rem; font-weight: 900; text-transform: uppercase; }
+    .statement-panel, .category-panel { padding: 0; overflow: hidden; } .statement-toolbar, .category-toolbar { align-items: start; border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 18px; } .statement-toolbar > div:first-child, .category-toolbar > div:first-child { display: grid; gap: 4px; min-width: 0; }
     .status-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; } .status-chip { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); display: inline-flex; gap: 6px; font-size: .8rem; font-weight: 800; min-height: 32px; padding: 6px 10px; white-space: nowrap; } .status-chip strong { color: inherit; }
-    .status-chip-pending { background: var(--warning-bg); border-color: #fde68a; color: var(--warning); } .status-chip-confirmed { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); } .status-chip-transfer { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
+    .status-chip-pending { background: var(--warning-bg); border-color: #fde68a; color: var(--warning); } .status-chip-confirmed { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); } .status-chip-transfer { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; } .status-chip-expense { background: #fee2e2; border-color: #fecaca; color: var(--danger); }
     .statement-list { display: grid; } .statement-day { display: grid; } .statement-day header { align-items: center; background: #f1f7fa; border-bottom: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; min-height: 44px; padding: 0 18px; } .statement-day time { color: var(--primary); font-weight: 900; } .statement-day-rows { display: grid; }
     .statement-row { align-items: start; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto; min-width: 0; padding: 13px 18px; } .statement-row-main { display: grid; gap: 4px; min-width: 0; } .statement-row-main strong { overflow-wrap: anywhere; } .statement-row-main span { color: var(--muted); font-size: .88rem; line-height: 1.35; } .statement-amount { text-align: right; white-space: nowrap; }
     .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr) auto; } .statement-actions { border-top: 1px solid var(--line); display: grid; gap: 10px; grid-column: 2 / -1; padding-top: 10px; }
-    .transaction-dot { border-radius: 999px; height: 10px; margin-top: 6px; width: 10px; } .transaction-dot-income { background: var(--success); } .transaction-dot-expense { background: var(--danger); } .transaction-dot-transfer { background: var(--cyan); }
+    .transaction-dot, .category-kind-dot { border-radius: 999px; height: 10px; width: 10px; } .transaction-dot { margin-top: 6px; } .transaction-dot-income, .category-kind-dot-income { background: var(--success); } .transaction-dot-expense, .category-kind-dot-expense { background: var(--danger); } .transaction-dot-transfer, .category-kind-dot-transfer { background: var(--cyan); }
     .amount-credit { color: var(--success); } .amount-debit { color: var(--danger); } .amount-neutral { color: var(--muted); }
     .statement-form-panel form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
     .rows { display: grid; gap: 10px; } .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; min-width: 0; padding-top: 10px; } .row:first-child { border-top: 0; padding-top: 0; } .row div { display: grid; gap: 4px; min-width: 0; } .row span { color: var(--muted); line-height: 1.45; } .row strong { overflow-wrap: anywhere; } .row > strong { text-align: right; white-space: nowrap; }
-    .maintenance-rows { gap: 14px; } .maintenance-item, .category-tree-node { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .maintenance-item:first-child, .category-tree-node:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; } .maintenance-summary > strong { text-align: right; white-space: nowrap; }
+    .maintenance-rows { gap: 14px; } .maintenance-item, .category-card { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .maintenance-item:first-child, .category-card:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; } .maintenance-summary > strong { text-align: right; white-space: nowrap; }
     .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; padding: 12px; }
-    .category-tree-list { display: grid; gap: 18px; } .category-kind-group { display: grid; gap: 12px; } .category-kind-group header { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .category-kind-group header span, .category-path { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; max-width: 100%; overflow-wrap: anywhere; padding: 6px 10px; } .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 12px; padding-left: 14px; } .category-tree-child { border-top-style: dashed; }
+    .category-tree-list { display: grid; gap: 18px; padding: 18px; } .category-kind-group { background: #fbfdfe; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 14px; padding: 14px; } .category-kind-group header { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .category-kind-group header div, .category-card-title { align-items: center; display: flex; gap: 10px; min-width: 0; } .category-kind-group header span, .category-path { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; max-width: 100%; overflow-wrap: anywhere; padding: 6px 10px; }
+    .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 12px; padding-left: 14px; } .category-tree-child { border-top-style: dashed; } .category-card-header { align-items: start; display: flex; gap: 12px; justify-content: space-between; min-width: 0; } .category-card-title strong { overflow-wrap: anywhere; } .category-card-title span { color: var(--muted); font-size: .88rem; } .category-card-title > div { display: grid; gap: 3px; min-width: 0; } .category-card-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .category-create-panel { position: sticky; top: 84px; } .category-actions { background: #f8fbfc; }
     .inline-edit-form { align-items: end; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .inline-edit-form button, .inline-edit-form .form-status { grid-column: 1 / -1; } .statement-edit-form { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
-    .form-panel form { grid-template-columns: 1fr; } .wide-form .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wide-form .form-panel button, .wide-form .full-span, .statement-form-panel button, .statement-form-panel .full-span { grid-column: 1 / -1; }
+    .form-panel form { grid-template-columns: 1fr; } .wide-form .form-panel form, .category-create-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wide-form .form-panel button, .wide-form .full-span, .statement-form-panel button, .statement-form-panel .full-span, .category-create-panel button, .category-create-panel .full-span { grid-column: 1 / -1; }
     .review-note { background: #f0fdf4; border-color: #bbf7d0; }
-    @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid, .workspace-grid.wide-form, .statement-layout { grid-template-columns: 1fr; } .wide-form .form-panel form, .statement-form-panel form, .statement-edit-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .statement-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar, .inline-edit-form, .statement-edit-form { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar, .maintenance-summary { align-items: stretch; display: grid; } .statement-heading .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row, .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .statement-actions { grid-column: 1 / -1; } .row > strong, .maintenance-summary > strong { text-align: left; white-space: normal; } .category-kind-group header { align-items: stretch; display: grid; } }
+    @media (max-width: 1024px) { .summary-grid, .category-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid, .workspace-grid.wide-form, .statement-layout, .category-workspace { grid-template-columns: 1fr; } .wide-form .form-panel form, .statement-form-panel form, .statement-edit-form, .category-create-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .statement-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .category-create-panel { position: static; } }
+    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .summary-grid, .category-summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar, .inline-edit-form, .statement-edit-form, .category-create-panel form { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar, .maintenance-summary, .category-hero, .category-toolbar, .category-card-header { align-items: stretch; display: grid; } .statement-heading .button-link, .category-hero .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row, .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .statement-actions { grid-column: 1 / -1; } .row > strong, .maintenance-summary > strong { text-align: left; white-space: normal; } .category-kind-group header { align-items: stretch; display: grid; } .category-card-badges { justify-content: flex-start; } }
   `;
 }
