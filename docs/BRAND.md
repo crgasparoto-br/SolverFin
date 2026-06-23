@@ -69,7 +69,7 @@ O simbolo deve funcionar sozinho em favicon/app icon e tambem junto ao nome. A m
 
 | Papel | Cor | Hex | Uso |
 | --- | --- | --- | --- |
-| Primaria | Azul petróleo profundo | `#0F3D4C` | Confiança, seguranca, base institucional |
+| Primaria | Azul petroleo profundo | `#0F3D4C` | Confianca, seguranca, base institucional |
 | Secundaria | Verde financeiro inteligente | `#16A34A` | Saude financeira, progresso, confirmacao |
 | Destaque | Ciano tecnologico | `#22D3EE` | IA, automacao, estados ativos e highlights |
 | Fundo claro | Branco gelo | `#F8FAFC` | Interfaces limpas e documentacao |
@@ -90,12 +90,35 @@ A interface deve ser **mobile-first**, limpa e orientada a rotina diaria. O usua
 
 ### Principios visuais
 
-- Layout em cards com bastante respiro.
+- Layout com bastante respiro, hierarquia clara e superficies discretas.
+- Usar cards apenas quando organizarem dados ou acoes; evitar cards explicativos em excesso.
 - Hierarquia clara para saldo, fluxo, pendencias e acoes rapidas.
 - Estados de IA sempre marcados como sugestao, com origem, confianca e botao de revisar.
 - Graficos simples: linhas, barras e donuts apenas quando ajudarem decisao.
 - Contraste forte para acessibilidade.
 - Microcopy direta, sem jargao bancario.
+- Priorizar icones reconheciveis para acoes recorrentes, sempre com nome acessivel (`aria-label`, `title` ou texto visivel quando necessario).
+
+### Padrao de telas e CRUD
+
+- Telas de listagem devem ser limpas, objetivas e orientadas a acao.
+- Evitar blocos longos de texto introdutorio, cards educativos e explicacoes permanentes quando a acao for autoexplicativa.
+- Preferir estados vazios compactos com uma frase curta e uma acao principal.
+- Criacao e edicao de registros devem acontecer em **pop-up/modal sempre que possivel**, sem navegar para outra pagina.
+- Use pagina dedicada apenas quando o formulario for longo, exigir comparacao ampla, envolver fluxo guiado em varias etapas ou precisar de contexto visual extenso.
+- O botao principal de criacao deve ficar em local consistente da tela e pode usar icone de adicionar quando o contexto estiver claro.
+- Acoes por linha, como editar, duplicar, arquivar, excluir ou visualizar, devem priorizar icones com tooltip/label acessivel.
+- Confirmacoes destrutivas devem usar modal curto, com titulo direto, impacto claro e acao primaria segura.
+- Modais devem ter titulo objetivo, campos agrupados por necessidade real, botoes claros, fechamento por cancelar/esc e foco acessivel.
+- Em mobile, modais podem se comportar como bottom sheet ou tela sobreposta, preservando a sensacao de fluxo rapido.
+
+### Densidade e conteudo
+
+- Cada tela deve mostrar primeiro os dados e acoes mais importantes para a rotina financeira.
+- Textos auxiliares devem ser curtos e aparecer perto do campo ou estado que explicam.
+- Evitar repetir instrucoes que o usuario ja entende pelo rotulo, icone ou posicionamento.
+- Preferir tabelas, listas compactas e filtros simples a paineis explicativos.
+- Indicadores e badges devem ser usados para status, pendencias e alertas, nao como decoracao.
 
 ## Tom de voz visual e verbal
 
