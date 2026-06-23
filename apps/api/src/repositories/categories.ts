@@ -43,7 +43,7 @@ export async function listCategoriesForContext(
   const rows = await query<CategoryRow>(
     `select ${SELECT_COLUMNS} from "Category"
      where "organizationId" = $1 and "financialProfileId" = $2
-     order by "name" asc`,
+     order by "kind" asc, "parentCategoryId" asc nulls first, "name" asc`,
     [context.organizationId, context.financialProfileId],
   );
 
@@ -66,11 +66,15 @@ export async function createCategoryForContext(
   const parentCategory = payload.parentCategoryId
     ? await findCategoryRow(context, payload.parentCategoryId)
     : undefined;
+  const ancestorCategories = parentCategory
+    ? await listCategoryAncestors(context, parentCategory)
+    : [];
   const category = createCategoryDomain({
     id: randomUUID(),
     context,
     now: new Date().toISOString(),
     payload,
+    ancestorCategories,
     ...(parentCategory ? { parentCategory } : {}),
   });
 
@@ -103,14 +107,19 @@ export async function updateCategoryForContext(
   payload: UpdateCategoryPayload,
 ): Promise<Category> {
   const currentCategory = await findCategoryRow(context, categoryId);
-  const parentCategory = payload.parentCategoryId
-    ? await findCategoryRow(context, payload.parentCategoryId)
+  const nextParentCategoryId = payload.parentCategoryId ?? currentCategory?.parentCategoryId;
+  const parentCategory = nextParentCategoryId
+    ? await findCategoryRow(context, nextParentCategoryId)
     : undefined;
+  const ancestorCategories = parentCategory
+    ? await listCategoryAncestors(context, parentCategory)
+    : [];
   const updatedCategory = updateCategoryDomain({
     context,
     category: currentCategory,
     now: new Date().toISOString(),
     payload,
+    ancestorCategories,
     ...(parentCategory ? { parentCategory } : {}),
   });
 
@@ -179,6 +188,27 @@ async function findCategoryRow(
   );
 
   return rows[0] ? mapCategoryRow(rows[0]) : undefined;
+}
+
+async function listCategoryAncestors(
+  context: TenantContext,
+  category: Category,
+): Promise<Category[]> {
+  const ancestors: Category[] = [category];
+  let nextParentCategoryId = category.parentCategoryId;
+
+  while (nextParentCategoryId) {
+    const parentCategory = await findCategoryRow(context, nextParentCategoryId);
+
+    if (!parentCategory) {
+      break;
+    }
+
+    ancestors.push(parentCategory);
+    nextParentCategoryId = parentCategory.parentCategoryId;
+  }
+
+  return ancestors;
 }
 
 function mapCategoryRow(row: CategoryRow): Category {
