@@ -185,6 +185,8 @@ export async function renderCategoriesPage(token: string): Promise<string> {
     return renderApiErrorPage("/categorias", "Categorias", categories.error);
   }
 
+  const categoryItems = categories.data.categories;
+
   return renderAuthenticatedPage({
     pathname: "/categorias",
     currentLabel: "Categorias",
@@ -192,20 +194,19 @@ export async function renderCategoriesPage(token: string): Promise<string> {
       ${renderPageHeading({
         eyebrow: "Padronizar classificação",
         title: "Categorias",
-        description: "Classifique receitas, despesas e transferências com consistência.",
+        description: "Organize receitas e despesas em categorias principais e detalhadas.",
       })}
       <section class="workspace-grid wide-form">
         <section class="panel list-panel">
           <div class="section-heading">
-            <h2>Categorias cadastradas</h2>
-            <span>${categories.data.categories.length} itens</span>
+            <div>
+              <h2>Categorias por hierarquia</h2>
+              <p class="muted">Categorias arquivadas permanecem visíveis aqui para preservar histórico.</p>
+            </div>
+            <span>${categoryItems.length} itens</span>
           </div>
-          <div class="rows maintenance-rows">
-            ${
-              categories.data.categories
-                .map(renderCategoryRow)
-                .join("") || renderEmptyState("Nenhuma categoria cadastrada.", "Crie categorias para organizar receitas e despesas.")
-            }
+          <div class="category-tree-list">
+            ${renderCategoryTree(categoryItems)}
           </div>
         </section>
         <section class="panel form-panel">
@@ -215,6 +216,12 @@ export async function renderCategoriesPage(token: string): Promise<string> {
             <label>Tipo
               <select name="kind" required>
                 ${renderCategoryKindOptions()}
+              </select>
+            </label>
+            <label class="full-span">Categoria superior
+              <select name="parentCategoryId">
+                <option value="">Categoria principal</option>
+                ${renderCategoryParentOptions(categoryItems)}
               </select>
             </label>
             <button type="submit">Criar categoria</button>
@@ -505,23 +512,61 @@ function renderAccountRow(account: AccountRecord): string {
   `;
 }
 
-function renderCategoryRow(category: CategoryRecord): string {
+function renderCategoryTree(categories: CategoryRecord[]): string {
+  const visibleKinds = ["expense", "income", "transfer"];
+  const content = visibleKinds
+    .map((kind) => {
+      const categoriesForKind = categories.filter((category) => category.kind === kind);
+      const rootCategories = categoriesForKind.filter((category) => !category.parentCategoryId);
+
+      if (categoriesForKind.length === 0) {
+        return "";
+      }
+
+      return `
+        <section class="category-kind-group" aria-label="${escapeHtml(formatCategoryKind(kind))}">
+          <header><h3>${escapeHtml(formatCategoryKind(kind))}</h3><span>${categoriesForKind.length} categorias</span></header>
+          <div class="category-tree-nodes">
+            ${
+              rootCategories
+                .map((category) => renderCategoryTreeNode(category, categories))
+                .join("") || renderEmptyState("Nenhuma categoria principal.", "Crie uma categoria sem superior para começar este grupo.")
+            }
+          </div>
+        </section>
+      `;
+    })
+    .join("");
+
+  return content || renderEmptyState("Nenhuma categoria cadastrada.", "Crie categorias para organizar receitas e despesas.");
+}
+
+function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRecord[]): string {
+  const children = categories
+    .filter((candidate) => candidate.parentCategoryId === category.id)
+    .sort((left, right) => left.name.localeCompare(right.name));
   const isArchived = category.status === "archived";
 
   return `
-    <article class="maintenance-item">
+    <article class="category-tree-node ${category.parentCategoryId ? "category-tree-child" : ""}">
       <div class="maintenance-summary">
-        <div><strong>${escapeHtml(category.name)}</strong><span>${escapeHtml(formatCategoryKind(category.kind))} - ${escapeHtml(formatGenericStatus(category.status))}</span></div>
+        <div>
+          <strong>${escapeHtml(category.name)}</strong>
+          <span>${category.parentCategoryId ? "Categoria detalhada" : "Categoria principal"} - ${escapeHtml(formatGenericStatus(category.status))}</span>
+        </div>
+        <span class="category-path">${escapeHtml(getCategoryDisplayName(category, categories))}</span>
       </div>
       <div class="maintenance-actions" aria-label="Ações da categoria ${escapeHtml(category.name)}">
         <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/categories/${escapeHtml(category.id)}">Abrir detalhe</button>
         <form data-api-form data-api-method="PATCH" data-api-path="/api/categories/${escapeHtml(category.id)}" class="inline-edit-form">
           <label>Nome<input name="name" value="${escapeHtml(category.name)}" required /></label>
           <label>Tipo<select name="kind">${renderCategoryKindOptions(category.kind)}</select></label>
+          <label>Categoria superior<select name="parentCategoryId"><option value="">Categoria principal</option>${renderCategoryParentOptions(categories, category)}</select></label>
           <button type="submit">Salvar edição</button>
         </form>
         ${isArchived ? renderActionButton("Restaurar categoria", `/api/categories/${category.id}/restore`) : renderActionButton("Arquivar categoria", `/api/categories/${category.id}/archive`, "Arquivar esta categoria? Novos lançamentos não devem usá-la.")}
       </div>
+      ${children.length > 0 ? `<div class="category-tree-children">${children.map((child) => renderCategoryTreeNode(child, categories)).join("")}</div>` : ""}
     </article>
   `;
 }
@@ -695,7 +740,10 @@ function apiFormScript(): string {
       function buildPayload(form) {
         const payload = {};
         new FormData(form).forEach((value, key) => {
-          if (value === "") return;
+          if (value === "") {
+            if (key === "parentCategoryId") payload[key] = null;
+            return;
+          }
           const field = form.querySelector('[name="' + key + '"]');
           if (field && field.dataset.money !== undefined) {
             payload[key] = Math.round(parseFloat(String(value).replace(",", ".")) * 100);
@@ -876,13 +924,54 @@ function renderAccountOptions(accounts: AccountRecord[], selected?: string): str
     .join("");
 }
 
+function renderCategoryParentOptions(
+  categories: CategoryRecord[],
+  currentCategory?: CategoryRecord,
+): string {
+  return categories
+    .filter((category) => category.id !== currentCategory?.id)
+    .sort((left, right) => getCategoryDisplayName(left, categories).localeCompare(getCategoryDisplayName(right, categories)))
+    .map((category) => {
+      const selected = currentCategory?.parentCategoryId === category.id ? " selected" : "";
+      const archived = category.status === "archived" ? " - arquivada" : "";
+      return `<option value="${escapeHtml(category.id)}"${selected}>${escapeHtml(formatCategoryKind(category.kind))} - ${escapeHtml(getCategoryDisplayName(category, categories))}${archived}</option>`;
+    })
+    .join("");
+}
+
 function renderCategoryOptions(categories: CategoryRecord[], selected?: string): string {
   return categories
+    .slice()
+    .sort((left, right) => getCategoryDisplayName(left, categories).localeCompare(getCategoryDisplayName(right, categories)))
     .map(
       (category) =>
-        `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
+        `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(getCategoryDisplayName(category, categories))}</option>`,
     )
     .join("");
+}
+
+function getCategoryDisplayName(category: CategoryRecord, categories: readonly CategoryRecord[]): string {
+  const path = [category.name];
+  const visitedCategoryIds = new Set<string>([category.id]);
+  let parentCategoryId = category.parentCategoryId;
+
+  while (parentCategoryId) {
+    if (visitedCategoryIds.has(parentCategoryId)) {
+      break;
+    }
+
+    const parentCategory = categories.find((candidate) => candidate.id === parentCategoryId);
+
+    if (!parentCategory) {
+      break;
+    }
+
+    path.unshift(parentCategory.name);
+    visitedCategoryIds.add(parentCategory.id);
+    parentCategoryId = parentCategory.parentCategoryId;
+  }
+
+  return path.join(" > ");
 }
 
 function formatMoney(amountMinor: number): string {
@@ -1060,6 +1149,7 @@ interface CategoryRecord {
   name: string;
   kind: string;
   status: string;
+  parentCategoryId?: string;
 }
 
 interface TransactionRecord {
@@ -1114,7 +1204,7 @@ function baseCss(): string {
     :root { color-scheme: light; --bg: #f8fafc; --surface: #ffffff; --surface-soft: #eef5f8; --text: #0f172a; --muted: #475569; --line: #cbd5e1; --primary: #0f3d4c; --primary-soft: #e8f3f6; --cyan: #0891b2; --success: #166534; --success-bg: #dcfce7; --danger: #dc2626; --danger-bg: #fee2e2; --warning: #b45309; --warning-bg: #fef3c7; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    h1, h2, p { margin: 0; } h1 { font-size: clamp(1.6rem, 4vw, 2rem); line-height: 1.15; } h2 { font-size: 1rem; line-height: 1.3; } a { color: inherit; }
+    h1, h2, h3, p { margin: 0; } h1 { font-size: clamp(1.6rem, 4vw, 2rem); line-height: 1.15; } h2 { font-size: 1rem; line-height: 1.3; } h3 { font-size: .95rem; line-height: 1.3; } a { color: inherit; }
     button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(34, 211, 238, .55); outline-offset: 2px; }
     .login-shell, .placeholder-state { align-items: center; display: grid; min-height: 100vh; padding: 24px; }
     .panel, .placeholder-state, .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
@@ -1151,13 +1241,14 @@ function baseCss(): string {
     .statement-form-panel form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
     .rows { display: grid; gap: 10px; } .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; min-width: 0; padding-top: 10px; } .row:first-child { border-top: 0; padding-top: 0; } .row div { display: grid; gap: 4px; min-width: 0; } .row span { color: var(--muted); line-height: 1.45; } .row strong { overflow-wrap: anywhere; } .row > strong { text-align: right; white-space: nowrap; }
-    .maintenance-rows { gap: 14px; } .maintenance-item { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .maintenance-item:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; } .maintenance-summary > strong { text-align: right; white-space: nowrap; }
+    .maintenance-rows { gap: 14px; } .maintenance-item, .category-tree-node { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .maintenance-item:first-child, .category-tree-node:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; } .maintenance-summary > strong { text-align: right; white-space: nowrap; }
     .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; padding: 12px; }
+    .category-tree-list { display: grid; gap: 18px; } .category-kind-group { display: grid; gap: 12px; } .category-kind-group header { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .category-kind-group header span, .category-path { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; max-width: 100%; overflow-wrap: anywhere; padding: 6px 10px; } .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 12px; padding-left: 14px; } .category-tree-child { border-top-style: dashed; }
     .inline-edit-form { align-items: end; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .inline-edit-form button, .inline-edit-form .form-status { grid-column: 1 / -1; } .statement-edit-form { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
     .form-panel form { grid-template-columns: 1fr; } .wide-form .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wide-form .form-panel button, .wide-form .full-span, .statement-form-panel button, .statement-form-panel .full-span { grid-column: 1 / -1; }
     .review-note { background: #f0fdf4; border-color: #bbf7d0; }
     @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid, .workspace-grid.wide-form, .statement-layout { grid-template-columns: 1fr; } .wide-form .form-panel form, .statement-form-panel form, .statement-edit-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .statement-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar, .inline-edit-form, .statement-edit-form { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar, .maintenance-summary { align-items: stretch; display: grid; } .statement-heading .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row, .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .statement-actions { grid-column: 1 / -1; } .row > strong, .maintenance-summary > strong { text-align: left; white-space: normal; } }
+    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar, .inline-edit-form, .statement-edit-form { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar, .maintenance-summary { align-items: stretch; display: grid; } .statement-heading .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row, .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .statement-actions { grid-column: 1 / -1; } .row > strong, .maintenance-summary > strong { text-align: left; white-space: normal; } .category-kind-group header { align-items: stretch; display: grid; } }
   `;
 }
