@@ -9,9 +9,9 @@ const DEFAULT_CATEGORY_TREE = [
   {
     kind: "EXPENSE",
     roots: [
-      [
-        "Moradia",
-        [
+      {
+        name: "Moradia",
+        children: [
           "Aluguel",
           "Condominio",
           "Agua",
@@ -22,11 +22,14 @@ const DEFAULT_CATEGORY_TREE = [
           "IPTU",
           "Manutencao residencial",
         ],
-      ],
-      ["Alimentacao", ["Mercado", "Feira", "Padaria", "Restaurante", "Delivery", "Lanches"]],
-      [
-        "Transporte",
-        [
+      },
+      {
+        name: "Alimentacao",
+        children: ["Mercado", "Feira", "Padaria", "Restaurante", "Delivery", "Lanches"],
+      },
+      {
+        name: "Transporte",
+        children: [
           "Combustivel",
           "Transporte publico",
           "Aplicativos de transporte",
@@ -36,34 +39,70 @@ const DEFAULT_CATEGORY_TREE = [
           "Seguro do veiculo",
           "IPVA e licenciamento",
         ],
-      ],
-      ["Saude", ["Plano de saude", "Consultas", "Exames", "Medicamentos", "Dentista", "Terapia"]],
-      ["Educacao", ["Escola ou faculdade", "Cursos", "Livros", "Material escolar"]],
-      [
-        "Lazer",
-        ["Viagens", "Cinema e eventos", "Assinaturas e streaming", "Hobbies", "Bares e restaurantes"],
-      ],
-      ["Compras", ["Vestuario", "Eletronicos", "Casa e decoracao", "Presentes", "Cuidados pessoais"]],
-      [
-        "Servicos financeiros",
-        ["Tarifas bancarias", "Juros", "Multas", "Anuidade de cartao", "Seguros"],
-      ],
-      ["Familia e dependentes", ["Filhos", "Pets", "Ajuda familiar"]],
-      ["Impostos e taxas", ["Imposto de renda", "Taxas publicas", "Documentos e cartorio"]],
-      ["Outros", ["Doacoes", "Diversos", "Ajustes"]],
+      },
+      {
+        name: "Saude",
+        children: ["Plano de saude", "Consultas", "Exames", "Medicamentos", "Dentista", "Terapia"],
+      },
+      {
+        name: "Educacao",
+        children: ["Escola ou faculdade", "Cursos", "Livros", "Material escolar"],
+      },
+      {
+        name: "Lazer",
+        children: [
+          "Viagens",
+          "Cinema e eventos",
+          "Assinaturas e streaming",
+          "Hobbies",
+          "Bares e restaurantes",
+        ],
+      },
+      {
+        name: "Compras",
+        children: ["Vestuario", "Eletronicos", "Casa e decoracao", "Presentes", "Cuidados pessoais"],
+      },
+      {
+        name: "Servicos financeiros",
+        children: ["Tarifas bancarias", "Juros", "Multas", "Anuidade de cartao", "Seguros"],
+      },
+      {
+        name: "Familia e dependentes",
+        children: ["Filhos", "Pets", "Ajuda familiar"],
+      },
+      {
+        name: "Impostos e taxas",
+        children: ["Imposto de renda", "Taxas publicas", "Documentos e cartorio"],
+      },
+      {
+        name: "Outros",
+        children: ["Doacoes", "Diversos", "Ajustes"],
+      },
     ],
   },
   {
     kind: "INCOME",
     roots: [
-      [
-        "Trabalho",
-        ["Salario", "Pro-labore", "Bonus", "Comissoes", "Freelance", "13o salario", "Ferias"],
-      ],
-      ["Negocios", ["Vendas", "Prestacao de servicos", "Reembolsos de clientes"]],
-      ["Investimentos", ["Rendimentos", "Dividendos", "Juros", "Alugueis recebidos", "Venda de ativos"]],
-      ["Reembolsos", ["Reembolso de despesas", "Estornos", "Cashback"]],
-      ["Outros recebimentos", ["Presentes recebidos", "Ajuda familiar", "Outros"]],
+      {
+        name: "Trabalho",
+        children: ["Salario", "Pro-labore", "Bonus", "Comissoes", "Freelance", "13o salario", "Ferias"],
+      },
+      {
+        name: "Negocios",
+        children: ["Vendas", "Prestacao de servicos", "Reembolsos de clientes"],
+      },
+      {
+        name: "Investimentos",
+        children: ["Rendimentos", "Dividendos", "Juros", "Alugueis recebidos", "Venda de ativos"],
+      },
+      {
+        name: "Reembolsos",
+        children: ["Reembolso de despesas", "Estornos", "Cashback"],
+      },
+      {
+        name: "Outros recebimentos",
+        children: ["Presentes recebidos", "Ajuda familiar", "Outros"],
+      },
     ],
   },
 ];
@@ -139,31 +178,31 @@ async function seedProfileDefaultCategories(client, profile) {
   let createdCount = 0;
 
   for (const group of DEFAULT_CATEGORY_TREE) {
-    for (const [parentName, children] of group.roots) {
+    for (const root of group.roots) {
       const parentId = buildDeterministicUuid([
         profile.organizationId,
         profile.id,
         "default-category",
         group.kind,
-        parentName,
+        root.name,
       ]);
 
       await insertCategory(client, profile, {
         id: parentId,
         parentCategoryId: null,
-        name: parentName,
+        name: root.name,
         kind: group.kind,
       });
       createdCount += 1;
 
-      for (const childName of children) {
+      for (const childName of root.children) {
         await insertCategory(client, profile, {
           id: buildDeterministicUuid([
             profile.organizationId,
             profile.id,
             "default-category",
             group.kind,
-            parentName,
+            root.name,
             childName,
           ]),
           parentCategoryId: parentId,
