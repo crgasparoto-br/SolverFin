@@ -56,6 +56,7 @@ interface TransactionRow {
   amountMinor: number;
   currency: string;
   occurredOn: Date;
+  plannedOn: Date;
   description: string;
   reconciledAt: Date | null;
   voidedAt: Date | null;
@@ -97,7 +98,7 @@ export class DeterministicReviewSuggestionError extends Error {
 
 const TRANSACTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
   "categoryId", "cardId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
-  "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "description",
+  "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description",
   "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 const AI_SUGGESTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
   "sourceEntityId", "targetEntityId", "confidence", "explanation", "provider", "model", "reviewedByUserId",
@@ -611,6 +612,7 @@ function mapTransactionRow(row: TransactionRow): Transaction {
     amountMinor: row.amountMinor,
     currency: row.currency,
     occurredOn: row.occurredOn.toISOString().slice(0, 10),
+    plannedOn: row.plannedOn.toISOString().slice(0, 10),
     description: row.description,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),

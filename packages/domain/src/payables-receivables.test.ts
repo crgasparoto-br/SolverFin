@@ -391,6 +391,7 @@ function createTransactionFixture(
     amountMinor,
     currency,
     occurredOn: "2026-06-25",
+    plannedOn: "2026-06-25",
     description: `Lancamento ${id}`,
     accountId: account.id,
     createdAt: now,

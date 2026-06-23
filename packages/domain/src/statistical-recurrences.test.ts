@@ -164,6 +164,7 @@ function expense(
     amountMinor,
     currency: "BRL",
     occurredOn,
+    plannedOn: occurredOn,
     description,
     accountId,
     categoryId,

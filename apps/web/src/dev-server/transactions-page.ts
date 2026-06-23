@@ -147,9 +147,13 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
                 ${renderTableHeader()}
                 ${
                   rows.length > 0
-                    ? rows.map((row) => renderRow(row, selectedAccount, accounts, categories)).join("")
+                    ? rows
+                        .map((row) => renderRow(row, selectedAccount, accounts, categories))
+                        .join("")
                     : emptyState(
-                        selectedAccount ? "Nenhum lançamento neste período." : "Selecione uma conta.",
+                        selectedAccount
+                          ? "Nenhum lançamento neste período."
+                          : "Selecione uma conta.",
                         selectedAccount
                           ? "Ajuste o filtro ou crie um lançamento para acompanhar o saldo."
                           : "O extrato é sempre exibido por conta bancária.",
@@ -210,7 +214,10 @@ function buildRows(
     });
 }
 
-function summarize(rows: StatementRow[], selectedAccount: AccountRecord | undefined): StatementSummary {
+function summarize(
+  rows: StatementRow[],
+  selectedAccount: AccountRecord | undefined,
+): StatementSummary {
   const openingMinor = selectedAccount?.openingBalanceMinor ?? 0;
 
   return rows.reduce<StatementSummary>(
@@ -317,7 +324,9 @@ function renderTransferNote(
   if (transaction.kind !== "transfer") return "";
 
   const origin = accounts.find((account) => account.id === transaction.accountId)?.name;
-  const destination = accounts.find((account) => account.id === transaction.destinationAccountId)?.name;
+  const destination = accounts.find(
+    (account) => account.id === transaction.destinationAccountId,
+  )?.name;
   const text =
     selectedAccount?.id === transaction.destinationAccountId
       ? `Recebida de ${origin ?? "outra conta"}`
@@ -433,7 +442,7 @@ function clientScript(): string {
       document.querySelectorAll("[data-transaction]").forEach((node) => {
         const transaction = JSON.parse(node.textContent);
         const hydrate = (selector, clone) => {
-          const button = document.querySelector(selector + transaction.id + '\"]');
+          const button = document.querySelector(selector + transaction.id + '"]');
           if (!button) return;
           button.addEventListener("click", () => {
             form.reset();
@@ -547,7 +556,10 @@ function renderCategoryOptions(categories: CategoryRecord[], selected?: string):
     .join("");
 }
 
-function signedAmount(transaction: TransactionRecord, selectedAccountId: string | undefined): number {
+function signedAmount(
+  transaction: TransactionRecord,
+  selectedAccountId: string | undefined,
+): number {
   if (transaction.kind === "income") return transaction.amountMinor;
   if (transaction.kind === "expense") return -transaction.amountMinor;
   if (transaction.kind === "transfer" && transaction.destinationAccountId === selectedAccountId) {

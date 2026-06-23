@@ -309,6 +309,7 @@ function createTransactionFixture(
     amountMinor,
     currency: "BRL",
     occurredOn,
+    plannedOn: occurredOn,
     description: `Transacao ${id}`,
     accountId: "account-demo",
     createdAt: now,

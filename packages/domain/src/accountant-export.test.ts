@@ -108,6 +108,7 @@ function buildTransaction(
     amountMinor,
     currency: "BRL",
     occurredOn,
+    plannedOn: occurredOn,
     description: `Lancamento ${id}`,
     accountId: "account-export-demo",
     createdAt: "2026-06-01T00:00:00.000Z",

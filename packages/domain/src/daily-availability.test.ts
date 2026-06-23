@@ -156,6 +156,7 @@ function transactionFixture(
     amountMinor,
     currency: "BRL",
     occurredOn,
+    plannedOn: occurredOn,
     description: id,
     accountId: "account-a",
     categoryId,

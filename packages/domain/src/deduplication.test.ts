@@ -252,6 +252,7 @@ function buildTransaction(
     amountMinor: overrides.amountMinor,
     currency: "BRL",
     occurredOn: overrides.occurredOn,
+    plannedOn: overrides.occurredOn,
     description: overrides.description,
     accountId: overrides.accountId,
     createdAt: now,

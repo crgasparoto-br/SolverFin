@@ -56,10 +56,13 @@ async function categoriesExposeRestoreAction(): Promise<void> {
 async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<void> {
   const html = await renderTransactionsPage("token");
 
-  assert.match(html, /<h1>Extrato da conta<\/h1>/);
+  assert.match(html, /<h1>Lançamentos<\/h1>/);
   assert.match(html, /Movimentações/);
-  assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/transactions\/transaction-1"/);
-  assert.match(html, /Cancelar lançamento/);
+  assert.match(
+    html,
+    /data-action data-method="PATCH" data-path="\/api\/transactions\/transaction-1"/,
+  );
+  assert.match(html, /Excluir/);
 }
 
 async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void> {

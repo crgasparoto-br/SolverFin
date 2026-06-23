@@ -699,8 +699,8 @@ async function upsertDemoTransactions(client) {
 
     await client.query(
       `INSERT INTO "Transaction"
-       ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "categoryId", "cardId", "invoiceId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "description", "reconciledAt", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'BRL', $13, $14, $15, $16, $16, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "categoryId", "cardId", "invoiceId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "reconciledAt", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'BRL', $13, $13, $14, $15, $16, $16, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        ON CONFLICT ("id") DO UPDATE SET
          "accountId" = EXCLUDED."accountId",
          "destinationAccountId" = EXCLUDED."destinationAccountId",
@@ -712,6 +712,7 @@ async function upsertDemoTransactions(client) {
          "source" = EXCLUDED."source",
          "amountMinor" = EXCLUDED."amountMinor",
          "occurredOn" = EXCLUDED."occurredOn",
+         "plannedOn" = EXCLUDED."plannedOn",
          "description" = EXCLUDED."description",
          "reconciledAt" = EXCLUDED."reconciledAt",
          "updatedByUserId" = EXCLUDED."updatedByUserId",

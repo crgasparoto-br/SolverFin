@@ -250,6 +250,7 @@ function buildTransaction(id: string, description: string, categoryId: string): 
     amountMinor: 2500,
     currency: "BRL",
     occurredOn: "2026-06-16",
+    plannedOn: "2026-06-16",
     description,
     accountId: "account-demo",
     categoryId,

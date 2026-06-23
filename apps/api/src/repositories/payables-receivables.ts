@@ -94,6 +94,7 @@ interface TransactionRow {
   amountMinor: number;
   currency: string;
   occurredOn: Date;
+  plannedOn: Date;
   description: string;
   reconciledAt: Date | null;
   voidedAt: Date | null;
@@ -109,7 +110,7 @@ const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId
 
 const TRANSACTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
   "categoryId", "cardId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
-  "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "description",
+  "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description",
   "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 export async function listPayableReceivablesForContext(
@@ -303,9 +304,9 @@ function buildPayableReceivableParams(payableReceivable: PayableReceivable): unk
 function buildInsertTransactionSql(): string {
   return `insert into "Transaction"
     ("id", "organizationId", "financialProfileId", "accountId", "categoryId", "kind", "status",
-     "source", "amountMinor", "currency", "occurredOn", "description", "createdAt", "updatedAt",
+     "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt", "updatedAt",
      "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
 }
 
 function buildTransactionParams(transaction: Transaction): unknown[] {
@@ -321,6 +322,7 @@ function buildTransactionParams(transaction: Transaction): unknown[] {
     transaction.amountMinor,
     transaction.currency,
     transaction.occurredOn,
+    transaction.plannedOn,
     transaction.description,
     transaction.createdAt,
     transaction.updatedAt,
@@ -482,6 +484,7 @@ function mapTransactionRow(row: TransactionRow): Transaction {
     amountMinor: row.amountMinor,
     currency: row.currency,
     occurredOn: toDateOnly(row.occurredOn),
+    plannedOn: toDateOnly(row.plannedOn),
     description: row.description,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),

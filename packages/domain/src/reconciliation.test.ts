@@ -205,6 +205,7 @@ function buildTransaction(
     amountMinor: 4250,
     currency: "BRL",
     occurredOn: "2026-06-12",
+    plannedOn: "2026-06-12",
     description: "Compra Mercado Demo",
     accountId: "account-a",
     categoryId: "category-food",

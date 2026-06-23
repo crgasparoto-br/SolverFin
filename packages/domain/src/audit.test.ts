@@ -14,6 +14,7 @@ const baseTransaction: Transaction = {
   amountMinor: 12990,
   currency: "BRL",
   occurredOn: "2026-06-15",
+  plannedOn: "2026-06-15",
   description: "Compra ficticia de teste",
   accountId: "account-demo-1",
   categoryId: "category-demo-1",

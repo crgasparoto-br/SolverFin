@@ -397,7 +397,11 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
 
   const status = validateTransactionStatus(input.payload.status ?? "posted");
   const plannedOn = validateTransactionDate(input.payload.plannedOn ?? input.payload.occurredOn);
-  const effectiveOn = resolveEffectiveOn(status, input.payload.effectiveOn, input.payload.occurredOn);
+  const effectiveOn = resolveEffectiveOn(
+    status,
+    input.payload.effectiveOn,
+    input.payload.occurredOn,
+  );
   const transaction: Transaction = {
     id: input.id,
     organizationId: input.context.organizationId,

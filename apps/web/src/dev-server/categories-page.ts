@@ -199,7 +199,13 @@ function renderCategoryTree(categories: CategoryRecord[]): string {
     })
     .join("");
 
-  return content || renderEmptyState("Nenhuma categoria cadastrada.", "Crie categorias para organizar receitas e despesas.");
+  return (
+    content ||
+    renderEmptyState(
+      "Nenhuma categoria cadastrada.",
+      "Crie categorias para organizar receitas e despesas.",
+    )
+  );
 }
 
 function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRecord[]): string {
@@ -241,7 +247,10 @@ function renderCategoryKindOptions(selected?: string): string {
     ["expense", "Despesa"],
     ["transfer", "Transferencia"],
   ]
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
     .join("");
 }
 
@@ -251,7 +260,11 @@ function renderCategoryParentOptions(
 ): string {
   return categories
     .filter((category) => category.id !== currentCategory?.id)
-    .sort((left, right) => getCategoryDisplayName(left, categories).localeCompare(getCategoryDisplayName(right, categories)))
+    .sort((left, right) =>
+      getCategoryDisplayName(left, categories).localeCompare(
+        getCategoryDisplayName(right, categories),
+      ),
+    )
     .map((category) => {
       const selected = currentCategory?.parentCategoryId === category.id ? " selected" : "";
       const archived = category.status === "archived" ? " - arquivada" : "";
@@ -260,7 +273,10 @@ function renderCategoryParentOptions(
     .join("");
 }
 
-function getCategoryDisplayName(category: CategoryRecord, categories: readonly CategoryRecord[]): string {
+function getCategoryDisplayName(
+  category: CategoryRecord,
+  categories: readonly CategoryRecord[],
+): string {
   const path = [category.name];
   const visitedCategoryIds = new Set<string>([category.id]);
   let parentCategoryId = category.parentCategoryId;

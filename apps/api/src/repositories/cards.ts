@@ -278,9 +278,9 @@ export async function payInvoiceForContext(
     await executeQuery(
       `insert into "Transaction"
         ("id", "organizationId", "financialProfileId", "accountId", "cardId", "invoiceId", "kind",
-         "status", "source", "amountMinor", "currency", "occurredOn", "description", "createdAt",
+         "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt",
          "updatedAt", "createdByUserId", "updatedByUserId")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
       [
         result.transaction.id,
         result.transaction.organizationId,
@@ -294,6 +294,7 @@ export async function payInvoiceForContext(
         result.transaction.amountMinor,
         result.transaction.currency,
         result.transaction.occurredOn,
+        result.transaction.plannedOn,
         result.transaction.description,
         result.transaction.createdAt,
         result.transaction.updatedAt,
@@ -357,9 +358,9 @@ function buildInvoiceParams(invoice: Invoice, exists: boolean): unknown[] {
 function buildInsertCardTransactionSql(): string {
   return `insert into "Transaction"
     ("id", "organizationId", "financialProfileId", "cardId", "invoiceId", "categoryId", "kind", "status",
-     "source", "amountMinor", "currency", "occurredOn", "description", "createdAt", "updatedAt",
+     "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt", "updatedAt",
      "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`;
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`;
 }
 
 function buildCardTransactionParams(transaction: Transaction): unknown[] {
@@ -376,6 +377,7 @@ function buildCardTransactionParams(transaction: Transaction): unknown[] {
     transaction.amountMinor,
     transaction.currency,
     transaction.occurredOn,
+    transaction.plannedOn,
     transaction.description,
     transaction.createdAt,
     transaction.updatedAt,

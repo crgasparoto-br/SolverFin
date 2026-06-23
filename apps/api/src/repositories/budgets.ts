@@ -190,12 +190,13 @@ async function listTransactionsForCategoryPeriod(
     amountMinor: number;
     currency: string;
     occurredOn: Date;
+    plannedOn: Date;
     description: string;
     createdAt: Date;
     updatedAt: Date;
   }>(
     `select "id", "organizationId", "financialProfileId", "accountId", "categoryId", "kind", "status",
-            "source", "amountMinor", "currency", "occurredOn", "description", "createdAt", "updatedAt"
+            "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt", "updatedAt"
      from "Transaction"
      where "organizationId" = $1 and "financialProfileId" = $2 and "categoryId" = $3
        and "occurredOn" >= $4 and "occurredOn" <= $5`,
@@ -213,6 +214,7 @@ async function listTransactionsForCategoryPeriod(
       amountMinor: row.amountMinor,
       currency: row.currency,
       occurredOn: row.occurredOn.toISOString().slice(0, 10),
+      plannedOn: row.plannedOn.toISOString().slice(0, 10),
       description: row.description,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),

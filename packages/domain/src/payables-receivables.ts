@@ -387,6 +387,7 @@ function buildSettlementTransaction(
     categoryId,
     payableReceivable.kind,
   );
+  const settledOn = validateDate(input.payload.settledOn, "PAYABLE_RECEIVABLE_DUE_DATE_REQUIRED");
   const transaction: Transaction = {
     id: input.transactionId,
     organizationId: input.context.organizationId,
@@ -396,7 +397,8 @@ function buildSettlementTransaction(
     source: "manual",
     amountMinor,
     currency: payableReceivable.currency,
-    occurredOn: validateDate(input.payload.settledOn, "PAYABLE_RECEIVABLE_DUE_DATE_REQUIRED"),
+    occurredOn: settledOn,
+    plannedOn: settledOn,
     description: input.payload.description?.trim() || payableReceivable.description,
     accountId: account.id,
     createdAt: input.now,

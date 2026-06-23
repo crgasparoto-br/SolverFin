@@ -500,7 +500,9 @@ async function updateTransactionHandler(
       ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
       ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
       ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
-      ...(body.effectiveOn !== undefined ? { effectiveOn: readOptionalDate(body.effectiveOn) } : {}),
+      ...(body.effectiveOn !== undefined
+        ? { effectiveOn: readOptionalDate(body.effectiveOn) }
+        : {}),
       ...(body.description !== undefined ? { description: String(body.description) } : {}),
       ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
       ...(body.destinationAccountId !== undefined
