@@ -203,30 +203,50 @@ function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRe
     .filter((candidate) => candidate.parentCategoryId === category.id)
     .sort((left, right) => left.name.localeCompare(right.name));
   const displayName = getCategoryDisplayName(category, categories);
+  const hasChildren = children.length > 0;
+  const childrenId = `category-children-${category.id}`;
 
   return `
-    <article class="category-tree-node ${category.parentCategoryId ? "category-tree-child" : ""}" data-category-item data-category-kind="${escapeHtml(category.kind)}" data-category-status="${escapeHtml(category.status)}">
-      <button
-        class="category-node-button"
-        type="button"
-        data-edit-category
-        data-category-id="${escapeHtml(category.id)}"
-        data-category-name="${escapeHtml(category.name)}"
-        data-category-kind-value="${escapeHtml(category.kind)}"
-        data-category-status-value="${escapeHtml(category.status)}"
-        data-category-parent-id="${escapeHtml(category.parentCategoryId ?? "")}"
-        aria-label="Editar categoria ${escapeHtml(category.name)}"
-      >
-        <span class="category-dot category-dot-${escapeHtml(category.kind)}" aria-hidden="true"></span>
-        <span class="category-node-text">
-          <strong>${escapeHtml(category.name)}</strong>
-          <span>${category.parentCategoryId ? "Categoria detalhada" : "Categoria principal"} - ${escapeHtml(formatGenericStatus(category.status))}</span>
-        </span>
-        <span class="category-path">${escapeHtml(displayName)}</span>
-        <span class="category-edit-icon" aria-hidden="true">...</span>
-      </button>
-      ${children.length > 0 ? `<div class="category-tree-children">${children.map((child) => renderCategoryTreeNode(child, categories)).join("")}</div>` : ""}
+    <article class="category-tree-node ${category.parentCategoryId ? "category-tree-child" : ""}" data-category-item data-category-kind="${escapeHtml(category.kind)}" data-category-status="${escapeHtml(category.status)}" data-category-collapsed="false">
+      <div class="category-node-row">
+        ${hasChildren ? renderCategoryCollapseButton(category, childrenId) : `<span class="category-collapse-spacer" aria-hidden="true"></span>`}
+        <button
+          class="category-node-button"
+          type="button"
+          data-edit-category
+          data-category-id="${escapeHtml(category.id)}"
+          data-category-name="${escapeHtml(category.name)}"
+          data-category-kind-value="${escapeHtml(category.kind)}"
+          data-category-status-value="${escapeHtml(category.status)}"
+          data-category-parent-id="${escapeHtml(category.parentCategoryId ?? "")}"
+          aria-label="Editar categoria ${escapeHtml(category.name)}"
+        >
+          <span class="category-dot category-dot-${escapeHtml(category.kind)}" aria-hidden="true"></span>
+          <span class="category-node-text">
+            <strong>${escapeHtml(category.name)}</strong>
+            <span>${category.parentCategoryId ? "Categoria detalhada" : "Categoria principal"} - ${escapeHtml(formatGenericStatus(category.status))}</span>
+          </span>
+          <span class="category-path">${escapeHtml(displayName)}</span>
+          <span class="category-edit-icon" aria-hidden="true">...</span>
+        </button>
+      </div>
+      ${hasChildren ? `<div id="${escapeHtml(childrenId)}" class="category-tree-children" data-category-children>${children.map((child) => renderCategoryTreeNode(child, categories)).join("")}</div>` : ""}
     </article>
+  `;
+}
+
+function renderCategoryCollapseButton(category: CategoryRecord, childrenId: string): string {
+  return `
+    <button
+      class="category-collapse-button"
+      type="button"
+      data-toggle-category-children
+      aria-expanded="true"
+      aria-controls="${escapeHtml(childrenId)}"
+      aria-label="Ocultar subcategorias de ${escapeHtml(category.name)}"
+    >
+      <span aria-hidden="true">v</span>
+    </button>
   `;
 }
 
@@ -467,6 +487,21 @@ function categoryPageScript(): string {
         openModal(button);
       }
 
+      function setCategoryCollapsed(item, collapsed) {
+        if (!item) return;
+        const children = item.querySelector(":scope > .category-tree-children");
+        const toggle = item.querySelector(":scope > .category-node-row > [data-toggle-category-children]");
+        item.dataset.categoryCollapsed = String(collapsed);
+        if (children) children.hidden = collapsed;
+        if (toggle) {
+          toggle.setAttribute("aria-expanded", String(!collapsed));
+          const name = item.querySelector(":scope > .category-node-row [data-edit-category]")?.dataset.categoryName || "categoria";
+          toggle.setAttribute("aria-label", (collapsed ? "Mostrar" : "Ocultar") + " subcategorias de " + name);
+          const icon = toggle.querySelector("span");
+          if (icon) icon.textContent = collapsed ? ">" : "v";
+        }
+      }
+
       openButton?.addEventListener("click", () => openCreateModal(openButton));
       closeButtons.forEach((button) => button.addEventListener("click", closeModal));
       document.addEventListener("keydown", (event) => {
@@ -475,6 +510,15 @@ function categoryPageScript(): string {
 
       document.querySelectorAll("[data-edit-category]").forEach((button) => {
         button.addEventListener("click", () => openEditModal(button));
+      });
+
+      document.querySelectorAll("[data-toggle-category-children]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const item = button.closest("[data-category-item]");
+          const collapsed = item?.dataset.categoryCollapsed === "true";
+          setCategoryCollapsed(item, !collapsed);
+        });
       });
 
       statusActionButton?.addEventListener("click", async () => {
@@ -512,6 +556,7 @@ function categoryPageScript(): string {
         const childMatches = children.map((child) => applyFilterToNode(child, filter)).some(Boolean);
         const visible = matchesFilter(item, filter) || childMatches;
         item.hidden = !visible;
+        if (filter !== "all" && childMatches) setCategoryCollapsed(item, false);
         return visible;
       }
 
@@ -559,7 +604,7 @@ function pageCss(): string {
     .categories-workspace { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(16rem, .38fr) minmax(0, 1fr); } .categories-insights { position: sticky; top: 88px; } .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading.compact { align-items: start; } .kind-meters { display: grid; gap: 14px; } .kind-meter { display: grid; gap: 8px; } .kind-meter div:first-child { align-items: center; display: flex; justify-content: space-between; gap: 12px; } .kind-meter span { color: var(--muted); font-size: .86rem; } .meter-track { background: var(--primary-soft); border-radius: 999px; height: 8px; overflow: hidden; } .meter-fill { border-radius: inherit; display: block; height: 100%; } .meter-expense { background: var(--danger); } .meter-income { background: var(--success); } .meter-transfer { background: var(--cyan); } .catalog-note { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 6px; padding: 12px; }
     .category-directory { padding: 0; overflow: hidden; } .category-toolbar { align-items: start; border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 18px; } .category-toolbar > div:first-child { display: grid; gap: 4px; min-width: 0; } .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; } .filter-chip { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 34px; padding: 0 12px; } .filter-chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: white; }
     .category-tree-list { display: grid; gap: 0; } .category-kind-group { border-bottom: 1px solid var(--line); display: grid; gap: 12px; padding: 18px; } .category-kind-group:last-child { border-bottom: 0; } .category-kind-group header { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .category-kind-group header > div { display: grid; gap: 4px; min-width: 0; } .kind-badge, .category-path { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; max-width: 100%; overflow-wrap: anywhere; padding: 6px 10px; } .kind-badge-expense { background: var(--danger-bg); color: var(--danger); } .kind-badge-income { background: var(--success-bg); color: var(--success); } .kind-badge-transfer { background: #e0f2fe; color: #0369a1; }
-    .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 18px; padding-left: 16px; } .category-tree-node { background: #fbfdfe; border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; padding: 12px; } .category-tree-child { background: var(--surface); } .category-node-button { align-items: start; background: transparent; border: 0; color: inherit; display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto auto; justify-content: stretch; min-height: auto; padding: 0; text-align: left; width: 100%; } .category-node-button:hover .category-edit-icon, .category-node-button:focus-visible .category-edit-icon { background: var(--primary); color: white; } .category-node-text { display: grid; gap: 4px; min-width: 0; } .category-node-text strong { overflow-wrap: anywhere; } .category-node-text span { color: var(--muted); font-weight: 500; line-height: 1.45; } .category-edit-icon { align-items: center; align-self: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); display: inline-flex; font-weight: 900; justify-content: center; min-height: 32px; min-width: 32px; padding: 0 8px; } .category-dot { border-radius: 999px; height: 10px; margin-top: 7px; width: 10px; } .category-dot-expense { background: var(--danger); } .category-dot-income { background: var(--success); } .category-dot-transfer { background: var(--cyan); }
+    .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 34px; padding-left: 16px; } .category-tree-node { background: #fbfdfe; border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; padding: 12px; } .category-tree-child { background: var(--surface); } .category-node-row { align-items: start; display: grid; gap: 10px; grid-template-columns: auto minmax(0, 1fr); } .category-collapse-button, .category-collapse-spacer { align-self: start; min-height: 32px; min-width: 32px; width: 32px; } .category-collapse-button { background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); font-weight: 900; padding: 0; } .category-collapse-button:hover, .category-collapse-button:focus-visible { background: var(--primary); color: white; } .category-node-button { align-items: start; background: transparent; border: 0; color: inherit; display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto auto; justify-content: stretch; min-height: auto; padding: 0; text-align: left; width: 100%; } .category-node-button:hover .category-edit-icon, .category-node-button:focus-visible .category-edit-icon { background: var(--primary); color: white; } .category-node-text { display: grid; gap: 4px; min-width: 0; } .category-node-text strong { overflow-wrap: anywhere; } .category-node-text span { color: var(--muted); font-weight: 500; line-height: 1.45; } .category-edit-icon { align-items: center; align-self: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); display: inline-flex; font-weight: 900; justify-content: center; min-height: 32px; min-width: 32px; padding: 0 8px; } .category-dot { border-radius: 999px; height: 10px; margin-top: 7px; width: 10px; } .category-dot-expense { background: var(--danger); } .category-dot-income { background: var(--success); } .category-dot-transfer { background: var(--cyan); }
     .category-form { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .category-form .form-status, .full-span { grid-column: 1 / -1; } .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
     .category-modal { inset: 0; position: fixed; z-index: 20; } .category-modal-backdrop { background: rgba(6,25,35,.48); inset: 0; position: absolute; } .category-dialog { background: var(--surface); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.24); display: grid; gap: 16px; left: 50%; max-height: calc(100svh - 32px); max-width: 560px; overflow: auto; padding: 18px; position: absolute; top: 50%; transform: translate(-50%, -50%); width: min(calc(100vw - 32px), 560px); } .category-dialog-header { align-items: start; display: flex; gap: 12px; justify-content: space-between; } .category-dialog-header > div { display: grid; gap: 4px; } .dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; grid-column: 1 / -1; justify-content: flex-end; }
     @media (max-width: 1024px) { .categories-workspace { grid-template-columns: 1fr; } .categories-insights { position: static; } }
