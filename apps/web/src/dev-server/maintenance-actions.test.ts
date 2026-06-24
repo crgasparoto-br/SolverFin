@@ -56,10 +56,10 @@ async function categoriesExposeRestoreAction(): Promise<void> {
 async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<void> {
   const html = await renderTransactionsPage("token");
 
-  assert.match(html, /<h1>Lançamentos<\/h1>/);
+  assert.match(html, /<h1>Extrato Bancário<\/h1>/);
   assert.match(html, /Movimentações/);
   assert.match(html, /statement-layout/);
-  assert.match(html, /Resumo do período/);
+  assert.match(html, /Resumo da Conta/);
   assert.doesNotMatch(html, /summary-grid/);
   assert.match(
     html,
