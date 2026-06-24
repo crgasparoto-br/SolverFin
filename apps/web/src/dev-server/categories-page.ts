@@ -78,7 +78,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
             <div class="category-toolbar">
               <div>
                 <h2>Categorias por hierarquia</h2>
-                <p class="sf-muted">Clique em uma categoria para editar, arquivar ou restaurar.</p>
+                <p class="sf-muted">Use o menu de cada categoria para editar, arquivar ou excluir.</p>
               </div>
               <div class="filter-chips" aria-label="Filtros locais de categorias">
                 ${renderFilterButton("Todas", "all", true)}
@@ -214,11 +214,7 @@ function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRe
           class="category-node-button"
           type="button"
           data-edit-category
-          data-category-id="${escapeHtml(category.id)}"
-          data-category-name="${escapeHtml(category.name)}"
-          data-category-kind-value="${escapeHtml(category.kind)}"
-          data-category-status-value="${escapeHtml(category.status)}"
-          data-category-parent-id="${escapeHtml(category.parentCategoryId ?? "")}"
+          ${renderCategoryDataAttributes(category)}
           aria-label="Editar categoria ${escapeHtml(category.name)}"
         >
           <span class="category-dot category-dot-${escapeHtml(category.kind)}" aria-hidden="true"></span>
@@ -227,11 +223,33 @@ function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRe
             <span>${category.parentCategoryId ? "Categoria detalhada" : "Categoria principal"} - ${escapeHtml(formatGenericStatus(category.status))}</span>
           </span>
           <span class="category-path">${escapeHtml(displayName)}</span>
-          <span class="category-edit-icon" aria-hidden="true">...</span>
         </button>
+        ${renderCategoryActionMenu(category)}
       </div>
       ${hasChildren ? `<div id="${escapeHtml(childrenId)}" class="category-tree-children" data-category-children>${children.map((child) => renderCategoryTreeNode(child, categories)).join("")}</div>` : ""}
     </article>
+  `;
+}
+
+function renderCategoryDataAttributes(category: CategoryRecord): string {
+  return `data-category-id="${escapeHtml(category.id)}" data-category-name="${escapeHtml(category.name)}" data-category-kind-value="${escapeHtml(category.kind)}" data-category-status-value="${escapeHtml(category.status)}" data-category-parent-id="${escapeHtml(category.parentCategoryId ?? "")}"`;
+}
+
+function renderCategoryActionMenu(category: CategoryRecord): string {
+  const isArchived = category.status === "archived";
+  const statusLabel = isArchived ? "Restaurar" : "Arquivar";
+  const statusPath = `/api/categories/${category.id}/${isArchived ? "restore" : "archive"}`;
+  const statusConfirm = isArchived ? "" : "Arquivar esta categoria? Novos lancamentos nao devem usa-la.";
+
+  return `
+    <div class="category-action-menu">
+      <button class="category-menu-button icon-button" type="button" data-category-menu-button aria-expanded="false" aria-label="Abrir acoes da categoria ${escapeHtml(category.name)}">...</button>
+      <div class="category-menu-popover" data-category-menu role="menu" hidden>
+        <button type="button" role="menuitem" data-category-menu-action="edit" ${renderCategoryDataAttributes(category)}>Editar</button>
+        <button type="button" role="menuitem" data-category-menu-action="request" data-api-method="POST" data-api-path="${escapeHtml(statusPath)}"${statusConfirm ? ` data-api-confirm="${escapeHtml(statusConfirm)}"` : ""}>${statusLabel}</button>
+        <button class="danger-menu-item" type="button" role="menuitem" data-category-menu-action="request" data-api-method="DELETE" data-api-path="/api/categories/${escapeHtml(category.id)}" data-api-confirm="Excluir esta categoria? Ela so sera removida se nao tiver subcategorias, lancamentos ou outros registros vinculados.">Excluir</button>
+      </div>
+    </div>
   `;
 }
 
@@ -431,8 +449,17 @@ function categoryPageScript(): string {
         return categoryForm ? ensureStatus(categoryForm) : null;
       }
 
+      function closeCategoryMenus(exceptMenu) {
+        document.querySelectorAll("[data-category-menu]").forEach((menu) => {
+          if (menu === exceptMenu) return;
+          menu.hidden = true;
+          menu.parentElement?.querySelector("[data-category-menu-button]")?.setAttribute("aria-expanded", "false");
+        });
+      }
+
       function openModal(trigger) {
         if (!modal) return;
+        closeCategoryMenus();
         lastTrigger = trigger || openButton;
         modal.hidden = false;
         modal.setAttribute("aria-hidden", "false");
@@ -487,6 +514,33 @@ function categoryPageScript(): string {
         openModal(button);
       }
 
+      async function runCategoryMenuRequest(button) {
+        const path = button.dataset.apiPath;
+        if (!path) return;
+        const confirmation = button.dataset.apiConfirm;
+        if (confirmation && !window.confirm(confirmation)) return;
+        const item = button.closest("[data-category-item]");
+        const status = item ? ensureStatus(item) : null;
+        button.disabled = true;
+        if (status) {
+          status.className = "form-status sf-muted";
+          status.textContent = "Enviando...";
+        }
+        const response = await fetch(path, {
+          method: button.dataset.apiMethod || "POST",
+          headers: { "content-type": "application/json" },
+        });
+        if (status) {
+          status.className = response.ok ? "form-status success" : "form-status sf-error";
+          status.textContent = await readApiMessage(response);
+        }
+        if (response.ok) {
+          window.setTimeout(() => window.location.reload(), 450);
+          return;
+        }
+        button.disabled = false;
+      }
+
       function setCategoryCollapsed(item, collapsed) {
         if (!item) return;
         const children = item.querySelector(":scope > .category-tree-children");
@@ -505,11 +559,39 @@ function categoryPageScript(): string {
       openButton?.addEventListener("click", () => openCreateModal(openButton));
       closeButtons.forEach((button) => button.addEventListener("click", closeModal));
       document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && modal && !modal.hidden) closeModal();
+        if (event.key === "Escape") {
+          closeCategoryMenus();
+          if (modal && !modal.hidden) closeModal();
+        }
       });
+      document.addEventListener("click", () => closeCategoryMenus());
 
       document.querySelectorAll("[data-edit-category]").forEach((button) => {
         button.addEventListener("click", () => openEditModal(button));
+      });
+
+      document.querySelectorAll("[data-category-menu-button]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const menu = button.parentElement?.querySelector("[data-category-menu]");
+          if (!menu) return;
+          const shouldOpen = menu.hidden;
+          closeCategoryMenus(menu);
+          menu.hidden = !shouldOpen;
+          button.setAttribute("aria-expanded", String(shouldOpen));
+        });
+      });
+
+      document.querySelectorAll("[data-category-menu]").forEach((menu) => {
+        menu.addEventListener("click", (event) => event.stopPropagation());
+      });
+
+      document.querySelectorAll('[data-category-menu-action="edit"]').forEach((button) => {
+        button.addEventListener("click", () => openEditModal(button));
+      });
+
+      document.querySelectorAll('[data-category-menu-action="request"]').forEach((button) => {
+        button.addEventListener("click", () => runCategoryMenuRequest(button));
       });
 
       document.querySelectorAll("[data-toggle-category-children]").forEach((button) => {
@@ -604,11 +686,11 @@ function pageCss(): string {
     .categories-workspace { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(16rem, .38fr) minmax(0, 1fr); } .categories-insights { position: sticky; top: 88px; } .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading.compact { align-items: start; } .kind-meters { display: grid; gap: 14px; } .kind-meter { display: grid; gap: 8px; } .kind-meter div:first-child { align-items: center; display: flex; justify-content: space-between; gap: 12px; } .kind-meter span { color: var(--muted); font-size: .86rem; } .meter-track { background: var(--primary-soft); border-radius: 999px; height: 8px; overflow: hidden; } .meter-fill { border-radius: inherit; display: block; height: 100%; } .meter-expense { background: var(--danger); } .meter-income { background: var(--success); } .meter-transfer { background: var(--cyan); } .catalog-note { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 6px; padding: 12px; }
     .category-directory { padding: 0; overflow: hidden; } .category-toolbar { align-items: start; border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 18px; } .category-toolbar > div:first-child { display: grid; gap: 4px; min-width: 0; } .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; } .filter-chip { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 34px; padding: 0 12px; } .filter-chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: white; }
     .category-tree-list { display: grid; gap: 0; } .category-kind-group { border-bottom: 1px solid var(--line); display: grid; gap: 12px; padding: 18px; } .category-kind-group:last-child { border-bottom: 0; } .category-kind-group header { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .category-kind-group header > div { display: grid; gap: 4px; min-width: 0; } .kind-badge, .category-path { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; max-width: 100%; overflow-wrap: anywhere; padding: 6px 10px; } .kind-badge-expense { background: var(--danger-bg); color: var(--danger); } .kind-badge-income { background: var(--success-bg); color: var(--success); } .kind-badge-transfer { background: #e0f2fe; color: #0369a1; }
-    .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 34px; padding-left: 16px; } .category-tree-node { background: #fbfdfe; border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; padding: 12px; } .category-tree-child { background: var(--surface); } .category-node-row { align-items: start; display: grid; gap: 10px; grid-template-columns: auto minmax(0, 1fr); } .category-collapse-button, .category-collapse-spacer { align-self: start; min-height: 32px; min-width: 32px; width: 32px; } .category-collapse-button { background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); font-weight: 900; padding: 0; } .category-collapse-button:hover, .category-collapse-button:focus-visible { background: var(--primary); color: white; } .category-node-button { align-items: start; background: transparent; border: 0; color: inherit; display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto auto; justify-content: stretch; min-height: auto; padding: 0; text-align: left; width: 100%; } .category-node-button:hover .category-edit-icon, .category-node-button:focus-visible .category-edit-icon { background: var(--primary); color: white; } .category-node-text { display: grid; gap: 4px; min-width: 0; } .category-node-text strong { overflow-wrap: anywhere; } .category-node-text span { color: var(--muted); font-weight: 500; line-height: 1.45; } .category-edit-icon { align-items: center; align-self: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); display: inline-flex; font-weight: 900; justify-content: center; min-height: 32px; min-width: 32px; padding: 0 8px; } .category-dot { border-radius: 999px; height: 10px; margin-top: 7px; width: 10px; } .category-dot-expense { background: var(--danger); } .category-dot-income { background: var(--success); } .category-dot-transfer { background: var(--cyan); }
+    .category-tree-nodes, .category-tree-children { display: grid; gap: 12px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 34px; padding-left: 16px; } .category-tree-node { background: #fbfdfe; border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 12px; padding: 12px; } .category-tree-child { background: var(--surface); } .category-node-row { align-items: start; display: grid; gap: 10px; grid-template-columns: auto minmax(0, 1fr) auto; } .category-collapse-button, .category-collapse-spacer { align-self: start; min-height: 32px; min-width: 32px; width: 32px; } .category-collapse-button { background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); font-weight: 900; padding: 0; } .category-collapse-button:hover, .category-collapse-button:focus-visible { background: var(--primary); color: white; } .category-node-button { align-items: start; background: transparent; border: 0; color: inherit; display: grid; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto; justify-content: stretch; min-height: auto; padding: 0; text-align: left; width: 100%; } .category-node-button:hover + .category-action-menu .category-menu-button, .category-node-button:focus-visible + .category-action-menu .category-menu-button { background: var(--primary); color: white; } .category-node-text { display: grid; gap: 4px; min-width: 0; } .category-node-text strong { overflow-wrap: anywhere; } .category-node-text span { color: var(--muted); font-weight: 500; line-height: 1.45; } .category-action-menu { align-self: start; position: relative; } .category-menu-button { font-weight: 900; min-height: 32px; width: 32px; } .category-menu-button:hover, .category-menu-button[aria-expanded="true"] { background: var(--primary); color: white; } .category-menu-popover { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 18px 40px rgba(15,23,42,.18); display: grid; gap: 4px; min-width: 160px; padding: 6px; position: absolute; right: 0; top: calc(100% + 6px); z-index: 8; } .category-menu-popover button { background: transparent; color: var(--text); justify-content: flex-start; min-height: 36px; padding: 0 10px; width: 100%; } .category-menu-popover button:hover, .category-menu-popover button:focus-visible { background: var(--primary-soft); color: var(--primary); } .category-menu-popover .danger-menu-item { color: var(--danger); } .category-menu-popover .danger-menu-item:hover, .category-menu-popover .danger-menu-item:focus-visible { background: var(--danger-bg); color: var(--danger); } .category-dot { border-radius: 999px; height: 10px; margin-top: 7px; width: 10px; } .category-dot-expense { background: var(--danger); } .category-dot-income { background: var(--success); } .category-dot-transfer { background: var(--cyan); }
     .category-form { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .category-form .form-status, .full-span { grid-column: 1 / -1; } .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
     .category-modal { inset: 0; position: fixed; z-index: 20; } .category-modal-backdrop { background: rgba(6,25,35,.48); inset: 0; position: absolute; } .category-dialog { background: var(--surface); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.24); display: grid; gap: 16px; left: 50%; max-height: calc(100svh - 32px); max-width: 560px; overflow: auto; padding: 18px; position: absolute; top: 50%; transform: translate(-50%, -50%); width: min(calc(100vw - 32px), 560px); } .category-dialog-header { align-items: start; display: flex; gap: 12px; justify-content: space-between; } .category-dialog-header > div { display: grid; gap: 4px; } .dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; grid-column: 1 / -1; justify-content: flex-end; }
     @media (max-width: 1024px) { .categories-workspace { grid-template-columns: 1fr; } .categories-insights { position: static; } }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .categories-hero, .category-toolbar, .category-kind-group header, .section-heading, .category-node-button { align-items: stretch; display: grid; } .category-node-button { grid-template-columns: auto minmax(0, 1fr) auto; } .category-path { grid-column: 2 / -1; justify-self: start; } .category-edit-icon { grid-column: 3; grid-row: 1; } .categories-hero .sf-button { width: 100%; } .filter-chips { justify-content: flex-start; } .category-form { grid-template-columns: 1fr; } .dialog-actions { display: grid; } }
+    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .categories-hero, .category-toolbar, .category-kind-group header, .section-heading, .category-node-button { align-items: stretch; display: grid; } .category-node-button { grid-template-columns: auto minmax(0, 1fr); } .category-path { grid-column: 2 / -1; justify-self: start; } .category-action-menu { grid-column: 3; grid-row: 1; } .categories-hero .sf-button { width: 100%; } .filter-chips { justify-content: flex-start; } .category-form { grid-template-columns: 1fr; } .dialog-actions { display: grid; } }
   `;
 }
 
