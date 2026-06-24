@@ -34,6 +34,7 @@ import {
 import {
   archiveCategoryForContext,
   createCategoryForContext,
+  deleteCategoryForContext,
   getCategoryForContext,
   listCategoriesForContext,
   restoreCategoryForContext,
@@ -122,6 +123,7 @@ route("GET", "/api/categories", listCategoriesHandler);
 route("POST", "/api/categories", createCategoryHandler);
 route("GET", "/api/categories/:categoryId", getCategoryHandler);
 route("PATCH", "/api/categories/:categoryId", updateCategoryHandler);
+route("DELETE", "/api/categories/:categoryId", deleteCategoryHandler);
 route("POST", "/api/categories/:categoryId/archive", archiveCategoryHandler);
 route("POST", "/api/categories/:categoryId/restore", restoreCategoryHandler);
 
@@ -399,6 +401,18 @@ async function updateCategoryHandler(
   });
 
   return json(200, { category });
+}
+
+async function deleteCategoryHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const categoryId = requireParam(match, "categoryId");
+
+  await deleteCategoryForContext(context, categoryId);
+
+  return json(200, { categoryId });
 }
 
 async function archiveCategoryHandler(
