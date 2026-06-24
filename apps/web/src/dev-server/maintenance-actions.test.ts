@@ -58,6 +58,9 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
 
   assert.match(html, /<h1>Lançamentos<\/h1>/);
   assert.match(html, /Movimentações/);
+  assert.match(html, /statement-layout/);
+  assert.match(html, /Resumo do período/);
+  assert.doesNotMatch(html, /summary-grid/);
   assert.match(
     html,
     /data-action data-method="PATCH" data-path="\/api\/transactions\/transaction-1"/,
