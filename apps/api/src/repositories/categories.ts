@@ -39,6 +39,14 @@ interface DefaultCategoryDefinition {
   children?: readonly string[];
 }
 
+interface CategoryDeleteBlockers {
+  children: number;
+  transactions: number;
+  recurrences: number;
+  budgets: number;
+  payablesReceivables: number;
+}
+
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "parentCategoryId", "name",
   "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
@@ -207,6 +215,37 @@ export async function restoreCategoryForContext(
   return restoredCategory;
 }
 
+export async function deleteCategoryForContext(
+  context: TenantContext,
+  categoryId: EntityId,
+): Promise<void> {
+  const currentCategory = getCategoryDomain(context, await findCategoryRow(context, categoryId));
+
+  await withTransaction(async (executeQuery) => {
+    const blockers = await countCategoryDeleteBlockers(executeQuery, context, currentCategory.id);
+
+    if (blockers.children > 0) {
+      throwCategoryDeleteBlocked(
+        "CATEGORY_DELETE_HAS_CHILDREN",
+        "Mova ou exclua as subcategorias antes de excluir esta categoria.",
+      );
+    }
+
+    if (hasLinkedCategoryHistory(blockers)) {
+      throwCategoryDeleteBlocked(
+        "CATEGORY_DELETE_HAS_HISTORY",
+        "Esta categoria possui lançamentos ou registros vinculados. Arquive a categoria para manter o histórico.",
+      );
+    }
+
+    await executeQuery(
+      `delete from "Category"
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [currentCategory.id, context.organizationId, context.financialProfileId],
+    );
+  });
+}
+
 async function ensureDefaultCategoriesForContext(context: TenantContext): Promise<void> {
   await withTransaction(async (executeQuery) => {
     const existingRows = await executeQuery<{ count: string }>(
@@ -290,6 +329,46 @@ async function persistCategoryUpdate(category: Category): Promise<void> {
       category.updatedByUserId ?? null,
     ],
   );
+}
+
+async function countCategoryDeleteBlockers(
+  executeQuery: typeof query,
+  context: TenantContext,
+  categoryId: EntityId,
+): Promise<CategoryDeleteBlockers> {
+  const rows = await executeQuery<CategoryDeleteBlockers>(
+    `select
+       (select count(*)::int from "Category" where "organizationId" = $1 and "financialProfileId" = $2 and "parentCategoryId" = $3) as "children",
+       (select count(*)::int from "Transaction" where "organizationId" = $1 and "financialProfileId" = $2 and "categoryId" = $3) as "transactions",
+       (select count(*)::int from "Recurrence" where "organizationId" = $1 and "financialProfileId" = $2 and "categoryId" = $3) as "recurrences",
+       (select count(*)::int from "Budget" where "organizationId" = $1 and "financialProfileId" = $2 and "categoryId" = $3) as "budgets",
+       (select count(*)::int from "PayableReceivable" where "organizationId" = $1 and "financialProfileId" = $2 and "categoryId" = $3) as "payablesReceivables"`,
+    [context.organizationId, context.financialProfileId, categoryId],
+  );
+
+  return rows[0] ?? {
+    children: 0,
+    transactions: 0,
+    recurrences: 0,
+    budgets: 0,
+    payablesReceivables: 0,
+  };
+}
+
+function hasLinkedCategoryHistory(blockers: CategoryDeleteBlockers): boolean {
+  return (
+    blockers.transactions > 0 ||
+    blockers.recurrences > 0 ||
+    blockers.budgets > 0 ||
+    blockers.payablesReceivables > 0
+  );
+}
+
+function throwCategoryDeleteBlocked(code: string, message: string): never {
+  throw Object.assign(new Error(message), {
+    code,
+    statusCode: 409,
+  });
 }
 
 async function findCategoryRow(
