@@ -457,6 +457,26 @@ function categoryPageScript(): string {
         return categoryForm ? ensureStatus(categoryForm) : null;
       }
 
+      function categoryKindLabel(kind) {
+        if (kind === "income") return "Receita";
+        if (kind === "expense") return "Despesa";
+        if (kind === "transfer") return "Transferencia";
+        return "";
+      }
+
+      function filterParentCategoryOptions(kind, selectedParentId) {
+        const select = categoryForm?.elements.parentCategoryId;
+        if (!select) return;
+        const label = categoryKindLabel(kind);
+        Array.from(select.options).forEach((option, index) => {
+          const visible = index === 0 || option.textContent.startsWith(label + " - ");
+          option.hidden = !visible;
+          option.disabled = !visible;
+        });
+        if (selectedParentId !== undefined) select.value = selectedParentId;
+        if (select.options[select.selectedIndex]?.disabled) select.value = "";
+      }
+
       function closeCategoryMenus(exceptMenu) {
         document.querySelectorAll("[data-category-menu]").forEach((menu) => {
           if (menu === exceptMenu) return;
@@ -495,6 +515,7 @@ function categoryPageScript(): string {
         categoryForm.reset();
         categoryForm.dataset.apiPath = "/api/categories";
         delete categoryForm.dataset.apiMethod;
+        filterParentCategoryOptions(categoryForm.elements.kind.value);
         modalEyebrow.textContent = "Novo cadastro";
         modalTitle.textContent = "Nova categoria";
         submitButton.textContent = "Criar categoria";
@@ -510,7 +531,7 @@ function categoryPageScript(): string {
         categoryForm.dataset.apiMethod = "PATCH";
         categoryForm.elements.name.value = button.dataset.categoryName || "";
         categoryForm.elements.kind.value = button.dataset.categoryKindValue || "expense";
-        categoryForm.elements.parentCategoryId.value = button.dataset.categoryParentId || "";
+        filterParentCategoryOptions(categoryForm.elements.kind.value, button.dataset.categoryParentId || "");
         modalEyebrow.textContent = "Editar categoria";
         modalTitle.textContent = button.dataset.categoryName || "Categoria";
         submitButton.textContent = "Salvar edicao";
@@ -572,6 +593,9 @@ function categoryPageScript(): string {
       }
 
       openButton?.addEventListener("click", () => openCreateModal(openButton));
+      categoryForm?.elements.kind?.addEventListener("change", (event) => {
+        filterParentCategoryOptions(event.target.value);
+      });
       expandAllButton?.addEventListener("click", () => setAllCategoriesCollapsed(false));
       collapseAllButton?.addEventListener("click", () => setAllCategoriesCollapsed(true));
       closeButtons.forEach((button) => button.addEventListener("click", closeModal));
