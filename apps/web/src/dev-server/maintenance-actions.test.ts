@@ -54,10 +54,17 @@ async function categoriesExposeRestoreAction(): Promise<void> {
 }
 
 async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<void> {
-  const html = await renderTransactionsPage("token");
+  const html = await renderTransactionsPage("token", new URL("/lancamentos?month=2026-06", "http://solverfin.test"));
 
-  assert.match(html, /<h1>Lançamentos<\/h1>/);
+  assert.match(html, /<h1>Extrato Bancário<\/h1>/);
   assert.match(html, /Movimentações/);
+  assert.match(html, /Mês fechado/);
+  assert.match(html, /name="month" type="month" value="2026-06"/);
+  assert.match(html, /01\/06\/2026 até 30\/06\/2026/);
+  assert.match(html, /statement-layout/);
+  assert.match(html, /grid-template-columns:320px minmax\(0,1fr\)/);
+  assert.match(html, /Resumo da Conta/);
+  assert.doesNotMatch(html, /summary-grid/);
   assert.match(
     html,
     /data-action data-method="PATCH" data-path="\/api\/transactions\/transaction-1"/,

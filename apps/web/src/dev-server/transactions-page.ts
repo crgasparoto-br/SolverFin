@@ -36,6 +36,7 @@ interface TransactionRecord {
 
 interface StatementFilters {
   accountId?: string;
+  month: string;
   startsOn: string;
   endsOn: string;
 }
@@ -95,13 +96,13 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
       <div class="app-shell">
         ${renderSidebar()}
         <div class="main-area">
-          <header class="topbar"><strong>Extrato da conta</strong><button type="button" data-logout>Sair</button></header>
+          <header class="topbar"><strong>Extrato bancário</strong><button type="button" data-logout>Sair</button></header>
           <main>
             <section class="statement-heading">
               <div>
-                <p class="eyebrow">Extrato bancário</p>
-                <h1>Lançamentos</h1>
-                <p class="muted">Movimentações por conta e período, sem compras de cartão misturadas.</p>
+                <p class="eyebrow">Conta e movimentações</p>
+                <h1>Extrato Bancário</h1>
+                <p class="muted">Acompanhe lançamentos, saldo e pendências por conta e mês fechado.</p>
               </div>
               <button type="button" class="button-link" data-open-modal${selectedAccount ? "" : " disabled"}>Novo lançamento</button>
             </section>
@@ -109,57 +110,49 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
             <section class="panel account-filter">
               <form class="filter-form" method="get" action="/lancamentos">
                 <label>Conta<select name="accountId" required><option value="">Selecione uma conta</option>${renderAccountOptions(accounts, filters.accountId)}</select></label>
-                <label>Início<input name="startsOn" type="date" value="${escapeHtml(filters.startsOn)}" required /></label>
-                <label>Fim<input name="endsOn" type="date" value="${escapeHtml(filters.endsOn)}" required /></label>
-                <button type="submit">Filtrar</button>
+                <label>Mês fechado<input name="month" type="month" value="${escapeHtml(filters.month)}" required /></label>
+                <button type="submit">Consultar mês</button>
               </form>
               ${
                 selectedAccount
-                  ? `<p class="muted">Conta selecionada: <strong>${escapeHtml(selectedAccount.name)}</strong>.</p>`
+                  ? `<p class="muted">Consulta de <strong>${formatDate(filters.startsOn)} até ${formatDate(filters.endsOn)}</strong> em <strong>${escapeHtml(selectedAccount.name)}</strong>.</p>`
                   : `<p class="warning">Selecione uma conta para consultar o extrato e criar lançamentos.</p>`
               }
             </section>
 
-            <section class="summary-grid" aria-label="Situação do período">
-              ${metric("Saldo inicial", summary.openingMinor, "Antes do período")}
-              ${metric("Entradas", summary.incomeMinor, "Créditos da conta")}
-              ${metric("Saídas", -summary.expenseMinor, "Débitos da conta")}
-              ${metric("Saldo previsto", summary.plannedBalanceMinor, "Inclui pendências")}
-              ${metric("Saldo efetivo", summary.effectiveBalanceMinor, "Com data efetiva")}
-              ${metric("Conciliado", summary.reconciledMinor, `${summary.reconciledCount} conferidos`)}
-              ${metric("Não conciliado", summary.unreconciledMinor, `${summary.unreconciledCount} em aberto`)}
-              ${metric("Pendentes", summary.pendingMinor, `${summary.pendingCount} sem data efetiva`)}
-            </section>
-
-            <section class="panel statement-panel">
-              <div class="statement-toolbar">
-                <div>
-                  <h2>${selectedAccount ? `Extrato de ${escapeHtml(selectedAccount.name)}` : "Extrato"}</h2>
-                  <p class="muted">${formatDate(filters.startsOn)} até ${formatDate(filters.endsOn)}</p>
+            <section class="statement-layout">
+              ${renderSummaryPanel(summary, selectedAccount)}
+              <section class="panel statement-panel">
+                <div class="statement-toolbar">
+                  <div>
+                    <p class="eyebrow">Movimentações</p>
+                    <h2>${selectedAccount ? `Extrato de ${escapeHtml(selectedAccount.name)}` : "Extrato"}</h2>
+                    <p class="muted">${formatDate(filters.startsOn)} até ${formatDate(filters.endsOn)}</p>
+                  </div>
+                  <div class="chips">
+                    ${chip("Pendentes", summary.pendingCount, "pending")}
+                    ${chip("Não conciliados", summary.unreconciledCount, "posted")}
+                    ${chip("Conciliados", summary.reconciledCount, "ok")}
+                  </div>
                 </div>
-                <div class="chips">
-                  ${chip("Pendentes", summary.pendingCount, "pending")}
-                  ${chip("Não conciliados", summary.unreconciledCount, "posted")}
-                  ${chip("Conciliados", summary.reconciledCount, "ok")}
+                <div class="statement-table" role="table" aria-label="Extrato bancário">
+                  ${renderTableHeader()}
+                  ${
+                    rows.length > 0
+                      ? rows
+                          .map((row) => renderRow(row, selectedAccount, accounts, categories))
+                          .join("")
+                      : emptyState(
+                          selectedAccount
+                            ? "Nenhum lançamento neste mês fechado."
+                            : "Selecione uma conta.",
+                          selectedAccount
+                            ? "Escolha outro mês ou crie um lançamento para acompanhar o saldo."
+                            : "O extrato é sempre exibido por conta bancária.",
+                        )
+                  }
                 </div>
-              </div>
-              <div class="statement-table" role="table" aria-label="Extrato bancário">
-                ${renderTableHeader()}
-                ${
-                  rows.length > 0
-                    ? rows
-                        .map((row) => renderRow(row, selectedAccount, accounts, categories))
-                        .join("")
-                    : emptyState(
-                        selectedAccount
-                          ? "Nenhum lançamento neste período."
-                          : "Selecione uma conta.",
-                        selectedAccount
-                          ? "Ajuste o filtro ou crie um lançamento para acompanhar o saldo."
-                          : "O extrato é sempre exibido por conta bancária.",
-                      )
-                }
-              </div>
+              </section>
             </section>
           </main>
         </div>
@@ -171,15 +164,52 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
 }
 
 function resolveFilters(url: URL | undefined, accounts: AccountRecord[]): StatementFilters {
-  const today = new Date();
-  const start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
-  const end = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0));
+  const month = resolveSelectedMonth(url);
+  const period = monthToPeriod(month);
   const accountId = url?.searchParams.get("accountId") ?? accounts[0]?.id;
 
   return {
     ...(accountId ? { accountId } : {}),
-    startsOn: url?.searchParams.get("startsOn") ?? start.toISOString().slice(0, 10),
-    endsOn: url?.searchParams.get("endsOn") ?? end.toISOString().slice(0, 10),
+    month,
+    startsOn: period.startsOn,
+    endsOn: period.endsOn,
+  };
+}
+
+function resolveSelectedMonth(url: URL | undefined): string {
+  const queryMonth = url?.searchParams.get("month");
+  if (isValidMonth(queryMonth)) return queryMonth;
+
+  const startsOn = url?.searchParams.get("startsOn");
+  const legacyMonth = startsOn?.slice(0, 7);
+  if (isValidMonth(legacyMonth)) return legacyMonth;
+
+  return getPreviousClosedMonth();
+}
+
+function getPreviousClosedMonth(): string {
+  const today = new Date();
+  const previousMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 1, 1));
+
+  return previousMonth.toISOString().slice(0, 7);
+}
+
+function isValidMonth(value: string | null | undefined): value is string {
+  if (!/^\d{4}-\d{2}$/.test(value ?? "")) return false;
+
+  const month = Number(value?.slice(5, 7));
+  return month >= 1 && month <= 12;
+}
+
+function monthToPeriod(month: string): Pick<StatementFilters, "startsOn" | "endsOn"> {
+  const year = Number(month.slice(0, 4));
+  const monthIndex = Number(month.slice(5, 7)) - 1;
+  const startsOn = new Date(Date.UTC(year, monthIndex, 1));
+  const endsOn = new Date(Date.UTC(year, monthIndex + 1, 0));
+
+  return {
+    startsOn: startsOn.toISOString().slice(0, 10),
+    endsOn: endsOn.toISOString().slice(0, 10),
   };
 }
 
@@ -435,6 +465,7 @@ function clientScript(): string {
         form.reset();
         form.dataset.path = "/api/transactions";
         form.dataset.method = "POST";
+        if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind;
         document.querySelector("[data-modal-title]").textContent = document.querySelector("[data-modal-title]").textContent.replace("Editar", "Novo").replace("Clonar", "Novo");
         modal.showModal();
       }));
@@ -575,8 +606,47 @@ function statementDate(transaction: TransactionRecord): string {
   return transaction.effectiveOn ?? transaction.plannedOn ?? transaction.occurredOn;
 }
 
-function metric(title: string, amountMinor: number, subtitle: string): string {
-  return `<article class="metric"><span>${escapeHtml(title)}</span><strong class="${amountMinor < 0 ? "debit" : amountMinor > 0 ? "credit" : ""}">${formatMoney(amountMinor)}</strong><p>${escapeHtml(subtitle)}</p></article>`;
+function renderSummaryPanel(
+  summary: StatementSummary,
+  selectedAccount: AccountRecord | undefined,
+): string {
+  return `
+    <aside class="panel account-summary" aria-label="Resumo da conta">
+      <div>
+        <p class="eyebrow">Resumo da Conta</p>
+        <h2>${escapeHtml(selectedAccount?.name ?? "Selecione uma conta")}</h2>
+      </div>
+      <section class="summary-balance">
+        <span>Saldo atual</span>
+        <strong class="${summary.effectiveBalanceMinor < 0 ? "debit" : "credit"}">${formatMoney(summary.effectiveBalanceMinor)}</strong>
+        <p>Saldo efetivo com lançamentos realizados.</p>
+      </section>
+      <div class="summary-totals">
+        ${summaryTotal("Receitas", summary.incomeMinor, "credit")}
+        ${summaryTotal("Despesas", -summary.expenseMinor, "debit")}
+      </div>
+      <section class="quick-actions" aria-label="Ações rápidas">
+        <h3>Ações rápidas</h3>
+        <button type="button" data-open-modal data-quick-kind="transfer"${selectedAccount ? "" : " disabled"}>Transferir</button>
+        <button type="button" data-open-modal data-quick-kind="expense"${selectedAccount ? "" : " disabled"}>Nova despesa</button>
+        <button type="button" data-open-modal data-quick-kind="income"${selectedAccount ? "" : " disabled"}>Nova receita</button>
+      </section>
+      <section class="status-overview" aria-label="Status dos lançamentos">
+        <h3>Status</h3>
+        ${statusLine("Conciliados", summary.reconciledCount, summary.reconciledMinor, "ok")}
+        ${statusLine("Não conciliados", summary.unreconciledCount, summary.unreconciledMinor, "posted")}
+        ${statusLine("Pendentes", summary.pendingCount, summary.pendingMinor, "pending")}
+      </section>
+    </aside>
+  `;
+}
+
+function summaryTotal(label: string, amountMinor: number, tone: string): string {
+  return `<div class="summary-total"><span>${escapeHtml(label)}</span><strong class="${tone}">${formatMoney(amountMinor)}</strong></div>`;
+}
+
+function statusLine(label: string, count: number, amountMinor: number, tone: string): string {
+  return `<div class="status-line"><span class="chip chip-${tone}">${count}</span><p>${escapeHtml(label)}</p><strong>${formatMoney(amountMinor)}</strong></div>`;
 }
 
 function chip(label: string, count: number, tone: string): string {
@@ -624,6 +694,6 @@ function serializeScriptJson(value: unknown): string {
 
 function css(): string {
   return `
-    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,p{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{color:white;font-size:1.2rem;font-weight:900;text-decoration:none}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1240px;padding:24px}.panel,.metric{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.statement-heading,.statement-toolbar{align-items:center;display:flex;gap:16px;justify-content:space-between}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.warning{color:var(--amber);font-weight:800}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.danger{background:var(--red-bg);color:var(--red)}label{display:grid;gap:8px;font-weight:700}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.account-filter{background:var(--primary);color:white}.account-filter .muted,.account-filter label{color:rgba(255,255,255,.86)}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.4fr) repeat(2,minmax(10rem,1fr)) auto}.summary-grid{display:grid;gap:14px;grid-template-columns:repeat(4,minmax(0,1fr))}.metric{display:grid;gap:8px}.metric span{color:var(--muted);font-size:.78rem;font-weight:800;text-transform:uppercase}.metric strong{font-size:1.25rem;overflow-wrap:anywhere}.metric p{color:var(--muted)}.statement-panel{padding:0;overflow:hidden}.statement-toolbar{border-bottom:1px solid var(--line);padding:18px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:6px;font-size:.8rem;font-weight:800;padding:6px 10px;white-space:nowrap}.chip-pending{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.statement-table{display:grid;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:12px;grid-template-columns:7rem minmax(14rem,1.5fr) minmax(9rem,1fr) 7rem 8rem 8rem 8rem 5rem;min-width:920px;padding:12px 18px}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.78rem;font-weight:900;text-transform:uppercase}.description{display:grid;gap:3px}.description span{color:var(--muted);font-size:.86rem}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.actions{position:relative}.actions summary{background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;font-weight:900;list-style:none;padding:7px 10px}.actions summary::-webkit-details-marker{display:none}.actions div{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:8px;min-width:210px;padding:10px;position:absolute;right:0;top:38px;z-index:3}.actions button{justify-content:flex-start}.empty{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(900px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.error-page{min-height:100vh;place-content:center}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}@media(max-width:1024px){.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-form,.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.summary-grid,.filter-form,.modal-panel form[data-form]{grid-template-columns:1fr}.statement-heading,.statement-toolbar{align-items:stretch;display:grid}.button-link{width:100%}}
+    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{color:white;font-size:1.2rem;font-weight:900;text-decoration:none}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1280px;padding:24px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.statement-heading,.statement-toolbar{align-items:center;display:flex;gap:16px;justify-content:space-between}.statement-heading h1{font-size:1.9rem}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.warning{color:var(--amber);font-weight:800}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.danger{background:var(--red-bg);color:var(--red)}label{display:grid;gap:8px;font-weight:700}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.account-filter{background:var(--surface);color:var(--text)}.account-filter .muted{margin-top:12px}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.4fr) minmax(14rem,1fr) auto}.statement-layout{align-items:start;display:grid;gap:18px;grid-template-columns:320px minmax(0,1fr)}.account-summary{display:grid;gap:18px;position:sticky;top:88px}.account-summary h2{font-size:1.1rem}.summary-balance{background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;display:grid;gap:6px;padding:14px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.78rem;font-weight:800;text-transform:uppercase}.summary-balance strong{font-size:1.6rem;overflow-wrap:anywhere}.summary-balance p{color:var(--muted);font-size:.9rem}.summary-totals{display:grid;gap:10px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:8px;display:grid;gap:4px;padding:12px}.summary-total strong{font-size:1rem;overflow-wrap:anywhere}.quick-actions,.status-overview{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:16px}.quick-actions h3,.status-overview h3{font-size:.95rem}.quick-actions button{background:white;border:1px solid var(--line);color:var(--primary);justify-content:flex-start}.quick-actions button:hover{background:var(--soft)}.status-line{align-items:center;display:grid;gap:8px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-weight:800}.status-line strong{font-size:.9rem}.statement-panel{padding:0;overflow:hidden}.statement-toolbar{border-bottom:1px solid var(--line);padding:18px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:6px;font-size:.8rem;font-weight:800;padding:6px 10px;white-space:nowrap}.chip-pending{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.statement-table{display:grid;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:12px;grid-template-columns:7rem minmax(14rem,1.5fr) minmax(9rem,1fr) 7rem 8rem 8rem 8rem 5rem;min-width:920px;padding:12px 18px}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.78rem;font-weight:900;text-transform:uppercase}.description{display:grid;gap:3px}.description span{color:var(--muted);font-size:.86rem}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.actions{position:relative}.actions summary{background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;font-weight:900;list-style:none;padding:7px 10px}.actions summary::-webkit-details-marker{display:none}.actions div{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:8px;min-width:210px;padding:10px;position:absolute;right:0;top:38px;z-index:3}.actions button{justify-content:flex-start}.empty{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(900px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.error-page{min-height:100vh;place-content:center}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}@media(max-width:1024px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}.filter-form,.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form[data-form],.summary-totals{grid-template-columns:1fr}.statement-heading,.statement-toolbar{align-items:stretch;display:grid}.button-link{width:100%}}
   `;
 }
