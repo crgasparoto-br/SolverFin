@@ -12,19 +12,13 @@
   "categories": ["finance", "productivity", "business"],
   "icons": [
     {
-      "src": "/icons/solverfin-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/solverfin-512.png",
+      "src": "/brand/Solverfin_02.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/solverfin-maskable-512.png",
+      "src": "/brand/Solverfin_02.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
