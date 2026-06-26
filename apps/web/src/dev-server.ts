@@ -15,6 +15,7 @@ import { renderRecurrencesPage } from "./dev-server/recurrences-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
+import { tryServeStaticAsset } from "./dev-server/static-assets.js";
 import { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
 export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
@@ -57,6 +58,10 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/health") {
     sendJson(response, 200, { status: "ok", app: "solverfin-web" });
+    return;
+  }
+
+  if (await tryServeStaticAsset(url.pathname, response)) {
     return;
   }
 

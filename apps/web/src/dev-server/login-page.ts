@@ -1,3 +1,5 @@
+import { faviconLinks } from "./pages.js";
+
 export function renderLoginPage(errorMessage?: string): string {
   return `<!doctype html>
 <html lang="pt-BR">
@@ -5,12 +7,14 @@ export function renderLoginPage(errorMessage?: string): string {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    ${faviconLinks()}
     <title>Entrar no SolverFin</title>
     <style>${loginCss()}</style>
   </head>
   <body>
     <main class="login-shell">
       <section class="panel" aria-labelledby="login-title">
+        <img class="login-logo" src="/images/solverfin-logo.png" width="120" height="120" alt="SolverFin" />
         <p class="eyebrow">Acesso SolverFin</p>
         <h1 id="login-title">Entrar no SolverFin</h1>
         <p class="muted">Entre com uma conta cadastrada ou crie um usuário para salvar o acesso no banco local.</p>
@@ -93,6 +97,7 @@ function loginCss(): string {
     h1, p { margin: 0; } h1 { font-size: 2rem; letter-spacing: 0; }
     .login-shell { align-items: center; display: grid; min-height: 100vh; padding: 24px; }
     .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 18px; margin: 0 auto; max-width: 480px; padding: 20px; width: 100%; }
+    .login-logo { display: block; margin: 0 auto; }
     .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .muted { color: var(--muted); line-height: 1.5; }
     .auth-tabs { background: #eef5f8; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 4px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; }
     .tab { background: transparent; color: var(--text); min-height: 38px; }
