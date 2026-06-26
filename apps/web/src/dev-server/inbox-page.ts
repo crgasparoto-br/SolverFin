@@ -1,6 +1,7 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { faviconLinks } from "./pages.js";
 import { privateRoutes } from "./routes.js";
 
 interface AccountRecord {
@@ -135,7 +136,7 @@ function renderShell(pathname: string, content: string): string {
   return `
     <div class="app-shell">
       <aside class="sidebar">
-        <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin">SolverFin</a>
+        <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
         <nav aria-label="Menu principal">${renderNavigation(pathname)}</nav>
         <button class="logout" type="button" data-logout>Sair</button>
       </aside>
@@ -303,6 +304,7 @@ function renderPage(title: string, body: string): string {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    ${faviconLinks()}
     <title>${escapeHtml(title)}</title>
     <style>${baseCss()}</style>
   </head>
@@ -341,7 +343,7 @@ function baseCss(): string {
     .success { background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: 8px; color: var(--success); padding: 10px 12px; }
     .form-status { grid-column: 1 / -1; }
     .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; }
-    .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; min-height: 44px; text-decoration: none; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; }
+    .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; gap: 10px; min-height: 44px; text-decoration: none; } .brand img { border-radius: 6px; display: block; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; }
     .logout { background: rgba(255,255,255,.12); margin-top: auto; } .main-area { min-width: 0; } .topbar { align-items: center; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; min-height: 64px; padding: 0 24px; position: sticky; top: 0; z-index: 5; } .topbar div { display: grid; gap: 2px; } .topbar span { color: var(--muted); font-size: .875rem; }
     main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; }
     .page-heading { display: grid; gap: 6px; max-width: 760px; }
