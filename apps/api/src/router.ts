@@ -560,6 +560,7 @@ async function createRecurrenceHandler(
     amountMinor: Number(body.amountMinor),
     description: String(body.description ?? ""),
     accountId: String(body.accountId ?? ""),
+    ...(body.interval !== undefined ? { interval: Number(body.interval) } : {}),
     ...(body.endOn !== undefined ? { endOn: String(body.endOn) } : {}),
     ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
     ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
@@ -589,6 +590,7 @@ async function updateRecurrenceHandler(
     requireParam(match, "recurrenceId"),
     {
       ...(body.frequency !== undefined ? { frequency: body.frequency as RecurrenceFrequency } : {}),
+      ...(body.interval !== undefined ? { interval: Number(body.interval) } : {}),
       ...(body.startOn !== undefined ? { startOn: String(body.startOn) } : {}),
       ...(body.endOn !== undefined ? { endOn: String(body.endOn) } : {}),
       ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),

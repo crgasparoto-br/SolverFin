@@ -22,6 +22,7 @@ import {
 export type RecurrenceErrorCode =
   | "RECURRENCE_FREQUENCY_REQUIRED"
   | "RECURRENCE_FREQUENCY_INVALID"
+  | "RECURRENCE_INTERVAL_INVALID"
   | "RECURRENCE_STATUS_INVALID"
   | "RECURRENCE_AMOUNT_INVALID"
   | "RECURRENCE_DATE_REQUIRED"
@@ -64,6 +65,7 @@ export interface CreateRecurrenceInput {
 
 export interface CreateRecurrencePayload {
   frequency: RecurrenceFrequency;
+  interval?: number;
   startOn: ISODate;
   endOn?: ISODate;
   amountMinor: number;
@@ -86,6 +88,7 @@ export interface UpdateRecurrenceInput {
 
 export interface UpdateRecurrencePayload {
   frequency?: RecurrenceFrequency;
+  interval?: number;
   status?: RecurrenceStatus;
   startOn?: ISODate;
   endOn?: ISODate;
@@ -172,6 +175,7 @@ export function createRecurrence(input: CreateRecurrenceInput): RecurrenceMutati
     financialProfileId: payload.financialProfileId,
     status: "active",
     frequency: validateFrequency(payload.frequency),
+    interval: validateInterval(payload.interval),
     startOn: validateDate(payload.startOn),
     amountMinor: validateAmount(payload.amountMinor),
     currency: normalizeCurrency(payload.currency ?? account.currency),
@@ -338,7 +342,7 @@ export function generateRecurrenceInstallments(
   const generationLimit = input.maxOccurrences ?? 36;
 
   for (let sequenceNumber = 1; sequenceNumber <= generationLimit; sequenceNumber += 1) {
-    const dueOn = addFrequency(recurrence.startOn, recurrence.frequency, sequenceNumber - 1);
+    const dueOn = addFrequency(recurrence.startOn, recurrence.frequency, sequenceNumber - 1, recurrence.interval);
 
     if (dueOn > through || (recurrence.endOn !== undefined && dueOn > recurrence.endOn)) {
       break;
@@ -447,6 +451,10 @@ function buildOptionalRecurrenceUpdate(
 
   if (payload.frequency !== undefined) {
     update.frequency = validateFrequency(payload.frequency);
+  }
+
+  if (payload.interval !== undefined) {
+    update.interval = validateInterval(payload.interval);
   }
 
   if (payload.status !== undefined) {
@@ -574,6 +582,19 @@ function validateFrequency(frequency: RecurrenceFrequency | undefined): Recurren
   return frequency;
 }
 
+function validateInterval(interval: number | undefined): number {
+  if (interval === undefined) return 1;
+
+  if (!Number.isInteger(interval) || interval < 1) {
+    throw new RecurrenceError(
+      "RECURRENCE_INTERVAL_INVALID",
+      "Recurrence interval must be a positive integer.",
+    );
+  }
+
+  return interval;
+}
+
 function validateStatus(status: RecurrenceStatus): RecurrenceStatus {
   if (!ALLOWED_RECURRENCE_STATUSES.includes(status)) {
     throw new RecurrenceError("RECURRENCE_STATUS_INVALID", "Recurrence status is not supported.");
@@ -665,20 +686,27 @@ function normalizeCurrency(currency = "BRL"): string {
   return currency.trim().toUpperCase();
 }
 
-function addFrequency(startOn: ISODate, frequency: RecurrenceFrequency, offset: number): ISODate {
+function addFrequency(
+  startOn: ISODate,
+  frequency: RecurrenceFrequency,
+  offset: number,
+  interval = 1,
+): ISODate {
+  const steps = offset * interval;
+
   if (frequency === "daily") {
-    return addDays(startOn, offset);
+    return addDays(startOn, steps);
   }
 
   if (frequency === "weekly") {
-    return addDays(startOn, offset * 7);
+    return addDays(startOn, steps * 7);
   }
 
   if (frequency === "yearly") {
-    return addMonths(startOn, offset * 12);
+    return addMonths(startOn, steps * 12);
   }
 
-  return addMonths(startOn, offset);
+  return addMonths(startOn, steps);
 }
 
 function addDays(startOn: ISODate, days: number): ISODate {
@@ -707,7 +735,7 @@ function countOccurrences(recurrence: Recurrence): number {
   let count = 0;
 
   for (let offset = 0; offset < 600; offset += 1) {
-    const dueOn = addFrequency(recurrence.startOn, recurrence.frequency, offset);
+    const dueOn = addFrequency(recurrence.startOn, recurrence.frequency, offset, recurrence.interval);
 
     if (dueOn > recurrence.endOn) {
       break;
@@ -764,6 +792,7 @@ function buildRedactedRecurrenceChanges(
   const fields = [
     "status",
     "frequency",
+    "interval",
     "startOn",
     "endOn",
     "amountMinor",

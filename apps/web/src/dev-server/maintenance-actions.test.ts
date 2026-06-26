@@ -58,11 +58,11 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
 
   assert.match(html, /<h1>Extrato Bancário<\/h1>/);
   assert.match(html, /Movimentações/);
-  assert.match(html, /Mês fechado/);
-  assert.match(html, /name="month" type="month" value="2026-06"/);
+  assert.match(html, /<label for="filter-month">Mês<\/label>/);
+  assert.match(html, /id="filter-month" name="month" type="month" value="2026-06"/);
   assert.match(html, /01\/06\/2026 até 30\/06\/2026/);
   assert.match(html, /statement-layout/);
-  assert.match(html, /grid-template-columns:320px minmax\(0,1fr\)/);
+  assert.match(html, /grid-template-columns:240px minmax\(0,1fr\)/);
   assert.match(html, /Resumo da Conta/);
   assert.doesNotMatch(html, /summary-grid/);
   assert.match(

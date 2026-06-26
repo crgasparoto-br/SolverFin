@@ -36,6 +36,7 @@ interface RecurrenceRow {
   categoryId: string | null;
   status: string;
   frequency: string;
+  interval: number;
   startOn: Date;
   endOn: Date | null;
   amountMinor: number;
@@ -64,7 +65,7 @@ interface InstallmentRow {
 }
 
 const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "categoryId",
-  "status", "frequency", "startOn", "endOn", "amountMinor", "currency", "description",
+  "status", "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 const INSTALLMENT_COLUMNS = `"id", "organizationId", "financialProfileId", "recurrenceId", "cardId",
@@ -242,12 +243,13 @@ async function persistRecurrenceMutation(result: RecurrenceMutationResult): Prom
     await executeQuery(
       `insert into "Recurrence"
         ("id", "organizationId", "financialProfileId", "accountId", "categoryId", "status", "frequency",
-         "startOn", "endOn", "amountMinor", "currency", "description", "createdAt", "updatedAt",
+         "interval", "startOn", "endOn", "amountMinor", "currency", "description", "createdAt", "updatedAt",
          "createdByUserId", "updatedByUserId")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
        on conflict ("id") do update set
          "accountId" = excluded."accountId", "categoryId" = excluded."categoryId",
-         "status" = excluded."status", "frequency" = excluded."frequency", "startOn" = excluded."startOn",
+         "status" = excluded."status", "frequency" = excluded."frequency", "interval" = excluded."interval",
+         "startOn" = excluded."startOn",
          "endOn" = excluded."endOn", "amountMinor" = excluded."amountMinor", "currency" = excluded."currency",
          "description" = excluded."description", "updatedAt" = excluded."updatedAt",
          "updatedByUserId" = excluded."updatedByUserId"`,
@@ -266,6 +268,7 @@ function buildRecurrenceParams(recurrence: Recurrence): unknown[] {
     recurrence.categoryId ?? null,
     recurrence.status.toUpperCase(),
     recurrence.frequency.toUpperCase(),
+    recurrence.interval,
     recurrence.startOn,
     recurrence.endOn ?? null,
     recurrence.amountMinor,
@@ -402,6 +405,7 @@ function mapRecurrenceRow(row: RecurrenceRow): Recurrence {
     accountId: row.accountId,
     status: row.status.toLowerCase() as RecurrenceStatus,
     frequency: row.frequency.toLowerCase() as RecurrenceFrequency,
+    interval: row.interval,
     startOn: toDateOnly(row.startOn),
     amountMinor: row.amountMinor,
     currency: row.currency,

@@ -341,6 +341,7 @@ function appendRegisteredRecurrenceComponents(
     const nextDueOn = nextDueOnWithinWindow(
       recurrence.startOn,
       recurrence.frequency,
+      recurrence.interval,
       input.today,
       horizonEndOn,
       recurrence.endOn,
@@ -440,12 +441,13 @@ function buildIgnoredComponent(
 function nextDueOnWithinWindow(
   startOn: ISODate,
   frequency: Recurrence["frequency"],
+  interval: Recurrence["interval"],
   windowStartOn: ISODate,
   windowEndOn: ISODate,
   endOn: ISODate | undefined,
 ): ISODate | undefined {
   for (let occurrence = 0; occurrence < 600; occurrence += 1) {
-    const dueOn = addFrequency(startOn, frequency, occurrence);
+    const dueOn = addFrequency(startOn, frequency, occurrence, interval);
 
     if (endOn !== undefined && dueOn > endOn) {
       return undefined;
@@ -482,20 +484,23 @@ function addFrequency(
   startOn: ISODate,
   frequency: Recurrence["frequency"],
   offset: number,
+  interval = 1,
 ): ISODate {
+  const steps = offset * interval;
+
   if (frequency === "daily") {
-    return addDays(startOn, offset);
+    return addDays(startOn, steps);
   }
 
   if (frequency === "weekly") {
-    return addDays(startOn, offset * 7);
+    return addDays(startOn, steps * 7);
   }
 
   if (frequency === "yearly") {
-    return addMonths(startOn, offset * 12);
+    return addMonths(startOn, steps * 12);
   }
 
-  return addMonths(startOn, offset);
+  return addMonths(startOn, steps);
 }
 
 function addDays(startOn: ISODate, days: number): ISODate {

@@ -77,6 +77,7 @@ function doesNotDuplicateRegisteredRecurrence(): void {
     financialProfileId: tenantA.financialProfileId,
     status: "active",
     frequency: "monthly",
+    interval: 1,
     startOn: "2026-04-10",
     amountMinor: 5000,
     currency: "BRL",

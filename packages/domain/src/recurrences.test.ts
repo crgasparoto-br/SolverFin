@@ -36,6 +36,7 @@ const category = createCategoryFixture(tenantA, "category-a", "active");
 runCreatesRecurrence();
 runRejectsArchivedAccount();
 runGeneratesMonthlyInstallmentsWithoutDuplicates();
+runGeneratesBiweeklyInstallmentsWithInterval();
 runClampsMissingMonthDay();
 runPausesAndCancelsRecurrence();
 runUpdatesFutureRule();
@@ -107,6 +108,30 @@ function runGeneratesMonthlyInstallmentsWithoutDuplicates(): void {
   assertEqual(installments[1]?.sequenceNumber, 3, "third sequence should be generated");
   assertEqual(installments[2]?.sequenceNumber, 4, "fourth sequence should be generated");
   assertEqual(installments[0]?.totalInstallments, 4, "bounded recurrence should expose total");
+}
+
+function runGeneratesBiweeklyInstallmentsWithInterval(): void {
+  const recurrence = createRecurrenceFixture({
+    id: "recurrence-biweekly",
+    startOn: "2026-06-01",
+    frequency: "weekly",
+    interval: 2,
+  });
+
+  const installments = generateRecurrenceInstallments({
+    context: tenantA,
+    recurrence,
+    existingInstallments: [],
+    now,
+    through: "2026-06-30",
+    makeInstallmentId: (sequenceNumber) => `installment-biweekly-${sequenceNumber}`,
+  });
+
+  assertEqual(recurrence.interval, 2, "fixture should persist requested interval");
+  assertEqual(installments.length, 3, "every 2 weeks should generate 3 occurrences in June");
+  assertEqual(installments[0]?.dueOn, "2026-06-01", "first occurrence should be start date");
+  assertEqual(installments[1]?.dueOn, "2026-06-15", "second occurrence should skip 2 weeks");
+  assertEqual(installments[2]?.dueOn, "2026-06-29", "third occurrence should skip 2 more weeks");
 }
 
 function runClampsMissingMonthDay(): void {
@@ -262,9 +287,12 @@ function createRecurrenceFixture(input: {
   id: string;
   startOn: string;
   endOn?: string;
+  frequency?: Recurrence["frequency"];
+  interval?: number;
 }): Recurrence {
   const payload = {
-    frequency: "monthly" as const,
+    frequency: input.frequency ?? ("monthly" as const),
+    ...(input.interval !== undefined ? { interval: input.interval } : {}),
     startOn: input.startOn,
     amountMinor: 4500,
     description: "Recorrencia ficticia",

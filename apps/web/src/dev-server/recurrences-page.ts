@@ -20,6 +20,7 @@ interface RecurrenceRecord {
   id: string;
   status: string;
   frequency: string;
+  interval?: number;
   startOn: string;
   endOn?: string;
   amountMinor: number;
@@ -109,6 +110,7 @@ export async function renderRecurrencesPage(token: string): Promise<string> {
           <h2>Nova recorrência</h2>
           <form data-api-form data-api-path="/api/recurrences">
             <label>Descrição<input name="description" required placeholder="Ex.: Aluguel, internet, assinatura" /></label>
+            <label>A cada<input name="interval" type="number" min="1" max="60" value="1" /></label>
             <label>Frequência
               <select name="frequency" required>
                 ${renderFrequencyOptions()}
@@ -157,7 +159,7 @@ function renderRecurrenceRow(
       <div class="maintenance-summary">
         <div>
           <strong>${escapeHtml(recurrence.description)}</strong>
-          <span>${escapeHtml(formatFrequency(recurrence.frequency))} - ${escapeHtml(formatRecurrenceStatus(recurrence.status))} - ${escapeHtml(accountName)} - ${escapeHtml(categoryName)}</span>
+          <span>${escapeHtml(formatFrequency(recurrence.frequency, recurrence.interval))} - ${escapeHtml(formatRecurrenceStatus(recurrence.status))} - ${escapeHtml(accountName)} - ${escapeHtml(categoryName)}</span>
           <span>Desde ${formatDate(recurrence.startOn)}${recurrence.endOn ? ` até ${formatDate(recurrence.endOn)}` : ""}</span>
         </div>
         <strong>${formatMoney(recurrence.amountMinor)}</strong>
@@ -166,6 +168,7 @@ function renderRecurrenceRow(
         <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/recurrences/${escapeHtml(recurrence.id)}">Abrir detalhe</button>
         <form data-api-form data-api-method="PATCH" data-api-path="/api/recurrences/${escapeHtml(recurrence.id)}" class="inline-edit-form">
           <label>Descrição<input name="description" value="${escapeHtml(recurrence.description)}" required /></label>
+          <label>A cada<input name="interval" type="number" min="1" max="60" value="${recurrence.interval ?? 1}" /></label>
           <label>Frequência<select name="frequency">${renderFrequencyOptions(recurrence.frequency)}</select></label>
           <label>Valor (R$)<input name="amountMinor" data-money value="${formatMoneyInput(recurrence.amountMinor)}" inputmode="decimal" required /></label>
           <label>Início<input name="startOn" type="date" value="${escapeHtml(recurrence.startOn)}" required /></label>
@@ -446,7 +449,15 @@ function formatDate(date: string): string {
   return formatDateOnly(date);
 }
 
-function formatFrequency(frequency: string): string {
+function formatFrequency(frequency: string, interval?: number): string {
+  if (interval !== undefined && interval > 1) {
+    if (frequency === "daily") return `A cada ${interval} dias`;
+    if (frequency === "weekly") return `A cada ${interval} semanas`;
+    if (frequency === "monthly") return `A cada ${interval} meses`;
+    if (frequency === "yearly") return `A cada ${interval} anos`;
+    return frequency;
+  }
+
   if (frequency === "daily") return "Diária";
   if (frequency === "weekly") return "Semanal";
   if (frequency === "monthly") return "Mensal";

@@ -406,6 +406,7 @@ model Recurrence {
   categoryId         String?             @db.Uuid
   status             RecurrenceStatus    @default(ACTIVE)
   frequency          RecurrenceFrequency
+  interval           Int                 @default(1)
   startOn            DateTime            @db.Date
   endOn              DateTime?           @db.Date
   amountMinor        Int

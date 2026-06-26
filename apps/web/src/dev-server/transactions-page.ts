@@ -17,6 +17,7 @@ interface CategoryRecord {
   name: string;
   kind: string;
   status: string;
+  parentCategoryId?: string;
 }
 
 interface TransactionRecord {
@@ -105,14 +106,20 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
                 <h1>Extrato Bancário</h1>
                 <p class="muted">Acompanhe lançamentos, saldo e pendências por conta e mês fechado.</p>
               </div>
-              <button type="button" class="button-link" data-open-modal${selectedAccount ? "" : " disabled"}>Novo lançamento</button>
             </section>
 
             <section class="panel account-filter">
-              <form class="filter-form" method="get" action="/lancamentos">
+              <form class="filter-form" method="get" action="/lancamentos" data-auto-submit>
                 <label>Conta<select name="accountId" required><option value="">Selecione uma conta</option>${renderAccountOptions(accounts, filters.accountId)}</select></label>
-                <label>Mês fechado<input name="month" type="month" value="${escapeHtml(filters.month)}" required /></label>
-                <button type="submit">Consultar mês</button>
+                <div class="month-field">
+                  <label for="filter-month">Mês</label>
+                  <div class="month-nav">
+                    <button type="button" class="icon-btn" data-month-step="-1" aria-label="Mês anterior">&#8249;</button>
+                    <input id="filter-month" name="month" type="month" value="${escapeHtml(filters.month)}" required />
+                    <button type="button" class="icon-btn" data-month-step="1" aria-label="Próximo mês">&#8250;</button>
+                  </div>
+                </div>
+                <button type="button" class="ghost-btn" data-month-current>Mês atual</button>
               </form>
               ${
                 selectedAccount
@@ -386,17 +393,28 @@ function renderModal(
           <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
           <label>Data prevista<input name="plannedOn" type="date" required /></label>
           <label>Data efetiva<input name="effectiveOn" type="date" /></label>
-          <label>Situação<select name="status"><option value="posted">Efetivado não conciliado</option><option value="reconciled">Conciliado</option><option value="planned">Previsto/pendente</option></select></label>
-          <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
-          <label>Conta destino<select name="destinationAccountId"><option value="">Apenas transferência</option>${renderAccountOptions(accounts)}</select></label>
+          <label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
+          <label data-field="destinationAccountId">Conta destino<select name="destinationAccountId"><option value="">Apenas transferência</option>${renderAccountOptions(accounts)}</select></label>
           <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
-          <label>Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label>
-          <label>Frequência<select name="frequency"><option value="monthly">Mensal</option><option value="weekly">Semanal</option><option value="yearly">Anual</option></select></label>
-          <label>Fim opcional<input name="endOn" type="date" /></label>
+          <label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label>
+          <label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label>
+          <label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label>
+          <label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label>
+          <label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label>
+          <label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label>
           <label class="full">Descrição<input name="description" required /></label>
           <label class="full">Observação<textarea name="note" rows="3"></textarea></label>
           <label class="full">Editar repetição<select name="editScope"><option>Somente este lançamento</option><option>Este e os próximos</option><option>Toda a repetição</option></select></label>
-          <button type="submit"${selectedAccount ? "" : " disabled"}>Salvar lançamento</button>
+          <input type="hidden" name="status" value="posted" />
+          <div class="full save-row">
+            <div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">
+              ${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}
+              ${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}
+              ${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}
+              <span class="status-label" data-status-label>Efetivado não conciliado</span>
+            </div>
+            <button type="submit"${selectedAccount ? "" : " disabled"}>Salvar lançamento</button>
+          </div>
         </form>
       </section>
     </dialog>
@@ -414,8 +432,83 @@ function clientScript(): string {
       form && form.appendChild(statusNode);
 
       function moneyToMinor(value) {
-        return Math.round(parseFloat(String(value).replace(",", ".")) * 100);
+        const normalized = String(value).replace(/\\./g, "").replace(",", ".");
+        return Math.round(parseFloat(normalized || "0") * 100);
       }
+
+      function minorToMoneyInput(amountMinor) {
+        return (amountMinor / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      const moneyInput = form && form.querySelector("[data-money]");
+      moneyInput && moneyInput.addEventListener("input", () => {
+        const digits = moneyInput.value.replace(/\\D/g, "");
+        const cents = digits ? parseInt(digits, 10) : 0;
+        moneyInput.value = minorToMoneyInput(cents);
+      });
+
+      function setFieldVisible(name, visible) {
+        const field = form.querySelector('[data-field="' + name + '"]');
+        if (field) field.hidden = !visible;
+      }
+
+      function syncCategoryOptions() {
+        const kind = form.kind.value;
+        const select = form.querySelector("[data-category-select]");
+        if (!select) return;
+        let selectedHidden = false;
+        Array.from(select.options).forEach((option) => {
+          if (!option.dataset.kind) return;
+          const visible = option.dataset.kind === kind;
+          option.hidden = !visible;
+          if (!visible && option.selected) selectedHidden = true;
+        });
+        if (selectedHidden) select.value = "";
+      }
+
+      function syncFieldVisibility() {
+        const kind = form.kind.value;
+        const repeatMode = form.repeatMode.value;
+        setFieldVisible("destinationAccountId", kind === "transfer");
+        setFieldVisible("installments", repeatMode === "installment");
+        setFieldVisible("installmentStart", repeatMode === "installment");
+        setFieldVisible("installmentValueMode", repeatMode === "installment");
+        setFieldVisible("interval", repeatMode === "fixed");
+        setFieldVisible("frequency", repeatMode === "fixed");
+        setFieldVisible("endOn", repeatMode === "fixed");
+        syncCategoryOptions();
+      }
+
+      form && form.addEventListener("change", (event) => {
+        if (event.target.name === "kind" || event.target.name === "repeatMode") syncFieldVisibility();
+      });
+
+      const statusButtons = form ? Array.from(form.querySelectorAll("[data-status-option]")) : [];
+      const statusLabel = form && form.querySelector("[data-status-label]");
+
+      function setStatus(value) {
+        form.status.value = value;
+        statusButtons.forEach((button) => {
+          const active = button.dataset.statusOption === value;
+          button.classList.toggle("active", active);
+          if (active && statusLabel) statusLabel.textContent = button.dataset.statusLabelText;
+        });
+      }
+
+      statusButtons.forEach((button) => button.addEventListener("click", () => setStatus(button.dataset.statusOption)));
+
+      const effectiveOnInput = form && form.querySelector('[name="effectiveOn"]');
+      effectiveOnInput && effectiveOnInput.addEventListener("blur", () => {
+        if (!effectiveOnInput.value && form.plannedOn.value) effectiveOnInput.value = form.plannedOn.value;
+      });
+
+      const installmentsInput = form && form.querySelector('[name="installments"]');
+      const installmentStartInput = form && form.querySelector('[name="installmentStart"]');
+      installmentsInput && installmentsInput.addEventListener("input", () => {
+        const total = Math.max(2, Number(installmentsInput.value || 2));
+        installmentStartInput.max = String(total);
+        if (Number(installmentStartInput.value || 1) > total) installmentStartInput.value = String(total);
+      });
 
       function addMonths(dateValue, months) {
         const date = new Date(dateValue + "T00:00:00Z");
@@ -423,20 +516,39 @@ function clientScript(): string {
         return date.toISOString().slice(0, 10);
       }
 
-      function payload(index, total) {
+      function shiftMonth(monthValue, steps) {
+        const [year, month] = monthValue.split("-").map(Number);
+        const date = new Date(Date.UTC(year, month - 1 + steps, 1));
+        return date.toISOString().slice(0, 7);
+      }
+
+      const monthInput = document.querySelector("#filter-month");
+
+      document.querySelectorAll("[data-month-step]").forEach((button) => button.addEventListener("click", () => {
+        monthInput.value = shiftMonth(monthInput.value, Number(button.dataset.monthStep));
+        monthInput.closest("form").requestSubmit();
+      }));
+
+      document.querySelectorAll("[data-month-current]").forEach((button) => button.addEventListener("click", () => {
+        monthInput.value = new Date().toISOString().slice(0, 7);
+        monthInput.closest("form").requestSubmit();
+      }));
+
+      document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => {
+        if (event.target.name === "accountId" || event.target.name === "month") autoForm.requestSubmit();
+      }));
+
+      function basePayload(plannedOn, effectiveOn, amountMinor, description) {
         const data = new FormData(form);
-        const plannedOn = index ? addMonths(String(data.get("plannedOn")), index) : String(data.get("plannedOn"));
-        const effectiveBase = String(data.get("effectiveOn") || "");
-        const effectiveOn = effectiveBase ? (index ? addMonths(effectiveBase, index) : effectiveBase) : "";
         const result = {
           kind: String(data.get("kind")),
-          amountMinor: moneyToMinor(data.get("amountMinor")),
+          amountMinor,
           occurredOn: effectiveOn || plannedOn,
           plannedOn,
           effectiveOn: effectiveOn || null,
           accountId: String(data.get("accountId")),
-          description: String(data.get("description") || "") + (total > 1 ? " " + (index + 1) + "/" + total : ""),
-          status: effectiveOn ? String(data.get("status")) : "planned"
+          description,
+          status: String(data.get("status"))
         };
         const destinationAccountId = String(data.get("destinationAccountId") || "");
         const categoryId = String(data.get("categoryId") || "");
@@ -445,6 +557,40 @@ function clientScript(): string {
         if (categoryId) result.categoryId = categoryId;
         if (note) result.description += " - " + note;
         return result;
+      }
+
+      function plannedAndEffectiveOn(monthOffset) {
+        const data = new FormData(form);
+        const plannedOnRaw = String(data.get("plannedOn"));
+        const plannedOn = monthOffset ? addMonths(plannedOnRaw, monthOffset) : plannedOnRaw;
+        const effectiveBase = String(data.get("effectiveOn") || "") || plannedOnRaw;
+        const effectiveOn = monthOffset ? addMonths(effectiveBase, monthOffset) : effectiveBase;
+        return { plannedOn, effectiveOn };
+      }
+
+      function payload(index, total) {
+        const data = new FormData(form);
+        const { plannedOn, effectiveOn } = plannedAndEffectiveOn(index);
+        const description = String(data.get("description") || "") + (total > 1 ? " " + (index + 1) + "/" + total : "");
+        return basePayload(plannedOn, effectiveOn, moneyToMinor(data.get("amountMinor")), description);
+      }
+
+      function installmentAmountMinor(totalMinor, totalCount, parcelNumber) {
+        const base = Math.floor(totalMinor / totalCount);
+        const remainder = totalMinor - base * totalCount;
+        return parcelNumber > totalCount - remainder ? base + 1 : base;
+      }
+
+      function installmentPayload(parcelNumber, totalCount, monthOffset) {
+        const data = new FormData(form);
+        const { plannedOn, effectiveOn } = plannedAndEffectiveOn(monthOffset);
+        const enteredAmountMinor = moneyToMinor(data.get("amountMinor"));
+        const valueMode = String(data.get("installmentValueMode") || "per_installment");
+        const amountMinor = valueMode === "total"
+          ? installmentAmountMinor(enteredAmountMinor, totalCount, parcelNumber)
+          : enteredAmountMinor;
+        const description = String(data.get("description") || "") + " " + parcelNumber + "/" + totalCount;
+        return basePayload(plannedOn, effectiveOn, amountMinor, description);
       }
 
       async function send(path, method, body) {
@@ -468,6 +614,8 @@ function clientScript(): string {
         form.dataset.method = "POST";
         if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind;
         document.querySelector("[data-modal-title]").textContent = document.querySelector("[data-modal-title]").textContent.replace("Editar", "Novo").replace("Clonar", "Novo");
+        setStatus("posted");
+        syncFieldVisibility();
         modal.showModal();
       }));
 
@@ -481,14 +629,15 @@ function clientScript(): string {
             form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id;
             form.dataset.method = clone ? "POST" : "PATCH";
             form.kind.value = transaction.kind;
-            form.amountMinor.value = (transaction.amountMinor / 100).toFixed(2).replace(".", ",");
+            form.amountMinor.value = minorToMoneyInput(transaction.amountMinor);
             form.plannedOn.value = transaction.plannedOn || transaction.occurredOn;
             form.effectiveOn.value = transaction.effectiveOn || "";
-            form.status.value = transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned";
+            setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned");
             form.destinationAccountId.value = transaction.destinationAccountId || "";
             form.categoryId.value = transaction.categoryId || "";
             form.description.value = clone ? "Cópia de " + transaction.description : transaction.description;
             document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento";
+            syncFieldVisibility();
             modal.showModal();
           });
         };
@@ -506,6 +655,7 @@ function clientScript(): string {
           const item = payload(0, 1);
           response = await send("/api/recurrences", "POST", {
             frequency: form.frequency.value,
+            interval: Math.max(1, Number(form.interval.value || 1)),
             startOn: form.plannedOn.value,
             endOn: form.endOn.value || undefined,
             amountMinor: item.amountMinor,
@@ -514,9 +664,13 @@ function clientScript(): string {
             categoryId: item.categoryId
           });
         } else if (mode === "installment" && method === "POST") {
-          const total = Math.max(2, Number(form.installments.value || 2));
+          const totalCount = Math.max(2, Number(form.installments.value || 2));
+          const startParcel = Math.min(Math.max(1, Number(form.installmentStart.value || 1)), totalCount);
           const responses = [];
-          for (let index = 0; index < total; index += 1) responses.push(await send("/api/transactions", "POST", payload(index, total)));
+          let monthOffset = 0;
+          for (let parcelNumber = startParcel; parcelNumber <= totalCount; parcelNumber += 1, monthOffset += 1) {
+            responses.push(await send("/api/transactions", "POST", installmentPayload(parcelNumber, totalCount, monthOffset)));
+          }
           response = responses.find((item) => !item.ok) || responses[responses.length - 1];
         } else {
           response = await send(form.dataset.path || "/api/transactions", method, payload(0, 1));
@@ -560,6 +714,10 @@ function renderErrorPage(error: string): string {
   });
 }
 
+function renderStatusIcon(value: string, label: string, iconPaths: string): string {
+  return `<button type="button" class="status-icon-btn" data-status-option="${value}" data-status-label-text="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">${iconPaths}</svg></button>`;
+}
+
 function renderKindOptions(): string {
   return [
     ["income", "Entrada"],
@@ -580,12 +738,33 @@ function renderAccountOptions(accounts: AccountRecord[], selected?: string): str
 }
 
 function renderCategoryOptions(categories: CategoryRecord[], selected?: string): string {
-  return categories
-    .map(
-      (category) =>
-        `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
-    )
+  return buildCategoryHierarchy(categories)
+    .map(({ category, depth }) => {
+      const indent = depth > 0 ? "  ".repeat(depth) + "↳ " : "";
+      return `<option value="${escapeHtml(category.id)}" data-kind="${escapeHtml(category.kind)}"${selected === category.id ? " selected" : ""}>${indent}${escapeHtml(category.name)}</option>`;
+    })
     .join("");
+}
+
+function buildCategoryHierarchy(
+  categories: CategoryRecord[],
+): { category: CategoryRecord; depth: number }[] {
+  const childrenByParent = new Map<string | undefined, CategoryRecord[]>();
+  for (const category of categories) {
+    const key = category.parentCategoryId;
+    childrenByParent.set(key, [...(childrenByParent.get(key) ?? []), category]);
+  }
+
+  const rows: { category: CategoryRecord; depth: number }[] = [];
+  function walk(parentId: string | undefined, depth: number): void {
+    for (const category of childrenByParent.get(parentId) ?? []) {
+      rows.push({ category, depth });
+      walk(category.id, depth + 1);
+    }
+  }
+  walk(undefined, 0);
+
+  return rows;
 }
 
 function signedAmount(
@@ -695,6 +874,6 @@ function serializeScriptJson(value: unknown): string {
 
 function css(): string {
   return `
-    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{align-items:center;color:white;display:inline-flex;font-size:1.2rem;font-weight:900;gap:10px;text-decoration:none}.brand img{border-radius:6px;display:block}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1440px;padding:24px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.statement-heading,.statement-toolbar{align-items:center;display:flex;gap:16px;justify-content:space-between}.statement-heading h1{font-size:1.9rem}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.warning{color:var(--amber);font-weight:800}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.danger{background:var(--red-bg);color:var(--red)}label{display:grid;gap:8px;font-weight:700}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.account-filter{background:var(--surface);color:var(--text)}.account-filter .muted{margin-top:12px}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.4fr) minmax(14rem,1fr) auto}.statement-layout{align-items:start;display:grid;gap:18px;grid-template-columns:320px minmax(0,1fr)}.account-summary{display:grid;gap:18px;position:sticky;top:88px}.account-summary h2{font-size:1.1rem}.summary-balance{background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;display:grid;gap:6px;padding:14px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.78rem;font-weight:800;text-transform:uppercase}.summary-balance strong{font-size:1.6rem;overflow-wrap:anywhere}.summary-balance p{color:var(--muted);font-size:.9rem}.summary-totals{display:grid;gap:10px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:8px;display:grid;gap:4px;padding:12px}.summary-total strong{font-size:1rem;overflow-wrap:anywhere}.quick-actions,.status-overview{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:16px}.quick-actions h3,.status-overview h3{font-size:.95rem}.quick-actions button{background:white;border:1px solid var(--line);color:var(--primary);justify-content:flex-start}.quick-actions button:hover{background:var(--soft)}.status-line{align-items:center;display:grid;gap:8px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-weight:800}.status-line strong{font-size:.9rem}.statement-panel{padding:0;overflow:hidden}.statement-toolbar{border-bottom:1px solid var(--line);padding:18px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:6px;font-size:.8rem;font-weight:800;padding:6px 10px;white-space:nowrap}.chip-pending{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.statement-table{display:grid;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:12px;grid-template-columns:7rem minmax(14rem,1.5fr) minmax(9rem,1fr) 7rem 8rem 8rem 8rem 5rem;min-width:920px;padding:12px 18px}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.78rem;font-weight:900;text-transform:uppercase}.description{display:grid;gap:3px}.description span{color:var(--muted);font-size:.86rem}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.actions{position:relative}.actions summary{background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;font-weight:900;list-style:none;padding:7px 10px}.actions summary::-webkit-details-marker{display:none}.actions div{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:8px;min-width:210px;padding:10px;position:absolute;right:0;top:38px;z-index:3}.actions button{justify-content:flex-start}.empty{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(900px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.error-page{min-height:100vh;place-content:center}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}@media(max-width:1024px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}.filter-form,.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form[data-form],.summary-totals{grid-template-columns:1fr}.statement-heading,.statement-toolbar{align-items:stretch;display:grid}.button-link{width:100%}}
+    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{align-items:center;color:white;display:inline-flex;font-size:1.2rem;font-weight:900;gap:10px;text-decoration:none}.brand img{border-radius:6px;display:block}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1440px;padding:24px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.statement-heading,.statement-toolbar{align-items:center;display:flex;gap:16px;justify-content:space-between}.statement-heading h1{font-size:1.9rem}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.warning{color:var(--amber);font-weight:800}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.danger{background:var(--red-bg);color:var(--red)}label{display:grid;gap:8px;font-weight:700}[hidden]{display:none}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.account-filter{background:var(--surface);color:var(--text)}.account-filter .muted{margin-top:12px}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.2fr) minmax(15rem,1fr) auto}.month-field{display:grid;gap:8px}.month-field label{font-weight:700}.month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto;padding:4px}.month-nav input{border:0;background:transparent;min-height:34px;text-align:center}.month-nav input:focus{outline:2px solid var(--cyan);border-radius:6px}.icon-btn{background:white;border:1px solid var(--line);border-radius:6px;color:var(--primary);font-size:1.1rem;font-weight:900;line-height:1;min-height:34px;min-width:34px;padding:0}.icon-btn:hover{background:var(--soft)}.ghost-btn{background:white;border:1px solid var(--line);color:var(--primary)}.ghost-btn:hover{background:var(--soft)}.statement-layout{align-items:start;display:grid;gap:14px;grid-template-columns:240px minmax(0,1fr)}.account-summary{display:grid;gap:18px;position:sticky;top:88px}.account-summary h2{font-size:1.1rem}.summary-balance{background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;display:grid;gap:6px;padding:14px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.78rem;font-weight:800;text-transform:uppercase}.summary-balance strong{font-size:1.6rem;overflow-wrap:anywhere}.summary-balance p{color:var(--muted);font-size:.9rem}.summary-totals{display:grid;gap:10px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:8px;display:grid;gap:4px;padding:12px}.summary-total strong{font-size:1rem;overflow-wrap:anywhere}.quick-actions,.status-overview{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:16px}.quick-actions h3,.status-overview h3{font-size:.95rem}.quick-actions button{background:white;border:1px solid var(--line);color:var(--primary);justify-content:flex-start}.quick-actions button:hover{background:var(--soft)}.status-line{align-items:center;display:grid;gap:8px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-weight:800}.status-line strong{font-size:.9rem}.statement-panel{padding:0;overflow:hidden}.statement-toolbar{border-bottom:1px solid var(--line);padding:18px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:6px;font-size:.8rem;font-weight:800;padding:6px 10px;white-space:nowrap}.chip-pending{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.statement-table{display:grid;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:10px;grid-template-columns:6.5rem minmax(9rem,1.3fr) minmax(7.5rem,0.9fr) 7.5rem 6.5rem 8.5rem 8.5rem 3.5rem;padding:12px 14px}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.78rem;font-weight:900;text-transform:uppercase}.description{display:grid;gap:3px}.description span{color:var(--muted);font-size:.86rem}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.actions{position:relative}.actions summary{background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;font-weight:900;list-style:none;padding:7px 10px}.actions summary::-webkit-details-marker{display:none}.actions div{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:8px;min-width:210px;padding:10px;position:absolute;right:0;top:38px;z-index:3}.actions button{justify-content:flex-start}.empty{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(900px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.save-row{align-items:center;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between}.status-icons{align-items:center;display:flex;gap:8px}.status-icon-btn{align-items:center;background:white;border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;height:36px;justify-content:center;min-height:0;padding:0;width:36px}.status-icon-btn:hover{background:var(--soft)}.status-icon-btn[data-status-option=posted].active{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.status-icon-btn[data-status-option=reconciled].active{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.status-icon-btn[data-status-option=planned].active{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.status-label{color:var(--muted);font-size:.8rem;font-weight:700}.error-page{min-height:100vh;place-content:center}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}@media(max-width:1550px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}}@media(max-width:1024px){.filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form[data-form],.summary-totals{grid-template-columns:1fr}.statement-heading,.statement-toolbar{align-items:stretch;display:grid}.button-link{width:100%}.save-row{align-items:stretch;flex-direction:column}}
   `;
 }
