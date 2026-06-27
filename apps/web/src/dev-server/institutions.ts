@@ -14,7 +14,20 @@ export function findInstitution(key: string | undefined) {
   return institutions.find((item) => item.key === key) ?? fallbackInstitution;
 }
 
-export function renderInstitutionIcon(key: string): string {
+const institutionLogoDomains: Record<string, string> = {
+  bradesco: "bradesco.com.br",
+  inter: "bancointer.com.br",
+  c6: "c6bank.com.br",
+  caixa: "caixa.gov.br",
+  porto_bank: "portobank.com.br",
+};
+
+function getInstitutionLogoUrl(key: string): string | undefined {
+  const domain = institutionLogoDomains[key];
+  return domain ? `https://logo.clearbit.com/${domain}?size=128` : undefined;
+}
+
+function renderFallbackInstitutionIcon(key: string): string {
   if (key === "bradesco")
     return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><circle cx="22" cy="22" r="18" fill="#cc092f"/><path d="M14 24c2.2-6 7.9-9.6 14.8-9.6 1.5 0 2.9.2 4.2.6-2.8 1.2-4.9 3.4-6.2 6.4 3 .4 5.4 1.9 7.2 4.4-2.4-.7-4.8-.8-7-.2-1.8.5-3.4 1.6-4.7 3.2-1.7-3-4.7-4.7-8.3-4.8z" fill="#fff"/></svg>`;
   if (key === "inter")
@@ -28,4 +41,17 @@ export function renderInstitutionIcon(key: string): string {
   if (key === "solverfin_demo")
     return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><rect x="7" y="7" width="30" height="30" rx="9" fill="#0f3d4c"/><path d="M14 27.5c4.1 0 4.1-11 8.2-11s4.1 11 8.8 11" fill="none" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/><circle cx="31" cy="27.5" r="3" fill="#fff"/></svg>`;
   return `<svg class="brand-icon" viewBox="0 0 44 44" role="img"><rect x="7" y="15" width="30" height="21" rx="4" fill="#0f3d4c"/><path d="M9 15 22 8l13 7H9z" fill="#22d3ee"/><path d="M14 19h4v12h-4V19zm6 0h4v12h-4V19zm6 0h4v12h-4V19z" fill="#fff"/></svg>`;
+}
+
+export function renderInstitutionIcon(key: string): string {
+  const logoUrl = getInstitutionLogoUrl(key);
+  const fallbackSvg = renderFallbackInstitutionIcon(key);
+
+  if (!logoUrl) {
+    return fallbackSvg;
+  }
+
+  const hiddenFallback = fallbackSvg.replace('class="brand-icon"', 'class="brand-icon" style="display:none"');
+
+  return `<span class="brand-icon-wrap"><img class="brand-icon brand-logo-img" src="${logoUrl}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />${hiddenFallback}</span>`;
 }
