@@ -1,6 +1,7 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { findInstitution, renderInstitutionIcon } from "./institutions.js";
 import { faviconLinks } from "./pages.js";
 import { privateRoutes } from "./routes.js";
 
@@ -10,6 +11,7 @@ interface AccountRecord {
   kind: string;
   status: string;
   openingBalanceMinor: number;
+  institutionKey?: string;
 }
 
 interface CategoryRecord {
@@ -104,13 +106,13 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
               <div>
                 <p class="eyebrow">Conta e movimentações</p>
                 <h1>Extrato Bancário</h1>
-                <p class="muted">Acompanhe lançamentos, saldo e pendências por conta e mês fechado.</p>
+                <p class="muted">Acompanhe lançamentos, saldo e pendências por conta e mês.</p>
               </div>
             </section>
 
             <section class="panel account-filter">
               <form class="filter-form" method="get" action="/lancamentos" data-auto-submit>
-                <label>Conta<select name="accountId" required><option value="">Selecione uma conta</option>${renderAccountOptions(accounts, filters.accountId)}</select></label>
+                ${renderAccountPicker(accounts, selectedAccount, filters.accountId)}
                 <div class="month-field">
                   <label for="filter-month">Mês</label>
                   <div class="month-nav">
@@ -152,7 +154,7 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
                           .join("")
                       : emptyState(
                           selectedAccount
-                            ? "Nenhum lançamento neste mês fechado."
+                            ? "Nenhum lançamento neste mês."
                             : "Selecione uma conta.",
                           selectedAccount
                             ? "Escolha outro mês ou crie um lançamento para acompanhar o saldo."
@@ -192,14 +194,11 @@ function resolveSelectedMonth(url: URL | undefined): string {
   const legacyMonth = startsOn?.slice(0, 7);
   if (isValidMonth(legacyMonth)) return legacyMonth;
 
-  return getPreviousClosedMonth();
+  return getCurrentMonth();
 }
 
-function getPreviousClosedMonth(): string {
-  const today = new Date();
-  const previousMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 1, 1));
-
-  return previousMonth.toISOString().slice(0, 7);
+function getCurrentMonth(): string {
+  return new Date().toISOString().slice(0, 7);
 }
 
 function isValidMonth(value: string | null | undefined): value is string {
@@ -341,12 +340,13 @@ function renderRow(
       <strong class="${row.amountMinor < 0 ? "debit" : "credit"}">${formatMoney(row.amountMinor)}</strong>
       <strong>${row.balanceAfterMinor === undefined ? "Previsto" : formatMoney(row.balanceAfterMinor)}</strong>
       <details class="actions">
-        <summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">...</summary>
-        <div>
-          <button type="button" data-edit="${escapeHtml(transaction.id)}">Editar</button>
-          <button type="button" data-action data-method="PATCH" data-path="/api/transactions/${escapeHtml(transaction.id)}" data-payload='${escapeHtml(JSON.stringify({ status: nextStatus }))}'>${transaction.status === "reconciled" ? "Desconciliar" : "Marcar como conciliado"}</button>
-          <button type="button" data-clone="${escapeHtml(transaction.id)}">Clonar</button>
-          <button type="button" class="danger" data-action data-method="POST" data-path="/api/transactions/${escapeHtml(transaction.id)}/void" data-confirm="${escapeHtml(transaction.status === "reconciled" ? "Este lançamento já está conciliado. Excluir mesmo assim?" : "Excluir este lançamento?")}">Excluir</button>
+        <summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary>
+        <div class="actions-menu" role="menu">
+          <button type="button" class="actions-item" data-edit="${escapeHtml(transaction.id)}">${renderEditIcon()}<span>Editar</span></button>
+          <button type="button" class="actions-item" data-action data-method="PATCH" data-path="/api/transactions/${escapeHtml(transaction.id)}" data-payload='${escapeHtml(JSON.stringify({ status: nextStatus }))}'>${renderReconcileIcon(transaction.status === "reconciled")}<span>${transaction.status === "reconciled" ? "Desconciliar" : "Marcar como conciliado"}</span></button>
+          <button type="button" class="actions-item" data-clone="${escapeHtml(transaction.id)}">${renderCloneIcon()}<span>Clonar</span></button>
+          <hr class="actions-divider" />
+          <button type="button" class="actions-item danger" data-action data-method="POST" data-path="/api/transactions/${escapeHtml(transaction.id)}/void" data-confirm="${escapeHtml(transaction.status === "reconciled" ? "Este lançamento já está conciliado. Excluir mesmo assim?" : "Excluir este lançamento?")}">${renderTrashIcon()}<span>Excluir</span></button>
         </div>
       </details>
       <script type="application/json" data-transaction="${escapeHtml(transaction.id)}">${serializeScriptJson(transaction)}</script>
@@ -522,6 +522,46 @@ function clientScript(): string {
         return date.toISOString().slice(0, 7);
       }
 
+      const accountPicker = document.querySelector("[data-account-picker]");
+      if (accountPicker) {
+        const trigger = accountPicker.querySelector("[data-account-trigger]");
+        const triggerIcon = trigger.querySelector(".account-select-icon");
+        const triggerText = trigger.querySelector(".account-select-text");
+        const menu = accountPicker.querySelector("[data-account-menu]");
+        const input = accountPicker.querySelector("[data-account-input]");
+
+        function closeAccountMenu() {
+          menu.hidden = true;
+          trigger.setAttribute("aria-expanded", "false");
+        }
+
+        trigger.addEventListener("click", () => {
+          const isOpen = !menu.hidden;
+          menu.hidden = isOpen;
+          trigger.setAttribute("aria-expanded", String(!isOpen));
+        });
+
+        menu.querySelectorAll("[data-account-option]").forEach((option) => option.addEventListener("click", () => {
+          const id = option.dataset.accountOption;
+          menu.querySelectorAll("[data-account-option]").forEach((node) => node.setAttribute("aria-selected", String(node === option)));
+          triggerIcon.innerHTML = option.querySelector(".account-select-icon").innerHTML;
+          triggerText.textContent = option.dataset.accountName;
+          closeAccountMenu();
+          if (input.value !== id) {
+            input.value = id;
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }));
+
+        document.addEventListener("click", (event) => {
+          if (!accountPicker.contains(event.target)) closeAccountMenu();
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") closeAccountMenu();
+        });
+      }
+
       const monthInput = document.querySelector("#filter-month");
 
       document.querySelectorAll("[data-month-step]").forEach((button) => button.addEventListener("click", () => {
@@ -679,6 +719,30 @@ function clientScript(): string {
         if (response.ok) window.setTimeout(() => window.location.reload(), 450);
       });
 
+      document.querySelectorAll(".actions").forEach((details) => {
+        const menu = details.querySelector(":scope > div");
+        if (!menu) return;
+        const closeOthers = () => document.querySelectorAll(".actions[open]").forEach((other) => {
+          if (other !== details) other.removeAttribute("open");
+        });
+        details.addEventListener("toggle", () => {
+          if (!details.open) return;
+          closeOthers();
+          const summary = details.querySelector("summary");
+          const rect = summary.getBoundingClientRect();
+          menu.style.position = "fixed";
+          menu.style.top = "0px";
+          menu.style.left = "0px";
+          const menuWidth = menu.offsetWidth;
+          const menuHeight = menu.offsetHeight;
+          const left = Math.min(Math.max(8, rect.right - menuWidth), window.innerWidth - menuWidth - 8);
+          const fitsBelow = rect.bottom + 6 + menuHeight <= window.innerHeight - 8;
+          const top = fitsBelow ? rect.bottom + 6 : Math.max(8, rect.top - menuHeight - 6);
+          menu.style.left = left + "px";
+          menu.style.top = top + "px";
+        });
+      });
+
       document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async () => {
         if (button.dataset.confirm && !window.confirm(button.dataset.confirm)) return;
         const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {});
@@ -718,6 +782,28 @@ function renderStatusIcon(value: string, label: string, iconPaths: string): stri
   return `<button type="button" class="status-icon-btn" data-status-option="${value}" data-status-label-text="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">${iconPaths}</svg></button>`;
 }
 
+function renderDotsIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="5" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="19" r="1.9" fill="currentColor"/></svg>`;
+}
+
+function renderEditIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
+}
+
+function renderCloneIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+}
+
+function renderTrashIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function renderReconcileIcon(isReconciled: boolean): string {
+  if (isReconciled)
+    return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 14 5 10l4-4M5 10h9a5 5 0 1 1 0 10h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
 function renderKindOptions(): string {
   return [
     ["income", "Entrada"],
@@ -735,6 +821,44 @@ function renderAccountOptions(accounts: AccountRecord[], selected?: string): str
         `<option value="${escapeHtml(account.id)}"${selected === account.id ? " selected" : ""}>${escapeHtml(account.name)}</option>`,
     )
     .join("");
+}
+
+function renderAccountPicker(
+  accounts: AccountRecord[],
+  selectedAccount: AccountRecord | undefined,
+  selectedId: string | undefined,
+): string {
+  const triggerIcon = selectedAccount
+    ? renderInstitutionIcon(findInstitution(selectedAccount.institutionKey).key)
+    : renderInstitutionIcon("");
+
+  return `
+    <div class="account-field" data-account-picker>
+      <label id="account-picker-label">Conta</label>
+      <div class="account-select">
+        <button type="button" class="account-select-trigger" data-account-trigger aria-haspopup="listbox" aria-expanded="false" aria-labelledby="account-picker-label">
+          <span class="account-select-icon">${triggerIcon}</span>
+          <span class="account-select-text">${selectedAccount ? escapeHtml(selectedAccount.name) : "Selecione uma conta"}</span>
+          <svg class="account-select-chevron" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <input type="hidden" name="accountId" value="${escapeHtml(selectedId ?? "")}" required data-account-input />
+        <ul class="account-select-menu" role="listbox" hidden data-account-menu aria-labelledby="account-picker-label">
+          ${accounts.map((account) => renderAccountOption(account, selectedId)).join("")}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+function renderAccountOption(account: AccountRecord, selected?: string): string {
+  const institution = findInstitution(account.institutionKey);
+
+  return `
+    <li role="option" tabindex="-1" data-account-option="${escapeHtml(account.id)}" data-account-name="${escapeHtml(account.name)}" aria-selected="${selected === account.id}">
+      <span class="account-select-icon">${renderInstitutionIcon(institution.key)}</span>
+      <span>${escapeHtml(account.name)}</span>
+    </li>
+  `;
 }
 
 function renderCategoryOptions(categories: CategoryRecord[], selected?: string): string {
@@ -874,6 +998,6 @@ function serializeScriptJson(value: unknown): string {
 
 function css(): string {
   return `
-    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{align-items:center;color:white;display:inline-flex;font-size:1.2rem;font-weight:900;gap:10px;text-decoration:none}.brand img{border-radius:6px;display:block}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1440px;padding:24px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.statement-heading,.statement-toolbar{align-items:center;display:flex;gap:16px;justify-content:space-between}.statement-heading h1{font-size:1.9rem}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.warning{color:var(--amber);font-weight:800}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.danger{background:var(--red-bg);color:var(--red)}label{display:grid;gap:8px;font-weight:700}[hidden]{display:none}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.account-filter{background:var(--surface);color:var(--text)}.account-filter .muted{margin-top:12px}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.2fr) minmax(15rem,1fr) auto}.month-field{display:grid;gap:8px}.month-field label{font-weight:700}.month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto;padding:4px}.month-nav input{border:0;background:transparent;min-height:34px;text-align:center}.month-nav input:focus{outline:2px solid var(--cyan);border-radius:6px}.icon-btn{background:white;border:1px solid var(--line);border-radius:6px;color:var(--primary);font-size:1.1rem;font-weight:900;line-height:1;min-height:34px;min-width:34px;padding:0}.icon-btn:hover{background:var(--soft)}.ghost-btn{background:white;border:1px solid var(--line);color:var(--primary)}.ghost-btn:hover{background:var(--soft)}.statement-layout{align-items:start;display:grid;gap:14px;grid-template-columns:240px minmax(0,1fr)}.account-summary{display:grid;gap:18px;position:sticky;top:88px}.account-summary h2{font-size:1.1rem}.summary-balance{background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;display:grid;gap:6px;padding:14px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.78rem;font-weight:800;text-transform:uppercase}.summary-balance strong{font-size:1.6rem;overflow-wrap:anywhere}.summary-balance p{color:var(--muted);font-size:.9rem}.summary-totals{display:grid;gap:10px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:8px;display:grid;gap:4px;padding:12px}.summary-total strong{font-size:1rem;overflow-wrap:anywhere}.quick-actions,.status-overview{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:16px}.quick-actions h3,.status-overview h3{font-size:.95rem}.quick-actions button{background:white;border:1px solid var(--line);color:var(--primary);justify-content:flex-start}.quick-actions button:hover{background:var(--soft)}.status-line{align-items:center;display:grid;gap:8px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-weight:800}.status-line strong{font-size:.9rem}.statement-panel{padding:0;overflow:hidden}.statement-toolbar{border-bottom:1px solid var(--line);padding:18px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:6px;font-size:.8rem;font-weight:800;padding:6px 10px;white-space:nowrap}.chip-pending{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.statement-table{display:grid;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:10px;grid-template-columns:6.5rem minmax(9rem,1.3fr) minmax(7.5rem,0.9fr) 7.5rem 6.5rem 8.5rem 8.5rem 3.5rem;padding:12px 14px}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.78rem;font-weight:900;text-transform:uppercase}.description{display:grid;gap:3px}.description span{color:var(--muted);font-size:.86rem}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.actions{position:relative}.actions summary{background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;font-weight:900;list-style:none;padding:7px 10px}.actions summary::-webkit-details-marker{display:none}.actions div{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:8px;min-width:210px;padding:10px;position:absolute;right:0;top:38px;z-index:3}.actions button{justify-content:flex-start}.empty{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(900px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.save-row{align-items:center;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between}.status-icons{align-items:center;display:flex;gap:8px}.status-icon-btn{align-items:center;background:white;border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;height:36px;justify-content:center;min-height:0;padding:0;width:36px}.status-icon-btn:hover{background:var(--soft)}.status-icon-btn[data-status-option=posted].active{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.status-icon-btn[data-status-option=reconciled].active{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.status-icon-btn[data-status-option=planned].active{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.status-label{color:var(--muted);font-size:.8rem;font-weight:700}.error-page{min-height:100vh;place-content:center}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}@media(max-width:1550px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}}@media(max-width:1024px){.filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form[data-form],.summary-totals{grid-template-columns:1fr}.statement-heading,.statement-toolbar{align-items:stretch;display:grid}.button-link{width:100%}.save-row{align-items:stretch;flex-direction:column}}
+    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{align-items:center;color:white;display:inline-flex;font-size:1.2rem;font-weight:900;gap:10px;text-decoration:none}.brand img{border-radius:6px;display:block}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1440px;padding:24px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.statement-heading,.statement-toolbar{align-items:center;display:flex;gap:16px;justify-content:space-between}.statement-heading h1{font-size:1.9rem}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.warning{color:var(--amber);font-weight:800}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.danger{background:var(--red-bg);color:var(--red)}label{display:grid;gap:8px;font-weight:700}[hidden]{display:none}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.account-filter{background:var(--surface);color:var(--text)}.account-filter .muted{margin-top:12px}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.2fr) minmax(15rem,1fr) auto}.month-field{display:grid;gap:8px}.month-field label{font-weight:700}.account-field{display:grid;gap:8px}.account-field>label{font-weight:700}.account-select{position:relative}.account-select-trigger{align-items:center;background:white;border:1px solid var(--line);color:var(--text);display:flex;gap:10px;justify-content:flex-start;text-align:left;width:100%}.account-select-trigger:hover{background:var(--soft)}.account-select-icon{align-items:center;display:inline-flex;flex-shrink:0;height:24px;width:24px}.account-select-icon .brand-icon{display:block;height:24px;width:24px}.account-select-text{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-select-chevron{color:var(--muted);flex-shrink:0}.account-select-menu{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);left:0;list-style:none;margin:6px 0 0;max-height:280px;overflow-y:auto;padding:6px;position:absolute;right:0;top:100%;z-index:20}.account-select-menu li{align-items:center;border-radius:6px;cursor:pointer;display:flex;font-weight:700;gap:10px;padding:9px 10px}.account-select-menu li:hover,.account-select-menu li[aria-selected=true]{background:var(--soft)}.account-select-menu li .brand-icon{display:block;height:24px;width:24px}.month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto;padding:4px}.month-nav input{border:0;background:transparent;min-height:34px;text-align:center}.month-nav input:focus{outline:2px solid var(--cyan);border-radius:6px}.icon-btn{background:white;border:1px solid var(--line);border-radius:6px;color:var(--primary);font-size:1.1rem;font-weight:900;line-height:1;min-height:34px;min-width:34px;padding:0}.icon-btn:hover{background:var(--soft)}.ghost-btn{background:white;border:1px solid var(--line);color:var(--primary)}.ghost-btn:hover{background:var(--soft)}.statement-layout{align-items:start;display:grid;gap:14px;grid-template-columns:240px minmax(0,1fr)}.account-summary{display:grid;gap:18px;position:sticky;top:88px}.account-summary h2{font-size:1.1rem}.summary-balance{background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;display:grid;gap:6px;padding:14px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.78rem;font-weight:800;text-transform:uppercase}.summary-balance strong{font-size:1.6rem;overflow-wrap:anywhere}.summary-balance p{color:var(--muted);font-size:.9rem}.summary-totals{display:grid;gap:10px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:8px;display:grid;gap:4px;padding:12px}.summary-total strong{font-size:1rem;overflow-wrap:anywhere}.quick-actions,.status-overview{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:16px}.quick-actions h3,.status-overview h3{font-size:.95rem}.quick-actions button{background:white;border:1px solid var(--line);color:var(--primary);justify-content:flex-start}.quick-actions button:hover{background:var(--soft)}.status-line{align-items:center;display:grid;gap:8px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-weight:800}.status-line strong{font-size:.9rem}.statement-panel{padding:0;overflow:hidden}.statement-toolbar{border-bottom:1px solid var(--line);padding:18px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:6px;font-size:.8rem;font-weight:800;padding:6px 10px;white-space:nowrap}.chip-pending{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.statement-table{display:grid;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:10px;grid-template-columns:6.5rem minmax(9rem,1.3fr) minmax(7.5rem,0.9fr) 7.5rem 6.5rem 8.5rem 8.5rem 3.5rem;padding:12px 14px}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.78rem;font-weight:900;text-transform:uppercase}.description{display:grid;gap:3px}.description span{color:var(--muted);font-size:.86rem}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.actions{position:relative}.actions summary{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:32px;justify-content:center;list-style:none;width:32px}.actions summary::-webkit-details-marker{display:none}.actions summary:hover{background:#d4e6ec}.actions-menu{background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:2px;max-width:240px;padding:6px;position:absolute;right:0;top:38px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:6px;color:var(--text);display:flex;font-size:.86rem;font-weight:700;gap:10px;justify-content:flex-start;min-height:36px;padding:0 10px;text-align:left;white-space:nowrap}.actions-item:hover{background:var(--soft)}.actions-item svg{flex-shrink:0}.actions-item.danger{color:var(--red)}.actions-item.danger:hover{background:var(--red-bg)}.actions-divider{border:0;border-top:1px solid var(--line);margin:4px 2px}.empty{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(900px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.save-row{align-items:center;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between}.status-icons{align-items:center;display:flex;gap:8px}.status-icon-btn{align-items:center;background:white;border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;height:36px;justify-content:center;min-height:0;padding:0;width:36px}.status-icon-btn:hover{background:var(--soft)}.status-icon-btn[data-status-option=posted].active{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.status-icon-btn[data-status-option=reconciled].active{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.status-icon-btn[data-status-option=planned].active{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.status-label{color:var(--muted);font-size:.8rem;font-weight:700}.error-page{min-height:100vh;place-content:center}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}@media(max-width:1550px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}}@media(max-width:1024px){.filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form[data-form],.summary-totals{grid-template-columns:1fr}.statement-heading,.statement-toolbar{align-items:stretch;display:grid}.button-link{width:100%}.save-row{align-items:stretch;flex-direction:column}}
   `;
 }
