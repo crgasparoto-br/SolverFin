@@ -48,7 +48,7 @@ async function accountsExposeEditAndArchiveActions(): Promise<void> {
 async function categoriesExposeRestoreAction(): Promise<void> {
   const html = await renderCategoriesPage("token");
 
-  assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/categories\/category-1"/);
+  assert.match(html, /data-api-method="POST" data-api-path="\/api\/categories\/category-1\/archive"/);
   assert.match(html, /Arquivar categoria/);
   assert.match(html, /Restaurar categoria/);
 }
