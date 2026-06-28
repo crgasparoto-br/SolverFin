@@ -10,6 +10,7 @@ import {
   resumeRecurrence as resumeRecurrenceDomain,
   updateRecurrence as updateRecurrenceDomain,
   type Account,
+  type Card,
   type Category,
   type CreateRecurrencePayload,
   type EntityId,
@@ -32,7 +33,8 @@ interface RecurrenceRow {
   id: string;
   organizationId: string;
   financialProfileId: string;
-  accountId: string;
+  accountId: string | null;
+  cardId: string | null;
   categoryId: string | null;
   status: string;
   frequency: string;
@@ -64,7 +66,7 @@ interface InstallmentRow {
   updatedAt: Date;
 }
 
-const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "categoryId",
+const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "cardId", "categoryId",
   "status", "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
@@ -96,7 +98,8 @@ export async function createRecurrenceForContext(
   context: TenantContext,
   payload: CreateRecurrencePayload,
 ): Promise<Recurrence> {
-  const account = await findAccountRow(context, payload.accountId);
+  const account = payload.accountId ? await findAccountRow(context, payload.accountId) : undefined;
+  const card = payload.cardId ? await findCardRow(context, payload.cardId) : undefined;
   const category = payload.categoryId
     ? await findCategoryRow(context, payload.categoryId)
     : undefined;
@@ -107,6 +110,7 @@ export async function createRecurrenceForContext(
     now: new Date().toISOString(),
     payload,
     ...(account ? { account } : {}),
+    ...(card ? { card } : {}),
     ...(category ? { category } : {}),
   });
 
@@ -121,9 +125,13 @@ export async function updateRecurrenceForContext(
   payload: UpdateRecurrencePayload,
 ): Promise<Recurrence> {
   const currentRecurrence = await findRecurrenceRow(context, recurrenceId);
-  const accountId = payload.accountId ?? currentRecurrence?.accountId;
+  const accountId =
+    payload.accountId ?? (payload.cardId !== undefined ? undefined : currentRecurrence?.accountId);
+  const cardId =
+    payload.cardId ?? (payload.accountId !== undefined ? undefined : currentRecurrence?.cardId);
   const categoryId = payload.categoryId ?? currentRecurrence?.categoryId;
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
+  const card = cardId ? await findCardRow(context, cardId) : undefined;
   const category = categoryId ? await findCategoryRow(context, categoryId) : undefined;
 
   const result = updateRecurrenceDomain({
@@ -132,6 +140,7 @@ export async function updateRecurrenceForContext(
     now: new Date().toISOString(),
     payload,
     ...(account ? { account } : {}),
+    ...(card ? { card } : {}),
     ...(category ? { category } : {}),
   });
 
@@ -242,12 +251,12 @@ async function persistRecurrenceMutation(result: RecurrenceMutationResult): Prom
   await withTransaction(async (executeQuery) => {
     await executeQuery(
       `insert into "Recurrence"
-        ("id", "organizationId", "financialProfileId", "accountId", "categoryId", "status", "frequency",
+        ("id", "organizationId", "financialProfileId", "accountId", "cardId", "categoryId", "status", "frequency",
          "interval", "startOn", "endOn", "amountMinor", "currency", "description", "createdAt", "updatedAt",
          "createdByUserId", "updatedByUserId")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
        on conflict ("id") do update set
-         "accountId" = excluded."accountId", "categoryId" = excluded."categoryId",
+         "accountId" = excluded."accountId", "cardId" = excluded."cardId", "categoryId" = excluded."categoryId",
          "status" = excluded."status", "frequency" = excluded."frequency", "interval" = excluded."interval",
          "startOn" = excluded."startOn",
          "endOn" = excluded."endOn", "amountMinor" = excluded."amountMinor", "currency" = excluded."currency",
@@ -264,7 +273,8 @@ function buildRecurrenceParams(recurrence: Recurrence): unknown[] {
     recurrence.id,
     recurrence.organizationId,
     recurrence.financialProfileId,
-    recurrence.accountId,
+    recurrence.accountId ?? null,
+    recurrence.cardId ?? null,
     recurrence.categoryId ?? null,
     recurrence.status.toUpperCase(),
     recurrence.frequency.toUpperCase(),
@@ -353,6 +363,42 @@ async function findAccountRow(
   };
 }
 
+async function findCardRow(context: TenantContext, cardId: EntityId): Promise<Card | undefined> {
+  const rows = await query<{
+    id: string;
+    organizationId: string;
+    financialProfileId: string;
+    name: string;
+    status: string;
+    closingDay: number;
+    dueDay: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }>(
+    `select "id", "organizationId", "financialProfileId", "name", "status", "closingDay", "dueDay",
+            "createdAt", "updatedAt"
+     from "Card" where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [cardId, context.organizationId, context.financialProfileId],
+  );
+  const row = rows[0];
+
+  if (!row) {
+    return undefined;
+  }
+
+  return {
+    id: row.id,
+    organizationId: row.organizationId,
+    financialProfileId: row.financialProfileId,
+    name: row.name,
+    status: row.status.toLowerCase() as Card["status"],
+    closingDay: row.closingDay,
+    dueDay: row.dueDay,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
 async function findCategoryRow(
   context: TenantContext,
   categoryId: EntityId,
@@ -402,7 +448,6 @@ function mapRecurrenceRow(row: RecurrenceRow): Recurrence {
     id: row.id,
     organizationId: row.organizationId,
     financialProfileId: row.financialProfileId,
-    accountId: row.accountId,
     status: row.status.toLowerCase() as RecurrenceStatus,
     frequency: row.frequency.toLowerCase() as RecurrenceFrequency,
     interval: row.interval,
@@ -414,6 +459,8 @@ function mapRecurrenceRow(row: RecurrenceRow): Recurrence {
     updatedAt: row.updatedAt.toISOString(),
   };
 
+  if (row.accountId !== null) recurrence.accountId = row.accountId;
+  if (row.cardId !== null) recurrence.cardId = row.cardId;
   if (row.categoryId !== null) recurrence.categoryId = row.categoryId;
   if (row.endOn !== null) recurrence.endOn = toDateOnly(row.endOn);
   if (row.createdByUserId !== null) recurrence.createdByUserId = row.createdByUserId;

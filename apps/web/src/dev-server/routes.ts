@@ -7,7 +7,7 @@ export const privateRoutes = new Map<string, string>([
   ["/pagar-receber", "Pagar e receber"],
   ["/contas-cartoes", "Contas e Cartões"],
   ["/categorias", "Categorias"],
-  ["/cartoes", "Cartões"],
+  ["/cartoes", "Cartões de Crédito"],
   ["/orcamentos", "Orçamentos"],
   ["/inbox", "Inbox"],
   ["/relatorios", "Relatórios"],

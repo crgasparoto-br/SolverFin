@@ -20,8 +20,11 @@ Recorrencia representa uma regra de geracao futura com:
 - `amountMinor`;
 - `currency`;
 - `description`;
-- `accountId`;
+- `accountId` opcional;
+- `cardId` opcional;
 - `categoryId` opcional.
+
+Uma recorrencia pertence a exatamente um destino: `accountId` (lancamento fixo de conta) ou `cardId` (compra fixa/assinatura no cartao), nunca os dois nem nenhum. `createRecurrence`/`updateRecurrence` rejeitam com `RECURRENCE_TARGET_REQUIRED` quando faltam os dois e `RECURRENCE_TARGET_CONFLICT` quando ambos sao informados.
 
 Parcela representa uma previsao gerada ou uma compra parcelada com:
 

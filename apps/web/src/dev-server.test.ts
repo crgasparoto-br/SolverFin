@@ -137,7 +137,7 @@ function sidebarMenuUsesPtBrLabels(): void {
     Array.from(privateRoutes.values()).filter((label) => label === "Contas e Cartões").length,
     1,
   );
-  assert.equal(privateRoutes.get("/cartoes"), "Cartões");
+  assert.equal(privateRoutes.get("/cartoes"), "Cartões de Crédito");
   assert.equal(privateRoutes.get("/orcamentos"), "Orçamentos");
   assert.equal(privateRoutes.get("/relatorios"), "Relatórios");
   assert.equal(privateRoutes.get("/configuracoes"), "Configurações");

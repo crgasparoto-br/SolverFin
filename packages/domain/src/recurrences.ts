@@ -1,6 +1,7 @@
 import type {
   Account,
   AuditLogEntryDraft,
+  Card,
   Category,
   EntityId,
   Installment,
@@ -31,6 +32,10 @@ export type RecurrenceErrorCode =
   | "RECURRENCE_ACCOUNT_REQUIRED"
   | "RECURRENCE_ACCOUNT_INVALID"
   | "RECURRENCE_ACCOUNT_ARCHIVED"
+  | "RECURRENCE_TARGET_REQUIRED"
+  | "RECURRENCE_TARGET_CONFLICT"
+  | "RECURRENCE_CARD_INVALID"
+  | "RECURRENCE_CARD_NOT_ACTIVE"
   | "RECURRENCE_CATEGORY_INVALID"
   | "RECURRENCE_CATEGORY_ARCHIVED"
   | "RECURRENCE_GENERATION_WINDOW_INVALID"
@@ -60,6 +65,7 @@ export interface CreateRecurrenceInput {
   now: ISODateTime;
   payload: CreateRecurrencePayload;
   account?: Account;
+  card?: Card;
   category?: Category;
 }
 
@@ -70,7 +76,8 @@ export interface CreateRecurrencePayload {
   endOn?: ISODate;
   amountMinor: number;
   description: string;
-  accountId: EntityId;
+  accountId?: EntityId;
+  cardId?: EntityId;
   currency?: string;
   categoryId?: EntityId;
   organizationId?: EntityId;
@@ -83,6 +90,7 @@ export interface UpdateRecurrenceInput {
   now: ISODateTime;
   payload: UpdateRecurrencePayload;
   account?: Account;
+  card?: Card;
   category?: Category;
 }
 
@@ -95,6 +103,7 @@ export interface UpdateRecurrencePayload {
   amountMinor?: number;
   description?: string;
   accountId?: EntityId;
+  cardId?: EntityId;
   currency?: string;
   categoryId?: EntityId;
   organizationId?: EntityId;
@@ -104,6 +113,7 @@ export interface UpdateRecurrencePayload {
 export interface ListRecurrencesFilters {
   status?: RecurrenceStatus | "all";
   accountId?: EntityId;
+  cardId?: EntityId;
   categoryId?: EntityId;
   activeOn?: ISODate;
 }
@@ -166,7 +176,12 @@ const ALLOWED_INSTALLMENT_STATUSES: readonly InstallmentStatus[] = [
 
 export function createRecurrence(input: CreateRecurrenceInput): RecurrenceMutationResult {
   const payload = applyTenantScope(input.context, input.payload);
-  const account = assertAccount(input.context, input.account, payload.accountId);
+  const target = assertRecurrenceTarget(input.context, {
+    account: input.account,
+    accountId: payload.accountId,
+    card: input.card,
+    cardId: payload.cardId,
+  });
   assertCategory(input.context, input.category, payload.categoryId);
 
   const recurrence: Recurrence = {
@@ -178,14 +193,21 @@ export function createRecurrence(input: CreateRecurrenceInput): RecurrenceMutati
     interval: validateInterval(payload.interval),
     startOn: validateDate(payload.startOn),
     amountMinor: validateAmount(payload.amountMinor),
-    currency: normalizeCurrency(payload.currency ?? account.currency),
+    currency: normalizeCurrency(payload.currency ?? target.account?.currency),
     description: normalizeDescription(payload.description),
-    accountId: account.id,
     createdAt: input.now,
     updatedAt: input.now,
     createdByUserId: input.context.userId,
     updatedByUserId: input.context.userId,
   };
+
+  if (target.account !== undefined) {
+    recurrence.accountId = target.account.id;
+  }
+
+  if (target.card !== undefined) {
+    recurrence.cardId = target.card.id;
+  }
 
   if (payload.endOn !== undefined) {
     recurrence.endOn = validateEndOn(recurrence.startOn, payload.endOn);
@@ -219,6 +241,7 @@ export function listRecurrences(
       recurrence.status === filters.status;
     const accountMatches =
       filters.accountId === undefined || recurrence.accountId === filters.accountId;
+    const cardMatches = filters.cardId === undefined || recurrence.cardId === filters.cardId;
     const categoryMatches =
       filters.categoryId === undefined || recurrence.categoryId === filters.categoryId;
     const activeOnMatches =
@@ -226,7 +249,7 @@ export function listRecurrences(
       (recurrence.startOn <= filters.activeOn &&
         (recurrence.endOn === undefined || recurrence.endOn >= filters.activeOn));
 
-    return statusMatches && accountMatches && categoryMatches && activeOnMatches;
+    return statusMatches && accountMatches && cardMatches && categoryMatches && activeOnMatches;
   });
 }
 
@@ -243,8 +266,18 @@ export function updateRecurrence(input: UpdateRecurrenceInput): RecurrenceMutati
     input.recurrence,
     input.payload,
   );
-  const nextAccountId = input.payload.accountId ?? currentRecurrence.accountId;
-  const account = assertAccount(input.context, input.account, nextAccountId);
+  const nextAccountId =
+    input.payload.accountId ??
+    (input.payload.cardId !== undefined ? undefined : currentRecurrence.accountId);
+  const nextCardId =
+    input.payload.cardId ??
+    (input.payload.accountId !== undefined ? undefined : currentRecurrence.cardId);
+  const target = assertRecurrenceTarget(input.context, {
+    account: input.account,
+    accountId: nextAccountId,
+    card: input.card,
+    cardId: nextCardId,
+  });
   assertCategory(
     input.context,
     input.category,
@@ -254,10 +287,19 @@ export function updateRecurrence(input: UpdateRecurrenceInput): RecurrenceMutati
   const updatedRecurrence: Recurrence = {
     ...currentRecurrence,
     ...buildOptionalRecurrenceUpdate(input.payload, currentRecurrence.startOn),
-    accountId: account.id,
     updatedAt: input.now,
     updatedByUserId: input.context.userId,
   };
+
+  if (target.account !== undefined) {
+    updatedRecurrence.accountId = target.account.id;
+    delete updatedRecurrence.cardId;
+  }
+
+  if (target.card !== undefined) {
+    updatedRecurrence.cardId = target.card.id;
+    delete updatedRecurrence.accountId;
+  }
 
   return {
     recurrence: updatedRecurrence,
@@ -352,20 +394,24 @@ export function generateRecurrenceInstallments(
       continue;
     }
 
-    installments.push(
-      buildInstallment({
-        id: input.makeInstallmentId(sequenceNumber, dueOn),
-        context: input.context,
-        now: input.now,
-        status: "planned",
-        sequenceNumber,
-        totalInstallments: recurrence.endOn === undefined ? 0 : countOccurrences(recurrence),
-        dueOn,
-        amountMinor: recurrence.amountMinor,
-        currency: recurrence.currency,
-        recurrenceId: recurrence.id,
-      }),
-    );
+    const installmentInput: BuildInstallmentInput = {
+      id: input.makeInstallmentId(sequenceNumber, dueOn),
+      context: input.context,
+      now: input.now,
+      status: "planned",
+      sequenceNumber,
+      totalInstallments: recurrence.endOn === undefined ? 0 : countOccurrences(recurrence),
+      dueOn,
+      amountMinor: recurrence.amountMinor,
+      currency: recurrence.currency,
+      recurrenceId: recurrence.id,
+    };
+
+    if (recurrence.cardId !== undefined) {
+      installmentInput.cardId = recurrence.cardId;
+    }
+
+    installments.push(buildInstallment(installmentInput));
   }
 
   return installments;
@@ -539,6 +585,66 @@ function assertAccount(
   }
 
   return scopedAccount;
+}
+
+interface RecurrenceTargetInput {
+  account: Account | undefined;
+  accountId: EntityId | undefined;
+  card: Card | undefined;
+  cardId: EntityId | undefined;
+}
+
+interface RecurrenceTarget {
+  account: Account | undefined;
+  card: Card | undefined;
+}
+
+function assertRecurrenceTarget(
+  context: TenantContext,
+  input: RecurrenceTargetInput,
+): RecurrenceTarget {
+  const hasAccount = Boolean(input.accountId);
+  const hasCard = Boolean(input.cardId);
+
+  if (hasAccount && hasCard) {
+    throw new RecurrenceError(
+      "RECURRENCE_TARGET_CONFLICT",
+      "Recurrence cannot be linked to both an account and a card.",
+    );
+  }
+
+  if (!hasAccount && !hasCard) {
+    throw new RecurrenceError(
+      "RECURRENCE_TARGET_REQUIRED",
+      "Recurrence requires either an account or a card.",
+    );
+  }
+
+  if (hasAccount) {
+    return {
+      account: assertAccount(context, input.account, input.accountId as EntityId),
+      card: undefined,
+    };
+  }
+
+  return {
+    account: undefined,
+    card: assertCard(context, input.card, input.cardId as EntityId),
+  };
+}
+
+function assertCard(context: TenantContext, card: Card | undefined, cardId: EntityId): Card {
+  const scopedCard = getTenantScopedResource(context, card);
+
+  if (scopedCard.id !== cardId) {
+    throw new RecurrenceError("RECURRENCE_CARD_INVALID", "Recurrence card id does not match.");
+  }
+
+  if (scopedCard.status !== "active") {
+    throw new RecurrenceError("RECURRENCE_CARD_NOT_ACTIVE", "Recurrence card must be active.");
+  }
+
+  return scopedCard;
 }
 
 function assertCategory(

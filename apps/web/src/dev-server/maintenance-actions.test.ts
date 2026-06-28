@@ -48,13 +48,19 @@ async function accountsExposeEditAndArchiveActions(): Promise<void> {
 async function categoriesExposeRestoreAction(): Promise<void> {
   const html = await renderCategoriesPage("token");
 
-  assert.match(html, /data-api-method="POST" data-api-path="\/api\/categories\/category-1\/archive"/);
+  assert.match(
+    html,
+    /data-api-method="POST" data-api-path="\/api\/categories\/category-1\/archive"/,
+  );
   assert.match(html, /Arquivar categoria/);
   assert.match(html, /Restaurar categoria/);
 }
 
 async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<void> {
-  const html = await renderTransactionsPage("token", new URL("/lancamentos?month=2026-06", "http://solverfin.test"));
+  const html = await renderTransactionsPage(
+    "token",
+    new URL("/lancamentos?month=2026-06", "http://solverfin.test"),
+  );
 
   assert.match(html, /<h1>Extrato Bancário<\/h1>/);
   assert.match(html, /Movimentações/);
@@ -75,14 +81,13 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
 async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void> {
   const html = await renderCardsPage("token");
 
-  assert.match(html, /Bloquear cartão/);
-  assert.match(html, /Arquivar cartão/);
-  assert.match(html, /Registrar compra/);
-  assert.match(html, /\/api\/cards\/card-1\/purchases/);
-  assert.match(html, /<h2>Faturas<\/h2>/);
-  assert.match(html, /Abrir detalhe da fatura/);
-  assert.match(html, /data-api-path="\/api\/invoices\/invoice-1\/pay"/);
-  assert.match(html, /Pagar fatura/);
+  assert.match(html, /Cartões de Crédito/);
+  assert.match(html, /Salvar compra/);
+  assert.match(html, /data-path="\/api\/cards\/card-1\/purchases"/);
+  assert.match(html, /Fechar fatura/);
+  assert.match(html, /data-api-path="\/api\/invoices\/invoice-1\/close"/);
+  assert.match(html, /data-path="\/api\/invoices\/invoice-1\/pay"/);
+  assert.match(html, /Lançar pagamento/);
 }
 
 async function budgetsExposeUsageAndArchiveActions(): Promise<void> {

@@ -59,7 +59,7 @@ export const solverFinShellRoutes = [
   {
     id: "cards",
     path: "/app/cartoes",
-    label: "Cartoes",
+    label: "Cartoes de Credito",
     description: "Acompanhe compras, faturas, fechamento e pagamento de cartao.",
     navigationGroup: "main",
     requiresAuthentication: true,

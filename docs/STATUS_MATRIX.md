@@ -42,7 +42,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 | Lancamentos / Extrato     | Feito   | Feito            | Feito    | Feito      | Feito    | Parcial  | Integracao feito; unitarios parcial | Parcial      | Web preserva Extrato da conta com resumo, agrupamento por data, criacao, detalhe via acao, edicao e cancelamento/estorno. Chips seguem como indicadores. |
 | Recorrencias              | Feito   | Feito            | Parcial  | Feito      | Feito    | Feito    | Web parcial; integracao parcial     | Feito        | `/recorrencias` lista, cria, edita, pausa, retoma, cancela e gera parcelas pelo contrato existente.                                                      |
 | Parcelas                  | Feito   | Feito            | Parcial  | Parcial    | Parcial  | Parcial  | Parcial                             | Parcial      | Parcelas aparecem no fluxo de geracao de recorrencias; ainda nao ha rota dedicada para reler historico nem manutencao direta.                            |
-| Cartoes / Faturas         | Feito   | Feito            | Feito    | Feito      | Feito    | Parcial  | Parcial                             | Parcial      | Web lista/cria/edita cartoes, bloqueia, arquiva e registra compra; listagem e pagamento de faturas ainda nao aparecem na UI.                             |
+| Cartoes / Faturas         | Feito   | Feito            | Feito    | Feito      | Feito    | Feito    | Integracao feito; unitarios parcial | Parcial      | Cadastro/manutencao do cartao em Contas e Cartoes; `/cartoes` (Cartoes de Credito) cobre fatura, compra, conciliacao, fechamento e pagamento.            |
 | Orcamentos                | Feito   | Feito            | Feito    | Feito      | Feito    | Parcial  | Parcial                             | Parcial      | Web lista, cria, abre detalhe via acao, edita, consulta uso e arquiva; ainda nao ha tela dedicada de detalhe.                                            |
 | Contas a pagar/receber    | Feito   | Feito            | Parcial  | Feito      | Feito    | Feito    | Integracao feito; unitarios parcial | Feito        | `/pagar-receber` lista, cria, edita pendentes, conclui e cancela conforme contrato MVP.                                                                  |
 | Importacao CSV/OFX        | Feito   | Parcial          | Pendente | Pendente   | Pendente | Pendente | Parcial                             | Parcial      | Dominio faz preview, hash, sugestoes e problemas; falta lote persistido operacional, repository, API e UI.                                               |
@@ -99,18 +99,19 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - Parcelas: Sim, como retorno imediato da geracao, com sequencia, vencimento, valor e status.
 - Lacuna restante: nao ha rota dedicada para reler historico de parcelas ja geradas.
 
-### Cartoes (`/cartoes`)
+### Cartoes de Credito (`/cartoes`)
 
-- Listar: Sim, em cards/linhas.
-- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
-- Criar: Sim, formulario "Novo cartao".
-- Editar: Sim, formulario inline.
-- Arquivar/inativar: Sim, para cartao ativo.
-- Bloquear: Sim, para cartao ativo.
-- Registrar compra: Sim.
-- Faturas: Nao ha listagem/pagamento na UI atual.
+- Selecionar cartao: Sim, por seletor com indicador de cartao adicional/virtual vinculado.
+- Selecionar fatura: Sim, por navegacao de periodo (fatura anterior/proxima).
+- Resumo da fatura: Sim, com fatura atual, detalhamento, totais por cartao da familia e limite total consolidado.
+- Registrar compra: Sim, em modal.
+- Editar compra: Sim, em modal.
+- Filtrar compras: Sim, por busca e por conciliado/nao conciliado.
+- Fechar fatura: Sim, para fatura aberta.
+- Pagar fatura: Sim, em modal, para fatura nao paga/cancelada.
+- Cadastro, edicao, bloqueio e arquivamento de cartao: ficam em Contas e Cartoes (`/contas-cartoes`).
 - Excluir: Nao.
-- Lacuna restante: listar faturas e pagar fatura.
+- Lacuna restante: nao ha como mover uma compra para outra fatura/periodo pela UI.
 
 ### Orcamentos (`/orcamentos`)
 
@@ -236,19 +237,23 @@ API disponivel:
 - `POST /api/cards/:cardId/archive`
 - `POST /api/cards/:cardId/block`
 - `POST /api/cards/:cardId/purchases`
+- `GET /api/card-additional-links`
+- `POST /api/card-additional-links`
+- `PATCH /api/card-additional-links/:groupCardId/primary`
 - `GET /api/invoices`
 - `GET /api/invoices/:invoiceId`
+- `GET /api/invoices/:invoiceId/summary`
+- `POST /api/invoices/:invoiceId/close`
 - `POST /api/invoices/:invoiceId/pay`
 
 UI disponivel:
 
-- lista, cria, consulta detalhe via acao, edita, bloqueia, arquiva e registra compra em `/cartoes`.
+- cadastra, edita, bloqueia e arquiva cartao em `/contas-cartoes`;
+- seleciona cartao/fatura, mostra resumo consolidado por familia de cartao, registra/edita compra, filtra, fecha fatura e paga fatura em `/cartoes` (Cartoes de Credito).
 
 Lacunas:
 
-- listar faturas;
-- pagar fatura;
-- tela dedicada de detalhe.
+- mover compra para outra fatura/periodo pela UI.
 
 ### Orcamentos
 

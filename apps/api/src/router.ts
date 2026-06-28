@@ -553,10 +553,12 @@ async function listRecurrencesHandler(
 ): Promise<ApiResponse> {
   const status = request.query.get("status") as RecurrenceStatus | "all" | null;
   const accountId = request.query.get("accountId");
+  const cardId = request.query.get("cardId");
   const categoryId = request.query.get("categoryId");
   const recurrences = await listRecurrencesForContext(context, {
     ...(status ? { status } : {}),
     ...(accountId ? { accountId } : {}),
+    ...(cardId ? { cardId } : {}),
     ...(categoryId ? { categoryId } : {}),
   });
 
@@ -573,7 +575,8 @@ async function createRecurrenceHandler(
     startOn: String(body.startOn ?? ""),
     amountMinor: Number(body.amountMinor),
     description: String(body.description ?? ""),
-    accountId: String(body.accountId ?? ""),
+    ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+    ...(body.cardId !== undefined ? { cardId: String(body.cardId) } : {}),
     ...(body.interval !== undefined ? { interval: Number(body.interval) } : {}),
     ...(body.endOn !== undefined ? { endOn: String(body.endOn) } : {}),
     ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
@@ -610,6 +613,7 @@ async function updateRecurrenceHandler(
       ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
       ...(body.description !== undefined ? { description: String(body.description) } : {}),
       ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+      ...(body.cardId !== undefined ? { cardId: String(body.cardId) } : {}),
       ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
       ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
     },

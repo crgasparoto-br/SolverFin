@@ -19,18 +19,18 @@ Criar a moldura comum das telas financeiras para que as proximas issues de front
 
 ## Rotas principais
 
-| Rota                 | Label         | Grupo     | Autenticacao | Perfil financeiro |
-| -------------------- | ------------- | --------- | ------------ | ----------------- |
-| `/app`               | Resumo        | Rotina    | Sim          | Sim               |
-| `/app/lancamentos`   | Lancamentos   | Rotina    | Sim          | Sim               |
-| `/app/contas`        | Contas        | Organizar | Sim          | Sim               |
-| `/app/cartoes`       | Cartoes       | Organizar | Sim          | Sim               |
-| `/app/categorias`    | Categorias    | Organizar | Sim          | Sim               |
-| `/app/orcamentos`    | Orcamentos    | Rotina    | Sim          | Sim               |
-| `/app/relatorios`    | Relatorios    | Rotina    | Sim          | Sim               |
-| `/app/revisao`       | Revisao       | Revisar   | Sim          | Sim               |
-| `/app/configuracoes` | Configuracoes | Ajustes   | Sim          | Nao               |
-| `/entrar`            | Entrar        | Publico   | Nao          | Nao               |
+| Rota                 | Label              | Grupo     | Autenticacao | Perfil financeiro |
+| -------------------- | ------------------ | --------- | ------------ | ----------------- |
+| `/app`               | Resumo             | Rotina    | Sim          | Sim               |
+| `/app/lancamentos`   | Lancamentos        | Rotina    | Sim          | Sim               |
+| `/app/contas`        | Contas             | Organizar | Sim          | Sim               |
+| `/app/cartoes`       | Cartoes de Credito | Rotina    | Sim          | Sim               |
+| `/app/categorias`    | Categorias         | Organizar | Sim          | Sim               |
+| `/app/orcamentos`    | Orcamentos         | Rotina    | Sim          | Sim               |
+| `/app/relatorios`    | Relatorios         | Rotina    | Sim          | Sim               |
+| `/app/revisao`       | Revisao            | Revisar   | Sim          | Sim               |
+| `/app/configuracoes` | Configuracoes      | Ajustes   | Sim          | Nao               |
+| `/entrar`            | Entrar             | Publico   | Nao          | Nao               |
 
 Todas as rotas privadas estao marcadas como `placeholder` porque ainda nao existe aplicacao web executavel nem conteudo completo de tela.
 

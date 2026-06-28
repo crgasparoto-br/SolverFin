@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 
+import { handleCardAdditionalLinksApiRequest } from "./card-additional-links-router.js";
 import { closePool } from "./db.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
@@ -27,6 +28,8 @@ async function main(): Promise<void> {
   const payablesReceivables = await createPersonalPayablesReceivablesFlow(token, fixtures);
   const importBatch = await createPersonalCsvImportFlow(token, fixtures);
   const cardInvoice = await createPersonalCardInvoiceFlow(token, fixtures);
+  await createCardAdditionalLinksSummaryFlow(token, fixtures);
+  await createCardRecurrenceFlow(token, fixtures);
 
   await assertPersonalProfileListsOnlyPersonalData(
     token,
@@ -375,6 +378,173 @@ async function createPersonalCardInvoiceFlow(
   };
 }
 
+async function createCardAdditionalLinksSummaryFlow(
+  token: string,
+  fixtures: Pick<PersonalFixtures, "account">,
+): Promise<void> {
+  const suffix = Date.now().toString(36);
+
+  const primaryCardResponse = await apiRequest(token, "POST", "/api/cards", {
+    name: `Cartao principal familia ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 200000,
+    paymentAccountId: fixtures.account.id,
+  });
+  assert.equal(primaryCardResponse.statusCode, 201);
+  const primaryCard = readBody<{ card: ApiCard }>(primaryCardResponse).card;
+
+  const additionalCardResponse = await apiRequest(token, "POST", "/api/cards", {
+    name: `Cartao adicional familia ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 50000,
+    paymentAccountId: fixtures.account.id,
+  });
+  assert.equal(additionalCardResponse.statusCode, 201);
+  const additionalCard = readBody<{ card: ApiCard }>(additionalCardResponse).card;
+
+  const unlinkedCardResponse = await apiRequest(token, "POST", "/api/cards", {
+    name: `Cartao sem vinculo familia ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 30000,
+    paymentAccountId: fixtures.account.id,
+  });
+  assert.equal(unlinkedCardResponse.statusCode, 201);
+  const unlinkedCard = readBody<{ card: ApiCard }>(unlinkedCardResponse).card;
+
+  const linkResponse = await apiRequest(token, "POST", "/api/card-additional-links", {
+    groupCardId: primaryCard.id,
+    cardId: additionalCard.id,
+  });
+  assert.equal(linkResponse.statusCode, 201);
+
+  const primaryPurchaseResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/cards/${primaryCard.id}/purchases`,
+    {
+      occurredOn: "2026-06-19",
+      amountMinor: 5000,
+      description: `Compra principal familia ${suffix}`,
+    },
+  );
+  assert.equal(primaryPurchaseResponse.statusCode, 201);
+  const primaryPurchase = readBody<{ invoice: ApiInvoice }>(primaryPurchaseResponse);
+
+  const additionalPurchaseResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/cards/${additionalCard.id}/purchases`,
+    {
+      occurredOn: "2026-06-19",
+      amountMinor: 1500,
+      description: `Compra adicional familia ${suffix}`,
+    },
+  );
+  assert.equal(additionalPurchaseResponse.statusCode, 201);
+
+  const unlinkedPurchaseResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/cards/${unlinkedCard.id}/purchases`,
+    {
+      occurredOn: "2026-06-19",
+      amountMinor: 999,
+      description: `Compra sem vinculo familia ${suffix}`,
+    },
+  );
+  assert.equal(unlinkedPurchaseResponse.statusCode, 201);
+
+  const summaryResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/invoices/${primaryPurchase.invoice.id}/summary`,
+  );
+  assert.equal(summaryResponse.statusCode, 200);
+  const summary = readBody<{ summary: ApiInvoiceSummary }>(summaryResponse).summary;
+
+  assert.equal(summary.cardTotals.length, 2);
+  const primaryTotal = summary.cardTotals.find((total) => total.cardId === primaryCard.id);
+  const additionalTotal = summary.cardTotals.find((total) => total.cardId === additionalCard.id);
+
+  assert.equal(primaryTotal?.invoiceTotalMinor, 5000);
+  assert.equal(primaryTotal?.limitTotalMinor, 200000);
+  assert.equal(additionalTotal?.invoiceTotalMinor, 1500);
+  assert.equal(additionalTotal?.limitTotalMinor, 50000);
+  assert.equal(
+    summary.cardTotals.some((total) => total.cardId === unlinkedCard.id),
+    false,
+  );
+}
+
+async function createCardRecurrenceFlow(
+  token: string,
+  fixtures: Pick<PersonalFixtures, "account" | "category">,
+): Promise<void> {
+  const suffix = Date.now().toString(36);
+
+  const cardResponse = await apiRequest(token, "POST", "/api/cards", {
+    name: `Cartao assinatura ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    paymentAccountId: fixtures.account.id,
+  });
+  assert.equal(cardResponse.statusCode, 201);
+  const card = readBody<{ card: ApiCard }>(cardResponse).card;
+
+  const missingTargetResponse = await apiRequest(token, "POST", "/api/recurrences", {
+    frequency: "monthly",
+    startOn: "2026-06-05",
+    amountMinor: 4990,
+    description: `Assinatura sem cartao/conta ${suffix}`,
+  });
+  assert.equal(missingTargetResponse.statusCode, 400);
+  assert.equal(readErrorCode(missingTargetResponse), "RECURRENCE_TARGET_REQUIRED");
+
+  const conflictingTargetResponse = await apiRequest(token, "POST", "/api/recurrences", {
+    frequency: "monthly",
+    startOn: "2026-06-05",
+    amountMinor: 4990,
+    description: `Assinatura com conta e cartao ${suffix}`,
+    accountId: fixtures.account.id,
+    cardId: card.id,
+  });
+  assert.equal(conflictingTargetResponse.statusCode, 400);
+  assert.equal(readErrorCode(conflictingTargetResponse), "RECURRENCE_TARGET_CONFLICT");
+
+  const recurrenceResponse = await apiRequest(token, "POST", "/api/recurrences", {
+    frequency: "monthly",
+    startOn: "2026-06-05",
+    amountMinor: 4990,
+    description: `Assinatura no cartao ${suffix}`,
+    cardId: card.id,
+    categoryId: fixtures.category.id,
+  });
+  assert.equal(recurrenceResponse.statusCode, 201);
+  const recurrence = readBody<{ recurrence: ApiRecurrence }>(recurrenceResponse).recurrence;
+
+  assert.equal(recurrence.financialProfileId, PERSONAL_PROFILE_ID);
+  assert.equal(recurrence.cardId, card.id);
+  assert.equal(recurrence.accountId, undefined);
+
+  const generateResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/recurrences/${recurrence.id}/generate-installments`,
+    { through: "2026-08-05" },
+  );
+  assert.equal(generateResponse.statusCode, 201);
+  const installments = readBody<{ installments: ApiInstallment[] }>(generateResponse).installments;
+
+  assert.equal(installments.length, 3);
+  installments.forEach((installment) => {
+    assert.equal(installment.cardId, card.id);
+    assert.equal(installment.recurrenceId, recurrence.id);
+  });
+}
+
 async function assertPersonalProfileListsOnlyPersonalData(
   token: string,
   fixtures: PersonalFixtures,
@@ -588,7 +758,9 @@ async function apiRequest(
   const importBatchesResponse = await handleImportBatchesApiRequest(request);
   const payablesReceivablesResponse =
     importBatchesResponse ?? (await handlePayablesReceivablesApiRequest(request));
-  const response = payablesReceivablesResponse ?? (await handleApiRequest(request));
+  const cardAdditionalLinksResponse =
+    payablesReceivablesResponse ?? (await handleCardAdditionalLinksApiRequest(request));
+  const response = cardAdditionalLinksResponse ?? (await handleApiRequest(request));
 
   assert.ok(response, `${method} ${path} should be handled by the API router`);
 
@@ -730,6 +902,27 @@ interface ApiCardPurchase {
   status: string;
   amountMinor: number;
   occurredOn: string;
+}
+
+interface ApiRecurrence {
+  id: string;
+  financialProfileId: string;
+  accountId?: string;
+  cardId?: string;
+  status: string;
+  frequency: string;
+  amountMinor: number;
+}
+
+interface ApiInstallment {
+  id: string;
+  recurrenceId?: string;
+  cardId?: string;
+  sequenceNumber: number;
+  totalInstallments: number;
+  dueOn: string;
+  amountMinor: number;
+  status: string;
 }
 
 interface ApiPayableReceivable {

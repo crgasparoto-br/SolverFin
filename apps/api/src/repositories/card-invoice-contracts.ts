@@ -135,9 +135,9 @@ export async function summarizeInvoiceForContext(
        where "organizationId" = $1 and "financialProfileId" = $2 and "invoiceId" = $3 and "cardId" = $4`,
     [context.organizationId, context.financialProfileId, invoice.id, invoice.cardId],
   );
-  const limitUsedMinor = await calculateLimitUsedForCard(context, invoice.cardId);
-  const limitTotalMinor = card.creditLimitMinor ?? 0;
   const amountDueMinor = calculateAmountDue(invoice);
+  const familyCardIds = await resolveFamilyCardIds(context, invoice.cardId);
+  const cardTotals = await buildCardTotals(context, familyCardIds, invoice);
 
   return {
     invoiceId: invoice.id,
@@ -156,19 +156,78 @@ export async function summarizeInvoiceForContext(
     reconciledExpensesMinor: toNumber(totals?.reconciledExpensesMinor),
     unreconciledExpensesMinor: toNumber(totals?.unreconciledExpensesMinor),
     purchasesCount: toNumber(totals?.purchasesCount),
-    cardTotals: [
-      {
-        cardId: card.id,
-        cardName: card.name,
-        ...(card.maskedIdentifier !== null ? { maskedIdentifier: card.maskedIdentifier } : {}),
+    cardTotals,
+  };
+}
+
+async function resolveFamilyCardIds(context: TenantContext, cardId: EntityId): Promise<EntityId[]> {
+  const [membership] = await query<{ groupCardId: string }>(
+    `select "groupCardId" from "CardAdditionalLink"
+       where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3`,
+    [context.organizationId, context.financialProfileId, cardId],
+  );
+  const groupCardId = membership?.groupCardId ?? cardId;
+  const rows = await query<{ cardId: string }>(
+    `select "cardId" from "CardAdditionalLink"
+       where "organizationId" = $1 and "financialProfileId" = $2 and "groupCardId" = $3`,
+    [context.organizationId, context.financialProfileId, groupCardId],
+  );
+
+  return rows.length > 0 ? rows.map((row) => row.cardId) : [cardId];
+}
+
+async function buildCardTotals(
+  context: TenantContext,
+  familyCardIds: readonly EntityId[],
+  primaryInvoice: InvoiceContractRow,
+): Promise<InvoiceCardTotalContract[]> {
+  return Promise.all(
+    familyCardIds.map(async (familyCardId) => {
+      const familyCard = await findCard(context, familyCardId);
+      const limitUsedMinor = await calculateLimitUsedForCard(context, familyCardId);
+      const limitTotalMinor = familyCard.creditLimitMinor ?? 0;
+      const periodInvoice =
+        familyCardId === primaryInvoice.cardId
+          ? primaryInvoice
+          : await findInvoiceForCardPeriod(
+              context,
+              familyCardId,
+              toDateOnly(primaryInvoice.periodStartOn),
+            );
+      const invoiceTotalMinor = periodInvoice?.totalAmountMinor ?? 0;
+      const invoiceAmountDueMinor = periodInvoice ? calculateAmountDue(periodInvoice) : 0;
+
+      return {
+        cardId: familyCard.id,
+        cardName: familyCard.name,
+        ...(familyCard.maskedIdentifier !== null
+          ? { maskedIdentifier: familyCard.maskedIdentifier }
+          : {}),
         limitTotalMinor,
         limitUsedMinor,
         limitAvailableMinor: Math.max(0, limitTotalMinor - limitUsedMinor),
-        invoiceTotalMinor: invoice.totalAmountMinor,
-        invoiceAmountDueMinor: amountDueMinor,
-      },
-    ],
-  };
+        invoiceTotalMinor,
+        invoiceAmountDueMinor,
+      };
+    }),
+  );
+}
+
+async function findInvoiceForCardPeriod(
+  context: TenantContext,
+  cardId: EntityId,
+  periodStartOn: string,
+): Promise<InvoiceContractRow | undefined> {
+  const rows = await query<InvoiceContractRow>(
+    `select "id", "organizationId", "financialProfileId", "cardId", "status", "periodStartOn",
+            "periodEndOn", "dueOn", "totalAmountMinor", "currency", "paidAt", "paymentTransactionId",
+            "updatedAt"
+       from "Invoice"
+       where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3 and "periodStartOn" = $4`,
+    [context.organizationId, context.financialProfileId, cardId, periodStartOn],
+  );
+
+  return rows[0];
 }
 
 export async function listCardPurchasesForContext(

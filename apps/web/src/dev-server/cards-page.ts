@@ -1,295 +1,286 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { findInstitution, renderInstitutionIcon } from "./institutions.js";
 import { faviconLinks } from "./pages.js";
 import { privateRoutes } from "./routes.js";
 
-interface InvoiceOperation {
-  invoice: InvoiceRecord;
-  summary: InvoiceSummaryRecord;
-  purchases: CardPurchaseRecord[];
-  summaryError?: string;
-  purchasesError?: string;
-}
+export async function renderCardsPage(token: string, url?: URL): Promise<string> {
+  const [cardsResult, invoicesResult, categoriesResult, accountsResult, linksResult] =
+    await Promise.all([
+      apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
+      apiGet<{ invoices: InvoiceRecord[] }>(token, "/api/invoices?status=all"),
+      apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?kind=expense"),
+      apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
+      apiGet<{ links: CardAdditionalLinkRecord[] }>(token, "/api/card-additional-links"),
+    ]);
 
-export async function renderCardsPage(token: string): Promise<string> {
-  const [cards, invoices, accounts, categories] = await Promise.all([
-    apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
-    apiGet<{ invoices: InvoiceRecord[] }>(token, "/api/invoices?status=all"),
-    apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
-    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?kind=expense"),
+  if (!cardsResult.ok) return renderErrorPage(cardsResult.error);
+  if (!invoicesResult.ok) return renderErrorPage(invoicesResult.error);
+
+  const cards = cardsResult.data.cards;
+  const invoices = invoicesResult.data.invoices;
+  const categories = categoriesResult.ok ? (categoriesResult.data.categories ?? []) : [];
+  const accounts = accountsResult.ok ? (accountsResult.data.accounts ?? []) : [];
+  const links = linksResult.ok ? (linksResult.data.links ?? []) : [];
+  const additionalCardIds = new Set(
+    links.filter((link) => link.cardId !== link.groupCardId).map((link) => link.cardId),
+  );
+
+  const selectedCard = resolveSelectedCard(cards, url?.searchParams.get("cardId") ?? undefined);
+  const cardInvoices = invoices
+    .filter((invoice) => invoice.cardId === selectedCard?.id)
+    .sort((a, b) => b.periodEndOn.localeCompare(a.periodEndOn));
+  const selectedInvoice = resolveSelectedInvoice(
+    cardInvoices,
+    url?.searchParams.get("invoiceId") ?? undefined,
+  );
+
+  const [summaryResult, purchasesResult] = await Promise.all([
+    selectedInvoice
+      ? apiGet<{ summary: InvoiceSummaryRecord }>(
+          token,
+          `/api/invoices/${selectedInvoice.id}/summary`,
+        )
+      : Promise.resolve({ ok: true, data: { summary: undefined } } as const),
+    selectedInvoice
+      ? apiGet<{ purchases: CardPurchaseRecord[] }>(
+          token,
+          `/api/invoices/${selectedInvoice.id}/purchases`,
+        )
+      : Promise.resolve({ ok: true, data: { purchases: [] } } as const),
   ]);
 
-  if (!cards.ok) return renderApiErrorPage("/cartoes", "Cartões", cards.error);
-  if (!invoices.ok) return renderApiErrorPage("/cartoes", "Cartões", invoices.error);
+  const summary =
+    summaryResult.ok && summaryResult.data.summary
+      ? summaryResult.data.summary
+      : selectedInvoice
+        ? fallbackSummary(selectedInvoice)
+        : undefined;
+  const purchases = purchasesResult.ok ? purchasesResult.data.purchases : [];
 
-  const cardItems = cards.data.cards;
-  const invoiceItems = invoices.data.invoices;
-  const accountOptions = accounts.ok ? accounts.data.accounts : [];
-  const categoryOptions = categories.ok ? categories.data.categories : [];
-  const invoiceOperations = await loadInvoiceOperations(token, invoiceItems);
-  const selectedCardId = cardItems.find((card) => card.status === "active")?.id ?? cardItems[0]?.id;
+  return renderPage({
+    title: "Cartões de Crédito - SolverFin",
+    body: `
+      <div class="app-shell">
+        ${renderSidebar()}
+        <div class="main-area">
+          <header class="topbar"><strong>Cartões de Crédito</strong><button type="button" data-logout>Sair</button></header>
+          <main>
+            <section class="cards-heading">
+              <div>
+                <p class="eyebrow">Rotina de cartões</p>
+                <h1>Cartões de Crédito</h1>
+                <p class="muted">Acompanhe a fatura do cartão, registre compras e faça a baixa do pagamento.</p>
+              </div>
+              <button type="button" data-open-modal="purchase"${selectedCard ? "" : " disabled"}>Nova compra</button>
+            </section>
 
-  return renderAuthenticatedPage({
-    pathname: "/cartoes",
-    currentLabel: "Cartões",
-    content: `
-      <section class="cards-heading">
-        <div>
-          <p class="eyebrow">Rotina de cartões</p>
-          <h1>Faturas e compras</h1>
-          <p class="muted">Acompanhe a fatura por cartão, registre compras e faça a baixa usando uma conta vinculada.</p>
+            <section class="panel card-filter">
+              <form class="filter-form" method="get" action="/cartoes" data-auto-submit>
+                ${renderCardPicker(cards, additionalCardIds, selectedCard)}
+                <div class="month-field">
+                  <label id="invoice-period-label">Fatura</label>
+                  <div class="month-nav">
+                    <button type="button" class="icon-btn" data-invoice-step="-1" aria-label="Fatura anterior">&#8249;</button>
+                    <span class="month-current" data-invoice-period-text>${selectedInvoice ? escapeHtml(formatMonthYear(selectedInvoice.periodEndOn)) : "Sem faturas"}</span>
+                    <button type="button" class="icon-btn" data-invoice-step="1" aria-label="Próxima fatura">&#8250;</button>
+                  </div>
+                </div>
+                <input type="hidden" name="invoiceId" value="${escapeHtml(selectedInvoice?.id ?? "")}" data-invoice-input />
+                <script type="application/json" data-invoice-options>${serializeScriptJson(cardInvoices.map((invoice) => ({ id: invoice.id, label: formatMonthYear(invoice.periodEndOn) })))}</script>
+              </form>
+            </section>
+
+            <section class="cards-layout">
+              ${renderSummaryPanel(summary, selectedInvoice, accounts)}
+              <section class="panel invoice-panel">
+                <div class="invoice-toolbar">
+                  <div>
+                    <p class="eyebrow">Compras</p>
+                    <h2>${selectedCard ? `Fatura de ${escapeHtml(selectedCard.name)}` : "Selecione um cartão"}</h2>
+                  </div>
+                  <div class="filter-controls">
+                    <input type="search" data-purchase-search placeholder="Buscar descrição ou categoria" />
+                    <button type="button" class="toggle-chip" data-reconciliation-toggle="unreconciled" aria-pressed="true">Não conciliados</button>
+                    <button type="button" class="toggle-chip" data-reconciliation-toggle="reconciled" aria-pressed="true">Conciliados</button>
+                  </div>
+                </div>
+                <div class="purchase-list" aria-label="Compras da fatura">
+                  ${
+                    purchasesResult.ok
+                      ? purchases
+                          .map((purchase) => renderPurchaseRow(purchase, categories))
+                          .join("") ||
+                        renderEmptyState(
+                          selectedInvoice
+                            ? "Nenhuma compra nesta fatura."
+                            : "Nenhuma fatura para este cartão.",
+                          selectedInvoice
+                            ? "Registre uma compra para acompanhar valor, categoria e conciliação."
+                            : "A primeira compra registrada gera a fatura automaticamente.",
+                        )
+                      : `<p class="error" role="alert">${escapeHtml(purchasesResult.error)}</p>`
+                  }
+                </div>
+              </section>
+            </section>
+          </main>
         </div>
-        <a class="button-link" href="#nova-compra">Nova compra</a>
-      </section>
-
-      <section class="cards-workspace" aria-label="Operação de faturas de cartão">
-        <aside class="card-selector" aria-label="Selecionar cartão">
-          <div class="section-heading compact-heading">
-            <h2>Cartões</h2>
-            <span>${cardItems.length} itens</span>
-          </div>
-          <div class="card-tabs" role="tablist" aria-label="Cartões cadastrados">
-            ${
-              cardItems
-                .map((card) =>
-                  renderCardSelector(card, invoiceOperations, selectedCardId === card.id),
-                )
-                .join("") ||
-              renderEmptyState(
-                "Nenhum cartão cadastrado.",
-                "Use Contas e Cartões para cadastrar cartões antes de operar faturas.",
-              )
-            }
-          </div>
-        </aside>
-
-        <div class="invoice-area">
-          ${
-            cardItems
-              .map((card) =>
-                renderCardOperationSection({
-                  card,
-                  invoices: invoiceOperations.filter(
-                    (operation) => operation.invoice.cardId === card.id,
-                  ),
-                  accounts: accountOptions,
-                  categories: categoryOptions,
-                  isSelected: selectedCardId === card.id,
-                }),
-              )
-              .join("") ||
-            renderEmptyState(
-              "Sem cartões para operar.",
-              "O cadastro de cartões fica em Contas e Cartões para manter esta tela focada na rotina.",
-            )
-          }
-        </div>
-      </section>
-
-      ${apiFormScript()}
-      ${cardsPageScript()}
+      </div>
+      ${renderPurchaseModal(selectedCard, cards, additionalCardIds, links, categories)}
+      ${renderPaymentModal(selectedInvoice, accounts, summary?.amountDueMinor ?? 0)}
+      ${clientScript()}
     `,
   });
 }
 
-async function loadInvoiceOperations(
-  token: string,
-  invoices: InvoiceRecord[],
-): Promise<InvoiceOperation[]> {
-  return Promise.all(
-    invoices.map(async (invoice) => {
-      const [summary, purchases] = await Promise.all([
-        apiGet<{ summary: InvoiceSummaryRecord }>(token, `/api/invoices/${invoice.id}/summary`),
-        apiGet<{ purchases: CardPurchaseRecord[] }>(token, `/api/invoices/${invoice.id}/purchases`),
-      ]);
+function resolveSelectedCard(
+  cards: CardRecord[],
+  cardId: string | undefined,
+): CardRecord | undefined {
+  if (cardId) {
+    const requested = cards.find((card) => card.id === cardId);
+    if (requested) return requested;
+  }
 
-      return {
-        invoice,
-        summary: summary.ok ? summary.data.summary : fallbackSummary(invoice),
-        purchases: purchases.ok ? purchases.data.purchases : [],
-        ...(summary.ok ? {} : { summaryError: summary.error }),
-        ...(purchases.ok ? {} : { purchasesError: purchases.error }),
-      };
-    }),
-  );
+  return cards.find((card) => card.status === "active") ?? cards[0];
 }
 
-function renderCardSelector(
-  card: CardRecord,
-  operations: InvoiceOperation[],
-  isSelected: boolean,
+function resolveSelectedInvoice(
+  cardInvoices: InvoiceRecord[],
+  invoiceId: string | undefined,
+): InvoiceRecord | undefined {
+  if (invoiceId) {
+    const requested = cardInvoices.find((invoice) => invoice.id === invoiceId);
+    if (requested) return requested;
+  }
+
+  return cardInvoices.find((invoice) => invoice.status === "open") ?? cardInvoices[0];
+}
+
+function renderCardPicker(
+  cards: CardRecord[],
+  additionalCardIds: ReadonlySet<string>,
+  selectedCard: CardRecord | undefined,
 ): string {
-  const cardInvoices = operations.filter((operation) => operation.invoice.cardId === card.id);
-  const openInvoice = cardInvoices.find((operation) => operation.invoice.status === "open");
-  const totalDue = cardInvoices.reduce(
-    (sum, operation) => sum + operation.summary.amountDueMinor,
-    0,
-  );
+  const triggerIcon = renderInstitutionIcon(findInstitution(selectedCard?.institutionKey).key);
 
   return `
-    <button type="button" class="card-tab" data-card-tab="${escapeHtml(card.id)}" aria-selected="${isSelected ? "true" : "false"}">
-      <span>
-        <strong>${escapeHtml(card.name)}</strong>
-        <small>${escapeHtml(formatGenericStatus(card.status))}${card.maskedIdentifier ? ` · ${escapeHtml(card.maskedIdentifier)}` : ""}</small>
-      </span>
-      <span class="card-tab-meta">
-        <strong>${formatMoney(totalDue)}</strong>
-        <small>${openInvoice ? `Vence ${formatDate(openInvoice.invoice.dueOn)}` : `${cardInvoices.length} faturas`}</small>
-      </span>
-    </button>
+    <div class="account-field" data-card-picker>
+      <label id="card-picker-label">Cartão</label>
+      <div class="account-select">
+        <button type="button" class="account-select-trigger" data-card-trigger aria-haspopup="listbox" aria-expanded="false" aria-labelledby="card-picker-label">
+          <span class="account-select-icon">${triggerIcon}</span>
+          <span class="account-select-text">${selectedCard ? escapeHtml(selectedCard.name) : "Selecione um cartão"}</span>
+          <svg class="account-select-chevron" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <input type="hidden" name="cardId" value="${escapeHtml(selectedCard?.id ?? "")}" required data-card-input />
+        <ul class="account-select-menu" role="listbox" hidden data-card-menu aria-labelledby="card-picker-label">
+          ${cards.map((card) => renderCardOption(card, additionalCardIds, selectedCard?.id)).join("")}
+        </ul>
+      </div>
+      <a class="ghost-link" href="/contas-cartoes" title="Editar cadastro do cartão" aria-label="Editar cadastro do cartão">${renderPencilIcon()}</a>
+    </div>
   `;
 }
 
-function renderCardOperationSection(input: {
-  card: CardRecord;
-  invoices: InvoiceOperation[];
-  accounts: AccountRecord[];
-  categories: CategoryRecord[];
-  isSelected: boolean;
-}): string {
-  const sortedInvoices = [...input.invoices].sort((a, b) =>
-    b.invoice.periodEndOn.localeCompare(a.invoice.periodEndOn),
-  );
-  const selectedInvoiceId =
-    sortedInvoices.find((operation) => operation.invoice.status === "open")?.invoice.id ??
-    sortedInvoices[0]?.invoice.id;
-  const canMutateCard = input.card.status === "active";
+function renderCardOption(
+  card: CardRecord,
+  additionalCardIds: ReadonlySet<string>,
+  selectedId: string | undefined,
+): string {
+  const institution = findInstitution(card.institutionKey);
 
   return `
-    <section class="card-operation" data-card-section="${escapeHtml(input.card.id)}"${input.isSelected ? "" : " hidden"}>
-      <div class="operation-topline">
-        <div>
-          <p class="eyebrow">Cartão selecionado</p>
-          <h2>${escapeHtml(input.card.name)}</h2>
-          <p class="muted">Fecha dia ${input.card.closingDay}, vence dia ${input.card.dueDay}${input.card.maskedIdentifier ? ` · ${escapeHtml(input.card.maskedIdentifier)}` : ""}</p>
-        </div>
-        <div class="period-controls" aria-label="Navegar entre faturas">
-          <button type="button" class="secondary-button icon-button" data-invoice-step="previous" title="Fatura anterior" aria-label="Fatura anterior">‹</button>
-          <button type="button" class="secondary-button icon-button" data-invoice-step="next" title="Próxima fatura" aria-label="Próxima fatura">›</button>
-        </div>
-      </div>
-
-      <div class="card-actions" aria-label="Ações do cartão ${escapeHtml(input.card.name)}">
-        ${canMutateCard ? renderActionButton("Bloquear cartão", `/api/cards/${input.card.id}/block`, "Bloquear este cartão?") : ""}
-        ${canMutateCard ? renderActionButton("Arquivar cartão", `/api/cards/${input.card.id}/archive`, "Arquivar este cartão?") : ""}
-      </div>
-
-      <h2>Faturas</h2>
-      <div class="invoice-tabs" role="tablist" aria-label="Faturas do cartão">
-        ${
-          sortedInvoices
-            .map((operation) =>
-              renderInvoiceTab(operation, operation.invoice.id === selectedInvoiceId),
-            )
-            .join("") || `<span class="muted">Nenhuma fatura gerada para este cartão.</span>`
-        }
-      </div>
-
-      ${
-        sortedInvoices
-          .map((operation) =>
-            renderInvoiceView({
-              operation,
-              card: input.card,
-              accounts: input.accounts,
-              categories: input.categories,
-              isSelected: operation.invoice.id === selectedInvoiceId,
-            }),
-          )
-          .join("") || renderNoInvoiceState(input.card, input.categories)
-      }
-    </section>
+    <li role="option" tabindex="-1" data-card-option="${escapeHtml(card.id)}" data-card-name="${escapeHtml(card.name)}" aria-selected="${selectedId === card.id}">
+      <span class="account-select-icon">${renderInstitutionIcon(institution.key)}</span>
+      <span>${escapeHtml(card.name)}${card.maskedIdentifier ? ` · ${escapeHtml(card.maskedIdentifier)}` : ""}${additionalCardIds.has(card.id) ? " · Adicional" : ""}</span>
+    </li>
   `;
 }
 
-function renderInvoiceTab(operation: InvoiceOperation, isSelected: boolean): string {
-  return `
-    <button type="button" class="invoice-tab" data-invoice-tab="${escapeHtml(operation.invoice.id)}" aria-selected="${isSelected ? "true" : "false"}">
-      <span>${formatDate(operation.invoice.periodEndOn)}</span>
-      <strong>${formatMoney(operation.summary.amountDueMinor)}</strong>
-    </button>
-  `;
-}
+function renderSummaryPanel(
+  summary: InvoiceSummaryRecord | undefined,
+  invoice: InvoiceRecord | undefined,
+  accounts: AccountRecord[],
+): string {
+  if (!summary || !invoice) {
+    return `
+      <aside class="panel invoice-summary" aria-label="Resumo da fatura">
+        ${renderEmptyState("Nenhuma fatura disponível.", "Cadastre um cartão em Contas e Cartões e registre a primeira compra.")}
+      </aside>
+    `;
+  }
 
-function renderInvoiceView(input: {
-  operation: InvoiceOperation;
-  card: CardRecord;
-  accounts: AccountRecord[];
-  categories: CategoryRecord[];
-  isSelected: boolean;
-}): string {
-  const { invoice, summary, purchases } = input.operation;
-  const categoryNames = new Map(input.categories.map((category) => [category.id, category.name]));
   const canClose = invoice.status === "open";
   const canPay = invoice.status !== "paid" && invoice.status !== "cancelled";
+  const totalLimitMinor = summary.cardTotals.reduce((sum, total) => sum + total.limitTotalMinor, 0);
+  const totalUsedMinor = summary.cardTotals.reduce((sum, total) => sum + total.limitUsedMinor, 0);
+  const totalAvailableMinor = Math.max(0, totalLimitMinor - totalUsedMinor);
 
   return `
-    <section class="invoice-view" data-invoice-view="${escapeHtml(invoice.id)}"${input.isSelected ? "" : " hidden"}>
-      <div class="invoice-main">
-        <details class="purchase-form-panel" id="nova-compra">
-          <summary>Nova compra</summary>
-          ${renderCardPurchaseForm(input.card, input.categories)}
-        </details>
-
-        <section class="invoice-toolbar" aria-label="Filtros de compras">
-          <label>Buscar<input type="search" data-purchase-search placeholder="Descrição ou categoria" /></label>
-          <label>Status
-            <select data-reconciliation-filter>
-              <option value="all">Todas</option>
-              <option value="unreconciled">Não conciliadas</option>
-              <option value="reconciled">Conciliadas</option>
-            </select>
-          </label>
-        </section>
-
-        <section class="purchase-list" aria-label="Compras da fatura">
-          ${
-            input.operation.purchasesError
-              ? `<p class="error" role="alert">${escapeHtml(input.operation.purchasesError)}</p>`
-              : purchases.map((purchase) => renderPurchaseRow(purchase, categoryNames)).join("") ||
-                renderEmptyState(
-                  "Nenhuma compra nesta fatura.",
-                  "Registre uma compra para acompanhar valor, categoria e conciliação.",
-                )
-          }
-        </section>
-      </div>
-
-      <aside class="invoice-summary" aria-label="Resumo da fatura">
-        <div class="summary-title">
-          <div>
-            <p class="eyebrow">Fatura ${escapeHtml(formatGenericStatus(summary.status))}</p>
-            <h2>${formatDate(summary.closingOn)}</h2>
-            <p class="muted">Vencimento ${formatDate(summary.dueOn)}</p>
-          </div>
-          <strong>${formatMoney(summary.amountDueMinor)}</strong>
-        </div>
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/invoices/${escapeHtml(invoice.id)}">Abrir detalhe da fatura</button>
-        ${input.operation.summaryError ? `<p class="error" role="alert">${escapeHtml(input.operation.summaryError)}</p>` : ""}
-        <dl class="summary-grid">
-          ${renderSummaryItem("Saldo anterior", summary.previousBalanceMinor)}
-          ${renderSummaryItem("Despesas", summary.totalExpensesMinor)}
-          ${renderSummaryItem("Total pago", summary.totalPaidMinor)}
-          ${renderSummaryItem("A pagar", summary.amountDueMinor)}
-          ${renderSummaryItem("Conciliado", summary.reconciledExpensesMinor)}
-          ${renderSummaryItem("Não conciliado", summary.unreconciledExpensesMinor)}
+    <aside class="panel invoice-summary" aria-label="Resumo da fatura">
+      <section class="summary-block">
+        <p class="eyebrow">Fatura ${escapeHtml(formatGenericStatus(summary.status))}</p>
+        <h2>Fatura atual (R$)</h2>
+        <dl class="summary-list">
+          ${summaryRow("Fechamento", formatDate(summary.closingOn))}
+          ${summaryRow("Vencimento", formatDate(summary.dueOn))}
+          ${summaryRow("Saldo anterior", formatMoney(summary.previousBalanceMinor))}
+          ${summaryRow("Total pago", formatMoney(summary.totalPaidMinor))}
+          ${summaryRow("Total", formatMoney(-summary.totalExpensesMinor), "debit")}
+          ${summaryRow("Valor a pagar", formatMoney(-summary.amountDueMinor), "debit", true)}
         </dl>
-        ${renderLimitSummary(summary)}
         <div class="invoice-actions">
           ${canClose ? renderActionButton("Fechar fatura", `/api/invoices/${invoice.id}/close`, "Fechar esta fatura?") : ""}
-          ${canPay ? renderInvoicePaymentForm(invoice, input.accounts, summary.amountDueMinor) : `<p class="muted">Pagamento indisponível para faturas ${escapeHtml(formatGenericStatus(invoice.status).toLowerCase())}.</p>`}
+          ${canPay ? `<button type="button" data-open-modal="payment">Lançar pagamento</button>` : `<p class="muted">Pagamento indisponível para faturas ${escapeHtml(formatGenericStatus(invoice.status).toLowerCase())}.</p>`}
         </div>
-      </aside>
-    </section>
+      </section>
+
+      <section class="summary-block">
+        <h2>Detalhamento</h2>
+        <dl class="summary-list">
+          ${summaryRow("Despesas", formatMoney(-summary.totalExpensesMinor), "debit")}
+          ${summaryRow("Total conciliado", formatMoney(-summary.reconciledExpensesMinor), "debit")}
+          ${summaryRow("Total não conciliado", formatMoney(-summary.unreconciledExpensesMinor), "debit")}
+        </dl>
+      </section>
+
+      <section class="summary-block">
+        <h2>Totais por cartão (R$)</h2>
+        <dl class="summary-list">
+          ${summary.cardTotals.map((total) => summaryRow(`${total.cardName}${total.maskedIdentifier ? ` - ${total.maskedIdentifier}` : ""}`, formatMoney(-total.invoiceTotalMinor), total.invoiceTotalMinor > 0 ? "debit" : undefined)).join("") || `<p class="muted">Sem dados de limite.</p>`}
+        </dl>
+      </section>
+
+      ${
+        summary.cardTotals.length > 0
+          ? `
+        <section class="summary-block">
+          <h2>Limite (Total)</h2>
+          <dl class="summary-list">
+            ${summaryRow("Limite da conta", formatMoney(totalLimitMinor))}
+            ${summaryRow("Utilizado", formatMoney(-totalUsedMinor), "debit")}
+            ${summaryRow("Disponível", formatMoney(totalAvailableMinor), "credit")}
+          </dl>
+        </section>
+      `
+          : ""
+      }
+      ${accounts.length === 0 ? `<p class="muted">Cadastre uma conta para registrar o pagamento da fatura.</p>` : ""}
+    </aside>
   `;
 }
 
-function renderPurchaseRow(
-  purchase: CardPurchaseRecord,
-  categoryNames: ReadonlyMap<string, string>,
-): string {
-  const categoryName = purchase.categoryId ? categoryNames.get(purchase.categoryId) : undefined;
+function summaryRow(label: string, value: string, tone?: string, emphasis = false): string {
+  return `<div class="summary-row${emphasis ? " summary-row-strong" : ""}"><dt>${escapeHtml(label)}</dt><dd${tone ? ` class="${tone}"` : ""}>${value}</dd></div>`;
+}
+
+function renderPurchaseRow(purchase: CardPurchaseRecord, categories: CategoryRecord[]): string {
+  const categoryName = purchase.categoryId
+    ? categories.find((category) => category.id === purchase.categoryId)?.name
+    : undefined;
   const reconciliation = purchase.status === "reconciled" ? "reconciled" : "unreconciled";
   const search = [purchase.description, categoryName ?? "", purchase.status]
     .join(" ")
@@ -298,370 +289,455 @@ function renderPurchaseRow(
   return `
     <article class="purchase-row" data-purchase-item data-reconciliation="${reconciliation}" data-search="${escapeHtml(search)}">
       <time datetime="${escapeHtml(purchase.occurredOn)}">${formatDate(purchase.occurredOn)}</time>
-      <div>
+      <div class="description">
         <strong>${escapeHtml(purchase.description)}</strong>
-        <span>${escapeHtml(categoryName ?? "Sem categoria")} · ${escapeHtml(formatGenericStatus(purchase.status))}</span>
+        <span>${escapeHtml(categoryName ?? "Sem categoria")}</span>
       </div>
-      <strong>${formatMoney(purchase.amountMinor)}</strong>
-      <details class="item-actions">
-        <summary>Ações</summary>
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/transactions/${escapeHtml(purchase.id)}">Abrir lançamento</button>
+      <span class="chip chip-${reconciliation === "reconciled" ? "ok" : "posted"}">${escapeHtml(formatGenericStatus(purchase.status))}</span>
+      <strong class="debit">${formatMoney(-purchase.amountMinor)}</strong>
+      <details class="actions">
+        <summary aria-label="Ações da compra ${escapeHtml(purchase.description)}">${renderDotsIcon()}</summary>
+        <div class="actions-menu" role="menu">
+          <button type="button" class="actions-item" data-edit-purchase="${escapeHtml(purchase.id)}">${renderEditIcon()}<span>Editar</span></button>
+        </div>
       </details>
+      <script type="application/json" data-purchase="${escapeHtml(purchase.id)}">${serializeScriptJson(purchase)}</script>
     </article>
   `;
 }
 
-function renderNoInvoiceState(card: CardRecord, categories: CategoryRecord[]): string {
+function renderPurchaseModal(
+  selectedCard: CardRecord | undefined,
+  cards: CardRecord[],
+  additionalCardIds: ReadonlySet<string>,
+  links: CardAdditionalLinkRecord[],
+  categories: CategoryRecord[],
+): string {
+  const familyCardIds = resolveFamilyCardIds(selectedCard?.id, links);
+  const familyCards = cards.filter((card) => familyCardIds.has(card.id));
+
   return `
-    <section class="invoice-view">
-      <div class="invoice-main">
-        ${renderEmptyState(
-          "Nenhuma fatura para este cartão.",
-          "A primeira compra registrada gera a fatura automaticamente.",
-        )}
-      </div>
-      <aside class="invoice-summary" id="nova-compra">
-        <h2>Nova compra</h2>
-        ${renderCardPurchaseForm(card, categories)}
-      </aside>
-    </section>
+    <dialog data-modal="purchase">
+      <section class="modal-panel">
+        <form method="dialog" class="close-form"><button type="submit">Fechar</button></form>
+        <div>
+          <p class="eyebrow">Compra no cartão</p>
+          <h2 data-purchase-modal-title>Nova compra</h2>
+        </div>
+        <form data-purchase-form data-path="/api/cards/${escapeHtml(selectedCard?.id ?? "")}/purchases">
+          <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
+          <label>Data<input name="occurredOn" type="date" required /></label>
+          <label class="full">Descrição<input name="description" placeholder="Compra no cartão" required /></label>
+          <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
+          ${
+            familyCards.length > 1
+              ? `<label>Cartão<select name="purchaseCardId">${familyCards.map((card) => `<option value="${escapeHtml(card.id)}"${card.id === selectedCard?.id ? " selected" : ""}>${escapeHtml(card.name)}${card.maskedIdentifier ? ` · ${escapeHtml(card.maskedIdentifier)}` : ""}${additionalCardIds.has(card.id) ? " · Adicional" : ""}</option>`).join("")}</select></label>`
+              : ""
+          }
+          <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
+          <label data-purchase-field="totalInstallments" hidden>Parcelas<input name="totalInstallments" type="number" min="2" max="120" value="2" /></label>
+          <label data-purchase-field="interval" hidden>A cada<input name="interval" type="number" min="1" max="60" value="1" /></label>
+          <label data-purchase-field="frequency" hidden>Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label>
+          <label data-purchase-field="endOn" hidden>Fim opcional<input name="endOn" type="date" /></label>
+          <button type="submit" class="full">Salvar compra</button>
+        </form>
+      </section>
+    </dialog>
   `;
 }
 
-function renderLimitSummary(summary: InvoiceSummaryRecord): string {
-  const total = summary.cardTotals[0];
-
-  if (!total) {
-    return "";
-  }
-
-  const usedPercent =
-    total.limitTotalMinor > 0
-      ? Math.min(100, Math.round((total.limitUsedMinor / total.limitTotalMinor) * 100))
-      : 0;
-
-  return `
-    <section class="limit-box">
-      <div>
-        <strong>${escapeHtml(total.cardName)}</strong>
-        <span>${total.maskedIdentifier ? escapeHtml(total.maskedIdentifier) : "Identificador não informado"}</span>
-      </div>
-      <div class="limit-meter" aria-label="${usedPercent}% do limite usado"><span style="width: ${usedPercent}%"></span></div>
-      <dl class="limit-values">
-        ${renderSummaryItem("Limite", total.limitTotalMinor)}
-        ${renderSummaryItem("Usado", total.limitUsedMinor)}
-        ${renderSummaryItem("Disponível", total.limitAvailableMinor)}
-      </dl>
-    </section>
-  `;
-}
-
-function renderSummaryItem(label: string, amountMinor: number): string {
-  return `<div><dt>${escapeHtml(label)}</dt><dd>${formatMoney(amountMinor)}</dd></div>`;
-}
-
-function renderCardPurchaseForm(card: CardRecord, categories: CategoryRecord[]): string {
-  return `
-    <form data-api-form data-api-path="/api/cards/${escapeHtml(card.id)}/purchases" class="compact-form">
-      <label>Compra em<input name="occurredOn" type="date" required /></label>
-      <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
-      <label>Descrição<input name="description" placeholder="Compra no cartão" required /></label>
-      <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
-      <button type="submit">Registrar compra</button>
-    </form>
-  `;
-}
-
-function renderInvoicePaymentForm(
-  invoice: InvoiceRecord,
+function renderPaymentModal(
+  invoice: InvoiceRecord | undefined,
   accounts: AccountRecord[],
   amountDueMinor: number,
 ): string {
   return `
-    <details class="payment-panel">
-      <summary>Pagar fatura</summary>
-      <form data-api-form data-api-path="/api/invoices/${escapeHtml(invoice.id)}/pay" data-api-confirm="Registrar o pagamento desta fatura?" class="compact-form">
-        <label>Conta<select name="paymentAccountId" required>${renderAccountOptions(accounts)}</select></label>
-        <label>Pago em<input name="paidOn" type="date" required /></label>
-        <label>Valor pago (R$)<input name="amountMinor" data-money inputmode="decimal" value="${formatMoneyInput(amountDueMinor)}" required /></label>
-        <label>Descrição<input name="description" value="Pagamento da fatura ${formatDate(invoice.periodEndOn)}" /></label>
-        <button type="submit">Confirmar pagamento</button>
-      </form>
-    </details>
+    <dialog data-modal="payment">
+      <section class="modal-panel">
+        <form method="dialog" class="close-form"><button type="submit">Fechar</button></form>
+        <div>
+          <p class="eyebrow">Pagamento de fatura</p>
+          <h2>Lançar pagamento</h2>
+        </div>
+        <form data-path="/api/invoices/${escapeHtml(invoice?.id ?? "")}/pay" data-confirm="Registrar o pagamento desta fatura?">
+          <label>Conta<select name="paymentAccountId" required>${renderAccountOptions(accounts)}</select></label>
+          <label>Pago em<input name="paidOn" type="date" required /></label>
+          <label>Valor pago (R$)<input name="amountMinor" data-money inputmode="decimal" value="${formatMoneyInput(amountDueMinor)}" required /></label>
+          <label class="full">Descrição<input name="description" value="Pagamento da fatura ${invoice ? formatDate(invoice.periodEndOn) : ""}" /></label>
+          <button type="submit" class="full">Confirmar pagamento</button>
+        </form>
+      </section>
+    </dialog>
   `;
+}
+
+function resolveFamilyCardIds(
+  cardId: string | undefined,
+  links: CardAdditionalLinkRecord[],
+): Set<string> {
+  if (!cardId) return new Set();
+
+  const membership = links.find((link) => link.cardId === cardId);
+  const groupCardId = membership?.groupCardId ?? cardId;
+  const family = links
+    .filter((link) => link.groupCardId === groupCardId)
+    .map((link) => link.cardId);
+
+  return new Set(family.length > 0 ? family : [cardId]);
 }
 
 function renderActionButton(label: string, path: string, confirmation?: string): string {
   return `<button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="${escapeHtml(path)}"${confirmation ? ` data-api-confirm="${escapeHtml(confirmation)}"` : ""}>${escapeHtml(label)}</button>`;
 }
 
-function renderAuthenticatedPage(input: {
-  pathname: string;
-  currentLabel: string;
-  content: string;
-}): string {
+function renderEmptyState(title: string, description: string): string {
+  return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
+}
+
+function renderAccountOptions(accounts: AccountRecord[]): string {
+  return accounts
+    .map(
+      (account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`,
+    )
+    .join("");
+}
+
+function renderCategoryOptions(categories: CategoryRecord[]): string {
+  return categories
+    .map(
+      (category) =>
+        `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`,
+    )
+    .join("");
+}
+
+function renderSidebar(): string {
+  return `
+    <aside class="sidebar">
+      <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
+      <nav>${Array.from(privateRoutes.entries())
+        .map(
+          ([path, label]) =>
+            `<a href="${path}"${path === "/cartoes" ? ' aria-current="page"' : ""}>${escapeHtml(label)}</a>`,
+        )
+        .join("")}</nav>
+      <button class="logout" type="button" data-logout>Sair</button>
+    </aside>
+  `;
+}
+
+function renderErrorPage(error: string): string {
   return renderPage({
-    title: `${input.currentLabel} - SolverFin`,
-    body: `
-      <div class="app-shell">
-        <aside class="sidebar">
-          <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-          <nav aria-label="Menu principal">${renderNavigation(input.pathname)}</nav>
-          <button class="logout" type="button" data-logout>Sair</button>
-        </aside>
-        <div class="main-area">
-          <header class="topbar"><div><strong>${escapeHtml(input.currentLabel)}</strong><span>Usuário Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
-          <main>${input.content}</main>
-        </div>
-      </div>
-      <script>
-        document.querySelectorAll("[data-logout]").forEach((button) => {
-          button.addEventListener("click", async () => {
-            await fetch("/api/session", { method: "DELETE" });
-            window.location.assign("/login");
-          });
-        });
-      </script>
-    `,
+    title: "Cartões de Crédito - SolverFin",
+    body: `<main class="error-page"><section class="panel"><p class="eyebrow">Erro ao carregar dados</p><h1>Cartões de Crédito</h1><p class="error">${escapeHtml(error)}</p><a class="button-link" href="/cartoes">Tentar novamente</a></section></main>`,
   });
 }
 
-function renderApiErrorPage(pathname: string, currentLabel: string, error: string): string {
-  return renderAuthenticatedPage({
-    pathname,
-    currentLabel,
-    content: `
-      <section class="panel placeholder-state">
-        <p class="eyebrow">Erro ao carregar dados</p>
-        <h1>${escapeHtml(currentLabel)}</h1>
-        <p class="error" role="alert">${escapeHtml(error)}</p>
-        <a class="button-link" href="${escapeHtml(pathname)}">Tentar novamente</a>
-      </section>
-    `,
-  });
-}
-
-function apiFormScript(): string {
+function clientScript(): string {
   return `
     <script>
-      function ensureStatus(container) {
-        let status = container.querySelector(":scope > [data-form-status]");
+      function moneyToMinor(value) {
+        const normalized = String(value).replace(/\\./g, "").replace(",", ".");
+        return Math.round(parseFloat(normalized || "0") * 100);
+      }
+
+      function minorToMoneyInput(amountMinor) {
+        return (amountMinor / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      document.querySelectorAll("[data-money]").forEach((input) => {
+        input.addEventListener("input", () => {
+          const digits = input.value.replace(/\\D/g, "");
+          const cents = digits ? parseInt(digits, 10) : 0;
+          input.value = minorToMoneyInput(cents);
+        });
+      });
+
+      document.querySelectorAll("[data-logout]").forEach((button) => button.addEventListener("click", async () => {
+        await fetch("/api/session", { method: "DELETE" });
+        window.location.assign("/login");
+      }));
+
+      function setupSelect(rootSelector, triggerSelector, menuSelector, inputSelector, optionSelector) {
+        const root = document.querySelector(rootSelector);
+        if (!root) return;
+        const trigger = root.querySelector(triggerSelector);
+        const triggerIcon = trigger.querySelector(".account-select-icon");
+        const triggerText = trigger.querySelector(".account-select-text");
+        const menu = root.querySelector(menuSelector);
+        const input = root.querySelector(inputSelector);
+
+        function close() {
+          menu.hidden = true;
+          trigger.setAttribute("aria-expanded", "false");
+        }
+
+        trigger.addEventListener("click", () => {
+          const isOpen = !menu.hidden;
+          menu.hidden = isOpen;
+          trigger.setAttribute("aria-expanded", String(!isOpen));
+        });
+
+        menu.querySelectorAll(optionSelector).forEach((option) => option.addEventListener("click", () => {
+          const id = option.dataset.cardOption || option.dataset.accountOption;
+          menu.querySelectorAll(optionSelector).forEach((node) => node.setAttribute("aria-selected", String(node === option)));
+          triggerIcon.innerHTML = option.querySelector(".account-select-icon").innerHTML;
+          triggerText.textContent = option.dataset.cardName || option.dataset.accountName;
+          close();
+          if (input.value !== id) {
+            input.value = id;
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }));
+
+        document.addEventListener("click", (event) => {
+          if (!root.contains(event.target)) close();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") close();
+        });
+      }
+
+      setupSelect("[data-card-picker]", "[data-card-trigger]", "[data-card-menu]", "[data-card-input]", "[data-card-option]");
+
+      document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => {
+        if (event.target.name === "cardId") {
+          autoForm.querySelector("[data-invoice-input]").value = "";
+          autoForm.requestSubmit();
+        }
+      }));
+
+      const invoiceOptions = JSON.parse(document.querySelector("[data-invoice-options]").textContent || "[]");
+      const invoiceInput = document.querySelector("[data-invoice-input]");
+      const invoicePeriodText = document.querySelector("[data-invoice-period-text]");
+
+      document.querySelectorAll("[data-invoice-step]").forEach((button) => button.addEventListener("click", () => {
+        if (invoiceOptions.length === 0) return;
+        const currentIndex = Math.max(0, invoiceOptions.findIndex((item) => item.id === invoiceInput.value));
+        const delta = Number(button.dataset.invoiceStep);
+        const nextIndex = (currentIndex - delta + invoiceOptions.length) % invoiceOptions.length;
+        invoiceInput.value = invoiceOptions[nextIndex].id;
+        invoicePeriodText.textContent = invoiceOptions[nextIndex].label;
+        invoiceInput.closest("form").requestSubmit();
+      }));
+
+      const purchaseSearch = document.querySelector("[data-purchase-search]");
+      const reconciliationToggles = Array.from(document.querySelectorAll("[data-reconciliation-toggle]"));
+
+      function applyPurchaseFilters() {
+        const query = String(purchaseSearch.value || "").trim().toLowerCase();
+        const activeStatuses = reconciliationToggles
+          .filter((toggle) => toggle.getAttribute("aria-pressed") === "true")
+          .map((toggle) => toggle.dataset.reconciliationToggle);
+        document.querySelectorAll("[data-purchase-item]").forEach((item) => {
+          const matchesText = !query || item.dataset.search.includes(query);
+          const matchesStatus = activeStatuses.includes(item.dataset.reconciliation);
+          item.hidden = !(matchesText && matchesStatus);
+        });
+      }
+
+      purchaseSearch && purchaseSearch.addEventListener("input", applyPurchaseFilters);
+      reconciliationToggles.forEach((toggle) => toggle.addEventListener("click", () => {
+        toggle.setAttribute("aria-pressed", String(toggle.getAttribute("aria-pressed") !== "true"));
+        applyPurchaseFilters();
+      }));
+
+      document.querySelectorAll(".actions").forEach((details) => {
+        const menu = details.querySelector(":scope > div");
+        if (!menu) return;
+        details.addEventListener("toggle", () => {
+          if (!details.open) return;
+          document.querySelectorAll(".actions[open]").forEach((other) => {
+            if (other !== details) other.removeAttribute("open");
+          });
+        });
+      });
+
+      function openModal(name) {
+        document.querySelector('dialog[data-modal="' + name + '"]').showModal();
+      }
+
+      const purchaseForm = document.querySelector("[data-purchase-form]");
+      const purchaseRepeatMode = purchaseForm && purchaseForm.querySelector('[name="repeatMode"]');
+      const purchaseRepeatModeLabel = purchaseRepeatMode && purchaseRepeatMode.closest("label");
+
+      function setPurchaseFieldVisible(name, visible) {
+        const field = purchaseForm.querySelector('[data-purchase-field="' + name + '"]');
+        if (field) field.hidden = !visible;
+      }
+
+      function syncPurchaseFieldVisibility() {
+        const mode = purchaseRepeatMode.value;
+        setPurchaseFieldVisible("totalInstallments", mode === "installment");
+        setPurchaseFieldVisible("interval", mode === "fixed");
+        setPurchaseFieldVisible("frequency", mode === "fixed");
+        setPurchaseFieldVisible("endOn", mode === "fixed");
+      }
+
+      purchaseRepeatMode && purchaseRepeatMode.addEventListener("change", syncPurchaseFieldVisibility);
+
+      document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => {
+        if (button.disabled) return;
+        if (button.dataset.openModal === "purchase") {
+          purchaseForm.reset();
+          purchaseForm.dataset.method = "POST";
+          if (purchaseRepeatModeLabel) purchaseRepeatModeLabel.hidden = false;
+          syncPurchaseFieldVisibility();
+          document.querySelector("[data-purchase-modal-title]").textContent = "Nova compra";
+        }
+        openModal(button.dataset.openModal);
+      }));
+
+      document.querySelectorAll("[data-purchase]").forEach((node) => {
+        const purchase = JSON.parse(node.textContent);
+        const button = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
+        if (!button) return;
+        button.addEventListener("click", () => {
+          const form = purchaseForm;
+          form.reset();
+          form.dataset.path = "/api/transactions/" + purchase.id;
+          form.dataset.method = "PATCH";
+          form.amountMinor.value = minorToMoneyInput(purchase.amountMinor);
+          form.occurredOn.value = purchase.occurredOn;
+          form.description.value = purchase.description;
+          if (form.categoryId) form.categoryId.value = purchase.categoryId || "";
+          if (purchaseRepeatModeLabel) purchaseRepeatModeLabel.hidden = true;
+          syncPurchaseFieldVisibility();
+          document.querySelector("[data-purchase-modal-title]").textContent = "Editar compra";
+          openModal("purchase");
+        });
+      });
+
+      async function send(path, method, body) {
+        return fetch(path, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+      }
+
+      async function message(response) {
+        const body = await response.json().catch(() => ({}));
+        return response.ok ? "Ação concluída. Atualizando..." : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
+      }
+
+      function statusNodeFor(form) {
+        let status = form.querySelector("[data-form-status]");
         if (!status) {
           status = document.createElement("p");
-          status.className = "form-status muted";
+          status.className = "muted full";
           status.setAttribute("data-form-status", "");
           status.setAttribute("aria-live", "polite");
-          container.appendChild(status);
+          form.appendChild(status);
         }
         return status;
       }
 
-      function buildPayload(form) {
-        const payload = {};
-        new FormData(form).forEach((value, key) => {
-          if (value === "") return;
-          const field = form.querySelector('[name="' + key + '"]');
-          if (field && field.dataset.money !== undefined) {
-            payload[key] = Math.round(parseFloat(String(value).replace(",", ".")) * 100);
-          } else if (field && field.type === "number") {
-            payload[key] = Number(value);
-          } else {
-            payload[key] = value;
-          }
-        });
-        return payload;
+      function extractPurchaseCardId(path) {
+        const match = /\\/api\\/cards\\/([^/]+)\\/purchases/.exec(path || "");
+        return match ? match[1] : "";
       }
 
-      async function readApiMessage(response) {
-        const body = await response.json().catch(() => ({}));
-        if (response.ok) return "Ação concluída. Atualizando a tela...";
-        return (body.error && body.error.message) || "Não foi possível concluir a ação.";
-      }
-
-      document.querySelectorAll("[data-api-form]").forEach((form) => {
-        const status = ensureStatus(form);
+      document.querySelectorAll("[data-purchase-form]").forEach((form) => {
+        const status = statusNodeFor(form);
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
-          const confirmation = form.dataset.apiConfirm;
-          if (confirmation && !window.confirm(confirmation)) return;
-          const submitButton = form.querySelector('button[type="submit"]');
-          const method = form.dataset.apiMethod || "POST";
-          const payload = buildPayload(form);
+          const data = new FormData(form);
+          const path = form.dataset.path || form.getAttribute("data-path");
+          const method = form.dataset.method || "POST";
+          const mode = method === "POST" ? String(data.get("repeatMode") || "single") : "single";
+          const purchaseCardId =
+            String(data.get("purchaseCardId") || "") || extractPurchaseCardId(path);
+          const categoryId = String(data.get("categoryId") || "");
+          const basePayload = {
+            amountMinor: moneyToMinor(data.get("amountMinor")),
+            occurredOn: String(data.get("occurredOn")),
+            description: String(data.get("description") || ""),
+          };
+          if (categoryId) basePayload.categoryId = categoryId;
 
-          if (submitButton) submitButton.disabled = true;
-          status.className = "form-status muted";
           status.textContent = "Salvando...";
+          let response;
 
-          const response = await fetch(form.dataset.apiPath, {
-            method,
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 450);
-            return;
+          if (mode === "fixed") {
+            const endOn = String(data.get("endOn") || "");
+            response = await send("/api/recurrences", "POST", {
+              frequency: String(data.get("frequency") || "monthly"),
+              interval: Math.max(1, Number(data.get("interval") || 1)),
+              startOn: basePayload.occurredOn,
+              ...(endOn ? { endOn } : {}),
+              amountMinor: basePayload.amountMinor,
+              description: basePayload.description,
+              cardId: purchaseCardId,
+              ...(categoryId ? { categoryId } : {}),
+            });
+          } else if (mode === "installment") {
+            response = await send("/api/cards/" + purchaseCardId + "/purchases", "POST", {
+              ...basePayload,
+              totalInstallments: Math.max(2, Number(data.get("totalInstallments") || 2)),
+            });
+          } else if (purchaseCardId && method === "POST") {
+            response = await send("/api/cards/" + purchaseCardId + "/purchases", "POST", basePayload);
+          } else {
+            response = await send(path, method, basePayload);
           }
-          if (submitButton) submitButton.disabled = false;
+
+          status.textContent = await message(response);
+          if (response.ok) window.setTimeout(() => window.location.reload(), 450);
+        });
+      });
+
+      document.querySelectorAll("dialog form:not([data-purchase-form]):not(.close-form)").forEach((form) => {
+        const status = statusNodeFor(form);
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) return;
+          const data = new FormData(form);
+          const payload = {};
+          data.forEach((value, key) => {
+            if (value === "") return;
+            const field = form.querySelector('[name="' + key + '"]');
+            payload[key] = field && field.dataset.money !== undefined ? moneyToMinor(value) : value;
+          });
+          status.textContent = "Salvando...";
+          const response = await send(form.dataset.path, "POST", payload);
+          status.textContent = await message(response);
+          if (response.ok) window.setTimeout(() => window.location.reload(), 450);
         });
       });
 
       document.querySelectorAll("[data-api-action]").forEach((button) => {
-        const container = button.closest(".item-actions") || button.closest(".invoice-actions") || button.parentElement;
-        const status = ensureStatus(container);
+        const status = statusNodeFor(button.closest(".invoice-actions") || button.parentElement);
         button.addEventListener("click", async () => {
           const confirmation = button.dataset.apiConfirm;
           if (confirmation && !window.confirm(confirmation)) return;
           button.disabled = true;
-          status.className = "form-status muted";
           status.textContent = "Enviando...";
-
-          const response = await fetch(button.dataset.apiPath, {
-            method: button.dataset.apiMethod || "POST",
-            headers: { "content-type": "application/json" },
-          });
-
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-          if (response.ok && button.dataset.apiMethod !== "GET") {
+          const response = await send(button.dataset.apiPath, button.dataset.apiMethod || "POST", {});
+          status.textContent = await message(response);
+          if (response.ok) {
             window.setTimeout(() => window.location.reload(), 450);
             return;
           }
           button.disabled = false;
         });
       });
-    </script>
-  `;
-}
 
-function cardsPageScript(): string {
-  return `
-    <script>
-      function setSelected(elements, selected) {
-        elements.forEach((item) => item.setAttribute("aria-selected", item === selected ? "true" : "false"));
-      }
-
-      function showCard(cardId) {
-        document.querySelectorAll("[data-card-section]").forEach((section) => {
-          section.hidden = section.dataset.cardSection !== cardId;
-        });
-        setSelected(document.querySelectorAll("[data-card-tab]"), document.querySelector('[data-card-tab="' + cardId + '"]'));
-      }
-
-      function showInvoice(section, invoiceId) {
-        section.querySelectorAll("[data-invoice-view]").forEach((view) => {
-          view.hidden = view.dataset.invoiceView !== invoiceId;
-        });
-        setSelected(section.querySelectorAll("[data-invoice-tab]"), section.querySelector('[data-invoice-tab="' + invoiceId + '"]'));
-      }
-
-      document.querySelectorAll("[data-card-tab]").forEach((button) => {
-        button.addEventListener("click", () => showCard(button.dataset.cardTab));
-      });
-
-      document.querySelectorAll("[data-invoice-tab]").forEach((button) => {
-        button.addEventListener("click", () => showInvoice(button.closest("[data-card-section]"), button.dataset.invoiceTab));
-      });
-
-      document.querySelectorAll("[data-invoice-step]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const section = button.closest("[data-card-section]");
-          const tabs = Array.from(section.querySelectorAll("[data-invoice-tab]"));
-          if (tabs.length === 0) return;
-          const current = Math.max(0, tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true"));
-          const delta = button.dataset.invoiceStep === "next" ? 1 : -1;
-          const next = (current + delta + tabs.length) % tabs.length;
-          showInvoice(section, tabs[next].dataset.invoiceTab);
-        });
-      });
-
-      document.querySelectorAll("[data-invoice-view]").forEach((view) => {
-        const search = view.querySelector("[data-purchase-search]");
-        const filter = view.querySelector("[data-reconciliation-filter]");
-        const apply = () => {
-          const query = String(search.value || "").trim().toLowerCase();
-          const reconciliation = filter.value;
-          view.querySelectorAll("[data-purchase-item]").forEach((item) => {
-            const matchesText = !query || item.dataset.search.includes(query);
-            const matchesStatus = reconciliation === "all" || item.dataset.reconciliation === reconciliation;
-            item.hidden = !(matchesText && matchesStatus);
-          });
-        };
-        search.addEventListener("input", apply);
-        filter.addEventListener("change", apply);
-      });
+      applyPurchaseFilters();
     </script>
   `;
 }
 
 function renderPage(input: { title: string; body: string }): string {
-  return `<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    ${faviconLinks()}
-    <title>${escapeHtml(input.title)}</title>
-    <style>${baseCss()}</style>
-  </head>
-  <body>${input.body}</body>
-</html>`;
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><link rel="manifest" href="/manifest.webmanifest" />${faviconLinks()}<title>${escapeHtml(input.title)}</title><style>${css()}</style></head><body>${input.body}</body></html>`;
 }
 
-function renderNavigation(activePathname: string): string {
-  return Array.from(privateRoutes.entries())
-    .map(
-      ([path, label]) =>
-        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
-    )
-    .join("");
+function renderDotsIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="5" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="19" r="1.9" fill="currentColor"/></svg>`;
 }
 
-function renderEmptyState(title: string, description: string): string {
-  return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
+function renderEditIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
 }
 
-function renderAccountOptions(accounts: AccountRecord[], selected?: string): string {
-  return accounts
-    .map(
-      (account) =>
-        `<option value="${escapeHtml(account.id)}"${selected === account.id ? " selected" : ""}>${escapeHtml(account.name)}</option>`,
-    )
-    .join("");
-}
-
-function renderCategoryOptions(categories: CategoryRecord[], selected?: string): string {
-  return categories
-    .map(
-      (category) =>
-        `<option value="${escapeHtml(category.id)}"${selected === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
-    )
-    .join("");
-}
-
-function fallbackSummary(invoice: InvoiceRecord): InvoiceSummaryRecord {
-  return {
-    invoiceId: invoice.id,
-    financialProfileId: "",
-    cardId: invoice.cardId,
-    cardName: "Cartão",
-    status: invoice.status,
-    periodStartOn: invoice.periodStartOn,
-    closingOn: invoice.periodEndOn,
-    dueOn: invoice.dueOn,
-    previousBalanceMinor: 0,
-    totalExpensesMinor: invoice.totalAmountMinor,
-    totalPaidMinor: invoice.status === "paid" ? invoice.totalAmountMinor : 0,
-    amountDueMinor:
-      invoice.status === "paid" || invoice.status === "cancelled" ? 0 : invoice.totalAmountMinor,
-    reconciledExpensesMinor: 0,
-    unreconciledExpensesMinor: invoice.totalAmountMinor,
-    purchasesCount: 0,
-    cardTotals: [],
-  };
+function renderPencilIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
 }
 
 function formatMoney(amountMinor: number): string {
@@ -672,8 +748,20 @@ function formatMoneyInput(amountMinor: number): string {
   return (amountMinor / 100).toFixed(2).replace(".", ",");
 }
 
-function formatDate(date: string): string {
-  return formatDateOnly(date);
+function formatDate(value: string): string {
+  return formatDateOnly(value);
+}
+
+function formatMonthYear(dateOnly: string): string {
+  const [year, month] = dateOnly.split("-").map(Number) as [number, number];
+  const date = new Date(Date.UTC(year, month - 1, 1));
+  const label = date.toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function formatGenericStatus(status: string): string {
@@ -700,6 +788,32 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+function serializeScriptJson(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
+function fallbackSummary(invoice: InvoiceRecord): InvoiceSummaryRecord {
+  return {
+    invoiceId: invoice.id,
+    financialProfileId: "",
+    cardId: invoice.cardId,
+    cardName: "Cartão",
+    status: invoice.status,
+    periodStartOn: invoice.periodStartOn,
+    closingOn: invoice.periodEndOn,
+    dueOn: invoice.dueOn,
+    previousBalanceMinor: 0,
+    totalExpensesMinor: invoice.totalAmountMinor,
+    totalPaidMinor: invoice.status === "paid" ? invoice.totalAmountMinor : 0,
+    amountDueMinor:
+      invoice.status === "paid" || invoice.status === "cancelled" ? 0 : invoice.totalAmountMinor,
+    reconciledExpensesMinor: 0,
+    unreconciledExpensesMinor: invoice.totalAmountMinor,
+    purchasesCount: 0,
+    cardTotals: [],
+  };
+}
+
 interface AccountRecord {
   id: string;
   name: string;
@@ -717,6 +831,13 @@ interface CardRecord {
   closingDay: number;
   dueDay: number;
   maskedIdentifier?: string;
+  institutionKey?: string;
+}
+
+interface CardAdditionalLinkRecord {
+  groupCardId: string;
+  cardId: string;
+  isPrimary: boolean;
 }
 
 interface InvoiceRecord {
@@ -773,35 +894,8 @@ interface CardPurchaseRecord {
   status: string;
 }
 
-function baseCss(): string {
+function css(): string {
   return `
-    :root { color-scheme: light; --bg: #f8fafc; --surface: #ffffff; --surface-soft: #eef5f8; --text: #0f172a; --muted: #475569; --line: #cbd5e1; --primary: #0f3d4c; --primary-soft: #e8f3f6; --cyan: #0891b2; --success: #166534; --success-bg: #dcfce7; --danger: #dc2626; --danger-bg: #fee2e2; }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    h1, h2, p, dl, dd { margin: 0; } h1 { font-size: clamp(1.6rem, 4vw, 2rem); line-height: 1.15; } h2 { font-size: 1rem; line-height: 1.3; } a { color: inherit; }
-    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid rgba(34, 211, 238, .55); outline-offset: 2px; }
-    .panel, .placeholder-state { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
-    .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; } .muted { color: var(--muted); line-height: 1.5; }
-    form, label { display: grid; gap: 8px; } label { color: var(--text); font-weight: 700; } input, select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: inherit; min-height: 44px; padding: 0 12px; width: 100%; }
-    button, .button-link { align-items: center; background: var(--primary); border: 0; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; text-decoration: none; }
-    button:disabled { cursor: not-allowed; opacity: .58; } .secondary-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); } .icon-button { font-size: 1.3rem; min-width: 44px; padding: 0; }
-    .error { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; } .success { background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: 8px; color: var(--success); padding: 10px 12px; } .form-status { grid-column: 1 / -1; }
-    .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; }
-    .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; gap: 10px; min-height: 44px; text-decoration: none; } .brand img { border-radius: 6px; display: block; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; }
-    .logout { background: rgba(255,255,255,.12); margin-top: auto; } .main-area { min-width: 0; } .topbar { align-items: center; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; min-height: 64px; padding: 0 24px; position: sticky; top: 0; z-index: 5; } .topbar div { display: grid; gap: 2px; } .topbar span { color: var(--muted); font-size: .875rem; }
-    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; } .cards-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .cards-heading > div { display: grid; gap: 6px; max-width: 760px; }
-    .cards-workspace { align-items: start; display: grid; gap: 18px; grid-template-columns: 280px minmax(0, 1fr); } .card-selector, .invoice-summary { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 14px; padding: 16px; }
-    .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; } .compact-heading h2 { font-size: .95rem; }
-    .card-tabs { display: grid; gap: 10px; } .card-tab { background: transparent; border: 1px solid var(--line); color: var(--text); display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; justify-content: stretch; min-height: 76px; padding: 12px; text-align: left; } .card-tab[aria-selected="true"] { background: var(--primary-soft); border-color: #a5cbd6; } .card-tab span { display: grid; gap: 3px; min-width: 0; } .card-tab small { color: var(--muted); font-weight: 700; line-height: 1.35; } .card-tab-meta { text-align: right; }
-    .invoice-area, .card-operation { display: grid; gap: 14px; min-width: 0; } .operation-topline { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: flex; gap: 16px; justify-content: space-between; padding: 16px; } .operation-topline > div:first-child { display: grid; gap: 4px; } .card-actions { display: flex; gap: 8px; }
-    .period-controls, .invoice-tabs { display: flex; gap: 8px; } .invoice-tabs { overflow-x: auto; padding-bottom: 2px; } .invoice-tab { background: var(--surface); border: 1px solid var(--line); color: var(--text); display: grid; gap: 2px; min-width: 128px; padding: 10px 12px; } .invoice-tab[aria-selected="true"] { background: var(--primary); color: white; } .invoice-tab[aria-selected="true"] span { color: rgba(255,255,255,.78); } .invoice-tab span { color: var(--muted); font-size: .82rem; font-weight: 800; }
-    .invoice-view { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) 340px; } .invoice-main { display: grid; gap: 14px; min-width: 0; } .invoice-toolbar { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) 190px; padding: 14px; }
-    .purchase-list { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 0; min-width: 0; overflow: hidden; } .purchase-row { align-items: center; border-top: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: 92px minmax(0, 1fr) auto 88px; padding: 14px; } .purchase-row:first-child { border-top: 0; } .purchase-row time, .purchase-row span { color: var(--muted); font-size: .9rem; } .purchase-row div { display: grid; gap: 4px; min-width: 0; } .purchase-row > strong { white-space: nowrap; } .item-actions summary, .payment-panel summary, .purchase-form-panel summary { color: var(--primary); cursor: pointer; font-weight: 800; }
-    .invoice-summary { align-content: start; position: sticky; top: 84px; } .summary-title { align-items: start; display: flex; gap: 12px; justify-content: space-between; } .summary-title > div { display: grid; gap: 4px; } .summary-title > strong { font-size: 1.15rem; white-space: nowrap; } .summary-grid, .limit-values { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .summary-grid div, .limit-values div { background: var(--surface-soft); border-radius: 8px; display: grid; gap: 4px; padding: 10px; } dt { color: var(--muted); font-size: .78rem; font-weight: 800; } dd { font-weight: 900; }
-    .limit-box { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .limit-box > div:first-child { display: grid; gap: 4px; } .limit-box span { color: var(--muted); } .limit-meter { background: #dbeafe; border-radius: 999px; height: 10px; overflow: hidden; } .limit-meter span { background: var(--cyan); display: block; height: 100%; }
-    .invoice-actions, .compact-form { display: grid; gap: 10px; } .compact-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .compact-form button, .compact-form .form-status { grid-column: 1 / -1; } .payment-panel { border-top: 1px solid var(--line); padding-top: 12px; } .purchase-form-panel { border-bottom: 1px solid var(--line); padding-bottom: 14px; }
-    .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
-    @media (max-width: 1080px) { .cards-workspace, .invoice-view { grid-template-columns: 1fr; } .invoice-summary { position: static; } .card-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } .cards-heading, .operation-topline { align-items: stretch; display: grid; } .card-tabs, .invoice-toolbar, .compact-form, .summary-grid, .limit-values { grid-template-columns: 1fr; } .card-tab { grid-template-columns: 1fr; } .card-tab-meta { text-align: left; } .purchase-row { align-items: start; grid-template-columns: 1fr; } }
+    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p,dl,dd{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{align-items:center;color:white;display:inline-flex;font-size:1.2rem;font-weight:900;gap:10px;text-decoration:none}.brand img{border-radius:6px;display:block}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1440px;padding:24px;width:100%}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.cards-heading{align-items:end;display:flex;gap:16px;justify-content:space-between}.cards-heading>div{display:grid;gap:6px;max-width:760px}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}label{display:grid;gap:8px;font-weight:700}[hidden]{display:none}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}.card-filter{background:var(--surface)}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.2fr) minmax(13rem,1fr)}.account-field{align-items:end;display:grid;gap:8px;grid-template-columns:1fr auto;position:relative}.account-field>label:first-child{grid-column:1/-1}.ghost-link{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;color:var(--primary);display:inline-flex;height:42px;justify-content:center;width:42px}.account-select{position:relative}.account-select-trigger{align-items:center;background:white;border:1px solid var(--line);color:var(--text);display:flex;gap:10px;justify-content:flex-start;text-align:left;width:100%}.account-select-trigger:hover{background:var(--soft)}.account-select-icon{align-items:center;display:inline-flex;flex-shrink:0;height:24px;width:24px}.account-select-icon .brand-icon,.account-select-icon .brand-icon-wrap{display:block;height:24px;width:24px}.account-select-icon .brand-logo-img{background:#fff;border-radius:50%;object-fit:contain;padding:3px}.account-select-text{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-select-chevron{color:var(--muted);flex-shrink:0}.account-select-menu{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);left:0;list-style:none;margin:6px 0 0;max-height:280px;overflow-y:auto;padding:6px;position:absolute;right:0;top:100%;z-index:20}.account-select-menu li{align-items:center;border-radius:6px;cursor:pointer;display:flex;font-weight:700;gap:10px;padding:9px 10px}.account-select-menu li:hover,.account-select-menu li[aria-selected=true]{background:var(--soft)}.month-field{display:grid;gap:8px}.month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto;padding:4px}.month-current{font-weight:800;text-align:center}.icon-btn{background:white;border:1px solid var(--line);border-radius:6px;color:var(--primary);font-size:1.1rem;font-weight:900;line-height:1;min-height:34px;min-width:34px;padding:0}.icon-btn:hover{background:var(--soft)}.cards-layout{align-items:start;display:grid;gap:14px;grid-template-columns:300px minmax(0,1fr)}.invoice-summary{display:grid;gap:18px;position:sticky;top:88px}.summary-block{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:14px}.summary-block:first-child{border-top:0;padding-top:0}.summary-block h2{font-size:.95rem}.summary-list{display:grid;gap:6px}.summary-row{align-items:center;display:flex;font-size:.86rem;gap:10px;justify-content:space-between}.summary-row dt{color:var(--muted);font-weight:700}.summary-row dd{font-weight:800;text-align:right}.summary-row-strong dd{font-size:1.05rem}.invoice-actions{display:grid;gap:8px}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.invoice-panel{display:grid;gap:14px;padding:0}.invoice-toolbar{align-items:center;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;padding:18px}.filter-controls{align-items:center;display:flex;flex-wrap:wrap;gap:8px}.filter-controls input[type=search]{min-width:220px;width:auto}.toggle-chip{background:var(--bg);border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.82rem;font-weight:800;min-height:36px;padding:0 14px}.toggle-chip[aria-pressed=true]{background:var(--soft);border-color:#a5cbd6;color:var(--primary)}.purchase-list{display:grid;gap:0;padding:0 18px 18px}.purchase-row{align-items:center;border-top:1px solid var(--line);display:grid;gap:12px;grid-template-columns:6.5rem minmax(0,1fr) auto 8.5rem 3.5rem;padding:14px 0}.purchase-row:first-child{border-top:0}.purchase-row time{color:var(--muted);font-size:.9rem}.description{display:grid;gap:3px;min-width:0}.description span{color:var(--muted);font-size:.86rem}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;font-size:.78rem;font-weight:800;gap:6px;padding:6px 10px;white-space:nowrap}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.actions{position:relative}.actions summary{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:32px;justify-content:center;list-style:none;width:32px}.actions summary::-webkit-details-marker{display:none}.actions-menu{background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:2px;padding:6px;position:absolute;right:0;top:38px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:6px;color:var(--text);display:flex;font-size:.86rem;font-weight:700;gap:10px;justify-content:flex-start;min-height:36px;padding:0 10px;text-align:left;white-space:nowrap}.actions-item:hover{background:var(--soft)}.empty-state{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(680px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form:not(.close-form){display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}.full{grid-column:1/-1}.error-page{min-height:100vh;place-content:center}@media(max-width:1080px){.cards-layout{grid-template-columns:1fr}.invoice-summary{position:static}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form:not(.close-form){grid-template-columns:1fr}.cards-heading{align-items:stretch;display:grid}.purchase-row{align-items:start;grid-template-columns:1fr}}
   `;
 }

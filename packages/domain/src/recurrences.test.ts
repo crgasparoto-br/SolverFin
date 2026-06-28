@@ -1,4 +1,4 @@
-import type { Account, Category, Installment, Recurrence } from "./index.js";
+import type { Account, Card, Category, Installment, Recurrence } from "./index.js";
 import type { TenantContext } from "./tenant.js";
 import {
   cancelFutureInstallments,
@@ -31,10 +31,17 @@ const tenantB: TenantContext = {
 
 const activeAccount = createAccountFixture(tenantA, "account-a", "active");
 const archivedAccount = createAccountFixture(tenantA, "account-archived", "archived");
+const activeCard = createCardFixture(tenantA, "card-a", "active");
+const blockedCard = createCardFixture(tenantA, "card-blocked", "blocked");
 const category = createCategoryFixture(tenantA, "category-a", "active");
 
 runCreatesRecurrence();
 runRejectsArchivedAccount();
+runCreatesCardRecurrence();
+runRejectsInactiveCard();
+runRejectsRecurrenceWithoutAccountOrCard();
+runRejectsRecurrenceWithBothAccountAndCard();
+runGeneratesCardInstallmentsWithCardId();
 runGeneratesMonthlyInstallmentsWithoutDuplicates();
 runGeneratesBiweeklyInstallmentsWithInterval();
 runClampsMissingMonthDay();
@@ -84,6 +91,119 @@ function runRejectsArchivedAccount(): void {
       }),
     "RECURRENCE_ACCOUNT_ARCHIVED",
   );
+}
+
+function runCreatesCardRecurrence(): void {
+  const result = createRecurrence({
+    id: "recurrence-card-subscription",
+    context: tenantA,
+    now,
+    card: activeCard,
+    category,
+    payload: {
+      frequency: "monthly",
+      startOn: "2026-06-05",
+      amountMinor: 4990,
+      description: "Assinatura no cartao ficticia",
+      cardId: activeCard.id,
+      categoryId: category.id,
+    },
+  });
+
+  assertEqual(result.recurrence.status, "active", "card recurrence should start active");
+  assertEqual(result.recurrence.cardId, activeCard.id, "card recurrence should keep card id");
+  assertEqual(result.recurrence.accountId, undefined, "card recurrence should not have account id");
+  assertEqual(result.recurrence.currency, "BRL", "card recurrence should default currency to BRL");
+}
+
+function runRejectsInactiveCard(): void {
+  assertRecurrenceError(
+    () =>
+      createRecurrence({
+        id: "recurrence-card-blocked",
+        context: tenantA,
+        now,
+        card: blockedCard,
+        payload: {
+          frequency: "monthly",
+          startOn: "2026-06-05",
+          amountMinor: 4990,
+          description: "Assinatura ficticia",
+          cardId: blockedCard.id,
+        },
+      }),
+    "RECURRENCE_CARD_NOT_ACTIVE",
+  );
+}
+
+function runRejectsRecurrenceWithoutAccountOrCard(): void {
+  assertRecurrenceError(
+    () =>
+      createRecurrence({
+        id: "recurrence-no-target",
+        context: tenantA,
+        now,
+        payload: {
+          frequency: "monthly",
+          startOn: "2026-06-05",
+          amountMinor: 4990,
+          description: "Assinatura ficticia",
+        },
+      }),
+    "RECURRENCE_TARGET_REQUIRED",
+  );
+}
+
+function runRejectsRecurrenceWithBothAccountAndCard(): void {
+  assertRecurrenceError(
+    () =>
+      createRecurrence({
+        id: "recurrence-conflicting-target",
+        context: tenantA,
+        now,
+        account: activeAccount,
+        card: activeCard,
+        payload: {
+          frequency: "monthly",
+          startOn: "2026-06-05",
+          amountMinor: 4990,
+          description: "Assinatura ficticia",
+          accountId: activeAccount.id,
+          cardId: activeCard.id,
+        },
+      }),
+    "RECURRENCE_TARGET_CONFLICT",
+  );
+}
+
+function runGeneratesCardInstallmentsWithCardId(): void {
+  const recurrence = createRecurrence({
+    id: "recurrence-card-installments",
+    context: tenantA,
+    now,
+    card: activeCard,
+    payload: {
+      frequency: "monthly",
+      startOn: "2026-06-10",
+      amountMinor: 4990,
+      description: "Assinatura no cartao ficticia",
+      cardId: activeCard.id,
+    },
+  }).recurrence;
+
+  const installments = generateRecurrenceInstallments({
+    context: tenantA,
+    recurrence,
+    existingInstallments: [],
+    now,
+    through: "2026-08-10",
+    makeInstallmentId: (sequenceNumber) => `installment-card-${sequenceNumber}`,
+  });
+
+  assertEqual(installments.length, 3, "should generate three monthly card installments");
+  installments.forEach((installment) => {
+    assertEqual(installment.cardId, activeCard.id, "card installment should keep card id");
+  });
 }
 
 function runGeneratesMonthlyInstallmentsWithoutDuplicates(): void {
@@ -261,6 +381,20 @@ function createAccountFixture(
     status,
     currency: "BRL",
     openingBalanceMinor: 0,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function createCardFixture(context: TenantContext, id: string, status: Card["status"]): Card {
+  return {
+    id,
+    organizationId: context.organizationId,
+    financialProfileId: context.financialProfileId,
+    name: `Cartao ${id}`,
+    status,
+    closingDay: 20,
+    dueDay: 10,
     createdAt: now,
     updatedAt: now,
   };

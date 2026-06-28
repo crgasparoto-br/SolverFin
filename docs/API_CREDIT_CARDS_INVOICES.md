@@ -38,6 +38,14 @@ A fatura e resolvida por `cardId + periodStartOn + periodEndOn`:
 
 Compras parceladas criam parcelas planejadas. O valor total e dividido entre as parcelas, com centavos excedentes aplicados nas primeiras parcelas.
 
+## Compra fixa/recorrente
+
+Uma compra recorrente no cartao (assinatura, mensalidade) usa o mesmo recurso de `Recurrence` ja usado para lancamentos fixos de conta, agora aceitando `cardId` no lugar de `accountId` (os dois sao mutuamente exclusivos).
+
+- `POST /api/recurrences` com `cardId` em vez de `accountId` cria a recorrencia vinculada ao cartao.
+- `POST /api/recurrences/:id/generate-installments` gera as parcelas planejadas (`Installment` com `cardId` preenchido), do mesmo jeito que para recorrencias de conta.
+- A tela Cartoes de Credito usa essa rota no modo de repeticao "Fixo" do pop-up de nova compra.
+
 ## Pagamento de fatura
 
 `payInvoice` cria uma transacao `expense` na conta de pagamento e marca a fatura como `paid`.
@@ -47,6 +55,15 @@ Decisao de MVP:
 - pagamento parcial ou maior que o total da fatura e rejeitado;
 - o pagamento deve ser exatamente igual ao total atual da fatura;
 - suporte a pagamento parcial depende de campo persistente de valor pago/saldo em aberto e fica para evolucao futura.
+
+## Resumo de fatura e cartoes adicionais
+
+`GET /api/invoices/:id/summary` retorna `cardTotals`, um total por cartao para compor o resumo na tela web Cartoes de Credito.
+
+- Quando o cartao da fatura nao tem vinculo em `CardAdditionalLink`, `cardTotals` traz apenas o proprio cartao.
+- Quando o cartao pertence a um grupo (cartao principal + adicionais/virtuais cadastrados em Contas e Cartoes), `cardTotals` traz um item por cartao do grupo, cada um com seu proprio limite e, quando existir, a fatura do mesmo periodo (`periodStartOn` igual ao da fatura consultada).
+- Cartao do grupo sem fatura no periodo aparece com `invoiceTotalMinor` e `invoiceAmountDueMinor` iguais a zero, mantendo o limite visivel.
+- A tela soma os itens de `cardTotals` para exibir limite, uso e disponivel consolidados do grupo.
 
 ## Privacidade de dados de cartao
 

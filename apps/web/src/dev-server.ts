@@ -112,7 +112,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/cartoes" && token) {
-    sendHtml(response, 200, await renderCardsPage(token));
+    sendHtml(response, 200, await renderCardsPage(token, url));
     return;
   }
 
