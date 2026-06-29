@@ -42,7 +42,7 @@ export function renderLoginPage(errorMessage?: string): string {
           const target = tab.dataset.authTab;
           tabs.forEach((item) => item.classList.toggle("active", item === tab));
           panels.forEach((panel) => {
-            panel.hidden = panel.datasetAuthPanel !== target;
+            panel.hidden = panel.dataset.authPanel !== target;
           });
         });
       });
