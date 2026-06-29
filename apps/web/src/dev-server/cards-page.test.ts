@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { renderCardsPage } from "./cards-page.js";
+import { renderEnhancedCardsPage } from "./cards-page-enhancement.js";
 
 const originalFetch = globalThis.fetch;
 
@@ -55,7 +55,12 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
     }
 
     if (url.pathname === "/api/categories") {
-      return jsonResponse({ categories: [{ id: "category-1", name: "Mercado" }] });
+      return jsonResponse({
+        categories: [
+          { id: "category-root", name: "Alimentação" },
+          { id: "category-1", name: "Mercado", parentCategoryId: "category-root" },
+        ],
+      });
     }
 
     if (url.pathname === "/api/invoices/invoice-1/summary") {
@@ -126,7 +131,7 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
     return jsonResponse({});
   };
 
-  const html = await renderCardsPage("session-token");
+  const html = await renderEnhancedCardsPage("session-token");
 
   assert.match(html, /Faturas e compras/);
   assert.match(html, /Cartão Principal/);
@@ -138,6 +143,11 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /Disponível/);
   assert.match(html, /Supermercado/);
   assert.match(html, /Aplicativo de transporte/);
+  assert.match(html, /Alimentação &gt; Mercado/);
+  assert.match(html, /data-card-purchase-form/);
+  assert.match(html, /Repetição/);
+  assert.match(html, /Parcela inicial/);
+  assert.match(html, /Número de parcelas/);
   assert.match(html, /data-reconciliation-filter/);
   assert.match(html, /data-purchase-search/);
   assert.match(html, /\/api\/invoices\/invoice-1\/close/);
