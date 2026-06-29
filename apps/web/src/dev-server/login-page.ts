@@ -11,6 +11,7 @@ export function renderLoginPage(errorMessage?: string): string {
   <body>
     <main class="login-shell">
       <section class="panel" aria-labelledby="login-title">
+        <img class="login-logo" src="/brand/Solverfin_02.png" alt="SolverFin" width="96" height="96" />
         <p class="eyebrow">Acesso SolverFin</p>
         <h1 id="login-title">Entrar no SolverFin</h1>
         <p class="muted">Entre com uma conta cadastrada ou crie um usuário para salvar o acesso no banco local.</p>
@@ -41,7 +42,7 @@ export function renderLoginPage(errorMessage?: string): string {
           const target = tab.dataset.authTab;
           tabs.forEach((item) => item.classList.toggle("active", item === tab));
           panels.forEach((panel) => {
-            panel.hidden = panel.dataset.authPanel !== target;
+            panel.hidden = panel.datasetAuthPanel !== target;
           });
         });
       });
@@ -90,17 +91,18 @@ function loginCss(): string {
     :root { color-scheme: light; --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --muted: #64748b; --line: #dbe3ee; --primary: #0f3d4c; --cyan: #0891b2; --danger: #dc2626; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    h1, p { margin: 0; } h1 { font-size: 2rem; letter-spacing: 0; }
+    h1, p { margin: 0; } h1 { font-size: 2rem; letter-spacing: 0; text-align: center; }
     .login-shell { align-items: center; display: grid; min-height: 100vh; padding: 24px; }
-    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 18px; margin: 0 auto; max-width: 480px; padding: 20px; width: 100%; }
-    .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .muted { color: var(--muted); line-height: 1.5; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 18px; margin: 0 auto; max-width: 480px; padding: 24px 20px 20px; width: 100%; }
+    .login-logo { display: block; height: 96px; justify-self: center; object-fit: contain; width: 96px; }
+    .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; text-align: center; text-transform: uppercase; } .muted { color: var(--muted); line-height: 1.5; text-align: center; }
     .auth-tabs { background: #eef5f8; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 4px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; }
     .tab { background: transparent; color: var(--text); min-height: 38px; }
     .tab.active { background: var(--surface); box-shadow: 0 1px 3px rgba(15, 23, 42, .12); }
     form, label { display: grid; gap: 10px; } label { font-weight: 700; }
     input { border: 1px solid var(--line); border-radius: 8px; font: inherit; min-height: 44px; padding: 0 12px; width: 100%; }
     button { align-items: center; background: var(--primary); border: 0; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; }
-    .error { background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }
+    .error { background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; text-align: left; }
     [hidden] { display: none !important; }
   `;
 }
