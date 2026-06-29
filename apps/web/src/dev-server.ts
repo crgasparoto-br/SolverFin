@@ -5,7 +5,7 @@ import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { handleApiRequest } from "./dev-server/api.js";
-import { renderCardsPage } from "./dev-server/cards-page.js";
+import { renderEnhancedCardsPage } from "./dev-server/cards-page-enhancement.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
@@ -22,6 +22,7 @@ export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancemen
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 export { renderAccountsPage, renderBudgetsPage, renderDashboardPage } from "./dev-server/pages.js";
 export { renderCardsPage } from "./dev-server/cards-page.js";
+export { renderEnhancedCardsPage } from "./dev-server/cards-page-enhancement.js";
 export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
@@ -107,7 +108,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/cartoes" && token) {
-    sendHtml(response, 200, await renderCardsPage(token));
+    sendHtml(response, 200, await renderEnhancedCardsPage(token));
     return;
   }
 
