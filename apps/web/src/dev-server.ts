@@ -5,7 +5,6 @@ import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { handleApiRequest } from "./dev-server/api.js";
-import { renderCardsPage } from "./dev-server/cards-page.js";
 import { renderEnhancedCardsPage } from "./dev-server/cards-page-enhancement.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
