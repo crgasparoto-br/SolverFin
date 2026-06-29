@@ -1,6 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
-import { solverFinLogoPngBase64 } from "./pwa/brand-assets.js";
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
@@ -35,13 +34,6 @@ export { renderTransactionsPage } from "./dev-server/transactions-page.js";
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.PORT ?? 5173);
 const manifest = buildSolverFinWebManifest();
-const solverFinLogoPng = Buffer.from(solverFinLogoPngBase64, "base64");
-const solverFinLogoPaths = new Set([
-  "/brand/Solverfin_02.png",
-  "/icons/solverfin-192.png",
-  "/icons/solverfin-512.png",
-  "/icons/solverfin-maskable-512.png",
-]);
 
 const server = createServer((request, response) => {
   void handleRequest(request, response);
@@ -58,16 +50,6 @@ if (process.argv[1]?.endsWith("dev-server.js") === true) {
 async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
   const token = getSessionTokenFromRequest(request);
-
-  if (solverFinLogoPaths.has(url.pathname)) {
-    response.writeHead(200, {
-      "cache-control": "public, max-age=31536000, immutable",
-      "content-length": solverFinLogoPng.byteLength,
-      "content-type": "image/png",
-    });
-    response.end(solverFinLogoPng);
-    return;
-  }
 
   if (url.pathname === "/manifest.webmanifest") {
     sendJson(response, 200, manifest, "application/manifest+json; charset=utf-8");

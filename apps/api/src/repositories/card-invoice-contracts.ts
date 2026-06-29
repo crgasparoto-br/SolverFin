@@ -132,7 +132,8 @@ export async function summarizeInvoiceForContext(
         coalesce(sum(case when "status" = 'RECONCILED' then "amountMinor" else 0 end), 0)::int as "reconciledExpensesMinor",
         coalesce(sum(case when "status" <> 'RECONCILED' then "amountMinor" else 0 end), 0)::int as "unreconciledExpensesMinor"
        from "Transaction"
-       where "organizationId" = $1 and "financialProfileId" = $2 and "invoiceId" = $3 and "cardId" = $4`,
+       where "organizationId" = $1 and "financialProfileId" = $2 and "invoiceId" = $3 and "cardId" = $4
+         and "accountId" is null`,
     [context.organizationId, context.financialProfileId, invoice.id, invoice.cardId],
   );
   const amountDueMinor = calculateAmountDue(invoice);
@@ -179,23 +180,16 @@ async function resolveFamilyCardIds(context: TenantContext, cardId: EntityId): P
 async function buildCardTotals(
   context: TenantContext,
   familyCardIds: readonly EntityId[],
-  primaryInvoice: InvoiceContractRow,
+  sharedInvoice: InvoiceContractRow,
 ): Promise<InvoiceCardTotalContract[]> {
+  const invoiceTotalMinor = sharedInvoice.totalAmountMinor;
+  const invoiceAmountDueMinor = calculateAmountDue(sharedInvoice);
+
   return Promise.all(
     familyCardIds.map(async (familyCardId) => {
       const familyCard = await findCard(context, familyCardId);
       const limitUsedMinor = await calculateLimitUsedForCard(context, familyCardId);
       const limitTotalMinor = familyCard.creditLimitMinor ?? 0;
-      const periodInvoice =
-        familyCardId === primaryInvoice.cardId
-          ? primaryInvoice
-          : await findInvoiceForCardPeriod(
-              context,
-              familyCardId,
-              toDateOnly(primaryInvoice.periodStartOn),
-            );
-      const invoiceTotalMinor = periodInvoice?.totalAmountMinor ?? 0;
-      const invoiceAmountDueMinor = periodInvoice ? calculateAmountDue(periodInvoice) : 0;
 
       return {
         cardId: familyCard.id,
@@ -213,23 +207,6 @@ async function buildCardTotals(
   );
 }
 
-async function findInvoiceForCardPeriod(
-  context: TenantContext,
-  cardId: EntityId,
-  periodStartOn: string,
-): Promise<InvoiceContractRow | undefined> {
-  const rows = await query<InvoiceContractRow>(
-    `select "id", "organizationId", "financialProfileId", "cardId", "status", "periodStartOn",
-            "periodEndOn", "dueOn", "totalAmountMinor", "currency", "paidAt", "paymentTransactionId",
-            "updatedAt"
-       from "Invoice"
-       where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3 and "periodStartOn" = $4`,
-    [context.organizationId, context.financialProfileId, cardId, periodStartOn],
-  );
-
-  return rows[0];
-}
-
 export async function listCardPurchasesForContext(
   context: TenantContext,
   filters: CardPurchaseFilters = {},
@@ -238,6 +215,7 @@ export async function listCardPurchasesForContext(
     `"organizationId" = $1`,
     `"financialProfileId" = $2`,
     `"cardId" is not null`,
+    `"accountId" is null`,
     `"kind" = 'EXPENSE'`,
   ];
   const params: unknown[] = [context.organizationId, context.financialProfileId];
@@ -356,10 +334,12 @@ async function calculateLimitUsedForCard(
   cardId: EntityId,
 ): Promise<number> {
   const [row] = await query<LimitUsedRow>(
-    `select coalesce(sum("totalAmountMinor"), 0)::int as "limitUsedMinor"
-       from "Invoice"
-       where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3
-         and "status" in ('OPEN', 'CLOSED', 'OVERDUE')`,
+    `select coalesce(sum(t."amountMinor"), 0)::int as "limitUsedMinor"
+       from "Transaction" t
+       join "Invoice" i on i."id" = t."invoiceId"
+       where t."organizationId" = $1 and t."financialProfileId" = $2 and t."cardId" = $3
+         and t."accountId" is null and t."kind" = 'EXPENSE'
+         and i."status" in ('OPEN', 'CLOSED', 'OVERDUE')`,
     [context.organizationId, context.financialProfileId, cardId],
   );
 

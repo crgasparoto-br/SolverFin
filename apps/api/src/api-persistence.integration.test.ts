@@ -469,13 +469,25 @@ async function createCardAdditionalLinksSummaryFlow(
   const primaryTotal = summary.cardTotals.find((total) => total.cardId === primaryCard.id);
   const additionalTotal = summary.cardTotals.find((total) => total.cardId === additionalCard.id);
 
-  assert.equal(primaryTotal?.invoiceTotalMinor, 5000);
+  // Cartões da mesma família compartilham uma única fatura: o total da fatura
+  // é o mesmo para todos os membros do grupo (5000 + 1500), mas o limite e o
+  // uso de limite continuam sendo calculados por cartão individualmente.
+  assert.equal(primaryTotal?.invoiceTotalMinor, 6500);
   assert.equal(primaryTotal?.limitTotalMinor, 200000);
-  assert.equal(additionalTotal?.invoiceTotalMinor, 1500);
+  assert.equal(primaryTotal?.limitUsedMinor, 5000);
+  assert.equal(additionalTotal?.invoiceTotalMinor, 6500);
   assert.equal(additionalTotal?.limitTotalMinor, 50000);
+  assert.equal(additionalTotal?.limitUsedMinor, 1500);
   assert.equal(
     summary.cardTotals.some((total) => total.cardId === unlinkedCard.id),
     false,
+  );
+
+  const additionalPurchaseResult = readBody<{ invoice: ApiInvoice }>(additionalPurchaseResponse);
+  assert.equal(
+    additionalPurchaseResult.invoice.id,
+    primaryPurchase.invoice.id,
+    "purchase on the linked card should land on the shared family invoice",
   );
 }
 

@@ -6,6 +6,7 @@ const originalFetch = globalThis.fetch;
 
 await cardsPageRendersInvoiceWorkspace();
 await cardsPageAggregatesFamilyCardTotals();
+await cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard();
 
 globalThis.fetch = originalFetch;
 
@@ -159,6 +160,7 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /data-purchase-field="frequency"/);
   assert.match(html, /data-purchase-field="endOn"/);
   assert.doesNotMatch(html, /Novo cartão/);
+  assert.doesNotMatch(html, /<details class="purchase-group"/);
 }
 
 async function cardsPageAggregatesFamilyCardTotals(): Promise<void> {
@@ -252,6 +254,151 @@ async function cardsPageAggregatesFamilyCardTotals(): Promise<void> {
 
   assert.match(html, /Cartão Adicional/);
   assert.match(html, /name="purchaseCardId"/);
+}
+
+async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Promise<void> {
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = new URL(String(input));
+
+    if (url.pathname === "/api/cards") {
+      return jsonResponse({
+        cards: [
+          { id: "card-1", name: "Cartão Principal", status: "active", closingDay: 20, dueDay: 10 },
+          { id: "card-2", name: "Cartão C6", status: "active", closingDay: 20, dueDay: 10 },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/invoices") {
+      return jsonResponse({
+        invoices: [
+          {
+            id: "invoice-1",
+            cardId: "card-1",
+            status: "open",
+            periodStartOn: "2026-06-01",
+            periodEndOn: "2026-06-20",
+            dueOn: "2026-07-10",
+            totalAmountMinor: 5000,
+          },
+          {
+            id: "invoice-2",
+            cardId: "card-2",
+            status: "open",
+            periodStartOn: "2026-06-01",
+            periodEndOn: "2026-06-20",
+            dueOn: "2026-07-10",
+            totalAmountMinor: 3000,
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/card-additional-links") {
+      return jsonResponse({
+        links: [
+          { groupCardId: "card-1", cardId: "card-1", isPrimary: true },
+          { groupCardId: "card-1", cardId: "card-2", isPrimary: false },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/invoices/invoice-2/summary") {
+      return jsonResponse({
+        summary: {
+          invoiceId: "invoice-2",
+          financialProfileId: "profile-1",
+          cardId: "card-2",
+          cardName: "Cartão C6",
+          status: "open",
+          periodStartOn: "2026-06-01",
+          closingOn: "2026-06-20",
+          dueOn: "2026-07-10",
+          previousBalanceMinor: 0,
+          totalExpensesMinor: 3000,
+          totalPaidMinor: 0,
+          amountDueMinor: 3000,
+          reconciledExpensesMinor: 0,
+          unreconciledExpensesMinor: 3000,
+          purchasesCount: 2,
+          cardTotals: [
+            {
+              cardId: "card-1",
+              cardName: "Cartão Principal",
+              limitTotalMinor: 200000,
+              limitUsedMinor: 5000,
+              limitAvailableMinor: 195000,
+              invoiceTotalMinor: 5000,
+              invoiceAmountDueMinor: 5000,
+            },
+            {
+              cardId: "card-2",
+              cardName: "Cartão C6",
+              limitTotalMinor: 50000,
+              limitUsedMinor: 3000,
+              limitAvailableMinor: 47000,
+              invoiceTotalMinor: 3000,
+              invoiceAmountDueMinor: 3000,
+            },
+          ],
+        },
+      });
+    }
+
+    if (url.pathname === "/api/invoices/invoice-1/purchases") {
+      return jsonResponse({
+        purchases: [
+          {
+            id: "purchase-1",
+            financialProfileId: "profile-1",
+            cardId: "card-1",
+            invoiceId: "invoice-1",
+            occurredOn: "2026-06-10",
+            description: "Compra no principal",
+            amountMinor: 5000,
+            currency: "BRL",
+            status: "posted",
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/invoices/invoice-2/purchases") {
+      return jsonResponse({
+        purchases: [
+          {
+            id: "purchase-2",
+            financialProfileId: "profile-1",
+            cardId: "card-2",
+            invoiceId: "invoice-2",
+            occurredOn: "2026-06-12",
+            description: "Compra no adicional",
+            amountMinor: 3000,
+            currency: "BRL",
+            status: "posted",
+          },
+        ],
+      });
+    }
+
+    return jsonResponse({});
+  };
+
+  const html = await renderCardsPage(
+    "session-token",
+    new URL("http://localhost/cartoes?cardId=card-2"),
+  );
+
+  assert.match(html, /Fatura de Cartão C6/);
+  assert.match(html, /Fatura consolidada com os cartões adicionais do grupo\./);
+  assert.match(html, /Compra no principal/);
+  assert.match(html, /Compra no adicional/);
+  assert.match(html, /<details class="purchase-group" open>/);
+  assert.match(html, /purchase-group-name">Cartão Principal<\/span>/);
+  assert.match(html, /purchase-group-name">Cartão C6<\/span>/);
+  assert.match(html, /class="muted">1 compra<\/span>/);
+  assert.match(html, /<strong class="debit">[^<]*50,00<\/strong>/);
+  assert.match(html, /<strong class="debit">[^<]*30,00<\/strong>/);
 }
 
 function jsonResponse(body: unknown): Response {

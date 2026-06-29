@@ -17,6 +17,7 @@ import {
   type CardStatus,
   type CreateCardPayload,
   type EntityId,
+  type ExistingForecastTransaction,
   type Installment,
   type InstallmentStatus,
   type Invoice,
@@ -189,34 +190,50 @@ export async function registerCardPurchaseForContext(
   context: TenantContext,
   cardId: EntityId,
   payload: RegisterCardPurchasePayload,
-): Promise<{ transaction: Transaction; invoice: Invoice; installments: readonly Installment[] }> {
+): Promise<{
+  transaction: Transaction;
+  invoice: Invoice;
+  futureInvoices: readonly Invoice[];
+  installments: readonly Installment[];
+  forecastTransactions: readonly Transaction[];
+}> {
   const card = await findCardRow(context, cardId);
-  const existingInvoices = await listAllInvoicesForCard(context, cardId);
+  const groupCardId = await resolveGroupCardId(context, cardId);
+  const existingInvoices = await listAllInvoicesForCard(context, groupCardId);
+  const paymentAccount = card?.paymentAccountId
+    ? await findAccountRow(context, card.paymentAccountId)
+    : undefined;
+  const existingForecastTransactions = card?.paymentAccountId
+    ? await listForecastTransactionsForInvoices(
+        context,
+        existingInvoices.map((invoice) => invoice.id),
+        card.paymentAccountId,
+      )
+    : [];
   const now = new Date().toISOString();
-  let newInvoiceId: EntityId | undefined;
 
   const result = registerCardPurchaseDomain({
     transactionId: randomUUID(),
     context,
     card,
+    groupCardId,
     existingInvoices,
+    ...(paymentAccount ? { paymentAccount } : {}),
+    existingForecastTransactions,
     now,
     payload,
-    makeInvoiceId: () => {
-      newInvoiceId = randomUUID();
-
-      return newInvoiceId;
-    },
+    makeInvoiceId: () => randomUUID(),
     makeInstallmentId: () => randomUUID(),
+    makeForecastTransactionId: () => randomUUID(),
   });
 
   await withTransaction(async (executeQuery) => {
-    const invoiceExisted = existingInvoices.some((invoice) => invoice.id === result.invoice.id);
+    for (const invoice of [result.invoice, ...result.futureInvoices]) {
+      const invoiceExisted = existingInvoices.some((existing) => existing.id === invoice.id);
 
-    await executeQuery(
-      buildUpsertInvoiceSql(invoiceExisted),
-      buildInvoiceParams(result.invoice, invoiceExisted),
-    );
+      await executeQuery(buildUpsertInvoiceSql(invoiceExisted), buildInvoiceParams(invoice, invoiceExisted));
+    }
+
     await executeQuery(
       buildInsertCardTransactionSql(),
       buildCardTransactionParams(result.transaction),
@@ -246,6 +263,17 @@ export async function registerCardPurchaseForContext(
       );
     }
 
+    for (const forecastTransaction of result.forecastTransactions) {
+      const forecastExisted = existingForecastTransactions.some(
+        (existing) => existing.id === forecastTransaction.id,
+      );
+
+      await executeQuery(
+        buildUpsertForecastTransactionSql(forecastExisted),
+        buildForecastTransactionParams(forecastTransaction, forecastExisted),
+      );
+    }
+
     for (const auditEntry of result.auditEntries) {
       await insertAuditLogEntry(executeQuery, auditEntry);
     }
@@ -263,6 +291,9 @@ export async function payInvoiceForContext(
   const invoice = await findInvoiceRow(context, invoiceId);
   const card = invoice ? await findCardRow(context, invoice.cardId) : undefined;
   const paymentAccount = await findAccountRow(context, paymentAccountId);
+  const existingForecastTransactionId = invoice
+    ? await findForecastTransactionIdForInvoice(context, invoice.id)
+    : undefined;
 
   const result = payInvoiceDomain({
     transactionId: randomUUID(),
@@ -270,6 +301,7 @@ export async function payInvoiceForContext(
     invoice,
     card,
     paymentAccount,
+    ...(existingForecastTransactionId ? { existingForecastTransactionId } : {}),
     now: new Date().toISOString(),
     payload,
   });
@@ -303,6 +335,13 @@ export async function payInvoiceForContext(
       ],
     );
     await executeQuery(buildUpsertInvoiceSql(true), buildInvoiceParams(result.invoice, true));
+
+    if (result.voidedForecastTransactionId) {
+      await executeQuery(
+        `update "Transaction" set "status" = 'VOIDED', "voidedAt" = $2, "updatedAt" = $2 where "id" = $1`,
+        [result.voidedForecastTransactionId, result.transaction.updatedAt],
+      );
+    }
 
     for (const auditEntry of result.auditEntries) {
       await insertAuditLogEntry(executeQuery, auditEntry);
@@ -386,6 +425,98 @@ function buildCardTransactionParams(transaction: Transaction): unknown[] {
   ];
 }
 
+function buildUpsertForecastTransactionSql(exists: boolean): string {
+  if (!exists) {
+    return `insert into "Transaction"
+      ("id", "organizationId", "financialProfileId", "accountId", "cardId", "invoiceId", "kind", "status",
+       "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt", "updatedAt",
+       "createdByUserId", "updatedByUserId")
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`;
+  }
+
+  return `update "Transaction" set
+      "amountMinor" = $2, "occurredOn" = $3, "plannedOn" = $4, "updatedAt" = $5, "updatedByUserId" = $6
+    where "id" = $1`;
+}
+
+function buildForecastTransactionParams(transaction: Transaction, exists: boolean): unknown[] {
+  if (!exists) {
+    return [
+      transaction.id,
+      transaction.organizationId,
+      transaction.financialProfileId,
+      transaction.accountId ?? null,
+      transaction.cardId ?? null,
+      transaction.invoiceId ?? null,
+      transaction.kind.toUpperCase(),
+      transaction.status.toUpperCase(),
+      transaction.source.toUpperCase(),
+      transaction.amountMinor,
+      transaction.currency,
+      transaction.occurredOn,
+      transaction.plannedOn,
+      transaction.description,
+      transaction.createdAt,
+      transaction.updatedAt,
+      transaction.createdByUserId ?? null,
+      transaction.updatedByUserId ?? null,
+    ];
+  }
+
+  return [
+    transaction.id,
+    transaction.amountMinor,
+    transaction.occurredOn,
+    transaction.plannedOn,
+    transaction.updatedAt,
+    transaction.updatedByUserId ?? null,
+  ];
+}
+
+async function listForecastTransactionsForInvoices(
+  context: TenantContext,
+  invoiceIds: readonly EntityId[],
+  accountId: EntityId,
+): Promise<ExistingForecastTransaction[]> {
+  if (invoiceIds.length === 0) {
+    return [];
+  }
+
+  const rows = await query<{
+    id: string;
+    invoiceId: string;
+    createdAt: Date;
+    createdByUserId: string | null;
+  }>(
+    `select "id", "invoiceId", "createdAt", "createdByUserId" from "Transaction"
+     where "organizationId" = $1 and "financialProfileId" = $2 and "accountId" = $3
+       and "status" = 'PLANNED' and "source" = 'MANUAL' and "invoiceId" = any($4::uuid[])`,
+    [context.organizationId, context.financialProfileId, accountId, invoiceIds],
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    invoiceId: row.invoiceId,
+    createdAt: row.createdAt.toISOString(),
+    ...(row.createdByUserId !== null ? { createdByUserId: row.createdByUserId } : {}),
+  }));
+}
+
+async function findForecastTransactionIdForInvoice(
+  context: TenantContext,
+  invoiceId: EntityId,
+): Promise<EntityId | undefined> {
+  const rows = await query<{ id: string }>(
+    `select "id" from "Transaction"
+     where "organizationId" = $1 and "financialProfileId" = $2 and "invoiceId" = $3
+       and "status" = 'PLANNED' and "source" = 'MANUAL'
+     limit 1`,
+    [context.organizationId, context.financialProfileId, invoiceId],
+  );
+
+  return rows[0]?.id;
+}
+
 async function persistCardMutation(result: CardMutationResult): Promise<void> {
   await withTransaction(async (executeQuery) => {
     await executeQuery(
@@ -433,6 +564,16 @@ async function listAllInvoicesForCard(
   );
 
   return rows.map(mapInvoiceRow);
+}
+
+async function resolveGroupCardId(context: TenantContext, cardId: EntityId): Promise<EntityId> {
+  const rows = await query<{ groupCardId: string }>(
+    `select "groupCardId" from "CardAdditionalLink"
+     where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3`,
+    [context.organizationId, context.financialProfileId, cardId],
+  );
+
+  return rows[0]?.groupCardId ?? cardId;
 }
 
 async function findCardRow(context: TenantContext, cardId: EntityId): Promise<Card | undefined> {

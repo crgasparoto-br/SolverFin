@@ -42,7 +42,8 @@ export interface PwaInstallabilityCheck {
   warnings: readonly string[];
 }
 
-export const solverFinLogoPath = "/brand/Solverfin_02.png";
+export const solverFinLogoPath = "/icons/solverfin-512.png";
+export const solverFinMaskableLogoPath = "/icons/solverfin-maskable-512.png";
 
 export const solverFinWebManifest = {
   id: "/app",
@@ -64,7 +65,7 @@ export const solverFinWebManifest = {
       purpose: "any",
     },
     {
-      src: solverFinLogoPath,
+      src: solverFinMaskableLogoPath,
       sizes: "512x512",
       type: "image/png",
       purpose: "maskable",

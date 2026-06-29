@@ -66,14 +66,24 @@ export interface CardMutationResult {
 export interface CardPurchaseResult {
   transaction: Transaction;
   invoice: Invoice;
+  futureInvoices: readonly Invoice[];
   installments: readonly Installment[];
+  forecastTransactions: readonly Transaction[];
   auditEntries: readonly AuditLogEntryDraft[];
 }
 
 export interface InvoicePaymentResult {
   invoice: Invoice;
   transaction: Transaction;
+  voidedForecastTransactionId?: EntityId;
   auditEntries: readonly AuditLogEntryDraft[];
+}
+
+export interface ExistingForecastTransaction {
+  id: EntityId;
+  invoiceId: EntityId;
+  createdAt: ISODateTime;
+  createdByUserId?: EntityId;
 }
 
 export interface InvoicePeriod {
@@ -140,11 +150,15 @@ export interface RegisterCardPurchaseInput {
   transactionId: EntityId;
   context: TenantContext;
   card: Card | undefined;
+  groupCardId?: EntityId;
   existingInvoices: readonly Invoice[];
+  paymentAccount?: Account;
+  existingForecastTransactions?: readonly ExistingForecastTransaction[];
   now: ISODateTime;
   payload: RegisterCardPurchasePayload;
   makeInvoiceId: (period: InvoicePeriod) => EntityId;
   makeInstallmentId?: (sequenceNumber: number, dueOn: ISODate) => EntityId;
+  makeForecastTransactionId?: (invoiceId: EntityId) => EntityId;
 }
 
 export interface RegisterCardPurchasePayload {
@@ -154,6 +168,7 @@ export interface RegisterCardPurchasePayload {
   currency?: string;
   categoryId?: EntityId;
   totalInstallments?: number;
+  installmentStart?: number;
 }
 
 export interface PayInvoiceInput {
@@ -162,6 +177,7 @@ export interface PayInvoiceInput {
   invoice: Invoice | undefined;
   card: Card | undefined;
   paymentAccount: Account | undefined;
+  existingForecastTransactionId?: EntityId;
   now: ISODateTime;
   payload: PayInvoicePayload;
 }
@@ -347,17 +363,56 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
   const occurredOn = validateDate(input.payload.occurredOn, "CARD_PURCHASE_DATE_REQUIRED");
   const description = normalizeDescription(input.payload.description);
   const currency = normalizeCurrency(input.payload.currency);
-  const period = calculateInvoicePeriod(card, occurredOn);
-  const invoiceResult = resolveInvoiceForPurchase({
-    context: input.context,
-    card,
-    existingInvoices: input.existingInvoices,
-    now: input.now,
-    amountMinor,
-    currency,
-    period,
-    makeInvoiceId: input.makeInvoiceId,
-  });
+  const { totalInstallments, installmentStart } = resolveInstallmentPlan(
+    input.payload.totalInstallments,
+    input.payload.installmentStart,
+  );
+
+  if (totalInstallments > 1 && input.makeInstallmentId === undefined) {
+    throw new CardError(
+      "CARD_INSTALLMENTS_INVALID",
+      "Installment id factory is required for installment purchases.",
+    );
+  }
+
+  const amounts = totalInstallments > 1 ? splitAmount(amountMinor, totalInstallments) : [amountMinor];
+  const remainingCount = totalInstallments - installmentStart + 1;
+  const invoiceCardId = input.groupCardId ?? card.id;
+
+  let knownInvoices: readonly Invoice[] = input.existingInvoices;
+  const invoiceResults: { invoice: Invoice; auditEntry: AuditLogEntryDraft }[] = [];
+  const installmentSchedule: { sequenceNumber: number; dueOn: ISODate; amountMinor: number }[] = [];
+
+  for (let offset = 0; offset < remainingCount; offset += 1) {
+    const sequenceNumber = installmentStart + offset;
+    const purchaseOnForPeriod = offset === 0 ? occurredOn : addMonths(occurredOn, offset);
+    const period = calculateInvoicePeriod(card, purchaseOnForPeriod);
+    const shareAmount = amounts[sequenceNumber - 1] ?? 0;
+    const invoiceResult = resolveInvoiceForPurchase({
+      context: input.context,
+      invoiceCardId,
+      existingInvoices: knownInvoices,
+      now: input.now,
+      amountMinor: shareAmount,
+      currency,
+      period,
+      makeInvoiceId: input.makeInvoiceId,
+    });
+
+    invoiceResults.push(invoiceResult);
+    knownInvoices = [...knownInvoices, invoiceResult.invoice];
+    installmentSchedule.push({ sequenceNumber, dueOn: invoiceResult.invoice.dueOn, amountMinor: shareAmount });
+  }
+
+  const [currentInvoiceResult, ...futureInvoiceResults] = invoiceResults;
+
+  if (currentInvoiceResult === undefined) {
+    throw new CardError(
+      "CARD_INSTALLMENTS_INVALID",
+      "Card purchase must resolve at least one invoice period.",
+    );
+  }
+
   const transaction: Transaction = {
     id: input.transactionId,
     organizationId: input.context.organizationId,
@@ -371,7 +426,7 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
     plannedOn: occurredOn,
     description,
     cardId: card.id,
-    invoiceId: invoiceResult.invoice.id,
+    invoiceId: currentInvoiceResult.invoice.id,
     createdAt: input.now,
     updatedAt: input.now,
     createdByUserId: input.context.userId,
@@ -382,27 +437,123 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
     transaction.categoryId = input.payload.categoryId;
   }
 
-  const installments = buildPurchaseInstallments({
+  const installments =
+    totalInstallments > 1
+      ? buildPurchaseInstallments({
+          context: input.context,
+          now: input.now,
+          cardId: card.id,
+          transactionId: transaction.id,
+          currency,
+          totalInstallments,
+          schedule: installmentSchedule,
+          makeInstallmentId: input.makeInstallmentId,
+        })
+      : [];
+
+  const forecastTransactions = buildPaymentForecastTransactions({
     context: input.context,
     now: input.now,
-    cardId: card.id,
-    transactionId: transaction.id,
-    amountMinor,
-    currency,
-    firstDueOn: invoiceResult.invoice.dueOn,
-    totalInstallments: input.payload.totalInstallments,
-    makeInstallmentId: input.makeInstallmentId,
+    invoiceCardId,
+    cardName: card.name,
+    paymentAccount: input.paymentAccount,
+    invoices: invoiceResults.map((result) => result.invoice),
+    existingForecastTransactions: input.existingForecastTransactions ?? [],
+    makeForecastTransactionId: input.makeForecastTransactionId,
   });
 
   return {
     transaction,
-    invoice: invoiceResult.invoice,
+    invoice: currentInvoiceResult.invoice,
+    futureInvoices: futureInvoiceResults.map((result) => result.invoice),
     installments,
+    forecastTransactions,
     auditEntries: [
-      invoiceResult.auditEntry,
+      ...invoiceResults.map((result) => result.auditEntry),
       buildTransactionAuditEntry(input.context.userId, input.now, transaction),
     ],
   };
+}
+
+function resolveInstallmentPlan(
+  totalInstallmentsInput: number | undefined,
+  installmentStartInput: number | undefined,
+): { totalInstallments: number; installmentStart: number } {
+  const totalInstallments = totalInstallmentsInput ?? 1;
+
+  if (totalInstallments === 1) {
+    return { totalInstallments: 1, installmentStart: 1 };
+  }
+
+  if (!Number.isInteger(totalInstallments) || totalInstallments <= 1 || totalInstallments > 120) {
+    throw new CardError(
+      "CARD_INSTALLMENTS_INVALID",
+      "Card purchase installments must be between 2 and 120.",
+    );
+  }
+
+  const installmentStart = installmentStartInput ?? 1;
+
+  if (
+    !Number.isInteger(installmentStart) ||
+    installmentStart < 1 ||
+    installmentStart > totalInstallments
+  ) {
+    throw new CardError(
+      "CARD_INSTALLMENTS_INVALID",
+      "Installment start must be between 1 and the total number of installments.",
+    );
+  }
+
+  return { totalInstallments, installmentStart };
+}
+
+function buildPaymentForecastTransactions(input: {
+  context: TenantContext;
+  now: ISODateTime;
+  invoiceCardId: EntityId;
+  cardName: string;
+  paymentAccount: Account | undefined;
+  invoices: readonly Invoice[];
+  existingForecastTransactions: readonly ExistingForecastTransaction[];
+  makeForecastTransactionId: ((invoiceId: EntityId) => EntityId) | undefined;
+}): Transaction[] {
+  if (input.paymentAccount === undefined || input.paymentAccount.status !== "active") {
+    return [];
+  }
+
+  if (input.makeForecastTransactionId === undefined) {
+    return [];
+  }
+
+  const description = `Previsão de pagamento da fatura - ${input.cardName}`;
+
+  return input.invoices.map((invoice) => {
+    const existing = input.existingForecastTransactions.find(
+      (transaction) => transaction.invoiceId === invoice.id,
+    );
+
+    return {
+      id: existing?.id ?? input.makeForecastTransactionId!(invoice.id),
+      organizationId: input.context.organizationId,
+      financialProfileId: input.context.financialProfileId,
+      kind: "expense",
+      status: "planned",
+      source: "manual",
+      amountMinor: invoice.totalAmountMinor,
+      currency: invoice.currency,
+      occurredOn: invoice.dueOn,
+      plannedOn: invoice.dueOn,
+      description,
+      accountId: input.paymentAccount!.id,
+      cardId: input.invoiceCardId,
+      invoiceId: invoice.id,
+      createdAt: existing?.createdAt ?? input.now,
+      updatedAt: input.now,
+      createdByUserId: existing?.createdByUserId ?? input.context.userId,
+      updatedByUserId: input.context.userId,
+    };
+  });
 }
 
 export function payInvoice(input: PayInvoiceInput): InvoicePaymentResult {
@@ -466,6 +617,9 @@ export function payInvoice(input: PayInvoiceInput): InvoicePaymentResult {
   return {
     invoice: paidInvoice,
     transaction,
+    ...(input.existingForecastTransactionId !== undefined
+      ? { voidedForecastTransactionId: input.existingForecastTransactionId }
+      : {}),
     auditEntries: [
       buildInvoiceAuditEntry("update", input.context.userId, input.now, invoice, paidInvoice),
       buildTransactionAuditEntry(input.context.userId, input.now, transaction),
@@ -533,7 +687,7 @@ function buildOptionalCardUpdate(payload: UpdateCardPayload): Partial<Card> {
 
 function resolveInvoiceForPurchase(input: {
   context: TenantContext;
-  card: Card;
+  invoiceCardId: EntityId;
   existingInvoices: readonly Invoice[];
   now: ISODateTime;
   amountMinor: number;
@@ -543,7 +697,7 @@ function resolveInvoiceForPurchase(input: {
 }): { invoice: Invoice; auditEntry: AuditLogEntryDraft } {
   const existingInvoice = listTenantScopedResources(input.context, input.existingInvoices).find(
     (invoice) =>
-      invoice.cardId === input.card.id &&
+      invoice.cardId === input.invoiceCardId &&
       invoice.periodStartOn === input.period.periodStartOn &&
       invoice.periodEndOn === input.period.periodEndOn,
   );
@@ -575,7 +729,7 @@ function resolveInvoiceForPurchase(input: {
     id: input.makeInvoiceId(input.period),
     organizationId: input.context.organizationId,
     financialProfileId: input.context.financialProfileId,
-    cardId: input.card.id,
+    cardId: input.invoiceCardId,
     status: "open",
     periodStartOn: input.period.periodStartOn,
     periodEndOn: input.period.periodEndOn,
@@ -605,25 +759,11 @@ function buildPurchaseInstallments(input: {
   now: ISODateTime;
   cardId: EntityId;
   transactionId: EntityId;
-  amountMinor: number;
   currency: string;
-  firstDueOn: ISODate;
-  totalInstallments: number | undefined;
+  totalInstallments: number;
+  schedule: readonly { sequenceNumber: number; dueOn: ISODate; amountMinor: number }[];
   makeInstallmentId: ((sequenceNumber: number, dueOn: ISODate) => EntityId) | undefined;
 }): Installment[] {
-  const totalInstallments = input.totalInstallments ?? 1;
-
-  if (totalInstallments === 1) {
-    return [];
-  }
-
-  if (!Number.isInteger(totalInstallments) || totalInstallments <= 1 || totalInstallments > 120) {
-    throw new CardError(
-      "CARD_INSTALLMENTS_INVALID",
-      "Card purchase installments must be between 2 and 120.",
-    );
-  }
-
   if (input.makeInstallmentId === undefined) {
     throw new CardError(
       "CARD_INSTALLMENTS_INVALID",
@@ -631,32 +771,23 @@ function buildPurchaseInstallments(input: {
     );
   }
 
-  const amounts = splitAmount(input.amountMinor, totalInstallments);
-  const installments: Installment[] = [];
-
-  for (let sequenceNumber = 1; sequenceNumber <= totalInstallments; sequenceNumber += 1) {
-    const dueOn = addMonths(input.firstDueOn, sequenceNumber - 1);
-
-    installments.push({
-      id: input.makeInstallmentId(sequenceNumber, dueOn),
-      organizationId: input.context.organizationId,
-      financialProfileId: input.context.financialProfileId,
-      status: "planned",
-      sequenceNumber,
-      totalInstallments,
-      dueOn,
-      amountMinor: amounts[sequenceNumber - 1] ?? 0,
-      currency: input.currency,
-      transactionId: input.transactionId,
-      cardId: input.cardId,
-      createdAt: input.now,
-      updatedAt: input.now,
-      createdByUserId: input.context.userId,
-      updatedByUserId: input.context.userId,
-    });
-  }
-
-  return installments;
+  return input.schedule.map((item) => ({
+    id: input.makeInstallmentId!(item.sequenceNumber, item.dueOn),
+    organizationId: input.context.organizationId,
+    financialProfileId: input.context.financialProfileId,
+    status: "planned",
+    sequenceNumber: item.sequenceNumber,
+    totalInstallments: input.totalInstallments,
+    dueOn: item.dueOn,
+    amountMinor: item.amountMinor,
+    currency: input.currency,
+    transactionId: input.transactionId,
+    cardId: input.cardId,
+    createdAt: input.now,
+    updatedAt: input.now,
+    createdByUserId: input.context.userId,
+    updatedByUserId: input.context.userId,
+  }));
 }
 
 function validateInvoiceCanReceivePurchase(invoice: Invoice): void {

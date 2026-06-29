@@ -39,6 +39,14 @@ runCalculatesInvoicePeriodAroundClosingDay();
 runRegistersPurchaseAndCreatesInvoice();
 runUpdatesExistingOpenInvoice();
 runRegistersInstallmentPurchase();
+runRegistersInstallmentPurchaseWithCustomStart();
+runDistributesInstallmentsAcrossFutureInvoices();
+runRejectsInvalidInstallmentStart();
+runSharesInvoiceAcrossGroupCardId();
+runCreatesPaymentForecastTransaction();
+runUpdatesExistingPaymentForecastTransaction();
+runSkipsForecastTransactionWithoutPaymentAccount();
+runVoidsForecastTransactionWhenInvoicePaid();
 runPaysInvoiceFromAccount();
 runRejectsPartialPaymentInMvp();
 runRejectsBlockedCardPurchase();
@@ -269,6 +277,287 @@ function runRegistersInstallmentPurchase(): void {
   );
 }
 
+function runDistributesInstallmentsAcrossFutureInvoices(): void {
+  const card = createCardFixture();
+  const result = registerCardPurchase({
+    transactionId: "transaction-installments-future",
+    context: tenantA,
+    card,
+    existingInvoices: [],
+    now,
+    payload: {
+      occurredOn: "2026-06-15",
+      amountMinor: 10000,
+      description: "Compra parcelada ficticia",
+      totalInstallments: 3,
+    },
+    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+    makeInstallmentId: (sequenceNumber) => `installment-${sequenceNumber}`,
+  });
+
+  assertEqual(
+    result.invoice.totalAmountMinor,
+    3334,
+    "current invoice should receive only the first installment share",
+  );
+  assertEqual(result.futureInvoices.length, 2, "purchase should create two future invoices");
+  assertEqual(
+    result.futureInvoices[0]?.totalAmountMinor,
+    3333,
+    "second installment should land on the next invoice",
+  );
+  assertEqual(
+    result.futureInvoices[1]?.totalAmountMinor,
+    3333,
+    "third installment should land on the invoice after that",
+  );
+  const distributedTotal =
+    result.invoice.totalAmountMinor +
+    result.futureInvoices.reduce((sum, invoice) => sum + invoice.totalAmountMinor, 0);
+  assertEqual(distributedTotal, 10000, "distributed invoice totals should match the purchase total");
+}
+
+function runRegistersInstallmentPurchaseWithCustomStart(): void {
+  const card = createCardFixture();
+  const result = registerCardPurchase({
+    transactionId: "transaction-installments-start",
+    context: tenantA,
+    card,
+    existingInvoices: [],
+    now,
+    payload: {
+      occurredOn: "2026-06-15",
+      amountMinor: 10000,
+      description: "Compra parcelada retroativa",
+      totalInstallments: 3,
+      installmentStart: 2,
+    },
+    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+    makeInstallmentId: (sequenceNumber) => `installment-${sequenceNumber}`,
+  });
+
+  assertEqual(result.installments.length, 2, "only remaining installments should be created");
+  assertEqual(result.installments[0]?.sequenceNumber, 2, "schedule should start at parcel 2");
+  assertEqual(result.installments[1]?.sequenceNumber, 3, "schedule should end at the last parcel");
+  assertEqual(
+    result.invoice.totalAmountMinor,
+    3333,
+    "current invoice should receive only the starting installment share",
+  );
+  assertEqual(result.futureInvoices.length, 1, "only one future invoice remains after the start");
+  assertEqual(
+    result.transaction.amountMinor,
+    10000,
+    "transaction should keep the full purchase value for display",
+  );
+}
+
+function runRejectsInvalidInstallmentStart(): void {
+  const card = createCardFixture();
+
+  assertCardError(
+    () =>
+      registerCardPurchase({
+        transactionId: "transaction-installments-invalid-start",
+        context: tenantA,
+        card,
+        existingInvoices: [],
+        now,
+        payload: {
+          occurredOn: "2026-06-15",
+          amountMinor: 10000,
+          description: "Compra parcelada invalida",
+          totalInstallments: 3,
+          installmentStart: 4,
+        },
+        makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+        makeInstallmentId: (sequenceNumber) => `installment-${sequenceNumber}`,
+      }),
+    "CARD_INSTALLMENTS_INVALID",
+  );
+}
+
+function runSharesInvoiceAcrossGroupCardId(): void {
+  const physicalCard = createCard({
+    id: "card-c6-fisico",
+    context: tenantA,
+    now,
+    payload: { name: "C6 - Físico", closingDay: 26, dueDay: 1 },
+  }).card;
+  const virtualCard = createCard({
+    id: "card-c6-virtual",
+    context: tenantA,
+    now,
+    payload: { name: "C6 - Virtual", closingDay: 26, dueDay: 1 },
+  }).card;
+
+  const firstResult = registerCardPurchase({
+    transactionId: "transaction-c6-physical",
+    context: tenantA,
+    card: physicalCard,
+    groupCardId: virtualCard.id,
+    existingInvoices: [],
+    now,
+    payload: {
+      occurredOn: "2026-06-20",
+      amountMinor: 10000,
+      description: "Compra no fisico",
+    },
+    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+  });
+
+  assertEqual(
+    firstResult.invoice.cardId,
+    virtualCard.id,
+    "shared invoice should be filed under the group card id",
+  );
+  assertEqual(
+    firstResult.transaction.cardId,
+    physicalCard.id,
+    "transaction should keep the literal card used for the purchase",
+  );
+
+  const secondResult = registerCardPurchase({
+    transactionId: "transaction-c6-virtual",
+    context: tenantA,
+    card: virtualCard,
+    groupCardId: virtualCard.id,
+    existingInvoices: [firstResult.invoice],
+    now,
+    payload: {
+      occurredOn: "2026-06-21",
+      amountMinor: 5000,
+      description: "Compra no virtual",
+    },
+    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+  });
+
+  assertEqual(
+    secondResult.invoice.id,
+    firstResult.invoice.id,
+    "purchase on the other family card should reuse the shared invoice",
+  );
+  assertEqual(
+    secondResult.invoice.totalAmountMinor,
+    15000,
+    "shared invoice total should accumulate purchases from both cards",
+  );
+}
+
+function runCreatesPaymentForecastTransaction(): void {
+  const card = createCardFixtureWithPayment();
+  const result = registerCardPurchase({
+    transactionId: "transaction-forecast",
+    context: tenantA,
+    card,
+    existingInvoices: [],
+    paymentAccount,
+    now,
+    payload: {
+      occurredOn: "2026-06-15",
+      amountMinor: 12345,
+      description: "Mercado ficticio",
+    },
+    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+    makeForecastTransactionId: (invoiceId) => `forecast-${invoiceId}`,
+  });
+
+  assertEqual(result.forecastTransactions.length, 1, "purchase should create a payment forecast");
+  const [forecast] = result.forecastTransactions;
+  assertEqual(forecast?.status, "planned", "forecast should be planned");
+  assertEqual(forecast?.accountId, paymentAccount.id, "forecast should target the payment account");
+  assertEqual(forecast?.invoiceId, result.invoice.id, "forecast should reference the invoice");
+  assertEqual(forecast?.amountMinor, 12345, "forecast should match the invoice total");
+  assertEqual(forecast?.plannedOn, result.invoice.dueOn, "forecast should land on the due date");
+  assertEqual(forecast?.effectiveOn, undefined, "forecast should not be effective yet");
+}
+
+function runUpdatesExistingPaymentForecastTransaction(): void {
+  const card = createCardFixtureWithPayment();
+  const existingInvoice = createInvoiceFixture(
+    card,
+    "2026-05-21",
+    "2026-06-20",
+    "2026-07-10",
+    5000,
+  );
+  const result = registerCardPurchase({
+    transactionId: "transaction-forecast-update",
+    context: tenantA,
+    card,
+    existingInvoices: [existingInvoice],
+    paymentAccount,
+    existingForecastTransactions: [
+      {
+        id: "forecast-existing",
+        invoiceId: existingInvoice.id,
+        createdAt: "2026-06-01T00:00:00.000Z",
+      },
+    ],
+    now,
+    payload: {
+      occurredOn: "2026-06-18",
+      amountMinor: 2500,
+      description: "Farmacia ficticia",
+    },
+    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+    makeForecastTransactionId: (invoiceId) => `forecast-${invoiceId}`,
+  });
+
+  assertEqual(result.forecastTransactions.length, 1, "purchase should reuse the forecast");
+  const [forecast] = result.forecastTransactions;
+  assertEqual(forecast?.id, "forecast-existing", "forecast id should be reused");
+  assertEqual(forecast?.amountMinor, 7500, "forecast amount should reflect the new invoice total");
+  assertEqual(forecast?.createdAt, "2026-06-01T00:00:00.000Z", "forecast createdAt should be preserved");
+}
+
+function runSkipsForecastTransactionWithoutPaymentAccount(): void {
+  const card = createCardFixture();
+  const result = registerCardPurchase({
+    transactionId: "transaction-no-forecast",
+    context: tenantA,
+    card,
+    existingInvoices: [],
+    now,
+    payload: {
+      occurredOn: "2026-06-15",
+      amountMinor: 5000,
+      description: "Compra sem conta de pagamento",
+    },
+    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+  });
+
+  assertEqual(
+    result.forecastTransactions.length,
+    0,
+    "purchase should not forecast without a payment account",
+  );
+}
+
+function runVoidsForecastTransactionWhenInvoicePaid(): void {
+  const card = createCardFixtureWithPayment();
+  const invoice = createInvoiceFixture(card, "2026-05-21", "2026-06-20", "2026-07-10", 12000);
+  const result = payInvoice({
+    transactionId: "transaction-payment-voids-forecast",
+    context: tenantA,
+    invoice,
+    card,
+    paymentAccount,
+    existingForecastTransactionId: "forecast-existing",
+    now,
+    payload: {
+      paidOn: "2026-07-10",
+      amountMinor: 12000,
+    },
+  });
+
+  assertEqual(
+    result.voidedForecastTransactionId,
+    "forecast-existing",
+    "payment should void the matching forecast transaction",
+  );
+}
+
 function runPaysInvoiceFromAccount(): void {
   const card = createCardFixture();
   const invoice = createInvoiceFixture(card, "2026-05-21", "2026-06-20", "2026-07-10", 12000);
@@ -364,6 +653,22 @@ function createCardFixture(): Card {
       closingDay: 20,
       dueDay: 10,
       maskedIdentifier: "**** 1111",
+    },
+  }).card;
+}
+
+function createCardFixtureWithPayment(): Card {
+  return createCard({
+    id: "card-fixture-payment",
+    context: tenantA,
+    now,
+    paymentAccount,
+    payload: {
+      name: "Cartao fixture",
+      closingDay: 20,
+      dueDay: 10,
+      maskedIdentifier: "**** 1111",
+      paymentAccountId: paymentAccount.id,
     },
   }).card;
 }

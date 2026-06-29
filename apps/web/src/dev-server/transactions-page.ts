@@ -88,7 +88,9 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
 
   const rows = buildRows(
     transactionResult.data.transactions.filter(
-      (transaction) => transaction.cardId === undefined && transaction.invoiceId === undefined,
+      (transaction) =>
+        transaction.accountId !== undefined ||
+        (transaction.cardId === undefined && transaction.invoiceId === undefined),
     ),
     selectedAccount,
   );

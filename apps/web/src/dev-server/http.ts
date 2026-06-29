@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-const solverFinLogoPath = "/brand/Solverfin_02.png";
+const solverFinLogoPath = "/icons/solverfin-512.png";
 const solverFinDescription =
   "Controle financeiro inteligente para pessoas, MEIs, autônomos e pequenos negócios.";
 
@@ -56,9 +56,6 @@ function enhanceSolverFinBranding(html: string): string {
     output = output.replace(
       "</head>",
       `    <meta name="description" content="${solverFinDescription}" data-solverfin-brand-metadata />
-    <link rel="icon" type="image/png" href="${solverFinLogoPath}" />
-    <link rel="shortcut icon" href="${solverFinLogoPath}" />
-    <link rel="apple-touch-icon" href="${solverFinLogoPath}" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="SolverFin" />
     <meta property="og:description" content="${solverFinDescription}" />
@@ -67,24 +64,9 @@ function enhanceSolverFinBranding(html: string): string {
     <meta name="twitter:title" content="SolverFin" />
     <meta name="twitter:description" content="${solverFinDescription}" />
     <meta name="twitter:image" content="${solverFinLogoPath}" />
-    <style data-solverfin-brand-styles>
-      .brand-with-logo { align-items: center; display: inline-flex; gap: 10px; }
-      .brand-logo { border-radius: 12px; height: 36px; width: 36px; }
-      .brand-login-logo { border-radius: 18px; box-shadow: 0 16px 40px rgba(15, 61, 76, .16); height: 72px; width: 72px; }
-    </style>
   </head>`,
     );
   }
-
-  output = output.replace(
-    '<a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin">SolverFin</a>',
-    `<a class="brand brand-with-logo" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img class="brand-logo" src="${solverFinLogoPath}" alt="" aria-hidden="true" /><span>SolverFin</span></a>`,
-  );
-
-  output = output.replace(
-    '<section class="panel" aria-labelledby="login-title">',
-    `<section class="panel" aria-labelledby="login-title"><img class="brand-login-logo" src="${solverFinLogoPath}" alt="Logo SolverFin" />`,
-  );
 
   return output;
 }

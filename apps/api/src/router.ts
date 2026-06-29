@@ -787,6 +787,9 @@ async function registerCardPurchaseHandler(
     ...(body.totalInstallments !== undefined
       ? { totalInstallments: Number(body.totalInstallments) }
       : {}),
+    ...(body.installmentStart !== undefined
+      ? { installmentStart: Number(body.installmentStart) }
+      : {}),
   });
 
   return json(201, result);
