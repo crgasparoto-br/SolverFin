@@ -15,25 +15,33 @@ export async function renderEnhancedCardsPage(token: string): Promise<string> {
 
   const categoryItems = categories.ok ? categories.data.categories : [];
 
-  return injectCardPurchaseInstallments(applyHierarchicalCategoryLabels(html, categoryItems));
+  return injectCardPurchaseInstallments(applyHierarchicalCategoryOptions(html, categoryItems));
 }
 
-function applyHierarchicalCategoryLabels(html: string, categories: CategoryRecord[]): string {
+function applyHierarchicalCategoryOptions(html: string, categories: CategoryRecord[]): string {
+  if (categories.length === 0) {
+    return html;
+  }
+
+  const options = renderCategoryOptions(categories);
+
+  return html.replace(
+    /<select name="categoryId"><option value="">Sem categoria<\/option>[\s\S]*?<\/select>/g,
+    `<select name="categoryId"><option value="">Sem categoria</option>${options}</select>`,
+  );
+}
+
+function renderCategoryOptions(categories: CategoryRecord[]): string {
   return categories
     .slice()
     .sort((left, right) =>
       getCategoryDisplayName(left, categories).localeCompare(getCategoryDisplayName(right, categories)),
     )
-    .reduce((content, category) => {
-      const value = escapeHtml(category.id);
-      const label = escapeHtml(getCategoryDisplayName(category, categories));
-      const optionPattern = new RegExp(
-        `(<option value="${escapeRegExp(value)}"[^>]*>)[^<]*(</option>)`,
-        "g",
-      );
-
-      return content.replace(optionPattern, `$1${label}$2`);
-    }, html);
+    .map(
+      (category) =>
+        `<option value="${escapeHtml(category.id)}">${escapeHtml(getCategoryDisplayName(category, categories))}</option>`,
+    )
+    .join("");
 }
 
 function injectCardPurchaseInstallments(html: string): string {
@@ -169,8 +177,4 @@ function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
