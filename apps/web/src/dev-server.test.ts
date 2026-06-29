@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
 
-import { enhanceAccountsCardsTabs, renderLoginPage, resolveRoute } from "./dev-server.js";
+import {
+  enhanceAccountsCardsTabs,
+  enhanceSolverFinBrandLogo,
+  renderLoginPage,
+  resolveRoute,
+} from "./dev-server.js";
 import { privateRoutes } from "./dev-server/routes.js";
 
 loginRouteIsRealPage();
+loginPageKeepsOnlyCenteredLogo();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
@@ -11,6 +17,7 @@ accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
 accountsCardsDirectEnhancementIsInjectedOnce();
 accountsCardsAdditionalButtonUsesDirectController();
 accountsCardsEditAdditionalSubmitIsCapturedDirectly();
+brandEnhancementAddsLogoBesideSidebarName();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
@@ -25,6 +32,15 @@ function loginRouteIsRealPage(): void {
   assert.match(login, /<form id="register-form"/);
   assert.match(login, /\/api\/users/);
   assert.doesNotMatch(login, /demo@solverfin\.example\.invalid/);
+}
+
+function loginPageKeepsOnlyCenteredLogo(): void {
+  const login = renderLoginPage();
+
+  assert.match(login, /class="login-logo"/);
+  assert.match(login, /src="\/brand\/Solverfin_02\.png"/);
+  assert.match(login, /justify-self: center/);
+  assert.doesNotMatch(login, /position:\s*(fixed|absolute)/);
 }
 
 function privateRouteRedirectsWithoutSession(): void {
@@ -118,6 +134,17 @@ function accountsCardsEditAdditionalSubmitIsCapturedDirectly(): void {
   assert.match(enhanced, /await loadSavedCards\(\)/);
   assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
   assert.doesNotMatch(enhanced, /window\.location\.reload\(\)/);
+}
+
+function brandEnhancementAddsLogoBesideSidebarName(): void {
+  const html =
+    '<html><head></head><body><aside class="sidebar"><a class="brand" href="/dashboard">SolverFin</a></aside></body></html>';
+  const enhanced = enhanceSolverFinBrandLogo(html);
+
+  assert.match(enhanced, /data-solverfin-brand-logo/);
+  assert.match(enhanced, /class="brand-logo"/);
+  assert.match(enhanced, /src="\/brand\/Solverfin_02\.png"/);
+  assert.match(enhanced, /<span>SolverFin<\/span>/);
 }
 
 function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
