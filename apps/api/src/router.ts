@@ -479,6 +479,7 @@ async function createTransactionHandler(
     ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
     ...(body.effectiveOn !== undefined ? { effectiveOn: readOptionalDate(body.effectiveOn) } : {}),
     ...(body.description !== undefined ? { description: String(body.description) } : {}),
+    ...(body.note !== undefined ? { note: readOptionalText(body.note) } : {}),
     ...(body.status !== undefined ? { status: body.status as TransactionStatus } : {}),
     ...(body.destinationAccountId !== undefined
       ? { destinationAccountId: String(body.destinationAccountId) }
@@ -519,6 +520,8 @@ async function updateTransactionHandler(
         ? { effectiveOn: readOptionalDate(body.effectiveOn) }
         : {}),
       ...(body.description !== undefined ? { description: String(body.description) } : {}),
+      ...(body.note !== undefined ? { note: readOptionalText(body.note) } : {}),
+      ...(body.applyToFuturePlanned === true ? { applyToFuturePlanned: true } : {}),
       ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
       ...(body.destinationAccountId !== undefined
         ? { destinationAccountId: String(body.destinationAccountId) }
@@ -1004,6 +1007,16 @@ function readOptionalDate(value: unknown): string | null {
   const text = String(value);
 
   return text.trim() ? text : null;
+}
+
+function readOptionalText(value: unknown): string | null {
+  if (value === null) {
+    return null;
+  }
+
+  const text = String(value).trim();
+
+  return text ? text : null;
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {

@@ -45,6 +45,7 @@ interface TransactionRow {
   plannedOn: Date;
   effectiveOn: Date | null;
   description: string;
+  note: string | null;
   reconciledAt: Date | null;
   voidedAt: Date | null;
   createdAt: Date;
@@ -79,10 +80,33 @@ interface CategoryRow {
   updatedAt: Date;
 }
 
+interface RecurrenceScheduleRow {
+  frequency: string;
+  interval: number;
+}
+
+interface InstallmentSequenceRow {
+  sequenceNumber: number;
+}
+
+type TransactionWithNote = Transaction & { note?: string };
+type CreateTransactionPayloadWithMetadata = CreateTransactionPayload & {
+  note?: string | null;
+  applyToFuturePlanned?: boolean;
+};
+type UpdateTransactionPayloadWithMetadata = UpdateTransactionPayload & {
+  note?: string | null;
+  applyToFuturePlanned?: boolean;
+};
+
+type TransactionMetadata = {
+  applyToFuturePlanned?: boolean;
+};
+
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
   "categoryId", "cardId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
   "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
-  "effectiveOn", "description", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
+  "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 export async function listTransactionsForContext(
   context: TenantContext,
@@ -109,44 +133,47 @@ export async function getTransactionForContext(
 
 export async function createTransactionForContext(
   context: TenantContext,
-  payload: CreateTransactionPayload,
+  payload: CreateTransactionPayloadWithMetadata,
 ): Promise<Transaction> {
-  const account = await findAccountRow(context, payload.accountId);
-  const destinationAccount = payload.destinationAccountId
-    ? await findAccountRow(context, payload.destinationAccountId)
+  const prepared = prepareTransactionPayload(payload);
+  const account = await findAccountRow(context, prepared.payload.accountId);
+  const destinationAccount = prepared.payload.destinationAccountId
+    ? await findAccountRow(context, prepared.payload.destinationAccountId)
     : undefined;
-  const category = payload.categoryId
-    ? await findCategoryRow(context, payload.categoryId)
+  const category = prepared.payload.categoryId
+    ? await findCategoryRow(context, prepared.payload.categoryId)
     : undefined;
 
   const result = createTransactionDomain({
     id: randomUUID(),
     context,
     now: new Date().toISOString(),
-    payload,
+    payload: prepared.payload,
     ...(account ? { account } : {}),
     ...(destinationAccount ? { destinationAccount } : {}),
     ...(category ? { category } : {}),
   });
+  const transaction = attachNote(result.transaction, prepared.note);
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(buildInsertTransactionSql(), buildTransactionParams(result.transaction));
+    await executeQuery(buildInsertTransactionSql(), buildTransactionParams(transaction));
     await insertAuditLogEntry(executeQuery, result.auditEntry);
   });
 
-  return result.transaction;
+  return transaction;
 }
 
 export async function updateTransactionForContext(
   context: TenantContext,
   transactionId: EntityId,
-  payload: UpdateTransactionPayload,
+  payload: UpdateTransactionPayloadWithMetadata,
 ): Promise<Transaction> {
   const currentTransaction = await findTransactionRow(context, transactionId);
-  const accountId = payload.accountId ?? currentTransaction?.accountId;
+  const prepared = prepareTransactionPayload(payload, getTransactionNote(currentTransaction));
+  const accountId = prepared.payload.accountId ?? currentTransaction?.accountId;
   const destinationAccountId =
-    payload.destinationAccountId ?? currentTransaction?.destinationAccountId;
-  const categoryId = payload.categoryId ?? currentTransaction?.categoryId;
+    prepared.payload.destinationAccountId ?? currentTransaction?.destinationAccountId;
+  const categoryId = prepared.payload.categoryId ?? currentTransaction?.categoryId;
 
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
   const destinationAccount = destinationAccountId
@@ -158,18 +185,32 @@ export async function updateTransactionForContext(
     context,
     transaction: currentTransaction,
     now: new Date().toISOString(),
-    payload,
+    payload: prepared.payload,
     ...(account ? { account } : {}),
     ...(destinationAccount ? { destinationAccount } : {}),
     ...(category ? { category } : {}),
   });
+  const transaction = attachNote(result.transaction, prepared.note);
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(buildUpdateTransactionSql(), buildTransactionParams(result.transaction));
+    await executeQuery(buildUpdateTransactionSql(), buildTransactionParams(transaction));
+    await syncInstallmentById(
+      executeQuery,
+      context,
+      currentTransaction?.installmentId,
+      transaction.plannedOn,
+      transaction.amountMinor,
+      transaction.currency,
+      transaction.updatedAt,
+    );
     await insertAuditLogEntry(executeQuery, result.auditEntry);
+
+    if (prepared.metadata.applyToFuturePlanned === true) {
+      await updateFuturePlannedTransactions(executeQuery, context, currentTransaction, transaction);
+    }
   });
 
-  return result.transaction;
+  return transaction;
 }
 
 export async function voidTransactionForContext(
@@ -178,21 +219,22 @@ export async function voidTransactionForContext(
 ): Promise<Transaction> {
   const currentTransaction = await findTransactionRow(context, transactionId);
   const result = voidTransactionDomain(context, currentTransaction, new Date().toISOString());
+  const transaction = attachNote(result.transaction, getTransactionNote(currentTransaction));
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(buildUpdateTransactionSql(), buildTransactionParams(result.transaction));
+    await executeQuery(buildUpdateTransactionSql(), buildTransactionParams(transaction));
     await insertAuditLogEntry(executeQuery, result.auditEntry);
   });
 
-  return result.transaction;
+  return transaction;
 }
 
 function buildInsertTransactionSql(): string {
   return `insert into "Transaction"
     ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "categoryId",
      "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
-     "effectiveOn", "description", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`;
+     "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`;
 }
 
 function buildUpdateTransactionSql(): string {
@@ -200,12 +242,12 @@ function buildUpdateTransactionSql(): string {
       "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6, "transferGroupId" = $7,
       "kind" = $8, "status" = $9, "source" = $10, "amountMinor" = $11, "currency" = $12,
       "occurredOn" = $13, "plannedOn" = $14, "effectiveOn" = $15, "description" = $16,
-      "reconciledAt" = $17, "voidedAt" = $18, "createdAt" = $19, "updatedAt" = $20,
-      "createdByUserId" = $21, "updatedByUserId" = $22
+      "note" = $17, "reconciledAt" = $18, "voidedAt" = $19, "createdAt" = $20, "updatedAt" = $21,
+      "createdByUserId" = $22, "updatedByUserId" = $23
     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
-function buildTransactionParams(transaction: Transaction): unknown[] {
+function buildTransactionParams(transaction: TransactionWithNote): unknown[] {
   return [
     transaction.id,
     transaction.organizationId,
@@ -223,6 +265,7 @@ function buildTransactionParams(transaction: Transaction): unknown[] {
     transaction.plannedOn,
     transaction.effectiveOn ?? null,
     transaction.description,
+    transaction.note ?? null,
     transaction.reconciledAt ?? null,
     transaction.voidedAt ?? null,
     transaction.createdAt,
@@ -316,7 +359,7 @@ async function findCategoryRow(
 }
 
 function mapTransactionRow(row: TransactionRow): Transaction {
-  const transaction: Transaction = {
+  const transaction: TransactionWithNote = {
     id: row.id,
     organizationId: row.organizationId,
     financialProfileId: row.financialProfileId,
@@ -332,6 +375,7 @@ function mapTransactionRow(row: TransactionRow): Transaction {
     updatedAt: row.updatedAt.toISOString(),
   };
 
+  if (row.note !== null) transaction.note = row.note;
   if (row.effectiveOn !== null) transaction.effectiveOn = toDateOnly(row.effectiveOn);
   if (row.accountId !== null) transaction.accountId = row.accountId;
   if (row.destinationAccountId !== null)
@@ -352,6 +396,286 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   return transaction;
 }
 
+function prepareTransactionPayload<
+  TPayload extends { note?: string | null; applyToFuturePlanned?: boolean },
+>(
+  payload: TPayload,
+  fallbackNote?: string,
+): { payload: TPayload; metadata: TransactionMetadata; note: string | undefined } {
+  const { note, applyToFuturePlanned, ...nextPayload } = payload;
+
+  return {
+    payload: nextPayload as TPayload,
+    metadata: applyToFuturePlanned === true ? { applyToFuturePlanned: true } : {},
+    note: note !== undefined ? normalizeOptionalText(note) : fallbackNote,
+  };
+}
+
+function attachNote(transaction: Transaction, note: string | undefined): TransactionWithNote {
+  const transactionWithNote: TransactionWithNote = { ...transaction };
+
+  if (note !== undefined) {
+    transactionWithNote.note = note;
+  }
+
+  return transactionWithNote;
+}
+
+function getTransactionNote(transaction: Transaction | undefined): string | undefined {
+  return (transaction as TransactionWithNote | undefined)?.note;
+}
+
+function normalizeOptionalText(value: string | null): string | undefined {
+  if (value === null) {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+
+  return normalized ? normalized : undefined;
+}
+
+async function updateFuturePlannedTransactions(
+  executeQuery: typeof query,
+  context: TenantContext,
+  currentTransaction: Transaction | undefined,
+  updatedTransaction: TransactionWithNote,
+): Promise<void> {
+  if (!currentTransaction?.recurrenceId) {
+    return;
+  }
+
+  const futureRows = await executeQuery<TransactionRow>(
+    `select ${SELECT_COLUMNS} from "Transaction"
+     where "organizationId" = $1 and "financialProfileId" = $2 and "recurrenceId" = $3
+       and "status" = 'PLANNED' and "plannedOn" > $4
+     order by "plannedOn" asc, "createdAt" asc`,
+    [
+      context.organizationId,
+      context.financialProfileId,
+      currentTransaction.recurrenceId,
+      currentTransaction.plannedOn,
+    ],
+  );
+
+  const schedule = await readRecurrenceSchedule(
+    executeQuery,
+    context,
+    currentTransaction.recurrenceId,
+  );
+  const shouldRecalculateDates = updatedTransaction.plannedOn !== currentTransaction.plannedOn;
+  const note = updatedTransaction.note ?? null;
+  const now = updatedTransaction.updatedAt;
+
+  await updateRecurrenceRuleFromTransaction(
+    executeQuery,
+    context,
+    currentTransaction,
+    updatedTransaction,
+    schedule,
+  );
+
+  for (const [index, row] of futureRows.entries()) {
+    const plannedOn = shouldRecalculateDates
+      ? addFrequency(updatedTransaction.plannedOn, schedule.frequency, index + 1, schedule.interval)
+      : toDateOnly(row.plannedOn);
+
+    await executeQuery(
+      `update "Transaction" set
+        "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6,
+        "kind" = $7, "amountMinor" = $8, "currency" = $9,
+        "occurredOn" = $10, "plannedOn" = $11, "effectiveOn" = null,
+        "description" = $12, "note" = $13, "updatedAt" = $14, "updatedByUserId" = $15
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [
+        row.id,
+        context.organizationId,
+        context.financialProfileId,
+        updatedTransaction.accountId ?? null,
+        updatedTransaction.destinationAccountId ?? null,
+        updatedTransaction.categoryId ?? null,
+        updatedTransaction.kind.toUpperCase(),
+        updatedTransaction.amountMinor,
+        updatedTransaction.currency,
+        plannedOn,
+        plannedOn,
+        updatedTransaction.description,
+        note,
+        now,
+        context.userId,
+      ],
+    );
+
+    await syncInstallmentById(
+      executeQuery,
+      context,
+      row.installmentId,
+      plannedOn,
+      updatedTransaction.amountMinor,
+      updatedTransaction.currency,
+      now,
+    );
+  }
+}
+
+async function readRecurrenceSchedule(
+  executeQuery: typeof query,
+  context: TenantContext,
+  recurrenceId: EntityId,
+): Promise<{ frequency: string; interval: number }> {
+  const rows = await executeQuery<RecurrenceScheduleRow>(
+    `select "frequency", "interval" from "Recurrence"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [recurrenceId, context.organizationId, context.financialProfileId],
+  );
+  const row = rows[0];
+
+  return {
+    frequency: row?.frequency.toLowerCase() ?? "monthly",
+    interval: row?.interval ?? 1,
+  };
+}
+
+async function updateRecurrenceRuleFromTransaction(
+  executeQuery: typeof query,
+  context: TenantContext,
+  currentTransaction: Transaction,
+  updatedTransaction: TransactionWithNote,
+  schedule: { frequency: string; interval: number },
+): Promise<void> {
+  if (!currentTransaction.recurrenceId) {
+    return;
+  }
+
+  const sequenceNumber = await readInstallmentSequence(
+    executeQuery,
+    context,
+    currentTransaction.installmentId,
+  );
+  const startOn =
+    updatedTransaction.plannedOn !== currentTransaction.plannedOn
+      ? addFrequency(
+          updatedTransaction.plannedOn,
+          schedule.frequency,
+          -(Math.max(1, sequenceNumber ?? 1) - 1),
+          schedule.interval,
+        )
+      : undefined;
+
+  await executeQuery(
+    `update "Recurrence" set
+      "accountId" = $4, "categoryId" = $5, "kind" = $6, "amountMinor" = $7,
+      "currency" = $8, "description" = $9,
+      "startOn" = coalesce($10, "startOn"), "updatedAt" = $11, "updatedByUserId" = $12
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [
+      currentTransaction.recurrenceId,
+      context.organizationId,
+      context.financialProfileId,
+      updatedTransaction.accountId ?? null,
+      updatedTransaction.categoryId ?? null,
+      updatedTransaction.kind.toUpperCase(),
+      updatedTransaction.amountMinor,
+      updatedTransaction.currency,
+      updatedTransaction.description,
+      startOn ?? null,
+      updatedTransaction.updatedAt,
+      context.userId,
+    ],
+  );
+}
+
+async function readInstallmentSequence(
+  executeQuery: typeof query,
+  context: TenantContext,
+  installmentId: EntityId | undefined,
+): Promise<number | undefined> {
+  if (!installmentId) {
+    return undefined;
+  }
+
+  const rows = await executeQuery<InstallmentSequenceRow>(
+    `select "sequenceNumber" from "Installment"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [installmentId, context.organizationId, context.financialProfileId],
+  );
+
+  return rows[0]?.sequenceNumber;
+}
+
+async function syncInstallmentById(
+  executeQuery: typeof query,
+  context: TenantContext,
+  installmentId: EntityId | undefined | null,
+  dueOn: string,
+  amountMinor: number,
+  currency: string,
+  updatedAt: string,
+): Promise<void> {
+  if (!installmentId) {
+    return;
+  }
+
+  await executeQuery(
+    `update "Installment" set "dueOn" = $4, "amountMinor" = $5, "currency" = $6, "updatedAt" = $7
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [installmentId, context.organizationId, context.financialProfileId, dueOn, amountMinor, currency, updatedAt],
+  );
+}
+
+function addFrequency(startOn: string, frequency: string, offset: number, interval = 1): string {
+  const steps = offset * interval;
+
+  if (frequency === "daily") {
+    return addDays(startOn, steps);
+  }
+
+  if (frequency === "weekly") {
+    return addDays(startOn, steps * 7);
+  }
+
+  if (frequency === "yearly") {
+    return addMonths(startOn, steps * 12);
+  }
+
+  return addMonths(startOn, steps);
+}
+
+function addDays(startOn: string, days: number): string {
+  const date = parseDate(startOn);
+  date.setUTCDate(date.getUTCDate() + days);
+
+  return toIsoDate(date);
+}
+
+function addMonths(startOn: string, months: number): string {
+  const [year, month, day] = startOn.split("-").map(Number) as [number, number, number];
+  const targetMonthIndex = month - 1 + months;
+  const targetYear = year + Math.floor(targetMonthIndex / 12);
+  const normalizedMonthIndex = ((targetMonthIndex % 12) + 12) % 12;
+  const targetMonth = normalizedMonthIndex + 1;
+  const lastDay = getLastDayOfMonth(targetYear, targetMonth);
+  const targetDay = isLastDayOfMonth(year, month, day) ? lastDay : Math.min(day, lastDay);
+
+  return toIsoDate(new Date(Date.UTC(targetYear, normalizedMonthIndex, targetDay)));
+}
+
+function parseDate(value: string): Date {
+  return new Date(`${value}T00:00:00.000Z`);
+}
+
+function toIsoDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
+
 function toDateOnly(value: Date): string {
   return value.toISOString().slice(0, 10);
+}
+
+function isLastDayOfMonth(year: number, month: number, day: number): boolean {
+  return day === getLastDayOfMonth(year, month);
+}
+
+function getLastDayOfMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
