@@ -46,7 +46,7 @@ function renderRecurrenceActionMenuButton(
 }
 
 export function renderRecurrenceIndicator(): string {
-  return `<span class="recurrence-indicator" title="Lançamento recorrente" aria-label="Lançamento recorrente">${renderRepeatIcon()}</span>`;
+  return `<span class="recurrence-indicator" title="Lançamento recorrente" aria-label="Lançamento recorrente">${renderRepeatIcon()}<span>Recorrente</span></span>`;
 }
 
 export function renderRecurrenceEditModal(
@@ -90,7 +90,7 @@ export function renderRecurrenceEditModal(
 }
 
 export function recurrencesSectionStyles(): string {
-  return `.recurrence-indicator{color:var(--cyan);display:inline-flex}.recurrence-indicator svg{display:block}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}.modal-panel form[data-form] label:has([name=editScope]){display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}}`;
+  return `.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.72rem;font-weight:900;gap:4px;line-height:1;margin-left:8px;padding:3px 7px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:13px;width:13px}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}.modal-panel form[data-form] label:has([name=editScope]){display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}}`;
 }
 
 export function recurrencesSectionScript(): string {
@@ -242,7 +242,7 @@ export function recurrencesSectionScript(): string {
             const method = form.dataset.method || "POST";
             const path = form.dataset.path || "/api/transactions";
             const applyToFuturePlanned = method === "PATCH" && Boolean(form.dataset.recurrenceId)
-              ? window.confirm("Este lançamento faz parte de uma recorrência. Clique em OK para aplicar também aos lançamentos planejados futuros, ou em Cancelar para alterar somente este lançamento.")
+              ? window.confirm("Este lançamento é recorrente.\n\nOK: aplicar esta alteração também em todos os lançamentos futuros planejados.\nCancelar: alterar somente este lançamento editado.")
               : false;
             let response;
             if (statusNode) statusNode.textContent = "Salvando...";
