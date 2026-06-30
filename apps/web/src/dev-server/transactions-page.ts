@@ -109,15 +109,10 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
 
   if (!transactionResult.ok) return renderErrorPage(transactionResult.error);
 
-  const rows = buildRows(
-    transactionResult.data.transactions.filter(
-      (transaction) =>
-        transaction.accountId !== undefined ||
-        (transaction.cardId === undefined && transaction.invoiceId === undefined),
-    ),
-    selectedAccount,
-  );
-  const summary = summarize(rows, selectedAccount);
+  const transactions = transactionResult.data.transactions.filter(isAccountStatementTransaction);
+  const openingMinor = calculateOpeningBalance(transactions, selectedAccount, filters.startsOn);
+  const rows = buildRows(filterStatementPeriodTransactions(transactions, filters), selectedAccount, openingMinor);
+  const summary = summarize(rows, openingMinor);
 
   return renderPage({
     title: "Lançamentos - SolverFin",
@@ -251,16 +246,53 @@ function buildTransactionQuery(filters: StatementFilters): string {
   return new URLSearchParams({
     status: "all",
     accountId: filters.accountId ?? "",
-    plannedFrom: filters.startsOn,
     plannedTo: filters.endsOn,
   }).toString();
+}
+
+function isAccountStatementTransaction(transaction: TransactionRecord): boolean {
+  return (
+    transaction.accountId !== undefined ||
+    (transaction.cardId === undefined && transaction.invoiceId === undefined)
+  );
+}
+
+function filterStatementPeriodTransactions(
+  transactions: TransactionRecord[],
+  filters: StatementFilters,
+): TransactionRecord[] {
+  return transactions.filter((transaction) => {
+    const date = statementDate(transaction);
+
+    return date >= filters.startsOn && date <= filters.endsOn;
+  });
+}
+
+function calculateOpeningBalance(
+  transactions: TransactionRecord[],
+  selectedAccount: AccountRecord | undefined,
+  startsOn: string,
+): number {
+  let balance = selectedAccount?.openingBalanceMinor ?? 0;
+
+  for (const transaction of transactions
+    .filter((candidate) => candidate.status !== "voided")
+    .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))) {
+    if (statementDate(transaction) >= startsOn) continue;
+    if (transaction.effectiveOn === undefined) continue;
+
+    balance += signedAmount(transaction, selectedAccount?.id);
+  }
+
+  return balance;
 }
 
 function buildRows(
   transactions: TransactionRecord[],
   selectedAccount: AccountRecord | undefined,
+  openingMinor: number,
 ): StatementRow[] {
-  let balance = selectedAccount?.openingBalanceMinor ?? 0;
+  let balance = openingMinor;
 
   return transactions
     .filter((transaction) => transaction.status !== "voided")
@@ -278,12 +310,7 @@ function buildRows(
     });
 }
 
-function summarize(
-  rows: StatementRow[],
-  selectedAccount: AccountRecord | undefined,
-): StatementSummary {
-  const openingMinor = selectedAccount?.openingBalanceMinor ?? 0;
-
+function summarize(rows: StatementRow[], openingMinor: number): StatementSummary {
   return rows.reduce<StatementSummary>(
     (summary, row) => {
       const absolute = Math.abs(row.amountMinor);
