@@ -97,9 +97,6 @@ export function recurrencesSectionScript(): string {
   return `
     <script>
       (function () {
-        const transactionMetadataPrefix = "\\n\\n[[solverfin:transaction-meta:";
-        const transactionMetadataSuffix = "]]";
-
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
           return Math.round(parseFloat(normalized || "0") * 100);
@@ -144,13 +141,6 @@ export function recurrencesSectionScript(): string {
           return new Date(Date.UTC(year, month, 0)).getUTCDate();
         }
 
-        function encodeDescription(description, metadata) {
-          const hasNote = Object.prototype.hasOwnProperty.call(metadata, "note");
-          const hasFutureScope = metadata.applyToFuturePlanned === true;
-          if (!hasNote && !hasFutureScope) return description;
-          return description + transactionMetadataPrefix + encodeURIComponent(JSON.stringify(metadata)) + transactionMetadataSuffix;
-        }
-
         function setupTransactionFormOverride() {
           const form = document.querySelector("[data-form]");
           if (!form || !form.repeatMode || !form.plannedOn || !form.amountMinor) return;
@@ -163,9 +153,6 @@ export function recurrencesSectionScript(): string {
           function basePayload(plannedOn, effectiveOn, amountMinor, description, applyToFuturePlanned) {
             const data = new FormData(form);
             const note = String(data.get("note") || "");
-            const metadata = {};
-            if (note.trim() || form.dataset.currentTransactionId) metadata.note = note;
-            if (applyToFuturePlanned) metadata.applyToFuturePlanned = true;
             const result = {
               kind: String(data.get("kind")),
               amountMinor,
@@ -173,9 +160,11 @@ export function recurrencesSectionScript(): string {
               plannedOn,
               effectiveOn: effectiveOn || null,
               accountId: String(data.get("accountId")),
-              description: encodeDescription(description, metadata),
+              description,
               status: String(data.get("status"))
             };
+            if (note.trim() || form.dataset.currentTransactionId) result.note = note;
+            if (applyToFuturePlanned) result.applyToFuturePlanned = true;
             const destinationAccountId = String(data.get("destinationAccountId") || "");
             const categoryId = String(data.get("categoryId") || "");
             if (destinationAccountId) result.destinationAccountId = destinationAccountId;
@@ -408,6 +397,6 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
