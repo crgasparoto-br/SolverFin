@@ -1,1 +1,1 @@
-alter table "Transaction" add column "note" text;
+alter table "Transaction" add column if not exists "note" text;
