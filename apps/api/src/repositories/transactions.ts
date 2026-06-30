@@ -401,7 +401,7 @@ function prepareTransactionPayload<
 >(
   payload: TPayload,
   fallbackNote?: string,
-): { payload: TPayload; metadata: TransactionMetadata; note?: string } {
+): { payload: TPayload; metadata: TransactionMetadata; note: string | undefined } {
   const { note, applyToFuturePlanned, ...nextPayload } = payload;
 
   return {
