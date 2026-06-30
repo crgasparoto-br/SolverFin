@@ -20,6 +20,7 @@ export interface CardPurchaseContract {
   cardId: EntityId;
   invoiceId?: EntityId;
   categoryId?: EntityId;
+  recurrenceId?: EntityId;
   occurredOn: string;
   description: string;
   amountMinor: number;
@@ -90,6 +91,7 @@ interface CardPurchaseRow {
   cardId: string;
   invoiceId: string | null;
   categoryId: string | null;
+  recurrenceId: string | null;
   occurredOn: Date;
   description: string;
   amountMinor: number;
@@ -247,7 +249,7 @@ export async function listCardPurchasesForContext(
   }
 
   const rows = await query<CardPurchaseRow>(
-    `select "id", "financialProfileId", "cardId", "invoiceId", "categoryId", "occurredOn",
+    `select "id", "financialProfileId", "cardId", "invoiceId", "categoryId", "recurrenceId", "occurredOn",
             "description", "amountMinor", "currency", "status", "reconciledAt"
        from "Transaction"
        where ${where.join(" and ")}
@@ -375,6 +377,7 @@ function mapPurchaseRow(row: CardPurchaseRow): CardPurchaseContract {
     cardId: row.cardId,
     ...(row.invoiceId !== null ? { invoiceId: row.invoiceId } : {}),
     ...(row.categoryId !== null ? { categoryId: row.categoryId } : {}),
+    ...(row.recurrenceId !== null ? { recurrenceId: row.recurrenceId } : {}),
     occurredOn: toDateOnly(row.occurredOn),
     description: row.description,
     amountMinor: row.amountMinor,

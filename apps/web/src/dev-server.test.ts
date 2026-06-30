@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { enhanceAccountsCardsTabs, renderLoginPage, resolveRoute } from "./dev-server.js";
+import { institutions, renderInstitutionIcon } from "./dev-server/institutions.js";
 import { privateRoutes } from "./dev-server/routes.js";
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
@@ -11,6 +17,7 @@ accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
 accountsCardsDirectEnhancementIsInjectedOnce();
 accountsCardsAdditionalButtonUsesDirectController();
 accountsCardsEditAdditionalSubmitIsCapturedDirectly();
+institutionIconsUseExplicitLogoSources();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
@@ -120,6 +127,43 @@ function accountsCardsEditAdditionalSubmitIsCapturedDirectly(): void {
   assert.doesNotMatch(enhanced, /window\.location\.reload\(\)/);
 }
 
+function institutionIconsUseExplicitLogoSources(): void {
+  for (const institution of institutions) {
+    const icon = renderInstitutionIcon(institution.key);
+
+    assert.doesNotMatch(icon, /logo\.clearbit\.com/);
+    assert.match(icon, /institution-badge-icon/);
+    assert.match(icon, new RegExp(`>${institution.shortLabel}<`));
+  }
+
+  assert.match(renderInstitutionIcon("bradesco"), /<img\b/);
+  assert.match(renderInstitutionIcon("bradesco"), /\/images\/institutions\/bradesco\.png/);
+  assert.match(renderInstitutionIcon("inter"), /\/images\/institutions\/inter\.png/);
+  assert.match(renderInstitutionIcon("c6"), />C6</);
+  assert.doesNotMatch(renderInstitutionIcon("c6"), /<img\b/);
+  assert.match(renderInstitutionIcon("porto_bank"), /\/images\/institutions\/porto-bank\.svg/);
+  assert.match(renderInstitutionIcon("bradesco"), />BR</);
+
+  assertLocalInstitutionLogo("/images/institutions/bradesco.png", "png");
+  assertLocalInstitutionLogo("/images/institutions/inter.png", "png");
+  assertLocalInstitutionLogo("/images/institutions/porto-bank.svg", "svg");
+}
+
+function assertLocalInstitutionLogo(src: string, kind: "png" | "svg"): void {
+  assert.doesNotMatch(src, /^https?:\/\//);
+
+  const filePath = path.join(repoRoot, "apps", "web", "public", src);
+  assert.equal(existsSync(filePath), true, `${src} must exist`);
+
+  const bytes = readFileSync(filePath);
+  if (kind === "png") {
+    assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+    return;
+  }
+
+  assert.match(bytes.subarray(0, 200).toString("utf8"), /<svg\b/i);
+}
+
 function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
   const authenticatedRoute = resolveRoute("/contas", true);
 
@@ -129,7 +173,7 @@ function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
 
 function sidebarMenuUsesPtBrLabels(): void {
   assert.equal(privateRoutes.get("/lancamentos"), "Extrato da conta");
-  assert.equal(privateRoutes.get("/recorrencias"), "Recorrências");
+  assert.equal(privateRoutes.has("/recorrencias"), false);
   assert.equal(privateRoutes.get("/pagar-receber"), "Pagar e receber");
   assert.equal(privateRoutes.get("/contas-cartoes"), "Contas e Cartões");
   assert.equal(privateRoutes.has("/contas"), false);

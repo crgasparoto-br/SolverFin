@@ -41,6 +41,9 @@ runCreatesCardRecurrence();
 runRejectsInactiveCard();
 runRejectsRecurrenceWithoutAccountOrCard();
 runRejectsRecurrenceWithBothAccountAndCard();
+runRejectsAccountRecurrenceWithoutKind();
+runForcesExpenseKindForCardRecurrence();
+runRejectsCategoryKindMismatch();
 runGeneratesCardInstallmentsWithCardId();
 runGeneratesMonthlyInstallmentsWithoutDuplicates();
 runGeneratesBiweeklyInstallmentsWithInterval();
@@ -63,6 +66,7 @@ function runCreatesRecurrence(): void {
       startOn: "2026-06-05",
       amountMinor: 150000,
       description: "Aluguel ficticio",
+      kind: "expense",
       accountId: activeAccount.id,
       categoryId: category.id,
     },
@@ -176,6 +180,68 @@ function runRejectsRecurrenceWithBothAccountAndCard(): void {
   );
 }
 
+function runRejectsAccountRecurrenceWithoutKind(): void {
+  assertRecurrenceError(
+    () =>
+      createRecurrence({
+        id: "recurrence-missing-kind",
+        context: tenantA,
+        now,
+        account: activeAccount,
+        payload: {
+          frequency: "monthly",
+          startOn: "2026-06-05",
+          amountMinor: 4990,
+          description: "Assinatura ficticia",
+          accountId: activeAccount.id,
+        },
+      }),
+    "RECURRENCE_KIND_REQUIRED",
+  );
+}
+
+function runForcesExpenseKindForCardRecurrence(): void {
+  const result = createRecurrence({
+    id: "recurrence-card-kind",
+    context: tenantA,
+    now,
+    card: activeCard,
+    payload: {
+      frequency: "monthly",
+      startOn: "2026-06-05",
+      amountMinor: 4990,
+      description: "Assinatura ficticia",
+      kind: "income",
+      cardId: activeCard.id,
+    },
+  });
+
+  assertEqual(result.recurrence.kind, "expense", "card recurrence kind should always be expense");
+}
+
+function runRejectsCategoryKindMismatch(): void {
+  assertRecurrenceError(
+    () =>
+      createRecurrence({
+        id: "recurrence-category-mismatch",
+        context: tenantA,
+        now,
+        account: activeAccount,
+        category,
+        payload: {
+          frequency: "monthly",
+          startOn: "2026-06-05",
+          amountMinor: 4990,
+          description: "Assinatura ficticia",
+          kind: "income",
+          accountId: activeAccount.id,
+          categoryId: category.id,
+        },
+      }),
+    "RECURRENCE_CATEGORY_KIND_MISMATCH",
+  );
+}
+
 function runGeneratesCardInstallmentsWithCardId(): void {
   const recurrence = createRecurrence({
     id: "recurrence-card-installments",
@@ -191,18 +257,29 @@ function runGeneratesCardInstallmentsWithCardId(): void {
     },
   }).recurrence;
 
-  const installments = generateRecurrenceInstallments({
+  const { installments, transactions } = generateRecurrenceInstallments({
     context: tenantA,
     recurrence,
     existingInstallments: [],
     now,
     through: "2026-08-10",
     makeInstallmentId: (sequenceNumber) => `installment-card-${sequenceNumber}`,
+    makeTransactionId: (sequenceNumber) => `transaction-card-${sequenceNumber}`,
   });
 
   assertEqual(installments.length, 3, "should generate three monthly card installments");
   installments.forEach((installment) => {
     assertEqual(installment.cardId, activeCard.id, "card installment should keep card id");
+  });
+  assertEqual(transactions.length, 3, "should also materialize three card transactions");
+  transactions.forEach((transaction) => {
+    assertEqual(transaction.cardId, activeCard.id, "card transaction should keep card id");
+    assertEqual(transaction.kind, "expense", "card transaction should be an expense");
+    assertEqual(
+      transaction.source,
+      "recurrence",
+      "card transaction should track recurrence source",
+    );
   });
 }
 
@@ -214,13 +291,14 @@ function runGeneratesMonthlyInstallmentsWithoutDuplicates(): void {
   });
   const existingInstallments = [createInstallmentFixture(recurrence, 2, "2026-07-10")];
 
-  const installments = generateRecurrenceInstallments({
+  const { installments } = generateRecurrenceInstallments({
     context: tenantA,
     recurrence,
     existingInstallments,
     now,
     through: "2026-09-30",
     makeInstallmentId: (sequenceNumber) => `installment-${sequenceNumber}`,
+    makeTransactionId: (sequenceNumber) => `transaction-${sequenceNumber}`,
   });
 
   assertEqual(installments.length, 3, "generation should skip existing sequence");
@@ -238,13 +316,14 @@ function runGeneratesBiweeklyInstallmentsWithInterval(): void {
     interval: 2,
   });
 
-  const installments = generateRecurrenceInstallments({
+  const { installments } = generateRecurrenceInstallments({
     context: tenantA,
     recurrence,
     existingInstallments: [],
     now,
     through: "2026-06-30",
     makeInstallmentId: (sequenceNumber) => `installment-biweekly-${sequenceNumber}`,
+    makeTransactionId: (sequenceNumber) => `transaction-biweekly-${sequenceNumber}`,
   });
 
   assertEqual(recurrence.interval, 2, "fixture should persist requested interval");
@@ -261,13 +340,14 @@ function runClampsMissingMonthDay(): void {
     endOn: "2026-03-31",
   });
 
-  const installments = generateRecurrenceInstallments({
+  const { installments } = generateRecurrenceInstallments({
     context: tenantA,
     recurrence,
     existingInstallments: [],
     now,
     through: "2026-03-31",
     makeInstallmentId: (sequenceNumber) => `installment-clamp-${sequenceNumber}`,
+    makeTransactionId: (sequenceNumber) => `transaction-clamp-${sequenceNumber}`,
   });
 
   assertEqual(installments[0]?.dueOn, "2026-01-31", "first due date should be preserved");
@@ -290,9 +370,19 @@ function runPausesAndCancelsRecurrence(): void {
     now,
     through: "2026-12-31",
     makeInstallmentId: (sequenceNumber) => `cancelled-${sequenceNumber}`,
+    makeTransactionId: (sequenceNumber) => `cancelled-transaction-${sequenceNumber}`,
   });
 
-  assertEqual(generated.length, 0, "cancelled recurrence should not generate new installments");
+  assertEqual(
+    generated.installments.length,
+    0,
+    "cancelled recurrence should not generate new installments",
+  );
+  assertEqual(
+    generated.transactions.length,
+    0,
+    "cancelled recurrence should not generate new transactions",
+  );
 }
 
 function runUpdatesFutureRule(): void {
@@ -430,6 +520,7 @@ function createRecurrenceFixture(input: {
     startOn: input.startOn,
     amountMinor: 4500,
     description: "Recorrencia ficticia",
+    kind: "expense" as const,
     accountId: activeAccount.id,
     categoryId: category.id,
   };

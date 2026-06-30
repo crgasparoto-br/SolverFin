@@ -14,6 +14,7 @@ Recorrencia representa uma regra de geracao futura com:
 - `organizationId`;
 - `financialProfileId`;
 - `status`;
+- `kind` (`income` ou `expense`);
 - `frequency`;
 - `startOn`;
 - `endOn` opcional;
@@ -25,6 +26,8 @@ Recorrencia representa uma regra de geracao futura com:
 - `categoryId` opcional.
 
 Uma recorrencia pertence a exatamente um destino: `accountId` (lancamento fixo de conta) ou `cardId` (compra fixa/assinatura no cartao), nunca os dois nem nenhum. `createRecurrence`/`updateRecurrence` rejeitam com `RECURRENCE_TARGET_REQUIRED` quando faltam os dois e `RECURRENCE_TARGET_CONFLICT` quando ambos sao informados.
+
+Recorrencia vinculada a `cardId` tem `kind` sempre forcado para `expense` (compra de cartao nunca e receita). Recorrencia vinculada a `accountId` exige `kind` explicito no payload — sem ele, `createRecurrence`/`updateRecurrence` rejeitam com `RECURRENCE_KIND_REQUIRED`. Quando uma `categoryId` e informada, a categoria precisa ter o mesmo `kind` da recorrencia, senao a operacao rejeita com `RECURRENCE_CATEGORY_KIND_MISMATCH`.
 
 Parcela representa uma previsao gerada ou uma compra parcelada com:
 
@@ -111,6 +114,7 @@ Payload:
   "endOn": "2026-12-10",
   "amountMinor": 4990,
   "description": "Assinatura ficticia",
+  "kind": "expense",
   "accountId": "account-demo",
   "categoryId": "category-demo"
 }
@@ -123,11 +127,18 @@ Padroes:
 
 ### Geracao sem duplicidade
 
-`generateRecurrenceInstallments` gera apenas parcelas planejadas que ainda nao existem para a combinacao `recurrenceId + sequenceNumber`.
+`generateRecurrenceInstallments` gera apenas parcelas planejadas que ainda nao existem para a combinacao `recurrenceId + sequenceNumber`. A partir de cada parcela, tambem monta a `Transaction` correspondente (`kind` da recorrencia, `status: planned`, `source: recurrence`, `recurrenceId`/`installmentId` preenchidos) — gerar parcelas materializa lancamentos reais, visiveis no extrato/fatura, e nao so um registro de controle.
 
 Reexecutar a geracao com a mesma janela nao deve duplicar parcelas ja existentes.
 
 Por padrao, recorrencias sem `endOn` geram no maximo 36 ocorrencias por chamada. O chamador pode informar `maxOccurrences` menor ou maior quando houver uma politica operacional explicita.
+
+A API HTTP chama essa geracao em dois momentos automaticos, sem exigir acao do usuario:
+
+- ao criar a recorrencia (`POST /api/recurrences`), materializando imediatamente qualquer vencimento `dueOn <= hoje` (cobre inclusive `startOn` retroativo);
+- a cada `GET /api/recurrences` filtrado por `accountId` ou `cardId` (exatamente o que as telas de Extrato e Cartoes chamam), fazendo catch-up de vencimentos pendentes ate hoje antes de listar.
+
+Para recorrencias vinculadas a `cardId`, a materializacao reusa o fluxo de compra de cartao (`registerCardPurchaseForContext`) para que cada ocorrencia resolva a `Invoice` certa, da mesma forma que qualquer outra compra no cartao. Como esse fluxo nao conhece recorrencias, o repository faz um `update` de acompanhamento logo depois para preencher `recurrenceId`/`installmentId` na `Transaction` resultante — a web depende desses dois campos para mostrar o indicador de recorrencia e as acoes de pausar/retomar/cancelar/editar direto na linha do lancamento.
 
 ### Datas inexistentes no mes
 
@@ -177,6 +188,8 @@ Erros controlados do contrato de dominio:
 400 RECURRENCE_FREQUENCY_REQUIRED
 400 RECURRENCE_FREQUENCY_INVALID
 400 RECURRENCE_STATUS_INVALID
+400 RECURRENCE_KIND_REQUIRED
+400 RECURRENCE_KIND_INVALID
 400 RECURRENCE_AMOUNT_INVALID
 400 RECURRENCE_DATE_REQUIRED
 400 RECURRENCE_END_BEFORE_START
@@ -184,8 +197,13 @@ Erros controlados do contrato de dominio:
 400 RECURRENCE_ACCOUNT_REQUIRED
 400 RECURRENCE_ACCOUNT_INVALID
 400 RECURRENCE_ACCOUNT_ARCHIVED
+400 RECURRENCE_TARGET_REQUIRED
+400 RECURRENCE_TARGET_CONFLICT
+400 RECURRENCE_CARD_INVALID
+400 RECURRENCE_CARD_NOT_ACTIVE
 400 RECURRENCE_CATEGORY_INVALID
 400 RECURRENCE_CATEGORY_ARCHIVED
+400 RECURRENCE_CATEGORY_KIND_MISMATCH
 400 RECURRENCE_GENERATION_WINDOW_INVALID
 400 INSTALLMENT_TOTAL_INVALID
 400 INSTALLMENT_SEQUENCE_INVALID

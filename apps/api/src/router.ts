@@ -63,6 +63,7 @@ import {
 import { buildFinancialSummary } from "./repositories/dashboard.js";
 import {
   cancelRecurrenceForContext,
+  catchUpRecurrenceInstallmentsForContext,
   createRecurrenceForContext,
   generateInstallmentsForContext,
   getRecurrenceForContext,
@@ -555,6 +556,14 @@ async function listRecurrencesHandler(
   const accountId = request.query.get("accountId");
   const cardId = request.query.get("cardId");
   const categoryId = request.query.get("categoryId");
+
+  if (accountId || cardId) {
+    await catchUpRecurrenceInstallmentsForContext(context, {
+      ...(accountId ? { accountId } : {}),
+      ...(cardId ? { cardId } : {}),
+    });
+  }
+
   const recurrences = await listRecurrencesForContext(context, {
     ...(status ? { status } : {}),
     ...(accountId ? { accountId } : {}),
@@ -575,6 +584,7 @@ async function createRecurrenceHandler(
     startOn: String(body.startOn ?? ""),
     amountMinor: Number(body.amountMinor),
     description: String(body.description ?? ""),
+    ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
     ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
     ...(body.cardId !== undefined ? { cardId: String(body.cardId) } : {}),
     ...(body.interval !== undefined ? { interval: Number(body.interval) } : {}),
@@ -612,6 +622,7 @@ async function updateRecurrenceHandler(
       ...(body.endOn !== undefined ? { endOn: String(body.endOn) } : {}),
       ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
       ...(body.description !== undefined ? { description: String(body.description) } : {}),
+      ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
       ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
       ...(body.cardId !== undefined ? { cardId: String(body.cardId) } : {}),
       ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
@@ -664,14 +675,14 @@ async function generateInstallmentsHandler(
   const through = body.through !== undefined ? String(body.through) : defaultGenerationWindow();
   const maxOccurrences =
     body.maxOccurrences !== undefined ? Number(body.maxOccurrences) : undefined;
-  const installments = await generateInstallmentsForContext(
+  const result = await generateInstallmentsForContext(
     context,
     requireParam(match, "recurrenceId"),
     through,
     maxOccurrences,
   );
 
-  return json(201, { installments });
+  return json(201, result);
 }
 
 function defaultGenerationWindow(): string {

@@ -11,8 +11,11 @@ await cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard();
 globalThis.fetch = originalFetch;
 
 async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
+  const calledPaths: string[] = [];
+
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input));
+    calledPaths.push(url.pathname);
 
     if (url.pathname === "/api/cards") {
       return jsonResponse({
@@ -108,6 +111,7 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
             cardId: "card-1",
             invoiceId: "invoice-1",
             categoryId: "category-1",
+            recurrenceId: "recurrence-card-1",
             occurredOn: "2026-06-19",
             description: "Supermercado",
             amountMinor: 10000,
@@ -124,6 +128,27 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
             amountMinor: 7345,
             currency: "BRL",
             status: "posted",
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/recurrences") {
+      assert.equal(url.searchParams.get("cardId"), "card-1");
+
+      return jsonResponse({
+        recurrences: [
+          {
+            id: "recurrence-card-1",
+            status: "active",
+            frequency: "monthly",
+            interval: 1,
+            startOn: "2026-06-05",
+            amountMinor: 2990,
+            currency: "BRL",
+            description: "Assinatura streaming",
+            cardId: "card-1",
+            categoryId: "category-1",
           },
         ],
       });
@@ -161,6 +186,19 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /data-purchase-field="endOn"/);
   assert.doesNotMatch(html, /Novo cartão/);
   assert.doesNotMatch(html, /<details class="purchase-group"/);
+  assert.doesNotMatch(html, /Compromissos previsíveis/);
+  assert.doesNotMatch(html, /Recorrências deste cartão/);
+  assert.match(html, /recurrence-indicator/);
+  assert.match(html, /data-recurrence-edit="recurrence-card-1"/);
+  assert.doesNotMatch(html, /\/recorrencias/);
+  assert.doesNotMatch(html, /name="kind"/, "card recurrences should not expose a kind field");
+
+  const recurrencesIndex = calledPaths.indexOf("/api/recurrences");
+  const purchasesIndex = calledPaths.indexOf("/api/invoices/invoice-1/purchases");
+  assert.ok(
+    recurrencesIndex >= 0 && purchasesIndex >= 0 && recurrencesIndex < purchasesIndex,
+    "recurrences must be fetched before purchases so catch-up materialization shows up in the same render",
+  );
 }
 
 async function cardsPageAggregatesFamilyCardTotals(): Promise<void> {
@@ -245,6 +283,10 @@ async function cardsPageAggregatesFamilyCardTotals(): Promise<void> {
 
     if (url.pathname === "/api/invoices/invoice-1/purchases") {
       return jsonResponse({ purchases: [] });
+    }
+
+    if (url.pathname === "/api/recurrences") {
+      return jsonResponse({ recurrences: [] });
     }
 
     return jsonResponse({});
@@ -379,6 +421,10 @@ async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Prom
           },
         ],
       });
+    }
+
+    if (url.pathname === "/api/recurrences") {
+      return jsonResponse({ recurrences: [] });
     }
 
     return jsonResponse({});

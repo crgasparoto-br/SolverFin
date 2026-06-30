@@ -190,6 +190,7 @@ export interface Transaction extends Traceable, TenantScoped {
 
 export interface Recurrence extends Traceable, TenantScoped {
   status: RecurrenceStatus;
+  kind: TransactionKind;
   frequency: RecurrenceFrequency;
   interval: number;
   startOn: ISODate;

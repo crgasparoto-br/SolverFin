@@ -11,6 +11,8 @@ import type {
   Recurrence,
   RecurrenceFrequency,
   RecurrenceStatus,
+  Transaction,
+  TransactionKind,
 } from "./index.js";
 import type { TenantContext } from "./tenant.js";
 import {
@@ -25,6 +27,8 @@ export type RecurrenceErrorCode =
   | "RECURRENCE_FREQUENCY_INVALID"
   | "RECURRENCE_INTERVAL_INVALID"
   | "RECURRENCE_STATUS_INVALID"
+  | "RECURRENCE_KIND_REQUIRED"
+  | "RECURRENCE_KIND_INVALID"
   | "RECURRENCE_AMOUNT_INVALID"
   | "RECURRENCE_DATE_REQUIRED"
   | "RECURRENCE_END_BEFORE_START"
@@ -38,6 +42,7 @@ export type RecurrenceErrorCode =
   | "RECURRENCE_CARD_NOT_ACTIVE"
   | "RECURRENCE_CATEGORY_INVALID"
   | "RECURRENCE_CATEGORY_ARCHIVED"
+  | "RECURRENCE_CATEGORY_KIND_MISMATCH"
   | "RECURRENCE_GENERATION_WINDOW_INVALID"
   | "INSTALLMENT_TOTAL_INVALID"
   | "INSTALLMENT_SEQUENCE_INVALID"
@@ -76,6 +81,7 @@ export interface CreateRecurrencePayload {
   endOn?: ISODate;
   amountMinor: number;
   description: string;
+  kind?: TransactionKind;
   accountId?: EntityId;
   cardId?: EntityId;
   currency?: string;
@@ -102,6 +108,7 @@ export interface UpdateRecurrencePayload {
   endOn?: ISODate;
   amountMinor?: number;
   description?: string;
+  kind?: TransactionKind;
   accountId?: EntityId;
   cardId?: EntityId;
   currency?: string;
@@ -125,7 +132,13 @@ export interface GenerateRecurrenceInstallmentsInput {
   now: ISODateTime;
   through: ISODate;
   makeInstallmentId: (sequenceNumber: number, dueOn: ISODate) => EntityId;
+  makeTransactionId: (sequenceNumber: number, dueOn: ISODate) => EntityId;
   maxOccurrences?: number;
+}
+
+export interface GenerateRecurrenceInstallmentsResult {
+  installments: Installment[];
+  transactions: Transaction[];
 }
 
 export interface GenerateInstallmentScheduleInput {
@@ -182,13 +195,15 @@ export function createRecurrence(input: CreateRecurrenceInput): RecurrenceMutati
     card: input.card,
     cardId: payload.cardId,
   });
-  assertCategory(input.context, input.category, payload.categoryId);
+  const kind = resolveRecurrenceKind(target.card !== undefined, payload.kind);
+  assertCategory(input.context, input.category, payload.categoryId, kind);
 
   const recurrence: Recurrence = {
     id: input.id,
     organizationId: payload.organizationId,
     financialProfileId: payload.financialProfileId,
     status: "active",
+    kind,
     frequency: validateFrequency(payload.frequency),
     interval: validateInterval(payload.interval),
     startOn: validateDate(payload.startOn),
@@ -278,15 +293,21 @@ export function updateRecurrence(input: UpdateRecurrenceInput): RecurrenceMutati
     card: input.card,
     cardId: nextCardId,
   });
+  const nextKind = resolveRecurrenceKind(
+    target.card !== undefined,
+    input.payload.kind ?? currentRecurrence.kind,
+  );
   assertCategory(
     input.context,
     input.category,
     input.payload.categoryId ?? currentRecurrence.categoryId,
+    nextKind,
   );
 
   const updatedRecurrence: Recurrence = {
     ...currentRecurrence,
     ...buildOptionalRecurrenceUpdate(input.payload, currentRecurrence.startOn),
+    kind: nextKind,
     updatedAt: input.now,
     updatedByUserId: input.context.userId,
   };
@@ -359,11 +380,11 @@ export function cancelFutureInstallments(
 
 export function generateRecurrenceInstallments(
   input: GenerateRecurrenceInstallmentsInput,
-): Installment[] {
+): GenerateRecurrenceInstallmentsResult {
   const recurrence = getTenantScopedResource(input.context, input.recurrence);
 
   if (recurrence.status !== "active") {
-    return [];
+    return { installments: [], transactions: [] };
   }
 
   const through = validateDate(input.through);
@@ -381,10 +402,16 @@ export function generateRecurrenceInstallments(
       .map((installment) => installment.sequenceNumber),
   );
   const installments: Installment[] = [];
+  const transactions: Transaction[] = [];
   const generationLimit = input.maxOccurrences ?? 36;
 
   for (let sequenceNumber = 1; sequenceNumber <= generationLimit; sequenceNumber += 1) {
-    const dueOn = addFrequency(recurrence.startOn, recurrence.frequency, sequenceNumber - 1, recurrence.interval);
+    const dueOn = addFrequency(
+      recurrence.startOn,
+      recurrence.frequency,
+      sequenceNumber - 1,
+      recurrence.interval,
+    );
 
     if (dueOn > through || (recurrence.endOn !== undefined && dueOn > recurrence.endOn)) {
       break;
@@ -411,10 +438,20 @@ export function generateRecurrenceInstallments(
       installmentInput.cardId = recurrence.cardId;
     }
 
-    installments.push(buildInstallment(installmentInput));
+    const installment = buildInstallment(installmentInput);
+    installments.push(installment);
+    transactions.push(
+      buildRecurrenceTransaction({
+        recurrence,
+        installment,
+        context: input.context,
+        now: input.now,
+        id: input.makeTransactionId(sequenceNumber, dueOn),
+      }),
+    );
   }
 
-  return installments;
+  return { installments, transactions };
 }
 
 export function generateInstallmentSchedule(
@@ -562,6 +599,48 @@ function buildInstallment(input: BuildInstallmentInput): Installment {
   return installment;
 }
 
+function buildRecurrenceTransaction(input: {
+  recurrence: Recurrence;
+  installment: Installment;
+  context: TenantContext;
+  now: ISODateTime;
+  id: EntityId;
+}): Transaction {
+  const transaction: Transaction = {
+    id: input.id,
+    organizationId: input.context.organizationId,
+    financialProfileId: input.context.financialProfileId,
+    kind: input.recurrence.kind,
+    status: "planned",
+    source: "recurrence",
+    amountMinor: input.installment.amountMinor,
+    currency: input.installment.currency,
+    occurredOn: input.installment.dueOn,
+    plannedOn: input.installment.dueOn,
+    description: input.recurrence.description,
+    recurrenceId: input.recurrence.id,
+    installmentId: input.installment.id,
+    createdAt: input.now,
+    updatedAt: input.now,
+    createdByUserId: input.context.userId,
+    updatedByUserId: input.context.userId,
+  };
+
+  if (input.recurrence.accountId !== undefined) {
+    transaction.accountId = input.recurrence.accountId;
+  }
+
+  if (input.recurrence.cardId !== undefined) {
+    transaction.cardId = input.recurrence.cardId;
+  }
+
+  if (input.recurrence.categoryId !== undefined) {
+    transaction.categoryId = input.recurrence.categoryId;
+  }
+
+  return transaction;
+}
+
 function assertAccount(
   context: TenantContext,
   account: Account | undefined,
@@ -651,6 +730,7 @@ function assertCategory(
   context: TenantContext,
   category: Category | undefined,
   categoryId: EntityId | undefined,
+  kind: TransactionKind,
 ): void {
   if (categoryId === undefined) {
     return;
@@ -671,6 +751,38 @@ function assertCategory(
       "Recurrence category must be active.",
     );
   }
+
+  if (scopedCategory.kind !== kind) {
+    throw new RecurrenceError(
+      "RECURRENCE_CATEGORY_KIND_MISMATCH",
+      "Recurrence category kind must match the recurrence kind.",
+    );
+  }
+}
+
+function resolveRecurrenceKind(
+  hasCard: boolean,
+  kind: TransactionKind | undefined,
+): TransactionKind {
+  if (hasCard) {
+    return "expense";
+  }
+
+  if (kind === undefined) {
+    throw new RecurrenceError(
+      "RECURRENCE_KIND_REQUIRED",
+      "Recurrence kind is required when linked to an account.",
+    );
+  }
+
+  if (kind !== "income" && kind !== "expense") {
+    throw new RecurrenceError(
+      "RECURRENCE_KIND_INVALID",
+      "Recurrence kind must be income or expense.",
+    );
+  }
+
+  return kind;
 }
 
 function validateFrequency(frequency: RecurrenceFrequency | undefined): RecurrenceFrequency {
@@ -841,7 +953,12 @@ function countOccurrences(recurrence: Recurrence): number {
   let count = 0;
 
   for (let offset = 0; offset < 600; offset += 1) {
-    const dueOn = addFrequency(recurrence.startOn, recurrence.frequency, offset, recurrence.interval);
+    const dueOn = addFrequency(
+      recurrence.startOn,
+      recurrence.frequency,
+      offset,
+      recurrence.interval,
+    );
 
     if (dueOn > recurrence.endOn) {
       break;
@@ -897,6 +1014,7 @@ function buildRedactedRecurrenceChanges(
 ): Record<string, "changed" | "added" | "removed"> | undefined {
   const fields = [
     "status",
+    "kind",
     "frequency",
     "interval",
     "startOn",

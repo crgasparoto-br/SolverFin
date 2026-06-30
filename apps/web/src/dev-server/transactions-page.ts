@@ -3,6 +3,14 @@ import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 import { apiGet } from "./api.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
 import { faviconLinks } from "./pages.js";
+import {
+  recurrencesSectionScript,
+  recurrencesSectionStyles,
+  renderRecurrenceActionMenuItems,
+  renderRecurrenceEditModal,
+  renderRecurrenceIndicator,
+  type RecurrenceRecord,
+} from "./recurrences-section.js";
 import { privateRoutes } from "./routes.js";
 
 interface AccountRecord {
@@ -36,6 +44,7 @@ interface TransactionRecord {
   categoryId?: string;
   cardId?: string;
   invoiceId?: string;
+  recurrenceId?: string;
 }
 
 interface StatementFilters {
@@ -77,6 +86,20 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
   const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
   const filters = resolveFilters(url, accounts);
   const selectedAccount = accounts.find((account) => account.id === filters.accountId);
+
+  // Fetching recurrences first triggers the API's catch-up materialization of any due
+  // installment into a real Transaction, so it must run before the transactions fetch
+  // below in order for newly materialized lançamentos to show up in this same render.
+  const recurrencesResult = selectedAccount
+    ? await apiGet<{ recurrences: RecurrenceRecord[] }>(
+        token,
+        `/api/recurrences?accountId=${selectedAccount.id}&status=all`,
+      )
+    : { ok: true as const, data: { recurrences: [] as RecurrenceRecord[] } };
+  const recurrences: RecurrenceRecord[] = recurrencesResult.ok
+    ? recurrencesResult.data.recurrences
+    : [];
+
   const transactionResult = filters.accountId
     ? await apiGet<{ transactions: TransactionRecord[] }>(
         token,
@@ -152,12 +175,12 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
                   ${
                     rows.length > 0
                       ? rows
-                          .map((row) => renderRow(row, selectedAccount, accounts, categories))
+                          .map((row) =>
+                            renderRow(row, selectedAccount, accounts, categories, recurrences),
+                          )
                           .join("")
                       : emptyState(
-                          selectedAccount
-                            ? "Nenhum lançamento neste mês."
-                            : "Selecione uma conta.",
+                          selectedAccount ? "Nenhum lançamento neste mês." : "Selecione uma conta.",
                           selectedAccount
                             ? "Escolha outro mês ou crie um lançamento para acompanhar o saldo."
                             : "O extrato é sempre exibido por conta bancária.",
@@ -170,7 +193,9 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
         </div>
       </div>
       ${renderModal(selectedAccount, accounts, categories)}
+      ${renderRecurrenceEditModal(categories, "account")}
       ${clientScript()}
+      ${recurrencesSectionScript()}
     `,
   });
 }
@@ -314,6 +339,7 @@ function renderRow(
   selectedAccount: AccountRecord | undefined,
   accounts: AccountRecord[],
   categories: CategoryRecord[],
+  recurrences: RecurrenceRecord[],
 ): string {
   const { transaction } = row;
   const categoryName = transaction.categoryId
@@ -328,12 +354,15 @@ function renderRow(
         : "pending";
   const nextStatus = transaction.status === "reconciled" ? "posted" : "reconciled";
   const date = statementDate(transaction);
+  const recurrence = transaction.recurrenceId
+    ? recurrences.find((candidate) => candidate.id === transaction.recurrenceId)
+    : undefined;
 
   return `
     <article class="statement-row statement-body" role="row">
       <time datetime="${escapeHtml(date)}">${formatDate(date)}</time>
       <div class="description">
-        <strong>${escapeHtml(transaction.description || "(sem descrição)")}</strong>
+        <strong>${escapeHtml(transaction.description || "(sem descrição)")}${recurrence ? renderRecurrenceIndicator() : ""}</strong>
         ${renderTransferNote(transaction, selectedAccount, accounts)}
       </div>
       <span>${escapeHtml(categoryName)}</span>
@@ -349,6 +378,7 @@ function renderRow(
           <button type="button" class="actions-item" data-clone="${escapeHtml(transaction.id)}">${renderCloneIcon()}<span>Clonar</span></button>
           <hr class="actions-divider" />
           <button type="button" class="actions-item danger" data-action data-method="POST" data-path="/api/transactions/${escapeHtml(transaction.id)}/void" data-confirm="${escapeHtml(transaction.status === "reconciled" ? "Este lançamento já está conciliado. Excluir mesmo assim?" : "Excluir este lançamento?")}">${renderTrashIcon()}<span>Excluir</span></button>
+          ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
         </div>
       </details>
       <script type="application/json" data-transaction="${escapeHtml(transaction.id)}">${serializeScriptJson(transaction)}</script>
@@ -397,7 +427,7 @@ function renderModal(
           <label>Data efetiva<input name="effectiveOn" type="date" /></label>
           <label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
           <label data-field="destinationAccountId">Conta destino<select name="destinationAccountId"><option value="">Apenas transferência</option>${renderAccountOptions(accounts)}</select></label>
-          <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
+          <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label>
           <label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label>
           <label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label>
           <label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label>
@@ -470,6 +500,9 @@ function clientScript(): string {
 
       function syncFieldVisibility() {
         const kind = form.kind.value;
+        const fixedOption = form.repeatMode.querySelector('[data-repeat-option="fixed"]');
+        if (fixedOption) fixedOption.disabled = kind === "transfer";
+        if (kind === "transfer" && form.repeatMode.value === "fixed") form.repeatMode.value = "single";
         const repeatMode = form.repeatMode.value;
         setFieldVisible("destinationAccountId", kind === "transfer");
         setFieldVisible("installments", repeatMode === "installment");
@@ -702,6 +735,7 @@ function clientScript(): string {
             endOn: form.endOn.value || undefined,
             amountMinor: item.amountMinor,
             description: item.description,
+            kind: item.kind,
             accountId: item.accountId,
             categoryId: item.categoryId
           });
@@ -1001,5 +1035,6 @@ function serializeScriptJson(value: unknown): string {
 function css(): string {
   return `
     :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{align-items:center;color:white;display:inline-flex;font-size:1.2rem;font-weight:900;gap:10px;text-decoration:none}.brand img{border-radius:6px;display:block}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1440px;padding:24px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.statement-heading,.statement-toolbar{align-items:center;display:flex;gap:16px;justify-content:space-between}.statement-heading h1{font-size:1.9rem}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.warning{color:var(--amber);font-weight:800}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.danger{background:var(--red-bg);color:var(--red)}label{display:grid;gap:8px;font-weight:700}[hidden]{display:none}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.account-filter{background:var(--surface);color:var(--text)}.account-filter .muted{margin-top:12px}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.2fr) minmax(15rem,1fr) auto}.month-field{display:grid;gap:8px}.month-field label{font-weight:700}.account-field{display:grid;gap:8px}.account-field>label{font-weight:700}.account-select{position:relative}.account-select-trigger{align-items:center;background:white;border:1px solid var(--line);color:var(--text);display:flex;gap:10px;justify-content:flex-start;text-align:left;width:100%}.account-select-trigger:hover{background:var(--soft)}.account-select-icon{align-items:center;display:inline-flex;flex-shrink:0;height:24px;width:24px}.account-select-icon .brand-icon,.account-select-icon .brand-icon-wrap{display:block;height:24px;width:24px}.account-select-icon .brand-logo-img{background:#fff;border-radius:50%;object-fit:contain;padding:3px}.account-select-text{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-select-chevron{color:var(--muted);flex-shrink:0}.account-select-menu{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);left:0;list-style:none;margin:6px 0 0;max-height:280px;overflow-y:auto;padding:6px;position:absolute;right:0;top:100%;z-index:20}.account-select-menu li{align-items:center;border-radius:6px;cursor:pointer;display:flex;font-weight:700;gap:10px;padding:9px 10px}.account-select-menu li:hover,.account-select-menu li[aria-selected=true]{background:var(--soft)}.account-select-menu li .brand-icon,.account-select-menu li .brand-icon-wrap{display:block;height:24px;width:24px}.month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto;padding:4px}.month-nav input{border:0;background:transparent;min-height:34px;text-align:center}.month-nav input:focus{outline:2px solid var(--cyan);border-radius:6px}.icon-btn{background:white;border:1px solid var(--line);border-radius:6px;color:var(--primary);font-size:1.1rem;font-weight:900;line-height:1;min-height:34px;min-width:34px;padding:0}.icon-btn:hover{background:var(--soft)}.ghost-btn{background:white;border:1px solid var(--line);color:var(--primary)}.ghost-btn:hover{background:var(--soft)}.statement-layout{align-items:start;display:grid;gap:14px;grid-template-columns:240px minmax(0,1fr)}.account-summary{display:grid;gap:18px;position:sticky;top:88px}.account-summary h2{font-size:1.1rem}.summary-balance{background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;display:grid;gap:6px;padding:14px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.78rem;font-weight:800;text-transform:uppercase}.summary-balance strong{font-size:1.6rem;overflow-wrap:anywhere}.summary-balance p{color:var(--muted);font-size:.9rem}.summary-totals{display:grid;gap:10px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:8px;display:grid;gap:4px;padding:12px}.summary-total strong{font-size:1rem;overflow-wrap:anywhere}.quick-actions,.status-overview{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:16px}.quick-actions h3,.status-overview h3{font-size:.95rem}.quick-actions button{background:white;border:1px solid var(--line);color:var(--primary);justify-content:flex-start}.quick-actions button:hover{background:var(--soft)}.status-line{align-items:center;display:grid;gap:8px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-weight:800}.status-line strong{font-size:.9rem}.statement-panel{padding:0;overflow:hidden}.statement-toolbar{border-bottom:1px solid var(--line);padding:18px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:6px;font-size:.8rem;font-weight:800;padding:6px 10px;white-space:nowrap}.chip-pending{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.statement-table{display:grid;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:10px;grid-template-columns:6.5rem minmax(9rem,1.3fr) minmax(7.5rem,0.9fr) 7.5rem 6.5rem 8.5rem 8.5rem 3.5rem;padding:12px 14px}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.78rem;font-weight:900;text-transform:uppercase}.description{display:grid;gap:3px}.description span{color:var(--muted);font-size:.86rem}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.actions{position:relative}.actions summary{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:32px;justify-content:center;list-style:none;width:32px}.actions summary::-webkit-details-marker{display:none}.actions summary:hover{background:#d4e6ec}.actions-menu{background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:2px;max-width:240px;padding:6px;position:absolute;right:0;top:38px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:6px;color:var(--text);display:flex;font-size:.86rem;font-weight:700;gap:10px;justify-content:flex-start;min-height:36px;padding:0 10px;text-align:left;white-space:nowrap}.actions-item:hover{background:var(--soft)}.actions-item svg{flex-shrink:0}.actions-item.danger{color:var(--red)}.actions-item.danger:hover{background:var(--red-bg)}.actions-divider{border:0;border-top:1px solid var(--line);margin:4px 2px}.empty{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(900px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.save-row{align-items:center;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between}.status-icons{align-items:center;display:flex;gap:8px}.status-icon-btn{align-items:center;background:white;border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;height:36px;justify-content:center;min-height:0;padding:0;width:36px}.status-icon-btn:hover{background:var(--soft)}.status-icon-btn[data-status-option=posted].active{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.status-icon-btn[data-status-option=reconciled].active{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.status-icon-btn[data-status-option=planned].active{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}.status-label{color:var(--muted);font-size:.8rem;font-weight:700}.error-page{min-height:100vh;place-content:center}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}@media(max-width:1550px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}}@media(max-width:1024px){.filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form[data-form],.summary-totals{grid-template-columns:1fr}.statement-heading,.statement-toolbar{align-items:stretch;display:grid}.button-link{width:100%}.save-row{align-items:stretch;flex-direction:column}}
+    ${recurrencesSectionStyles()}
   `;
 }

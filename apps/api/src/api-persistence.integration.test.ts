@@ -541,6 +541,24 @@ async function createCardRecurrenceFlow(
   assert.equal(recurrence.cardId, card.id);
   assert.equal(recurrence.accountId, undefined);
 
+  // Creating a recurrence immediately materializes any due installment into a real
+  // Transaction, so re-generating through the start date should find nothing new.
+  const verifyImmediateMaterializationResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/recurrences/${recurrence.id}/generate-installments`,
+    { through: "2026-06-05" },
+  );
+  assert.equal(verifyImmediateMaterializationResponse.statusCode, 201);
+  const verifyImmediateMaterialization = readBody<{ installments: ApiInstallment[] }>(
+    verifyImmediateMaterializationResponse,
+  ).installments;
+  assert.equal(
+    verifyImmediateMaterialization.length,
+    0,
+    "first installment should already exist from recurrence creation",
+  );
+
   const generateResponse = await apiRequest(
     token,
     "POST",
@@ -548,12 +566,29 @@ async function createCardRecurrenceFlow(
     { through: "2026-08-05" },
   );
   assert.equal(generateResponse.statusCode, 201);
-  const installments = readBody<{ installments: ApiInstallment[] }>(generateResponse).installments;
+  const generateBody = readBody<{ installments: ApiInstallment[]; transactions: ApiTransaction[] }>(
+    generateResponse,
+  );
 
-  assert.equal(installments.length, 3);
-  installments.forEach((installment) => {
+  assert.equal(generateBody.installments.length, 2, "remaining two months should be generated");
+  generateBody.installments.forEach((installment) => {
     assert.equal(installment.cardId, card.id);
     assert.equal(installment.recurrenceId, recurrence.id);
+  });
+  assert.equal(
+    generateBody.transactions.length,
+    2,
+    "remaining months should materialize as transactions",
+  );
+  generateBody.transactions.forEach((transaction) => {
+    assert.equal(transaction.cardId, card.id);
+    assert.equal(transaction.kind, "expense");
+    assert.equal(transaction.recurrenceId, recurrence.id);
+    assert.notEqual(
+      transaction.invoiceId,
+      undefined,
+      "card recurrence transaction should be linked to an invoice, like any other card purchase",
+    );
   });
 }
 
@@ -871,6 +906,8 @@ interface ApiTransaction {
   cardId?: string;
   categoryId?: string;
   invoiceId?: string;
+  recurrenceId?: string;
+  installmentId?: string;
   kind?: string;
   status?: string;
 }

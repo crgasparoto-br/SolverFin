@@ -150,6 +150,8 @@ A experiencia deve ser direta, calma e orientada a acao. Textos visiveis devem e
 
 A experiencia de manutencao de registros deve evitar trocas de pagina desnecessarias. Sempre que o escopo permitir, criar e editar contas, cartoes, categorias, lancamentos, recorrencias, contas a pagar/receber, orcamentos e cadastros auxiliares por modal ou pop-up contextual.
 
+Recorrencias nao tem tela propria: sao criadas e geridas dentro da tela onde a conta ou o cartao de origem ja e gerenciado (Extrato da conta para recorrencias de conta, Cartoes de Credito para recorrencias de cartao).
+
 Telas operacionais devem ser clean: listas, filtros, acoes rapidas, estados vazios compactos e icones acessiveis devem ter prioridade sobre cards explicativos, banners permanentes e blocos longos de texto.
 
 Exemplos de tom adequado:

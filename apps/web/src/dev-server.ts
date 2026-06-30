@@ -11,7 +11,6 @@ import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { renderPayablesReceivablesPage } from "./dev-server/payables-receivables-page.js";
-import { renderRecurrencesPage } from "./dev-server/recurrences-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
@@ -26,7 +25,6 @@ export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
 export { renderPayablesReceivablesPage } from "./dev-server/payables-receivables-page.js";
-export { renderRecurrencesPage } from "./dev-server/recurrences-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
 export { renderSettingsPage } from "./dev-server/settings-page.js";
 export { renderTransactionsPage } from "./dev-server/transactions-page.js";
@@ -105,11 +103,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/pagar-receber" && token) {
     sendHtml(response, 200, await renderPayablesReceivablesPage(token));
-    return;
-  }
-
-  if (url.pathname === "/recorrencias" && token) {
-    sendHtml(response, 200, await renderRecurrencesPage(token));
     return;
   }
 

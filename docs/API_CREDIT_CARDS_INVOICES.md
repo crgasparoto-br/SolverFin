@@ -60,7 +60,7 @@ Uma compra recorrente no cartao (assinatura, mensalidade) usa o mesmo recurso de
 
 - `POST /api/recurrences` com `cardId` em vez de `accountId` cria a recorrencia vinculada ao cartao.
 - `POST /api/recurrences/:id/generate-installments` gera as parcelas planejadas (`Installment` com `cardId` preenchido), do mesmo jeito que para recorrencias de conta.
-- A tela Cartoes de Credito usa essa rota no modo de repeticao "Fixo" do pop-up de nova compra.
+- A tela Cartoes de Credito usa essa rota no modo de repeticao "Fixo" do pop-up de nova compra. A mesma tela tambem lista, edita, pausa, retoma, cancela e gera parcelas das recorrencias do cartao selecionado (`GET /api/recurrences?cardId=...`), sem precisar de uma tela separada — ver `docs/RECURRENCES_INSTALLMENTS_WEB.md`.
 
 ## Pagamento de fatura
 

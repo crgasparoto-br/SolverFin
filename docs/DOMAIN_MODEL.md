@@ -73,8 +73,15 @@ e nao usam conta de destino.
 
 ### Recorrencia e parcela
 
-`Recorrencia` descreve lancamentos futuros repetidos. `Parcela` representa uma
-parte prevista ou realizada de recorrencia, compra parcelada ou controle similar.
+`Recorrencia` descreve lancamentos futuros repetidos e carrega um `kind`
+(`income`/`expense`) — obrigatorio quando vinculada a conta, sempre `expense`
+quando vinculada a cartao. `Parcela` representa uma parte prevista ou
+realizada de recorrencia, compra parcelada ou controle similar.
+
+Gerar parcelas materializa cada uma como uma `Transacao` real (`kind`,
+`status: planned`, `source: recurrence`), visivel no extrato/fatura como
+qualquer outro lancamento — uma recorrencia nunca fica so como registro de
+controle sem um lancamento correspondente.
 
 Reexecucoes de geracao devem evitar duplicidade por tenant, recorrencia,
 sequencia e vencimento.

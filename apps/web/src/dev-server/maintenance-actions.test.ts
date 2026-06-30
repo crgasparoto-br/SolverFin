@@ -200,6 +200,10 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
     return { purchases: [] };
   }
 
+  if (pathname === "/api/recurrences") {
+    return { recurrences: [] };
+  }
+
   if (pathname === "/api/budgets") {
     return {
       budgets: [
