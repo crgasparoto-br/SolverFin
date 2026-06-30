@@ -6,6 +6,7 @@ const originalFetch = globalThis.fetch;
 
 await transactionsPageShowsRecurringTransactionInsideMovimentacoes();
 await transactionsPageHasNoSeparateRecurrencesBlock();
+await transactionsPageUsesPreviousMonthEndingBalance();
 
 globalThis.fetch = originalFetch;
 
@@ -122,6 +123,89 @@ async function transactionsPageHasNoSeparateRecurrencesBlock(): Promise<void> {
 
   assert.doesNotMatch(html, /Compromissos previsíveis/);
   assert.doesNotMatch(html, /Recorrências desta conta/);
+}
+
+async function transactionsPageUsesPreviousMonthEndingBalance(): Promise<void> {
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = new URL(String(input), "http://solverfin.test");
+
+    if (url.pathname === "/api/accounts") {
+      return jsonResponse({
+        accounts: [
+          {
+            id: "account-1",
+            name: "Conta principal",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 50000,
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/categories") {
+      return jsonResponse({ categories: [] });
+    }
+
+    if (url.pathname === "/api/recurrences") {
+      return jsonResponse({ recurrences: [] });
+    }
+
+    if (url.pathname === "/api/transactions") {
+      assert.equal(url.searchParams.get("accountId"), "account-1");
+      assert.equal(url.searchParams.get("plannedFrom"), null);
+      assert.equal(url.searchParams.get("plannedTo"), "2026-06-30");
+
+      return jsonResponse({
+        transactions: [
+          {
+            id: "previous-effective-income",
+            description: "Salário maio",
+            kind: "income",
+            status: "posted",
+            amountMinor: 100000,
+            occurredOn: "2026-05-20",
+            plannedOn: "2026-05-20",
+            effectiveOn: "2026-05-20",
+            accountId: "account-1",
+          },
+          {
+            id: "previous-planned-expense",
+            description: "Despesa prevista maio",
+            kind: "expense",
+            status: "planned",
+            amountMinor: 999999,
+            occurredOn: "2026-05-25",
+            plannedOn: "2026-05-25",
+            accountId: "account-1",
+          },
+          {
+            id: "current-effective-expense",
+            description: "Mercado junho",
+            kind: "expense",
+            status: "posted",
+            amountMinor: 25000,
+            occurredOn: "2026-06-02",
+            plannedOn: "2026-06-02",
+            effectiveOn: "2026-06-02",
+            accountId: "account-1",
+          },
+        ],
+      });
+    }
+
+    return jsonResponse({});
+  };
+
+  const html = await renderTransactionsPage(
+    "session-token",
+    new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-06"),
+  );
+
+  assert.match(html, /Mercado junho/);
+  assert.match(html, /R\$\s*1\.250,00/);
+  assert.doesNotMatch(html, /Salário maio/);
+  assert.doesNotMatch(html, /Despesa prevista maio/);
 }
 
 function jsonResponse(body: unknown): Response {
