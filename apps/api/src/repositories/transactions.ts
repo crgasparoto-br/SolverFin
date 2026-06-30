@@ -90,16 +90,19 @@ interface InstallmentSequenceRow {
 }
 
 type TransactionWithNote = Transaction & { note?: string };
-type CreateTransactionPayloadWithMetadata = CreateTransactionPayload & { description?: string };
-type UpdateTransactionPayloadWithMetadata = UpdateTransactionPayload & { description?: string };
-
-type TransactionMetadata = {
-  note?: string;
+type CreateTransactionPayloadWithMetadata = CreateTransactionPayload & {
+  note?: string | null;
+  applyToFuturePlanned?: boolean;
+};
+type UpdateTransactionPayloadWithMetadata = UpdateTransactionPayload & {
+  note?: string | null;
   applyToFuturePlanned?: boolean;
 };
 
-const TRANSACTION_METADATA_PREFIX = "\n\n[[solverfin:transaction-meta:";
-const TRANSACTION_METADATA_SUFFIX = "]]";
+type TransactionMetadata = {
+  applyToFuturePlanned?: boolean;
+};
+
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
   "categoryId", "cardId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
   "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
@@ -191,7 +194,15 @@ export async function updateTransactionForContext(
 
   await withTransaction(async (executeQuery) => {
     await executeQuery(buildUpdateTransactionSql(), buildTransactionParams(transaction));
-    await syncInstallmentFromTransaction(executeQuery, context, transaction);
+    await syncInstallmentById(
+      executeQuery,
+      context,
+      currentTransaction?.installmentId,
+      transaction.plannedOn,
+      transaction.amountMinor,
+      transaction.currency,
+      transaction.updatedAt,
+    );
     await insertAuditLogEntry(executeQuery, result.auditEntry);
 
     if (prepared.metadata.applyToFuturePlanned === true) {
@@ -385,56 +396,19 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   return transaction;
 }
 
-function prepareTransactionPayload<TPayload extends { description?: string }>(
+function prepareTransactionPayload<
+  TPayload extends { note?: string | null; applyToFuturePlanned?: boolean },
+>(
   payload: TPayload,
   fallbackNote?: string,
 ): { payload: TPayload; metadata: TransactionMetadata; note?: string } {
-  const parsed = parseTransactionMetadata(payload.description);
-  const nextPayload = { ...payload };
-
-  if (parsed.description !== undefined) {
-    nextPayload.description = parsed.description;
-  }
+  const { note, applyToFuturePlanned, ...nextPayload } = payload;
 
   return {
-    payload: nextPayload,
-    metadata: parsed.metadata,
-    note: parsed.metadata.note !== undefined ? normalizeOptionalText(parsed.metadata.note) : fallbackNote,
+    payload: nextPayload as TPayload,
+    metadata: applyToFuturePlanned === true ? { applyToFuturePlanned: true } : {},
+    note: note !== undefined ? normalizeOptionalText(note) : fallbackNote,
   };
-}
-
-function parseTransactionMetadata(description: string | undefined): {
-  description?: string;
-  metadata: TransactionMetadata;
-} {
-  if (description === undefined) {
-    return { metadata: {} };
-  }
-
-  const markerIndex = description.lastIndexOf(TRANSACTION_METADATA_PREFIX);
-
-  if (markerIndex < 0 || !description.endsWith(TRANSACTION_METADATA_SUFFIX)) {
-    return { description, metadata: {} };
-  }
-
-  const encodedMetadata = description.slice(
-    markerIndex + TRANSACTION_METADATA_PREFIX.length,
-    -TRANSACTION_METADATA_SUFFIX.length,
-  );
-
-  try {
-    const parsed = JSON.parse(decodeURIComponent(encodedMetadata)) as TransactionMetadata;
-
-    return {
-      description: description.slice(0, markerIndex),
-      metadata: {
-        ...(typeof parsed.note === "string" ? { note: parsed.note } : {}),
-        ...(parsed.applyToFuturePlanned === true ? { applyToFuturePlanned: true } : {}),
-      },
-    };
-  } catch {
-    return { description, metadata: {} };
-  }
 }
 
 function attachNote(transaction: Transaction, note: string | undefined): TransactionWithNote {
@@ -451,7 +425,11 @@ function getTransactionNote(transaction: Transaction | undefined): string | unde
   return (transaction as TransactionWithNote | undefined)?.note;
 }
 
-function normalizeOptionalText(value: string): string | undefined {
+function normalizeOptionalText(value: string | null): string | undefined {
+  if (value === null) {
+    return undefined;
+  }
+
   const normalized = value.trim();
 
   return normalized ? normalized : undefined;
@@ -486,7 +464,7 @@ async function updateFuturePlannedTransactions(
     currentTransaction.recurrenceId,
   );
   const shouldRecalculateDates = updatedTransaction.plannedOn !== currentTransaction.plannedOn;
-  const note = getTransactionNote(updatedTransaction) ?? null;
+  const note = updatedTransaction.note ?? null;
   const now = updatedTransaction.updatedAt;
 
   await updateRecurrenceRuleFromTransaction(
@@ -623,22 +601,6 @@ async function readInstallmentSequence(
   );
 
   return rows[0]?.sequenceNumber;
-}
-
-async function syncInstallmentFromTransaction(
-  executeQuery: typeof query,
-  context: TenantContext,
-  transaction: Transaction,
-): Promise<void> {
-  await syncInstallmentById(
-    executeQuery,
-    context,
-    transaction.installmentId,
-    transaction.plannedOn,
-    transaction.amountMinor,
-    transaction.currency,
-    transaction.updatedAt,
-  );
 }
 
 async function syncInstallmentById(
