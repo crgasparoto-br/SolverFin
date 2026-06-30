@@ -90,13 +90,16 @@ export function renderRecurrenceEditModal(
 }
 
 export function recurrencesSectionStyles(): string {
-  return `.recurrence-indicator{color:var(--cyan);display:inline-flex}.recurrence-indicator svg{display:block}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}}`;
+  return `.recurrence-indicator{color:var(--cyan);display:inline-flex}.recurrence-indicator svg{display:block}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}.modal-panel form[data-form] label:has([name=editScope]){display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}}`;
 }
 
 export function recurrencesSectionScript(): string {
   return `
     <script>
       (function () {
+        const transactionMetadataPrefix = "\\n\\n[[solverfin:transaction-meta:";
+        const transactionMetadataSuffix = "]]";
+
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
           return Math.round(parseFloat(normalized || "0") * 100);
@@ -122,6 +125,169 @@ export function recurrencesSectionScript(): string {
           const body = await response.json().catch(() => ({}));
           return response.ok ? "Ação concluída. Atualizando..." : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
         }
+
+        function addMonths(dateValue, months) {
+          const parts = dateValue.split("-").map(Number);
+          const year = parts[0];
+          const month = parts[1];
+          const day = parts[2];
+          const targetMonthIndex = month - 1 + months;
+          const targetYear = year + Math.floor(targetMonthIndex / 12);
+          const normalizedMonthIndex = ((targetMonthIndex % 12) + 12) % 12;
+          const targetMonth = normalizedMonthIndex + 1;
+          const lastDay = getLastDayOfMonth(targetYear, targetMonth);
+          const targetDay = day === getLastDayOfMonth(year, month) ? lastDay : Math.min(day, lastDay);
+          return new Date(Date.UTC(targetYear, normalizedMonthIndex, targetDay)).toISOString().slice(0, 10);
+        }
+
+        function getLastDayOfMonth(year, month) {
+          return new Date(Date.UTC(year, month, 0)).getUTCDate();
+        }
+
+        function encodeDescription(description, metadata) {
+          const hasNote = Object.prototype.hasOwnProperty.call(metadata, "note");
+          const hasFutureScope = metadata.applyToFuturePlanned === true;
+          if (!hasNote && !hasFutureScope) return description;
+          return description + transactionMetadataPrefix + encodeURIComponent(JSON.stringify(metadata)) + transactionMetadataSuffix;
+        }
+
+        function setupTransactionFormOverride() {
+          const form = document.querySelector("[data-form]");
+          if (!form || !form.repeatMode || !form.plannedOn || !form.amountMinor) return;
+
+          const editScope = form.querySelector('[name="editScope"]');
+          if (editScope && editScope.closest("label")) editScope.closest("label").hidden = true;
+
+          const statusNode = form.querySelector('[aria-live="polite"]');
+
+          function basePayload(plannedOn, effectiveOn, amountMinor, description, applyToFuturePlanned) {
+            const data = new FormData(form);
+            const note = String(data.get("note") || "");
+            const metadata = {};
+            if (note.trim() || form.dataset.currentTransactionId) metadata.note = note;
+            if (applyToFuturePlanned) metadata.applyToFuturePlanned = true;
+            const result = {
+              kind: String(data.get("kind")),
+              amountMinor,
+              occurredOn: effectiveOn || plannedOn,
+              plannedOn,
+              effectiveOn: effectiveOn || null,
+              accountId: String(data.get("accountId")),
+              description: encodeDescription(description, metadata),
+              status: String(data.get("status"))
+            };
+            const destinationAccountId = String(data.get("destinationAccountId") || "");
+            const categoryId = String(data.get("categoryId") || "");
+            if (destinationAccountId) result.destinationAccountId = destinationAccountId;
+            if (categoryId) result.categoryId = categoryId;
+            return result;
+          }
+
+          function plannedAndEffectiveOn(monthOffset) {
+            const data = new FormData(form);
+            const plannedOnRaw = String(data.get("plannedOn"));
+            const plannedOn = monthOffset ? addMonths(plannedOnRaw, monthOffset) : plannedOnRaw;
+            const effectiveBase = String(data.get("effectiveOn") || "") || plannedOnRaw;
+            const effectiveOn = monthOffset ? addMonths(effectiveBase, monthOffset) : effectiveBase;
+            return { plannedOn, effectiveOn };
+          }
+
+          function payload(index, total, applyToFuturePlanned) {
+            const data = new FormData(form);
+            const dates = plannedAndEffectiveOn(index);
+            const description = String(data.get("description") || "") + (total > 1 ? " " + (index + 1) + "/" + total : "");
+            return basePayload(dates.plannedOn, dates.effectiveOn, moneyToMinor(data.get("amountMinor")), description, applyToFuturePlanned);
+          }
+
+          function installmentAmountMinor(totalMinor, totalCount, parcelNumber) {
+            const base = Math.floor(totalMinor / totalCount);
+            const remainder = totalMinor - base * totalCount;
+            return parcelNumber > totalCount - remainder ? base + 1 : base;
+          }
+
+          function installmentPayload(parcelNumber, totalCount, monthOffset) {
+            const data = new FormData(form);
+            const dates = plannedAndEffectiveOn(monthOffset);
+            const enteredAmountMinor = moneyToMinor(data.get("amountMinor"));
+            const valueMode = String(data.get("installmentValueMode") || "per_installment");
+            const amountMinor = valueMode === "total"
+              ? installmentAmountMinor(enteredAmountMinor, totalCount, parcelNumber)
+              : enteredAmountMinor;
+            const description = String(data.get("description") || "") + " " + parcelNumber + "/" + totalCount;
+            return basePayload(dates.plannedOn, dates.effectiveOn, amountMinor, description, false);
+          }
+
+          function clearCurrentTransaction() {
+            delete form.dataset.currentTransactionId;
+            delete form.dataset.recurrenceId;
+          }
+
+          document.querySelectorAll("[data-open-modal]").forEach((button) => {
+            button.addEventListener("click", clearCurrentTransaction);
+          });
+
+          document.querySelectorAll("[data-transaction]").forEach((node) => {
+            const transaction = JSON.parse(node.textContent);
+            const editButton = document.querySelector('[data-edit="' + transaction.id + '"]');
+            const cloneButton = document.querySelector('[data-clone="' + transaction.id + '"]');
+            if (editButton) {
+              editButton.addEventListener("click", () => {
+                form.dataset.currentTransactionId = transaction.id;
+                if (transaction.recurrenceId) form.dataset.recurrenceId = transaction.recurrenceId;
+                else delete form.dataset.recurrenceId;
+                if (form.note) form.note.value = transaction.note || "";
+              });
+            }
+            if (cloneButton) {
+              cloneButton.addEventListener("click", () => {
+                clearCurrentTransaction();
+                if (form.note) form.note.value = "";
+              });
+            }
+          });
+
+          form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            const mode = form.repeatMode.value;
+            const method = form.dataset.method || "POST";
+            const path = form.dataset.path || "/api/transactions";
+            const applyToFuturePlanned = method === "PATCH" && Boolean(form.dataset.recurrenceId)
+              ? window.confirm("Este lançamento faz parte de uma recorrência. Clique em OK para aplicar também aos lançamentos planejados futuros, ou em Cancelar para alterar somente este lançamento.")
+              : false;
+            let response;
+            if (statusNode) statusNode.textContent = "Salvando...";
+            if (mode === "fixed" && method === "POST") {
+              const item = payload(0, 1, false);
+              response = await send("/api/recurrences", "POST", {
+                frequency: form.frequency.value,
+                interval: Math.max(1, Number(form.interval.value || 1)),
+                startOn: form.plannedOn.value,
+                endOn: form.endOn.value || undefined,
+                amountMinor: item.amountMinor,
+                description: String(new FormData(form).get("description") || ""),
+                kind: item.kind,
+                accountId: item.accountId,
+                categoryId: item.categoryId
+              });
+            } else if (mode === "installment" && method === "POST") {
+              const totalCount = Math.max(2, Number(form.installments.value || 2));
+              const startParcel = Math.min(Math.max(1, Number(form.installmentStart.value || 1)), totalCount);
+              const responses = [];
+              let monthOffset = 0;
+              for (let parcelNumber = startParcel; parcelNumber <= totalCount; parcelNumber += 1, monthOffset += 1) {
+                responses.push(await send("/api/transactions", "POST", installmentPayload(parcelNumber, totalCount, monthOffset)));
+              }
+              response = responses.find((item) => !item.ok) || responses[responses.length - 1];
+            } else {
+              response = await send(path, method, payload(0, 1, applyToFuturePlanned));
+            }
+            if (statusNode) statusNode.textContent = await readMessage(response);
+            if (response.ok) window.setTimeout(() => window.location.reload(), 450);
+          }, true);
+        }
+
+        setupTransactionFormOverride();
 
         const modal = document.querySelector("[data-recurrence-modal]");
         const modalStatus = modal && modal.querySelector("[data-recurrence-modal-status]");
@@ -242,6 +408,6 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
