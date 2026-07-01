@@ -23,20 +23,62 @@ describe("dev-server route contract", () => {
     assert.equal(implementedRoutes.has("/relatorios"), false);
   });
 
-  it("keeps current and legacy app routes reachable", () => {
+  it("redirects all legacy /app routes to canonical private paths", () => {
+    for (const route of listPrivateShellRoutes()) {
+      const legacyPath = route.path === "/dashboard" ? "/app" : `/app${route.path}`;
+
+      assert.deepEqual(resolveRoute(legacyPath, true), {
+        statusCode: 302,
+        kind: "dashboard",
+        location: route.path,
+      });
+      assert.deepEqual(resolveRoute(legacyPath, false), {
+        statusCode: 302,
+        kind: "login",
+        location: "/login",
+      });
+    }
+  });
+
+  it("resolves public and private entry points by session state", () => {
+    assert.deepEqual(resolveRoute("/", true), {
+      statusCode: 302,
+      kind: "dashboard",
+      location: "/dashboard",
+    });
+    assert.deepEqual(resolveRoute("/", false), {
+      statusCode: 302,
+      kind: "login",
+      location: "/login",
+    });
+    assert.deepEqual(resolveRoute("/login", true), {
+      statusCode: 302,
+      kind: "dashboard",
+      location: "/dashboard",
+    });
+    assert.deepEqual(resolveRoute("/login", false), {
+      statusCode: 200,
+      kind: "login",
+    });
     assert.deepEqual(resolveRoute("/dashboard", true), {
       statusCode: 200,
       kind: "dashboard",
     });
-    assert.deepEqual(resolveRoute("/app/lancamentos", true), {
-      statusCode: 302,
-      kind: "dashboard",
-      location: "/lancamentos",
-    });
-    assert.deepEqual(resolveRoute("/app/lancamentos", false), {
+    assert.deepEqual(resolveRoute("/dashboard", false), {
       statusCode: 302,
       kind: "login",
       location: "/login",
+    });
+  });
+
+  it("keeps unknown paths out of the private shell", () => {
+    assert.deepEqual(resolveRoute("/rota-inexistente", true), {
+      statusCode: 404,
+      kind: "not-found",
+    });
+    assert.deepEqual(resolveRoute("/rota-inexistente", false), {
+      statusCode: 404,
+      kind: "not-found",
     });
   });
 });
