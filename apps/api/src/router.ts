@@ -1,8 +1,6 @@
 import {
   TenantAuthorizationError,
   TenantError,
-  type AccountKind,
-  type AccountStatus,
   type BudgetStatus,
   type CardStatus,
   type CategoryKind,
@@ -18,13 +16,6 @@ import {
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import {
-  archiveAccountForContext,
-  createAccountForContext,
-  getAccountForContext,
-  listAccountsForContext,
-  updateAccountForContext,
-} from "./repositories/accounts.js";
 import {
   closeInvoiceForContext,
   listCardPurchasesForContext,
@@ -113,12 +104,6 @@ const routes: Route[] = [];
 
 route("GET", "/api/financial-profiles", listProfilesHandler);
 route("GET", "/api/financial-summary", financialSummaryHandler);
-
-route("GET", "/api/accounts", listAccountsHandler);
-route("POST", "/api/accounts", createAccountHandler);
-route("GET", "/api/accounts/:accountId", getAccountHandler);
-route("PATCH", "/api/accounts/:accountId", updateAccountHandler);
-route("POST", "/api/accounts/:accountId/archive", archiveAccountHandler);
 
 route("GET", "/api/categories", listCategoriesHandler);
 route("POST", "/api/categories", createCategoryHandler);
@@ -270,80 +255,6 @@ async function financialSummaryHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   return json(200, await buildFinancialSummary(context));
-}
-
-async function listAccountsHandler(
-  request: ApiRequest,
-  context: TenantContext,
-): Promise<ApiResponse> {
-  const status = request.query.get("status") as AccountStatus | "all" | null;
-  const accounts = await listAccountsForContext(context, status ? { status } : {});
-
-  return json(200, { accounts });
-}
-
-async function createAccountHandler(
-  request: ApiRequest,
-  context: TenantContext,
-): Promise<ApiResponse> {
-  const body = requireObjectBody(request.body);
-  const account = await createAccountForContext(context, {
-    name: String(body.name ?? ""),
-    kind: body.kind as AccountKind,
-    ...(body.openingBalanceMinor !== undefined
-      ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
-      : {}),
-    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    ...(body.maskedIdentifier !== undefined
-      ? { maskedIdentifier: String(body.maskedIdentifier) }
-      : {}),
-    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
-  });
-
-  return json(201, { account });
-}
-
-async function getAccountHandler(
-  _request: ApiRequest,
-  context: TenantContext,
-  match: Readonly<Record<string, string>>,
-): Promise<ApiResponse> {
-  const account = await getAccountForContext(context, requireParam(match, "accountId"));
-
-  return json(200, { account });
-}
-
-async function updateAccountHandler(
-  request: ApiRequest,
-  context: TenantContext,
-  match: Readonly<Record<string, string>>,
-): Promise<ApiResponse> {
-  const body = requireObjectBody(request.body);
-  const account = await updateAccountForContext(context, requireParam(match, "accountId"), {
-    ...(body.name !== undefined ? { name: String(body.name) } : {}),
-    ...(body.kind !== undefined ? { kind: body.kind as AccountKind } : {}),
-    ...(body.status !== undefined ? { status: body.status as AccountStatus } : {}),
-    ...(body.openingBalanceMinor !== undefined
-      ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
-      : {}),
-    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    ...(body.maskedIdentifier !== undefined
-      ? { maskedIdentifier: String(body.maskedIdentifier) }
-      : {}),
-    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
-  });
-
-  return json(200, { account });
-}
-
-async function archiveAccountHandler(
-  _request: ApiRequest,
-  context: TenantContext,
-  match: Readonly<Record<string, string>>,
-): Promise<ApiResponse> {
-  const account = await archiveAccountForContext(context, requireParam(match, "accountId"));
-
-  return json(200, { account });
 }
 
 async function listCategoriesHandler(
