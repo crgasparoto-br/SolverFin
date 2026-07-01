@@ -2,7 +2,6 @@ import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
-import { faviconLinks } from "./pages.js";
 import {
   recurrencesSectionScript,
   recurrencesSectionStyles,
@@ -11,7 +10,7 @@ import {
   renderRecurrenceIndicator,
   type RecurrenceRecord,
 } from "./recurrences-section.js";
-import { privateRoutes } from "./routes.js";
+import { renderAuthenticatedShellDocument } from "./shell.js";
 
 export async function renderCardsPage(token: string, url?: URL): Promise<string> {
   const [cardsResult, invoicesResult, categoriesResult, accountsResult, linksResult] =
@@ -88,79 +87,64 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
         .sort((a, b) => b.occurredOn.localeCompare(a.occurredOn))
     : [];
 
-  return renderPage({
-    title: "Cartões de Crédito - SolverFin",
-    body: `
-      <div class="app-shell">
-        ${renderSidebar()}
-        <div class="main-area">
-          <header class="topbar"><strong>Cartões de Crédito</strong><button type="button" data-logout>Sair</button></header>
-          <main>
-            <section class="cards-heading">
-              <div>
-                <p class="eyebrow">Rotina de cartões</p>
-                <h1>Cartões de Crédito</h1>
-                <p class="muted">Acompanhe a fatura do cartão, registre compras e faça a baixa do pagamento.</p>
-              </div>
-              <button type="button" data-open-modal="purchase"${selectedCard ? "" : " disabled"}>Nova compra</button>
-            </section>
-
-            <section class="panel card-filter">
-              <form class="filter-form" method="get" action="/cartoes" data-auto-submit>
-                ${renderCardPicker(cards, additionalCardIds, selectedCard)}
-                <div class="month-field">
-                  <label id="invoice-period-label">Fatura</label>
-                  <div class="month-nav">
-                    <button type="button" class="icon-btn" data-invoice-step="-1" aria-label="Fatura anterior">&#8249;</button>
-                    <span class="month-current" data-invoice-period-text>${selectedInvoice ? escapeHtml(formatMonthYear(selectedInvoice.periodEndOn)) : "Sem faturas"}</span>
-                    <button type="button" class="icon-btn" data-invoice-step="1" aria-label="Próxima fatura">&#8250;</button>
-                  </div>
-                </div>
-                <input type="hidden" name="invoiceId" value="${escapeHtml(selectedInvoice?.id ?? "")}" data-invoice-input />
-                <script type="application/json" data-invoice-options>${serializeScriptJson(cardInvoices.map((invoice) => ({ id: invoice.id, label: formatMonthYear(invoice.periodEndOn) })))}</script>
-              </form>
-            </section>
-
-            <section class="cards-layout">
-              ${renderSummaryPanel(summary, selectedInvoice, accounts)}
-              <section class="panel invoice-panel">
-                <div class="invoice-toolbar">
-                  <div>
-                    <p class="eyebrow">Compras</p>
-                    <h2>${selectedCard ? `Fatura de ${escapeHtml(selectedCard.name)}` : "Selecione um cartão"}</h2>
-                    ${familyCardIds.size > 1 ? `<p class="muted">Fatura consolidada com os cartões adicionais do grupo.</p>` : ""}
-                  </div>
-                  <div class="filter-controls">
-                    <input type="search" data-purchase-search placeholder="Buscar descrição, categoria ou cartão" />
-                    <button type="button" class="toggle-chip" data-reconciliation-toggle="unreconciled" aria-pressed="true">Não conciliados</button>
-                    <button type="button" class="toggle-chip" data-reconciliation-toggle="reconciled" aria-pressed="true">Conciliados</button>
-                  </div>
-                </div>
-                <div class="purchase-list" aria-label="Compras da fatura">
-                  ${
-                    purchasesOk
-                      ? renderPurchaseListBody(
-                          purchases,
-                          categories,
-                          cards,
-                          selectedInvoice,
-                          recurrences,
-                        )
-                      : `<p class="error" role="alert">${escapeHtml(failedPurchasesResult && !failedPurchasesResult.ok ? failedPurchasesResult.error : "Não foi possível carregar as compras.")}</p>`
-                  }
-                </div>
-              </section>
-            </section>
-          </main>
+  return renderShell(
+    `
+      <section class="cards-heading">
+        <div>
+          <p class="eyebrow">Rotina de cartões</p>
+          <h1>Cartões de Crédito</h1>
+          <p class="muted">Acompanhe a fatura do cartão, registre compras e faça a baixa do pagamento.</p>
         </div>
-      </div>
+        <button type="button" data-open-modal="purchase"${selectedCard ? "" : " disabled"}>Nova compra</button>
+      </section>
+
+      <section class="panel card-filter">
+        <form class="filter-form" method="get" action="/cartoes" data-auto-submit>
+          ${renderCardPicker(cards, additionalCardIds, selectedCard)}
+          <div class="month-field">
+            <label id="invoice-period-label">Fatura</label>
+            <div class="month-nav">
+              <button type="button" class="icon-btn" data-invoice-step="-1" aria-label="Fatura anterior">&#8249;</button>
+              <span class="month-current" data-invoice-period-text>${selectedInvoice ? escapeHtml(formatMonthYear(selectedInvoice.periodEndOn)) : "Sem faturas"}</span>
+              <button type="button" class="icon-btn" data-invoice-step="1" aria-label="Próxima fatura">&#8250;</button>
+            </div>
+          </div>
+          <input type="hidden" name="invoiceId" value="${escapeHtml(selectedInvoice?.id ?? "")}" data-invoice-input />
+          <script type="application/json" data-invoice-options>${serializeScriptJson(cardInvoices.map((invoice) => ({ id: invoice.id, label: formatMonthYear(invoice.periodEndOn) })))}</script>
+        </form>
+      </section>
+
+      <section class="cards-layout">
+        ${renderSummaryPanel(summary, selectedInvoice, accounts)}
+        <section class="panel invoice-panel">
+          <div class="invoice-toolbar">
+            <div>
+              <p class="eyebrow">Compras</p>
+              <h2>${selectedCard ? `Fatura de ${escapeHtml(selectedCard.name)}` : "Selecione um cartão"}</h2>
+              ${familyCardIds.size > 1 ? `<p class="muted">Fatura consolidada com os cartões adicionais do grupo.</p>` : ""}
+            </div>
+            <div class="filter-controls">
+              <input type="search" data-purchase-search placeholder="Buscar descrição, categoria ou cartão" />
+              <button type="button" class="toggle-chip" data-reconciliation-toggle="unreconciled" aria-pressed="true">Não conciliados</button>
+              <button type="button" class="toggle-chip" data-reconciliation-toggle="reconciled" aria-pressed="true">Conciliados</button>
+            </div>
+          </div>
+          <div class="purchase-list" aria-label="Compras da fatura">
+            ${
+              purchasesOk
+                ? renderPurchaseListBody(purchases, categories, cards, selectedInvoice, recurrences)
+                : `<p class="error" role="alert">${escapeHtml(failedPurchasesResult && !failedPurchasesResult.ok ? failedPurchasesResult.error : "Não foi possível carregar as compras.")}</p>`
+            }
+          </div>
+        </section>
+      </section>
       ${renderPurchaseModal(selectedCard, cards, additionalCardIds, links, categories)}
       ${renderPaymentModal(selectedInvoice, accounts, summary?.amountDueMinor ?? 0)}
       ${renderRecurrenceEditModal(categories, "card")}
       ${clientScript()}
       ${recurrencesSectionScript()}
     `,
-  });
+  );
 }
 
 function resolveSelectedCard(
@@ -567,26 +551,19 @@ function buildCategoryHierarchy(
   return rows;
 }
 
-function renderSidebar(): string {
-  return `
-    <aside class="sidebar">
-      <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-      <nav>${Array.from(privateRoutes.entries())
-        .map(
-          ([path, label]) =>
-            `<a href="${path}"${path === "/cartoes" ? ' aria-current="page"' : ""}>${escapeHtml(label)}</a>`,
-        )
-        .join("")}</nav>
-      <button class="logout" type="button" data-logout>Sair</button>
-    </aside>
-  `;
+function renderShell(content: string): string {
+  return renderAuthenticatedShellDocument({
+    activePathname: "/cartoes",
+    content,
+    currentLabel: "Cartões de Crédito",
+    styles: css(),
+  });
 }
 
 function renderErrorPage(error: string): string {
-  return renderPage({
-    title: "Cartões de Crédito - SolverFin",
-    body: `<main class="error-page"><section class="panel"><p class="eyebrow">Erro ao carregar dados</p><h1>Cartões de Crédito</h1><p class="error">${escapeHtml(error)}</p><a class="button-link" href="/cartoes">Tentar novamente</a></section></main>`,
-  });
+  return renderShell(
+    `<section class="panel"><p class="eyebrow">Erro ao carregar dados</p><h1>Cartões de Crédito</h1><p class="error">${escapeHtml(error)}</p><a class="button-link" href="/cartoes">Tentar novamente</a></section>`,
+  );
 }
 
 function clientScript(): string {
@@ -608,11 +585,6 @@ function clientScript(): string {
           input.value = minorToMoneyInput(cents);
         });
       });
-
-      document.querySelectorAll("[data-logout]").forEach((button) => button.addEventListener("click", async () => {
-        await fetch("/api/session", { method: "DELETE" });
-        window.location.assign("/login");
-      }));
 
       function setupSelect(rootSelector, triggerSelector, menuSelector, inputSelector, optionSelector) {
         const root = document.querySelector(rootSelector);
@@ -900,10 +872,6 @@ function clientScript(): string {
       applyPurchaseFilters();
     </script>
   `;
-}
-
-function renderPage(input: { title: string; body: string }): string {
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><link rel="manifest" href="/manifest.webmanifest" />${faviconLinks()}<title>${escapeHtml(input.title)}</title><style>${css()}</style></head><body>${input.body}</body></html>`;
 }
 
 function renderDotsIcon(): string {

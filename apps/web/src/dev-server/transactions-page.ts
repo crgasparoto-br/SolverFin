@@ -2,7 +2,6 @@ import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
-import { faviconLinks } from "./pages.js";
 import {
   recurrencesSectionScript,
   recurrencesSectionStyles,
@@ -11,7 +10,7 @@ import {
   renderRecurrenceIndicator,
   type RecurrenceRecord,
 } from "./recurrences-section.js";
-import { privateRoutes } from "./routes.js";
+import { renderAuthenticatedShellDocument } from "./shell.js";
 import {
   buildRows,
   buildTransactionQuery,
@@ -79,85 +78,76 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
   );
   const summary = summarize(rows, openingMinor);
 
-  return renderPage({
-    title: "Lançamentos - SolverFin",
-    body: `
-      <div class="app-shell">
-        ${renderSidebar()}
-        <div class="main-area">
-          <header class="topbar"><strong>Extrato bancário</strong><button type="button" data-logout>Sair</button></header>
-          <main>
-            <section class="statement-heading">
-              <div>
-                <p class="eyebrow">Conta e movimentações</p>
-                <h1>Extrato Bancário</h1>
-                <p class="muted">Acompanhe lançamentos, saldo e pendências por conta e mês.</p>
-              </div>
-            </section>
-
-            <section class="panel account-filter">
-              <form class="filter-form" method="get" action="/lancamentos" data-auto-submit>
-                ${renderAccountPicker(accounts, selectedAccount, filters.accountId)}
-                <div class="month-field">
-                  <label for="filter-month">Mês</label>
-                  <div class="month-nav">
-                    <button type="button" class="icon-btn" data-month-step="-1" aria-label="Mês anterior">&#8249;</button>
-                    <input id="filter-month" name="month" type="month" value="${escapeHtml(filters.month)}" required />
-                    <button type="button" class="icon-btn" data-month-step="1" aria-label="Próximo mês">&#8250;</button>
-                  </div>
-                </div>
-                <button type="button" class="ghost-btn" data-month-current>Mês atual</button>
-              </form>
-              ${
-                selectedAccount
-                  ? `<p class="muted">Consulta de <strong>${formatDate(filters.startsOn)} até ${formatDate(filters.endsOn)}</strong> em <strong>${escapeHtml(selectedAccount.name)}</strong>.</p>`
-                  : `<p class="warning">Selecione uma conta para consultar o extrato e criar lançamentos.</p>`
-              }
-            </section>
-
-            <section class="statement-layout">
-              ${renderSummaryPanel(summary, selectedAccount)}
-              <section class="panel statement-panel">
-                <div class="statement-toolbar">
-                  <div>
-                    <p class="eyebrow">Movimentações</p>
-                    <h2>${selectedAccount ? `Extrato de ${escapeHtml(selectedAccount.name)}` : "Extrato"}</h2>
-                    <p class="muted">${formatDate(filters.startsOn)} até ${formatDate(filters.endsOn)}</p>
-                  </div>
-                  <div class="chips">
-                    ${chip("Pendentes", summary.pendingCount, "pending")}
-                    ${chip("Não conciliados", summary.unreconciledCount, "posted")}
-                    ${chip("Conciliados", summary.reconciledCount, "ok")}
-                  </div>
-                </div>
-                <div class="statement-table" role="table" aria-label="Extrato bancário">
-                  ${renderTableHeader()}
-                  ${
-                    rows.length > 0
-                      ? rows
-                          .map((row) =>
-                            renderRow(row, selectedAccount, accounts, categories, recurrences),
-                          )
-                          .join("")
-                      : emptyState(
-                          selectedAccount ? "Nenhum lançamento neste mês." : "Selecione uma conta.",
-                          selectedAccount
-                            ? "Escolha outro mês ou crie um lançamento para acompanhar o saldo."
-                            : "O extrato é sempre exibido por conta bancária.",
-                        )
-                  }
-                </div>
-              </section>
-            </section>
-          </main>
+  return renderShell(
+    `
+      <section class="statement-heading">
+        <div>
+          <p class="eyebrow">Conta e movimentações</p>
+          <h1>Extrato Bancário</h1>
+          <p class="muted">Acompanhe lançamentos, saldo e pendências por conta e mês.</p>
         </div>
-      </div>
+      </section>
+
+      <section class="panel account-filter">
+        <form class="filter-form" method="get" action="/lancamentos" data-auto-submit>
+          ${renderAccountPicker(accounts, selectedAccount, filters.accountId)}
+          <div class="month-field">
+            <label for="filter-month">Mês</label>
+            <div class="month-nav">
+              <button type="button" class="icon-btn" data-month-step="-1" aria-label="Mês anterior">&#8249;</button>
+              <input id="filter-month" name="month" type="month" value="${escapeHtml(filters.month)}" required />
+              <button type="button" class="icon-btn" data-month-step="1" aria-label="Próximo mês">&#8250;</button>
+            </div>
+          </div>
+          <button type="button" class="ghost-btn" data-month-current>Mês atual</button>
+        </form>
+        ${
+          selectedAccount
+            ? `<p class="muted">Consulta de <strong>${formatDate(filters.startsOn)} até ${formatDate(filters.endsOn)}</strong> em <strong>${escapeHtml(selectedAccount.name)}</strong>.</p>`
+            : `<p class="warning">Selecione uma conta para consultar o extrato e criar lançamentos.</p>`
+        }
+      </section>
+
+      <section class="statement-layout">
+        ${renderSummaryPanel(summary, selectedAccount)}
+        <section class="panel statement-panel">
+          <div class="statement-toolbar">
+            <div>
+              <p class="eyebrow">Movimentações</p>
+              <h2>${selectedAccount ? `Extrato de ${escapeHtml(selectedAccount.name)}` : "Extrato"}</h2>
+              <p class="muted">${formatDate(filters.startsOn)} até ${formatDate(filters.endsOn)}</p>
+            </div>
+            <div class="chips">
+              ${chip("Pendentes", summary.pendingCount, "pending")}
+              ${chip("Não conciliados", summary.unreconciledCount, "posted")}
+              ${chip("Conciliados", summary.reconciledCount, "ok")}
+            </div>
+          </div>
+          <div class="statement-table" role="table" aria-label="Extrato bancário">
+            ${renderTableHeader()}
+            ${
+              rows.length > 0
+                ? rows
+                    .map((row) =>
+                      renderRow(row, selectedAccount, accounts, categories, recurrences),
+                    )
+                    .join("")
+                : emptyState(
+                    selectedAccount ? "Nenhum lançamento neste mês." : "Selecione uma conta.",
+                    selectedAccount
+                      ? "Escolha outro mês ou crie um lançamento para acompanhar o saldo."
+                      : "O extrato é sempre exibido por conta bancária.",
+                  )
+            }
+          </div>
+        </section>
+      </section>
       ${renderModal(selectedAccount, accounts, categories)}
       ${renderRecurrenceEditModal(categories, "account")}
       ${clientScript()}
       ${recurrencesSectionScript()}
     `,
-  });
+  );
 }
 
 function renderTableHeader(): string {
@@ -512,11 +502,6 @@ function clientScript(): string {
         return response.ok ? "Ação concluída. Atualizando..." : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
       }
 
-      document.querySelectorAll("[data-logout]").forEach((button) => button.addEventListener("click", async () => {
-        await fetch("/api/session", { method: "DELETE" });
-        window.location.assign("/login");
-      }));
-
       document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => {
         if (button.disabled) return;
         form.reset();
@@ -623,30 +608,19 @@ function clientScript(): string {
   `;
 }
 
-function renderPage(input: { title: string; body: string }): string {
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><link rel="manifest" href="/manifest.webmanifest" />${faviconLinks()}<title>${escapeHtml(input.title)}</title><style>${css()}</style></head><body>${input.body}</body></html>`;
-}
-
-function renderSidebar(): string {
-  return `
-    <aside class="sidebar">
-      <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-      <nav>${Array.from(privateRoutes.entries())
-        .map(
-          ([path, label]) =>
-            `<a href="${path}"${path === "/lancamentos" ? ' aria-current="page"' : ""}>${escapeHtml(label)}</a>`,
-        )
-        .join("")}</nav>
-      <button class="logout" type="button" data-logout>Sair</button>
-    </aside>
-  `;
+function renderShell(content: string): string {
+  return renderAuthenticatedShellDocument({
+    activePathname: "/lancamentos",
+    content,
+    currentLabel: "Extrato bancário",
+    styles: css(),
+  });
 }
 
 function renderErrorPage(error: string): string {
-  return renderPage({
-    title: "Lançamentos - SolverFin",
-    body: `<main class="error-page"><section class="panel"><p class="eyebrow">Erro ao carregar dados</p><h1>Lançamentos</h1><p class="error">${escapeHtml(error)}</p><a class="button-link" href="/lancamentos">Tentar novamente</a></section></main>`,
-  });
+  return renderShell(
+    `<section class="panel"><p class="eyebrow">Erro ao carregar dados</p><h1>Lançamentos</h1><p class="error">${escapeHtml(error)}</p><a class="button-link" href="/lancamentos">Tentar novamente</a></section>`,
+  );
 }
 
 function renderStatusIcon(value: string, label: string, iconPaths: string): string {

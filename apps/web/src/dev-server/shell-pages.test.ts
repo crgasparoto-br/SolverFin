@@ -8,8 +8,12 @@ const currentDir = dirname(fileURLToPath(import.meta.url));
 
 const migratedShellModules = [
   "accounts-cards-page.js",
+  "cards-page.js",
+  "categories-page.js",
+  "inbox-page.js",
   "payables-receivables-page.js",
   "settings-page.js",
+  "transactions-page.js",
 ] as const;
 
 describe("migrated SSR shell pages", () => {

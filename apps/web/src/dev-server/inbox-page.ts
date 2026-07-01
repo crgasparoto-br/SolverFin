@@ -1,8 +1,7 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
-import { faviconLinks } from "./pages.js";
-import { privateRoutes } from "./routes.js";
+import { renderAuthenticatedShellDocument } from "./shell.js";
 
 interface AccountRecord {
   id: string;
@@ -40,17 +39,14 @@ export async function renderInboxPage(token: string): Promise<string> {
   ]);
 
   if (!messages.ok) {
-    return renderPage("Inbox - SolverFin", renderShell("/inbox", renderError(messages.error)));
+    return renderShell(renderError(messages.error));
   }
 
   const accountOptions = accounts.ok ? accounts.data.accounts : [];
   const categoryOptions = categories.ok ? categories.data.categories : [];
 
-  return renderPage(
-    "Inbox - SolverFin",
-    renderShell(
-      "/inbox",
-      `
+  return renderShell(
+    `
         <section class="page-heading">
           <p class="eyebrow">Mensagens bancárias</p>
           <h1>Inbox</h1>
@@ -105,7 +101,6 @@ export async function renderInboxPage(token: string): Promise<string> {
         </section>
         ${apiFormScript()}
       `,
-    ),
   );
 }
 
@@ -132,28 +127,13 @@ function renderInboxRow(item: BankMessageInboxRecord): string {
   `;
 }
 
-function renderShell(pathname: string, content: string): string {
-  return `
-    <div class="app-shell">
-      <aside class="sidebar">
-        <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-        <nav aria-label="Menu principal">${renderNavigation(pathname)}</nav>
-        <button class="logout" type="button" data-logout>Sair</button>
-      </aside>
-      <div class="main-area">
-        <header class="topbar"><div><strong>Inbox</strong><span>Usuário Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
-        <main>${content}</main>
-      </div>
-    </div>
-    <script>
-      document.querySelectorAll("[data-logout]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          await fetch("/api/session", { method: "DELETE" });
-          window.location.assign("/login");
-        });
-      });
-    </script>
-  `;
+function renderShell(content: string): string {
+  return renderAuthenticatedShellDocument({
+    activePathname: "/inbox",
+    content,
+    currentLabel: "Inbox",
+    styles: baseCss(),
+  });
 }
 
 function renderError(error: string): string {
@@ -169,15 +149,6 @@ function renderError(error: string): string {
 
 function renderActionButton(label: string, path: string, confirmation: string): string {
   return `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(path)}" data-api-confirm="${escapeHtml(confirmation)}">${escapeHtml(label)}</button>`;
-}
-
-function renderNavigation(activePathname: string): string {
-  return Array.from(privateRoutes.entries())
-    .map(
-      ([path, label]) =>
-        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
-    )
-    .join("");
 }
 
 function renderAccountOptions(accounts: AccountRecord[]): string {
@@ -295,21 +266,6 @@ function apiFormScript(): string {
       });
     </script>
   `;
-}
-
-function renderPage(title: string, body: string): string {
-  return `<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    ${faviconLinks()}
-    <title>${escapeHtml(title)}</title>
-    <style>${baseCss()}</style>
-  </head>
-  <body>${body}</body>
-</html>`;
 }
 
 function escapeHtml(value: string): string {

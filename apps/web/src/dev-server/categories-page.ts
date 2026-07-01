@@ -1,6 +1,5 @@
 import { apiGet } from "./api.js";
-import { faviconLinks } from "./pages.js";
-import { privateRoutes } from "./routes.js";
+import { renderAuthenticatedShellDocument } from "./shell.js";
 
 interface CategoryRecord {
   id: string;
@@ -28,25 +27,18 @@ export async function renderCategoriesPage(token: string): Promise<string> {
   );
 
   if (!categories.ok) {
-    return renderPage({
-      title: "Categorias - SolverFin",
-      body: renderShell(
-        "/categorias",
-        "Categorias",
-        `<section class="sf-panel sf-error-state"><p class="sf-eyebrow">Erro ao carregar dados</p><h1>Categorias</h1><p class="sf-error" role="alert">${escapeHtml(categories.error)}</p><a class="sf-button" href="/categorias">Tentar novamente</a></section>`,
-      ),
-    });
+    return renderShell(
+      "Categorias",
+      `<section class="sf-panel sf-error-state"><p class="sf-eyebrow">Erro ao carregar dados</p><h1>Categorias</h1><p class="sf-error" role="alert">${escapeHtml(categories.error)}</p><a class="sf-button" href="/categorias">Tentar novamente</a></section>`,
+    );
   }
 
   const categoryItems = categories.data.categories;
   const summary = summarizeCategories(categoryItems);
 
-  return renderPage({
-    title: "Categorias - SolverFin",
-    body: renderShell(
-      "/categorias",
-      "Categorias",
-      `
+  return renderShell(
+    "Categorias",
+    `
         <section class="categories-hero" aria-labelledby="categories-title">
           <div>
             <p class="sf-eyebrow">Organizacao financeira</p>
@@ -131,8 +123,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
         ${apiFormScript()}
         ${categoryPageScript()}
       `,
-    ),
-  });
+  );
 }
 
 function summarizeCategories(categories: CategoryRecord[]): CategorySummary {
@@ -352,39 +343,13 @@ function renderEmptyState(title: string, description: string): string {
   return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="sf-muted">${escapeHtml(description)}</p></div>`;
 }
 
-function renderShell(pathname: string, currentLabel: string, content: string): string {
-  return `
-    <div class="app-shell">
-      <aside class="sidebar">
-        <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-        <nav aria-label="Menu principal">
-          ${renderNavigation(pathname)}
-        </nav>
-        <button class="logout" type="button" data-logout>Sair</button>
-      </aside>
-      <div class="main-area">
-        <header class="topbar"><div><strong>${escapeHtml(currentLabel)}</strong><span>Usuario Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
-        <main>${content}</main>
-      </div>
-    </div>
-    <script>
-      document.querySelectorAll("[data-logout]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          await fetch("/api/session", { method: "DELETE" });
-          window.location.assign("/login");
-        });
-      });
-    </script>
-  `;
-}
-
-function renderNavigation(activePathname: string): string {
-  return Array.from(privateRoutes.entries())
-    .map(
-      ([path, label]) =>
-        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
-    )
-    .join("");
+function renderShell(currentLabel: string, content: string): string {
+  return renderAuthenticatedShellDocument({
+    activePathname: "/categorias",
+    content,
+    currentLabel,
+    styles: pageCss(),
+  });
 }
 
 function apiFormScript(): string {
@@ -707,21 +672,6 @@ function categoryPageScript(): string {
       });
     </script>
   `;
-}
-
-function renderPage(input: { title: string; body: string }): string {
-  return `<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    ${faviconLinks()}
-    <title>${escapeHtml(input.title)}</title>
-    <style>${pageCss()}</style>
-  </head>
-  <body>${input.body}</body>
-</html>`;
 }
 
 function pageCss(): string {
