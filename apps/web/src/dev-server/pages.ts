@@ -2,39 +2,7 @@ import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
 import { implementedRoutes, privateRoutes } from "./routes.js";
-
-export function renderLoginPage(errorMessage?: string): string {
-  return renderPage({
-    title: "Entrar no SolverFin",
-    body: `
-      <main class="login-shell">
-        <section class="panel" aria-labelledby="login-title">
-          <p class="eyebrow">Ambiente local de desenvolvimento</p>
-          <h1 id="login-title">Entrar no SolverFin</h1>
-          <p class="muted">Use a conta demo fictícia para acessar o dashboard navegável do MVP.</p>
-          ${errorMessage ? `<p class="error" role="alert">${escapeHtml(errorMessage)}</p>` : ""}
-          <form id="login-form" method="post" action="/api/session">
-            <label>Email<input name="email" type="email" autocomplete="username" value="demo@solverfin.example.invalid" required /></label>
-            <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha demo fictícia" required /></label>
-            <button type="submit">Entrar</button>
-          </form>
-        </section>
-      </main>
-      <script>
-        document.querySelector("#login-form").addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const form = event.currentTarget;
-          const response = await fetch("/api/session", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ email: form.email.value, password: form.password.value })
-          });
-          window.location.assign(response.ok ? "/dashboard" : "/login?erro=credenciais");
-        });
-      </script>
-    `,
-  });
-}
+import { renderAuthenticatedShellDocument } from "./shell.js";
 
 export async function renderPrivatePage(pathname: string, token: string): Promise<string> {
   if (!implementedRoutes.has(pathname) || pathname === "/dashboard") {
@@ -694,34 +662,11 @@ function renderAuthenticatedPage(input: {
   currentLabel: string;
   content: string;
 }): string {
-  return renderPage({
-    title: `${input.currentLabel} - SolverFin`,
-    body: `
-      <div class="app-shell">
-        <aside class="sidebar">
-          <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin">
-            <img src="/icons/solverfin-192.png" width="28" height="28" alt="" />
-            SolverFin
-          </a>
-          <nav aria-label="Menu principal">
-            ${renderNavigation(input.pathname)}
-          </nav>
-          <button class="logout" type="button" data-logout>Sair</button>
-        </aside>
-        <div class="main-area">
-          <header class="topbar"><div><strong>${escapeHtml(input.currentLabel)}</strong><span>Usuário Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
-          <main>${input.content}</main>
-        </div>
-      </div>
-      <script>
-        document.querySelectorAll("[data-logout]").forEach((button) => {
-          button.addEventListener("click", async () => {
-            await fetch("/api/session", { method: "DELETE" });
-            window.location.assign("/login");
-          });
-        });
-      </script>
-    `,
+  return renderAuthenticatedShellDocument({
+    activePathname: input.pathname,
+    content: input.content,
+    currentLabel: input.currentLabel,
+    styles: baseCss(),
   });
 }
 
@@ -842,15 +787,6 @@ export function faviconLinks(): string {
   return `<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />`;
-}
-
-function renderNavigation(activePathname: string): string {
-  return Array.from(privateRoutes.entries())
-    .map(
-      ([path, label]) =>
-        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
-    )
-    .join("");
 }
 
 function renderPageHeading(input: { eyebrow: string; title: string; description: string }): string {
