@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { privateRoutes } from "./routes.js";
 import { renderAuthenticatedShellDocument, renderShellDocument } from "./shell.js";
 
 describe("SSR shell document", () => {
@@ -37,5 +38,19 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /<a href="\/configuracoes" >Configurações<\/a>/);
     assert.match(html, /fetch\("\/api\/session", \{ method: "DELETE" \}\)/);
     assert.match(html, /window\.location\.assign\("\/login"\)/);
+  });
+
+  it("renders every private route in the shared navigation", () => {
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/dashboard",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Dashboard",
+      styles: ".test-marker { color: #0f3d4c; }",
+    });
+
+    for (const [path, label] of privateRoutes.entries()) {
+      assert.ok(html.includes(`<a href="${path}"`));
+      assert.ok(html.includes(`>${label}</a>`));
+    }
   });
 });
