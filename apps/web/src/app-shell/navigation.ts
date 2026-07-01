@@ -89,7 +89,9 @@ function isPrimaryMobileRoute(route: ShellRoute): boolean {
   return (
     route.id === "dashboard" ||
     route.id === "transactions" ||
-    route.id === "review" ||
+    route.id === "cards" ||
+    route.id === "payablesReceivables" ||
+    route.id === "inbox" ||
     route.id === "settings"
   );
 }

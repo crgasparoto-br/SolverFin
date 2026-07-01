@@ -1,28 +1,30 @@
+import {
+  getShellRouteByPath,
+  listImplementedPrivateShellRoutes,
+  listPrivateShellRoutes,
+} from "../app-shell/routes.js";
+
 export type RouteKind = "login" | "dashboard" | "placeholder" | "not-found";
 
-export const privateRoutes = new Map<string, string>([
-  ["/dashboard", "Dashboard"],
-  ["/lancamentos", "Extrato da conta"],
-  ["/pagar-receber", "Pagar e receber"],
-  ["/contas-cartoes", "Contas e Cartões"],
-  ["/categorias", "Categorias"],
-  ["/cartoes", "Cartões de Crédito"],
-  ["/orcamentos", "Orçamentos"],
-  ["/inbox", "Inbox"],
-  ["/relatorios", "Relatórios"],
-  ["/configuracoes", "Configurações"],
-]);
+export const privateRoutes = new Map(
+  listPrivateShellRoutes().map((route) => [route.path, route.label]),
+);
 
-export const implementedRoutes = new Set([
-  "/dashboard",
-  "/contas-cartoes",
-  "/categorias",
-  "/lancamentos",
-  "/pagar-receber",
-  "/cartoes",
-  "/orcamentos",
-  "/inbox",
-  "/configuracoes",
+export const implementedRoutes = new Set(
+  listImplementedPrivateShellRoutes().map((route) => route.path),
+);
+
+const legacyAppRouteRedirects = new Map([
+  ["/app", "/dashboard"],
+  ["/app/lancamentos", "/lancamentos"],
+  ["/app/pagar-receber", "/pagar-receber"],
+  ["/app/contas-cartoes", "/contas-cartoes"],
+  ["/app/categorias", "/categorias"],
+  ["/app/cartoes", "/cartoes"],
+  ["/app/orcamentos", "/orcamentos"],
+  ["/app/inbox", "/inbox"],
+  ["/app/relatorios", "/relatorios"],
+  ["/app/configuracoes", "/configuracoes"],
 ]);
 
 export function resolveRoute(
@@ -37,16 +39,33 @@ export function resolveRoute(
     };
   }
 
-  if (pathname === "/login") {
+  const legacyRedirect = legacyAppRouteRedirects.get(pathname);
+
+  if (legacyRedirect) {
+    return {
+      statusCode: 302,
+      kind: hasSession ? "dashboard" : "login",
+      location: hasSession ? legacyRedirect : "/login",
+    };
+  }
+
+  const shellRoute = getShellRouteByPath(pathname);
+
+  if (shellRoute?.requiresAuthentication === false) {
     return hasSession
       ? { statusCode: 302, kind: "dashboard", location: "/dashboard" }
       : { statusCode: 200, kind: "login" };
   }
 
-  if (privateRoutes.has(pathname)) {
-    return hasSession
-      ? { statusCode: 200, kind: pathname === "/dashboard" ? "dashboard" : "placeholder" }
-      : { statusCode: 302, kind: "login", location: "/login" };
+  if (shellRoute?.requiresAuthentication === true) {
+    if (!hasSession) {
+      return { statusCode: 302, kind: "login", location: "/login" };
+    }
+
+    return {
+      statusCode: 200,
+      kind: shellRoute.id === "dashboard" ? "dashboard" : "placeholder",
+    };
   }
 
   return { statusCode: 404, kind: "not-found" };
