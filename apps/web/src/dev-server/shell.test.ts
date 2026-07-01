@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
+import { listPrivateShellRoutes } from "../app-shell/routes.js";
 import { privateRoutes } from "./routes.js";
 import { renderAuthenticatedShellDocument, renderShellDocument } from "./shell.js";
 
@@ -34,8 +36,11 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /<strong>Pagar &amp; receber<\/strong>/);
     assert.match(html, /<style>\.test-marker \{ color: #0f3d4c; \}<\/style>/);
     assert.match(html, /<main><section>Conteúdo da página<\/section><\/main>/);
-    assert.match(html, /<a href="\/pagar-receber" aria-current="page">Pagar e receber<\/a>/);
-    assert.match(html, /<a href="\/configuracoes" >Configurações<\/a>/);
+    assert.match(
+      html,
+      /<a href="\/pagar-receber" data-nav-priority="primary" aria-current="page">Pagar e receber<\/a>/,
+    );
+    assert.match(html, /<a href="\/configuracoes" data-nav-priority="primary" >Configurações<\/a>/);
     assert.match(html, /fetch\("\/api\/session", \{ method: "DELETE" \}\)/);
     assert.match(html, /window\.location\.assign\("\/login"\)/);
   });
@@ -63,10 +68,59 @@ describe("authenticated SSR shell", () => {
         styles: ".test-marker { color: #0f3d4c; }",
       });
 
-      for (const [path, label] of privateRoutes.entries()) {
-        const activeAttribute = path === activePathname ? ` aria-current="page"` : " ";
-        assert.ok(html.includes(`<a href="${path}"${activeAttribute}>${label}</a>`));
+      for (const route of listPrivateShellRoutes()) {
+        const isPrimary = isPrimaryMobileRoute(route);
+        const priority = isPrimary ? "primary" : "secondary";
+        const idAttribute = isPrimary ? "" : ` id="nav-secondary-${route.id}"`;
+        const activeAttribute = route.path === activePathname ? ` aria-current="page"` : " ";
+        assert.ok(
+          html.includes(
+            `<a href="${route.path}"${idAttribute} data-nav-priority="${priority}"${activeAttribute}>${route.label}</a>`,
+          ),
+        );
       }
     }
+  });
+
+  it("classifies private routes into primary and secondary mobile navigation groups", () => {
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/dashboard",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Dashboard",
+      styles: ".test-marker { color: #0f3d4c; }",
+    });
+
+    for (const route of listPrivateShellRoutes()) {
+      const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
+      assert.ok(html.includes(`data-nav-priority="${priority}"`));
+
+      if (priority === "secondary") {
+        assert.ok(html.includes(`id="nav-secondary-${route.id}"`));
+      }
+    }
+  });
+
+  it("keeps the secondary navigation collapsed by default when a primary route is active", () => {
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/dashboard",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Dashboard",
+      styles: ".test-marker { color: #0f3d4c; }",
+    });
+
+    assert.doesNotMatch(html, /<nav aria-label="Menu principal" class="nav-open">/);
+    assert.match(html, /aria-expanded="false"[^>]*>Mais rotas<\/button>/);
+  });
+
+  it("opens the secondary navigation by default when a secondary route is active", () => {
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/categorias",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Categorias",
+      styles: ".test-marker { color: #0f3d4c; }",
+    });
+
+    assert.match(html, /<nav aria-label="Menu principal" class="nav-open">/);
+    assert.match(html, /aria-expanded="true"[^>]*>Menos rotas<\/button>/);
   });
 });

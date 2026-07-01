@@ -85,7 +85,7 @@ export function buildShellHeaderModel(input: {
   };
 }
 
-function isPrimaryMobileRoute(route: ShellRoute): boolean {
+export function isPrimaryMobileRoute(route: ShellRoute): boolean {
   return (
     route.id === "dashboard" ||
     route.id === "transactions" ||
