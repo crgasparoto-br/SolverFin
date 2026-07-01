@@ -29,3 +29,68 @@ export function sharedShellStyles(): string {
     @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } }
   `;
 }
+
+/**
+ * CSS for the native <dialog>-based create/edit modal pattern (see
+ * dev-server/accounts-cards-page.ts for the reference implementation): the
+ * dialog surface, its backdrop, the close row, and the icon buttons that
+ * trigger it. Pages compose this instead of redefining the same modal chrome.
+ */
+export function sharedDialogStyles(): string {
+  return `
+    .master-dialog { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 760px; padding: 20px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.38); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 12px; } .dialog-heading { display: grid; gap: 4px; }
+    .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
+    .icon-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 44px; padding: 0; width: 44px; } .danger-icon-button { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 20px; width: 20px; }
+    @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 760px) { .edit-grid { grid-template-columns: 1fr; } }
+  `;
+}
+
+/**
+ * Client-side behaviour for the native <dialog>-based modal pattern: opens
+ * the dialog referenced by a [data-open-dialog] trigger and closes it from
+ * its .dialog-close-form. Pages that render modals should inline this script
+ * once alongside their own page-specific script.
+ */
+export function dialogScript(): string {
+  return `
+    <script>
+      function openDialog(button) {
+        const dialogId = button.dataset.openDialog;
+        const dialog = dialogId ? document.getElementById(dialogId) : null;
+        if (!dialog) return;
+
+        if (typeof dialog.showModal === "function") {
+          if (!dialog.open) dialog.showModal();
+        } else {
+          dialog.setAttribute("open", "");
+        }
+
+        const firstField = dialog.querySelector("input, select, button");
+        if (firstField && typeof firstField.focus === "function") firstField.focus();
+      }
+
+      function closeDialog(form) {
+        const dialog = form.closest("dialog");
+        if (!dialog) return;
+
+        if (typeof dialog.close === "function") {
+          dialog.close();
+        } else {
+          dialog.removeAttribute("open");
+        }
+      }
+
+      document.querySelectorAll("[data-open-dialog]").forEach((button) => {
+        button.addEventListener("click", () => openDialog(button));
+      });
+
+      document.querySelectorAll(".dialog-close-form").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          closeDialog(form);
+        });
+      });
+    </script>
+  `;
+}

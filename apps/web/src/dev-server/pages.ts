@@ -3,7 +3,7 @@ import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 import { apiGet } from "./api.js";
 import { implementedRoutes, privateRoutes } from "./routes.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
-import { sharedShellStyles } from "./shared-styles.js";
+import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 
 export async function renderPrivatePage(pathname: string, token: string): Promise<string> {
   if (!implementedRoutes.has(pathname) || pathname === "/dashboard") {
@@ -421,43 +421,78 @@ export async function renderBudgetsPage(token: string): Promise<string> {
     pathname: "/orcamentos",
     currentLabel: "Orçamentos",
     content: `
-      ${renderPageHeading({
-        eyebrow: "Planejamento mensal",
-        title: "Orçamentos",
-        description: "Acompanhe limites planejados por categoria de despesa.",
-      })}
-      <section class="workspace-grid wide-form">
-        <section class="panel list-panel">
-          <div class="section-heading">
-            <h2>Limites planejados</h2>
-            <span>${budgets.data.budgets.length} itens</span>
-          </div>
-          <div class="rows maintenance-rows">
-            ${
-              budgets.data.budgets
-                .map((budget) => renderBudgetRow(budget, categoryOptions))
-                .join("") || renderEmptyState("Nenhum orçamento cadastrado.", "Crie limites mensais para acompanhar categorias de despesa.")
-            }
-          </div>
-        </section>
-        <section class="panel form-panel">
-          <h2>Novo orçamento</h2>
-          <form data-api-form data-api-path="/api/budgets">
-            <label>Categoria
-              <select name="categoryId" required>
-                ${renderCategoryOptions(categoryOptions)}
-              </select>
-            </label>
-            <label>Início do período<input name="periodStartOn" type="date" required /></label>
-            <label>Fim do período<input name="periodEndOn" type="date" required /></label>
-            <label>Valor planejado (R$)<input name="plannedAmountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
-            <button type="submit">Criar orçamento</button>
-          </form>
-        </section>
+      <section class="budgets-heading">
+        <div>
+          <p class="eyebrow">Planejamento mensal</p>
+          <h1>Orçamentos</h1>
+          <p class="muted">Acompanhe limites planejados por categoria de despesa.</p>
+        </div>
+        <button type="button" data-open-dialog="new-budget-dialog">Novo orçamento</button>
       </section>
+      <section class="panel list-panel">
+        <div class="section-heading">
+          <h2>Limites planejados</h2>
+          <span>${budgets.data.budgets.length} itens</span>
+        </div>
+        <div class="rows maintenance-rows">
+          ${
+            budgets.data.budgets
+              .map((budget) => renderBudgetRow(budget))
+              .join("") || renderEmptyState("Nenhum orçamento cadastrado.", "Crie limites mensais para acompanhar categorias de despesa.")
+          }
+        </div>
+      </section>
+      ${renderNewBudgetDialog(categoryOptions)}
+      ${budgets.data.budgets.map((budget) => renderBudgetEditDialog(budget, categoryOptions)).join("")}
       ${apiFormScript()}
+      ${dialogScript()}
     `,
   });
+}
+
+function renderNewBudgetDialog(categories: CategoryRecord[]): string {
+  return `
+    <dialog id="new-budget-dialog" class="master-dialog" aria-labelledby="new-budget-title">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Novo cadastro</p>
+        <h2 id="new-budget-title">Novo orçamento</h2>
+      </div>
+      <form data-api-form data-api-path="/api/budgets" class="edit-grid">
+        <label>Categoria
+          <select name="categoryId" required>
+            ${renderCategoryOptions(categories)}
+          </select>
+        </label>
+        <label>Início do período<input name="periodStartOn" type="date" required /></label>
+        <label>Fim do período<input name="periodEndOn" type="date" required /></label>
+        <label>Valor planejado (R$)<input name="plannedAmountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
+        <button type="submit">Criar orçamento</button>
+      </form>
+    </dialog>
+  `;
+}
+
+function renderBudgetEditDialog(budget: BudgetRecord, categories: CategoryRecord[]): string {
+  const dialogId = `edit-budget-dialog-${budget.id}`;
+  const titleId = `${dialogId}-title`;
+
+  return `
+    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Editar cadastro</p>
+        <h2 id="${escapeHtml(titleId)}">${formatDate(budget.periodStartOn)} - ${formatDate(budget.periodEndOn)}</h2>
+      </div>
+      <form data-api-form data-api-method="PATCH" data-api-path="/api/budgets/${escapeHtml(budget.id)}" class="edit-grid">
+        <label>Categoria<select name="categoryId">${renderCategoryOptions(categories, budget.categoryId)}</select></label>
+        <label>Início<input name="periodStartOn" type="date" value="${escapeHtml(budget.periodStartOn)}" required /></label>
+        <label>Fim<input name="periodEndOn" type="date" value="${escapeHtml(budget.periodEndOn)}" required /></label>
+        <label>Valor (R$)<input name="plannedAmountMinor" data-money value="${formatMoneyInput(budget.plannedAmountMinor)}" inputmode="decimal" required /></label>
+        <button type="submit">Salvar edição</button>
+      </form>
+    </dialog>
+  `;
 }
 
 function renderAccountRow(account: AccountRecord): string {
@@ -614,7 +649,7 @@ function renderCardPurchaseForm(card: CardRecord, categories: CategoryRecord[]):
   `;
 }
 
-function renderBudgetRow(budget: BudgetRecord, categories: CategoryRecord[]): string {
+function renderBudgetRow(budget: BudgetRecord): string {
   const isArchived = budget.status === "archived";
 
   return `
@@ -626,17 +661,15 @@ function renderBudgetRow(budget: BudgetRecord, categories: CategoryRecord[]): st
       <div class="maintenance-actions" aria-label="Ações do orçamento">
         <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${escapeHtml(budget.id)}">Abrir detalhe</button>
         <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${escapeHtml(budget.id)}/usage">Consultar uso</button>
-        <form data-api-form data-api-method="PATCH" data-api-path="/api/budgets/${escapeHtml(budget.id)}" class="inline-edit-form">
-          <label>Categoria<select name="categoryId">${renderCategoryOptions(categories, budget.categoryId)}</select></label>
-          <label>Início<input name="periodStartOn" type="date" value="${escapeHtml(budget.periodStartOn)}" required /></label>
-          <label>Fim<input name="periodEndOn" type="date" value="${escapeHtml(budget.periodEndOn)}" required /></label>
-          <label>Valor (R$)<input name="plannedAmountMinor" data-money value="${formatMoneyInput(budget.plannedAmountMinor)}" inputmode="decimal" required /></label>
-          <button type="submit">Salvar edição</button>
-        </form>
+        <button type="button" class="icon-button" data-open-dialog="edit-budget-dialog-${escapeHtml(budget.id)}" aria-label="Editar orçamento">${renderEditIcon()}</button>
         ${isArchived ? "" : renderActionButton("Arquivar orçamento", `/api/budgets/${budget.id}/archive`, "Arquivar este orçamento?")}
       </div>
     </article>
   `;
+}
+
+function renderEditIcon(): string {
+  return `<svg class="action-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
 }
 
 function renderActionButton(label: string, path: string, confirmation?: string): string {
@@ -1149,10 +1182,13 @@ interface BudgetRecord {
 function baseCss(): string {
   return `
     ${sharedShellStyles()}
+    ${sharedDialogStyles()}
     .login-shell, .placeholder-state { align-items: center; display: grid; min-height: 100vh; padding: 24px; }
     .placeholder-state { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
     .login-shell .panel { gap: 18px; margin: 0 auto; max-width: 460px; width: 100%; }
     main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; } .dashboard-heading, .page-heading, .statement-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .page-heading { align-items: start; display: grid; max-width: 760px; } .statement-heading { align-items: center; } .statement-heading > div { display: grid; gap: 6px; max-width: 760px; }
+    .budgets-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .budgets-heading > div { display: grid; gap: 6px; max-width: 760px; }
+    .item-actions { display: flex; gap: 8px; justify-content: flex-end; }
     .demo-pill { background: var(--success-bg); border-radius: 999px; color: var(--success); font-weight: 800; padding: 8px 12px; white-space: nowrap; }
     .summary-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); } .metric-card { display: grid; gap: 8px; min-width: 0; } .metric-card span { color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .metric-card strong { color: var(--primary); font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; } .metric-card p { color: var(--muted); line-height: 1.45; }
     .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(19rem, .45fr); } .workspace-grid.wide-form { grid-template-columns: minmax(0, .95fr) minmax(22rem, .6fr); }
@@ -1179,6 +1215,6 @@ function baseCss(): string {
     .form-panel form { grid-template-columns: 1fr; } .wide-form .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wide-form .form-panel button, .wide-form .full-span, .statement-form-panel button, .statement-form-panel .full-span { grid-column: 1 / -1; }
     .review-note { background: #f0fdf4; border-color: #bbf7d0; }
     @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid, .workspace-grid.wide-form, .statement-layout { grid-template-columns: 1fr; } .wide-form .form-panel form, .statement-form-panel form, .statement-edit-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .statement-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 760px) { .summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar, .inline-edit-form, .statement-edit-form { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar, .maintenance-summary { align-items: stretch; display: grid; } .statement-heading .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row, .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .statement-actions { grid-column: 1 / -1; } .row > strong, .maintenance-summary > strong { text-align: left; white-space: normal; } .category-kind-group header { align-items: stretch; display: grid; } }
+    @media (max-width: 760px) { .summary-grid, .wide-form .form-panel form, .statement-form-panel form, .statement-sidebar, .inline-edit-form, .statement-edit-form { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading, .statement-heading, .statement-toolbar, .maintenance-summary, .budgets-heading { align-items: stretch; display: grid; } .statement-heading .button-link { width: 100%; } .status-chips { justify-content: flex-start; } .statement-row, .statement-row-with-actions { grid-template-columns: auto minmax(0, 1fr); } .statement-amount { grid-column: 2; text-align: left; white-space: normal; } .statement-actions { grid-column: 1 / -1; } .row > strong, .maintenance-summary > strong { text-align: left; white-space: normal; } .category-kind-group header { align-items: stretch; display: grid; } }
   `;
 }
