@@ -9,8 +9,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../.tmp-tests/api/auth.test.js && node ../../.tmp-tests/api/oidc.test.js && node ../../.tmp-tests/api/errors.test.js && node ../../.tmp-tests/api/mvp.test.js && node ../../.tmp-tests/api/accounts-router.test.js",
-    "test:integration": "rm -rf ../../.tmp-tests/api-integration && tsc -p tsconfig.test.json --outDir ../../.tmp-tests/api-integration && node ../../.tmp-tests/api-integration/api-persistence.integration.test.js && node ../../.tmp-tests/api-integration/ai-review-queue.integration.test.js && node ../../.tmp-tests/api-integration/financial-profiles.integration.test.js",
+    "test": "rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/api --include .test.js --exclude .integration.test.js",
+    "test:integration": "rm -rf ../../.tmp-tests/api-integration && tsc -p tsconfig.test.json --outDir ../../.tmp-tests/api-integration && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/api-integration --include .integration.test.js",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
