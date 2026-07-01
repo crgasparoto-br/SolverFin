@@ -2,8 +2,7 @@ import { formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
 import { findInstitution, institutions, renderInstitutionIcon } from "./institutions.js";
-import { faviconLinks } from "./pages.js";
-import { privateRoutes } from "./routes.js";
+import { renderAuthenticatedShellDocument } from "./shell.js";
 
 const fallbackCardBrand = { key: "", label: "Sem bandeira", shortLabel: "--" } as const;
 
@@ -288,29 +287,11 @@ function renderAuthenticatedPage(input: {
   currentLabel: string;
   content: string;
 }): string {
-  return renderPage({
-    title: `${input.currentLabel} - SolverFin`,
-    body: `
-      <div class="app-shell">
-        <aside class="sidebar">
-          <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-          <nav aria-label="Menu principal">${renderNavigation(input.pathname)}</nav>
-          <button class="logout" type="button" data-logout>Sair</button>
-        </aside>
-        <div class="main-area">
-          <header class="topbar"><div><strong>${escapeHtml(input.currentLabel)}</strong><span>Usuário Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
-          <main>${input.content}</main>
-        </div>
-      </div>
-      <script>
-        document.querySelectorAll("[data-logout]").forEach((button) => {
-          button.addEventListener("click", async () => {
-            await fetch("/api/session", { method: "DELETE" });
-            window.location.assign("/login");
-          });
-        });
-      </script>
-    `,
+  return renderAuthenticatedShellDocument({
+    activePathname: input.pathname,
+    content: input.content,
+    currentLabel: input.currentLabel,
+    styles: baseCss(),
   });
 }
 
@@ -528,30 +509,6 @@ function masterPageScript(): string {
       applyFilters();
     </script>
   `;
-}
-
-function renderPage(input: { title: string; body: string }): string {
-  return `<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    ${faviconLinks()}
-    <title>${escapeHtml(input.title)}</title>
-    <style>${baseCss()}</style>
-  </head>
-  <body>${input.body}</body>
-</html>`;
-}
-
-function renderNavigation(activePathname: string): string {
-  return Array.from(privateRoutes.entries())
-    .map(
-      ([path, label]) =>
-        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
-    )
-    .join("");
 }
 
 function renderEmptyState(title: string, description: string): string {
