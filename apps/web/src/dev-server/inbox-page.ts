@@ -1,7 +1,7 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
-import { sharedShellStyles } from "./shared-styles.js";
+import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
 interface AccountRecord {
@@ -49,60 +49,69 @@ export async function renderInboxPage(token: string): Promise<string> {
   return renderShell(
     `
         <section class="page-heading">
-          <p class="eyebrow">Mensagens bancárias</p>
-          <h1>Inbox</h1>
-          <p class="muted">Cole mensagens fictícias ou autorizadas para criar sugestões revisáveis. Nenhum lançamento final é criado sem confirmação.</p>
+          <div>
+            <p class="eyebrow">Mensagens bancárias</p>
+            <h1>Inbox</h1>
+            <p class="muted">Cole mensagens fictícias ou autorizadas para criar sugestões revisáveis. Nenhum lançamento final é criado sem confirmação.</p>
+          </div>
+          <button type="button" data-open-dialog="new-inbox-message-dialog">Registrar mensagem</button>
         </section>
-        <section class="workspace-grid wide-form">
-          <section class="panel list-panel">
-            <div class="section-heading">
-              <h2>Itens recebidos</h2>
-              <span>${messages.data.messages.length} itens</span>
-            </div>
-            <div class="rows maintenance-rows">
-              ${
-                messages.data.messages.map(renderInboxRow).join("") ||
-                renderEmptyState(
-                  "Nenhuma mensagem recebida.",
-                  "Cole uma mensagem autorizada para gerar uma sugestão pendente de revisão.",
-                )
-              }
-            </div>
-          </section>
-          <section class="panel form-panel privacy-panel">
-            <div>
-              <p class="eyebrow">Nova entrada</p>
-              <h2>Registrar mensagem</h2>
-            </div>
-            <form data-api-form data-api-path="/api/bank-message-inbox">
-              <input type="hidden" name="origin" value="pasted" />
-              <label class="full-span">Mensagem
-                <textarea name="text" rows="8" required placeholder="Cole aqui uma mensagem fictícia ou autorizada"></textarea>
-              </label>
-              <label>Conta para sugestão
-                <select name="accountId">
-                  <option value="">Revisar depois</option>
-                  ${renderAccountOptions(accountOptions)}
-                </select>
-              </label>
-              <label>Categoria
-                <select name="categoryId">
-                  <option value="">Sem categoria</option>
-                  ${renderCategoryOptions(categoryOptions)}
-                </select>
-              </label>
-              <label class="consent-check full-span">
-                <input name="consentAccepted" type="checkbox" value="true" required />
-                Confirmo que tenho autorização para processar esta mensagem neste perfil financeiro.
-              </label>
-              <button type="submit">Enviar para revisão</button>
-            </form>
-            <p class="muted small-note">O texto bruto é descartado após a normalização. A tela mostra apenas resumo mascarado, status e explicação da sugestão.</p>
-          </section>
+        <section class="panel list-panel">
+          <div class="section-heading">
+            <h2>Itens recebidos</h2>
+            <span>${messages.data.messages.length} itens</span>
+          </div>
+          <div class="rows maintenance-rows">
+            ${
+              messages.data.messages.map(renderInboxRow).join("") ||
+              renderEmptyState(
+                "Nenhuma mensagem recebida.",
+                "Cole uma mensagem autorizada para gerar uma sugestão pendente de revisão.",
+              )
+            }
+          </div>
         </section>
+        ${renderNewMessageDialog(accountOptions, categoryOptions)}
         ${apiFormScript()}
+        ${dialogScript()}
       `,
   );
+}
+
+function renderNewMessageDialog(accounts: AccountRecord[], categories: CategoryRecord[]): string {
+  return `
+    <dialog id="new-inbox-message-dialog" class="master-dialog" aria-labelledby="new-inbox-message-title">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Nova entrada</p>
+        <h2 id="new-inbox-message-title">Registrar mensagem</h2>
+      </div>
+      <form data-api-form data-api-path="/api/bank-message-inbox" class="edit-grid">
+        <input type="hidden" name="origin" value="pasted" />
+        <label class="full-span">Mensagem
+          <textarea name="text" rows="8" required placeholder="Cole aqui uma mensagem fictícia ou autorizada"></textarea>
+        </label>
+        <label>Conta para sugestão
+          <select name="accountId">
+            <option value="">Revisar depois</option>
+            ${renderAccountOptions(accounts)}
+          </select>
+        </label>
+        <label>Categoria
+          <select name="categoryId">
+            <option value="">Sem categoria</option>
+            ${renderCategoryOptions(categories)}
+          </select>
+        </label>
+        <label class="consent-check full-span">
+          <input name="consentAccepted" type="checkbox" value="true" required />
+          Confirmo que tenho autorização para processar esta mensagem neste perfil financeiro.
+        </label>
+        <button type="submit">Enviar para revisão</button>
+      </form>
+      <p class="muted small-note">O texto bruto é descartado após a normalização. A tela mostra apenas resumo mascarado, status e explicação da sugestão.</p>
+    </dialog>
+  `;
 }
 
 function renderInboxRow(item: BankMessageInboxRecord): string {
@@ -281,22 +290,20 @@ function escapeHtml(value: string): string {
 function baseCss(): string {
   return `
     ${sharedShellStyles()}
+    ${sharedDialogStyles()}
     .small-note { font-size: .9rem; }
     textarea { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: inherit; line-height: 1.45; min-height: 44px; padding: 10px 12px; resize: vertical; width: 100%; }
     .secondary-link { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; text-decoration: none; }
     main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; }
-    .page-heading { display: grid; gap: 6px; max-width: 760px; }
-    .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, .95fr) minmax(22rem, .6fr); }
+    .page-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .page-heading > div { display: grid; gap: 6px; max-width: 760px; }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
     .rows, .maintenance-item, .maintenance-actions { display: grid; gap: 12px; }
     .maintenance-item { border-top: 1px solid var(--line); padding-top: 14px; } .maintenance-item:first-child { border-top: 0; padding-top: 0; }
     .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; }
     .maintenance-actions, .message-preview { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; padding: 12px; }
     .message-preview p { color: var(--muted); line-height: 1.55; overflow-wrap: anywhere; }
-    .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
-    .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .full-span, .form-panel button { grid-column: 1 / -1; }
+    .full-span { grid-column: 1 / -1; }
     .consent-check { align-items: start; display: grid; font-weight: 700; grid-template-columns: auto minmax(0, 1fr); } .consent-check input { height: 20px; min-height: 20px; margin-top: 2px; width: 20px; }
-    @media (max-width: 1024px) { .workspace-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 760px) { .form-panel form { grid-template-columns: 1fr; } .section-heading, .maintenance-summary { align-items: stretch; display: grid; } }
+    @media (max-width: 760px) { .page-heading { align-items: stretch; display: grid; } .section-heading, .maintenance-summary { align-items: stretch; display: grid; } }
   `;
 }

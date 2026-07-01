@@ -96,6 +96,8 @@ async function budgetsExposeUsageAndArchiveActions(): Promise<void> {
   assert.match(html, /Consultar uso/);
   assert.match(html, /Arquivar orçamento/);
   assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-1"/);
+  assert.match(html, /data-open-dialog="new-budget-dialog"/);
+  assert.match(html, /id="edit-budget-dialog-budget-1"/);
 }
 
 function resolveMockBody(pathname: string, searchParams: URLSearchParams): unknown {

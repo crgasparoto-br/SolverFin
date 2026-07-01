@@ -1,7 +1,7 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
-import { sharedShellStyles } from "./shared-styles.js";
+import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
 interface PayablesReceivablesResponse {
@@ -74,9 +74,12 @@ export async function renderPayablesReceivablesPage(token: string): Promise<stri
     "Pagar e receber",
     `
       <section class="page-heading">
-        <p class="eyebrow">Rotina mensal</p>
-        <h1>Contas a pagar e receber</h1>
-        <p class="muted">Acompanhe vencimentos, registre recebimentos e conclua pagamentos sem excluir o histórico financeiro.</p>
+        <div>
+          <p class="eyebrow">Rotina mensal</p>
+          <h1>Contas a pagar e receber</h1>
+          <p class="muted">Acompanhe vencimentos, registre recebimentos e conclua pagamentos sem excluir o histórico financeiro.</p>
+        </div>
+        <button type="button" data-open-dialog="new-payable-receivable-dialog">Nova conta</button>
       </section>
       <section class="summary-grid" aria-label="Resumo de contas a pagar e receber">
         ${renderMetricCard("Pendentes", summary.pendingCount, "Aguardam pagamento ou recebimento")}
@@ -84,49 +87,58 @@ export async function renderPayablesReceivablesPage(token: string): Promise<stri
         ${renderMetricCard("A receber", formatMoney(summary.pendingReceivableMinor), "Entradas pendentes")}
         ${renderMetricCard("Concluídas", summary.settledCount, "Já geraram ou associaram lançamento")}
       </section>
-      <section class="workspace-grid wide-form">
-        <section class="panel list-panel">
-          <div class="section-heading">
-            <div>
-              <h2>Compromissos cadastrados</h2>
-              <p class="muted">Pendentes podem ser editados, concluídos ou cancelados. Itens concluídos e cancelados ficam apenas para consulta.</p>
-            </div>
-            <span>${items.data.payablesReceivables.length} itens</span>
+      <section class="panel list-panel">
+        <div class="section-heading">
+          <div>
+            <h2>Compromissos cadastrados</h2>
+            <p class="muted">Pendentes podem ser editados, concluídos ou cancelados. Itens concluídos e cancelados ficam apenas para consulta.</p>
           </div>
-          ${renderStatusSection("Pendentes", items.data.payablesReceivables, "pending", accountOptions, categoryOptions)}
-          ${renderStatusSection("Concluídas", items.data.payablesReceivables, "settled", accountOptions, categoryOptions)}
-          ${renderStatusSection("Canceladas", items.data.payablesReceivables, "cancelled", accountOptions, categoryOptions)}
-        </section>
-        <section class="panel form-panel">
-          <h2>Nova conta</h2>
-          <form data-api-form data-api-path="/api/payables-receivables">
-            <label>Tipo
-              <select name="kind" required>
-                ${renderKindOptions()}
-              </select>
-            </label>
-            <label>Descrição<input name="description" required placeholder="Ex.: Fornecedor, aluguel, cliente" /></label>
-            <label>Valor (R$)<input name="amountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
-            <label>Vencimento<input name="dueOn" type="date" required /></label>
-            <label>Conta
-              <select name="accountId">
-                <option value="">Sem conta definida</option>
-                ${renderAccountOptions(accountOptions)}
-              </select>
-            </label>
-            <label>Categoria
-              <select name="categoryId">
-                <option value="">Sem categoria</option>
-                ${renderCategoryOptions(categoryOptions)}
-              </select>
-            </label>
-            <button type="submit">Criar conta</button>
-          </form>
-        </section>
+          <span>${items.data.payablesReceivables.length} itens</span>
+        </div>
+        ${renderStatusSection("Pendentes", items.data.payablesReceivables, "pending", accountOptions, categoryOptions)}
+        ${renderStatusSection("Concluídas", items.data.payablesReceivables, "settled", accountOptions, categoryOptions)}
+        ${renderStatusSection("Canceladas", items.data.payablesReceivables, "cancelled", accountOptions, categoryOptions)}
       </section>
+      ${renderNewItemDialog(accountOptions, categoryOptions)}
       ${payablesReceivablesScript()}
+      ${dialogScript()}
     `,
   );
+}
+
+function renderNewItemDialog(accounts: AccountRecord[], categories: CategoryRecord[]): string {
+  return `
+    <dialog id="new-payable-receivable-dialog" class="master-dialog" aria-labelledby="new-payable-receivable-title">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Novo cadastro</p>
+        <h2 id="new-payable-receivable-title">Nova conta</h2>
+      </div>
+      <form data-api-form data-api-path="/api/payables-receivables" class="edit-grid">
+        <label>Tipo
+          <select name="kind" required>
+            ${renderKindOptions()}
+          </select>
+        </label>
+        <label>Descrição<input name="description" required placeholder="Ex.: Fornecedor, aluguel, cliente" /></label>
+        <label>Valor (R$)<input name="amountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
+        <label>Vencimento<input name="dueOn" type="date" required /></label>
+        <label>Conta
+          <select name="accountId">
+            <option value="">Sem conta definida</option>
+            ${renderAccountOptions(accounts)}
+          </select>
+        </label>
+        <label>Categoria
+          <select name="categoryId">
+            <option value="">Sem categoria</option>
+            ${renderCategoryOptions(categories)}
+          </select>
+        </label>
+        <button type="submit">Criar conta</button>
+      </form>
+    </dialog>
+  `;
 }
 
 function renderStatusSection(
@@ -186,29 +198,76 @@ function renderItemRow(
         ${
           isPending
             ? `
-              <form data-api-form data-api-method="PATCH" data-api-path="/api/payables-receivables/${escapeHtml(item.id)}" class="inline-edit-form">
-                <label>Tipo<select name="kind">${renderKindOptions(item.kind)}</select></label>
-                <label>Descrição<input name="description" value="${escapeHtml(item.description)}" required /></label>
-                <label>Valor (R$)<input name="amountMinor" data-money value="${formatMoneyInput(item.amountMinor)}" inputmode="decimal" required /></label>
-                <label>Vencimento<input name="dueOn" type="date" value="${escapeHtml(item.dueOn)}" required /></label>
-                <label>Conta<select name="accountId"><option value="">Sem conta definida</option>${renderAccountOptions(accounts, item.accountId)}</select></label>
-                <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories, item.categoryId)}</select></label>
-                <button type="submit">Salvar edição</button>
-              </form>
-              <form data-settle-form data-api-path="/api/payables-receivables/${escapeHtml(item.id)}/settle" class="inline-edit-form">
-                <label>Data da conclusão<input name="settledOn" type="date" value="${escapeHtml(item.dueOn)}" required /></label>
-                <label>Conta<select name="accountId" required>${renderAccountOptions(accounts, item.accountId)}</select></label>
-                <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories, item.categoryId)}</select></label>
-                <label>Descrição do lançamento<input name="description" value="${escapeHtml(item.description)}" /></label>
-                <button type="submit" class="secondary-button">Concluir ${item.kind === "payable" ? "pagamento" : "recebimento"}</button>
-              </form>
+              <button type="button" class="icon-button" data-open-dialog="edit-payable-receivable-dialog-${escapeHtml(item.id)}" aria-label="Editar conta ${escapeHtml(item.description)}">${renderEditIcon()}</button>
+              <button type="button" class="secondary-button" data-open-dialog="settle-payable-receivable-dialog-${escapeHtml(item.id)}">Concluir ${item.kind === "payable" ? "pagamento" : "recebimento"}</button>
               ${renderActionButton("Cancelar conta", `/api/payables-receivables/${item.id}/cancel`, "Cancelar esta conta? Ela deixará de aparecer como pendente, mas continuará no histórico.")}
             `
             : renderReadonlyNote(item)
         }
       </div>
+      ${isPending ? renderEditDialog(item, accounts, categories) : ""}
+      ${isPending ? renderSettleDialog(item, accounts, categories) : ""}
     </article>
   `;
+}
+
+function renderEditDialog(
+  item: PayableReceivableRecord,
+  accounts: AccountRecord[],
+  categories: CategoryRecord[],
+): string {
+  const dialogId = `edit-payable-receivable-dialog-${item.id}`;
+  const titleId = `${dialogId}-title`;
+
+  return `
+    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Editar cadastro</p>
+        <h2 id="${escapeHtml(titleId)}">${escapeHtml(item.description)}</h2>
+      </div>
+      <form data-api-form data-api-method="PATCH" data-api-path="/api/payables-receivables/${escapeHtml(item.id)}" class="edit-grid">
+        <label>Tipo<select name="kind">${renderKindOptions(item.kind)}</select></label>
+        <label>Descrição<input name="description" value="${escapeHtml(item.description)}" required /></label>
+        <label>Valor (R$)<input name="amountMinor" data-money value="${formatMoneyInput(item.amountMinor)}" inputmode="decimal" required /></label>
+        <label>Vencimento<input name="dueOn" type="date" value="${escapeHtml(item.dueOn)}" required /></label>
+        <label>Conta<select name="accountId"><option value="">Sem conta definida</option>${renderAccountOptions(accounts, item.accountId)}</select></label>
+        <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories, item.categoryId)}</select></label>
+        <button type="submit">Salvar edição</button>
+      </form>
+    </dialog>
+  `;
+}
+
+function renderSettleDialog(
+  item: PayableReceivableRecord,
+  accounts: AccountRecord[],
+  categories: CategoryRecord[],
+): string {
+  const dialogId = `settle-payable-receivable-dialog-${item.id}`;
+  const titleId = `${dialogId}-title`;
+  const actionLabel = item.kind === "payable" ? "pagamento" : "recebimento";
+
+  return `
+    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Concluir ${actionLabel}</p>
+        <h2 id="${escapeHtml(titleId)}">${escapeHtml(item.description)}</h2>
+      </div>
+      <form data-settle-form data-api-path="/api/payables-receivables/${escapeHtml(item.id)}/settle" class="edit-grid">
+        <label>Data da conclusão<input name="settledOn" type="date" value="${escapeHtml(item.dueOn)}" required /></label>
+        <label>Conta<select name="accountId" required>${renderAccountOptions(accounts, item.accountId)}</select></label>
+        <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories, item.categoryId)}</select></label>
+        <label>Descrição do lançamento<input name="description" value="${escapeHtml(item.description)}" /></label>
+        <button type="submit" class="secondary-button">Concluir ${actionLabel}</button>
+      </form>
+    </dialog>
+  `;
+}
+
+function renderEditIcon(): string {
+  return `<svg class="action-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
 }
 
 function renderReadonlyNote(item: PayableReceivableRecord): string {
@@ -447,17 +506,15 @@ function escapeHtml(value: string): string {
 function baseCss(): string {
   return `
     ${sharedShellStyles()}
-    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; } .page-heading { align-items: start; display: grid; max-width: 760px; }
+    ${sharedDialogStyles()}
+    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; } .page-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .page-heading > div { display: grid; gap: 6px; max-width: 760px; }
     .summary-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); } .metric-card { display: grid; gap: 8px; min-width: 0; } .metric-card span { color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .metric-card strong { color: var(--primary); font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; } .metric-card p { color: var(--muted); line-height: 1.45; }
-    .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, .95fr) minmax(22rem, .6fr); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading > div { display: grid; gap: 4px; min-width: 0; } .section-heading span, .status-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
     .status-section { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .status-section:first-of-type { border-top: 0; padding-top: 0; } .status-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
     .rows { display: grid; gap: 10px; } .maintenance-rows { gap: 14px; } .maintenance-item { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .maintenance-item:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; } .maintenance-summary > strong { text-align: right; white-space: nowrap; }
-    .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; padding: 12px; }
-    .inline-edit-form { align-items: end; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .inline-edit-form button, .inline-edit-form .form-status { grid-column: 1 / -1; }
-    .form-panel form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form-panel button { grid-column: 1 / -1; }
+    .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; padding: 12px; }
     .amount-credit { color: var(--success); } .amount-debit { color: var(--danger); }
-    @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workspace-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 760px) { .summary-grid, .form-panel form, .inline-edit-form { grid-template-columns: 1fr; } .section-heading, .maintenance-summary { align-items: stretch; display: grid; } .maintenance-summary > strong { text-align: left; white-space: normal; } }
+    @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 760px) { .page-heading, .summary-grid { grid-template-columns: 1fr; } .page-heading { align-items: stretch; display: grid; } .section-heading, .maintenance-summary { align-items: stretch; display: grid; } .maintenance-summary > strong { text-align: left; white-space: normal; } }
   `;
 }

@@ -86,6 +86,10 @@ async function payablesReceivablesPageExposesMainMaintenanceFlow(): Promise<void
   assert.match(html, /Não há edição para itens já concluídos/);
   assert.doesNotMatch(html, /archive/);
   assert.doesNotMatch(html, /restore/);
+  assert.match(html, /data-open-dialog="new-payable-receivable-dialog"/);
+  assert.match(html, /id="edit-payable-receivable-dialog-payable-1"/);
+  assert.match(html, /id="settle-payable-receivable-dialog-payable-1"/);
+  assert.doesNotMatch(html, /class="inline-edit-form"/);
 }
 
 function jsonResponse(body: unknown): Response {

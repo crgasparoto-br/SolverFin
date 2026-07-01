@@ -37,4 +37,7 @@ async function settingsPageRendersFinancialProfileManagement(): Promise<void> {
   assert.match(html, /href="\/dashboard\?profileId=profile-family"/);
   assert.match(html, /href="\/contas\?profileId=profile-family"/);
   assert.match(html, /href="\/lancamentos\?profileId=profile-family"/);
+  assert.match(html, /data-open-dialog="new-profile-dialog"/);
+  assert.match(html, /id="edit-profile-dialog-profile-family"/);
+  assert.doesNotMatch(html, /class="inline-edit-form"/);
 }
