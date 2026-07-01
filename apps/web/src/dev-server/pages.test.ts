@@ -10,7 +10,10 @@ describe("dev-server private placeholder pages", () => {
 
     assert.match(html, /<title>Relatórios - SolverFin<\/title>/);
     assert.match(html, /<h1>Relatórios<\/h1>/);
-    assert.match(html, /<a href="\/relatorios" aria-current="page">Relatórios<\/a>/);
+    assert.match(
+      html,
+      /<a href="\/relatorios" id="nav-secondary-reports" data-nav-priority="secondary" aria-current="page">Relatórios<\/a>/,
+    );
 
     for (const [path, label] of privateRoutes.entries()) {
       assert.ok(html.includes(`<a href="${path}"`));

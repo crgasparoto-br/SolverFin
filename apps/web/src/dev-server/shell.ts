@@ -1,4 +1,5 @@
-import { privateRoutes } from "./routes.js";
+import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
+import { listPrivateShellRoutes } from "../app-shell/routes.js";
 
 export interface ShellDocumentInput {
   body: string;
@@ -43,7 +44,7 @@ export function renderAuthenticatedShell(
     <div class="app-shell">
       <aside class="sidebar">
         <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-        <nav aria-label="Menu principal">${renderNavigation(input.activePathname)}</nav>
+        <nav aria-label="Menu principal" class="${isActivePathnameSecondary(input.activePathname) ? "nav-open" : ""}">${renderNavigation(input.activePathname)}</nav>
         <button class="logout" type="button" data-logout>Sair</button>
       </aside>
       <div class="main-area">
@@ -52,6 +53,7 @@ export function renderAuthenticatedShell(
       </div>
     </div>
     ${logoutScript()}
+    ${navigationScript()}
   `;
 }
 
@@ -63,13 +65,32 @@ export function faviconLinks(): string {
   `;
 }
 
+function isActivePathnameSecondary(activePathname: string): boolean {
+  const activeRoute = listPrivateShellRoutes().find((route) => route.path === activePathname);
+  return activeRoute !== undefined && !isPrimaryMobileRoute(activeRoute);
+}
+
 function renderNavigation(activePathname: string): string {
-  return Array.from(privateRoutes.entries())
-    .map(
-      ([path, label]) =>
-        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
-    )
+  const routes = listPrivateShellRoutes();
+  const activeIsSecondary = isActivePathnameSecondary(activePathname);
+  const secondaryIds = routes
+    .filter((route) => !isPrimaryMobileRoute(route))
+    .map((route) => `nav-secondary-${route.id}`);
+
+  const links = routes
+    .map((route) => {
+      const isActive = route.path === activePathname;
+      const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
+      const id = priority === "secondary" ? ` id="nav-secondary-${route.id}"` : "";
+
+      return `<a href="${route.path}"${id} data-nav-priority="${priority}" ${isActive ? `aria-current="page"` : ""}>${escapeHtml(route.label)}</a>`;
+    })
     .join("");
+
+  return `
+    ${links}
+    <button type="button" class="nav-more-toggle" data-nav-more aria-expanded="${activeIsSecondary}" aria-controls="${secondaryIds.join(" ")}">${activeIsSecondary ? "Menos rotas" : "Mais rotas"}</button>
+  `;
 }
 
 function logoutScript(): string {
@@ -79,6 +100,22 @@ function logoutScript(): string {
         button.addEventListener("click", async () => {
           await fetch("/api/session", { method: "DELETE" });
           window.location.assign("/login");
+        });
+      });
+    </script>
+  `;
+}
+
+function navigationScript(): string {
+  return `
+    <script>
+      document.querySelectorAll("[data-nav-more]").forEach((button) => {
+        const nav = button.closest("nav");
+        if (!nav) return;
+        button.addEventListener("click", () => {
+          const isOpen = nav.classList.toggle("nav-open");
+          button.setAttribute("aria-expanded", String(isOpen));
+          button.textContent = isOpen ? "Menos rotas" : "Mais rotas";
         });
       });
     </script>

@@ -24,9 +24,20 @@ export function sharedShellStyles(): string {
     .form-status { grid-column: 1 / -1; }
     .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; }
     .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; gap: 10px; min-height: 44px; text-decoration: none; } .brand img { border-radius: 6px; display: block; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; }
+    .nav-more-toggle { display: none; }
     .logout { background: rgba(255,255,255,.12); margin-top: auto; } .main-area { min-width: 0; } .topbar { align-items: center; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; min-height: 64px; padding: 0 24px; position: sticky; top: 0; z-index: 5; } .topbar div { display: grid; gap: 2px; } .topbar span { color: var(--muted); font-size: .875rem; }
     .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 16px; }
-    @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; } nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; } nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; } .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; } }
+    @media (max-width: 760px) {
+      .app-shell { grid-template-columns: 1fr; } .sidebar { gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 10; } .sidebar .logout { display: none; }
+      nav { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+      nav a { background: rgba(255,255,255,.1); flex: 0 0 auto; min-height: 44px; white-space: nowrap; }
+      nav a[data-nav-priority="primary"] { order: 1; }
+      nav a[data-nav-priority="secondary"] { display: none; order: 3; }
+      nav.nav-open a[data-nav-priority="secondary"] { display: inline-flex; align-items: center; }
+      .nav-more-toggle { align-items: center; background: rgba(255,255,255,.1); border: 0; border-radius: 8px; color: rgba(255,255,255,.82); cursor: pointer; display: inline-flex; flex: 0 0 auto; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; order: 2; padding: 0 14px; white-space: nowrap; }
+      .nav-more-toggle:hover, .nav-more-toggle[aria-expanded="true"] { background: rgba(34,211,238,.18); color: white; }
+      .topbar { min-height: 56px; padding: 0 16px; position: static; } .topbar button { display: none; } main { padding: 18px 16px 28px; }
+    }
   `;
 }
 
