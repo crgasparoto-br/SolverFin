@@ -1,5 +1,11 @@
 import { privateRoutes } from "./routes.js";
 
+export interface ShellDocumentInput {
+  body: string;
+  styles: string;
+  title: string;
+}
+
 export interface AuthenticatedShellDocumentInput {
   activePathname: string;
   content: string;
@@ -7,7 +13,7 @@ export interface AuthenticatedShellDocumentInput {
   styles: string;
 }
 
-export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocumentInput): string {
+export function renderShellDocument(input: ShellDocumentInput): string {
   return `<!doctype html>
 <html lang="pt-BR">
   <head>
@@ -15,13 +21,19 @@ export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocume
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="manifest" href="/manifest.webmanifest" />
     ${faviconLinks()}
-    <title>${escapeHtml(input.currentLabel)} - SolverFin</title>
+    <title>${escapeHtml(input.title)}</title>
     <style>${input.styles}</style>
   </head>
-  <body>
-    ${renderAuthenticatedShell(input)}
-  </body>
+  <body>${input.body}</body>
 </html>`;
+}
+
+export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocumentInput): string {
+  return renderShellDocument({
+    body: renderAuthenticatedShell(input),
+    styles: input.styles,
+    title: `${input.currentLabel} - SolverFin`,
+  });
 }
 
 export function renderAuthenticatedShell(
