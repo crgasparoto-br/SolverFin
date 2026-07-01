@@ -601,6 +601,21 @@ function clientScript(): string {
         });
       });
 
+      document.addEventListener("click", (event) => {
+        document.querySelectorAll(".actions[open]").forEach((details) => {
+          if (!details.contains(event.target)) details.removeAttribute("open");
+        });
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        document.querySelectorAll(".actions[open]").forEach((details) => {
+          const summary = details.querySelector("summary");
+          details.removeAttribute("open");
+          if (summary) summary.focus();
+        });
+      });
+
       document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async () => {
         if (button.dataset.confirm && !window.confirm(button.dataset.confirm)) return;
         const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {});
