@@ -20,7 +20,14 @@ export interface MobileViewportReadinessResult {
 }
 
 const MOBILE_MAX_WIDTH = 767;
-const PRIMARY_ROUTE_IDS = new Set(["dashboard", "transactions", "review", "settings"]);
+const PRIMARY_ROUTE_IDS = new Set([
+  "dashboard",
+  "transactions",
+  "cards",
+  "payablesReceivables",
+  "inbox",
+  "settings",
+]);
 
 export function evaluateMobileViewportReadiness(
   input: MobileViewportReadinessInput,
