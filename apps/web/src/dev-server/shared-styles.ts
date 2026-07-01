@@ -21,7 +21,7 @@ export function sharedShellStyles(): string {
     .danger-action { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
     .error { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }
     .success { background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: 8px; color: var(--success); padding: 10px 12px; }
-    .form-status { grid-column: 1 / -1; }
+    .form-status { grid-column: 1 / -1; min-height: 1.3em; }
     .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; } .sidebar { background: var(--primary); color: white; display: flex; flex-direction: column; gap: 22px; padding: 22px; }
     .brand { align-items: center; display: inline-flex; font-size: 1.2rem; font-weight: 900; gap: 10px; min-height: 44px; text-decoration: none; } .brand img { border-radius: 6px; display: block; } nav { display: grid; gap: 6px; } nav a { border-radius: 8px; color: rgba(255,255,255,.82); font-weight: 800; min-height: 40px; padding: 10px 12px; text-decoration: none; } nav a:hover, nav a[aria-current="page"] { background: rgba(34,211,238,.18); color: white; }
     .nav-more-toggle { display: none; }

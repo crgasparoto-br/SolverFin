@@ -360,7 +360,7 @@ function apiFormScript(): string {
         let status = container.querySelector(":scope > [data-form-status]");
         if (!status) {
           status = document.createElement("p");
-          status.className = "form-status sf-muted";
+          status.className = "form-status muted";
           status.setAttribute("data-form-status", "");
           status.setAttribute("aria-live", "polite");
           container.appendChild(status);
@@ -393,14 +393,14 @@ function apiFormScript(): string {
           const submitButton = form.querySelector('button[type="submit"]');
           const method = form.dataset.apiMethod || "POST";
           if (submitButton) submitButton.disabled = true;
-          status.className = "form-status sf-muted";
+          status.className = "form-status muted";
           status.textContent = "Salvando...";
           const response = await fetch(form.dataset.apiPath, {
             method,
             headers: { "content-type": "application/json" },
             body: JSON.stringify(buildPayload(form)),
           });
-          status.className = response.ok ? "form-status success" : "form-status sf-error";
+          status.className = response.ok ? "form-status success" : "form-status error";
           status.textContent = await readApiMessage(response);
           if (response.ok) {
             window.setTimeout(() => window.location.reload(), 450);
@@ -481,7 +481,7 @@ function categoryPageScript(): string {
       function resetStatus() {
         const status = formStatus();
         if (!status) return;
-        status.className = "form-status sf-muted";
+        status.className = "form-status muted";
         status.textContent = "";
       }
 
@@ -527,7 +527,7 @@ function categoryPageScript(): string {
         const status = item ? ensureStatus(item) : null;
         button.disabled = true;
         if (status) {
-          status.className = "form-status sf-muted";
+          status.className = "form-status muted";
           status.textContent = "Enviando...";
         }
         const response = await fetch(path, {
@@ -535,7 +535,7 @@ function categoryPageScript(): string {
           headers: { "content-type": "application/json" },
         });
         if (status) {
-          status.className = response.ok ? "form-status success" : "form-status sf-error";
+          status.className = response.ok ? "form-status success" : "form-status error";
           status.textContent = await readApiMessage(response);
         }
         if (response.ok) {
@@ -627,12 +627,12 @@ function categoryPageScript(): string {
         const status = formStatus();
         statusActionButton.disabled = true;
         if (status) {
-          status.className = "form-status sf-muted";
+          status.className = "form-status muted";
           status.textContent = "Enviando...";
         }
         const response = await fetch(path, { method: "POST", headers: { "content-type": "application/json" } });
         if (status) {
-          status.className = response.ok ? "form-status success" : "form-status sf-error";
+          status.className = response.ok ? "form-status success" : "form-status error";
           status.textContent = await readApiMessage(response);
         }
         if (response.ok) {
