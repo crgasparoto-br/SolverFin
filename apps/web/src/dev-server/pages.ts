@@ -1,6 +1,6 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
-import { apiGet } from "./api.js";
+import { apiGet, type ApiFailure, type ApiSuccess } from "./api.js";
 import { implementedRoutes, privateRoutes } from "./routes.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
@@ -41,7 +41,15 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
     });
   }
 
-  const summary = await apiGet<FinancialSummary>(token, "/api/financial-summary");
+  const [summary, pendingItems, pendingReview, openInvoices] = await Promise.all([
+    apiGet<FinancialSummary>(token, "/api/financial-summary"),
+    apiGet<{ payablesReceivables: PendingPayableReceivable[] }>(
+      token,
+      "/api/payables-receivables?status=pending",
+    ),
+    apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
+    apiGet<{ invoices: OpenInvoice[] }>(token, "/api/invoices?status=open"),
+  ]);
 
   if (!summary.ok) {
     return renderApiErrorPage(pathname, currentLabel, summary.error);
@@ -55,7 +63,6 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
         <div>
           <p class="eyebrow">Perfil pessoal demo</p>
           <h1>Resumo financeiro</h1>
-          <p class="muted">Dados fictícios do banco local de desenvolvimento.</p>
         </div>
         <span class="demo-pill">Demo seguro</span>
       </section>
@@ -65,12 +72,21 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
         ${renderMetricCard("Despesas do mês", summary.data.expensesMinor, "Saídas postadas no mês atual")}
         ${renderMetricCard("Compromissos previstos", summary.data.plannedCommitmentsMinor, "Lançamentos planejados no mês")}
       </section>
+      <section class="panel next-actions" aria-label="Próximas ações">
+        <div class="section-heading">
+          <h2>Próximas ações</h2>
+        </div>
+        ${renderNextActions(pendingItems, pendingReview, openInvoices)}
+        <div class="quick-links" aria-label="Atalhos da rotina">
+          <a class="button-link secondary-link" href="/lancamentos">Extrato</a>
+          <a class="button-link secondary-link" href="/cartoes">Cartões</a>
+          <a class="button-link secondary-link" href="/pagar-receber">Pagar e receber</a>
+          <a class="button-link secondary-link" href="/inbox">Inbox e revisão</a>
+        </div>
+      </section>
       <section class="panel list-panel">
         <div class="section-heading">
-          <div>
-            <h2>Itens recentes</h2>
-            <p class="muted">Valores em BRL, calculados a partir de unidades menores.</p>
-          </div>
+          <h2>Itens recentes</h2>
         </div>
         <div class="rows">
           ${
@@ -87,12 +103,83 @@ export async function renderDashboardPage(token: string, pathname = "/dashboard"
           }
         </div>
       </section>
-      <section class="panel review-note">
-        <h2>Pendências de revisão</h2>
-        <p class="muted">Revise qualquer previsão antes de usar como apoio para decisões financeiras.</p>
-      </section>
     `,
   });
+}
+
+interface PendingPayableReceivable {
+  kind: string;
+  dueOn: string;
+}
+
+interface OpenInvoice {
+  dueOn: string;
+}
+
+function renderNextActions(
+  pendingItems:
+    | ApiSuccess<{ payablesReceivables: PendingPayableReceivable[] }>
+    | ApiFailure,
+  pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
+  openInvoices: ApiSuccess<{ invoices: OpenInvoice[] }> | ApiFailure,
+): string {
+  const payables = pendingItems.ok ? pendingItems.data.payablesReceivables : [];
+  const reviewCount = pendingReview.ok ? pendingReview.data.messages.length : 0;
+  const invoices = openInvoices.ok ? openInvoices.data.invoices : [];
+
+  const actions = [
+    payables.length > 0
+      ? renderNextActionRow(
+          `${payables.length} conta${payables.length === 1 ? "" : "s"} a pagar ou receber pendente${payables.length === 1 ? "" : "s"}`,
+          `Próximo vencimento em ${formatDate(nearestDueDate(payables.map((item) => item.dueOn)))}.`,
+          "/pagar-receber",
+          "Ver pagar e receber",
+        )
+      : "",
+    reviewCount > 0
+      ? renderNextActionRow(
+          `${reviewCount} ite${reviewCount === 1 ? "m" : "ns"} aguardando revisão na inbox`,
+          "Confirme ou ajuste as sugestões antes de usá-las como lançamento.",
+          "/inbox",
+          "Abrir inbox",
+        )
+      : "",
+    invoices.length > 0
+      ? renderNextActionRow(
+          `${invoices.length} fatura${invoices.length === 1 ? "" : "s"} de cartão em aberto`,
+          `Próximo vencimento em ${formatDate(nearestDueDate(invoices.map((item) => item.dueOn)))}.`,
+          "/cartoes",
+          "Ver cartões",
+        )
+      : "",
+  ].filter((row) => row !== "");
+
+  if (actions.length === 0) {
+    return renderEmptyState(
+      "Nenhuma pendência agora.",
+      "Contas, faturas e itens de revisão pendentes aparecerão aqui.",
+    );
+  }
+
+  return `<div class="rows next-action-rows">${actions.join("")}</div>`;
+}
+
+function renderNextActionRow(
+  title: string,
+  description: string,
+  href: string,
+  linkLabel: string,
+): string {
+  return `
+    <article class="row next-action-row">
+      <div><strong>${escapeHtml(title)}</strong><span>${escapeHtml(description)}</span></div>
+      <a class="button-link secondary-link" href="${href}">${escapeHtml(linkLabel)}</a>
+    </article>
+  `;
+}
+
+function nearestDueDate(dates: string[]): string {
+  return dates.slice().sort((left, right) => left.localeCompare(right))[0] ?? "";
 }
 
 export async function renderAccountsPage(token: string): Promise<string> {
@@ -1190,6 +1277,9 @@ function baseCss(): string {
     .budgets-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .budgets-heading > div { display: grid; gap: 6px; max-width: 760px; }
     .item-actions { display: flex; gap: 8px; justify-content: flex-end; }
     .demo-pill { background: var(--success-bg); border-radius: 999px; color: var(--success); font-weight: 800; padding: 8px 12px; white-space: nowrap; }
+    .secondary-link { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); }
+    .next-actions { gap: 14px; } .next-action-rows { gap: 12px; } .next-action-row { gap: 12px; }
+    .quick-links { display: flex; flex-wrap: wrap; gap: 8px; }
     .summary-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); } .metric-card { display: grid; gap: 8px; min-width: 0; } .metric-card span { color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .metric-card strong { color: var(--primary); font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; } .metric-card p { color: var(--muted); line-height: 1.45; }
     .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(19rem, .45fr); } .workspace-grid.wide-form { grid-template-columns: minmax(0, .95fr) minmax(22rem, .6fr); }
     .statement-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(17rem, .42fr) minmax(0, 1fr); } .statement-sidebar, .statement-workspace { display: grid; gap: 18px; min-width: 0; }
