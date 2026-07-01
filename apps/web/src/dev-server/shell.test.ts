@@ -53,4 +53,20 @@ describe("authenticated SSR shell", () => {
       assert.ok(html.includes(`>${label}</a>`));
     }
   });
+
+  it("marks only the active private route in the shared navigation", () => {
+    for (const activePathname of privateRoutes.keys()) {
+      const html = renderAuthenticatedShellDocument({
+        activePathname,
+        content: "<section>Conteúdo da página</section>",
+        currentLabel: privateRoutes.get(activePathname) ?? "Dashboard",
+        styles: ".test-marker { color: #0f3d4c; }",
+      });
+
+      for (const [path, label] of privateRoutes.entries()) {
+        const ariaCurrent = path === activePathname ? ` aria-current="page"` : "";
+        assert.ok(html.includes(`<a href="${path}"${ariaCurrent}>${label}</a>`));
+      }
+    }
+  });
 });
