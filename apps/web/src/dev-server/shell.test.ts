@@ -64,8 +64,8 @@ describe("authenticated SSR shell", () => {
       });
 
       for (const [path, label] of privateRoutes.entries()) {
-        const ariaCurrent = path === activePathname ? ` aria-current="page"` : "";
-        assert.ok(html.includes(`<a href="${path}"${ariaCurrent}>${label}</a>`));
+        const activeAttribute = path === activePathname ? ` aria-current="page"` : " ";
+        assert.ok(html.includes(`<a href="${path}"${activeAttribute}>${label}</a>`));
       }
     }
   });
