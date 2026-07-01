@@ -1,12 +1,13 @@
 export type ShellRouteId =
   | "dashboard"
-  | "accounts"
-  | "cards"
-  | "categories"
   | "transactions"
+  | "payablesReceivables"
+  | "accountsCards"
+  | "categories"
+  | "cards"
   | "budgets"
+  | "inbox"
   | "reports"
-  | "review"
   | "settings"
   | "signIn";
 
@@ -27,9 +28,9 @@ export interface ShellRoute {
 export const solverFinShellRoutes = [
   {
     id: "dashboard",
-    path: "/app",
+    path: "/dashboard",
     label: "Resumo",
-    description: "Acompanhe saldo, resultado do periodo e proximas pendencias.",
+    description: "Acompanhe saldo, resultado do período e próximas pendências.",
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
@@ -37,40 +38,50 @@ export const solverFinShellRoutes = [
   },
   {
     id: "transactions",
-    path: "/app/lancamentos",
-    label: "Extrato da conta",
-    description: "Acompanhe saldo, filtros e movimentacoes por conta.",
+    path: "/lancamentos",
+    label: "Extrato",
+    description: "Acompanhe saldos, filtros e movimentações por conta.",
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
     status: "available",
   },
   {
-    id: "accounts",
-    path: "/app/contas-cartoes",
-    label: "Contas e Cartoes",
-    description:
-      "Cadastre contas, bancos, dinheiro, aplicacoes e cartoes usados na rotina financeira.",
-    navigationGroup: "manage",
+    id: "payablesReceivables",
+    path: "/pagar-receber",
+    label: "Pagar e receber",
+    description: "Acompanhe vencimentos, pagamentos e recebimentos previstos.",
+    navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
     status: "available",
   },
   {
     id: "cards",
-    path: "/app/cartoes",
-    label: "Cartoes de Credito",
-    description: "Acompanhe compras, faturas, fechamento e pagamento de cartao.",
+    path: "/cartoes",
+    label: "Cartões",
+    description: "Acompanhe compras, faturas, fechamento e pagamento de cartão.",
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
     status: "available",
   },
   {
+    id: "accountsCards",
+    path: "/contas-cartoes",
+    label: "Contas e Cartões",
+    description:
+      "Cadastre contas, bancos, dinheiro, aplicações e cartões usados na rotina financeira.",
+    navigationGroup: "manage",
+    requiresAuthentication: true,
+    requiresFinancialProfile: true,
+    status: "available",
+  },
+  {
     id: "categories",
-    path: "/app/categorias",
+    path: "/categorias",
     label: "Categorias",
-    description: "Mantenha categorias para organizar receitas e despesas.",
+    description: "Mantenha categorias para organizar receitas, despesas e transferências.",
     navigationGroup: "manage",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
@@ -78,29 +89,29 @@ export const solverFinShellRoutes = [
   },
   {
     id: "budgets",
-    path: "/app/orcamentos",
-    label: "Orcamentos",
-    description: "Acompanhe limites, metas e alertas basicos.",
-    navigationGroup: "main",
-    requiresAuthentication: true,
-    requiresFinancialProfile: true,
-    status: "placeholder",
-  },
-  {
-    id: "reports",
-    path: "/app/relatorios",
-    label: "Relatorios",
-    description: "Veja gastos por categoria, evolucao mensal e previsto versus realizado.",
+    path: "/orcamentos",
+    label: "Orçamentos",
+    description: "Acompanhe limites planejados por categoria de despesa.",
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
     status: "available",
   },
   {
-    id: "review",
-    path: "/app/revisao",
-    label: "Revisao",
-    description: "Revise sugestoes, importacoes e possiveis duplicidades antes de confirmar.",
+    id: "inbox",
+    path: "/inbox",
+    label: "Inbox",
+    description: "Revise mensagens, importações e sugestões antes de confirmar.",
+    navigationGroup: "review",
+    requiresAuthentication: true,
+    requiresFinancialProfile: true,
+    status: "available",
+  },
+  {
+    id: "reports",
+    path: "/relatorios",
+    label: "Relatórios",
+    description: "Veja gastos por categoria, evolução mensal e previsto versus realizado.",
     navigationGroup: "review",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
@@ -108,23 +119,23 @@ export const solverFinShellRoutes = [
   },
   {
     id: "settings",
-    path: "/app/configuracoes",
-    label: "Configuracoes",
-    description: "Ajuste contexto financeiro, preferencias e privacidade quando disponivel.",
+    path: "/configuracoes",
+    label: "Configurações",
+    description: "Ajuste perfis financeiros, preferências e privacidade.",
     navigationGroup: "settings",
     requiresAuthentication: true,
     requiresFinancialProfile: false,
-    status: "placeholder",
+    status: "available",
   },
   {
     id: "signIn",
-    path: "/entrar",
+    path: "/login",
     label: "Entrar",
-    description: "Acesse sua area financeira para continuar.",
+    description: "Acesse sua área financeira para continuar.",
     navigationGroup: "public",
     requiresAuthentication: false,
     requiresFinancialProfile: false,
-    status: "placeholder",
+    status: "available",
   },
 ] as const satisfies readonly ShellRoute[];
 
@@ -138,4 +149,8 @@ export function listShellRoutesByGroup(group: ShellNavigationGroup): ShellRoute[
 
 export function listPrivateShellRoutes(): ShellRoute[] {
   return solverFinShellRoutes.filter((route) => route.requiresAuthentication);
+}
+
+export function listImplementedPrivateShellRoutes(): ShellRoute[] {
+  return listPrivateShellRoutes().filter((route) => route.status === "available");
 }
