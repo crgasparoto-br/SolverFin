@@ -16,6 +16,7 @@ import {
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { handleAccountsApiRequest } from "./accounts-router.js";
 import {
   closeInvoiceForContext,
   listCardPurchasesForContext,
@@ -152,6 +153,12 @@ route("POST", "/api/budgets/:budgetId/archive", archiveBudgetHandler);
 route("GET", "/api/budgets/:budgetId/usage", getBudgetUsageHandler);
 
 export async function handleApiRequest(request: ApiRequest): Promise<ApiResponse | undefined> {
+  const accountsResult = await handleAccountsApiRequest(request);
+
+  if (accountsResult) {
+    return accountsResult;
+  }
+
   const correlationId = resolveCorrelationId(request.headers);
   const match = findRoute(request.method, request.pathname);
 
