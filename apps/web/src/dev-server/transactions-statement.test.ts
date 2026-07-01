@@ -93,7 +93,9 @@ function transactionQueryKeepsPreviousBalanceWindow(): void {
 
 function statementTransactionFilterKeepsAccountOrAccountOnlyRecords(): void {
   assert.equal(
-    isAccountStatementTransaction(transaction("account-income", "income", "posted", 1000, "2026-06-01")),
+    isAccountStatementTransaction(
+      transaction("account-income", "income", "posted", 1000, "2026-06-01"),
+    ),
     true,
   );
   assert.equal(
@@ -134,7 +136,11 @@ function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
   const openingMinor = calculateOpeningBalance(transactions, account, filters.startsOn);
   assert.equal(openingMinor, 150000);
 
-  const rows = buildRows(filterStatementPeriodTransactions(transactions, filters), account, openingMinor);
+  const rows = buildRows(
+    filterStatementPeriodTransactions(transactions, filters),
+    account,
+    openingMinor,
+  );
   assert.deepEqual(
     rows.map((row) => row.transaction.id),
     ["current-effective-expense", "current-pending-income", "current-transfer-in"],

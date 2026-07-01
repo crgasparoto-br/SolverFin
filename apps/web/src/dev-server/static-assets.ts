@@ -13,8 +13,15 @@ const contentTypeByExtension: Record<string, string> = {
   ".webmanifest": "application/manifest+json",
 };
 
-export async function tryServeStaticAsset(pathname: string, response: ServerResponse): Promise<boolean> {
-  if (!pathname.startsWith("/icons/") && !pathname.startsWith("/images/") && pathname !== "/favicon.ico") {
+export async function tryServeStaticAsset(
+  pathname: string,
+  response: ServerResponse,
+): Promise<boolean> {
+  if (
+    !pathname.startsWith("/icons/") &&
+    !pathname.startsWith("/images/") &&
+    pathname !== "/favicon.ico"
+  ) {
     return false;
   }
 

@@ -231,7 +231,10 @@ export async function registerCardPurchaseForContext(
     for (const invoice of [result.invoice, ...result.futureInvoices]) {
       const invoiceExisted = existingInvoices.some((existing) => existing.id === invoice.id);
 
-      await executeQuery(buildUpsertInvoiceSql(invoiceExisted), buildInvoiceParams(invoice, invoiceExisted));
+      await executeQuery(
+        buildUpsertInvoiceSql(invoiceExisted),
+        buildInvoiceParams(invoice, invoiceExisted),
+      );
     }
 
     await executeQuery(

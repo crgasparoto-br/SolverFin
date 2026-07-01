@@ -314,7 +314,11 @@ function runDistributesInstallmentsAcrossFutureInvoices(): void {
   const distributedTotal =
     result.invoice.totalAmountMinor +
     result.futureInvoices.reduce((sum, invoice) => sum + invoice.totalAmountMinor, 0);
-  assertEqual(distributedTotal, 10000, "distributed invoice totals should match the purchase total");
+  assertEqual(
+    distributedTotal,
+    10000,
+    "distributed invoice totals should match the purchase total",
+  );
 }
 
 function runRegistersInstallmentPurchaseWithCustomStart(): void {
@@ -508,7 +512,11 @@ function runUpdatesExistingPaymentForecastTransaction(): void {
   const [forecast] = result.forecastTransactions;
   assertEqual(forecast?.id, "forecast-existing", "forecast id should be reused");
   assertEqual(forecast?.amountMinor, 7500, "forecast amount should reflect the new invoice total");
-  assertEqual(forecast?.createdAt, "2026-06-01T00:00:00.000Z", "forecast createdAt should be preserved");
+  assertEqual(
+    forecast?.createdAt,
+    "2026-06-01T00:00:00.000Z",
+    "forecast createdAt should be preserved",
+  );
 }
 
 function runSkipsForecastTransactionWithoutPaymentAccount(): void {

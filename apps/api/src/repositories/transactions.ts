@@ -479,7 +479,12 @@ async function updateFuturePlannedTransactions(
 
   for (const [index, row] of futureRows.entries()) {
     const plannedOn = shouldRecalculateDates
-      ? addRecurrenceFrequency(updatedTransaction.plannedOn, schedule.frequency, index + 1, schedule.interval)
+      ? addRecurrenceFrequency(
+          updatedTransaction.plannedOn,
+          schedule.frequency,
+          index + 1,
+          schedule.interval,
+        )
       : toDateOnly(row.plannedOn);
 
     await executeQuery(
@@ -621,7 +626,15 @@ async function syncInstallmentById(
   await executeQuery(
     `update "Installment" set "dueOn" = $4, "amountMinor" = $5, "currency" = $6, "updatedAt" = $7
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [installmentId, context.organizationId, context.financialProfileId, dueOn, amountMinor, currency, updatedAt],
+    [
+      installmentId,
+      context.organizationId,
+      context.financialProfileId,
+      dueOn,
+      amountMinor,
+      currency,
+      updatedAt,
+    ],
   );
 }
 

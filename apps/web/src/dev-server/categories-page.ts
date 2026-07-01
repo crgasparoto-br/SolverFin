@@ -252,7 +252,9 @@ function renderCategoryActionMenu(category: CategoryRecord): string {
   const isArchived = category.status === "archived";
   const statusLabel = isArchived ? "Restaurar" : "Arquivar";
   const statusPath = `/api/categories/${category.id}/${isArchived ? "restore" : "archive"}`;
-  const statusConfirm = isArchived ? "" : "Arquivar esta categoria? Novos lancamentos nao devem usa-la.";
+  const statusConfirm = isArchived
+    ? ""
+    : "Arquivar esta categoria? Novos lancamentos nao devem usa-la.";
 
   return `
     <div class="category-action-menu">
@@ -748,6 +750,6 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }

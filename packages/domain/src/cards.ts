@@ -375,7 +375,8 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
     );
   }
 
-  const amounts = totalInstallments > 1 ? splitAmount(amountMinor, totalInstallments) : [amountMinor];
+  const amounts =
+    totalInstallments > 1 ? splitAmount(amountMinor, totalInstallments) : [amountMinor];
   const remainingCount = totalInstallments - installmentStart + 1;
   const invoiceCardId = input.groupCardId ?? card.id;
 
@@ -401,7 +402,11 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
 
     invoiceResults.push(invoiceResult);
     knownInvoices = [...knownInvoices, invoiceResult.invoice];
-    installmentSchedule.push({ sequenceNumber, dueOn: invoiceResult.invoice.dueOn, amountMinor: shareAmount });
+    installmentSchedule.push({
+      sequenceNumber,
+      dueOn: invoiceResult.invoice.dueOn,
+      amountMinor: shareAmount,
+    });
   }
 
   const [currentInvoiceResult, ...futureInvoiceResults] = invoiceResults;

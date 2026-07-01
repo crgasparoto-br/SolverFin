@@ -346,13 +346,15 @@ async function countCategoryDeleteBlockers(
     [context.organizationId, context.financialProfileId, categoryId],
   );
 
-  return rows[0] ?? {
-    children: 0,
-    transactions: 0,
-    recurrences: 0,
-    budgets: 0,
-    payablesReceivables: 0,
-  };
+  return (
+    rows[0] ?? {
+      children: 0,
+      transactions: 0,
+      recurrences: 0,
+      budgets: 0,
+      payablesReceivables: 0,
+    }
+  );
 }
 
 function hasLinkedCategoryHistory(blockers: CategoryDeleteBlockers): boolean {

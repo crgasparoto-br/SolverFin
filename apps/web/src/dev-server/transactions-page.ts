@@ -72,7 +72,11 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
 
   const transactions = transactionResult.data.transactions.filter(isAccountStatementTransaction);
   const openingMinor = calculateOpeningBalance(transactions, selectedAccount, filters.startsOn);
-  const rows = buildRows(filterStatementPeriodTransactions(transactions, filters), selectedAccount, openingMinor);
+  const rows = buildRows(
+    filterStatementPeriodTransactions(transactions, filters),
+    selectedAccount,
+    openingMinor,
+  );
   const summary = summarize(rows, openingMinor);
 
   return renderPage({
