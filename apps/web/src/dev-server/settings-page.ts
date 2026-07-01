@@ -1,6 +1,5 @@
 import { apiGet } from "./api.js";
-import { faviconLinks } from "./pages.js";
-import { privateRoutes } from "./routes.js";
+import { renderAuthenticatedShellDocument } from "./shell.js";
 
 interface FinancialProfilesResponse {
   activeProfileId?: string;
@@ -117,38 +116,12 @@ function renderProfileRow(
 }
 
 function renderShell(currentLabel: string, content: string): string {
-  return `<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    ${faviconLinks()}
-    <title>${escapeHtml(currentLabel)} - SolverFin</title>
-    <style>${baseCss()}</style>
-  </head>
-  <body>
-    <div class="app-shell">
-      <aside class="sidebar">
-        <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-        <nav aria-label="Menu principal">${renderNavigation("/configuracoes")}</nav>
-        <button class="logout" type="button" data-logout>Sair</button>
-      </aside>
-      <div class="main-area">
-        <header class="topbar"><div><strong>${escapeHtml(currentLabel)}</strong><span>Usuário Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
-        <main>${content}</main>
-      </div>
-    </div>
-    <script>
-      document.querySelectorAll("[data-logout]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          await fetch("/api/session", { method: "DELETE" });
-          window.location.assign("/login");
-        });
-      });
-    </script>
-  </body>
-</html>`;
+  return renderAuthenticatedShellDocument({
+    activePathname: "/configuracoes",
+    content,
+    currentLabel,
+    styles: baseCss(),
+  });
 }
 
 function settingsScript(): string {
@@ -228,15 +201,6 @@ function settingsScript(): string {
       });
     </script>
   `;
-}
-
-function renderNavigation(activePathname: string): string {
-  return Array.from(privateRoutes.entries())
-    .map(
-      ([path, label]) =>
-        `<a href="${path}" ${path === activePathname ? `aria-current="page"` : ""}>${escapeHtml(label)}</a>`,
-    )
-    .join("");
 }
 
 function renderProfileKindOptions(selected?: string): string {
