@@ -12,15 +12,20 @@ import {
   type RecurrenceRecord,
 } from "./recurrences-section.js";
 import { privateRoutes } from "./routes.js";
-
-interface AccountRecord {
-  id: string;
-  name: string;
-  kind: string;
-  status: string;
-  openingBalanceMinor: number;
-  institutionKey?: string;
-}
+import {
+  buildRows,
+  buildTransactionQuery,
+  calculateOpeningBalance,
+  filterStatementPeriodTransactions,
+  isAccountStatementTransaction,
+  resolveFilters,
+  statementDate,
+  summarize,
+  type AccountRecord,
+  type StatementRow,
+  type StatementSummary,
+  type TransactionRecord,
+} from "./transactions-statement.js";
 
 interface CategoryRecord {
   id: string;
@@ -28,50 +33,6 @@ interface CategoryRecord {
   kind: string;
   status: string;
   parentCategoryId?: string;
-}
-
-interface TransactionRecord {
-  id: string;
-  description: string;
-  kind: string;
-  status: string;
-  amountMinor: number;
-  occurredOn: string;
-  plannedOn: string;
-  effectiveOn?: string;
-  accountId?: string;
-  destinationAccountId?: string;
-  categoryId?: string;
-  cardId?: string;
-  invoiceId?: string;
-  recurrenceId?: string;
-}
-
-interface StatementFilters {
-  accountId?: string;
-  month: string;
-  startsOn: string;
-  endsOn: string;
-}
-
-interface StatementRow {
-  transaction: TransactionRecord;
-  amountMinor: number;
-  balanceAfterMinor?: number;
-}
-
-interface StatementSummary {
-  openingMinor: number;
-  incomeMinor: number;
-  expenseMinor: number;
-  plannedBalanceMinor: number;
-  effectiveBalanceMinor: number;
-  reconciledMinor: number;
-  unreconciledMinor: number;
-  pendingMinor: number;
-  pendingCount: number;
-  reconciledCount: number;
-  unreconciledCount: number;
 }
 
 export async function renderTransactionsPage(token: string, url?: URL): Promise<string> {
@@ -193,163 +154,6 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
       ${recurrencesSectionScript()}
     `,
   });
-}
-
-function resolveFilters(url: URL | undefined, accounts: AccountRecord[]): StatementFilters {
-  const month = resolveSelectedMonth(url);
-  const period = monthToPeriod(month);
-  const accountId = url?.searchParams.get("accountId") ?? accounts[0]?.id;
-
-  return {
-    ...(accountId ? { accountId } : {}),
-    month,
-    startsOn: period.startsOn,
-    endsOn: period.endsOn,
-  };
-}
-
-function resolveSelectedMonth(url: URL | undefined): string {
-  const queryMonth = url?.searchParams.get("month");
-  if (isValidMonth(queryMonth)) return queryMonth;
-
-  const startsOn = url?.searchParams.get("startsOn");
-  const legacyMonth = startsOn?.slice(0, 7);
-  if (isValidMonth(legacyMonth)) return legacyMonth;
-
-  return getCurrentMonth();
-}
-
-function getCurrentMonth(): string {
-  return new Date().toISOString().slice(0, 7);
-}
-
-function isValidMonth(value: string | null | undefined): value is string {
-  if (!/^\d{4}-\d{2}$/.test(value ?? "")) return false;
-
-  const month = Number(value?.slice(5, 7));
-  return month >= 1 && month <= 12;
-}
-
-function monthToPeriod(month: string): Pick<StatementFilters, "startsOn" | "endsOn"> {
-  const year = Number(month.slice(0, 4));
-  const monthIndex = Number(month.slice(5, 7)) - 1;
-  const startsOn = new Date(Date.UTC(year, monthIndex, 1));
-  const endsOn = new Date(Date.UTC(year, monthIndex + 1, 0));
-
-  return {
-    startsOn: startsOn.toISOString().slice(0, 10),
-    endsOn: endsOn.toISOString().slice(0, 10),
-  };
-}
-
-function buildTransactionQuery(filters: StatementFilters): string {
-  return new URLSearchParams({
-    status: "all",
-    accountId: filters.accountId ?? "",
-    plannedTo: filters.endsOn,
-  }).toString();
-}
-
-function isAccountStatementTransaction(transaction: TransactionRecord): boolean {
-  return (
-    transaction.accountId !== undefined ||
-    (transaction.cardId === undefined && transaction.invoiceId === undefined)
-  );
-}
-
-function filterStatementPeriodTransactions(
-  transactions: TransactionRecord[],
-  filters: StatementFilters,
-): TransactionRecord[] {
-  return transactions.filter((transaction) => {
-    const date = statementDate(transaction);
-
-    return date >= filters.startsOn && date <= filters.endsOn;
-  });
-}
-
-function calculateOpeningBalance(
-  transactions: TransactionRecord[],
-  selectedAccount: AccountRecord | undefined,
-  startsOn: string,
-): number {
-  let balance = selectedAccount?.openingBalanceMinor ?? 0;
-
-  for (const transaction of transactions
-    .filter((candidate) => candidate.status !== "voided")
-    .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))) {
-    if (statementDate(transaction) >= startsOn) continue;
-    if (transaction.effectiveOn === undefined) continue;
-
-    balance += signedAmount(transaction, selectedAccount?.id);
-  }
-
-  return balance;
-}
-
-function buildRows(
-  transactions: TransactionRecord[],
-  selectedAccount: AccountRecord | undefined,
-  openingMinor: number,
-): StatementRow[] {
-  let balance = openingMinor;
-
-  return transactions
-    .filter((transaction) => transaction.status !== "voided")
-    .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))
-    .map((transaction) => {
-      const amountMinor = signedAmount(transaction, selectedAccount?.id);
-      const effective = transaction.effectiveOn !== undefined;
-      if (effective) balance += amountMinor;
-
-      return {
-        transaction,
-        amountMinor,
-        ...(effective ? { balanceAfterMinor: balance } : {}),
-      };
-    });
-}
-
-function summarize(rows: StatementRow[], openingMinor: number): StatementSummary {
-  return rows.reduce<StatementSummary>(
-    (summary, row) => {
-      const absolute = Math.abs(row.amountMinor);
-
-      if (row.amountMinor >= 0) summary.incomeMinor += row.amountMinor;
-      if (row.amountMinor < 0) summary.expenseMinor += absolute;
-      summary.plannedBalanceMinor += row.amountMinor;
-
-      if (row.transaction.effectiveOn === undefined) {
-        summary.pendingMinor += absolute;
-        summary.pendingCount += 1;
-        return summary;
-      }
-
-      summary.effectiveBalanceMinor += row.amountMinor;
-      if (row.transaction.status === "reconciled") {
-        summary.reconciledMinor += absolute;
-        summary.reconciledCount += 1;
-      } else {
-        summary.unreconciledMinor += absolute;
-        summary.unreconciledCount += 1;
-      }
-
-      return summary;
-    },
-    {
-      openingMinor,
-      incomeMinor: 0,
-      expenseMinor: 0,
-      plannedBalanceMinor: openingMinor,
-      effectiveBalanceMinor: openingMinor,
-      reconciledMinor: 0,
-      unreconciledMinor: 0,
-      pendingMinor: 0,
-      pendingCount: 0,
-      reconciledCount: 0,
-      unreconciledCount: 0,
-    },
-  );
 }
 
 function renderTableHeader(): string {
@@ -952,25 +756,6 @@ function buildCategoryHierarchy(
   walk(undefined, 0);
 
   return rows;
-}
-
-function signedAmount(
-  transaction: TransactionRecord,
-  selectedAccountId: string | undefined,
-): number {
-  if (transaction.kind === "income") return transaction.amountMinor;
-  if (transaction.kind === "expense") return -transaction.amountMinor;
-  if (transaction.kind === "transfer" && transaction.destinationAccountId === selectedAccountId) {
-    return transaction.amountMinor;
-  }
-  if (transaction.kind === "transfer" && transaction.accountId === selectedAccountId) {
-    return -transaction.amountMinor;
-  }
-  return 0;
-}
-
-function statementDate(transaction: TransactionRecord): string {
-  return transaction.effectiveOn ?? transaction.plannedOn ?? transaction.occurredOn;
 }
 
 function renderSummaryPanel(
