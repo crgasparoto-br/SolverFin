@@ -2,6 +2,7 @@ import "./load-env.js";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { handleAccountsApiRequest } from "./accounts-router.js";
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js";
 import { handleCardAdditionalLinksApiRequest } from "./card-additional-links-router.js";
@@ -51,6 +52,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       headers,
       body,
     };
+
+    const accountsResult = await handleAccountsApiRequest(apiRequest);
+
+    if (accountsResult) {
+      writeResponse(response, accountsResult);
+
+      return;
+    }
 
     const financialProfilesResult = await handleFinancialProfilesApiRequest(apiRequest);
 
