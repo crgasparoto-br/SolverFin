@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../.tmp-tests/web/accessibility.test.js && node ../../.tmp-tests/web/dashboard/availability.test.js && node ../../.tmp-tests/web/pwa/manifest.test.js && node ../../.tmp-tests/web/inbox/share-target.test.js && node ../../.tmp-tests/web/dev-server.test.js && node ../../.tmp-tests/web/dev-server/maintenance-actions.test.js && node ../../.tmp-tests/web/dev-server/settings-page.test.js && node ../../.tmp-tests/web/dev-server/transactions-page.test.js && node ../../.tmp-tests/web/dev-server/payables-receivables-page.test.js && node ../../.tmp-tests/web/dev-server/cards-page.test.js",
+    "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../.tmp-tests/web/accessibility.test.js && node ../../.tmp-tests/web/dashboard/availability.test.js && node ../../.tmp-tests/web/pwa/manifest.test.js && node ../../.tmp-tests/web/inbox/share-target.test.js && node ../../.tmp-tests/web/dev-server.test.js && node ../../.tmp-tests/web/dev-server/maintenance-actions.test.js && node ../../.tmp-tests/web/dev-server/settings-page.test.js && node ../../.tmp-tests/web/dev-server/transactions-statement.test.js && node ../../.tmp-tests/web/dev-server/transactions-page.test.js && node ../../.tmp-tests/web/dev-server/payables-receivables-page.test.js && node ../../.tmp-tests/web/dev-server/cards-page.test.js",
     "build": "tsc --noEmit"
   },
   "dependencies": {
