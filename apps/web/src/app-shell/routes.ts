@@ -29,7 +29,7 @@ export const solverFinShellRoutes = [
   {
     id: "dashboard",
     path: "/dashboard",
-    label: "Resumo",
+    label: "Dashboard",
     description: "Acompanhe saldo, resultado do período e próximas pendências.",
     navigationGroup: "main",
     requiresAuthentication: true,
@@ -39,7 +39,7 @@ export const solverFinShellRoutes = [
   {
     id: "transactions",
     path: "/lancamentos",
-    label: "Extrato",
+    label: "Extrato da conta",
     description: "Acompanhe saldos, filtros e movimentações por conta.",
     navigationGroup: "main",
     requiresAuthentication: true,
@@ -59,7 +59,7 @@ export const solverFinShellRoutes = [
   {
     id: "cards",
     path: "/cartoes",
-    label: "Cartões",
+    label: "Cartões de Crédito",
     description: "Acompanhe compras, faturas, fechamento e pagamento de cartão.",
     navigationGroup: "main",
     requiresAuthentication: true,
