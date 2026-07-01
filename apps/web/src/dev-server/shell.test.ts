@@ -1,7 +1,24 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { renderAuthenticatedShellDocument } from "./shell.js";
+import { renderAuthenticatedShellDocument, renderShellDocument } from "./shell.js";
+
+describe("SSR shell document", () => {
+  it("renders a shared HTML document with escaped title and provided body", () => {
+    const html = renderShellDocument({
+      body: "<main>Conteúdo público</main>",
+      styles: ".test-marker { color: #0f3d4c; }",
+      title: "Entrar & revisar",
+    });
+
+    assert.match(html, /<!doctype html>/);
+    assert.match(html, /<html lang="pt-BR">/);
+    assert.match(html, /<link rel="manifest" href="\/manifest\.webmanifest" \/>/);
+    assert.match(html, /<title>Entrar &amp; revisar<\/title>/);
+    assert.match(html, /<style>\.test-marker \{ color: #0f3d4c; \}<\/style>/);
+    assert.match(html, /<body><main>Conteúdo público<\/main><\/body>/);
+  });
+});
 
 describe("authenticated SSR shell", () => {
   it("renders the shared shell with active navigation and logout handling", () => {
