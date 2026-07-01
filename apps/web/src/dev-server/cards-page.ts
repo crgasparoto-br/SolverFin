@@ -681,6 +681,21 @@ function clientScript(): string {
         });
       });
 
+      document.addEventListener("click", (event) => {
+        document.querySelectorAll(".actions[open]").forEach((details) => {
+          if (!details.contains(event.target)) details.removeAttribute("open");
+        });
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        document.querySelectorAll(".actions[open]").forEach((details) => {
+          const summary = details.querySelector("summary");
+          details.removeAttribute("open");
+          if (summary) summary.focus();
+        });
+      });
+
       function openModal(name) {
         document.querySelector('dialog[data-modal="' + name + '"]').showModal();
       }
