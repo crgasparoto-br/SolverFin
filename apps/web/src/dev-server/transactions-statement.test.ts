@@ -98,8 +98,14 @@ function statementTransactionFilterKeepsAccountOrAccountOnlyRecords(): void {
   );
   assert.equal(
     isAccountStatementTransaction({
-      ...transaction("card-expense", "expense", "posted", 1000, "2026-06-01"),
-      accountId: undefined,
+      id: "card-expense",
+      description: "card-expense",
+      kind: "expense",
+      status: "posted",
+      amountMinor: 1000,
+      occurredOn: "2026-06-01",
+      plannedOn: "2026-06-01",
+      effectiveOn: "2026-06-01",
       cardId: "card-1",
       invoiceId: "invoice-1",
     }),
@@ -110,14 +116,10 @@ function statementTransactionFilterKeepsAccountOrAccountOnlyRecords(): void {
 function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
   const transactions: TransactionRecord[] = [
     transaction("previous-effective-income", "income", "posted", 100000, "2026-05-20"),
-    transaction("previous-planned-expense", "expense", "planned", 999999, "2026-05-25", {
-      effectiveOn: undefined,
-    }),
+    pendingTransaction("previous-planned-expense", "expense", 999999, "2026-05-25"),
     transaction("previous-voided-income", "income", "voided", 777777, "2026-05-26"),
     transaction("current-effective-expense", "expense", "posted", 25000, "2026-06-02"),
-    transaction("current-pending-income", "income", "planned", 10000, "2026-06-10", {
-      effectiveOn: undefined,
-    }),
+    pendingTransaction("current-pending-income", "income", 10000, "2026-06-10"),
     transaction("current-transfer-in", "transfer", "reconciled", 40000, "2026-06-11", {
       accountId: "account-2",
       destinationAccountId: "account-1",
@@ -191,5 +193,23 @@ function transaction(
     effectiveOn: date,
     accountId: "account-1",
     ...overrides,
+  };
+}
+
+function pendingTransaction(
+  id: string,
+  kind: string,
+  amountMinor: number,
+  date: string,
+): TransactionRecord {
+  return {
+    id,
+    description: id,
+    kind,
+    status: "planned",
+    amountMinor,
+    occurredOn: date,
+    plannedOn: date,
+    accountId: "account-1",
   };
 }
