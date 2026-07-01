@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import {
+  addRecurrenceFrequency,
   createTransaction as createTransactionDomain,
   getTransaction as getTransactionDomain,
   listTransactions as listTransactionsDomain,
@@ -11,6 +12,7 @@ import {
   type CreateTransactionPayload,
   type EntityId,
   type ListTransactionsFilters,
+  type RecurrenceFrequency,
   type Transaction,
   type TransactionKind,
   type TransactionSource,
@@ -477,7 +479,7 @@ async function updateFuturePlannedTransactions(
 
   for (const [index, row] of futureRows.entries()) {
     const plannedOn = shouldRecalculateDates
-      ? addFrequency(updatedTransaction.plannedOn, schedule.frequency, index + 1, schedule.interval)
+      ? addRecurrenceFrequency(updatedTransaction.plannedOn, schedule.frequency, index + 1, schedule.interval)
       : toDateOnly(row.plannedOn);
 
     await executeQuery(
@@ -522,7 +524,7 @@ async function readRecurrenceSchedule(
   executeQuery: typeof query,
   context: TenantContext,
   recurrenceId: EntityId,
-): Promise<{ frequency: string; interval: number }> {
+): Promise<{ frequency: RecurrenceFrequency; interval: number }> {
   const rows = await executeQuery<RecurrenceScheduleRow>(
     `select "frequency", "interval" from "Recurrence"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
@@ -531,7 +533,7 @@ async function readRecurrenceSchedule(
   const row = rows[0];
 
   return {
-    frequency: row?.frequency.toLowerCase() ?? "monthly",
+    frequency: normalizeRecurrenceFrequency(row?.frequency),
     interval: row?.interval ?? 1,
   };
 }
@@ -541,7 +543,7 @@ async function updateRecurrenceRuleFromTransaction(
   context: TenantContext,
   currentTransaction: Transaction,
   updatedTransaction: TransactionWithNote,
-  schedule: { frequency: string; interval: number },
+  schedule: { frequency: RecurrenceFrequency; interval: number },
 ): Promise<void> {
   if (!currentTransaction.recurrenceId) {
     return;
@@ -554,7 +556,7 @@ async function updateRecurrenceRuleFromTransaction(
   );
   const startOn =
     updatedTransaction.plannedOn !== currentTransaction.plannedOn
-      ? addFrequency(
+      ? addRecurrenceFrequency(
           updatedTransaction.plannedOn,
           schedule.frequency,
           -(Math.max(1, sequenceNumber ?? 1) - 1),
@@ -623,59 +625,21 @@ async function syncInstallmentById(
   );
 }
 
-function addFrequency(startOn: string, frequency: string, offset: number, interval = 1): string {
-  const steps = offset * interval;
+function normalizeRecurrenceFrequency(frequency: string | undefined): RecurrenceFrequency {
+  const normalized = frequency?.toLowerCase();
 
-  if (frequency === "daily") {
-    return addDays(startOn, steps);
+  if (
+    normalized === "daily" ||
+    normalized === "weekly" ||
+    normalized === "monthly" ||
+    normalized === "yearly"
+  ) {
+    return normalized;
   }
 
-  if (frequency === "weekly") {
-    return addDays(startOn, steps * 7);
-  }
-
-  if (frequency === "yearly") {
-    return addMonths(startOn, steps * 12);
-  }
-
-  return addMonths(startOn, steps);
-}
-
-function addDays(startOn: string, days: number): string {
-  const date = parseDate(startOn);
-  date.setUTCDate(date.getUTCDate() + days);
-
-  return toIsoDate(date);
-}
-
-function addMonths(startOn: string, months: number): string {
-  const [year, month, day] = startOn.split("-").map(Number) as [number, number, number];
-  const targetMonthIndex = month - 1 + months;
-  const targetYear = year + Math.floor(targetMonthIndex / 12);
-  const normalizedMonthIndex = ((targetMonthIndex % 12) + 12) % 12;
-  const targetMonth = normalizedMonthIndex + 1;
-  const lastDay = getLastDayOfMonth(targetYear, targetMonth);
-  const targetDay = isLastDayOfMonth(year, month, day) ? lastDay : Math.min(day, lastDay);
-
-  return toIsoDate(new Date(Date.UTC(targetYear, normalizedMonthIndex, targetDay)));
-}
-
-function parseDate(value: string): Date {
-  return new Date(`${value}T00:00:00.000Z`);
-}
-
-function toIsoDate(value: Date): string {
-  return value.toISOString().slice(0, 10);
+  return "monthly";
 }
 
 function toDateOnly(value: Date): string {
   return value.toISOString().slice(0, 10);
-}
-
-function isLastDayOfMonth(year: number, month: number, day: number): boolean {
-  return day === getLastDayOfMonth(year, month);
-}
-
-function getLastDayOfMonth(year: number, month: number): number {
-  return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }

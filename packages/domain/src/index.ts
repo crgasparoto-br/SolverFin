@@ -6,6 +6,7 @@ export * from "./category-learning.js";
 export * from "./ai-review-queue.js";
 export * from "./transactions.js";
 export * from "./recurrences.js";
+export * from "./recurrence-calendar.js";
 export * from "./cards.js";
 export * from "./budgets.js";
 export * from "./payables-receivables.js";
