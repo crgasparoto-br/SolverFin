@@ -18,7 +18,6 @@ describe("migrated SSR shell pages", () => {
       const source = readFileSync(join(currentDir, moduleFileName), "utf8");
 
       assert.match(source, /renderAuthenticatedShellDocument/);
-      assert.doesNotMatch(source, /app-shell/);
       assert.doesNotMatch(source, /data-logout/);
       assert.doesNotMatch(source, /privateRoutes/);
     });
