@@ -52,7 +52,9 @@ function toWebInstitution(institution: {
     label: institution.label,
     shortLabel: institution.fallbackLabel,
     isKnown: institution.isKnown ?? true,
-    ...(institution.logoAssetPath !== undefined ? { logoAssetPath: institution.logoAssetPath } : {}),
+    ...(institution.logoAssetPath !== undefined
+      ? { logoAssetPath: institution.logoAssetPath }
+      : {}),
   };
 }
 
