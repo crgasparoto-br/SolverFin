@@ -30,6 +30,7 @@ const now = "2026-06-15T10:00:00.000Z";
 testCreateIncomeTransaction();
 testCreateExpenseTransaction();
 testCreateTransferTransaction();
+testPlannedTransactionsClearEffectiveDate();
 testValidations();
 testListAndUpdateTransactions();
 testTenantIsolation();
@@ -117,6 +118,52 @@ function testCreateTransferTransaction(): void {
     result.movements[1]?.accountId,
     destinationAccount.id,
     "transfer destination account",
+  );
+}
+
+function testPlannedTransactionsClearEffectiveDate(): void {
+  const account = createAccountFixture(tenantA, "account-planned", "active");
+  const created = createTransaction({
+    id: "transaction-planned-income",
+    context: tenantA,
+    now,
+    account,
+    payload: {
+      kind: "income",
+      amountMinor: 120000,
+      occurredOn: "2026-08-05",
+      plannedOn: "2026-08-10",
+      effectiveOn: "2026-08-05",
+      accountId: account.id,
+      status: "planned",
+    },
+  });
+  const posted = createTransactionFixture(tenantA, "transaction-posted-expense", "expense", account.id);
+  const movedBackToPlanned = updateTransaction({
+    context: tenantA,
+    transaction: posted,
+    now: "2026-06-15T11:00:00.000Z",
+    account,
+    payload: {
+      status: "planned",
+      plannedOn: "2026-08-15",
+      effectiveOn: "2026-08-15",
+    },
+  });
+
+  assertEqual(created.transaction.status, "planned", "created planned status");
+  assertEqual(created.transaction.effectiveOn, undefined, "created planned effective date");
+  assertEqual(created.transaction.occurredOn, "2026-08-10", "created planned occurred date");
+  assertEqual(movedBackToPlanned.transaction.status, "planned", "updated planned status");
+  assertEqual(
+    movedBackToPlanned.transaction.effectiveOn,
+    undefined,
+    "updated planned effective date",
+  );
+  assertEqual(
+    movedBackToPlanned.transaction.occurredOn,
+    "2026-08-15",
+    "updated planned occurred date",
   );
 }
 
