@@ -53,6 +53,24 @@ npm run db:setup
 
 Esse reset remove dados locais de desenvolvimento.
 
+### Acesso ao banco via web (Adminer)
+
+O `docker-compose.yml` inclui um servico `adminer` para inspecionar o banco local pelo navegador, sem instalar cliente Postgres.
+
+```bash
+docker compose up -d adminer
+```
+
+Acesse `http://localhost:8082` (porta configuravel via `ADMINER_PORT` no `.env`) e conecte com:
+
+- Sistema: `PostgreSQL`
+- Servidor: `postgres`
+- Usuario: `solverfin`
+- Senha: `solverfin_dev_password`
+- Base de dados: `solverfin`
+
+Se estiver em uma maquina remota (ex.: dev via SSH/VSCode Remote), use o port forwarding do VSCode (painel "Ports" -> Forward a Port -> `8082`) ou um tunel SSH manual (`ssh -L 8082:localhost:8082 usuario@host`) para acessar a partir do navegador local.
+
 ## Validacoes
 
 Comandos que nao exigem banco em execucao:
