@@ -2,7 +2,7 @@ import { financialInstitutionCatalog } from "@solverfin/domain";
 
 import { requireMasterUser } from "./admin-auth.js";
 import { type AuthRequestHeaders } from "./auth.js";
-import { auth, requireAuthenticatedRequest } from "./auth-service.js";
+import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 
@@ -118,13 +118,4 @@ function json(statusCode: number, body: unknown): ApiResponse {
     headers: { "content-type": "application/json; charset=utf-8" },
     body,
   };
-}
-
-export function rememberAdminTestSession(sessionId: string, userId: string): void {
-  auth.rememberSession({
-    id: sessionId,
-    userId,
-    createdAt: new Date("2026-07-02T00:00:00.000Z"),
-    expiresAt: new Date("2026-07-02T01:00:00.000Z"),
-  });
 }
