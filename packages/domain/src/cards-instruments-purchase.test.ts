@@ -173,7 +173,11 @@ function runRejectsArchivedInstrumentPurchase(): void {
     now,
   });
 
-  assertEqual(archivedResult.card.status, "active", "card should remain active with another instrument");
+  assertEqual(
+    archivedResult.card.status,
+    "active",
+    "card should remain active with another instrument",
+  );
   assertCardError(
     () =>
       registerCardPurchase({
