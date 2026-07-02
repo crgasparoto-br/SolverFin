@@ -8,6 +8,7 @@ export * from "./transactions.js";
 export * from "./recurrences.js";
 export * from "./recurrence-calendar.js";
 export * from "./cards.js";
+export * from "./card-instruments.js";
 export * from "./budgets.js";
 export * from "./payables-receivables.js";
 export * from "./payables-receivables-transition.js";
@@ -44,6 +45,7 @@ export type AuditAction =
 export type AuditEntityKind =
   | "account"
   | "card"
+  | "card_instrument"
   | "category"
   | "transaction"
   | "recurrence"
@@ -65,6 +67,9 @@ export type AccountKind = "checking" | "savings" | "cash" | "investment" | "othe
 export type AccountStatus = "active" | "archived";
 
 export type CardStatus = "active" | "archived" | "blocked";
+export type CardInstrumentType = "physical" | "virtual";
+export type CardInstrumentHolder = "primary" | "additional";
+export type CardInstrumentStatus = "active" | "archived";
 
 export type CategoryKind = "income" | "expense" | "transfer";
 export type CategoryStatus = "active" | "archived";
@@ -159,6 +164,17 @@ export interface Card extends Traceable, TenantScoped {
   paymentAccountId?: EntityId;
 }
 
+export interface CardInstrument extends Traceable, TenantScoped {
+  cardId: EntityId;
+  type: CardInstrumentType;
+  holder: CardInstrumentHolder;
+  status: CardInstrumentStatus;
+  isDefault: boolean;
+  name?: string;
+  maskedIdentifier?: string;
+  creditLimitMinor?: number;
+}
+
 export interface Category extends Traceable, TenantScoped {
   name: string;
   kind: CategoryKind;
@@ -180,6 +196,7 @@ export interface Transaction extends Traceable, TenantScoped {
   destinationAccountId?: EntityId;
   categoryId?: EntityId;
   cardId?: EntityId;
+  cardInstrumentId?: EntityId;
   invoiceId?: EntityId;
   recurrenceId?: EntityId;
   installmentId?: EntityId;
@@ -202,6 +219,7 @@ export interface Recurrence extends Traceable, TenantScoped {
   description: string;
   accountId?: EntityId;
   cardId?: EntityId;
+  cardInstrumentId?: EntityId;
   categoryId?: EntityId;
 }
 
@@ -215,6 +233,7 @@ export interface Installment extends Traceable, TenantScoped {
   transactionId?: EntityId;
   recurrenceId?: EntityId;
   cardId?: EntityId;
+  cardInstrumentId?: EntityId;
 }
 
 export interface Invoice extends Traceable, TenantScoped {
@@ -312,6 +331,7 @@ const AUDITED_TRANSACTION_FIELDS = [
   "destinationAccountId",
   "categoryId",
   "cardId",
+  "cardInstrumentId",
   "invoiceId",
   "recurrenceId",
   "installmentId",
