@@ -7,6 +7,7 @@ import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.j
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js";
 import { handleCardAdditionalLinksApiRequest } from "./card-additional-links-router.js";
+import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
@@ -115,6 +116,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (payablesReceivablesResult) {
       writeResponse(response, payablesReceivablesResult);
+
+      return;
+    }
+
+    const creditCardAccountsResult = await handleCreditCardAccountsApiRequest(apiRequest);
+
+    if (creditCardAccountsResult) {
+      writeResponse(response, creditCardAccountsResult);
 
       return;
     }
