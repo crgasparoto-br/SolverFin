@@ -235,12 +235,11 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
   );
   const kind = validateTransactionKind(input.payload.kind ?? currentTransaction.kind);
   const nextStatus = input.payload.status ?? currentTransaction.status;
-  const nextEffectiveOn =
-    input.payload.effectiveOn !== undefined
+  const nextEffectiveOn = shouldClearEffectiveOn(nextStatus)
+    ? null
+    : input.payload.effectiveOn !== undefined
       ? input.payload.effectiveOn
-      : nextStatus === "planned" || nextStatus === "suggested"
-        ? null
-        : currentTransaction.effectiveOn;
+      : currentTransaction.effectiveOn;
   const payload: CreateTransactionPayload = {
     kind,
     status: nextStatus,
@@ -604,7 +603,7 @@ function resolveEffectiveOn(
   effectiveOn: ISODate | null | undefined,
   fallbackOccurredOn: ISODate,
 ): ISODate | undefined {
-  if (effectiveOn === null) {
+  if (shouldClearEffectiveOn(status) || effectiveOn === null) {
     return undefined;
   }
 
@@ -612,11 +611,11 @@ function resolveEffectiveOn(
     return validateTransactionDate(effectiveOn);
   }
 
-  if (status === "planned" || status === "suggested") {
-    return undefined;
-  }
-
   return validateTransactionDate(fallbackOccurredOn);
+}
+
+function shouldClearEffectiveOn(status: TransactionStatus): boolean {
+  return status === "planned" || status === "suggested";
 }
 
 function normalizeDescription(description = ""): string {

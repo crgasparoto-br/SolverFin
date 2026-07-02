@@ -5,6 +5,7 @@ import { renderTransactionsPage } from "./transactions-page.js";
 const originalFetch = globalThis.fetch;
 
 await transactionsPageShowsRecurringTransactionInsideMovimentacoes();
+await transactionsPageShowsPlannedIncomeAndExpenseCommitments();
 await transactionsPageHasNoSeparateRecurrencesBlock();
 await transactionsPageUsesPreviousMonthEndingBalance();
 
@@ -102,6 +103,114 @@ async function transactionsPageShowsRecurringTransactionInsideMovimentacoes(): P
     recurrencesIndex >= 0 && transactionsIndex >= 0 && recurrencesIndex < transactionsIndex,
     "recurrences must be fetched before transactions so catch-up materialization shows up in the same render",
   );
+}
+
+async function transactionsPageShowsPlannedIncomeAndExpenseCommitments(): Promise<void> {
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = new URL(String(input), "http://solverfin.test");
+
+    if (url.pathname === "/api/accounts") {
+      return jsonResponse({
+        accounts: [
+          {
+            id: "account-1",
+            name: "Conta principal",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 100000,
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/categories") {
+      return jsonResponse({
+        categories: [
+          { id: "category-income", name: "Clientes", kind: "income", status: "active" },
+          { id: "category-expense", name: "Moradia", kind: "expense", status: "active" },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/recurrences") {
+      return jsonResponse({ recurrences: [] });
+    }
+
+    if (url.pathname === "/api/transactions") {
+      assert.equal(url.searchParams.get("accountId"), "account-1");
+      assert.equal(url.searchParams.get("status"), "all");
+      assert.equal(url.searchParams.get("plannedTo"), "2026-08-31");
+
+      return jsonResponse({
+        transactions: [
+          {
+            id: "planned-expense",
+            description: "Aluguel futuro",
+            kind: "expense",
+            status: "planned",
+            amountMinor: 120000,
+            occurredOn: "2026-08-10",
+            plannedOn: "2026-08-10",
+            accountId: "account-1",
+            categoryId: "category-expense",
+          },
+          {
+            id: "planned-income",
+            description: "Cliente futuro",
+            kind: "income",
+            status: "planned",
+            amountMinor: 350000,
+            occurredOn: "2026-08-18",
+            plannedOn: "2026-08-18",
+            accountId: "account-1",
+            categoryId: "category-income",
+          },
+          {
+            id: "posted-expense",
+            description: "Mercado efetivado",
+            kind: "expense",
+            status: "posted",
+            amountMinor: 40000,
+            occurredOn: "2026-08-05",
+            plannedOn: "2026-08-05",
+            effectiveOn: "2026-08-05",
+            accountId: "account-1",
+            categoryId: "category-expense",
+          },
+          {
+            id: "reconciled-income",
+            description: "Salário conciliado",
+            kind: "income",
+            status: "reconciled",
+            amountMinor: 500000,
+            occurredOn: "2026-08-07",
+            plannedOn: "2026-08-07",
+            effectiveOn: "2026-08-07",
+            accountId: "account-1",
+            categoryId: "category-income",
+          },
+        ],
+      });
+    }
+
+    return jsonResponse({});
+  };
+
+  const html = await renderTransactionsPage(
+    "session-token",
+    new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-08"),
+  );
+
+  assert.match(html, /Aluguel futuro/);
+  assert.match(html, /Cliente futuro/);
+  assert.match(html, /Mercado efetivado/);
+  assert.match(html, /Salário conciliado/);
+  assert.match(html, /Previsto/);
+  assert.match(html, /Efetivado/);
+  assert.match(html, /Conciliado/);
+  assert.match(html, /Pendentes/);
+  assert.match(html, /Marcar como conciliado/);
+  assert.doesNotMatch(html, /\/pagar-receber/);
 }
 
 async function transactionsPageHasNoSeparateRecurrencesBlock(): Promise<void> {
