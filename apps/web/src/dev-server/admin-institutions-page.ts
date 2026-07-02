@@ -1,6 +1,6 @@
 import { apiGet } from "./api.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
-import { sharedShellStyles } from "./shared-styles.js";
+import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 
 interface AdminInstitutionView {
   key: string;
@@ -111,7 +111,7 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
         <div class="section-heading">
           <div>
             <h2>Catálogo global</h2>
-            <p class="muted">Código bancário oficial, chave interna, status e situação visual de cada instituição.</p>
+            <p class="muted">Linhas compactas com código, status e logo. Use o quadrado do logo para enviar ou substituir a imagem.</p>
           </div>
           <span>${pagination?.total ?? institutions.length} itens</span>
         </div>
@@ -119,7 +119,9 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
           ${institutions.map((institution) => renderInstitutionRow(institution, query)).join("") || renderEmptyState()}
         </div>
       </section>
+      ${institutions.map((institution) => renderLogoUploadDialog(institution, query)).join("")}
       ${adminRefreshScript()}
+      ${dialogScript()}
       ${adminLogoUploadScript()}
       ${adminStatusScript()}
     `,
@@ -159,38 +161,67 @@ function renderSummaryCard(title: string, value: number, subtitle: string): stri
 function renderInstitutionRow(institution: AdminInstitutionView, query: string): string {
   const statusAction = institution.status === "active" ? "INACTIVE" : "ACTIVE";
   const statusLabel = institution.status === "active" ? "Desativar" : "Ativar";
+  const dialogId = logoDialogId(institution);
+  const logoActionLabel = institution.logoAssetPath
+    ? `Substituir logomarca de ${institution.label}`
+    : `Enviar logomarca de ${institution.label}`;
 
   return `
     <article class="admin-institution-row">
-      <div class="institution-logo-preview">
+      <button type="button" class="institution-logo-trigger" data-open-dialog="${dialogId}" aria-label="${escapeHtml(logoActionLabel)}" title="${escapeHtml(logoActionLabel)}">
         ${renderLogoPreview(institution)}
-      </div>
+        <span class="logo-upload-hint" aria-hidden="true">Upload</span>
+      </button>
       <div class="institution-main">
-        <strong>${escapeHtml(institution.label)}</strong>
+        <div class="institution-title-line">
+          <strong>${escapeHtml(institution.label)}</strong>
+          <span class="status-pill ${institution.status === "active" ? "status-pill-active" : ""}">${escapeHtml(formatStatus(institution.status))}</span>
+        </div>
         <span>${escapeHtml(institution.description)}</span>
         <code>chave interna: ${escapeHtml(institution.key)}</code>
       </div>
       <dl class="institution-meta">
-        <div><dt>Status</dt><dd>${escapeHtml(formatStatus(institution.status))}</dd></div>
         <div><dt>Código</dt><dd>${escapeHtml(institution.bankCode ?? "não informado")}</dd></div>
-        <div><dt>Logo</dt><dd>${escapeHtml(formatLogoStatus(institution.logoStatus))}</dd></div>
         <div><dt>ISPB</dt><dd>${escapeHtml(institution.ispb ?? "não informado")}</dd></div>
         <div><dt>Tipo</dt><dd>${escapeHtml(formatInstitutionType(institution.institutionType))}</dd></div>
+        <div><dt>Logo</dt><dd>${escapeHtml(formatLogoStatus(institution.logoStatus))}</dd></div>
         <div><dt>Identificador técnico</dt><dd>${escapeHtml(institution.financialInstitutionCode)}</dd></div>
       </dl>
       <div class="institution-actions">
         <form class="status-form" data-status-form data-api-path="/api/admin/institutions/${escapeHtml(encodeURIComponent(institution.key))}/status${escapeHtml(query)}" data-next-status="${statusAction}">
           <button type="submit" class="secondary-button">${statusLabel}</button>
         </form>
-        <form class="logo-upload-form" data-logo-upload-form data-api-path="/api/admin/institutions/${escapeHtml(encodeURIComponent(institution.key))}/logo${escapeHtml(query)}">
-          <label class="logo-upload-control">Arquivo
-            <input name="logo" type="file" accept="image/png,image/jpeg,image/webp" required />
-          </label>
-          <button type="submit" class="secondary-button">${institution.logoAssetPath ? "Substituir logomarca" : "Enviar logomarca"}</button>
-          <p class="form-status muted" data-logo-upload-status aria-live="polite">PNG, JPG ou WebP até o limite configurado.</p>
-        </form>
       </div>
     </article>
+  `;
+}
+
+function renderLogoUploadDialog(institution: AdminInstitutionView, query: string): string {
+  const dialogId = logoDialogId(institution);
+
+  return `
+    <dialog class="master-dialog logo-upload-dialog" id="${dialogId}" aria-labelledby="${dialogId}-title">
+      <form method="dialog" class="dialog-close-form">
+        <button type="submit" class="secondary-button">Fechar</button>
+      </form>
+      <div class="logo-dialog-layout">
+        <div class="logo-dialog-preview" aria-hidden="true">
+          ${renderLogoPreview(institution)}
+        </div>
+        <div class="dialog-heading">
+          <p class="eyebrow">Logomarca</p>
+          <h2 id="${dialogId}-title">${escapeHtml(institution.label)}</h2>
+          <p class="muted">Envie PNG, JPG ou WebP para substituir a imagem usada no catálogo.</p>
+        </div>
+      </div>
+      <form class="logo-upload-form" data-logo-upload-form data-api-path="/api/admin/institutions/${escapeHtml(encodeURIComponent(institution.key))}/logo${escapeHtml(query)}">
+        <label class="logo-upload-control">Arquivo da logomarca
+          <input name="logo" type="file" accept="image/png,image/jpeg,image/webp" required />
+        </label>
+        <button type="submit">${institution.logoAssetPath ? "Substituir logomarca" : "Enviar logomarca"}</button>
+        <p class="form-status muted" data-logo-upload-status aria-live="polite">A imagem será aplicada após o envio.</p>
+      </form>
+    </dialog>
   `;
 }
 
@@ -213,6 +244,10 @@ function renderSelectOptions(options: Array<[string, string]>, selected: string)
 
 function renderEmptyState(): string {
   return `<div class="empty-state"><strong>Nenhuma instituição encontrada.</strong><p class="muted">Ajuste os filtros ou use Limpar filtros para voltar à lista completa.</p></div>`;
+}
+
+function logoDialogId(institution: AdminInstitutionView): string {
+  return `logo-upload-${encodeURIComponent(institution.key).replace(/%/g, "-").replace(/[^A-Za-z0-9_-]/g, "-")}`;
 }
 
 function formatStatus(status: string): string {
@@ -367,39 +402,55 @@ function adminStatusScript(): string {
 function adminPageStyles(): string {
   return `
     ${sharedShellStyles()}
-    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; }
+    ${sharedDialogStyles()}
+    main { display: grid; gap: 18px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; }
     .admin-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; }
     .admin-heading > div { display: grid; gap: 6px; max-width: 760px; }
-    .summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 8px; padding: 18px; }
-    .metric-card span { color: var(--muted); font-size: 0.86rem; font-weight: 800; text-transform: uppercase; }
-    .metric-card strong { color: var(--text); font-size: 1.8rem; }
+    .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 14px 16px; }
+    .metric-card span { color: var(--muted); font-size: 0.78rem; font-weight: 800; text-transform: uppercase; }
+    .metric-card strong { color: var(--text); font-size: 1.55rem; line-height: 1; }
     .metric-card p { color: var(--muted); margin: 0; }
     .filters-grid { display: grid; gap: 12px; grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(150px, 1fr)); }
     .filters-grid .wide { grid-column: span 2; }
     .filter-actions { align-items: end; display: flex; gap: 10px; }
-    .admin-actions-panel { align-items: start; display: flex; justify-content: space-between; }
-    .admin-institution-list { display: grid; gap: 12px; }
-    .admin-institution-row { align-items: center; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 14px; grid-template-columns: 64px minmax(240px, 1fr) minmax(320px, 0.9fr) minmax(260px, auto); padding: 14px; }
-    .institution-logo-preview { align-items: center; background: var(--primary-soft); border-radius: 8px; color: var(--primary); display: flex; font-weight: 900; height: 52px; justify-content: center; overflow: hidden; width: 52px; }
-    .institution-logo-preview img { height: 44px; max-width: 44px; object-fit: contain; }
-    .institution-main { display: grid; gap: 4px; }
-    .institution-main span { color: var(--muted); }
-    .institution-main code { background: var(--background); border-radius: 999px; color: var(--muted); font-size: 0.78rem; justify-self: start; padding: 4px 8px; }
-    .institution-meta { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
-    .institution-meta div { display: grid; gap: 2px; }
-    .institution-meta dt { color: var(--muted); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
-    .institution-meta dd { margin: 0; }
-    .institution-actions { display: grid; gap: 10px; }
+    .admin-actions-panel { align-items: center; display: flex; justify-content: space-between; }
+    .list-panel { gap: 12px; }
+    .section-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; }
+    .section-heading > div { display: grid; gap: 4px; }
+    .section-heading > span { color: var(--muted); font-size: 0.88rem; font-weight: 800; white-space: nowrap; }
+    .admin-institution-list { display: grid; gap: 8px; }
+    .admin-institution-row { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 12px; grid-template-columns: 58px minmax(240px, 1fr) minmax(380px, 1fr) minmax(96px, auto); min-height: 74px; padding: 10px 12px; }
+    .institution-logo-trigger { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); display: flex; font-weight: 900; justify-content: center; min-height: 54px; overflow: hidden; padding: 0; position: relative; width: 54px; }
+    .institution-logo-trigger:hover, .institution-logo-trigger:focus-visible { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,.18); }
+    .institution-logo-trigger img { height: 42px; max-width: 42px; object-fit: contain; }
+    .logo-upload-hint { align-items: center; background: rgba(15,61,76,.86); bottom: 0; color: white; display: flex; font-size: 0.62rem; font-weight: 800; height: 18px; justify-content: center; left: 0; opacity: 0; position: absolute; right: 0; transition: opacity .16s ease; }
+    .institution-logo-trigger:hover .logo-upload-hint, .institution-logo-trigger:focus-visible .logo-upload-hint { opacity: 1; }
+    .institution-main { display: grid; gap: 4px; min-width: 0; }
+    .institution-title-line { align-items: center; display: flex; gap: 8px; min-width: 0; }
+    .institution-title-line strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .institution-main span:not(.status-pill) { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .institution-main code { background: var(--bg); border-radius: 999px; color: var(--muted); font-size: 0.76rem; justify-self: start; max-width: 100%; overflow: hidden; padding: 3px 8px; text-overflow: ellipsis; white-space: nowrap; }
+    .status-pill { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: 999px; color: var(--warning); flex: 0 0 auto; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; }
+    .status-pill-active { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); }
+    .institution-meta { align-items: center; display: grid; gap: 10px; grid-template-columns: .65fr .95fr .9fr .9fr 1.2fr; margin: 0; min-width: 0; }
+    .institution-meta div { display: grid; gap: 2px; min-width: 0; }
+    .institution-meta dt { color: var(--muted); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; }
+    .institution-meta dd { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .institution-actions { display: flex; justify-content: flex-end; }
     .status-form { display: flex; justify-content: flex-start; }
-    .logo-upload-form { display: grid; gap: 8px; }
-    .logo-upload-control { color: var(--muted); display: grid; font-size: 0.82rem; gap: 4px; }
-    .logo-upload-control input { max-width: 240px; }
+    .status-form button { min-width: 92px; }
+    .logo-upload-dialog { max-width: 560px; }
+    .logo-dialog-layout { align-items: center; display: grid; gap: 16px; grid-template-columns: 84px 1fr; margin-bottom: 16px; }
+    .logo-dialog-preview { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); display: flex; font-size: 1.1rem; font-weight: 900; height: 84px; justify-content: center; overflow: hidden; width: 84px; }
+    .logo-dialog-preview img { height: 68px; max-width: 68px; object-fit: contain; }
+    .logo-upload-form { display: grid; gap: 12px; }
+    .logo-upload-control { color: var(--text); display: grid; font-size: 0.9rem; gap: 6px; }
     .admin-denied { max-width: 760px; }
     .form-status { margin: 0; }
-    @media (max-width: 1240px) { .admin-institution-row { grid-template-columns: 52px 1fr; } .institution-meta, .institution-actions { grid-column: 1 / -1; } }
-    @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { .admin-heading, .admin-actions-panel, .filters-grid { display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .summary-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1240px) { .admin-institution-row { grid-template-columns: 58px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 2 / -1; } .institution-actions { justify-content: flex-start; } }
+    @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) { main { padding: 18px 16px 28px; } .admin-heading, .admin-actions-panel, .section-heading, .filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .summary-grid { grid-template-columns: 1fr; } .admin-institution-row { align-items: start; grid-template-columns: 54px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: 1fr; } .logo-dialog-layout { grid-template-columns: 1fr; } }
   `;
 }
 
