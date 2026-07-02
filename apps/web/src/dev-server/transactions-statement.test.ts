@@ -134,7 +134,11 @@ function statementKeepsInvoicePaymentInAccountStatement(): void {
     new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-07"),
     [account],
   );
-  const rows = buildRows(filterStatementPeriodTransactions([payment], filters), account, 50000);
+  const rows = buildRows(
+    filterStatementPeriodTransactions([payment], filters),
+    account,
+    50000,
+  );
 
   assert.equal(isAccountStatementTransaction(payment), true);
   assert.deepEqual(
