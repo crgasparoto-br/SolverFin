@@ -1,10 +1,22 @@
-# Contas a pagar e a receber
+# API legada - Contas a pagar e a receber
 
-Este documento registra o contrato de dominio do MVP para contas a pagar e a receber.
+Este documento registra o contrato legado de dominio/API para contas a pagar e a receber.
 
-## Objetivo
+## Status
 
-Permitir controlar vencimentos simples, marcar uma conta como paga ou recebida e gerar ou vincular um lancamento financeiro ao concluir a baixa.
+`PayableReceivable` permanece disponivel para compatibilidade, auditoria e preservacao de dados antigos, mas nao e mais a fonte operacional preferencial para novos compromissos financeiros.
+
+Fontes preferenciais apos a decisao da #284:
+
+- `Transaction` planejado/sugerido/postado para receitas, despesas e transferencias de conta corrente;
+- `Invoice` aberta/fechada/paga para compromissos de cartao;
+- recorrencias e parcelas materializadas no fluxo de origem.
+
+A API abaixo nao deve ser usada para reintroduzir uma tela dedicada ou uma nova jornada de criacao em `/pagar-receber`. A transicao tecnica completa do dominio fica para a #290.
+
+## Objetivo legado
+
+Permitir controlar vencimentos simples, marcar uma conta como paga ou recebida e gerar ou vincular um lancamento financeiro ao concluir a baixa, preservando registros criados antes da consolidacao em Extrato e Cartoes.
 
 ## Entidade
 
@@ -24,7 +36,7 @@ Campos principais:
 - `settlementTransactionId`: lancamento financeiro vinculado a baixa.
 - `cancelledAt`: data/hora de cancelamento.
 
-## Regras de criacao
+## Regras de criacao legada
 
 - Toda conta nasce como `pending`.
 - `payable` gera fluxo de despesa e aceita somente categoria de despesa.
@@ -33,6 +45,8 @@ Campos principais:
 - Valor deve ser inteiro positivo em unidade menor.
 - Descricao e vencimento sao obrigatorios.
 - Escopo de `organizationId` e `financialProfileId` sempre vem do contexto ativo; payload externo nao pode trocar tenant.
+
+Novas experiencias de usuario devem preferir criar `Transaction` ou `Invoice` conforme a origem do compromisso.
 
 ## Filtros
 
@@ -48,7 +62,7 @@ A listagem sempre aplica isolamento por tenant/contexto antes dos filtros.
 
 ## Baixa
 
-`settlePayableReceivable` suporta dois caminhos no MVP.
+`settlePayableReceivable` suporta dois caminhos no contrato legado.
 
 ### Gerar lancamento
 
@@ -74,6 +88,16 @@ Quando `existingTransactionId` e informado, o dominio valida que o lancamento ex
 
 A conta passa para `settled` e grava `settlementTransactionId` com o id vinculado.
 
+## Compatibilidade e dupla contagem
+
+Leitores que ainda precisem considerar `PayableReceivable` devem tratar o recurso como fallback legado. Para disponibilidade diaria, Dashboard, relatorios ou projecoes, ignore o registro legado quando houver:
+
+- `settlementTransactionId` vinculado a um `Transaction` valido;
+- `Transaction` equivalente por tipo, valor, moeda, data, conta e categoria;
+- `Invoice` representando compromisso de cartao correspondente.
+
+Essa regra preserva historico sem somar o mesmo compromisso duas vezes.
+
 ## Status e restricoes
 
 - `pending`: pode ser editada, cancelada ou baixada.
@@ -91,11 +115,13 @@ Na baixa com geracao ou vinculacao de lancamento, o resultado inclui:
 - auditoria da conta a pagar/receber;
 - auditoria do lancamento financeiro vinculado.
 
-## Fora de escopo do MVP
+## Fora de escopo deste contrato legado
 
+- Reintroduzir tela dedicada `/pagar-receber` como fluxo ativo.
+- Usar `PayableReceivable` como fonte primaria para novos compromissos.
 - Pagamento parcial.
 - Alertas automaticos de vencimento.
 - Emissao de boletos, notas fiscais ou documentos externos.
 - Integracao com Agenda Profissional.
 - Conciliacao bancaria automatica completa.
-- API HTTP e persistencia/repositories reais.
+- Remocao fisica ou migracao destrutiva de dados antigos sem plano explicito.
