@@ -855,9 +855,7 @@ function buildPurchaseInstallments(input: {
     currency: input.currency,
     transactionId: input.transactionId,
     cardId: input.cardId,
-    ...(input.cardInstrumentId !== undefined
-      ? { cardInstrumentId: input.cardInstrumentId }
-      : {}),
+    ...(input.cardInstrumentId !== undefined ? { cardInstrumentId: input.cardInstrumentId } : {}),
     createdAt: input.now,
     updatedAt: input.now,
     createdByUserId: input.context.userId,
