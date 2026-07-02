@@ -11,6 +11,7 @@ interface AdminInstitutionView {
   financialInstitutionCode: string;
   bankCode?: string;
   ispb?: string;
+  institutionType?: string;
   logoAssetPath?: string;
   logoObjectKey?: string;
   logoUploadedAt?: string;
@@ -26,10 +27,19 @@ interface AdminInstitutionsResponse {
     usingFallback: number;
     updatedAt: string | null;
   };
+  pagination?: {
+    page: number;
+    pageSize: number;
+    total: number;
+  };
 }
 
-export async function renderAdminInstitutionsPage(token: string): Promise<string> {
-  const result = await apiGet<AdminInstitutionsResponse>(token, "/api/admin/institutions");
+export async function renderAdminInstitutionsPage(token: string, url?: URL): Promise<string> {
+  const query = url ? buildAdminApiQuery(url.searchParams) : "";
+  const result = await apiGet<AdminInstitutionsResponse>(
+    token,
+    `/api/admin/institutions${query}`,
+  );
 
   if (!result.ok) {
     return renderAuthenticatedShellDocument({
@@ -49,7 +59,8 @@ export async function renderAdminInstitutionsPage(token: string): Promise<string
     });
   }
 
-  const { institutions, summary } = result.data;
+  const { institutions, summary, pagination } = result.data;
+  const params = url?.searchParams ?? new URLSearchParams();
 
   return renderAuthenticatedShellDocument({
     activePathname: "/admin/instituicoes",
@@ -63,18 +74,35 @@ export async function renderAdminInstitutionsPage(token: string): Promise<string
           <h1>Instituições financeiras</h1>
           <p class="muted">Catálogo compartilhado por todos os usuários para contas e cartões.</p>
         </div>
-        <button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh">Atualizar bancos</button>
+        <button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh${escapeHtml(query)}">Atualizar bancos</button>
       </section>
       <section class="summary-grid" aria-label="Resumo do catálogo">
-        ${renderSummaryCard("Instituições", summary.total, "itens no catálogo global")}
+        ${renderSummaryCard("Instituições", summary.total, "itens encontrados")}
         ${renderSummaryCard("Ativas", summary.active, "disponíveis para seleção")}
-        ${renderSummaryCard("Com logo", summary.withLogo, "assets locais ou aprovados")}
+        ${renderSummaryCard("Com logo", summary.withLogo, "assets locais ou R2")}
         ${renderSummaryCard("Fallback", summary.usingFallback, "usando iniciais acessíveis")}
+      </section>
+      <section class="panel filters-panel">
+        <form method="get" action="/admin/instituicoes" class="filters-grid">
+          <label class="wide">Busca geral<input name="q" type="search" value="${escapeHtml(params.get("q") ?? "")}" placeholder="Nome, chave interna, COMPE ou ISPB" /></label>
+          <label>Status<select name="status">${renderSelectOptions([["all", "Todos"], ["active", "Ativos"], ["inactive", "Inativos"]], params.get("status") ?? "all")}</select></label>
+          <label>Situação da logo<select name="logoStatus">${renderSelectOptions([["all", "Todas"], ["r2_asset", "Logo R2"], ["local_asset", "Logo local"], ["fallback", "Fallback"]], params.get("logoStatus") ?? "all")}</select></label>
+          <label>Código bancário<input name="bankCode" inputmode="numeric" value="${escapeHtml(params.get("bankCode") ?? "")}" placeholder="001" /></label>
+          <label>ISPB<input name="ispb" value="${escapeHtml(params.get("ispb") ?? "")}" placeholder="Busca parcial" /></label>
+          <label>Tipo<select name="institutionType">${renderSelectOptions([["", "Todos"], ["bank", "Banco"], ["cooperative", "Cooperativa"], ["payment_institution", "Instituição de pagamento"], ["digital_wallet", "Carteira digital"], ["demo", "Demo"]], params.get("institutionType") ?? "")}</select></label>
+          <label>Pendências<select name="missing">${renderSelectOptions([["", "Todas"], ["bankCode", "Sem código bancário"], ["ispb", "Sem ISPB"], ["logo", "Sem logo"]], params.get("missing") ?? "")}</select></label>
+          <label>Ordenar<select name="sort">${renderSelectOptions([["label", "Nome"], ["key", "Chave interna"], ["bankCode", "Código bancário"], ["ispb", "ISPB"], ["status", "Status"], ["updatedAt", "Atualização"]], params.get("sort") ?? "label")}</select></label>
+          <input type="hidden" name="order" value="${escapeHtml(params.get("order") ?? "asc")}" />
+          <div class="filter-actions">
+            <button type="submit">Aplicar filtros</button>
+            <a class="button-link secondary-link" href="/admin/instituicoes">Limpar filtros</a>
+          </div>
+        </form>
       </section>
       <section class="panel admin-actions-panel">
         <div>
           <h2>Atualização do catálogo</h2>
-          <p class="muted">A ação abaixo é idempotente: pode ser executada novamente sem duplicar instituições ou alterar lançamentos existentes.</p>
+          <p class="muted">A ação abaixo sincroniza os padrões sem duplicar instituições nem apagar logomarcas já enviadas.</p>
           <p class="muted">Última atualização nesta tela: ${escapeHtml(summary.updatedAt ?? "ainda não executada")}</p>
         </div>
         <p class="form-status muted" data-admin-refresh-status aria-live="polite">Pronto para verificar o catálogo global.</p>
@@ -83,25 +111,55 @@ export async function renderAdminInstitutionsPage(token: string): Promise<string
         <div class="section-heading">
           <div>
             <h2>Catálogo global</h2>
-            <p class="muted">Chave interna, status, código e situação visual de cada instituição.</p>
+            <p class="muted">Código bancário oficial, chave interna, status e situação visual de cada instituição.</p>
           </div>
-          <span>${institutions.length} itens</span>
+          <span>${pagination?.total ?? institutions.length} itens</span>
         </div>
         <div class="admin-institution-list">
-          ${institutions.map(renderInstitutionRow).join("")}
+          ${institutions.map((institution) => renderInstitutionRow(institution, query)).join("") || renderEmptyState()}
         </div>
       </section>
       ${adminRefreshScript()}
       ${adminLogoUploadScript()}
+      ${adminStatusScript()}
     `,
   });
+}
+
+function buildAdminApiQuery(params: URLSearchParams): string {
+  const allowed = new URLSearchParams();
+
+  for (const key of [
+    "q",
+    "status",
+    "logoStatus",
+    "bankCode",
+    "ispb",
+    "institutionType",
+    "missing",
+    "page",
+    "pageSize",
+    "sort",
+    "order",
+  ]) {
+    const value = params.get(key)?.trim();
+
+    if (value) allowed.set(key, value);
+  }
+
+  const query = allowed.toString();
+
+  return query ? `?${query}` : "";
 }
 
 function renderSummaryCard(title: string, value: number, subtitle: string): string {
   return `<article class="metric-card"><span>${escapeHtml(title)}</span><strong>${value}</strong><p>${escapeHtml(subtitle)}</p></article>`;
 }
 
-function renderInstitutionRow(institution: AdminInstitutionView): string {
+function renderInstitutionRow(institution: AdminInstitutionView, query: string): string {
+  const statusAction = institution.status === "active" ? "INACTIVE" : "ACTIVE";
+  const statusLabel = institution.status === "active" ? "Desativar" : "Ativar";
+
   return `
     <article class="admin-institution-row">
       <div class="institution-logo-preview">
@@ -110,21 +168,28 @@ function renderInstitutionRow(institution: AdminInstitutionView): string {
       <div class="institution-main">
         <strong>${escapeHtml(institution.label)}</strong>
         <span>${escapeHtml(institution.description)}</span>
-        <code>${escapeHtml(institution.key)}</code>
+        <code>chave interna: ${escapeHtml(institution.key)}</code>
       </div>
       <dl class="institution-meta">
         <div><dt>Status</dt><dd>${escapeHtml(formatStatus(institution.status))}</dd></div>
-        <div><dt>Código</dt><dd>${escapeHtml(institution.financialInstitutionCode)}</dd></div>
+        <div><dt>Código</dt><dd>${escapeHtml(institution.bankCode ?? "não informado")}</dd></div>
         <div><dt>Logo</dt><dd>${escapeHtml(formatLogoStatus(institution.logoStatus))}</dd></div>
-        <div><dt>COMPE/ISPB</dt><dd>${escapeHtml(formatBankCodes(institution))}</dd></div>
+        <div><dt>ISPB</dt><dd>${escapeHtml(institution.ispb ?? "não informado")}</dd></div>
+        <div><dt>Tipo</dt><dd>${escapeHtml(formatInstitutionType(institution.institutionType))}</dd></div>
+        <div><dt>Identificador técnico</dt><dd>${escapeHtml(institution.financialInstitutionCode)}</dd></div>
       </dl>
-      <form class="institution-actions logo-upload-form" data-logo-upload-form data-api-path="/api/admin/institutions/${escapeHtml(encodeURIComponent(institution.key))}/logo">
-        <label class="logo-upload-control">Arquivo
-          <input name="logo" type="file" accept="image/png,image/jpeg,image/webp" required />
-        </label>
-        <button type="submit" class="secondary-button">${institution.logoAssetPath ? "Substituir logomarca" : "Enviar logomarca"}</button>
-        <p class="form-status muted" data-logo-upload-status aria-live="polite">PNG, JPG ou WebP até o limite configurado.</p>
-      </form>
+      <div class="institution-actions">
+        <form class="status-form" data-status-form data-api-path="/api/admin/institutions/${escapeHtml(encodeURIComponent(institution.key))}/status${escapeHtml(query)}" data-next-status="${statusAction}">
+          <button type="submit" class="secondary-button">${statusLabel}</button>
+        </form>
+        <form class="logo-upload-form" data-logo-upload-form data-api-path="/api/admin/institutions/${escapeHtml(encodeURIComponent(institution.key))}/logo${escapeHtml(query)}">
+          <label class="logo-upload-control">Arquivo
+            <input name="logo" type="file" accept="image/png,image/jpeg,image/webp" required />
+          </label>
+          <button type="submit" class="secondary-button">${institution.logoAssetPath ? "Substituir logomarca" : "Enviar logomarca"}</button>
+          <p class="form-status muted" data-logo-upload-status aria-live="polite">PNG, JPG ou WebP até o limite configurado.</p>
+        </form>
+      </div>
     </article>
   `;
 }
@@ -135,6 +200,19 @@ function renderLogoPreview(institution: AdminInstitutionView): string {
   }
 
   return `<span>${escapeHtml(institution.fallbackLabel)}</span>`;
+}
+
+function renderSelectOptions(options: Array<[string, string]>, selected: string): string {
+  return options
+    .map(
+      ([value, label]) =>
+        `<option value="${escapeHtml(value)}"${selected === value ? " selected" : ""}>${escapeHtml(label)}</option>`,
+    )
+    .join("");
+}
+
+function renderEmptyState(): string {
+  return `<div class="empty-state"><strong>Nenhuma instituição encontrada.</strong><p class="muted">Ajuste os filtros ou use Limpar filtros para voltar à lista completa.</p></div>`;
 }
 
 function formatStatus(status: string): string {
@@ -149,13 +227,13 @@ function formatLogoStatus(status: AdminInstitutionView["logoStatus"]): string {
   return "Fallback por iniciais";
 }
 
-function formatBankCodes(institution: AdminInstitutionView): string {
-  const values = [
-    institution.bankCode ? `COMPE ${institution.bankCode}` : "",
-    institution.ispb ? `ISPB ${institution.ispb}` : "",
-  ].filter(Boolean);
-
-  return values.join(" / ") || "não informado";
+function formatInstitutionType(type: string | undefined): string {
+  if (type === "bank") return "Banco";
+  if (type === "cooperative") return "Cooperativa";
+  if (type === "payment_institution") return "Instituição de pagamento";
+  if (type === "digital_wallet") return "Carteira digital";
+  if (type === "demo") return "Demo";
+  return type ?? "não informado";
 }
 
 function adminRefreshScript(): string {
@@ -257,6 +335,34 @@ function adminLogoUploadScript(): string {
   `;
 }
 
+function adminStatusScript(): string {
+  return `
+    <script>
+      document.querySelectorAll("[data-status-form]").forEach((form) => {
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const button = form.querySelector('button[type="submit"]');
+          if (button) button.disabled = true;
+          const response = await fetch(form.dataset.apiPath, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ status: form.dataset.nextStatus }),
+          });
+
+          if (response.ok) {
+            window.setTimeout(() => window.location.reload(), 450);
+            return;
+          }
+
+          if (button) button.disabled = false;
+          const body = await response.json().catch(() => ({}));
+          window.alert((body.error && body.error.message) || "Não foi possível alterar o status.");
+        });
+      });
+    </script>
+  `;
+}
+
 function adminPageStyles(): string {
   return `
     ${sharedShellStyles()}
@@ -264,14 +370,17 @@ function adminPageStyles(): string {
     .admin-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; }
     .admin-heading > div { display: grid; gap: 6px; max-width: 760px; }
     .summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; display: grid; gap: 8px; padding: 18px; }
+    .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 8px; padding: 18px; }
     .metric-card span { color: var(--muted); font-size: 0.86rem; font-weight: 800; text-transform: uppercase; }
     .metric-card strong { color: var(--text); font-size: 1.8rem; }
     .metric-card p { color: var(--muted); margin: 0; }
+    .filters-grid { display: grid; gap: 12px; grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(150px, 1fr)); }
+    .filters-grid .wide { grid-column: span 2; }
+    .filter-actions { align-items: end; display: flex; gap: 10px; }
     .admin-actions-panel { align-items: start; display: flex; justify-content: space-between; }
     .admin-institution-list { display: grid; gap: 12px; }
-    .admin-institution-row { align-items: center; border: 1px solid var(--line); border-radius: 14px; display: grid; gap: 14px; grid-template-columns: 64px minmax(240px, 1fr) minmax(280px, 0.9fr) minmax(260px, auto); padding: 14px; }
-    .institution-logo-preview { align-items: center; background: var(--primary-soft); border-radius: 16px; color: var(--primary); display: flex; font-weight: 900; height: 52px; justify-content: center; overflow: hidden; width: 52px; }
+    .admin-institution-row { align-items: center; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 14px; grid-template-columns: 64px minmax(240px, 1fr) minmax(320px, 0.9fr) minmax(260px, auto); padding: 14px; }
+    .institution-logo-preview { align-items: center; background: var(--primary-soft); border-radius: 8px; color: var(--primary); display: flex; font-weight: 900; height: 52px; justify-content: center; overflow: hidden; width: 52px; }
     .institution-logo-preview img { height: 44px; max-width: 44px; object-fit: contain; }
     .institution-main { display: grid; gap: 4px; }
     .institution-main span { color: var(--muted); }
@@ -280,14 +389,16 @@ function adminPageStyles(): string {
     .institution-meta div { display: grid; gap: 2px; }
     .institution-meta dt { color: var(--muted); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
     .institution-meta dd { margin: 0; }
-    .institution-actions { display: grid; gap: 8px; }
+    .institution-actions { display: grid; gap: 10px; }
+    .status-form { display: flex; justify-content: flex-start; }
+    .logo-upload-form { display: grid; gap: 8px; }
     .logo-upload-control { color: var(--muted); display: grid; font-size: 0.82rem; gap: 4px; }
     .logo-upload-control input { max-width: 240px; }
     .admin-denied { max-width: 760px; }
     .form-status { margin: 0; }
-    @media (max-width: 1180px) { .admin-institution-row { grid-template-columns: 52px 1fr; } .institution-meta, .institution-actions { grid-column: 1 / -1; } }
-    @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { .admin-heading, .admin-actions-panel { display: grid; } .summary-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1240px) { .admin-institution-row { grid-template-columns: 52px 1fr; } .institution-meta, .institution-actions { grid-column: 1 / -1; } }
+    @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) { .admin-heading, .admin-actions-panel, .filters-grid { display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .summary-grid { grid-template-columns: 1fr; } }
   `;
 }
 
