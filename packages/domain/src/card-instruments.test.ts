@@ -128,7 +128,9 @@ function runSetsSingleDefaultInstrument(): void {
     now,
   });
 
-  const defaultCount = defaultResult.instruments.filter((instrument) => instrument.isDefault).length;
+  const defaultCount = defaultResult.instruments.filter(
+    (instrument) => instrument.isDefault,
+  ).length;
 
   assertEqual(defaultCount, 1, "only one instrument should be default");
   assertEqual(
@@ -203,7 +205,11 @@ function runBlocksCardWhenLastActiveInstrumentIsArchived(): void {
   });
 
   assertEqual(archivedResult.card.status, "blocked", "card should be blocked");
-  assertEqual(isAvailable(archivedResult.card, archivedResult.instruments), false, "card blocks use");
+  assertEqual(
+    isAvailable(archivedResult.card, archivedResult.instruments),
+    false,
+    "card blocks use",
+  );
 }
 
 function runRejectsInstrumentWithoutRequiredFields(): void {
