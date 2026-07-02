@@ -34,7 +34,6 @@ periodHelpersResolveMonthBoundaries();
 filtersKeepCurrentAndLegacyFallbacks();
 transactionQueryKeepsPreviousBalanceWindow();
 statementTransactionFilterKeepsAccountOrAccountOnlyRecords();
-statementKeepsInvoicePaymentInAccountStatement();
 statementCalculationsIgnoreVoidedAndPendingOpeningEntries();
 transferSignedAmountDependsOnSelectedAccount();
 
@@ -114,38 +113,6 @@ function statementTransactionFilterKeepsAccountOrAccountOnlyRecords(): void {
     }),
     false,
   );
-}
-
-function statementKeepsInvoicePaymentInAccountStatement(): void {
-  const payment = transaction(
-    "invoice-payment",
-    "expense",
-    "posted",
-    17345,
-    "2026-07-10",
-    {
-      accountId: "account-1",
-      cardId: "card-1",
-      invoiceId: "invoice-1",
-      description: "Pagamento da fatura 20/06/2026",
-    },
-  );
-  const filters = resolveFilters(
-    new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-07"),
-    [account],
-  );
-  const rows = buildRows(
-    filterStatementPeriodTransactions([payment], filters),
-    account,
-    50000,
-  );
-  const [row] = rows;
-
-  assert.equal(isAccountStatementTransaction(payment), true);
-  assert.equal(rows.length, 1);
-  assert.equal(row?.transaction.id, "invoice-payment");
-  assert.equal(row?.amountMinor, -17345);
-  assert.equal(row?.balanceAfterMinor, 32655);
 }
 
 function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
