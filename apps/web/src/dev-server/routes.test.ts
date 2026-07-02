@@ -40,6 +40,21 @@ describe("dev-server route contract", () => {
     }
   });
 
+  it("redirects retired payables routes to transactions", () => {
+    for (const retiredPath of ["/pagar-receber", "/app/pagar-receber"] as const) {
+      assert.deepEqual(resolveRoute(retiredPath, true), {
+        statusCode: 302,
+        kind: "placeholder",
+        location: "/lancamentos",
+      });
+      assert.deepEqual(resolveRoute(retiredPath, false), {
+        statusCode: 302,
+        kind: "login",
+        location: "/login",
+      });
+    }
+  });
+
   it("resolves public and private entry points by session state", () => {
     assert.deepEqual(resolveRoute("/", true), {
       statusCode: 302,
