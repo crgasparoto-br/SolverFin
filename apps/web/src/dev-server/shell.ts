@@ -144,7 +144,7 @@ function masterNavigationScript(): string {
           link.href = "/admin/instituicoes";
           link.id = "nav-secondary-adminInstitutions";
           link.dataset.navPriority = "secondary";
-          link.textContent = "Admin - Instituições";
+          link.textContent = ["Admin", "Instituições"].join(" - ");
 
           const toggle = nav.querySelector("[data-nav-more]");
           nav.insertBefore(link, toggle);
