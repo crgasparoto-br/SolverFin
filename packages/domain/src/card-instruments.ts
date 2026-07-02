@@ -81,18 +81,9 @@ export interface CardInstrumentMutationResult {
   instruments: readonly CardInstrument[];
 }
 
-const ALLOWED_INSTRUMENT_TYPES: readonly CardInstrumentType[] = [
-  "physical",
-  "virtual",
-];
-const ALLOWED_INSTRUMENT_HOLDERS: readonly CardInstrumentHolder[] = [
-  "primary",
-  "additional",
-];
-const ALLOWED_INSTRUMENT_STATUSES: readonly CardInstrumentStatus[] = [
-  "active",
-  "archived",
-];
+const ALLOWED_INSTRUMENT_TYPES = ["physical", "virtual"] as const;
+const ALLOWED_INSTRUMENT_HOLDERS = ["primary", "additional"] as const;
+const ALLOWED_INSTRUMENT_STATUSES = ["active", "archived"] as const;
 
 export function createCardInstrument(
   input: CreateCardInstrumentInput,
@@ -114,9 +105,12 @@ export function createCardInstrument(
   const currentDefaultInstrumentId = existingActiveInstruments.find(
     (instrument) => instrument.isDefault,
   )?.id;
-  const defaultInstrumentId = shouldBecomeDefault
-    ? input.id
-    : currentDefaultInstrumentId;
+  let defaultInstrumentId = currentDefaultInstrumentId;
+
+  if (shouldBecomeDefault) {
+    defaultInstrumentId = input.id;
+  }
+
   const instrument: CardInstrument = {
     id: input.id,
     organizationId: input.context.organizationId,
@@ -147,11 +141,11 @@ export function createCardInstrument(
     input.now,
     input.context.userId,
   );
+  const resultInstrument = instruments.find((candidate) => candidate.id === instrument.id);
 
   return {
     card: syncedCard,
-    instrument:
-      instruments.find((candidate) => candidate.id === instrument.id) ?? instrument,
+    instrument: resultInstrument ?? instrument,
     instruments,
   };
 }
@@ -189,11 +183,13 @@ export function setDefaultCardInstrument(
     input.now,
     input.context.userId,
   );
+  const resultInstrument = updatedInstruments.find(
+    (instrument) => instrument.id === target.id,
+  );
 
   return {
     card: syncedCard,
-    instrument:
-      updatedInstruments.find((instrument) => instrument.id === target.id) ?? target,
+    instrument: resultInstrument ?? target,
     instruments: updatedInstruments,
   };
 }
@@ -225,10 +221,9 @@ export function archiveCardInstrument(
       updatedByUserId: input.context.userId,
     };
   });
-  const nextDefault =
-    activeInstruments(archivedInstruments).find(
-      (instrument) => instrument.isDefault,
-    ) ?? activeInstruments(archivedInstruments)[0];
+  const archivedActiveInstruments = activeInstruments(archivedInstruments);
+  const preservedDefault = archivedActiveInstruments.find((instrument) => instrument.isDefault);
+  const nextDefault = preservedDefault ?? archivedActiveInstruments[0];
   const updatedInstruments =
     nextDefault !== undefined
       ? normalizeDefaultInstrument(
@@ -244,11 +239,13 @@ export function archiveCardInstrument(
     input.now,
     input.context.userId,
   );
+  const resultInstrument = updatedInstruments.find(
+    (instrument) => instrument.id === target.id,
+  );
 
   return {
     card: syncedCard,
-    instrument:
-      updatedInstruments.find((instrument) => instrument.id === target.id) ?? target,
+    instrument: resultInstrument ?? target,
     instruments: updatedInstruments,
   };
 }
@@ -289,11 +286,13 @@ export function isCardAvailableForNewCardPurchases(
   instruments: readonly CardInstrument[],
 ): boolean {
   const scopedCard = getTenantScopedResource(context, card);
+  const activeInstrumentCount = listActiveCardInstruments(
+    context,
+    scopedCard,
+    instruments,
+  ).length;
 
-  return (
-    scopedCard.status === "active" &&
-    listActiveCardInstruments(context, scopedCard, instruments).length > 0
-  );
+  return scopedCard.status === "active" && activeInstrumentCount > 0;
 }
 
 function normalizeDefaultInstrument(
