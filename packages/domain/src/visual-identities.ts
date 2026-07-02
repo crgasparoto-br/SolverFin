@@ -266,7 +266,9 @@ export function findFinancialInstitution(
     return noFinancialInstitution;
   }
 
-  const institution = financialInstitutionCatalog.find((item) => item.key === normalizedValue);
+  const institution = financialInstitutionCatalog.find(
+    (item) => item.key === normalizedValue,
+  );
 
   if (institution !== undefined) {
     return { ...institution, isKnown: true };
