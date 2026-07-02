@@ -118,7 +118,7 @@ export async function handleAdminInstitutionsApiRequest(
 }
 
 export function buildAdminInstitutionsPayload(
-  institutions: FinancialInstitutionRecord[] = financialInstitutionCatalog.map(
+  institutionsOrUpdatedAt: FinancialInstitutionRecord[] | string | null = financialInstitutionCatalog.map(
     toDefaultInstitutionRecord,
   ),
   updatedAt: string | null = null,
@@ -128,6 +128,12 @@ export function buildAdminInstitutionsPayload(
   summary: AdminInstitutionsSummary;
   pagination?: AdminInstitutionsPagination;
 } {
+  const institutions = Array.isArray(institutionsOrUpdatedAt)
+    ? institutionsOrUpdatedAt
+    : financialInstitutionCatalog.map(toDefaultInstitutionRecord);
+  const resolvedUpdatedAt = Array.isArray(institutionsOrUpdatedAt)
+    ? updatedAt
+    : institutionsOrUpdatedAt;
   const payload = {
     institutions,
     summary: {
@@ -135,7 +141,7 @@ export function buildAdminInstitutionsPayload(
       active: institutions.filter((institution) => institution.status === "active").length,
       withLogo: institutions.filter((institution) => institution.logoStatus !== "fallback").length,
       usingFallback: institutions.filter((institution) => institution.logoStatus === "fallback").length,
-      updatedAt,
+      updatedAt: resolvedUpdatedAt,
     },
     ...(pagination ? { pagination } : {}),
   };
@@ -254,27 +260,29 @@ function updateInstitutionStatusHandler(
 }
 
 function parseInstitutionFilters(query: URLSearchParams): ListFinancialInstitutionsFilters {
-  return {
-    ...(readQuery(query, "q") ? { q: readQuery(query, "q") } : {}),
+  const filters: ListFinancialInstitutionsFilters = {
     status: parseStatusFilter(query.get("status")),
     logoStatus: parseLogoStatusFilter(query.get("logoStatus")),
-    ...(readQuery(query, "bankCode") ? { bankCode: readQuery(query, "bankCode") } : {}),
-    ...(readQuery(query, "ispb") ? { ispb: readQuery(query, "ispb") } : {}),
-    ...(readQuery(query, "institutionType")
-      ? { institutionType: readQuery(query, "institutionType") }
-      : {}),
-    ...(parseMissingFilter(query.get("missing"))
-      ? { missing: parseMissingFilter(query.get("missing")) }
-      : {}),
-    ...(parsePositiveInteger(query.get("page"))
-      ? { page: parsePositiveInteger(query.get("page")) }
-      : {}),
-    ...(parsePositiveInteger(query.get("pageSize"))
-      ? { pageSize: parsePositiveInteger(query.get("pageSize")) }
-      : {}),
     sort: parseSort(query.get("sort")),
     order: query.get("order") === "desc" ? "desc" : "asc",
   };
+  const q = readQuery(query, "q");
+  const bankCode = readQuery(query, "bankCode");
+  const ispb = readQuery(query, "ispb");
+  const institutionType = readQuery(query, "institutionType");
+  const missing = parseMissingFilter(query.get("missing"));
+  const page = parsePositiveInteger(query.get("page"));
+  const pageSize = parsePositiveInteger(query.get("pageSize"));
+
+  if (q) filters.q = q;
+  if (bankCode) filters.bankCode = bankCode;
+  if (ispb) filters.ispb = ispb;
+  if (institutionType) filters.institutionType = institutionType;
+  if (missing) filters.missing = missing;
+  if (page) filters.page = page;
+  if (pageSize) filters.pageSize = pageSize;
+
+  return filters;
 }
 
 function parseStatusFilter(value: string | null): "active" | "inactive" | "all" {
@@ -295,7 +303,9 @@ function parseMissingFilter(value: string | null): "bankCode" | "ispb" | "logo" 
   return undefined;
 }
 
-function parseSort(value: string | null): ListFinancialInstitutionsFilters["sort"] {
+function parseSort(
+  value: string | null,
+): "label" | "key" | "bankCode" | "ispb" | "status" | "updatedAt" {
   if (
     value === "label" ||
     value === "key" ||
