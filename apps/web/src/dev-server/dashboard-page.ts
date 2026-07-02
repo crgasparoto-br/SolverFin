@@ -27,10 +27,26 @@ export async function renderDashboardPage(token: string): Promise<string> {
       <span class="demo-pill">Demo seguro</span>
     </section>
     <section class="summary-grid" aria-label="Indicadores principais">
-      ${renderMetricCard("Disponível estimado", summary.data.availableBalanceMinor, "Saldo das contas ativas")}
-      ${renderMetricCard("Receitas do mês", summary.data.incomeMinor, "Entradas postadas no mês atual")}
-      ${renderMetricCard("Despesas do mês", summary.data.expensesMinor, "Saídas postadas no mês atual")}
-      ${renderMetricCard("Compromissos previstos", summary.data.plannedCommitmentsMinor, "Lançamentos planejados no mês")}
+      ${renderMetricCard(
+        "Disponível estimado",
+        summary.data.availableBalanceMinor,
+        "Saldo das contas ativas",
+      )}
+      ${renderMetricCard(
+        "Receitas do mês",
+        summary.data.incomeMinor,
+        "Entradas postadas no mês atual",
+      )}
+      ${renderMetricCard(
+        "Despesas do mês",
+        summary.data.expensesMinor,
+        "Saídas postadas no mês atual",
+      )}
+      ${renderMetricCard(
+        "Compromissos previstos",
+        summary.data.plannedCommitmentsMinor,
+        "Lançamentos planejados no mês",
+      )}
     </section>
     <section class="panel next-actions" aria-label="Próximas ações">
       <div class="section-heading">
@@ -96,19 +112,24 @@ function renderNextActions(
     : [];
   const reviewCount = pendingReview.ok ? pendingReview.data.messages.length : 0;
   const invoices = openInvoices.ok ? openInvoices.data.invoices : [];
+  const plannedCount = plannedTransactions.length;
+  const reviewPlural = reviewCount === 1 ? "m" : "ns";
+  const invoicePlural = invoices.length === 1 ? "" : "s";
+  const plannedPlural = plannedCount === 1 ? "" : "s";
+  const plannedDueDates = plannedTransactions.map(getTransactionDueDate);
 
   const actions = [
-    plannedTransactions.length > 0
+    plannedCount > 0
       ? renderNextActionRow(
-          `${plannedTransactions.length} lançamento${plannedTransactions.length === 1 ? "" : "s"} previsto${plannedTransactions.length === 1 ? "" : "s"} no Extrato`,
-          `Próximo vencimento em ${formatDate(nearestDueDate(plannedTransactions.map(getTransactionDueDate)))}.`,
+          `${plannedCount} lançamento${plannedPlural} previsto${plannedPlural} no Extrato`,
+          `Próximo vencimento em ${formatDate(nearestDueDate(plannedDueDates))}.`,
           "/lancamentos",
           "Ver extrato",
         )
       : "",
     reviewCount > 0
       ? renderNextActionRow(
-          `${reviewCount} ite${reviewCount === 1 ? "m" : "ns"} aguardando revisão na inbox`,
+          `${reviewCount} ite${reviewPlural} aguardando revisão na inbox`,
           "Confirme ou ajuste as sugestões antes de usá-las como lançamento.",
           "/inbox",
           "Abrir inbox",
@@ -116,7 +137,7 @@ function renderNextActions(
       : "",
     invoices.length > 0
       ? renderNextActionRow(
-          `${invoices.length} fatura${invoices.length === 1 ? "" : "s"} de cartão em aberto`,
+          `${invoices.length} fatura${invoicePlural} de cartão em aberto`,
           `Próximo vencimento em ${formatDate(nearestDueDate(invoices.map((item) => item.dueOn)))}.`,
           "/cartoes",
           "Ver cartões",
@@ -158,7 +179,11 @@ function renderRecentItems(items: FinancialSummaryItem[]): string {
           </article>
         `,
       )
-      .join("") || renderEmptyState("Nenhum lançamento ainda.", "Crie lançamentos para acompanhar a rotina financeira deste perfil.")
+      .join("") ||
+    renderEmptyState(
+      "Nenhum lançamento ainda.",
+      "Crie lançamentos para acompanhar a rotina financeira deste perfil.",
+    )
   );
 }
 
