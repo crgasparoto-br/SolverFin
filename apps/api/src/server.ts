@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
+import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js";
 import { handleCardAdditionalLinksApiRequest } from "./card-additional-links-router.js";
@@ -57,6 +58,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (accountsResult) {
       writeResponse(response, accountsResult);
+
+      return;
+    }
+
+    const adminInstitutionsResult = await handleAdminInstitutionsApiRequest(apiRequest);
+
+    if (adminInstitutionsResult) {
+      writeResponse(response, adminInstitutionsResult);
 
       return;
     }
