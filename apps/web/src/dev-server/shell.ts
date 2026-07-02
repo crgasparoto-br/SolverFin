@@ -55,6 +55,7 @@ export function renderAuthenticatedShell(
     </div>
     ${logoutScript()}
     ${navigationScript()}
+    ${masterNavigationScript()}
   `;
 }
 
@@ -121,6 +122,44 @@ function navigationScript(): string {
           button.textContent = isOpen ? "Menos rotas" : "Mais rotas";
         });
       });
+    </script>
+  `;
+}
+
+function masterNavigationScript(): string {
+  return `
+    <script>
+      (async () => {
+        const nav = document.querySelector('nav[aria-label="Menu principal"]');
+        if (!nav || nav.querySelector('a[href="/admin/instituicoes"]')) return;
+
+        try {
+          const response = await fetch("/api/me");
+          if (!response.ok) return;
+
+          const body = await response.json();
+          if (!body.user || body.user.isMaster !== true) return;
+
+          const link = document.createElement("a");
+          link.href = "/admin/instituicoes";
+          link.id = "nav-secondary-adminInstitutions";
+          link.dataset.navPriority = "secondary";
+          link.textContent = "Admin - Instituições";
+
+          const toggle = nav.querySelector("[data-nav-more]");
+          nav.insertBefore(link, toggle);
+
+          if (toggle) {
+            const controls = new Set(
+              (toggle.getAttribute("aria-controls") || "").split(/\s+/).filter(Boolean),
+            );
+            controls.add(link.id);
+            toggle.setAttribute("aria-controls", Array.from(controls).join(" "));
+          }
+        } catch {
+          // Keep regular navigation usable if the profile endpoint is unavailable.
+        }
+      })();
     </script>
   `;
 }
