@@ -128,7 +128,7 @@ function renderAccountItem(account: AccountRecord): string {
 
   return `
     <article class="master-item" data-master-item data-status="${escapeHtml(account.status)}" data-search="${escapeHtml(search)}">
-      <div class="identity-mark" aria-hidden="true">${renderInstitutionIcon(institution.key)}</div>
+      <div class="identity-mark">${renderInstitutionIcon(institution.key)}</div>
       <div class="item-main">
         <div class="item-title-row">
           <strong>${escapeHtml(account.name)}</strong>
@@ -231,8 +231,8 @@ function renderCardEditDialog(
         <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label>
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
         <label>Limite (R$)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
-        <label>Conta de pagamento<select name="paymentAccountId"><option value="">Não vinculada</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
-        <label>Final do Cartão<input name="maskedIdentifier" value="${escapeHtml(card.maskedIdentifier ?? "")}" placeholder="Ex.: final 9876" /></label>
+        <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
+        <label>Identificador<input name="maskedIdentifier" value="${escapeHtml(card.maskedIdentifier ?? "")}" placeholder="final 1234" /></label>
         <button type="submit">Salvar cartão</button>
       </form>
     </dialog>
@@ -243,17 +243,14 @@ function renderAccountDialog(): string {
   return `
     <dialog id="new-account-dialog" class="master-dialog" aria-labelledby="new-account-title">
       <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
-        <p class="eyebrow">Novo cadastro</p>
-        <h2 id="new-account-title">Nova conta</h2>
-      </div>
+      <div class="dialog-heading"><p class="eyebrow">Novo cadastro</p><h2 id="new-account-title">Nova conta</h2></div>
       <form data-api-form data-api-path="/api/accounts" class="edit-grid">
         <label>Nome<input name="name" required /></label>
         <label>Tipo<select name="kind" required>${renderAccountKindOptions()}</select></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions()}</select></label>
         <label>Moeda<select name="currency">${renderCurrencyOptions()}</select></label>
         <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
-        <label>Nº Conta<input name="maskedIdentifier" /></label>
+        <label>Nº Conta<input name="maskedIdentifier" placeholder="Ag 0001 · Conta 12345" /></label>
         <button type="submit">Criar conta</button>
       </form>
     </dialog>
@@ -264,10 +261,7 @@ function renderCardDialog(accounts: AccountRecord[]): string {
   return `
     <dialog id="new-card-dialog" class="master-dialog" aria-labelledby="new-card-title">
       <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
-        <p class="eyebrow">Novo cadastro</p>
-        <h2 id="new-card-title">Novo cartão</h2>
-      </div>
+      <div class="dialog-heading"><p class="eyebrow">Novo cadastro</p><h2 id="new-card-title">Novo cartão</h2></div>
       <form data-api-form data-api-path="/api/cards" class="edit-grid">
         <label>Nome<input name="name" required /></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions()}</select></label>
@@ -275,8 +269,8 @@ function renderCardDialog(accounts: AccountRecord[]): string {
         <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" required /></label>
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" required /></label>
         <label>Limite (R$)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
-        <label>Conta de pagamento<select name="paymentAccountId"><option value="">Não vinculada</option>${renderAccountOptions(accounts)}</select></label>
-        <label>Final do Cartão<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>
+        <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts)}</select></label>
+        <label>Identificador<input name="maskedIdentifier" placeholder="final 1234" /></label>
         <button type="submit">Criar cartão</button>
       </form>
     </dialog>
@@ -332,7 +326,7 @@ function apiFormScript(): string {
           if (value === "") return;
           const field = form.querySelector('[name="' + key + '"]');
           if (field && field.dataset.money !== undefined) {
-            payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);
+            payload[key] = Math.round(parseFloat(String(value).replace(/\./g, "").replace(",", ".")) * 100);
           } else if (field && field.type === "number") {
             payload[key] = Number(value);
           } else {
@@ -391,12 +385,12 @@ function masterPageScript(): string {
       const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
 
       function maskMoneyValue(raw) {
-        const digits = String(raw || "").replace(/\\D/g, "").replace(/^0+(?=\\d)/, "");
+        const digits = String(raw || "").replace(/\D/g, "").replace(/^0+(?=\d)/, "");
         if (digits.length === 0) return "";
         const padded = digits.padStart(3, "0");
         const cents = padded.slice(-2);
-        const intPart = padded.slice(0, -2).replace(/^0+(?=\\d)/, "") || "0";
-        const withThousands = intPart.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ".");
+        const intPart = padded.slice(0, -2).replace(/^0+(?=\d)/, "") || "0";
+        const withThousands = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         return withThousands + "," + cents;
       }
 
@@ -488,7 +482,7 @@ function masterPageScript(): string {
           if (event.key !== "ArrowRight" && event.key !== "ArrowLeft" && event.key !== "Home" && event.key !== "End") return;
           event.preventDefault();
           const lastIndex = tabButtons.length - 1;
-          const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? lastIndex : event.key === "ArrowRight" ? (index + 1) % tabButtons.length : (index - 1 + tabButtons.length) % tabButtons.length;
+          const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? lastIndex : event.key === "ArrowRight" ? (index + 1) % tabButtons.length : (index - 1 + lastIndex + 1) % tabButtons.length;
           activateTab(tabButtons[nextIndex]);
         });
       });
@@ -679,9 +673,9 @@ function baseCss(): string {
     .filter-row { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(12rem, .25fr); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading > div { display: grid; gap: 4px; }
     .master-list { display: grid; gap: 12px; } .master-item { align-items: start; border-top: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 44px minmax(0, 1fr) minmax(9rem, auto) auto; padding-top: 14px; } .master-item:first-child { border-top: 0; padding-top: 0; }
-    .identity-mark { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: white; display: flex; height: 44px; justify-content: center; overflow: hidden; width: 44px; } .card-mark { background: #f8fafc; }
+    .identity-mark { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 12px; color: white; display: flex; height: 44px; justify-content: center; overflow: hidden; width: 44px; } .card-mark { background: #f8fafc; }
     .brand-icon { display: block; height: 44px; width: 44px; } .card-brand-icon { filter: drop-shadow(0 1px 2px rgba(15,23,42,.14)); }
-    .brand-icon-wrap { align-items: center; background: #fff; display: flex; height: 44px; justify-content: center; width: 44px; } .institution-logo-img { background: #fff; object-fit: contain; padding: 4px; }
+    .brand-icon-wrap { align-items: center; background: #fff; display: flex; height: 44px; justify-content: center; width: 44px; } .institution-logo-img { background: #fff; border-radius: 10px; object-fit: contain; padding: 5px; }
     .item-main { display: grid; gap: 5px; min-width: 0; } .item-main p { color: var(--muted); line-height: 1.45; } .item-title-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; } .amount-stack { display: grid; gap: 3px; justify-items: end; text-align: right; white-space: nowrap; } .amount-stack span { color: var(--muted); font-size: .76rem; font-weight: 800; text-transform: uppercase; } .amount-stack strong { color: var(--text); }
     .item-actions { display: flex; gap: 8px; justify-content: flex-end; } .inline-action-form { display: block; gap: 0; } .icon-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 44px; padding: 0; width: 44px; } .danger-icon-button { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 20px; width: 20px; }
     .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
