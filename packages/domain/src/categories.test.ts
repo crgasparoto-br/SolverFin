@@ -46,16 +46,34 @@ testOtherTenantAccessIsRejected();
 testCategoryKindValidation();
 
 function testCanonicalDefaultTreeContainsExpectedGroups(): void {
-  const expenseGroup = DEFAULT_CATEGORY_TREE.find((group) => group.kind === "expense");
-  const incomeGroup = DEFAULT_CATEGORY_TREE.find((group) => group.kind === "income");
-  const transferGroup = DEFAULT_CATEGORY_TREE.find((group) => group.kind === "transfer");
-  const housing = expenseGroup?.roots.find((category) => category.name === "Moradia");
-  const work = incomeGroup?.roots.find((category) => category.name === "Trabalho");
-  const transfers = transferGroup?.roots.find((category) => category.name === "Transferências");
+  const expenseGroup = DEFAULT_CATEGORY_TREE.find(
+    (group) => group.kind === "expense",
+  );
+  const incomeGroup = DEFAULT_CATEGORY_TREE.find(
+    (group) => group.kind === "income",
+  );
+  const transferGroup = DEFAULT_CATEGORY_TREE.find(
+    (group) => group.kind === "transfer",
+  );
+  const housing = expenseGroup?.roots.find(
+    (category) => category.name === "Moradia",
+  );
+  const work = incomeGroup?.roots.find(
+    (category) => category.name === "Trabalho",
+  );
+  const transfers = transferGroup?.roots.find(
+    (category) => category.name === "Transferências",
+  );
 
-  assertEqual(housing?.children?.some((category) => category.name === "Gás"), true, "housing gas");
   assertEqual(
-    housing?.children?.some((category) => category.name === "Manutenção residencial"),
+    housing?.children?.some((category) => category.name === "Gás"),
+    true,
+    "housing gas",
+  );
+  assertEqual(
+    housing?.children?.some(
+      (category) => category.name === "Manutenção residencial",
+    ),
     true,
     "housing maintenance",
   );
@@ -65,7 +83,9 @@ function testCanonicalDefaultTreeContainsExpectedGroups(): void {
     "work thirteenth salary",
   );
   assertEqual(
-    transfers?.children?.some((category) => category.name === "Pagamento de cartão"),
+    transfers?.children?.some(
+      (category) => category.name === "Pagamento de cartão",
+    ),
     true,
     "transfer payment category",
   );
@@ -73,14 +93,24 @@ function testCanonicalDefaultTreeContainsExpectedGroups(): void {
 
 function testDefaultSuggestionsAreEditablePayloads(): void {
   const suggestions = getDefaultCategorySuggestions();
-  const expenseSuggestion = suggestions.find((suggestion) => suggestion.kind === "expense");
-  const detailedSuggestion = suggestions.find((suggestion) => suggestion.parentName === "Moradia");
-  const transferSuggestion = suggestions.find((suggestion) => suggestion.kind === "transfer");
+  const expenseSuggestion = suggestions.find(
+    (suggestion) => suggestion.kind === "expense",
+  );
+  const detailedSuggestion = suggestions.find(
+    (suggestion) => suggestion.parentName === "Moradia",
+  );
+  const transferSuggestion = suggestions.find(
+    (suggestion) => suggestion.kind === "transfer",
+  );
 
   assertEqual(Boolean(expenseSuggestion), true, "expense suggestion exists");
   assertEqual(expenseSuggestion?.source, "system_default", "suggestion source");
   assertEqual(Boolean(detailedSuggestion), true, "hierarchical suggestion exists");
-  assertEqual(transferSuggestion?.name, "Transferências", "transfer suggestion exists");
+  assertEqual(
+    transferSuggestion?.name,
+    "Transferências",
+    "transfer suggestion exists",
+  );
 }
 
 function testCategoryNameUniquenessNormalization(): void {
@@ -116,13 +146,22 @@ function testCreateAndEditCategory(): void {
   });
 
   assertEqual(category.organizationId, tenantA.organizationId, "category org scope");
-  assertEqual(category.financialProfileId, tenantA.financialProfileId, "category profile scope");
+  assertEqual(
+    category.financialProfileId,
+    tenantA.financialProfileId,
+    "category profile scope",
+  );
   assertEqual(category.name, "Alimentacao", "category name");
   assertEqual(updatedCategory.name, "Mercado", "updated category name");
 }
 
 function testCreateSubcategory(): void {
-  const parentCategory = createCategoryFixture(tenantA, "category-parent", "expense", "active");
+  const parentCategory = createCategoryFixture(
+    tenantA,
+    "category-parent",
+    "expense",
+    "active",
+  );
   const subcategory = createCategory({
     id: "category-child",
     context: tenantA,
@@ -221,17 +260,40 @@ function testCanClearParentCategory(): void {
 }
 
 function testArchiveAndRestoreCategory(): void {
-  const category = createCategoryFixture(tenantA, "category-archive", "expense", "active");
-  const archivedCategory = archiveCategory(tenantA, category, "2026-06-15T12:00:00.000Z");
-  const restoredCategory = restoreCategory(tenantA, archivedCategory, "2026-06-15T13:00:00.000Z");
+  const category = createCategoryFixture(
+    tenantA,
+    "category-archive",
+    "expense",
+    "active",
+  );
+  const archivedCategory = archiveCategory(
+    tenantA,
+    category,
+    "2026-06-15T12:00:00.000Z",
+  );
+  const restoredCategory = restoreCategory(
+    tenantA,
+    archivedCategory,
+    "2026-06-15T13:00:00.000Z",
+  );
 
   assertEqual(archivedCategory.status, "archived", "archived status");
   assertEqual(restoredCategory.status, "active", "restored status");
 }
 
 function testReplaceCategoryWithHistory(): void {
-  const oldCategory = createCategoryFixture(tenantA, "category-old", "expense", "active");
-  const newCategory = createCategoryFixture(tenantA, "category-new", "expense", "active");
+  const oldCategory = createCategoryFixture(
+    tenantA,
+    "category-old",
+    "expense",
+    "active",
+  );
+  const newCategory = createCategoryFixture(
+    tenantA,
+    "category-new",
+    "expense",
+    "active",
+  );
   const replacement = replaceCategory({
     context: tenantA,
     category: oldCategory,
@@ -240,12 +302,21 @@ function testReplaceCategoryWithHistory(): void {
     hasHistory: true,
   });
 
-  assertEqual(replacement.archivedCategory.status, "archived", "replacement archives old category");
+  assertEqual(
+    replacement.archivedCategory.status,
+    "archived",
+    "replacement archives old category",
+  );
   assertEqual(replacement.replacementCategoryId, newCategory.id, "replacement id");
 }
 
 function testCategoryInUseRequiresReplacement(): void {
-  const category = createCategoryFixture(tenantA, "category-used", "expense", "active");
+  const category = createCategoryFixture(
+    tenantA,
+    "category-used",
+    "expense",
+    "active",
+  );
 
   assertCategoryError(
     () =>
@@ -261,7 +332,12 @@ function testCategoryInUseRequiresReplacement(): void {
 }
 
 function testOtherTenantAccessIsRejected(): void {
-  const otherCategory = createCategoryFixture(tenantB, "category-other", "expense", "active");
+  const otherCategory = createCategoryFixture(
+    tenantB,
+    "category-other",
+    "expense",
+    "active",
+  );
 
   assertTenantAuthorizationError(
     () => archiveCategory(tenantA, otherCategory, now),
@@ -270,7 +346,12 @@ function testOtherTenantAccessIsRejected(): void {
 }
 
 function testCategoryKindValidation(): void {
-  const expenseCategory = createCategoryFixture(tenantA, "category-expense", "expense", "active");
+  const expenseCategory = createCategoryFixture(
+    tenantA,
+    "category-expense",
+    "expense",
+    "active",
+  );
 
   assertCategoryError(
     () => assertCategorySupportsTransactionKind(expenseCategory, "income"),
@@ -290,7 +371,11 @@ function testCategoryKindValidation(): void {
     },
   );
 
-  assertEqual(categories.length, 1, "category list filters kind tenant and active status");
+  assertEqual(
+    categories.length,
+    1,
+    "category list filters kind tenant and active status",
+  );
   assertEqual(categories[0]?.id, expenseCategory.id, "filtered category id");
 }
 
@@ -316,7 +401,10 @@ function createCategoryFixture(
   };
 }
 
-function assertCategoryError(action: () => void, expectedCode: CategoryError["code"]): void {
+function assertCategoryError(
+  action: () => void,
+  expectedCode: CategoryError["code"],
+): void {
   try {
     action();
   } catch (error) {
@@ -349,6 +437,8 @@ function assertTenantAuthorizationError(
 
 function assertEqual<T>(actual: T, expected: T, message: string): void {
   if (actual !== expected) {
-    throw new Error(`${message}. Expected ${String(expected)}, received ${String(actual)}.`);
+    throw new Error(
+      `${message}. Expected ${String(expected)}, received ${String(actual)}.`,
+    );
   }
 }
