@@ -10,7 +10,7 @@ A migracao destrutiva da #319 introduz a estrutura persistente para o novo model
 - `CardInstrument` representa os meios internos de uso do agrupador, como fisico, virtual, titular principal e adicional.
 - `Transaction`, `Recurrence` e `Installment` passam a aceitar `cardInstrumentId` para preservar a origem da compra, recorrencia ou parcela.
 - `Invoice.cardId` continua apontando para o agrupador, nunca para um instrumento isolado.
-- A tabela fisica `CardAdditionalLink` foi aposentada pela migracao destrutiva. Enquanto as rotas e repositories novos nao chegam nas #321 e #323, existe uma view read-only de compatibilidade com o mesmo nome, resolvendo cada agrupador para ele mesmo.
+- `CardAdditionalLink` permanece temporariamente como tabela legada para manter rotas e testes antigos ate as #321, #323 e #324 substituirem o fluxo por instrumentos internos. Ela nao faz parte do schema Prisma nem do modelo principal novo.
 
 As rotas antigas de `/api/cards` ainda existem como transicao tecnica. O comportamento principal do produto deve evoluir para cartao agrupador com instrumentos internos nas proximas subissues do epico.
 
