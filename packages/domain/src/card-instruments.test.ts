@@ -39,7 +39,11 @@ runRejectsInstrumentFromAnotherCard();
 runTenantIsolation();
 
 function runCreatesFirstActiveInstrumentAsDefault(): void {
-  const blockedCard = blockCard(tenantA, createCardFixture("card-first"), now).card;
+  const blockedCard = blockCard(
+    tenantA,
+    createCardFixture("card-first"),
+    now,
+  ).card;
   const result = createCardInstrument({
     id: "instrument-first",
     context: tenantA,
@@ -54,14 +58,22 @@ function runCreatesFirstActiveInstrumentAsDefault(): void {
     },
   });
 
-  assertEqual(result.instrument.isDefault, true, "first active instrument should be default");
+  assertEqual(
+    result.instrument.isDefault,
+    true,
+    "first active instrument should be default",
+  );
   assertEqual(
     result.card.status,
     "active",
     "card should become active with an active instrument",
   );
   assertEqual(
-    isCardAvailableForNewCardPurchases(tenantA, result.card, result.instruments),
+    isCardAvailableForNewCardPurchases(
+      tenantA,
+      result.card,
+      result.instruments,
+    ),
     true,
     "card should be available for purchases with an active instrument",
   );
@@ -95,7 +107,11 @@ function runKeepsExistingDefaultWhenAddingInstrument(): void {
   });
 
   assertEqual(
-    getDefaultCardInstrument(tenantA, secondResult.card, secondResult.instruments)?.id,
+    getDefaultCardInstrument(
+      tenantA,
+      secondResult.card,
+      secondResult.instruments,
+    )?.id,
     "instrument-default",
     "new active instrument should not replace the current default automatically",
   );
@@ -141,7 +157,11 @@ function runSetsSingleDefaultInstrument(): void {
     "only one active instrument should be default",
   );
   assertEqual(
-    getDefaultCardInstrument(tenantA, defaultResult.card, defaultResult.instruments)?.id,
+    getDefaultCardInstrument(
+      tenantA,
+      defaultResult.card,
+      defaultResult.instruments,
+    )?.id,
     "instrument-virtual",
     "selected instrument should become default",
   );
@@ -182,7 +202,11 @@ function runArchivesDefaultAndPromotesNextActiveInstrument(): void {
   });
 
   assertEqual(
-    getDefaultCardInstrument(tenantA, archivedResult.card, archivedResult.instruments)?.id,
+    getDefaultCardInstrument(
+      tenantA,
+      archivedResult.card,
+      archivedResult.instruments,
+    )?.id,
     "instrument-virtual-main",
     "next active instrument should become default",
   );
@@ -221,7 +245,11 @@ function runBlocksCardWhenLastActiveInstrumentIsArchived(): void {
     "card should be blocked without active instruments",
   );
   assertEqual(
-    isCardAvailableForNewCardPurchases(tenantA, archivedResult.card, archivedResult.instruments),
+    isCardAvailableForNewCardPurchases(
+      tenantA,
+      archivedResult.card,
+      archivedResult.instruments,
+    ),
     false,
     "card should not be available without active instruments",
   );
