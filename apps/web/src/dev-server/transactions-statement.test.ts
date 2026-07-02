@@ -139,20 +139,13 @@ function statementKeepsInvoicePaymentInAccountStatement(): void {
     account,
     50000,
   );
+  const [row] = rows;
 
   assert.equal(isAccountStatementTransaction(payment), true);
-  assert.deepEqual(
-    rows.map((row) => row.transaction.id),
-    ["invoice-payment"],
-  );
-  assert.deepEqual(
-    rows.map((row) => row.amountMinor),
-    [-17345],
-  );
-  assert.deepEqual(
-    rows.map((row) => row.balanceAfterMinor),
-    [32655],
-  );
+  assert.equal(rows.length, 1);
+  assert.equal(row?.transaction.id, "invoice-payment");
+  assert.equal(row?.amountMinor, -17345);
+  assert.equal(row?.balanceAfterMinor, 32655);
 }
 
 function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
