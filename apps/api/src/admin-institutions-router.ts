@@ -4,6 +4,11 @@ import { requireMasterUser } from "./admin-auth.js";
 import { type AuthRequestHeaders } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import {
+  getUploadedInstitutionLogo,
+  uploadInstitutionLogo,
+  type LogoStorageAdapter,
+} from "./institution-logo-upload.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 
 interface AdminInstitutionView {
@@ -16,7 +21,9 @@ interface AdminInstitutionView {
   bankCode?: string;
   ispb?: string;
   logoAssetPath?: string;
-  logoStatus: "local_asset" | "fallback";
+  logoObjectKey?: string;
+  logoUploadedAt?: string;
+  logoStatus: "local_asset" | "r2_asset" | "fallback";
 }
 
 interface AdminInstitutionsSummary {
@@ -32,6 +39,12 @@ const adminInstitutionRoutes = new Map<string, (request: ApiRequest) => Promise<
   ["POST /api/admin/institutions/refresh", refreshAdminInstitutionsHandler],
 ]);
 
+let logoStorageAdapterOverride: LogoStorageAdapter | undefined;
+
+export function setLogoStorageAdapterForTests(adapter: LogoStorageAdapter | undefined): void {
+  logoStorageAdapterOverride = adapter;
+}
+
 export async function handleAdminInstitutionsApiRequest(
   request: ApiRequest,
 ): Promise<ApiResponse | undefined> {
@@ -39,9 +52,12 @@ export async function handleAdminInstitutionsApiRequest(
     return undefined;
   }
 
-  const handler = adminInstitutionRoutes.get(`${request.method} ${request.pathname}`);
+  const uploadMatch = /^\/api\/admin\/institutions\/([^/]+)\/logo$/.exec(request.pathname);
+  const handler = uploadMatch
+    ? uploadInstitutionLogoHandler(uploadMatch[1] ?? "")
+    : adminInstitutionRoutes.get(`${request.method} ${request.pathname}`);
 
-  if (!handler) {
+  if (!handler || (uploadMatch && request.method !== "POST")) {
     return undefined;
   }
 
@@ -67,18 +83,25 @@ export function buildAdminInstitutionsPayload(updatedAt: string | null = null): 
   institutions: AdminInstitutionView[];
   summary: AdminInstitutionsSummary;
 } {
-  const institutions = financialInstitutionCatalog.map((institution) => ({
-    key: institution.key,
-    label: institution.label,
-    description: institution.description,
-    fallbackLabel: institution.fallbackLabel,
-    status: institution.status,
-    financialInstitutionCode: institution.financialInstitutionCode,
-    ...(institution.bankCode !== undefined ? { bankCode: institution.bankCode } : {}),
-    ...(institution.ispb !== undefined ? { ispb: institution.ispb } : {}),
-    ...(institution.logoAssetPath !== undefined ? { logoAssetPath: institution.logoAssetPath } : {}),
-    logoStatus: institution.logoAssetPath ? "local_asset" : "fallback",
-  }));
+  const institutions = financialInstitutionCatalog.map((institution) => {
+    const uploadedLogo = getUploadedInstitutionLogo(institution.key);
+    const logoAssetPath = uploadedLogo?.publicUrl ?? institution.logoAssetPath;
+
+    return {
+      key: institution.key,
+      label: institution.label,
+      description: institution.description,
+      fallbackLabel: institution.fallbackLabel,
+      status: institution.status,
+      financialInstitutionCode: institution.financialInstitutionCode,
+      ...(institution.bankCode !== undefined ? { bankCode: institution.bankCode } : {}),
+      ...(institution.ispb !== undefined ? { ispb: institution.ispb } : {}),
+      ...(logoAssetPath !== undefined ? { logoAssetPath } : {}),
+      ...(uploadedLogo !== undefined ? { logoObjectKey: uploadedLogo.objectKey } : {}),
+      ...(uploadedLogo !== undefined ? { logoUploadedAt: uploadedLogo.uploadedAt } : {}),
+      logoStatus: uploadedLogo ? "r2_asset" : institution.logoAssetPath ? "local_asset" : "fallback",
+    };
+  });
 
   return {
     institutions,
@@ -106,6 +129,40 @@ function refreshAdminInstitutionsHandler(): Promise<ApiResponse> {
       },
     }),
   );
+}
+
+function uploadInstitutionLogoHandler(
+  institutionKey: string,
+): (request: ApiRequest) => Promise<ApiResponse> {
+  return async (request) => {
+    const body = requireObjectBody(request.body);
+    const logo = await uploadInstitutionLogo(
+      {
+        institutionKey: decodeURIComponent(institutionKey),
+        fileName: String(body.fileName ?? ""),
+        mimeType: String(body.mimeType ?? ""),
+        contentBase64: String(body.contentBase64 ?? ""),
+      },
+      logoStorageAdapterOverride,
+    );
+
+    return json(200, {
+      logo,
+      ...buildAdminInstitutionsPayload(logo.uploadedAt),
+      operation: {
+        status: "uploaded",
+        message: "Logomarca enviada com sucesso.",
+      },
+    });
+  };
+}
+
+function requireObjectBody(body: unknown): Record<string, unknown> {
+  if (typeof body !== "object" || body === null) {
+    return {};
+  }
+
+  return body as Record<string, unknown>;
 }
 
 function buildAuthHeaders(authorization: string | undefined): AuthRequestHeaders {
