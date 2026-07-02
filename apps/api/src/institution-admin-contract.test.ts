@@ -30,7 +30,10 @@ function adminPayloadMirrorsGlobalCatalogWithoutReorderingOrDuplication(): void 
     payload.institutions.map((institution) => institution.key),
     financialInstitutionCatalog.map((institution) => institution.key),
   );
-  assert.equal(new Set(payload.institutions.map((institution) => institution.key)).size, payload.summary.total);
+  assert.equal(
+    new Set(payload.institutions.map((institution) => institution.key)).size,
+    payload.summary.total,
+  );
 
   for (const catalogInstitution of financialInstitutionCatalog) {
     const adminInstitution = payload.institutions.find(
@@ -42,7 +45,10 @@ function adminPayloadMirrorsGlobalCatalogWithoutReorderingOrDuplication(): void 
     assert.equal(adminInstitution.description, catalogInstitution.description);
     assert.equal(adminInstitution.fallbackLabel, catalogInstitution.fallbackLabel);
     assert.equal(adminInstitution.status, catalogInstitution.status);
-    assert.equal(adminInstitution.financialInstitutionCode, catalogInstitution.financialInstitutionCode);
+    assert.equal(
+      adminInstitution.financialInstitutionCode,
+      catalogInstitution.financialInstitutionCode,
+    );
   }
 }
 
@@ -102,8 +108,9 @@ async function logoUploadStorageFailureKeepsPreviousState(): Promise<void> {
       assert.equal(response.statusCode, 502);
       assert.equal(readErrorCode(response), "INSTITUTION_LOGO_STORAGE_UNAVAILABLE");
       assert.equal(
-        buildAdminInstitutionsPayload().institutions.find((institution) => institution.key === "inter")
-          ?.logoStatus,
+        buildAdminInstitutionsPayload().institutions.find(
+          (institution) => institution.key === "inter",
+        )?.logoStatus,
         "local_asset",
       );
     });
@@ -124,7 +131,12 @@ function rememberSession(sessionId: string): string {
   return sessionId;
 }
 
-function buildRequest(method: string, path: string, body?: unknown, sessionId?: string): ApiRequest {
+function buildRequest(
+  method: string,
+  path: string,
+  body?: unknown,
+  sessionId?: string,
+): ApiRequest {
   const url = new URL(path, "http://solverfin.test");
 
   return {

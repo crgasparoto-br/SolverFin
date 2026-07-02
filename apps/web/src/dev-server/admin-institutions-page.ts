@@ -150,7 +150,10 @@ function formatLogoStatus(status: AdminInstitutionView["logoStatus"]): string {
 }
 
 function formatBankCodes(institution: AdminInstitutionView): string {
-  const values = [institution.bankCode ? `COMPE ${institution.bankCode}` : "", institution.ispb ? `ISPB ${institution.ispb}` : ""].filter(Boolean);
+  const values = [
+    institution.bankCode ? `COMPE ${institution.bankCode}` : "",
+    institution.ispb ? `ISPB ${institution.ispb}` : "",
+  ].filter(Boolean);
 
   return values.join(" / ") || "não informado";
 }
@@ -293,6 +296,6 @@ function escapeHtml(value: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }

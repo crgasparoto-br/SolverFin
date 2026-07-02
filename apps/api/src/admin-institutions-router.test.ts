@@ -62,12 +62,7 @@ async function adminInstitutionsAllowConfiguredMaster(): Promise<void> {
 async function adminInstitutionRefreshIsIdempotent(): Promise<void> {
   await withEnv(MASTER_EMAILS_ENV_KEY, demoUser.email, async () => {
     const response = await handleAdminInstitutionsApiRequest(
-      buildRequest(
-        "POST",
-        "/api/admin/institutions/refresh",
-        {},
-        rememberSession("admin-refresh"),
-      ),
+      buildRequest("POST", "/api/admin/institutions/refresh", {}, rememberSession("admin-refresh")),
     );
 
     assert.ok(response);

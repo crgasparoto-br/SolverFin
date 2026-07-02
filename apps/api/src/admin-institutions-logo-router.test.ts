@@ -86,12 +86,7 @@ function rememberSession(sessionId: string): string {
   return sessionId;
 }
 
-function buildRequest(
-  method: string,
-  path: string,
-  body: unknown,
-  sessionId: string,
-): ApiRequest {
+function buildRequest(method: string, path: string, body: unknown, sessionId: string): ApiRequest {
   const url = new URL(path, "http://solverfin.test");
 
   return {
@@ -128,9 +123,9 @@ function readInstitutionLogoStatus(response: ApiResponse, key: string): string |
   assert.equal(typeof response.body, "object");
   assert.notEqual(response.body, null);
 
-  return (response.body as { institutions?: Array<{ key: string; logoStatus?: string }> }).institutions?.find(
-    (institution) => institution.key === key,
-  )?.logoStatus;
+  return (
+    response.body as { institutions?: Array<{ key: string; logoStatus?: string }> }
+  ).institutions?.find((institution) => institution.key === key)?.logoStatus;
 }
 
 async function withTemporaryEnv(

@@ -229,7 +229,7 @@ export const financialInstitutionCatalog = [
     status: "active",
     financialInstitutionCode: "solverfin_demo",
   },
-] as const satisfies readonly FinancialInstitutionCatalogItem[];
+] as const satisfies readonly FinancialInstitutionCatalogItem[] as readonly FinancialInstitutionCatalogItem[];
 
 export const cardBrandCatalog = [
   { key: "visa", label: "Visa", fallbackLabel: "VI" },

@@ -57,7 +57,10 @@ export function buildShellNavigation(input: BuildShellNavigationInput): ShellNav
   const sections = PRIVATE_NAVIGATION_GROUPS.map((group) => ({
     group,
     label: NAVIGATION_GROUP_LABELS[group],
-    routes: listShellRoutesByGroup(group, { includeMaster: input.includeMasterRoutes }),
+    routes: listShellRoutesByGroup(
+      group,
+      input.includeMasterRoutes !== undefined ? { includeMaster: input.includeMasterRoutes } : {},
+    ),
   })).filter((section) => section.routes.length > 0);
   const items = sections.flatMap((section) =>
     section.routes.map((route) => ({

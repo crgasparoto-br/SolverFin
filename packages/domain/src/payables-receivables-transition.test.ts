@@ -47,8 +47,16 @@ function runPlansPendingLegacyAsPlannedTransaction(): void {
   assertEqual(item?.disposition, "create_planned_transaction", "pending legacy should migrate");
   assertEqual(item?.plannedTransactionDraft?.kind, "expense", "payable should become expense");
   assertEqual(item?.plannedTransactionDraft?.status, "planned", "pending should become planned");
-  assertEqual(item?.plannedTransactionDraft?.plannedOn, payable.dueOn, "due date should be plannedOn");
-  assertEqual(item?.plannedTransactionDraft?.accountId, payable.accountId, "account should be copied");
+  assertEqual(
+    item?.plannedTransactionDraft?.plannedOn,
+    payable.dueOn,
+    "due date should be plannedOn",
+  );
+  assertEqual(
+    item?.plannedTransactionDraft?.accountId,
+    payable.accountId,
+    "account should be copied",
+  );
   assertEqual(plan.summary.create_planned_transaction, 1, "summary should count migration draft");
 }
 
@@ -66,7 +74,11 @@ function runKeepsDuplicatePendingAsLegacyReference(): void {
     "keep_legacy_duplicate_reference",
     "duplicate pending should not create another transaction",
   );
-  assertEqual(item?.transactionId, transaction.id, "duplicate should reference existing transaction");
+  assertEqual(
+    item?.transactionId,
+    transaction.id,
+    "duplicate should reference existing transaction",
+  );
 }
 
 function runPreservesSettledSettlementReference(): void {

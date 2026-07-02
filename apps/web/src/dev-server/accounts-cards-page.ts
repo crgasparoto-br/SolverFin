@@ -326,7 +326,7 @@ function apiFormScript(): string {
           if (value === "") return;
           const field = form.querySelector('[name="' + key + '"]');
           if (field && field.dataset.money !== undefined) {
-            payload[key] = Math.round(parseFloat(String(value).replace(/\./g, "").replace(",", ".")) * 100);
+            payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);
           } else if (field && field.type === "number") {
             payload[key] = Number(value);
           } else {
@@ -385,12 +385,12 @@ function masterPageScript(): string {
       const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
 
       function maskMoneyValue(raw) {
-        const digits = String(raw || "").replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+        const digits = String(raw || "").replace(/\\D/g, "").replace(/^0+(?=\\d)/, "");
         if (digits.length === 0) return "";
         const padded = digits.padStart(3, "0");
         const cents = padded.slice(-2);
-        const intPart = padded.slice(0, -2).replace(/^0+(?=\d)/, "") || "0";
-        const withThousands = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        const intPart = padded.slice(0, -2).replace(/^0+(?=\\d)/, "") || "0";
+        const withThousands = intPart.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ".");
         return withThousands + "," + cents;
       }
 

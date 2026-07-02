@@ -27,15 +27,15 @@ Dependencias que precisam continuar funcionando durante a compatibilidade:
 
 ## Mapeamento de dados
 
-| Estado legado | Destino tecnico | Regra |
-| --- | --- | --- |
-| `pending` com `accountId` e sem transacao equivalente | criar `Transaction` planejada | `payable -> expense`, `receivable -> income`, `plannedOn = dueOn`, `effectiveOn` ausente |
-| `pending` sem `accountId` | revisao manual | `Transaction` exige conta; nao inferir automaticamente |
-| `pending` com `Transaction` equivalente | manter referencia legada | evita dupla contagem |
-| `settled` com `settlementTransactionId` valido | manter referencia legada | preservar auditoria e evitar recriacao |
-| `settled` sem link, mas com `Transaction` equivalente postada ou conciliada | vincular transacao existente em script futuro | nao criar duplicata |
-| `settled` sem link nem equivalente | revisao manual | risco de auditoria incompleta |
-| `cancelled` | manter historico legado | nao migrar para `Transaction` ativa |
+| Estado legado                                                               | Destino tecnico                               | Regra                                                                                    |
+| --------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `pending` com `accountId` e sem transacao equivalente                       | criar `Transaction` planejada                 | `payable -> expense`, `receivable -> income`, `plannedOn = dueOn`, `effectiveOn` ausente |
+| `pending` sem `accountId`                                                   | revisao manual                                | `Transaction` exige conta; nao inferir automaticamente                                   |
+| `pending` com `Transaction` equivalente                                     | manter referencia legada                      | evita dupla contagem                                                                     |
+| `settled` com `settlementTransactionId` valido                              | manter referencia legada                      | preservar auditoria e evitar recriacao                                                   |
+| `settled` sem link, mas com `Transaction` equivalente postada ou conciliada | vincular transacao existente em script futuro | nao criar duplicata                                                                      |
+| `settled` sem link nem equivalente                                          | revisao manual                                | risco de auditoria incompleta                                                            |
+| `cancelled`                                                                 | manter historico legado                       | nao migrar para `Transaction` ativa                                                      |
 
 ## Contrato da API legada
 

@@ -194,7 +194,10 @@ function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
     /import \{ findInstitution, institutions, renderInstitutionIcon \} from "\.\/institutions\.js";/,
   );
   assert.match(accountsCardsPageSource, /<div class="identity-mark">\$\{renderInstitutionIcon/);
-  assert.doesNotMatch(accountsCardsPageSource, /<div class="identity-mark" aria-hidden="true">\$\{renderInstitutionIcon/);
+  assert.doesNotMatch(
+    accountsCardsPageSource,
+    /<div class="identity-mark" aria-hidden="true">\$\{renderInstitutionIcon/,
+  );
 }
 
 function institutionIconsUseExplicitLogoSources(): void {

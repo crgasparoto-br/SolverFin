@@ -1,4 +1,10 @@
-import type { EntityId, ISODate, Transaction, TransactionKind, TransactionSource } from "./index.js";
+import type {
+  EntityId,
+  ISODate,
+  Transaction,
+  TransactionKind,
+  TransactionSource,
+} from "./index.js";
 import type {
   PayableReceivable,
   PayableReceivableKind,

@@ -1,7 +1,6 @@
 import { financialInstitutionCatalog } from "@solverfin/domain";
 
 import { requireMasterUser } from "./admin-auth.js";
-import { type AuthRequestHeaders } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
@@ -64,7 +63,7 @@ export async function handleAdminInstitutionsApiRequest(
   const correlationId = resolveCorrelationId(request.headers);
 
   try {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(request.headers);
     requireMasterUser(user);
 
     return await handler(request);
@@ -83,7 +82,7 @@ export function buildAdminInstitutionsPayload(updatedAt: string | null = null): 
   institutions: AdminInstitutionView[];
   summary: AdminInstitutionsSummary;
 } {
-  const institutions = financialInstitutionCatalog.map((institution) => {
+  const institutions = financialInstitutionCatalog.map((institution): AdminInstitutionView => {
     const uploadedLogo = getUploadedInstitutionLogo(institution.key);
     const logoAssetPath = uploadedLogo?.publicUrl ?? institution.logoAssetPath;
 
@@ -99,7 +98,11 @@ export function buildAdminInstitutionsPayload(updatedAt: string | null = null): 
       ...(logoAssetPath !== undefined ? { logoAssetPath } : {}),
       ...(uploadedLogo !== undefined ? { logoObjectKey: uploadedLogo.objectKey } : {}),
       ...(uploadedLogo !== undefined ? { logoUploadedAt: uploadedLogo.uploadedAt } : {}),
-      logoStatus: uploadedLogo ? "r2_asset" : institution.logoAssetPath ? "local_asset" : "fallback",
+      logoStatus: uploadedLogo
+        ? "r2_asset"
+        : institution.logoAssetPath
+          ? "local_asset"
+          : "fallback",
     };
   });
 
@@ -163,10 +166,6 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
   }
 
   return body as Record<string, unknown>;
-}
-
-function buildAuthHeaders(authorization: string | undefined): AuthRequestHeaders {
-  return authorization === undefined ? {} : { authorization };
 }
 
 function json(statusCode: number, body: unknown): ApiResponse {

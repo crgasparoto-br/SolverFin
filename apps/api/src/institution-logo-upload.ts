@@ -359,7 +359,9 @@ function assertMagicBytes(content: Buffer, mimeType: string): void {
 }
 
 function resolveMaxLogoBytes(env: Readonly<Record<string, string | undefined>>): number {
-  const value = Number(env[INSTITUTION_LOGO_MAX_BYTES_ENV_KEY] ?? DEFAULT_INSTITUTION_LOGO_MAX_BYTES);
+  const value = Number(
+    env[INSTITUTION_LOGO_MAX_BYTES_ENV_KEY] ?? DEFAULT_INSTITUTION_LOGO_MAX_BYTES,
+  );
 
   return Number.isFinite(value) && value > 0 ? value : DEFAULT_INSTITUTION_LOGO_MAX_BYTES;
 }

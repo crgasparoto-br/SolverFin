@@ -28,7 +28,8 @@ const disabledMasterUser: AuthenticatedUser = {
 };
 
 const configuredMasterEnv = {
-  [MASTER_EMAILS_ENV_KEY]: " master@solverfin.example.invalid , outro-master@solverfin.example.invalid ",
+  [MASTER_EMAILS_ENV_KEY]:
+    " master@solverfin.example.invalid , outro-master@solverfin.example.invalid ",
 };
 
 testMasterConfigurationIsNormalized();
