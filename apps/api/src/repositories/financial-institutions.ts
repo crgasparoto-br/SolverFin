@@ -432,20 +432,34 @@ function refreshMemoryInstitutions(defaults: FinancialInstitutionRecord[]): void
     memoryInstitutions.set(institution.key, {
       ...institution,
       status: current?.status ?? institution.status,
-      ...(current?.logoObjectKey
-        ? {
-            logoAssetPath: current.logoPublicUrl ?? current.logoAssetPath,
-            logoObjectKey: current.logoObjectKey,
-            logoPublicUrl: current.logoPublicUrl,
-            logoMimeType: current.logoMimeType,
-            logoSizeBytes: current.logoSizeBytes,
-            logoContentSha256: current.logoContentSha256,
-            logoUploadedAt: current.logoUploadedAt,
-            logoStatus: "r2_asset",
-          }
-        : {}),
+      ...buildMemoryLogoMetadata(current),
     });
   }
+}
+
+function buildMemoryLogoMetadata(
+  institution: FinancialInstitutionRecord | undefined,
+): Partial<FinancialInstitutionRecord> {
+  if (!institution?.logoObjectKey) {
+    return {};
+  }
+
+  return {
+    ...(institution.logoPublicUrl ?? institution.logoAssetPath
+      ? { logoAssetPath: institution.logoPublicUrl ?? institution.logoAssetPath }
+      : {}),
+    logoObjectKey: institution.logoObjectKey,
+    ...(institution.logoPublicUrl ? { logoPublicUrl: institution.logoPublicUrl } : {}),
+    ...(institution.logoMimeType ? { logoMimeType: institution.logoMimeType } : {}),
+    ...(institution.logoSizeBytes !== undefined
+      ? { logoSizeBytes: institution.logoSizeBytes }
+      : {}),
+    ...(institution.logoContentSha256
+      ? { logoContentSha256: institution.logoContentSha256 }
+      : {}),
+    ...(institution.logoUploadedAt ? { logoUploadedAt: institution.logoUploadedAt } : {}),
+    logoStatus: "r2_asset",
+  };
 }
 
 function canUseMemoryFallback(error: unknown): boolean {
