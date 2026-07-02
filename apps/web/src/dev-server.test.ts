@@ -3,6 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { financialInstitutionCatalog } from "@solverfin/domain";
+
 import { enhanceAccountsCardsTabs, renderLoginPage, resolveRoute } from "./dev-server.js";
 import { institutions, renderInstitutionIcon } from "./dev-server/institutions.js";
 import { privateRoutes } from "./dev-server/routes.js";
@@ -17,6 +19,7 @@ accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
 accountsCardsDirectEnhancementIsInjectedOnce();
 accountsCardsAdditionalButtonUsesDirectController();
 accountsCardsEditAdditionalSubmitIsCapturedDirectly();
+accountAndCardInstitutionSelectsUseGlobalCatalog();
 institutionIconsUseExplicitLogoSources();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
 sidebarMenuUsesPtBrLabels();
@@ -127,6 +130,40 @@ function accountsCardsEditAdditionalSubmitIsCapturedDirectly(): void {
   assert.doesNotMatch(enhanced, /window\.location\.reload\(\)/);
 }
 
+function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
+  const expectedKeys = [
+    "",
+    ...[...financialInstitutionCatalog]
+      .filter((institution) => institution.status === "active")
+      .sort((first, second) => first.label.localeCompare(second.label, "pt-BR"))
+      .map((institution) => institution.key),
+  ];
+
+  assert.deepEqual(
+    institutions.map((institution) => institution.key),
+    expectedKeys,
+  );
+
+  for (const catalogInstitution of financialInstitutionCatalog) {
+    const webInstitution = institutions.find(
+      (institution) => institution.key === catalogInstitution.key,
+    );
+
+    assert.equal(webInstitution?.label, catalogInstitution.label);
+    assert.equal(webInstitution?.shortLabel, catalogInstitution.fallbackLabel);
+  }
+
+  const accountsCardsPageSource = readFileSync(
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards-page.ts"),
+    "utf8",
+  );
+
+  assert.match(
+    accountsCardsPageSource,
+    /import \{ findInstitution, institutions, renderInstitutionIcon \} from "\.\/institutions\.js";/,
+  );
+}
+
 function institutionIconsUseExplicitLogoSources(): void {
   for (const institution of institutions) {
     const icon = renderInstitutionIcon(institution.key);
@@ -141,6 +178,9 @@ function institutionIconsUseExplicitLogoSources(): void {
   assert.match(renderInstitutionIcon("inter"), /\/images\/institutions\/inter\.png/);
   assert.match(renderInstitutionIcon("c6"), />C6</);
   assert.doesNotMatch(renderInstitutionIcon("c6"), /<img\b/);
+  assert.match(renderInstitutionIcon("nubank"), />NU</);
+  assert.doesNotMatch(renderInstitutionIcon("nubank"), /<img\b/);
+  assert.match(renderInstitutionIcon("legacy_bank"), />LB</);
   assert.match(renderInstitutionIcon("porto_bank"), /\/images\/institutions\/porto-bank\.svg/);
   assert.match(renderInstitutionIcon("bradesco"), />BR</);
 
