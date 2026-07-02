@@ -58,10 +58,15 @@ const demoCardInstruments = [
 
 function assertSafeEnvironment() {
   if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is required to run the demo card instrument seed.");
+    throw new Error(
+      "DATABASE_URL is required to run the demo card instrument seed.",
+    );
   }
 
-  if (process.env.NODE_ENV === "production" && process.env.SOLVERFIN_ALLOW_DEMO_SEED !== "true") {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.SOLVERFIN_ALLOW_DEMO_SEED !== "true"
+  ) {
     throw new Error(
       "Demo card instrument seed is blocked in production unless SOLVERFIN_ALLOW_DEMO_SEED=true.",
     );
