@@ -25,6 +25,12 @@ const cards = {
   personalTravelCard: "55555555-5555-4555-8555-555555555552",
 };
 
+const cardInstruments = {
+  personalCardPhysicalPrimary: "55555555-5555-4555-8555-555555555561",
+  personalCardVirtualPrimary: "55555555-5555-4555-8555-555555555562",
+  personalTravelPhysicalPrimary: "55555555-5555-4555-8555-555555555563",
+};
+
 const invoices = {
   personalCardOpen: "99999999-9999-4999-8999-999999999901",
   personalCardPaid: "99999999-9999-4999-8999-999999999902",
@@ -129,6 +135,7 @@ const transactions = [
     categories[0][0],
     null,
     null,
+    null,
     "INCOME",
     "POSTED",
     "MANUAL",
@@ -143,6 +150,7 @@ const transactions = [
     accounts.personalChecking,
     null,
     categories[2][0],
+    null,
     null,
     null,
     "EXPENSE",
@@ -161,6 +169,7 @@ const transactions = [
     categories[3][0],
     null,
     null,
+    null,
     "EXPENSE",
     "PLANNED",
     "MANUAL",
@@ -175,6 +184,7 @@ const transactions = [
     accounts.meiChecking,
     null,
     categories[7][0],
+    null,
     null,
     null,
     "INCOME",
@@ -193,6 +203,7 @@ const transactions = [
     categories[9][0],
     null,
     null,
+    null,
     "EXPENSE",
     "PLANNED",
     "MANUAL",
@@ -207,6 +218,7 @@ const transactions = [
     accounts.businessChecking,
     null,
     categories[10][0],
+    null,
     null,
     null,
     "INCOME",
@@ -225,6 +237,7 @@ const transactions = [
     categories[11][0],
     null,
     null,
+    null,
     "EXPENSE",
     "SUGGESTED",
     "IMPORT",
@@ -240,6 +253,7 @@ const transactions = [
     null,
     categories[2][0],
     cards.personalCard,
+    cardInstruments.personalCardPhysicalPrimary,
     invoices.personalCardOpen,
     "EXPENSE",
     "RECONCILED",
@@ -256,6 +270,7 @@ const transactions = [
     null,
     categories[6][0],
     cards.personalCard,
+    cardInstruments.personalCardPhysicalPrimary,
     invoices.personalCardOpen,
     "EXPENSE",
     "POSTED",
@@ -272,6 +287,7 @@ const transactions = [
     null,
     categories[3][0],
     cards.personalCard,
+    cardInstruments.personalCardVirtualPrimary,
     invoices.personalCardOpen,
     "EXPENSE",
     "POSTED",
@@ -288,6 +304,7 @@ const transactions = [
     null,
     categories[5][0],
     cards.personalCard,
+    cardInstruments.personalCardVirtualPrimary,
     invoices.personalCardOpen,
     "EXPENSE",
     "RECONCILED",
@@ -304,6 +321,7 @@ const transactions = [
     null,
     categories[2][0],
     cards.personalCard,
+    cardInstruments.personalCardPhysicalPrimary,
     invoices.personalCardPaid,
     "EXPENSE",
     "RECONCILED",
@@ -320,6 +338,7 @@ const transactions = [
     null,
     categories[3][0],
     cards.personalCard,
+    cardInstruments.personalCardPhysicalPrimary,
     invoices.personalCardPaid,
     "EXPENSE",
     "RECONCILED",
@@ -336,6 +355,7 @@ const transactions = [
     null,
     categories[3][0],
     cards.personalTravelCard,
+    cardInstruments.personalTravelPhysicalPrimary,
     invoices.travelCardClosed,
     "EXPENSE",
     "POSTED",
@@ -351,6 +371,7 @@ const transactions = [
     accounts.personalChecking,
     null,
     categories[5][0],
+    null,
     null,
     invoices.personalCardPaid,
     "EXPENSE",
@@ -515,7 +536,6 @@ async function upsertDemoCards(client) {
       20,
       10,
       350000,
-      "final 9876 ficticio",
       "porto_bank",
       "visa",
     ],
@@ -528,7 +548,6 @@ async function upsertDemoCards(client) {
       5,
       15,
       120000,
-      "final 1234 ficticio",
       "c6",
       "mastercard",
     ],
@@ -543,14 +562,13 @@ async function upsertDemoCards(client) {
     closingDay,
     dueDay,
     creditLimitMinor,
-    maskedIdentifier,
     institutionKey,
     brandKey,
   ] of rows) {
     await client.query(
       `INSERT INTO "Card"
        ("id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status", "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        ON CONFLICT ("id") DO UPDATE SET
          "paymentAccountId" = EXCLUDED."paymentAccountId",
          "name" = EXCLUDED."name",
@@ -572,9 +590,93 @@ async function upsertDemoCards(client) {
         closingDay,
         dueDay,
         creditLimitMinor,
-        maskedIdentifier,
         institutionKey,
         brandKey,
+      ],
+    );
+  }
+}
+
+async function upsertDemoCardInstruments(client) {
+  const rows = [
+    [
+      cardInstruments.personalCardPhysicalPrimary,
+      profiles.personal,
+      cards.personalCard,
+      "PHYSICAL",
+      "PRIMARY",
+      "ACTIVE",
+      true,
+      "Fisico titular demo",
+      "final 9876 ficticio",
+      300000,
+    ],
+    [
+      cardInstruments.personalCardVirtualPrimary,
+      profiles.personal,
+      cards.personalCard,
+      "VIRTUAL",
+      "PRIMARY",
+      "ACTIVE",
+      false,
+      "Virtual assinatura demo",
+      "final 4310 ficticio",
+      50000,
+    ],
+    [
+      cardInstruments.personalTravelPhysicalPrimary,
+      profiles.personal,
+      cards.personalTravelCard,
+      "PHYSICAL",
+      "PRIMARY",
+      "ACTIVE",
+      true,
+      "Fisico viagem demo",
+      "final 1234 ficticio",
+      120000,
+    ],
+  ];
+
+  for (const [
+    id,
+    financialProfileId,
+    cardId,
+    type,
+    holder,
+    status,
+    isDefault,
+    name,
+    maskedIdentifier,
+    creditLimitMinor,
+  ] of rows) {
+    await client.query(
+      `INSERT INTO "CardInstrument"
+       ("id", "organizationId", "financialProfileId", "cardId", "type", "holder", "status", "isDefault", "name", "maskedIdentifier", "creditLimitMinor", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $12, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       ON CONFLICT ("id") DO UPDATE SET
+         "cardId" = EXCLUDED."cardId",
+         "type" = EXCLUDED."type",
+         "holder" = EXCLUDED."holder",
+         "status" = EXCLUDED."status",
+         "isDefault" = EXCLUDED."isDefault",
+         "name" = EXCLUDED."name",
+         "maskedIdentifier" = EXCLUDED."maskedIdentifier",
+         "creditLimitMinor" = EXCLUDED."creditLimitMinor",
+         "updatedByUserId" = EXCLUDED."updatedByUserId",
+         "updatedAt" = CURRENT_TIMESTAMP`,
+      [
+        id,
+        DEMO_ORGANIZATION_ID,
+        financialProfileId,
+        cardId,
+        type,
+        holder,
+        status,
+        isDefault,
+        name,
+        maskedIdentifier,
+        creditLimitMinor,
+        DEMO_USER_ID,
       ],
     );
   }
@@ -687,6 +789,7 @@ async function upsertDemoTransactions(client) {
       destinationAccountId,
       categoryId,
       cardId,
+      cardInstrumentId,
       invoiceId,
       kind,
       status,
@@ -699,13 +802,14 @@ async function upsertDemoTransactions(client) {
 
     await client.query(
       `INSERT INTO "Transaction"
-       ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "categoryId", "cardId", "invoiceId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "reconciledAt", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+       ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "categoryId", "cardId", "cardInstrumentId", "invoiceId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "reconciledAt", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'BRL', $13, $13, $14, $15, $16, $16, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        ON CONFLICT ("id") DO UPDATE SET
          "accountId" = EXCLUDED."accountId",
          "destinationAccountId" = EXCLUDED."destinationAccountId",
          "categoryId" = EXCLUDED."categoryId",
          "cardId" = EXCLUDED."cardId",
+         "cardInstrumentId" = EXCLUDED."cardInstrumentId",
          "invoiceId" = EXCLUDED."invoiceId",
          "kind" = EXCLUDED."kind",
          "status" = EXCLUDED."status",
@@ -725,6 +829,7 @@ async function upsertDemoTransactions(client) {
         destinationAccountId,
         categoryId,
         cardId,
+        cardInstrumentId,
         invoiceId,
         kind,
         status,
@@ -767,6 +872,7 @@ async function main() {
     await upsertDemoProfiles(client);
     await upsertDemoAccounts(client);
     await upsertDemoCards(client);
+    await upsertDemoCardInstruments(client);
     await upsertDemoCategories(client);
     await upsertDemoBudgets(client);
     await upsertDemoInvoices(client);
