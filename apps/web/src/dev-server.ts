@@ -89,7 +89,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/admin/instituicoes" && token) {
-    sendHtml(response, 200, await renderAdminInstitutionsPage(token));
+    sendHtml(response, 200, await renderAdminInstitutionsPage(token, url));
     return;
   }
 
