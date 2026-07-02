@@ -138,7 +138,12 @@ function testPlannedTransactionsClearEffectiveDate(): void {
       status: "planned",
     },
   });
-  const posted = createTransactionFixture(tenantA, "transaction-posted-expense", "expense", account.id);
+  const posted = createTransactionFixture(
+    tenantA,
+    "transaction-posted-expense",
+    "expense",
+    account.id,
+  );
   const movedBackToPlanned = updateTransaction({
     context: tenantA,
     transaction: posted,
