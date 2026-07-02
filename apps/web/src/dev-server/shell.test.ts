@@ -137,6 +137,6 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /fetch\("\/api\/me"\)/);
     assert.match(html, /body\.user\.isMaster !== true/);
     assert.match(html, /link\.href = "\/admin\/instituicoes"/);
-    assert.match(html, /link\.textContent = "Admin - Instituições"/);
+    assert.match(html, /link\.textContent = \["Admin", "Instituições"\]\.join\(" - "\)/);
   });
 });
