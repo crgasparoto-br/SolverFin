@@ -125,4 +125,18 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /<nav aria-label="Menu principal" class="nav-open">/);
     assert.match(html, /aria-expanded="true"[^>]*>Menos rotas<\/button>/);
   });
+
+  it("can add the admin institutions route when the current user is master", () => {
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/dashboard",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Dashboard",
+      styles: ".test-marker { color: #0f3d4c; }",
+    });
+
+    assert.match(html, /fetch\("\/api\/me"\)/);
+    assert.match(html, /body\.user\.isMaster !== true/);
+    assert.match(html, /link\.href = "\/admin\/instituicoes"/);
+    assert.match(html, /link\.textContent = "Admin - Instituições"/);
+  });
 });
