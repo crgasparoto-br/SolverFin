@@ -263,9 +263,7 @@ export function isCardBrandKey(value: string): value is CardBrandKey {
   return cardBrandKeys.has(value);
 }
 
-export function findFinancialInstitution(
-  value: string | undefined,
-): ResolvedFinancialInstitution {
+export function findFinancialInstitution(value: string | undefined): ResolvedFinancialInstitution {
   const normalizedValue = normalizeOptionalCatalogKey(value);
 
   if (normalizedValue === undefined) {
