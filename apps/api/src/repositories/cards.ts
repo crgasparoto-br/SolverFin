@@ -13,6 +13,7 @@ import {
   updateCard as updateCardDomain,
   type Account,
   type Card,
+  type CardInstrument,
   type CardMutationResult,
   type CardStatus,
   type CreateCardPayload,
@@ -34,6 +35,7 @@ import {
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { listCardInstrumentsForContext } from "./card-instruments.js";
 
 interface CardRow {
   id: string;
@@ -199,6 +201,10 @@ export async function registerCardPurchaseForContext(
 }> {
   const card = await findCardRow(context, cardId);
   const groupCardId = await resolveGroupCardId(context, cardId);
+  const instruments =
+    payload.cardInstrumentId !== undefined
+      ? await listCardInstrumentsForContext(context, groupCardId)
+      : undefined;
   const existingInvoices = await listAllInvoicesForCard(context, groupCardId);
   const paymentAccount = card?.paymentAccountId
     ? await findAccountRow(context, card.paymentAccountId)
@@ -217,6 +223,7 @@ export async function registerCardPurchaseForContext(
     context,
     card,
     groupCardId,
+    ...(instruments !== undefined ? { instruments } : {}),
     existingInvoices,
     ...(paymentAccount ? { paymentAccount } : {}),
     existingForecastTransactions,
@@ -245,15 +252,16 @@ export async function registerCardPurchaseForContext(
     for (const installment of result.installments) {
       await executeQuery(
         `insert into "Installment"
-          ("id", "organizationId", "financialProfileId", "recurrenceId", "cardId", "status",
+          ("id", "organizationId", "financialProfileId", "recurrenceId", "cardId", "cardInstrumentId", "status",
            "sequenceNumber", "totalInstallments", "dueOn", "amountMinor", "currency", "createdAt", "updatedAt")
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
         [
           installment.id,
           installment.organizationId,
           installment.financialProfileId,
           installment.recurrenceId ?? null,
           installment.cardId ?? null,
+          installment.cardInstrumentId ?? null,
           installment.status.toUpperCase(),
           installment.sequenceNumber,
           installment.totalInstallments,
@@ -399,10 +407,10 @@ function buildInvoiceParams(invoice: Invoice, exists: boolean): unknown[] {
 
 function buildInsertCardTransactionSql(): string {
   return `insert into "Transaction"
-    ("id", "organizationId", "financialProfileId", "cardId", "invoiceId", "categoryId", "kind", "status",
+    ("id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId", "categoryId", "kind", "status",
      "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt", "updatedAt",
      "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`;
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`;
 }
 
 function buildCardTransactionParams(transaction: Transaction): unknown[] {
@@ -411,6 +419,7 @@ function buildCardTransactionParams(transaction: Transaction): unknown[] {
     transaction.organizationId,
     transaction.financialProfileId,
     transaction.cardId ?? null,
+    transaction.cardInstrumentId ?? null,
     transaction.invoiceId ?? null,
     transaction.categoryId ?? null,
     transaction.kind.toUpperCase(),
@@ -692,4 +701,4 @@ function toDateOnly(value: Date): string {
   return value.toISOString().slice(0, 10);
 }
 
-export type { InvoicePeriod, InstallmentStatus };
+export type { InvoicePeriod, InstallmentStatus, CardInstrument };
