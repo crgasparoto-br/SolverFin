@@ -12,6 +12,7 @@ export interface AuthenticatedShellDocumentInput {
   content: string;
   currentLabel: string;
   styles: string;
+  showAdminNavigation?: boolean;
 }
 
 export function renderShellDocument(input: ShellDocumentInput): string {
@@ -44,7 +45,7 @@ export function renderAuthenticatedShell(
     <div class="app-shell">
       <aside class="sidebar">
         <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
-        <nav aria-label="Menu principal" class="${isActivePathnameSecondary(input.activePathname) ? "nav-open" : ""}">${renderNavigation(input.activePathname)}</nav>
+        <nav aria-label="Menu principal" class="${isActivePathnameSecondary(input.activePathname, input.showAdminNavigation === true) ? "nav-open" : ""}">${renderNavigation(input.activePathname, input.showAdminNavigation === true)}</nav>
         <button class="logout" type="button" data-logout>Sair</button>
       </aside>
       <div class="main-area">
@@ -65,14 +66,16 @@ export function faviconLinks(): string {
   `;
 }
 
-function isActivePathnameSecondary(activePathname: string): boolean {
-  const activeRoute = listPrivateShellRoutes().find((route) => route.path === activePathname);
+function isActivePathnameSecondary(activePathname: string, includeMasterRoutes: boolean): boolean {
+  const activeRoute = listPrivateShellRoutes({ includeMaster: includeMasterRoutes }).find(
+    (route) => route.path === activePathname,
+  );
   return activeRoute !== undefined && !isPrimaryMobileRoute(activeRoute);
 }
 
-function renderNavigation(activePathname: string): string {
-  const routes = listPrivateShellRoutes();
-  const activeIsSecondary = isActivePathnameSecondary(activePathname);
+function renderNavigation(activePathname: string, includeMasterRoutes: boolean): string {
+  const routes = listPrivateShellRoutes({ includeMaster: includeMasterRoutes });
+  const activeIsSecondary = isActivePathnameSecondary(activePathname, includeMasterRoutes);
   const secondaryIds = routes
     .filter((route) => !isPrimaryMobileRoute(route))
     .map((route) => `nav-secondary-${route.id}`);
