@@ -6,6 +6,7 @@ import {
   type TenantContext,
 } from "@solverfin/domain";
 
+import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
@@ -44,6 +45,12 @@ route("POST", `${ACCOUNTS_BASE_PATH}/:accountId/archive`, archiveAccountHandler)
 export async function handleAccountsApiRequest(
   request: ApiRequest,
 ): Promise<ApiResponse | undefined> {
+  const adminResult = await handleAdminInstitutionsApiRequest(request);
+
+  if (adminResult) {
+    return adminResult;
+  }
+
   if (!request.pathname.startsWith(ACCOUNTS_BASE_PATH)) {
     return undefined;
   }

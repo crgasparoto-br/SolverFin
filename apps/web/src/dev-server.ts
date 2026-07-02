@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
+import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { handleApiRequest } from "./dev-server/api.js";
@@ -17,6 +18,7 @@ import { renderSettingsPage } from "./dev-server/settings-page.js";
 import { tryServeStaticAsset } from "./dev-server/static-assets.js";
 import { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
+export { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 export { renderAccountsPage, renderBudgetsPage } from "./dev-server/pages.js";
@@ -83,6 +85,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/dashboard" && token) {
     sendHtml(response, 200, await renderDashboardPage(token));
+    return;
+  }
+
+  if (url.pathname === "/admin/instituicoes" && token) {
+    sendHtml(response, 200, await renderAdminInstitutionsPage(token));
     return;
   }
 

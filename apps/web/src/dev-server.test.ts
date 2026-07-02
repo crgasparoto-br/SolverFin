@@ -8,6 +8,7 @@ import { financialInstitutionCatalog } from "@solverfin/domain";
 import { enhanceAccountsCardsTabs, renderLoginPage, resolveRoute } from "./dev-server.js";
 import { institutions, renderInstitutionIcon } from "./dev-server/institutions.js";
 import { privateRoutes } from "./dev-server/routes.js";
+import { renderAuthenticatedShell } from "./dev-server/shell.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -15,6 +16,7 @@ loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
+adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu();
 accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
 accountsCardsDirectEnhancementIsInjectedOnce();
 accountsCardsAdditionalButtonUsesDirectController();
@@ -66,6 +68,35 @@ function accountsCardsRouteRendersMasterPage(): void {
 
   assert.equal(authenticatedRoute.statusCode, 200);
   assert.equal(authenticatedRoute.kind, "placeholder");
+}
+
+function adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu(): void {
+  const anonymousRoute = resolveRoute("/admin/instituicoes", false);
+
+  assert.equal(anonymousRoute.statusCode, 302);
+  assert.equal(anonymousRoute.location, "/login");
+
+  const authenticatedRoute = resolveRoute("/admin/instituicoes", true);
+
+  assert.equal(authenticatedRoute.statusCode, 200);
+  assert.equal(authenticatedRoute.kind, "placeholder");
+  assert.equal(privateRoutes.has("/admin/instituicoes"), false);
+
+  const commonShell = renderAuthenticatedShell({
+    activePathname: "/dashboard",
+    content: "<p>Dashboard</p>",
+    currentLabel: "Dashboard",
+  });
+  const masterShell = renderAuthenticatedShell({
+    activePathname: "/admin/instituicoes",
+    content: "<p>Admin</p>",
+    currentLabel: "Admin - Instituições",
+    showAdminNavigation: true,
+  });
+
+  assert.doesNotMatch(commonShell, /Admin - Instituições/);
+  assert.match(masterShell, /Admin - Instituições/);
+  assert.match(masterShell, /\/admin\/instituicoes/);
 }
 
 function accountsCardsEnhancementIgnoresNonAccountsCardsHtml(): void {
@@ -225,6 +256,7 @@ function sidebarMenuUsesPtBrLabels(): void {
   assert.equal(privateRoutes.get("/orcamentos"), "Orçamentos");
   assert.equal(privateRoutes.get("/relatorios"), "Relatórios");
   assert.equal(privateRoutes.get("/configuracoes"), "Configurações");
+  assert.equal(privateRoutes.has("/admin/instituicoes"), false);
 }
 
 function dashboardDoesNotRenderOnUnknownRoute(): void {

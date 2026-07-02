@@ -8,9 +8,10 @@ export type ShellRouteId =
   | "inbox"
   | "reports"
   | "settings"
+  | "adminInstitutions"
   | "signIn";
 
-export type ShellNavigationGroup = "main" | "manage" | "review" | "settings" | "public";
+export type ShellNavigationGroup = "main" | "manage" | "review" | "settings" | "admin" | "public";
 export type ShellRouteStatus = "available" | "placeholder";
 
 export interface ShellRoute {
@@ -21,7 +22,12 @@ export interface ShellRoute {
   navigationGroup: ShellNavigationGroup;
   requiresAuthentication: boolean;
   requiresFinancialProfile: boolean;
+  requiresMaster?: boolean;
   status: ShellRouteStatus;
+}
+
+export interface ListPrivateShellRoutesOptions {
+  includeMaster?: boolean;
 }
 
 export const solverFinShellRoutes = [
@@ -117,6 +123,17 @@ export const solverFinShellRoutes = [
     status: "available",
   },
   {
+    id: "adminInstitutions",
+    path: "/admin/instituicoes",
+    label: "Admin - Instituições",
+    description: "Mantenha o catálogo global de instituições financeiras e logomarcas.",
+    navigationGroup: "admin",
+    requiresAuthentication: true,
+    requiresFinancialProfile: false,
+    requiresMaster: true,
+    status: "available",
+  },
+  {
     id: "signIn",
     path: "/login",
     label: "Entrar",
@@ -132,14 +149,27 @@ export function getShellRouteByPath(path: string): ShellRoute | undefined {
   return solverFinShellRoutes.find((route) => route.path === path);
 }
 
-export function listShellRoutesByGroup(group: ShellNavigationGroup): ShellRoute[] {
-  return solverFinShellRoutes.filter((route) => route.navigationGroup === group);
+export function listShellRoutesByGroup(
+  group: ShellNavigationGroup,
+  options: ListPrivateShellRoutesOptions = {},
+): ShellRoute[] {
+  return solverFinShellRoutes.filter(
+    (route) => route.navigationGroup === group && shouldIncludeRoute(route, options),
+  );
 }
 
-export function listPrivateShellRoutes(): ShellRoute[] {
-  return solverFinShellRoutes.filter((route) => route.requiresAuthentication);
+export function listPrivateShellRoutes(options: ListPrivateShellRoutesOptions = {}): ShellRoute[] {
+  return solverFinShellRoutes.filter(
+    (route) => route.requiresAuthentication && shouldIncludeRoute(route, options),
+  );
 }
 
-export function listImplementedPrivateShellRoutes(): ShellRoute[] {
-  return listPrivateShellRoutes().filter((route) => route.status === "available");
+export function listImplementedPrivateShellRoutes(
+  options: ListPrivateShellRoutesOptions = {},
+): ShellRoute[] {
+  return listPrivateShellRoutes(options).filter((route) => route.status === "available");
+}
+
+function shouldIncludeRoute(route: ShellRoute, options: ListPrivateShellRoutesOptions): boolean {
+  return route.requiresMaster !== true || options.includeMaster === true;
 }
