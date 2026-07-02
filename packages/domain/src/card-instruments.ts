@@ -114,7 +114,9 @@ export function createCardInstrument(
   const currentDefaultInstrumentId = existingActiveInstruments.find(
     (instrument) => instrument.isDefault,
   )?.id;
-  const defaultInstrumentId = shouldBecomeDefault ? input.id : currentDefaultInstrumentId;
+  const defaultInstrumentId = shouldBecomeDefault
+    ? input.id
+    : currentDefaultInstrumentId;
   const instrument: CardInstrument = {
     id: input.id,
     organizationId: input.context.organizationId,
@@ -190,7 +192,8 @@ export function setDefaultCardInstrument(
 
   return {
     card: syncedCard,
-    instrument: updatedInstruments.find((instrument) => instrument.id === target.id) ?? target,
+    instrument:
+      updatedInstruments.find((instrument) => instrument.id === target.id) ?? target,
     instruments: updatedInstruments,
   };
 }
@@ -223,8 +226,9 @@ export function archiveCardInstrument(
     };
   });
   const nextDefault =
-    activeInstruments(archivedInstruments).find((instrument) => instrument.isDefault) ??
-    activeInstruments(archivedInstruments)[0];
+    activeInstruments(archivedInstruments).find(
+      (instrument) => instrument.isDefault,
+    ) ?? activeInstruments(archivedInstruments)[0];
   const updatedInstruments =
     nextDefault !== undefined
       ? normalizeDefaultInstrument(
@@ -243,7 +247,8 @@ export function archiveCardInstrument(
 
   return {
     card: syncedCard,
-    instrument: updatedInstruments.find((instrument) => instrument.id === target.id) ?? target,
+    instrument:
+      updatedInstruments.find((instrument) => instrument.id === target.id) ?? target,
     instruments: updatedInstruments,
   };
 }
