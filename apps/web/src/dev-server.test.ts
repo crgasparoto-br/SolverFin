@@ -174,7 +174,7 @@ function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
 function sidebarMenuUsesPtBrLabels(): void {
   assert.equal(privateRoutes.get("/lancamentos"), "Extrato da conta");
   assert.equal(privateRoutes.has("/recorrencias"), false);
-  assert.equal(privateRoutes.get("/pagar-receber"), "Pagar e receber");
+  assert.equal(privateRoutes.has("/pagar-receber"), false);
   assert.equal(privateRoutes.get("/contas-cartoes"), "Contas e Cartões");
   assert.equal(privateRoutes.has("/contas"), false);
   assert.equal(
