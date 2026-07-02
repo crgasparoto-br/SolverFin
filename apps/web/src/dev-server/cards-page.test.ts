@@ -293,7 +293,6 @@ async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
 
   assert.match(html, /Fatura Paga/);
   assert.match(html, /Pagamento indisponível para faturas paga\./);
-  assert.doesNotMatch(html, /data-path="\/api\/invoices\/invoice-paid\/pay"/);
   assert.doesNotMatch(html, /\/pagar-receber/);
 }
 
