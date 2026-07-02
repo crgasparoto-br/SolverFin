@@ -2,6 +2,8 @@
 
 Este pacote organiza o backlog inicial do SolverFin para implementacao orientada por IA.
 
+> Nota de manutencao: este backlog registra o plano inicial e pode conter termos historicos. A decisao #284 consolidou a rotina de pagar/receber em **Extrato da conta** e **Cartoes de Credito**. Para novas implementacoes, nao recrie uma tela operacional dedicada `/pagar-receber`; trate `PayableReceivable` como compatibilidade legada ate a transicao tecnica da #290.
+
 ## E01 - [EPIC] Fundacao documental e operacao por IA
 Criar a base documental que permita que agentes de IA implementem o projeto com minimo retrabalho, maximo contexto e criterios claros.
 
@@ -46,7 +48,7 @@ Implementar APIs do controle financeiro essencial.
 - `C04` **Implementar recorrencias e parcelamentos** - Suportar contas mensais, assinaturas e compras parceladas.
 - `C05` **Implementar cartoes de credito e faturas** - Permitir controle basico de cartoes e faturas.
 - `C06` **Implementar orcamentos, metas e alertas basicos** - Permitir controle mensal por categoria.
-- `C07` **Implementar contas a pagar e a receber** - Suportar controle simples de vencimentos.
+- `C07` **Implementar contrato legado de contas a pagar e a receber** - Suportar controle simples de vencimentos no backlog inicial; apos a #284, novos fluxos devem usar Extrato da conta, Cartoes de Credito, `Transaction` e `Invoice`.
 
 ## E06 - [EPIC] Frontend web/PWA MVP
 Entregar interface simples, responsiva e mobile-first para uso diario.
@@ -105,6 +107,6 @@ Garantir manutencao, confiabilidade, monitoramento e evolucao segura.
 ## E12 - [EPIC] Integracoes SolverIT e plano profissional/MEI
 Conectar SolverFin ao ecossistema SolverIT: Agenda Profissional, Limite MEI e exportacoes para contador.
 
-- `G01` **Definir contrato de integracao com Agenda Profissional** - Planejar como atendimentos/servicos geram contas a receber ou receitas.
+- `G01` **Definir contrato de integracao com Agenda Profissional** - Planejar como atendimentos/servicos geram lancamentos previstos ou receitas no Extrato da conta.
 - `G02` **Definir contrato de integracao com Limite MEI** - Planejar como receitas do SolverFin alimentam controle do limite MEI.
 - `G03` **Implementar exportacao para contador e relatorios MEI** - Gerar saidas uteis para usuario profissional.

@@ -6,14 +6,16 @@
 ## Contexto
 SolverFin sera o controle financeiro inteligente da SolverIT, com foco em controle pessoal, MEI, profissional autonomo e pequenos negocios. O diferencial central e reduzir lancamentos manuais por meio de importacao, regras, IA de classificacao, conciliacao, mensagens bancarias e assistente financeiro.
 
+A decisao #284 consolidou compromissos de conta corrente no **Extrato da conta**. Integracoes novas devem gerar `Transaction` planejado/sugerido/postado conforme o estado do pagamento, nao registros novos em `PayableReceivable`.
+
 ## Objetivo
-Planejar como atendimentos/servicos geram contas a receber ou receitas.
+Planejar como atendimentos/servicos geram lancamentos previstos ou receitas no Extrato da conta.
 
 ## Escopo
 Mapear eventos, campos, autenticacao, idempotencia e conciliacao com pagamentos.
 
 ## Fora de escopo
-Nao cobrir funcionalidades fora do escopo descrito; nao antecipar integracoes externas sem ADR aprovada.
+Nao cobrir funcionalidades fora do escopo descrito; nao antecipar integracoes externas sem ADR aprovada. Nao recriar uma fonte operacional separada de contas a receber sem nova decisao explicita.
 
 ## Artefatos esperados
 - `docs/integrations/agenda-profissional.md`

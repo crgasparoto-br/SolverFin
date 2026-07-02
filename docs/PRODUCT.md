@@ -58,7 +58,7 @@ O usuario importa CSV/OFX ou cola textos de mensagens bancarias. SolverFin norma
 
 ### Acompanhar rotina mensal
 
-O usuario acompanha saldo, proximos vencimentos, faturas, contas a pagar/receber, orcamentos, metas e alertas basicos.
+O usuario acompanha saldo, proximos vencimentos, faturas, lancamentos previstos, orcamentos, metas e alertas basicos. Compromissos de conta corrente ficam no **Extrato da conta**; compromissos de cartao ficam em **Cartoes de Credito**.
 
 ### Usar IA com controle
 
@@ -84,7 +84,7 @@ O MVP deve permitir:
 - receitas, despesas e transferencias;
 - recorrencias e parcelamentos;
 - rotina operacional de cartoes de credito e faturas em **Cartoes**;
-- contas a pagar e a receber;
+- compromissos financeiros futuros em **Extrato da conta** e **Cartoes de Credito**, sem tela dedicada de contas a pagar/receber;
 - orcamentos, metas e alertas basicos;
 - importacao inicial por CSV/OFX;
 - inbox para textos de mensagens bancarias coladas ou compartilhadas;
@@ -148,9 +148,11 @@ A IA nao deve:
 
 A experiencia deve ser direta, calma e orientada a acao. Textos visiveis devem explicar o que o usuario pode revisar, corrigir, confirmar ou acompanhar, sem jargao tecnico.
 
-A experiencia de manutencao de registros deve evitar trocas de pagina desnecessarias. Sempre que o escopo permitir, criar e editar contas, cartoes, categorias, lancamentos, recorrencias, contas a pagar/receber, orcamentos e cadastros auxiliares por modal ou pop-up contextual.
+A experiencia de manutencao de registros deve evitar trocas de pagina desnecessarias. Sempre que o escopo permitir, criar e editar contas, cartoes, categorias, lancamentos, recorrencias, orcamentos e cadastros auxiliares por modal ou pop-up contextual.
 
 Recorrencias nao tem tela propria: sao criadas e geridas dentro da tela onde a conta ou o cartao de origem ja e gerenciado (Extrato da conta para recorrencias de conta, Cartoes de Credito para recorrencias de cartao).
+
+Contas a pagar e a receber tambem nao tem tela operacional propria no produto ativo. Receitas, despesas e transferencias previstas devem ser criadas e acompanhadas no **Extrato da conta**; compras, faturas e pagamentos de cartao devem ser criados e acompanhados em **Cartoes de Credito**. Qualquer compatibilidade tecnica com registros antigos deve preservar historico sem reintroduzir uma jornada separada para o usuario.
 
 Telas operacionais devem ser clean: listas, filtros, acoes rapidas, estados vazios compactos e icones acessiveis devem ter prioridade sobre cards explicativos, banners permanentes e blocos longos de texto.
 

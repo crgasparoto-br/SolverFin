@@ -3,13 +3,24 @@
 **Parent epic:** `E05` - [EPIC] Backend core financeiro MVP
 **Fase:** MVP
 
+## Status historico
+
+Esta issue body pertence ao backlog inicial. A implementacao original criou o dominio/API `PayableReceivable`, mas a decisao posterior da #284 substituiu a tela operacional dedicada por fluxos em **Extrato da conta** e **Cartoes de Credito**.
+
+Para novas implementacoes:
+
+- use `Transaction` para receitas, despesas, transferencias e compromissos previstos de conta;
+- use `Invoice` e compras de cartao para compromissos de cartao;
+- trate `PayableReceivable` como legado de compatibilidade ate a transicao tecnica da #290;
+- nao recrie uma tela ativa em `/pagar-receber` sem nova decisao explicita.
+
 ## Contexto
 SolverFin sera o controle financeiro inteligente da SolverIT, com foco em controle pessoal, MEI, profissional autonomo e pequenos negocios. O diferencial central e reduzir lancamentos manuais por meio de importacao, regras, IA de classificacao, conciliacao, mensagens bancarias e assistente financeiro.
 
-## Objetivo
+## Objetivo original
 Suportar controle simples de vencimentos.
 
-## Escopo
+## Escopo original
 Criar entidades/fluxos para pagar/receber, status, vencimento e conciliacao com lancamentos.
 
 ## Fora de escopo
@@ -18,7 +29,7 @@ Nao cobrir funcionalidades fora do escopo descrito; nao antecipar integracoes ex
 ## Artefatos esperados
 - Codigo, testes e documentacao relacionados ao escopo desta issue.
 
-## Criterios de aceite
+## Criterios de aceite originais
 - [ ] Conta marcada como paga/recebida gera ou vincula lancamento financeiro.
 
 ## Padrao para implementacao por IA
