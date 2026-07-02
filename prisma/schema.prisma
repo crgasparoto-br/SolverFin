@@ -32,6 +32,16 @@ enum CardStatus {
   BLOCKED
 }
 
+enum CardInstrumentType {
+  PHYSICAL
+  VIRTUAL
+}
+
+enum CardInstrumentHolder {
+  PRIMARY
+  ADDITIONAL
+}
+
 enum AccountKind {
   CHECKING
   SAVINGS
@@ -176,6 +186,7 @@ enum AuditAction {
 enum AuditEntityKind {
   ACCOUNT
   CARD
+  CARD_INSTRUMENT
   CATEGORY
   TRANSACTION
   RECURRENCE
@@ -240,6 +251,7 @@ model FinancialProfile {
   owner               User                  @relation("FinancialProfileOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
   accounts            Account[]
   cards               Card[]
+  cardInstruments     CardInstrument[]
   categories          Category[]
   transactions        Transaction[]
   recurrences         Recurrence[]
@@ -306,6 +318,7 @@ model Card {
 
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   paymentAccount   Account?         @relation("CardPaymentAccount", fields: [paymentAccountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  instruments      CardInstrument[]
   transactions     Transaction[]    @relation("TransactionCard")
   invoices         Invoice[]
   installments     Installment[]
@@ -315,6 +328,35 @@ model Card {
   @@index([organizationId, financialProfileId, status])
   @@index([organizationId, financialProfileId, institutionKey])
   @@index([organizationId, financialProfileId, brandKey])
+}
+
+model CardInstrument {
+  id                 String               @id @default(uuid()) @db.Uuid
+  organizationId     String               @db.Uuid
+  financialProfileId String               @db.Uuid
+  cardId             String               @db.Uuid
+  type               CardInstrumentType
+  holder             CardInstrumentHolder
+  status             RecordStatus         @default(ACTIVE)
+  isDefault          Boolean              @default(false)
+  name               String?              @db.VarChar(160)
+  maskedIdentifier   String?              @db.VarChar(80)
+  creditLimitMinor   Int?
+  createdByUserId    String?              @db.Uuid
+  updatedByUserId    String?              @db.Uuid
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  card             Card             @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Cascade)
+  transactions     Transaction[]    @relation("TransactionCardInstrument")
+  recurrences      Recurrence[]     @relation("RecurrenceCardInstrument")
+  installments     Installment[]    @relation("InstallmentCardInstrument")
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, cardId, status])
+  @@index([organizationId, financialProfileId, cardId, type, holder])
+  @@index([organizationId, financialProfileId, status])
 }
 
 model Category {
@@ -351,6 +393,7 @@ model Transaction {
   destinationAccountId String?           @db.Uuid
   categoryId           String?           @db.Uuid
   cardId               String?           @db.Uuid
+  cardInstrumentId     String?           @db.Uuid
   invoiceId            String?           @db.Uuid
   recurrenceId         String?           @db.Uuid
   installmentId        String?           @db.Uuid
@@ -378,6 +421,7 @@ model Transaction {
   destinationAccount       Account?           @relation("TransactionDestinationAccount", fields: [destinationAccountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   category                 Category?          @relation(fields: [categoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   card                     Card?              @relation("TransactionCard", fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  cardInstrument           CardInstrument?    @relation("TransactionCardInstrument", fields: [cardInstrumentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   invoice                  Invoice?           @relation("InvoiceTransactions", fields: [invoiceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   recurrence               Recurrence?        @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   installment              Installment?       @relation(fields: [installmentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
@@ -395,6 +439,7 @@ model Transaction {
   @@index([organizationId, financialProfileId, accountId, plannedOn])
   @@index([organizationId, financialProfileId, effectiveOn])
   @@index([organizationId, financialProfileId, cardId, occurredOn])
+  @@index([organizationId, financialProfileId, cardInstrumentId, occurredOn])
   @@index([organizationId, financialProfileId, categoryId, occurredOn])
   @@index([organizationId, financialProfileId, importBatchId])
   @@index([organizationId, financialProfileId, transferGroupId])
@@ -406,6 +451,7 @@ model Recurrence {
   financialProfileId String              @db.Uuid
   accountId          String?             @db.Uuid
   cardId             String?             @db.Uuid
+  cardInstrumentId   String?             @db.Uuid
   categoryId         String?             @db.Uuid
   status             RecurrenceStatus    @default(ACTIVE)
   kind               TransactionKind     @default(EXPENSE)
@@ -424,6 +470,7 @@ model Recurrence {
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   account          Account?         @relation(fields: [accountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   card             Card?            @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  cardInstrument   CardInstrument?  @relation("RecurrenceCardInstrument", fields: [cardInstrumentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   category         Category?        @relation(fields: [categoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   transactions     Transaction[]
   installments     Installment[]
@@ -432,6 +479,7 @@ model Recurrence {
   @@index([organizationId, financialProfileId, status])
   @@index([organizationId, financialProfileId, startOn])
   @@index([organizationId, financialProfileId, cardId])
+  @@index([organizationId, financialProfileId, cardInstrumentId])
 }
 
 model Installment {
@@ -440,6 +488,7 @@ model Installment {
   financialProfileId String            @db.Uuid
   recurrenceId       String?           @db.Uuid
   cardId             String?           @db.Uuid
+  cardInstrumentId   String?           @db.Uuid
   status             InstallmentStatus @default(PLANNED)
   sequenceNumber     Int
   totalInstallments  Int
@@ -454,12 +503,14 @@ model Installment {
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   recurrence       Recurrence?      @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   card             Card?            @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  cardInstrument   CardInstrument?  @relation("InstallmentCardInstrument", fields: [cardInstrumentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   transactions     Transaction[]
 
   @@unique([id, organizationId, financialProfileId])
   @@unique([organizationId, financialProfileId, recurrenceId, sequenceNumber])
   @@index([organizationId, financialProfileId, dueOn])
   @@index([organizationId, financialProfileId, status])
+  @@index([organizationId, financialProfileId, cardInstrumentId])
 }
 
 model Invoice {
