@@ -26,20 +26,22 @@ describe("SSR shell document", () => {
 describe("authenticated SSR shell", () => {
   it("renders the shared shell with active navigation and logout handling", () => {
     const html = renderAuthenticatedShellDocument({
-      activePathname: "/pagar-receber",
+      activePathname: "/lancamentos",
       content: "<section>Conteúdo da página</section>",
-      currentLabel: "Pagar & receber",
+      currentLabel: "Extrato da conta",
       styles: ".test-marker { color: #0f3d4c; }",
     });
 
-    assert.match(html, /<title>Pagar &amp; receber - SolverFin<\/title>/);
-    assert.match(html, /<strong>Pagar &amp; receber<\/strong>/);
+    assert.match(html, /<title>Extrato da conta - SolverFin<\/title>/);
+    assert.match(html, /<strong>Extrato da conta<\/strong>/);
     assert.match(html, /<style>\.test-marker \{ color: #0f3d4c; \}<\/style>/);
     assert.match(html, /<main><section>Conteúdo da página<\/section><\/main>/);
     assert.match(
       html,
-      /<a href="\/pagar-receber" data-nav-priority="primary" aria-current="page">Pagar e receber<\/a>/,
+      /<a href="\/lancamentos" data-nav-priority="primary" aria-current="page">Extrato da conta<\/a>/,
     );
+    assert.doesNotMatch(html, /href="\/pagar-receber"/);
+    assert.doesNotMatch(html, />Pagar e receber<\/a>/);
     assert.match(html, /<a href="\/configuracoes" data-nav-priority="primary" >Configurações<\/a>/);
     assert.match(html, /fetch\("\/api\/session", \{ method: "DELETE" \}\)/);
     assert.match(html, /window\.location\.assign\("\/login"\)/);
