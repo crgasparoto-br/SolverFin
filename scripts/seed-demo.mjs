@@ -803,7 +803,7 @@ async function upsertDemoTransactions(client) {
     await client.query(
       `INSERT INTO "Transaction"
        ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "categoryId", "cardId", "cardInstrumentId", "invoiceId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "reconciledAt", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'BRL', $13, $13, $14, $15, $16, $16, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'BRL', $14, $14, $15, $16, $17, $17, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        ON CONFLICT ("id") DO UPDATE SET
          "accountId" = EXCLUDED."accountId",
          "destinationAccountId" = EXCLUDED."destinationAccountId",
