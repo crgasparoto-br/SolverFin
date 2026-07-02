@@ -5,6 +5,7 @@ import { renderCardsPage } from "./cards-page.js";
 const originalFetch = globalThis.fetch;
 
 await cardsPageRendersInvoiceWorkspace();
+await cardsPageDisablesPaymentForSettledInvoices();
 await cardsPageAggregatesFamilyCardTotals();
 await cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard();
 
@@ -163,6 +164,7 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /Cartão Principal/);
   assert.match(html, /final 9876/);
   assert.match(html, /Vencimento/);
+  assert.match(html, /Valor a pagar/);
   assert.match(html, /Saldo anterior/);
   assert.match(html, /Total conciliado/);
   assert.match(html, /Total não conciliado/);
@@ -176,6 +178,11 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /data-purchase-search/);
   assert.match(html, /\/api\/invoices\/invoice-1\/close/);
   assert.match(html, /data-path="\/api\/invoices\/invoice-1\/pay"/);
+  assert.match(html, /name="paymentAccountId"/);
+  assert.match(html, /name="paidOn"/);
+  assert.match(html, /Conta Principal/);
+  assert.match(html, /Pagamento da fatura/);
+  assert.match(html, /Confirmar pagamento/);
   assert.match(html, /data-edit-purchase="purchase-1"/);
   assert.match(html, /name="repeatMode"/);
   assert.match(html, /<option value="installment">Parcelado<\/option>/);
@@ -191,6 +198,7 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /recurrence-indicator/);
   assert.match(html, /data-recurrence-edit="recurrence-card-1"/);
   assert.doesNotMatch(html, /\/recorrencias/);
+  assert.doesNotMatch(html, /\/pagar-receber/);
   assert.doesNotMatch(html, /name="kind"/, "card recurrences should not expose a kind field");
 
   const recurrencesIndex = calledPaths.indexOf("/api/recurrences");
@@ -199,6 +207,93 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
     recurrencesIndex >= 0 && purchasesIndex >= 0 && recurrencesIndex < purchasesIndex,
     "recurrences must be fetched before purchases so catch-up materialization shows up in the same render",
   );
+}
+
+async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = new URL(String(input));
+
+    if (url.pathname === "/api/cards") {
+      return jsonResponse({
+        cards: [
+          {
+            id: "card-1",
+            name: "Cartão Principal",
+            status: "active",
+            closingDay: 20,
+            dueDay: 10,
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/invoices") {
+      return jsonResponse({
+        invoices: [
+          {
+            id: "invoice-paid",
+            cardId: "card-1",
+            status: "paid",
+            periodStartOn: "2026-06-01",
+            periodEndOn: "2026-06-20",
+            dueOn: "2026-07-10",
+            totalAmountMinor: 17345,
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/accounts") {
+      return jsonResponse({ accounts: [{ id: "account-1", name: "Conta Principal" }] });
+    }
+
+    if (url.pathname === "/api/categories") {
+      return jsonResponse({ categories: [] });
+    }
+
+    if (url.pathname === "/api/card-additional-links") {
+      return jsonResponse({ links: [] });
+    }
+
+    if (url.pathname === "/api/invoices/invoice-paid/summary") {
+      return jsonResponse({
+        summary: {
+          invoiceId: "invoice-paid",
+          financialProfileId: "profile-1",
+          cardId: "card-1",
+          cardName: "Cartão Principal",
+          status: "paid",
+          periodStartOn: "2026-06-01",
+          closingOn: "2026-06-20",
+          dueOn: "2026-07-10",
+          previousBalanceMinor: 0,
+          totalExpensesMinor: 17345,
+          totalPaidMinor: 17345,
+          amountDueMinor: 0,
+          reconciledExpensesMinor: 17345,
+          unreconciledExpensesMinor: 0,
+          purchasesCount: 1,
+          cardTotals: [],
+        },
+      });
+    }
+
+    if (url.pathname === "/api/invoices/invoice-paid/purchases") {
+      return jsonResponse({ purchases: [] });
+    }
+
+    if (url.pathname === "/api/recurrences") {
+      return jsonResponse({ recurrences: [] });
+    }
+
+    return jsonResponse({});
+  };
+
+  const html = await renderCardsPage("session-token");
+
+  assert.match(html, /Fatura Paga/);
+  assert.match(html, /Pagamento indisponível para faturas paga\./);
+  assert.doesNotMatch(html, /\/pagar-receber/);
 }
 
 async function cardsPageAggregatesFamilyCardTotals(): Promise<void> {
