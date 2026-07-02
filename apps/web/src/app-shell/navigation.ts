@@ -21,6 +21,7 @@ export interface ShellHeaderModel {
 export interface BuildShellNavigationInput {
   activePath: string;
   viewportMode: ShellViewportMode;
+  includeMasterRoutes?: boolean;
 }
 
 export interface ShellNavigationItem {
@@ -40,6 +41,7 @@ const NAVIGATION_GROUP_LABELS: Record<ShellNavigationGroup, string> = {
   manage: "Organizar",
   review: "Revisar",
   settings: "Ajustes",
+  admin: "Admin",
   public: "Publico",
 };
 
@@ -48,13 +50,14 @@ const PRIVATE_NAVIGATION_GROUPS: readonly ShellNavigationGroup[] = [
   "manage",
   "review",
   "settings",
+  "admin",
 ];
 
 export function buildShellNavigation(input: BuildShellNavigationInput): ShellNavigationModel {
   const sections = PRIVATE_NAVIGATION_GROUPS.map((group) => ({
     group,
     label: NAVIGATION_GROUP_LABELS[group],
-    routes: listShellRoutesByGroup(group),
+    routes: listShellRoutesByGroup(group, { includeMaster: input.includeMasterRoutes }),
   })).filter((section) => section.routes.length > 0);
   const items = sections.flatMap((section) =>
     section.routes.map((route) => ({
