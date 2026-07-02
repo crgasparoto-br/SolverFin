@@ -117,7 +117,11 @@ export const DEFAULT_CATEGORY_TREE: readonly DefaultCategoryGroup[] = [
       },
       {
         name: "Família e dependentes",
-        children: [{ name: "Filhos" }, { name: "Pets" }, { name: "Ajuda familiar" }],
+        children: [
+          { name: "Filhos" },
+          { name: "Pets" },
+          { name: "Ajuda familiar" },
+        ],
       },
       {
         name: "Impostos e taxas",
@@ -129,7 +133,11 @@ export const DEFAULT_CATEGORY_TREE: readonly DefaultCategoryGroup[] = [
       },
       {
         name: "Outros",
-        children: [{ name: "Doações" }, { name: "Diversos" }, { name: "Ajustes" }],
+        children: [
+          { name: "Doações" },
+          { name: "Diversos" },
+          { name: "Ajustes" },
+        ],
       },
     ],
   },
