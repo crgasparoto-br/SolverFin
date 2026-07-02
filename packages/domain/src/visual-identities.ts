@@ -58,7 +58,8 @@ export const financialInstitutionCatalog = [
   {
     key: "banco_do_brasil",
     label: "Banco do Brasil",
-    description: "Banco múltiplo brasileiro com ampla rede de varejo e serviços digitais.",
+    description:
+      "Banco múltiplo brasileiro com ampla rede de varejo e serviços digitais.",
     fallbackLabel: "BB",
     status: "active",
     financialInstitutionCode: "banco_do_brasil",
@@ -66,7 +67,8 @@ export const financialInstitutionCatalog = [
   {
     key: "banco_pan",
     label: "Banco Pan",
-    description: "Banco brasileiro com contas digitais, cartões, crédito e financiamento.",
+    description:
+      "Banco brasileiro com contas digitais, cartões, crédito e financiamento.",
     fallbackLabel: "PN",
     status: "active",
     financialInstitutionCode: "banco_pan",
@@ -74,7 +76,8 @@ export const financialInstitutionCatalog = [
   {
     key: "banco_xp",
     label: "Banco XP",
-    description: "Instituição financeira ligada ao ecossistema XP, com conta, cartão e investimentos.",
+    description:
+      "Instituição financeira ligada ao ecossistema XP, com conta, cartão e investimentos.",
     fallbackLabel: "XP",
     status: "active",
     financialInstitutionCode: "banco_xp",
@@ -82,7 +85,8 @@ export const financialInstitutionCatalog = [
   {
     key: "bradesco",
     label: "Bradesco",
-    description: "Banco múltiplo brasileiro com contas, cartões, crédito e investimentos.",
+    description:
+      "Banco múltiplo brasileiro com contas, cartões, crédito e investimentos.",
     fallbackLabel: "BR",
     status: "active",
     financialInstitutionCode: "bradesco",
@@ -91,7 +95,8 @@ export const financialInstitutionCatalog = [
   {
     key: "btg_pactual",
     label: "BTG Pactual",
-    description: "Banco brasileiro de investimentos com conta digital, cartão e serviços financeiros.",
+    description:
+      "Banco brasileiro de investimentos com conta digital, cartão e serviços financeiros.",
     fallbackLabel: "BT",
     status: "active",
     financialInstitutionCode: "btg_pactual",
@@ -99,7 +104,8 @@ export const financialInstitutionCatalog = [
   {
     key: "c6",
     label: "C6 Bank",
-    description: "Banco digital brasileiro com conta, cartões e serviços financeiros.",
+    description:
+      "Banco digital brasileiro com conta, cartões e serviços financeiros.",
     fallbackLabel: "C6",
     status: "active",
     financialInstitutionCode: "c6",
@@ -107,7 +113,8 @@ export const financialInstitutionCatalog = [
   {
     key: "caixa",
     label: "Caixa",
-    description: "Banco público brasileiro com contas, cartões, crédito e serviços sociais.",
+    description:
+      "Banco público brasileiro com contas, cartões, crédito e serviços sociais.",
     fallbackLabel: "CX",
     status: "active",
     financialInstitutionCode: "caixa",
@@ -115,7 +122,8 @@ export const financialInstitutionCatalog = [
   {
     key: "inter",
     label: "Inter",
-    description: "Banco digital brasileiro com conta, cartões, crédito e marketplace financeiro.",
+    description:
+      "Banco digital brasileiro com conta, cartões, crédito e marketplace financeiro.",
     fallbackLabel: "IN",
     status: "active",
     financialInstitutionCode: "inter",
@@ -124,7 +132,8 @@ export const financialInstitutionCatalog = [
   {
     key: "itau",
     label: "Itaú",
-    description: "Banco múltiplo brasileiro com contas, cartões, crédito e investimentos.",
+    description:
+      "Banco múltiplo brasileiro com contas, cartões, crédito e investimentos.",
     fallbackLabel: "IT",
     status: "active",
     financialInstitutionCode: "itau",
@@ -132,7 +141,8 @@ export const financialInstitutionCatalog = [
   {
     key: "mercado_pago",
     label: "Mercado Pago",
-    description: "Conta de pagamento e serviços financeiros digitais do ecossistema Mercado Livre.",
+    description:
+      "Conta de pagamento e serviços financeiros digitais do ecossistema Mercado Livre.",
     fallbackLabel: "MP",
     status: "active",
     financialInstitutionCode: "mercado_pago",
@@ -140,7 +150,8 @@ export const financialInstitutionCatalog = [
   {
     key: "neon",
     label: "Neon",
-    description: "Conta digital brasileira com cartões, pagamentos e serviços financeiros.",
+    description:
+      "Conta digital brasileira com cartões, pagamentos e serviços financeiros.",
     fallbackLabel: "NE",
     status: "active",
     financialInstitutionCode: "neon",
@@ -148,7 +159,8 @@ export const financialInstitutionCatalog = [
   {
     key: "nubank",
     label: "Nubank",
-    description: "Banco digital brasileiro com conta, cartões, crédito e investimentos.",
+    description:
+      "Banco digital brasileiro com conta, cartões, crédito e investimentos.",
     fallbackLabel: "NU",
     status: "active",
     financialInstitutionCode: "nubank",
@@ -156,7 +168,8 @@ export const financialInstitutionCatalog = [
   {
     key: "original",
     label: "Original",
-    description: "Banco digital brasileiro com conta, cartões e serviços financeiros.",
+    description:
+      "Banco digital brasileiro com conta, cartões e serviços financeiros.",
     fallbackLabel: "OR",
     status: "active",
     financialInstitutionCode: "original",
@@ -164,7 +177,8 @@ export const financialInstitutionCatalog = [
   {
     key: "pagbank",
     label: "PagBank",
-    description: "Conta digital e serviços financeiros do ecossistema PagSeguro.",
+    description:
+      "Conta digital e serviços financeiros do ecossistema PagSeguro.",
     fallbackLabel: "PG",
     status: "active",
     financialInstitutionCode: "pagbank",
@@ -172,7 +186,8 @@ export const financialInstitutionCatalog = [
   {
     key: "picpay",
     label: "PicPay",
-    description: "Carteira digital e conta de pagamento com serviços financeiros.",
+    description:
+      "Carteira digital e conta de pagamento com serviços financeiros.",
     fallbackLabel: "PP",
     status: "active",
     financialInstitutionCode: "picpay",
@@ -180,7 +195,8 @@ export const financialInstitutionCatalog = [
   {
     key: "porto_bank",
     label: "Porto Bank",
-    description: "Banco e serviços financeiros ligados ao ecossistema Porto.",
+    description:
+      "Banco e serviços financeiros ligados ao ecossistema Porto.",
     fallbackLabel: "PB",
     status: "active",
     financialInstitutionCode: "porto_bank",
@@ -189,7 +205,8 @@ export const financialInstitutionCatalog = [
   {
     key: "safra",
     label: "Safra",
-    description: "Banco brasileiro com contas, cartões, crédito, câmbio e investimentos.",
+    description:
+      "Banco brasileiro com contas, cartões, crédito, câmbio e investimentos.",
     fallbackLabel: "SA",
     status: "active",
     financialInstitutionCode: "safra",
@@ -197,7 +214,8 @@ export const financialInstitutionCatalog = [
   {
     key: "santander",
     label: "Santander",
-    description: "Banco múltiplo com atuação no Brasil em contas, cartões, crédito e investimentos.",
+    description:
+      "Banco múltiplo com atuação no Brasil em contas, cartões, crédito e investimentos.",
     fallbackLabel: "ST",
     status: "active",
     financialInstitutionCode: "santander",
@@ -205,7 +223,8 @@ export const financialInstitutionCatalog = [
   {
     key: "sicredi",
     label: "Sicredi",
-    description: "Instituição financeira cooperativa com contas, cartões, crédito e investimentos.",
+    description:
+      "Instituição financeira cooperativa com contas, cartões, crédito e investimentos.",
     fallbackLabel: "SI",
     status: "active",
     financialInstitutionCode: "sicredi",
@@ -213,7 +232,8 @@ export const financialInstitutionCatalog = [
   {
     key: "sicoob",
     label: "Sicoob",
-    description: "Sistema de cooperativas financeiras com contas, cartões, crédito e investimentos.",
+    description:
+      "Sistema de cooperativas financeiras com contas, cartões, crédito e investimentos.",
     fallbackLabel: "SC",
     status: "active",
     financialInstitutionCode: "sicoob",
@@ -221,7 +241,8 @@ export const financialInstitutionCatalog = [
   {
     key: "solverfin_demo",
     label: "Instituição demo",
-    description: "Instituição fictícia usada apenas em dados de demonstração do SolverFin.",
+    description:
+      "Instituição fictícia usada apenas em dados de demonstração do SolverFin.",
     fallbackLabel: "SD",
     status: "active",
     financialInstitutionCode: "solverfin_demo",
