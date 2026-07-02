@@ -1,4 +1,4 @@
-import type { Card, CardInstrument } from "./index.js";
+import type { Card } from "./index.js";
 import type { TenantContext } from "./tenant.js";
 import {
   archiveCardInstrument,
