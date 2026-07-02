@@ -12,13 +12,13 @@ const validPngBase64 = Buffer.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x01,
 ]).toString("base64");
 
-validLogoUploadIsStoredWithSafeObjectKey();
+await validLogoUploadIsStoredWithSafeObjectKey();
 unknownInstitutionIsRejected();
 emptyLogoIsRejected();
 unsupportedMimeTypeIsRejected();
 contentMismatchIsRejected();
 largeLogoIsRejectedBeforeStorage();
-storageFailureDoesNotUpdateLogoMetadata();
+await storageFailureDoesNotUpdateLogoMetadata();
 
 async function validLogoUploadIsStoredWithSafeObjectKey(): Promise<void> {
   clearUploadedInstitutionLogosForTests();
