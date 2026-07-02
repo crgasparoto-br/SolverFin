@@ -10,6 +10,7 @@ export * from "./recurrence-calendar.js";
 export * from "./cards.js";
 export * from "./budgets.js";
 export * from "./payables-receivables.js";
+export * from "./payables-receivables-transition.js";
 export * from "./imports.js";
 export * from "./bank-message-inbox.js";
 export * from "./deduplication.js";
