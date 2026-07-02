@@ -2,6 +2,7 @@ import type {
   Account,
   AuditLogEntryDraft,
   Card,
+  CardInstrument,
   CardBrandKey,
   CardStatus,
   EntityId,
@@ -38,6 +39,9 @@ export type CardErrorCode =
   | "CARD_PAYMENT_ACCOUNT_INVALID"
   | "CARD_PAYMENT_ACCOUNT_ARCHIVED"
   | "CARD_NOT_ACTIVE"
+  | "CARD_INSTRUMENT_REQUIRED"
+  | "CARD_INSTRUMENT_CARD_MISMATCH"
+  | "CARD_INSTRUMENT_NOT_ACTIVE"
   | "CARD_PURCHASE_AMOUNT_INVALID"
   | "CARD_PURCHASE_DATE_REQUIRED"
   | "CARD_PURCHASE_DESCRIPTION_REQUIRED"
@@ -151,6 +155,7 @@ export interface RegisterCardPurchaseInput {
   context: TenantContext;
   card: Card | undefined;
   groupCardId?: EntityId;
+  instruments?: readonly CardInstrument[];
   existingInvoices: readonly Invoice[];
   paymentAccount?: Account;
   existingForecastTransactions?: readonly ExistingForecastTransaction[];
@@ -167,6 +172,7 @@ export interface RegisterCardPurchasePayload {
   description: string;
   currency?: string;
   categoryId?: EntityId;
+  cardInstrumentId?: EntityId;
   totalInstallments?: number;
   installmentStart?: number;
 }
@@ -359,6 +365,12 @@ export function calculateInvoicePeriod(
 
 export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurchaseResult {
   const card = assertActiveCard(input.context, input.card);
+  const cardInstrument = resolveCardInstrumentForPurchase({
+    context: input.context,
+    card,
+    instruments: input.instruments,
+    cardInstrumentId: input.payload.cardInstrumentId,
+  });
   const amountMinor = validateAmount(input.payload.amountMinor, "CARD_PURCHASE_AMOUNT_INVALID");
   const occurredOn = validateDate(input.payload.occurredOn, "CARD_PURCHASE_DATE_REQUIRED");
   const description = normalizeDescription(input.payload.description);
@@ -431,6 +443,7 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
     plannedOn: occurredOn,
     description,
     cardId: card.id,
+    ...(cardInstrument !== undefined ? { cardInstrumentId: cardInstrument.id } : {}),
     invoiceId: currentInvoiceResult.invoice.id,
     createdAt: input.now,
     updatedAt: input.now,
@@ -448,6 +461,7 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
           context: input.context,
           now: input.now,
           cardId: card.id,
+          cardInstrumentId: cardInstrument?.id,
           transactionId: transaction.id,
           currency,
           totalInstallments,
@@ -511,6 +525,58 @@ function resolveInstallmentPlan(
   }
 
   return { totalInstallments, installmentStart };
+}
+
+function resolveCardInstrumentForPurchase(input: {
+  context: TenantContext;
+  card: Card;
+  instruments: readonly CardInstrument[] | undefined;
+  cardInstrumentId: EntityId | undefined;
+}): CardInstrument | undefined {
+  if (input.instruments === undefined && input.cardInstrumentId === undefined) {
+    return undefined;
+  }
+
+  const scopedInstruments = listTenantScopedResources(input.context, input.instruments ?? []);
+  const cardInstruments = scopedInstruments.filter(
+    (instrument) => instrument.cardId === input.card.id,
+  );
+  const instrument =
+    input.cardInstrumentId !== undefined
+      ? scopedInstruments.find((candidate) => candidate.id === input.cardInstrumentId)
+      : cardInstruments.find((candidate) => candidate.status === "active" && candidate.isDefault);
+
+  if (instrument === undefined) {
+    const hasActiveCardInstrument = cardInstruments.some(
+      (candidate) => candidate.status === "active",
+    );
+    const code =
+      input.cardInstrumentId !== undefined || hasActiveCardInstrument
+        ? "CARD_INSTRUMENT_CARD_MISMATCH"
+        : "CARD_INSTRUMENT_REQUIRED";
+    const message =
+      code === "CARD_INSTRUMENT_CARD_MISMATCH"
+        ? "Card instrument does not belong to the provided card."
+        : "Card requires an active instrument to receive purchases.";
+
+    throw new CardError(code, message);
+  }
+
+  if (instrument.cardId !== input.card.id) {
+    throw new CardError(
+      "CARD_INSTRUMENT_CARD_MISMATCH",
+      "Card instrument does not belong to the provided card.",
+    );
+  }
+
+  if (instrument.status !== "active") {
+    throw new CardError(
+      "CARD_INSTRUMENT_NOT_ACTIVE",
+      "Only active card instruments can receive new purchases.",
+    );
+  }
+
+  return instrument;
 }
 
 function buildPaymentForecastTransactions(input: {
@@ -763,6 +829,7 @@ function buildPurchaseInstallments(input: {
   context: TenantContext;
   now: ISODateTime;
   cardId: EntityId;
+  cardInstrumentId: EntityId | undefined;
   transactionId: EntityId;
   currency: string;
   totalInstallments: number;
@@ -788,6 +855,7 @@ function buildPurchaseInstallments(input: {
     currency: input.currency,
     transactionId: input.transactionId,
     cardId: input.cardId,
+    ...(input.cardInstrumentId !== undefined ? { cardInstrumentId: input.cardInstrumentId } : {}),
     createdAt: input.now,
     updatedAt: input.now,
     createdByUserId: input.context.userId,
