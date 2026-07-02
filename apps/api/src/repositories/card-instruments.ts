@@ -10,6 +10,7 @@ import {
   listCards as listCardsDomain,
   setDefaultCardInstrument as setDefaultCardInstrumentDomain,
   updateCard as updateCardDomain,
+  type Account,
   type Card,
   type CardInstrument,
   type CardInstrumentHolder,
@@ -32,8 +33,10 @@ export interface CreditCardAccountContract extends Card {
   instruments: readonly CardInstrument[];
 }
 
+type NewCardInstrumentPayload = Omit<CreateCardInstrumentPayload, "cardId">;
+
 export interface CreateCreditCardAccountPayload extends CreateCardPayload {
-  instruments: readonly CreateCardInstrumentPayload[];
+  instruments: readonly NewCardInstrumentPayload[];
 }
 
 export interface UpdateCardInstrumentPayload {
@@ -95,7 +98,6 @@ const CARD_INSTRUMENT_COLUMNS = `"id", "organizationId", "financialProfileId", "
 
 const ALLOWED_INSTRUMENT_TYPES: readonly CardInstrumentType[] = ["physical", "virtual"];
 const ALLOWED_INSTRUMENT_HOLDERS: readonly CardInstrumentHolder[] = ["primary", "additional"];
-const ALLOWED_INSTRUMENT_STATUSES: readonly CardInstrumentStatus[] = ["active", "archived"];
 
 export async function listCreditCardAccountsForContext(
   context: TenantContext,
@@ -128,12 +130,16 @@ export async function createCreditCardAccountForContext(
 ): Promise<CreditCardAccountContract> {
   assertHasActiveInstrumentPayload(payload.instruments);
 
+  const paymentAccount = payload.paymentAccountId
+    ? await findAccountRow(context, payload.paymentAccountId)
+    : undefined;
   const now = new Date().toISOString();
   let card = createCardDomain({
     id: randomUUID(),
     context,
     now,
     payload,
+    ...(paymentAccount ? { paymentAccount } : {}),
   }).card;
   let instruments: readonly CardInstrument[] = [];
 
@@ -165,11 +171,16 @@ export async function updateCreditCardAccountForContext(
   payload: UpdateCardPayload,
 ): Promise<CreditCardAccountContract> {
   const currentCard = await findCardRow(context, cardId);
+  const paymentAccountId = payload.paymentAccountId ?? currentCard?.paymentAccountId;
+  const paymentAccount = paymentAccountId
+    ? await findAccountRow(context, paymentAccountId)
+    : undefined;
   const result = updateCardDomain({
     context,
     card: currentCard,
     now: new Date().toISOString(),
     payload,
+    ...(paymentAccount ? { paymentAccount } : {}),
   });
 
   await persistCardMutation(result);
@@ -210,7 +221,7 @@ export async function listCardInstrumentsForContext(
 export async function createCardInstrumentForContext(
   context: TenantContext,
   cardId: EntityId,
-  payload: Omit<CreateCardInstrumentPayload, "cardId">,
+  payload: NewCardInstrumentPayload,
 ): Promise<CreditCardAccountContract> {
   const card = getCardDomain(context, await findCardRow(context, cardId));
   const existingInstruments = await listCardInstrumentsForContext(context, card.id);
@@ -251,7 +262,12 @@ export async function updateCardInstrumentForContext(
 
   const card = getCardDomain(context, await findCardRow(context, currentInstrument.cardId));
   const instruments = await listCardInstrumentsForContext(context, card.id);
-  const updatedInstrument = buildUpdatedInstrument(currentInstrument, payload, new Date().toISOString(), context.userId);
+  const updatedInstrument = buildUpdatedInstrument(
+    currentInstrument,
+    payload,
+    new Date().toISOString(),
+    context.userId,
+  );
   const updatedInstruments = instruments.map((instrument) =>
     instrument.id === updatedInstrument.id ? updatedInstrument : instrument,
   );
@@ -329,7 +345,7 @@ function buildCreditCardAccount(
   };
 }
 
-function assertHasActiveInstrumentPayload(payloads: readonly CreateCardInstrumentPayload[]): void {
+function assertHasActiveInstrumentPayload(payloads: readonly NewCardInstrumentPayload[]): void {
   if (!Array.isArray(payloads) || payloads.length === 0) {
     throw cardInstrumentError(
       "CARD_INSTRUMENT_REQUIRED",
@@ -585,6 +601,47 @@ async function findCardInstrumentRow(
   }
 
   return mapCardInstrumentRow(row);
+}
+
+async function findAccountRow(
+  context: TenantContext,
+  accountId: EntityId,
+): Promise<Account | undefined> {
+  const rows = await query<{
+    id: string;
+    organizationId: string;
+    financialProfileId: string;
+    name: string;
+    kind: string;
+    status: string;
+    currency: string;
+    openingBalanceMinor: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }>(
+    `select "id", "organizationId", "financialProfileId", "name", "kind", "status", "currency",
+            "openingBalanceMinor", "createdAt", "updatedAt"
+     from "Account" where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [accountId, context.organizationId, context.financialProfileId],
+  );
+  const row = rows[0];
+
+  if (!row) {
+    return undefined;
+  }
+
+  return {
+    id: row.id,
+    organizationId: row.organizationId,
+    financialProfileId: row.financialProfileId,
+    name: row.name,
+    kind: row.kind.toLowerCase() as Account["kind"],
+    status: row.status.toLowerCase() as Account["status"],
+    currency: row.currency,
+    openingBalanceMinor: row.openingBalanceMinor,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }
 
 function mapCardRow(row: CardRow): Card {
