@@ -58,8 +58,7 @@ export const financialInstitutionCatalog = [
   {
     key: "banco_do_brasil",
     label: "Banco do Brasil",
-    description:
-      "Banco múltiplo brasileiro com ampla rede de varejo e serviços digitais.",
+    description: "Banco múltiplo brasileiro com ampla rede de varejo e serviços digitais.",
     fallbackLabel: "BB",
     status: "active",
     financialInstitutionCode: "banco_do_brasil",
@@ -67,8 +66,7 @@ export const financialInstitutionCatalog = [
   {
     key: "banco_pan",
     label: "Banco Pan",
-    description:
-      "Banco brasileiro com contas digitais, cartões, crédito e financiamento.",
+    description: "Banco brasileiro com contas digitais, cartões, crédito e financiamento.",
     fallbackLabel: "PN",
     status: "active",
     financialInstitutionCode: "banco_pan",
@@ -85,8 +83,7 @@ export const financialInstitutionCatalog = [
   {
     key: "bradesco",
     label: "Bradesco",
-    description:
-      "Banco múltiplo brasileiro com contas, cartões, crédito e investimentos.",
+    description: "Banco múltiplo brasileiro com contas, cartões, crédito e investimentos.",
     fallbackLabel: "BR",
     status: "active",
     financialInstitutionCode: "bradesco",
@@ -104,8 +101,7 @@ export const financialInstitutionCatalog = [
   {
     key: "c6",
     label: "C6 Bank",
-    description:
-      "Banco digital brasileiro com conta, cartões e serviços financeiros.",
+    description: "Banco digital brasileiro com conta, cartões e serviços financeiros.",
     fallbackLabel: "C6",
     status: "active",
     financialInstitutionCode: "c6",
@@ -113,8 +109,7 @@ export const financialInstitutionCatalog = [
   {
     key: "caixa",
     label: "Caixa",
-    description:
-      "Banco público brasileiro com contas, cartões, crédito e serviços sociais.",
+    description: "Banco público brasileiro com contas, cartões, crédito e serviços sociais.",
     fallbackLabel: "CX",
     status: "active",
     financialInstitutionCode: "caixa",
@@ -122,8 +117,7 @@ export const financialInstitutionCatalog = [
   {
     key: "inter",
     label: "Inter",
-    description:
-      "Banco digital brasileiro com conta, cartões, crédito e marketplace financeiro.",
+    description: "Banco digital brasileiro com conta, cartões, crédito e marketplace financeiro.",
     fallbackLabel: "IN",
     status: "active",
     financialInstitutionCode: "inter",
@@ -132,8 +126,7 @@ export const financialInstitutionCatalog = [
   {
     key: "itau",
     label: "Itaú",
-    description:
-      "Banco múltiplo brasileiro com contas, cartões, crédito e investimentos.",
+    description: "Banco múltiplo brasileiro com contas, cartões, crédito e investimentos.",
     fallbackLabel: "IT",
     status: "active",
     financialInstitutionCode: "itau",
@@ -150,8 +143,7 @@ export const financialInstitutionCatalog = [
   {
     key: "neon",
     label: "Neon",
-    description:
-      "Conta digital brasileira com cartões, pagamentos e serviços financeiros.",
+    description: "Conta digital brasileira com cartões, pagamentos e serviços financeiros.",
     fallbackLabel: "NE",
     status: "active",
     financialInstitutionCode: "neon",
@@ -159,8 +151,7 @@ export const financialInstitutionCatalog = [
   {
     key: "nubank",
     label: "Nubank",
-    description:
-      "Banco digital brasileiro com conta, cartões, crédito e investimentos.",
+    description: "Banco digital brasileiro com conta, cartões, crédito e investimentos.",
     fallbackLabel: "NU",
     status: "active",
     financialInstitutionCode: "nubank",
@@ -168,8 +159,7 @@ export const financialInstitutionCatalog = [
   {
     key: "original",
     label: "Original",
-    description:
-      "Banco digital brasileiro com conta, cartões e serviços financeiros.",
+    description: "Banco digital brasileiro com conta, cartões e serviços financeiros.",
     fallbackLabel: "OR",
     status: "active",
     financialInstitutionCode: "original",
@@ -177,8 +167,7 @@ export const financialInstitutionCatalog = [
   {
     key: "pagbank",
     label: "PagBank",
-    description:
-      "Conta digital e serviços financeiros do ecossistema PagSeguro.",
+    description: "Conta digital e serviços financeiros do ecossistema PagSeguro.",
     fallbackLabel: "PG",
     status: "active",
     financialInstitutionCode: "pagbank",
@@ -186,8 +175,7 @@ export const financialInstitutionCatalog = [
   {
     key: "picpay",
     label: "PicPay",
-    description:
-      "Carteira digital e conta de pagamento com serviços financeiros.",
+    description: "Carteira digital e conta de pagamento com serviços financeiros.",
     fallbackLabel: "PP",
     status: "active",
     financialInstitutionCode: "picpay",
@@ -195,8 +183,7 @@ export const financialInstitutionCatalog = [
   {
     key: "porto_bank",
     label: "Porto Bank",
-    description:
-      "Banco e serviços financeiros ligados ao ecossistema Porto.",
+    description: "Banco e serviços financeiros ligados ao ecossistema Porto.",
     fallbackLabel: "PB",
     status: "active",
     financialInstitutionCode: "porto_bank",
@@ -205,8 +192,7 @@ export const financialInstitutionCatalog = [
   {
     key: "safra",
     label: "Safra",
-    description:
-      "Banco brasileiro com contas, cartões, crédito, câmbio e investimentos.",
+    description: "Banco brasileiro com contas, cartões, crédito, câmbio e investimentos.",
     fallbackLabel: "SA",
     status: "active",
     financialInstitutionCode: "safra",
@@ -241,8 +227,7 @@ export const financialInstitutionCatalog = [
   {
     key: "solverfin_demo",
     label: "Instituição demo",
-    description:
-      "Instituição fictícia usada apenas em dados de demonstração do SolverFin.",
+    description: "Instituição fictícia usada apenas em dados de demonstração do SolverFin.",
     fallbackLabel: "SD",
     status: "active",
     financialInstitutionCode: "solverfin_demo",
@@ -287,9 +272,7 @@ export function findFinancialInstitution(
     return noFinancialInstitution;
   }
 
-  const institution = financialInstitutionCatalog.find(
-    (item) => item.key === normalizedValue,
-  );
+  const institution = financialInstitutionCatalog.find((item) => item.key === normalizedValue);
 
   if (institution !== undefined) {
     return { ...institution, isKnown: true };
@@ -299,9 +282,7 @@ export function findFinancialInstitution(
     key: normalizedValue,
     label: "Instituição não cadastrada",
     description: "Chave legada preservada para compatibilidade.",
-    fallbackLabel: getVisualFallbackLabel(
-      normalizedValue.replace(/[_-]+/g, " "),
-    ),
+    fallbackLabel: getVisualFallbackLabel(normalizedValue.replace(/[_-]+/g, " ")),
     status: "unknown",
     isKnown: false,
   };
@@ -322,9 +303,7 @@ export function getVisualFallbackLabel(label: string): string {
     .trim()
     .split(/[\s_-]+/)
     .slice(0, 2)
-    .map(
-      (part) => part.replace(/[^A-Za-z0-9]/g, "")[0]?.toUpperCase() ?? "",
-    )
+    .map((part) => part.replace(/[^A-Za-z0-9]/g, "")[0]?.toUpperCase() ?? "")
     .join("");
 
   return initials || "SF";
