@@ -93,10 +93,15 @@ export function createCardInstrument(
   assertInstrumentBelongsToCard(input.payload.cardId, card.id);
 
   const existingInstruments = listCardInstruments(input.context, card, input.existingInstruments);
+  const existingActiveInstruments = activeInstruments(existingInstruments);
   const status = validateInstrumentStatus(input.payload.status ?? "active");
   const shouldBecomeDefault =
     status === "active" &&
-    (input.payload.isDefault === true || activeInstruments(existingInstruments).length === 0);
+    (input.payload.isDefault === true || existingActiveInstruments.length === 0);
+  const currentDefaultInstrumentId = existingActiveInstruments.find(
+    (instrument) => instrument.isDefault,
+  )?.id;
+  const defaultInstrumentId = shouldBecomeDefault ? input.id : currentDefaultInstrumentId;
   const instrument: CardInstrument = {
     id: input.id,
     organizationId: input.context.organizationId,
@@ -114,7 +119,7 @@ export function createCardInstrument(
   };
   const instruments = normalizeDefaultInstrument(
     [...existingInstruments, instrument],
-    instrument.id,
+    defaultInstrumentId,
     input.now,
     input.context.userId,
   );
