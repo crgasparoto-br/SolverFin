@@ -118,9 +118,10 @@ export async function handleAdminInstitutionsApiRequest(
 }
 
 export function buildAdminInstitutionsPayload(
-  institutionsOrUpdatedAt: FinancialInstitutionRecord[] | string | null = financialInstitutionCatalog.map(
-    toDefaultInstitutionRecord,
-  ),
+  institutionsOrUpdatedAt:
+    | FinancialInstitutionRecord[]
+    | string
+    | null = financialInstitutionCatalog.map(toDefaultInstitutionRecord),
   updatedAt: string | null = null,
   pagination?: AdminInstitutionsPagination,
 ): {
@@ -140,7 +141,8 @@ export function buildAdminInstitutionsPayload(
       total: pagination?.total ?? institutions.length,
       active: institutions.filter((institution) => institution.status === "active").length,
       withLogo: institutions.filter((institution) => institution.logoStatus !== "fallback").length,
-      usingFallback: institutions.filter((institution) => institution.logoStatus === "fallback").length,
+      usingFallback: institutions.filter((institution) => institution.logoStatus === "fallback")
+        .length,
       updatedAt: resolvedUpdatedAt,
     },
     ...(pagination ? { pagination } : {}),
@@ -327,7 +329,9 @@ function parsePositiveInteger(value: string | null): number | undefined {
 }
 
 function parseStatusPayload(body: unknown): FinancialInstitutionStatus {
-  const status = String(requireObjectBody(body).status ?? "").trim().toUpperCase();
+  const status = String(requireObjectBody(body).status ?? "")
+    .trim()
+    .toUpperCase();
 
   if (status === "ACTIVE") return "active";
   if (status === "INACTIVE") return "inactive";

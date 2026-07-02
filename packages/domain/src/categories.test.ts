@@ -6,8 +6,10 @@ import {
   assertCategorySupportsTransactionKind,
   CategoryError,
   createCategory,
+  DEFAULT_CATEGORY_TREE,
   getDefaultCategorySuggestions,
   listCategories,
+  normalizeCategoryNameForUniqueness,
   replaceCategory,
   restoreCategory,
   updateCategory,
@@ -29,7 +31,9 @@ const tenantB: TenantContext = {
 
 const now = "2026-06-15T10:00:00.000Z";
 
+testCanonicalDefaultTreeContainsExpectedGroups();
 testDefaultSuggestionsAreEditablePayloads();
+testCategoryNameUniquenessNormalization();
 testCreateAndEditCategory();
 testCreateSubcategory();
 testRejectParentKindMismatch();
@@ -41,14 +45,59 @@ testCategoryInUseRequiresReplacement();
 testOtherTenantAccessIsRejected();
 testCategoryKindValidation();
 
+function testCanonicalDefaultTreeContainsExpectedGroups(): void {
+  const expenseGroup = DEFAULT_CATEGORY_TREE.find((group) => group.kind === "expense");
+  const incomeGroup = DEFAULT_CATEGORY_TREE.find((group) => group.kind === "income");
+  const transferGroup = DEFAULT_CATEGORY_TREE.find((group) => group.kind === "transfer");
+  const housing = expenseGroup?.roots.find((category) => category.name === "Moradia");
+  const work = incomeGroup?.roots.find((category) => category.name === "Trabalho");
+  const transfers = transferGroup?.roots.find((category) => category.name === "Transferências");
+
+  assertEqual(
+    housing?.children?.some((category) => category.name === "Gás"),
+    true,
+    "housing gas",
+  );
+  assertEqual(
+    housing?.children?.some((category) => category.name === "Manutenção residencial"),
+    true,
+    "housing maintenance",
+  );
+  assertEqual(
+    work?.children?.some((category) => category.name === "13º salário"),
+    true,
+    "work thirteenth salary",
+  );
+  assertEqual(
+    transfers?.children?.some((category) => category.name === "Pagamento de cartão"),
+    true,
+    "transfer payment category",
+  );
+}
+
 function testDefaultSuggestionsAreEditablePayloads(): void {
   const suggestions = getDefaultCategorySuggestions();
   const expenseSuggestion = suggestions.find((suggestion) => suggestion.kind === "expense");
   const detailedSuggestion = suggestions.find((suggestion) => suggestion.parentName === "Moradia");
+  const transferSuggestion = suggestions.find((suggestion) => suggestion.kind === "transfer");
 
   assertEqual(Boolean(expenseSuggestion), true, "expense suggestion exists");
   assertEqual(expenseSuggestion?.source, "system_default", "suggestion source");
   assertEqual(Boolean(detailedSuggestion), true, "hierarchical suggestion exists");
+  assertEqual(transferSuggestion?.name, "Transferências", "transfer suggestion exists");
+}
+
+function testCategoryNameUniquenessNormalization(): void {
+  assertEqual(
+    normalizeCategoryNameForUniqueness(" Alimentação "),
+    normalizeCategoryNameForUniqueness("alimentacao"),
+    "accent and case normalization",
+  );
+  assertEqual(
+    normalizeCategoryNameForUniqueness(" Energia   Elétrica "),
+    normalizeCategoryNameForUniqueness("energia eletrica"),
+    "space normalization",
+  );
 }
 
 function testCreateAndEditCategory(): void {

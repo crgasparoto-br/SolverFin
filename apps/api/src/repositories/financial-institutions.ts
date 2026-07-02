@@ -1,4 +1,7 @@
-import { financialInstitutionCatalog, type FinancialInstitutionCatalogItem } from "@solverfin/domain";
+import {
+  financialInstitutionCatalog,
+  type FinancialInstitutionCatalogItem,
+} from "@solverfin/domain";
 
 import { query, withTransaction } from "../db.js";
 import type { UploadedInstitutionLogo } from "../institution-logo-upload.js";
@@ -106,7 +109,10 @@ export async function listFinancialInstitutions(
   const filtered = institutions.filter((institution) => matchesFilters(institution, filters));
   const sorted = sortInstitutions(filtered, filters);
   const page = clampPositiveInteger(filters.page, DEFAULT_PAGE);
-  const pageSize = Math.min(clampPositiveInteger(filters.pageSize, DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
+  const pageSize = Math.min(
+    clampPositiveInteger(filters.pageSize, DEFAULT_PAGE_SIZE),
+    MAX_PAGE_SIZE,
+  );
   const start = (page - 1) * pageSize;
 
   return {
@@ -445,7 +451,7 @@ function buildMemoryLogoMetadata(
   }
 
   return {
-    ...(institution.logoPublicUrl ?? institution.logoAssetPath
+    ...((institution.logoPublicUrl ?? institution.logoAssetPath)
       ? { logoAssetPath: institution.logoPublicUrl ?? institution.logoAssetPath }
       : {}),
     logoObjectKey: institution.logoObjectKey,
@@ -454,9 +460,7 @@ function buildMemoryLogoMetadata(
     ...(institution.logoSizeBytes !== undefined
       ? { logoSizeBytes: institution.logoSizeBytes }
       : {}),
-    ...(institution.logoContentSha256
-      ? { logoContentSha256: institution.logoContentSha256 }
-      : {}),
+    ...(institution.logoContentSha256 ? { logoContentSha256: institution.logoContentSha256 } : {}),
     ...(institution.logoUploadedAt ? { logoUploadedAt: institution.logoUploadedAt } : {}),
     logoStatus: "r2_asset",
   };
@@ -467,6 +471,6 @@ function canUseMemoryFallback(error: unknown): boolean {
 
   return (
     message.includes("DATABASE_URL is required") ||
-    message.includes("relation \"FinancialInstitution\" does not exist")
+    message.includes('relation "FinancialInstitution" does not exist')
   );
 }

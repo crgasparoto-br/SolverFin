@@ -1,125 +1,14 @@
 import "dotenv/config";
 
 import { createHash } from "node:crypto";
+import {
+  DEFAULT_CATEGORY_TREE,
+  normalizeCategoryNameForUniqueness,
+} from "../packages/domain/dist/default-categories.js";
 import pg from "pg";
 
 const { Client } = pg;
-
-const DEFAULT_CATEGORY_TREE = [
-  {
-    kind: "EXPENSE",
-    roots: [
-      {
-        name: "Moradia",
-        children: [
-          "Aluguel",
-          "Condomínio",
-          "Água",
-          "Energia elétrica",
-          "Gás",
-          "Internet",
-          "Telefone",
-          "IPTU",
-          "Manutenção residencial",
-        ],
-      },
-      {
-        name: "Alimentação",
-        children: ["Mercado", "Feira", "Padaria", "Restaurante", "Delivery", "Lanches"],
-      },
-      {
-        name: "Transporte",
-        children: [
-          "Combustível",
-          "Transporte público",
-          "Aplicativos de transporte",
-          "Estacionamento",
-          "Pedágio",
-          "Manutenção do veículo",
-          "Seguro do veículo",
-          "IPVA e licenciamento",
-        ],
-      },
-      {
-        name: "Saúde",
-        children: ["Plano de saúde", "Consultas", "Exames", "Medicamentos", "Dentista", "Terapia"],
-      },
-      {
-        name: "Educação",
-        children: ["Escola ou faculdade", "Cursos", "Livros", "Material escolar"],
-      },
-      {
-        name: "Lazer",
-        children: [
-          "Viagens",
-          "Cinema e eventos",
-          "Assinaturas e streaming",
-          "Hobbies",
-          "Bares e restaurantes",
-        ],
-      },
-      {
-        name: "Compras",
-        children: [
-          "Vestuário",
-          "Eletrônicos",
-          "Casa e decoração",
-          "Presentes",
-          "Cuidados pessoais",
-        ],
-      },
-      {
-        name: "Serviços financeiros",
-        children: ["Tarifas bancárias", "Juros", "Multas", "Anuidade de cartão", "Seguros"],
-      },
-      {
-        name: "Família e dependentes",
-        children: ["Filhos", "Pets", "Ajuda familiar"],
-      },
-      {
-        name: "Impostos e taxas",
-        children: ["Imposto de renda", "Taxas públicas", "Documentos e cartório"],
-      },
-      {
-        name: "Outros",
-        children: ["Doações", "Diversos", "Ajustes"],
-      },
-    ],
-  },
-  {
-    kind: "INCOME",
-    roots: [
-      {
-        name: "Trabalho",
-        children: [
-          "Salário",
-          "Pró-labore",
-          "Bônus",
-          "Comissões",
-          "Freelance",
-          "13º salário",
-          "Férias",
-        ],
-      },
-      {
-        name: "Negócios",
-        children: ["Vendas", "Prestação de serviços", "Reembolsos de clientes"],
-      },
-      {
-        name: "Investimentos",
-        children: ["Rendimentos", "Dividendos", "Juros", "Aluguéis recebidos", "Venda de ativos"],
-      },
-      {
-        name: "Reembolsos",
-        children: ["Reembolso de despesas", "Estornos", "Cashback"],
-      },
-      {
-        name: "Outros recebimentos",
-        children: ["Presentes recebidos", "Ajuda familiar", "Outros"],
-      },
-    ],
-  },
-];
+const ROOT_PARENT_KEY = "__root__";
 
 function assertSafeEnvironment() {
   if (!process.env.DATABASE_URL) {
@@ -135,14 +24,17 @@ function assertSafeEnvironment() {
 
 function buildDeterministicUuid(parts) {
   const hash = createHash("sha256").update(parts.join("|")).digest("hex");
-  const uuid = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-8${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 
-  return uuid;
+  return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-8${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+}
+
+function toDatabaseKind(kind) {
+  return kind.toUpperCase();
 }
 
 async function listProfiles(client) {
   const result = await client.query(
-    `select "id", "organizationId", "ownerUserId"
+    `select "id", "organizationId", "ownerUserId", "name"
      from "FinancialProfile"
      where "status" = 'ACTIVE'
      order by "createdAt" asc`,
@@ -151,81 +43,113 @@ async function listProfiles(client) {
   return result.rows;
 }
 
-async function hasExistingCategoryStructure(client, profile) {
+async function listExistingCategories(client, profile) {
   const result = await client.query(
-    `select 1 from "Category"
-     where "organizationId" = $1 and "financialProfileId" = $2
-     limit 1`,
+    `select "id", "parentCategoryId", "name", "normalizedName", "kind", "status"
+     from "Category"
+     where "organizationId" = $1 and "financialProfileId" = $2`,
     [profile.organizationId, profile.id],
   );
 
-  return result.rowCount > 0;
+  return result.rows;
+}
+
+function buildCategoryIndex(categories) {
+  return new Map(
+    categories.map((category) => [
+      buildCategoryIndexKey(
+        category.kind.toLowerCase(),
+        category.parentCategoryId,
+        category.normalizedName ?? normalizeCategoryNameForUniqueness(category.name),
+      ),
+      category,
+    ]),
+  );
+}
+
+function buildCategoryIndexKey(kind, parentCategoryId, normalizedName) {
+  return [kind, parentCategoryId ?? ROOT_PARENT_KEY, normalizedName].join("|");
 }
 
 async function insertCategory(client, profile, category) {
-  await client.query(
+  const result = await client.query(
     `insert into "Category"
-     ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "kind", "status", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
-     values ($1, $2, $3, $4, $5, $6, 'ACTIVE', $7, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-     on conflict ("id") do update set
-       "parentCategoryId" = excluded."parentCategoryId",
-       "name" = excluded."name",
-       "kind" = excluded."kind",
-       "status" = excluded."status",
-       "updatedByUserId" = excluded."updatedByUserId",
-       "updatedAt" = CURRENT_TIMESTAMP`,
+     ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "normalizedName",
+      "kind", "status", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+     values ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', $8, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+     returning "id", "parentCategoryId", "name", "normalizedName", "kind", "status"`,
     [
       category.id,
       profile.organizationId,
       profile.id,
       category.parentCategoryId,
       category.name,
-      category.kind,
+      normalizeCategoryNameForUniqueness(category.name),
+      toDatabaseKind(category.kind),
       profile.ownerUserId,
     ],
   );
+
+  return result.rows[0];
 }
 
-async function seedProfileDefaultCategories(client, profile) {
-  if (await hasExistingCategoryStructure(client, profile)) {
-    return 0;
+async function findOrCreateDefaultCategory(client, profile, index, category) {
+  const normalizedName = normalizeCategoryNameForUniqueness(category.name);
+  const existingCategory = index.get(
+    buildCategoryIndexKey(category.kind, category.parentCategoryId, normalizedName),
+  );
+
+  if (existingCategory) {
+    return { category: existingCategory, created: false };
   }
 
+  const createdCategory = await insertCategory(client, profile, {
+    id: buildDeterministicUuid([
+      profile.organizationId,
+      profile.id,
+      "default-category",
+      category.kind,
+      category.parentCategoryId ?? ROOT_PARENT_KEY,
+      normalizedName,
+    ]),
+    ...category,
+  });
+
+  index.set(
+    buildCategoryIndexKey(
+      category.kind,
+      createdCategory.parentCategoryId,
+      createdCategory.normalizedName,
+    ),
+    createdCategory,
+  );
+
+  return { category: createdCategory, created: true };
+}
+
+async function repairProfileDefaultCategories(client, profile) {
+  const categoryIndex = buildCategoryIndex(await listExistingCategories(client, profile));
   let createdCount = 0;
 
   for (const group of DEFAULT_CATEGORY_TREE) {
     for (const root of group.roots) {
-      const parentId = buildDeterministicUuid([
-        profile.organizationId,
-        profile.id,
-        "default-category",
-        group.kind,
-        root.name,
-      ]);
-
-      await insertCategory(client, profile, {
-        id: parentId,
+      const rootResult = await findOrCreateDefaultCategory(client, profile, categoryIndex, {
         parentCategoryId: null,
         name: root.name,
         kind: group.kind,
       });
-      createdCount += 1;
 
-      for (const childName of root.children) {
-        await insertCategory(client, profile, {
-          id: buildDeterministicUuid([
-            profile.organizationId,
-            profile.id,
-            "default-category",
-            group.kind,
-            root.name,
-            childName,
-          ]),
-          parentCategoryId: parentId,
-          name: childName,
+      if (rootResult.created) createdCount += 1;
+      if (rootResult.category.status === "ARCHIVED") continue;
+
+      for (const child of root.children ?? []) {
+        const childResult = await findOrCreateDefaultCategory(client, profile, categoryIndex, {
+          parentCategoryId: rootResult.category.id,
+          name: child.name,
           kind: group.kind,
         });
-        createdCount += 1;
+
+        if (childResult.created) createdCount += 1;
       }
     }
   }
@@ -246,12 +170,15 @@ async function main() {
     let createdCount = 0;
 
     for (const profile of profiles) {
-      createdCount += await seedProfileDefaultCategories(client, profile);
+      const profileCreatedCount = await repairProfileDefaultCategories(client, profile);
+      createdCount += profileCreatedCount;
+      console.log(
+        `Profile ${profile.name ?? profile.id}: default categories created ${profileCreatedCount}.`,
+      );
     }
 
     await client.query("COMMIT");
-    console.log(`Default category seed applied.
-Categories created or refreshed: ${createdCount}.`);
+    console.log(`Default category repair applied. Categories created: ${createdCount}.`);
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
