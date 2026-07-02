@@ -55,7 +55,11 @@ function runCreatesFirstActiveInstrumentAsDefault(): void {
   });
 
   assertEqual(result.instrument.isDefault, true, "first active instrument should be default");
-  assertEqual(result.card.status, "active", "card should become active with an active instrument");
+  assertEqual(
+    result.card.status,
+    "active",
+    "card should become active with an active instrument",
+  );
   assertEqual(
     isCardAvailableForNewCardPurchases(tenantA, result.card, result.instruments),
     true,
@@ -182,7 +186,11 @@ function runArchivesDefaultAndPromotesNextActiveInstrument(): void {
     "instrument-virtual-main",
     "next active instrument should become default",
   );
-  assertEqual(archivedResult.card.status, "active", "card should remain active with one instrument");
+  assertEqual(
+    archivedResult.card.status,
+    "active",
+    "card should remain active with one instrument",
+  );
 }
 
 function runBlocksCardWhenLastActiveInstrumentIsArchived(): void {
@@ -207,7 +215,11 @@ function runBlocksCardWhenLastActiveInstrumentIsArchived(): void {
     now,
   });
 
-  assertEqual(archivedResult.card.status, "blocked", "card should be blocked without active instruments");
+  assertEqual(
+    archivedResult.card.status,
+    "blocked",
+    "card should be blocked without active instruments",
+  );
   assertEqual(
     isCardAvailableForNewCardPurchases(tenantA, archivedResult.card, archivedResult.instruments),
     false,
