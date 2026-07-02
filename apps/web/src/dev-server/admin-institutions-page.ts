@@ -309,24 +309,31 @@ function adminLogoUploadScript(): string {
             status.textContent = "Enviando logomarca...";
           }
 
-          const contentBase64 = await readFileAsBase64(file);
-          const response = await fetch(form.dataset.apiPath, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ fileName: file.name, mimeType: file.type, contentBase64 }),
-          });
-          const body = await response.json().catch(() => ({}));
+          try {
+            const contentBase64 = await readFileAsBase64(file);
+            const response = await fetch(form.dataset.apiPath, {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ fileName: file.name, mimeType: file.type, contentBase64 }),
+            });
+            const body = await response.json().catch(() => ({}));
 
-          if (status) {
-            status.className = response.ok ? "form-status success" : "form-status error";
-            status.textContent = response.ok
-              ? ((body.operation && body.operation.message) || "Logomarca enviada.")
-              : ((body.error && body.error.message) || "Não foi possível enviar a logomarca.");
-          }
+            if (status) {
+              status.className = response.ok ? "form-status success" : "form-status error";
+              status.textContent = response.ok
+                ? ((body.operation && body.operation.message) || "Logomarca enviada.")
+                : ((body.error && body.error.message) || "Não foi possível enviar a logomarca.");
+            }
 
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 700);
-            return;
+            if (response.ok) {
+              window.setTimeout(() => window.location.reload(), 700);
+              return;
+            }
+          } catch {
+            if (status) {
+              status.className = "form-status error";
+              status.textContent = "Não foi possível conectar com a API. Tente novamente.";
+            }
           }
 
           if (button) button.disabled = false;
