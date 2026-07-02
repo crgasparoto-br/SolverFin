@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import {
   clearUploadedInstitutionLogosForTests,
+  createR2LogoStorageAdapter,
   getUploadedInstitutionLogo,
   uploadInstitutionLogo,
   validateInstitutionLogoUpload,
@@ -19,6 +20,7 @@ unsupportedMimeTypeIsRejected();
 contentMismatchIsRejected();
 largeLogoIsRejectedBeforeStorage();
 await storageFailureDoesNotUpdateLogoMetadata();
+await r2NetworkFailureUsesStorageError();
 
 async function validLogoUploadIsStoredWithSafeObjectKey(): Promise<void> {
   clearUploadedInstitutionLogosForTests();
@@ -141,6 +143,36 @@ async function storageFailureDoesNotUpdateLogoMetadata(): Promise<void> {
     "INSTITUTION_LOGO_STORAGE_UNAVAILABLE",
   );
   assert.equal(getUploadedInstitutionLogo("inter"), undefined);
+}
+
+async function r2NetworkFailureUsesStorageError(): Promise<void> {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    throw new TypeError("fetch failed");
+  }) as typeof fetch;
+
+  try {
+    const adapter = createR2LogoStorageAdapter({
+      R2_ACCOUNT_ID: "00000000000000000000000000000000",
+      R2_ACCESS_KEY_ID: "test-access-key",
+      R2_SECRET_ACCESS_KEY: "test-secret-key",
+      R2_BUCKET_NAME: "solverfin-assets",
+      R2_PUBLIC_BASE_URL: "https://assets.example.invalid",
+      R2_REGION: "auto",
+    });
+
+    await assertAsyncLogoError(
+      () =>
+        adapter.putObject({
+          objectKey: "institutions/bradesco/logo-test.png",
+          content: Buffer.from("logo"),
+          mimeType: "image/png",
+        }),
+      "INSTITUTION_LOGO_STORAGE_UNAVAILABLE",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 }
 
 function createMemoryAdapter(): LogoStorageAdapter {

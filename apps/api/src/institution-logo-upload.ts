@@ -11,6 +11,10 @@ const ALLOWED_LOGO_TYPES = new Map([
   ["image/webp", "webp"],
 ]);
 
+interface StorageUnavailableInput {
+  cause?: unknown;
+}
+
 export interface InstitutionLogoUploadInput {
   institutionKey: string;
   fileName?: string;
@@ -198,18 +202,20 @@ export function createR2LogoStorageAdapter(
         content: input.content,
         mimeType: input.mimeType,
       });
-      const response = await fetch(url, {
-        method: "PUT",
-        headers,
-        body: input.content,
-      });
+      let response: Response;
+
+      try {
+        response = await fetch(url, {
+          method: "PUT",
+          headers,
+          body: input.content,
+        });
+      } catch (error) {
+        throw storageUnavailableError({ cause: error });
+      }
 
       if (!response.ok) {
-        throw new InstitutionLogoUploadError(
-          "INSTITUTION_LOGO_STORAGE_UNAVAILABLE",
-          "Não foi possível salvar a logomarca no storage R2.",
-          502,
-        );
+        throw storageUnavailableError();
       }
 
       return {
@@ -227,6 +233,14 @@ interface R2Config {
   bucketName: string;
   publicBaseUrl: string;
   region: string;
+}
+
+function storageUnavailableError(_input: StorageUnavailableInput = {}): InstitutionLogoUploadError {
+  return new InstitutionLogoUploadError(
+    "INSTITUTION_LOGO_STORAGE_UNAVAILABLE",
+    "Não foi possível salvar a logomarca no storage R2. Verifique a configuração do R2 e tente novamente.",
+    502,
+  );
 }
 
 function resolveCatalogInstitution(institutionKey: string): UploadableInstitution | undefined {
