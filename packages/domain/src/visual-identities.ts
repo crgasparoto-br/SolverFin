@@ -278,7 +278,9 @@ export function findFinancialInstitution(
     key: normalizedValue,
     label: "Instituição não cadastrada",
     description: "Chave legada preservada para compatibilidade.",
-    fallbackLabel: getVisualFallbackLabel(normalizedValue.replace(/[_-]+/g, " ")),
+    fallbackLabel: getVisualFallbackLabel(
+      normalizedValue.replace(/[_-]+/g, " "),
+    ),
     status: "unknown",
     isKnown: false,
   };
@@ -299,7 +301,9 @@ export function getVisualFallbackLabel(label: string): string {
     .trim()
     .split(/[\s_-]+/)
     .slice(0, 2)
-    .map((part) => part.replace(/[^A-Za-z0-9]/g, "")[0]?.toUpperCase() ?? "")
+    .map(
+      (part) => part.replace(/[^A-Za-z0-9]/g, "")[0]?.toUpperCase() ?? "",
+    )
     .join("");
 
   return initials || "SF";
