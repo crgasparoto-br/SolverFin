@@ -90,7 +90,6 @@ export function isPrimaryMobileRoute(route: ShellRoute): boolean {
     route.id === "dashboard" ||
     route.id === "transactions" ||
     route.id === "cards" ||
-    route.id === "payablesReceivables" ||
     route.id === "inbox" ||
     route.id === "settings"
   );
