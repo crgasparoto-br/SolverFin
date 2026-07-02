@@ -1,12 +1,26 @@
-# Contas a pagar e a receber
+# Contas a pagar e a receber - legado
 
 ## Status
 
-O backend possui contrato MVP para contas a pagar e a receber com persistencia PostgreSQL, isolamento por organizacao/perfil financeiro e auditoria de mudancas financeiras relevantes.
+`PayableReceivable` e um dominio/API legado de compatibilidade. Ele continua existindo para preservar dados historicos, auditoria, integracoes internas e transicao tecnica segura, mas nao representa mais uma tela operacional ativa no produto.
 
-A interface web inicial esta disponivel na rota `/pagar-receber`. Ela e despachada diretamente por `apps/web/src/dev-server.ts`, consome os endpoints abaixo e permite listar, criar, editar, concluir e cancelar contas a pagar/receber sem expor exclusao fisica, archive ou restore.
+A decisao de produto da #284 consolida a rotina assim:
 
-## Modelo
+- receitas, despesas, transferencias e compromissos previstos de conta corrente ficam no **Extrato da conta** (`/lancamentos`);
+- compras, faturas, fechamento e pagamento de cartao ficam em **Cartoes de Credito** (`/cartoes`);
+- a rota historica `/pagar-receber` nao deve ser apresentada como jornada principal nem como destino operacional novo.
+
+Enquanto a #290 nao concluir a transicao tecnica do dominio, este documento serve como referencia de compatibilidade para registros antigos. Novas implementacoes de produto devem preferir `Transaction`, `Invoice`, recorrencias e parcelas materializadas conforme o fluxo de origem.
+
+## Regra de transicao
+
+Dados antigos de `PayableReceivable` nao podem ser perdidos. Leitores temporarios podem continuar consultando esse recurso quando precisarem preservar historico ou compatibilidade, mas devem evitar dupla contagem quando houver:
+
+- `settlementTransactionId` apontando para um `Transaction` existente;
+- `Transaction` equivalente ja representando o mesmo compromisso planejado ou efetivado;
+- `Invoice` aberta/fechada representando compromisso de cartao.
+
+## Modelo legado
 
 Contas a pagar e a receber usam o mesmo recurso persistente `PayableReceivable`.
 
@@ -26,9 +40,9 @@ Campos principais:
 
 Todos os registros carregam `organizationId` e `financialProfileId`.
 
-## Endpoints
+## Endpoints legados
 
-Todos os endpoints exigem sessao autenticada e respeitam `profileId` quando informado na query string.
+Todos os endpoints exigem sessao autenticada e respeitam `profileId` quando informado na query string. Eles devem ser tratados como compatibilidade enquanto a remocao segura nao for planejada na #290.
 
 ### Listar
 
@@ -139,19 +153,14 @@ POST /api/payables-receivables/:payableReceivableId/cancel
 
 Cancelamento e a exclusao logica do MVP para este dominio. Nao ha exclusao fisica, arquivamento separado ou restauracao/reativacao neste contrato inicial.
 
-## Web
+## Web legado
 
-A rota `/pagar-receber` oferece:
+A tela dedicada `/pagar-receber` foi retirada da jornada operacional ativa. O usuario deve criar e acompanhar compromissos em:
 
-- resumo de pendentes, a pagar, a receber e concluidas;
-- listagem por status `pending`, `settled` e `cancelled`;
-- cadastro de conta a pagar ou receber;
-- edicao apenas de itens pendentes;
-- conclusao com confirmacao simples, gerando ou associando lancamento conforme o backend;
-- cancelamento com confirmacao simples;
-- mensagens de estado vazio, sucesso e erro sem detalhes tecnicos.
+- `/lancamentos`, para receitas, despesas, transferencias e previsoes de conta;
+- `/cartoes`, para compras, faturas, fechamento e pagamento de cartao.
 
-Itens concluidos e cancelados ficam em modo consulta para preservar o contrato atual. A UI nao mostra archive, restore nem exclusao fisica.
+Qualquer rota, tela ou componente remanescente de `PayableReceivable` deve ser tratado como compatibilidade temporaria, nao como experiencia principal. Nao adicionar novos links de navegacao, chamadas de Dashboard ou fluxos de onboarding para `/pagar-receber`.
 
 ## Regras de tenant e auditoria
 
