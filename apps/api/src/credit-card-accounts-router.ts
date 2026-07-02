@@ -23,6 +23,7 @@ import {
   updateCardInstrumentForContext,
   updateCreditCardAccountForContext,
 } from "./repositories/card-instruments.js";
+import { registerCardPurchaseForContext } from "./repositories/cards.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
@@ -51,6 +52,7 @@ route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/archive`, archiveCreditCardAccountH
 route("GET", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, listCardInstrumentsHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, createCardInstrumentHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCardInstrumentHandler);
+route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
 route("PATCH", `${INSTRUMENTS_BASE_PATH}/:instrumentId`, updateCardInstrumentHandler);
 route("POST", `${INSTRUMENTS_BASE_PATH}/:instrumentId/archive`, archiveCardInstrumentHandler);
 
@@ -261,6 +263,32 @@ async function createCardInstrumentHandler(
   );
 
   return json(201, { creditCardAccount });
+}
+
+async function registerCardPurchaseHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const result = await registerCardPurchaseForContext(context, requireParam(match, "cardId"), {
+    occurredOn: String(body.occurredOn ?? ""),
+    amountMinor: Number(body.amountMinor),
+    description: String(body.description ?? ""),
+    ...(body.cardInstrumentId !== undefined
+      ? { cardInstrumentId: String(body.cardInstrumentId) }
+      : {}),
+    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+    ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+    ...(body.totalInstallments !== undefined
+      ? { totalInstallments: Number(body.totalInstallments) }
+      : {}),
+    ...(body.installmentStart !== undefined
+      ? { installmentStart: Number(body.installmentStart) }
+      : {}),
+  });
+
+  return json(201, result);
 }
 
 async function updateCardInstrumentHandler(
