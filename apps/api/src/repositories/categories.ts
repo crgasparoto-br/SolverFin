@@ -213,17 +213,10 @@ export async function deleteCategoryForContext(
   context: TenantContext,
   categoryId: EntityId,
 ): Promise<void> {
-  const currentCategory = getCategoryDomain(
-    context,
-    await findCategoryRow(context, categoryId),
-  );
+  const currentCategory = getCategoryDomain(context, await findCategoryRow(context, categoryId));
 
   await withTransaction(async (executeQuery) => {
-    const blockers = await countCategoryDeleteBlockers(
-      executeQuery,
-      context,
-      currentCategory.id,
-    );
+    const blockers = await countCategoryDeleteBlockers(executeQuery, context, currentCategory.id);
 
     if (blockers.children > 0) {
       throwCategoryDeleteBlocked(
@@ -247,14 +240,10 @@ export async function deleteCategoryForContext(
   });
 }
 
-async function ensureDefaultCategoriesForContext(
-  context: TenantContext,
-): Promise<void> {
+async function ensureDefaultCategoriesForContext(context: TenantContext): Promise<void> {
   await withTransaction(async (executeQuery) => {
     const now = new Date().toISOString();
-    let categoryIndex = indexCategories(
-      await listCategoryRowsForContext(executeQuery, context),
-    );
+    let categoryIndex = indexCategories(await listCategoryRowsForContext(executeQuery, context));
 
     for (const group of DEFAULT_CATEGORY_TREE) {
       for (const root of group.roots) {
@@ -508,9 +497,9 @@ async function listCategoryAncestors(
   return ancestors;
 }
 
-function normalizeCategoryParentPayload<
-  T extends CreateCategoryPayload | UpdateCategoryPayload,
->(payload: T): T {
+function normalizeCategoryParentPayload<T extends CreateCategoryPayload | UpdateCategoryPayload>(
+  payload: T,
+): T {
   if (payload.parentCategoryId === undefined) {
     return payload;
   }
@@ -523,9 +512,7 @@ function normalizeCategoryParentPayload<
   };
 }
 
-function normalizeParentCategoryId(
-  parentCategoryId: EntityId | null | undefined,
-): EntityId | null {
+function normalizeParentCategoryId(parentCategoryId: EntityId | null | undefined): EntityId | null {
   if (parentCategoryId === null || parentCategoryId === undefined) {
     return null;
   }
@@ -557,11 +544,9 @@ function buildCategoryIndexKey(
   parentCategoryId: EntityId | null,
   name: string,
 ): string {
-  return [
-    kind,
-    parentCategoryId ?? ROOT_PARENT_KEY,
-    normalizeCategoryNameForUniqueness(name),
-  ].join("|");
+  return [kind, parentCategoryId ?? ROOT_PARENT_KEY, normalizeCategoryNameForUniqueness(name)].join(
+    "|",
+  );
 }
 
 function mapCategoryRow(row: CategoryRow): Category {
@@ -606,10 +591,5 @@ function throwCategoryDuplicate(): never {
 }
 
 function isCategoryUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === "23505"
-  );
+  return typeof error === "object" && error !== null && "code" in error && error.code === "23505";
 }

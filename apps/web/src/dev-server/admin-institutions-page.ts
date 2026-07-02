@@ -36,10 +36,7 @@ interface AdminInstitutionsResponse {
 
 export async function renderAdminInstitutionsPage(token: string, url?: URL): Promise<string> {
   const query = url ? buildAdminApiQuery(url.searchParams) : "";
-  const result = await apiGet<AdminInstitutionsResponse>(
-    token,
-    `/api/admin/institutions${query}`,
-  );
+  const result = await apiGet<AdminInstitutionsResponse>(token, `/api/admin/institutions${query}`);
 
   if (!result.ok) {
     return renderAuthenticatedShellDocument({
@@ -85,13 +82,56 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
       <section class="panel filters-panel">
         <form method="get" action="/admin/instituicoes" class="filters-grid">
           <label class="wide">Busca geral<input name="q" type="search" value="${escapeHtml(params.get("q") ?? "")}" placeholder="Nome, chave interna, COMPE ou ISPB" /></label>
-          <label>Status<select name="status">${renderSelectOptions([["all", "Todos"], ["active", "Ativos"], ["inactive", "Inativos"]], params.get("status") ?? "all")}</select></label>
-          <label>Situação da logo<select name="logoStatus">${renderSelectOptions([["all", "Todas"], ["r2_asset", "Logo R2"], ["local_asset", "Logo local"], ["fallback", "Fallback"]], params.get("logoStatus") ?? "all")}</select></label>
+          <label>Status<select name="status">${renderSelectOptions(
+            [
+              ["all", "Todos"],
+              ["active", "Ativos"],
+              ["inactive", "Inativos"],
+            ],
+            params.get("status") ?? "all",
+          )}</select></label>
+          <label>Situação da logo<select name="logoStatus">${renderSelectOptions(
+            [
+              ["all", "Todas"],
+              ["r2_asset", "Logo R2"],
+              ["local_asset", "Logo local"],
+              ["fallback", "Fallback"],
+            ],
+            params.get("logoStatus") ?? "all",
+          )}</select></label>
           <label>Código bancário<input name="bankCode" inputmode="numeric" value="${escapeHtml(params.get("bankCode") ?? "")}" placeholder="001" /></label>
           <label>ISPB<input name="ispb" value="${escapeHtml(params.get("ispb") ?? "")}" placeholder="Busca parcial" /></label>
-          <label>Tipo<select name="institutionType">${renderSelectOptions([["", "Todos"], ["bank", "Banco"], ["cooperative", "Cooperativa"], ["payment_institution", "Instituição de pagamento"], ["digital_wallet", "Carteira digital"], ["demo", "Demo"]], params.get("institutionType") ?? "")}</select></label>
-          <label>Pendências<select name="missing">${renderSelectOptions([["", "Todas"], ["bankCode", "Sem código bancário"], ["ispb", "Sem ISPB"], ["logo", "Sem logo"]], params.get("missing") ?? "")}</select></label>
-          <label>Ordenar<select name="sort">${renderSelectOptions([["label", "Nome"], ["key", "Chave interna"], ["bankCode", "Código bancário"], ["ispb", "ISPB"], ["status", "Status"], ["updatedAt", "Atualização"]], params.get("sort") ?? "label")}</select></label>
+          <label>Tipo<select name="institutionType">${renderSelectOptions(
+            [
+              ["", "Todos"],
+              ["bank", "Banco"],
+              ["cooperative", "Cooperativa"],
+              ["payment_institution", "Instituição de pagamento"],
+              ["digital_wallet", "Carteira digital"],
+              ["demo", "Demo"],
+            ],
+            params.get("institutionType") ?? "",
+          )}</select></label>
+          <label>Pendências<select name="missing">${renderSelectOptions(
+            [
+              ["", "Todas"],
+              ["bankCode", "Sem código bancário"],
+              ["ispb", "Sem ISPB"],
+              ["logo", "Sem logo"],
+            ],
+            params.get("missing") ?? "",
+          )}</select></label>
+          <label>Ordenar<select name="sort">${renderSelectOptions(
+            [
+              ["label", "Nome"],
+              ["key", "Chave interna"],
+              ["bankCode", "Código bancário"],
+              ["ispb", "ISPB"],
+              ["status", "Status"],
+              ["updatedAt", "Atualização"],
+            ],
+            params.get("sort") ?? "label",
+          )}</select></label>
           <input type="hidden" name="order" value="${escapeHtml(params.get("order") ?? "asc")}" />
           <div class="filter-actions">
             <button type="submit">Aplicar filtros</button>
@@ -247,7 +287,9 @@ function renderEmptyState(): string {
 }
 
 function logoDialogId(institution: AdminInstitutionView): string {
-  return `logo-upload-${encodeURIComponent(institution.key).replace(/%/g, "-").replace(/[^A-Za-z0-9_-]/g, "-")}`;
+  return `logo-upload-${encodeURIComponent(institution.key)
+    .replace(/%/g, "-")
+    .replace(/[^A-Za-z0-9_-]/g, "-")}`;
 }
 
 function formatStatus(status: string): string {

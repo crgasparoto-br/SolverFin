@@ -117,11 +117,7 @@ export const DEFAULT_CATEGORY_TREE: readonly DefaultCategoryGroup[] = [
       },
       {
         name: "Família e dependentes",
-        children: [
-          { name: "Filhos" },
-          { name: "Pets" },
-          { name: "Ajuda familiar" },
-        ],
+        children: [{ name: "Filhos" }, { name: "Pets" }, { name: "Ajuda familiar" }],
       },
       {
         name: "Impostos e taxas",
@@ -133,11 +129,7 @@ export const DEFAULT_CATEGORY_TREE: readonly DefaultCategoryGroup[] = [
       },
       {
         name: "Outros",
-        children: [
-          { name: "Doações" },
-          { name: "Diversos" },
-          { name: "Ajustes" },
-        ],
+        children: [{ name: "Doações" }, { name: "Diversos" }, { name: "Ajustes" }],
       },
     ],
   },
@@ -176,19 +168,11 @@ export const DEFAULT_CATEGORY_TREE: readonly DefaultCategoryGroup[] = [
       },
       {
         name: "Reembolsos",
-        children: [
-          { name: "Reembolso de despesas" },
-          { name: "Estornos" },
-          { name: "Cashback" },
-        ],
+        children: [{ name: "Reembolso de despesas" }, { name: "Estornos" }, { name: "Cashback" }],
       },
       {
         name: "Outros recebimentos",
-        children: [
-          { name: "Presentes recebidos" },
-          { name: "Ajuda familiar" },
-          { name: "Outros" },
-        ],
+        children: [{ name: "Presentes recebidos" }, { name: "Ajuda familiar" }, { name: "Outros" }],
       },
     ],
   },
