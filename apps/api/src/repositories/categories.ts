@@ -3,8 +3,10 @@ import { randomUUID } from "node:crypto";
 import {
   archiveCategory as archiveCategoryDomain,
   createCategory as createCategoryDomain,
+  DEFAULT_CATEGORY_TREE,
   getCategory as getCategoryDomain,
   listCategories as listCategoriesDomain,
+  normalizeCategoryNameForUniqueness,
   restoreCategory as restoreCategoryDomain,
   updateCategory as updateCategoryDomain,
   type Category,
@@ -25,18 +27,13 @@ interface CategoryRow {
   financialProfileId: string;
   parentCategoryId: string | null;
   name: string;
+  normalizedName: string;
   kind: string;
   status: string;
   createdAt: Date;
   updatedAt: Date;
   createdByUserId: string | null;
   updatedByUserId: string | null;
-}
-
-interface DefaultCategoryDefinition {
-  name: string;
-  kind: CategoryKind;
-  children?: readonly string[];
 }
 
 interface CategoryDeleteBlockers {
@@ -47,42 +44,12 @@ interface CategoryDeleteBlockers {
   payablesReceivables: number;
 }
 
-const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "parentCategoryId", "name",
-  "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
+type ExecuteQuery = typeof query;
 
-const DEFAULT_CATEGORIES: readonly DefaultCategoryDefinition[] = [
-  {
-    name: "Moradia",
-    kind: "expense",
-    children: ["Aluguel", "Condomínio", "Energia elétrica", "Água", "Internet"],
-  },
-  {
-    name: "Alimentação",
-    kind: "expense",
-    children: ["Mercado", "Restaurantes", "Lanches"],
-  },
-  {
-    name: "Transporte",
-    kind: "expense",
-    children: ["Combustível", "Aplicativos e táxi", "Manutenção"],
-  },
-  { name: "Saúde", kind: "expense", children: ["Consultas", "Medicamentos", "Plano de saúde"] },
-  { name: "Educação", kind: "expense" },
-  { name: "Lazer", kind: "expense" },
-  { name: "Serviços", kind: "expense" },
-  { name: "Impostos e taxas", kind: "expense" },
-  { name: "Outros gastos", kind: "expense" },
-  { name: "Salário", kind: "income" },
-  { name: "Pró-labore", kind: "income" },
-  { name: "Vendas", kind: "income" },
-  { name: "Rendimentos", kind: "income" },
-  { name: "Reembolsos", kind: "income" },
-  { name: "Outros recebimentos", kind: "income" },
-  { name: "Transferências entre contas", kind: "transfer" },
-  { name: "Investimentos", kind: "transfer" },
-  { name: "Resgate de investimentos", kind: "transfer" },
-  { name: "Pagamento de cartão", kind: "transfer" },
-];
+const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "parentCategoryId", "name",
+  "normalizedName", "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
+
+const ROOT_PARENT_KEY = "__root__";
 
 export async function listCategoriesForContext(
   context: TenantContext,
@@ -129,25 +96,40 @@ export async function createCategoryForContext(
     ...(parentCategory ? { parentCategory } : {}),
   });
 
-  await query(
-    `insert into "Category"
-      ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "kind", "status",
-       "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-    [
-      category.id,
-      category.organizationId,
-      category.financialProfileId,
-      category.parentCategoryId ?? null,
-      category.name,
-      category.kind.toUpperCase(),
-      category.status.toUpperCase(),
-      category.createdAt,
-      category.updatedAt,
-      category.createdByUserId ?? null,
-      category.updatedByUserId ?? null,
-    ],
-  );
+  await assertCategoryNameAvailable(query, context, {
+    kind: category.kind,
+    parentCategoryId: category.parentCategoryId ?? null,
+    name: category.name,
+  });
+
+  try {
+    await query(
+      `insert into "Category"
+        ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "normalizedName",
+         "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [
+        category.id,
+        category.organizationId,
+        category.financialProfileId,
+        category.parentCategoryId ?? null,
+        category.name,
+        normalizeCategoryNameForUniqueness(category.name),
+        category.kind.toUpperCase(),
+        category.status.toUpperCase(),
+        category.createdAt,
+        category.updatedAt,
+        category.createdByUserId ?? null,
+        category.updatedByUserId ?? null,
+      ],
+    );
+  } catch (error) {
+    if (isCategoryUniqueViolation(error)) {
+      throwCategoryDuplicate();
+    }
+
+    throw error;
+  }
 
   return category;
 }
@@ -178,6 +160,12 @@ export async function updateCategoryForContext(
     ...(parentCategory ? { parentCategory } : {}),
   });
 
+  await assertCategoryNameAvailable(query, context, {
+    kind: updatedCategory.kind,
+    parentCategoryId: updatedCategory.parentCategoryId ?? null,
+    name: updatedCategory.name,
+    excludingCategoryId: updatedCategory.id,
+  });
   await persistCategoryUpdate(updatedCategory);
 
   return updatedCategory;
@@ -210,6 +198,12 @@ export async function restoreCategoryForContext(
     new Date().toISOString(),
   );
 
+  await assertCategoryNameAvailable(query, context, {
+    kind: restoredCategory.kind,
+    parentCategoryId: restoredCategory.parentCategoryId ?? null,
+    name: restoredCategory.name,
+    excludingCategoryId: restoredCategory.id,
+  });
   await persistCategoryUpdate(restoredCategory);
 
   return restoredCategory;
@@ -248,45 +242,93 @@ export async function deleteCategoryForContext(
 
 async function ensureDefaultCategoriesForContext(context: TenantContext): Promise<void> {
   await withTransaction(async (executeQuery) => {
-    const existingRows = await executeQuery<{ count: string }>(
-      `select count(*)::text as "count" from "Category"
-       where "organizationId" = $1 and "financialProfileId" = $2`,
-      [context.organizationId, context.financialProfileId],
-    );
-    const existingCount = Number(existingRows[0]?.count ?? 0);
-
-    if (existingCount > 0) {
-      return;
-    }
-
     const now = new Date().toISOString();
+    let categoryIndex = indexCategories(await listCategoryRowsForContext(executeQuery, context));
 
-    for (const category of DEFAULT_CATEGORIES) {
-      const parentCategoryId = randomUUID();
-
-      await insertCategorySeed(executeQuery, context, {
-        id: parentCategoryId,
-        parentCategoryId: null,
-        name: category.name,
-        kind: category.kind,
-        now,
-      });
-
-      for (const childName of category.children ?? []) {
-        await insertCategorySeed(executeQuery, context, {
-          id: randomUUID(),
-          parentCategoryId,
-          name: childName,
-          kind: category.kind,
+    for (const group of DEFAULT_CATEGORY_TREE) {
+      for (const root of group.roots) {
+        const rootCategory = await findOrCreateDefaultCategory(executeQuery, {
+          context,
+          index: categoryIndex,
+          kind: group.kind,
+          parentCategoryId: null,
+          name: root.name,
           now,
         });
+
+        categoryIndex = rootCategory.index;
+
+        if (rootCategory.category.status === "archived") {
+          continue;
+        }
+
+        for (const child of root.children ?? []) {
+          const childCategory = await findOrCreateDefaultCategory(executeQuery, {
+            context,
+            index: categoryIndex,
+            kind: group.kind,
+            parentCategoryId: rootCategory.category.id,
+            name: child.name,
+            now,
+          });
+          categoryIndex = childCategory.index;
+        }
       }
     }
   });
 }
 
+async function findOrCreateDefaultCategory(
+  executeQuery: ExecuteQuery,
+  input: {
+    context: TenantContext;
+    index: CategoryIndex;
+    kind: CategoryKind;
+    parentCategoryId: EntityId | null;
+    name: string;
+    now: string;
+  },
+): Promise<{ category: Category; index: CategoryIndex }> {
+  const existingCategory = input.index.get(
+    buildCategoryIndexKey(input.kind, input.parentCategoryId, input.name),
+  );
+
+  if (existingCategory) {
+    return { category: existingCategory, index: input.index };
+  }
+
+  const category = mapCategoryRow(
+    await insertCategorySeed(executeQuery, input.context, {
+      id: randomUUID(),
+      parentCategoryId: input.parentCategoryId,
+      name: input.name,
+      kind: input.kind,
+      now: input.now,
+    }),
+  );
+  const nextIndex = new Map(input.index);
+
+  nextIndex.set(
+    buildCategoryIndexKey(category.kind, category.parentCategoryId ?? null, category.name),
+    category,
+  );
+
+  return { category, index: nextIndex };
+}
+
+async function listCategoryRowsForContext(
+  executeQuery: ExecuteQuery,
+  context: TenantContext,
+): Promise<CategoryRow[]> {
+  return executeQuery<CategoryRow>(
+    `select ${SELECT_COLUMNS} from "Category"
+     where "organizationId" = $1 and "financialProfileId" = $2`,
+    [context.organizationId, context.financialProfileId],
+  );
+}
+
 async function insertCategorySeed(
-  executeQuery: typeof query,
+  executeQuery: ExecuteQuery,
   context: TenantContext,
   input: {
     id: EntityId;
@@ -295,44 +337,58 @@ async function insertCategorySeed(
     kind: CategoryKind;
     now: string;
   },
-): Promise<void> {
-  await executeQuery(
+): Promise<CategoryRow> {
+  const rows = await executeQuery<CategoryRow>(
     `insert into "Category"
-      ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "kind", "status",
-       "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-     values ($1, $2, $3, $4, $5, $6, 'ACTIVE', $7, $7, $8, $8)`,
+      ("id", "organizationId", "financialProfileId", "parentCategoryId", "name", "normalizedName",
+       "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+     values ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', $8, $8, $9, $9)
+     returning ${SELECT_COLUMNS}`,
     [
       input.id,
       context.organizationId,
       context.financialProfileId,
       input.parentCategoryId,
       input.name,
+      normalizeCategoryNameForUniqueness(input.name),
       input.kind.toUpperCase(),
       input.now,
       context.userId,
     ],
   );
+
+  return rows[0] ?? throwUnexpectedCategoryInsert();
 }
 
 async function persistCategoryUpdate(category: Category): Promise<void> {
-  await query(
-    `update "Category" set
-      "name" = $2, "kind" = $3, "status" = $4, "parentCategoryId" = $5, "updatedAt" = $6, "updatedByUserId" = $7
-     where "id" = $1`,
-    [
-      category.id,
-      category.name,
-      category.kind.toUpperCase(),
-      category.status.toUpperCase(),
-      category.parentCategoryId ?? null,
-      category.updatedAt,
-      category.updatedByUserId ?? null,
-    ],
-  );
+  try {
+    await query(
+      `update "Category" set
+        "name" = $2, "normalizedName" = $3, "kind" = $4, "status" = $5,
+        "parentCategoryId" = $6, "updatedAt" = $7, "updatedByUserId" = $8
+       where "id" = $1`,
+      [
+        category.id,
+        category.name,
+        normalizeCategoryNameForUniqueness(category.name),
+        category.kind.toUpperCase(),
+        category.status.toUpperCase(),
+        category.parentCategoryId ?? null,
+        category.updatedAt,
+        category.updatedByUserId ?? null,
+      ],
+    );
+  } catch (error) {
+    if (isCategoryUniqueViolation(error)) {
+      throwCategoryDuplicate();
+    }
+
+    throw error;
+  }
 }
 
 async function countCategoryDeleteBlockers(
-  executeQuery: typeof query,
+  executeQuery: ExecuteQuery,
   context: TenantContext,
   categoryId: EntityId,
 ): Promise<CategoryDeleteBlockers> {
@@ -371,6 +427,40 @@ function throwCategoryDeleteBlocked(code: string, message: string): never {
     code,
     statusCode: 409,
   });
+}
+
+async function assertCategoryNameAvailable(
+  executeQuery: ExecuteQuery,
+  context: TenantContext,
+  input: {
+    kind: CategoryKind;
+    parentCategoryId: EntityId | null;
+    name: string;
+    excludingCategoryId?: EntityId;
+  },
+): Promise<void> {
+  const duplicateRows = await executeQuery<{ id: string }>(
+    `select "id" from "Category"
+     where "organizationId" = $1
+       and "financialProfileId" = $2
+       and "kind" = $3
+       and "normalizedName" = $4
+       and (($5::uuid is null and "parentCategoryId" is null) or "parentCategoryId" = $5::uuid)
+       and ($6::uuid is null or "id" <> $6::uuid)
+     limit 1`,
+    [
+      context.organizationId,
+      context.financialProfileId,
+      input.kind.toUpperCase(),
+      normalizeCategoryNameForUniqueness(input.name),
+      input.parentCategoryId,
+      input.excludingCategoryId ?? null,
+    ],
+  );
+
+  if (duplicateRows.length > 0) {
+    throwCategoryDuplicate();
+  }
 }
 
 async function findCategoryRow(
@@ -436,6 +526,31 @@ function normalizeParentCategoryId(parentCategoryId: EntityId | null | undefined
   return normalizedParentCategoryId;
 }
 
+type CategoryIndex = ReadonlyMap<string, Category>;
+
+function indexCategories(rows: readonly CategoryRow[]): CategoryIndex {
+  return new Map(
+    rows
+      .map(mapCategoryRow)
+      .map((category) => [
+        buildCategoryIndexKey(category.kind, category.parentCategoryId ?? null, category.name),
+        category,
+      ]),
+  );
+}
+
+function buildCategoryIndexKey(
+  kind: CategoryKind,
+  parentCategoryId: EntityId | null,
+  name: string,
+): string {
+  return [
+    kind,
+    parentCategoryId ?? ROOT_PARENT_KEY,
+    normalizeCategoryNameForUniqueness(name),
+  ].join("|");
+}
+
 function mapCategoryRow(row: CategoryRow): Category {
   const category: Category = {
     id: row.id,
@@ -461,4 +576,27 @@ function mapCategoryRow(row: CategoryRow): Category {
   }
 
   return category;
+}
+
+function throwUnexpectedCategoryInsert(): never {
+  throw Object.assign(new Error("Could not create default category."), {
+    code: "CATEGORY_DEFAULT_CREATE_FAILED",
+    statusCode: 500,
+  });
+}
+
+function throwCategoryDuplicate(): never {
+  throw Object.assign(new Error("Já existe uma categoria com este nome neste grupo."), {
+    code: "CATEGORY_DUPLICATE",
+    statusCode: 409,
+  });
+}
+
+function isCategoryUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "23505"
+  );
 }
