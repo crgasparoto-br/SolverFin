@@ -10,7 +10,7 @@ A decisao de produto da #284 consolida a rotina assim:
 - compras, faturas, fechamento e pagamento de cartao ficam em **Cartoes de Credito** (`/cartoes`);
 - a rota historica `/pagar-receber` nao deve ser apresentada como jornada principal nem como destino operacional novo.
 
-Enquanto a #290 nao concluir a transicao tecnica do dominio, este documento serve como referencia de compatibilidade para registros antigos. Novas implementacoes de produto devem preferir `Transaction`, `Invoice`, recorrencias e parcelas materializadas conforme o fluxo de origem.
+A transicao tecnica da #290 esta registrada em [`docs/PAYABLES_RECEIVABLES_TRANSITION.md`](./PAYABLES_RECEIVABLES_TRANSITION.md). Novas implementacoes de produto devem preferir `Transaction`, `Invoice`, recorrencias e parcelas materializadas conforme o fluxo de origem.
 
 ## Regra de transicao
 
@@ -19,6 +19,8 @@ Dados antigos de `PayableReceivable` nao podem ser perdidos. Leitores temporario
 - `settlementTransactionId` apontando para um `Transaction` existente;
 - `Transaction` equivalente ja representando o mesmo compromisso planejado ou efetivado;
 - `Invoice` aberta/fechada representando compromisso de cartao.
+
+O helper `buildPayableReceivableTransitionPlan` classifica registros legados antes de qualquer migracao fisica, separando criacao planejada, vinculo de liquidacao existente, duplicidade, historico cancelado e revisao manual.
 
 ## Modelo legado
 
@@ -42,7 +44,7 @@ Todos os registros carregam `organizationId` e `financialProfileId`.
 
 ## Endpoints legados
 
-Todos os endpoints exigem sessao autenticada e respeitam `profileId` quando informado na query string. Eles devem ser tratados como compatibilidade enquanto a remocao segura nao for planejada na #290.
+Todos os endpoints exigem sessao autenticada e respeitam `profileId` quando informado na query string. Eles devem ser tratados como compatibilidade enquanto a transicao segura nao for totalmente executada e validada.
 
 ### Listar
 
