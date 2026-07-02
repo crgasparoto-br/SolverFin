@@ -36,7 +36,7 @@ async function adminInstitutionsRequireAuthentication(): Promise<void> {
 }
 
 async function adminInstitutionsBlockRegularUsers(): Promise<void> {
-  withEnv(MASTER_EMAILS_ENV_KEY, "master@solverfin.example.invalid", async () => {
+  await withEnv(MASTER_EMAILS_ENV_KEY, "master@solverfin.example.invalid", async () => {
     const response = await handleAdminInstitutionsApiRequest(
       buildRequest("GET", "/api/admin/institutions", undefined, rememberSession("admin-regular")),
     );
@@ -48,7 +48,7 @@ async function adminInstitutionsBlockRegularUsers(): Promise<void> {
 }
 
 async function adminInstitutionsAllowConfiguredMaster(): Promise<void> {
-  withEnv(MASTER_EMAILS_ENV_KEY, demoUser.email, async () => {
+  await withEnv(MASTER_EMAILS_ENV_KEY, demoUser.email, async () => {
     const response = await handleAdminInstitutionsApiRequest(
       buildRequest("GET", "/api/admin/institutions", undefined, rememberSession("admin-master")),
     );
@@ -60,7 +60,7 @@ async function adminInstitutionsAllowConfiguredMaster(): Promise<void> {
 }
 
 async function adminInstitutionRefreshIsIdempotent(): Promise<void> {
-  withEnv(MASTER_EMAILS_ENV_KEY, demoUser.email, async () => {
+  await withEnv(MASTER_EMAILS_ENV_KEY, demoUser.email, async () => {
     const response = await handleAdminInstitutionsApiRequest(
       buildRequest(
         "POST",
@@ -141,15 +141,21 @@ function readOperationStatus(response: ApiResponse): string | undefined {
   return (response.body as { operation?: { status?: string } }).operation?.status;
 }
 
-function withEnv(key: string, value: string, action: () => void | Promise<void>): void {
+async function withEnv(
+  key: string,
+  value: string,
+  action: () => void | Promise<void>,
+): Promise<void> {
   const previousValue = process.env[key];
   process.env[key] = value;
 
-  void Promise.resolve(action()).finally(() => {
+  try {
+    await action();
+  } finally {
     if (previousValue === undefined) {
       delete process.env[key];
     } else {
       process.env[key] = previousValue;
     }
-  });
+  }
 }
