@@ -12,11 +12,20 @@ const tenantA: TenantContext = {
   userId: "user-a",
 };
 
+const tenantB: TenantContext = {
+  organizationId: "org-b",
+  financialProfileId: "profile-b",
+  financialProfileKind: "personal",
+  userId: "user-b",
+};
+
 runUsesDefaultInstrumentWhenPurchaseOmitsInstrumentId();
 runPreservesSelectedInstrumentOnPurchaseAndInstallments();
 runSharesInvoiceAcrossInstrumentsOfSameAggregator();
 runRejectsPurchaseWithoutActiveInstrument();
 runRejectsArchivedInstrumentPurchase();
+runRejectsMissingInstrumentPurchase();
+runRejectsInstrumentFromAnotherTenant();
 runRejectsInstrumentFromAnotherCard();
 
 function runUsesDefaultInstrumentWhenPurchaseOmitsInstrumentId(): void {
@@ -186,6 +195,67 @@ function runRejectsArchivedInstrumentPurchase(): void {
   );
 }
 
+function runRejectsMissingInstrumentPurchase(): void {
+  const group = createInstrumentGroup(createCardFixture("card-missing-instrument"));
+
+  assertCardError(
+    () =>
+      registerCardPurchase({
+        transactionId: "transaction-missing-instrument",
+        context: tenantA,
+        card: group.card,
+        instruments: group.instruments,
+        existingInvoices: [],
+        now,
+        payload: {
+          occurredOn: "2026-06-15",
+          amountMinor: 1_000,
+          description: "Compra com instrumento inexistente",
+          cardInstrumentId: "instrument-missing",
+        },
+        makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+      }),
+    "CARD_INSTRUMENT_CARD_MISMATCH",
+  );
+}
+
+function runRejectsInstrumentFromAnotherTenant(): void {
+  const group = createInstrumentGroup(createCardFixture("card-tenant-owner"));
+  const tenantBCard = createCardFixtureForTenant("card-tenant-b", tenantB);
+  const tenantBInstrument = createCardInstrument({
+    id: "instrument-tenant-b",
+    context: tenantB,
+    card: tenantBCard,
+    existingInstruments: [],
+    now,
+    payload: {
+      cardId: tenantBCard.id,
+      type: "physical",
+      holder: "primary",
+    },
+  }).instrument;
+
+  assertCardError(
+    () =>
+      registerCardPurchase({
+        transactionId: "transaction-cross-tenant-instrument",
+        context: tenantA,
+        card: group.card,
+        instruments: [...group.instruments, tenantBInstrument],
+        existingInvoices: [],
+        now,
+        payload: {
+          occurredOn: "2026-06-15",
+          amountMinor: 1_000,
+          description: "Compra com instrumento de outro tenant",
+          cardInstrumentId: tenantBInstrument.id,
+        },
+        makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+      }),
+    "CARD_INSTRUMENT_CARD_MISMATCH",
+  );
+}
+
 function runRejectsInstrumentFromAnotherCard(): void {
   const group = createInstrumentGroup(createCardFixture("card-owner"));
   const otherGroup = createInstrumentGroup(createCardFixture("card-other-owner"));
@@ -212,9 +282,13 @@ function runRejectsInstrumentFromAnotherCard(): void {
 }
 
 function createCardFixture(id: string): Card {
+  return createCardFixtureForTenant(id, tenantA);
+}
+
+function createCardFixtureForTenant(id: string, context: TenantContext): Card {
   return createCard({
     id,
-    context: tenantA,
+    context,
     now,
     payload: {
       name: `Cartao ${id}`,
