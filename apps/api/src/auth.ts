@@ -195,7 +195,7 @@ export function createInMemoryAuthSessionStore(): AuthSessionStore {
 
   return {
     create(session: AuthSession): void {
-      sessions.set(session.id);
+      sessions.set(session.id, session);
     },
 
     get(sessionId: string): AuthSession | undefined {
