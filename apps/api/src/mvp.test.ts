@@ -30,6 +30,7 @@ async function loginCreatesSessionAndAllowsPrivateContracts(): Promise<void> {
 
   assert.equal(me.statusCode, 200);
   assert.equal(JSON.stringify(me.body).includes("SolverFinDemo!2026"), false);
+  assert.equal(readUser(me.body).isMaster, false);
 
   const logout = await handleMvpApiRequest({
     method: "DELETE",
@@ -87,6 +88,14 @@ function readToken(body: unknown): string {
   return body.session.token;
 }
 
+function readUser(body: unknown): { isMaster: boolean } {
+  if (!isUserBody(body)) {
+    throw new Error("Expected user profile response.");
+  }
+
+  return body.user;
+}
+
 function isSessionBody(body: unknown): body is { session: { token: string } } {
   if (typeof body !== "object" || body === null || !("session" in body)) {
     return false;
@@ -99,4 +108,18 @@ function isSessionBody(body: unknown): body is { session: { token: string } } {
   }
 
   return typeof (session as { token?: unknown }).token === "string";
+}
+
+function isUserBody(body: unknown): body is { user: { isMaster: boolean } } {
+  if (typeof body !== "object" || body === null || !("user" in body)) {
+    return false;
+  }
+
+  const user = (body as { user?: unknown }).user;
+
+  if (typeof user !== "object" || user === null || !("isMaster" in user)) {
+    return false;
+  }
+
+  return typeof (user as { isMaster?: unknown }).isMaster === "boolean";
 }

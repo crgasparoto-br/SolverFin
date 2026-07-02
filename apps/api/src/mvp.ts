@@ -1,4 +1,5 @@
 import { AuthError, type AuthenticatedUser } from "./auth.js";
+import { isMasterUser } from "./admin-auth.js";
 import {
   authenticateProductiveUser,
   authenticateUser,
@@ -209,6 +210,7 @@ function serializeUser(user: AuthenticatedUser) {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
+    isMaster: isMasterUser(user),
   };
 }
 

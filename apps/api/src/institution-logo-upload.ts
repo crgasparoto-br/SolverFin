@@ -1,6 +1,6 @@
 import { createHash, createHmac } from "node:crypto";
 
-import { financialInstitutionCatalog, type FinancialInstitutionKey } from "@solverfin/domain";
+import { financialInstitutionCatalog } from "@solverfin/domain";
 
 export const INSTITUTION_LOGO_MAX_BYTES_ENV_KEY = "INSTITUTION_LOGO_MAX_BYTES";
 export const DEFAULT_INSTITUTION_LOGO_MAX_BYTES = 2 * 1024 * 1024;
@@ -18,8 +18,13 @@ export interface InstitutionLogoUploadInput {
   contentBase64: string;
 }
 
+export interface UploadableInstitution {
+  key: string;
+  status: "active" | "inactive";
+}
+
 export interface ValidatedInstitutionLogoUpload {
-  institutionKey: FinancialInstitutionKey;
+  institutionKey: string;
   mimeType: string;
   extension: string;
   content: Buffer;
@@ -28,7 +33,7 @@ export interface ValidatedInstitutionLogoUpload {
 }
 
 export interface UploadedInstitutionLogo {
-  institutionKey: FinancialInstitutionKey;
+  institutionKey: string;
   objectKey: string;
   publicUrl: string;
   mimeType: string;
@@ -72,8 +77,9 @@ export function clearUploadedInstitutionLogosForTests(): void {
 export async function uploadInstitutionLogo(
   input: InstitutionLogoUploadInput,
   adapter: LogoStorageAdapter = createR2LogoStorageAdapter(),
+  institution?: UploadableInstitution,
 ): Promise<UploadedInstitutionLogo> {
-  const validated = validateInstitutionLogoUpload(input);
+  const validated = validateInstitutionLogoUpload(input, process.env, institution);
   const stored = await adapter.putObject({
     objectKey: validated.objectKey,
     content: validated.content,
@@ -98,8 +104,9 @@ export async function uploadInstitutionLogo(
 export function validateInstitutionLogoUpload(
   input: InstitutionLogoUploadInput,
   env: Readonly<Record<string, string | undefined>> = process.env,
+  persistedInstitution?: UploadableInstitution,
 ): ValidatedInstitutionLogoUpload {
-  const institution = financialInstitutionCatalog.find((item) => item.key === input.institutionKey);
+  const institution = persistedInstitution ?? resolveCatalogInstitution(input.institutionKey);
 
   if (!institution) {
     throw new InstitutionLogoUploadError(
@@ -168,7 +175,7 @@ export function validateInstitutionLogoUpload(
 }
 
 export function buildInstitutionLogoObjectKey(input: {
-  institutionKey: FinancialInstitutionKey;
+  institutionKey: string;
   extension: string;
   contentSha256: string;
 }): string {
@@ -220,6 +227,17 @@ interface R2Config {
   bucketName: string;
   publicBaseUrl: string;
   region: string;
+}
+
+function resolveCatalogInstitution(institutionKey: string): UploadableInstitution | undefined {
+  const institution = financialInstitutionCatalog.find((item) => item.key === institutionKey);
+
+  return institution
+    ? {
+        key: institution.key,
+        status: institution.status,
+      }
+    : undefined;
 }
 
 function resolveR2Config(env: Readonly<Record<string, string | undefined>>): R2Config {
