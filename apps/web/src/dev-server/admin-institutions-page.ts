@@ -12,7 +12,9 @@ interface AdminInstitutionView {
   bankCode?: string;
   ispb?: string;
   logoAssetPath?: string;
-  logoStatus: "local_asset" | "fallback";
+  logoObjectKey?: string;
+  logoUploadedAt?: string;
+  logoStatus: "local_asset" | "r2_asset" | "fallback";
 }
 
 interface AdminInstitutionsResponse {
@@ -90,6 +92,7 @@ export async function renderAdminInstitutionsPage(token: string): Promise<string
         </div>
       </section>
       ${adminRefreshScript()}
+      ${adminLogoUploadScript()}
     `,
   });
 }
@@ -115,9 +118,13 @@ function renderInstitutionRow(institution: AdminInstitutionView): string {
         <div><dt>Logo</dt><dd>${escapeHtml(formatLogoStatus(institution.logoStatus))}</dd></div>
         <div><dt>COMPE/ISPB</dt><dd>${escapeHtml(formatBankCodes(institution))}</dd></div>
       </dl>
-      <div class="institution-actions">
-        <button type="button" class="secondary-button" disabled title="Fluxo R2 será implementado na issue #300">Enviar logomarca</button>
-      </div>
+      <form class="institution-actions logo-upload-form" data-logo-upload-form data-api-path="/api/admin/institutions/${escapeHtml(encodeURIComponent(institution.key))}/logo">
+        <label class="logo-upload-control">Arquivo
+          <input name="logo" type="file" accept="image/png,image/jpeg,image/webp" required />
+        </label>
+        <button type="submit" class="secondary-button">${institution.logoAssetPath ? "Substituir logomarca" : "Enviar logomarca"}</button>
+        <p class="form-status muted" data-logo-upload-status aria-live="polite">PNG, JPG ou WebP até o limite configurado.</p>
+      </form>
     </article>
   `;
 }
@@ -137,7 +144,8 @@ function formatStatus(status: string): string {
 }
 
 function formatLogoStatus(status: AdminInstitutionView["logoStatus"]): string {
-  if (status === "local_asset") return "Logo local/R2";
+  if (status === "r2_asset") return "Logo R2";
+  if (status === "local_asset") return "Logo local";
   return "Fallback por iniciais";
 }
 
@@ -185,6 +193,67 @@ function adminRefreshScript(): string {
   `;
 }
 
+function adminLogoUploadScript(): string {
+  return `
+    <script>
+      function readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || "").split(",")[1] || "");
+          reader.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      document.querySelectorAll("[data-logo-upload-form]").forEach((form) => {
+        const input = form.querySelector('input[type="file"]');
+        const button = form.querySelector('button[type="submit"]');
+        const status = form.querySelector("[data-logo-upload-status]");
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const file = input && input.files ? input.files[0] : undefined;
+
+          if (!file) {
+            if (status) {
+              status.className = "form-status error";
+              status.textContent = "Selecione uma imagem antes de enviar.";
+            }
+            return;
+          }
+
+          if (button) button.disabled = true;
+          if (status) {
+            status.className = "form-status muted";
+            status.textContent = "Enviando logomarca...";
+          }
+
+          const contentBase64 = await readFileAsBase64(file);
+          const response = await fetch(form.dataset.apiPath, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ fileName: file.name, mimeType: file.type, contentBase64 }),
+          });
+          const body = await response.json().catch(() => ({}));
+
+          if (status) {
+            status.className = response.ok ? "form-status success" : "form-status error";
+            status.textContent = response.ok
+              ? ((body.operation && body.operation.message) || "Logomarca enviada.")
+              : ((body.error && body.error.message) || "Não foi possível enviar a logomarca.");
+          }
+
+          if (response.ok) {
+            window.setTimeout(() => window.location.reload(), 700);
+            return;
+          }
+
+          if (button) button.disabled = false;
+        });
+      });
+    </script>
+  `;
+}
+
 function adminPageStyles(): string {
   return `
     ${sharedShellStyles()}
@@ -198,7 +267,7 @@ function adminPageStyles(): string {
     .metric-card p { color: var(--muted); margin: 0; }
     .admin-actions-panel { align-items: start; display: flex; justify-content: space-between; }
     .admin-institution-list { display: grid; gap: 12px; }
-    .admin-institution-row { align-items: center; border: 1px solid var(--line); border-radius: 14px; display: grid; gap: 14px; grid-template-columns: 64px minmax(240px, 1fr) minmax(280px, 0.9fr) auto; padding: 14px; }
+    .admin-institution-row { align-items: center; border: 1px solid var(--line); border-radius: 14px; display: grid; gap: 14px; grid-template-columns: 64px minmax(240px, 1fr) minmax(280px, 0.9fr) minmax(260px, auto); padding: 14px; }
     .institution-logo-preview { align-items: center; background: var(--primary-soft); border-radius: 16px; color: var(--primary); display: flex; font-weight: 900; height: 52px; justify-content: center; overflow: hidden; width: 52px; }
     .institution-logo-preview img { height: 44px; max-width: 44px; object-fit: contain; }
     .institution-main { display: grid; gap: 4px; }
@@ -208,10 +277,13 @@ function adminPageStyles(): string {
     .institution-meta div { display: grid; gap: 2px; }
     .institution-meta dt { color: var(--muted); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
     .institution-meta dd { margin: 0; }
-    .institution-actions { display: flex; justify-content: flex-end; }
+    .institution-actions { display: grid; gap: 8px; }
+    .logo-upload-control { color: var(--muted); display: grid; font-size: 0.82rem; gap: 4px; }
+    .logo-upload-control input { max-width: 240px; }
     .admin-denied { max-width: 760px; }
     .form-status { margin: 0; }
-    @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .admin-institution-row { grid-template-columns: 52px 1fr; } .institution-meta, .institution-actions { grid-column: 1 / -1; } }
+    @media (max-width: 1180px) { .admin-institution-row { grid-template-columns: 52px 1fr; } .institution-meta, .institution-actions { grid-column: 1 / -1; } }
+    @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 640px) { .admin-heading, .admin-actions-panel { display: grid; } .summary-grid { grid-template-columns: 1fr; } }
   `;
 }
