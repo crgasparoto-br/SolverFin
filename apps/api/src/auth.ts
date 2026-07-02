@@ -59,7 +59,8 @@ export type AuthErrorCode =
   | "AUTH_SESSION_INVALID"
   | "AUTH_SESSION_EXPIRED"
   | "AUTH_USER_ALREADY_EXISTS"
-  | "AUTH_USER_DISABLED";
+  | "AUTH_USER_DISABLED"
+  | "AUTH_ADMIN_REQUIRED";
 
 export class AuthError extends Error {
   readonly code: AuthErrorCode;

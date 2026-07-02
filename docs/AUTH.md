@@ -21,6 +21,20 @@ O modulo `apps/api/src/auth-service.ts` conecta essa camada ao PostgreSQL e adic
 - revogacao em massa por usuario fica disponivel no servico de autenticacao;
 - eventos de seguranca sao registrados em `SecurityAuditEvent`.
 
+## Usuario master e Admin global
+
+A area Admin global deve ser protegida por backend antes de listar, atualizar ou alterar recursos compartilhados entre todos os usuarios.
+
+A definicao inicial de usuario master fica em `SOLVERFIN_MASTER_EMAILS`, com uma lista separada por virgulas. A comparacao normaliza espacos e caixa alta/baixa, ignora valores que nao sejam emails validos e falha de modo seguro quando a variavel estiver ausente ou vazia.
+
+O helper `apps/api/src/admin-auth.ts` expoe:
+
+- `listConfiguredMasterEmails` para ler a configuracao normalizada;
+- `isMasterUser` para checagem booleana;
+- `requireMasterUser` para bloquear usuario comum ou desabilitado com `AUTH_ADMIN_REQUIRED` e status HTTP 403.
+
+Usuario com status `disabled` nunca recebe acesso Admin mesmo que o email esteja configurado como master. Essa regra nao usa ownership de organizacao ou perfil financeiro, pois o Admin global nao pertence a um perfil financeiro especifico.
+
 ## Provider produtivo
 
 A rota `POST /api/session/oidc` recebe a resposta validada do fluxo OIDC/OAuth2 do cliente, confere `state`, valida o `idToken` contra JWKS do provider e troca a identidade externa por uma sessao local do SolverFin.
@@ -58,6 +72,8 @@ Eventos de seguranca sao gravados em `SecurityAuditEvent` sem tokens, respostas 
 - revogacao de todas as sessoes de um usuario;
 - acesso negado a perfil financeiro quando chamado pelo servico de autenticacao.
 
+Acoes administrativas globais devem reutilizar o guard master e registrar auditoria especifica quando a rota administrativa existir. Se a estrutura de auditoria nao estiver disponivel em um ambiente local, a operacao deve continuar sem expor segredos ou payloads sensiveis.
+
 ## Variaveis locais
 
 `.env.example` inclui:
@@ -66,6 +82,7 @@ Eventos de seguranca sao gravados em `SecurityAuditEvent` sem tokens, respostas 
 AUTH_SESSION_TTL_MINUTES=60
 AUTH_SESSION_IDLE_TIMEOUT_MINUTES=30
 AUTH_ALLOW_DEMO=false
+SOLVERFIN_MASTER_EMAILS=master@solverfin.example.invalid
 OIDC_ISSUER_URL=https://identity.example.invalid/solverfin
 OIDC_AUDIENCE=solverfin-api
 OIDC_JWKS_URI=https://identity.example.invalid/solverfin/.well-known/jwks.json
@@ -76,6 +93,8 @@ OIDC_JWKS_URI=https://identity.example.invalid/solverfin/.well-known/jwks.json
 `AUTH_SESSION_IDLE_TIMEOUT_MINUTES` controla o timeout por inatividade das sessoes persistidas. Quando ausente ou invalido, o padrao e 30 minutos.
 
 `AUTH_ALLOW_DEMO=true` deve ser usado apenas em demonstracoes nao produtivas e controladas. Ele nao torna a autenticacao demo adequada para producao.
+
+`SOLVERFIN_MASTER_EMAILS` controla quem pode acessar recursos Admin globais. Em producao, configure apenas emails reais de usuarios autorizados em ambiente protegido. Variavel ausente ou vazia nao libera acesso Admin para ninguem.
 
 ## Erros controlados
 
@@ -109,6 +128,12 @@ Sessao expirada por timeout absoluto ou inatividade retorna:
 AUTH_SESSION_EXPIRED
 ```
 
+Usuario autenticado sem permissao master para Admin global retorna:
+
+```text
+AUTH_ADMIN_REQUIRED
+```
+
 ## Testes
 
 O pacote `@solverfin/api` cobre:
@@ -126,6 +151,7 @@ O pacote `@solverfin/api` cobre:
 - timeout por inatividade;
 - bloqueio da autenticacao demo fora de ambiente local/teste sem opt-in explicito;
 - configuracao OIDC produtiva para ambientes nao locais;
-- validacao de JWT OIDC assinado, audience invalida, token expirado e `state` invalido.
+- validacao de JWT OIDC assinado, audience invalida, token expirado e `state` invalido;
+- configuracao e guard de usuario master para Admin global, incluindo falha segura quando `SOLVERFIN_MASTER_EMAILS` esta ausente, usuario comum e usuario desabilitado.
 
 Todos os testes usam usuarios ficticios e nao dependem de segredos reais.
