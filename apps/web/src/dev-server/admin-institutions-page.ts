@@ -74,7 +74,7 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
           <h1>Instituições financeiras</h1>
           <p class="muted">Catálogo compartilhado por todos os usuários para contas e cartões.</p>
         </div>
-        <button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh${escapeHtml(query)}">Atualizar bancos</button>
+        <button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh" data-api-query="${escapeHtml(query)}">Atualizar bancos</button>
       </section>
       <section class="summary-grid" aria-label="Resumo do catálogo">
         ${renderSummaryCard("Instituições", summary.total, "itens encontrados")}
@@ -248,7 +248,8 @@ function adminRefreshScript(): string {
             status.textContent = "Atualizando catálogo...";
           }
 
-          const response = await fetch(button.dataset.apiPath, {
+          const refreshPath = button.dataset.apiPath + (button.dataset.apiQuery || "");
+          const response = await fetch(refreshPath, {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ source: "admin" }),
