@@ -193,6 +193,8 @@ function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
     accountsCardsPageSource,
     /import \{ findInstitution, institutions, renderInstitutionIcon \} from "\.\/institutions\.js";/,
   );
+  assert.match(accountsCardsPageSource, /<div class="identity-mark">\$\{renderInstitutionIcon/);
+  assert.doesNotMatch(accountsCardsPageSource, /<div class="identity-mark" aria-hidden="true">\$\{renderInstitutionIcon/);
 }
 
 function institutionIconsUseExplicitLogoSources(): void {
@@ -200,12 +202,19 @@ function institutionIconsUseExplicitLogoSources(): void {
     const icon = renderInstitutionIcon(institution.key);
 
     assert.doesNotMatch(icon, /logo\.clearbit\.com/);
+    assert.doesNotMatch(icon, /https?:\/\/.*logo/i);
     assert.match(icon, /institution-badge-icon/);
     assert.match(icon, new RegExp(`>${institution.shortLabel}<`));
   }
 
-  assert.match(renderInstitutionIcon("bradesco"), /<img\b/);
-  assert.match(renderInstitutionIcon("bradesco"), /\/images\/institutions\/bradesco\.png/);
+  const bradescoIcon = renderInstitutionIcon("bradesco");
+
+  assert.match(bradescoIcon, /<img\b/);
+  assert.match(bradescoIcon, /alt="Logo Bradesco"/);
+  assert.match(bradescoIcon, /width="44" height="44"/);
+  assert.match(bradescoIcon, /decoding="async"/);
+  assert.match(bradescoIcon, /data-logo-source="local"/);
+  assert.match(bradescoIcon, /\/images\/institutions\/bradesco\.png/);
   assert.match(renderInstitutionIcon("inter"), /\/images\/institutions\/inter\.png/);
   assert.match(renderInstitutionIcon("c6"), />C6</);
   assert.doesNotMatch(renderInstitutionIcon("c6"), /<img\b/);
@@ -214,25 +223,43 @@ function institutionIconsUseExplicitLogoSources(): void {
   assert.match(renderInstitutionIcon("legacy_bank"), />LB</);
   assert.match(renderInstitutionIcon("porto_bank"), /\/images\/institutions\/porto-bank\.svg/);
   assert.match(renderInstitutionIcon("bradesco"), />BR</);
+  assert.match(renderInstitutionIcon("bradesco"), /aria-hidden="true"/);
+  assert.match(renderInstitutionIcon("bradesco"), /removeAttribute\('aria-hidden'\)/);
 
-  assertLocalInstitutionLogo("/images/institutions/bradesco.png", "png");
-  assertLocalInstitutionLogo("/images/institutions/inter.png", "png");
-  assertLocalInstitutionLogo("/images/institutions/porto-bank.svg", "svg");
+  for (const institution of financialInstitutionCatalog) {
+    if (institution.logoAssetPath === undefined) continue;
+
+    assert.match(institution.logoAssetPath, /^\/images\/institutions\/[a-z0-9-]+\.(png|svg|webp)$/);
+    assertLocalInstitutionLogo(institution.logoAssetPath);
+  }
 }
 
-function assertLocalInstitutionLogo(src: string, kind: "png" | "svg"): void {
+function assertLocalInstitutionLogo(src: string): void {
   assert.doesNotMatch(src, /^https?:\/\//);
 
   const filePath = path.join(repoRoot, "apps", "web", "public", src);
   assert.equal(existsSync(filePath), true, `${src} must exist`);
 
   const bytes = readFileSync(filePath);
-  if (kind === "png") {
+  if (src.endsWith(".png")) {
     assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
     return;
   }
 
-  assert.match(bytes.subarray(0, 200).toString("utf8"), /<svg\b/i);
+  if (src.endsWith(".svg")) {
+    const svg = bytes.subarray(0, 200).toString("utf8");
+    assert.match(svg, /<svg\b/i);
+    assert.doesNotMatch(svg, /<script\b/i);
+    return;
+  }
+
+  if (src.endsWith(".webp")) {
+    assert.equal(bytes.subarray(0, 4).toString("ascii"), "RIFF");
+    assert.equal(bytes.subarray(8, 12).toString("ascii"), "WEBP");
+    return;
+  }
+
+  assert.fail(`${src} must use png, svg or webp`);
 }
 
 function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
