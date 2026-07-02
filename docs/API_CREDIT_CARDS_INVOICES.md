@@ -10,7 +10,7 @@ A migracao destrutiva da #319 introduz a estrutura persistente para o novo model
 - `CardInstrument` representa os meios internos de uso do agrupador, como fisico, virtual, titular principal e adicional.
 - `Transaction`, `Recurrence` e `Installment` passam a aceitar `cardInstrumentId` para preservar a origem da compra, recorrencia ou parcela.
 - `Invoice.cardId` continua apontando para o agrupador, nunca para um instrumento isolado.
-- `CardAdditionalLink` permanece temporariamente como tabela legada para manter rotas e testes antigos ate as #321, #323 e #324 substituirem o fluxo por instrumentos internos. Ela nao faz parte do schema Prisma nem do modelo principal novo.
+- `CardAdditionalLink` permanece temporariamente como tabela legada para manter rotas e testes antigos ate as #323 e #324 substituirem o restante do fluxo por instrumentos internos. Ela nao faz parte do schema Prisma nem do modelo principal novo.
 
 A #320 liga o dominio de compras ao novo modelo quando o chamador fornece contexto de instrumentos:
 
@@ -20,17 +20,90 @@ A #320 liga o dominio de compras ao novo modelo quando o chamador fornece contex
 - agrupadores sem instrumento ativo sao bloqueados para novas compras no fluxo novo;
 - a fatura continua unica por agrupador e periodo, mesmo quando diferentes instrumentos fazem compras no mesmo ciclo.
 
-As rotas antigas de `/api/cards` ainda existem como transicao tecnica. O comportamento principal do produto deve evoluir para cartao agrupador com instrumentos internos nas proximas subissues do epico.
+A #321 adiciona o contrato de API para agrupadores e instrumentos. As rotas antigas de `/api/cards` continuam como compatibilidade temporaria, mas o caminho principal para novas telas e integracoes passa a ser `/api/credit-card-accounts`.
 
-## Escopo entregue antes da API nova
+## Escopo entregue antes da UI nova
 
-- Cadastro de cartao com nome, status, dia de fechamento, dia de vencimento, limite opcional, identificador mascarado legado e conta padrao de pagamento opcional.
+- Cadastro de cartao agrupador com nome, status, dia de fechamento, dia de vencimento, limite opcional, bandeira, instituicao e conta padrao de pagamento opcional.
+- Cadastro e manutencao de instrumentos internos fisicos/virtuais, titular principal/adicional, default, identificador mascarado e limite individual.
 - Registro de compra no cartao com criacao ou atualizacao da fatura correta.
-- Suporte a compra com instrumento interno quando a camada chamadora fornece `instruments` ou `cardInstrumentId`.
+- Suporte a compra com instrumento interno quando a camada chamadora fornece `cardInstrumentId`.
 - Suporte a compra parcelada com parcelas vinculadas ao cartao, a transacao de compra e, no fluxo novo, ao instrumento usado.
 - Pagamento integral da fatura com transacao de saida na conta de origem.
 - Regras de tenant/contexto em cartoes, instrumentos, faturas e contas de pagamento.
-- Auditoria redigida para criacao/atualizacao de cartoes, faturas e transacoes criadas pelo fluxo.
+- Auditoria redigida para criacao/atualizacao de cartoes, faturas e transacoes criadas pelos fluxos ja auditados.
+
+## API de agrupadores e instrumentos
+
+### Rotas principais
+
+```text
+GET    /api/credit-card-accounts
+POST   /api/credit-card-accounts
+GET    /api/credit-card-accounts/:cardId
+PATCH  /api/credit-card-accounts/:cardId
+POST   /api/credit-card-accounts/:cardId/archive
+
+GET    /api/credit-card-accounts/:cardId/instruments
+POST   /api/credit-card-accounts/:cardId/instruments
+PATCH  /api/credit-card-accounts/:cardId/default-instrument
+POST   /api/credit-card-accounts/:cardId/purchases
+
+PATCH  /api/credit-card-instruments/:instrumentId
+POST   /api/credit-card-instruments/:instrumentId/archive
+```
+
+### Criacao de agrupador
+
+`POST /api/credit-card-accounts` cria o agrupador e seus instrumentos iniciais no mesmo contrato. O corpo deve conter os dados do agrupador e uma lista `instruments` com ao menos um instrumento ativo.
+
+Exemplo:
+
+```json
+{
+  "name": "Cartao C6",
+  "institutionKey": "c6",
+  "brandKey": "mastercard",
+  "closingDay": 20,
+  "dueDay": 10,
+  "creditLimitMinor": 500000,
+  "instruments": [
+    {
+      "type": "physical",
+      "holder": "primary",
+      "name": "Fisico titular",
+      "maskedIdentifier": "**** 1111",
+      "creditLimitMinor": 300000
+    },
+    {
+      "type": "virtual",
+      "holder": "primary",
+      "name": "Virtual compras online",
+      "maskedIdentifier": "**** 2222",
+      "creditLimitMinor": 200000
+    }
+  ]
+}
+```
+
+A resposta usa `creditCardAccount` e inclui o agrupador com `instruments` aninhados. A listagem retorna `creditCardAccounts` no mesmo formato hierarquico.
+
+### Instrumentos
+
+`POST /api/credit-card-accounts/:cardId/instruments` adiciona um instrumento ao agrupador existente. O primeiro instrumento ativo de um agrupador vira default automaticamente. Para trocar o default, use:
+
+```json
+PATCH /api/credit-card-accounts/:cardId/default-instrument
+{
+  "instrumentId": "..."
+}
+```
+
+`PATCH /api/credit-card-instruments/:instrumentId` permite editar tipo, titularidade, nome, identificador mascarado, limite individual e marcar como default com `isDefault: true`. Para arquivar, prefira `POST /api/credit-card-instruments/:instrumentId/archive`, que promove outro instrumento ativo quando existir ou bloqueia o agrupador quando o ultimo ativo for arquivado.
+
+### Compras pelo contrato novo
+
+`POST /api/credit-card-accounts/:cardId/purchases` registra compra no agrupador. Quando `cardInstrumentId` e informado, a API carrega os instrumentos do agrupador, aplica as validacoes do dominio e persiste a origem da compra em `Transaction.cardInstrumentId` e nas parcelas.
 
 ## Modelo persistente alvo
 
@@ -164,5 +237,4 @@ Fixtures e exemplos usam apenas dados ficticios e mascarados.
 - Integracao com operadora de cartao.
 - Juros, rotativo e parcelamento da propria fatura.
 - Pagamentos parciais.
-- Endpoints definitivos de agrupador e instrumentos, previstos na #321.
 - Ajuste completo de UI e fluxo de compras/faturas, previstos nas #322 e #323.
