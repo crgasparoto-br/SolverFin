@@ -1,4 +1,4 @@
-import type { Card } from "./index.js";
+import type { Card, CardInstrument } from "./index.js";
 import type { TenantContext } from "./tenant.js";
 import {
   archiveCardInstrument,
@@ -39,11 +39,8 @@ runRejectsInstrumentFromAnotherCard();
 runTenantIsolation();
 
 function runCreatesFirstActiveInstrumentAsDefault(): void {
-  const blockedCard = blockCard(
-    tenantA,
-    createCardFixture("card-first"),
-    now,
-  ).card;
+  const card = createCardFixture("card-first");
+  const blockedCard = blockCard(tenantA, card, now).card;
   const result = createCardInstrument({
     id: "instrument-first",
     context: tenantA,
@@ -58,25 +55,9 @@ function runCreatesFirstActiveInstrumentAsDefault(): void {
     },
   });
 
-  assertEqual(
-    result.instrument.isDefault,
-    true,
-    "first active instrument should be default",
-  );
-  assertEqual(
-    result.card.status,
-    "active",
-    "card should become active with an active instrument",
-  );
-  assertEqual(
-    isCardAvailableForNewCardPurchases(
-      tenantA,
-      result.card,
-      result.instruments,
-    ),
-    true,
-    "card should be available for purchases with an active instrument",
-  );
+  assertEqual(result.instrument.isDefault, true, "first instrument should be default");
+  assertEqual(result.card.status, "active", "card should become active");
+  assertEqual(isAvailable(result.card, result.instruments), true, "card should be available");
 }
 
 function runKeepsExistingDefaultWhenAddingInstrument(): void {
@@ -107,13 +88,9 @@ function runKeepsExistingDefaultWhenAddingInstrument(): void {
   });
 
   assertEqual(
-    getDefaultCardInstrument(
-      tenantA,
-      secondResult.card,
-      secondResult.instruments,
-    )?.id,
+    getDefaultInstrumentId(secondResult.card, secondResult.instruments),
     "instrument-default",
-    "new active instrument should not replace the current default automatically",
+    "new instrument should keep current default",
   );
 }
 
@@ -151,17 +128,11 @@ function runSetsSingleDefaultInstrument(): void {
     now,
   });
 
+  const defaultCount = defaultResult.instruments.filter((instrument) => instrument.isDefault).length;
+
+  assertEqual(defaultCount, 1, "only one instrument should be default");
   assertEqual(
-    defaultResult.instruments.filter((instrument) => instrument.isDefault).length,
-    1,
-    "only one active instrument should be default",
-  );
-  assertEqual(
-    getDefaultCardInstrument(
-      tenantA,
-      defaultResult.card,
-      defaultResult.instruments,
-    )?.id,
+    getDefaultInstrumentId(defaultResult.card, defaultResult.instruments),
     "instrument-virtual",
     "selected instrument should become default",
   );
@@ -202,19 +173,11 @@ function runArchivesDefaultAndPromotesNextActiveInstrument(): void {
   });
 
   assertEqual(
-    getDefaultCardInstrument(
-      tenantA,
-      archivedResult.card,
-      archivedResult.instruments,
-    )?.id,
+    getDefaultInstrumentId(archivedResult.card, archivedResult.instruments),
     "instrument-virtual-main",
     "next active instrument should become default",
   );
-  assertEqual(
-    archivedResult.card.status,
-    "active",
-    "card should remain active with one instrument",
-  );
+  assertEqual(archivedResult.card.status, "active", "card should remain active");
 }
 
 function runBlocksCardWhenLastActiveInstrumentIsArchived(): void {
@@ -239,20 +202,8 @@ function runBlocksCardWhenLastActiveInstrumentIsArchived(): void {
     now,
   });
 
-  assertEqual(
-    archivedResult.card.status,
-    "blocked",
-    "card should be blocked without active instruments",
-  );
-  assertEqual(
-    isCardAvailableForNewCardPurchases(
-      tenantA,
-      archivedResult.card,
-      archivedResult.instruments,
-    ),
-    false,
-    "card should not be available without active instruments",
-  );
+  assertEqual(archivedResult.card.status, "blocked", "card should be blocked");
+  assertEqual(isAvailable(archivedResult.card, archivedResult.instruments), false, "card blocks use");
 }
 
 function runRejectsInstrumentWithoutRequiredFields(): void {
@@ -369,11 +320,12 @@ function runTenantIsolation(): void {
       holder: "primary",
     },
   }).instrument;
+  const tenantBCard = createCardFixtureForTenant(tenantB);
 
   assertEqual(
-    getDefaultCardInstrument(tenantB, createCardFixtureForTenant(tenantB), [instrument]),
+    getDefaultCardInstrument(tenantB, tenantBCard, [instrument]),
     undefined,
-    "other tenant should not see the instrument",
+    "other tenant should not see instrument",
   );
   assertTenantError(() =>
     createCardInstrument({
@@ -416,6 +368,19 @@ function createCardFixtureForTenant(context: TenantContext): Card {
       dueDay: 10,
     },
   }).card;
+}
+
+function getDefaultInstrumentId(
+  card: Card,
+  instruments: readonly CardInstrument[],
+): string | undefined {
+  const instrument = getDefaultCardInstrument(tenantA, card, instruments);
+
+  return instrument?.id;
+}
+
+function isAvailable(card: Card, instruments: readonly CardInstrument[]): boolean {
+  return isCardAvailableForNewCardPurchases(tenantA, card, instruments);
 }
 
 function assertCardInstrumentError(
