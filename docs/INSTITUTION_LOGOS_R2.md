@@ -2,16 +2,17 @@
 
 ## Objetivo
 
-A tela Admin global de instituições financeiras permite que o usuário master envie ou substitua logomarcas. O arquivo é enviado ao backend autenticado do SolverFin, validado no servidor e salvo no Cloudflare R2. Credenciais do R2 nunca devem ser expostas no frontend.
+A tela Admin global de instituições financeiras permite que o usuário master envie ou substitua logomarcas. O arquivo é enviado ao backend autenticado do SolverFin, validado no servidor, salvo no Cloudflare R2 e registrado na tabela global `FinancialInstitution`. Credenciais do R2 nunca devem ser expostas no frontend.
 
 ## Fluxo
 
 1. Usuário master acessa `/admin/instituicoes`.
 2. A tela envia PNG, JPG/JPEG ou WebP para `POST /api/admin/institutions/:institutionKey/logo`.
-3. O backend valida sessão, `SOLVERFIN_MASTER_EMAILS`, instituição, MIME type, conteúdo, tamanho e assinatura básica do arquivo.
+3. O backend valida sessão, `SOLVERFIN_MASTER_EMAILS`, instituição persistida, status ativo, MIME type, conteúdo, tamanho e assinatura básica do arquivo.
 4. O backend gera uma chave segura em `institutions/<institutionKey>/logo-<hash>.<ext>` sem usar o nome original como caminho confiável.
 5. O adapter R2 grava o objeto via API compatível com S3 usando assinatura AWS4.
-6. A resposta retorna `publicUrl`, `objectKey`, hash, tamanho e metadados suficientes para atualizar o preview.
+6. Depois do upload bem-sucedido, a API persiste `logoObjectKey`, `logoPublicUrl`, `logoMimeType`, `logoSizeBytes`, `logoContentSha256` e `logoUploadedAt` em `FinancialInstitution`.
+7. A resposta retorna os metadados suficientes para atualizar o preview, e um restart/deploy da API preserva a logo enviada porque os metadados não ficam mais apenas em memória.
 
 ## Variáveis de ambiente
 
@@ -37,7 +38,7 @@ INSTITUTION_LOGO_MAX_BYTES=2097152
 - MIME type precisa bater com os bytes iniciais do arquivo;
 - tamanho acima do limite retorna erro controlado;
 - instituição inexistente ou inativa é recusada;
-- erro do R2 retorna erro controlado e não altera o metadado em memória.
+- erro do R2 retorna erro controlado e não altera metadados persistidos.
 
 ## Segurança
 
@@ -45,7 +46,3 @@ INSTITUTION_LOGO_MAX_BYTES=2097152
 - Usuário comum recebe `AUTH_ADMIN_REQUIRED` mesmo chamando o endpoint diretamente.
 - O frontend nunca recebe `R2_SECRET_ACCESS_KEY` nem assina upload direto para R2.
 - O nome original do arquivo é tratado apenas como metadado informativo; a chave de storage usa instituição e hash.
-
-## Observação sobre persistência
-
-O ciclo atual prepara o fluxo seguro, adapter R2 e resposta para a UI. Enquanto não existir uma tabela global persistida para metadados de instituições, a aplicação mantém o metadado de logo enviado em memória no processo da API. Um ciclo posterior pode trocar esse armazenamento por persistência em banco sem alterar o contrato principal do endpoint.
