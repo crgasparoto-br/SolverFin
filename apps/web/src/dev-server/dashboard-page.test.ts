@@ -1,14 +1,17 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { renderDashboardPage } from "./pages.js";
+import { renderDashboardPage } from "./dashboard-page.js";
 
 const originalFetch = globalThis.fetch;
 
 describe("dev-server dashboard page", () => {
-  it("highlights pending payables/receivables, inbox review items and open invoices with quick links", async () => {
+  it("highlights planned statement items, inbox review items and open invoices with quick links", async () => {
+    const calledPaths: string[] = [];
+
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
+      calledPaths.push(url.pathname);
 
       if (url.pathname === "/api/financial-summary") {
         return jsonResponse({
@@ -20,12 +23,28 @@ describe("dev-server dashboard page", () => {
         });
       }
 
-      if (url.pathname === "/api/payables-receivables") {
-        assert.equal(url.searchParams.get("status"), "pending");
+      if (url.pathname === "/api/transactions") {
+        assert.equal(url.searchParams.get("status"), "all");
         return jsonResponse({
-          payablesReceivables: [
-            { kind: "payable", dueOn: "2026-07-10" },
-            { kind: "receivable", dueOn: "2026-07-05" },
+          transactions: [
+            {
+              id: "planned-expense",
+              description: "Aluguel previsto",
+              kind: "expense",
+              status: "planned",
+              amountMinor: 20000,
+              occurredOn: "2026-07-10",
+              plannedOn: "2026-07-10",
+            },
+            {
+              id: "planned-income",
+              description: "Receita prevista",
+              kind: "income",
+              status: "planned",
+              amountMinor: 50000,
+              occurredOn: "2026-07-05",
+              plannedOn: "2026-07-05",
+            },
           ],
         });
       }
@@ -46,15 +65,17 @@ describe("dev-server dashboard page", () => {
     const html = await renderDashboardPage("session-token");
 
     assert.match(html, /Próximas ações/);
-    assert.match(html, /2 contas a pagar ou receber pendentes/);
+    assert.match(html, /2 lançamentos previstos no Extrato/);
     assert.match(html, /Próximo vencimento em 05\/07\/2026/);
     assert.match(html, /1 item aguardando revisão na inbox/);
     assert.match(html, /1 fatura de cartão em aberto/);
-    assert.match(html, /href="\/pagar-receber">Ver pagar e receber/);
+    assert.match(html, /href="\/lancamentos">Ver extrato/);
     assert.match(html, /href="\/inbox">Abrir inbox/);
     assert.match(html, /href="\/cartoes">Ver cartões/);
     assert.match(html, /class="quick-links"/);
     assert.match(html, /href="\/lancamentos">Extrato/);
+    assert.doesNotMatch(html, /\/pagar-receber/);
+    assert.equal(calledPaths.includes("/api/payables-receivables"), false);
 
     globalThis.fetch = originalFetch;
   });
@@ -73,8 +94,8 @@ describe("dev-server dashboard page", () => {
         });
       }
 
-      if (url.pathname === "/api/payables-receivables") {
-        return jsonResponse({ payablesReceivables: [] });
+      if (url.pathname === "/api/transactions") {
+        return jsonResponse({ transactions: [] });
       }
 
       if (url.pathname === "/api/bank-message-inbox") {
@@ -91,6 +112,7 @@ describe("dev-server dashboard page", () => {
     const html = await renderDashboardPage("session-token");
 
     assert.match(html, /Nenhuma pendência agora\./);
+    assert.doesNotMatch(html, /\/pagar-receber/);
 
     globalThis.fetch = originalFetch;
   });
