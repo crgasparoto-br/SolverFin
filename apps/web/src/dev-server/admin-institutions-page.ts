@@ -178,14 +178,14 @@ function renderInstitutionRow(institution: AdminInstitutionView, query: string):
           <span class="status-pill ${institution.status === "active" ? "status-pill-active" : ""}">${escapeHtml(formatStatus(institution.status))}</span>
         </div>
         <span>${escapeHtml(institution.description)}</span>
-        <code>chave interna: ${escapeHtml(institution.key)}</code>
+        <code>chave: ${escapeHtml(institution.key)}</code>
       </div>
       <dl class="institution-meta">
         <div><dt>Código</dt><dd>${escapeHtml(institution.bankCode ?? "não informado")}</dd></div>
         <div><dt>ISPB</dt><dd>${escapeHtml(institution.ispb ?? "não informado")}</dd></div>
         <div><dt>Tipo</dt><dd>${escapeHtml(formatInstitutionType(institution.institutionType))}</dd></div>
         <div><dt>Logo</dt><dd>${escapeHtml(formatLogoStatus(institution.logoStatus))}</dd></div>
-        <div><dt>Identificador técnico</dt><dd>${escapeHtml(institution.financialInstitutionCode)}</dd></div>
+        <div><dt>ID técnico</dt><dd>${escapeHtml(institution.financialInstitutionCode)}</dd></div>
       </dl>
       <div class="institution-actions">
         <form class="status-form" data-status-form data-api-path="/api/admin/institutions/${escapeHtml(encodeURIComponent(institution.key))}/status${escapeHtml(query)}" data-next-status="${statusAction}">
@@ -420,26 +420,26 @@ function adminPageStyles(): string {
     .section-heading > div { display: grid; gap: 4px; }
     .section-heading > span { color: var(--muted); font-size: 0.88rem; font-weight: 800; white-space: nowrap; }
     .admin-institution-list { display: grid; gap: 8px; }
-    .admin-institution-row { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 12px; grid-template-columns: 58px minmax(240px, 1fr) minmax(380px, 1fr) minmax(96px, auto); min-height: 74px; padding: 10px 12px; }
-    .institution-logo-trigger { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); display: flex; font-weight: 900; justify-content: center; min-height: 54px; overflow: hidden; padding: 0; position: relative; width: 54px; }
+    .admin-institution-row { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 10px; grid-template-columns: 58px minmax(220px, .85fr) minmax(460px, 1.25fr) minmax(84px, auto); min-height: 68px; padding: 8px 10px; }
+    .institution-logo-trigger { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); display: flex; font-weight: 900; justify-content: center; min-height: 52px; overflow: hidden; padding: 0; position: relative; width: 52px; }
     .institution-logo-trigger:hover, .institution-logo-trigger:focus-visible { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,.18); }
-    .institution-logo-trigger img { height: 42px; max-width: 42px; object-fit: contain; }
-    .logo-upload-hint { align-items: center; background: rgba(15,61,76,.86); bottom: 0; color: white; display: flex; font-size: 0.62rem; font-weight: 800; height: 18px; justify-content: center; left: 0; opacity: 0; position: absolute; right: 0; transition: opacity .16s ease; }
+    .institution-logo-trigger img { height: 40px; max-width: 40px; object-fit: contain; }
+    .logo-upload-hint { align-items: center; background: rgba(15,61,76,.86); bottom: 0; color: white; display: flex; font-size: 0.58rem; font-weight: 800; height: 16px; justify-content: center; left: 0; opacity: 0; position: absolute; right: 0; transition: opacity .16s ease; }
     .institution-logo-trigger:hover .logo-upload-hint, .institution-logo-trigger:focus-visible .logo-upload-hint { opacity: 1; }
-    .institution-main { display: grid; gap: 4px; min-width: 0; }
-    .institution-title-line { align-items: center; display: flex; gap: 8px; min-width: 0; }
-    .institution-title-line strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .institution-main span:not(.status-pill) { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .institution-main code { background: var(--bg); border-radius: 999px; color: var(--muted); font-size: 0.76rem; justify-self: start; max-width: 100%; overflow: hidden; padding: 3px 8px; text-overflow: ellipsis; white-space: nowrap; }
-    .status-pill { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: 999px; color: var(--warning); flex: 0 0 auto; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; }
+    .institution-main { display: grid; gap: 3px; min-width: 0; }
+    .institution-title-line { align-items: center; display: flex; gap: 7px; min-width: 0; }
+    .institution-title-line strong { font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .institution-main span:not(.status-pill) { color: var(--muted); font-size: 0.82rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .institution-main code { background: var(--bg); border-radius: 999px; color: var(--muted); font-size: 0.7rem; justify-self: start; max-width: 100%; overflow: hidden; padding: 2px 7px; text-overflow: ellipsis; white-space: nowrap; }
+    .status-pill { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: 999px; color: var(--warning); flex: 0 0 auto; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; }
     .status-pill-active { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); }
-    .institution-meta { align-items: center; display: grid; gap: 10px; grid-template-columns: .65fr .95fr .9fr .9fr 1.2fr; margin: 0; min-width: 0; }
-    .institution-meta div { display: grid; gap: 2px; min-width: 0; }
-    .institution-meta dt { color: var(--muted); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; }
-    .institution-meta dd { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .institution-meta { align-items: start; display: grid; gap: 8px; grid-template-columns: .55fr .8fr .7fr .85fr 1fr; margin: 0; min-width: 0; }
+    .institution-meta div { display: grid; gap: 1px; min-width: 0; }
+    .institution-meta dt { color: var(--muted); font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+    .institution-meta dd { font-size: 0.76rem; line-height: 1.24; margin: 0; min-width: 0; overflow-wrap: anywhere; }
     .institution-actions { display: flex; justify-content: flex-end; }
     .status-form { display: flex; justify-content: flex-start; }
-    .status-form button { min-width: 92px; }
+    .status-form button { font-size: 0.82rem; min-height: 38px; min-width: 82px; padding: 0 12px; }
     .logo-upload-dialog { max-width: 560px; }
     .logo-dialog-layout { align-items: center; display: grid; gap: 16px; grid-template-columns: 84px 1fr; margin-bottom: 16px; }
     .logo-dialog-preview { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); display: flex; font-size: 1.1rem; font-weight: 900; height: 84px; justify-content: center; overflow: hidden; width: 84px; }
@@ -448,9 +448,9 @@ function adminPageStyles(): string {
     .logo-upload-control { color: var(--text); display: grid; font-size: 0.9rem; gap: 6px; }
     .admin-denied { max-width: 760px; }
     .form-status { margin: 0; }
-    @media (max-width: 1240px) { .admin-institution-row { grid-template-columns: 58px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 2 / -1; } .institution-actions { justify-content: flex-start; } }
+    @media (max-width: 1240px) { .admin-institution-row { grid-template-columns: 56px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 2 / -1; } .institution-actions { justify-content: flex-start; } }
     @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { main { padding: 18px 16px 28px; } .admin-heading, .admin-actions-panel, .section-heading, .filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .summary-grid { grid-template-columns: 1fr; } .admin-institution-row { align-items: start; grid-template-columns: 54px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: 1fr; } .logo-dialog-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { main { padding: 18px 16px 28px; } .admin-heading, .admin-actions-panel, .section-heading, .filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .summary-grid { grid-template-columns: 1fr; } .admin-institution-row { align-items: start; grid-template-columns: 52px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: 1fr; } .logo-dialog-layout { grid-template-columns: 1fr; } }
   `;
 }
 
