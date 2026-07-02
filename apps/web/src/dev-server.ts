@@ -6,6 +6,7 @@ import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { handleApiRequest } from "./dev-server/api.js";
 import { renderCardsPage } from "./dev-server/cards-page.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
+import { renderDashboardPage } from "./dev-server/dashboard-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
@@ -18,9 +19,10 @@ import { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
 export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
-export { renderAccountsPage, renderBudgetsPage, renderDashboardPage } from "./dev-server/pages.js";
+export { renderAccountsPage, renderBudgetsPage } from "./dev-server/pages.js";
 export { renderCardsPage } from "./dev-server/cards-page.js";
 export { renderCategoriesPage } from "./dev-server/categories-page.js";
+export { renderDashboardPage } from "./dev-server/dashboard-page.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
@@ -79,6 +81,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     return;
   }
 
+  if (url.pathname === "/dashboard" && token) {
+    sendHtml(response, 200, await renderDashboardPage(token));
+    return;
+  }
+
   if (url.pathname === "/contas-cartoes" && token) {
     sendHtml(response, 200, enhanceAccountsCardsTabs(await renderAccountsCardsPage(token)));
     return;
@@ -109,7 +116,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     return;
   }
 
-  if ((route.kind === "dashboard" || route.kind === "placeholder") && token) {
+  if (route.kind === "placeholder" && token) {
     sendHtml(response, 200, await renderPrivatePage(url.pathname, token));
     return;
   }

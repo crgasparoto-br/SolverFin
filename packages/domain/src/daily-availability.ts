@@ -240,7 +240,11 @@ function appendPayableReceivableComponents(
       continue;
     }
 
-    if (seenEntityIds.has(item.id)) {
+    if (
+      seenEntityIds.has(item.id) ||
+      hasLinkedSettlementTransaction(input, item) ||
+      hasEquivalentTransaction(input, item)
+    ) {
       continue;
     }
 
@@ -262,6 +266,61 @@ function appendPayableReceivableComponents(
       entityId: item.id,
     });
   }
+}
+
+function hasLinkedSettlementTransaction(
+  input: CalculateDailyAvailabilityInput,
+  item: PayableReceivable,
+): boolean {
+  if (item.settlementTransactionId === undefined) {
+    return false;
+  }
+
+  return listTenantScopedResources(input.context, input.transactions ?? []).some(
+    (transaction) =>
+      transaction.id === item.settlementTransactionId && transaction.status !== "voided",
+  );
+}
+
+function hasEquivalentTransaction(
+  input: CalculateDailyAvailabilityInput,
+  item: PayableReceivable,
+): boolean {
+  return listTenantScopedResources(input.context, input.transactions ?? []).some((transaction) => {
+    if (transaction.status === "voided") {
+      return false;
+    }
+
+    if (transaction.invoiceId !== undefined || transaction.installmentId !== undefined) {
+      return false;
+    }
+
+    if (transaction.kind !== payableReceivableTransactionKind(item)) {
+      return false;
+    }
+
+    if (transaction.amountMinor !== item.amountMinor || transaction.currency !== item.currency) {
+      return false;
+    }
+
+    if (transaction.plannedOn !== item.dueOn && transaction.occurredOn !== item.dueOn) {
+      return false;
+    }
+
+    if (item.accountId !== undefined && transaction.accountId !== item.accountId) {
+      return false;
+    }
+
+    if (item.categoryId !== undefined && transaction.categoryId !== item.categoryId) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+function payableReceivableTransactionKind(item: PayableReceivable): Transaction["kind"] {
+  return item.kind === "receivable" ? "income" : "expense";
 }
 
 function appendInvoiceComponents(

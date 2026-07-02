@@ -22,6 +22,8 @@ const tenantB: TenantContext = {
 };
 
 calculatesAvailabilityWithCardsAndInferredRecurrences();
+usesPlannedTransactionsInvoicesAndLegacyFallbacks();
+skipsLegacyPayablesWhenLinkedOrEquivalentToTransactions();
 changedAssumptionChangesResult();
 emptyHistoryProducesLowConfidenceLimitation();
 tenantIsolationIsApplied();
@@ -54,6 +56,87 @@ function calculatesAvailabilityWithCardsAndInferredRecurrences(): void {
     true,
   );
   assert.equal(result.confidence, "medium");
+}
+
+function usesPlannedTransactionsInvoicesAndLegacyFallbacks(): void {
+  const result = calculateDailyAvailability({
+    context: tenantA,
+    today: "2026-06-16",
+    calculatedAt: now,
+    currentBalanceMinor: 100000,
+    transactions: [
+      transactionFixture("planned-income", "income", 30000, "2026-06-20"),
+      transactionFixture("planned-expense", "expense", 12000, "2026-06-21"),
+    ],
+    invoices: [invoiceFixture("open-invoice", 45000, "2026-06-25", "open")],
+    payablesReceivables: [
+      payableReceivableFixture("legacy-receivable", "receivable", 18000, "2026-06-26"),
+    ],
+  });
+  const commitmentSources = ["transactions", "invoices", "payables_receivables"];
+  const commitmentComponents = result.components.filter((component) =>
+    commitmentSources.includes(component.source),
+  );
+
+  assert.deepEqual(
+    commitmentComponents.map((component) => [
+      component.source,
+      component.entityId,
+      component.amountMinor,
+    ]),
+    [
+      ["transactions", "planned-income", 30000],
+      ["transactions", "planned-expense", -12000],
+      ["payables_receivables", "legacy-receivable", 18000],
+      ["invoices", "open-invoice", -45000],
+    ],
+  );
+}
+
+function skipsLegacyPayablesWhenLinkedOrEquivalentToTransactions(): void {
+  const equivalentTransaction = transactionFixture(
+    "planned-energy",
+    "expense",
+    25000,
+    "2026-06-20",
+    "cat-a",
+  );
+  const settlementTransaction: Transaction = {
+    ...transactionFixture("settled-salary", "income", 50000, "2026-06-21"),
+    status: "posted",
+  };
+  const equivalentLegacy = payableReceivableFixture(
+    "legacy-energy",
+    "payable",
+    25000,
+    "2026-06-20",
+  );
+  const linkedLegacy: PayableReceivable = {
+    ...payableReceivableFixture("legacy-salary", "receivable", 50000, "2026-06-21"),
+    settlementTransactionId: "settled-salary",
+  };
+  const fallbackLegacy = payableReceivableFixture(
+    "legacy-client",
+    "receivable",
+    15000,
+    "2026-06-22",
+  );
+
+  const result = calculateDailyAvailability({
+    context: tenantA,
+    today: "2026-06-16",
+    calculatedAt: now,
+    currentBalanceMinor: 100000,
+    transactions: [equivalentTransaction, settlementTransaction],
+    payablesReceivables: [equivalentLegacy, linkedLegacy, fallbackLegacy],
+  });
+
+  assert.deepEqual(
+    result.components
+      .filter((component) => component.source === "payables_receivables")
+      .map((component) => component.entityId),
+    ["legacy-client"],
+  );
 }
 
 function changedAssumptionChangesResult(): void {
@@ -165,13 +248,18 @@ function transactionFixture(
   };
 }
 
-function invoiceFixture(id: string, totalAmountMinor: number, dueOn: string): Invoice {
+function invoiceFixture(
+  id: string,
+  totalAmountMinor: number,
+  dueOn: string,
+  status: Invoice["status"] = "closed",
+): Invoice {
   return {
     id,
     organizationId: tenantA.organizationId,
     financialProfileId: tenantA.financialProfileId,
     cardId: "card-a",
-    status: "closed",
+    status,
     periodStartOn: "2026-06-01",
     periodEndOn: "2026-06-15",
     dueOn,
@@ -215,6 +303,8 @@ function payableReceivableFixture(
     currency: "BRL",
     dueOn,
     description: id,
+    accountId: "account-a",
+    categoryId: "cat-a",
     createdAt: now,
     updatedAt: now,
   };
