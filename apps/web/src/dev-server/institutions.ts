@@ -61,20 +61,28 @@ function toWebInstitution(institution: {
 function renderInstitutionBadge(key: string, hidden = false): string {
   const institution = findInstitution(key);
   const label = institution.shortLabel;
-  const style = hidden ? ` style="display:none"` : "";
+  const hiddenAttributes = hidden ? ` style="display:none" aria-hidden="true"` : "";
 
-  return `<svg class="brand-icon institution-badge-icon" viewBox="0 0 44 44" role="img" aria-label="${escapeHtml(institution.label)}"${style}><rect x="4" y="4" width="36" height="36" rx="9" fill="#0f3d4c"/><rect x="7" y="7" width="30" height="30" rx="7" fill="#ffffff" fill-opacity=".12"/><text x="22" y="27" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${label.length > 2 ? "12" : "14"}" font-weight="800" fill="#ffffff">${escapeHtml(label)}</text></svg>`;
+  return `<svg class="brand-icon institution-badge-icon" viewBox="0 0 44 44" role="img" aria-label="${escapeHtml(institution.label)}"${hiddenAttributes}><rect x="4" y="4" width="36" height="36" rx="9" fill="#0f3d4c"/><rect x="7" y="7" width="30" height="30" rx="7" fill="#ffffff" fill-opacity=".12"/><text x="22" y="27" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${label.length > 2 ? "12" : "14"}" font-weight="800" fill="#ffffff">${escapeHtml(label)}</text></svg>`;
 }
 
 export function renderInstitutionIcon(key: string): string {
   const institution = findInstitution(key);
   const logoSource = institutionLogoSources[institution.key];
 
-  if (!logoSource) {
+  if (!logoSource || !isAllowedLogoSource(logoSource)) {
     return renderInstitutionBadge(institution.key);
   }
 
-  return `<span class="brand-icon-wrap"><img class="brand-icon institution-logo-img" src="${escapeHtml(logoSource)}" alt="${escapeHtml(institution.label)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />${renderInstitutionBadge(institution.key, true)}</span>`;
+  return `<span class="brand-icon-wrap" data-logo-source="${escapeHtml(resolveLogoSourceKind(logoSource))}"><img class="brand-icon institution-logo-img" src="${escapeHtml(logoSource)}" alt="Logo ${escapeHtml(institution.label)}" width="44" height="44" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='block';this.nextElementSibling.removeAttribute('aria-hidden')" />${renderInstitutionBadge(institution.key, true)}</span>`;
+}
+
+function isAllowedLogoSource(source: string): boolean {
+  return source.startsWith("/images/institutions/") || source.startsWith("/assets/institutions/");
+}
+
+function resolveLogoSourceKind(source: string): "local" | "uploaded" {
+  return source.startsWith("/assets/institutions/") ? "uploaded" : "local";
 }
 
 function escapeHtml(value: string): string {
