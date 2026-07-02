@@ -42,30 +42,122 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 
 A rotina operacional de pagar e receber nao possui mais tela propria ativa. O usuario deve criar e acompanhar compromissos em:
 
-- **Extrato da conta** (`/lancamentos`), para receitas, despesas, transferencias e lancamentos previstos de conta corrente;
+- **Extrato da conta** (`/lancamentos`), para receitas, despesas, transferencias e lancamentos previstos de conta corrente.
 - **Cartoes de Credito** (`/cartoes`), para compras, faturas, fechamento e pagamento de cartao.
 
 `PayableReceivable` continua existindo como dominio/API legado para preservar registros antigos, auditoria e compatibilidade durante a transicao. Leitores temporarios devem evitar dupla contagem quando houver `settlementTransactionId`, `Transaction` equivalente ou `Invoice` correspondente. A transicao tecnica segura do dominio fica para a #290.
 
-## Matriz por area
+## Status por area
 
-| Area                              | Dominio | Schema/migration | Seed     | Repository | API     | UI              | Testes                              | Documentacao | Nota                                                                                                                                                                                                                         |
-| --------------------------------- | ------- | ---------------- | -------- | ---------- | ------- | --------------- | ----------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contas                            | Feito   | Feito            | Feito    | Feito      | Feito   | Parcial         | Integracao feito; unitarios parcial | Parcial      | Web lista, cria, abre detalhe via acao, edita e arquiva; ainda nao ha tela dedicada de detalhe.                                                                                                                              |
-| Categorias                        | Feito   | Feito            | Feito    | Feito      | Feito   | Parcial         | Integracao feito; unitarios parcial | Parcial      | Web lista, cria, abre detalhe via acao, edita, arquiva e restaura; ainda nao ha tela dedicada de detalhe.                                                                                                                    |
-| Lancamentos / Extrato             | Feito   | Feito            | Feito    | Feito      | Feito   | Parcial         | Integracao feito; unitarios parcial | Parcial      | Web preserva Extrato da conta com resumo, agrupamento por data, criacao, detalhe via acao, edicao e cancelamento/estorno. Tambem e a tela ativa para compromissos previstos de conta corrente.                               |
-| Recorrencias                      | Feito   | Feito            | Parcial  | Feito      | Feito   | Feito           | Web parcial; integracao parcial     | Feito        | Sem rota propria nem bloco separado: cada lancamento recorrente aparece na lista normal de `/lancamentos`/`/cartoes` com indicador visual e acoes no proprio menu do lancamento.                                             |
-| Parcelas                          | Feito   | Feito            | Parcial  | Parcial    | Parcial | Parcial         | Parcial                             | Parcial      | Parcelas aparecem no fluxo de geracao de recorrencias; ainda nao ha rota dedicada para reler historico nem manutencao direta.                                                                                                |
-| Cartoes / Faturas                 | Feito   | Feito            | Feito    | Feito      | Feito   | Feito           | Integracao feito; unitarios parcial | Parcial      | Cadastro/manutencao do cartao em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao.                                                       |
-| Orcamentos                        | Feito   | Feito            | Feito    | Feito      | Feito   | Parcial         | Parcial                             | Parcial      | Web lista, cria, abre detalhe via acao, edita, consulta uso e arquiva; ainda nao ha tela dedicada de detalhe.                                                                                                                |
-| Contas a pagar/receber            | Legado  | Legado           | Parcial  | Legado     | Legado  | Legado/retirada | Integracao feito; unitarios parcial | Legado       | `PayableReceivable` e mantido para compatibilidade e historico. `/pagar-receber` nao deve ser tratado como tela operacional ativa nem aparecer em navegacao, Dashboard ou novas jornadas de produto.                         |
-| Importacao CSV/OFX                | Feito   | Parcial          | Pendente | Pendente   | Pendente| Pendente        | Parcial                             | Parcial      | Dominio faz preview, hash, sugestoes e problemas; falta lote persistido operacional, repository, API e UI.                                                                                                                   |
-| Deduplicacao                      | Feito   | Pendente         | Pendente | Pendente   | Pendente| Pendente        | Parcial                             | Parcial      | Existem regras deterministicas no dominio, mas ainda nao ha fluxo persistido de revisao.                                                                                                                                     |
-| Conciliacao                       | Feito   | Parcial          | Pendente | Pendente   | Pendente| Parcial         | Parcial                             | Parcial      | A UI tem indicadores de status no extrato, mas nao executa conciliacao operacional.                                                                                                                                          |
-| Regras automaticas                | Feito   | Pendente         | Pendente | Pendente   | Pendente| Pendente        | Parcial                             | Parcial      | Existem regras aplicaveis no dominio, mas ainda nao ha cadastro, persistencia nem fila operacional.                                                                                                                          |
-| IA / sugestoes revisaveis         | Feito   | Parcial          | Pendente | Pendente   | Pendente| Pendente        | Parcial                             | Parcial      | `AiSuggestion` existe no schema e ha fila de revisao no dominio, mas faltam repository, API e UI.                                                                                                                            |
+### Contas
 
-## Matriz de operacoes visiveis na UI
+- Dominio/API/persistencia: Feito.
+- UI: Parcial.
+- Testes: integracao feita; unitarios parciais.
+- Documentacao: Parcial.
+- Nota: web lista, cria, abre detalhe via acao, edita e arquiva; ainda nao ha tela dedicada de detalhe.
+
+### Categorias
+
+- Dominio/API/persistencia: Feito.
+- UI: Parcial.
+- Testes: integracao feita; unitarios parciais.
+- Documentacao: Parcial.
+- Nota: web lista, cria, abre detalhe via acao, edita, arquiva e restaura; ainda nao ha tela dedicada de detalhe.
+
+### Lancamentos / Extrato da conta
+
+- Dominio/API/persistencia: Feito.
+- UI: Parcial.
+- Testes: integracao feita; unitarios parciais.
+- Documentacao: Parcial.
+- Nota: web preserva Extrato da conta com resumo, agrupamento por data, criacao, detalhe via acao, edicao e cancelamento/estorno. Tambem e a tela ativa para compromissos previstos de conta corrente.
+
+### Recorrencias
+
+- Dominio/API/persistencia: Feito.
+- UI: Feito para o fluxo atual.
+- Testes: web parcial; integracao parcial.
+- Documentacao: Feito.
+- Nota: nao ha rota propria nem bloco separado. Cada lancamento recorrente aparece na lista normal de `/lancamentos` ou `/cartoes`, com indicador visual e acoes no proprio menu do lancamento.
+
+### Parcelas
+
+- Dominio/schema: Feito.
+- Repository/API/UI: Parcial.
+- Testes: Parcial.
+- Documentacao: Parcial.
+- Nota: parcelas aparecem no fluxo de geracao de recorrencias; ainda nao ha rota dedicada para reler historico nem manutencao direta.
+
+### Cartoes / Faturas
+
+- Dominio/API/persistencia: Feito.
+- UI: Feito.
+- Testes: integracao feita; unitarios parciais.
+- Documentacao: Parcial.
+- Nota: cadastro/manutencao do cartao fica em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao.
+
+### Orcamentos
+
+- Dominio/API/persistencia: Feito.
+- UI: Parcial.
+- Testes: Parcial.
+- Documentacao: Parcial.
+- Nota: web lista, cria, abre detalhe via acao, edita, consulta uso e arquiva; ainda nao ha tela dedicada de detalhe.
+
+### Contas a pagar/receber
+
+- Dominio/schema/repository/API: Legado.
+- Seed: Parcial.
+- UI: Legado/retirada da jornada ativa.
+- Testes: integracao feita; unitarios parciais.
+- Documentacao: Legado.
+- Nota: `PayableReceivable` e mantido para compatibilidade e historico. `/pagar-receber` nao deve ser tratado como tela operacional ativa nem aparecer em navegacao, Dashboard ou novas jornadas de produto.
+
+### Importacao CSV/OFX
+
+- Dominio: Feito.
+- Schema/migration: Parcial.
+- Repository/API/UI: Pendente.
+- Testes: Parcial.
+- Documentacao: Parcial.
+- Nota: dominio faz preview, hash, sugestoes e problemas; falta lote persistido operacional, repository, API e UI.
+
+### Deduplicacao
+
+- Dominio: Feito.
+- Schema/repository/API/UI: Pendente.
+- Testes: Parcial.
+- Documentacao: Parcial.
+- Nota: existem regras deterministicas no dominio, mas ainda nao ha fluxo persistido de revisao.
+
+### Conciliacao
+
+- Dominio: Feito.
+- Schema/UI: Parcial.
+- Repository/API: Pendente.
+- Testes: Parcial.
+- Documentacao: Parcial.
+- Nota: a UI tem indicadores de status no extrato, mas nao executa conciliacao operacional.
+
+### Regras automaticas
+
+- Dominio: Feito.
+- Schema/repository/API/UI: Pendente.
+- Testes: Parcial.
+- Documentacao: Parcial.
+- Nota: existem regras aplicaveis no dominio, mas ainda nao ha cadastro, persistencia nem fila operacional.
+
+### IA / sugestoes revisaveis
+
+- Dominio: Feito.
+- Schema/migration: Parcial.
+- Repository/API/UI: Pendente.
+- Testes: Parcial.
+- Documentacao: Parcial.
+- Nota: `AiSuggestion` existe no schema e ha fila de revisao no dominio, mas faltam repository, API e UI.
+
+## Operacoes visiveis na UI
 
 ### Contas (`/contas`)
 
@@ -101,25 +193,22 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Acoes especificas: chips de status visiveis, ainda como indicadores.
 - Lacuna restante: confirmar se chips de status viram filtros interativos em iteracao futura.
 
-### Recorrencias (sem tela nem bloco proprio; embutidas na lista de `/lancamentos` e `/cartoes`)
+### Recorrencias
 
-Sem rota propria e sem secao separada: cada lancamento gerado por uma recorrencia aparece como uma linha normal na lista de Movimentacoes (Extrato) ou Compras (Cartoes), com um indicador visual de recorrencia e acoes extras (Editar/Pausar/Retomar/Cancelar recorrencia) no mesmo menu "..." que qualquer outro lancamento ja tem.
+Sem rota propria e sem secao separada: cada lancamento gerado por uma recorrencia aparece como uma linha normal na lista de Movimentacoes (Extrato) ou Compras (Cartoes), com um indicador visual de recorrencia e acoes extras no mesmo menu de qualquer outro lancamento.
 
-- Listar: Sim — os dados da recorrencia (status, frequencia etc.) sao buscados via `GET /api/recurrences?accountId=...`/`?cardId=...&status=all` e casados com o `recurrenceId` de cada lancamento da lista.
-- Visualizar detalhe: Sim, via modal de edicao aberto pela acao "Editar recorrencia" no menu do lancamento.
-- Criar: Sim, via repeticao "Fixo" no modal de novo lancamento (Extrato) ou nova compra (Cartoes); nao ha formulario de criacao avulso. A criacao ja materializa imediatamente o primeiro vencimento como lancamento real (`Transaction`), que aparece na propria lista de Movimentacoes/Compras sem nenhuma acao extra.
-- Editar: Sim, modal compartilhado entre Extrato e Cartoes (com campo "Tipo" para recorrencias de conta), aberto pelo menu do lancamento.
-- Pausar: Sim, quando ativa, pelo menu do lancamento.
-- Retomar: Sim, quando pausada, pelo menu do lancamento.
-- Cancelar: Sim, quando ainda nao cancelada ou concluida, pelo menu do lancamento.
-- Gerar parcelas: Automatico a cada acesso a tela (catch-up de vencimentos ate hoje) e tambem manual, com formulario de periodo e limite dentro do modal de edicao, para adiantar vencimentos futuros.
-- Parcelas: Cada parcela gerada materializa uma `Transaction` real (nao so um registro de controle), visivel direto na lista; sem listagem dedicada de historico de parcelas.
+- Listar: Sim, casando `recurrenceId` dos lancamentos com dados de `GET /api/recurrences`.
+- Visualizar detalhe: Sim, via modal de edicao aberto pela acao "Editar recorrencia".
+- Criar: Sim, via repeticao "Fixo" no modal de novo lancamento ou nova compra.
+- Editar: Sim, em modal compartilhado entre Extrato e Cartoes.
+- Pausar, retomar e cancelar: Sim, pelo menu do lancamento.
+- Gerar parcelas: Automatico no catch-up e manual pelo modal de edicao.
 - Lacuna restante: nao ha rota dedicada para reler historico de parcelas ja geradas.
 
 ### Cartoes de Credito (`/cartoes`)
 
 - Selecionar cartao: Sim, por seletor com indicador de cartao adicional/virtual vinculado.
-- Selecionar fatura: Sim, por navegacao de periodo (fatura anterior/proxima).
+- Selecionar fatura: Sim, por navegacao de periodo.
 - Resumo da fatura: Sim, com fatura atual, detalhamento, totais por cartao da familia e limite total consolidado.
 - Registrar compra: Sim, em modal.
 - Editar compra: Sim, em modal.
@@ -143,10 +232,10 @@ Sem rota propria e sem secao separada: cada lancamento gerado por uma recorrenci
 
 ### Contas a pagar/receber (legado; sem tela operacional ativa)
 
-- Listar na UI ativa: Nao. A experiencia ativa deve estar no Extrato da conta e em Cartoes de Credito.
-- Criar na UI ativa: Nao. Novos compromissos devem nascer como `Transaction`, `Invoice`, recorrencia ou parcela materializada conforme a origem.
+- Listar na UI ativa: Nao.
+- Criar na UI ativa: Nao.
 - Editar na UI ativa: Nao.
-- Concluir pagamento/recebimento na UI ativa: Pelo fluxo de origem: efetivacao de lancamento no Extrato ou pagamento de fatura em Cartoes.
+- Concluir pagamento/recebimento na UI ativa: pelo fluxo de origem, com efetivacao de lancamento no Extrato ou pagamento de fatura em Cartoes.
 - API legada: Sim, enquanto a transicao tecnica nao for concluida.
 - Lacuna restante: planejar na #290 migracao, compatibilidade, possivel descontinuacao e tratamento de dados historicos sem perda.
 
@@ -172,9 +261,7 @@ UI disponivel:
 
 - lista, cria, consulta detalhe via acao, edita e arquiva em `/contas`.
 
-Lacunas:
-
-- tela dedicada de detalhe.
+Lacuna: tela dedicada de detalhe.
 
 ### Categorias
 
@@ -191,9 +278,7 @@ UI disponivel:
 
 - lista, cria, consulta detalhe via acao, edita, arquiva e restaura em `/categorias`.
 
-Lacunas:
-
-- tela dedicada de detalhe.
+Lacuna: tela dedicada de detalhe.
 
 ### Lancamentos / Extrato da conta
 
@@ -234,7 +319,7 @@ API disponivel:
 
 UI disponivel:
 
-- recorrencias sem rota nem bloco proprio: lancamentos recorrentes aparecem na lista normal de `/lancamentos`/`/cartoes`, com criacao via repeticao "Fixo" e edicao/pausa/retomada/cancelamento/geracao de parcelas pelo menu de acoes do lancamento.
+- recorrencias sem rota nem bloco proprio: lancamentos recorrentes aparecem na lista normal de `/lancamentos`/`/cartoes`, com criacao via repeticao "Fixo" e manutencao pelo menu de acoes do lancamento.
 
 Lacunas:
 
@@ -264,11 +349,9 @@ API disponivel:
 UI disponivel:
 
 - cadastra, edita, bloqueia e arquiva cartao em `/contas-cartoes`;
-- seleciona cartao/fatura, mostra resumo consolidado por familia de cartao, registra/edita compra, filtra, fecha fatura e paga fatura em `/cartoes` (Cartoes de Credito).
+- seleciona cartao/fatura, mostra resumo consolidado por familia de cartao, registra/edita compra, filtra, fecha fatura e paga fatura em `/cartoes`.
 
-Lacunas:
-
-- mover compra para outra fatura/periodo pela UI.
+Lacuna: mover compra para outra fatura/periodo pela UI.
 
 ### Orcamentos
 
@@ -285,9 +368,7 @@ UI disponivel:
 
 - lista, cria, consulta detalhe/uso via acao, edita e arquiva em `/orcamentos`.
 
-Lacunas:
-
-- tela dedicada de detalhe/uso.
+Lacuna: tela dedicada de detalhe/uso.
 
 ### Contas a pagar/receber legado
 
@@ -303,13 +384,11 @@ API disponivel temporariamente:
 UI disponivel:
 
 - sem tela operacional ativa para novos fluxos;
-- `/lancamentos` deve cobrir receitas, despesas, transferencias e lancamentos previstos de conta;
-- `/cartoes` deve cobrir compras, faturas, fechamento e pagamento de cartao;
+- `/lancamentos` cobre receitas, despesas, transferencias e lancamentos previstos de conta;
+- `/cartoes` cobre compras, faturas, fechamento e pagamento de cartao;
 - componentes internos remanescentes de `/pagar-receber` devem ser tratados como legado, sem links novos de navegacao ou Dashboard.
 
-Lacunas:
-
-- plano da #290 para migracao/compatibilidade do dominio, endpoints, testes e dados antigos.
+Lacuna: plano da #290 para migracao/compatibilidade do dominio, endpoints, testes e dados antigos.
 
 ## Ambiguidades e encaminhamentos
 
