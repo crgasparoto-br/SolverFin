@@ -132,3 +132,18 @@ alter table "Invoice"
   foreign key ("cardId", "organizationId", "financialProfileId") references "Card"("id", "organizationId", "financialProfileId") on delete restrict on update cascade,
   add constraint "Invoice_paymentTransactionId_organizationId_financialProfileId_fkey"
   foreign key ("paymentTransactionId", "organizationId", "financialProfileId") references "Transaction"("id", "organizationId", "financialProfileId") on delete restrict on update cascade;
+
+-- Temporary read-only compatibility for legacy queries that still select from
+-- CardAdditionalLink until #321/#323 replace repositories and routes with the
+-- card instrument model. The legacy table is gone; each aggregator resolves to
+-- itself so current purchase flows do not depend on manual additional links.
+create view "CardAdditionalLink" as
+select
+  "organizationId",
+  "financialProfileId",
+  "id" as "groupCardId",
+  "id" as "cardId",
+  true as "isPrimary",
+  "createdAt",
+  "updatedAt"
+from "Card";
