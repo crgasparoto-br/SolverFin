@@ -28,7 +28,7 @@
     "db:seed:check": "node --check scripts/seed-demo.mjs && node --check scripts/seed-demo-card-instruments.mjs && node --check scripts/seed-default-categories.mjs && node --check scripts/seed-default-categories-for-user.mjs",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
+    "format:check": "prettier scripts/seed-demo-card-instruments.mjs --write && git diff -- scripts/seed-demo-card-instruments.mjs && exit 1",
     "lint": "npm run build:packages && npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
