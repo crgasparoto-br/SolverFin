@@ -129,7 +129,8 @@ function runKeepsCancelledRecordsAsHistory(): void {
 
 function runRequiresManualReviewWhenPendingHasNoAccount(): void {
   const payable = createLegacy("legacy-no-account", "payable", "pending");
-  const { accountId: _accountId, ...withoutAccount } = payable;
+  const withoutAccount: PayableReceivable = { ...payable };
+  delete withoutAccount.accountId;
   const plan = buildPayableReceivableTransitionPlan({
     payablesReceivables: [withoutAccount],
     transactions: [],
