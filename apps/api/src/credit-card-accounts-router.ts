@@ -51,18 +51,10 @@ route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId`, updateCreditCardAccountHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/archive`, archiveCreditCardAccountHandler);
 route("GET", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, listCardInstrumentsHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, createCardInstrumentHandler);
-route(
-  "PATCH",
-  `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`,
-  setDefaultCardInstrumentHandler,
-);
+route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCardInstrumentHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
 route("PATCH", `${INSTRUMENTS_BASE_PATH}/:instrumentId`, updateCardInstrumentHandler);
-route(
-  "POST",
-  `${INSTRUMENTS_BASE_PATH}/:instrumentId/archive`,
-  archiveCardInstrumentHandler,
-);
+route("POST", `${INSTRUMENTS_BASE_PATH}/:instrumentId/archive`, archiveCardInstrumentHandler);
 
 export async function handleCreditCardAccountsApiRequest(
   request: ApiRequest,
@@ -82,9 +74,7 @@ export async function handleCreditCardAccountsApiRequest(
   }
 
   try {
-    const user = auth.requireAuthenticatedRequest(
-      buildAuthHeaders(request.headers.authorization),
-    );
+    const user = auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -166,10 +156,7 @@ async function listCreditCardAccountsHandler(
   const status = request.query.get("status") as CardStatus | "all" | null;
 
   return json(200, {
-    creditCardAccounts: await listCreditCardAccountsForContext(
-      context,
-      status ? { status } : {},
-    ),
+    creditCardAccounts: await listCreditCardAccountsForContext(context, status ? { status } : {}),
   });
 }
 
@@ -189,9 +176,7 @@ async function createCreditCardAccountHandler(
     ...(body.maskedIdentifier !== undefined
       ? { maskedIdentifier: String(body.maskedIdentifier) }
       : {}),
-    ...(body.institutionKey !== undefined
-      ? { institutionKey: String(body.institutionKey) }
-      : {}),
+    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
     ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
     ...(body.paymentAccountId !== undefined
       ? { paymentAccountId: String(body.paymentAccountId) }
@@ -207,10 +192,7 @@ async function getCreditCardAccountHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   return json(200, {
-    creditCardAccount: await getCreditCardAccountForContext(
-      context,
-      requireParam(match, "cardId"),
-    ),
+    creditCardAccount: await getCreditCardAccountForContext(context, requireParam(match, "cardId")),
   });
 }
 
@@ -234,9 +216,7 @@ async function updateCreditCardAccountHandler(
       ...(body.maskedIdentifier !== undefined
         ? { maskedIdentifier: String(body.maskedIdentifier) }
         : {}),
-      ...(body.institutionKey !== undefined
-        ? { institutionKey: String(body.institutionKey) }
-        : {}),
+      ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
       ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
       ...(body.paymentAccountId !== undefined
         ? { paymentAccountId: String(body.paymentAccountId) }
@@ -266,10 +246,7 @@ async function listCardInstrumentsHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   return json(200, {
-    instruments: await listCardInstrumentsForContext(
-      context,
-      requireParam(match, "cardId"),
-    ),
+    instruments: await listCardInstrumentsForContext(context, requireParam(match, "cardId")),
   });
 }
 
@@ -294,26 +271,22 @@ async function registerCardPurchaseHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const result = await registerCardPurchaseForContext(
-    context,
-    requireParam(match, "cardId"),
-    {
-      occurredOn: String(body.occurredOn ?? ""),
-      amountMinor: Number(body.amountMinor),
-      description: String(body.description ?? ""),
-      ...(body.cardInstrumentId !== undefined
-        ? { cardInstrumentId: String(body.cardInstrumentId) }
-        : {}),
-      ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-      ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-      ...(body.totalInstallments !== undefined
-        ? { totalInstallments: Number(body.totalInstallments) }
-        : {}),
-      ...(body.installmentStart !== undefined
-        ? { installmentStart: Number(body.installmentStart) }
-        : {}),
-    },
-  );
+  const result = await registerCardPurchaseForContext(context, requireParam(match, "cardId"), {
+    occurredOn: String(body.occurredOn ?? ""),
+    amountMinor: Number(body.amountMinor),
+    description: String(body.description ?? ""),
+    ...(body.cardInstrumentId !== undefined
+      ? { cardInstrumentId: String(body.cardInstrumentId) }
+      : {}),
+    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+    ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+    ...(body.totalInstallments !== undefined
+      ? { totalInstallments: Number(body.totalInstallments) }
+      : {}),
+    ...(body.installmentStart !== undefined
+      ? { installmentStart: Number(body.installmentStart) }
+      : {}),
+  });
 
   return json(201, result);
 }
@@ -330,9 +303,7 @@ async function updateCardInstrumentHandler(
     {
       ...(body.type !== undefined ? { type: body.type as CardInstrumentType } : {}),
       ...(body.holder !== undefined ? { holder: body.holder as CardInstrumentHolder } : {}),
-      ...(body.status !== undefined
-        ? { status: body.status as CardInstrumentStatus }
-        : {}),
+      ...(body.status !== undefined ? { status: body.status as CardInstrumentStatus } : {}),
       ...(body.isDefault !== undefined ? { isDefault: body.isDefault === true } : {}),
       ...(body.name !== undefined ? { name: readOptionalString(body.name) } : {}),
       ...(body.maskedIdentifier !== undefined
@@ -390,9 +361,7 @@ function readInstrument(body: Record<string, unknown>) {
     ...(body.status !== undefined ? { status: body.status as CardInstrumentStatus } : {}),
     ...(body.isDefault !== undefined ? { isDefault: body.isDefault === true } : {}),
     ...(body.name !== undefined ? { name: String(body.name) } : {}),
-    ...(body.maskedIdentifier !== undefined
-      ? { maskedIdentifier: String(body.maskedIdentifier) }
-      : {}),
+    ...(body.maskedIdentifier !== undefined ? { maskedIdentifier: String(body.maskedIdentifier) } : {}),
     ...(body.creditLimitMinor !== undefined
       ? { creditLimitMinor: Number(body.creditLimitMinor) }
       : {}),
@@ -417,11 +386,7 @@ function readOptionalNumber(value: unknown): number | null {
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
-    throw new AuthError(
-      "AUTH_INVALID_CREDENTIALS",
-      "Request body must be a JSON object.",
-      400,
-    );
+    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
   }
 
   return body as Record<string, unknown>;
@@ -445,9 +410,7 @@ function json(statusCode: number, body: unknown): ApiResponse {
   };
 }
 
-function buildAuthHeaders(
-  authorization: string | undefined,
-): { authorization?: string } {
+function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
   return authorization === undefined ? {} : { authorization };
 }
 
