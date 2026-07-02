@@ -31,8 +31,7 @@ export interface VisualIdentityCatalogItem<TKey extends string> {
   fallbackLabel: string;
 }
 
-export interface FinancialInstitutionCatalogItem
-  extends VisualIdentityCatalogItem<FinancialInstitutionKey> {
+export interface FinancialInstitutionCatalogItem extends VisualIdentityCatalogItem<FinancialInstitutionKey> {
   description: string;
   status: FinancialInstitutionStatus;
   financialInstitutionCode: string;
@@ -134,8 +133,7 @@ export const financialInstitutionCatalog = [
   {
     key: "mercado_pago",
     label: "Mercado Pago",
-    description:
-      "Conta de pagamento e serviços financeiros digitais do ecossistema Mercado Livre.",
+    description: "Conta de pagamento e serviços financeiros digitais do ecossistema Mercado Livre.",
     fallbackLabel: "MP",
     status: "active",
     financialInstitutionCode: "mercado_pago",
@@ -209,8 +207,7 @@ export const financialInstitutionCatalog = [
   {
     key: "sicredi",
     label: "Sicredi",
-    description:
-      "Instituição financeira cooperativa com contas, cartões, crédito e investimentos.",
+    description: "Instituição financeira cooperativa com contas, cartões, crédito e investimentos.",
     fallbackLabel: "SI",
     status: "active",
     financialInstitutionCode: "sicredi",
