@@ -73,11 +73,17 @@ function usesPlannedTransactionsInvoicesAndLegacyFallbacks(): void {
       payableReceivableFixture("legacy-receivable", "receivable", 18000, "2026-06-26"),
     ],
   });
+  const commitmentSources = ["transactions", "invoices", "payables_receivables"];
+  const commitmentComponents = result.components.filter((component) =>
+    commitmentSources.includes(component.source),
+  );
 
   assert.deepEqual(
-    result.components
-      .filter((component) => ["transactions", "invoices", "payables_receivables"].includes(component.source))
-      .map((component) => [component.source, component.entityId, component.amountMinor]),
+    commitmentComponents.map((component) => [
+      component.source,
+      component.entityId,
+      component.amountMinor,
+    ]),
     [
       ["transactions", "planned-income", 30000],
       ["transactions", "planned-expense", -12000],
