@@ -14,10 +14,14 @@ export const implementedRoutes = new Set(
   listImplementedPrivateShellRoutes().map((route) => route.path),
 );
 
+const retiredPrivateRouteRedirects = new Map([
+  ["/pagar-receber", "/lancamentos"],
+  ["/app/pagar-receber", "/lancamentos"],
+]);
+
 const legacyAppRouteRedirects = new Map([
   ["/app", "/dashboard"],
   ["/app/lancamentos", "/lancamentos"],
-  ["/app/pagar-receber", "/pagar-receber"],
   ["/app/contas-cartoes", "/contas-cartoes"],
   ["/app/categorias", "/categorias"],
   ["/app/cartoes", "/cartoes"],
@@ -36,6 +40,16 @@ export function resolveRoute(
       statusCode: 302,
       kind: hasSession ? "dashboard" : "login",
       location: hasSession ? "/dashboard" : "/login",
+    };
+  }
+
+  const retiredRedirect = retiredPrivateRouteRedirects.get(pathname);
+
+  if (retiredRedirect) {
+    return {
+      statusCode: 302,
+      kind: hasSession ? "placeholder" : "login",
+      location: hasSession ? retiredRedirect : "/login",
     };
   }
 
