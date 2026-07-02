@@ -1,7 +1,6 @@
 export type ShellRouteId =
   | "dashboard"
   | "transactions"
-  | "payablesReceivables"
   | "accountsCards"
   | "categories"
   | "cards"
@@ -41,16 +40,6 @@ export const solverFinShellRoutes = [
     path: "/lancamentos",
     label: "Extrato da conta",
     description: "Acompanhe saldos, filtros e movimentações por conta.",
-    navigationGroup: "main",
-    requiresAuthentication: true,
-    requiresFinancialProfile: true,
-    status: "available",
-  },
-  {
-    id: "payablesReceivables",
-    path: "/pagar-receber",
-    label: "Pagar e receber",
-    description: "Acompanhe vencimentos, pagamentos e recebimentos previstos.",
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
