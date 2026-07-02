@@ -7,6 +7,19 @@ import {
   updateTenantScopedResource,
 } from "./tenant-authorization.js";
 
+export type {
+  DefaultCategorySuggestion,
+  FlattenedDefaultCategory,
+  DefaultCategoryGroup,
+  DefaultCategoryNode,
+} from "./default-categories.js";
+export {
+  DEFAULT_CATEGORY_TREE,
+  flattenDefaultCategoryTree,
+  getDefaultCategorySuggestions,
+  normalizeCategoryNameForUniqueness,
+} from "./default-categories.js";
+
 export type CategoryErrorCode =
   | "CATEGORY_NAME_REQUIRED"
   | "CATEGORY_KIND_REQUIRED"
@@ -14,6 +27,7 @@ export type CategoryErrorCode =
   | "CATEGORY_PARENT_INVALID"
   | "CATEGORY_PARENT_KIND_MISMATCH"
   | "CATEGORY_PARENT_CYCLE"
+  | "CATEGORY_DUPLICATE"
   | "CATEGORY_REPLACEMENT_REQUIRED"
   | "CATEGORY_REPLACEMENT_INVALID"
   | "CATEGORY_TRANSACTION_KIND_INVALID";
@@ -34,13 +48,6 @@ export type CategorySuggestionSource =
   | "user_created"
   | "ai_suggested"
   | "imported";
-
-export interface DefaultCategorySuggestion {
-  name: string;
-  kind: CategoryKind;
-  source: Extract<CategorySuggestionSource, "system_default">;
-  parentName?: string;
-}
 
 export interface CreateCategoryInput {
   id: EntityId;
@@ -97,32 +104,6 @@ export interface ListCategoriesFilters {
 }
 
 const ALLOWED_CATEGORY_KINDS: readonly CategoryKind[] = ["income", "expense", "transfer"];
-
-const DEFAULT_CATEGORY_SUGGESTIONS: readonly DefaultCategorySuggestion[] = [
-  { name: "Trabalho", kind: "income", source: "system_default" },
-  { name: "Salario", kind: "income", source: "system_default", parentName: "Trabalho" },
-  { name: "Freelance", kind: "income", source: "system_default", parentName: "Trabalho" },
-  { name: "Moradia", kind: "expense", source: "system_default" },
-  { name: "Aluguel", kind: "expense", source: "system_default", parentName: "Moradia" },
-  { name: "Agua", kind: "expense", source: "system_default", parentName: "Moradia" },
-  { name: "Energia eletrica", kind: "expense", source: "system_default", parentName: "Moradia" },
-  { name: "Alimentacao", kind: "expense", source: "system_default" },
-  { name: "Mercado", kind: "expense", source: "system_default", parentName: "Alimentacao" },
-  { name: "Restaurante", kind: "expense", source: "system_default", parentName: "Alimentacao" },
-  { name: "Transporte", kind: "expense", source: "system_default" },
-  { name: "Combustivel", kind: "expense", source: "system_default", parentName: "Transporte" },
-  {
-    name: "Aplicativos de transporte",
-    kind: "expense",
-    source: "system_default",
-    parentName: "Transporte",
-  },
-  { name: "Transferencias", kind: "transfer", source: "system_default" },
-];
-
-export function getDefaultCategorySuggestions(): readonly DefaultCategorySuggestion[] {
-  return DEFAULT_CATEGORY_SUGGESTIONS;
-}
 
 export function createCategory(input: CreateCategoryInput): Category {
   const payload = applyTenantScope(input.context, input.payload);
