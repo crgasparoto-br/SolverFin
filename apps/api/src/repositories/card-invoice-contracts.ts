@@ -139,8 +139,7 @@ export async function summarizeInvoiceForContext(
     [context.organizationId, context.financialProfileId, invoice.id, invoice.cardId],
   );
   const amountDueMinor = calculateAmountDue(invoice);
-  const familyCardIds = await resolveFamilyCardIds(context, invoice.cardId);
-  const cardTotals = await buildCardTotals(context, familyCardIds, invoice);
+  const cardTotals = await buildCardTotals(context, [invoice.cardId], invoice);
 
   return {
     invoiceId: invoice.id,
@@ -161,22 +160,6 @@ export async function summarizeInvoiceForContext(
     purchasesCount: toNumber(totals?.purchasesCount),
     cardTotals,
   };
-}
-
-async function resolveFamilyCardIds(context: TenantContext, cardId: EntityId): Promise<EntityId[]> {
-  const [membership] = await query<{ groupCardId: string }>(
-    `select "groupCardId" from "CardAdditionalLink"
-       where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3`,
-    [context.organizationId, context.financialProfileId, cardId],
-  );
-  const groupCardId = membership?.groupCardId ?? cardId;
-  const rows = await query<{ cardId: string }>(
-    `select "cardId" from "CardAdditionalLink"
-       where "organizationId" = $1 and "financialProfileId" = $2 and "groupCardId" = $3`,
-    [context.organizationId, context.financialProfileId, groupCardId],
-  );
-
-  return rows.length > 0 ? rows.map((row) => row.cardId) : [cardId];
 }
 
 async function buildCardTotals(

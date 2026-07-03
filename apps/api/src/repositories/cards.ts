@@ -200,7 +200,7 @@ export async function registerCardPurchaseForContext(
   forecastTransactions: readonly Transaction[];
 }> {
   const card = await findCardRow(context, cardId);
-  const groupCardId = await resolveGroupCardId(context, cardId);
+  const groupCardId = cardId;
   const instruments =
     payload.cardInstrumentId !== undefined
       ? await listCardInstrumentsForContext(context, groupCardId)
@@ -576,16 +576,6 @@ async function listAllInvoicesForCard(
   );
 
   return rows.map(mapInvoiceRow);
-}
-
-async function resolveGroupCardId(context: TenantContext, cardId: EntityId): Promise<EntityId> {
-  const rows = await query<{ groupCardId: string }>(
-    `select "groupCardId" from "CardAdditionalLink"
-     where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3`,
-    [context.organizationId, context.financialProfileId, cardId],
-  );
-
-  return rows[0]?.groupCardId ?? cardId;
 }
 
 async function findCardRow(context: TenantContext, cardId: EntityId): Promise<Card | undefined> {
