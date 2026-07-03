@@ -8,6 +8,7 @@ import {
   getCard as getCardDomain,
   listCardInstruments as listCardInstrumentsDomain,
   listCards as listCardsDomain,
+  resolveCardInstrumentEffectiveCreditLimit,
   setDefaultCardInstrument as setDefaultCardInstrumentDomain,
   updateCard as updateCardDomain,
   type Account,
@@ -29,8 +30,12 @@ import {
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 
+export interface CreditCardInstrumentContract extends CardInstrument {
+  effectiveCreditLimitMinor?: number;
+}
+
 export interface CreditCardAccountContract extends Card {
-  instruments: readonly CardInstrument[];
+  instruments: readonly CreditCardInstrumentContract[];
 }
 
 type NewCardInstrumentPayload = Omit<CreateCardInstrumentPayload, "cardId">;
@@ -121,7 +126,7 @@ export async function getCreditCardAccountForContext(
   const card = getCardDomain(context, await findCardRow(context, cardId));
   const instruments = await listCardInstrumentsForContext(context, card.id);
 
-  return { ...card, instruments };
+  return buildCreditCardAccount(context, card, instruments);
 }
 
 export async function createCreditCardAccountForContext(
@@ -162,7 +167,7 @@ export async function createCreditCardAccountForContext(
 
   await persistCardWithInstruments(card, instruments);
 
-  return { ...card, instruments };
+  return buildCreditCardAccount(context, card, instruments);
 }
 
 export async function updateCreditCardAccountForContext(
@@ -234,7 +239,7 @@ export async function deleteCreditCardAccountForContext(
 export async function listCardInstrumentsForContext(
   context: TenantContext,
   cardId: EntityId,
-): Promise<CardInstrument[]> {
+): Promise<CreditCardInstrumentContract[]> {
   const card = getCardDomain(context, await findCardRow(context, cardId));
   const rows = await query<CardInstrumentRow>(
     `select ${CARD_INSTRUMENT_COLUMNS} from "CardInstrument"
@@ -242,8 +247,9 @@ export async function listCardInstrumentsForContext(
      order by "isDefault" desc, "createdAt" asc`,
     [context.organizationId, context.financialProfileId, card.id],
   );
+  const instruments = listCardInstrumentsDomain(context, card, rows.map(mapCardInstrumentRow));
 
-  return listCardInstrumentsDomain(context, card, rows.map(mapCardInstrumentRow));
+  return instruments.map((instrument) => buildCardInstrumentContract(card, instrument));
 }
 
 export async function createCardInstrumentForContext(
@@ -267,7 +273,7 @@ export async function createCardInstrumentForContext(
 
   await persistCardWithInstruments(result.card, result.instruments);
 
-  return { ...result.card, instruments: result.instruments };
+  return buildCreditCardAccount(context, result.card, result.instruments);
 }
 
 export async function updateCardInstrumentForContext(
@@ -308,7 +314,7 @@ export async function updateCardInstrumentForContext(
     return setDefaultCardInstrumentForContext(context, card.id, updatedInstrument.id);
   }
 
-  return { ...card, instruments: updatedInstruments };
+  return buildCreditCardAccount(context, card, updatedInstruments);
 }
 
 export async function archiveCardInstrumentForContext(
@@ -328,7 +334,7 @@ export async function archiveCardInstrumentForContext(
 
   await persistCardWithInstruments(result.card, result.instruments);
 
-  return { ...result.card, instruments: result.instruments };
+  return buildCreditCardAccount(context, result.card, result.instruments);
 }
 
 export async function setDefaultCardInstrumentForContext(
@@ -348,7 +354,7 @@ export async function setDefaultCardInstrumentForContext(
 
   await persistCardWithInstruments(result.card, result.instruments);
 
-  return { ...result.card, instruments: result.instruments };
+  return buildCreditCardAccount(context, result.card, result.instruments);
 }
 
 async function listAllInstrumentsForContext(context: TenantContext): Promise<CardInstrument[]> {
@@ -411,9 +417,23 @@ function buildCreditCardAccount(
   card: Card,
   instruments: readonly CardInstrument[],
 ): CreditCardAccountContract {
+  const cardInstruments = listCardInstrumentsDomain(context, card, instruments);
+
   return {
     ...card,
-    instruments: listCardInstrumentsDomain(context, card, instruments),
+    instruments: cardInstruments.map((instrument) => buildCardInstrumentContract(card, instrument)),
+  };
+}
+
+function buildCardInstrumentContract(
+  card: Card,
+  instrument: CardInstrument,
+): CreditCardInstrumentContract {
+  const effectiveCreditLimitMinor = resolveCardInstrumentEffectiveCreditLimit(card, instrument);
+
+  return {
+    ...instrument,
+    ...(effectiveCreditLimitMinor !== undefined ? { effectiveCreditLimitMinor } : {}),
   };
 }
 
