@@ -114,7 +114,10 @@ async function assertListsGeneratedInstallments(
     `/api/installments?accountId=${UNMATCHED_ACCOUNT_ID}&recurrenceId=${recurrenceId}`,
   );
   assert.equal(unmatchedResponse.statusCode, 200);
-  assert.equal(readBody<{ installments: ApiInstallmentHistory[] }>(unmatchedResponse).installments.length, 0);
+  assert.equal(
+    readBody<{ installments: ApiInstallmentHistory[] }>(unmatchedResponse).installments.length,
+    0,
+  );
 }
 
 async function assertFiltersTenantProfile(token: string, recurrenceId: string): Promise<void> {
