@@ -156,8 +156,7 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
     assert.match(html, /1\.000,00/);
     assert.match(html, />Default<\/span>/);
     assert.equal(
-      (html.match(/\/api\/credit-card-accounts\/card-c6\/default-instrument/g) ?? [])
-        .length,
+      (html.match(/\/api\/credit-card-accounts\/card-c6\/default-instrument/g) ?? []).length,
       1,
     );
     assert.match(html, /name="instrumentId" value="instrument-virtual"/);
