@@ -10,6 +10,7 @@ import { query } from "../db.js";
 
 export interface ListInstallmentsFilters {
   transactionId?: EntityId;
+  accountId?: EntityId;
   recurrenceId?: EntityId;
   cardId?: EntityId;
   cardInstrumentId?: EntityId;
@@ -64,6 +65,7 @@ export async function listInstallmentsForContext(
   const where = [`i."organizationId" = $1`, `i."financialProfileId" = $2`];
 
   addEqualsFilter(where, params, `t."id"`, filters.transactionId);
+  addEqualsFilter(where, params, `t."accountId"`, filters.accountId);
   addEqualsFilter(where, params, `i."recurrenceId"`, filters.recurrenceId);
   addEqualsFilter(where, params, `i."cardId"`, filters.cardId);
   addEqualsFilter(where, params, `i."cardInstrumentId"`, filters.cardInstrumentId);
