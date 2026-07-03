@@ -44,9 +44,11 @@ O usuario cria contas, cartoes, categorias, contexto financeiro e preferencias b
 
 A area **Contas e Cartoes** e o cadastro mestre de instrumentos financeiros. Ela concentra contas bancarias, dinheiro, aplicacoes, contas de pagamento e cartoes usados nos lancamentos.
 
+Para cartoes de credito, o cadastro mestre usa o modelo de **cartao agrupador/fatura** com **instrumentos internos**. O agrupador representa o contrato e a fatura; os instrumentos representam os meios de uso, como fisico titular, virtual titular, fisico adicional e virtual adicional. O documento `docs/CARDS.md` e a referencia de produto/tecnica para esse modelo.
+
 A area **Cartoes** fica reservada para a rotina operacional: compras, faturas, fechamento e pagamento de cartao. Cadastro de novos cartoes nao deve ser a acao principal dessa area.
 
-No MVP local, `/contas-cartoes` e a rota final planejada para o cadastro mestre. Enquanto a tela completa da issue #212 nao substitui a tela atual, essa rota redireciona para `/contas`, preservando compatibilidade com a navegacao existente.
+No MVP local, `/contas-cartoes` e a rota do cadastro mestre de contas e cartoes. A rota `/cartoes` permanece dedicada a rotina operacional de compras e faturas.
 
 ### Registrar e revisar movimentacoes
 
