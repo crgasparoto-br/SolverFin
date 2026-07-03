@@ -83,7 +83,7 @@ async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void>
 
   assert.match(html, /Cartões de Crédito/);
   assert.match(html, /Salvar compra/);
-  assert.match(html, /data-path="\/api\/cards\/card-1\/purchases"/);
+  assert.match(html, /data-path="\/api\/credit-card-accounts\/card-1\/purchases"/);
   assert.match(html, /Fechar fatura/);
   assert.match(html, /data-api-path="\/api\/invoices\/invoice-1\/close"/);
   assert.match(html, /data-path="\/api\/invoices\/invoice-1\/pay"/);

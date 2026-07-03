@@ -20,3 +20,4 @@ scripts/validate-env-example.mjs
 
 # SSR page templates contain large inline HTML/CSS strings that are easier to review manually.
 apps/web/src/dev-server/pages.ts
+apps/web/src/dev-server/cards-page.ts

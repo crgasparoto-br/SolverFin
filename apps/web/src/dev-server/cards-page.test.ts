@@ -39,6 +39,29 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
       });
     }
 
+    if (url.pathname === "/api/credit-card-accounts/card-1/instruments") {
+      return jsonResponse({
+        instruments: [
+          {
+            id: "instrument-main",
+            type: "physical",
+            holder: "primary",
+            status: "active",
+            isDefault: true,
+            maskedIdentifier: "final 1234",
+            effectiveCreditLimitMinor: 200000,
+          },
+          {
+            id: "instrument-archived",
+            type: "virtual",
+            holder: "additional",
+            status: "archived",
+            isDefault: false,
+          },
+        ],
+      });
+    }
+
     if (url.pathname === "/api/invoices") {
       return jsonResponse({
         invoices: [
@@ -179,6 +202,11 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /Pagamento da fatura/);
   assert.match(html, /Confirmar pagamento/);
   assert.match(html, /data-edit-purchase="purchase-1"/);
+  assert.match(html, /name="cardInstrumentId"/);
+  assert.match(html, /value="instrument-main" selected/);
+  assert.match(html, /Físico - Titular principal · final 1234 · limite R\$\s+2\.000,00/);
+  assert.doesNotMatch(html, /instrument-archived/);
+  assert.match(html, /data-path="\/api\/credit-card-accounts\/card-1\/purchases"/);
   assert.match(html, /name="repeatMode"/);
   assert.match(html, /<option value="installment">Parcelado<\/option>/);
   assert.match(html, /<option value="fixed">Fixo<\/option>/);
@@ -197,6 +225,7 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.doesNotMatch(html, /name="kind"/, "card recurrences should not expose a kind field");
   assert.doesNotMatch(html, /name="purchaseCardId"/);
   assert.equal(calledPaths.includes("/api/card-additional-links"), false);
+  assert.equal(calledPaths.includes("/api/credit-card-accounts/card-1/instruments"), true);
 
   const recurrencesIndex = calledPaths.indexOf("/api/recurrences");
   const purchasesIndex = calledPaths.indexOf("/api/invoices/invoice-1/purchases");
@@ -222,6 +251,10 @@ async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
           },
         ],
       });
+    }
+
+    if (url.pathname === "/api/credit-card-accounts/card-1/instruments") {
+      return jsonResponse({ instruments: [] });
     }
 
     if (url.pathname === "/api/invoices") {
@@ -301,6 +334,20 @@ async function cardsPageUsesOnlySelectedCardInvoice(): Promise<void> {
         cards: [
           { id: "card-1", name: "Cartão Principal", status: "active", closingDay: 20, dueDay: 10 },
           { id: "card-2", name: "Cartão C6", status: "active", closingDay: 20, dueDay: 10 },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/credit-card-accounts/card-2/instruments") {
+      return jsonResponse({
+        instruments: [
+          {
+            id: "instrument-c6",
+            type: "virtual",
+            holder: "primary",
+            status: "active",
+            isDefault: true,
+          },
         ],
       });
     }
@@ -408,11 +455,14 @@ async function cardsPageUsesOnlySelectedCardInvoice(): Promise<void> {
 
   assert.match(html, /Fatura de Cartão C6/);
   assert.match(html, /Compra no cartão selecionado/);
+  assert.match(html, /value="instrument-c6" selected/);
+  assert.match(html, /data-path="\/api\/credit-card-accounts\/card-2\/purchases"/);
   assert.doesNotMatch(html, /Compra no principal/);
   assert.doesNotMatch(html, /Fatura consolidada com os cartões adicionais do grupo/);
   assert.doesNotMatch(html, /name="purchaseCardId"/);
   assert.equal(calledPaths.includes("/api/card-additional-links"), false);
   assert.equal(calledPaths.includes("/api/invoices/invoice-1/purchases"), false);
+  assert.equal(calledPaths.includes("/api/credit-card-accounts/card-2/instruments"), true);
 }
 
 function jsonResponse(body: unknown): Response {
