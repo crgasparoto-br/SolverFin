@@ -23,6 +23,7 @@ async function main(): Promise<void> {
 
   await runRejectsAccountWithoutActiveInstrument(token);
   await runRejectsInstrumentLimitsAboveAccountLimit(token);
+  await runRegistersPurchaseWithDefaultInstrument(token);
   await runPreservesRecurrenceInstrumentAfterDefaultChange(token);
   await runCreditCardAccountInstrumentLifecycle(token);
 }
@@ -61,6 +62,54 @@ async function runRejectsInstrumentLimitsAboveAccountLimit(token: string): Promi
 
   assert.equal(response.statusCode, 400);
   assert.equal(readErrorCode(response), "CARD_INSTRUMENT_LIMIT_EXCEEDS_CARD_LIMIT");
+}
+
+async function runRegistersPurchaseWithDefaultInstrument(token: string): Promise<void> {
+  const suffix = Date.now().toString(36);
+  const createResponse = await apiRequest(token, "POST", "/api/credit-card-accounts", {
+    name: `Cartao compra default ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 50_000,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico default",
+        maskedIdentifier: "**** 5555",
+      },
+      {
+        type: "virtual",
+        holder: "additional",
+        name: "Virtual reserva",
+        maskedIdentifier: "**** 6666",
+      },
+    ],
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const account = readCreditCardAccount(createResponse);
+  const defaultCardInstrument = defaultInstrument(account);
+
+  assert.notEqual(defaultCardInstrument, undefined);
+  assert.equal(defaultCardInstrument?.type, "physical");
+
+  const purchaseResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/credit-card-accounts/${account.id}/purchases`,
+    {
+      occurredOn: "2026-06-17",
+      amountMinor: 2_345,
+      description: `Compra default integracao ${suffix}`,
+    },
+  );
+  assert.equal(purchaseResponse.statusCode, 201);
+  const purchase = readPurchase(purchaseResponse);
+
+  assert.equal(purchase.transaction.cardId, account.id);
+  assert.equal(purchase.transaction.cardInstrumentId, defaultCardInstrument?.id);
+  assert.equal(purchase.invoice.cardId, account.id);
+  assert.equal(purchase.invoice.totalAmountMinor, 2_345);
 }
 
 async function runPreservesRecurrenceInstrumentAfterDefaultChange(token: string): Promise<void> {

@@ -73,6 +73,10 @@ interface InvoiceRow {
   updatedAt: Date;
 }
 
+interface RegisterCardPurchaseForContextOptions {
+  requireInstrumentContext?: boolean;
+}
+
 const CARD_COLUMNS = `"id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status",
   "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
@@ -192,6 +196,7 @@ export async function registerCardPurchaseForContext(
   context: TenantContext,
   cardId: EntityId,
   payload: RegisterCardPurchasePayload,
+  options: RegisterCardPurchaseForContextOptions = {},
 ): Promise<{
   transaction: Transaction;
   invoice: Invoice;
@@ -200,10 +205,11 @@ export async function registerCardPurchaseForContext(
   forecastTransactions: readonly Transaction[];
 }> {
   const card = await findCardRow(context, cardId);
-  const instruments =
-    payload.cardInstrumentId !== undefined
-      ? await listCardInstrumentsForContext(context, cardId)
-      : undefined;
+  const shouldLoadInstruments =
+    options.requireInstrumentContext === true || payload.cardInstrumentId !== undefined;
+  const instruments = shouldLoadInstruments
+    ? await listCardInstrumentsForContext(context, cardId)
+    : undefined;
   const existingInvoices = await listAllInvoicesForCard(context, cardId);
   const paymentAccount = card?.paymentAccountId
     ? await findAccountRow(context, card.paymentAccountId)
