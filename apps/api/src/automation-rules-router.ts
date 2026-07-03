@@ -171,37 +171,71 @@ async function resolveContext(request: ApiRequest) {
 }
 
 function parseConditions(body: Readonly<Record<string, unknown>>): AutomationRuleConditions {
-  const amount = {
-    ...(toOptionalMinor(body.amountEqualsMinor ?? body.amountEquals) !== undefined
-      ? { equalsMinor: toOptionalMinor(body.amountEqualsMinor ?? body.amountEquals) }
-      : {}),
-    ...(toOptionalMinor(body.amountMinMinor ?? body.amountMin) !== undefined
-      ? { minMinor: toOptionalMinor(body.amountMinMinor ?? body.amountMin) }
-      : {}),
-    ...(toOptionalMinor(body.amountMaxMinor ?? body.amountMax) !== undefined
-      ? { maxMinor: toOptionalMinor(body.amountMaxMinor ?? body.amountMax) }
-      : {}),
-  };
+  const conditions: AutomationRuleConditions = {};
+  const equalsMinor = toOptionalMinor(body.amountEqualsMinor ?? body.amountEquals);
+  const minMinor = toOptionalMinor(body.amountMinMinor ?? body.amountMin);
+  const maxMinor = toOptionalMinor(body.amountMaxMinor ?? body.amountMax);
+  const amount: NonNullable<AutomationRuleConditions["amount"]> = {};
 
-  return {
-    ...(body.descriptionIncludes !== undefined
-      ? { descriptionIncludes: String(body.descriptionIncludes) }
-      : {}),
-    ...(body.merchantIncludes !== undefined ? { merchantIncludes: String(body.merchantIncludes) } : {}),
-    ...(Object.keys(amount).length > 0 ? { amount } : {}),
-    ...(body.conditionAccountId !== undefined ? { accountId: String(body.conditionAccountId) } : {}),
-    ...(body.conditionCardId !== undefined ? { cardId: String(body.conditionCardId) } : {}),
-    ...(body.kind !== undefined ? { kind: parseKind(body.kind) } : {}),
-  };
+  if (body.descriptionIncludes !== undefined) {
+    conditions.descriptionIncludes = String(body.descriptionIncludes);
+  }
+
+  if (body.merchantIncludes !== undefined) {
+    conditions.merchantIncludes = String(body.merchantIncludes);
+  }
+
+  if (equalsMinor !== undefined) {
+    amount.equalsMinor = equalsMinor;
+  }
+
+  if (minMinor !== undefined) {
+    amount.minMinor = minMinor;
+  }
+
+  if (maxMinor !== undefined) {
+    amount.maxMinor = maxMinor;
+  }
+
+  if (Object.keys(amount).length > 0) {
+    conditions.amount = amount;
+  }
+
+  if (body.conditionAccountId !== undefined) {
+    conditions.accountId = String(body.conditionAccountId);
+  }
+
+  if (body.conditionCardId !== undefined) {
+    conditions.cardId = String(body.conditionCardId);
+  }
+
+  if (body.kind !== undefined) {
+    conditions.kind = parseKind(body.kind);
+  }
+
+  return conditions;
 }
 
 function parseActions(body: Readonly<Record<string, unknown>>): AutomationRuleActions {
-  return {
-    ...(body.actionCategoryId !== undefined ? { categoryId: String(body.actionCategoryId) } : {}),
-    ...(body.actionAccountId !== undefined ? { accountId: String(body.actionAccountId) } : {}),
-    ...(body.actionCardId !== undefined ? { cardId: String(body.actionCardId) } : {}),
-    ...(body.actionStatus !== undefined ? { status: String(body.actionStatus) as AutomationRuleActions["status"] } : {}),
-  };
+  const actions: AutomationRuleActions = {};
+
+  if (body.actionCategoryId !== undefined) {
+    actions.categoryId = String(body.actionCategoryId);
+  }
+
+  if (body.actionAccountId !== undefined) {
+    actions.accountId = String(body.actionAccountId);
+  }
+
+  if (body.actionCardId !== undefined) {
+    actions.cardId = String(body.actionCardId);
+  }
+
+  if (body.actionStatus !== undefined) {
+    actions.status = String(body.actionStatus) as AutomationRuleActions["status"];
+  }
+
+  return actions;
 }
 
 function hasConditionPayload(body: Readonly<Record<string, unknown>>): boolean {
