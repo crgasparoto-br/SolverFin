@@ -21,6 +21,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`
 - `docs/AI_REVIEW_QUEUE.md`
 - `docs/BANK_MESSAGE_INBOX.md`
+- `docs/AUTOMATION_RULES.md`
 - `docs/PAYABLES_RECEIVABLES.md`
 - `docs/API_PAYABLES_RECEIVABLES.md`
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
@@ -117,46 +118,46 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Inbox de mensagens bancarias
 
 - Dominio/API/persistencia: Parcial/Feito para fluxo inicial.
-- UI: Parcial/Feito para tela inicial.
+- UI: Parcial/Feito para tela inicial e fila de revisao integrada.
 - Testes: Parcial.
 - Documentacao: Feito em `docs/BANK_MESSAGE_INBOX.md`.
-- Nota: `/inbox` permite colar mensagem, confirmar consentimento, selecionar conta/categoria opcionais e gerar sugestao revisavel. O texto bruto e descartado apos normalizacao, hash e mascaramento.
+- Nota: `/inbox` permite colar mensagem, confirmar consentimento, selecionar conta/categoria opcionais, gerar sugestao revisavel e revisar sugestoes pendentes. O texto bruto e descartado apos normalizacao, hash e mascaramento.
 
 ### Deduplicacao
 
 - Dominio: Feito.
 - Schema/repository/API: Parcial/Feito para fluxo deterministico inicial em lotes CSV.
-- UI: Pendente para experiencia final amigavel.
+- UI: Parcial/Feito para revisao operacional via Inbox.
 - Testes: Parcial.
 - Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
-- Nota: `POST /api/import-batches/:importBatchId/detect-duplicates` cria sugestoes revisaveis `deduplication`/`reconciliation` em `AiSuggestion`. A aprovacao de duplicidade registra revisao, sem alterar lancamentos automaticamente.
+- Nota: `POST /api/import-batches/:importBatchId/detect-duplicates` cria sugestoes revisaveis `deduplication`/`reconciliation` em `AiSuggestion`. A Inbox lista as sugestoes e permite aprovar/rejeitar; aprovacao de duplicidade registra revisao, sem alterar lancamentos automaticamente.
 
 ### Conciliacao
 
 - Dominio: Feito.
 - Schema/repository/API: Parcial/Feito para conciliacao deterministica inicial via sugestoes revisaveis.
-- UI: Parcial; indicadores existem no extrato, mas falta experiencia operacional completa de revisao.
+- UI: Parcial/Feito para revisao operacional via Inbox; indicadores existem no extrato.
 - Testes: Parcial.
 - Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
-- Nota: aprovacao de sugestao `reconciliation` marca o lancamento alvo como `reconciled`, preenche `reconciledAt`/`aiSuggestionId` e registra auditoria minima.
+- Nota: aprovacao de sugestao `reconciliation` pela Inbox usa o endpoint deterministico, marca o lancamento alvo como `reconciled`, preenche `reconciledAt`/`aiSuggestionId` e registra auditoria minima.
 
 ### Regras automaticas
 
 - Dominio: Feito.
-- Schema/repository/API/UI: Pendente para cadastro e gestao operacional ampla.
+- Schema/repository/API/UI: Parcial/Feito para primeiro fluxo operacional revisavel.
 - Testes: Parcial.
-- Documentacao: Parcial.
-- Nota: existem regras deterministicas aplicaveis no dominio e parte do fluxo de deduplicacao/conciliacao usa `provider: solverfin-rule`, mas ainda falta cadastro de regras automaticas configuraveis pelo usuario.
+- Documentacao: Parcial/Atualizada em `docs/AUTOMATION_RULES.md`.
+- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configurações` permite criar, listar, inativar e executar regras. A aplicacao gera sugestoes `categorization` revisaveis com `provider: solverfin-automation`, sem efeito financeiro irreversivel automatico.
 
 ### IA / sugestoes revisaveis
 
 - Dominio: Feito.
 - Schema/migration: Parcial.
 - Repository/API: Parcial/Feito para fila de revisao.
-- UI: Pendente para uma experiencia final dedicada da fila.
+- UI: Parcial/Feito para revisao operacional na Inbox.
 - Testes: Parcial.
 - Documentacao: Feito em `docs/AI_REVIEW_QUEUE.md`.
-- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. Aprovacao com efeito financeiro automatico existe apenas para `transaction_extraction` com dados suficientes. Ainda nao ha chamada a provedor real de IA, payload estruturado completo em coluna propria nem assistente financeiro conversacional.
+- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. A Inbox permite aprovar/rejeitar sugestoes pendentes. Aprovacao com efeito financeiro automatico existe apenas para `transaction_extraction` com dados suficientes. Ainda nao ha chamada a provedor real de IA, payload estruturado completo em coluna propria nem assistente financeiro conversacional.
 
 ### Perfis financeiros / tenant operacional
 
@@ -178,8 +179,8 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 ### Configuracoes
 
-- UI: Parcial/Feito para estado inicial.
-- Nota: `/configuracoes` cobre gestao inicial de perfis financeiros. Pode evoluir para preferencias, privacidade, consentimentos, automacoes e parametros de IA.
+- UI: Parcial/Feito para estado inicial, perfis financeiros e regras automaticas.
+- Nota: `/configuracoes` cobre gestao inicial de perfis financeiros e regras automaticas. Pode evoluir para preferencias, privacidade, consentimentos, automacoes avancadas e parametros de IA.
 
 ## Operacoes visiveis na UI
 
@@ -254,9 +255,10 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Preview/aceite amigavel de importacao na UI: Nao.
 - Inbox de mensagens bancarias: Sim, fluxo inicial em `/inbox`.
 - Fila de revisao por API: Sim, em `/api/ai-review-queue`.
-- Fila de revisao dedicada na UI: Pendente.
+- Fila de revisao na UI: Parcial, integrada na Inbox.
 - Deduplicacao/conciliacao deterministica por API: Sim, para lote CSV.
-- Cadastro de regras automaticas pelo usuario: Pendente.
+- Revisao de deduplicacao/conciliacao na UI: Sim, via Inbox.
+- Cadastro de regras automaticas pelo usuario: Sim, fluxo inicial em Configuracoes.
 - Provedor real de IA: Pendente.
 
 ## Ambiguidades e encaminhamentos
@@ -266,12 +268,12 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Autenticacao produtiva tem ADR aceita, mas provider real e sessao persistente ainda precisam ser implementados.
 - Gestao de perfis financeiros existe em `/configuracoes`, mas seletor global persistido e multiusuario avancado seguem fora do fluxo atual.
 - A transicao de `PayableReceivable` tem plano documentado, mas o dominio/API legado permanece por compatibilidade.
-- Importacao, deduplicacao, conciliacao, inbox e fila revisavel ja possuem primeiras APIs/fluxos; a principal lacuna agora e a experiencia web completa e a politica operacional final de privacidade/retencao.
+- Importacao, deduplicacao, conciliacao, inbox, regras automaticas e fila revisavel ja possuem primeiras APIs/fluxos; as principais lacunas agora sao preview de importacao amigavel, OFX operacional, payload estruturado completo das sugestoes e politica operacional final de privacidade/retencao.
 
 ## Proximas implementacoes sugeridas
 
-1. Criar UI de preview/revisao para importacoes CSV e sugestoes de deduplicacao/conciliacao.
-2. Evoluir a fila de revisao de sugestoes para uma tela operacional amigavel.
+1. Criar UI de preview/revisao especifica para importacoes CSV antes da fila geral.
+2. Evoluir payload estruturado de `AiSuggestion` para aplicar categorizacao e regras com efeito especifico apos revisao.
 3. Implementar relatorios iniciais no lugar do placeholder.
 4. Adicionar consulta historica dedicada de parcelas por recorrencia.
 5. Evoluir telas dedicadas de detalhe/uso para contas, categorias, lancamentos, cartoes e orcamentos.
