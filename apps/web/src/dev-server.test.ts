@@ -19,8 +19,7 @@ accountsCardsRouteRendersMasterPage();
 adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu();
 accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
 accountsCardsDirectEnhancementIsInjectedOnce();
-accountsCardsAdditionalButtonUsesDirectController();
-accountsCardsEditAdditionalSubmitIsCapturedDirectly();
+accountsCardsEnhancementKeepsOnlyActiveFilter();
 accountAndCardInstitutionSelectsUseGlobalCatalog();
 institutionIconsUseExplicitLogoSources();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
@@ -115,50 +114,26 @@ function accountsCardsDirectEnhancementIsInjectedOnce(): void {
 
   assert.match(enhanced, /data-accounts-cards-direct-enhancement/);
   assert.equal((enhancedAgain.match(/data-accounts-cards-direct-enhancement/g) ?? []).length, 1);
-  assert.match(enhanced, /installCardFormHandlers\(\)/);
-  assert.match(enhanced, /form\.onsubmit = \(event\) =>/);
-  assert.match(enhanced, /document\.addEventListener\("submit"/);
+  assert.match(enhanced, /activeFilterStorageKey/);
+  assert.match(enhanced, /wireActiveFilter\(\)/);
+  assert.doesNotMatch(enhanced, /card-additional-links/);
+  assert.doesNotMatch(enhanced, /installCardFormHandlers/);
 }
 
-function accountsCardsAdditionalButtonUsesDirectController(): void {
+function accountsCardsEnhancementKeepsOnlyActiveFilter(): void {
   const html =
-    '<html><body><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
+    '<html><body><div class="master-actions" aria-label="Ações principais">\n          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>\n        </div>\n        <div class="filter-row">\n          <label>Status\n            <select data-master-status>\n              <option value="all">Todos</option>\n              <option value="active">Ativos</option>\n              <option value="inactive">Inativos</option>\n            </select>\n          </label>\n        </div><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador<input name="maskedIdentifier" /></label>\n        <button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
   const enhanced = enhanceAccountsCardsTabs(html);
 
-  assert.match(enhanced, />\+ adicional<\/button>/);
-  assert.match(enhanced, /Cartões vinculados/);
-  assert.match(enhanced, /additional-card-save/);
-  assert.match(enhanced, /additional-card-actions/);
-  assert.match(enhanced, /additional-card-saved-list/);
-  assert.match(enhanced, /cardLinksApiPath = "\/api\/card-additional-links"/);
-  assert.match(enhanced, /Definir principal/);
-  assert.match(enhanced, /additional-card-primary-marker/);
-  assert.match(enhanced, /addAdditionalRow\(addButton\)/);
-  assert.match(enhanced, /loadSavedCards\(\)/);
-  assert.doesNotMatch(enhanced, /event\.defaultPrevented/);
-  assert.doesNotMatch(enhanced, /\?\./);
-}
-
-function accountsCardsEditAdditionalSubmitIsCapturedDirectly(): void {
-  const html =
-    '<html><body><dialog id="edit-card-dialog-card-1"><form data-api-form data-api-method="PATCH" data-api-path="/api/cards/card-1" class="edit-grid"><label>Identificador mascarado<input name="maskedIdentifier" value="final 1234" placeholder="Ex.: final 9876" /></label>\n        <button type="submit">Salvar cartão</button></form></dialog><section data-tab-panel="accounts"></section></body></html>';
-  const enhanced = enhanceAccountsCardsTabs(html);
-
-  assert.match(enhanced, /data-api-path="\/api\/cards\/card-1"/);
-  assert.match(enhanced, /data-additional-card-add/);
-  assert.match(enhanced, /form\.addEventListener\("submit", \(event\) =>/);
-  assert.match(enhanced, /submitCardForm\(event, form\)/);
-  assert.match(
-    enhanced,
-    /sendJson\(cardLinksApiPath, "POST", \{ groupCardId, cardId: additionalCard\.id \}\)/,
-  );
-  assert.match(
-    enhanced,
-    /status\.textContent = isEdit \? "Cartão salvo\." : "Cartão criado\. Atualizando a tela\.\.\."/,
-  );
-  assert.match(enhanced, /await loadSavedCards\(\)/);
-  assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
-  assert.doesNotMatch(enhanced, /window\.location\.reload\(\)/);
+  assert.match(enhanced, /active-filter-switch/);
+  assert.match(enhanced, /Exibir apenas ativos/);
+  assert.doesNotMatch(enhanced, /data-master-status/);
+  assert.doesNotMatch(enhanced, /Cartões vinculados/);
+  assert.doesNotMatch(enhanced, /data-additional-card-add/);
+  assert.doesNotMatch(enhanced, /additional-card-save/);
+  assert.doesNotMatch(enhanced, /cardLinksApiPath/);
+  assert.doesNotMatch(enhanced, /\/api\/card-additional-links/);
+  assert.doesNotMatch(enhanced, /Definir principal/);
 }
 
 function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
