@@ -5,6 +5,7 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
 import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
+import { handleAutomationRulesApiRequest } from "./automation-rules-router.js";
 import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js";
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
@@ -98,6 +99,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (aiReviewQueueResult) {
       writeResponse(response, aiReviewQueueResult);
+
+      return;
+    }
+
+    const automationRulesResult = await handleAutomationRulesApiRequest(apiRequest);
+
+    if (automationRulesResult) {
+      writeResponse(response, automationRulesResult);
 
       return;
     }
@@ -239,11 +248,11 @@ async function readJsonBody(request: IncomingMessage): Promise<unknown> {
 
 function normalizeHeaders(
   headers: IncomingMessage["headers"],
-): Readonly<Record<string, string | undefined>> {
+): Record<string, string | undefined> {
   const normalized: Record<string, string | undefined> = {};
 
   for (const [key, value] of Object.entries(headers)) {
-    normalized[key] = Array.isArray(value) ? value[0] : value;
+    normalized[key.toLowerCase()] = Array.isArray(value) ? value.join(", ") : value;
   }
 
   return normalized;
