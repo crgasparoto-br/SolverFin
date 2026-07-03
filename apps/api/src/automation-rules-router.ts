@@ -37,10 +37,7 @@ const ALLOWED_ACTION_STATUSES: readonly AutomationActionStatus[] = [
   "suggested",
   "voided",
   "pending_review",
-  "approved",
-  "edited",
-  "rejected",
-  "discarded",
+  "duplicate",
 ];
 
 route("GET", BASE_PATH, listAutomationRulesHandler);
