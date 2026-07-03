@@ -205,25 +205,45 @@ function renderCardInstrumentList(card: CreditCardAccountRecord): string {
 
   return `
     <div class="instrument-list" aria-label="Instrumentos de ${escapeHtml(card.name)}">
-      ${card.instruments.map(renderCardInstrumentItem).join("")}
+      ${card.instruments.map((instrument) => renderCardInstrumentItem(card, instrument)).join("")}
     </div>
   `;
 }
 
-function renderCardInstrumentItem(instrument: CardInstrumentRecord): string {
+function renderCardInstrumentItem(
+  card: CreditCardAccountRecord,
+  instrument: CardInstrumentRecord,
+): string {
   const title =
     instrument.name?.trim() ||
     `${formatInstrumentType(instrument.type)} ${formatInstrumentHolder(instrument.holder).toLowerCase()}`;
+  const isActive = instrument.status === "active";
+  const escapedTitle = escapeHtml(title);
+  const setDefaultAction =
+    isActive && !instrument.isDefault
+      ? `<form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/default-instrument" class="inline-action-form">
+          <input type="hidden" name="instrumentId" value="${escapeHtml(instrument.id)}" />
+          <button type="submit" class="icon-button" aria-label="Definir ${escapedTitle} como default">${renderDefaultIcon()}</button>
+        </form>`
+      : "";
+  const archiveAction = isActive
+    ? `<form data-api-form data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}/archive" data-confirm="Arquivar ${escapedTitle}? Ele continuará visível para acompanhamento, mas não poderá receber novas compras." class="inline-action-form">
+        <button type="submit" class="icon-button danger-icon-button" aria-label="Arquivar ${escapedTitle}">${renderArchiveIcon()}</button>
+      </form>`
+    : "";
 
   return `
     <div class="instrument-item" data-card-instrument>
       <div>
-        <strong>${escapeHtml(title)}</strong>
+        <strong>${escapedTitle}</strong>
         <p class="instrument-meta">${escapeHtml(formatInstrumentType(instrument.type))} · ${escapeHtml(formatInstrumentHolder(instrument.holder))}${instrument.maskedIdentifier ? ` · ${escapeHtml(instrument.maskedIdentifier)}` : ""}${instrument.creditLimitMinor !== undefined ? ` · limite ${formatMoney(instrument.creditLimitMinor)}` : ""}</p>
       </div>
-      <div class="instrument-tags">
-        ${instrument.isDefault ? `<span class="instrument-pill">Default</span>` : ""}
-        <span class="instrument-pill ${instrument.status === "archived" ? "is-archived" : ""}">${escapeHtml(formatGenericStatus(instrument.status))}</span>
+      <div class="instrument-side">
+        <div class="instrument-tags">
+          ${instrument.isDefault ? `<span class="instrument-pill">Default</span>` : ""}
+          <span class="instrument-pill ${instrument.status === "archived" ? "is-archived" : ""}">${escapeHtml(formatGenericStatus(instrument.status))}</span>
+        </div>
+        ${setDefaultAction || archiveAction ? `<div class="instrument-actions" aria-label="Ações de ${escapedTitle}">${setDefaultAction}${archiveAction}</div>` : ""}
       </div>
     </div>
   `;
@@ -639,6 +659,10 @@ function renderArchiveIcon(): string {
   return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M5 5h14v4H5V5zm2 6h10v8H7v-8zm2 2v4h6v-4H9zM7 7v1h10V7H7z" fill="currentColor"/></svg>`;
 }
 
+function renderDefaultIcon(): string {
+  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z" fill="currentColor"/></svg>`;
+}
+
 function renderCardBrandIcon(key: string): string {
   if (key === "visa")
     return `<svg class="brand-icon card-brand-icon" viewBox="0 0 44 44" role="img"><rect x="6" y="11" width="32" height="22" rx="6" fill="#fff"/><path d="M11 26h5.2l3.1-8h-4.2l-1.4 4.8-1.5-4.8H8l3 8zm10.2 0h4l1.4-8h-4l-1.4 8zm6.1 0h8.8l.7-3.1h-4.7l4.1-4.9h-8.4l-.7 3.1h4.1L27.3 26z" fill="#1a1f71"/><path d="M31.7 15h5.7l-1 2.5h-5.7l1-2.5z" fill="#f7b600"/></svg>`;
@@ -758,12 +782,13 @@ function baseCss(): string {
     .item-main { display: grid; gap: 5px; min-width: 0; } .item-main p { color: var(--muted); line-height: 1.45; } .item-title-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; } .amount-stack { display: grid; gap: 3px; justify-items: end; text-align: right; white-space: nowrap; } .amount-stack span { color: var(--muted); font-size: .76rem; font-weight: 800; text-transform: uppercase; } .amount-stack strong { color: var(--text); }
     .instrument-list { border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 0; margin-top: 6px; overflow: hidden; } .instrument-list.is-empty { padding: 10px 12px; }
     .instrument-item { align-items: center; background: var(--surface-soft); border-top: 1px solid var(--line); display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; } .instrument-item:first-child { border-top: 0; } .instrument-meta { font-size: .88rem; }
-    .instrument-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; } .instrument-pill { background: #e0f2fe; border-radius: 999px; color: #075985; font-size: .72rem; font-weight: 800; padding: 4px 8px; white-space: nowrap; } .instrument-pill.is-archived { background: #f1f5f9; color: #475569; }
+    .instrument-side { display: grid; gap: 8px; justify-items: end; } .instrument-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; } .instrument-pill { background: #e0f2fe; border-radius: 999px; color: #075985; font-size: .72rem; font-weight: 800; padding: 4px 8px; white-space: nowrap; } .instrument-pill.is-archived { background: #f1f5f9; color: #475569; }
+    .instrument-actions { display: flex; gap: 6px; justify-content: flex-end; } .instrument-actions .icon-button { min-height: 36px; width: 36px; }
     .item-actions { display: flex; gap: 8px; justify-content: flex-end; } .inline-action-form { display: block; gap: 0; } .icon-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 44px; padding: 0; width: 44px; } .danger-icon-button { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 20px; width: 20px; }
     .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
     .filter-empty-state { margin-top: 4px; }
     .master-dialog { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 760px; padding: 20px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.38); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 12px; } .dialog-heading { display: grid; gap: 4px; }
     @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .master-heading { align-items: stretch; display: grid; } .master-item { grid-template-columns: 44px minmax(0, 1fr) auto; } .item-actions { grid-column: 2 / -1; justify-content: flex-start; } }
-    @media (max-width: 760px) { h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading, .instrument-item { display: grid; grid-template-columns: 1fr; } .item-actions { grid-column: auto; justify-content: flex-start; } .instrument-tags { justify-content: flex-start; } .amount-stack { justify-items: start; text-align: left; white-space: normal; } }
+    @media (max-width: 760px) { h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading, .instrument-item { display: grid; grid-template-columns: 1fr; } .item-actions { grid-column: auto; justify-content: flex-start; } .instrument-side { justify-items: start; } .instrument-tags, .instrument-actions { justify-content: flex-start; } .amount-stack { justify-items: start; text-align: left; white-space: normal; } }
   `;
 }
