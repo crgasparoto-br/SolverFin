@@ -6,8 +6,7 @@ const originalFetch = globalThis.fetch;
 
 await cardsPageRendersInvoiceWorkspace();
 await cardsPageDisablesPaymentForSettledInvoices();
-await cardsPageAggregatesFamilyCardTotals();
-await cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard();
+await cardsPageUsesOnlySelectedCardInvoice();
 
 globalThis.fetch = originalFetch;
 
@@ -62,10 +61,6 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
 
     if (url.pathname === "/api/categories") {
       return jsonResponse({ categories: [{ id: "category-1", name: "Mercado" }] });
-    }
-
-    if (url.pathname === "/api/card-additional-links") {
-      return jsonResponse({ links: [] });
     }
 
     if (url.pathname === "/api/invoices/invoice-1/summary") {
@@ -200,6 +195,8 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.doesNotMatch(html, /\/recorrencias/);
   assert.doesNotMatch(html, /\/pagar-receber/);
   assert.doesNotMatch(html, /name="kind"/, "card recurrences should not expose a kind field");
+  assert.doesNotMatch(html, /name="purchaseCardId"/);
+  assert.equal(calledPaths.includes("/api/card-additional-links"), false);
 
   const recurrencesIndex = calledPaths.indexOf("/api/recurrences");
   const purchasesIndex = calledPaths.indexOf("/api/invoices/invoice-1/purchases");
@@ -251,10 +248,6 @@ async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
       return jsonResponse({ categories: [] });
     }
 
-    if (url.pathname === "/api/card-additional-links") {
-      return jsonResponse({ links: [] });
-    }
-
     if (url.pathname === "/api/invoices/invoice-paid/summary") {
       return jsonResponse({
         summary: {
@@ -296,106 +289,12 @@ async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
   assert.doesNotMatch(html, /\/pagar-receber/);
 }
 
-async function cardsPageAggregatesFamilyCardTotals(): Promise<void> {
+async function cardsPageUsesOnlySelectedCardInvoice(): Promise<void> {
+  const calledPaths: string[] = [];
+
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input));
-
-    if (url.pathname === "/api/cards") {
-      return jsonResponse({
-        cards: [
-          { id: "card-1", name: "Cartão Principal", status: "active", closingDay: 20, dueDay: 10 },
-          { id: "card-2", name: "Cartão Adicional", status: "active", closingDay: 20, dueDay: 10 },
-        ],
-      });
-    }
-
-    if (url.pathname === "/api/invoices") {
-      return jsonResponse({
-        invoices: [
-          {
-            id: "invoice-1",
-            cardId: "card-1",
-            status: "open",
-            periodStartOn: "2026-06-01",
-            periodEndOn: "2026-06-20",
-            dueOn: "2026-07-10",
-            totalAmountMinor: 5000,
-          },
-        ],
-      });
-    }
-
-    if (url.pathname === "/api/card-additional-links") {
-      return jsonResponse({
-        links: [
-          { groupCardId: "card-1", cardId: "card-1", isPrimary: true },
-          { groupCardId: "card-1", cardId: "card-2", isPrimary: false },
-        ],
-      });
-    }
-
-    if (url.pathname === "/api/invoices/invoice-1/summary") {
-      return jsonResponse({
-        summary: {
-          invoiceId: "invoice-1",
-          financialProfileId: "profile-1",
-          cardId: "card-1",
-          cardName: "Cartão Principal",
-          status: "open",
-          periodStartOn: "2026-06-01",
-          closingOn: "2026-06-20",
-          dueOn: "2026-07-10",
-          previousBalanceMinor: 0,
-          totalExpensesMinor: 5000,
-          totalPaidMinor: 0,
-          amountDueMinor: 5000,
-          reconciledExpensesMinor: 0,
-          unreconciledExpensesMinor: 5000,
-          purchasesCount: 1,
-          cardTotals: [
-            {
-              cardId: "card-1",
-              cardName: "Cartão Principal",
-              limitTotalMinor: 200000,
-              limitUsedMinor: 5000,
-              limitAvailableMinor: 195000,
-              invoiceTotalMinor: 5000,
-              invoiceAmountDueMinor: 5000,
-            },
-            {
-              cardId: "card-2",
-              cardName: "Cartão Adicional",
-              limitTotalMinor: 50000,
-              limitUsedMinor: 0,
-              limitAvailableMinor: 50000,
-              invoiceTotalMinor: 0,
-              invoiceAmountDueMinor: 0,
-            },
-          ],
-        },
-      });
-    }
-
-    if (url.pathname === "/api/invoices/invoice-1/purchases") {
-      return jsonResponse({ purchases: [] });
-    }
-
-    if (url.pathname === "/api/recurrences") {
-      return jsonResponse({ recurrences: [] });
-    }
-
-    return jsonResponse({});
-  };
-
-  const html = await renderCardsPage("session-token");
-
-  assert.match(html, /Cartão Adicional/);
-  assert.match(html, /name="purchaseCardId"/);
-}
-
-async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Promise<void> {
-  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
-    const url = new URL(String(input));
+    calledPaths.push(url.pathname);
 
     if (url.pathname === "/api/cards") {
       return jsonResponse({
@@ -431,15 +330,6 @@ async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Prom
       });
     }
 
-    if (url.pathname === "/api/card-additional-links") {
-      return jsonResponse({
-        links: [
-          { groupCardId: "card-1", cardId: "card-1", isPrimary: true },
-          { groupCardId: "card-1", cardId: "card-2", isPrimary: false },
-        ],
-      });
-    }
-
     if (url.pathname === "/api/invoices/invoice-2/summary") {
       return jsonResponse({
         summary: {
@@ -457,17 +347,8 @@ async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Prom
           amountDueMinor: 3000,
           reconciledExpensesMinor: 0,
           unreconciledExpensesMinor: 3000,
-          purchasesCount: 2,
+          purchasesCount: 1,
           cardTotals: [
-            {
-              cardId: "card-1",
-              cardName: "Cartão Principal",
-              limitTotalMinor: 200000,
-              limitUsedMinor: 5000,
-              limitAvailableMinor: 195000,
-              invoiceTotalMinor: 5000,
-              invoiceAmountDueMinor: 5000,
-            },
             {
               cardId: "card-2",
               cardName: "Cartão C6",
@@ -483,21 +364,7 @@ async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Prom
     }
 
     if (url.pathname === "/api/invoices/invoice-1/purchases") {
-      return jsonResponse({
-        purchases: [
-          {
-            id: "purchase-1",
-            financialProfileId: "profile-1",
-            cardId: "card-1",
-            invoiceId: "invoice-1",
-            occurredOn: "2026-06-10",
-            description: "Compra no principal",
-            amountMinor: 5000,
-            currency: "BRL",
-            status: "posted",
-          },
-        ],
-      });
+      throw new Error("Should not fetch purchases for another card invoice");
     }
 
     if (url.pathname === "/api/invoices/invoice-2/purchases") {
@@ -509,7 +376,7 @@ async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Prom
             cardId: "card-2",
             invoiceId: "invoice-2",
             occurredOn: "2026-06-12",
-            description: "Compra no adicional",
+            description: "Compra no cartão selecionado",
             amountMinor: 3000,
             currency: "BRL",
             status: "posted",
@@ -518,7 +385,16 @@ async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Prom
       });
     }
 
+    if (url.pathname === "/api/accounts") {
+      return jsonResponse({ accounts: [] });
+    }
+
+    if (url.pathname === "/api/categories") {
+      return jsonResponse({ categories: [] });
+    }
+
     if (url.pathname === "/api/recurrences") {
+      assert.equal(url.searchParams.get("cardId"), "card-2");
       return jsonResponse({ recurrences: [] });
     }
 
@@ -531,15 +407,12 @@ async function cardsPageMergesFamilyPurchasesWhenSelectingAdditionalCard(): Prom
   );
 
   assert.match(html, /Fatura de Cartão C6/);
-  assert.match(html, /Fatura consolidada com os cartões adicionais do grupo\./);
-  assert.match(html, /Compra no principal/);
-  assert.match(html, /Compra no adicional/);
-  assert.match(html, /<details class="purchase-group" open>/);
-  assert.match(html, /purchase-group-name">Cartão Principal<\/span>/);
-  assert.match(html, /purchase-group-name">Cartão C6<\/span>/);
-  assert.match(html, /class="muted">1 compra<\/span>/);
-  assert.match(html, /<strong class="debit">[^<]*50,00<\/strong>/);
-  assert.match(html, /<strong class="debit">[^<]*30,00<\/strong>/);
+  assert.match(html, /Compra no cartão selecionado/);
+  assert.doesNotMatch(html, /Compra no principal/);
+  assert.doesNotMatch(html, /Fatura consolidada com os cartões adicionais do grupo/);
+  assert.doesNotMatch(html, /name="purchaseCardId"/);
+  assert.equal(calledPaths.includes("/api/card-additional-links"), false);
+  assert.equal(calledPaths.includes("/api/invoices/invoice-1/purchases"), false);
 }
 
 function jsonResponse(body: unknown): Response {
