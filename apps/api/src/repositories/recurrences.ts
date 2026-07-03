@@ -39,6 +39,7 @@ interface RecurrenceRow {
   financialProfileId: string;
   accountId: string | null;
   cardId: string | null;
+  cardInstrumentId: string | null;
   categoryId: string | null;
   status: string;
   kind: string;
@@ -61,6 +62,7 @@ interface InstallmentRow {
   financialProfileId: string;
   recurrenceId: string | null;
   cardId: string | null;
+  cardInstrumentId: string | null;
   status: string;
   sequenceNumber: number;
   totalInstallments: number;
@@ -71,11 +73,11 @@ interface InstallmentRow {
   updatedAt: Date;
 }
 
-const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "cardId", "categoryId",
+const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId",
   "status", "kind", "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
-const INSTALLMENT_COLUMNS = `"id", "organizationId", "financialProfileId", "recurrenceId", "cardId",
+const INSTALLMENT_COLUMNS = `"id", "organizationId", "financialProfileId", "recurrenceId", "cardId", "cardInstrumentId",
   "status", "sequenceNumber", "totalInstallments", "dueOn", "amountMinor", "currency", "createdAt", "updatedAt"`;
 
 export async function listRecurrencesForContext(
@@ -229,9 +231,9 @@ export async function generateInstallmentsForContext(
     for (const installment of result.installments) {
       await executeQuery(
         `insert into "Installment"
-          ("id", "organizationId", "financialProfileId", "recurrenceId", "cardId", "status",
+          ("id", "organizationId", "financialProfileId", "recurrenceId", "cardId", "cardInstrumentId", "status",
            "sequenceNumber", "totalInstallments", "dueOn", "amountMinor", "currency", "createdAt", "updatedAt")
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
         buildInstallmentParams(installment),
       );
     }
@@ -249,6 +251,9 @@ export async function generateInstallmentsForContext(
         occurredOn: installment.dueOn,
         amountMinor: installment.amountMinor,
         description: recurrence.description,
+        ...(recurrence.cardInstrumentId !== undefined
+          ? { cardInstrumentId: recurrence.cardInstrumentId }
+          : {}),
         ...(recurrence.categoryId !== undefined ? { categoryId: recurrence.categoryId } : {}),
       });
       // registerCardPurchaseForContext does not know about recurrences, so backfill the
@@ -318,14 +323,14 @@ async function persistRecurrenceMutation(result: RecurrenceMutationResult): Prom
   await withTransaction(async (executeQuery) => {
     await executeQuery(
       `insert into "Recurrence"
-        ("id", "organizationId", "financialProfileId", "accountId", "cardId", "categoryId", "status", "kind",
+        ("id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId", "status", "kind",
          "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description", "createdAt",
          "updatedAt", "createdByUserId", "updatedByUserId")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
        on conflict ("id") do update set
-         "accountId" = excluded."accountId", "cardId" = excluded."cardId", "categoryId" = excluded."categoryId",
-         "status" = excluded."status", "kind" = excluded."kind", "frequency" = excluded."frequency",
-         "interval" = excluded."interval", "startOn" = excluded."startOn",
+         "accountId" = excluded."accountId", "cardId" = excluded."cardId", "cardInstrumentId" = excluded."cardInstrumentId",
+         "categoryId" = excluded."categoryId", "status" = excluded."status", "kind" = excluded."kind",
+         "frequency" = excluded."frequency", "interval" = excluded."interval", "startOn" = excluded."startOn",
          "endOn" = excluded."endOn", "amountMinor" = excluded."amountMinor", "currency" = excluded."currency",
          "description" = excluded."description", "updatedAt" = excluded."updatedAt",
          "updatedByUserId" = excluded."updatedByUserId"`,
@@ -342,6 +347,7 @@ function buildRecurrenceParams(recurrence: Recurrence): unknown[] {
     recurrence.financialProfileId,
     recurrence.accountId ?? null,
     recurrence.cardId ?? null,
+    recurrence.cardInstrumentId ?? null,
     recurrence.categoryId ?? null,
     recurrence.status.toUpperCase(),
     recurrence.kind.toUpperCase(),
@@ -361,10 +367,10 @@ function buildRecurrenceParams(recurrence: Recurrence): unknown[] {
 
 function buildInsertRecurrenceTransactionSql(): string {
   return `insert into "Transaction"
-    ("id", "organizationId", "financialProfileId", "accountId", "cardId", "categoryId", "recurrenceId",
+    ("id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId", "recurrenceId",
      "installmentId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
      "description", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`;
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
 }
 
 function buildRecurrenceTransactionParams(transaction: Transaction): unknown[] {
@@ -374,6 +380,7 @@ function buildRecurrenceTransactionParams(transaction: Transaction): unknown[] {
     transaction.financialProfileId,
     transaction.accountId ?? null,
     transaction.cardId ?? null,
+    transaction.cardInstrumentId ?? null,
     transaction.categoryId ?? null,
     transaction.recurrenceId ?? null,
     transaction.installmentId ?? null,
@@ -399,6 +406,7 @@ function buildInstallmentParams(installment: Installment): unknown[] {
     installment.financialProfileId,
     installment.recurrenceId ?? null,
     installment.cardId ?? null,
+    installment.cardInstrumentId ?? null,
     installment.status.toUpperCase(),
     installment.sequenceNumber,
     installment.totalInstallments,
@@ -563,6 +571,7 @@ function mapRecurrenceRow(row: RecurrenceRow): Recurrence {
 
   if (row.accountId !== null) recurrence.accountId = row.accountId;
   if (row.cardId !== null) recurrence.cardId = row.cardId;
+  if (row.cardInstrumentId !== null) recurrence.cardInstrumentId = row.cardInstrumentId;
   if (row.categoryId !== null) recurrence.categoryId = row.categoryId;
   if (row.endOn !== null) recurrence.endOn = toDateOnly(row.endOn);
   if (row.createdByUserId !== null) recurrence.createdByUserId = row.createdByUserId;
@@ -588,6 +597,7 @@ function mapInstallmentRow(row: InstallmentRow): Installment {
 
   if (row.recurrenceId !== null) installment.recurrenceId = row.recurrenceId;
   if (row.cardId !== null) installment.cardId = row.cardId;
+  if (row.cardInstrumentId !== null) installment.cardInstrumentId = row.cardInstrumentId;
 
   return installment;
 }
