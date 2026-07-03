@@ -155,6 +155,23 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
     assert.match(html, /Virtual · Adicional · \*\*\*\* 2222 · limite/);
     assert.match(html, /1\.000,00/);
     assert.match(html, />Default<\/span>/);
+    assert.match(html, /aria-label="Adicionar instrumento em Cartão C6"/);
+    assert.match(html, /data-open-dialog="new-card-instrument-dialog-card-c6"/);
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/instruments"/);
+    assert.match(html, /<label>Tipo<select name="type" required>/);
+    assert.match(html, /<label>Titularidade<select name="holder" required>/);
+    assert.match(html, /<button type="submit">Criar instrumento<\/button>/);
+    assert.match(html, /aria-label="Editar instrumento Físico titular"/);
+    assert.match(html, /aria-label="Editar instrumento Virtual adicional"/);
+    assert.match(
+      html,
+      /data-api-path="\/api\/credit-card-instruments\/instrument-physical"/,
+    );
+    assert.match(
+      html,
+      /data-api-path="\/api\/credit-card-instruments\/instrument-virtual"/,
+    );
+    assert.match(html, /<button type="submit">Salvar instrumento<\/button>/);
     assert.equal(
       (html.match(/\/api\/credit-card-accounts\/card-c6\/default-instrument/g) ?? []).length,
       1,
