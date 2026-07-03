@@ -12,7 +12,7 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
   return keepCardInstrumentsInsideEditDialog(html);
 }
 
-function keepCardInstrumentsInsideEditDialog(html: string): string {
+export function keepCardInstrumentsInsideEditDialog(html: string): string {
   const createDialogs = collectCreateInstrumentDialogs(html);
   let nextHtml = html;
 
