@@ -62,11 +62,7 @@ async function runRejectsAccountUsedAsCardPaymentAccount(token: string): Promise
   assert.equal(cardResponse.statusCode, 201);
   const card = readCreditCardAccount(cardResponse);
 
-  const blockedDeleteResponse = await apiRequest(
-    token,
-    "DELETE",
-    `/api/accounts/${account.id}`,
-  );
+  const blockedDeleteResponse = await apiRequest(token, "DELETE", `/api/accounts/${account.id}`);
 
   assert.equal(blockedDeleteResponse.statusCode, 400);
   assert.equal(readErrorCode(blockedDeleteResponse), "ACCOUNT_IN_USE");
@@ -78,11 +74,7 @@ async function runRejectsAccountUsedAsCardPaymentAccount(token: string): Promise
   );
   assert.equal(cardDeleteResponse.statusCode, 200);
 
-  const accountDeleteResponse = await apiRequest(
-    token,
-    "DELETE",
-    `/api/accounts/${account.id}`,
-  );
+  const accountDeleteResponse = await apiRequest(token, "DELETE", `/api/accounts/${account.id}`);
   assert.equal(accountDeleteResponse.statusCode, 200);
 }
 
