@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 
-import { handleCardAdditionalLinksApiRequest } from "./card-additional-links-router.js";
 import { closePool } from "./db.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
@@ -28,7 +27,7 @@ async function main(): Promise<void> {
   const payablesReceivables = await createPersonalPayablesReceivablesFlow(token, fixtures);
   const importBatch = await createPersonalCsvImportFlow(token, fixtures);
   const cardInvoice = await createPersonalCardInvoiceFlow(token, fixtures);
-  await createCardAdditionalLinksSummaryFlow(token, fixtures);
+  await assertCardAdditionalLinksRouteIsRetired(token);
   await createCardRecurrenceFlow(token, fixtures);
 
   await assertPersonalProfileListsOnlyPersonalData(
@@ -378,117 +377,17 @@ async function createPersonalCardInvoiceFlow(
   };
 }
 
-async function createCardAdditionalLinksSummaryFlow(
-  token: string,
-  fixtures: Pick<PersonalFixtures, "account">,
-): Promise<void> {
-  const suffix = Date.now().toString(36);
+async function assertCardAdditionalLinksRouteIsRetired(token: string): Promise<void> {
+  const listResponse = await apiRequest(token, "GET", "/api/card-additional-links");
+  assert.equal(listResponse.statusCode, 404);
+  assert.equal(readErrorCode(listResponse), "API_ROUTE_NOT_FOUND");
 
-  const primaryCardResponse = await apiRequest(token, "POST", "/api/cards", {
-    name: `Cartao principal familia ${suffix}`,
-    closingDay: 20,
-    dueDay: 10,
-    creditLimitMinor: 200000,
-    paymentAccountId: fixtures.account.id,
+  const createResponse = await apiRequest(token, "POST", "/api/card-additional-links", {
+    groupCardId: "00000000-0000-4000-8000-000000000001",
+    cardId: "00000000-0000-4000-8000-000000000002",
   });
-  assert.equal(primaryCardResponse.statusCode, 201);
-  const primaryCard = readBody<{ card: ApiCard }>(primaryCardResponse).card;
-
-  const additionalCardResponse = await apiRequest(token, "POST", "/api/cards", {
-    name: `Cartao adicional familia ${suffix}`,
-    closingDay: 20,
-    dueDay: 10,
-    creditLimitMinor: 50000,
-    paymentAccountId: fixtures.account.id,
-  });
-  assert.equal(additionalCardResponse.statusCode, 201);
-  const additionalCard = readBody<{ card: ApiCard }>(additionalCardResponse).card;
-
-  const unlinkedCardResponse = await apiRequest(token, "POST", "/api/cards", {
-    name: `Cartao sem vinculo familia ${suffix}`,
-    closingDay: 20,
-    dueDay: 10,
-    creditLimitMinor: 30000,
-    paymentAccountId: fixtures.account.id,
-  });
-  assert.equal(unlinkedCardResponse.statusCode, 201);
-  const unlinkedCard = readBody<{ card: ApiCard }>(unlinkedCardResponse).card;
-
-  const linkResponse = await apiRequest(token, "POST", "/api/card-additional-links", {
-    groupCardId: primaryCard.id,
-    cardId: additionalCard.id,
-  });
-  assert.equal(linkResponse.statusCode, 201);
-
-  const primaryPurchaseResponse = await apiRequest(
-    token,
-    "POST",
-    `/api/cards/${primaryCard.id}/purchases`,
-    {
-      occurredOn: "2026-06-19",
-      amountMinor: 5000,
-      description: `Compra principal familia ${suffix}`,
-    },
-  );
-  assert.equal(primaryPurchaseResponse.statusCode, 201);
-  const primaryPurchase = readBody<{ invoice: ApiInvoice }>(primaryPurchaseResponse);
-
-  const additionalPurchaseResponse = await apiRequest(
-    token,
-    "POST",
-    `/api/cards/${additionalCard.id}/purchases`,
-    {
-      occurredOn: "2026-06-19",
-      amountMinor: 1500,
-      description: `Compra adicional familia ${suffix}`,
-    },
-  );
-  assert.equal(additionalPurchaseResponse.statusCode, 201);
-
-  const unlinkedPurchaseResponse = await apiRequest(
-    token,
-    "POST",
-    `/api/cards/${unlinkedCard.id}/purchases`,
-    {
-      occurredOn: "2026-06-19",
-      amountMinor: 999,
-      description: `Compra sem vinculo familia ${suffix}`,
-    },
-  );
-  assert.equal(unlinkedPurchaseResponse.statusCode, 201);
-
-  const summaryResponse = await apiRequest(
-    token,
-    "GET",
-    `/api/invoices/${primaryPurchase.invoice.id}/summary`,
-  );
-  assert.equal(summaryResponse.statusCode, 200);
-  const summary = readBody<{ summary: ApiInvoiceSummary }>(summaryResponse).summary;
-
-  assert.equal(summary.cardTotals.length, 2);
-  const primaryTotal = summary.cardTotals.find((total) => total.cardId === primaryCard.id);
-  const additionalTotal = summary.cardTotals.find((total) => total.cardId === additionalCard.id);
-
-  // Cartões da mesma família compartilham uma única fatura: o total da fatura
-  // é o mesmo para todos os membros do grupo (5000 + 1500), mas o limite e o
-  // uso de limite continuam sendo calculados por cartão individualmente.
-  assert.equal(primaryTotal?.invoiceTotalMinor, 6500);
-  assert.equal(primaryTotal?.limitTotalMinor, 200000);
-  assert.equal(primaryTotal?.limitUsedMinor, 5000);
-  assert.equal(additionalTotal?.invoiceTotalMinor, 6500);
-  assert.equal(additionalTotal?.limitTotalMinor, 50000);
-  assert.equal(additionalTotal?.limitUsedMinor, 1500);
-  assert.equal(
-    summary.cardTotals.some((total) => total.cardId === unlinkedCard.id),
-    false,
-  );
-
-  const additionalPurchaseResult = readBody<{ invoice: ApiInvoice }>(additionalPurchaseResponse);
-  assert.equal(
-    additionalPurchaseResult.invoice.id,
-    primaryPurchase.invoice.id,
-    "purchase on the linked card should land on the shared family invoice",
-  );
+  assert.equal(createResponse.statusCode, 404);
+  assert.equal(readErrorCode(createResponse), "API_ROUTE_NOT_FOUND");
 }
 
 async function createCardRecurrenceFlow(
@@ -805,13 +704,20 @@ async function apiRequest(
   const importBatchesResponse = await handleImportBatchesApiRequest(request);
   const payablesReceivablesResponse =
     importBatchesResponse ?? (await handlePayablesReceivablesApiRequest(request));
-  const cardAdditionalLinksResponse =
-    payablesReceivablesResponse ?? (await handleCardAdditionalLinksApiRequest(request));
-  const response = cardAdditionalLinksResponse ?? (await handleApiRequest(request));
+  const response = payablesReceivablesResponse ?? (await handleApiRequest(request));
 
-  assert.ok(response, `${method} ${path} should be handled by the API router`);
-
-  return response;
+  return (
+    response ?? {
+      statusCode: 404,
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: {
+        error: {
+          code: "API_ROUTE_NOT_FOUND",
+          message: "Rota de API nao encontrada.",
+        },
+      },
+    }
+  );
 }
 
 function readBody<TBody>(response: Pick<ApiResponse, "body">): TBody {
