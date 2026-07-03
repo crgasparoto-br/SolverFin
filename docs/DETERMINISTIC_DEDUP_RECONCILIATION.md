@@ -99,9 +99,15 @@ Todas as consultas e mutacoes filtram por `organizationId` e `financialProfileId
 
 As explicacoes usam somente dados minimizados do fluxo de importacao e nao exigem persistencia do CSV bruto. Logs e auditoria registram mudancas redigidas, sem valores sensiveis completos alem do que ja faz parte do contrato financeiro normalizado.
 
+## Relacao com inbox e fila revisavel
+
+O inbox de mensagens bancarias ja possui fluxo inicial proprio em `/api/bank-message-inbox` e `/inbox`, criando lotes `BANK_MESSAGE` e sugestoes revisaveis sem persistir texto bruto. A fila geral de revisao tambem existe em `/api/ai-review-queue` para listar, aprovar, editar ou rejeitar sugestoes.
+
+A deduplicacao/conciliacao deterministica deste documento continua focada no primeiro fluxo de lote CSV. A extensao das mesmas regras para inbox, OFX ou outros canais deve ser tratada como evolucao explicita, preservando minimizacao, tenant e revisao humana.
+
 ## Limites conhecidos
 
-- O fluxo inicial cobre CSV persistido; OFX e inbox bancario ainda precisam de ligacao operacional propria.
+- O fluxo inicial de deteccao cobre CSV persistido; OFX ainda precisa de ligacao operacional propria.
 - `AiSuggestion` guarda a explicacao e os vinculos principais, mas ainda nao possui payload estruturado para todos os detalhes da sugestao importada.
 - Nao existe tabela dedicada de `ReconciliationLink`; nesta entrega, o vinculo operacional fica em `AiSuggestion` e `Transaction.aiSuggestionId`.
-- A UI ainda precisa expor a fila de revisao para uso final amigavel.
+- A UI ainda precisa expor a revisao de deduplicacao/conciliacao para uso final amigavel.
