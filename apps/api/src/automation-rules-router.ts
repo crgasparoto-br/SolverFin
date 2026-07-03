@@ -1,4 +1,9 @@
-import { TenantAuthorizationError, TenantError, type AutomationRuleActions, type AutomationRuleConditions } from "@solverfin/domain";
+import {
+  TenantAuthorizationError,
+  TenantError,
+  type AutomationRuleActions,
+  type AutomationRuleConditions,
+} from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
@@ -273,7 +278,10 @@ function hasActionPayload(body: Readonly<Record<string, unknown>>): boolean {
 
 function parseKind(value: unknown): "income" | "expense" | "transfer" {
   if (value === "income" || value === "expense" || value === "transfer") return value;
-  throw new AutomationRuleRepositoryError("AUTOMATION_RULE_KIND_INVALID", "Tipo de lancamento invalido.");
+  throw new AutomationRuleRepositoryError(
+    "AUTOMATION_RULE_KIND_INVALID",
+    "Tipo de lancamento invalido.",
+  );
 }
 
 function parseActionStatus(value: unknown): AutomationActionStatus {
@@ -289,7 +297,10 @@ function parseActionStatus(value: unknown): AutomationActionStatus {
 
 function parseStatus(value: unknown): "active" | "inactive" {
   if (value === "active" || value === "inactive") return value;
-  throw new AutomationRuleRepositoryError("AUTOMATION_RULE_STATUS_INVALID", "Status de regra invalido.");
+  throw new AutomationRuleRepositoryError(
+    "AUTOMATION_RULE_STATUS_INVALID",
+    "Status de regra invalido.",
+  );
 }
 
 function toOptionalNumber(value: unknown): number | undefined {

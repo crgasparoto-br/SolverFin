@@ -399,13 +399,18 @@ function renderProfileKindOptions(selected?: string): string {
 
 function renderAccountOptions(accounts: AccountRecord[]): string {
   return accounts
-    .map((account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`)
+    .map(
+      (account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`,
+    )
     .join("");
 }
 
 function renderCategoryOptions(categories: CategoryRecord[]): string {
   return categories
-    .map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`)
+    .map(
+      (category) =>
+        `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`,
+    )
     .join("");
 }
 
@@ -435,12 +440,16 @@ function formatAutomationStatus(status: string): string {
 
 function describeConditions(conditions: AutomationRuleRecord["conditions"]): string {
   const parts: string[] = [];
-  if (conditions.descriptionIncludes) parts.push(`descrição contém "${conditions.descriptionIncludes}"`);
+  if (conditions.descriptionIncludes)
+    parts.push(`descrição contém "${conditions.descriptionIncludes}"`);
   if (conditions.kind) parts.push(`tipo ${conditions.kind}`);
   if (conditions.accountId) parts.push("conta específica");
-  if (conditions.amount?.equalsMinor !== undefined) parts.push(`valor igual ${conditions.amount.equalsMinor}`);
-  if (conditions.amount?.minMinor !== undefined) parts.push(`valor mínimo ${conditions.amount.minMinor}`);
-  if (conditions.amount?.maxMinor !== undefined) parts.push(`valor máximo ${conditions.amount.maxMinor}`);
+  if (conditions.amount?.equalsMinor !== undefined)
+    parts.push(`valor igual ${conditions.amount.equalsMinor}`);
+  if (conditions.amount?.minMinor !== undefined)
+    parts.push(`valor mínimo ${conditions.amount.minMinor}`);
+  if (conditions.amount?.maxMinor !== undefined)
+    parts.push(`valor máximo ${conditions.amount.maxMinor}`);
   return parts.join(", ") || "sem condição visível";
 }
 

@@ -288,7 +288,10 @@ async function hasAutomationSuggestionForSource(
   return rows.length > 0;
 }
 
-function normalizeAutomationRule(context: TenantContext, input: AutomationRuleInput): AutomationRule {
+function normalizeAutomationRule(
+  context: TenantContext,
+  input: AutomationRuleInput,
+): AutomationRule {
   const name = input.name.trim();
 
   if (!name) {
@@ -342,7 +345,9 @@ function sanitizeConditions(conditions: AutomationRuleConditions): AutomationRul
     ...(conditions.descriptionIncludes?.trim()
       ? { descriptionIncludes: conditions.descriptionIncludes.trim() }
       : {}),
-    ...(conditions.merchantIncludes?.trim() ? { merchantIncludes: conditions.merchantIncludes.trim() } : {}),
+    ...(conditions.merchantIncludes?.trim()
+      ? { merchantIncludes: conditions.merchantIncludes.trim() }
+      : {}),
     ...(conditions.amount !== undefined ? { amount: conditions.amount } : {}),
     ...(conditions.accountId !== undefined ? { accountId: conditions.accountId } : {}),
     ...(conditions.cardId !== undefined ? { cardId: conditions.cardId } : {}),
@@ -387,7 +392,11 @@ function buildAutomationTargetFromSuggestion(
   };
 }
 
-function parseDescriptionDetails(value: string): { description: string; accountId?: string; categoryId?: string } {
+function parseDescriptionDetails(value: string): {
+  description: string;
+  accountId?: string;
+  categoryId?: string;
+} {
   const parts = value.split("; ");
   const description = parts[0]?.trim() ?? "";
   const accountPart = parts.find((part) => part.startsWith("conta "));
@@ -415,10 +424,11 @@ function buildAutomationSuggestion(
     sourceEntityId: sourceSuggestion.id,
     targetEntityId: sourceSuggestion.id,
     confidence: 0.9,
-    explanation: `Regra automatica sugeriu ajustes para a sugestao ${sourceSuggestion.id}. ${reasons.join(" ")}`.slice(
-      0,
-      500,
-    ),
+    explanation:
+      `Regra automatica sugeriu ajustes para a sugestao ${sourceSuggestion.id}. ${reasons.join(" ")}`.slice(
+        0,
+        500,
+      ),
     provider: "solverfin-automation",
     model: "automation-rules-v1",
     createdAt: now,

@@ -246,9 +246,7 @@ async function readJsonBody(request: IncomingMessage): Promise<unknown> {
   }
 }
 
-function normalizeHeaders(
-  headers: IncomingMessage["headers"],
-): Record<string, string | undefined> {
+function normalizeHeaders(headers: IncomingMessage["headers"]): Record<string, string | undefined> {
   const normalized: Record<string, string | undefined> = {};
 
   for (const [key, value] of Object.entries(headers)) {

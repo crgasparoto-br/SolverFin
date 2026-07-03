@@ -151,9 +151,10 @@ function renderNewMessageDialog(accounts: AccountRecord[], categories: CategoryR
 
 function renderReviewSuggestionRow(item: ReviewQueueItem): string {
   const confidence = `${Math.round(item.confidence * 100)}%`;
-  const reviewApiBase = item.kind === "deduplication" || item.kind === "reconciliation"
-    ? "/api/review-suggestions"
-    : "/api/ai-review-queue";
+  const reviewApiBase =
+    item.kind === "deduplication" || item.kind === "reconciliation"
+      ? "/api/review-suggestions"
+      : "/api/ai-review-queue";
 
   return `
     <article class="maintenance-item">
