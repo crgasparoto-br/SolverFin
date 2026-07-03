@@ -10,7 +10,7 @@ A migracao destrutiva da #319 introduz a estrutura persistente para o novo model
 - `CardInstrument` representa os meios internos de uso do agrupador, como fisico, virtual, titular principal e adicional.
 - `Transaction`, `Recurrence` e `Installment` passam a aceitar `cardInstrumentId` para preservar a origem da compra, recorrencia ou parcela.
 - `Invoice.cardId` continua apontando para o agrupador, nunca para um instrumento isolado.
-- `CardAdditionalLink` permanece temporariamente como tabela legada para manter rotas e testes antigos ate as #323 e #324 substituirem o restante do fluxo por instrumentos internos. Ela nao faz parte do schema Prisma nem do modelo principal novo.
+- O fluxo legado de vinculo manual entre cartoes separados foi aposentado como comportamento de API. Novas implementacoes devem usar instrumentos internos vinculados diretamente ao agrupador.
 
 A #320 liga o dominio de compras ao novo modelo quando o chamador fornece contexto de instrumentos:
 
@@ -20,7 +20,7 @@ A #320 liga o dominio de compras ao novo modelo quando o chamador fornece contex
 - agrupadores sem instrumento ativo sao bloqueados para novas compras no fluxo novo;
 - a fatura continua unica por agrupador e periodo, mesmo quando diferentes instrumentos fazem compras no mesmo ciclo.
 
-A #321 adiciona o contrato de API para agrupadores e instrumentos. As rotas antigas de `/api/cards` continuam como compatibilidade temporaria, mas o caminho principal para novas telas e integracoes passa a ser `/api/credit-card-accounts`.
+A #321 adiciona o contrato de API para agrupadores e instrumentos. As rotas antigas de `/api/cards` continuam como compatibilidade temporaria para operacoes basicas de cartao, mas o caminho principal para novas telas e integracoes passa a ser `/api/credit-card-accounts` e seus instrumentos aninhados.
 
 ## Escopo entregue antes da UI nova
 
@@ -160,7 +160,7 @@ No modelo novo, `registerCardPurchase` cria uma transacao `expense` com:
 - `cardInstrumentId` do instrumento usado, para rastreabilidade e exibicao;
 - `invoiceId` da fatura do periodo.
 
-Enquanto a API antiga ainda esta em transicao, `cardInstrumentId` e exigido apenas quando o chamador informa contexto de instrumentos ou um instrumento explicito. Sem esse contexto, o dominio preserva compatibilidade com os fluxos legados ate as proximas subissues conectarem repositories, rotas e UI ao modelo novo.
+Enquanto a API antiga ainda esta em transicao, `cardInstrumentId` e exigido apenas quando o chamador informa contexto de instrumentos ou um instrumento explicito. Sem esse contexto, o dominio preserva compatibilidade com os fluxos que ainda nao migraram para `/api/credit-card-accounts`.
 
 Quando `instruments` e informado:
 

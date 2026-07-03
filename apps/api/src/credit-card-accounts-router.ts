@@ -361,7 +361,9 @@ function readInstrument(body: Record<string, unknown>) {
     ...(body.status !== undefined ? { status: body.status as CardInstrumentStatus } : {}),
     ...(body.isDefault !== undefined ? { isDefault: body.isDefault === true } : {}),
     ...(body.name !== undefined ? { name: String(body.name) } : {}),
-    ...(body.maskedIdentifier !== undefined ? { maskedIdentifier: String(body.maskedIdentifier) } : {}),
+    ...(body.maskedIdentifier !== undefined
+      ? { maskedIdentifier: String(body.maskedIdentifier) }
+      : {}),
     ...(body.creditLimitMinor !== undefined
       ? { creditLimitMinor: Number(body.creditLimitMinor) }
       : {}),
