@@ -11,6 +11,7 @@ import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-route
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
+import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
@@ -91,6 +92,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (importBatchesResult) {
       writeResponse(response, importBatchesResult);
+
+      return;
+    }
+
+    const installmentsResult = await handleInstallmentsApiRequest(apiRequest);
+
+    if (installmentsResult) {
+      writeResponse(response, installmentsResult);
 
       return;
     }
