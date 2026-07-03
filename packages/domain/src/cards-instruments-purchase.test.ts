@@ -127,6 +127,11 @@ function runSharesInvoiceAcrossInstrumentsOfSameAggregator(): void {
     firstResult.invoice.id,
     "same aggregator and period should share invoice",
   );
+  assertEqual(
+    secondResult.invoice.cardId,
+    group.card.id,
+    "shared invoice should keep the aggregator card id",
+  );
   assertEqual(secondResult.invoice.totalAmountMinor, 10_000, "invoice should accumulate purchases");
   assertEqual(
     firstResult.transaction.cardInstrumentId,
