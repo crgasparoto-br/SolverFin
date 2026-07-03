@@ -134,6 +134,29 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
               },
             ],
           },
+          {
+            id: "card-blocked",
+            name: "Cartão bloqueado",
+            status: "blocked",
+            closingDay: 5,
+            dueDay: 15,
+            creditLimitMinor: 200_000,
+            institutionKey: "nubank",
+            brandKey: "visa",
+            paymentAccountId: "account-main",
+            instruments: [
+              {
+                id: "instrument-archived",
+                type: "virtual",
+                holder: "primary",
+                status: "archived",
+                isDefault: false,
+                name: "Virtual antigo",
+                maskedIdentifier: "**** 9999",
+                creditLimitMinor: 50_000,
+              },
+            ],
+          },
         ],
       });
     }
@@ -145,7 +168,7 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
     const html = await renderAccountsCardsPage("session-token");
 
     assert.match(html, /Cartão C6/);
-    assert.match(html, /Cartões de crédito <span>1<\/span>/);
+    assert.match(html, /Cartões de crédito <span>2<\/span>/);
     assert.match(html, /Conta de pagamento: Conta pagamento · 2 instrumentos ativos/);
     assert.match(html, /aria-label="Instrumentos de Cartão C6"/);
     assert.match(html, /Físico titular/);
@@ -182,6 +205,22 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
     );
     assert.match(html, /aria-label="Arquivar Físico titular"/);
     assert.match(html, /aria-label="Arquivar Virtual adicional"/);
+    assert.match(html, /Cartão bloqueado/);
+    assert.match(html, />Bloqueado<\/span>/);
+    assert.match(html, /Conta de pagamento: Conta pagamento · 0 instrumentos ativos/);
+    assert.match(
+      html,
+      /Sem instrumento ativo para novos lançamentos\. Cadastre um novo instrumento para voltar a usar este cartão\./,
+    );
+    assert.match(html, /Virtual antigo/);
+    assert.match(html, /Virtual · Titular principal · \*\*\*\* 9999 · limite/);
+    assert.match(html, /500,00/);
+    assert.match(html, /aria-label="Adicionar instrumento em Cartão bloqueado"/);
+    assert.match(html, /data-open-dialog="new-card-instrument-dialog-card-blocked"/);
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-blocked\/instruments"/);
+    assert.match(html, /aria-label="Editar instrumento Virtual antigo"/);
+    assert.doesNotMatch(html, /Definir Virtual antigo como default/);
+    assert.doesNotMatch(html, /Arquivar Virtual antigo/);
     assert.match(html, /data-api-path="\/api\/credit-card-accounts"/);
     assert.match(html, /data-payload-kind="credit-card-account"/);
     assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/archive"/);
