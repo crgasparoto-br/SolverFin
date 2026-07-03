@@ -239,7 +239,9 @@ function requireInstrument(
 ): ApiCardInstrument {
   const instrument = account.instruments.find((candidate) => candidate.type === type);
 
-  assert.notEqual(instrument, undefined);
+  if (instrument === undefined) {
+    throw new Error(`Expected ${type} instrument.`);
+  }
 
   return instrument;
 }
@@ -255,9 +257,7 @@ function readCreditCardAccount(response: Pick<ApiResponse, "body">): ApiCreditCa
 }
 
 function readCreditCardAccounts(response: Pick<ApiResponse, "body">): ApiCreditCardAccount[] {
-  return readBody<{ creditCardAccounts: ApiCreditCardAccount[] }>(
-    response,
-  ).creditCardAccounts;
+  return readBody<{ creditCardAccounts: ApiCreditCardAccount[] }>(response).creditCardAccounts;
 }
 
 function readPurchase(response: Pick<ApiResponse, "body">): {
