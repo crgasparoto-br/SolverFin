@@ -203,6 +203,34 @@ export async function archiveCreditCardAccountForContext(
   return getCreditCardAccountForContext(context, result.card.id);
 }
 
+export async function deleteCreditCardAccountForContext(
+  context: TenantContext,
+  cardId: EntityId,
+): Promise<void> {
+  const card = getCardDomain(context, await findCardRow(context, cardId));
+  const hasUsage = await cardHasUsage(context, card.id);
+
+  if (hasUsage) {
+    throw cardInstrumentError(
+      "CARD_ACCOUNT_IN_USE",
+      "Este cartao ja possui uso ou vinculos e nao pode ser excluido. Arquive o cartao para ocultar.",
+    );
+  }
+
+  await withTransaction(async (executeQuery) => {
+    await executeQuery(
+      `delete from "CardInstrument"
+       where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3`,
+      [context.organizationId, context.financialProfileId, card.id],
+    );
+    await executeQuery(
+      `delete from "Card"
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [card.id, context.organizationId, context.financialProfileId],
+    );
+  });
+}
+
 export async function listCardInstrumentsForContext(
   context: TenantContext,
   cardId: EntityId,
@@ -332,6 +360,50 @@ async function listAllInstrumentsForContext(context: TenantContext): Promise<Car
   );
 
   return rows.map(mapCardInstrumentRow);
+}
+
+async function cardHasUsage(context: TenantContext, cardId: EntityId): Promise<boolean> {
+  const rows = await query<{ exists: boolean }>(
+    `select (
+       exists(
+         select 1 from "Transaction"
+         where "organizationId" = $1 and "financialProfileId" = $2
+           and (
+             "cardId" = $3
+             or "cardInstrumentId" in (
+               select "id" from "CardInstrument"
+               where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3
+             )
+           )
+       ) or exists(
+         select 1 from "Invoice"
+         where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3
+       ) or exists(
+         select 1 from "Recurrence"
+         where "organizationId" = $1 and "financialProfileId" = $2
+           and (
+             "cardId" = $3
+             or "cardInstrumentId" in (
+               select "id" from "CardInstrument"
+               where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3
+             )
+           )
+       ) or exists(
+         select 1 from "Installment"
+         where "organizationId" = $1 and "financialProfileId" = $2
+           and (
+             "cardId" = $3
+             or "cardInstrumentId" in (
+               select "id" from "CardInstrument"
+               where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3
+             )
+           )
+       )
+     ) as "exists"`,
+    [context.organizationId, context.financialProfileId, cardId],
+  );
+
+  return rows[0]?.exists ?? false;
 }
 
 function buildCreditCardAccount(

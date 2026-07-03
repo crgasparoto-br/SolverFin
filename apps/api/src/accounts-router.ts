@@ -13,6 +13,7 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   archiveAccountForContext,
   createAccountForContext,
+  deleteAccountForContext,
   getAccountForContext,
   listAccountsForContext,
   updateAccountForContext,
@@ -40,6 +41,7 @@ route("GET", ACCOUNTS_BASE_PATH, listAccountsHandler);
 route("POST", ACCOUNTS_BASE_PATH, createAccountHandler);
 route("GET", `${ACCOUNTS_BASE_PATH}/:accountId`, getAccountHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:accountId`, updateAccountHandler);
+route("DELETE", `${ACCOUNTS_BASE_PATH}/:accountId`, deleteAccountHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:accountId/archive`, archiveAccountHandler);
 
 export async function handleAccountsApiRequest(
@@ -210,6 +212,18 @@ async function archiveAccountHandler(
   const account = await archiveAccountForContext(context, requireParam(match, "accountId"));
 
   return json(200, { account });
+}
+
+async function deleteAccountHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const accountId = requireParam(match, "accountId");
+
+  await deleteAccountForContext(context, accountId);
+
+  return json(200, { accountId });
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
