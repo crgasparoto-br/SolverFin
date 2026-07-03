@@ -259,6 +259,13 @@ export function listActiveCardInstruments(
   return activeInstruments(listCardInstruments(context, card, instruments));
 }
 
+export function resolveCardInstrumentEffectiveCreditLimit(
+  card: Pick<Card, "creditLimitMinor">,
+  instrument: Pick<CardInstrument, "creditLimitMinor">,
+): number | undefined {
+  return instrument.creditLimitMinor ?? card.creditLimitMinor;
+}
+
 export function getDefaultCardInstrument(
   context: TenantContext,
   card: Card | undefined,
