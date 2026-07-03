@@ -26,8 +26,22 @@ type AutomationHandler = (
   match: Readonly<Record<string, string>>,
 ) => Promise<ApiResponse>;
 
+type AutomationActionStatus = NonNullable<AutomationRuleActions["status"]>;
+
 const BASE_PATH = "/api/automation-rules";
 const routes: AutomationRoute[] = [];
+const ALLOWED_ACTION_STATUSES: readonly AutomationActionStatus[] = [
+  "planned",
+  "posted",
+  "reconciled",
+  "suggested",
+  "voided",
+  "pending_review",
+  "approved",
+  "edited",
+  "rejected",
+  "discarded",
+];
 
 route("GET", BASE_PATH, listAutomationRulesHandler);
 route("POST", BASE_PATH, createAutomationRuleHandler);
@@ -232,7 +246,7 @@ function parseActions(body: Readonly<Record<string, unknown>>): AutomationRuleAc
   }
 
   if (body.actionStatus !== undefined) {
-    actions.status = String(body.actionStatus) as AutomationRuleActions["status"];
+    actions.status = parseActionStatus(body.actionStatus);
   }
 
   return actions;
@@ -263,6 +277,17 @@ function hasActionPayload(body: Readonly<Record<string, unknown>>): boolean {
 function parseKind(value: unknown): "income" | "expense" | "transfer" {
   if (value === "income" || value === "expense" || value === "transfer") return value;
   throw new AutomationRuleRepositoryError("AUTOMATION_RULE_KIND_INVALID", "Tipo de lancamento invalido.");
+}
+
+function parseActionStatus(value: unknown): AutomationActionStatus {
+  if (ALLOWED_ACTION_STATUSES.includes(value as AutomationActionStatus)) {
+    return value as AutomationActionStatus;
+  }
+
+  throw new AutomationRuleRepositoryError(
+    "AUTOMATION_RULE_ACTION_STATUS_INVALID",
+    "Status sugerido pela regra invalido.",
+  );
 }
 
 function parseStatus(value: unknown): "active" | "inactive" {
