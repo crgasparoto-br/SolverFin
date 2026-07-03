@@ -18,6 +18,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - [`docs/PRODUCT.md`](./PRODUCT.md)
 - [`docs/PAYABLES_RECEIVABLES.md`](./PAYABLES_RECEIVABLES.md)
 - [`docs/API_PAYABLES_RECEIVABLES.md`](./API_PAYABLES_RECEIVABLES.md)
+- [`docs/API_CREDIT_CARDS_INVOICES.md`](./API_CREDIT_CARDS_INVOICES.md)
 - [`docs/RECURRENCES_INSTALLMENTS_WEB.md`](./RECURRENCES_INSTALLMENTS_WEB.md)
 - [`docs/WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md)
 - [`prisma/schema.prisma`](../prisma/schema.prisma)
@@ -95,7 +96,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - UI: Feito.
 - Testes: integracao feita; unitarios parciais.
 - Documentacao: Parcial.
-- Nota: cadastro/manutencao do cartao fica em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao.
+- Nota: cadastro/manutencao do cartao agrupador fica em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao.
 
 ### Orcamentos
 
@@ -154,7 +155,6 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Schema/migration: Parcial.
 - Repository/API/UI: Pendente.
 - Testes: Parcial.
-- Documentacao: Parcial.
 - Nota: `AiSuggestion` existe no schema e ha fila de revisao no dominio, mas faltam repository, API e UI.
 
 ## Operacoes visiveis na UI
@@ -207,15 +207,15 @@ Sem rota propria e sem secao separada: cada lancamento gerado por uma recorrenci
 
 ### Cartoes de Credito (`/cartoes`)
 
-- Selecionar cartao: Sim, por seletor com indicador de cartao adicional/virtual vinculado.
+- Selecionar cartao agrupador: Sim, por seletor do agrupador/fatura.
 - Selecionar fatura: Sim, por navegacao de periodo.
-- Resumo da fatura: Sim, com fatura atual, detalhamento, totais por cartao da familia e limite total consolidado.
+- Resumo da fatura: Sim, com fatura atual, detalhamento, totais consolidados do agrupador e origem por instrumento quando disponivel.
 - Registrar compra: Sim, em modal.
 - Editar compra: Sim, em modal.
 - Filtrar compras: Sim, por busca e por conciliado/nao conciliado.
 - Fechar fatura: Sim, para fatura aberta.
 - Pagar fatura: Sim, em modal, para fatura nao paga/cancelada.
-- Cadastro, edicao, bloqueio e arquivamento de cartao: ficam em Contas e Cartoes (`/contas-cartoes`).
+- Cadastro, edicao, bloqueio e arquivamento de cartao agrupador e instrumentos ficam em Contas e Cartoes (`/contas-cartoes`).
 - Excluir: Nao.
 - Lacuna restante: nao ha como mover uma compra para outra fatura/periodo pela UI.
 
@@ -328,7 +328,26 @@ Lacunas:
 
 ### Cartoes e faturas
 
-API disponivel:
+API principal disponivel:
+
+- `GET /api/credit-card-accounts`
+- `POST /api/credit-card-accounts`
+- `GET /api/credit-card-accounts/:cardId`
+- `PATCH /api/credit-card-accounts/:cardId`
+- `POST /api/credit-card-accounts/:cardId/archive`
+- `GET /api/credit-card-accounts/:cardId/instruments`
+- `POST /api/credit-card-accounts/:cardId/instruments`
+- `PATCH /api/credit-card-accounts/:cardId/default-instrument`
+- `POST /api/credit-card-accounts/:cardId/purchases`
+- `PATCH /api/credit-card-instruments/:instrumentId`
+- `POST /api/credit-card-instruments/:instrumentId/archive`
+- `GET /api/invoices`
+- `GET /api/invoices/:invoiceId`
+- `GET /api/invoices/:invoiceId/summary`
+- `POST /api/invoices/:invoiceId/close`
+- `POST /api/invoices/:invoiceId/pay`
+
+API legada temporaria:
 
 - `GET /api/cards`
 - `POST /api/cards`
@@ -337,19 +356,15 @@ API disponivel:
 - `POST /api/cards/:cardId/archive`
 - `POST /api/cards/:cardId/block`
 - `POST /api/cards/:cardId/purchases`
-- `GET /api/card-additional-links`
-- `POST /api/card-additional-links`
-- `PATCH /api/card-additional-links/:groupCardId/primary`
-- `GET /api/invoices`
-- `GET /api/invoices/:invoiceId`
-- `GET /api/invoices/:invoiceId/summary`
-- `POST /api/invoices/:invoiceId/close`
-- `POST /api/invoices/:invoiceId/pay`
+
+Rota removida do comportamento ativo:
+
+- `/api/card-additional-links` nao e mais registrada no servidor e deve responder como rota inexistente.
 
 UI disponivel:
 
-- cadastra, edita, bloqueia e arquiva cartao em `/contas-cartoes`;
-- seleciona cartao/fatura, mostra resumo consolidado por familia de cartao, registra/edita compra, filtra, fecha fatura e paga fatura em `/cartoes`.
+- cadastra, edita, bloqueia e arquiva cartao agrupador e instrumentos em `/contas-cartoes`;
+- seleciona cartao agrupador/fatura, mostra resumo consolidado, registra/edita compra, filtra, fecha fatura e paga fatura em `/cartoes`.
 
 Lacuna: mover compra para outra fatura/periodo pela UI.
 
@@ -396,7 +411,7 @@ Lacuna: plano da #290 para migracao/compatibilidade do dominio, endpoints, teste
 - Os chips de status do Extrato da conta existem visualmente, mas ainda precisam ser confirmados como filtros interativos ou indicadores em uma proxima iteracao.
 - Autenticacao produtiva segue dependente da ADR da issue #174.
 - Selecao e gestao operacional de perfis financeiros segue na issue #182.
-- Importacao, deduplicacao, conciliacao e IA devem avancar em ordem que preserve revisao humana, auditoria e privacidade: #175, #176, #178 e #183.
+- Importacao, deduplicacao/conciliacao e IA devem avancar em ordem que preserve revisao humana, auditoria e privacidade: #175, #176, #178 e #183.
 - A remocao tecnica de `PayableReceivable` nao deve ocorrer antes de plano explicito de migracao/compatibilidade, previsto na #290.
 
 ## Proximas implementacoes sugeridas
