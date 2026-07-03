@@ -315,10 +315,7 @@ function renderCardEditDialog(
   `;
 }
 
-function renderCardInstrumentCreateDialog(
-  card: CreditCardAccountRecord,
-  dialogId: string,
-): string {
+function renderCardInstrumentCreateDialog(card: CreditCardAccountRecord, dialogId: string): string {
   const titleId = `${dialogId}-title`;
 
   return `
