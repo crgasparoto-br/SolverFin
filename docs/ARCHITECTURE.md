@@ -11,7 +11,8 @@ Ele nao substitui ADRs. Decisoes duradouras, mudancas de stack, integracoes exte
 O nucleo financeiro do MVP esta ligado de ponta a ponta com persistencia real:
 
 - `apps/api` e um servidor HTTP em Node `http` puro (sem framework) que resolve sessao/tenant, chama `packages/domain` para validar regras e persiste via `pg` (SQL parametrizado) em PostgreSQL. Cobre contas, categorias, lancamentos, recorrencias/parcelas, cartoes/faturas, orcamentos e o dominio legado de contas a pagar/receber, incluindo trilha de auditoria (`AuditLogEntry`).
-- `apps/web` e um servidor SSR em Node `http` puro que autentica contra a API real (token guardado em cookie HttpOnly) e renderiza dashboard, contas, categorias, lancamentos (com lancamentos recorrentes da conta na mesma lista), cartoes (com compras recorrentes do cartao na mesma lista) e orcamentos com dados reais; demais rotas do menu ainda sao placeholder ou fluxos parciais.
+- O modelo atual de cartoes de credito usa cartao agrupador/fatura como recurso pai e instrumentos internos como origem rastreavel das compras. A fatura pertence ao agrupador e compras feitas por instrumentos fisicos, virtuais, do titular principal ou adicionais consolidam no mesmo periodo. As regras detalhadas ficam em `docs/CARDS.md`.
+- `apps/web` e um servidor SSR em Node `http` puro que autentica contra a API real (token guardado em cookie HttpOnly) e renderiza dashboard, contas, categorias, lancamentos (com lancamentos recorrentes da conta na mesma lista), cartoes agrupadores (com instrumentos internos e compras recorrentes do cartao na mesma lista) e orcamentos com dados reais; demais rotas do menu ainda sao placeholder ou fluxos parciais.
 - Recorrencias nao tem rota web nem bloco proprio: cada lancamento que pertence a uma recorrencia aparece como uma linha normal na lista de `/lancamentos` (escopada por conta) e `/cartoes` (escopada por cartao), com indicador visual e as acoes de editar/pausar/retomar/cancelar/gerar parcelas no menu daquele lancamento. A criacao acontece pelo proprio modal de novo lancamento/nova compra com repeticao "Fixo", e ja materializa o primeiro vencimento como lancamento real. Parcelas geradas aparecem como retorno imediato da acao de geracao, mas ainda nao ha rota dedicada para reler parcelas historicas por recorrencia.
 - A rotina operacional de contas a pagar/receber foi consolidada fora de uma tela propria: receitas, despesas, transferencias e lancamentos previstos ficam em `/lancamentos`; compras, faturas, fechamento e pagamento de cartao ficam em `/cartoes`. O Dashboard e a disponibilidade diaria devem usar `Transaction`, `Invoice`, recorrencias e parcelas materializadas como fontes principais.
 - `PayableReceivable` permanece como compatibilidade tecnica: possui dominio, schema Prisma, migration, repository SQL, API dedicada em `/api/payables-receivables` e cobertura de integracao, mas nao deve ser tratado como jornada operacional ativa nem como destino de navegacao. Leituras temporarias desse dominio devem evitar dupla contagem quando houver `settlementTransactionId` ou `Transaction` equivalente. O seed demo nao cria registros desse dominio no estado atual.
@@ -119,7 +120,7 @@ Web/PWA
   -> revisa sugestoes, lancamentos, faturas, alertas e relatorios
 
 Dominio financeiro
-  -> valida regras de contas, categorias, lancamentos, recorrencias, faturas, orcamentos e conciliacao
+  -> valida regras de contas, categorias, lancamentos, recorrencias, faturas, cartoes agrupadores/instrumentos, orcamentos e conciliacao
 
 Servicos de IA
   -> recebem dados minimizados
@@ -136,15 +137,18 @@ Responsavel por visao, escopo, personas, tom, criterios, privacidade e regras de
 Arquivos principais:
 
 - `docs/PRODUCT.md`
+- `docs/CARDS.md`
 - `docs/BRAND.md`
 - `docs/PRIVACY.md`
 - `README.md`
 
 ### Dominio financeiro
 
-Responsavel por entidades e regras como contas, categorias, lancamentos, recorrencias, parcelas, faturas, orcamentos, metas, compatibilidade legada de contas a pagar/receber e conciliacao.
+Responsavel por entidades e regras como contas, categorias, lancamentos, recorrencias, parcelas, faturas, cartoes agrupadores, instrumentos internos, orcamentos, metas, compatibilidade legada de contas a pagar/receber e conciliacao.
 
 Regras de dominio nao devem depender diretamente de detalhes de UI, banco, fila, provedores de IA ou APIs externas. Novos compromissos financeiros devem ser modelados preferencialmente como `Transaction`, `Invoice`, recorrencias ou parcelas materializadas, conforme a origem do fluxo.
+
+Cartoes de credito seguem o modelo descrito em `docs/CARDS.md`: o agrupador e dono da fatura, instrumentos registram a origem da compra e o fluxo principal nao deve depender de `CardAdditionalLink` para cadastro, compras, faturas, recorrencias, parcelas, previsoes ou exibicao principal.
 
 ### Identidade e tenant
 
@@ -176,7 +180,7 @@ A IA deve produzir saidas estruturadas, revisaveis e auditaveis. Regras determin
 
 Responsavel por fluxos de rotina diaria, revisao de sugestoes, dashboards, relatorios e configuracoes.
 
-A interface deve ser mobile-first, acessivel, clara e coerente com `docs/BRAND.md`. A experiencia ativa de pagar e receber compromissos nao deve depender de `/pagar-receber`: contas de conta corrente vivem em `/lancamentos` e compromissos de cartao vivem em `/cartoes`.
+A interface deve ser mobile-first, acessivel, clara e coerente com `docs/BRAND.md`. A experiencia ativa de pagar e receber compromissos nao deve depender de `/pagar-receber`: contas de conta corrente vivem em `/lancamentos` e compromissos de cartao vivem em `/cartoes`, com agrupadores como recursos principais e instrumentos internos como detalhe operacional.
 
 ## Regras arquiteturais
 
