@@ -119,9 +119,7 @@ export async function createRecurrenceForContext(
     ? await findCategoryRow(context, payload.categoryId)
     : undefined;
 
-  if (card !== undefined && payload.cardInstrumentId !== undefined) {
-    await assertActiveCardInstrumentBelongsToCard(context, card.id, payload.cardInstrumentId);
-  }
+  await assertRecurrenceCardInstrumentTarget(context, card, payload.cardInstrumentId);
 
   const result = createRecurrenceDomain({
     id: randomUUID(),
@@ -138,7 +136,11 @@ export async function createRecurrenceForContext(
   }
 
   await persistRecurrenceMutation(result);
-  await generateInstallmentsForContext(context, result.recurrence.id, todayIso());
+
+  const generationThrough = todayIso();
+  if (result.recurrence.startOn <= generationThrough) {
+    await generateInstallmentsForContext(context, result.recurrence.id, generationThrough);
+  }
 
   return result.recurrence;
 }
@@ -158,9 +160,7 @@ export async function updateRecurrenceForContext(
   const card = cardId ? await findCardRow(context, cardId) : undefined;
   const category = categoryId ? await findCategoryRow(context, categoryId) : undefined;
 
-  if (card !== undefined && payload.cardInstrumentId !== undefined) {
-    await assertActiveCardInstrumentBelongsToCard(context, card.id, payload.cardInstrumentId);
-  }
+  await assertRecurrenceCardInstrumentTarget(context, card, payload.cardInstrumentId);
 
   const result = updateRecurrenceDomain({
     context,
@@ -172,7 +172,10 @@ export async function updateRecurrenceForContext(
     ...(category ? { category } : {}),
   });
 
-  if (payload.accountId !== undefined) {
+  if (
+    payload.accountId !== undefined ||
+    (payload.cardId !== undefined && payload.cardInstrumentId === undefined)
+  ) {
     delete result.recurrence.cardInstrumentId;
   }
 
@@ -536,6 +539,22 @@ async function findCardRow(context: TenantContext, cardId: EntityId): Promise<Ca
   };
 }
 
+async function assertRecurrenceCardInstrumentTarget(
+  context: TenantContext,
+  card: Card | undefined,
+  cardInstrumentId: EntityId | undefined,
+): Promise<void> {
+  if (cardInstrumentId === undefined) {
+    return;
+  }
+
+  if (card === undefined) {
+    throwRecurrenceCardInstrumentInvalid();
+  }
+
+  await assertActiveCardInstrumentBelongsToCard(context, card.id, cardInstrumentId);
+}
+
 async function assertActiveCardInstrumentBelongsToCard(
   context: TenantContext,
   cardId: EntityId,
@@ -549,11 +568,15 @@ async function assertActiveCardInstrumentBelongsToCard(
   );
 
   if (rows[0] === undefined) {
-    throw Object.assign(
-      new Error("Instrumento de cartao da recorrencia deve estar ativo e pertencer ao cartao."),
-      { code: "RECURRENCE_CARD_INSTRUMENT_INVALID", statusCode: 400 },
-    );
+    throwRecurrenceCardInstrumentInvalid();
   }
+}
+
+function throwRecurrenceCardInstrumentInvalid(): never {
+  throw Object.assign(
+    new Error("Instrumento de cartao da recorrencia deve estar ativo e pertencer ao cartao."),
+    { code: "RECURRENCE_CARD_INSTRUMENT_INVALID", statusCode: 400 },
+  );
 }
 
 async function findCategoryRow(
