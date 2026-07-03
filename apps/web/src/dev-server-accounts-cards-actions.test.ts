@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 
-import { renderAccountsCardsPage } from "./dev-server.js";
+import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
+import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 
-await accountsCardsPageRendersDeleteActionsAndInlineInstrumentEditing();
+await accountsCardsPageRendersDialogOnlyInstrumentActions();
 
-async function accountsCardsPageRendersDeleteActionsAndInlineInstrumentEditing(): Promise<void> {
+async function accountsCardsPageRendersDialogOnlyInstrumentActions(): Promise<void> {
   const originalFetch = globalThis.fetch;
 
   globalThis.fetch = (async (input: string | URL | Request) => {
@@ -60,26 +61,38 @@ async function accountsCardsPageRendersDeleteActionsAndInlineInstrumentEditing()
   }) as typeof fetch;
 
   try {
-    const html = await renderAccountsCardsPage("session-token");
+    const html = enhanceAccountsCardsTabs(await renderAccountsCardsPage("session-token"));
 
-    assert.match(html, /data-api-method="DELETE" data-api-path="\/api\/accounts\/account-unused"/);
-    assert.match(html, /aria-label="Excluir Conta sem uso"/);
-    assert.match(
-      html,
+    const expectedPatterns = [
+      /data-api-method="DELETE" data-api-path="\/api\/accounts\/account-unused"/,
+      /aria-label="Excluir Conta sem uso"/,
       /data-api-method="DELETE" data-api-path="\/api\/credit-card-accounts\/card-unused"/,
-    );
-    assert.match(html, /aria-label="Excluir Cartão sem uso"/);
-    assert.match(html, /Só é possível excluir contas sem lançamentos/);
-    assert.match(html, /Só é possível excluir cartões sem compras/);
-    assert.match(html, /Instrumentos do cartão/);
-    assert.match(html, /Dados dos instrumentos/);
-    assert.match(html, /class="edit-grid instrument-edit-form"/);
-    assert.match(html, /<strong>Físico titular<\/strong>/);
-    assert.match(html, /<button type="submit">Salvar instrumento<\/button>/);
+      /aria-label="Excluir Cartão sem uso"/,
+      /Só é possível excluir contas sem lançamentos/,
+      /Só é possível excluir cartões sem compras/,
+      /Instrumentos do cartão/,
+      /Dados dos instrumentos/,
+      /class="edit-grid instrument-edit-form"/,
+      /<strong>Físico titular<\/strong>/,
+      /<button type="submit">Salvar instrumento<\/button>/,
+      /data-toggle-instrument-create="new-card-instrument-form-card-unused"/,
+      /id="new-card-instrument-form-card-unused" hidden data-api-form data-api-path="\/api\/credit-card-accounts\/card-unused\/instruments"/,
+      /<button type="submit">Criar instrumento<\/button>/,
+    ];
+
+    const absentPatterns = [
+      /<div class="instrument-list/,
+      /data-card-instrument/,
+      /data-open-dialog="new-card-instrument-dialog-card-unused"/,
+      /id="new-card-instrument-dialog-card-unused"/,
+    ];
+
+    expectedPatterns.forEach((pattern) => assert.match(html, pattern));
+    absentPatterns.forEach((pattern) => assert.doesNotMatch(html, pattern));
     assert.equal(
       (html.match(/data-api-path="\/api\/credit-card-instruments\/instrument-physical"/g) ?? [])
         .length,
-      2,
+      1,
     );
   } finally {
     globalThis.fetch = originalFetch;

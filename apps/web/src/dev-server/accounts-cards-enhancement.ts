@@ -1,7 +1,9 @@
+import { keepCardInstrumentsInsideEditDialog } from "./accounts-cards-page-dialog-only.js";
+
 export function enhanceAccountsCardsTabs(html: string): string {
   if (!html.includes('data-tab-panel="accounts"')) return html;
 
-  let enhanced = injectActiveFilter(html);
+  let enhanced = keepCardInstrumentsInsideEditDialog(injectActiveFilter(html));
 
   if (!enhanced.includes("data-accounts-cards-direct-enhancement")) {
     enhanced = enhanced.replace("</body>", `${accountsCardsDirectEnhancementScript()}</body>`);

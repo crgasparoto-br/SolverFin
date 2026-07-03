@@ -109,7 +109,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/lancamentos" && token) {
-    sendHtml(response, 200, await renderTransactionsPage(token, url));
+    sendHtml(response, 200, await renderTransactionsPage(token));
     return;
   }
 
