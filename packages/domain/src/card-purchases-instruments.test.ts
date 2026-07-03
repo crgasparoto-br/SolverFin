@@ -18,7 +18,10 @@ runRejectsArchivedInstrumentForPurchase();
 
 function runUsesDefaultInstrumentForPurchase(): void {
   const setup = createCardWithInstruments("card-default-purchase");
-  const defaultInstrument = requireInstrument(setup.instruments, "instrument-card-default-purchase-physical");
+  const defaultInstrument = requireInstrument(
+    setup.instruments,
+    "instrument-card-default-purchase-physical",
+  );
   const result = registerCardPurchase({
     transactionId: "transaction-default-instrument",
     context: tenantA,
