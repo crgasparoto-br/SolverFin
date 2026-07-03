@@ -271,22 +271,27 @@ async function registerCardPurchaseHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const result = await registerCardPurchaseForContext(context, requireParam(match, "cardId"), {
-    occurredOn: String(body.occurredOn ?? ""),
-    amountMinor: Number(body.amountMinor),
-    description: String(body.description ?? ""),
-    ...(body.cardInstrumentId !== undefined
-      ? { cardInstrumentId: String(body.cardInstrumentId) }
-      : {}),
-    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-    ...(body.totalInstallments !== undefined
-      ? { totalInstallments: Number(body.totalInstallments) }
-      : {}),
-    ...(body.installmentStart !== undefined
-      ? { installmentStart: Number(body.installmentStart) }
-      : {}),
-  });
+  const result = await registerCardPurchaseForContext(
+    context,
+    requireParam(match, "cardId"),
+    {
+      occurredOn: String(body.occurredOn ?? ""),
+      amountMinor: Number(body.amountMinor),
+      description: String(body.description ?? ""),
+      ...(body.cardInstrumentId !== undefined
+        ? { cardInstrumentId: String(body.cardInstrumentId) }
+        : {}),
+      ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+      ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+      ...(body.totalInstallments !== undefined
+        ? { totalInstallments: Number(body.totalInstallments) }
+        : {}),
+      ...(body.installmentStart !== undefined
+        ? { installmentStart: Number(body.installmentStart) }
+        : {}),
+    },
+    { requireInstrumentContext: true },
+  );
 
   return json(201, result);
 }
