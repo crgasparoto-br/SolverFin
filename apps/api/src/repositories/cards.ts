@@ -200,12 +200,11 @@ export async function registerCardPurchaseForContext(
   forecastTransactions: readonly Transaction[];
 }> {
   const card = await findCardRow(context, cardId);
-  const groupCardId = cardId;
   const instruments =
     payload.cardInstrumentId !== undefined
-      ? await listCardInstrumentsForContext(context, groupCardId)
+      ? await listCardInstrumentsForContext(context, cardId)
       : undefined;
-  const existingInvoices = await listAllInvoicesForCard(context, groupCardId);
+  const existingInvoices = await listAllInvoicesForCard(context, cardId);
   const paymentAccount = card?.paymentAccountId
     ? await findAccountRow(context, card.paymentAccountId)
     : undefined;
@@ -222,7 +221,6 @@ export async function registerCardPurchaseForContext(
     transactionId: randomUUID(),
     context,
     card,
-    groupCardId,
     ...(instruments !== undefined ? { instruments } : {}),
     existingInvoices,
     ...(paymentAccount ? { paymentAccount } : {}),
