@@ -3,7 +3,9 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
-import { renderAccountsCardsPage as renderAccountsCardsPageForRoute } from "./dev-server/accounts-cards-page-dialog-only.js";
+import {
+  renderAccountsCardsPage as renderAccountsCardsPageForRoute,
+} from "./dev-server/accounts-cards-page-dialog-only.js";
 import { handleApiRequest } from "./dev-server/api.js";
 import { renderCardsPage } from "./dev-server/cards-page.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
@@ -113,7 +115,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/lancamentos" && token) {
-    sendHtml(response, 200, await renderTransactionsPage(token, url));
+    sendHtml(response, 200, await renderTransactionsPage(token));
     return;
   }
 
