@@ -62,7 +62,11 @@ async function runRejectsAccountUsedAsCardPaymentAccount(token: string): Promise
   assert.equal(cardResponse.statusCode, 201);
   const card = readCreditCardAccount(cardResponse);
 
-  const blockedDeleteResponse = await apiRequest(token, "DELETE", `/api/accounts/${account.id}`);
+  const blockedDeleteResponse = await apiRequest(
+    token,
+    "DELETE",
+    `/api/accounts/${account.id}`,
+  );
 
   assert.equal(blockedDeleteResponse.statusCode, 400);
   assert.equal(readErrorCode(blockedDeleteResponse), "ACCOUNT_IN_USE");
@@ -74,7 +78,11 @@ async function runRejectsAccountUsedAsCardPaymentAccount(token: string): Promise
   );
   assert.equal(cardDeleteResponse.statusCode, 200);
 
-  const accountDeleteResponse = await apiRequest(token, "DELETE", `/api/accounts/${account.id}`);
+  const accountDeleteResponse = await apiRequest(
+    token,
+    "DELETE",
+    `/api/accounts/${account.id}`,
+  );
   assert.equal(accountDeleteResponse.statusCode, 200);
 }
 
@@ -103,10 +111,17 @@ async function runDeletesUnusedCreditCardAccount(token: string): Promise<void> {
   assert.equal(createResponse.statusCode, 201);
   const card = readCreditCardAccount(createResponse);
 
-  const deleteResponse = await apiRequest(token, "DELETE", `/api/credit-card-accounts/${card.id}`);
+  const deleteResponse = await apiRequest(
+    token,
+    "DELETE",
+    `/api/credit-card-accounts/${card.id}`,
+  );
 
   assert.equal(deleteResponse.statusCode, 200);
-  assert.equal(readBody<{ creditCardAccountId: string }>(deleteResponse).creditCardAccountId, card.id);
+  assert.equal(
+    readBody<{ creditCardAccountId: string }>(deleteResponse).creditCardAccountId,
+    card.id,
+  );
 }
 
 async function runRejectsUsedCreditCardAccount(token: string): Promise<void> {
@@ -140,7 +155,11 @@ async function runRejectsUsedCreditCardAccount(token: string): Promise<void> {
   );
   assert.equal(purchaseResponse.statusCode, 201);
 
-  const deleteResponse = await apiRequest(token, "DELETE", `/api/credit-card-accounts/${card.id}`);
+  const deleteResponse = await apiRequest(
+    token,
+    "DELETE",
+    `/api/credit-card-accounts/${card.id}`,
+  );
 
   assert.equal(deleteResponse.statusCode, 400);
   assert.equal(readErrorCode(deleteResponse), "CARD_ACCOUNT_IN_USE");
