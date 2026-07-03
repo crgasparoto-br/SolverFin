@@ -383,7 +383,7 @@ function buildAutomationTargetFromSuggestion(
     kind: (match[3] ?? "expense") as TransactionKind,
     ...(details.accountId !== undefined ? { accountId: details.accountId } : {}),
     ...(details.categoryId !== undefined ? { categoryId: details.categoryId } : {}),
-    status: suggestion.status,
+    status: "pending_review",
   };
 }
 
