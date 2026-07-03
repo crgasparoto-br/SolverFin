@@ -24,6 +24,7 @@ async function main(): Promise<void> {
   await runRejectsAccountWithoutActiveInstrument(token);
   await runRejectsInstrumentLimitsAboveAccountLimit(token);
   await runRegistersPurchaseWithDefaultInstrument(token);
+  await runRejectsPurchaseWithArchivedInstrument(token);
   await runPreservesRecurrenceInstrumentAfterDefaultChange(token);
   await runCreditCardAccountInstrumentLifecycle(token);
 }
@@ -110,6 +111,61 @@ async function runRegistersPurchaseWithDefaultInstrument(token: string): Promise
   assert.equal(purchase.transaction.cardInstrumentId, defaultCardInstrument?.id);
   assert.equal(purchase.invoice.cardId, account.id);
   assert.equal(purchase.invoice.totalAmountMinor, 2_345);
+}
+
+async function runRejectsPurchaseWithArchivedInstrument(token: string): Promise<void> {
+  const suffix = Date.now().toString(36);
+  const createResponse = await apiRequest(token, "POST", "/api/credit-card-accounts", {
+    name: `Cartao instrumento arquivado ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 50_000,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico ativo",
+        maskedIdentifier: "**** 7777",
+      },
+      {
+        type: "virtual",
+        holder: "additional",
+        name: "Virtual arquivavel",
+        maskedIdentifier: "**** 8888",
+      },
+    ],
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const account = readCreditCardAccount(createResponse);
+  const activeInstrument = requireInstrument(account, "physical");
+  const archivedInstrument = requireInstrument(account, "virtual");
+
+  const archiveResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/credit-card-instruments/${archivedInstrument.id}/archive`,
+  );
+  assert.equal(archiveResponse.statusCode, 200);
+  const activeAccount = readCreditCardAccount(archiveResponse);
+
+  assert.equal(activeAccount.status, "active");
+  assert.equal(requireInstrument(activeAccount, "physical").id, activeInstrument.id);
+  assert.equal(requireInstrument(activeAccount, "virtual").status, "archived");
+
+  const purchaseResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/credit-card-accounts/${account.id}/purchases`,
+    {
+      occurredOn: "2026-06-18",
+      amountMinor: 1_999,
+      description: `Compra instrumento arquivado ${suffix}`,
+      cardInstrumentId: archivedInstrument.id,
+    },
+  );
+
+  assert.equal(purchaseResponse.statusCode, 400);
+  assert.equal(readErrorCode(purchaseResponse), "CARD_INSTRUMENT_NOT_ACTIVE");
 }
 
 async function runPreservesRecurrenceInstrumentAfterDefaultChange(token: string): Promise<void> {
