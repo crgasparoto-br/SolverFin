@@ -5,7 +5,12 @@ import { fileURLToPath } from "node:url";
 
 import { financialInstitutionCatalog } from "@solverfin/domain";
 
-import { enhanceAccountsCardsTabs, renderLoginPage, resolveRoute } from "./dev-server.js";
+import {
+  enhanceAccountsCardsTabs,
+  renderAccountsCardsPage,
+  renderLoginPage,
+  resolveRoute,
+} from "./dev-server.js";
 import { institutions, renderInstitutionIcon } from "./dev-server/institutions.js";
 import { privateRoutes } from "./dev-server/routes.js";
 import { renderAuthenticatedShell } from "./dev-server/shell.js";
@@ -16,6 +21,7 @@ loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
+await accountsCardsPageRendersCreditCardAccountsWithNestedInstruments();
 adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu();
 accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
 accountsCardsDirectEnhancementIsInjectedOnce();
@@ -68,6 +74,102 @@ function accountsCardsRouteRendersMasterPage(): void {
 
   assert.equal(authenticatedRoute.statusCode, 200);
   assert.equal(authenticatedRoute.kind, "placeholder");
+}
+
+async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments(): Promise<void> {
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = String(input);
+
+    if (url.endsWith("/api/accounts?status=all")) {
+      return jsonResponse({
+        accounts: [
+          {
+            id: "account-main",
+            name: "Conta pagamento",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 0,
+            currency: "BRL",
+            institutionKey: "c6",
+          },
+        ],
+      });
+    }
+
+    if (url.endsWith("/api/credit-card-accounts?status=all")) {
+      return jsonResponse({
+        creditCardAccounts: [
+          {
+            id: "card-c6",
+            name: "Cartão C6",
+            status: "active",
+            closingDay: 20,
+            dueDay: 10,
+            creditLimitMinor: 500_000,
+            institutionKey: "c6",
+            brandKey: "mastercard",
+            paymentAccountId: "account-main",
+            instruments: [
+              {
+                id: "instrument-physical",
+                type: "physical",
+                holder: "primary",
+                status: "active",
+                isDefault: true,
+                name: "Físico titular",
+                maskedIdentifier: "**** 1111",
+                creditLimitMinor: 300_000,
+              },
+              {
+                id: "instrument-virtual",
+                type: "virtual",
+                holder: "additional",
+                status: "archived",
+                isDefault: false,
+                name: "Virtual adicional",
+                maskedIdentifier: "**** 2222",
+                creditLimitMinor: 100_000,
+              },
+            ],
+          },
+        ],
+      });
+    }
+
+    throw new Error(`Unexpected fetch: ${url}`);
+  }) as typeof fetch;
+
+  try {
+    const html = await renderAccountsCardsPage("session-token");
+
+    assert.match(html, /Cartão C6/);
+    assert.match(html, /Cartões de crédito <span>1<\/span>/);
+    assert.match(html, /Conta de pagamento: Conta pagamento · 1 instrumento ativo/);
+    assert.match(html, /aria-label="Instrumentos de Cartão C6"/);
+    assert.match(html, /Físico titular/);
+    assert.match(html, /Físico · Titular principal · \*\*\*\* 1111 · limite/);
+    assert.match(html, /3\.000,00/);
+    assert.match(html, /Virtual adicional/);
+    assert.match(html, /Virtual · Adicional · \*\*\*\* 2222 · limite/);
+    assert.match(html, /1\.000,00/);
+    assert.match(html, />Default<\/span>/);
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts"/);
+    assert.match(html, /data-payload-kind="credit-card-account"/);
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/archive"/);
+    assert.doesNotMatch(html, /data-api-path="\/api\/cards"/);
+    assert.doesNotMatch(html, /\/api\/card-additional-links/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
 }
 
 function adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu(): void {
@@ -143,6 +245,9 @@ function accountsCardsPageDoesNotFetchRetiredLinks(): void {
     "utf8",
   );
 
+  assert.match(accountsCardsPageSource, /\/api\/credit-card-accounts\?status=all/);
+  assert.match(accountsCardsPageSource, /creditCardAccounts/);
+  assert.doesNotMatch(accountsCardsPageSource, /\/api\/cards\?status=all/);
   assert.doesNotMatch(accountsCardsPageSource, /\/api\/card-additional-links/);
   assert.doesNotMatch(accountsCardsPageSource, /CardAdditionalLinkRecord/);
 }
