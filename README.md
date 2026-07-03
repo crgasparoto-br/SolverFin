@@ -72,7 +72,7 @@ npm run dev:api    # API real em http://localhost:4000
 npm run dev:web    # Web SSR em http://localhost:5173, consumindo a API real
 ```
 
-Durante `npm run dev:web`, a aplicacao web compila em modo watch e o servidor local reinicia automaticamente quando os arquivos TypeScript geram uma nova saida em `apps/web/dist`. Depois de alterar uma tela, basta recarregar o navegador em `http://localhost:5173`; nao e necessario matar e subir o processo novamente.
+Durante `npm run dev:web` e `npm run dev:api`, cada aplicacao compila em modo watch e o servidor local reinicia automaticamente quando os arquivos TypeScript geram uma nova saida em `apps/web/dist` ou `apps/api/dist`. Depois de alterar uma tela ou uma rota de API, basta recarregar o navegador em `http://localhost:5173`; nao e necessario matar e subir os processos novamente. Isso evita que a API continue servindo rotas antigas (erro `Rota de API nao encontrada.`) depois de um `git pull` com novos endpoints.
 
 Login demo: `demo@solverfin.example.invalid` / `SolverFinDemo!2026`.
 
