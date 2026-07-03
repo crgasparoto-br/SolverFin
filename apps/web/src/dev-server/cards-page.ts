@@ -40,6 +40,16 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
   );
   const periodInvoices = selectedInvoice ? [selectedInvoice] : [];
 
+  const instrumentsResult = selectedCard
+    ? await apiGet<{ instruments: CardInstrumentRecord[] }>(
+        token,
+        `/api/credit-card-accounts/${selectedCard.id}/instruments`,
+      )
+    : { ok: true as const, data: { instruments: [] as CardInstrumentRecord[] } };
+  const instruments = instrumentsResult.ok
+    ? (instrumentsResult.data.instruments ?? []).filter((instrument) => instrument.status === "active")
+    : [];
+
   // Fetching recurrences first triggers the API's catch-up materialization of any due
   // installment into a real Transaction, so it must run before the purchases fetch below
   // in order for newly materialized purchases to show up in this same render.
@@ -131,7 +141,7 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
           </div>
         </section>
       </section>
-      ${renderPurchaseModal(selectedCard, categories)}
+      ${renderPurchaseModal(selectedCard, categories, instruments)}
       ${renderPaymentModal(selectedInvoice, accounts, summary?.amountDueMinor ?? 0)}
       ${renderRecurrenceEditModal(categories, "card")}
       ${clientScript()}
@@ -395,6 +405,7 @@ function renderPurchaseRow(
 function renderPurchaseModal(
   selectedCard: CardRecord | undefined,
   categories: CategoryRecord[],
+  instruments: CardInstrumentRecord[],
 ): string {
   return `
     <dialog data-modal="purchase">
@@ -404,10 +415,11 @@ function renderPurchaseModal(
           <p class="eyebrow">Compra no cartão</p>
           <h2 data-purchase-modal-title>Nova compra</h2>
         </div>
-        <form data-purchase-form data-path="/api/cards/${escapeHtml(selectedCard?.id ?? "")}/purchases">
+        <form data-purchase-form data-path="/api/credit-card-accounts/${escapeHtml(selectedCard?.id ?? "")}/purchases">
           <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
           <label>Data<input name="occurredOn" type="date" required /></label>
           <label class="full">Descrição<input name="description" placeholder="Compra no cartão" required /></label>
+          <label>Instrumento<select name="cardInstrumentId" ${instruments.length === 0 ? "disabled" : "required"}>${renderInstrumentOptions(instruments)}</select></label>
           <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
           <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
           <label data-purchase-field="totalInstallments" hidden>Parcelas<input name="totalInstallments" type="number" min="2" max="120" value="2" /></label>
@@ -416,7 +428,7 @@ function renderPurchaseModal(
           <label data-purchase-field="interval" hidden>A cada<input name="interval" type="number" min="1" max="60" value="1" /></label>
           <label data-purchase-field="frequency" hidden>Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label>
           <label data-purchase-field="endOn" hidden>Fim opcional<input name="endOn" type="date" /></label>
-          <button type="submit" class="full">Salvar compra</button>
+          <button type="submit" class="full"${selectedCard && instruments.length > 0 ? "" : " disabled"}>Salvar compra</button>
         </form>
       </section>
     </dialog>
@@ -471,6 +483,43 @@ function renderCategoryOptions(categories: CategoryRecord[]): string {
       return `<option value="${escapeHtml(category.id)}">${indent}${escapeHtml(category.name)}</option>`;
     })
     .join("");
+}
+
+function renderInstrumentOptions(instruments: CardInstrumentRecord[]): string {
+  if (instruments.length === 0) {
+    return `<option value="">Nenhum instrumento ativo</option>`;
+  }
+
+  return instruments
+    .map(
+      (instrument) =>
+        `<option value="${escapeHtml(instrument.id)}"${instrument.isDefault ? " selected" : ""}>${escapeHtml(formatInstrumentLabel(instrument))}</option>`,
+    )
+    .join("");
+}
+
+function formatInstrumentLabel(instrument: CardInstrumentRecord): string {
+  const name = instrument.name?.trim();
+  const title = name || `${formatInstrumentType(instrument.type)} - ${formatInstrumentHolder(instrument.holder)}`;
+  const identifier = instrument.maskedIdentifier ? ` · ${instrument.maskedIdentifier}` : "";
+  const limit =
+    instrument.effectiveCreditLimitMinor !== undefined
+      ? ` · limite ${formatMoney(instrument.effectiveCreditLimitMinor)}`
+      : "";
+
+  return `${title}${identifier}${limit}`;
+}
+
+function formatInstrumentType(type: string): string {
+  if (type === "physical") return "Físico";
+  if (type === "virtual") return "Virtual";
+  return type;
+}
+
+function formatInstrumentHolder(holder: string): string {
+  if (holder === "primary") return "Titular principal";
+  if (holder === "additional") return "Adicional";
+  return holder;
 }
 
 function buildCategoryHierarchy(
@@ -646,6 +695,8 @@ function clientScript(): string {
       const purchaseForm = document.querySelector("[data-purchase-form]");
       const purchaseRepeatMode = purchaseForm && purchaseForm.querySelector('[name="repeatMode"]');
       const purchaseRepeatModeLabel = purchaseRepeatMode && purchaseRepeatMode.closest("label");
+      const purchaseInstrumentInput = purchaseForm && purchaseForm.querySelector('[name="cardInstrumentId"]');
+      const purchaseInstrumentLabel = purchaseInstrumentInput && purchaseInstrumentInput.closest("label");
 
       function setPurchaseFieldVisible(name, visible) {
         const field = purchaseForm.querySelector('[data-purchase-field="' + name + '"]');
@@ -678,6 +729,7 @@ function clientScript(): string {
           purchaseForm.reset();
           purchaseForm.dataset.method = "POST";
           if (purchaseRepeatModeLabel) purchaseRepeatModeLabel.hidden = false;
+          if (purchaseInstrumentLabel) purchaseInstrumentLabel.hidden = false;
           syncPurchaseFieldVisibility();
           document.querySelector("[data-purchase-modal-title]").textContent = "Nova compra";
         }
@@ -698,6 +750,7 @@ function clientScript(): string {
           form.description.value = purchase.description;
           if (form.categoryId) form.categoryId.value = purchase.categoryId || "";
           if (purchaseRepeatModeLabel) purchaseRepeatModeLabel.hidden = true;
+          if (purchaseInstrumentLabel) purchaseInstrumentLabel.hidden = true;
           syncPurchaseFieldVisibility();
           document.querySelector("[data-purchase-modal-title]").textContent = "Editar compra";
           openModal("purchase");
@@ -726,7 +779,7 @@ function clientScript(): string {
       }
 
       function extractPurchaseCardId(path) {
-        const match = /\\/api\\/cards\\/([^/]+)\\/purchases/.exec(path || "");
+        const match = /\\/api\\/(?:cards|credit-card-accounts)\\/([^/]+)\\/purchases/.exec(path || "");
         return match ? match[1] : "";
       }
 
@@ -741,12 +794,14 @@ function clientScript(): string {
           const purchaseCardId =
             String(data.get("purchaseCardId") || "") || extractPurchaseCardId(path);
           const categoryId = String(data.get("categoryId") || "");
+          const cardInstrumentId = method === "POST" ? String(data.get("cardInstrumentId") || "") : "";
           const basePayload = {
             amountMinor: moneyToMinor(data.get("amountMinor")),
             occurredOn: String(data.get("occurredOn")),
             description: String(data.get("description") || ""),
           };
           if (categoryId) basePayload.categoryId = categoryId;
+          if (cardInstrumentId) basePayload.cardInstrumentId = cardInstrumentId;
 
           status.textContent = "Salvando...";
           let response;
@@ -761,6 +816,7 @@ function clientScript(): string {
               amountMinor: basePayload.amountMinor,
               description: basePayload.description,
               cardId: purchaseCardId,
+              ...(cardInstrumentId ? { cardInstrumentId } : {}),
               ...(categoryId ? { categoryId } : {}),
             });
           } else if (mode === "installment") {
@@ -774,14 +830,14 @@ function clientScript(): string {
               valueMode === "per_installment"
                 ? basePayload.amountMinor * totalInstallments
                 : basePayload.amountMinor;
-            response = await send("/api/cards/" + purchaseCardId + "/purchases", "POST", {
+            response = await send(path, "POST", {
               ...basePayload,
               amountMinor: purchaseAmountMinor,
               totalInstallments,
               installmentStart,
             });
           } else if (purchaseCardId && method === "POST") {
-            response = await send("/api/cards/" + purchaseCardId + "/purchases", "POST", basePayload);
+            response = await send(path, "POST", basePayload);
           } else {
             response = await send(path, method, basePayload);
           }
@@ -942,6 +998,17 @@ interface CardRecord {
   dueDay: number;
   maskedIdentifier?: string;
   institutionKey?: string;
+}
+
+interface CardInstrumentRecord {
+  id: string;
+  type: string;
+  holder: string;
+  status: string;
+  isDefault: boolean;
+  name?: string;
+  maskedIdentifier?: string;
+  effectiveCreditLimitMinor?: number;
 }
 
 interface InvoiceRecord {
