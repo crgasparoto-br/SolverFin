@@ -42,7 +42,7 @@ runRegistersInstallmentPurchase();
 runRegistersInstallmentPurchaseWithCustomStart();
 runDistributesInstallmentsAcrossFutureInvoices();
 runRejectsInvalidInstallmentStart();
-runSharesInvoiceAcrossGroupCardId();
+runKeepsSeparateInvoicesForSeparateCards();
 runCreatesPaymentForecastTransaction();
 runUpdatesExistingPaymentForecastTransaction();
 runSkipsForecastTransactionWithoutPaymentAccount();
@@ -381,12 +381,12 @@ function runRejectsInvalidInstallmentStart(): void {
   );
 }
 
-function runSharesInvoiceAcrossGroupCardId(): void {
+function runKeepsSeparateInvoicesForSeparateCards(): void {
   const physicalCard = createCard({
     id: "card-c6-fisico",
     context: tenantA,
     now,
-    payload: { name: "C6 - Físico", closingDay: 26, dueDay: 1 },
+    payload: { name: "C6 - Fisico", closingDay: 26, dueDay: 1 },
   }).card;
   const virtualCard = createCard({
     id: "card-c6-virtual",
@@ -399,7 +399,6 @@ function runSharesInvoiceAcrossGroupCardId(): void {
     transactionId: "transaction-c6-physical",
     context: tenantA,
     card: physicalCard,
-    groupCardId: virtualCard.id,
     existingInvoices: [],
     now,
     payload: {
@@ -407,25 +406,24 @@ function runSharesInvoiceAcrossGroupCardId(): void {
       amountMinor: 10000,
       description: "Compra no fisico",
     },
-    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+    makeInvoiceId: (period) => `invoice-${physicalCard.id}-${period.periodEndOn}`,
   });
 
   assertEqual(
     firstResult.invoice.cardId,
-    virtualCard.id,
-    "shared invoice should be filed under the group card id",
+    physicalCard.id,
+    "invoice should be filed under the purchase card",
   );
   assertEqual(
     firstResult.transaction.cardId,
     physicalCard.id,
-    "transaction should keep the literal card used for the purchase",
+    "transaction should keep the card used for the purchase",
   );
 
   const secondResult = registerCardPurchase({
     transactionId: "transaction-c6-virtual",
     context: tenantA,
     card: virtualCard,
-    groupCardId: virtualCard.id,
     existingInvoices: [firstResult.invoice],
     now,
     payload: {
@@ -433,19 +431,20 @@ function runSharesInvoiceAcrossGroupCardId(): void {
       amountMinor: 5000,
       description: "Compra no virtual",
     },
-    makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
+    makeInvoiceId: (period) => `invoice-${virtualCard.id}-${period.periodEndOn}`,
   });
 
   assertEqual(
-    secondResult.invoice.id,
-    firstResult.invoice.id,
-    "purchase on the other family card should reuse the shared invoice",
+    secondResult.invoice.cardId,
+    virtualCard.id,
+    "separate cards should not share invoices through a legacy group alias",
   );
   assertEqual(
-    secondResult.invoice.totalAmountMinor,
-    15000,
-    "shared invoice total should accumulate purchases from both cards",
+    secondResult.invoice.id,
+    "invoice-card-c6-virtual-2026-06-26",
+    "separate card should create its own invoice for the same period",
   );
+  assertEqual(secondResult.invoice.totalAmountMinor, 5000, "separate invoice keeps its own total");
 }
 
 function runCreatesPaymentForecastTransaction(): void {
