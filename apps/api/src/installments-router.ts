@@ -68,7 +68,12 @@ function route(method: string, path: string, handler: InstallmentsHandler): void
     })
     .join("/");
 
-  routes.push({ method, pattern: new RegExp(`^${patternSource}$`), paramNames, handler });
+  routes.push({
+    method,
+    pattern: new RegExp(`^${patternSource}$`),
+    paramNames,
+    handler,
+  });
 }
 
 function findRoute(
@@ -117,7 +122,9 @@ function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
     ...(request.query.get("cardInstrumentId")
       ? { cardInstrumentId: String(request.query.get("cardInstrumentId")) }
       : {}),
-    ...(request.query.get("invoiceId") ? { invoiceId: String(request.query.get("invoiceId")) } : {}),
+    ...(request.query.get("invoiceId")
+      ? { invoiceId: String(request.query.get("invoiceId")) }
+      : {}),
     ...(request.query.get("categoryId")
       ? { categoryId: String(request.query.get("categoryId")) }
       : {}),
