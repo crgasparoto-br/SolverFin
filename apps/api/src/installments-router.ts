@@ -115,6 +115,7 @@ function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
     ...(request.query.get("transactionId")
       ? { transactionId: String(request.query.get("transactionId")) }
       : {}),
+    ...(request.query.get("accountId") ? { accountId: String(request.query.get("accountId")) } : {}),
     ...(request.query.get("recurrenceId")
       ? { recurrenceId: String(request.query.get("recurrenceId")) }
       : {}),
