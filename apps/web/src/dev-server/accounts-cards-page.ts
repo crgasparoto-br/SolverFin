@@ -18,17 +18,21 @@ const cardBrands = [
 const accountCurrencies = ["BRL", "USD", "EUR"] as const;
 
 export async function renderAccountsCardsPage(token: string): Promise<string> {
-  const [accounts, cards] = await Promise.all([
+  const [accounts, creditCardAccounts] = await Promise.all([
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts?status=all"),
-    apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
+    apiGet<{ creditCardAccounts: CreditCardAccountRecord[] }>(
+      token,
+      "/api/credit-card-accounts?status=all",
+    ),
   ]);
 
   if (!accounts.ok)
     return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", accounts.error);
-  if (!cards.ok) return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", cards.error);
+  if (!creditCardAccounts.ok)
+    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", creditCardAccounts.error);
 
   const accountItems = accounts.data.accounts;
-  const cardItems = cards.data.cards;
+  const cardItems = creditCardAccounts.data.creditCardAccounts;
 
   return renderAuthenticatedPage({
     pathname: "/contas-cartoes",
@@ -53,7 +57,7 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
           <button id="connections-tab" type="button" role="tab" class="tab-button" data-tab="connections" aria-controls="connections-panel" aria-selected="false">Conexões</button>
         </div>
         <div class="filter-row">
-          <label>Buscar<input data-master-search type="search" placeholder="Nome, instituição ou final mascarado" /></label>
+          <label>Buscar<input data-master-search type="search" placeholder="Nome, instituição, bandeira ou instrumento" /></label>
           <label>Status
             <select data-master-status>
               <option value="all">Todos</option>
@@ -82,12 +86,12 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
         <div class="section-heading">
           <div>
             <h2>Cartões de crédito</h2>
-            <p class="muted">Cadastre dados básicos do cartão sem misturar com compras e faturas.</p>
+            <p class="muted">Cadastre o cartão agrupador e acompanhe os instrumentos internos usados nas compras.</p>
           </div>
           <span>${countActive(cardItems)} ativos</span>
         </div>
         <div class="master-list" data-master-list>
-          ${cardItems.map((card) => renderCardItem(card, accountItems)).join("") || renderEmptyState("Nenhum cartão cadastrado.", "Crie um cartão para vincular limite, vencimento e conta de pagamento.")}
+          ${cardItems.map((card) => renderCardItem(card, accountItems)).join("") || renderEmptyState("Nenhum cartão cadastrado.", "Crie um cartão agrupador com ao menos um instrumento ativo para começar.")}
         </div>
         ${renderFilterEmptyState("Nenhum cartão encontrado.")}
       </section>
@@ -140,16 +144,26 @@ function renderAccountItem(account: AccountRecord): string {
   `;
 }
 
-function renderCardItem(card: CardRecord, accounts: AccountRecord[]): string {
+function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]): string {
   const institution = findInstitution(card.institutionKey);
   const brand = findCardBrand(card.brandKey);
   const paymentAccount = accounts.find((account) => account.id === card.paymentAccountId);
+  const activeInstrumentCount = card.instruments.filter(
+    (instrument) => instrument.status === "active",
+  ).length;
   const search = [
     card.name,
     institution.label,
     brand.label,
-    card.maskedIdentifier ?? "",
     card.status,
+    ...card.instruments.flatMap((instrument) => [
+      instrument.name ?? "",
+      instrument.maskedIdentifier ?? "",
+      instrument.type,
+      instrument.holder,
+      instrument.status,
+      instrument.isDefault ? "default" : "",
+    ]),
   ]
     .join(" ")
     .toLowerCase();
@@ -157,25 +171,61 @@ function renderCardItem(card: CardRecord, accounts: AccountRecord[]): string {
   const isArchived = card.status === "archived";
 
   return `
-    <article class="master-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(search)}">
+    <article class="master-item card-account-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(search)}">
       <div class="identity-mark card-mark" aria-hidden="true">${renderCardBrandIcon(brand.key)}</div>
       <div class="item-main">
         <div class="item-title-row">
           <strong>${escapeHtml(card.name)}</strong>
           <span class="status-pill">${escapeHtml(formatGenericStatus(card.status))}</span>
         </div>
-        <p>${escapeHtml(institution.label)} · ${escapeHtml(brand.label)} · fecha ${card.closingDay}, vence ${card.dueDay}${card.maskedIdentifier ? ` · ${escapeHtml(card.maskedIdentifier)}` : ""}</p>
-        <p class="muted">Conta de pagamento: ${escapeHtml(paymentAccount?.name ?? "não vinculada")}</p>
+        <p>${escapeHtml(institution.label)} · ${escapeHtml(brand.label)} · fecha ${card.closingDay}, vence ${card.dueDay}</p>
+        <p class="muted">Conta de pagamento: ${escapeHtml(paymentAccount?.name ?? "não vinculada")} · ${activeInstrumentCount} ${activeInstrumentCount === 1 ? "instrumento ativo" : "instrumentos ativos"}</p>
+        ${renderCardInstrumentList(card)}
       </div>
-      <div class="amount-stack"><span>Limite</span><strong>${formatMoney(card.creditLimitMinor ?? 0)}</strong></div>
+      <div class="amount-stack"><span>Limite total</span><strong>${formatMoney(card.creditLimitMinor ?? 0)}</strong></div>
       <div class="item-actions" aria-label="Ações de ${escapeHtml(card.name)}">
         <button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar cadastro de ${escapeHtml(card.name)}">${renderEditIcon()}</button>
-        <form data-api-form data-api-path="/api/cards/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
+        <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
           <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(card.name)}"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
         </form>
       </div>
       ${renderCardEditDialog(card, accounts, editDialogId)}
     </article>
+  `;
+}
+
+function renderCardInstrumentList(card: CreditCardAccountRecord): string {
+  if (card.instruments.length === 0) {
+    return `
+      <div class="instrument-list is-empty" aria-label="Instrumentos de ${escapeHtml(card.name)}">
+        <p class="muted">Sem instrumento ativo para novos lançamentos.</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="instrument-list" aria-label="Instrumentos de ${escapeHtml(card.name)}">
+      ${card.instruments.map(renderCardInstrumentItem).join("")}
+    </div>
+  `;
+}
+
+function renderCardInstrumentItem(instrument: CardInstrumentRecord): string {
+  const title =
+    instrument.name?.trim() ||
+    `${formatInstrumentType(instrument.type)} ${formatInstrumentHolder(instrument.holder).toLowerCase()}`;
+
+  return `
+    <div class="instrument-item" data-card-instrument>
+      <div>
+        <strong>${escapeHtml(title)}</strong>
+        <p class="instrument-meta">${escapeHtml(formatInstrumentType(instrument.type))} · ${escapeHtml(formatInstrumentHolder(instrument.holder))}${instrument.maskedIdentifier ? ` · ${escapeHtml(instrument.maskedIdentifier)}` : ""}${instrument.creditLimitMinor !== undefined ? ` · limite ${formatMoney(instrument.creditLimitMinor)}` : ""}</p>
+      </div>
+      <div class="instrument-tags">
+        ${instrument.isDefault ? `<span class="instrument-pill">Default</span>` : ""}
+        <span class="instrument-pill ${instrument.status === "archived" ? "is-archived" : ""}">${escapeHtml(formatGenericStatus(instrument.status))}</span>
+      </div>
+    </div>
   `;
 }
 
@@ -203,7 +253,7 @@ function renderAccountEditDialog(account: AccountRecord, dialogId: string): stri
 }
 
 function renderCardEditDialog(
-  card: CardRecord,
+  card: CreditCardAccountRecord,
   accounts: AccountRecord[],
   dialogId: string,
 ): string {
@@ -216,15 +266,14 @@ function renderCardEditDialog(
         <p class="eyebrow">Editar cadastro</p>
         <h2 id="${escapeHtml(titleId)}">${escapeHtml(card.name)}</h2>
       </div>
-      <form data-api-form data-api-method="PATCH" data-api-path="/api/cards/${escapeHtml(card.id)}" class="edit-grid">
+      <form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}" class="edit-grid">
         <label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions(card.institutionKey)}</select></label>
         <label>Bandeira<select name="brandKey">${renderCardBrandOptions(card.brandKey)}</select></label>
         <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label>
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
-        <label>Limite (R$)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
+        <label>Limite total (R$)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
-        <label>Identificador<input name="maskedIdentifier" value="${escapeHtml(card.maskedIdentifier ?? "")}" placeholder="final 1234" /></label>
         <button type="submit">Salvar cartão</button>
       </form>
     </dialog>
@@ -254,15 +303,19 @@ function renderCardDialog(accounts: AccountRecord[]): string {
     <dialog id="new-card-dialog" class="master-dialog" aria-labelledby="new-card-title">
       <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
       <div class="dialog-heading"><p class="eyebrow">Novo cadastro</p><h2 id="new-card-title">Novo cartão</h2></div>
-      <form data-api-form data-api-path="/api/cards" class="edit-grid">
+      <form data-api-form data-api-path="/api/credit-card-accounts" data-payload-kind="credit-card-account" class="edit-grid">
         <label>Nome<input name="name" required /></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions()}</select></label>
         <label>Bandeira<select name="brandKey">${renderCardBrandOptions()}</select></label>
         <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" required /></label>
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" required /></label>
-        <label>Limite (R$)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
+        <label>Limite total (R$)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts)}</select></label>
-        <label>Identificador<input name="maskedIdentifier" placeholder="final 1234" /></label>
+        <label>Tipo do instrumento<select name="instrumentType" required><option value="physical">Físico</option><option value="virtual">Virtual</option></select></label>
+        <label>Titularidade<select name="instrumentHolder" required><option value="primary">Titular principal</option><option value="additional">Adicional</option></select></label>
+        <label>Nome do instrumento<input name="instrumentName" placeholder="Físico titular" /></label>
+        <label>Final mascarado<input name="instrumentMaskedIdentifier" placeholder="**** 1234" /></label>
+        <label>Limite do instrumento (R$)<input name="instrumentCreditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <button type="submit">Criar cartão</button>
       </form>
     </dialog>
@@ -325,6 +378,23 @@ function apiFormScript(): string {
             payload[key] = value;
           }
         });
+
+        if (form.dataset.payloadKind === "credit-card-account") {
+          const instrument = {
+            type: payload.instrumentType || "physical",
+            holder: payload.instrumentHolder || "primary",
+          };
+          if (payload.instrumentName !== undefined) instrument.name = payload.instrumentName;
+          if (payload.instrumentMaskedIdentifier !== undefined) instrument.maskedIdentifier = payload.instrumentMaskedIdentifier;
+          if (payload.instrumentCreditLimitMinor !== undefined) instrument.creditLimitMinor = payload.instrumentCreditLimitMinor;
+          delete payload.instrumentType;
+          delete payload.instrumentHolder;
+          delete payload.instrumentName;
+          delete payload.instrumentMaskedIdentifier;
+          delete payload.instrumentCreditLimitMinor;
+          payload.instruments = [instrument];
+        }
+
         return payload;
       }
 
@@ -615,6 +685,18 @@ function formatGenericStatus(status: string): string {
   return status;
 }
 
+function formatInstrumentType(type: string): string {
+  if (type === "physical") return "Físico";
+  if (type === "virtual") return "Virtual";
+  return type;
+}
+
+function formatInstrumentHolder(holder: string): string {
+  if (holder === "primary") return "Titular principal";
+  if (holder === "additional") return "Adicional";
+  return holder;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -635,17 +717,28 @@ interface AccountRecord {
   institutionKey?: string;
 }
 
-interface CardRecord {
+interface CreditCardAccountRecord {
   id: string;
   name: string;
   status: string;
   closingDay: number;
   dueDay: number;
   creditLimitMinor?: number;
-  maskedIdentifier?: string;
   institutionKey?: string;
   brandKey?: string;
   paymentAccountId?: string;
+  instruments: CardInstrumentRecord[];
+}
+
+interface CardInstrumentRecord {
+  id: string;
+  type: string;
+  holder: string;
+  status: string;
+  isDefault: boolean;
+  name?: string;
+  maskedIdentifier?: string;
+  creditLimitMinor?: number;
 }
 
 function baseCss(): string {
@@ -663,11 +756,14 @@ function baseCss(): string {
     .brand-icon { display: block; height: 44px; width: 44px; } .card-brand-icon { filter: drop-shadow(0 1px 2px rgba(15,23,42,.14)); }
     .brand-icon-wrap { align-items: center; background: #fff; display: flex; height: 44px; justify-content: center; width: 44px; } .institution-logo-img { background: #fff; border-radius: 10px; object-fit: contain; padding: 5px; }
     .item-main { display: grid; gap: 5px; min-width: 0; } .item-main p { color: var(--muted); line-height: 1.45; } .item-title-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; } .amount-stack { display: grid; gap: 3px; justify-items: end; text-align: right; white-space: nowrap; } .amount-stack span { color: var(--muted); font-size: .76rem; font-weight: 800; text-transform: uppercase; } .amount-stack strong { color: var(--text); }
+    .instrument-list { border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 0; margin-top: 6px; overflow: hidden; } .instrument-list.is-empty { padding: 10px 12px; }
+    .instrument-item { align-items: center; background: var(--surface-soft); border-top: 1px solid var(--line); display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; } .instrument-item:first-child { border-top: 0; } .instrument-meta { font-size: .88rem; }
+    .instrument-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; } .instrument-pill { background: #e0f2fe; border-radius: 999px; color: #075985; font-size: .72rem; font-weight: 800; padding: 4px 8px; white-space: nowrap; } .instrument-pill.is-archived { background: #f1f5f9; color: #475569; }
     .item-actions { display: flex; gap: 8px; justify-content: flex-end; } .inline-action-form { display: block; gap: 0; } .icon-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 44px; padding: 0; width: 44px; } .danger-icon-button { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 20px; width: 20px; }
     .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
     .filter-empty-state { margin-top: 4px; }
     .master-dialog { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 760px; padding: 20px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.38); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 12px; } .dialog-heading { display: grid; gap: 4px; }
     @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .master-heading { align-items: stretch; display: grid; } .master-item { grid-template-columns: 44px minmax(0, 1fr) auto; } .item-actions { grid-column: 2 / -1; justify-content: flex-start; } }
-    @media (max-width: 760px) { h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading { display: grid; grid-template-columns: 1fr; } .item-actions { grid-column: auto; justify-content: flex-start; } .amount-stack { justify-items: start; text-align: left; white-space: normal; } }
+    @media (max-width: 760px) { h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading, .instrument-item { display: grid; grid-template-columns: 1fr; } .item-actions { grid-column: auto; justify-content: flex-start; } .instrument-tags { justify-content: flex-start; } .amount-stack { justify-items: start; text-align: left; white-space: normal; } }
   `;
 }
