@@ -89,9 +89,7 @@ async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<v
     ],
   });
   assert.equal(createResponse.statusCode, 201);
-  const createdAccount = readBody<{ creditCardAccount: ApiCreditCardAccount }>(
-    createResponse,
-  ).creditCardAccount;
+  const createdAccount = readCreditCardAccount(createResponse);
 
   assert.equal(createdAccount.financialProfileId, PERSONAL_PROFILE_ID);
   assert.equal(createdAccount.status, "active");
@@ -110,9 +108,7 @@ async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<v
 
   const listResponse = await apiRequest(token, "GET", "/api/credit-card-accounts?status=all");
   assert.equal(listResponse.statusCode, 200);
-  const listedAccounts = readBody<{ creditCardAccounts: ApiCreditCardAccount[] }>(
-    listResponse,
-  ).creditCardAccounts;
+  const listedAccounts = readCreditCardAccounts(listResponse);
   const listedAccount = listedAccounts.find((account) => account.id === createdAccount.id);
 
   assert.notEqual(listedAccount, undefined);
@@ -125,9 +121,7 @@ async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<v
     { instrumentId: virtualInstrument.id },
   );
   assert.equal(defaultResponse.statusCode, 200);
-  const defaultAccount = readBody<{ creditCardAccount: ApiCreditCardAccount }>(
-    defaultResponse,
-  ).creditCardAccount;
+  const defaultAccount = readCreditCardAccount(defaultResponse);
 
   assert.equal(defaultInstrument(defaultAccount)?.id, virtualInstrument.id);
 
@@ -143,7 +137,7 @@ async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<v
     },
   );
   assert.equal(purchaseResponse.statusCode, 201);
-  const purchase = readBody<{ transaction: ApiTransaction; invoice: ApiInvoice }>(purchaseResponse);
+  const purchase = readPurchase(purchaseResponse);
 
   assert.equal(purchase.transaction.cardId, createdAccount.id);
   assert.equal(purchase.transaction.cardInstrumentId, virtualInstrument.id);
@@ -156,9 +150,7 @@ async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<v
     `/api/credit-card-instruments/${virtualInstrument.id}/archive`,
   );
   assert.equal(archiveDefaultResponse.statusCode, 200);
-  const afterDefaultArchive = readBody<{ creditCardAccount: ApiCreditCardAccount }>(
-    archiveDefaultResponse,
-  ).creditCardAccount;
+  const afterDefaultArchive = readCreditCardAccount(archiveDefaultResponse);
 
   assert.equal(afterDefaultArchive.status, "active");
   assert.equal(requireInstrument(afterDefaultArchive, "virtual").status, "archived");
@@ -170,12 +162,13 @@ async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<v
     `/api/credit-card-instruments/${physicalInstrument.id}/archive`,
   );
   assert.equal(archiveLastResponse.statusCode, 200);
-  const blockedAccount = readBody<{ creditCardAccount: ApiCreditCardAccount }>(
-    archiveLastResponse,
-  ).creditCardAccount;
+  const blockedAccount = readCreditCardAccount(archiveLastResponse);
 
   assert.equal(blockedAccount.status, "blocked");
-  assert.equal(blockedAccount.instruments.every((instrument) => instrument.status === "archived"), true);
+  assert.equal(
+    blockedAccount.instruments.every((instrument) => instrument.status === "archived"),
+    true,
+  );
   assert.equal(defaultInstrument(blockedAccount), undefined);
 
   const blockedPurchaseResponse = await apiRequest(
@@ -252,7 +245,26 @@ function requireInstrument(
 }
 
 function defaultInstrument(account: ApiCreditCardAccount): ApiCardInstrument | undefined {
-  return account.instruments.find((instrument) => instrument.status === "active" && instrument.isDefault);
+  return account.instruments.find(
+    (instrument) => instrument.status === "active" && instrument.isDefault,
+  );
+}
+
+function readCreditCardAccount(response: Pick<ApiResponse, "body">): ApiCreditCardAccount {
+  return readBody<{ creditCardAccount: ApiCreditCardAccount }>(response).creditCardAccount;
+}
+
+function readCreditCardAccounts(response: Pick<ApiResponse, "body">): ApiCreditCardAccount[] {
+  return readBody<{ creditCardAccounts: ApiCreditCardAccount[] }>(
+    response,
+  ).creditCardAccounts;
+}
+
+function readPurchase(response: Pick<ApiResponse, "body">): {
+  transaction: ApiTransaction;
+  invoice: ApiInvoice;
+} {
+  return readBody<{ transaction: ApiTransaction; invoice: ApiInvoice }>(response);
 }
 
 function readBody<TBody>(response: Pick<ApiResponse, "body">): TBody {
