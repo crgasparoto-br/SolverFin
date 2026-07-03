@@ -33,6 +33,14 @@ import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { registerCardPurchaseForContext } from "./cards.js";
 
+type CreateRecurrenceForContextPayload = CreateRecurrencePayload & {
+  cardInstrumentId?: EntityId;
+};
+
+type UpdateRecurrenceForContextPayload = UpdateRecurrencePayload & {
+  cardInstrumentId?: EntityId;
+};
+
 interface RecurrenceRow {
   id: string;
   organizationId: string;
@@ -103,13 +111,15 @@ export async function getRecurrenceForContext(
 
 export async function createRecurrenceForContext(
   context: TenantContext,
-  payload: CreateRecurrencePayload,
+  payload: CreateRecurrenceForContextPayload,
 ): Promise<Recurrence> {
   const account = payload.accountId ? await findAccountRow(context, payload.accountId) : undefined;
   const card = payload.cardId ? await findCardRow(context, payload.cardId) : undefined;
   const category = payload.categoryId
     ? await findCategoryRow(context, payload.categoryId)
     : undefined;
+
+  await assertRecurrenceCardInstrumentTarget(context, card, payload.cardInstrumentId);
 
   const result = createRecurrenceDomain({
     id: randomUUID(),
@@ -121,8 +131,16 @@ export async function createRecurrenceForContext(
     ...(category ? { category } : {}),
   });
 
+  if (payload.cardInstrumentId !== undefined) {
+    result.recurrence.cardInstrumentId = payload.cardInstrumentId;
+  }
+
   await persistRecurrenceMutation(result);
-  await generateInstallmentsForContext(context, result.recurrence.id, todayIso());
+
+  const generationThrough = todayIso();
+  if (result.recurrence.startOn <= generationThrough) {
+    await generateInstallmentsForContext(context, result.recurrence.id, generationThrough);
+  }
 
   return result.recurrence;
 }
@@ -130,7 +148,7 @@ export async function createRecurrenceForContext(
 export async function updateRecurrenceForContext(
   context: TenantContext,
   recurrenceId: EntityId,
-  payload: UpdateRecurrencePayload,
+  payload: UpdateRecurrenceForContextPayload,
 ): Promise<Recurrence> {
   const currentRecurrence = await findRecurrenceRow(context, recurrenceId);
   const accountId =
@@ -142,6 +160,8 @@ export async function updateRecurrenceForContext(
   const card = cardId ? await findCardRow(context, cardId) : undefined;
   const category = categoryId ? await findCategoryRow(context, categoryId) : undefined;
 
+  await assertRecurrenceCardInstrumentTarget(context, card, payload.cardInstrumentId);
+
   const result = updateRecurrenceDomain({
     context,
     recurrence: currentRecurrence,
@@ -151,6 +171,17 @@ export async function updateRecurrenceForContext(
     ...(card ? { card } : {}),
     ...(category ? { category } : {}),
   });
+
+  if (
+    payload.accountId !== undefined ||
+    (payload.cardId !== undefined && payload.cardInstrumentId === undefined)
+  ) {
+    delete result.recurrence.cardInstrumentId;
+  }
+
+  if (payload.cardInstrumentId !== undefined) {
+    result.recurrence.cardInstrumentId = payload.cardInstrumentId;
+  }
 
   await persistRecurrenceMutation(result);
 
@@ -506,6 +537,46 @@ async function findCardRow(context: TenantContext, cardId: EntityId): Promise<Ca
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
+}
+
+async function assertRecurrenceCardInstrumentTarget(
+  context: TenantContext,
+  card: Card | undefined,
+  cardInstrumentId: EntityId | undefined,
+): Promise<void> {
+  if (cardInstrumentId === undefined) {
+    return;
+  }
+
+  if (card === undefined) {
+    throwRecurrenceCardInstrumentInvalid();
+  }
+
+  await assertActiveCardInstrumentBelongsToCard(context, card.id, cardInstrumentId);
+}
+
+async function assertActiveCardInstrumentBelongsToCard(
+  context: TenantContext,
+  cardId: EntityId,
+  cardInstrumentId: EntityId,
+): Promise<void> {
+  const rows = await query<{ id: string }>(
+    `select "id" from "CardInstrument"
+     where "id" = $1 and "cardId" = $2 and "organizationId" = $3 and "financialProfileId" = $4 and "status" = 'ACTIVE'
+     limit 1`,
+    [cardInstrumentId, cardId, context.organizationId, context.financialProfileId],
+  );
+
+  if (rows[0] === undefined) {
+    throwRecurrenceCardInstrumentInvalid();
+  }
+}
+
+function throwRecurrenceCardInstrumentInvalid(): never {
+  throw Object.assign(
+    new Error("Instrumento de cartao da recorrencia deve estar ativo e pertencer ao cartao."),
+    { code: "RECURRENCE_CARD_INSTRUMENT_INVALID", statusCode: 400 },
+  );
 }
 
 async function findCategoryRow(
