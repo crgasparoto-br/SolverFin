@@ -168,6 +168,7 @@ function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]
     .join(" ")
     .toLowerCase();
   const editDialogId = `edit-card-dialog-${card.id}`;
+  const newInstrumentDialogId = `new-card-instrument-dialog-${card.id}`;
   const isArchived = card.status === "archived";
 
   return `
@@ -185,11 +186,14 @@ function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]
       <div class="amount-stack"><span>Limite total</span><strong>${formatMoney(card.creditLimitMinor ?? 0)}</strong></div>
       <div class="item-actions" aria-label="Ações de ${escapeHtml(card.name)}">
         <button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar cadastro de ${escapeHtml(card.name)}">${renderEditIcon()}</button>
+        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(newInstrumentDialogId)}" aria-label="Adicionar instrumento em ${escapeHtml(card.name)}"${isArchived ? " disabled" : ""}>${renderAddIcon()}</button>
         <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
           <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(card.name)}"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
         </form>
       </div>
       ${renderCardEditDialog(card, accounts, editDialogId)}
+      ${renderCardInstrumentCreateDialog(card, newInstrumentDialogId)}
+      ${card.instruments.map(renderCardInstrumentEditDialog).join("")}
     </article>
   `;
 }
@@ -219,6 +223,8 @@ function renderCardInstrumentItem(
     `${formatInstrumentType(instrument.type)} ${formatInstrumentHolder(instrument.holder).toLowerCase()}`;
   const isActive = instrument.status === "active";
   const escapedTitle = escapeHtml(title);
+  const editDialogId = `edit-card-instrument-dialog-${instrument.id}`;
+  const editAction = `<button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar instrumento ${escapedTitle}">${renderEditIcon()}</button>`;
   const setDefaultAction =
     isActive && !instrument.isDefault
       ? `<form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/default-instrument" class="inline-action-form">
@@ -243,7 +249,7 @@ function renderCardInstrumentItem(
           ${instrument.isDefault ? `<span class="instrument-pill">Default</span>` : ""}
           <span class="instrument-pill ${instrument.status === "archived" ? "is-archived" : ""}">${escapeHtml(formatGenericStatus(instrument.status))}</span>
         </div>
-        ${setDefaultAction || archiveAction ? `<div class="instrument-actions" aria-label="Ações de ${escapedTitle}">${setDefaultAction}${archiveAction}</div>` : ""}
+        <div class="instrument-actions" aria-label="Ações de ${escapedTitle}">${editAction}${setDefaultAction}${archiveAction}</div>
       </div>
     </div>
   `;
@@ -295,6 +301,57 @@ function renderCardEditDialog(
         <label>Limite total (R$)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
         <button type="submit">Salvar cartão</button>
+      </form>
+    </dialog>
+  `;
+}
+
+function renderCardInstrumentCreateDialog(
+  card: CreditCardAccountRecord,
+  dialogId: string,
+): string {
+  const titleId = `${dialogId}-title`;
+
+  return `
+    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Novo instrumento</p>
+        <h2 id="${escapeHtml(titleId)}">${escapeHtml(card.name)}</h2>
+      </div>
+      <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/instruments" class="edit-grid">
+        <label>Tipo<select name="type" required>${renderInstrumentTypeOptions()}</select></label>
+        <label>Titularidade<select name="holder" required>${renderInstrumentHolderOptions()}</select></label>
+        <label>Nome do instrumento<input name="name" placeholder="Virtual titular" /></label>
+        <label>Final mascarado<input name="maskedIdentifier" placeholder="**** 1234" /></label>
+        <label>Limite do instrumento (R$)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
+        <button type="submit">Criar instrumento</button>
+      </form>
+    </dialog>
+  `;
+}
+
+function renderCardInstrumentEditDialog(instrument: CardInstrumentRecord): string {
+  const dialogId = `edit-card-instrument-dialog-${instrument.id}`;
+  const titleId = `${dialogId}-title`;
+  const title =
+    instrument.name?.trim() ||
+    `${formatInstrumentType(instrument.type)} ${formatInstrumentHolder(instrument.holder).toLowerCase()}`;
+
+  return `
+    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Editar instrumento</p>
+        <h2 id="${escapeHtml(titleId)}">${escapeHtml(title)}</h2>
+      </div>
+      <form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}" class="edit-grid">
+        <label>Tipo<select name="type" required>${renderInstrumentTypeOptions(instrument.type)}</select></label>
+        <label>Titularidade<select name="holder" required>${renderInstrumentHolderOptions(instrument.holder)}</select></label>
+        <label>Nome do instrumento<input name="name" value="${escapeHtml(instrument.name ?? "")}" /></label>
+        <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
+        <label>Limite do instrumento (R$)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
+        <button type="submit">Salvar instrumento</button>
       </form>
     </dialog>
   `;
@@ -638,6 +695,30 @@ function renderAccountKindOptions(selected?: string): string {
     .join("");
 }
 
+function renderInstrumentTypeOptions(selected = "physical"): string {
+  return [
+    ["physical", "Físico"],
+    ["virtual", "Virtual"],
+  ]
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function renderInstrumentHolderOptions(selected = "primary"): string {
+  return [
+    ["primary", "Titular principal"],
+    ["additional", "Adicional"],
+  ]
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
 function renderAccountOptions(accounts: AccountRecord[], selected?: string): string {
   return accounts
     .map(
@@ -653,6 +734,10 @@ function findCardBrand(key: string | undefined) {
 
 function renderEditIcon(): string {
   return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
+}
+
+function renderAddIcon(): string {
+  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>`;
 }
 
 function renderArchiveIcon(): string {
