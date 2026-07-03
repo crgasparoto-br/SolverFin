@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { renderAccountsCardsPage } from "./dev-server.js";
+import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page-dialog-only.js";
 
 await accountsCardsPageRendersDialogOnlyInstrumentActions();
 
