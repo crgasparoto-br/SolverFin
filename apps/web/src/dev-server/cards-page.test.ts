@@ -204,7 +204,7 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /data-edit-purchase="purchase-1"/);
   assert.match(html, /name="cardInstrumentId"/);
   assert.match(html, /value="instrument-main" selected/);
-  assert.match(html, /Físico - Titular principal · final 1234 · limite R\$ 2\.000,00/);
+  assert.match(html, /Físico - Titular principal · final 1234 · limite R\$\s+2\.000,00/);
   assert.doesNotMatch(html, /instrument-archived/);
   assert.match(html, /data-path="\/api\/credit-card-accounts\/card-1\/purchases"/);
   assert.match(html, /name="repeatMode"/);
