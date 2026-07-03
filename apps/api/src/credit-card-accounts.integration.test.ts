@@ -1,13 +1,10 @@
-import { randomUUID } from "node:crypto";
 import assert from "node:assert/strict";
 
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
-import { closePool, query } from "./db.js";
+import { closePool } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
-const DEMO_ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
-const DEMO_USER_ID = "11111111-1111-4111-8111-111111111111";
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 
 void main()
@@ -92,28 +89,20 @@ async function runPreservesRecurrenceInstrumentAfterDefaultChange(token: string)
   const account = readCreditCardAccount(createResponse);
   const physicalInstrument = requireInstrument(account, "physical");
   const virtualInstrument = requireInstrument(account, "virtual");
-  const recurrenceId = randomUUID();
-  const createdAt = new Date().toISOString();
 
-  await query(
-    `insert into "Recurrence"
-      ("id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId", "status", "kind",
-       "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description", "createdAt",
-       "updatedAt", "createdByUserId", "updatedByUserId")
-     values ($1, $2, $3, null, $4, $5, null, 'ACTIVE', 'EXPENSE', 'MONTHLY', 1, $6, null, $7, 'BRL', $8, $9, $9, $10, $10)`,
-    [
-      recurrenceId,
-      DEMO_ORGANIZATION_ID,
-      PERSONAL_PROFILE_ID,
-      account.id,
-      physicalInstrument.id,
-      "2027-06-05",
-      1_234,
-      `Recorrencia instrumento ${suffix}`,
-      createdAt,
-      DEMO_USER_ID,
-    ],
-  );
+  const recurrenceResponse = await apiRequest(token, "POST", "/api/recurrences", {
+    frequency: "monthly",
+    startOn: "2027-06-05",
+    amountMinor: 1_234,
+    description: `Recorrencia instrumento ${suffix}`,
+    cardId: account.id,
+    cardInstrumentId: physicalInstrument.id,
+  });
+  assert.equal(recurrenceResponse.statusCode, 201);
+  const recurrence = readRecurrence(recurrenceResponse);
+
+  assert.equal(recurrence.cardId, account.id);
+  assert.equal(recurrence.cardInstrumentId, physicalInstrument.id);
 
   const defaultResponse = await apiRequest(
     token,
@@ -127,7 +116,7 @@ async function runPreservesRecurrenceInstrumentAfterDefaultChange(token: string)
   const generationResponse = await apiRequest(
     token,
     "POST",
-    `/api/recurrences/${recurrenceId}/generate-installments`,
+    `/api/recurrences/${recurrence.id}/generate-installments`,
     { through: "2027-06-05", maxOccurrences: 1 },
   );
   assert.equal(generationResponse.statusCode, 201);
@@ -343,6 +332,10 @@ function readPurchase(response: Pick<ApiResponse, "body">): {
   return readBody<{ transaction: ApiTransaction; invoice: ApiInvoice }>(response);
 }
 
+function readRecurrence(response: Pick<ApiResponse, "body">): ApiRecurrence {
+  return readBody<{ recurrence: ApiRecurrence }>(response).recurrence;
+}
+
 function readRecurrenceGeneration(response: Pick<ApiResponse, "body">): {
   transactions: ApiTransaction[];
 } {
@@ -383,6 +376,13 @@ interface ApiCardInstrument {
   holder: "primary" | "additional";
   status: "active" | "archived";
   isDefault: boolean;
+}
+
+interface ApiRecurrence {
+  id: string;
+  financialProfileId: string;
+  cardId?: string;
+  cardInstrumentId?: string;
 }
 
 interface ApiTransaction {
