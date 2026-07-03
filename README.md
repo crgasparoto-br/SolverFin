@@ -6,7 +6,7 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 ## Status do repositorio
 
-O MVP core esta navegavel de ponta a ponta com persistencia real: `apps/api` roda um servidor HTTP (Node `http`, sem framework) que aplica as regras de `packages/domain` e persiste em PostgreSQL via `pg`, e `apps/web` roda um servidor SSR que consome essa API real (autenticacao, dashboard, contas, categorias, lancamentos, cartoes/faturas e orcamentos). Recorrencias/parcelas tem dominio, schema e API completos; na web nao tem rota propria, ficam embutidas nas telas de Extrato da conta e Cartoes de Credito. A rotina operacional de contas a pagar/receber tambem foi consolidada: receitas, despesas e transferencias previstas ficam no Extrato da conta, enquanto compromissos de cartao ficam em Cartoes de Credito. O dominio/API `PayableReceivable` permanece como compatibilidade legada para preservar historico e transicao tecnica segura. Parcelas historicas ainda nao possuem rota dedicada de consulta direta. Importacao, conciliacao, automacao e IA financeira ainda nao tem persistencia/API ligadas.
+O MVP core esta navegavel de ponta a ponta com persistencia real: `apps/api` roda um servidor HTTP (Node `http`, sem framework) que aplica as regras de `packages/domain` e persiste em PostgreSQL via `pg`, e `apps/web` roda um servidor SSR que consome essa API real (autenticacao, dashboard, contas, categorias, lancamentos, cartoes/faturas e orcamentos). Recorrencias/parcelas tem dominio, schema e API completos; na web nao tem rota propria, ficam embutidas nas telas de Extrato da conta e Cartoes de Credito. A rotina operacional de contas a pagar/receber tambem foi consolidada: receitas, despesas e transferencias previstas ficam no Extrato da conta, enquanto compromissos de cartao ficam em Cartoes de Credito. O modelo atual de cartoes de credito trata o cadastro principal como cartao agrupador/fatura com instrumentos internos, documentado em `docs/CARDS.md`. O dominio/API `PayableReceivable` permanece como compatibilidade legada para preservar historico e transicao tecnica segura. Parcelas historicas ainda nao possuem rota dedicada de consulta direta. Importacao, conciliacao, automacao e IA financeira ainda nao tem persistencia/API ligadas.
 
 ## Stack inicial planejada
 
@@ -178,7 +178,7 @@ Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` qu
 
 ## Ambiente local com PostgreSQL
 
-O ambiente de desenvolvimento usa `docker-compose.yml` para subir um PostgreSQL local com dados persistidos no volume `solverfin-postgres-data`.
+O ambiente de desenvolvimento usa `docker-compose.yml` para subir um PostgreSQL com dados persistidos no volume `solverfin-postgres-data`.
 
 Crie o arquivo local de ambiente a partir do exemplo seguro:
 
@@ -225,6 +225,7 @@ A porta padrao e `5432`. Se ela estiver ocupada, altere `POSTGRES_PORT` no seu `
 Leia estes documentos antes de implementar qualquer issue:
 
 - `docs/PRODUCT.md`: visao de produto, personas, jornadas, escopo MVP, fases e limites.
+- `docs/CARDS.md`: modelo de cartao agrupador/fatura, instrumentos internos, default, limites, rotas e cobertura esperada.
 - `docs/ARCHITECTURE.md`: arquitetura inicial, stack-alvo e regras tecnicas.
 - `docs/BRAND.md`: identidade visual, tom e direcao de interface.
 - `docs/CONVENTIONS.md`: convencoes de TypeScript, lint, formatacao e organizacao.
@@ -292,6 +293,7 @@ Leia estes documentos antes de implementar qualquer issue:
 |-- docs/
 |   |-- ARCHITECTURE.md
 |   |-- BRAND.md
+|   |-- CARDS.md
 |   |-- CONVENTIONS.md
 |   |-- ENVIRONMENT.md
 |   |-- PRODUCT.md
