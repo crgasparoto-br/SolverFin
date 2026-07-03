@@ -14,8 +14,43 @@ interface FinancialProfileRecord {
   status: string;
 }
 
+interface AccountRecord {
+  id: string;
+  name: string;
+}
+
+interface CategoryRecord {
+  id: string;
+  name: string;
+  kind: string;
+}
+
+interface AutomationRuleRecord {
+  id: string;
+  name: string;
+  status: string;
+  priority: number;
+  conditions: {
+    descriptionIncludes?: string;
+    kind?: string;
+    accountId?: string;
+    amount?: { equalsMinor?: number; minMinor?: number; maxMinor?: number };
+  };
+  actions: {
+    categoryId?: string;
+    accountId?: string;
+    status?: string;
+  };
+  explanation?: string;
+}
+
 export async function renderSettingsPage(token: string): Promise<string> {
-  const profiles = await apiGet<FinancialProfilesResponse>(token, "/api/financial-profiles");
+  const [profiles, rules, accounts, categories] = await Promise.all([
+    apiGet<FinancialProfilesResponse>(token, "/api/financial-profiles"),
+    apiGet<{ rules: AutomationRuleRecord[] }>(token, "/api/automation-rules?status=all"),
+    apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
+    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories"),
+  ]);
 
   if (!profiles.ok) {
     return renderShell(
@@ -30,6 +65,10 @@ export async function renderSettingsPage(token: string): Promise<string> {
       `,
     );
   }
+
+  const accountOptions = accounts.ok ? accounts.data.accounts : [];
+  const categoryOptions = categories.ok ? categories.data.categories : [];
+  const automationRules = rules.ok ? rules.data.rules : [];
 
   return renderShell(
     "Configurações",
@@ -59,8 +98,36 @@ export async function renderSettingsPage(token: string): Promise<string> {
           }
         </div>
       </section>
+      <section class="page-heading secondary-heading">
+        <div>
+          <p class="eyebrow">Automação revisável</p>
+          <h1>Regras automáticas</h1>
+          <p class="muted">Cadastre regras determinísticas para gerar sugestões revisáveis. Nenhuma regra confirma lançamento final sem aprovação humana.</p>
+        </div>
+        <div class="heading-actions">
+          <button type="button" data-open-dialog="new-automation-rule-dialog">Nova regra</button>
+          <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-confirm="Executar regras sobre sugestões pendentes?">Aplicar regras</button>
+        </div>
+      </section>
+      <section class="panel list-panel">
+        <div class="section-heading">
+          <h2>Regras configuradas</h2>
+          <span>${automationRules.length} itens</span>
+        </div>
+        ${rules.ok ? "" : `<p class="error" role="alert">Não foi possível carregar regras: ${escapeHtml(rules.error)}</p>`}
+        <div class="rows maintenance-rows">
+          ${
+            automationRules.map(renderAutomationRuleRow).join("") ||
+            renderEmptyState(
+              "Nenhuma regra automática.",
+              "Crie uma regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
+            )
+          }
+        </div>
+      </section>
       ${renderNewProfileDialog()}
       ${profiles.data.profiles.map(renderProfileEditDialog).join("")}
+      ${renderNewAutomationRuleDialog(accountOptions, categoryOptions)}
       ${settingsScript()}
       ${dialogScript()}
     `,
@@ -83,6 +150,58 @@ function renderNewProfileDialog(): string {
           </select>
         </label>
         <button type="submit">Criar perfil</button>
+      </form>
+    </dialog>
+  `;
+}
+
+function renderNewAutomationRuleDialog(
+  accounts: AccountRecord[],
+  categories: CategoryRecord[],
+): string {
+  return `
+    <dialog id="new-automation-rule-dialog" class="master-dialog" aria-labelledby="new-automation-rule-title">
+      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+      <div class="dialog-heading">
+        <p class="eyebrow">Nova automação</p>
+        <h2 id="new-automation-rule-title">Nova regra automática</h2>
+      </div>
+      <form data-api-form data-api-path="/api/automation-rules" class="edit-grid">
+        <label>Nome<input name="name" required placeholder="Ex.: Mercado vira Alimentação" /></label>
+        <label>Prioridade<input name="priority" type="number" value="100" /></label>
+        <label>Descrição contém<input name="descriptionIncludes" placeholder="Ex.: mercado" /></label>
+        <label>Tipo
+          <select name="kind">
+            <option value="">Qualquer</option>
+            <option value="expense">Despesa</option>
+            <option value="income">Receita</option>
+            <option value="transfer">Transferência</option>
+          </select>
+        </label>
+        <label>Valor mínimo em centavos<input name="amountMinMinor" type="number" placeholder="Ex.: 1000" /></label>
+        <label>Valor máximo em centavos<input name="amountMaxMinor" type="number" placeholder="Ex.: 50000" /></label>
+        <label>Sugerir conta
+          <select name="actionAccountId">
+            <option value="">Não alterar</option>
+            ${renderAccountOptions(accounts)}
+          </select>
+        </label>
+        <label>Sugerir categoria
+          <select name="actionCategoryId">
+            <option value="">Não alterar</option>
+            ${renderCategoryOptions(categories)}
+          </select>
+        </label>
+        <label>Status sugerido
+          <select name="actionStatus">
+            <option value="">Não alterar</option>
+            <option value="suggested">Sugerido</option>
+            <option value="planned">Planejado</option>
+            <option value="posted">Realizado</option>
+          </select>
+        </label>
+        <label class="full-span">Explicação opcional<input name="explanation" placeholder="Ex.: Compras com este texto costumam ser alimentação." /></label>
+        <button type="submit">Criar regra</button>
       </form>
     </dialog>
   `;
@@ -142,6 +261,31 @@ function renderProfileRow(
               : ""
           }
         </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderAutomationRuleRow(rule: AutomationRuleRecord): string {
+  const isActive = rule.status === "active";
+
+  return `
+    <article class="maintenance-item">
+      <div class="maintenance-summary">
+        <div>
+          <strong>${escapeHtml(rule.name)}</strong>
+          <span>${escapeHtml(formatAutomationStatus(rule.status))} - prioridade ${escapeHtml(String(rule.priority))}</span>
+        </div>
+      </div>
+      <div class="maintenance-actions" aria-label="Regra ${escapeHtml(rule.name)}">
+        <p class="muted">Quando: ${escapeHtml(describeConditions(rule.conditions))}</p>
+        <p class="muted">Sugerir: ${escapeHtml(describeActions(rule.actions))}</p>
+        ${rule.explanation ? `<p class="muted">${escapeHtml(rule.explanation)}</p>` : ""}
+        ${
+          isActive
+            ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-confirm="Inativar esta regra automática?">Inativar regra</button>`
+            : ""
+        }
       </div>
     </article>
   `;
@@ -214,7 +358,7 @@ function settingsScript(): string {
       });
 
       document.querySelectorAll("[data-api-action]").forEach((button) => {
-        const container = button.closest(".maintenance-actions") || button.parentElement;
+        const container = button.closest(".maintenance-actions") || button.closest(".heading-actions") || button.parentElement;
         const status = ensureStatus(container);
         button.addEventListener("click", async () => {
           const confirmation = button.dataset.apiConfirm;
@@ -253,6 +397,18 @@ function renderProfileKindOptions(selected?: string): string {
     .join("");
 }
 
+function renderAccountOptions(accounts: AccountRecord[]): string {
+  return accounts
+    .map((account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`)
+    .join("");
+}
+
+function renderCategoryOptions(categories: CategoryRecord[]): string {
+  return categories
+    .map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`)
+    .join("");
+}
+
 function renderEmptyState(title: string, description: string): string {
   return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
 }
@@ -271,6 +427,31 @@ function formatProfileStatus(status: string): string {
   return status;
 }
 
+function formatAutomationStatus(status: string): string {
+  if (status === "active") return "Ativa";
+  if (status === "inactive") return "Inativa";
+  return status;
+}
+
+function describeConditions(conditions: AutomationRuleRecord["conditions"]): string {
+  const parts: string[] = [];
+  if (conditions.descriptionIncludes) parts.push(`descrição contém "${conditions.descriptionIncludes}"`);
+  if (conditions.kind) parts.push(`tipo ${conditions.kind}`);
+  if (conditions.accountId) parts.push("conta específica");
+  if (conditions.amount?.equalsMinor !== undefined) parts.push(`valor igual ${conditions.amount.equalsMinor}`);
+  if (conditions.amount?.minMinor !== undefined) parts.push(`valor mínimo ${conditions.amount.minMinor}`);
+  if (conditions.amount?.maxMinor !== undefined) parts.push(`valor máximo ${conditions.amount.maxMinor}`);
+  return parts.join(", ") || "sem condição visível";
+}
+
+function describeActions(actions: AutomationRuleRecord["actions"]): string {
+  const parts: string[] = [];
+  if (actions.categoryId) parts.push("categoria");
+  if (actions.accountId) parts.push("conta");
+  if (actions.status) parts.push(`status ${actions.status}`);
+  return parts.join(", ") || "sem ação visível";
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -286,9 +467,12 @@ function baseCss(): string {
     ${sharedDialogStyles()}
     .secondary-link { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); }
     main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; } .page-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .page-heading > div { display: grid; gap: 6px; max-width: 760px; }
+    .secondary-heading { margin-top: 12px; }
+    .heading-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
     .rows { display: grid; gap: 14px; } .maintenance-item { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 14px; } .maintenance-item:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 16px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 4px; min-width: 0; } .maintenance-summary span { color: var(--muted); line-height: 1.45; }
     .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: grid; gap: 10px; padding: 12px; } .item-actions { display: flex; gap: 8px; justify-content: flex-end; } .profile-links { display: flex; flex-wrap: wrap; gap: 8px; }
-    @media (max-width: 760px) { .page-heading { align-items: stretch; display: grid; } .maintenance-summary, .section-heading { align-items: stretch; display: grid; } }
+    .full-span { grid-column: 1 / -1; }
+    @media (max-width: 760px) { .page-heading { align-items: stretch; display: grid; } .heading-actions { justify-content: stretch; } .maintenance-summary, .section-heading { align-items: stretch; display: grid; } }
   `;
 }
