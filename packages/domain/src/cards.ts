@@ -154,7 +154,6 @@ export interface RegisterCardPurchaseInput {
   transactionId: EntityId;
   context: TenantContext;
   card: Card | undefined;
-  groupCardId?: EntityId;
   instruments?: readonly CardInstrument[];
   existingInvoices: readonly Invoice[];
   paymentAccount?: Account;
@@ -390,7 +389,7 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
   const amounts =
     totalInstallments > 1 ? splitAmount(amountMinor, totalInstallments) : [amountMinor];
   const remainingCount = totalInstallments - installmentStart + 1;
-  const invoiceCardId = input.groupCardId ?? card.id;
+  const invoiceCardId = card.id;
 
   let knownInvoices: readonly Invoice[] = input.existingInvoices;
   const invoiceResults: { invoice: Invoice; auditEntry: AuditLogEntryDraft }[] = [];
