@@ -131,6 +131,27 @@ export async function archiveAccountForContext(
   return archivedAccount;
 }
 
+export async function deleteAccountForContext(
+  context: TenantContext,
+  accountId: EntityId,
+): Promise<void> {
+  const account = getAccountDomain(context, await findAccountRow(context, accountId));
+  const hasUsage = await accountHasUsage(context, account.id);
+
+  if (hasUsage) {
+    throw accountError(
+      "ACCOUNT_IN_USE",
+      "Esta conta ja possui uso ou vinculos e nao pode ser excluida. Arquive a conta para ocultar.",
+    );
+  }
+
+  await query(
+    `delete from "Account"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [account.id, context.organizationId, context.financialProfileId],
+  );
+}
+
 async function persistAccountUpdate(account: Account): Promise<void> {
   await query(
     `update "Account" set
@@ -181,6 +202,30 @@ async function accountHasTransactions(
   return rows[0]?.exists ?? false;
 }
 
+async function accountHasUsage(context: TenantContext, accountId: EntityId): Promise<boolean> {
+  const rows = await query<{ exists: boolean }>(
+    `select (
+       exists(
+         select 1 from "Transaction"
+         where "organizationId" = $1 and "financialProfileId" = $2
+           and ("accountId" = $3 or "destinationAccountId" = $3)
+       ) or exists(
+         select 1 from "Card"
+         where "organizationId" = $1 and "financialProfileId" = $2 and "paymentAccountId" = $3
+       ) or exists(
+         select 1 from "Recurrence"
+         where "organizationId" = $1 and "financialProfileId" = $2 and "accountId" = $3
+       ) or exists(
+         select 1 from "PayableReceivable"
+         where "organizationId" = $1 and "financialProfileId" = $2 and "accountId" = $3
+       )
+     ) as "exists"`,
+    [context.organizationId, context.financialProfileId, accountId],
+  );
+
+  return rows[0]?.exists ?? false;
+}
+
 function mapAccountRow(row: AccountRow): Account {
   const account: Account = {
     id: row.id,
@@ -212,4 +257,8 @@ function mapAccountRow(row: AccountRow): Account {
   }
 
   return account;
+}
+
+function accountError(code: string, message: string, statusCode = 400): Error {
+  return Object.assign(new Error(message), { code, statusCode });
 }
