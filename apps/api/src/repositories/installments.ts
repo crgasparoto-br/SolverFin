@@ -148,7 +148,10 @@ function addEqualsFilter(
   columnExpression: string,
   value: string | undefined,
 ): void {
-  if (value === undefined) return;
+  if (value === undefined) {
+    return;
+  }
+
   params.push(value);
   where.push(`${columnExpression} = $${params.length}`);
 }
@@ -170,7 +173,11 @@ function validateFilters(filters: ListInstallmentsFilters): void {
     throwInstallmentsFilterInvalid("Data final de vencimento invalida.");
   }
 
-  if (filters.dueFrom !== undefined && filters.dueTo !== undefined && filters.dueFrom > filters.dueTo) {
+  if (
+    filters.dueFrom !== undefined &&
+    filters.dueTo !== undefined &&
+    filters.dueFrom > filters.dueTo
+  ) {
     throwInstallmentsFilterInvalid("Periodo de vencimento invertido.");
   }
 }
@@ -213,7 +220,10 @@ function mapInstallmentHistoryRow(row: Row): InstallmentHistoryItem {
 }
 
 function attachTransaction(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.transactionId) return;
+  if (!row.transactionId) {
+    return;
+  }
+
   installment.transaction = {
     id: text(row.transactionId),
     status: lower(row.transactionStatus) as TransactionStatus,
@@ -234,7 +244,10 @@ function attachTransaction(installment: InstallmentHistoryItem, row: Row): void 
 }
 
 function attachRecurrence(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.recurrenceId) return;
+  if (!row.recurrenceId) {
+    return;
+  }
+
   installment.recurrence = {
     id: text(row.recurrenceId),
     status: lower(row.recurrenceStatus),
@@ -246,7 +259,10 @@ function attachRecurrence(installment: InstallmentHistoryItem, row: Row): void {
 }
 
 function attachInvoice(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.invoiceId) return;
+  if (!row.invoiceId) {
+    return;
+  }
+
   installment.invoice = {
     id: text(row.invoiceId),
     status: lower(row.invoiceStatus) as InvoiceStatus,
@@ -258,7 +274,10 @@ function attachInvoice(installment: InstallmentHistoryItem, row: Row): void {
 }
 
 function attachCard(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.cardId || !row.cardName) return;
+  if (!row.cardId || !row.cardName) {
+    return;
+  }
+
   installment.card = {
     id: text(row.cardId),
     name: text(row.cardName),
@@ -267,7 +286,10 @@ function attachCard(installment: InstallmentHistoryItem, row: Row): void {
 }
 
 function attachCardInstrument(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.cardInstrumentId) return;
+  if (!row.cardInstrumentId) {
+    return;
+  }
+
   installment.cardInstrument = {
     id: text(row.cardInstrumentId),
     cardId: text(row.cardId ?? row.transactionCardId),
@@ -281,7 +303,10 @@ function attachCardInstrument(installment: InstallmentHistoryItem, row: Row): vo
 }
 
 function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.categoryId || !row.categoryName) return;
+  if (!row.categoryId || !row.categoryName) {
+    return;
+  }
+
   installment.category = {
     id: text(row.categoryId),
     name: text(row.categoryName),
@@ -291,10 +316,21 @@ function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
 }
 
 function resolveEditBlockedReason(row: Row): InstallmentEditBlockedReason | undefined {
-  if (!row.transactionId || !row.transactionStatus) return "linked_transaction_missing";
-  if (lower(row.status) !== "planned") return "installment_status_locked";
-  if (lower(row.transactionStatus) !== "planned") return "transaction_status_locked";
-  if (row.invoiceId) return "invoice_linked";
+  if (!row.transactionId || !row.transactionStatus) {
+    return "linked_transaction_missing";
+  }
+
+  if (lower(row.status) !== "planned") {
+    return "installment_status_locked";
+  }
+
+  if (lower(row.transactionStatus) !== "planned") {
+    return "transaction_status_locked";
+  }
+
+  if (row.invoiceId) {
+    return "invoice_linked";
+  }
 
   return undefined;
 }
