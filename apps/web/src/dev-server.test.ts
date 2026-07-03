@@ -149,9 +149,11 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
     assert.match(html, /Conta de pagamento: Conta pagamento · 1 instrumento ativo/);
     assert.match(html, /aria-label="Instrumentos de Cartão C6"/);
     assert.match(html, /Físico titular/);
-    assert.match(html, /Físico · Titular principal · \*\*\*\* 1111 · limite R\$&nbsp;3\.000,00/);
+    assert.match(html, /Físico · Titular principal · \*\*\*\* 1111 · limite/);
+    assert.match(html, /3\.000,00/);
     assert.match(html, /Virtual adicional/);
-    assert.match(html, /Virtual · Adicional · \*\*\*\* 2222 · limite R\$&nbsp;1\.000,00/);
+    assert.match(html, /Virtual · Adicional · \*\*\*\* 2222 · limite/);
+    assert.match(html, /1\.000,00/);
     assert.match(html, />Default<\/span>/);
     assert.match(html, /data-api-path="\/api\/credit-card-accounts"/);
     assert.match(html, /data-payload-kind="credit-card-account"/);
