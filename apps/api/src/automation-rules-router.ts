@@ -114,11 +114,12 @@ async function listAutomationRulesHandler(request: ApiRequest): Promise<ApiRespo
 async function createAutomationRuleHandler(request: ApiRequest): Promise<ApiResponse> {
   const context = await resolveContext(request);
   const body = requireObjectBody(request.body);
+  const priority = toOptionalNumber(body.priority);
 
   return json(201, {
     rule: await createAutomationRuleForContext(context, {
       name: String(body.name ?? ""),
-      priority: toOptionalNumber(body.priority),
+      ...(priority !== undefined ? { priority } : {}),
       conditions: parseConditions(body),
       actions: parseActions(body),
       ...(body.explanation !== undefined ? { explanation: String(body.explanation) } : {}),
@@ -132,11 +133,12 @@ async function updateAutomationRuleHandler(
 ): Promise<ApiResponse> {
   const context = await resolveContext(request);
   const body = requireObjectBody(request.body);
+  const priority = toOptionalNumber(body.priority);
 
   return json(200, {
     rule: await updateAutomationRuleForContext(context, requireParam(match, "ruleId"), {
       ...(body.name !== undefined ? { name: String(body.name) } : {}),
-      ...(body.priority !== undefined ? { priority: toOptionalNumber(body.priority) } : {}),
+      ...(body.priority !== undefined && priority !== undefined ? { priority } : {}),
       ...(hasConditionPayload(body) ? { conditions: parseConditions(body) } : {}),
       ...(hasActionPayload(body) ? { actions: parseActions(body) } : {}),
       ...(body.status !== undefined ? { status: parseStatus(body.status) } : {}),
