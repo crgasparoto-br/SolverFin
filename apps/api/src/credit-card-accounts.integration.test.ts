@@ -1,10 +1,13 @@
+import { randomUUID } from "node:crypto";
 import assert from "node:assert/strict";
 
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
+const DEMO_ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
+const DEMO_USER_ID = "11111111-1111-4111-8111-111111111111";
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 
 void main()
@@ -23,6 +26,7 @@ async function main(): Promise<void> {
 
   await runRejectsAccountWithoutActiveInstrument(token);
   await runRejectsInstrumentLimitsAboveAccountLimit(token);
+  await runPreservesRecurrenceInstrumentAfterDefaultChange(token);
   await runCreditCardAccountInstrumentLifecycle(token);
 }
 
@@ -60,6 +64,78 @@ async function runRejectsInstrumentLimitsAboveAccountLimit(token: string): Promi
 
   assert.equal(response.statusCode, 400);
   assert.equal(readErrorCode(response), "CARD_INSTRUMENT_LIMIT_EXCEEDS_CARD_LIMIT");
+}
+
+async function runPreservesRecurrenceInstrumentAfterDefaultChange(token: string): Promise<void> {
+  const suffix = Date.now().toString(36);
+  const createResponse = await apiRequest(token, "POST", "/api/credit-card-accounts", {
+    name: `Cartao recorrencia instrumento ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 50_000,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico recorrencia",
+        maskedIdentifier: "**** 3333",
+      },
+      {
+        type: "virtual",
+        holder: "primary",
+        name: "Virtual recorrencia",
+        maskedIdentifier: "**** 4444",
+      },
+    ],
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const account = readCreditCardAccount(createResponse);
+  const physicalInstrument = requireInstrument(account, "physical");
+  const virtualInstrument = requireInstrument(account, "virtual");
+  const recurrenceId = randomUUID();
+  const createdAt = new Date().toISOString();
+
+  await query(
+    `insert into "Recurrence"
+      ("id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId", "status", "kind",
+       "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description", "createdAt",
+       "updatedAt", "createdByUserId", "updatedByUserId")
+     values ($1, $2, $3, null, $4, $5, null, 'ACTIVE', 'EXPENSE', 'MONTHLY', 1, $6, null, $7, 'BRL', $8, $9, $9, $10, $10)`,
+    [
+      recurrenceId,
+      DEMO_ORGANIZATION_ID,
+      PERSONAL_PROFILE_ID,
+      account.id,
+      physicalInstrument.id,
+      "2027-06-05",
+      1_234,
+      `Recorrencia instrumento ${suffix}`,
+      createdAt,
+      DEMO_USER_ID,
+    ],
+  );
+
+  const defaultResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/credit-card-accounts/${account.id}/default-instrument`,
+    { instrumentId: virtualInstrument.id },
+  );
+  assert.equal(defaultResponse.statusCode, 200);
+  assert.equal(defaultInstrument(readCreditCardAccount(defaultResponse))?.id, virtualInstrument.id);
+
+  const generationResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/recurrences/${recurrenceId}/generate-installments`,
+    { through: "2027-06-05", maxOccurrences: 1 },
+  );
+  assert.equal(generationResponse.statusCode, 201);
+  const generation = readRecurrenceGeneration(generationResponse);
+
+  assert.equal(generation.transactions.length, 1);
+  assert.equal(generation.transactions[0]?.cardId, account.id);
+  assert.equal(generation.transactions[0]?.cardInstrumentId, physicalInstrument.id);
 }
 
 async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<void> {
@@ -109,7 +185,7 @@ async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<v
   const listResponse = await apiRequest(token, "GET", "/api/credit-card-accounts?status=all");
   assert.equal(listResponse.statusCode, 200);
   const listedAccounts = readCreditCardAccounts(listResponse);
-  const listedAccount = listedAccounts.find((account) => account.id === createdAccount.id);
+  const listedAccount = listedAccounts.find((listed) => listed.id === createdAccount.id);
 
   assert.notEqual(listedAccount, undefined);
   assert.equal(listedAccount?.instruments.length, 2);
@@ -265,6 +341,12 @@ function readPurchase(response: Pick<ApiResponse, "body">): {
   invoice: ApiInvoice;
 } {
   return readBody<{ transaction: ApiTransaction; invoice: ApiInvoice }>(response);
+}
+
+function readRecurrenceGeneration(response: Pick<ApiResponse, "body">): {
+  transactions: ApiTransaction[];
+} {
+  return readBody<{ transactions: ApiTransaction[] }>(response);
 }
 
 function readBody<TBody>(response: Pick<ApiResponse, "body">): TBody {
