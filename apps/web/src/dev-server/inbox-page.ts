@@ -32,9 +32,27 @@ interface BankMessageInboxRecord {
   };
 }
 
+interface ReviewQueueItem {
+  id: string;
+  kind: string;
+  status: string;
+  origin: string;
+  confidence: number;
+  risk: string;
+  explanation: string;
+  maskedSummary: string;
+  createdAt: string;
+  provider?: string;
+  model?: string;
+}
+
 export async function renderInboxPage(token: string): Promise<string> {
-  const [messages, accounts, categories] = await Promise.all([
+  const [messages, reviewQueue, accounts, categories] = await Promise.all([
     apiGet<{ messages: BankMessageInboxRecord[] }>(token, "/api/bank-message-inbox?status=all"),
+    apiGet<{ suggestions: ReviewQueueItem[] }>(
+      token,
+      "/api/ai-review-queue?status=pending_review&includeLowConfidence=true",
+    ),
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
     apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories"),
   ]);
@@ -45,16 +63,32 @@ export async function renderInboxPage(token: string): Promise<string> {
 
   const accountOptions = accounts.ok ? accounts.data.accounts : [];
   const categoryOptions = categories.ok ? categories.data.categories : [];
+  const suggestions = reviewQueue.ok ? reviewQueue.data.suggestions : [];
 
   return renderShell(
     `
         <section class="page-heading">
           <div>
-            <p class="eyebrow">Mensagens bancárias</p>
+            <p class="eyebrow">Mensagens e revisão</p>
             <h1>Inbox</h1>
-            <p class="muted">Cole mensagens fictícias ou autorizadas para criar sugestões revisáveis. Nenhum lançamento final é criado sem confirmação.</p>
+            <p class="muted">Cole mensagens fictícias ou autorizadas, revise importações, deduplicação, conciliação e sugestões de regras automáticas antes de confirmar.</p>
           </div>
           <button type="button" data-open-dialog="new-inbox-message-dialog">Registrar mensagem</button>
+        </section>
+        <section class="panel list-panel">
+          <div class="section-heading">
+            <h2>Fila de revisão</h2>
+            <span>${suggestions.length} pendentes</span>
+          </div>
+          <div class="rows maintenance-rows">
+            ${
+              suggestions.map(renderReviewSuggestionRow).join("") ||
+              renderEmptyState(
+                "Nenhuma sugestão pendente.",
+                "Importações, mensagens, conciliações e regras automáticas aparecerão aqui antes de qualquer confirmação.",
+              )
+            }
+          </div>
         </section>
         <section class="panel list-panel">
           <div class="section-heading">
@@ -71,6 +105,7 @@ export async function renderInboxPage(token: string): Promise<string> {
             }
           </div>
         </section>
+        ${reviewQueue.ok ? "" : `<p class="error" role="alert">Não foi possível carregar a fila de revisão: ${escapeHtml(reviewQueue.error)}</p>`}
         ${renderNewMessageDialog(accountOptions, categoryOptions)}
         ${apiFormScript()}
         ${dialogScript()}
@@ -114,6 +149,32 @@ function renderNewMessageDialog(accounts: AccountRecord[], categories: CategoryR
   `;
 }
 
+function renderReviewSuggestionRow(item: ReviewQueueItem): string {
+  const confidence = `${Math.round(item.confidence * 100)}%`;
+  const reviewApiBase = item.kind === "deduplication" || item.kind === "reconciliation"
+    ? "/api/review-suggestions"
+    : "/api/ai-review-queue";
+
+  return `
+    <article class="maintenance-item">
+      <div class="maintenance-summary">
+        <div>
+          <strong>${escapeHtml(formatSuggestionKind(item.kind))}</strong>
+          <span>${escapeHtml(formatDateTime(item.createdAt))} - origem ${escapeHtml(formatOrigin(item.origin))} - confiança ${escapeHtml(confidence)}</span>
+        </div>
+      </div>
+      <div class="message-preview">
+        <p><strong>${escapeHtml(item.maskedSummary)}</strong></p>
+        <p>${escapeHtml(item.explanation)}</p>
+      </div>
+      <div class="maintenance-actions" aria-label="Ações da sugestão ${escapeHtml(item.id)}">
+        <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="${escapeHtml(reviewApiBase)}/${escapeHtml(item.id)}/approve" data-api-confirm="Aprovar esta sugestão?">Aprovar</button>
+        <button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(reviewApiBase)}/${escapeHtml(item.id)}/reject" data-api-confirm="Rejeitar esta sugestão?">Rejeitar</button>
+      </div>
+    </article>
+  `;
+}
+
 function renderInboxRow(item: BankMessageInboxRecord): string {
   const suggestion = item.suggestion;
   const confidence = suggestion ? `${Math.round(suggestion.confidence * 100)}%` : "-";
@@ -130,7 +191,7 @@ function renderInboxRow(item: BankMessageInboxRecord): string {
         <p>${escapeHtml(item.maskedText)}</p>
       </div>
       <div class="maintenance-actions" aria-label="Ações da mensagem recebida">
-        ${suggestion ? `<a class="secondary-link" href="/configuracoes">Revisar na fila de sugestões</a>` : ""}
+        ${suggestion ? `<a class="secondary-link" href="#">Sugestão disponível na fila acima</a>` : ""}
         ${item.status === "pending_review" ? renderActionButton("Descartar mensagem", `/api/bank-message-inbox/${item.id}/discard`, "Descartar esta mensagem da inbox?") : ""}
       </div>
     </article>
@@ -182,6 +243,15 @@ function renderEmptyState(title: string, description: string): string {
   return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
 }
 
+function formatSuggestionKind(kind: string): string {
+  if (kind === "transaction_extraction") return "Extração de lançamento";
+  if (kind === "categorization") return "Regra automática";
+  if (kind === "deduplication") return "Possível duplicidade";
+  if (kind === "reconciliation") return "Conciliação sugerida";
+  if (kind === "insight") return "Insight";
+  return kind;
+}
+
 function formatInboxStatus(status: string): string {
   if (status === "pending_review") return "Pendente de revisão";
   if (status === "approved") return "Aprovada";
@@ -193,7 +263,11 @@ function formatInboxStatus(status: string): string {
 }
 
 function formatOrigin(origin: string): string {
-  return origin === "shared" ? "compartilhamento" : "texto colado";
+  if (origin === "shared") return "compartilhamento";
+  if (origin === "import") return "importação";
+  if (origin === "rule") return "regra";
+  if (origin === "automation") return "automação";
+  return "texto colado";
 }
 
 function formatDateTime(value: string): string {
