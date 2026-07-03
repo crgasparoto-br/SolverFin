@@ -13,14 +13,12 @@ import {
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
 export async function renderCardsPage(token: string, url?: URL): Promise<string> {
-  const [cardsResult, invoicesResult, categoriesResult, accountsResult, linksResult] =
-    await Promise.all([
-      apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
-      apiGet<{ invoices: InvoiceRecord[] }>(token, "/api/invoices?status=all"),
-      apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?kind=expense"),
-      apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
-      apiGet<{ links: CardAdditionalLinkRecord[] }>(token, "/api/card-additional-links"),
-    ]);
+  const [cardsResult, invoicesResult, categoriesResult, accountsResult] = await Promise.all([
+    apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
+    apiGet<{ invoices: InvoiceRecord[] }>(token, "/api/invoices?status=all"),
+    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?kind=expense"),
+    apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
+  ]);
 
   if (!cardsResult.ok) return renderErrorPage(cardsResult.error);
   if (!invoicesResult.ok) return renderErrorPage(invoicesResult.error);
@@ -29,22 +27,18 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
   const invoices = invoicesResult.data.invoices;
   const categories = categoriesResult.ok ? (categoriesResult.data.categories ?? []) : [];
   const accounts = accountsResult.ok ? (accountsResult.data.accounts ?? []) : [];
-  const links = linksResult.ok ? (linksResult.data.links ?? []) : [];
-  const additionalCardIds = new Set(
-    links.filter((link) => link.cardId !== link.groupCardId).map((link) => link.cardId),
-  );
 
   const selectedCard = resolveSelectedCard(cards, url?.searchParams.get("cardId") ?? undefined);
-  const familyCardIds = resolveFamilyCardIds(selectedCard?.id, links);
-  const familyInvoices = invoices.filter((invoice) => familyCardIds.has(invoice.cardId));
-  const cardInvoices = dedupeInvoicesByPeriod(familyInvoices, selectedCard?.id);
+  const cardInvoices = selectedCard
+    ? invoices
+        .filter((invoice) => invoice.cardId === selectedCard.id)
+        .sort((a, b) => b.periodEndOn.localeCompare(a.periodEndOn))
+    : [];
   const selectedInvoice = resolveSelectedInvoice(
     cardInvoices,
     url?.searchParams.get("invoiceId") ?? undefined,
   );
-  const periodInvoices = selectedInvoice
-    ? familyInvoices.filter((invoice) => invoice.periodEndOn === selectedInvoice.periodEndOn)
-    : [];
+  const periodInvoices = selectedInvoice ? [selectedInvoice] : [];
 
   // Fetching recurrences first triggers the API's catch-up materialization of any due
   // installment into a real Transaction, so it must run before the purchases fetch below
@@ -100,7 +94,7 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
 
       <section class="panel card-filter">
         <form class="filter-form" method="get" action="/cartoes" data-auto-submit>
-          ${renderCardPicker(cards, additionalCardIds, selectedCard)}
+          ${renderCardPicker(cards, selectedCard)}
           <div class="month-field">
             <label id="invoice-period-label">Fatura</label>
             <div class="month-nav">
@@ -121,7 +115,6 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
             <div>
               <p class="eyebrow">Compras</p>
               <h2>${selectedCard ? `Fatura de ${escapeHtml(selectedCard.name)}` : "Selecione um cartão"}</h2>
-              ${familyCardIds.size > 1 ? `<p class="muted">Fatura consolidada com os cartões adicionais do grupo.</p>` : ""}
             </div>
             <div class="filter-controls">
               <input type="search" data-purchase-search placeholder="Buscar descrição, categoria ou cartão" />
@@ -138,7 +131,7 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
           </div>
         </section>
       </section>
-      ${renderPurchaseModal(selectedCard, cards, additionalCardIds, links, categories)}
+      ${renderPurchaseModal(selectedCard, categories)}
       ${renderPaymentModal(selectedInvoice, accounts, summary?.amountDueMinor ?? 0)}
       ${renderRecurrenceEditModal(categories, "card")}
       ${clientScript()}
@@ -171,27 +164,7 @@ function resolveSelectedInvoice(
   return cardInvoices.find((invoice) => invoice.status === "open") ?? cardInvoices[0];
 }
 
-function dedupeInvoicesByPeriod(
-  familyInvoices: InvoiceRecord[],
-  preferredCardId: string | undefined,
-): InvoiceRecord[] {
-  const byPeriod = new Map<string, InvoiceRecord>();
-
-  for (const invoice of familyInvoices) {
-    const existing = byPeriod.get(invoice.periodEndOn);
-    if (existing === undefined || invoice.cardId === preferredCardId) {
-      byPeriod.set(invoice.periodEndOn, invoice);
-    }
-  }
-
-  return Array.from(byPeriod.values()).sort((a, b) => b.periodEndOn.localeCompare(a.periodEndOn));
-}
-
-function renderCardPicker(
-  cards: CardRecord[],
-  additionalCardIds: ReadonlySet<string>,
-  selectedCard: CardRecord | undefined,
-): string {
+function renderCardPicker(cards: CardRecord[], selectedCard: CardRecord | undefined): string {
   const triggerIcon = renderInstitutionIcon(findInstitution(selectedCard?.institutionKey).key);
 
   return `
@@ -205,7 +178,7 @@ function renderCardPicker(
         </button>
         <input type="hidden" name="cardId" value="${escapeHtml(selectedCard?.id ?? "")}" required data-card-input />
         <ul class="account-select-menu" role="listbox" hidden data-card-menu aria-labelledby="card-picker-label">
-          ${cards.map((card) => renderCardOption(card, additionalCardIds, selectedCard?.id)).join("")}
+          ${cards.map((card) => renderCardOption(card, selectedCard?.id)).join("")}
         </ul>
       </div>
       <a class="ghost-link" href="/contas-cartoes" title="Editar cadastro do cartão" aria-label="Editar cadastro do cartão">${renderPencilIcon()}</a>
@@ -213,17 +186,13 @@ function renderCardPicker(
   `;
 }
 
-function renderCardOption(
-  card: CardRecord,
-  additionalCardIds: ReadonlySet<string>,
-  selectedId: string | undefined,
-): string {
+function renderCardOption(card: CardRecord, selectedId: string | undefined): string {
   const institution = findInstitution(card.institutionKey);
 
   return `
     <li role="option" tabindex="-1" data-card-option="${escapeHtml(card.id)}" data-card-name="${escapeHtml(card.name)}" aria-selected="${selectedId === card.id}">
       <span class="account-select-icon">${renderInstitutionIcon(institution.key)}</span>
-      <span>${escapeHtml(card.name)}${card.maskedIdentifier ? ` · ${escapeHtml(card.maskedIdentifier)}` : ""}${additionalCardIds.has(card.id) ? " · Adicional" : ""}</span>
+      <span>${escapeHtml(card.name)}${card.maskedIdentifier ? ` · ${escapeHtml(card.maskedIdentifier)}` : ""}</span>
     </li>
   `;
 }
@@ -425,14 +394,8 @@ function renderPurchaseRow(
 
 function renderPurchaseModal(
   selectedCard: CardRecord | undefined,
-  cards: CardRecord[],
-  additionalCardIds: ReadonlySet<string>,
-  links: CardAdditionalLinkRecord[],
   categories: CategoryRecord[],
 ): string {
-  const familyCardIds = resolveFamilyCardIds(selectedCard?.id, links);
-  const familyCards = cards.filter((card) => familyCardIds.has(card.id));
-
   return `
     <dialog data-modal="purchase">
       <section class="modal-panel">
@@ -446,11 +409,6 @@ function renderPurchaseModal(
           <label>Data<input name="occurredOn" type="date" required /></label>
           <label class="full">Descrição<input name="description" placeholder="Compra no cartão" required /></label>
           <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
-          ${
-            familyCards.length > 1
-              ? `<label>Cartão<select name="purchaseCardId">${familyCards.map((card) => `<option value="${escapeHtml(card.id)}"${card.id === selectedCard?.id ? " selected" : ""}>${escapeHtml(card.name)}${card.maskedIdentifier ? ` · ${escapeHtml(card.maskedIdentifier)}` : ""}${additionalCardIds.has(card.id) ? " · Adicional" : ""}</option>`).join("")}</select></label>`
-              : ""
-          }
           <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
           <label data-purchase-field="totalInstallments" hidden>Parcelas<input name="totalInstallments" type="number" min="2" max="120" value="2" /></label>
           <label data-purchase-field="installmentStart" hidden>Parcela inicial<input name="installmentStart" type="number" min="1" max="120" value="1" /></label>
@@ -488,21 +446,6 @@ function renderPaymentModal(
       </section>
     </dialog>
   `;
-}
-
-function resolveFamilyCardIds(
-  cardId: string | undefined,
-  links: CardAdditionalLinkRecord[],
-): Set<string> {
-  if (!cardId) return new Set();
-
-  const membership = links.find((link) => link.cardId === cardId);
-  const groupCardId = membership?.groupCardId ?? cardId;
-  const family = links
-    .filter((link) => link.groupCardId === groupCardId)
-    .map((link) => link.cardId);
-
-  return new Set(family.length > 0 ? family : [cardId]);
 }
 
 function renderActionButton(label: string, path: string, confirmation?: string): string {
@@ -999,12 +942,6 @@ interface CardRecord {
   dueDay: number;
   maskedIdentifier?: string;
   institutionKey?: string;
-}
-
-interface CardAdditionalLinkRecord {
-  groupCardId: string;
-  cardId: string;
-  isPrimary: boolean;
 }
 
 interface InvoiceRecord {
