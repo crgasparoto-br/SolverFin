@@ -199,10 +199,16 @@ function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]
 }
 
 function renderCardInstrumentList(card: CreditCardAccountRecord): string {
+  const hasActiveInstrument = card.instruments.some((instrument) => instrument.status === "active");
+  const inactiveNotice = hasActiveInstrument
+    ? ""
+    : `<p class="instrument-warning" role="status">Sem instrumento ativo para novos lançamentos. Cadastre um novo instrumento para voltar a usar este cartão.</p>`;
+
   if (card.instruments.length === 0) {
     return `
       <div class="instrument-list is-empty" aria-label="Instrumentos de ${escapeHtml(card.name)}">
         <p class="muted">Sem instrumento ativo para novos lançamentos.</p>
+        ${inactiveNotice}
       </div>
     `;
   }
@@ -211,6 +217,7 @@ function renderCardInstrumentList(card: CreditCardAccountRecord): string {
     <div class="instrument-list" aria-label="Instrumentos de ${escapeHtml(card.name)}">
       ${card.instruments.map((instrument) => renderCardInstrumentItem(card, instrument)).join("")}
     </div>
+    ${inactiveNotice}
   `;
 }
 
@@ -872,6 +879,7 @@ function baseCss(): string {
     .brand-icon-wrap { align-items: center; background: #fff; display: flex; height: 44px; justify-content: center; width: 44px; } .institution-logo-img { background: #fff; border-radius: 10px; object-fit: contain; padding: 5px; }
     .item-main { display: grid; gap: 5px; min-width: 0; } .item-main p { color: var(--muted); line-height: 1.45; } .item-title-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; } .amount-stack { display: grid; gap: 3px; justify-items: end; text-align: right; white-space: nowrap; } .amount-stack span { color: var(--muted); font-size: .76rem; font-weight: 800; text-transform: uppercase; } .amount-stack strong { color: var(--text); }
     .instrument-list { border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 0; margin-top: 6px; overflow: hidden; } .instrument-list.is-empty { padding: 10px 12px; }
+    .instrument-warning { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); font-size: .88rem; font-weight: 700; margin-top: 8px; padding: 9px 12px; }
     .instrument-item { align-items: center; background: var(--surface-soft); border-top: 1px solid var(--line); display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; } .instrument-item:first-child { border-top: 0; } .instrument-meta { font-size: .88rem; }
     .instrument-side { display: grid; gap: 8px; justify-items: end; } .instrument-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; } .instrument-pill { background: #e0f2fe; border-radius: 999px; color: #075985; font-size: .72rem; font-weight: 800; padding: 4px 8px; white-space: nowrap; } .instrument-pill.is-archived { background: #f1f5f9; color: #475569; }
     .instrument-actions { display: flex; gap: 6px; justify-content: flex-end; } .instrument-actions .icon-button { min-height: 36px; width: 36px; }
