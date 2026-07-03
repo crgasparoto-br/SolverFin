@@ -224,7 +224,7 @@ function renderCardInstrumentItem(
   const isActive = instrument.status === "active";
   const escapedTitle = escapeHtml(title);
   const editDialogId = `edit-card-instrument-dialog-${instrument.id}`;
-  const editAction = `<button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar instrumento ${escapedTitle}">${renderEditIcon()}</button>`;
+  const editAction = renderInstrumentEditAction(editDialogId, escapedTitle);
   const setDefaultAction =
     isActive && !instrument.isDefault
       ? `<form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/default-instrument" class="inline-action-form">
@@ -253,6 +253,15 @@ function renderCardInstrumentItem(
       </div>
     </div>
   `;
+}
+
+function renderInstrumentEditAction(dialogId: string, title: string): string {
+  return [
+    `<button type="button" class="icon-button" data-open-dialog="${escapeHtml(dialogId)}" `,
+    `aria-label="Editar instrumento ${title}">`,
+    renderEditIcon(),
+    `</button>`,
+  ].join("");
 }
 
 function renderAccountEditDialog(account: AccountRecord, dialogId: string): string {
