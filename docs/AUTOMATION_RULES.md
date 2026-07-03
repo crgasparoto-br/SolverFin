@@ -1,10 +1,12 @@
 # Regras automaticas configuraveis
 
-Este documento descreve o motor deterministico de regras automaticas do dominio financeiro.
+Este documento descreve o motor deterministico de regras automaticas e o primeiro fluxo operacional persistido do SolverFin.
 
 ## Objetivo
 
 Regras automaticas classificam ou enriquecem sugestoes, importacoes e lancamentos pendentes antes de acionar IA. Elas sao previsiveis, configuraveis por contexto financeiro e retornam uma explicacao do motivo da aplicacao.
+
+No fluxo operacional atual, regras aplicadas geram **sugestoes revisaveis**. Elas nao confirmam lancamentos finais nem executam efeitos financeiros irreversiveis sem revisao humana.
 
 ## Condicoes suportadas
 
@@ -45,6 +47,44 @@ Somente regras com status `active` sao consideradas. Regras `inactive` permanece
 
 Todas as regras e alvos passam pelo mesmo isolamento de tenant usado no restante do dominio. Uma regra de outro contexto financeiro e ignorada, e um alvo de outro contexto e tratado como recurso inexistente.
 
+## Persistencia e API
+
+A tabela `AutomationRule` persiste regras por `organizationId` e `financialProfileId`.
+
+Endpoints operacionais:
+
+```http
+GET /api/automation-rules?status=all
+POST /api/automation-rules
+PATCH /api/automation-rules/:ruleId
+POST /api/automation-rules/:ruleId/archive
+POST /api/automation-rules/apply
+```
+
+Exemplo minimo de criacao:
+
+```json
+{
+  "name": "Mercado vira Alimentacao",
+  "priority": 100,
+  "descriptionIncludes": "mercado",
+  "kind": "expense",
+  "actionCategoryId": "CATEGORY_ID",
+  "explanation": "Compras com mercado costumam ser alimentacao."
+}
+```
+
+A aplicacao das regras percorre sugestoes pendentes de `transaction_extraction` com dados suficientes, aplica as regras ativas do perfil e cria uma sugestao `categorization` com:
+
+- `provider: solverfin-automation`;
+- `model: automation-rules-v1`;
+- `status: pending_review`.
+
+## UI
+
+- `Configurações` permite listar, criar, inativar e executar regras automaticas.
+- `Inbox` mostra a fila de revisao, incluindo extracao, deduplicacao, conciliacao e sugestoes geradas por regras automaticas.
+
 ## Explicabilidade
 
 Cada regra aplicada retorna:
@@ -57,7 +97,7 @@ Cada regra aplicada retorna:
 
 Quando a regra possui `explanation`, esse texto e retornado. Caso contrario, o dominio gera uma explicacao padrao com o nome da regra, descricao do alvo e campos preenchidos.
 
-## Cobertura de testes
+## Cobertura de testes existente
 
 A suite de dominio cobre:
 
@@ -66,3 +106,9 @@ A suite de dominio cobre:
 - conflito resolvido por prioridade;
 - regra desativada;
 - isolamento por tenant.
+
+## Limites conhecidos
+
+- A aplicacao persistida inicial cobre sugestoes pendentes de extracao de transacao derivadas de CSV com dados suficientes na explicacao segura.
+- Sugestoes `categorization` geradas por regras ainda registram revisao sem efeito financeiro especifico ate existir payload estruturado dedicado.
+- OFX, aprendizado por historico e provider real de IA continuam fora deste fluxo inicial.
