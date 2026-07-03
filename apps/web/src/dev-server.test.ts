@@ -126,7 +126,7 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
                 id: "instrument-virtual",
                 type: "virtual",
                 holder: "additional",
-                status: "archived",
+                status: "active",
                 isDefault: false,
                 name: "Virtual adicional",
                 maskedIdentifier: "**** 2222",
@@ -146,7 +146,7 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
 
     assert.match(html, /Cartão C6/);
     assert.match(html, /Cartões de crédito <span>1<\/span>/);
-    assert.match(html, /Conta de pagamento: Conta pagamento · 1 instrumento ativo/);
+    assert.match(html, /Conta de pagamento: Conta pagamento · 2 instrumentos ativos/);
     assert.match(html, /aria-label="Instrumentos de Cartão C6"/);
     assert.match(html, /Físico titular/);
     assert.match(html, /Físico · Titular principal · \*\*\*\* 1111 · limite/);
@@ -155,6 +155,23 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
     assert.match(html, /Virtual · Adicional · \*\*\*\* 2222 · limite/);
     assert.match(html, /1\.000,00/);
     assert.match(html, />Default<\/span>/);
+    assert.equal(
+      (html.match(/\/api\/credit-card-accounts\/card-c6\/default-instrument/g) ?? [])
+        .length,
+      1,
+    );
+    assert.match(html, /name="instrumentId" value="instrument-virtual"/);
+    assert.match(html, /aria-label="Definir Virtual adicional como default"/);
+    assert.match(
+      html,
+      /data-api-path="\/api\/credit-card-instruments\/instrument-physical\/archive"/,
+    );
+    assert.match(
+      html,
+      /data-api-path="\/api\/credit-card-instruments\/instrument-virtual\/archive"/,
+    );
+    assert.match(html, /aria-label="Arquivar Físico titular"/);
+    assert.match(html, /aria-label="Arquivar Virtual adicional"/);
     assert.match(html, /data-api-path="\/api\/credit-card-accounts"/);
     assert.match(html, /data-payload-kind="credit-card-account"/);
     assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/archive"/);
