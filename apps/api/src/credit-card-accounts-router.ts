@@ -16,6 +16,7 @@ import {
   archiveCreditCardAccountForContext,
   createCardInstrumentForContext,
   createCreditCardAccountForContext,
+  deleteCreditCardAccountForContext,
   getCreditCardAccountForContext,
   listCardInstrumentsForContext,
   listCreditCardAccountsForContext,
@@ -48,6 +49,7 @@ route("GET", ACCOUNTS_BASE_PATH, listCreditCardAccountsHandler);
 route("POST", ACCOUNTS_BASE_PATH, createCreditCardAccountHandler);
 route("GET", `${ACCOUNTS_BASE_PATH}/:cardId`, getCreditCardAccountHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId`, updateCreditCardAccountHandler);
+route("DELETE", `${ACCOUNTS_BASE_PATH}/:cardId`, deleteCreditCardAccountHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/archive`, archiveCreditCardAccountHandler);
 route("GET", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, listCardInstrumentsHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, createCardInstrumentHandler);
@@ -238,6 +240,18 @@ async function archiveCreditCardAccountHandler(
       requireParam(match, "cardId"),
     ),
   });
+}
+
+async function deleteCreditCardAccountHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const cardId = requireParam(match, "cardId");
+
+  await deleteCreditCardAccountForContext(context, cardId);
+
+  return json(200, { creditCardAccountId: cardId });
 }
 
 async function listCardInstrumentsHandler(
