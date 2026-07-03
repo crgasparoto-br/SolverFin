@@ -11,33 +11,20 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - Bloqueado: depende de decisao, politica ou fluxo anterior.
 - Precisa de ADR: depende de decisao arquitetural/produtiva formal.
 
-## Fontes conferidas
+## Fontes conferidas nesta revisao
 
-- [`README.md`](../README.md)
-- [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md)
-- [`docs/PRODUCT.md`](./PRODUCT.md)
-- [`docs/PAYABLES_RECEIVABLES.md`](./PAYABLES_RECEIVABLES.md)
-- [`docs/API_PAYABLES_RECEIVABLES.md`](./API_PAYABLES_RECEIVABLES.md)
-- [`docs/API_CREDIT_CARDS_INVOICES.md`](./API_CREDIT_CARDS_INVOICES.md)
-- [`docs/RECURRENCES_INSTALLMENTS_WEB.md`](./RECURRENCES_INSTALLMENTS_WEB.md)
-- [`docs/WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md)
-- [`prisma/schema.prisma`](../prisma/schema.prisma)
-- [`apps/api/src/router.ts`](../apps/api/src/router.ts)
-- [`apps/api/src/payables-receivables-router.ts`](../apps/api/src/payables-receivables-router.ts)
-- [`apps/api/src/api-persistence.integration.test.ts`](../apps/api/src/api-persistence.integration.test.ts)
-- [`apps/web/src/dev-server.ts`](../apps/web/src/dev-server.ts)
-- [`apps/web/src/dev-server/dashboard-page.ts`](../apps/web/src/dev-server/dashboard-page.ts)
-- [`apps/web/src/dev-server/payables-receivables-page.ts`](../apps/web/src/dev-server/payables-receivables-page.ts)
-- [`apps/web/src/dev-server/recurrences-section.ts`](../apps/web/src/dev-server/recurrences-section.ts)
-- [`apps/web/src/dev-server/routes.ts`](../apps/web/src/dev-server/routes.ts)
-- [`packages/domain/src/index.ts`](../packages/domain/src/index.ts)
-- [`packages/domain/src/daily-availability.ts`](../packages/domain/src/daily-availability.ts)
-- [`packages/domain/src/payables-receivables.ts`](../packages/domain/src/payables-receivables.ts)
-- [`packages/domain/src/imports.ts`](../packages/domain/src/imports.ts)
-- [`packages/domain/src/deduplication.ts`](../packages/domain/src/deduplication.ts)
-- [`packages/domain/src/reconciliation.ts`](../packages/domain/src/reconciliation.ts)
-- [`packages/domain/src/automation-rules.ts`](../packages/domain/src/automation-rules.ts)
-- [`packages/domain/src/ai-review-queue.ts`](../packages/domain/src/ai-review-queue.ts)
+- `README.md`
+- `docs/ARCHITECTURE.md`
+- `docs/PRODUCT.md`
+- `docs/CARDS.md`
+- `docs/IMPORTS.md`
+- `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`
+- `docs/AI_REVIEW_QUEUE.md`
+- `docs/BANK_MESSAGE_INBOX.md`
+- `docs/PAYABLES_RECEIVABLES.md`
+- `docs/API_PAYABLES_RECEIVABLES.md`
+- `docs/WEB_MAINTENANCE_COVERAGE.md`
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304 e #338.
 
 ## Decisao atual sobre pagar/receber
 
@@ -46,7 +33,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - **Extrato da conta** (`/lancamentos`), para receitas, despesas, transferencias e lancamentos previstos de conta corrente.
 - **Cartoes de Credito** (`/cartoes`), para compras, faturas, fechamento e pagamento de cartao.
 
-`PayableReceivable` continua existindo como dominio/API legado para preservar registros antigos, auditoria e compatibilidade durante a transicao. Leitores temporarios devem evitar dupla contagem quando houver `settlementTransactionId`, `Transaction` equivalente ou `Invoice` correspondente. A transicao tecnica segura do dominio fica para a #290.
+`PayableReceivable` continua existindo como dominio/API legado para preservar registros antigos, auditoria e compatibilidade durante a transicao. A issue #290 registrou o plano de transicao segura; nenhuma remocao fisica desse dominio deve ocorrer sem migration/script idempotente e validacao explicita.
 
 ## Status por area
 
@@ -73,6 +60,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Testes: integracao feita; unitarios parciais.
 - Documentacao: Parcial.
 - Nota: web preserva Extrato da conta com resumo, agrupamento por data, criacao, detalhe via acao, edicao e cancelamento/estorno. Tambem e a tela ativa para compromissos previstos de conta corrente.
+- Lacuna restante: decidir se os chips de status serao filtros interativos ou apenas indicadores.
 
 ### Recorrencias
 
@@ -95,8 +83,9 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Dominio/API/persistencia: Feito.
 - UI: Feito.
 - Testes: integracao feita; unitarios parciais.
-- Documentacao: Parcial.
+- Documentacao: Feito para o modelo atual de cartao agrupador em `docs/CARDS.md`.
 - Nota: cadastro/manutencao do cartao agrupador fica em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao.
+- Lacuna restante: mover uma compra para outra fatura/periodo pela UI.
 
 ### Orcamentos
 
@@ -104,12 +93,12 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - UI: Parcial.
 - Testes: Parcial.
 - Documentacao: Parcial.
-- Nota: web lista, cria, abre detalhe via acao, edita, consulta uso e arquiva; ainda nao ha tela dedicada de detalhe.
+- Nota: web lista, cria, abre detalhe via acao, edita, consulta uso e arquiva; ainda nao ha tela dedicada de detalhe/uso.
 
 ### Contas a pagar/receber
 
 - Dominio/schema/repository/API: Legado.
-- Seed: Parcial.
+- Seed: sem criacao de registros novos no seed demo atual.
 - UI: Legado/retirada da jornada ativa.
 - Testes: integracao feita; unitarios parciais.
 - Documentacao: Legado.
@@ -119,305 +108,172 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 - Dominio: Feito.
 - Schema/migration: Parcial.
-- Repository/API/UI: Pendente.
+- Repository/API: Parcial/Feito para CSV persistido.
+- UI: Pendente para preview e aceite/rejeicao amigavel.
 - Testes: Parcial.
-- Documentacao: Parcial.
-- Nota: dominio faz preview, hash, sugestoes e problemas; falta lote persistido operacional, repository, API e UI.
+- Documentacao: Parcial/Atualizada em `docs/IMPORTS.md`.
+- Nota: CSV ja possui primeiro fluxo persistido por lote, endpoints `/api/import-batches`, `/api/import-batches/csv` e consulta de lote. OFX segue no dominio/parser inicial, ainda sem persistencia/API operacional. Ainda falta tela de preview, aceite/rejeicao estruturado, politica final de retencao de arquivos brutos e criacao final de lancamentos a partir das sugestoes.
+
+### Inbox de mensagens bancarias
+
+- Dominio/API/persistencia: Parcial/Feito para fluxo inicial.
+- UI: Parcial/Feito para tela inicial.
+- Testes: Parcial.
+- Documentacao: Feito em `docs/BANK_MESSAGE_INBOX.md`.
+- Nota: `/inbox` permite colar mensagem, confirmar consentimento, selecionar conta/categoria opcionais e gerar sugestao revisavel. O texto bruto e descartado apos normalizacao, hash e mascaramento.
 
 ### Deduplicacao
 
 - Dominio: Feito.
-- Schema/repository/API/UI: Pendente.
+- Schema/repository/API: Parcial/Feito para fluxo deterministico inicial em lotes CSV.
+- UI: Pendente para experiencia final amigavel.
 - Testes: Parcial.
-- Documentacao: Parcial.
-- Nota: existem regras deterministicas no dominio, mas ainda nao ha fluxo persistido de revisao.
+- Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
+- Nota: `POST /api/import-batches/:importBatchId/detect-duplicates` cria sugestoes revisaveis `deduplication`/`reconciliation` em `AiSuggestion`. A aprovacao de duplicidade registra revisao, sem alterar lancamentos automaticamente.
 
 ### Conciliacao
 
 - Dominio: Feito.
-- Schema/UI: Parcial.
-- Repository/API: Pendente.
+- Schema/repository/API: Parcial/Feito para conciliacao deterministica inicial via sugestoes revisaveis.
+- UI: Parcial; indicadores existem no extrato, mas falta experiencia operacional completa de revisao.
 - Testes: Parcial.
-- Documentacao: Parcial.
-- Nota: a UI tem indicadores de status no extrato, mas nao executa conciliacao operacional.
+- Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
+- Nota: aprovacao de sugestao `reconciliation` marca o lancamento alvo como `reconciled`, preenche `reconciledAt`/`aiSuggestionId` e registra auditoria minima.
 
 ### Regras automaticas
 
 - Dominio: Feito.
-- Schema/repository/API/UI: Pendente.
+- Schema/repository/API/UI: Pendente para cadastro e gestao operacional ampla.
 - Testes: Parcial.
 - Documentacao: Parcial.
-- Nota: existem regras aplicaveis no dominio, mas ainda nao ha cadastro, persistencia nem fila operacional.
+- Nota: existem regras deterministicas aplicaveis no dominio e parte do fluxo de deduplicacao/conciliacao usa `provider: solverfin-rule`, mas ainda falta cadastro de regras automaticas configuraveis pelo usuario.
 
 ### IA / sugestoes revisaveis
 
 - Dominio: Feito.
 - Schema/migration: Parcial.
-- Repository/API/UI: Pendente.
+- Repository/API: Parcial/Feito para fila de revisao.
+- UI: Pendente para uma experiencia final dedicada da fila.
 - Testes: Parcial.
-- Nota: `AiSuggestion` existe no schema e ha fila de revisao no dominio, mas faltam repository, API e UI.
+- Documentacao: Feito em `docs/AI_REVIEW_QUEUE.md`.
+- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. Aprovacao com efeito financeiro automatico existe apenas para `transaction_extraction` com dados suficientes. Ainda nao ha chamada a provedor real de IA, payload estruturado completo em coluna propria nem assistente financeiro conversacional.
+
+### Perfis financeiros / tenant operacional
+
+- Dominio/API/UI: Parcial/Feito para gestao inicial de perfis financeiros.
+- Documentacao: Parcial/Atualizada em `docs/TENANT.md`.
+- Nota: existe tela `/configuracoes` para listar, criar, editar e arquivar perfis financeiros, com links para operar telas financeiras com `profileId` explicito. Ainda falta, se necessario, seletor global persistido em toda a aplicacao e evolucao multiusuario mais ampla.
+
+### Autenticacao produtiva
+
+- Decisao arquitetural: Feito; ADR 0004 aceita.
+- Implementacao de provider/sessao produtiva: Pendente.
+- Nota: a decisao define provider gerenciado OIDC/OAuth2, credenciais delegadas e sessao propria persistente/revogavel no SolverFin. A escolha concreta do fornecedor e a implementacao ficam para issues tecnicas derivadas.
+
+### Relatorios
+
+- UI: Pendente/placeholder.
+- API/dominio especifico: Pendente para relatorios iniciais dedicados.
+- Nota: o MVP ainda precisa substituir o placeholder por relatorios financeiros iniciais coerentes com Dashboard, Extrato, Cartoes, Orcamentos, importacao e sugestoes revisaveis.
+
+### Configuracoes
+
+- UI: Parcial/Feito para estado inicial.
+- Nota: `/configuracoes` cobre gestao inicial de perfis financeiros. Pode evoluir para preferencias, privacidade, consentimentos, automacoes e parametros de IA.
 
 ## Operacoes visiveis na UI
 
 ### Contas (`/contas`)
 
-- Listar: Sim, em cards/linhas.
-- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
-- Criar: Sim, formulario "Nova conta".
-- Editar: Sim, formulario inline.
-- Arquivar/inativar: Sim, para conta ativa.
+- Listar: Sim.
+- Visualizar detalhe: Sim, por acao que consulta a API; nao ha tela dedicada.
+- Criar: Sim.
+- Editar: Sim.
+- Arquivar/inativar: Sim.
 - Restaurar/reativar: Nao aplicavel no contrato atual da UI.
 - Excluir: Nao.
 - Lacuna restante: tela dedicada de detalhe e restauracao, se o contrato evoluir nessa direcao.
 
 ### Categorias (`/categorias`)
 
-- Listar: Sim, em cards/linhas.
-- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
-- Criar: Sim, formulario "Nova categoria".
-- Editar: Sim, formulario inline.
-- Arquivar/inativar: Sim, para categoria ativa.
-- Restaurar/reativar: Sim, para categoria arquivada.
+- Listar: Sim.
+- Visualizar detalhe: Sim, por acao que consulta a API; nao ha tela dedicada.
+- Criar: Sim.
+- Editar: Sim.
+- Arquivar/inativar: Sim.
+- Restaurar/reativar: Sim.
 - Excluir: Nao.
 - Lacuna restante: tela dedicada de detalhe.
 
 ### Extrato da conta (`/lancamentos`)
 
 - Listar: Sim, agrupado por data.
-- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
-- Criar: Sim, formulario "Novo lancamento" / "Adicionar ao extrato".
-- Criar compromisso futuro: Sim, como lancamento planejado ou sugerido, com data prevista.
-- Editar: Sim, formulario inline.
-- Cancelar/estornar: Sim, para lancamento nao cancelado.
+- Visualizar detalhe: Sim, por acao que consulta a API; nao ha tela dedicada.
+- Criar: Sim, por formulario/modal de novo lancamento ou compromisso previsto.
+- Editar: Sim.
+- Cancelar/estornar: Sim.
 - Excluir: Nao.
-- Acoes especificas: chips de status visiveis, ainda como indicadores.
-- Lacuna restante: confirmar se chips de status viram filtros interativos em iteracao futura.
-
-### Recorrencias
-
-Sem rota propria e sem secao separada: cada lancamento gerado por uma recorrencia aparece como uma linha normal na lista de Movimentacoes (Extrato) ou Compras (Cartoes), com um indicador visual de recorrencia e acoes extras no mesmo menu de qualquer outro lancamento.
-
-- Listar: Sim, casando `recurrenceId` dos lancamentos com dados de `GET /api/recurrences`.
-- Visualizar detalhe: Sim, via modal de edicao aberto pela acao "Editar recorrencia".
-- Criar: Sim, via repeticao "Fixo" no modal de novo lancamento ou nova compra.
-- Editar: Sim, em modal compartilhado entre Extrato e Cartoes.
-- Pausar, retomar e cancelar: Sim, pelo menu do lancamento.
-- Gerar parcelas: Automatico no catch-up e manual pelo modal de edicao.
-- Lacuna restante: nao ha rota dedicada para reler historico de parcelas ja geradas.
-
-### Cartoes de Credito (`/cartoes`)
-
-- Selecionar cartao agrupador: Sim, por seletor do agrupador/fatura.
-- Selecionar fatura: Sim, por navegacao de periodo.
-- Resumo da fatura: Sim, com fatura atual, detalhamento, totais consolidados do agrupador e origem por instrumento quando disponivel.
-- Registrar compra: Sim, em modal.
-- Editar compra: Sim, em modal.
-- Filtrar compras: Sim, por busca e por conciliado/nao conciliado.
-- Fechar fatura: Sim, para fatura aberta.
-- Pagar fatura: Sim, em modal, para fatura nao paga/cancelada.
-- Cadastro, edicao, bloqueio e arquivamento de cartao agrupador e instrumentos ficam em Contas e Cartoes (`/contas-cartoes`).
-- Excluir: Nao.
-- Lacuna restante: nao ha como mover uma compra para outra fatura/periodo pela UI.
-
-### Orcamentos (`/orcamentos`)
-
-- Listar: Sim, em cards/linhas.
-- Visualizar detalhe: Sim, por acao que consulta a API e mostra feedback; nao ha tela dedicada.
-- Criar: Sim, formulario "Novo orcamento".
-- Editar: Sim, formulario inline.
-- Arquivar/inativar: Sim, para orcamento ativo.
-- Consultar uso: Sim, por acao da API.
-- Excluir: Nao.
-- Lacuna restante: tela dedicada de detalhe/uso.
-
-### Contas a pagar/receber (legado; sem tela operacional ativa)
-
-- Listar na UI ativa: Nao.
-- Criar na UI ativa: Nao.
-- Editar na UI ativa: Nao.
-- Concluir pagamento/recebimento na UI ativa: pelo fluxo de origem, com efetivacao de lancamento no Extrato ou pagamento de fatura em Cartoes.
-- API legada: Sim, enquanto a transicao tecnica nao for concluida.
-- Lacuna restante: planejar na #290 migracao, compatibilidade, possivel descontinuacao e tratamento de dados historicos sem perda.
-
-### Inbox, relatorios e configuracoes
-
-- Inbox: rota implementada para fluxo inicial de entrada/revisao conforme arquivos dedicados.
-- Configuracoes: rota implementada para estado/configuracao inicial conforme arquivo dedicado.
-- Relatorios: ainda aparece como placeholder.
-
-## Comparacao API x UI por recurso principal
-
-### Contas
-
-API disponivel:
-
-- `GET /api/accounts`
-- `POST /api/accounts`
-- `GET /api/accounts/:accountId`
-- `PATCH /api/accounts/:accountId`
-- `POST /api/accounts/:accountId/archive`
-
-UI disponivel:
-
-- lista, cria, consulta detalhe via acao, edita e arquiva em `/contas`.
-
-Lacuna: tela dedicada de detalhe.
-
-### Categorias
-
-API disponivel:
-
-- `GET /api/categories`
-- `POST /api/categories`
-- `GET /api/categories/:categoryId`
-- `PATCH /api/categories/:categoryId`
-- `POST /api/categories/:categoryId/archive`
-- `POST /api/categories/:categoryId/restore`
-
-UI disponivel:
-
-- lista, cria, consulta detalhe via acao, edita, arquiva e restaura em `/categorias`.
-
-Lacuna: tela dedicada de detalhe.
-
-### Lancamentos / Extrato da conta
-
-API disponivel:
-
-- `GET /api/transactions`
-- `POST /api/transactions`
-- `GET /api/transactions/:transactionId`
-- `PATCH /api/transactions/:transactionId`
-- `POST /api/transactions/:transactionId/void`
-
-UI disponivel:
-
-- tela `/lancamentos` como **Extrato da conta**;
-- resumo lateral do periodo;
-- agrupamento por data;
-- chips de status visiveis;
-- formulario "Adicionar ao extrato" para receitas, despesas, transferencias e compromissos previstos de conta;
-- detalhe via acao, edicao e cancelamento/estorno.
-
-Lacunas:
-
-- tela dedicada de detalhe;
-- confirmar se chips de status serao filtros interativos ou apenas indicadores.
+- Lacuna restante: decidir se chips de status viram filtros interativos.
 
 ### Recorrencias e parcelas
 
-API disponivel:
+- Recorrencias: aparecem nas listas normais de `/lancamentos` e `/cartoes`, sem rota propria.
+- Criar recorrencia: Sim, pela repeticao "Fixo" no modal de novo lancamento ou nova compra.
+- Editar/pausar/retomar/cancelar: Sim, pelo menu do lancamento/compra recorrente.
+- Gerar parcelas: Sim, automaticamente no catch-up e manualmente pelo modal de edicao.
+- Lacuna restante: consulta historica dedicada e manutencao direta de parcelas ja geradas.
 
-- `GET /api/recurrences`
-- `POST /api/recurrences`
-- `GET /api/recurrences/:recurrenceId`
-- `PATCH /api/recurrences/:recurrenceId`
-- `POST /api/recurrences/:recurrenceId/pause`
-- `POST /api/recurrences/:recurrenceId/resume`
-- `POST /api/recurrences/:recurrenceId/cancel`
-- `POST /api/recurrences/:recurrenceId/generate-installments`
+### Cartoes de Credito (`/cartoes`)
 
-UI disponivel:
+- Selecionar cartao agrupador: Sim.
+- Selecionar fatura: Sim.
+- Resumo da fatura: Sim.
+- Registrar compra: Sim.
+- Editar compra: Sim.
+- Filtrar compras: Sim.
+- Fechar fatura: Sim.
+- Pagar fatura: Sim.
+- Cadastro, edicao, bloqueio e arquivamento de cartao agrupador/instrumentos: Sim, em `/contas-cartoes`.
+- Excluir: Nao.
+- Lacuna restante: mover compra para outra fatura/periodo pela UI.
 
-- recorrencias sem rota nem bloco proprio: lancamentos recorrentes aparecem na lista normal de `/lancamentos`/`/cartoes`, com criacao via repeticao "Fixo" e manutencao pelo menu de acoes do lancamento.
+### Orcamentos (`/orcamentos`)
 
-Lacunas:
+- Listar: Sim.
+- Visualizar detalhe/uso: Sim, por acao que consulta a API; nao ha tela dedicada.
+- Criar: Sim.
+- Editar: Sim.
+- Arquivar/inativar: Sim.
+- Excluir: Nao.
+- Lacuna restante: tela dedicada de detalhe/uso.
 
-- consulta historica dedicada de parcelas ja geradas;
-- manutencao direta de parcelas.
+### Importacao, inbox e revisao
 
-### Cartoes e faturas
-
-API principal disponivel:
-
-- `GET /api/credit-card-accounts`
-- `POST /api/credit-card-accounts`
-- `GET /api/credit-card-accounts/:cardId`
-- `PATCH /api/credit-card-accounts/:cardId`
-- `POST /api/credit-card-accounts/:cardId/archive`
-- `GET /api/credit-card-accounts/:cardId/instruments`
-- `POST /api/credit-card-accounts/:cardId/instruments`
-- `PATCH /api/credit-card-accounts/:cardId/default-instrument`
-- `POST /api/credit-card-accounts/:cardId/purchases`
-- `PATCH /api/credit-card-instruments/:instrumentId`
-- `POST /api/credit-card-instruments/:instrumentId/archive`
-- `GET /api/invoices`
-- `GET /api/invoices/:invoiceId`
-- `GET /api/invoices/:invoiceId/summary`
-- `POST /api/invoices/:invoiceId/close`
-- `POST /api/invoices/:invoiceId/pay`
-
-API legada temporaria:
-
-- `GET /api/cards`
-- `POST /api/cards`
-- `GET /api/cards/:cardId`
-- `PATCH /api/cards/:cardId`
-- `POST /api/cards/:cardId/archive`
-- `POST /api/cards/:cardId/block`
-- `POST /api/cards/:cardId/purchases`
-
-Rota removida do comportamento ativo:
-
-- `/api/card-additional-links` nao e mais registrada no servidor e deve responder como rota inexistente.
-
-UI disponivel:
-
-- cadastra, edita, bloqueia e arquiva cartao agrupador e instrumentos em `/contas-cartoes`;
-- seleciona cartao agrupador/fatura, mostra resumo consolidado, registra/edita compra, filtra, fecha fatura e paga fatura em `/cartoes`.
-
-Lacuna: mover compra para outra fatura/periodo pela UI.
-
-### Orcamentos
-
-API disponivel:
-
-- `GET /api/budgets`
-- `POST /api/budgets`
-- `GET /api/budgets/:budgetId`
-- `PATCH /api/budgets/:budgetId`
-- `POST /api/budgets/:budgetId/archive`
-- `GET /api/budgets/:budgetId/usage`
-
-UI disponivel:
-
-- lista, cria, consulta detalhe/uso via acao, edita e arquiva em `/orcamentos`.
-
-Lacuna: tela dedicada de detalhe/uso.
-
-### Contas a pagar/receber legado
-
-API disponivel temporariamente:
-
-- `GET /api/payables-receivables`
-- `POST /api/payables-receivables`
-- `GET /api/payables-receivables/:payableReceivableId`
-- `PATCH /api/payables-receivables/:payableReceivableId`
-- `POST /api/payables-receivables/:payableReceivableId/settle`
-- `POST /api/payables-receivables/:payableReceivableId/cancel`
-
-UI disponivel:
-
-- sem tela operacional ativa para novos fluxos;
-- `/lancamentos` cobre receitas, despesas, transferencias e lancamentos previstos de conta;
-- `/cartoes` cobre compras, faturas, fechamento e pagamento de cartao;
-- componentes internos remanescentes de `/pagar-receber` devem ser tratados como legado, sem links novos de navegacao ou Dashboard.
-
-Lacuna: plano da #290 para migracao/compatibilidade do dominio, endpoints, testes e dados antigos.
+- CSV persistido: Sim, por API.
+- OFX persistido: Nao.
+- Preview/aceite amigavel de importacao na UI: Nao.
+- Inbox de mensagens bancarias: Sim, fluxo inicial em `/inbox`.
+- Fila de revisao por API: Sim, em `/api/ai-review-queue`.
+- Fila de revisao dedicada na UI: Pendente.
+- Deduplicacao/conciliacao deterministica por API: Sim, para lote CSV.
+- Cadastro de regras automaticas pelo usuario: Pendente.
+- Provedor real de IA: Pendente.
 
 ## Ambiguidades e encaminhamentos
 
-- Exclusao fisica de dados financeiros nao aparece como padrao atual; a arquitetura favorece exclusao logica, arquivamento, inativacao ou cancelamento auditavel. A politica de retencao/mascaramento deve ser consolidada na issue #177.
-- Os chips de status do Extrato da conta existem visualmente, mas ainda precisam ser confirmados como filtros interativos ou indicadores em uma proxima iteracao.
-- Autenticacao produtiva segue dependente da ADR da issue #174.
-- Selecao e gestao operacional de perfis financeiros segue na issue #182.
-- Importacao, deduplicacao/conciliacao e IA devem avancar em ordem que preserve revisao humana, auditoria e privacidade: #175, #176, #178 e #183.
-- A remocao tecnica de `PayableReceivable` nao deve ocorrer antes de plano explicito de migracao/compatibilidade, previsto na #290.
+- Exclusao fisica de dados financeiros nao aparece como padrao atual; a arquitetura favorece exclusao logica, arquivamento, inativacao ou cancelamento auditavel.
+- Chips de status do Extrato da conta existem visualmente, mas ainda precisam ser confirmados como filtros interativos ou indicadores.
+- Autenticacao produtiva tem ADR aceita, mas provider real e sessao persistente ainda precisam ser implementados.
+- Gestao de perfis financeiros existe em `/configuracoes`, mas seletor global persistido e multiusuario avancado seguem fora do fluxo atual.
+- A transicao de `PayableReceivable` tem plano documentado, mas o dominio/API legado permanece por compatibilidade.
+- Importacao, deduplicacao, conciliacao, inbox e fila revisavel ja possuem primeiras APIs/fluxos; a principal lacuna agora e a experiencia web completa e a politica operacional final de privacidade/retencao.
 
 ## Proximas implementacoes sugeridas
 
-1. Planejar na #290 a transicao tecnica segura de `PayableReceivable` sem perda de dados.
-2. Adicionar consulta historica dedicada de parcelas por recorrencia.
-3. Evoluir telas dedicadas de detalhe para contas, categorias, lancamentos, cartoes e orcamentos.
-4. Consolidar politica de retencao/mascaramento antes de ampliar importacao, inbox e IA com dados sensiveis.
-5. Ligar importacao, deduplicacao/conciliacao e fila revisavel em fluxo operacional.
+1. Criar UI de preview/revisao para importacoes CSV e sugestoes de deduplicacao/conciliacao.
+2. Evoluir a fila de revisao de sugestoes para uma tela operacional amigavel.
+3. Implementar relatorios iniciais no lugar do placeholder.
+4. Adicionar consulta historica dedicada de parcelas por recorrencia.
+5. Evoluir telas dedicadas de detalhe/uso para contas, categorias, lancamentos, cartoes e orcamentos.
+6. Implementar provider real de autenticacao produtiva e sessao persistente/revogavel.
+7. Consolidar consentimentos, retencao, mascaramento e exportacao/exclusao antes de ampliar IA e importacoes com dados sensiveis.
