@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
-import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page-dialog-only.js";
+import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
+import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 
 await accountsCardsPageRendersDialogOnlyInstrumentActions();
 
@@ -60,7 +61,7 @@ async function accountsCardsPageRendersDialogOnlyInstrumentActions(): Promise<vo
   }) as typeof fetch;
 
   try {
-    const html = await renderAccountsCardsPage("session-token");
+    const html = enhanceAccountsCardsTabs(await renderAccountsCardsPage("session-token"));
 
     const expectedPatterns = [
       /data-api-method="DELETE" data-api-path="\/api\/accounts\/account-unused"/,
