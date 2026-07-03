@@ -138,6 +138,9 @@ function renderAccountItem(account: AccountRecord): string {
         <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
           <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(account.name)}"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
         </form>
+        <form data-api-form data-api-method="DELETE" data-api-path="/api/accounts/${escapeHtml(account.id)}" data-confirm="Excluir ${escapeHtml(account.name)}? Só é possível excluir contas sem lançamentos, cartões, recorrências ou contas a pagar/receber vinculadas." class="inline-action-form">
+          <button type="submit" class="icon-button danger-icon-button" aria-label="Excluir ${escapeHtml(account.name)}">${renderTrashIcon()}</button>
+        </form>
       </div>
       ${renderAccountEditDialog(account, editDialogId)}
     </article>
@@ -189,6 +192,9 @@ function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]
         <button type="button" class="icon-button" data-open-dialog="${escapeHtml(newInstrumentDialogId)}" aria-label="Adicionar instrumento em ${escapeHtml(card.name)}"${isArchived ? " disabled" : ""}>${renderAddIcon()}</button>
         <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
           <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(card.name)}"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
+        </form>
+        <form data-api-form data-api-method="DELETE" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}" data-confirm="Excluir ${escapeHtml(card.name)}? Só é possível excluir cartões sem compras, faturas, parcelas ou recorrências vinculadas." class="inline-action-form">
+          <button type="submit" class="icon-button danger-icon-button" aria-label="Excluir ${escapeHtml(card.name)}">${renderTrashIcon()}</button>
         </form>
       </div>
       ${renderCardEditDialog(card, accounts, editDialogId)}
@@ -318,7 +324,65 @@ function renderCardEditDialog(
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
         <button type="submit">Salvar cartão</button>
       </form>
+      ${renderCardInlineInstrumentForms(card)}
     </dialog>
+  `;
+}
+
+function renderCardInlineInstrumentForms(card: CreditCardAccountRecord): string {
+  const activeCount = card.instruments.filter((instrument) => instrument.status === "active").length;
+
+  if (card.instruments.length === 0) {
+    return `
+      <section class="dialog-subsection" aria-label="Instrumentos de ${escapeHtml(card.name)}">
+        <div class="dialog-subsection-heading">
+          <div>
+            <p class="eyebrow">Instrumentos do cartão</p>
+            <h3>Dados dos instrumentos</h3>
+          </div>
+        </div>
+        <p class="muted">Nenhum instrumento cadastrado neste cartão.</p>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="dialog-subsection" aria-label="Instrumentos de ${escapeHtml(card.name)}">
+      <div class="dialog-subsection-heading">
+        <div>
+          <p class="eyebrow">Instrumentos do cartão</p>
+          <h3>Dados dos instrumentos</h3>
+        </div>
+        <span>${activeCount} ${activeCount === 1 ? "ativo" : "ativos"}</span>
+      </div>
+      <div class="dialog-instrument-forms">
+        ${card.instruments.map(renderCardInlineInstrumentForm).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderCardInlineInstrumentForm(instrument: CardInstrumentRecord): string {
+  const title =
+    instrument.name?.trim() ||
+    `${formatInstrumentType(instrument.type)} ${formatInstrumentHolder(instrument.holder).toLowerCase()}`;
+
+  return `
+    <form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}" class="edit-grid instrument-edit-form">
+      <div class="instrument-edit-heading">
+        <strong>${escapeHtml(title)}</strong>
+        <div class="instrument-tags">
+          ${instrument.isDefault ? `<span class="instrument-pill">Default</span>` : ""}
+          <span class="instrument-pill ${instrument.status === "archived" ? "is-archived" : ""}">${escapeHtml(formatGenericStatus(instrument.status))}</span>
+        </div>
+      </div>
+      <label>Tipo<select name="type" required>${renderInstrumentTypeOptions(instrument.type)}</select></label>
+      <label>Titularidade<select name="holder" required>${renderInstrumentHolderOptions(instrument.holder)}</select></label>
+      <label>Nome do instrumento<input name="name" value="${escapeHtml(instrument.name ?? "")}" /></label>
+      <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
+      <label>Limite do instrumento (R$)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
+      <button type="submit">Salvar instrumento</button>
+    </form>
   `;
 }
 
@@ -757,6 +821,10 @@ function renderArchiveIcon(): string {
   return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M5 5h14v4H5V5zm2 6h10v8H7v-8zm2 2v4h6v-4H9zM7 7v1h10V7H7z" fill="currentColor"/></svg>`;
 }
 
+function renderTrashIcon(): string {
+  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h10l-.7 11H7.7L7 9zm3 2 .3 7h1.5l-.2-7H10zm3.4 0-.2 7h1.5l.3-7h-1.6z" fill="currentColor"/></svg>`;
+}
+
 function renderDefaultIcon(): string {
   return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z" fill="currentColor"/></svg>`;
 }
@@ -870,7 +938,7 @@ function baseCss(): string {
     .master-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .master-heading > div:first-child { display: grid; gap: 6px; max-width: 720px; } .master-actions { display: flex; flex-wrap: wrap; gap: 10px; }
     .master-toolbar, .master-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 16px; padding: 16px; }
     [hidden] { display: none !important; }
-    .tab-list { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: flex; gap: 6px; padding: 6px; } .tab-button { background: transparent; color: var(--primary); flex: 1 1 0; gap: 8px; min-width: 0; } .tab-button[aria-selected="true"] { background: var(--surface); border: 1px solid #d4e6ec; color: var(--text); } .tab-button span, .section-heading > span, .status-pill { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 5px 9px; white-space: nowrap; }
+    .tab-list { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: flex; gap: 6px; padding: 6px; } .tab-button { background: transparent; color: var(--primary); flex: 1 1 0; gap: 8px; min-width: 0; } .tab-button[aria-selected="true"] { background: var(--surface); border: 1px solid #d4e6ec; color: var(--text); } .tab-button span, .section-heading > span, .status-pill, .dialog-subsection-heading > span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 5px 9px; white-space: nowrap; }
     .filter-row { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(12rem, .25fr); }
     .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading > div { display: grid; gap: 4px; }
     .master-list { display: grid; gap: 12px; } .master-item { align-items: start; border-top: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 44px minmax(0, 1fr) minmax(9rem, auto) auto; padding-top: 14px; } .master-item:first-child { border-top: 0; padding-top: 0; }
@@ -885,9 +953,10 @@ function baseCss(): string {
     .instrument-actions { display: flex; gap: 6px; justify-content: flex-end; } .instrument-actions .icon-button { min-height: 36px; width: 36px; }
     .item-actions { display: flex; gap: 8px; justify-content: flex-end; } .inline-action-form { display: block; gap: 0; } .icon-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 44px; padding: 0; width: 44px; } .danger-icon-button { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 20px; width: 20px; }
     .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
+    .dialog-subsection { border-top: 1px solid var(--line); display: grid; gap: 12px; margin-top: 18px; padding-top: 18px; } .dialog-subsection-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .dialog-subsection-heading > div { display: grid; gap: 4px; } .dialog-subsection h3 { font-size: 1rem; margin: 0; } .dialog-instrument-forms { display: grid; gap: 12px; } .instrument-edit-form { background: var(--surface-soft); border: 1px solid var(--line); border-radius: 8px; margin-top: 0; padding: 12px; } .instrument-edit-heading { align-items: center; display: flex; gap: 10px; grid-column: 1 / -1; justify-content: space-between; }
     .filter-empty-state { margin-top: 4px; }
     .master-dialog { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 760px; padding: 20px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.38); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 12px; } .dialog-heading { display: grid; gap: 4px; }
     @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .master-heading { align-items: stretch; display: grid; } .master-item { grid-template-columns: 44px minmax(0, 1fr) auto; } .item-actions { grid-column: 2 / -1; justify-content: flex-start; } }
-    @media (max-width: 760px) { h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading, .instrument-item { display: grid; grid-template-columns: 1fr; } .item-actions { grid-column: auto; justify-content: flex-start; } .instrument-side { justify-items: start; } .instrument-tags, .instrument-actions { justify-content: flex-start; } .amount-stack { justify-items: start; text-align: left; white-space: normal; } }
+    @media (max-width: 760px) { h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading, .instrument-item, .dialog-subsection-heading, .instrument-edit-heading { display: grid; grid-template-columns: 1fr; } .item-actions { grid-column: auto; justify-content: flex-start; } .instrument-side { justify-items: start; } .instrument-tags, .instrument-actions { justify-content: flex-start; } .amount-stack { justify-items: start; text-align: left; white-space: normal; } }
   `;
 }
