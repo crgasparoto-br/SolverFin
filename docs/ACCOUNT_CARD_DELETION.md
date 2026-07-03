@@ -40,4 +40,4 @@ Se houver qualquer uso, a API retorna `CARD_ACCOUNT_IN_USE` e a acao correta par
 
 A tela `Contas e Cartoes` exibe a acao de excluir ao lado das acoes de editar e arquivar. A protecao final fica sempre no servidor: se o cadastro ja tiver uso, a tela mostra a mensagem de erro retornada pela API.
 
-Na edicao de um cartao agrupador, a tela tambem mostra os dados dos instrumentos internos no mesmo dialogo, permitindo revisar e salvar tipo, titularidade, nome, identificador mascarado e limite individual sem sair da edicao do cartao.
+Na lista de cartoes, os instrumentos internos nao sao exibidos como itens separados. A edicao de um cartao agrupador mostra os instrumentos internos no mesmo dialogo, permitindo revisar e salvar tipo, titularidade, nome, identificador mascarado e limite individual sem sair da edicao do cartao. O botao `Novo instrumento` tambem fica dentro desse dialogo de edicao.
