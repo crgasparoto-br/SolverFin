@@ -190,6 +190,21 @@ No modelo alvo, a recorrencia de cartao deve guardar:
 - `cardId` do agrupador;
 - `cardInstrumentId` escolhido no momento da criacao.
 
+Pelo contrato REST, `POST /api/recurrences` e `PATCH /api/recurrences/:recurrenceId` aceitam `cardInstrumentId` quando a recorrencia usa `cardId`. O instrumento informado precisa estar ativo e pertencer ao mesmo agrupador, organizacao e perfil financeiro. O campo retornado em `recurrence.cardInstrumentId` e o valor preservado para as compras geradas por `POST /api/recurrences/:recurrenceId/generate-installments`.
+
+Exemplo:
+
+```json
+{
+  "frequency": "monthly",
+  "startOn": "2027-06-05",
+  "amountMinor": 1234,
+  "description": "Assinatura no cartao virtual",
+  "cardId": "...",
+  "cardInstrumentId": "..."
+}
+```
+
 Mudancas futuras no instrumento default apenas preenchem novas criacoes. Elas nao alteram recorrencias existentes.
 
 ## Pagamento de fatura
@@ -231,6 +246,7 @@ Fixtures e exemplos usam apenas dados ficticios e mascarados.
 - `CARD_INVOICE_NOT_OPEN`: fatura nao esta aberta para novas compras.
 - `CARD_INVOICE_PAYMENT_AMOUNT_INVALID`: pagamento nao corresponde ao total da fatura.
 - `CARD_PAYMENT_ACCOUNT_ARCHIVED`: conta de pagamento nao esta ativa.
+- `RECURRENCE_CARD_INSTRUMENT_INVALID`: instrumento informado na recorrencia nao esta ativo ou nao pertence ao agrupador/tenant.
 
 ## Fora de escopo desta transicao
 
