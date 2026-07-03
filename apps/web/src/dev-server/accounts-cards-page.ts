@@ -18,10 +18,9 @@ const cardBrands = [
 const accountCurrencies = ["BRL", "USD", "EUR"] as const;
 
 export async function renderAccountsCardsPage(token: string): Promise<string> {
-  const [accounts, cards, cardAdditionalLinks] = await Promise.all([
+  const [accounts, cards] = await Promise.all([
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts?status=all"),
     apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
-    apiGet<{ links: CardAdditionalLinkRecord[] }>(token, "/api/card-additional-links"),
   ]);
 
   if (!accounts.ok)
@@ -30,12 +29,6 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
 
   const accountItems = accounts.data.accounts;
   const cardItems = cards.data.cards;
-  const links = cardAdditionalLinks.ok ? cardAdditionalLinks.data.links : [];
-  const additionalCardIds = new Set(
-    links.filter((link) => link.cardId !== link.groupCardId).map((link) => link.cardId),
-  );
-  const mainCardItems = cardItems.filter((card) => !additionalCardIds.has(card.id));
-  const additionalCardItems = cardItems.filter((card) => additionalCardIds.has(card.id));
 
   return renderAuthenticatedPage({
     pathname: "/contas-cartoes",
@@ -56,7 +49,7 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
       <section class="master-toolbar" aria-label="Filtros da lista">
         <div class="tab-list" role="tablist" aria-label="Tipo de cadastro">
           <button id="accounts-tab" type="button" role="tab" class="tab-button" data-tab="accounts" aria-controls="accounts-panel" aria-selected="true">Contas bancárias <span>${accountItems.length}</span></button>
-          <button id="cards-tab" type="button" role="tab" class="tab-button" data-tab="cards" aria-controls="cards-panel" aria-selected="false">Cartões de crédito <span>${mainCardItems.length}</span></button>
+          <button id="cards-tab" type="button" role="tab" class="tab-button" data-tab="cards" aria-controls="cards-panel" aria-selected="false">Cartões de crédito <span>${cardItems.length}</span></button>
           <button id="connections-tab" type="button" role="tab" class="tab-button" data-tab="connections" aria-controls="connections-panel" aria-selected="false">Conexões</button>
         </div>
         <div class="filter-row">
@@ -91,14 +84,13 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
             <h2>Cartões de crédito</h2>
             <p class="muted">Cadastre dados básicos do cartão sem misturar com compras e faturas.</p>
           </div>
-          <span>${countActive(mainCardItems)} ativos</span>
+          <span>${countActive(cardItems)} ativos</span>
         </div>
         <div class="master-list" data-master-list>
-          ${mainCardItems.map((card) => renderCardItem(card, accountItems)).join("") || renderEmptyState("Nenhum cartão cadastrado.", "Crie um cartão para vincular limite, vencimento e conta de pagamento.")}
+          ${cardItems.map((card) => renderCardItem(card, accountItems)).join("") || renderEmptyState("Nenhum cartão cadastrado.", "Crie um cartão para vincular limite, vencimento e conta de pagamento.")}
         </div>
         ${renderFilterEmptyState("Nenhum cartão encontrado.")}
       </section>
-      ${additionalCardItems.map((card) => renderCardEditDialog(card, accountItems, `edit-card-dialog-${card.id}`)).join("")}
 
       <section id="connections-panel" class="master-panel" data-tab-panel="connections" role="tabpanel" aria-labelledby="connections-tab" hidden>
         ${renderEmptyState("Conexões ficam para uma próxima etapa.", "Esta tela está preparada para receber integrações quando houver suporte, sem prometer automação bancária direta.")}
@@ -641,12 +633,6 @@ interface AccountRecord {
   currency?: string;
   maskedIdentifier?: string;
   institutionKey?: string;
-}
-
-interface CardAdditionalLinkRecord {
-  groupCardId: string;
-  cardId: string;
-  isPrimary: boolean;
 }
 
 interface CardRecord {

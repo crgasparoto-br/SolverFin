@@ -20,6 +20,7 @@ adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu();
 accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
 accountsCardsDirectEnhancementIsInjectedOnce();
 accountsCardsEnhancementKeepsOnlyActiveFilter();
+accountsCardsPageDoesNotFetchRetiredLinks();
 accountAndCardInstitutionSelectsUseGlobalCatalog();
 institutionIconsUseExplicitLogoSources();
 legacyAccountsRouteDoesNotAppearAsPrivateRoute();
@@ -134,6 +135,16 @@ function accountsCardsEnhancementKeepsOnlyActiveFilter(): void {
   assert.doesNotMatch(enhanced, /cardLinksApiPath/);
   assert.doesNotMatch(enhanced, /\/api\/card-additional-links/);
   assert.doesNotMatch(enhanced, /Definir principal/);
+}
+
+function accountsCardsPageDoesNotFetchRetiredLinks(): void {
+  const accountsCardsPageSource = readFileSync(
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards-page.ts"),
+    "utf8",
+  );
+
+  assert.doesNotMatch(accountsCardsPageSource, /\/api\/card-additional-links/);
+  assert.doesNotMatch(accountsCardsPageSource, /CardAdditionalLinkRecord/);
 }
 
 function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
