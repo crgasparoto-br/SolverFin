@@ -330,7 +330,7 @@ function renderCardEditDialog(
 }
 
 function renderCardInlineInstrumentForms(card: CreditCardAccountRecord): string {
-  const activeCount = card.instruments.filter((instrument) => instrument.status === "active").length;
+  const activeCount = countActive(card.instruments);
 
   if (card.instruments.length === 0) {
     return `
