@@ -18,6 +18,7 @@ Todos os filtros sao opcionais:
 
 ```text
 transactionId
+accountId
 recurrenceId
 cardId
 cardInstrumentId
@@ -30,6 +31,8 @@ profileId
 ```
 
 `dueFrom` e `dueTo` usam `YYYY-MM-DD`. `status` aceita `planned`, `posted`, `reconciled`, `cancelled` ou `all`.
+
+`accountId` filtra parcelas pela transacao vinculada a uma conta. Esse filtro deve ser usado por `/lancamentos` para consultar somente as parcelas do extrato selecionado.
 
 Periodo invertido, data invalida ou status desconhecido retornam erro controlado `400 INSTALLMENTS_FILTER_INVALID`.
 
@@ -102,6 +105,6 @@ Parcelas ligadas a fatura, transacao postada/conciliada/cancelada ou sem transac
 
 ## Telas consumidoras
 
-- `/lancamentos`: listar parcelas ligadas ao lancamento/transacao original de conta e exibir manutencao apenas quando `editable` for verdadeiro.
+- `/lancamentos`: listar parcelas por `accountId`, periodo e vinculo com a transacao original de conta, exibindo manutencao apenas quando `editable` for verdadeiro.
 - `/cartoes`: listar historico por cartao agrupador, instrumento, fatura, periodo e compra/recorrencia quando os vinculos existirem.
 - `/relatorios`: usar a mesma leitura como base para visao consolidada somente leitura quando a tela deixar de ser placeholder.
