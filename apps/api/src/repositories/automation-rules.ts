@@ -17,10 +17,10 @@ import type { query as QueryFn } from "../db.js";
 
 export interface AutomationRuleDraft {
   name: string;
-  priority?: number;
+  priority?: number | undefined;
   conditions: AutomationRuleConditions;
   actions: AutomationRuleActions;
-  explanation?: string;
+  explanation?: string | undefined;
 }
 
 export interface ApplyAutomationRulesResult {
@@ -60,6 +60,20 @@ interface AiSuggestionRow {
   reviewedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface AutomationRuleInput {
+  id: EntityId;
+  name: string;
+  status: "active" | "inactive";
+  priority: number;
+  conditions: AutomationRuleConditions;
+  actions: AutomationRuleActions;
+  explanation?: string | undefined;
+  createdAt: string;
+  updatedAt: string;
+  createdByUserId?: EntityId | undefined;
+  updatedByUserId?: EntityId | undefined;
 }
 
 export class AutomationRuleRepositoryError extends Error {
@@ -108,7 +122,7 @@ export async function createAutomationRuleForContext(
     priority: draft.priority ?? 100,
     conditions: draft.conditions,
     actions: draft.actions,
-    explanation: draft.explanation,
+    ...(draft.explanation !== undefined ? { explanation: draft.explanation } : {}),
     createdAt: now,
     updatedAt: now,
     createdByUserId: context.userId,
@@ -134,9 +148,20 @@ export async function updateAutomationRuleForContext(
   const current = await findAutomationRuleForContext(context, ruleId);
   const now = new Date().toISOString();
   const updated = normalizeAutomationRule(context, {
-    ...current,
-    ...patch,
+    id: current.id,
+    name: patch.name ?? current.name,
+    status: patch.status ?? current.status,
+    priority: patch.priority ?? current.priority,
+    conditions: patch.conditions ?? current.conditions,
+    actions: patch.actions ?? current.actions,
+    ...(patch.explanation !== undefined
+      ? { explanation: patch.explanation }
+      : current.explanation !== undefined
+        ? { explanation: current.explanation }
+        : {}),
+    createdAt: current.createdAt,
     updatedAt: now,
+    ...(current.createdByUserId !== undefined ? { createdByUserId: current.createdByUserId } : {}),
     updatedByUserId: context.userId,
   });
 
@@ -191,13 +216,7 @@ export async function applyAutomationRulesForContext(
         continue;
       }
 
-      const alreadyExists = await hasAutomationSuggestionForSource(
-        context,
-        sourceSuggestion.id,
-        executeQuery,
-      );
-
-      if (alreadyExists) {
+      if (await hasAutomationSuggestionForSource(context, sourceSuggestion.id, executeQuery)) {
         skipped += 1;
         continue;
       }
@@ -269,10 +288,7 @@ async function hasAutomationSuggestionForSource(
   return rows.length > 0;
 }
 
-function normalizeAutomationRule(
-  context: TenantContext,
-  input: Omit<AutomationRule, "organizationId" | "financialProfileId">,
-): AutomationRule {
+function normalizeAutomationRule(context: TenantContext, input: AutomationRuleInput): AutomationRule {
   const name = input.name.trim();
 
   if (!name) {
@@ -297,14 +313,19 @@ function normalizeAutomationRule(
   }
 
   return {
-    ...input,
+    id: input.id,
     organizationId: context.organizationId,
     financialProfileId: context.financialProfileId,
     name,
+    status: input.status,
     priority: Number.isFinite(input.priority) ? input.priority : 100,
     conditions: sanitizeConditions(input.conditions),
     actions: sanitizeActions(input.actions),
     ...(input.explanation?.trim() ? { explanation: input.explanation.trim() } : {}),
+    createdAt: input.createdAt,
+    updatedAt: input.updatedAt,
+    ...(input.createdByUserId !== undefined ? { createdByUserId: input.createdByUserId } : {}),
+    ...(input.updatedByUserId !== undefined ? { updatedByUserId: input.updatedByUserId } : {}),
   };
 }
 
