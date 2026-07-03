@@ -6,6 +6,7 @@ import {
   createCardInstrument,
   getDefaultCardInstrument,
   isCardAvailableForNewCardPurchases,
+  resolveCardInstrumentEffectiveCreditLimit,
   setDefaultCardInstrument,
   type CreateCardInstrumentPayload,
 } from "./card-instruments.js";
@@ -35,6 +36,7 @@ runArchivesDefaultAndPromotesNextActiveInstrument();
 runBlocksCardWhenLastActiveInstrumentIsArchived();
 runRejectsInstrumentWithoutRequiredFields();
 runRejectsActiveInstrumentLimitsAboveCardLimit();
+runResolvesMissingInstrumentLimitFromCardLimit();
 runRejectsInstrumentFromAnotherCard();
 runTenantIsolation();
 
@@ -280,6 +282,54 @@ function runRejectsActiveInstrumentLimitsAboveCardLimit(): void {
         },
       }),
     "CARD_INSTRUMENT_LIMIT_EXCEEDS_CARD_LIMIT",
+  );
+}
+
+function runResolvesMissingInstrumentLimitFromCardLimit(): void {
+  const card = createCardFixture("card-limit-fallback", 12_500);
+  const createdResult = createCardInstrument({
+    id: "instrument-limit-fallback",
+    context: tenantA,
+    card,
+    existingInstruments: [],
+    now,
+    payload: {
+      cardId: card.id,
+      type: "physical",
+      holder: "primary",
+    },
+  });
+  const overrideResult = createCardInstrument({
+    id: "instrument-limit-override",
+    context: tenantA,
+    card: createdResult.card,
+    existingInstruments: createdResult.instruments,
+    now,
+    payload: {
+      cardId: card.id,
+      type: "virtual",
+      holder: "primary",
+      creditLimitMinor: 2_500,
+    },
+  });
+  const overrideInstrument = overrideResult.instruments.find(
+    (instrument) => instrument.id === "instrument-limit-override",
+  );
+
+  assertEqual(
+    createdResult.instrument.creditLimitMinor,
+    undefined,
+    "instrument should keep own limit empty",
+  );
+  assertEqual(
+    resolveCardInstrumentEffectiveCreditLimit(createdResult.card, createdResult.instrument),
+    12_500,
+    "instrument without own limit should inherit card limit",
+  );
+  assertEqual(
+    resolveCardInstrumentEffectiveCreditLimit(overrideResult.card, overrideInstrument!),
+    2_500,
+    "instrument own limit should take precedence over card limit",
   );
 }
 
