@@ -15,7 +15,7 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
 
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input));
-    calledPaths.push(url.pathname);
+    calledPaths.push(`${url.pathname}${url.search}`);
 
     if (url.pathname === "/api/cards") {
       return jsonResponse({
@@ -152,6 +152,50 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
       });
     }
 
+    if (url.pathname === "/api/installments") {
+      assert.equal(url.searchParams.get("cardId"), "card-1");
+      assert.equal(url.searchParams.get("status"), "all");
+      assert.equal(url.searchParams.get("dueFrom"), "2026-06-01");
+      assert.equal(url.searchParams.get("dueTo"), "2026-06-20");
+
+      return jsonResponse({
+        installments: [
+          {
+            id: "installment-1",
+            financialProfileId: "profile-1",
+            status: "posted",
+            sequenceNumber: 2,
+            totalInstallments: 10,
+            dueOn: "2026-06-10",
+            amountMinor: 12000,
+            currency: "BRL",
+            transaction: { id: "purchase-3", status: "posted", description: "Notebook" },
+            invoice: {
+              id: "invoice-1",
+              status: "open",
+              cardId: "card-1",
+              periodStartOn: "2026-06-01",
+              periodEndOn: "2026-06-20",
+              dueOn: "2026-07-10",
+            },
+            card: { id: "card-1", name: "Cartão Principal", status: "active" },
+            cardInstrument: {
+              id: "instrument-main",
+              cardId: "card-1",
+              type: "physical",
+              holder: "primary",
+              status: "active",
+              isDefault: true,
+              maskedIdentifier: "final 1234",
+            },
+            category: { id: "category-1", name: "Mercado", kind: "expense", status: "active" },
+            editable: false,
+            editBlockedReason: "invoice_linked",
+          },
+        ],
+      });
+    }
+
     if (url.pathname === "/api/recurrences") {
       assert.equal(url.searchParams.get("cardId"), "card-1");
 
@@ -189,6 +233,11 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /Disponível/);
   assert.match(html, /Totais por cartão/);
   assert.match(html, /Limite \(Total\)/);
+  assert.match(html, /Histórico da fatura/);
+  assert.match(html, /Notebook/);
+  assert.match(html, /2\/10/);
+  assert.match(html, /Físico - Titular principal · final 1234/);
+  assert.match(html, /Bloqueada pela fatura/);
   assert.match(html, /Supermercado/);
   assert.match(html, /Aplicativo de transporte/);
   assert.match(html, /data-reconciliation-toggle="unreconciled"/);
@@ -226,8 +275,13 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.doesNotMatch(html, /name="purchaseCardId"/);
   assert.equal(calledPaths.includes("/api/card-additional-links"), false);
   assert.equal(calledPaths.includes("/api/credit-card-accounts/card-1/instruments"), true);
+  assert.ok(
+    calledPaths.includes(
+      "/api/installments?cardId=card-1&status=all&dueFrom=2026-06-01&dueTo=2026-06-20",
+    ),
+  );
 
-  const recurrencesIndex = calledPaths.indexOf("/api/recurrences");
+  const recurrencesIndex = calledPaths.findIndex((path) => path.startsWith("/api/recurrences"));
   const purchasesIndex = calledPaths.indexOf("/api/invoices/invoice-1/purchases");
   assert.ok(
     recurrencesIndex >= 0 && purchasesIndex >= 0 && recurrencesIndex < purchasesIndex,
@@ -308,6 +362,10 @@ async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
       return jsonResponse({ purchases: [] });
     }
 
+    if (url.pathname === "/api/installments") {
+      return jsonResponse({ installments: [] });
+    }
+
     if (url.pathname === "/api/recurrences") {
       return jsonResponse({ recurrences: [] });
     }
@@ -319,6 +377,7 @@ async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
 
   assert.match(html, /Fatura Paga/);
   assert.match(html, /Pagamento indisponível para faturas paga\./);
+  assert.match(html, /Nenhuma parcela neste período/);
   assert.doesNotMatch(html, /\/pagar-receber/);
 }
 
@@ -327,7 +386,7 @@ async function cardsPageUsesOnlySelectedCardInvoice(): Promise<void> {
 
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input));
-    calledPaths.push(url.pathname);
+    calledPaths.push(`${url.pathname}${url.search}`);
 
     if (url.pathname === "/api/cards") {
       return jsonResponse({
@@ -432,6 +491,13 @@ async function cardsPageUsesOnlySelectedCardInvoice(): Promise<void> {
       });
     }
 
+    if (url.pathname === "/api/installments") {
+      assert.equal(url.searchParams.get("cardId"), "card-2");
+      assert.equal(url.searchParams.get("dueFrom"), "2026-06-01");
+      assert.equal(url.searchParams.get("dueTo"), "2026-06-20");
+      return jsonResponse({ installments: [] });
+    }
+
     if (url.pathname === "/api/accounts") {
       return jsonResponse({ accounts: [] });
     }
@@ -457,12 +523,18 @@ async function cardsPageUsesOnlySelectedCardInvoice(): Promise<void> {
   assert.match(html, /Compra no cartão selecionado/);
   assert.match(html, /value="instrument-c6" selected/);
   assert.match(html, /data-path="\/api\/credit-card-accounts\/card-2\/purchases"/);
+  assert.match(html, /Nenhuma parcela neste período/);
   assert.doesNotMatch(html, /Compra no principal/);
   assert.doesNotMatch(html, /Fatura consolidada com os cartões adicionais do grupo/);
   assert.doesNotMatch(html, /name="purchaseCardId"/);
   assert.equal(calledPaths.includes("/api/card-additional-links"), false);
   assert.equal(calledPaths.includes("/api/invoices/invoice-1/purchases"), false);
   assert.equal(calledPaths.includes("/api/credit-card-accounts/card-2/instruments"), true);
+  assert.ok(
+    calledPaths.includes(
+      "/api/installments?cardId=card-2&status=all&dueFrom=2026-06-01&dueTo=2026-06-20",
+    ),
+  );
 }
 
 function jsonResponse(body: unknown): Response {
