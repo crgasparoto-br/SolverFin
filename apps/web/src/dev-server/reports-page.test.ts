@@ -66,7 +66,11 @@ describe("dev-server reports page", () => {
               dueOn: "2099-08-15",
               amountMinor: 9999,
               currency: "BRL",
-              transaction: { id: "transaction-2", description: "Compra cancelada", status: "cancelled" },
+              transaction: {
+                id: "transaction-2",
+                description: "Compra cancelada",
+                status: "cancelled",
+              },
               invoice: {
                 id: "invoice-cancelled",
                 status: "cancelled",
@@ -95,7 +99,9 @@ describe("dev-server reports page", () => {
 
     const html = await renderReportsPage(
       "session-token",
-      new URL("http://localhost/relatorios?month=2099-08&cardId=card-1&categoryId=category-1&status=all"),
+      new URL(
+        "http://localhost/relatorios?month=2099-08&cardId=card-1&categoryId=category-1&status=all",
+      ),
     );
 
     assert.equal(

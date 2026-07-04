@@ -81,7 +81,10 @@ function renderStatusOptions(selected: string): string {
     ["reconciled", "Conciliadas"],
     ["cancelled", "Canceladas"],
   ]
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
     .join("");
 }
 
@@ -96,10 +99,7 @@ function renderCardOptions(cards: CardRecord[], selected: string | undefined): s
     .join("");
 }
 
-function renderCategoryOptions(
-  categories: CategoryRecord[],
-  selected: string | undefined,
-): string {
+function renderCategoryOptions(categories: CategoryRecord[], selected: string | undefined): string {
   return categories
     .slice()
     .sort((left, right) => left.name.localeCompare(right.name))
@@ -110,7 +110,10 @@ function renderCategoryOptions(
     .join("");
 }
 
-function renderInstallmentReport(installments: InstallmentRecord[], filters: ReportFilters): string {
+function renderInstallmentReport(
+  installments: InstallmentRecord[],
+  filters: ReportFilters,
+): string {
   const summary = summarizeInstallments(installments, todayDateOnly());
 
   if (installments.length === 0) {
@@ -169,7 +172,10 @@ function renderInstallmentReport(installments: InstallmentRecord[], filters: Rep
   `;
 }
 
-function summarizeInstallments(installments: InstallmentRecord[], today: string): InstallmentSummary {
+function summarizeInstallments(
+  installments: InstallmentRecord[],
+  today: string,
+): InstallmentSummary {
   return installments.reduce<InstallmentSummary>(
     (summary, installment) => {
       const amountMinor = installment.status === "cancelled" ? 0 : installment.amountMinor;
@@ -230,7 +236,10 @@ function groupByMonth(installments: InstallmentRecord[]): AggregateRow[] {
 }
 
 function groupByCard(installments: InstallmentRecord[]): AggregateRow[] {
-  return aggregateBy(installments, (installment) => installment.card?.name ?? "Sem cartão informado");
+  return aggregateBy(
+    installments,
+    (installment) => installment.card?.name ?? "Sem cartão informado",
+  );
 }
 
 function groupByCategory(installments: InstallmentRecord[]): AggregateRow[] {
@@ -256,7 +265,10 @@ function aggregateBy(
 
 function renderAggregateRows(rows: AggregateRow[], kind: string): string {
   if (rows.length === 0) {
-    return renderEmptyState("Sem dados para agrupar.", "As parcelas do filtro selecionado aparecerão aqui.");
+    return renderEmptyState(
+      "Sem dados para agrupar.",
+      "As parcelas do filtro selecionado aparecerão aqui.",
+    );
   }
 
   return `
@@ -276,9 +288,12 @@ function renderAggregateRows(rows: AggregateRow[], kind: string): string {
 }
 
 function renderInstallmentRow(installment: InstallmentRecord): string {
-  const source = installment.transaction?.description ?? installment.recurrence?.description ?? "Parcela";
+  const source =
+    installment.transaction?.description ?? installment.recurrence?.description ?? "Parcela";
   const sequence = `${installment.sequenceNumber}/${installment.totalInstallments}`;
-  const invoiceStatus = installment.invoice?.status ? ` · Fatura ${formatInvoiceStatus(installment.invoice.status)}` : "";
+  const invoiceStatus = installment.invoice?.status
+    ? ` · Fatura ${formatInvoiceStatus(installment.invoice.status)}`
+    : "";
 
   return `
     <article class="installment-table-row" role="row">
