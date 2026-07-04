@@ -234,7 +234,14 @@ async function transactionsPageShowsInstallmentsForSelectedAccount(): Promise<vo
 
     if (url.pathname === "/api/categories") {
       return jsonResponse({
-        categories: [{ id: "category-expense", name: "Equipamentos", kind: "expense", status: "active" }],
+        categories: [
+          {
+            id: "category-expense",
+            name: "Equipamentos",
+            kind: "expense",
+            status: "active",
+          },
+        ],
       });
     }
 
