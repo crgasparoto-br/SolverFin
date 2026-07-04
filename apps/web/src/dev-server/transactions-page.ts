@@ -157,7 +157,7 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
               ${chip("Conciliados", summary.reconciledCount, "ok")}
             </div>
           </div>
-          ${renderInstallmentsPanel(installments, installmentsError, selectedAccount)}
+          ${renderInstallmentsPanel(installments as InstallmentRecord[], installmentsError, selectedAccount)}
           <div class="statement-table" role="table" aria-label="Extrato bancário">
             ${renderTableHeader()}
             ${
