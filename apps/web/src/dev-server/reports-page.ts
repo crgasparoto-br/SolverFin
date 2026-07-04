@@ -49,15 +49,19 @@ function readReportFilters(url?: URL): ReportFilters {
   const status = normalizeStatus(url?.searchParams.get("status"));
   const dueFrom = `${month}-01`;
   const dueTo = monthEnd(month);
-
-  return {
+  const filters: ReportFilters = {
     month,
     dueFrom,
     dueTo,
     status,
-    cardId: nonEmpty(url?.searchParams.get("cardId")),
-    categoryId: nonEmpty(url?.searchParams.get("categoryId")),
   };
+  const cardId = nonEmpty(url?.searchParams.get("cardId"));
+  const categoryId = nonEmpty(url?.searchParams.get("categoryId"));
+
+  if (cardId !== undefined) filters.cardId = cardId;
+  if (categoryId !== undefined) filters.categoryId = categoryId;
+
+  return filters;
 }
 
 function buildInstallmentsPath(filters: ReportFilters): string {
