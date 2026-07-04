@@ -4,7 +4,9 @@ import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   listInstallmentsForContext,
+  updateInstallmentForContext,
   type ListInstallmentsFilters,
+  type UpdateInstallmentPayload,
 } from "./repositories/installments.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
@@ -16,12 +18,17 @@ interface InstallmentsRoute {
   handler: InstallmentsHandler;
 }
 
-type InstallmentsHandler = (request: ApiRequest) => Promise<ApiResponse>;
+type InstallmentsHandler = (
+  request: ApiRequest,
+  params: Readonly<Record<string, string>>,
+) => Promise<ApiResponse>;
 
 const BASE_PATH = "/api/installments";
+const ALLOWED_PATCH_FIELDS = new Set(["description", "note", "categoryId"]);
 const routes: InstallmentsRoute[] = [];
 
 route("GET", BASE_PATH, listInstallmentsHandler);
+route("PATCH", `${BASE_PATH}/:installmentId`, updateInstallmentHandler);
 
 export async function handleInstallmentsApiRequest(
   request: ApiRequest,
@@ -38,7 +45,7 @@ export async function handleInstallmentsApiRequest(
   }
 
   try {
-    return await match.route.handler(request);
+    return await match.route.handler(request, match.params);
   } catch (error) {
     const response = buildApiErrorResponse({
       error: mapDomainError(error),
@@ -104,6 +111,21 @@ async function listInstallmentsHandler(request: ApiRequest): Promise<ApiResponse
   });
 }
 
+async function updateInstallmentHandler(
+  request: ApiRequest,
+  params: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const context = await resolveContext(request);
+  const payload = readInstallmentPatchPayload(request.body);
+  const installment = await updateInstallmentForContext(
+    context,
+    requireParam(params, "installmentId"),
+    payload,
+  );
+
+  return json(200, { installment });
+}
+
 async function resolveContext(request: ApiRequest) {
   const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
 
@@ -112,6 +134,9 @@ async function resolveContext(request: ApiRequest) {
 
 function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
   return {
+    ...(request.query.get("installmentId")
+      ? { installmentId: String(request.query.get("installmentId")) }
+      : {}),
     ...(request.query.get("transactionId")
       ? { transactionId: String(request.query.get("transactionId")) }
       : {}),
@@ -137,6 +162,75 @@ function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
       ? { status: request.query.get("status") as InstallmentStatus | "all" }
       : {}),
   };
+}
+
+function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPayload {
+  const payload = requireObjectBody(body);
+  const allowedEntries = Object.entries(payload).filter(([key]) => ALLOWED_PATCH_FIELDS.has(key));
+
+  if (allowedEntries.length !== Object.keys(payload).length) {
+    throwInstallmentPayloadInvalid("Campo nao permitido para manutencao de parcela.");
+  }
+
+  if (allowedEntries.length === 0) {
+    throwInstallmentPayloadInvalid("Informe ao menos um campo para atualizar.");
+  }
+
+  const update: UpdateInstallmentPayload = {};
+
+  if (payload.description !== undefined) {
+    if (typeof payload.description !== "string" || !payload.description.trim()) {
+      throwInstallmentPayloadInvalid("Descricao da parcela invalida.");
+    }
+
+    update.description = payload.description;
+  }
+
+  if (payload.note !== undefined) {
+    if (payload.note !== null && typeof payload.note !== "string") {
+      throwInstallmentPayloadInvalid("Observacao da parcela invalida.");
+    }
+
+    update.note = payload.note;
+  }
+
+  if (payload.categoryId !== undefined) {
+    if (typeof payload.categoryId !== "string" || !payload.categoryId.trim()) {
+      throwInstallmentPayloadInvalid("Categoria da parcela invalida.");
+    }
+
+    update.categoryId = payload.categoryId;
+  }
+
+  return update;
+}
+
+function requireObjectBody(body: unknown): Record<string, unknown> {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    throwInstallmentPayloadInvalid("Payload de parcela invalido.");
+  }
+
+  return body as Record<string, unknown>;
+}
+
+function requireParam(params: Readonly<Record<string, string>>, name: string): string {
+  const value = params[name];
+
+  if (!value) {
+    throw Object.assign(new Error("Parametro obrigatorio ausente."), {
+      code: "API_ROUTE_PARAMETER_REQUIRED",
+      statusCode: 400,
+    });
+  }
+
+  return value;
+}
+
+function throwInstallmentPayloadInvalid(message: string): never {
+  throw Object.assign(new Error(message), {
+    code: "INSTALLMENT_PAYLOAD_INVALID",
+    statusCode: 400,
+  });
 }
 
 function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
