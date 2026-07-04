@@ -7,8 +7,10 @@ import type {
 } from "@solverfin/domain";
 
 import { query } from "../db.js";
+import { updateTransactionForContext } from "./transactions.js";
 
 export interface ListInstallmentsFilters {
+  installmentId?: EntityId;
   transactionId?: EntityId;
   accountId?: EntityId;
   recurrenceId?: EntityId;
@@ -19,6 +21,12 @@ export interface ListInstallmentsFilters {
   dueFrom?: string;
   dueTo?: string;
   status?: InstallmentStatus | "all";
+}
+
+export interface UpdateInstallmentPayload {
+  description?: string;
+  note?: string | null;
+  categoryId?: EntityId;
 }
 
 export type InstallmentEditBlockedReason =
@@ -64,6 +72,7 @@ export async function listInstallmentsForContext(
   const params: unknown[] = [context.organizationId, context.financialProfileId];
   const where = [`i."organizationId" = $1`, `i."financialProfileId" = $2`];
 
+  addEqualsFilter(where, params, `i."id"`, filters.installmentId);
   addEqualsFilter(where, params, `t."id"`, filters.transactionId);
   addEqualsFilter(where, params, `t."accountId"`, filters.accountId);
   addEqualsFilter(where, params, `i."recurrenceId"`, filters.recurrenceId);
@@ -144,6 +153,60 @@ export async function listInstallmentsForContext(
   return rows.map(mapInstallmentHistoryRow);
 }
 
+export async function updateInstallmentForContext(
+  context: TenantContext,
+  installmentId: EntityId,
+  payload: UpdateInstallmentPayload,
+): Promise<InstallmentHistoryItem> {
+  const current = await getInstallmentForMutation(context, installmentId);
+
+  if (!current.editable) {
+    throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
+  }
+
+  const transactionId = readNestedId(current.transaction);
+
+  if (!transactionId) {
+    throwInstallmentEditBlocked("linked_transaction_missing");
+  }
+
+  await updateTransactionForContext(context, transactionId, buildTransactionUpdatePayload(payload));
+
+  return getInstallmentForMutation(context, installmentId);
+}
+
+function buildTransactionUpdatePayload(payload: UpdateInstallmentPayload): {
+  description?: string;
+  note?: string | null;
+  categoryId?: EntityId;
+} {
+  const update: { description?: string; note?: string | null; categoryId?: EntityId } = {};
+
+  if (payload.description !== undefined) update.description = payload.description;
+  if (payload.note !== undefined) update.note = payload.note;
+  if (payload.categoryId !== undefined) update.categoryId = payload.categoryId;
+
+  return update;
+}
+
+async function getInstallmentForMutation(
+  context: TenantContext,
+  installmentId: EntityId,
+): Promise<InstallmentHistoryItem> {
+  const installment = (
+    await listInstallmentsForContext(context, { installmentId, status: "all" })
+  )[0];
+
+  if (!installment) {
+    throw Object.assign(new Error("Parcela nao encontrada."), {
+      code: "TENANT_RESOURCE_NOT_FOUND",
+      statusCode: 404,
+    });
+  }
+
+  return installment;
+}
+
 function addEqualsFilter(
   where: string[],
   params: unknown[],
@@ -192,6 +255,13 @@ function throwInstallmentsFilterInvalid(message: string): never {
   throw Object.assign(new Error(message), {
     code: "INSTALLMENTS_FILTER_INVALID",
     statusCode: 400,
+  });
+}
+
+function throwInstallmentEditBlocked(reason: InstallmentEditBlockedReason): never {
+  throw Object.assign(new Error(`Parcela bloqueada para edicao: ${reason}.`), {
+    code: "INSTALLMENT_EDIT_BLOCKED",
+    statusCode: 409,
   });
 }
 
@@ -335,6 +405,10 @@ function resolveEditBlockedReason(row: Row): InstallmentEditBlockedReason | unde
   }
 
   return undefined;
+}
+
+function readNestedId(record: Record<string, unknown> | undefined): string | undefined {
+  return typeof record?.id === "string" && record.id.trim() ? record.id : undefined;
 }
 
 function optionalId(key: string, value: unknown): Record<string, string> {
