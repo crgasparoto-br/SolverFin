@@ -7,6 +7,7 @@ import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const MEI_PROFILE_ID = "33333333-3333-4333-8333-333333333332";
+const UNMATCHED_ACCOUNT_ID = "00000000-0000-4000-8000-000000000000";
 
 void main()
   .catch((error: unknown) => {
@@ -92,7 +93,7 @@ async function assertListsGeneratedInstallments(
   const response = await apiRequest(
     token,
     "GET",
-    `/api/installments?recurrenceId=${recurrenceId}&status=planned&dueFrom=2026-06-01&dueTo=2026-08-31`,
+    `/api/installments?accountId=${accountId}&recurrenceId=${recurrenceId}&status=planned&dueFrom=2026-06-01&dueTo=2026-08-31`,
   );
   assert.equal(response.statusCode, 200);
   const installments = readBody<{ installments: ApiInstallmentHistory[] }>(response).installments;
@@ -106,6 +107,17 @@ async function assertListsGeneratedInstallments(
     assert.equal(installment.editable, true);
     assert.equal(installment.editBlockedReason, undefined);
   });
+
+  const unmatchedResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/installments?accountId=${UNMATCHED_ACCOUNT_ID}&recurrenceId=${recurrenceId}`,
+  );
+  assert.equal(unmatchedResponse.statusCode, 200);
+  assert.equal(
+    readBody<{ installments: ApiInstallmentHistory[] }>(unmatchedResponse).installments.length,
+    0,
+  );
 }
 
 async function assertFiltersTenantProfile(token: string, recurrenceId: string): Promise<void> {
