@@ -77,7 +77,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Repository/API/UI: Parcial.
 - Testes: Parcial.
 - Documentacao: Parcial.
-- Nota: parcelas aparecem no fluxo de geracao de recorrencias; ainda nao ha rota dedicada para reler historico nem manutencao direta.
+- Nota: parcelas aparecem no fluxo de geracao de recorrencias, podem ser consultadas por API, aparecem em `/cartoes` no recorte da fatura e tambem em `/relatorios` como consolidado somente leitura. Ainda nao ha manutencao direta de parcelas ja geradas.
 
 ### Cartoes / Faturas
 
@@ -173,9 +173,9 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 ### Relatorios
 
-- UI: Pendente/placeholder.
-- API/dominio especifico: Pendente para relatorios iniciais dedicados.
-- Nota: o MVP ainda precisa substituir o placeholder por relatorios financeiros iniciais coerentes com Dashboard, Extrato, Cartoes, Orcamentos, importacao e sugestoes revisaveis.
+- UI: Parcial/Feito para a primeira visao de parcelas consolidadas.
+- API/dominio especifico: Parcial; a tela usa `/api/installments` com filtros por periodo, cartao, categoria e status.
+- Nota: `/relatorios` substitui o placeholder por uma consulta somente leitura de parcelas com indicadores de abertas/planejadas, postadas/fechadas, vencidas, futuras e total mensal, alem de agrupamentos por mes, cartao e categoria. Ainda faltam relatorios financeiros mais amplos para Dashboard, Extrato, Orcamentos, importacao e sugestoes revisaveis.
 
 ### Configuracoes
 
@@ -222,7 +222,10 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Criar recorrencia: Sim, pela repeticao "Fixo" no modal de novo lancamento ou nova compra.
 - Editar/pausar/retomar/cancelar: Sim, pelo menu do lancamento/compra recorrente.
 - Gerar parcelas: Sim, automaticamente no catch-up e manualmente pelo modal de edicao.
-- Lacuna restante: consulta historica dedicada e manutencao direta de parcelas ja geradas.
+- Consultar parcelas na fatura: Sim, em `/cartoes`, no recorte do cartao/fatura selecionados.
+- Consultar parcelas consolidadas: Sim, em `/relatorios`, com filtros por mes, cartao, categoria e status.
+- Manutencao direta de parcelas geradas: Nao.
+- Lacuna restante: manutencao direta controlada de parcelas ja geradas, quando o contrato permitir.
 
 ### Cartoes de Credito (`/cartoes`)
 
@@ -247,6 +250,15 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Arquivar/inativar: Sim.
 - Excluir: Nao.
 - Lacuna restante: tela dedicada de detalhe/uso.
+
+### Relatorios (`/relatorios`)
+
+- Consultar parcelas por periodo: Sim.
+- Filtrar por cartao, categoria e status: Sim, conforme filtros aceitos pela API de parcelas.
+- Ver indicadores consolidados: Sim, para abertas/planejadas, postadas/fechadas, vencidas, futuras e total mensal.
+- Agrupar por mes, cartao e categoria: Sim.
+- Editar parcelas ou lancamentos: Nao; a tela e somente leitura.
+- Lacuna restante: ampliar relatorios para outras visoes financeiras alem de parcelas.
 
 ### Importacao, inbox e revisao
 
@@ -274,8 +286,8 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 1. Criar UI de preview/revisao especifica para importacoes CSV antes da fila geral.
 2. Evoluir payload estruturado de `AiSuggestion` para aplicar categorizacao e regras com efeito especifico apos revisao.
-3. Implementar relatorios iniciais no lugar do placeholder.
-4. Adicionar consulta historica dedicada de parcelas por recorrencia.
+3. Ampliar relatorios para outras visoes financeiras alem de parcelas.
+4. Implementar manutencao direta controlada de parcelas ja geradas.
 5. Evoluir telas dedicadas de detalhe/uso para contas, categorias, lancamentos, cartoes e orcamentos.
 6. Implementar provider real de autenticacao produtiva e sessao persistente/revogavel.
 7. Consolidar consentimentos, retencao, mascaramento e exportacao/exclusao antes de ampliar IA e importacoes com dados sensiveis.
