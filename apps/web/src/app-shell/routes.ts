@@ -110,7 +110,7 @@ export const solverFinShellRoutes = [
     navigationGroup: "review",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
-    status: "placeholder",
+    status: "available",
   },
   {
     id: "settings",

@@ -12,6 +12,7 @@ import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
+import { renderReportsPage } from "./dev-server/reports-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
@@ -27,6 +28,7 @@ export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderDashboardPage } from "./dev-server/dashboard-page.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
+export { renderReportsPage } from "./dev-server/reports-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
 export { renderSettingsPage } from "./dev-server/settings-page.js";
 export { renderTransactionsPage } from "./dev-server/transactions-page.js";
@@ -115,6 +117,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/inbox" && token) {
     sendHtml(response, 200, await renderInboxPage(token));
+    return;
+  }
+
+  if (url.pathname === "/relatorios" && token) {
+    sendHtml(response, 200, await renderReportsPage(token, url));
     return;
   }
 
