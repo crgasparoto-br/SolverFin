@@ -1,22 +1,26 @@
-# API de consulta de parcelas
+# API de consulta e manutencao de parcelas
 
 ## Objetivo
 
-Este contrato adiciona uma leitura historica, atual e futura de parcelas para as telas existentes do SolverFin. Ele nao cria uma rota web dedicada de Parcelas; a web deve consumir esses dados dentro de `/lancamentos`, `/cartoes` e, quando existir agregacao suficiente, `/relatorios`.
+Este contrato adiciona uma leitura historica, atual e futura de parcelas para as telas existentes do SolverFin. Ele nao cria uma rota web dedicada de Parcelas; a web deve consumir esses dados dentro de `/lancamentos`, `/cartoes` e `/relatorios`.
 
-## Endpoint
+A manutencao direta continua controlada pelo backend e limitada a campos seguros da transacao vinculada. O cliente nao pode alterar fatura, cartao agrupador, instrumento, valor, vencimento, tenant ou perfil financeiro por esta rota.
+
+## Endpoints
 
 ```http
 GET /api/installments
+PATCH /api/installments/:installmentId
 ```
 
-A rota usa a sessao autenticada e resolve `organizationId` e `financialProfileId` no servidor. O cliente nao deve enviar esses campos como autoridade de escopo. Quando houver mais de um perfil ativo, o filtro `profileId` segue o contrato atual de tenant.
+As rotas usam a sessao autenticada e resolvem `organizationId` e `financialProfileId` no servidor. O cliente nao deve enviar esses campos como autoridade de escopo. Quando houver mais de um perfil ativo, o filtro `profileId` segue o contrato atual de tenant.
 
-## Filtros
+## Filtros de consulta
 
 Todos os filtros sao opcionais:
 
 ```text
+installmentId
 transactionId
 accountId
 recurrenceId
@@ -36,7 +40,7 @@ profileId
 
 Periodo invertido, data invalida ou status desconhecido retornam erro controlado `400 INSTALLMENTS_FILTER_INVALID`.
 
-## Resposta
+## Resposta de consulta
 
 ```json
 {
@@ -92,13 +96,44 @@ transaction_status_locked
 invoice_linked
 ```
 
-Neste corte, a manutencao operacional continua sendo feita pelos fluxos existentes de transacao quando a parcela esta ligada a uma transacao planejada e sem fatura. O backend reexpoe a elegibilidade para que `/lancamentos` e `/cartoes` mostrem ou escondam acoes com base na regra do servidor.
+Parcelas ligadas a fatura, transacao postada/conciliada/cancelada, parcela nao planejada ou sem transacao vinculada nao devem exibir acao de edicao direta. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
 
-Parcelas ligadas a fatura, transacao postada/conciliada/cancelada ou sem transacao vinculada nao devem exibir acao de edicao direta.
+## PATCH /api/installments/:installmentId
+
+Payload permitido:
+
+```json
+{
+  "description": "Assinatura ficticia ajustada",
+  "note": "Observacao ficticia opcional",
+  "categoryId": "category-demo"
+}
+```
+
+Todos os campos sao opcionais, mas o payload deve trazer pelo menos um deles. `note` pode ser `null` para limpar a observacao. Campos fora da allowlist retornam `400 INSTALLMENT_PAYLOAD_INVALID`.
+
+A mutacao atualiza a transacao vinculada de forma atomica pelo fluxo existente de transacao, sincroniza a parcela quando necessario e grava auditoria minimizada/redigida da mutacao financeira. A resposta retorna a parcela recarregada:
+
+```json
+{
+  "installment": {
+    "id": "installment-demo",
+    "status": "planned",
+    "transaction": {
+      "id": "transaction-demo",
+      "description": "Assinatura ficticia ajustada",
+      "categoryId": "category-demo"
+    },
+    "editable": true
+  }
+}
+```
+
+Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. Recurso inexistente ou fora do tenant/profile ativo retorna o comportamento padrao de recurso nao encontrado.
 
 ## Tenant e privacidade
 
-- Listagens filtram apenas dados do contexto ativo.
+- Listagens e mutacoes filtram apenas dados do contexto ativo.
 - Acesso por `profileId` fora do escopo do usuario segue o comportamento atual de tenant.
 - A resposta evita payload financeiro completo de auditoria e retorna apenas os vinculos necessarios para exibicao operacional.
 - Exemplos usam dados ficticios.
@@ -107,4 +142,4 @@ Parcelas ligadas a fatura, transacao postada/conciliada/cancelada ou sem transac
 
 - `/lancamentos`: listar parcelas por `accountId`, periodo e vinculo com a transacao original de conta, exibindo manutencao apenas quando `editable` for verdadeiro.
 - `/cartoes`: listar historico por cartao agrupador, instrumento, fatura, periodo e compra/recorrencia quando os vinculos existirem.
-- `/relatorios`: usar a mesma leitura como base para visao consolidada somente leitura quando a tela deixar de ser placeholder.
+- `/relatorios`: usar a mesma leitura como base para visao consolidada somente leitura.
