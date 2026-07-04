@@ -28,7 +28,15 @@ async function main(): Promise<void> {
   const recurrence = await createRecurrence(token, suffix, account.id, category.id);
 
   await generateInstallments(token, recurrence.id);
-  await assertListsGeneratedInstallments(token, recurrence.id, account.id, category.id);
+  const editableInstallmentId = await assertListsGeneratedInstallments(
+    token,
+    recurrence.id,
+    account.id,
+    category.id,
+  );
+  await assertUpdatesEligibleInstallment(token, editableInstallmentId, category.id, suffix);
+  await assertRejectsInvalidInstallmentPatch(token, editableInstallmentId);
+  await assertRejectsOutOfProfileInstallmentPatch(token, editableInstallmentId);
   await assertFiltersTenantProfile(token, recurrence.id);
   await assertRejectsInvalidFilters(token);
 }
@@ -89,7 +97,7 @@ async function assertListsGeneratedInstallments(
   recurrenceId: string,
   accountId: string,
   categoryId: string,
-): Promise<void> {
+): Promise<string> {
   const response = await apiRequest(
     token,
     "GET",
@@ -118,6 +126,56 @@ async function assertListsGeneratedInstallments(
     readBody<{ installments: ApiInstallmentHistory[] }>(unmatchedResponse).installments.length,
     0,
   );
+
+  return installments[0]?.id ?? assert.fail("Expected at least one editable installment.");
+}
+
+async function assertUpdatesEligibleInstallment(
+  token: string,
+  installmentId: string,
+  categoryId: string,
+  suffix: string,
+): Promise<void> {
+  const description = `Parcela ajustada ${suffix}`;
+  const response = await apiRequest(token, "PATCH", `/api/installments/${installmentId}`, {
+    description,
+    note: "Observacao ficticia minimizada",
+    categoryId,
+  });
+  assert.equal(response.statusCode, 200);
+  const installment = readBody<{ installment: ApiInstallmentHistory }>(response).installment;
+
+  assert.equal(installment.id, installmentId);
+  assert.equal(installment.transaction?.description, description);
+  assert.equal(installment.transaction?.categoryId, categoryId);
+  assert.equal(installment.editable, true);
+}
+
+async function assertRejectsInvalidInstallmentPatch(
+  token: string,
+  installmentId: string,
+): Promise<void> {
+  const response = await apiRequest(token, "PATCH", `/api/installments/${installmentId}`, {
+    amountMinor: 1,
+  });
+
+  assert.equal(response.statusCode, 400);
+  assert.equal(readErrorCode(response), "INSTALLMENT_PAYLOAD_INVALID");
+}
+
+async function assertRejectsOutOfProfileInstallmentPatch(
+  token: string,
+  installmentId: string,
+): Promise<void> {
+  const response = await apiRequest(
+    token,
+    "PATCH",
+    `/api/installments/${installmentId}?profileId=${MEI_PROFILE_ID}`,
+    { description: "Tentativa fora do perfil" },
+  );
+
+  assert.equal(response.statusCode, 404);
+  assert.equal(readErrorCode(response), "TENANT_RESOURCE_NOT_FOUND");
 }
 
 async function assertFiltersTenantProfile(token: string, recurrenceId: string): Promise<void> {
@@ -239,7 +297,7 @@ interface ApiInstallmentHistory {
   id: string;
   financialProfileId: string;
   recurrence?: { id: string };
-  transaction?: { accountId?: string };
+  transaction?: { accountId?: string; categoryId?: string; description?: string };
   category?: { id: string };
   editable: boolean;
   editBlockedReason?: string;
