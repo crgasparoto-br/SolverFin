@@ -104,9 +104,7 @@ async function assertListsGeneratedInstallments(
     `/api/installments?accountId=${accountId}&recurrenceId=${recurrenceId}&status=planned&dueFrom=2026-06-01&dueTo=2026-08-31`,
   );
   assert.equal(response.statusCode, 200);
-  const installments = readBody<{ installments: ApiInstallmentHistory[] }>(
-    response,
-  ).installments;
+  const installments = readBody<{ installments: ApiInstallmentHistory[] }>(response).installments;
 
   assert.equal(installments.length >= 3, true);
   assertEveryProfile(installments, PERSONAL_PROFILE_ID);
@@ -125,14 +123,11 @@ async function assertListsGeneratedInstallments(
   );
   assert.equal(unmatchedResponse.statusCode, 200);
   assert.equal(
-    readBody<{ installments: ApiInstallmentHistory[] }>(unmatchedResponse).installments
-      .length,
+    readBody<{ installments: ApiInstallmentHistory[] }>(unmatchedResponse).installments.length,
     0,
   );
 
-  return (
-    installments[0]?.id ?? assert.fail("Expected at least one editable installment.")
-  );
+  return installments[0]?.id ?? assert.fail("Expected at least one editable installment.");
 }
 
 async function assertUpdatesEligibleInstallment(
@@ -148,9 +143,7 @@ async function assertUpdatesEligibleInstallment(
     categoryId,
   });
   assert.equal(response.statusCode, 200);
-  const installment = readBody<{ installment: ApiInstallmentHistory }>(
-    response,
-  ).installment;
+  const installment = readBody<{ installment: ApiInstallmentHistory }>(response).installment;
 
   assert.equal(installment.id, installmentId);
   assert.equal(installment.transaction?.description, description);
@@ -192,9 +185,7 @@ async function assertFiltersTenantProfile(token: string, recurrenceId: string): 
     `/api/installments?recurrenceId=${recurrenceId}&profileId=${MEI_PROFILE_ID}`,
   );
   assert.equal(response.statusCode, 200);
-  const installments = readBody<{ installments: ApiInstallmentHistory[] }>(
-    response,
-  ).installments;
+  const installments = readBody<{ installments: ApiInstallmentHistory[] }>(response).installments;
 
   assert.equal(installments.length, 0);
 }
@@ -306,11 +297,7 @@ interface ApiInstallmentHistory {
   id: string;
   financialProfileId: string;
   recurrence?: { id: string };
-  transaction?: {
-    accountId?: string;
-    categoryId?: string;
-    description?: string;
-  };
+  transaction?: { accountId?: string; categoryId?: string; description?: string };
   category?: { id: string };
   editable: boolean;
   editBlockedReason?: string;
