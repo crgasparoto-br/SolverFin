@@ -23,6 +23,7 @@ import {
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { updateCardPurchaseForContext } from "./card-invoice-contracts.js";
 
 interface TransactionRow {
   id: string;
@@ -32,6 +33,7 @@ interface TransactionRow {
   destinationAccountId: string | null;
   categoryId: string | null;
   cardId: string | null;
+  cardInstrumentId: string | null;
   invoiceId: string | null;
   recurrenceId: string | null;
   installmentId: string | null;
@@ -106,7 +108,7 @@ type TransactionMetadata = {
 };
 
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
-  "categoryId", "cardId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
+  "categoryId", "cardId", "cardInstrumentId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
   "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
   "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
@@ -171,6 +173,19 @@ export async function updateTransactionForContext(
   payload: UpdateTransactionPayloadWithMetadata,
 ): Promise<Transaction> {
   const currentTransaction = await findTransactionRow(context, transactionId);
+
+  if (isCardInvoicePurchase(currentTransaction)) {
+    await updateCardPurchaseForContext(context, currentTransaction.cardId, transactionId, {
+      ...(payload.status !== undefined ? { status: payload.status } : {}),
+      ...(payload.amountMinor !== undefined ? { amountMinor: payload.amountMinor } : {}),
+      ...(payload.occurredOn !== undefined ? { occurredOn: payload.occurredOn } : {}),
+      ...(payload.description !== undefined ? { description: payload.description } : {}),
+      ...(payload.categoryId !== undefined ? { categoryId: payload.categoryId } : {}),
+    });
+
+    return getTransactionDomain(context, await findTransactionRow(context, transactionId));
+  }
+
   const prepared = prepareTransactionPayload(payload, getTransactionNote(currentTransaction));
   const accountId = prepared.payload.accountId ?? currentTransaction?.accountId;
   const destinationAccountId =
@@ -384,6 +399,7 @@ function mapTransactionRow(row: TransactionRow): Transaction {
     transaction.destinationAccountId = row.destinationAccountId;
   if (row.categoryId !== null) transaction.categoryId = row.categoryId;
   if (row.cardId !== null) transaction.cardId = row.cardId;
+  if (row.cardInstrumentId !== null) transaction.cardInstrumentId = row.cardInstrumentId;
   if (row.invoiceId !== null) transaction.invoiceId = row.invoiceId;
   if (row.recurrenceId !== null) transaction.recurrenceId = row.recurrenceId;
   if (row.installmentId !== null) transaction.installmentId = row.installmentId;
@@ -396,6 +412,18 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   if (row.updatedByUserId !== null) transaction.updatedByUserId = row.updatedByUserId;
 
   return transaction;
+}
+
+function isCardInvoicePurchase(transaction: Transaction | undefined): transaction is Transaction & {
+  cardId: EntityId;
+  invoiceId: EntityId;
+} {
+  return (
+    transaction?.kind === "expense" &&
+    transaction.accountId === undefined &&
+    transaction.cardId !== undefined &&
+    transaction.invoiceId !== undefined
+  );
 }
 
 function prepareTransactionPayload<
