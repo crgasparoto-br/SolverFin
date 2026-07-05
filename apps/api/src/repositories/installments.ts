@@ -81,6 +81,10 @@ export async function listInstallmentsForContext(
   addEqualsFilter(where, params, `t."invoiceId"`, filters.invoiceId);
   addEqualsFilter(where, params, `coalesce(t."categoryId", r."categoryId")`, filters.categoryId);
 
+  if (shouldHideCardInstallmentsWithLinkedPurchases(filters)) {
+    where.push(`not (i."cardId" is not null and t."id" is not null and t."invoiceId" is not null)`);
+  }
+
   if (filters.status !== undefined && filters.status !== "all") {
     params.push(filters.status.toUpperCase());
     where.push(`i."status" = $${params.length}`);
@@ -173,6 +177,14 @@ export async function updateInstallmentForContext(
   await updateTransactionForContext(context, transactionId, buildTransactionUpdatePayload(payload));
 
   return getInstallmentForMutation(context, installmentId);
+}
+
+function shouldHideCardInstallmentsWithLinkedPurchases(filters: ListInstallmentsFilters): boolean {
+  return (
+    filters.cardId !== undefined &&
+    filters.installmentId === undefined &&
+    filters.transactionId === undefined
+  );
 }
 
 function buildTransactionUpdatePayload(payload: UpdateInstallmentPayload): {
