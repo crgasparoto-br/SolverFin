@@ -185,7 +185,10 @@ async function readTransaction(transactionId: string): Promise<TransactionRow> {
   );
 
   const row = rows[0];
-  assert.notEqual(row, undefined);
+
+  if (row === undefined) {
+    throw new Error(`Expected transaction ${transactionId}.`);
+  }
 
   return row;
 }
@@ -216,7 +219,10 @@ async function readRecurringOccurrence(recurrenceId: string): Promise<RecurringO
   );
 
   const row = rows[0];
-  assert.notEqual(row, undefined);
+
+  if (row === undefined) {
+    throw new Error(`Expected recurring occurrence for ${recurrenceId}.`);
+  }
 
   return row;
 }
