@@ -95,18 +95,18 @@ async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
     `select
         i."id" as "installmentId",
         i."sequenceNumber",
-        i."dueOn",
+        to_char(i."dueOn", 'YYYY-MM-DD') as "dueOn",
         i."amountMinor" as "installmentAmountMinor",
         i."cardInstrumentId" as "installmentCardInstrumentId",
         t."id" as "transactionId",
         t."amountMinor" as "transactionAmountMinor",
         t."description" as "transactionDescription",
-        t."occurredOn" as "transactionOccurredOn",
-        t."plannedOn" as "transactionPlannedOn",
+        to_char(t."occurredOn", 'YYYY-MM-DD') as "transactionOccurredOn",
+        to_char(t."plannedOn", 'YYYY-MM-DD') as "transactionPlannedOn",
         t."cardInstrumentId" as "transactionCardInstrumentId",
         inv."id" as "invoiceId",
-        inv."periodStartOn",
-        inv."periodEndOn"
+        to_char(inv."periodStartOn", 'YYYY-MM-DD') as "periodStartOn",
+        to_char(inv."periodEndOn", 'YYYY-MM-DD') as "periodEndOn"
        from "Installment" i
        left join "Transaction" t on t."installmentId" = i."id"
        left join "Invoice" inv on inv."id" = t."invoiceId"
