@@ -228,7 +228,8 @@ function cardPurchaseEditRouteScript(): string {
 
           const path = form.dataset.path || form.getAttribute("data-path") || "";
           const method = form.dataset.method || "POST";
-          if (method !== "PATCH" || !/^\/api\/credit-card-accounts\/[^/]+\/purchases\/[^/]+$/.test(path)) return;
+          const isCardPurchaseEditPath = path.startsWith("/api/credit-card-accounts/") && path.includes("/purchases/");
+          if (method !== "PATCH" || !isCardPurchaseEditPath) return;
 
           event.preventDefault();
           event.stopImmediatePropagation();
