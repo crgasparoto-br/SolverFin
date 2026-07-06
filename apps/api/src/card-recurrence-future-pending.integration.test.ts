@@ -101,11 +101,17 @@ async function main(): Promise<void> {
   assert.equal(refreshedEligible.transactionDescription, `Recorrencia atualizada ${suffix}`);
   assert.equal(refreshedEligible.transactionCardInstrumentId, virtualInstrument.id);
 
-  assertOccurrencePreserved(refreshedPaid, physicalInstrument.id);
-  assertOccurrencePreserved(refreshedCancelled, physicalInstrument.id);
+  assertOccurrencePreserved(refreshedPaid, paidOccurrence);
+  assertOccurrencePreserved(refreshedCancelled, cancelledOccurrence);
   assert.equal(refreshedMissingTransaction.transactionId, null);
-  assert.equal(refreshedMissingTransaction.installmentAmountMinor, 1_111);
-  assert.equal(refreshedMissingTransaction.installmentCardInstrumentId, physicalInstrument.id);
+  assert.equal(
+    refreshedMissingTransaction.installmentAmountMinor,
+    missingTransactionOccurrence.installmentAmountMinor,
+  );
+  assert.equal(
+    refreshedMissingTransaction.installmentCardInstrumentId,
+    missingTransactionOccurrence.installmentCardInstrumentId,
+  );
 }
 
 async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
@@ -165,11 +171,13 @@ function requireSequence(occurrences: OccurrenceRow[], sequenceNumber: number): 
   return occurrence;
 }
 
-function assertOccurrencePreserved(occurrence: OccurrenceRow, cardInstrumentId: string): void {
-  assert.equal(occurrence.installmentAmountMinor, 1_111);
-  assert.equal(occurrence.installmentCardInstrumentId, cardInstrumentId);
-  assert.equal(occurrence.transactionAmountMinor, 1_111);
-  assert.equal(occurrence.transactionCardInstrumentId, cardInstrumentId);
+function assertOccurrencePreserved(occurrence: OccurrenceRow, original: OccurrenceRow): void {
+  assert.equal(occurrence.installmentAmountMinor, original.installmentAmountMinor);
+  assert.equal(occurrence.installmentCardInstrumentId, original.installmentCardInstrumentId);
+  assert.equal(occurrence.transactionId, original.transactionId);
+  assert.equal(occurrence.transactionAmountMinor, original.transactionAmountMinor);
+  assert.equal(occurrence.transactionDescription, original.transactionDescription);
+  assert.equal(occurrence.transactionCardInstrumentId, original.transactionCardInstrumentId);
 }
 
 function assertIntegrationDatabaseConfigured(): void {
