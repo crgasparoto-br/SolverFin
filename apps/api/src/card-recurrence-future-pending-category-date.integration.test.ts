@@ -31,12 +31,8 @@ async function main(): Promise<void> {
   assertIntegrationDatabaseConfigured();
 
   const suffix = Date.now().toString(36);
-  const initialCategory = await createExpenseCategory(
-    `Categoria inicial futuras ${suffix}`,
-  );
-  const updatedCategory = await createExpenseCategory(
-    `Categoria atualizada futuras ${suffix}`,
-  );
+  const initialCategory = await createExpenseCategory(`Categoria inicial futuras ${suffix}`);
+  const updatedCategory = await createExpenseCategory(`Categoria atualizada futuras ${suffix}`);
   const account = await createCreditCardAccountForContext(CONTEXT, {
     name: `Cartao categoria data ${suffix}`,
     closingDay: 20,
@@ -141,13 +137,7 @@ async function createExpenseCategory(name: string): Promise<ApiCategory> {
     `insert into "Category"
        ("id", "organizationId", "financialProfileId", "name", "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
      values ($1, $2, $3, $4, 'EXPENSE', 'ACTIVE', now(), now(), $5, $5)`,
-    [
-      category.id,
-      CONTEXT.organizationId,
-      CONTEXT.financialProfileId,
-      category.name,
-      CONTEXT.userId,
-    ],
+    [category.id, CONTEXT.organizationId, CONTEXT.financialProfileId, category.name, CONTEXT.userId],
   );
 
   return category;
