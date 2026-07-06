@@ -69,13 +69,33 @@ function runSkipsExistingCardRecurrenceSequence(): void {
   });
 
   assertEqual(installments.length, 3, "card generation should skip existing sequence");
-  assertEqual(transactions.length, 3, "card generation should create transactions only for new sequences");
-  assertEqual(installments[0]?.sequenceNumber, 1, "first missing card sequence should be generated");
+  assertEqual(
+    transactions.length,
+    3,
+    "card generation should create transactions only for new sequences",
+  );
+  assertEqual(
+    installments[0]?.sequenceNumber,
+    1,
+    "first missing card sequence should be generated",
+  );
   assertEqual(installments[1]?.sequenceNumber, 3, "third card sequence should be generated");
   assertEqual(installments[2]?.sequenceNumber, 4, "fourth card sequence should be generated");
-  assertEqual(transactions[0]?.id, "transaction-card-no-dup-1", "sequence 1 transaction should be generated");
-  assertEqual(transactions[1]?.id, "transaction-card-no-dup-3", "sequence 3 transaction should be generated");
-  assertEqual(transactions[2]?.id, "transaction-card-no-dup-4", "sequence 4 transaction should be generated");
+  assertEqual(
+    transactions[0]?.id,
+    "transaction-card-no-dup-1",
+    "sequence 1 transaction should be generated",
+  );
+  assertEqual(
+    transactions[1]?.id,
+    "transaction-card-no-dup-3",
+    "sequence 3 transaction should be generated",
+  );
+  assertEqual(
+    transactions[2]?.id,
+    "transaction-card-no-dup-4",
+    "sequence 4 transaction should be generated",
+  );
 
   for (const installment of installments) {
     assertEqual(installment.cardId, activeCard.id, "generated installment should keep card id");
@@ -84,7 +104,11 @@ function runSkipsExistingCardRecurrenceSequence(): void {
   for (const transaction of transactions) {
     assertEqual(transaction.cardId, activeCard.id, "generated transaction should keep card id");
     assertEqual(transaction.kind, "expense", "generated card transaction should be expense");
-    assertEqual(transaction.source, "recurrence", "generated card transaction should keep recurrence source");
+    assertEqual(
+      transaction.source,
+      "recurrence",
+      "generated card transaction should keep recurrence source",
+    );
   }
 }
 
