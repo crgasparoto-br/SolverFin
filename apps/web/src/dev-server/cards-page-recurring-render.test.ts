@@ -8,7 +8,7 @@ const requestedPaths: string[] = [];
 globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
   const url = new URL(String(input));
   const path = `${url.pathname}${url.search}`;
-  const body = responses[path];
+  const body = responses[url.pathname];
   requestedPaths.push(path);
 
   if (body === undefined) {
@@ -150,7 +150,7 @@ const invoiceSummary = {
 };
 const responses: Record<string, unknown> = {
   "/api/accounts": { accounts: [] },
-  "/api/cards?status=all": {
+  "/api/cards": {
     cards: [
       {
         closingDay: 20,
@@ -161,13 +161,11 @@ const responses: Record<string, unknown> = {
       },
     ],
   },
-  "/api/categories?kind=expense": { categories: [category] },
+  "/api/categories": { categories: [category] },
   "/api/credit-card-accounts/card-1/instruments": { instruments: [cardInstrument] },
-  "/api/installments?cardId=card-1&status=all&dueFrom=2028-01-01&dueTo=2028-01-31": {
-    installments: [installment],
-  },
-  "/api/invoices?status=all": { invoices: [invoice] },
+  "/api/installments": { installments: [installment] },
+  "/api/invoices": { invoices: [invoice] },
   "/api/invoices/invoice-1/purchases": { purchases: [purchase] },
   "/api/invoices/invoice-1/summary": { summary: invoiceSummary },
-  "/api/recurrences?cardId=card-1&status=all": { recurrences: [recurrence] },
+  "/api/recurrences": { recurrences: [recurrence] },
 };
