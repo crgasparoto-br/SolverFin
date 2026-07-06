@@ -299,6 +299,7 @@ export function recurrencesSectionScript(): string {
           const instrumentInput = purchaseForm.querySelector('[name="cardInstrumentId"]');
           const instrumentLabel = instrumentInput && instrumentInput.closest("label");
           const title = document.querySelector("[data-purchase-modal-title]");
+          const cardPurchaseEditPattern = new RegExp("^/api/credit-card-accounts/[^/]+/purchases/[^/]+$");
 
           function statusNodeForPurchaseForm() {
             let status = purchaseForm.querySelector("[data-form-status]");
@@ -313,7 +314,7 @@ export function recurrencesSectionScript(): string {
           }
 
           function isCardPurchaseEdit(path, method) {
-            return method === "PATCH" && /^\/api\/credit-card-accounts\/[^/]+\/purchases\/[^/]+$/.test(path || "");
+            return method === "PATCH" && cardPurchaseEditPattern.test(path || "");
           }
 
           document.querySelectorAll("[data-purchase]").forEach((node) => {
