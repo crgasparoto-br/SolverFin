@@ -1,0 +1,143 @@
+import assert from "node:assert/strict";
+
+import { renderCardsPage } from "./cards-page.js";
+
+const category = { id: "cat-streaming", kind: "expense", name: "Streaming", status: "active" };
+const cardInstrument = {
+  holder: "primary",
+  id: "instrument-1",
+  isDefault: true,
+  maskedIdentifier: "**** 4242",
+  name: "Fisico",
+  status: "active",
+  type: "physical",
+};
+const invoice = {
+  cardId: "card-1",
+  dueOn: "2028-02-10",
+  id: "invoice-1",
+  periodEndOn: "2028-01-31",
+  periodStartOn: "2028-01-01",
+  status: "open",
+  totalAmountMinor: 1990,
+};
+const installment = {
+  amountMinor: 1990,
+  card: { id: "card-1", name: "Cartao principal", status: "active" },
+  cardInstrument,
+  category,
+  currency: "BRL",
+  dueOn: "2028-01-10",
+  editBlockedReason: "linked_transaction_missing",
+  editable: false,
+  financialProfileId: "profile-1",
+  id: "installment-1",
+  invoice,
+  recurrence: { description: "Spotify recorrente", id: "recurrence-1", status: "active" },
+  sequenceNumber: 1,
+  status: "posted",
+  totalInstallments: 1,
+};
+const invoiceSummary = {
+  amountDueMinor: 1990,
+  cardId: "card-1",
+  cardName: "Cartao principal",
+  cardTotals: [
+    {
+      cardId: "card-1",
+      cardName: "Cartao principal",
+      invoiceAmountDueMinor: 1990,
+      invoiceTotalMinor: 1990,
+      limitAvailableMinor: 8010,
+      limitTotalMinor: 10000,
+      limitUsedMinor: 1990,
+    },
+  ],
+  closingOn: "2028-01-31",
+  dueOn: "2028-02-10",
+  financialProfileId: "profile-1",
+  invoiceId: "invoice-1",
+  periodStartOn: "2028-01-01",
+  previousBalanceMinor: 0,
+  purchasesCount: 0,
+  reconciledExpensesMinor: 0,
+  status: "open",
+  totalExpensesMinor: 1990,
+  totalPaidMinor: 0,
+  unreconciledExpensesMinor: 1990,
+};
+const responses: Record<string, unknown> = {
+  "/api/accounts": { accounts: [] },
+  "/api/cards": {
+    cards: [
+      {
+        closingDay: 20,
+        dueDay: 10,
+        id: "card-1",
+        name: "Cartao principal",
+        status: "active",
+      },
+    ],
+  },
+  "/api/categories": { categories: [category] },
+  "/api/credit-card-accounts/card-1/instruments": { instruments: [cardInstrument] },
+  "/api/installments": { installments: [installment] },
+  "/api/invoices": { invoices: [invoice] },
+  "/api/invoices/invoice-1/purchases": { purchases: [] },
+  "/api/invoices/invoice-1/summary": { summary: invoiceSummary },
+  "/api/recurrences": { recurrences: [] },
+};
+
+const purchaseRowMarker = '<article class="purchase-row" data-purchase-item';
+const installmentRowMarker = '<article class="installment-row" data-installment-item';
+
+await cardsPageRendersStandaloneInstallment();
+
+async function cardsPageRendersStandaloneInstallment(): Promise<void> {
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = resolveFetchUrl(input);
+    const body = responses[url.pathname];
+
+    if (body === undefined) {
+      throw new Error(`Unexpected API path: ${url.pathname}${url.search}`);
+    }
+
+    return jsonResponse(body);
+  };
+
+  try {
+    const html = await renderCardsPage(
+      "token",
+      new URL("http://localhost/cartoes?cardId=card-1&invoiceId=invoice-1"),
+    );
+
+    assert.doesNotMatch(html, /Erro ao carregar dados/);
+    assert.equal(countOccurrences(html, purchaseRowMarker), 0);
+    assert.equal(countOccurrences(html, installmentRowMarker), 1);
+    assert.match(html, /Histórico da fatura/);
+    assert.match(html, /Spotify recorrente/);
+    assert.match(html, /Sem lançamento vinculado/);
+    assert.match(html, /Nenhuma compra nesta fatura/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+function resolveFetchUrl(input: string | URL | Request): URL {
+  if (typeof input === "string") return new URL(input);
+  if (input instanceof URL) return input;
+  return new URL(input.url);
+}
+
+function countOccurrences(value: string, search: string): number {
+  return value.split(search).length - 1;
+}
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    headers: { "content-type": "application/json; charset=utf-8" },
+    status: 200,
+  });
+}
