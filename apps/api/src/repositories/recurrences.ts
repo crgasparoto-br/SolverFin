@@ -33,13 +33,35 @@ import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { registerCardPurchaseForContext } from "./cards.js";
 
+type RecurrenceUpdateScope = "recurrence_only" | "recurrence_and_future_pending";
+
 type CreateRecurrenceForContextPayload = CreateRecurrencePayload & {
   cardInstrumentId?: EntityId;
 };
 
 type UpdateRecurrenceForContextPayload = UpdateRecurrencePayload & {
   cardInstrumentId?: EntityId;
+  editScope?: RecurrenceUpdateScope;
 };
+
+export interface RecurrenceFuturePendingUpdateSkippedItem {
+  installmentId: EntityId;
+  sequenceNumber: number;
+  reason: string;
+  transactionId?: EntityId;
+  invoiceId?: EntityId;
+}
+
+export interface RecurrenceFuturePendingUpdateSummary {
+  updatedCount: number;
+  skippedCount: number;
+  skipped: RecurrenceFuturePendingUpdateSkippedItem[];
+}
+
+export interface UpdateRecurrenceForContextResult {
+  recurrence: Recurrence;
+  futurePendingUpdate?: RecurrenceFuturePendingUpdateSummary;
+}
 
 interface RecurrenceRow {
   id: string;
@@ -81,12 +103,36 @@ interface InstallmentRow {
   updatedAt: Date;
 }
 
+interface FuturePendingCardOccurrenceRow {
+  installmentId: string;
+  installmentStatus: string;
+  sequenceNumber: number;
+  dueOn: Date;
+  installmentAmountMinor: number;
+  transactionId: string | null;
+  transactionStatus: string | null;
+  transactionAmountMinor: number | null;
+  invoiceId: string | null;
+  invoiceStatus: string | null;
+  periodStartOn: Date | null;
+  periodEndOn: Date | null;
+}
+
+interface FuturePendingCardOccurrenceUpdate {
+  row: FuturePendingCardOccurrenceRow;
+  dueOn: ISODate;
+}
+
 const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId",
   "status", "kind", "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 const INSTALLMENT_COLUMNS = `"id", "organizationId", "financialProfileId", "recurrenceId", "cardId", "cardInstrumentId",
   "status", "sequenceNumber", "totalInstallments", "dueOn", "amountMinor", "currency", "createdAt", "updatedAt"`;
+
+const LOCKED_INSTALLMENT_STATUSES = new Set(["RECONCILED", "CANCELLED"]);
+const LOCKED_TRANSACTION_STATUSES = new Set(["RECONCILED", "VOIDED"]);
+const LOCKED_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
 
 export async function listRecurrencesForContext(
   context: TenantContext,
@@ -153,43 +199,55 @@ export async function updateRecurrenceForContext(
   context: TenantContext,
   recurrenceId: EntityId,
   payload: UpdateRecurrenceForContextPayload,
-): Promise<Recurrence> {
+): Promise<UpdateRecurrenceForContextResult> {
+  const { editScope = "recurrence_only", ...recurrencePayload } = payload;
   const currentRecurrence = await findRecurrenceRow(context, recurrenceId);
   const accountId =
-    payload.accountId ?? (payload.cardId !== undefined ? undefined : currentRecurrence?.accountId);
+    recurrencePayload.accountId ??
+    (recurrencePayload.cardId !== undefined ? undefined : currentRecurrence?.accountId);
   const cardId =
-    payload.cardId ?? (payload.accountId !== undefined ? undefined : currentRecurrence?.cardId);
-  const categoryId = payload.categoryId ?? currentRecurrence?.categoryId;
+    recurrencePayload.cardId ??
+    (recurrencePayload.accountId !== undefined ? undefined : currentRecurrence?.cardId);
+  const categoryId = recurrencePayload.categoryId ?? currentRecurrence?.categoryId;
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
   const card = cardId ? await findCardRow(context, cardId) : undefined;
   const category = categoryId ? await findCategoryRow(context, categoryId) : undefined;
 
-  await assertRecurrenceCardInstrumentTarget(context, card, payload.cardInstrumentId);
+  await assertRecurrenceCardInstrumentTarget(context, card, recurrencePayload.cardInstrumentId);
 
   const result = updateRecurrenceDomain({
     context,
     recurrence: currentRecurrence,
     now: new Date().toISOString(),
-    payload,
+    payload: recurrencePayload,
     ...(account ? { account } : {}),
     ...(card ? { card } : {}),
     ...(category ? { category } : {}),
   });
 
   if (
-    payload.accountId !== undefined ||
-    (payload.cardId !== undefined && payload.cardInstrumentId === undefined)
+    recurrencePayload.accountId !== undefined ||
+    (recurrencePayload.cardId !== undefined && recurrencePayload.cardInstrumentId === undefined)
   ) {
     delete result.recurrence.cardInstrumentId;
   }
 
-  if (payload.cardInstrumentId !== undefined) {
-    result.recurrence.cardInstrumentId = payload.cardInstrumentId;
+  if (recurrencePayload.cardInstrumentId !== undefined) {
+    result.recurrence.cardInstrumentId = recurrencePayload.cardInstrumentId;
   }
 
   await persistRecurrenceMutation(result);
 
-  return result.recurrence;
+  if (editScope !== "recurrence_and_future_pending" || result.recurrence.cardId === undefined) {
+    return { recurrence: result.recurrence };
+  }
+
+  const futurePendingUpdate = await updateFuturePendingCardOccurrencesForContext(
+    context,
+    result.recurrence,
+  );
+
+  return { recurrence: result.recurrence, futurePendingUpdate };
 }
 
 export async function pauseRecurrenceForContext(
@@ -352,6 +410,240 @@ export async function listInstallmentsByRecurrence(
   );
 
   return rows.map(mapInstallmentRow);
+}
+
+async function updateFuturePendingCardOccurrencesForContext(
+  context: TenantContext,
+  recurrence: Recurrence,
+): Promise<RecurrenceFuturePendingUpdateSummary> {
+  const rows = await query<FuturePendingCardOccurrenceRow>(
+    `select
+        i."id" as "installmentId",
+        i."status" as "installmentStatus",
+        i."sequenceNumber",
+        i."dueOn",
+        i."amountMinor" as "installmentAmountMinor",
+        t."id" as "transactionId",
+        t."status" as "transactionStatus",
+        t."amountMinor" as "transactionAmountMinor",
+        t."invoiceId",
+        inv."status" as "invoiceStatus",
+        inv."periodStartOn",
+        inv."periodEndOn"
+       from "Installment" i
+       left join "Transaction" t
+         on t."installmentId" = i."id"
+        and t."organizationId" = i."organizationId"
+        and t."financialProfileId" = i."financialProfileId"
+        and t."cardId" = i."cardId"
+        and t."accountId" is null
+       left join "Invoice" inv
+         on inv."id" = t."invoiceId"
+        and inv."organizationId" = i."organizationId"
+        and inv."financialProfileId" = i."financialProfileId"
+       where i."organizationId" = $1
+         and i."financialProfileId" = $2
+         and i."recurrenceId" = $3
+         and i."cardId" is not null
+         and i."dueOn" >= $4
+       order by i."sequenceNumber" asc`,
+    [context.organizationId, context.financialProfileId, recurrence.id, todayIso()],
+  );
+
+  const skipped: RecurrenceFuturePendingUpdateSkippedItem[] = [];
+  const updates: FuturePendingCardOccurrenceUpdate[] = [];
+
+  for (const row of rows) {
+    const dueOn = calculateRecurrenceDueOn(recurrence, row.sequenceNumber);
+    const reason = getFuturePendingSkipReason(row, dueOn);
+
+    if (reason !== undefined) {
+      skipped.push({
+        installmentId: row.installmentId,
+        sequenceNumber: row.sequenceNumber,
+        reason,
+        ...(row.transactionId !== null ? { transactionId: row.transactionId } : {}),
+        ...(row.invoiceId !== null ? { invoiceId: row.invoiceId } : {}),
+      });
+      continue;
+    }
+
+    updates.push({ row, dueOn });
+  }
+
+  if (updates.length > 0) {
+    const now = new Date().toISOString();
+
+    await withTransaction(async (executeQuery) => {
+      for (const update of updates) {
+        const transactionId = update.row.transactionId as string;
+        const invoiceId = update.row.invoiceId as string;
+        const currentTransactionAmount = update.row.transactionAmountMinor ?? 0;
+        const amountDelta = recurrence.amountMinor - currentTransactionAmount;
+
+        await executeQuery(
+          `update "Installment"
+             set "cardInstrumentId" = $1,
+                 "dueOn" = $2,
+                 "amountMinor" = $3,
+                 "currency" = $4,
+                 "updatedAt" = $5
+           where "id" = $6 and "organizationId" = $7 and "financialProfileId" = $8`,
+          [
+            recurrence.cardInstrumentId ?? null,
+            update.dueOn,
+            recurrence.amountMinor,
+            recurrence.currency,
+            now,
+            update.row.installmentId,
+            context.organizationId,
+            context.financialProfileId,
+          ],
+        );
+
+        await executeQuery(
+          `update "Transaction"
+             set "cardInstrumentId" = $1,
+                 "categoryId" = $2,
+                 "amountMinor" = $3,
+                 "currency" = $4,
+                 "description" = $5,
+                 "occurredOn" = $6,
+                 "plannedOn" = $7,
+                 "updatedAt" = $8,
+                 "updatedByUserId" = $9
+           where "id" = $10 and "organizationId" = $11 and "financialProfileId" = $12`,
+          [
+            recurrence.cardInstrumentId ?? null,
+            recurrence.categoryId ?? null,
+            recurrence.amountMinor,
+            recurrence.currency,
+            recurrence.description,
+            update.dueOn,
+            update.dueOn,
+            now,
+            context.userId,
+            transactionId,
+            context.organizationId,
+            context.financialProfileId,
+          ],
+        );
+
+        if (amountDelta !== 0) {
+          await executeQuery(
+            `update "Invoice"
+               set "totalAmountMinor" = "totalAmountMinor" + $1,
+                   "updatedAt" = $2
+             where "id" = $3 and "organizationId" = $4 and "financialProfileId" = $5`,
+            [amountDelta, now, invoiceId, context.organizationId, context.financialProfileId],
+          );
+        }
+      }
+    });
+  }
+
+  return {
+    updatedCount: updates.length,
+    skippedCount: skipped.length,
+    skipped,
+  };
+}
+
+function getFuturePendingSkipReason(
+  row: FuturePendingCardOccurrenceRow,
+  dueOn: ISODate,
+): string | undefined {
+  if (LOCKED_INSTALLMENT_STATUSES.has(row.installmentStatus)) {
+    return "installment_locked";
+  }
+
+  if (row.transactionId === null) {
+    return "transaction_missing";
+  }
+
+  if (row.transactionStatus === null || LOCKED_TRANSACTION_STATUSES.has(row.transactionStatus)) {
+    return "transaction_locked";
+  }
+
+  if (row.invoiceId === null || row.invoiceStatus === null) {
+    return "invoice_missing";
+  }
+
+  if (LOCKED_INVOICE_STATUSES.has(row.invoiceStatus)) {
+    return "invoice_locked";
+  }
+
+  if (
+    row.periodStartOn !== null &&
+    row.periodEndOn !== null &&
+    (dueOn < toDateOnly(row.periodStartOn) || dueOn > toDateOnly(row.periodEndOn))
+  ) {
+    return "invoice_period_mismatch";
+  }
+
+  return undefined;
+}
+
+function calculateRecurrenceDueOn(recurrence: Recurrence, sequenceNumber: number): ISODate {
+  return addFrequency(
+    recurrence.startOn,
+    recurrence.frequency,
+    sequenceNumber - 1,
+    recurrence.interval,
+  );
+}
+
+function addFrequency(
+  startOn: ISODate,
+  frequency: RecurrenceFrequency,
+  offset: number,
+  interval = 1,
+): ISODate {
+  const steps = offset * interval;
+
+  if (frequency === "daily") {
+    return addDays(startOn, steps);
+  }
+
+  if (frequency === "weekly") {
+    return addDays(startOn, steps * 7);
+  }
+
+  if (frequency === "yearly") {
+    return addMonths(startOn, steps * 12);
+  }
+
+  return addMonths(startOn, steps);
+}
+
+function addDays(startOn: ISODate, days: number): ISODate {
+  const date = parseDate(startOn);
+  date.setUTCDate(date.getUTCDate() + days);
+
+  return formatDate(date);
+}
+
+function addMonths(startOn: ISODate, months: number): ISODate {
+  const [year, month, day] = startOn.split("-").map(Number) as [number, number, number];
+  const targetMonthIndex = month - 1 + months;
+  const targetYear = year + Math.floor(targetMonthIndex / 12);
+  const normalizedMonthIndex = ((targetMonthIndex % 12) + 12) % 12;
+  const lastDay = getLastDayOfMonth(targetYear, normalizedMonthIndex + 1);
+  const date = new Date(Date.UTC(targetYear, normalizedMonthIndex, Math.min(day, lastDay)));
+
+  return formatDate(date);
+}
+
+function parseDate(date: ISODate): Date {
+  return new Date(`${date}T00:00:00.000Z`);
+}
+
+function formatDate(date: Date): ISODate {
+  return date.toISOString().slice(0, 10);
+}
+
+function getLastDayOfMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 
 async function persistRecurrenceMutation(result: RecurrenceMutationResult): Promise<void> {
