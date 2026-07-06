@@ -145,6 +145,8 @@ export class InvoiceContractError extends Error {
   }
 }
 
+const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
+
 export async function summarizeInvoiceForContext(
   context: TenantContext,
   invoiceId: EntityId,
@@ -288,6 +290,14 @@ export async function updateCardPurchaseForContext(
     throw new InvoiceContractError(
       "CARD_PURCHASE_INVOICE_INVALID",
       "Compra nao pertence a fatura informada.",
+      409,
+    );
+  }
+
+  if (LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(invoice.status)) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_INVOICE_LOCKED",
+      "Compras de faturas fechadas, pagas ou canceladas nao podem ser editadas.",
       409,
     );
   }

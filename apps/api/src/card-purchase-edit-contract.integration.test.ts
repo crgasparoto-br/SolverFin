@@ -56,6 +56,7 @@ async function main(): Promise<void> {
 
   await assertCommonCardPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
   await assertRecurringCardPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
+  await assertLockedInvoiceRejectsCardPurchaseEdit(account.id, physicalInstrument, suffix);
 }
 
 async function assertCommonCardPurchaseEdit(
@@ -167,6 +168,58 @@ async function assertRecurringCardPurchaseEdit(
       "code" in error &&
       error.code === "CARD_PURCHASE_DATE_OUT_OF_INVOICE_PERIOD",
   );
+}
+
+async function assertLockedInvoiceRejectsCardPurchaseEdit(
+  cardId: string,
+  physicalInstrument: ApiCardInstrument,
+  suffix: string,
+): Promise<void> {
+  const lockedStatuses = ["CLOSED", "PAID", "CANCELLED"] as const;
+
+  for (const [index, status] of lockedStatuses.entries()) {
+    const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+      occurredOn: `2028-0${6 + index}-08`,
+      amountMinor: 4_000,
+      description: `Compra fatura ${status} ${suffix}`,
+      cardInstrumentId: physicalInstrument.id,
+    });
+
+    await query(`update "Invoice" set "status" = $2 where "id" = $1`, [
+      purchase.invoice.id,
+      status,
+    ]);
+
+    await assert.rejects(
+      () =>
+        updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+          amountMinor: 4_500,
+        }),
+      (error: unknown) =>
+        error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",
+    );
+
+    const row = await readTransaction(purchase.transaction.id);
+    assert.equal(row.cardInstrumentId, physicalInstrument.id);
+
+    const invoiceTotal = await readInvoiceTotal(purchase.invoice.id);
+    assert.equal(invoiceTotal, purchase.invoice.totalAmountMinor);
+  }
+}
+
+async function readInvoiceTotal(invoiceId: string): Promise<number> {
+  const rows = await query<{ totalAmountMinor: number }>(
+    `select "totalAmountMinor" from "Invoice" where "id" = $1`,
+    [invoiceId],
+  );
+
+  const row = rows[0];
+
+  if (row === undefined) {
+    throw new Error(`Expected invoice ${invoiceId}.`);
+  }
+
+  return row.totalAmountMinor;
 }
 
 async function readTransaction(transactionId: string): Promise<TransactionRow> {

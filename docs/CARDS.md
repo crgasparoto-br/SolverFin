@@ -91,6 +91,19 @@ A bandeira e o limite total pertencem ao agrupador.
 
 Instrumentos podem ter limite individual opcional. Quando houver limites individuais ativos, a soma desses limites nao deve ultrapassar o limite total do agrupador.
 
+## Edicao de compra de cartao
+
+A edicao de uma compra na tela `Cartoes` usa diretamente `PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId`. A tela nao depende de nenhuma rota generica de transacao nem de um override de outro modulo para corrigir rota, metodo ou payload.
+
+No modo de edicao:
+
+- o seletor de instrumento permanece visivel e editavel;
+- o modo de repeticao fica oculto, pois repeticao so se aplica a criacao de compra.
+
+Compras de faturas `closed`, `paid` ou `cancelled` tem a acao de edicao desabilitada na tela e sao rejeitadas pela API com o codigo `CARD_PURCHASE_INVOICE_LOCKED` (HTTP 409) caso a chamada ocorra mesmo assim. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria.
+
+A `Installment` tecnica vinculada a uma compra recorrente materializada (mesma `Transaction` que ja aparece como compra operacional com indicador de recorrencia) nao e exibida em nenhuma area da tela `Cartoes`; ela e filtrada da secao de historico de parcelas.
+
 ## Fluxo legado
 
 O fluxo antigo de criar cartoes separados e vincular adicionais manualmente nao e o comportamento principal.

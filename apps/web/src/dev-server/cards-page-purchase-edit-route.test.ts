@@ -137,8 +137,9 @@ async function cardsPageRoutesCardPurchaseEditsThroughPurchaseEndpoint(): Promis
     /form\.dataset\.path = "\/api\/credit-card-accounts\/" \+ purchase\.cardId \+ "\/purchases\/" \+ purchase\.id;/,
   );
   assert.match(html, /const cardInstrumentId = String\(data\.get\("cardInstrumentId"\) \|\| ""\);/);
-  assert.match(html, /if \(cardInstrumentId\) payload\.cardInstrumentId = cardInstrumentId;/);
-  assert.match(html, /event\.stopImmediatePropagation\(\);/);
+  assert.match(html, /if \(cardInstrumentId\) basePayload\.cardInstrumentId = cardInstrumentId;/);
+  assert.doesNotMatch(html, /setupCardPurchaseEditOverride/);
+  assert.match(html, /if \(purchaseInstrumentLabel\) purchaseInstrumentLabel\.hidden = false;/);
 }
 
 function jsonResponse(body: unknown): Response {
