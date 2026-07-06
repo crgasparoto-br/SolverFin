@@ -291,7 +291,77 @@ export function recurrencesSectionScript(): string {
           }, true);
         }
 
+        function setupCardPurchaseEditOverride() {
+          const purchaseForm = document.querySelector("[data-purchase-form]");
+          if (!purchaseForm) return;
+
+          const repeatModeLabel = purchaseForm.querySelector('[name="repeatMode"]') && purchaseForm.querySelector('[name="repeatMode"]').closest("label");
+          const instrumentInput = purchaseForm.querySelector('[name="cardInstrumentId"]');
+          const instrumentLabel = instrumentInput && instrumentInput.closest("label");
+          const title = document.querySelector("[data-purchase-modal-title]");
+          const cardPurchaseEditPattern = new RegExp("^/api/credit-card-accounts/[^/]+/purchases/[^/]+$");
+
+          function statusNodeForPurchaseForm() {
+            let status = purchaseForm.querySelector("[data-form-status]");
+            if (!status) {
+              status = document.createElement("p");
+              status.className = "form-status muted full";
+              status.setAttribute("data-form-status", "");
+              status.setAttribute("aria-live", "polite");
+              purchaseForm.appendChild(status);
+            }
+            return status;
+          }
+
+          function isCardPurchaseEdit(path, method) {
+            return method === "PATCH" && cardPurchaseEditPattern.test(path || "");
+          }
+
+          document.querySelectorAll("[data-purchase]").forEach((node) => {
+            const purchase = JSON.parse(node.textContent || "{}");
+            const button = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
+            if (!button || !purchase.cardId) return;
+
+            button.addEventListener("click", () => {
+              purchaseForm.dataset.path = "/api/credit-card-accounts/" + purchase.cardId + "/purchases/" + purchase.id;
+              purchaseForm.dataset.method = "PATCH";
+              if (repeatModeLabel) repeatModeLabel.hidden = true;
+              if (instrumentLabel) instrumentLabel.hidden = false;
+              if (instrumentInput && purchase.cardInstrumentId) instrumentInput.value = purchase.cardInstrumentId;
+              if (title) title.textContent = "Editar compra";
+            });
+          });
+
+          purchaseForm.addEventListener("submit", async (event) => {
+            const path = purchaseForm.dataset.path || purchaseForm.getAttribute("data-path") || "";
+            const method = purchaseForm.dataset.method || "POST";
+            if (!isCardPurchaseEdit(path, method)) return;
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            const data = new FormData(purchaseForm);
+            const categoryId = String(data.get("categoryId") || "");
+            const cardInstrumentId = String(data.get("cardInstrumentId") || "");
+            const payload = {
+              amountMinor: moneyToMinor(data.get("amountMinor")),
+              occurredOn: String(data.get("occurredOn") || ""),
+              description: String(data.get("description") || ""),
+            };
+            if (categoryId) payload.categoryId = categoryId;
+            if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
+
+            const status = statusNodeForPurchaseForm();
+            status.textContent = "Salvando...";
+            const response = await send(path, "PATCH", payload);
+            status.className = response.ok ? "form-status success full" : "form-status error full";
+            status.textContent = await readMessage(response);
+            if (response.ok) window.setTimeout(() => window.location.reload(), 450);
+          }, true);
+        }
+
         setupTransactionFormOverride();
+        setupCardPurchaseEditOverride();
 
         const modal = document.querySelector("[data-recurrence-modal]");
         const modalStatus = modal && modal.querySelector("[data-recurrence-modal-status]");
