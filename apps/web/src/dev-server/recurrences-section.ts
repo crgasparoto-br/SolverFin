@@ -369,10 +369,19 @@ export function recurrencesSectionScript(): string {
         const editForm = modal && modal.querySelector("[data-recurrence-edit-form]");
         const installmentsForm = modal && modal.querySelector("[data-recurrence-installments-form]");
 
+        function syncRecurrenceCardInstrumentOptions() {
+          const recurrenceInstrumentSelect = editForm && editForm.querySelector('[name="cardInstrumentId"]');
+          if (!recurrenceInstrumentSelect || recurrenceInstrumentSelect.options.length > 0) return;
+          const purchaseInstrumentSelect = document.querySelector('[data-purchase-form] [name="cardInstrumentId"]');
+          if (!purchaseInstrumentSelect) return;
+          recurrenceInstrumentSelect.innerHTML = purchaseInstrumentSelect.innerHTML;
+        }
+
         document.querySelectorAll("[data-recurrence-edit]").forEach((button) => {
           button.addEventListener("click", () => {
             const json = document.querySelector('[data-recurrence="' + button.dataset.recurrenceEdit + '"]');
             const recurrence = JSON.parse(json.textContent);
+            syncRecurrenceCardInstrumentOptions();
             editForm.id.value = recurrence.id;
             editForm.description.value = recurrence.description;
             editForm.interval.value = recurrence.interval || 1;
