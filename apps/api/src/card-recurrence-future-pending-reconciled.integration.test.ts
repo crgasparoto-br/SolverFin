@@ -129,16 +129,10 @@ async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
 }
 
 async function markInstallmentStatus(installmentId: string, status: string): Promise<void> {
-  await query(`update "Installment" set "status" = $1 where "id" = $2`, [
-    status,
-    installmentId,
-  ]);
+  await query(`update "Installment" set "status" = $1 where "id" = $2`, [status, installmentId]);
 }
 
-async function markTransactionStatus(
-  transactionId: string | null,
-  status: string,
-): Promise<void> {
+async function markTransactionStatus(transactionId: string | null, status: string): Promise<void> {
   assert.notEqual(transactionId, null);
 
   await query(`update "Transaction" set "status" = $1 where "id" = $2`, [status, transactionId]);
