@@ -177,6 +177,8 @@ A fatura e resolvida por `cardId + periodStartOn + periodEndOn`:
 
 Compras feitas por instrumentos diferentes do mesmo agrupador compartilham a mesma fatura quando pertencem ao mesmo periodo.
 
+`updateCardPurchaseForContext` (`PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId`) rejeita qualquer edicao quando a fatura vinculada estiver `CLOSED`, `PAID` ou `CANCELLED`, retornando o codigo `CARD_PURCHASE_INVOICE_LOCKED` com HTTP 409. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria.
+
 Compras parceladas criam parcelas planejadas. O valor total e dividido entre as parcelas, com centavos excedentes aplicados nas primeiras parcelas. Cada parcela preserva o `cardInstrumentId` escolhido na compra original quando o fluxo novo esta em uso.
 
 `installmentStart` permite registrar uma compra que ja esta em andamento. Informando `totalInstallments` e `installmentStart`, somente as parcelas de `installmentStart` ate o total sao criadas, e a fatura atual recebe a parcela `installmentStart`.

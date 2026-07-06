@@ -155,10 +155,10 @@ async function cardsPageRendersRecurringPurchaseOnce(): Promise<void> {
 
     assert.doesNotMatch(html, /Erro ao carregar dados/);
     assert.equal(countOccurrences(html, purchaseRowMarker), 1);
-    assert.equal(countOccurrences(html, installmentRowMarker), 1);
+    assert.equal(countOccurrences(html, installmentRowMarker), 0);
     assert.match(html, recurringPurchasePattern);
     assert.match(html, /data-recurrence-edit="recurrence-1"/);
-    assert.match(html, /Histórico da fatura/);
+    assert.match(html, /Nenhuma parcela neste período/);
     assert.ok(
       requestedPaths.includes(
         "/api/installments?cardId=card-1&status=all&dueFrom=2028-01-01&dueTo=2028-01-31",

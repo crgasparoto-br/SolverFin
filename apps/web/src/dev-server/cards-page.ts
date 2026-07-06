@@ -142,7 +142,7 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
               <button type="button" class="toggle-chip" data-reconciliation-toggle="reconciled" aria-pressed="true">Conciliados</button>
             </div>
           </div>
-          ${renderInstallmentsSection(installments, installmentsOk, installmentsError, selectedInvoice)}
+          ${renderInstallmentsSection(installments.filter((installment) => !installment.transaction?.recurrenceId), installmentsOk, installmentsError, selectedInvoice)}
           <div class="purchase-list" aria-label="Compras da fatura">
             ${
               purchasesOk
@@ -485,15 +485,22 @@ function renderPurchaseListBody(
     );
   }
 
+  const invoiceLocked = isInvoiceLockedForEdit(selectedInvoice);
   const groups = groupPurchasesByCard(purchases);
 
   if (groups.length < 2) {
     return purchases
-      .map((purchase) => renderPurchaseRow(purchase, categories, cards, false, recurrences))
+      .map((purchase) => renderPurchaseRow(purchase, categories, cards, false, recurrences, invoiceLocked))
       .join("");
   }
 
-  return groups.map((group) => renderPurchaseGroup(group, categories, cards, recurrences)).join("");
+  return groups
+    .map((group) => renderPurchaseGroup(group, categories, cards, recurrences, invoiceLocked))
+    .join("");
+}
+
+function isInvoiceLockedForEdit(invoice: InvoiceRecord | undefined): boolean {
+  return invoice !== undefined && ["closed", "paid", "cancelled"].includes(invoice.status);
 }
 
 function groupPurchasesByCard(
@@ -523,6 +530,7 @@ function renderPurchaseGroup(
   categories: CategoryRecord[],
   cards: CardRecord[],
   recurrences: RecurrenceRecord[],
+  invoiceLocked: boolean,
 ): string {
   const cardName = cards.find((card) => card.id === group.cardId)?.name ?? "Cartão";
   const totalMinor = group.cardPurchases.reduce((sum, purchase) => sum + purchase.amountMinor, 0);
@@ -537,7 +545,7 @@ function renderPurchaseGroup(
         <strong class="debit">${formatMoney(-totalMinor)}</strong>
       </summary>
       <div class="purchase-group-rows">
-        ${group.cardPurchases.map((purchase) => renderPurchaseRow(purchase, categories, cards, false, recurrences)).join("")}
+        ${group.cardPurchases.map((purchase) => renderPurchaseRow(purchase, categories, cards, false, recurrences, invoiceLocked)).join("")}
       </div>
     </details>
   `;
@@ -549,6 +557,7 @@ function renderPurchaseRow(
   cards: CardRecord[],
   showCardLabel: boolean,
   recurrences: RecurrenceRecord[],
+  invoiceLocked: boolean,
 ): string {
   const categoryName = purchase.categoryId
     ? categories.find((category) => category.id === purchase.categoryId)?.name
@@ -578,7 +587,7 @@ function renderPurchaseRow(
       <details class="actions">
         <summary aria-label="Ações da compra ${escapeHtml(purchase.description)}">${renderDotsIcon()}</summary>
         <div class="actions-menu" role="menu">
-          <button type="button" class="actions-item" data-edit-purchase="${escapeHtml(purchase.id)}">${renderEditIcon()}<span>Editar</span></button>
+          <button type="button" class="actions-item" data-edit-purchase="${escapeHtml(purchase.id)}"${invoiceLocked ? " disabled" : ""}>${renderEditIcon()}<span>Editar</span></button>
           ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
         </div>
       </details>
@@ -925,18 +934,21 @@ function clientScript(): string {
       document.querySelectorAll("[data-purchase]").forEach((node) => {
         const purchase = JSON.parse(node.textContent);
         const button = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
-        if (!button) return;
+        if (!button || button.disabled) return;
         button.addEventListener("click", () => {
           const form = purchaseForm;
           form.reset();
-          form.dataset.path = "/api/transactions/" + purchase.id;
+          form.dataset.path = "/api/credit-card-accounts/" + purchase.cardId + "/purchases/" + purchase.id;
           form.dataset.method = "PATCH";
           form.amountMinor.value = minorToMoneyInput(purchase.amountMinor);
           form.occurredOn.value = purchase.occurredOn;
           form.description.value = purchase.description;
           if (form.categoryId) form.categoryId.value = purchase.categoryId || "";
+          if (purchaseInstrumentInput && purchase.cardInstrumentId) {
+            purchaseInstrumentInput.value = purchase.cardInstrumentId;
+          }
           if (purchaseRepeatModeLabel) purchaseRepeatModeLabel.hidden = true;
-          if (purchaseInstrumentLabel) purchaseInstrumentLabel.hidden = true;
+          if (purchaseInstrumentLabel) purchaseInstrumentLabel.hidden = false;
           syncPurchaseFieldVisibility();
           document.querySelector("[data-purchase-modal-title]").textContent = "Editar compra";
           openModal("purchase");
@@ -980,7 +992,7 @@ function clientScript(): string {
           const purchaseCardId =
             String(data.get("purchaseCardId") || "") || extractPurchaseCardId(path);
           const categoryId = String(data.get("categoryId") || "");
-          const cardInstrumentId = method === "POST" ? String(data.get("cardInstrumentId") || "") : "";
+          const cardInstrumentId = String(data.get("cardInstrumentId") || "");
           const basePayload = {
             amountMinor: moneyToMinor(data.get("amountMinor")),
             occurredOn: String(data.get("occurredOn")),
