@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   const occurrences = await readOccurrences(recurrence.id);
   assert.equal(occurrences.length, 1);
 
-  const original = occurrences[0];
+  const original = requireOnlyOccurrence(occurrences);
   assert.notEqual(original.invoiceId, null);
   assert.notEqual(original.periodStartOn, null);
   assert.notEqual(original.periodEndOn, null);
@@ -87,7 +87,7 @@ async function main(): Promise<void> {
 
   const refreshed = await readOccurrences(recurrence.id);
   assert.equal(refreshed.length, 1);
-  assertOccurrencePreserved(refreshed[0], original);
+  assertOccurrencePreserved(requireOnlyOccurrence(refreshed), original);
 }
 
 async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
@@ -129,6 +129,14 @@ function requireInstrument(
   return instrument;
 }
 
+function requireOnlyOccurrence(occurrences: OccurrenceRow[]): OccurrenceRow {
+  if (occurrences.length !== 1 || occurrences[0] === undefined) {
+    throw new Error("Expected exactly one occurrence.");
+  }
+
+  return occurrences[0];
+}
+
 function assertOccurrencePreserved(occurrence: OccurrenceRow, original: OccurrenceRow): void {
   assert.equal(occurrence.dueOn, original.dueOn);
   assert.equal(occurrence.installmentAmountMinor, original.installmentAmountMinor);
@@ -147,8 +155,10 @@ function assertDateWithinPeriod(
   periodStartOn: string | null,
   periodEndOn: string | null,
 ): void {
-  assert.notEqual(periodStartOn, null);
-  assert.notEqual(periodEndOn, null);
+  if (periodStartOn === null || periodEndOn === null) {
+    throw new Error("Expected invoice period.");
+  }
+
   assert.ok(date >= periodStartOn && date <= periodEndOn);
 }
 
@@ -157,8 +167,10 @@ function assertDateOutsidePeriod(
   periodStartOn: string | null,
   periodEndOn: string | null,
 ): void {
-  assert.notEqual(periodStartOn, null);
-  assert.notEqual(periodEndOn, null);
+  if (periodStartOn === null || periodEndOn === null) {
+    throw new Error("Expected invoice period.");
+  }
+
   assert.ok(date < periodStartOn || date > periodEndOn);
 }
 
