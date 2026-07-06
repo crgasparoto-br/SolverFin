@@ -4,15 +4,15 @@ import { renderCardsPage } from "./cards-page.js";
 
 const originalFetch = globalThis.fetch;
 
-globalThis.fetch = (async (input: Parameters<typeof fetch>[0]) => {
-  const url = new URL(typeof input === "string" ? input : input.url);
+globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+  const url = new URL(String(input));
   const body = responseBodyFor(url.pathname + url.search);
 
   return new Response(JSON.stringify(body), {
     headers: { "content-type": "application/json; charset=utf-8" },
     status: 200,
   });
-}) as typeof fetch;
+};
 
 try {
   const html = await renderCardsPage(
