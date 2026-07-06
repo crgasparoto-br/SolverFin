@@ -211,8 +211,11 @@ async function assertHidesLinkedCardRecurrenceInstallments(
     ],
   });
   assert.equal(cardResponse.statusCode, 201);
-  const card = readBody<{ creditCardAccount: ApiCreditCardAccount }>(cardResponse).creditCardAccount;
-  const instrument = card.instruments[0] ?? assert.fail("Expected active card instrument.");
+  const card = readBody<{ creditCardAccount: ApiCreditCardAccount }>(
+    cardResponse,
+  ).creditCardAccount;
+  const instrument =
+    card.instruments[0] ?? assert.fail("Expected active card instrument.");
 
   const recurrenceResponse = await apiRequest(token, "POST", "/api/recurrences", {
     frequency: "monthly",
@@ -303,7 +306,8 @@ async function apiRequest(
     body,
   };
   const creditCardAccountsResponse = await handleCreditCardAccountsApiRequest(request);
-  const installmentsResponse = creditCardAccountsResponse ?? (await handleInstallmentsApiRequest(request));
+  const installmentsResponse =
+    creditCardAccountsResponse ?? (await handleInstallmentsApiRequest(request));
   const response = installmentsResponse ?? (await handleApiRequest(request));
 
   return (
