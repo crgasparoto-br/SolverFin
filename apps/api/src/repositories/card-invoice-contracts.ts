@@ -313,10 +313,15 @@ export async function updateCardPurchaseForContext(
   }
 
   const nextAmountMinor =
-    payload.amountMinor !== undefined ? validatePositiveAmount(payload.amountMinor) : current.amountMinor;
+    payload.amountMinor !== undefined
+      ? validatePositiveAmount(payload.amountMinor)
+      : current.amountMinor;
   const nextDescription =
-    payload.description !== undefined ? normalizeDescription(payload.description) : current.description;
-  const nextStatus = payload.status !== undefined ? normalizePurchaseStatus(payload.status) : current.status;
+    payload.description !== undefined
+      ? normalizeDescription(payload.description)
+      : current.description;
+  const nextStatus =
+    payload.status !== undefined ? normalizePurchaseStatus(payload.status) : current.status;
   const nextCategoryId =
     payload.categoryId !== undefined ? normalizeOptionalId(payload.categoryId) : current.categoryId;
   const nextCardInstrumentId = payload.cardInstrumentId ?? current.cardInstrumentId;
