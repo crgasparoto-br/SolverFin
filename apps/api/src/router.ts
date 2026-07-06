@@ -555,7 +555,9 @@ async function updateRecurrenceHandler(
       ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
       ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
       ...(body.editScope !== undefined
-        ? { editScope: String(body.editScope) }
+        ? {
+            editScope: String(body.editScope),
+          }
         : {}),
     },
   );
