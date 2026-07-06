@@ -137,7 +137,13 @@ async function createExpenseCategory(name: string): Promise<ApiCategory> {
     `insert into "Category"
        ("id", "organizationId", "financialProfileId", "name", "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
      values ($1, $2, $3, $4, 'EXPENSE', 'ACTIVE', now(), now(), $5, $5)`,
-    [category.id, CONTEXT.organizationId, CONTEXT.financialProfileId, category.name, CONTEXT.userId],
+    [
+      category.id,
+      CONTEXT.organizationId,
+      CONTEXT.financialProfileId,
+      category.name,
+      CONTEXT.userId,
+    ],
   );
 
   return category;
