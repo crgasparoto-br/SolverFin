@@ -313,13 +313,19 @@ export async function generateInstallmentsForContext(
     makeTransactionId: () => randomUUID(),
     ...(maxOccurrences !== undefined ? { maxOccurrences } : {}),
   });
+  const cardInstrumentId =
+    recurrence?.cardId !== undefined ? recurrence.cardInstrumentId : undefined;
+  const installments =
+    cardInstrumentId !== undefined
+      ? result.installments.map((installment) => ({ ...installment, cardInstrumentId }))
+      : result.installments;
 
-  if (result.installments.length === 0) {
-    return result;
+  if (installments.length === 0) {
+    return { ...result, installments };
   }
 
   await withTransaction(async (executeQuery) => {
-    for (const installment of result.installments) {
+    for (const installment of installments) {
       await executeQuery(
         `insert into "Installment"
           ("id", "organizationId", "financialProfileId", "recurrenceId", "cardId", "cardInstrumentId", "status",
@@ -336,10 +342,10 @@ export async function generateInstallmentsForContext(
     // any other card purchase does, instead of floating without an invoice.
     const cardId = recurrence.cardId;
     const transactions: Transaction[] = [];
-    const generatedInstallmentIds = result.installments.map((installment) => installment.id);
+    const generatedInstallmentIds = installments.map((installment) => installment.id);
 
     try {
-      for (const installment of result.installments) {
+      for (const installment of installments) {
         const purchase = await registerCardPurchaseForContext(context, cardId, {
           occurredOn: installment.dueOn,
           amountMinor: installment.amountMinor,
@@ -367,7 +373,7 @@ export async function generateInstallmentsForContext(
       throw error;
     }
 
-    return { installments: result.installments, transactions };
+    return { installments, transactions };
   }
 
   await withTransaction(async (executeQuery) => {
@@ -379,7 +385,7 @@ export async function generateInstallmentsForContext(
     }
   });
 
-  return result;
+  return { ...result, installments };
 }
 
 export async function catchUpRecurrenceInstallmentsForContext(
