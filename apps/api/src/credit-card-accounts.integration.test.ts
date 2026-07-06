@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
@@ -27,6 +27,7 @@ async function main(): Promise<void> {
   await runRejectsPurchaseWithArchivedInstrument(token);
   await runUpdatesCardPurchaseWithoutAccountId(token);
   await runPreservesRecurrenceInstrumentAfterDefaultChange(token);
+  await runDoesNotLeaveCardRecurrenceInstallmentWhenPurchaseMaterializationFails(token);
   await runCreditCardAccountInstrumentLifecycle(token);
 }
 
@@ -315,6 +316,75 @@ async function runPreservesRecurrenceInstrumentAfterDefaultChange(token: string)
   assert.equal(generation.transactions.length, 1);
   assert.equal(generation.transactions[0]?.cardId, account.id);
   assert.equal(generation.transactions[0]?.cardInstrumentId, physicalInstrument.id);
+}
+
+async function runDoesNotLeaveCardRecurrenceInstallmentWhenPurchaseMaterializationFails(
+  token: string,
+): Promise<void> {
+  const suffix = Date.now().toString(36);
+  const createResponse = await apiRequest(token, "POST", "/api/credit-card-accounts", {
+    name: `Cartao recorrencia falha ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 50_000,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico fallback",
+        maskedIdentifier: "**** 9191",
+      },
+      {
+        type: "virtual",
+        holder: "primary",
+        name: "Virtual recorrencia falha",
+        maskedIdentifier: "**** 9292",
+      },
+    ],
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const account = readCreditCardAccount(createResponse);
+  const archivedInstrument = requireInstrument(account, "virtual");
+
+  const recurrenceResponse = await apiRequest(token, "POST", "/api/recurrences", {
+    frequency: "monthly",
+    startOn: "2027-09-05",
+    amountMinor: 1_987,
+    description: `Recorrencia falha materializacao ${suffix}`,
+    cardId: account.id,
+    cardInstrumentId: archivedInstrument.id,
+  });
+  assert.equal(recurrenceResponse.statusCode, 201);
+  const recurrence = readRecurrence(recurrenceResponse);
+
+  const archiveResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/credit-card-instruments/${archivedInstrument.id}/archive`,
+  );
+  assert.equal(archiveResponse.statusCode, 200);
+
+  const generationResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/recurrences/${recurrence.id}/generate-installments`,
+    { through: "2027-09-05", maxOccurrences: 1 },
+  );
+
+  assert.equal(generationResponse.statusCode, 400);
+  assert.equal(readErrorCode(generationResponse), "CARD_INSTRUMENT_NOT_ACTIVE");
+
+  const installmentRows = await query<{ count: number }>(
+    `select count(*)::int as "count" from "Installment" where "recurrenceId" = $1`,
+    [recurrence.id],
+  );
+  const transactionRows = await query<{ count: number }>(
+    `select count(*)::int as "count" from "Transaction" where "recurrenceId" = $1`,
+    [recurrence.id],
+  );
+
+  assert.equal(installmentRows[0]?.count, 0);
+  assert.equal(transactionRows[0]?.count, 0);
 }
 
 async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<void> {
