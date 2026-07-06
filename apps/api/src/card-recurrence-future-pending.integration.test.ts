@@ -1,10 +1,20 @@
 import assert from "node:assert/strict";
 
-import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
+import type { TenantContext } from "@solverfin/domain";
+
 import { closePool, query } from "./db.js";
-import { handleMvpApiRequest } from "./mvp.js";
-import { handleApiRequest } from "./router.js";
-import type { ApiRequest, ApiResponse } from "./router.js";
+import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
+import {
+  createRecurrenceForContext,
+  generateInstallmentsForContext,
+  updateRecurrenceForContext,
+} from "./repositories/recurrences.js";
+
+const CONTEXT: TenantContext = {
+  organizationId: "22222222-2222-4222-8222-222222222222",
+  financialProfileId: "33333333-3333-4333-8333-333333333331",
+  userId: "11111111-1111-4111-8111-111111111111",
+};
 
 void main()
   .catch((error: unknown) => {
@@ -18,19 +28,43 @@ void main()
 async function main(): Promise<void> {
   assertIntegrationDatabaseConfigured();
 
-  const token = await loginAndReadToken();
   const suffix = Date.now().toString(36);
-  const account = await createCreditCardAccount(token, suffix);
-  const physicalInstrument = requireInstrument(account, "physical");
-  const virtualInstrument = requireInstrument(account, "virtual");
-  const recurrence = await createCardRecurrence(token, suffix, account.id, physicalInstrument.id);
+  const account = await createCreditCardAccountForContext(CONTEXT, {
+    name: `Cartao futuras pendentes ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 80_000,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico futuras",
+        maskedIdentifier: "**** 6161",
+      },
+      {
+        type: "virtual",
+        holder: "primary",
+        name: "Virtual futuras",
+        maskedIdentifier: "**** 7171",
+      },
+    ],
+  });
+  const physicalInstrument = requireInstrument(account.instruments, "physical");
+  const virtualInstrument = requireInstrument(account.instruments, "virtual");
+  const recurrence = await createRecurrenceForContext(CONTEXT, {
+    frequency: "monthly",
+    startOn: "2027-11-05",
+    amountMinor: 1_111,
+    description: `Recorrencia futuras pendentes ${suffix}`,
+    cardId: account.id,
+    cardInstrumentId: physicalInstrument.id,
+  });
 
-  await generateInstallments(token, recurrence.id);
+  await generateInstallmentsForContext(CONTEXT, recurrence.id, "2028-02-05", 4);
 
   const occurrences = await readOccurrences(recurrence.id);
   assert.equal(occurrences.length, 4);
 
-  const eligibleOccurrence = requireSequence(occurrences, 1);
   const paidOccurrence = requireSequence(occurrences, 2);
   const cancelledOccurrence = requireSequence(occurrences, 3);
   const missingTransactionOccurrence = requireSequence(occurrences, 4);
@@ -39,21 +73,17 @@ async function main(): Promise<void> {
   await markInvoiceStatus(cancelledOccurrence.invoiceId, "CANCELLED");
   await deleteTransaction(missingTransactionOccurrence.transactionId);
 
-  const updateResponse = await apiRequest(token, "PATCH", `/api/recurrences/${recurrence.id}`, {
+  const update = await updateRecurrenceForContext(CONTEXT, recurrence.id, {
     editScope: "recurrence_and_future_pending",
     amountMinor: 3_333,
     description: `Recorrencia atualizada ${suffix}`,
     cardInstrumentId: virtualInstrument.id,
   });
-  assert.equal(updateResponse.statusCode, 200);
-  const update = readBody<{ futurePendingUpdate?: ApiFuturePendingUpdate }>(updateResponse)
-    .futurePendingUpdate;
 
-  assert.notEqual(update, undefined);
-  assert.equal(update?.updatedCount, 1);
-  assert.equal(update?.skippedCount, 3);
+  assert.equal(update.futurePendingUpdate?.updatedCount, 1);
+  assert.equal(update.futurePendingUpdate?.skippedCount, 3);
   assert.deepEqual(
-    update?.skipped.map((item) => item.reason).sort(),
+    update.futurePendingUpdate?.skipped.map((item) => item.reason).sort(),
     ["invoice_locked", "invoice_locked", "transaction_missing"],
   );
 
@@ -74,64 +104,6 @@ async function main(): Promise<void> {
   assert.equal(refreshedMissingTransaction.transactionId, null);
   assert.equal(refreshedMissingTransaction.installmentAmountMinor, 1_111);
   assert.equal(refreshedMissingTransaction.installmentCardInstrumentId, physicalInstrument.id);
-}
-
-async function createCreditCardAccount(
-  token: string,
-  suffix: string,
-): Promise<ApiCreditCardAccount> {
-  const response = await apiRequest(token, "POST", "/api/credit-card-accounts", {
-    name: `Cartao futuras pendentes ${suffix}`,
-    closingDay: 20,
-    dueDay: 10,
-    creditLimitMinor: 80_000,
-    instruments: [
-      {
-        type: "physical",
-        holder: "primary",
-        name: "Fisico futuras",
-        maskedIdentifier: "**** 6161",
-      },
-      {
-        type: "virtual",
-        holder: "primary",
-        name: "Virtual futuras",
-        maskedIdentifier: "**** 7171",
-      },
-    ],
-  });
-  assert.equal(response.statusCode, 201);
-
-  return readBody<{ creditCardAccount: ApiCreditCardAccount }>(response).creditCardAccount;
-}
-
-async function createCardRecurrence(
-  token: string,
-  suffix: string,
-  cardId: string,
-  cardInstrumentId: string,
-): Promise<ApiRecurrence> {
-  const response = await apiRequest(token, "POST", "/api/recurrences", {
-    frequency: "monthly",
-    startOn: "2027-11-05",
-    amountMinor: 1_111,
-    description: `Recorrencia futuras pendentes ${suffix}`,
-    cardId,
-    cardInstrumentId,
-  });
-  assert.equal(response.statusCode, 201);
-
-  return readBody<{ recurrence: ApiRecurrence }>(response).recurrence;
-}
-
-async function generateInstallments(token: string, recurrenceId: string): Promise<void> {
-  const response = await apiRequest(
-    token,
-    "POST",
-    `/api/recurrences/${recurrenceId}/generate-installments`,
-    { through: "2028-02-05", maxOccurrences: 4 },
-  );
-  assert.equal(response.statusCode, 201);
 }
 
 async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
@@ -168,56 +140,11 @@ async function deleteTransaction(transactionId: string | null): Promise<void> {
   await query(`delete from "Transaction" where "id" = $1`, [transactionId]);
 }
 
-async function loginAndReadToken(): Promise<string> {
-  const response = await handleMvpApiRequest({
-    method: "POST",
-    path: "/api/session",
-    body: {
-      email: "demo@solverfin.example.invalid",
-      password: "SolverFinDemo!2026",
-    },
-  });
-  assert.equal(response.statusCode, 201);
-
-  return readBody<{ session: { token: string } }>(response).session.token;
-}
-
-async function apiRequest(
-  token: string,
-  method: string,
-  path: string,
-  body?: unknown,
-): Promise<ApiResponse> {
-  const url = new URL(path, "http://solverfin.integration.test");
-  const request: ApiRequest = {
-    method,
-    pathname: url.pathname,
-    query: url.searchParams,
-    headers: { authorization: `Bearer ${token}` },
-    body,
-  };
-  const creditCardAccountsResponse = await handleCreditCardAccountsApiRequest(request);
-  const response = creditCardAccountsResponse ?? (await handleApiRequest(request));
-
-  return (
-    response ?? {
-      statusCode: 404,
-      headers: { "content-type": "application/json; charset=utf-8" },
-      body: {
-        error: {
-          code: "API_ROUTE_NOT_FOUND",
-          message: "Rota de API nao encontrada.",
-        },
-      },
-    }
-  );
-}
-
 function requireInstrument(
-  account: ApiCreditCardAccount,
+  instruments: readonly ApiCardInstrument[],
   type: ApiCardInstrument["type"],
 ): ApiCardInstrument {
-  const instrument = account.instruments.find((candidate) => candidate.type === type);
+  const instrument = instruments.find((candidate) => candidate.type === type);
 
   if (instrument === undefined) {
     throw new Error(`Expected ${type} instrument.`);
@@ -236,21 +163,11 @@ function requireSequence(occurrences: OccurrenceRow[], sequenceNumber: number): 
   return occurrence;
 }
 
-function assertOccurrencePreserved(
-  occurrence: OccurrenceRow,
-  cardInstrumentId: string,
-): void {
+function assertOccurrencePreserved(occurrence: OccurrenceRow, cardInstrumentId: string): void {
   assert.equal(occurrence.installmentAmountMinor, 1_111);
   assert.equal(occurrence.installmentCardInstrumentId, cardInstrumentId);
   assert.equal(occurrence.transactionAmountMinor, 1_111);
   assert.equal(occurrence.transactionCardInstrumentId, cardInstrumentId);
-}
-
-function readBody<TBody>(response: Pick<ApiResponse, "body">): TBody {
-  assert.equal(typeof response.body, "object");
-  assert.notEqual(response.body, null);
-
-  return response.body as TBody;
 }
 
 function assertIntegrationDatabaseConfigured(): void {
@@ -260,24 +177,9 @@ function assertIntegrationDatabaseConfigured(): void {
   );
 }
 
-interface ApiCreditCardAccount {
-  id: string;
-  instruments: ApiCardInstrument[];
-}
-
 interface ApiCardInstrument {
   id: string;
   type: "physical" | "virtual";
-}
-
-interface ApiRecurrence {
-  id: string;
-}
-
-interface ApiFuturePendingUpdate {
-  updatedCount: number;
-  skippedCount: number;
-  skipped: Array<{ reason: string }>;
 }
 
 interface OccurrenceRow {
