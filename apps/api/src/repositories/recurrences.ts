@@ -336,29 +336,35 @@ export async function generateInstallmentsForContext(
     // any other card purchase does, instead of floating without an invoice.
     const cardId = recurrence.cardId;
     const transactions: Transaction[] = [];
+    const generatedInstallmentIds = result.installments.map((installment) => installment.id);
 
-    for (const installment of result.installments) {
-      const purchase = await registerCardPurchaseForContext(context, cardId, {
-        occurredOn: installment.dueOn,
-        amountMinor: installment.amountMinor,
-        description: recurrence.description,
-        ...(recurrence.cardInstrumentId !== undefined
-          ? { cardInstrumentId: recurrence.cardInstrumentId }
-          : {}),
-        ...(recurrence.categoryId !== undefined ? { categoryId: recurrence.categoryId } : {}),
-      });
-      // registerCardPurchaseForContext does not know about recurrences, so backfill the
-      // link afterwards: the web UI needs Transaction.recurrenceId to show the recurring
-      // indicator and pause/resume/cancel/edit actions on the purchase row itself.
-      await query(
-        `update "Transaction" set "recurrenceId" = $1, "installmentId" = $2 where "id" = $3`,
-        [recurrence.id, installment.id, purchase.transaction.id],
-      );
-      transactions.push({
-        ...purchase.transaction,
-        recurrenceId: recurrence.id,
-        installmentId: installment.id,
-      });
+    try {
+      for (const installment of result.installments) {
+        const purchase = await registerCardPurchaseForContext(context, cardId, {
+          occurredOn: installment.dueOn,
+          amountMinor: installment.amountMinor,
+          description: recurrence.description,
+          ...(recurrence.cardInstrumentId !== undefined
+            ? { cardInstrumentId: recurrence.cardInstrumentId }
+            : {}),
+          ...(recurrence.categoryId !== undefined ? { categoryId: recurrence.categoryId } : {}),
+        });
+        // registerCardPurchaseForContext does not know about recurrences, so backfill the
+        // link afterwards: the web UI needs Transaction.recurrenceId to show the recurring
+        // indicator and pause/resume/cancel/edit actions on the purchase row itself.
+        await query(
+          `update "Transaction" set "recurrenceId" = $1, "installmentId" = $2 where "id" = $3`,
+          [recurrence.id, installment.id, purchase.transaction.id],
+        );
+        transactions.push({
+          ...purchase.transaction,
+          recurrenceId: recurrence.id,
+          installmentId: installment.id,
+        });
+      }
+    } catch (error) {
+      await deleteUnmaterializedCardInstallmentsForContext(context, generatedInstallmentIds);
+      throw error;
     }
 
     return { installments: result.installments, transactions };
@@ -390,6 +396,34 @@ export async function catchUpRecurrenceInstallmentsForContext(
   for (const recurrence of recurrences) {
     await generateInstallmentsForContext(context, recurrence.id, through);
   }
+}
+
+async function deleteUnmaterializedCardInstallmentsForContext(
+  context: TenantContext,
+  installmentIds: readonly EntityId[],
+): Promise<void> {
+  if (installmentIds.length === 0) {
+    return;
+  }
+
+  await withTransaction(async (executeQuery) => {
+    await executeQuery(
+      `delete from "Installment" i
+       where i."organizationId" = $1
+         and i."financialProfileId" = $2
+         and i."id" = any($3::uuid[])
+         and i."cardId" is not null
+         and not exists (
+           select 1 from "Transaction" t
+            where t."organizationId" = i."organizationId"
+              and t."financialProfileId" = i."financialProfileId"
+              and t."installmentId" = i."id"
+              and t."cardId" = i."cardId"
+              and t."accountId" is null
+         )`,
+      [context.organizationId, context.financialProfileId, installmentIds],
+    );
+  });
 }
 
 function todayIso(): ISODate {
