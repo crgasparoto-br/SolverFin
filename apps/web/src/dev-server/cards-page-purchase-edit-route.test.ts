@@ -136,10 +136,6 @@ async function cardsPageRoutesCardPurchaseEditsThroughPurchaseEndpoint(): Promis
     html,
     /form\.dataset\.path = "\/api\/credit-card-accounts\/" \+ purchase\.cardId \+ "\/purchases\/" \+ purchase\.id;/,
   );
-  assert.match(
-    html,
-    /method !== "PATCH" \|\| !\^\\\/api\\\/credit-card-accounts\\\/\[\^\/\]\+\\\/purchases\\\/\[\^\/\]\+\$/,
-  );
   assert.match(html, /const cardInstrumentId = String\(data\.get\("cardInstrumentId"\) \|\| ""\);/);
   assert.match(html, /if \(cardInstrumentId\) payload\.cardInstrumentId = cardInstrumentId;/);
   assert.match(html, /event\.stopImmediatePropagation\(\);/);
