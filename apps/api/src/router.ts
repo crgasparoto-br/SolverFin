@@ -536,6 +536,7 @@ async function updateRecurrenceHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
+  const editScope = body.editScope;
   const result = await updateRecurrenceForContext(
     context,
     requireParam(match, "recurrenceId"),
@@ -554,11 +555,7 @@ async function updateRecurrenceHandler(
         : {}),
       ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
       ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-      ...(body.editScope !== undefined
-        ? {
-            editScope: String(body.editScope),
-          }
-        : {}),
+      ...(editScope !== undefined ? { editScope: String(editScope) } : {}),
     },
   );
 
