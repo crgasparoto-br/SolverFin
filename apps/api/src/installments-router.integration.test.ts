@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 
+import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { closePool } from "./db.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
@@ -38,6 +39,7 @@ async function main(): Promise<void> {
   await assertRejectsInvalidInstallmentPatch(token, editableInstallmentId);
   await assertRejectsOutOfProfileInstallmentPatch(token, editableInstallmentId);
   await assertFiltersTenantProfile(token, recurrence.id);
+  await assertHidesLinkedCardRecurrenceInstallments(token, suffix);
   await assertRejectsInvalidFilters(token);
 }
 
@@ -190,6 +192,73 @@ async function assertFiltersTenantProfile(token: string, recurrenceId: string): 
   assert.equal(installments.length, 0);
 }
 
+async function assertHidesLinkedCardRecurrenceInstallments(
+  token: string,
+  suffix: string,
+): Promise<void> {
+  const cardResponse = await apiRequest(token, "POST", "/api/credit-card-accounts", {
+    name: `Cartao parcelas recorrentes ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 80_000,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico recorrencia",
+        maskedIdentifier: "**** 5151",
+      },
+    ],
+  });
+  assert.equal(cardResponse.statusCode, 201);
+  const card = readBody<{ creditCardAccount: ApiCreditCardAccount }>(cardResponse).creditCardAccount;
+  const instrument = card.instruments[0] ?? assert.fail("Expected active card instrument.");
+
+  const recurrenceResponse = await apiRequest(token, "POST", "/api/recurrences", {
+    frequency: "monthly",
+    startOn: "2027-10-05",
+    amountMinor: 2_468,
+    description: `Recorrencia cartao parcelas ${suffix}`,
+    cardId: card.id,
+    cardInstrumentId: instrument.id,
+  });
+  assert.equal(recurrenceResponse.statusCode, 201);
+  const recurrence = readBody<{ recurrence: ApiRecurrence }>(recurrenceResponse).recurrence;
+
+  const generationResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/recurrences/${recurrence.id}/generate-installments`,
+    { through: "2027-10-05", maxOccurrences: 1 },
+  );
+  assert.equal(generationResponse.statusCode, 201);
+
+  const byRecurrenceResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/installments?recurrenceId=${recurrence.id}&status=all`,
+  );
+  assert.equal(byRecurrenceResponse.statusCode, 200);
+  const recurrenceInstallments = readBody<{ installments: ApiInstallmentHistory[] }>(
+    byRecurrenceResponse,
+  ).installments;
+  assert.equal(recurrenceInstallments.length, 1);
+  assert.equal(recurrenceInstallments[0]?.transaction?.cardId, card.id);
+  assert.notEqual(recurrenceInstallments[0]?.transaction?.invoiceId, undefined);
+
+  const cardResponseWithInvoiceFilter = await apiRequest(
+    token,
+    "GET",
+    `/api/installments?cardId=${card.id}&status=all&dueFrom=2027-10-01&dueTo=2027-10-20`,
+  );
+  assert.equal(cardResponseWithInvoiceFilter.statusCode, 200);
+  const cardInstallments = readBody<{ installments: ApiInstallmentHistory[] }>(
+    cardResponseWithInvoiceFilter,
+  ).installments;
+
+  assert.equal(cardInstallments.length, 0);
+}
+
 async function assertRejectsInvalidFilters(token: string): Promise<void> {
   const invalidStatus = await apiRequest(token, "GET", "/api/installments?status=invalid");
   assert.equal(invalidStatus.statusCode, 400);
@@ -233,7 +302,8 @@ async function apiRequest(
     headers: { authorization: `Bearer ${token}` },
     body,
   };
-  const installmentsResponse = await handleInstallmentsApiRequest(request);
+  const creditCardAccountsResponse = await handleCreditCardAccountsApiRequest(request);
+  const installmentsResponse = creditCardAccountsResponse ?? (await handleInstallmentsApiRequest(request));
   const response = installmentsResponse ?? (await handleApiRequest(request));
 
   return (
@@ -293,11 +363,27 @@ interface ApiRecurrence {
   financialProfileId: string;
 }
 
+interface ApiCreditCardAccount {
+  id: string;
+  financialProfileId: string;
+  instruments: ApiCardInstrument[];
+}
+
+interface ApiCardInstrument {
+  id: string;
+}
+
 interface ApiInstallmentHistory {
   id: string;
   financialProfileId: string;
   recurrence?: { id: string };
-  transaction?: { accountId?: string; categoryId?: string; description?: string };
+  transaction?: {
+    accountId?: string;
+    cardId?: string;
+    invoiceId?: string;
+    categoryId?: string;
+    description?: string;
+  };
   category?: { id: string };
   editable: boolean;
   editBlockedReason?: string;
