@@ -83,10 +83,11 @@ async function main(): Promise<void> {
 
   assert.equal(update.futurePendingUpdate?.updatedCount, 1);
   assert.equal(update.futurePendingUpdate?.skippedCount, 3);
-  assert.deepEqual(
-    update.futurePendingUpdate?.skipped.map((item) => item.reason).sort(),
-    ["invoice_locked", "invoice_locked", "transaction_missing"],
-  );
+  assert.deepEqual(update.futurePendingUpdate?.skipped.map((item) => item.reason).sort(), [
+    "invoice_locked",
+    "invoice_locked",
+    "transaction_missing",
+  ]);
 
   const refreshed = await readOccurrences(recurrence.id);
   const refreshedEligible = requireSequence(refreshed, 1);
@@ -97,20 +98,14 @@ async function main(): Promise<void> {
   assert.equal(refreshedEligible.installmentAmountMinor, 3_333);
   assert.equal(refreshedEligible.installmentCardInstrumentId, virtualInstrument.id);
   assert.equal(refreshedEligible.transactionAmountMinor, 3_333);
-  assert.equal(
-    refreshedEligible.transactionDescription,
-    `Recorrencia atualizada ${suffix}`,
-  );
+  assert.equal(refreshedEligible.transactionDescription, `Recorrencia atualizada ${suffix}`);
   assert.equal(refreshedEligible.transactionCardInstrumentId, virtualInstrument.id);
 
   assertOccurrencePreserved(refreshedPaid, physicalInstrument.id);
   assertOccurrencePreserved(refreshedCancelled, physicalInstrument.id);
   assert.equal(refreshedMissingTransaction.transactionId, null);
   assert.equal(refreshedMissingTransaction.installmentAmountMinor, 1_111);
-  assert.equal(
-    refreshedMissingTransaction.installmentCardInstrumentId,
-    physicalInstrument.id,
-  );
+  assert.equal(refreshedMissingTransaction.installmentCardInstrumentId, physicalInstrument.id);
 }
 
 async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
@@ -135,10 +130,7 @@ async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
   );
 }
 
-async function markInvoiceStatus(
-  invoiceId: string | null,
-  status: string,
-): Promise<void> {
+async function markInvoiceStatus(invoiceId: string | null, status: string): Promise<void> {
   assert.notEqual(invoiceId, null);
 
   await query(`update "Invoice" set "status" = $1 where "id" = $2`, [status, invoiceId]);
@@ -163,13 +155,8 @@ function requireInstrument(
   return instrument;
 }
 
-function requireSequence(
-  occurrences: OccurrenceRow[],
-  sequenceNumber: number,
-): OccurrenceRow {
-  const occurrence = occurrences.find(
-    (candidate) => candidate.sequenceNumber === sequenceNumber,
-  );
+function requireSequence(occurrences: OccurrenceRow[], sequenceNumber: number): OccurrenceRow {
+  const occurrence = occurrences.find((candidate) => candidate.sequenceNumber === sequenceNumber);
 
   if (occurrence === undefined) {
     throw new Error(`Expected occurrence sequence ${sequenceNumber}.`);
@@ -178,10 +165,7 @@ function requireSequence(
   return occurrence;
 }
 
-function assertOccurrencePreserved(
-  occurrence: OccurrenceRow,
-  cardInstrumentId: string,
-): void {
+function assertOccurrencePreserved(occurrence: OccurrenceRow, cardInstrumentId: string): void {
   assert.equal(occurrence.installmentAmountMinor, 1_111);
   assert.equal(occurrence.installmentCardInstrumentId, cardInstrumentId);
   assert.equal(occurrence.transactionAmountMinor, 1_111);
