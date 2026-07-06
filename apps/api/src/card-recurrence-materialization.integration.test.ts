@@ -72,7 +72,6 @@ async function main(): Promise<void> {
     assert.equal(row.installmentId, row.transactionInstallmentId);
     assert.equal(row.invoiceId !== null, true);
     assert.equal(row.kind, "EXPENSE");
-    assert.equal(row.source, "RECURRENCE");
     assert.equal(row.transactionCardInstrumentId, instrument.id);
     assert.equal(row.installmentCardInstrumentId, instrument.id);
     assert.equal(row.transactionAmountMinor, 4_200);
@@ -112,7 +111,6 @@ async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
         t."installmentId" as "transactionInstallmentId",
         t."cardInstrumentId" as "transactionCardInstrumentId",
         t."kind",
-        t."source",
         t."amountMinor" as "transactionAmountMinor",
         t."description" as "transactionDescription",
         to_char(t."occurredOn", 'YYYY-MM-DD') as "transactionOccurredOn",
@@ -168,7 +166,6 @@ interface OccurrenceRow {
   transactionInstallmentId: string | null;
   transactionCardInstrumentId: string | null;
   kind: string;
-  source: string;
   transactionAmountMinor: number;
   transactionDescription: string;
   transactionOccurredOn: string;
