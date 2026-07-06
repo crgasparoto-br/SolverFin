@@ -11,6 +11,7 @@ export interface RecurrenceRecord {
   description: string;
   accountId?: string;
   cardId?: string;
+  cardInstrumentId?: string;
   categoryId?: string;
 }
 
@@ -75,6 +76,11 @@ export function renderRecurrenceEditModal(
           <label>Início<input name="startOn" type="date" required /></label>
           <label>Fim opcional<input name="endOn" type="date" /></label>
           <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
+          ${
+            targetKind === "card"
+              ? `<label class="full">Aplicar alteração<select name="editScope"><option value="recurrence_only">Somente novas ocorrências</option><option value="recurrence_and_future_pending">Novas ocorrências e futuras pendentes</option></select></label>`
+              : ""
+          }
           <button type="submit" class="full">Salvar recorrência</button>
         </form>
         <form data-recurrence-installments-form>
@@ -121,6 +127,15 @@ export function recurrencesSectionScript(): string {
         async function readMessage(response) {
           const body = await response.json().catch(() => ({}));
           return response.ok ? "Ação concluída. Atualizando..." : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
+        }
+
+        function buildRecurrenceUpdateMessage(body) {
+          const summary = body && body.futurePendingUpdate;
+          if (!summary) return "Recorrência salva. Atualizando...";
+          const updated = Number(summary.updatedCount || 0);
+          const skipped = Number(summary.skippedCount || 0);
+          if (skipped > 0) return "Recorrência salva. " + updated + " futuras pendentes atualizadas; " + skipped + " preservadas por estarem bloqueadas. Atualizando...";
+          return "Recorrência salva. " + updated + " futuras pendentes atualizadas. Atualizando...";
         }
 
         function addMonths(dateValue, months) {
@@ -296,6 +311,7 @@ export function recurrencesSectionScript(): string {
             editForm.endOn.value = recurrence.endOn || "";
             if (editForm.kind) editForm.kind.value = recurrence.kind;
             if (editForm.categoryId) editForm.categoryId.value = recurrence.categoryId || "";
+            if (editForm.editScope) editForm.editScope.value = "recurrence_only";
             installmentsForm.id.value = recurrence.id;
             modalStatus.textContent = "";
             modal.showModal();
@@ -319,9 +335,12 @@ export function recurrencesSectionScript(): string {
           if (categoryId) payload.categoryId = categoryId;
           const kind = String(data.get("kind") || "");
           if (kind) payload.kind = kind;
+          const editScope = String(data.get("editScope") || "");
+          if (editScope) payload.editScope = editScope;
           modalStatus.textContent = "Salvando...";
           const response = await send("/api/recurrences/" + id, "PATCH", payload);
-          modalStatus.textContent = await readMessage(response);
+          const body = await response.json().catch(() => ({}));
+          modalStatus.textContent = response.ok ? buildRecurrenceUpdateMessage(body) : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
           if (response.ok) window.setTimeout(() => window.location.reload(), 450);
         });
 
