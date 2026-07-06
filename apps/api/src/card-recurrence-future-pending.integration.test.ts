@@ -117,6 +117,55 @@ async function main(): Promise<void> {
     refreshedMissingTransaction.installmentCardInstrumentId,
     missingTransactionOccurrence.installmentCardInstrumentId,
   );
+
+  await assertRecurrenceOnlyScopePreservesMaterializedOccurrences(
+    account.id,
+    physicalInstrument,
+    virtualInstrument,
+    suffix,
+  );
+}
+
+async function assertRecurrenceOnlyScopePreservesMaterializedOccurrences(
+  accountId: string,
+  physicalInstrument: ApiCardInstrument,
+  virtualInstrument: ApiCardInstrument,
+  suffix: string,
+): Promise<void> {
+  const recurrence = await createRecurrenceForContext(CONTEXT, {
+    frequency: "monthly",
+    startOn: "2028-04-08",
+    amountMinor: 4_444,
+    description: `Recorrencia somente cadastro ${suffix}`,
+    cardId: accountId,
+    cardInstrumentId: physicalInstrument.id,
+  });
+
+  await generateInstallmentsForContext(CONTEXT, recurrence.id, "2028-06-08", 3);
+
+  const occurrences = await readOccurrences(recurrence.id);
+  assert.equal(occurrences.length, 3);
+
+  const update = await updateRecurrenceForContext(CONTEXT, recurrence.id, {
+    editScope: "recurrence_only",
+    startOn: "2028-04-15",
+    amountMinor: 5_555,
+    description: `Recorrencia somente cadastro atualizada ${suffix}`,
+    cardInstrumentId: virtualInstrument.id,
+  });
+
+  assert.equal(update.futurePendingUpdate, undefined);
+  assert.equal(update.recurrence.startOn, "2028-04-15");
+  assert.equal(update.recurrence.amountMinor, 5_555);
+  assert.equal(update.recurrence.description, `Recorrencia somente cadastro atualizada ${suffix}`);
+  assert.equal(update.recurrence.cardInstrumentId, virtualInstrument.id);
+
+  const refreshed = await readOccurrences(recurrence.id);
+  assert.equal(refreshed.length, 3);
+
+  for (const occurrence of occurrences) {
+    assertOccurrencePreserved(requireSequence(refreshed, occurrence.sequenceNumber), occurrence);
+  }
 }
 
 async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
@@ -124,12 +173,16 @@ async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
     `select
         i."id" as "installmentId",
         i."sequenceNumber",
+        to_char(i."dueOn", 'YYYY-MM-DD') as "installmentDueOn",
         i."amountMinor" as "installmentAmountMinor",
         i."cardInstrumentId" as "installmentCardInstrumentId",
         t."id" as "transactionId",
         t."amountMinor" as "transactionAmountMinor",
         t."description" as "transactionDescription",
+        t."categoryId" as "transactionCategoryId",
         t."cardInstrumentId" as "transactionCardInstrumentId",
+        to_char(t."occurredOn", 'YYYY-MM-DD') as "transactionOccurredOn",
+        to_char(t."plannedOn", 'YYYY-MM-DD') as "transactionPlannedOn",
         inv."id" as "invoiceId",
         inv."status" as "invoiceStatus"
        from "Installment" i
@@ -177,12 +230,16 @@ function requireSequence(occurrences: OccurrenceRow[], sequenceNumber: number): 
 }
 
 function assertOccurrencePreserved(occurrence: OccurrenceRow, original: OccurrenceRow): void {
+  assert.equal(occurrence.installmentDueOn, original.installmentDueOn);
   assert.equal(occurrence.installmentAmountMinor, original.installmentAmountMinor);
   assert.equal(occurrence.installmentCardInstrumentId, original.installmentCardInstrumentId);
   assert.equal(occurrence.transactionId, original.transactionId);
   assert.equal(occurrence.transactionAmountMinor, original.transactionAmountMinor);
   assert.equal(occurrence.transactionDescription, original.transactionDescription);
+  assert.equal(occurrence.transactionCategoryId, original.transactionCategoryId);
   assert.equal(occurrence.transactionCardInstrumentId, original.transactionCardInstrumentId);
+  assert.equal(occurrence.transactionOccurredOn, original.transactionOccurredOn);
+  assert.equal(occurrence.transactionPlannedOn, original.transactionPlannedOn);
 }
 
 function assertIntegrationDatabaseConfigured(): void {
@@ -200,12 +257,16 @@ interface ApiCardInstrument {
 interface OccurrenceRow {
   installmentId: string;
   sequenceNumber: number;
+  installmentDueOn: string;
   installmentAmountMinor: number;
   installmentCardInstrumentId: string | null;
   transactionId: string | null;
   transactionAmountMinor: number | null;
   transactionDescription: string | null;
+  transactionCategoryId: string | null;
   transactionCardInstrumentId: string | null;
+  transactionOccurredOn: string | null;
+  transactionPlannedOn: string | null;
   invoiceId: string | null;
   invoiceStatus: string | null;
 }
