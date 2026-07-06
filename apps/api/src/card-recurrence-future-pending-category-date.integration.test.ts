@@ -95,7 +95,10 @@ async function main(): Promise<void> {
   assert.equal(occurrence.transactionOccurredOn, "2027-11-10");
   assert.equal(occurrence.transactionPlannedOn, "2027-11-10");
   assert.equal(occurrence.transactionAmountMinor, 3_333);
-  assert.equal(occurrence.transactionDescription, `Recorrencia categoria data atualizada ${suffix}`);
+  assert.equal(
+    occurrence.transactionDescription,
+    `Recorrencia categoria data atualizada ${suffix}`,
+  );
   assert.equal(occurrence.transactionCategoryId, updatedCategory.id);
 }
 
@@ -132,8 +135,8 @@ async function createExpenseCategory(name: string): Promise<ApiCategory> {
 
   await query(
     `insert into "Category"
-       ("id", "organizationId", "financialProfileId", "name", "kind", "status", "createdByUserId", "updatedByUserId")
-     values ($1, $2, $3, $4, 'EXPENSE', 'ACTIVE', $5, $5)`,
+       ("id", "organizationId", "financialProfileId", "name", "kind", "status", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+     values ($1, $2, $3, $4, 'EXPENSE', 'ACTIVE', now(), now(), $5, $5)`,
     [category.id, CONTEXT.organizationId, CONTEXT.financialProfileId, category.name, CONTEXT.userId],
   );
 
