@@ -123,6 +123,11 @@ const responses: Record<string, unknown> = {
   "/api/recurrences": { recurrences: [recurrence] },
 };
 
+const purchaseRowMarker = '<article class="purchase-row" data-purchase-item';
+const installmentRowMarker = '<article class="installment-row" data-installment-item';
+const recurringPurchasePattern =
+  /<article class="purchase-row" data-purchase-item[\s\S]*class="recurrence-indicator"/;
+
 await cardsPageRendersRecurringPurchaseOnce();
 
 async function cardsPageRendersRecurringPurchaseOnce(): Promise<void> {
@@ -149,18 +154,9 @@ async function cardsPageRendersRecurringPurchaseOnce(): Promise<void> {
     );
 
     assert.doesNotMatch(html, /Erro ao carregar dados/);
-    assert.equal(
-      countOccurrences(html, '<article class="purchase-row" data-purchase-item'),
-      1,
-    );
-    assert.equal(
-      countOccurrences(html, '<article class="installment-row" data-installment-item'),
-      1,
-    );
-    assert.match(
-      html,
-      /<article class="purchase-row" data-purchase-item[\s\S]*class="recurrence-indicator"/,
-    );
+    assert.equal(countOccurrences(html, purchaseRowMarker), 1);
+    assert.equal(countOccurrences(html, installmentRowMarker), 1);
+    assert.match(html, recurringPurchasePattern);
     assert.match(html, /data-recurrence-edit="recurrence-1"/);
     assert.match(html, /Histórico da fatura/);
     assert.ok(
