@@ -61,17 +61,19 @@ async function main(): Promise<void> {
     cardInstrumentId: physicalInstrument.id,
   });
 
-  await generateInstallmentsForContext(CONTEXT, recurrence.id, "2028-02-05", 4);
+  await generateInstallmentsForContext(CONTEXT, recurrence.id, "2028-03-05", 5);
 
   const occurrences = await readOccurrences(recurrence.id);
-  assert.equal(occurrences.length, 4);
+  assert.equal(occurrences.length, 5);
 
   const paidOccurrence = requireSequence(occurrences, 2);
   const cancelledOccurrence = requireSequence(occurrences, 3);
-  const missingTransactionOccurrence = requireSequence(occurrences, 4);
+  const closedOccurrence = requireSequence(occurrences, 4);
+  const missingTransactionOccurrence = requireSequence(occurrences, 5);
 
   await markInvoiceStatus(paidOccurrence.invoiceId, "PAID");
   await markInvoiceStatus(cancelledOccurrence.invoiceId, "CANCELLED");
+  await markInvoiceStatus(closedOccurrence.invoiceId, "CLOSED");
   await deleteTransaction(missingTransactionOccurrence.transactionId);
 
   const update = await updateRecurrenceForContext(CONTEXT, recurrence.id, {
@@ -82,8 +84,9 @@ async function main(): Promise<void> {
   });
 
   assert.equal(update.futurePendingUpdate?.updatedCount, 1);
-  assert.equal(update.futurePendingUpdate?.skippedCount, 3);
+  assert.equal(update.futurePendingUpdate?.skippedCount, 4);
   assert.deepEqual(update.futurePendingUpdate?.skipped.map((item) => item.reason).sort(), [
+    "invoice_locked",
     "invoice_locked",
     "invoice_locked",
     "transaction_missing",
@@ -93,7 +96,8 @@ async function main(): Promise<void> {
   const refreshedEligible = requireSequence(refreshed, 1);
   const refreshedPaid = requireSequence(refreshed, 2);
   const refreshedCancelled = requireSequence(refreshed, 3);
-  const refreshedMissingTransaction = requireSequence(refreshed, 4);
+  const refreshedClosed = requireSequence(refreshed, 4);
+  const refreshedMissingTransaction = requireSequence(refreshed, 5);
 
   assert.equal(refreshedEligible.installmentAmountMinor, 3_333);
   assert.equal(refreshedEligible.installmentCardInstrumentId, virtualInstrument.id);
@@ -103,6 +107,7 @@ async function main(): Promise<void> {
 
   assertOccurrencePreserved(refreshedPaid, paidOccurrence);
   assertOccurrencePreserved(refreshedCancelled, cancelledOccurrence);
+  assertOccurrencePreserved(refreshedClosed, closedOccurrence);
   assert.equal(refreshedMissingTransaction.transactionId, null);
   assert.equal(
     refreshedMissingTransaction.installmentAmountMinor,
