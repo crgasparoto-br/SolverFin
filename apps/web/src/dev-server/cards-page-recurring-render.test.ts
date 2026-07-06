@@ -2,53 +2,6 @@ import assert from "node:assert/strict";
 
 import { renderCardsPage } from "./cards-page.js";
 
-const originalFetch = globalThis.fetch;
-const requestedPaths: string[] = [];
-
-globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
-  const url = new URL(String(input));
-  const path = `${url.pathname}${url.search}`;
-  const body = responses[url.pathname];
-  requestedPaths.push(path);
-
-  if (body === undefined) {
-    throw new Error(`Unexpected API path: ${path}`);
-  }
-
-  return jsonResponse(body);
-};
-
-try {
-  const html = await renderCardsPage(
-    "token",
-    new URL("http://localhost/cartoes?cardId=card-1&invoiceId=invoice-1"),
-  );
-
-  assert.equal(countOccurrences(html, "data-purchase-item"), 1);
-  assert.equal(countOccurrences(html, "data-installment-item"), 1);
-  assert.equal(countOccurrences(html, "recurrence-indicator"), 1);
-  assert.match(html, /data-recurrence-edit="recurrence-1"/);
-  assert.match(html, /Histórico da fatura/);
-  assert.ok(
-    requestedPaths.includes(
-      "/api/installments?cardId=card-1&status=all&dueFrom=2028-01-01&dueTo=2028-01-31",
-    ),
-  );
-} finally {
-  globalThis.fetch = originalFetch;
-}
-
-function countOccurrences(value: string, search: string): number {
-  return value.split(search).length - 1;
-}
-
-function jsonResponse(body: unknown): Response {
-  return new Response(JSON.stringify(body), {
-    headers: { "content-type": "application/json; charset=utf-8" },
-    status: 200,
-  });
-}
-
 const category = { id: "cat-streaming", kind: "expense", name: "Streaming", status: "active" };
 const cardInstrument = {
   holder: "primary",
@@ -169,3 +122,61 @@ const responses: Record<string, unknown> = {
   "/api/invoices/invoice-1/summary": { summary: invoiceSummary },
   "/api/recurrences": { recurrences: [recurrence] },
 };
+
+await cardsPageRendersRecurringPurchaseOnce();
+
+async function cardsPageRendersRecurringPurchaseOnce(): Promise<void> {
+  const originalFetch = globalThis.fetch;
+  const requestedPaths: string[] = [];
+
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = resolveFetchUrl(input);
+    const path = `${url.pathname}${url.search}`;
+    const body = responses[url.pathname];
+    requestedPaths.push(path);
+
+    if (body === undefined) {
+      throw new Error(`Unexpected API path: ${path}`);
+    }
+
+    return jsonResponse(body);
+  };
+
+  try {
+    const html = await renderCardsPage(
+      "token",
+      new URL("http://localhost/cartoes?cardId=card-1&invoiceId=invoice-1"),
+    );
+
+    assert.doesNotMatch(html, /Erro ao carregar dados/);
+    assert.equal(countOccurrences(html, "data-purchase-item"), 1);
+    assert.equal(countOccurrences(html, "data-installment-item"), 1);
+    assert.equal(countOccurrences(html, "recurrence-indicator"), 1);
+    assert.match(html, /data-recurrence-edit="recurrence-1"/);
+    assert.match(html, /Histórico da fatura/);
+    assert.ok(
+      requestedPaths.includes(
+        "/api/installments?cardId=card-1&status=all&dueFrom=2028-01-01&dueTo=2028-01-31",
+      ),
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
+function resolveFetchUrl(input: string | URL | Request): URL {
+  if (typeof input === "string") return new URL(input);
+  if (input instanceof URL) return input;
+  return new URL(input.url);
+}
+
+function countOccurrences(value: string, search: string): number {
+  return value.split(search).length - 1;
+}
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    headers: { "content-type": "application/json; charset=utf-8" },
+    status: 200,
+  });
+}
