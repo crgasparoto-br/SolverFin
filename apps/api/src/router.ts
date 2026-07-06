@@ -537,27 +537,23 @@ async function updateRecurrenceHandler(
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
   const editScope = body.editScope;
-  const result = await updateRecurrenceForContext(
-    context,
-    requireParam(match, "recurrenceId"),
-    {
-      ...(body.frequency !== undefined ? { frequency: body.frequency as RecurrenceFrequency } : {}),
-      ...(body.interval !== undefined ? { interval: Number(body.interval) } : {}),
-      ...(body.startOn !== undefined ? { startOn: String(body.startOn) } : {}),
-      ...(body.endOn !== undefined ? { endOn: String(body.endOn) } : {}),
-      ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
-      ...(body.description !== undefined ? { description: String(body.description) } : {}),
-      ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
-      ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
-      ...(body.cardId !== undefined ? { cardId: String(body.cardId) } : {}),
-      ...(body.cardInstrumentId !== undefined
-        ? { cardInstrumentId: String(body.cardInstrumentId) }
-        : {}),
-      ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-      ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-      ...(editScope !== undefined ? { editScope: String(editScope) } : {}),
-    },
-  );
+  const result = await updateRecurrenceForContext(context, requireParam(match, "recurrenceId"), {
+    ...(body.frequency !== undefined ? { frequency: body.frequency as RecurrenceFrequency } : {}),
+    ...(body.interval !== undefined ? { interval: Number(body.interval) } : {}),
+    ...(body.startOn !== undefined ? { startOn: String(body.startOn) } : {}),
+    ...(body.endOn !== undefined ? { endOn: String(body.endOn) } : {}),
+    ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
+    ...(body.description !== undefined ? { description: String(body.description) } : {}),
+    ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
+    ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+    ...(body.cardId !== undefined ? { cardId: String(body.cardId) } : {}),
+    ...(body.cardInstrumentId !== undefined
+      ? { cardInstrumentId: String(body.cardInstrumentId) }
+      : {}),
+    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+    ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+    ...(editScope !== undefined ? { editScope: String(editScope) } : {}),
+  });
 
   return json(200, result);
 }
