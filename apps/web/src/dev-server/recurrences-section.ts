@@ -53,6 +53,7 @@ export function renderRecurrenceIndicator(): string {
 export function renderRecurrenceEditModal(
   categories: RecurrenceSectionCategory[],
   targetKind: RecurrenceSectionTargetKind,
+  cardInstrumentOptions = "",
 ): string {
   return `
     <dialog data-recurrence-modal>
@@ -78,7 +79,7 @@ export function renderRecurrenceEditModal(
           <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
           ${
             targetKind === "card"
-              ? `<label class="full">Aplicar alteração<select name="editScope"><option value="recurrence_only">Somente novas ocorrências</option><option value="recurrence_and_future_pending">Novas ocorrências e futuras pendentes</option></select></label>`
+              ? `<label>Instrumento<select name="cardInstrumentId">${cardInstrumentOptions}</select></label><label class="full">Aplicar alteração<select name="editScope"><option value="recurrence_only">Somente novas ocorrências</option><option value="recurrence_and_future_pending">Novas ocorrências e futuras pendentes</option></select></label>`
               : ""
           }
           <button type="submit" class="full">Salvar recorrência</button>
@@ -368,10 +369,19 @@ export function recurrencesSectionScript(): string {
         const editForm = modal && modal.querySelector("[data-recurrence-edit-form]");
         const installmentsForm = modal && modal.querySelector("[data-recurrence-installments-form]");
 
+        function syncRecurrenceCardInstrumentOptions() {
+          const recurrenceInstrumentSelect = editForm && editForm.querySelector('[name="cardInstrumentId"]');
+          if (!recurrenceInstrumentSelect || recurrenceInstrumentSelect.options.length > 0) return;
+          const purchaseInstrumentSelect = document.querySelector('[data-purchase-form] [name="cardInstrumentId"]');
+          if (!purchaseInstrumentSelect) return;
+          recurrenceInstrumentSelect.innerHTML = purchaseInstrumentSelect.innerHTML;
+        }
+
         document.querySelectorAll("[data-recurrence-edit]").forEach((button) => {
           button.addEventListener("click", () => {
             const json = document.querySelector('[data-recurrence="' + button.dataset.recurrenceEdit + '"]');
             const recurrence = JSON.parse(json.textContent);
+            syncRecurrenceCardInstrumentOptions();
             editForm.id.value = recurrence.id;
             editForm.description.value = recurrence.description;
             editForm.interval.value = recurrence.interval || 1;
@@ -381,6 +391,7 @@ export function recurrencesSectionScript(): string {
             editForm.endOn.value = recurrence.endOn || "";
             if (editForm.kind) editForm.kind.value = recurrence.kind;
             if (editForm.categoryId) editForm.categoryId.value = recurrence.categoryId || "";
+            if (editForm.cardInstrumentId) editForm.cardInstrumentId.value = recurrence.cardInstrumentId || "";
             if (editForm.editScope) editForm.editScope.value = "recurrence_only";
             installmentsForm.id.value = recurrence.id;
             modalStatus.textContent = "";
@@ -403,6 +414,8 @@ export function recurrencesSectionScript(): string {
           if (endOn) payload.endOn = endOn;
           const categoryId = String(data.get("categoryId") || "");
           if (categoryId) payload.categoryId = categoryId;
+          const cardInstrumentId = String(data.get("cardInstrumentId") || "");
+          if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
           const kind = String(data.get("kind") || "");
           if (kind) payload.kind = kind;
           const editScope = String(data.get("editScope") || "");
