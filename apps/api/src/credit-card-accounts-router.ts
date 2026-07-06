@@ -11,6 +11,7 @@ import {
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
 import {
   archiveCardInstrumentForContext,
   archiveCreditCardAccountForContext,
@@ -55,6 +56,7 @@ route("GET", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, listCardInstrumentsHan
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, createCardInstrumentHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCardInstrumentHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
+route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, updateCardPurchaseHandler);
 route("PATCH", `${INSTRUMENTS_BASE_PATH}/:instrumentId`, updateCardInstrumentHandler);
 route("POST", `${INSTRUMENTS_BASE_PATH}/:instrumentId/archive`, archiveCardInstrumentHandler);
 
@@ -308,6 +310,32 @@ async function registerCardPurchaseHandler(
   );
 
   return json(201, result);
+}
+
+async function updateCardPurchaseHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const result = await updateCardPurchaseForContext(
+    context,
+    requireParam(match, "cardId"),
+    requireParam(match, "transactionId"),
+    {
+      ...(body.invoiceId !== undefined ? { invoiceId: String(body.invoiceId) } : {}),
+      ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
+      ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
+      ...(body.description !== undefined ? { description: String(body.description) } : {}),
+      ...(body.categoryId !== undefined ? { categoryId: readOptionalString(body.categoryId) } : {}),
+      ...(body.cardInstrumentId !== undefined
+        ? { cardInstrumentId: String(body.cardInstrumentId) }
+        : {}),
+      ...(body.status !== undefined ? { status: String(body.status) } : {}),
+    },
+  );
+
+  return json(200, result);
 }
 
 async function updateCardInstrumentHandler(

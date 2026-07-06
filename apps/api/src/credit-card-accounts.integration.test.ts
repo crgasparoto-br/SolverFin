@@ -25,6 +25,7 @@ async function main(): Promise<void> {
   await runRejectsInstrumentLimitsAboveAccountLimit(token);
   await runRegistersPurchaseWithDefaultInstrument(token);
   await runRejectsPurchaseWithArchivedInstrument(token);
+  await runUpdatesCardPurchaseWithoutAccountId(token);
   await runPreservesRecurrenceInstrumentAfterDefaultChange(token);
   await runCreditCardAccountInstrumentLifecycle(token);
 }
@@ -166,6 +167,90 @@ async function runRejectsPurchaseWithArchivedInstrument(token: string): Promise<
 
   assert.equal(purchaseResponse.statusCode, 400);
   assert.equal(readErrorCode(purchaseResponse), "CARD_INSTRUMENT_NOT_ACTIVE");
+}
+
+async function runUpdatesCardPurchaseWithoutAccountId(token: string): Promise<void> {
+  const suffix = Date.now().toString(36);
+  const createResponse = await apiRequest(token, "POST", "/api/credit-card-accounts", {
+    name: `Cartao edicao compra ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    creditLimitMinor: 80_000,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico compra",
+        maskedIdentifier: "**** 1212",
+      },
+      {
+        type: "virtual",
+        holder: "primary",
+        name: "Virtual compra",
+        maskedIdentifier: "**** 3434",
+      },
+    ],
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const account = readCreditCardAccount(createResponse);
+  const physicalInstrument = requireInstrument(account, "physical");
+  const virtualInstrument = requireInstrument(account, "virtual");
+
+  const purchaseResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/credit-card-accounts/${account.id}/purchases`,
+    {
+      occurredOn: "2026-06-17",
+      amountMinor: 2_000,
+      description: `Compra editavel ${suffix}`,
+      cardInstrumentId: physicalInstrument.id,
+    },
+  );
+  assert.equal(purchaseResponse.statusCode, 201);
+  const purchase = readPurchase(purchaseResponse);
+
+  assert.equal(purchase.transaction.cardId, account.id);
+  assert.equal(purchase.transaction.cardInstrumentId, physicalInstrument.id);
+  assert.notEqual(purchase.transaction.invoiceId, undefined);
+
+  const updateResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/credit-card-accounts/${account.id}/purchases/${purchase.transaction.id}`,
+    {
+      invoiceId: purchase.transaction.invoiceId,
+      occurredOn: "2026-06-18",
+      amountMinor: 3_456,
+      description: `Compra editada ${suffix}`,
+      cardInstrumentId: virtualInstrument.id,
+    },
+  );
+  assert.equal(updateResponse.statusCode, 200);
+  const update = readUpdatedPurchase(updateResponse);
+
+  assert.equal(update.transaction.id, purchase.transaction.id);
+  assert.equal(update.transaction.cardId, account.id);
+  assert.equal(update.transaction.invoiceId, purchase.transaction.invoiceId);
+  assert.equal(update.transaction.cardInstrumentId, virtualInstrument.id);
+  assert.equal(update.transaction.amountMinor, 3_456);
+  assert.equal(update.transaction.occurredOn, "2026-06-18");
+  assert.equal(update.transaction.description, `Compra editada ${suffix}`);
+  assert.equal(update.invoice.invoiceId, purchase.transaction.invoiceId);
+  assert.equal(update.invoice.totalExpensesMinor, 3_456);
+
+  const outsidePeriodResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/credit-card-accounts/${account.id}/purchases/${purchase.transaction.id}`,
+    {
+      invoiceId: purchase.transaction.invoiceId,
+      occurredOn: "2026-06-21",
+    },
+  );
+
+  assert.equal(outsidePeriodResponse.statusCode, 409);
+  assert.equal(readErrorCode(outsidePeriodResponse), "CARD_PURCHASE_DATE_OUT_OF_INVOICE_PERIOD");
 }
 
 async function runPreservesRecurrenceInstrumentAfterDefaultChange(token: string): Promise<void> {
@@ -437,6 +522,13 @@ function readPurchase(response: Pick<ApiResponse, "body">): {
   return readBody<{ transaction: ApiTransaction; invoice: ApiInvoice }>(response);
 }
 
+function readUpdatedPurchase(response: Pick<ApiResponse, "body">): {
+  transaction: ApiTransaction;
+  invoice: ApiInvoiceSummary;
+} {
+  return readBody<{ transaction: ApiTransaction; invoice: ApiInvoiceSummary }>(response);
+}
+
 function readRecurrence(response: Pick<ApiResponse, "body">): ApiRecurrence {
   return readBody<{ recurrence: ApiRecurrence }>(response).recurrence;
 }
@@ -497,6 +589,8 @@ interface ApiTransaction {
   cardId?: string;
   cardInstrumentId?: string;
   invoiceId?: string;
+  occurredOn?: string;
+  description?: string;
 }
 
 interface ApiInvoice {
@@ -505,4 +599,12 @@ interface ApiInvoice {
   cardId: string;
   status: string;
   totalAmountMinor: number;
+}
+
+interface ApiInvoiceSummary {
+  invoiceId: string;
+  financialProfileId: string;
+  cardId: string;
+  status: string;
+  totalExpensesMinor: number;
 }

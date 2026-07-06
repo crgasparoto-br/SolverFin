@@ -18,15 +18,33 @@ export interface CardPurchaseContract {
   id: EntityId;
   financialProfileId: EntityId;
   cardId: EntityId;
+  cardInstrumentId?: EntityId;
   invoiceId?: EntityId;
   categoryId?: EntityId;
   recurrenceId?: EntityId;
+  installmentId?: EntityId;
   occurredOn: string;
+  plannedOn: string;
   description: string;
   amountMinor: number;
   currency: string;
   status: string;
   reconciledAt?: string;
+}
+
+export interface UpdateCardPurchasePayload {
+  invoiceId?: EntityId;
+  amountMinor?: number;
+  occurredOn?: string;
+  description?: string;
+  categoryId?: EntityId | null;
+  cardInstrumentId?: EntityId;
+  status?: string;
+}
+
+export interface UpdateCardPurchaseResult {
+  transaction: CardPurchaseContract;
+  invoice: InvoiceSummaryContract;
 }
 
 export interface InvoiceSummaryContract {
@@ -87,17 +105,22 @@ interface CardContractRow {
 
 interface CardPurchaseRow {
   id: string;
+  organizationId: string;
   financialProfileId: string;
   cardId: string;
+  cardInstrumentId: string | null;
   invoiceId: string | null;
   categoryId: string | null;
   recurrenceId: string | null;
+  installmentId: string | null;
   occurredOn: Date;
+  plannedOn: Date;
   description: string;
   amountMinor: number;
   currency: string;
   status: string;
   reconciledAt: Date | null;
+  updatedAt: Date;
 }
 
 interface PurchaseTotalsRow {
@@ -232,8 +255,9 @@ export async function listCardPurchasesForContext(
   }
 
   const rows = await query<CardPurchaseRow>(
-    `select "id", "financialProfileId", "cardId", "invoiceId", "categoryId", "recurrenceId", "occurredOn",
-            "description", "amountMinor", "currency", "status", "reconciledAt"
+    `select "id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId",
+            "categoryId", "recurrenceId", "installmentId", "occurredOn", "plannedOn", "description",
+            "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where ${where.join(" and ")}
        order by "occurredOn" desc, "createdAt" desc`,
@@ -241,6 +265,150 @@ export async function listCardPurchasesForContext(
   );
 
   return rows.map(mapPurchaseRow);
+}
+
+export async function updateCardPurchaseForContext(
+  context: TenantContext,
+  cardId: EntityId,
+  transactionId: EntityId,
+  payload: UpdateCardPurchasePayload,
+): Promise<UpdateCardPurchaseResult> {
+  const current = await findCardPurchase(context, cardId, transactionId);
+  const invoice = current.invoiceId ? await findInvoice(context, current.invoiceId) : undefined;
+
+  if (!invoice || invoice.cardId !== cardId || current.invoiceId === null) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_INVOICE_INVALID",
+      "Compra nao pertence a fatura informada.",
+      409,
+    );
+  }
+
+  if (payload.invoiceId !== undefined && payload.invoiceId !== invoice.id) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_INVOICE_INVALID",
+      "Compra nao pertence a fatura informada.",
+      409,
+    );
+  }
+
+  const occurredOn = payload.occurredOn ?? toDateOnly(current.occurredOn);
+
+  if (!isIsoDate(occurredOn)) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_DATE_INVALID",
+      "Informe uma data valida para a compra.",
+    );
+  }
+
+  const periodStartOn = toDateOnly(invoice.periodStartOn);
+  const periodEndOn = toDateOnly(invoice.periodEndOn);
+
+  if (occurredOn < periodStartOn || occurredOn > periodEndOn) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_DATE_OUT_OF_INVOICE_PERIOD",
+      "A data da compra precisa permanecer dentro do periodo da fatura atual.",
+      409,
+    );
+  }
+
+  const nextAmountMinor =
+    payload.amountMinor !== undefined
+      ? validatePositiveAmount(payload.amountMinor)
+      : current.amountMinor;
+  const nextDescription =
+    payload.description !== undefined
+      ? normalizeDescription(payload.description)
+      : current.description;
+  const nextStatus =
+    payload.status !== undefined ? normalizePurchaseStatus(payload.status) : current.status;
+  const nextCategoryId =
+    payload.categoryId !== undefined ? normalizeOptionalId(payload.categoryId) : current.categoryId;
+  const nextCardInstrumentId = payload.cardInstrumentId ?? current.cardInstrumentId;
+
+  if (payload.cardInstrumentId !== undefined) {
+    await assertActiveCardInstrumentBelongsToCard(context, cardId, payload.cardInstrumentId);
+  }
+
+  const now = new Date().toISOString();
+  const amountDelta = nextAmountMinor - current.amountMinor;
+  const nextReconciledAt = resolveReconciledAt(nextStatus, current.reconciledAt, now);
+
+  await withTransaction(async (executeQuery) => {
+    await executeQuery(
+      `update "Transaction" set
+        "categoryId" = $4, "cardInstrumentId" = $5, "status" = $6, "amountMinor" = $7,
+        "occurredOn" = $8, "plannedOn" = $8, "description" = $9, "reconciledAt" = $10,
+        "updatedAt" = $11, "updatedByUserId" = $12
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [
+        current.id,
+        context.organizationId,
+        context.financialProfileId,
+        nextCategoryId,
+        nextCardInstrumentId,
+        nextStatus,
+        nextAmountMinor,
+        occurredOn,
+        nextDescription,
+        nextReconciledAt,
+        now,
+        context.userId,
+      ],
+    );
+
+    if (current.installmentId !== null) {
+      await executeQuery(
+        `update "Installment" set
+          "cardInstrumentId" = $4, "status" = $5, "dueOn" = $6, "amountMinor" = $7,
+          "currency" = $8, "updatedAt" = $9
+         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+        [
+          current.installmentId,
+          context.organizationId,
+          context.financialProfileId,
+          nextCardInstrumentId,
+          mapTransactionStatusToInstallmentStatus(nextStatus),
+          occurredOn,
+          nextAmountMinor,
+          current.currency,
+          now,
+        ],
+      );
+    }
+
+    if (amountDelta !== 0) {
+      await executeQuery(
+        `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4, "updatedAt" = $5
+         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+        [invoice.id, context.organizationId, context.financialProfileId, amountDelta, now],
+      );
+    }
+
+    await insertAuditLogEntry(executeQuery, {
+      organizationId: context.organizationId,
+      financialProfileId: context.financialProfileId,
+      occurredAt: now,
+      actorKind: "user",
+      actorId: context.userId,
+      action: "update",
+      entityKind: "transaction",
+      entityId: current.id,
+      redactedChanges: buildPurchaseAuditChanges(current, {
+        amountMinor: nextAmountMinor,
+        occurredOn,
+        description: nextDescription,
+        categoryId: nextCategoryId,
+        cardInstrumentId: nextCardInstrumentId,
+        status: nextStatus,
+      }),
+    });
+  });
+
+  return {
+    transaction: await findCardPurchase(context, cardId, transactionId).then(mapPurchaseRow),
+    invoice: await summarizeInvoiceForContext(context, invoice.id),
+  };
 }
 
 export async function closeInvoiceForContext(
@@ -314,6 +482,49 @@ async function findCard(context: TenantContext, cardId: EntityId): Promise<CardC
   return row;
 }
 
+async function findCardPurchase(
+  context: TenantContext,
+  cardId: EntityId,
+  transactionId: EntityId,
+): Promise<CardPurchaseRow> {
+  const rows = await query<CardPurchaseRow>(
+    `select "id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId",
+            "categoryId", "recurrenceId", "installmentId", "occurredOn", "plannedOn", "description",
+            "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
+       from "Transaction"
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'`,
+    [transactionId, context.organizationId, context.financialProfileId, cardId],
+  );
+  const row = rows[0];
+
+  if (!row) {
+    throw notFoundError();
+  }
+
+  return row;
+}
+
+async function assertActiveCardInstrumentBelongsToCard(
+  context: TenantContext,
+  cardId: EntityId,
+  cardInstrumentId: EntityId,
+): Promise<void> {
+  const rows = await query<{ id: string }>(
+    `select "id" from "CardInstrument"
+     where "id" = $1 and "cardId" = $2 and "organizationId" = $3 and "financialProfileId" = $4 and "status" = 'ACTIVE'
+     limit 1`,
+    [cardInstrumentId, cardId, context.organizationId, context.financialProfileId],
+  );
+
+  if (rows[0] === undefined) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_INSTRUMENT_INVALID",
+      "Instrumento da compra deve estar ativo e pertencer ao cartao.",
+    );
+  }
+}
+
 async function calculateLimitUsedForCard(
   context: TenantContext,
   cardId: EntityId,
@@ -358,16 +569,115 @@ function mapPurchaseRow(row: CardPurchaseRow): CardPurchaseContract {
     id: row.id,
     financialProfileId: row.financialProfileId,
     cardId: row.cardId,
+    ...(row.cardInstrumentId !== null ? { cardInstrumentId: row.cardInstrumentId } : {}),
     ...(row.invoiceId !== null ? { invoiceId: row.invoiceId } : {}),
     ...(row.categoryId !== null ? { categoryId: row.categoryId } : {}),
     ...(row.recurrenceId !== null ? { recurrenceId: row.recurrenceId } : {}),
+    ...(row.installmentId !== null ? { installmentId: row.installmentId } : {}),
     occurredOn: toDateOnly(row.occurredOn),
+    plannedOn: toDateOnly(row.plannedOn),
     description: row.description,
     amountMinor: row.amountMinor,
     currency: row.currency,
     status: row.status.toLowerCase(),
     ...(row.reconciledAt !== null ? { reconciledAt: row.reconciledAt.toISOString() } : {}),
   };
+}
+
+function buildPurchaseAuditChanges(
+  current: CardPurchaseRow,
+  next: {
+    amountMinor: number;
+    occurredOn: string;
+    description: string;
+    categoryId: string | null;
+    cardInstrumentId: string | null;
+    status: string;
+  },
+) {
+  return {
+    ...(current.amountMinor !== next.amountMinor ? { amountMinor: "changed" as const } : {}),
+    ...(toDateOnly(current.occurredOn) !== next.occurredOn
+      ? { occurredOn: "changed" as const }
+      : {}),
+    ...(current.description !== next.description ? { description: "changed" as const } : {}),
+    ...(current.categoryId !== next.categoryId ? { categoryId: "changed" as const } : {}),
+    ...(current.cardInstrumentId !== next.cardInstrumentId
+      ? { cardInstrumentId: "changed" as const }
+      : {}),
+    ...(current.status !== next.status ? { status: "changed" as const } : {}),
+  };
+}
+
+function validatePositiveAmount(value: number): number {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_AMOUNT_INVALID",
+      "Valor da compra deve ser maior que zero.",
+    );
+  }
+
+  return value;
+}
+
+function normalizeDescription(value: string): string {
+  const description = value.trim();
+
+  if (!description) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_DESCRIPTION_REQUIRED",
+      "Descricao da compra e obrigatoria.",
+    );
+  }
+
+  return description;
+}
+
+function normalizeOptionalId(value: string | null): string | null {
+  if (value === null) {
+    return null;
+  }
+
+  const normalized = value.trim();
+
+  return normalized ? normalized : null;
+}
+
+function normalizePurchaseStatus(status: string): string {
+  const normalized = status.trim().toUpperCase();
+
+  if (normalized === "POSTED" || normalized === "RECONCILED" || normalized === "PLANNED") {
+    return normalized;
+  }
+
+  throw new InvoiceContractError(
+    "CARD_PURCHASE_STATUS_INVALID",
+    "Status da compra de cartao invalido.",
+  );
+}
+
+function resolveReconciledAt(status: string, current: Date | null, now: string): string | null {
+  if (status === "RECONCILED") {
+    return current?.toISOString() ?? now;
+  }
+
+  return null;
+}
+
+function mapTransactionStatusToInstallmentStatus(status: string): string {
+  if (status === "RECONCILED") {
+    return "RECONCILED";
+  }
+
+  if (status === "PLANNED") {
+    return "PLANNED";
+  }
+
+  return "POSTED";
+}
+
+function isIsoDate(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
 function toDateOnly(value: Date): string {

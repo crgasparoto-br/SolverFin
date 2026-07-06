@@ -137,9 +137,13 @@ export async function createRecurrenceForContext(
 
   await persistRecurrenceMutation(result);
 
-  const generationThrough = todayIso();
-  if (result.recurrence.startOn <= generationThrough) {
-    await generateInstallmentsForContext(context, result.recurrence.id, generationThrough);
+  if (result.recurrence.startOn <= todayIso()) {
+    await generateInstallmentsForContext(
+      context,
+      result.recurrence.id,
+      result.recurrence.startOn,
+      1,
+    );
   }
 
   return result.recurrence;
