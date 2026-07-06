@@ -33,15 +33,13 @@ import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { registerCardPurchaseForContext } from "./cards.js";
 
-type RecurrenceUpdateScope = "recurrence_only" | "recurrence_and_future_pending";
-
 type CreateRecurrenceForContextPayload = CreateRecurrencePayload & {
   cardInstrumentId?: EntityId;
 };
 
 type UpdateRecurrenceForContextPayload = UpdateRecurrencePayload & {
   cardInstrumentId?: EntityId;
-  editScope?: RecurrenceUpdateScope;
+  editScope?: string;
 };
 
 export interface RecurrenceFuturePendingUpdateSkippedItem {
