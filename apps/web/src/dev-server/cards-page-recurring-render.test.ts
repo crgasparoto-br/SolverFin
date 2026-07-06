@@ -3,15 +3,19 @@ import assert from "node:assert/strict";
 import { renderCardsPage } from "./cards-page.js";
 
 const originalFetch = globalThis.fetch;
+const requestedPaths: string[] = [];
 
 globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
   const url = new URL(String(input));
-  const body = responseBodyFor(url.pathname + url.search);
+  const path = `${url.pathname}${url.search}`;
+  const body = responses[path];
+  requestedPaths.push(path);
 
-  return new Response(JSON.stringify(body), {
-    headers: { "content-type": "application/json; charset=utf-8" },
-    status: 200,
-  });
+  if (body === undefined) {
+    throw new Error(`Unexpected API path: ${path}`);
+  }
+
+  return jsonResponse(body);
 };
 
 try {
@@ -25,74 +29,27 @@ try {
   assert.equal(countOccurrences(html, "recurrence-indicator"), 1);
   assert.match(html, /data-recurrence-edit="recurrence-1"/);
   assert.match(html, /Histórico da fatura/);
+  assert.ok(
+    requestedPaths.includes(
+      "/api/installments?cardId=card-1&status=all&dueFrom=2028-01-01&dueTo=2028-01-31",
+    ),
+  );
 } finally {
   globalThis.fetch = originalFetch;
-}
-
-function responseBodyFor(path: string): unknown {
-  if (path === "/api/cards?status=all") {
-    return {
-      cards: [
-        {
-          closingDay: 20,
-          dueDay: 10,
-          id: "card-1",
-          name: "Cartao principal",
-          status: "active",
-        },
-      ],
-    };
-  }
-
-  if (path === "/api/invoices?status=all") {
-    return { invoices: [invoice] };
-  }
-
-  if (path === "/api/categories?kind=expense") {
-    return { categories: [category] };
-  }
-
-  if (path === "/api/accounts") {
-    return { accounts: [] };
-  }
-
-  if (path === "/api/credit-card-accounts/card-1/instruments") {
-    return { instruments: [cardInstrument] };
-  }
-
-  if (path === "/api/recurrences?cardId=card-1&status=all") {
-    return { recurrences: [recurrence] };
-  }
-
-  if (path === "/api/invoices/invoice-1/summary") {
-    return { summary: invoiceSummary };
-  }
-
-  if (path === "/api/invoices/invoice-1/purchases") {
-    return { purchases: [purchase] };
-  }
-
-  if (
-    path ===
-    "/api/installments?cardId=card-1&status=all&dueFrom=2028-01-01&dueTo=2028-01-31"
-  ) {
-    return { installments: [installment] };
-  }
-
-  throw new Error(`Unexpected API path: ${path}`);
 }
 
 function countOccurrences(value: string, search: string): number {
   return value.split(search).length - 1;
 }
 
-const category = {
-  id: "cat-streaming",
-  kind: "expense",
-  name: "Streaming",
-  status: "active",
-};
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    headers: { "content-type": "application/json; charset=utf-8" },
+    status: 200,
+  });
+}
 
+const category = { id: "cat-streaming", kind: "expense", name: "Streaming", status: "active" };
 const cardInstrument = {
   holder: "primary",
   id: "instrument-1",
@@ -102,7 +59,6 @@ const cardInstrument = {
   status: "active",
   type: "physical",
 };
-
 const invoice = {
   cardId: "card-1",
   dueOn: "2028-02-10",
@@ -112,7 +68,6 @@ const invoice = {
   status: "open",
   totalAmountMinor: 1990,
 };
-
 const recurrence = {
   amountMinor: 1990,
   cardId: "card-1",
@@ -126,7 +81,6 @@ const recurrence = {
   startOn: "2028-01-10",
   status: "active",
 };
-
 const purchase = {
   amountMinor: 1990,
   cardId: "card-1",
@@ -141,14 +95,9 @@ const purchase = {
   recurrenceId: "recurrence-1",
   status: "posted",
 };
-
 const installment = {
   amountMinor: 1990,
-  card: {
-    id: "card-1",
-    name: "Cartao principal",
-    status: "active",
-  },
+  card: { id: "card-1", name: "Cartao principal", status: "active" },
   cardInstrument,
   category,
   currency: "BRL",
@@ -158,11 +107,7 @@ const installment = {
   financialProfileId: "profile-1",
   id: "installment-1",
   invoice,
-  recurrence: {
-    description: "Spotify recorrente",
-    id: "recurrence-1",
-    status: "active",
-  },
+  recurrence: { description: "Spotify recorrente", id: "recurrence-1", status: "active" },
   sequenceNumber: 1,
   status: "posted",
   totalInstallments: 1,
@@ -175,7 +120,6 @@ const installment = {
     status: "posted",
   },
 };
-
 const invoiceSummary = {
   amountDueMinor: 1990,
   cardId: "card-1",
@@ -203,4 +147,27 @@ const invoiceSummary = {
   totalExpensesMinor: 1990,
   totalPaidMinor: 0,
   unreconciledExpensesMinor: 1990,
+};
+const responses: Record<string, unknown> = {
+  "/api/accounts": { accounts: [] },
+  "/api/cards?status=all": {
+    cards: [
+      {
+        closingDay: 20,
+        dueDay: 10,
+        id: "card-1",
+        name: "Cartao principal",
+        status: "active",
+      },
+    ],
+  },
+  "/api/categories?kind=expense": { categories: [category] },
+  "/api/credit-card-accounts/card-1/instruments": { instruments: [cardInstrument] },
+  "/api/installments?cardId=card-1&status=all&dueFrom=2028-01-01&dueTo=2028-01-31": {
+    installments: [installment],
+  },
+  "/api/invoices?status=all": { invoices: [invoice] },
+  "/api/invoices/invoice-1/purchases": { purchases: [purchase] },
+  "/api/invoices/invoice-1/summary": { summary: invoiceSummary },
+  "/api/recurrences?cardId=card-1&status=all": { recurrences: [recurrence] },
 };
