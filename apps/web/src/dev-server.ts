@@ -4,7 +4,7 @@ import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
-import { handleApiRequest } from "./dev-server/api.js";
+import { apiGet, handleApiRequest } from "./dev-server/api.js";
 import { renderCardsPage } from "./dev-server/cards-page.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
@@ -33,8 +33,20 @@ export { resolveRoute } from "./dev-server/routes.js";
 export { renderSettingsPage } from "./dev-server/settings-page.js";
 export { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
+interface StatementAccountRecord {
+  id: string;
+  status: string;
+}
+
+interface StatementRecurrenceRecord {
+  id: string;
+  status: string;
+}
+
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.PORT ?? 5173);
+const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000";
+const monthPattern = /^\d{4}-\d{2}$/;
 const manifest = buildSolverFinWebManifest();
 
 const server = createServer((request, response) => {
@@ -111,7 +123,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/lancamentos" && token) {
-    sendHtml(response, 200, await renderTransactionsPage(token));
+    await materializeAccountStatementRecurrences(token, url);
+    sendHtml(response, 200, await renderTransactionsPage(token, url));
     return;
   }
 
@@ -136,4 +149,79 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   sendHtml(response, 404, renderNotFoundPage());
+}
+
+export async function materializeAccountStatementRecurrences(
+  token: string,
+  url: URL,
+): Promise<void> {
+  const month = resolveStatementMonth(url);
+
+  if (month === undefined) {
+    return;
+  }
+
+  const accountsResult = await apiGet<{ accounts: StatementAccountRecord[] }>(token, "/api/accounts");
+
+  if (!accountsResult.ok) {
+    return;
+  }
+
+  const accountId =
+    url.searchParams.get("accountId") ??
+    accountsResult.data.accounts.find((account) => account.status === "active")?.id;
+
+  if (!accountId) {
+    return;
+  }
+
+  const recurrencesResult = await apiGet<{ recurrences: StatementRecurrenceRecord[] }>(
+    token,
+    `/api/recurrences?${new URLSearchParams({ accountId, status: "all" }).toString()}`,
+  );
+
+  if (!recurrencesResult.ok) {
+    return;
+  }
+
+  const through = monthToLastDay(month);
+  const activeRecurrences = recurrencesResult.data.recurrences.filter(
+    (recurrence) => recurrence.status === "active",
+  );
+
+  await Promise.all(
+    activeRecurrences.map((recurrence) =>
+      fetch(`${apiBaseUrl}/api/recurrences/${encodeURIComponent(recurrence.id)}/generate-installments`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ through }),
+      }).catch(() => undefined),
+    ),
+  );
+}
+
+function resolveStatementMonth(url: URL): string | undefined {
+  const requestedMonth = url.searchParams.get("month");
+
+  if (monthPattern.test(requestedMonth ?? "")) {
+    return requestedMonth ?? undefined;
+  }
+
+  const startsOnMonth = url.searchParams.get("startsOn")?.slice(0, 7);
+
+  if (monthPattern.test(startsOnMonth ?? "")) {
+    return startsOnMonth;
+  }
+
+  return new Date().toISOString().slice(0, 7);
+}
+
+function monthToLastDay(month: string): string {
+  const year = Number(month.slice(0, 4));
+  const monthIndex = Number(month.slice(5, 7)) - 1;
+
+  return new Date(Date.UTC(year, monthIndex + 1, 0)).toISOString().slice(0, 10);
 }
