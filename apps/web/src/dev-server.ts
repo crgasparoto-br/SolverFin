@@ -131,7 +131,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (route.kind === "placeholder" && token) {
-    sendHtml(response, 200, await renderPrivatePage(url.pathname, token, url));
+    sendHtml(response, 200, await renderPrivatePage(url.pathname, token));
     return;
   }
 
