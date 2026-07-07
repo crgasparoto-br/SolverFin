@@ -1,7 +1,0 @@
-# Rascunho obsoleto
-
-Este arquivo era um rascunho historico das instrucoes de agentes.
-
-Use [`../../AGENTS.md`](../../AGENTS.md) como fonte de verdade para regras globais de agentes de IA no SolverFin.
-
-Este arquivo pode ser removido em uma limpeza futura quando a ferramenta permitir a exclusao direta deste caminho.
