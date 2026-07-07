@@ -161,7 +161,10 @@ export async function materializeAccountStatementRecurrences(
     return;
   }
 
-  const accountsResult = await apiGet<{ accounts: StatementAccountRecord[] }>(token, "/api/accounts");
+  const accountsResult = await apiGet<{ accounts: StatementAccountRecord[] }>(
+    token,
+    "/api/accounts",
+  );
 
   if (!accountsResult.ok) {
     return;
@@ -191,14 +194,17 @@ export async function materializeAccountStatementRecurrences(
 
   await Promise.all(
     activeRecurrences.map((recurrence) =>
-      fetch(`${apiBaseUrl}/api/recurrences/${encodeURIComponent(recurrence.id)}/generate-installments`, {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${token}`,
-          "content-type": "application/json",
+      fetch(
+        `${apiBaseUrl}/api/recurrences/${encodeURIComponent(recurrence.id)}/generate-installments`,
+        {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ through }),
         },
-        body: JSON.stringify({ through }),
-      }).catch(() => undefined),
+      ).catch(() => undefined),
     ),
   );
 }
