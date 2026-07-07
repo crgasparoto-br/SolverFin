@@ -60,7 +60,7 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
     ? recurrencesResult.data.recurrences
     : [];
 
-  const [summaryResult, purchasesResults, installmentsResult] = await Promise.all([
+  const [summaryResult, purchasesResults] = await Promise.all([
     selectedInvoice
       ? apiGet<{ summary: InvoiceSummaryRecord }>(
           token,
@@ -72,12 +72,6 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
         apiGet<{ purchases: CardPurchaseRecord[] }>(token, `/api/invoices/${invoice.id}/purchases`),
       ),
     ),
-    selectedCard
-      ? apiGet<{ installments: InstallmentRecord[] }>(
-          token,
-          buildInstallmentsPath(selectedCard, selectedInvoice),
-        )
-      : Promise.resolve({ ok: true, data: { installments: [] as InstallmentRecord[] } } as const),
   ]);
 
   const summary =
@@ -93,13 +87,6 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
         .flatMap((result) => (result.ok ? result.data.purchases : []))
         .sort((a, b) => b.occurredOn.localeCompare(a.occurredOn))
     : [];
-  const installmentsOk = installmentsResult.ok;
-  const installments = installmentsOk
-    ? installmentsResult.data.installments.sort(
-        (a, b) => b.dueOn.localeCompare(a.dueOn) || b.sequenceNumber - a.sequenceNumber,
-      )
-    : [];
-  const installmentsError = installmentsResult.ok ? undefined : installmentsResult.error;
 
   return renderShell(
     `
@@ -142,7 +129,6 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
               <button type="button" class="toggle-chip" data-reconciliation-toggle="reconciled" aria-pressed="true">Conciliados</button>
             </div>
           </div>
-          ${renderInstallmentsSection(installments.filter((installment) => !installment.transaction?.recurrenceId), installmentsOk, installmentsError, selectedInvoice)}
           <div class="purchase-list" aria-label="Compras da fatura">
             ${
               purchasesOk
@@ -159,17 +145,6 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
       ${recurrencesSectionScript()}
     `,
   );
-}
-
-function buildInstallmentsPath(card: CardRecord, invoice: InvoiceRecord | undefined): string {
-  const params = new URLSearchParams({ cardId: card.id, status: "all" });
-
-  if (invoice) {
-    params.set("dueFrom", invoice.periodStartOn);
-    params.set("dueTo", invoice.periodEndOn);
-  }
-
-  return `/api/installments?${params.toString()}`;
 }
 
 function resolveSelectedCard(
@@ -304,169 +279,6 @@ function renderSummaryPanel(
 
 function summaryRow(label: string, value: string, tone?: string, emphasis = false): string {
   return `<div class="summary-row${emphasis ? " summary-row-strong" : ""}"><dt>${escapeHtml(label)}</dt><dd${tone ? ` class="${tone}"` : ""}>${value}</dd></div>`;
-}
-
-function renderInstallmentsSection(
-  installments: InstallmentRecord[],
-  ok: boolean,
-  error: string | undefined,
-  selectedInvoice: InvoiceRecord | undefined,
-): string {
-  const periodLabel = selectedInvoice
-    ? `${formatDate(selectedInvoice.periodStartOn)} a ${formatDate(selectedInvoice.periodEndOn)}`
-    : "todas as faturas";
-
-  if (!ok) {
-    return `
-      <section class="installments-section" aria-label="Histórico de parcelas">
-        <header class="installments-header">
-          <div>
-            <p class="eyebrow">Parcelas</p>
-            <h3>Histórico da fatura</h3>
-          </div>
-        </header>
-        <p class="error" role="alert">${escapeHtml(error ?? "Não foi possível carregar o histórico de parcelas.")}</p>
-      </section>
-    `;
-  }
-
-  if (installments.length === 0) {
-    return `
-      <section class="installments-section" aria-label="Histórico de parcelas">
-        <header class="installments-header">
-          <div>
-            <p class="eyebrow">Parcelas</p>
-            <h3>Histórico da fatura</h3>
-            <p class="muted">Período: ${escapeHtml(periodLabel)}</p>
-          </div>
-        </header>
-        ${renderEmptyState("Nenhuma parcela neste período.", "As compras parceladas e recorrências do cartão aparecerão aqui quando existirem para os filtros selecionados.")}
-      </section>
-    `;
-  }
-
-  const totalMinor = installments.reduce((sum, installment) => sum + installment.amountMinor, 0);
-  const totalLabel = installments.length === 1 ? "1 parcela" : `${installments.length} parcelas`;
-
-  return `
-    <section class="installments-section" aria-label="Histórico de parcelas">
-      <header class="installments-header">
-        <div>
-          <p class="eyebrow">Parcelas</p>
-          <h3>Histórico da fatura</h3>
-          <p class="muted">${escapeHtml(totalLabel)} em ${escapeHtml(periodLabel)}</p>
-        </div>
-        <strong class="debit">${formatMoney(-totalMinor)}</strong>
-      </header>
-      <div class="installments-list">
-        ${groupInstallments(installments).map((group) => renderInstallmentGroup(group)).join("")}
-      </div>
-    </section>
-  `;
-}
-
-function groupInstallments(installments: InstallmentRecord[]): InstallmentGroup[] {
-  const order: string[] = [];
-  const groups = new Map<string, InstallmentGroup>();
-
-  for (const installment of installments) {
-    const key = [
-      installment.transaction?.id ?? installment.recurrence?.id ?? installment.id,
-      installment.invoice?.id ?? "without-invoice",
-      installment.cardInstrument?.id ?? "without-instrument",
-    ].join(":" );
-    let group = groups.get(key);
-    if (group === undefined) {
-      group = {
-        key,
-        title: installment.transaction?.description ?? installment.recurrence?.description ?? "Parcela sem descrição",
-        subtitle: formatInstallmentGroupSubtitle(installment),
-        installments: [],
-      };
-      groups.set(key, group);
-      order.push(key);
-    }
-    group.installments.push(installment);
-  }
-
-  return order.map((key) => groups.get(key)).filter((group): group is InstallmentGroup => group !== undefined);
-}
-
-function formatInstallmentGroupSubtitle(installment: InstallmentRecord): string {
-  return [
-    installment.card?.name,
-    installment.cardInstrument ? formatInstrumentLabel(installment.cardInstrument) : "Instrumento não informado",
-    installment.category?.name ?? "Sem categoria",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-}
-
-function renderInstallmentGroup(group: InstallmentGroup): string {
-  const amountMinor = group.installments.reduce((sum, installment) => sum + installment.amountMinor, 0);
-  const countLabel = group.installments.length === 1 ? "1 parcela" : `${group.installments.length} parcelas`;
-
-  return `
-    <details class="installment-group" open>
-      <summary class="installment-group-summary">
-        <span class="installment-group-name">${escapeHtml(group.title)}</span>
-        <span class="muted">${escapeHtml(countLabel)} · ${escapeHtml(group.subtitle)}</span>
-        <strong class="debit">${formatMoney(-amountMinor)}</strong>
-      </summary>
-      <div class="installment-group-rows">
-        ${group.installments.map((installment) => renderInstallmentRow(installment)).join("")}
-      </div>
-    </details>
-  `;
-}
-
-function renderInstallmentRow(installment: InstallmentRecord): string {
-  const invoiceStatus = installment.invoice?.status
-    ? formatGenericStatus(installment.invoice.status)
-    : "Sem fatura";
-  const reconciliation = installment.status === "reconciled" ? "reconciled" : "unreconciled";
-  const description = installment.transaction?.description ?? installment.recurrence?.description ?? "Parcela";
-  const search = [
-    description,
-    installment.category?.name ?? "",
-    installment.card?.name ?? "",
-    installment.cardInstrument ? formatInstrumentLabel(installment.cardInstrument) : "",
-    installment.status,
-    invoiceStatus,
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  return `
-    <article class="installment-row" data-installment-item data-reconciliation="${reconciliation}" data-search="${escapeHtml(search)}">
-      <time datetime="${escapeHtml(installment.dueOn)}">${formatDate(installment.dueOn)}</time>
-      <div class="description">
-        <strong>${escapeHtml(`${installment.sequenceNumber}/${installment.totalInstallments}`)} · ${escapeHtml(description)}</strong>
-        <span>${escapeHtml(installment.category?.name ?? "Sem categoria")}</span>
-      </div>
-      <span class="chip chip-${reconciliation === "reconciled" ? "ok" : "posted"}">${escapeHtml(formatGenericStatus(installment.status))}</span>
-      <span class="chip">${escapeHtml(invoiceStatus)}</span>
-      <span class="installment-lock">${escapeHtml(formatInstallmentEditState(installment))}</span>
-      <strong class="debit">${formatMoney(-installment.amountMinor)}</strong>
-    </article>
-  `;
-}
-
-function formatInstallmentEditState(installment: InstallmentRecord): string {
-  if (installment.editable) return "Manutenção liberada no extrato";
-
-  if (installment.editBlockedReason === "invoice_linked") return "Bloqueada pela fatura";
-  if (installment.editBlockedReason === "transaction_status_locked") {
-    return "Bloqueada pelo lançamento";
-  }
-  if (installment.editBlockedReason === "installment_status_locked") {
-    return "Bloqueada pelo status";
-  }
-  if (installment.editBlockedReason === "linked_transaction_missing") {
-    return "Sem lançamento vinculado";
-  }
-
-  return "Manutenção indisponível";
 }
 
 function renderPurchaseListBody(
@@ -692,7 +504,7 @@ function renderInstrumentOptions(instruments: CardInstrumentRecord[]): string {
     .join("");
 }
 
-function formatInstrumentLabel(instrument: CardInstrumentRecord | InstallmentCardInstrumentRecord): string {
+function formatInstrumentLabel(instrument: CardInstrumentRecord): string {
   const name = instrument.name?.trim();
   const title = name || `${formatInstrumentType(instrument.type)} - ${formatInstrumentHolder(instrument.holder)}`;
   const identifier = instrument.maskedIdentifier ? ` · ${instrument.maskedIdentifier}` : "";
@@ -843,7 +655,7 @@ function clientScript(): string {
         const activeStatuses = reconciliationToggles
           .filter((toggle) => toggle.getAttribute("aria-pressed") === "true")
           .map((toggle) => toggle.dataset.reconciliationToggle);
-        document.querySelectorAll("[data-purchase-item], [data-installment-item]").forEach((item) => {
+        document.querySelectorAll("[data-purchase-item]").forEach((item) => {
           const matchesText = !query || item.dataset.search.includes(query);
           const matchesStatus = activeStatuses.includes(item.dataset.reconciliation);
           item.hidden = !(matchesText && matchesStatus);
@@ -1264,84 +1076,9 @@ interface CardPurchaseRecord {
   status: string;
 }
 
-interface InstallmentRecord {
-  id: string;
-  financialProfileId: string;
-  status: string;
-  sequenceNumber: number;
-  totalInstallments: number;
-  dueOn: string;
-  amountMinor: number;
-  currency: string;
-  transaction?: InstallmentTransactionRecord;
-  recurrence?: InstallmentRecurrenceRecord;
-  invoice?: InstallmentInvoiceRecord;
-  card?: InstallmentCardRecord;
-  cardInstrument?: InstallmentCardInstrumentRecord;
-  category?: InstallmentCategoryRecord;
-  editable: boolean;
-  editBlockedReason?: string;
-}
-
-interface InstallmentTransactionRecord {
-  id: string;
-  status: string;
-  description: string;
-  accountId?: string;
-  invoiceId?: string;
-  categoryId?: string;
-  recurrenceId?: string;
-}
-
-interface InstallmentRecurrenceRecord {
-  id: string;
-  status: string;
-  description: string;
-}
-
-interface InstallmentInvoiceRecord {
-  id: string;
-  status: string;
-  cardId: string;
-  periodStartOn: string;
-  periodEndOn: string;
-  dueOn: string;
-}
-
-interface InstallmentCardRecord {
-  id: string;
-  name: string;
-  status: string;
-}
-
-interface InstallmentCardInstrumentRecord {
-  id: string;
-  cardId: string;
-  type: string;
-  holder: string;
-  status: string;
-  isDefault: boolean;
-  name?: string;
-  maskedIdentifier?: string;
-}
-
-interface InstallmentCategoryRecord {
-  id: string;
-  name: string;
-  kind: string;
-  status: string;
-}
-
-interface InstallmentGroup {
-  key: string;
-  title: string;
-  subtitle: string;
-  installments: InstallmentRecord[];
-}
-
 function css(): string {
   return `
-    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p,dl,dd{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{align-items:center;color:white;display:inline-flex;font-size:1.2rem;font-weight:900;gap:10px;text-decoration:none}.brand img{border-radius:6px;display:block}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1440px;padding:24px;width:100%}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.cards-heading{align-items:end;display:flex;gap:16px;justify-content:space-between}.cards-heading>div{display:grid;gap:6px;max-width:760px}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}label{display:grid;gap:8px;font-weight:700}[hidden]{display:none}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}.success{background:var(--green-bg);border:1px solid #bbf7d0;border-radius:8px;color:var(--green);padding:10px 12px}.form-status{min-height:1.3em}.card-filter{background:var(--surface)}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.2fr) minmax(13rem,1fr)}.account-field{align-items:end;display:grid;gap:8px;grid-template-columns:1fr auto;position:relative}.account-field>label:first-child{grid-column:1/-1}.ghost-link{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;color:var(--primary);display:inline-flex;height:42px;justify-content:center;width:42px}.account-select{position:relative}.account-select-trigger{align-items:center;background:white;border:1px solid var(--line);color:var(--text);display:flex;gap:10px;justify-content:flex-start;text-align:left;width:100%}.account-select-trigger:hover{background:var(--soft)}.account-select-icon{align-items:center;display:inline-flex;flex-shrink:0;height:24px;width:24px}.account-select-icon .brand-icon,.account-select-icon .brand-icon-wrap{display:block;height:24px;width:24px}.account-select-icon .brand-logo-img{background:#fff;border-radius:50%;object-fit:contain;padding:3px}.account-select-text{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-select-chevron{color:var(--muted);flex-shrink:0}.account-select-menu{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);left:0;list-style:none;margin:6px 0 0;max-height:280px;overflow-y:auto;padding:6px;position:absolute;right:0;top:100%;z-index:20}.account-select-menu li{align-items:center;border-radius:6px;cursor:pointer;display:flex;font-weight:700;gap:10px;padding:9px 10px}.account-select-menu li:hover,.account-select-menu li[aria-selected=true]{background:var(--soft)}.month-field{display:grid;gap:8px}.month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto;padding:4px}.month-current{font-weight:800;text-align:center}.icon-btn{background:white;border:1px solid var(--line);border-radius:6px;color:var(--primary);font-size:1.1rem;font-weight:900;line-height:1;min-height:34px;min-width:34px;padding:0}.icon-btn:hover{background:var(--soft)}.cards-layout{align-items:start;display:grid;gap:14px;grid-template-columns:300px minmax(0,1fr)}.invoice-summary{display:grid;gap:18px;position:sticky;top:88px}.summary-block{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:14px}.summary-block:first-child{border-top:0;padding-top:0}.summary-block h2{font-size:.95rem}.summary-list{display:grid;gap:6px}.summary-row{align-items:center;display:flex;font-size:.86rem;gap:10px;justify-content:space-between}.summary-row dt{color:var(--muted);font-weight:700}.summary-row dd{font-weight:800;text-align:right}.summary-row-strong dd{font-size:1.05rem}.invoice-actions{display:grid;gap:8px}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.invoice-panel{display:grid;gap:14px;padding:0}.invoice-toolbar{align-items:center;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;padding:18px}.filter-controls{align-items:center;display:flex;flex-wrap:wrap;gap:8px}.filter-controls input[type=search]{min-width:220px;width:auto}.toggle-chip{background:var(--bg);border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.82rem;font-weight:800;min-height:36px;padding:0 14px}.toggle-chip[aria-pressed=true]{background:var(--soft);border-color:#a5cbd6;color:var(--primary)}.installments-section{border-bottom:1px solid var(--line);display:grid;gap:12px;padding:18px}.installments-header{align-items:center;display:flex;gap:12px;justify-content:space-between}.installments-header>div{display:grid;gap:4px}.installments-list{display:grid;gap:0}.installment-group{border-top:1px solid var(--line)}.installment-group:first-child{border-top:0}.installment-group-summary{align-items:center;cursor:pointer;display:flex;gap:10px;list-style:none;padding:13px 0}.installment-group-summary::-webkit-details-marker{display:none}.installment-group-summary::before{color:var(--muted);content:"▸";transition:transform .15s ease}.installment-group[open]>.installment-group-summary::before{transform:rotate(90deg)}.installment-group-name{font-weight:800}.installment-group-summary .muted{flex:1}.installment-group-rows{display:grid;gap:0;padding-bottom:6px}.installment-row{align-items:center;border-top:1px solid var(--line);display:grid;gap:12px;grid-template-columns:6.5rem minmax(0,1fr) auto auto minmax(9rem,auto) 8.5rem;padding:12px 0}.installment-row time{color:var(--muted);font-size:.9rem}.installment-lock{color:var(--muted);font-size:.82rem;font-weight:700;text-align:right}.purchase-list{display:grid;gap:0;padding:0 18px 18px}.purchase-group{border-top:1px solid var(--line)}.purchase-group:first-child{border-top:0}.purchase-group-summary{align-items:center;cursor:pointer;display:flex;gap:10px;list-style:none;padding:14px 0}.purchase-group-summary::-webkit-details-marker{display:none}.purchase-group-summary::before{color:var(--muted);content:"▸";transition:transform .15s ease}.purchase-group[open]>.purchase-group-summary::before{transform:rotate(90deg)}.purchase-group-name{font-weight:800}.purchase-group-summary .muted{flex:1}.purchase-group-rows{display:grid;gap:0;padding-bottom:6px}.purchase-group-rows .purchase-row:first-child{border-top:1px solid var(--line)}.purchase-row{align-items:center;border-top:1px solid var(--line);display:grid;gap:12px;grid-template-columns:6.5rem minmax(0,1fr) auto 8.5rem 3.5rem;padding:14px 0}.purchase-row:first-child{border-top:0}.purchase-row time{color:var(--muted);font-size:.9rem}.description{display:grid;gap:3px;min-width:0}.description span{color:var(--muted);font-size:.86rem}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;font-size:.78rem;font-weight:800;gap:6px;padding:6px 10px;white-space:nowrap}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.actions{position:relative}.actions summary{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:32px;justify-content:center;list-style:none;width:32px}.actions summary::-webkit-details-marker{display:none}.actions-menu{background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:2px;padding:6px;position:absolute;right:0;top:38px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:6px;color:var(--text);display:flex;font-size:.86rem;font-weight:700;gap:10px;justify-content:flex-start;min-height:36px;padding:0 10px;text-align:left;white-space:nowrap}.actions-item:hover{background:var(--soft)}.empty-state{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(680px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form:not(.close-form){display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}.full{grid-column:1/-1}.error-page{min-height:100vh;place-content:center}@media(max-width:1180px){.installment-row{grid-template-columns:6.5rem minmax(0,1fr) auto auto}.installment-lock,.installment-row>strong{grid-column:2/-1;text-align:left}}@media(max-width:1080px){.cards-layout{grid-template-columns:1fr}.invoice-summary{position:static}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form:not(.close-form){grid-template-columns:1fr}.cards-heading{align-items:stretch;display:grid}.installments-header{align-items:flex-start;display:grid}.installment-group-summary,.purchase-group-summary{align-items:flex-start;display:grid}.installment-row,.purchase-row{align-items:start;grid-template-columns:1fr}.installment-lock{text-align:left}}
+    :root{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--primary:#0f3d4c;--soft:#e8f3f6;--cyan:#0891b2;--green:#166534;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}h1,h2,h3,p,dl,dd{margin:0}button,a,input,select,textarea{font:inherit}.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--primary);color:white;display:flex;flex-direction:column;gap:20px;padding:22px}.brand{align-items:center;color:white;display:inline-flex;font-size:1.2rem;font-weight:900;gap:10px;text-decoration:none}.brand img{border-radius:6px;display:block}nav{display:grid;gap:6px}nav a{border-radius:8px;color:rgba(255,255,255,.82);font-weight:800;padding:10px 12px;text-decoration:none}nav a[aria-current=page],nav a:hover{background:rgba(34,211,238,.18);color:white}.logout{margin-top:auto}.topbar{align-items:center;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;min-height:64px;padding:0 24px}main{display:grid;gap:20px;margin:0 auto;max-width:1440px;padding:24px;width:100%}.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}.cards-heading{align-items:end;display:flex;gap:16px;justify-content:space-between}.cards-heading>div{display:grid;gap:6px;max-width:760px}.eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:0;text-transform:uppercase}.muted{color:var(--muted);line-height:1.5}.button-link,button{align-items:center;background:var(--primary);border:0;border-radius:8px;color:white;cursor:pointer;display:inline-flex;font-weight:800;justify-content:center;min-height:42px;padding:0 14px;text-decoration:none}button:disabled{opacity:.55}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}label{display:grid;gap:8px;font-weight:700}[hidden]{display:none}input,select,textarea{border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 10px;width:100%}textarea{padding:10px}.error{background:var(--red-bg);border:1px solid #fecaca;border-radius:8px;color:var(--red);padding:10px 12px}.success{background:var(--green-bg);border:1px solid #bbf7d0;border-radius:8px;color:var(--green);padding:10px 12px}.form-status{min-height:1.3em}.card-filter{background:var(--surface)}.filter-form{align-items:end;display:grid;gap:12px;grid-template-columns:minmax(14rem,1.2fr) minmax(13rem,1fr)}.account-field{align-items:end;display:grid;gap:8px;grid-template-columns:1fr auto;position:relative}.account-field>label:first-child{grid-column:1/-1}.ghost-link{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:8px;color:var(--primary);display:inline-flex;height:42px;justify-content:center;width:42px}.account-select{position:relative}.account-select-trigger{align-items:center;background:white;border:1px solid var(--line);color:var(--text);display:flex;gap:10px;justify-content:flex-start;text-align:left;width:100%}.account-select-trigger:hover{background:var(--soft)}.account-select-icon{align-items:center;display:inline-flex;flex-shrink:0;height:24px;width:24px}.account-select-icon .brand-icon,.account-select-icon .brand-icon-wrap{display:block;height:24px;width:24px}.account-select-icon .brand-logo-img{background:#fff;border-radius:50%;object-fit:contain;padding:3px}.account-select-text{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-select-chevron{color:var(--muted);flex-shrink:0}.account-select-menu{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 40px rgba(15,23,42,.16);left:0;list-style:none;margin:6px 0 0;max-height:280px;overflow-y:auto;padding:6px;position:absolute;right:0;top:100%;z-index:20}.account-select-menu li{align-items:center;border-radius:6px;cursor:pointer;display:flex;font-weight:700;gap:10px;padding:9px 10px}.account-select-menu li:hover,.account-select-menu li[aria-selected=true]{background:var(--soft)}.month-field{display:grid;gap:8px}.month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto;padding:4px}.month-current{font-weight:800;text-align:center}.icon-btn{background:white;border:1px solid var(--line);border-radius:6px;color:var(--primary);font-size:1.1rem;font-weight:900;line-height:1;min-height:34px;min-width:34px;padding:0}.icon-btn:hover{background:var(--soft)}.cards-layout{align-items:start;display:grid;gap:14px;grid-template-columns:300px minmax(0,1fr)}.invoice-summary{display:grid;gap:18px;position:sticky;top:88px}.summary-block{border-top:1px solid var(--line);display:grid;gap:10px;padding-top:14px}.summary-block:first-child{border-top:0;padding-top:0}.summary-block h2{font-size:.95rem}.summary-list{display:grid;gap:6px}.summary-row{align-items:center;display:flex;font-size:.86rem;gap:10px;justify-content:space-between}.summary-row dt{color:var(--muted);font-weight:700}.summary-row dd{font-weight:800;text-align:right}.summary-row-strong dd{font-size:1.05rem}.invoice-actions{display:grid;gap:8px}.credit{color:var(--green)!important}.debit{color:var(--red)!important}.invoice-panel{display:grid;gap:14px;padding:0}.invoice-toolbar{align-items:center;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;padding:18px}.filter-controls{align-items:center;display:flex;flex-wrap:wrap;gap:8px}.filter-controls input[type=search]{min-width:220px;width:auto}.toggle-chip{background:var(--bg);border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.82rem;font-weight:800;min-height:36px;padding:0 14px}.toggle-chip[aria-pressed=true]{background:var(--soft);border-color:#a5cbd6;color:var(--primary)}.purchase-list{display:grid;gap:0;padding:0 18px 18px}.purchase-group{border-top:1px solid var(--line)}.purchase-group:first-child{border-top:0}.purchase-group-summary{align-items:center;cursor:pointer;display:flex;gap:10px;list-style:none;padding:14px 0}.purchase-group-summary::-webkit-details-marker{display:none}.purchase-group-summary::before{color:var(--muted);content:"▸";transition:transform .15s ease}.purchase-group[open]>.purchase-group-summary::before{transform:rotate(90deg)}.purchase-group-name{font-weight:800}.purchase-group-summary .muted{flex:1}.purchase-group-rows{display:grid;gap:0;padding-bottom:6px}.purchase-group-rows .purchase-row:first-child{border-top:1px solid var(--line)}.purchase-row{align-items:center;border-top:1px solid var(--line);display:grid;gap:12px;grid-template-columns:6.5rem minmax(0,1fr) auto 8.5rem 3.5rem;padding:14px 0}.purchase-row:first-child{border-top:0}.purchase-row time{color:var(--muted);font-size:.9rem}.description{display:grid;gap:3px;min-width:0}.description span{color:var(--muted);font-size:.86rem}.chip{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;font-size:.78rem;font-weight:800;gap:6px;padding:6px 10px;white-space:nowrap}.chip-ok{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}.actions{position:relative}.actions summary{align-items:center;background:var(--soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:32px;justify-content:center;list-style:none;width:32px}.actions summary::-webkit-details-marker{display:none}.actions-menu{background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 18px 40px rgba(15,23,42,.16);display:grid;gap:2px;padding:6px;position:absolute;right:0;top:38px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:6px;color:var(--text);display:flex;font-size:.86rem;font-weight:700;gap:10px;justify-content:flex-start;min-height:36px;padding:0 10px;text-align:left;white-space:nowrap}.actions-item:hover{background:var(--soft)}.empty-state{background:var(--bg);border:1px dashed var(--line);border-radius:8px;display:grid;gap:6px;margin:18px;padding:16px}dialog{border:0;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28);max-width:min(680px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.54)}.modal-panel{display:grid;gap:18px;padding:22px}.close-form{display:flex;justify-content:flex-end}.modal-panel form:not(.close-form){display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}.full{grid-column:1/-1}.error-page{min-height:100vh;place-content:center}@media(max-width:1080px){.cards-layout{grid-template-columns:1fr}.invoice-summary{position:static}}@media(max-width:760px){.app-shell{grid-template-columns:1fr}.sidebar{gap:12px;padding:14px}.sidebar .logout,.topbar button{display:none}nav{display:flex;gap:8px;overflow-x:auto}nav a{background:rgba(255,255,255,.1);white-space:nowrap}main{padding:18px 16px 28px}.filter-form,.modal-panel form:not(.close-form){grid-template-columns:1fr}.cards-heading{align-items:stretch;display:grid}.purchase-group-summary{align-items:flex-start;display:grid}.purchase-row{align-items:start;grid-template-columns:1fr}}
     ${recurrencesSectionStyles()}
   `;
 }

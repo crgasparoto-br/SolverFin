@@ -6,7 +6,7 @@ const originalFetch = globalThis.fetch;
 
 await transactionsPageShowsRecurringTransactionInsideMovimentacoes();
 await transactionsPageShowsPlannedIncomeAndExpenseCommitments();
-await transactionsPageShowsInstallmentsForSelectedAccount();
+await transactionsPageHasNoStandaloneInstallmentsPanel();
 await transactionsPageHasNoSeparateRecurrencesBlock();
 await transactionsPageUsesPreviousMonthEndingBalance();
 
@@ -214,9 +214,12 @@ async function transactionsPageShowsPlannedIncomeAndExpenseCommitments(): Promis
   assert.doesNotMatch(html, /\/pagar-receber/);
 }
 
-async function transactionsPageShowsInstallmentsForSelectedAccount(): Promise<void> {
+async function transactionsPageHasNoStandaloneInstallmentsPanel(): Promise<void> {
+  const calledPaths: string[] = [];
+
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input), "http://solverfin.test");
+    calledPaths.push(url.pathname);
 
     if (url.pathname === "/api/accounts") {
       return jsonResponse({
@@ -267,34 +270,6 @@ async function transactionsPageShowsInstallmentsForSelectedAccount(): Promise<vo
       });
     }
 
-    if (url.pathname === "/api/installments") {
-      assert.equal(url.searchParams.get("accountId"), "account-1");
-      assert.equal(url.searchParams.get("status"), "all");
-      assert.equal(url.searchParams.get("dueFrom"), "2026-08-01");
-      assert.equal(url.searchParams.get("dueTo"), "2026-08-31");
-
-      return jsonResponse({
-        installments: [
-          {
-            id: "installment-2",
-            status: "planned",
-            sequenceNumber: 2,
-            totalInstallments: 6,
-            dueOn: "2026-08-10",
-            amountMinor: 120000,
-            transaction: {
-              id: "transaction-installment",
-              accountId: "account-1",
-              description: "Notebook parcelado",
-              categoryId: "category-expense",
-            },
-            category: { id: "category-expense", name: "Equipamentos" },
-            editable: true,
-          },
-        ],
-      });
-    }
-
     return jsonResponse({});
   };
 
@@ -303,13 +278,15 @@ async function transactionsPageShowsInstallmentsForSelectedAccount(): Promise<vo
     new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-08"),
   );
 
-  assert.match(html, /Parcelas do período/);
-  assert.match(html, /Parcelas vinculadas a Conta principal/);
   assert.match(html, /Notebook parcelado/);
-  assert.match(html, /Equipamentos · Parcela 2\/6/);
-  assert.match(html, /data-installment-edit="transaction-installment"/);
-  assert.match(html, /Editar lançamento/);
-  assert.doesNotMatch(html, /\/parcelas/);
+  assert.doesNotMatch(html, /Parcelas do período/);
+  assert.doesNotMatch(html, /installments-panel/);
+  assert.doesNotMatch(html, /data-installment-edit/);
+  assert.equal(
+    calledPaths.includes("/api/installments"),
+    false,
+    "transactions page must not query /api/installments after removing the standalone installments panel",
+  );
 }
 
 async function transactionsPageHasNoSeparateRecurrencesBlock(): Promise<void> {
