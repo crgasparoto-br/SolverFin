@@ -129,7 +129,11 @@ async function cardsPageRendersRecurringPurchaseOnce(): Promise<void> {
     assert.doesNotMatch(html, /Erro ao carregar dados/);
     assert.equal(countOccurrences(html, purchaseRowMarker), 1);
     assert.match(html, recurringPurchasePattern);
-    assert.match(html, /data-recurrence-edit="recurrence-1"/);
+    assert.match(html, /data-edit-purchase="purchase-1"/);
+    assert.doesNotMatch(html, /data-recurrence-edit="recurrence-1"/);
+    assert.doesNotMatch(html, />Editar recorrência</);
+    assert.match(html, /Pausar recorrência/);
+    assert.match(html, /Cancelar recorrência/);
     assert.doesNotMatch(html, /installments-section/);
     assert.doesNotMatch(html, /Histórico da fatura/);
     assert.equal(
