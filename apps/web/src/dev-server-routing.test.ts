@@ -8,7 +8,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 transactionsRoutePassesRequestUrlToRenderer();
 
 function transactionsRoutePassesRequestUrlToRenderer(): void {
-  const source = readFileSync(path.join(repoRoot, "src", "dev-server.ts"), "utf8");
+  const source = readFileSync(path.join(repoRoot, "apps", "web", "src", "dev-server.ts"), "utf8");
 
   assert.match(
     source,
