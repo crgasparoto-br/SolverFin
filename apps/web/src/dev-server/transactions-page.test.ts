@@ -89,7 +89,7 @@ async function transactionsPageShowsRecurringTransactionInsideMovimentacoes(): P
   assert.match(html, /Movimentações/);
   assert.doesNotMatch(html, /Compromissos previsíveis/);
   assert.doesNotMatch(html, /Recorrências desta conta/);
-  assert.match(html, /data-recurrence-edit="recurrence-active"/);
+  assert.doesNotMatch(html, /data-recurrence-edit="recurrence-active"/);
   assert.match(html, /data-recurrence-action-path="\/api\/recurrences\/recurrence-active\/pause"/);
   assert.match(html, /recurrence-indicator/);
   assert.match(html, /data-recurrence-edit-form/);
