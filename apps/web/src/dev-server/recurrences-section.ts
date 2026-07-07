@@ -29,7 +29,6 @@ export function renderRecurrenceActionMenuItems(recurrence: RecurrenceRecord): s
 
   return `
     <hr class="actions-divider" />
-    <button type="button" class="actions-item" data-recurrence-edit="${escapeHtml(recurrence.id)}">${renderRepeatIcon()}<span>Editar recorrência</span></button>
     ${canPause ? renderRecurrenceActionMenuButton("Pausar recorrência", `/api/recurrences/${recurrence.id}/pause`, "Pausar esta recorrência? Novas parcelas não devem ser geradas enquanto ela estiver pausada.") : ""}
     ${canResume ? renderRecurrenceActionMenuButton("Retomar recorrência", `/api/recurrences/${recurrence.id}/resume`) : ""}
     ${canCancel ? renderRecurrenceActionMenuButton("Cancelar recorrência", `/api/recurrences/${recurrence.id}/cancel`, "Cancelar esta recorrência? Ela ficará disponível apenas para consulta.", true) : ""}
@@ -61,11 +60,11 @@ export function renderRecurrenceEditModal(
         <form method="dialog" class="close-form"><button type="submit">Fechar</button></form>
         <div>
           <p class="eyebrow">Recorrência</p>
-          <h2>Editar recorrência</h2>
+          <h2>Gerar parcelas da recorrência</h2>
         </div>
-        <form data-recurrence-edit-form>
+        <form data-recurrence-edit-form hidden>
           <input type="hidden" name="id" />
-          <label class="full">Descrição<input name="description" required /></label>
+          <label class="full">Descrição<input name="description" /></label>
           ${
             targetKind === "account"
               ? `<label>Tipo<select name="kind"><option value="income">Entrada</option><option value="expense">Saída</option></select></label>`
@@ -73,8 +72,8 @@ export function renderRecurrenceEditModal(
           }
           <label>A cada<input name="interval" type="number" min="1" max="60" value="1" /></label>
           <label>Frequência<select name="frequency">${renderFrequencyOptions()}</select></label>
-          <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
-          <label>Início<input name="startOn" type="date" required /></label>
+          <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
+          <label>Início<input name="startOn" type="date" /></label>
           <label>Fim opcional<input name="endOn" type="date" /></label>
           <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
           ${
@@ -104,6 +103,8 @@ export function recurrencesSectionScript(): string {
   return `
     <script>
       (function () {
+        const recurrenceScopeMessage = "Este lançamento é recorrente.\n\nOK: aplicar esta alteração também na recorrência e nos lançamentos futuros planejados.\nCancelar: alterar somente este registro.";
+
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
           return Math.round(parseFloat(normalized || "0") * 100);
@@ -128,15 +129,6 @@ export function recurrencesSectionScript(): string {
         async function readMessage(response) {
           const body = await response.json().catch(() => ({}));
           return response.ok ? "Ação concluída. Atualizando..." : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
-        }
-
-        function buildRecurrenceUpdateMessage(body) {
-          const summary = body && body.futurePendingUpdate;
-          if (!summary) return "Recorrência salva. Atualizando...";
-          const updated = Number(summary.updatedCount || 0);
-          const skipped = Number(summary.skippedCount || 0);
-          if (skipped > 0) return "Recorrência salva. " + updated + " futuras pendentes atualizadas; " + skipped + " preservadas por estarem bloqueadas. Atualizando...";
-          return "Recorrência salva. " + updated + " futuras pendentes atualizadas. Atualizando...";
         }
 
         function addMonths(dateValue, months) {
@@ -258,7 +250,7 @@ export function recurrencesSectionScript(): string {
             const method = form.dataset.method || "POST";
             const path = form.dataset.path || "/api/transactions";
             const applyToFuturePlanned = method === "PATCH" && Boolean(form.dataset.recurrenceId)
-              ? window.confirm("Este lançamento é recorrente.\n\nOK: aplicar esta alteração também em todos os lançamentos futuros planejados.\nCancelar: alterar somente este lançamento editado.")
+              ? window.confirm(recurrenceScopeMessage)
               : false;
             let response;
             if (statusNode) statusNode.textContent = "Salvando...";
@@ -292,70 +284,63 @@ export function recurrencesSectionScript(): string {
           }, true);
         }
 
+        function setupCardPurchaseFormOverride() {
+          const form = document.querySelector("[data-purchase-form]");
+          if (!form) return;
+
+          function clearCurrentPurchase() {
+            delete form.dataset.currentPurchaseId;
+            delete form.dataset.recurrenceId;
+          }
+
+          document.querySelectorAll('[data-open-modal="purchase"]').forEach((button) => {
+            button.addEventListener("click", clearCurrentPurchase);
+          });
+
+          document.querySelectorAll("[data-purchase]").forEach((node) => {
+            const purchase = JSON.parse(node.textContent);
+            const editButton = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
+            if (!editButton) return;
+            editButton.addEventListener("click", () => {
+              form.dataset.currentPurchaseId = purchase.id;
+              if (purchase.recurrenceId) form.dataset.recurrenceId = purchase.recurrenceId;
+              else delete form.dataset.recurrenceId;
+            });
+          });
+
+          form.addEventListener("submit", async (event) => {
+            const method = form.dataset.method || "POST";
+            if (method !== "PATCH" || !form.dataset.recurrenceId) return;
+            const applyToRecurrence = window.confirm(recurrenceScopeMessage);
+            if (!applyToRecurrence) return;
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            const data = new FormData(form);
+            const payload = {
+              description: String(data.get("description") || ""),
+              amountMinor: moneyToMinor(data.get("amountMinor")),
+              startOn: String(data.get("occurredOn") || ""),
+              editScope: "recurrence_and_future_pending"
+            };
+            const categoryId = String(data.get("categoryId") || "");
+            if (categoryId) payload.categoryId = categoryId;
+            const cardInstrumentId = String(data.get("cardInstrumentId") || "");
+            if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
+
+            const response = await send("/api/recurrences/" + form.dataset.recurrenceId, "PATCH", payload);
+            if (response.ok) window.setTimeout(() => window.location.reload(), 450);
+            else window.alert(await readMessage(response));
+          }, true);
+        }
+
         setupTransactionFormOverride();
+        setupCardPurchaseFormOverride();
 
         const modal = document.querySelector("[data-recurrence-modal]");
         const modalStatus = modal && modal.querySelector("[data-recurrence-modal-status]");
-        const editForm = modal && modal.querySelector("[data-recurrence-edit-form]");
         const installmentsForm = modal && modal.querySelector("[data-recurrence-installments-form]");
-
-        function syncRecurrenceCardInstrumentOptions() {
-          const recurrenceInstrumentSelect = editForm && editForm.querySelector('[name="cardInstrumentId"]');
-          if (!recurrenceInstrumentSelect || recurrenceInstrumentSelect.options.length > 0) return;
-          const purchaseInstrumentSelect = document.querySelector('[data-purchase-form] [name="cardInstrumentId"]');
-          if (!purchaseInstrumentSelect) return;
-          recurrenceInstrumentSelect.innerHTML = purchaseInstrumentSelect.innerHTML;
-        }
-
-        document.querySelectorAll("[data-recurrence-edit]").forEach((button) => {
-          button.addEventListener("click", () => {
-            const json = document.querySelector('[data-recurrence="' + button.dataset.recurrenceEdit + '"]');
-            const recurrence = JSON.parse(json.textContent);
-            syncRecurrenceCardInstrumentOptions();
-            editForm.id.value = recurrence.id;
-            editForm.description.value = recurrence.description;
-            editForm.interval.value = recurrence.interval || 1;
-            editForm.frequency.value = recurrence.frequency;
-            editForm.amountMinor.value = minorToMoneyInput(recurrence.amountMinor);
-            editForm.startOn.value = recurrence.startOn;
-            editForm.endOn.value = recurrence.endOn || "";
-            if (editForm.kind) editForm.kind.value = recurrence.kind;
-            if (editForm.categoryId) editForm.categoryId.value = recurrence.categoryId || "";
-            if (editForm.cardInstrumentId) editForm.cardInstrumentId.value = recurrence.cardInstrumentId || "";
-            if (editForm.editScope) editForm.editScope.value = "recurrence_only";
-            installmentsForm.id.value = recurrence.id;
-            modalStatus.textContent = "";
-            modal.showModal();
-          });
-        });
-
-        editForm && editForm.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const data = new FormData(editForm);
-          const id = String(data.get("id"));
-          const payload = {
-            description: String(data.get("description") || ""),
-            interval: Math.max(1, Number(data.get("interval") || 1)),
-            frequency: String(data.get("frequency") || "monthly"),
-            amountMinor: moneyToMinor(data.get("amountMinor")),
-            startOn: String(data.get("startOn") || ""),
-          };
-          const endOn = String(data.get("endOn") || "");
-          if (endOn) payload.endOn = endOn;
-          const categoryId = String(data.get("categoryId") || "");
-          if (categoryId) payload.categoryId = categoryId;
-          const cardInstrumentId = String(data.get("cardInstrumentId") || "");
-          if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
-          const kind = String(data.get("kind") || "");
-          if (kind) payload.kind = kind;
-          const editScope = String(data.get("editScope") || "");
-          if (editScope) payload.editScope = editScope;
-          modalStatus.textContent = "Salvando...";
-          const response = await send("/api/recurrences/" + id, "PATCH", payload);
-          const body = await response.json().catch(() => ({}));
-          modalStatus.textContent = response.ok ? buildRecurrenceUpdateMessage(body) : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
-          if (response.ok) window.setTimeout(() => window.location.reload(), 450);
-        });
 
         installmentsForm && installmentsForm.addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -364,9 +349,9 @@ export function recurrencesSectionScript(): string {
           const payload = { through: String(data.get("through") || "") };
           const maxOccurrences = String(data.get("maxOccurrences") || "");
           if (maxOccurrences) payload.maxOccurrences = Number(maxOccurrences);
-          modalStatus.textContent = "Gerando parcelas...";
+          if (modalStatus) modalStatus.textContent = "Gerando parcelas...";
           const response = await send("/api/recurrences/" + id + "/generate-installments", "POST", payload);
-          modalStatus.textContent = response.ok ? "Parcelas geradas. Atualizando..." : await readMessage(response);
+          if (modalStatus) modalStatus.textContent = response.ok ? "Parcelas geradas. Atualizando..." : await readMessage(response);
           if (response.ok) window.setTimeout(() => window.location.reload(), 450);
         });
 
