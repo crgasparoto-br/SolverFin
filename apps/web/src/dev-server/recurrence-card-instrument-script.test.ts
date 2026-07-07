@@ -10,7 +10,10 @@ assert.match(modal, /name="editScope"/);
 assert.match(modal, /data-recurrence-edit-form hidden/);
 assert.doesNotMatch(script, /function syncRecurrenceCardInstrumentOptions\(\)/);
 assert.doesNotMatch(script, /data-recurrence-edit/);
-assert.doesNotMatch(script, /editForm\.cardInstrumentId\.value = recurrence\.cardInstrumentId \|\| ""/);
+assert.doesNotMatch(
+  script,
+  /editForm\.cardInstrumentId\.value = recurrence\.cardInstrumentId \|\| ""/,
+);
 assert.match(script, /setupCardPurchaseFormOverride/);
 assert.match(script, /form\.dataset\.recurrenceId/);
 assert.match(script, /editScope: "recurrence_and_future_pending"/);
