@@ -111,7 +111,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/lancamentos" && token) {
-    sendHtml(response, 200, await renderTransactionsPage(token));
+    sendHtml(response, 200, await renderTransactionsPage(token, url));
     return;
   }
 
@@ -131,7 +131,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (route.kind === "placeholder" && token) {
-    sendHtml(response, 200, await renderPrivatePage(url.pathname, token));
+    sendHtml(response, 200, await renderPrivatePage(url.pathname, token, url));
     return;
   }
 
