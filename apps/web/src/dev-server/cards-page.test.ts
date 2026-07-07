@@ -7,7 +7,6 @@ const originalFetch = globalThis.fetch;
 await cardsPageRendersInvoiceWorkspace();
 await cardsPageDisablesPaymentForSettledInvoices();
 await cardsPageUsesOnlySelectedCardInvoice();
-await cardsPageHidesTechnicalInstallmentBehindRecurringPurchase();
 
 globalThis.fetch = originalFetch;
 
@@ -153,50 +152,6 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
       });
     }
 
-    if (url.pathname === "/api/installments") {
-      assert.equal(url.searchParams.get("cardId"), "card-1");
-      assert.equal(url.searchParams.get("status"), "all");
-      assert.equal(url.searchParams.get("dueFrom"), "2026-06-01");
-      assert.equal(url.searchParams.get("dueTo"), "2026-06-20");
-
-      return jsonResponse({
-        installments: [
-          {
-            id: "installment-1",
-            financialProfileId: "profile-1",
-            status: "posted",
-            sequenceNumber: 2,
-            totalInstallments: 10,
-            dueOn: "2026-06-10",
-            amountMinor: 12000,
-            currency: "BRL",
-            transaction: { id: "purchase-3", status: "posted", description: "Notebook" },
-            invoice: {
-              id: "invoice-1",
-              status: "open",
-              cardId: "card-1",
-              periodStartOn: "2026-06-01",
-              periodEndOn: "2026-06-20",
-              dueOn: "2026-07-10",
-            },
-            card: { id: "card-1", name: "Cartão Principal", status: "active" },
-            cardInstrument: {
-              id: "instrument-main",
-              cardId: "card-1",
-              type: "physical",
-              holder: "primary",
-              status: "active",
-              isDefault: true,
-              maskedIdentifier: "final 1234",
-            },
-            category: { id: "category-1", name: "Mercado", kind: "expense", status: "active" },
-            editable: false,
-            editBlockedReason: "invoice_linked",
-          },
-        ],
-      });
-    }
-
     if (url.pathname === "/api/recurrences") {
       assert.equal(url.searchParams.get("cardId"), "card-1");
 
@@ -234,11 +189,6 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /Disponível/);
   assert.match(html, /Totais por cartão/);
   assert.match(html, /Limite \(Total\)/);
-  assert.match(html, /Histórico da fatura/);
-  assert.match(html, /Notebook/);
-  assert.match(html, /2\/10/);
-  assert.match(html, /Físico - Titular principal · final 1234/);
-  assert.match(html, /Bloqueada pela fatura/);
   assert.match(html, /Supermercado/);
   assert.match(html, /Aplicativo de transporte/);
   assert.match(html, /data-reconciliation-toggle="unreconciled"/);
@@ -274,12 +224,14 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.doesNotMatch(html, /\/pagar-receber/);
   assert.doesNotMatch(html, /name="kind"/, "card recurrences should not expose a kind field");
   assert.doesNotMatch(html, /name="purchaseCardId"/);
+  assert.doesNotMatch(html, /installments-section/);
+  assert.doesNotMatch(html, /Histórico da fatura/);
   assert.equal(calledPaths.includes("/api/card-additional-links"), false);
   assert.equal(calledPaths.includes("/api/credit-card-accounts/card-1/instruments"), true);
-  assert.ok(
-    calledPaths.includes(
-      "/api/installments?cardId=card-1&status=all&dueFrom=2026-06-01&dueTo=2026-06-20",
-    ),
+  assert.equal(
+    calledPaths.some((path) => path.startsWith("/api/installments")),
+    false,
+    "cards page must not query /api/installments after removing the standalone installments block",
   );
 
   const recurrencesIndex = calledPaths.findIndex((path) => path.startsWith("/api/recurrences"));
@@ -377,10 +329,6 @@ async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
       });
     }
 
-    if (url.pathname === "/api/installments") {
-      return jsonResponse({ installments: [] });
-    }
-
     if (url.pathname === "/api/recurrences") {
       return jsonResponse({ recurrences: [] });
     }
@@ -392,8 +340,9 @@ async function cardsPageDisablesPaymentForSettledInvoices(): Promise<void> {
 
   assert.match(html, /Fatura Paga/);
   assert.match(html, /Pagamento indisponível para faturas paga\./);
-  assert.match(html, /Nenhuma parcela neste período/);
   assert.doesNotMatch(html, /\/pagar-receber/);
+  assert.doesNotMatch(html, /Histórico da fatura/);
+  assert.doesNotMatch(html, /installments-section/);
   assert.match(html, /data-edit-purchase="purchase-locked" disabled/);
 }
 
@@ -507,13 +456,6 @@ async function cardsPageUsesOnlySelectedCardInvoice(): Promise<void> {
       });
     }
 
-    if (url.pathname === "/api/installments") {
-      assert.equal(url.searchParams.get("cardId"), "card-2");
-      assert.equal(url.searchParams.get("dueFrom"), "2026-06-01");
-      assert.equal(url.searchParams.get("dueTo"), "2026-06-20");
-      return jsonResponse({ installments: [] });
-    }
-
     if (url.pathname === "/api/accounts") {
       return jsonResponse({ accounts: [] });
     }
@@ -539,135 +481,19 @@ async function cardsPageUsesOnlySelectedCardInvoice(): Promise<void> {
   assert.match(html, /Compra no cartão selecionado/);
   assert.match(html, /value="instrument-c6" selected/);
   assert.match(html, /data-path="\/api\/credit-card-accounts\/card-2\/purchases"/);
-  assert.match(html, /Nenhuma parcela neste período/);
   assert.doesNotMatch(html, /Compra no principal/);
   assert.doesNotMatch(html, /Fatura consolidada com os cartões adicionais do grupo/);
   assert.doesNotMatch(html, /name="purchaseCardId"/);
+  assert.doesNotMatch(html, /Histórico da fatura/);
+  assert.doesNotMatch(html, /installments-section/);
   assert.equal(calledPaths.includes("/api/card-additional-links"), false);
   assert.equal(calledPaths.includes("/api/invoices/invoice-1/purchases"), false);
   assert.equal(calledPaths.includes("/api/credit-card-accounts/card-2/instruments"), true);
-  assert.ok(
-    calledPaths.includes(
-      "/api/installments?cardId=card-2&status=all&dueFrom=2026-06-01&dueTo=2026-06-20",
-    ),
+  assert.equal(
+    calledPaths.some((path) => path.startsWith("/api/installments")),
+    false,
+    "cards page must not query /api/installments after removing the standalone installments block",
   );
-}
-
-async function cardsPageHidesTechnicalInstallmentBehindRecurringPurchase(): Promise<void> {
-  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
-    const url = new URL(String(input));
-
-    if (url.pathname === "/api/cards") {
-      return jsonResponse({
-        cards: [
-          { id: "card-1", name: "Cartão Principal", status: "active", closingDay: 20, dueDay: 10 },
-        ],
-      });
-    }
-
-    if (url.pathname === "/api/credit-card-accounts/card-1/instruments") {
-      return jsonResponse({ instruments: [] });
-    }
-
-    if (url.pathname === "/api/invoices") {
-      return jsonResponse({
-        invoices: [
-          {
-            id: "invoice-1",
-            cardId: "card-1",
-            status: "open",
-            periodStartOn: "2026-06-01",
-            periodEndOn: "2026-06-20",
-            dueOn: "2026-07-10",
-            totalAmountMinor: 2990,
-          },
-        ],
-      });
-    }
-
-    if (url.pathname === "/api/invoices/invoice-1/summary") {
-      return jsonResponse({ summary: undefined });
-    }
-
-    if (url.pathname === "/api/invoices/invoice-1/purchases") {
-      return jsonResponse({
-        purchases: [
-          {
-            id: "purchase-recurring",
-            financialProfileId: "profile-1",
-            cardId: "card-1",
-            invoiceId: "invoice-1",
-            recurrenceId: "recurrence-1",
-            occurredOn: "2026-06-05",
-            description: "Assinatura streaming",
-            amountMinor: 2990,
-            currency: "BRL",
-            status: "posted",
-          },
-        ],
-      });
-    }
-
-    if (url.pathname === "/api/installments") {
-      return jsonResponse({
-        installments: [
-          {
-            id: "installment-technical",
-            financialProfileId: "profile-1",
-            status: "posted",
-            sequenceNumber: 1,
-            totalInstallments: 1,
-            dueOn: "2026-06-05",
-            amountMinor: 2990,
-            currency: "BRL",
-            transaction: {
-              id: "purchase-recurring",
-              status: "posted",
-              description: "Assinatura streaming",
-              recurrenceId: "recurrence-1",
-            },
-            editable: false,
-            editBlockedReason: "invoice_linked",
-          },
-        ],
-      });
-    }
-
-    if (url.pathname === "/api/accounts") {
-      return jsonResponse({ accounts: [] });
-    }
-
-    if (url.pathname === "/api/categories") {
-      return jsonResponse({ categories: [] });
-    }
-
-    if (url.pathname === "/api/recurrences") {
-      return jsonResponse({
-        recurrences: [
-          {
-            id: "recurrence-1",
-            status: "active",
-            frequency: "monthly",
-            interval: 1,
-            startOn: "2026-06-05",
-            amountMinor: 2990,
-            currency: "BRL",
-            description: "Assinatura streaming",
-            cardId: "card-1",
-          },
-        ],
-      });
-    }
-
-    return jsonResponse({});
-  };
-
-  const html = await renderCardsPage("session-token");
-
-  assert.match(html, /Assinatura streaming/);
-  assert.match(html, /recurrence-indicator/);
-  assert.match(html, /Nenhuma parcela neste período/);
-  assert.doesNotMatch(html, /installment-technical/);
 }
 
 function jsonResponse(body: unknown): Response {

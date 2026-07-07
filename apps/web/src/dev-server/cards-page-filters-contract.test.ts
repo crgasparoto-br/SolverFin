@@ -19,7 +19,7 @@ const invoice = {
   periodEndOn: "2028-01-31",
   periodStartOn: "2028-01-01",
   status: "open",
-  totalAmountMinor: 3990,
+  totalAmountMinor: 1990,
 };
 const purchase = {
   amountMinor: 1990,
@@ -35,42 +35,19 @@ const purchase = {
   recurrenceId: "recurrence-1",
   status: "posted",
 };
-const installment = {
-  amountMinor: 2000,
-  card: { id: "card-1", name: "Cartao principal", status: "active" },
-  cardInstrument,
-  category,
-  currency: "BRL",
-  dueOn: "2028-01-12",
-  editBlockedReason: "installment_status_locked",
-  editable: false,
-  financialProfileId: "profile-1",
-  id: "installment-1",
-  invoice,
-  sequenceNumber: 2,
-  status: "reconciled",
-  totalInstallments: 3,
-  transaction: {
-    categoryId: "cat-streaming",
-    description: "Parcela avulsa",
-    id: "purchase-2",
-    invoiceId: "invoice-1",
-    status: "reconciled",
-  },
-};
 const invoiceSummary = {
-  amountDueMinor: 3990,
+  amountDueMinor: 1990,
   cardId: "card-1",
   cardName: "Cartao principal",
   cardTotals: [
     {
       cardId: "card-1",
       cardName: "Cartao principal",
-      invoiceAmountDueMinor: 3990,
-      invoiceTotalMinor: 3990,
-      limitAvailableMinor: 6010,
+      invoiceAmountDueMinor: 1990,
+      invoiceTotalMinor: 1990,
+      limitAvailableMinor: 8010,
       limitTotalMinor: 10000,
-      limitUsedMinor: 3990,
+      limitUsedMinor: 1990,
     },
   ],
   closingOn: "2028-01-31",
@@ -80,9 +57,9 @@ const invoiceSummary = {
   periodStartOn: "2028-01-01",
   previousBalanceMinor: 0,
   purchasesCount: 1,
-  reconciledExpensesMinor: 2000,
+  reconciledExpensesMinor: 0,
   status: "open",
-  totalExpensesMinor: 3990,
+  totalExpensesMinor: 1990,
   totalPaidMinor: 0,
   unreconciledExpensesMinor: 1990,
 };
@@ -101,27 +78,25 @@ const responses: Record<string, unknown> = {
   },
   "/api/categories": { categories: [category] },
   "/api/credit-card-accounts/card-1/instruments": { instruments: [cardInstrument] },
-  "/api/installments": { installments: [installment] },
   "/api/invoices": { invoices: [invoice] },
   "/api/invoices/invoice-1/purchases": { purchases: [purchase] },
   "/api/invoices/invoice-1/summary": { summary: invoiceSummary },
   "/api/recurrences": { recurrences: [] },
 };
 
-const filterTargetSelector =
-  /document\.querySelectorAll\("\[data-purchase-item\], \[data-installment-item\]"\)/;
+const filterTargetSelector = /document\.querySelectorAll\("\[data-purchase-item\]"\)/;
 const purchaseFilterContract =
   /<article class="purchase-row" data-purchase-item data-reconciliation="unreconciled" data-search="[^"]*spotify recorrente[^"]*streaming[^"]*"/;
-const installmentFilterContract =
-  /<article class="installment-row" data-installment-item data-reconciliation="reconciled" data-search="[^"]*parcela avulsa[^"]*streaming[^"]*"/;
 
-await cardsPageFiltersPurchasesAndInstallments();
+await cardsPageFiltersPurchases();
 
-async function cardsPageFiltersPurchasesAndInstallments(): Promise<void> {
+async function cardsPageFiltersPurchases(): Promise<void> {
   const originalFetch = globalThis.fetch;
+  const calledPaths: string[] = [];
 
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = resolveFetchUrl(input);
+    calledPaths.push(`${url.pathname}${url.search}`);
     const body = responses[url.pathname];
 
     if (body === undefined) {
@@ -143,7 +118,13 @@ async function cardsPageFiltersPurchasesAndInstallments(): Promise<void> {
     assert.match(html, /data-reconciliation-toggle="reconciled"/);
     assert.match(html, filterTargetSelector);
     assert.match(html, purchaseFilterContract);
-    assert.match(html, installmentFilterContract);
+    assert.doesNotMatch(html, /installments-section/);
+    assert.doesNotMatch(html, /Histórico da fatura/);
+    assert.equal(
+      calledPaths.some((path) => path.startsWith("/api/installments")),
+      false,
+      "cards page must not query /api/installments after removing the standalone installments block",
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }

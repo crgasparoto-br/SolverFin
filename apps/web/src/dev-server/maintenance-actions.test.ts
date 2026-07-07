@@ -88,7 +88,6 @@ async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void>
   assert.match(html, /data-api-path="\/api\/invoices\/invoice-1\/close"/);
   assert.match(html, /data-path="\/api\/invoices\/invoice-1\/pay"/);
   assert.match(html, /Lançar pagamento/);
-  assert.match(html, /Nenhuma parcela neste período/);
 }
 
 async function budgetsExposeUsageAndArchiveActions(): Promise<void> {
@@ -201,10 +200,6 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
 
   if (pathname === "/api/invoices/invoice-1/purchases") {
     return { purchases: [] };
-  }
-
-  if (pathname === "/api/installments") {
-    return { installments: [] };
   }
 
   if (pathname === "/api/recurrences") {

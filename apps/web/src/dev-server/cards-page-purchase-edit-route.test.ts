@@ -117,10 +117,6 @@ async function cardsPageRoutesCardPurchaseEditsThroughPurchaseEndpoint(): Promis
       return jsonResponse({ categories: [] });
     }
 
-    if (url.pathname === "/api/installments") {
-      return jsonResponse({ installments: [] });
-    }
-
     if (url.pathname === "/api/recurrences") {
       return jsonResponse({ recurrences: [] });
     }

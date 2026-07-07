@@ -48,31 +48,6 @@ const purchase = {
   recurrenceId: "recurrence-1",
   status: "posted",
 };
-const installment = {
-  amountMinor: 1990,
-  card: { id: "card-1", name: "Cartao principal", status: "active" },
-  cardInstrument,
-  category,
-  currency: "BRL",
-  dueOn: "2028-01-10",
-  editBlockedReason: "invoice_linked",
-  editable: false,
-  financialProfileId: "profile-1",
-  id: "installment-1",
-  invoice,
-  recurrence: { description: "Spotify recorrente", id: "recurrence-1", status: "active" },
-  sequenceNumber: 1,
-  status: "posted",
-  totalInstallments: 1,
-  transaction: {
-    categoryId: "cat-streaming",
-    description: "Spotify recorrente",
-    id: "purchase-1",
-    invoiceId: "invoice-1",
-    recurrenceId: "recurrence-1",
-    status: "posted",
-  },
-};
 const invoiceSummary = {
   amountDueMinor: 1990,
   cardId: "card-1",
@@ -116,7 +91,6 @@ const responses: Record<string, unknown> = {
   },
   "/api/categories": { categories: [category] },
   "/api/credit-card-accounts/card-1/instruments": { instruments: [cardInstrument] },
-  "/api/installments": { installments: [installment] },
   "/api/invoices": { invoices: [invoice] },
   "/api/invoices/invoice-1/purchases": { purchases: [purchase] },
   "/api/invoices/invoice-1/summary": { summary: invoiceSummary },
@@ -124,7 +98,6 @@ const responses: Record<string, unknown> = {
 };
 
 const purchaseRowMarker = '<article class="purchase-row" data-purchase-item';
-const installmentRowMarker = '<article class="installment-row" data-installment-item';
 const recurringPurchasePattern =
   /<article class="purchase-row" data-purchase-item[\s\S]*class="recurrence-indicator"/;
 
@@ -155,14 +128,14 @@ async function cardsPageRendersRecurringPurchaseOnce(): Promise<void> {
 
     assert.doesNotMatch(html, /Erro ao carregar dados/);
     assert.equal(countOccurrences(html, purchaseRowMarker), 1);
-    assert.equal(countOccurrences(html, installmentRowMarker), 0);
     assert.match(html, recurringPurchasePattern);
     assert.match(html, /data-recurrence-edit="recurrence-1"/);
-    assert.match(html, /Nenhuma parcela neste período/);
-    assert.ok(
-      requestedPaths.includes(
-        "/api/installments?cardId=card-1&status=all&dueFrom=2028-01-01&dueTo=2028-01-31",
-      ),
+    assert.doesNotMatch(html, /installments-section/);
+    assert.doesNotMatch(html, /Histórico da fatura/);
+    assert.equal(
+      requestedPaths.some((path) => path.startsWith("/api/installments")),
+      false,
+      "cards page must not query /api/installments after removing the standalone installments block",
     );
   } finally {
     globalThis.fetch = originalFetch;
