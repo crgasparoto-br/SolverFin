@@ -219,7 +219,10 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.doesNotMatch(html, /Compromissos previsíveis/);
   assert.doesNotMatch(html, /Recorrências deste cartão/);
   assert.match(html, /recurrence-indicator/);
-  assert.match(html, /data-recurrence-edit="recurrence-card-1"/);
+  assert.doesNotMatch(html, /data-recurrence-edit="recurrence-card-1"/);
+  assert.doesNotMatch(html, />Editar recorrência</);
+  assert.match(html, /Pausar recorrência/);
+  assert.match(html, /Cancelar recorrência/);
   assert.doesNotMatch(html, /\/recorrencias/);
   assert.doesNotMatch(html, /\/pagar-receber/);
   assert.doesNotMatch(html, /name="kind"/, "card recurrences should not expose a kind field");
