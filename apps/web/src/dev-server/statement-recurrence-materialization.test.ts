@@ -10,9 +10,13 @@ await usesFirstActiveAccountWhenStatementHasNoAccountFilter();
 globalThis.fetch = originalFetch;
 
 async function materializesActiveAccountRecurrencesThroughSelectedMonth(): Promise<void> {
-  const generationRequests: Array<{ path: string; body: unknown; authorization: string | null }> = [];
+  const generationRequests: Array<{ path: string; body: unknown; authorization: string | null }> =
+    [];
 
-  globalThis.fetch = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+  globalThis.fetch = async (
+    input: string | URL | Request,
+    init?: RequestInit,
+  ): Promise<Response> => {
     const url = resolveFetchUrl(input);
 
     if (url.pathname === "/api/accounts") {
