@@ -12,6 +12,7 @@ import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   archiveCardInstrumentForContext,
   archiveCreditCardAccountForContext,
@@ -57,6 +58,11 @@ route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, createCardInstrumentH
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCardInstrumentHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, updateCardPurchaseHandler);
+route(
+  "POST",
+  `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/move-invoice-period`,
+  moveCardPurchaseInvoicePeriodHandler,
+);
 route("PATCH", `${INSTRUMENTS_BASE_PATH}/:instrumentId`, updateCardInstrumentHandler);
 route("POST", `${INSTRUMENTS_BASE_PATH}/:instrumentId/archive`, archiveCardInstrumentHandler);
 
@@ -338,6 +344,22 @@ async function updateCardPurchaseHandler(
   return json(200, result);
 }
 
+async function moveCardPurchaseInvoicePeriodHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const result = await moveCardPurchaseInvoicePeriodForContext(
+    context,
+    requireParam(match, "cardId"),
+    requireParam(match, "transactionId"),
+    { invoicePeriod: String(body.invoicePeriod ?? "") },
+  );
+
+  return json(200, result);
+}
+
 async function updateCardInstrumentHandler(
   request: ApiRequest,
   context: TenantContext,
@@ -445,7 +467,7 @@ function requireParam(match: Readonly<Record<string, string>>, key: string): str
   const value = match[key];
 
   if (!value) {
-    throw new AuthError("AUTH_SESSION_REQUIRED", `Missing required path parameter: ${key}.`, 400);
+    throw new AuthError("AUTH_SESSION_REQUIRED", `Missing required path parameter: ${key}.", 400);
   }
 
   return value;
