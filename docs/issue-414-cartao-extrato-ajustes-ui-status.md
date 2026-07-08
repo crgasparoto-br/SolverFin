@@ -6,13 +6,15 @@ Solicitacao recebida:
 2. Em `/cartoes`, ao salvar lancamento recorrente editado, perguntar se a alteracao vale para todos os lancamentos ou somente para o lancamento editado.
 3. Em `/lancamentos`, subir os botoes de acao rapida para o cabecalho, no mesmo padrao do botao **Nova compra** em `/cartoes`.
 
-Estado identificado:
+Implementacao aplicada:
 
-- O label de instrumento ainda concatena o limite em `formatInstrumentLabel`.
-- O fluxo de pergunta para recorrencia existe em `recurrences-section.ts`, mas precisa ser validado no fluxo real da compra editada.
-- O cabecalho do Extrato ainda nao inclui os botoes rapidos no mesmo padrao de Cartoes.
+- `apps/web/src/dev-server/recurrences-section.ts`
+  - remove visualmente o trecho `limite ...` das opcoes de `select[name="cardInstrumentId"]` carregadas nas telas;
+  - ajusta a mensagem de confirmacao de escopo para deixar claro: OK aplica na recorrencia/futuros, Cancelar altera somente o lancamento atual;
+  - move os botoes da secao `Acoes rapidas` do Extrato para `.statement-heading`, criando `.statement-heading-actions`.
+- `apps/web/src/dev-server/issue-414-ui-adjustments.test.ts`
+  - adiciona teste de regressao para script e estilos compartilhados.
 
-Resultado desta rodada:
+Observacao tecnica:
 
-- Documentacao tecnica da solicitacao registrada em branch de trabalho.
-- Implementacao de codigo ainda pendente.
+A alteracao foi aplicada no modulo compartilhado de recorrencias, porque ele ja e carregado tanto em `/cartoes` quanto em `/lancamentos`. Isso evita reescrever arquivos SSR grandes e reduz o risco de sobrescrever CSS/script existente.
