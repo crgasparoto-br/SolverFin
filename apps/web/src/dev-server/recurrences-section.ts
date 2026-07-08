@@ -104,6 +104,7 @@ export function recurrencesSectionScript(): string {
     <script>
       (function () {
         const recurrenceScopeMessage = "Este lançamento faz parte de uma recorrência.\\n\\nOK: aplicar também na recorrência e nos lançamentos futuros.\\nCancelar: alterar somente este lançamento.";
+        const cardPurchaseRecurrenceMessage = "Esta compra faz parte de uma recorrência.\\n\\nOK: Sim, alterar também a recorrência e as compras futuras.\\nCancelar: Não, alterar somente esta compra.";
 
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
@@ -124,14 +125,11 @@ export function recurrencesSectionScript(): string {
           const heading = document.querySelector(".statement-heading");
           const quickActions = document.querySelector(".account-summary .quick-actions");
           if (!heading || !quickActions || heading.querySelector(".statement-heading-actions")) return;
-
           const buttons = Array.from(quickActions.querySelectorAll("button[data-open-modal]"));
           if (buttons.length === 0) return;
-
           const target = document.createElement("div");
           target.className = "statement-heading-actions";
           target.setAttribute("aria-label", "Ações rápidas do extrato");
-
           buttons.forEach((button) => target.appendChild(button));
           heading.appendChild(target);
           quickActions.dataset.actionsMoved = "true";
@@ -155,16 +153,13 @@ export function recurrencesSectionScript(): string {
             const purchase = JSON.parse(node.textContent || "{}");
             const editButton = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
             if (!editButton || editButton.disabled) return;
-
             const menu = editButton.closest(".actions-menu");
             if (!menu || menu.querySelector('[data-move-purchase="' + purchase.id + '"]')) return;
-
             const button = document.createElement("button");
             button.type = "button";
             button.className = "actions-item";
             button.dataset.movePurchase = purchase.id;
             button.innerHTML = renderMoveIcon() + "<span>Mover fatura</span>";
-
             button.addEventListener("click", async () => {
               const invoicePeriod = window.prompt("Informe o período da fatura destino no formato AAAA-MM");
               if (invoicePeriod === null) return;
@@ -173,13 +168,8 @@ export function recurrencesSectionScript(): string {
                 window.alert("Informe um período válido no formato AAAA-MM.");
                 return;
               }
-
               button.disabled = true;
-              const response = await send(
-                "/api/credit-card-accounts/" + purchase.cardId + "/purchases/" + purchase.id + "/move-invoice-period",
-                "POST",
-                { invoicePeriod: normalizedPeriod },
-              );
+              const response = await send("/api/credit-card-accounts/" + purchase.cardId + "/purchases/" + purchase.id + "/move-invoice-period", "POST", { invoicePeriod: normalizedPeriod });
               const body = await response.json().catch(() => ({}));
               if (!response.ok) {
                 window.alert(purchaseMoveErrorMessage(body));
@@ -188,7 +178,6 @@ export function recurrencesSectionScript(): string {
               }
               window.setTimeout(() => window.location.reload(), 450);
             });
-
             const divider = menu.querySelector(".actions-divider");
             if (divider) menu.insertBefore(button, divider);
             else menu.appendChild(button);
@@ -236,7 +225,6 @@ export function recurrencesSectionScript(): string {
           const editScope = form.querySelector('[name="editScope"]');
           if (editScope && editScope.closest("label")) editScope.closest("label").hidden = true;
           const statusNode = form.querySelector('[aria-live="polite"]');
-
           function basePayload(plannedOn, effectiveOn, amountMinor, description, applyToFuturePlanned) {
             const data = new FormData(form);
             const note = String(data.get("note") || "");
@@ -249,7 +237,6 @@ export function recurrencesSectionScript(): string {
             if (categoryId) result.categoryId = categoryId;
             return result;
           }
-
           function plannedAndEffectiveOn(monthOffset) {
             const data = new FormData(form);
             const plannedOnRaw = String(data.get("plannedOn"));
@@ -258,20 +245,17 @@ export function recurrencesSectionScript(): string {
             const effectiveOn = monthOffset ? addMonths(effectiveBase, monthOffset) : effectiveBase;
             return { plannedOn, effectiveOn };
           }
-
           function payload(index, total, applyToFuturePlanned) {
             const data = new FormData(form);
             const dates = plannedAndEffectiveOn(index);
             const description = String(data.get("description") || "") + (total > 1 ? " " + (index + 1) + "/" + total : "");
             return basePayload(dates.plannedOn, dates.effectiveOn, moneyToMinor(data.get("amountMinor")), description, applyToFuturePlanned);
           }
-
           function installmentAmountMinor(totalMinor, totalCount, parcelNumber) {
             const base = Math.floor(totalMinor / totalCount);
             const remainder = totalMinor - base * totalCount;
             return parcelNumber > totalCount - remainder ? base + 1 : base;
           }
-
           function installmentPayload(parcelNumber, totalCount, monthOffset) {
             const data = new FormData(form);
             const dates = plannedAndEffectiveOn(monthOffset);
@@ -281,12 +265,10 @@ export function recurrencesSectionScript(): string {
             const description = String(data.get("description") || "") + " " + parcelNumber + "/" + totalCount;
             return basePayload(dates.plannedOn, dates.effectiveOn, amountMinor, description, false);
           }
-
           function clearCurrentTransaction() {
             delete form.dataset.currentTransactionId;
             delete form.dataset.recurrenceId;
           }
-
           document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", clearCurrentTransaction));
           document.querySelectorAll("[data-transaction]").forEach((node) => {
             const transaction = JSON.parse(node.textContent);
@@ -295,7 +277,6 @@ export function recurrencesSectionScript(): string {
             if (editButton) editButton.addEventListener("click", () => { form.dataset.currentTransactionId = transaction.id; if (transaction.recurrenceId) form.dataset.recurrenceId = transaction.recurrenceId; else delete form.dataset.recurrenceId; if (form.note) form.note.value = transaction.note || ""; });
             if (cloneButton) cloneButton.addEventListener("click", () => { clearCurrentTransaction(); if (form.note) form.note.value = ""; });
           });
-
           form.addEventListener("submit", async (event) => {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -326,24 +307,42 @@ export function recurrencesSectionScript(): string {
         function setupCardPurchaseFormOverride() {
           const form = document.querySelector("[data-purchase-form]");
           if (!form) return;
-
+          const purchasesById = new Map();
           function clearCurrentPurchase() {
             delete form.dataset.currentPurchaseId;
             delete form.dataset.recurrenceId;
           }
-
+          function setCurrentPurchase(purchase) {
+            form.dataset.currentPurchaseId = purchase.id;
+            if (purchase.recurrenceId) form.dataset.recurrenceId = purchase.recurrenceId;
+            else delete form.dataset.recurrenceId;
+            normalizeCardInstrumentLabels();
+          }
+          function purchaseIdFromPath(path) {
+            const match = new RegExp("/purchases/([^/?#]+)").exec(path || "");
+            return match ? match[1] : "";
+          }
           document.querySelectorAll('[data-open-modal="purchase"]').forEach((button) => button.addEventListener("click", clearCurrentPurchase));
           document.querySelectorAll("[data-purchase]").forEach((node) => {
-            const purchase = JSON.parse(node.textContent);
+            const purchase = JSON.parse(node.textContent || "{}");
+            purchasesById.set(purchase.id, purchase);
             const editButton = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
             if (!editButton) return;
-            editButton.addEventListener("click", () => { form.dataset.currentPurchaseId = purchase.id; if (purchase.recurrenceId) form.dataset.recurrenceId = purchase.recurrenceId; else delete form.dataset.recurrenceId; normalizeCardInstrumentLabels(); });
+            editButton.addEventListener("click", () => setCurrentPurchase(purchase));
           });
-
+          document.addEventListener("click", (event) => {
+            const target = event.target && event.target.closest ? event.target.closest("[data-edit-purchase]") : null;
+            if (!target || target.disabled) return;
+            const purchase = purchasesById.get(target.dataset.editPurchase);
+            if (purchase) setCurrentPurchase(purchase);
+          }, true);
           form.addEventListener("submit", async (event) => {
             const method = form.dataset.method || "POST";
-            if (method !== "PATCH" || !form.dataset.recurrenceId) return;
-            const applyToRecurrence = window.confirm(recurrenceScopeMessage);
+            const currentPurchaseId = form.dataset.currentPurchaseId || purchaseIdFromPath(form.dataset.path || form.getAttribute("data-path") || "");
+            const purchase = purchasesById.get(currentPurchaseId);
+            const recurrenceId = form.dataset.recurrenceId || (purchase && purchase.recurrenceId) || "";
+            if (method !== "PATCH" || !recurrenceId) return;
+            const applyToRecurrence = window.confirm(cardPurchaseRecurrenceMessage);
             if (!applyToRecurrence) return;
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -353,7 +352,7 @@ export function recurrencesSectionScript(): string {
             if (categoryId) payload.categoryId = categoryId;
             const cardInstrumentId = String(data.get("cardInstrumentId") || "");
             if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
-            const response = await send("/api/recurrences/" + form.dataset.recurrenceId, "PATCH", payload);
+            const response = await send("/api/recurrences/" + recurrenceId, "PATCH", payload);
             if (response.ok) window.setTimeout(() => window.location.reload(), 450);
             else window.alert(await readMessage(response));
           }, true);
@@ -364,7 +363,6 @@ export function recurrencesSectionScript(): string {
         setupCardPurchaseMoveAction();
         setupTransactionFormOverride();
         setupCardPurchaseFormOverride();
-
         const modal = document.querySelector("[data-recurrence-modal]");
         const modalStatus = modal && modal.querySelector("[data-recurrence-modal-status]");
         const installmentsForm = modal && modal.querySelector("[data-recurrence-installments-form]");

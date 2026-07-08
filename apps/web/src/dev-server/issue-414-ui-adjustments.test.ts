@@ -27,6 +27,31 @@ assert.match(
 );
 assert.match(
   script,
+  /Esta compra faz parte de uma recorrência/,
+  "deve perguntar o escopo ao editar compra recorrente no cartão",
+);
+assert.match(
+  script,
+  /OK: Sim, alterar também a recorrência e as compras futuras/,
+  "a confirmação de cartão deve deixar clara a opção Sim para alterar a recorrência",
+);
+assert.match(
+  script,
+  /Cancelar: Não, alterar somente esta compra/,
+  "a confirmação de cartão deve deixar clara a opção Não para alterar somente a compra",
+);
+assert.match(
+  script,
+  /purchasesById/,
+  "deve manter mapa local de compras para derivar recurrenceId no submit",
+);
+assert.match(
+  script,
+  /purchaseIdFromPath/,
+  "deve conseguir identificar a compra editada pela URL do formulário",
+);
+assert.match(
+  script,
   /moveStatementQuickActionsToHeading\(\)/,
   "deve mover as ações rápidas do extrato para o cabeçalho",
 );
