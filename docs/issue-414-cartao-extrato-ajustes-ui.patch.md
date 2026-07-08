@@ -11,7 +11,9 @@ Substituir `formatInstrumentLabel` por:
 ```ts
 function formatInstrumentLabel(instrument: CardInstrumentRecord): string {
   const name = instrument.name?.trim();
-  const title = name || `${formatInstrumentType(instrument.type)} - ${formatInstrumentHolder(instrument.holder)}`;
+  const title =
+    name ||
+    `${formatInstrumentType(instrument.type)} - ${formatInstrumentHolder(instrument.holder)}`;
   const identifier = instrument.maskedIdentifier ? ` · ${instrument.maskedIdentifier}` : "";
 
   return `${title}${identifier}`;
@@ -38,7 +40,9 @@ Mover os botões rápidos para dentro de `.statement-heading`, no mesmo padrão 
   <div class="statement-heading-actions">
     <button type="button" data-open-modal data-quick-kind="expense" disabled?>Nova saída</button>
     <button type="button" data-open-modal data-quick-kind="income" disabled?>Nova entrada</button>
-    <button type="button" data-open-modal data-quick-kind="transfer" disabled?>Nova transferência</button>
+    <button type="button" data-open-modal data-quick-kind="transfer" disabled?>
+      Nova transferência
+    </button>
   </div>
 </section>
 ```

@@ -40,11 +40,7 @@ assert.match(
   /setupCardPurchaseMoveAction\(\)/,
   "deve registrar a ação visual de mover compra entre faturas",
 );
-assert.match(
-  script,
-  /data-move-purchase/,
-  "deve marcar a ação de mover compra no menu da compra",
-);
+assert.match(script, /data-move-purchase/, "deve marcar a ação de mover compra no menu da compra");
 assert.match(
   script,
   /move-invoice-period/,
