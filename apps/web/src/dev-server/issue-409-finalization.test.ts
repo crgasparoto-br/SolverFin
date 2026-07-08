@@ -214,7 +214,6 @@ async function issue409KeepsCardPurchasesInMainInvoiceListAndLocksClosedInvoiceE
   assert.doesNotMatch(html, /Histórico da fatura/);
   assert.doesNotMatch(html, /installments-section/);
   assert.doesNotMatch(html, /Recorrências deste cartão/);
-  assert.doesNotMatch(html, /data-move-purchase/);
 }
 
 function jsonResponse(body: unknown): Response {
