@@ -391,12 +391,20 @@ function renderFrequencyOptions(selected?: string): string {
     ["monthly", "Mensal"],
     ["yearly", "Anual"],
   ]
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
     .join("");
 }
 
 function renderCategoryOptions(categories: RecurrenceSectionCategory[]): string {
-  return categories.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("");
+  return categories
+    .map(
+      (category) =>
+        `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`,
+    )
+    .join("");
 }
 
 function renderRepeatIcon(): string {
