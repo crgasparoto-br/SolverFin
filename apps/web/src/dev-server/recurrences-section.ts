@@ -319,7 +319,7 @@ export function recurrencesSectionScript(): string {
             normalizeCardInstrumentLabels();
           }
           function purchaseIdFromPath(path) {
-            const match = /\/purchases\/([^/?#]+)/.exec(path || "");
+            const match = new RegExp("/purchases/([^/?#]+)").exec(path || "");
             return match ? match[1] : "";
           }
           document.querySelectorAll('[data-open-modal="purchase"]').forEach((button) => button.addEventListener("click", clearCurrentPurchase));
