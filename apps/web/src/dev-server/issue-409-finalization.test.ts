@@ -8,7 +8,6 @@ const originalFetch = globalThis.fetch;
 await issue409KeepsStatementStatusChipsAsIndicators();
 await issue409KeepsCardPurchasesInMainInvoiceListAndLocksClosedInvoiceEdits();
 
-
 globalThis.fetch = originalFetch;
 
 async function issue409KeepsStatementStatusChipsAsIndicators(): Promise<void> {
