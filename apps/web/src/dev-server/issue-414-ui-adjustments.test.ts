@@ -35,3 +35,33 @@ assert.match(
   /statement-heading-actions/,
   "deve estilizar as ações rápidas movidas para o cabeçalho do extrato",
 );
+assert.match(
+  script,
+  /setupCardPurchaseMoveAction\(\)/,
+  "deve registrar a ação visual de mover compra entre faturas",
+);
+assert.match(
+  script,
+  /data-move-purchase/,
+  "deve marcar a ação de mover compra no menu da compra",
+);
+assert.match(
+  script,
+  /move-invoice-period/,
+  "deve chamar o endpoint dedicado de movimentação de compra entre faturas",
+);
+assert.match(
+  script,
+  /invoicePeriod: normalizedPeriod/,
+  "deve enviar somente o periodo operacional da fatura destino no payload",
+);
+assert.doesNotMatch(
+  script,
+  /destinationInvoiceId|invoiceId: normalizedPeriod/,
+  "não deve calcular nem enviar invoiceId de destino no frontend",
+);
+assert.match(
+  script,
+  /editButton\.disabled/,
+  "deve omitir a ação quando a compra não estiver editável",
+);
