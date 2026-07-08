@@ -308,7 +308,7 @@ async function resolveInvoiceMoveAmountMinor(
     return findInstallmentAmountMinor(context, purchase.installmentId);
   }
 
-  const installmentAmountMinor = await findInstallmentAmountMinorByTransactionAndDueOn(
+  const installmentAmountMinor = await findInstallmentAmountMinorByDueOn(
     context,
     purchase,
     toDateOnly(originInvoice.dueOn),
@@ -336,25 +336,12 @@ async function findInstallmentAmountMinor(
   return row.amountMinor;
 }
 
-async function findInstallmentAmountMinorByTransactionAndDueOn(
+async function findInstallmentAmountMinorByDueOn(
   context: TenantContext,
   purchase: PurchaseForMoveRow,
   dueOn: string,
 ): Promise<number | undefined> {
   const rows = await query<InstallmentAmountForMoveRow>(
-    `select "amountMinor"
-       from "Installment"
-      where "organizationId" = $1 and "financialProfileId" = $2
-        and "transactionId" = $3 and "dueOn" = $4
-      limit 1`,
-    [context.organizationId, context.financialProfileId, purchase.id, dueOn],
-  );
-
-  if (rows[0] !== undefined) {
-    return rows[0].amountMinor;
-  }
-
-  const fallbackRows = await query<InstallmentAmountForMoveRow>(
     `select "amountMinor"
        from "Installment"
       where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3
@@ -373,7 +360,7 @@ async function findInstallmentAmountMinorByTransactionAndDueOn(
     ],
   );
 
-  return fallbackRows[0]?.amountMinor;
+  return rows[0]?.amountMinor;
 }
 
 function buildNewInvoice(
