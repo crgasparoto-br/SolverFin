@@ -200,10 +200,8 @@ export async function moveCardPurchaseInvoicePeriodForContext(
         invoiceId: "changed",
         invoicePeriod: "changed",
         occurredOn: "changed",
-        installmentScope: current.installmentId !== null ? "selected_purchase" : "none",
-        recurrenceScope: current.recurrenceId !== null ? "materialized_occurrence_only" : "none",
-        fromInvoiceId: originInvoice.id,
-        toInvoiceId: destinationInvoice.id,
+        ...(current.installmentId !== null ? { installmentId: "changed" as const } : {}),
+        ...(current.recurrenceId !== null ? { recurrenceId: "changed" as const } : {}),
       },
     });
   });
