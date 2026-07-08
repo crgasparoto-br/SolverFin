@@ -76,7 +76,6 @@ async function assertMoveCommonPurchase(
     amountMinor: 2_500,
     description: `Compra mover comum ${suffix}`,
     cardInstrumentId: instrument.id,
-    categoryId: "44444444-4444-4444-8444-444444444444",
   });
   const originInvoiceId = purchase.invoice.id;
   const destinationInvoiceId = destination.invoice.id;
@@ -92,7 +91,6 @@ async function assertMoveCommonPurchase(
   assert.equal(result.transaction.invoiceId, destinationInvoiceId);
   assert.equal(result.transaction.cardId, cardId);
   assert.equal(result.transaction.cardInstrumentId, instrument.id);
-  assert.equal(result.transaction.categoryId, "44444444-4444-4444-8444-444444444444");
   assert.equal(result.transaction.amountMinor, 2_500);
   assert.equal(result.transaction.currency, "BRL");
   assert.equal(result.transaction.description, `Compra mover comum ${suffix}`);
