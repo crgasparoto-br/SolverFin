@@ -137,6 +137,64 @@ export function recurrencesSectionScript(): string {
           quickActions.dataset.actionsMoved = "true";
         }
 
+        function purchaseMoveErrorMessage(responseBody) {
+          const code = responseBody && responseBody.error && responseBody.error.code;
+          if (code === "CARD_PURCHASE_INVOICE_PERIOD_INVALID") return "Informe um período válido no formato AAAA-MM.";
+          if (code === "CARD_PURCHASE_INVOICE_PERIOD_UNCHANGED") return "A compra já está nesta fatura.";
+          if (code === "CARD_PURCHASE_INVOICE_LOCKED") return "A fatura de origem está fechada, paga ou cancelada.";
+          if (code === "CARD_PURCHASE_DESTINATION_INVOICE_LOCKED") return "A fatura de destino está fechada, paga ou cancelada.";
+          return (responseBody && responseBody.error && responseBody.error.message) || "Não foi possível mover a compra.";
+        }
+
+        function renderMoveIcon() {
+          return '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M7 7h11l-3-3m3 3-3 3M17 17H6l3 3m-3-3 3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+
+        function setupCardPurchaseMoveAction() {
+          document.querySelectorAll("[data-purchase]").forEach((node) => {
+            const purchase = JSON.parse(node.textContent || "{}");
+            const editButton = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
+            if (!editButton || editButton.disabled) return;
+
+            const menu = editButton.closest(".actions-menu");
+            if (!menu || menu.querySelector('[data-move-purchase="' + purchase.id + '"]')) return;
+
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "actions-item";
+            button.dataset.movePurchase = purchase.id;
+            button.innerHTML = renderMoveIcon() + "<span>Mover fatura</span>";
+
+            button.addEventListener("click", async () => {
+              const invoicePeriod = window.prompt("Informe o período da fatura destino no formato AAAA-MM");
+              if (invoicePeriod === null) return;
+              const normalizedPeriod = String(invoicePeriod || "").trim();
+              if (!/^\\d{4}-\\d{2}$/.test(normalizedPeriod)) {
+                window.alert("Informe um período válido no formato AAAA-MM.");
+                return;
+              }
+
+              button.disabled = true;
+              const response = await send(
+                "/api/credit-card-accounts/" + purchase.cardId + "/purchases/" + purchase.id + "/move-invoice-period",
+                "POST",
+                { invoicePeriod: normalizedPeriod },
+              );
+              const body = await response.json().catch(() => ({}));
+              if (!response.ok) {
+                window.alert(purchaseMoveErrorMessage(body));
+                button.disabled = false;
+                return;
+              }
+              window.setTimeout(() => window.location.reload(), 450);
+            });
+
+            const divider = menu.querySelector(".actions-divider");
+            if (divider) menu.insertBefore(button, divider);
+            else menu.appendChild(button);
+          });
+        }
+
         document.querySelectorAll("[data-recurrence-modal] [data-money]").forEach((input) => {
           input.addEventListener("input", () => {
             const digits = input.value.replace(/\\D/g, "");
@@ -175,25 +233,14 @@ export function recurrencesSectionScript(): string {
         function setupTransactionFormOverride() {
           const form = document.querySelector("[data-form]");
           if (!form || !form.repeatMode || !form.plannedOn || !form.amountMinor) return;
-
           const editScope = form.querySelector('[name="editScope"]');
           if (editScope && editScope.closest("label")) editScope.closest("label").hidden = true;
-
           const statusNode = form.querySelector('[aria-live="polite"]');
 
           function basePayload(plannedOn, effectiveOn, amountMinor, description, applyToFuturePlanned) {
             const data = new FormData(form);
             const note = String(data.get("note") || "");
-            const result = {
-              kind: String(data.get("kind")),
-              amountMinor,
-              occurredOn: effectiveOn || plannedOn,
-              plannedOn,
-              effectiveOn: effectiveOn || null,
-              accountId: String(data.get("accountId")),
-              description,
-              status: String(data.get("status"))
-            };
+            const result = { kind: String(data.get("kind")), amountMinor, occurredOn: effectiveOn || plannedOn, plannedOn, effectiveOn: effectiveOn || null, accountId: String(data.get("accountId")), description, status: String(data.get("status")) };
             if (note.trim() || form.dataset.currentTransactionId) result.note = note;
             if (applyToFuturePlanned) result.applyToFuturePlanned = true;
             const destinationAccountId = String(data.get("destinationAccountId") || "");
@@ -230,9 +277,7 @@ export function recurrencesSectionScript(): string {
             const dates = plannedAndEffectiveOn(monthOffset);
             const enteredAmountMinor = moneyToMinor(data.get("amountMinor"));
             const valueMode = String(data.get("installmentValueMode") || "per_installment");
-            const amountMinor = valueMode === "total"
-              ? installmentAmountMinor(enteredAmountMinor, totalCount, parcelNumber)
-              : enteredAmountMinor;
+            const amountMinor = valueMode === "total" ? installmentAmountMinor(enteredAmountMinor, totalCount, parcelNumber) : enteredAmountMinor;
             const description = String(data.get("description") || "") + " " + parcelNumber + "/" + totalCount;
             return basePayload(dates.plannedOn, dates.effectiveOn, amountMinor, description, false);
           }
@@ -242,28 +287,13 @@ export function recurrencesSectionScript(): string {
             delete form.dataset.recurrenceId;
           }
 
-          document.querySelectorAll("[data-open-modal]").forEach((button) => {
-            button.addEventListener("click", clearCurrentTransaction);
-          });
-
+          document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", clearCurrentTransaction));
           document.querySelectorAll("[data-transaction]").forEach((node) => {
             const transaction = JSON.parse(node.textContent);
             const editButton = document.querySelector('[data-edit="' + transaction.id + '"]');
             const cloneButton = document.querySelector('[data-clone="' + transaction.id + '"]');
-            if (editButton) {
-              editButton.addEventListener("click", () => {
-                form.dataset.currentTransactionId = transaction.id;
-                if (transaction.recurrenceId) form.dataset.recurrenceId = transaction.recurrenceId;
-                else delete form.dataset.recurrenceId;
-                if (form.note) form.note.value = transaction.note || "";
-              });
-            }
-            if (cloneButton) {
-              cloneButton.addEventListener("click", () => {
-                clearCurrentTransaction();
-                if (form.note) form.note.value = "";
-              });
-            }
+            if (editButton) editButton.addEventListener("click", () => { form.dataset.currentTransactionId = transaction.id; if (transaction.recurrenceId) form.dataset.recurrenceId = transaction.recurrenceId; else delete form.dataset.recurrenceId; if (form.note) form.note.value = transaction.note || ""; });
+            if (cloneButton) cloneButton.addEventListener("click", () => { clearCurrentTransaction(); if (form.note) form.note.value = ""; });
           });
 
           form.addEventListener("submit", async (event) => {
@@ -272,32 +302,18 @@ export function recurrencesSectionScript(): string {
             const mode = form.repeatMode.value;
             const method = form.dataset.method || "POST";
             const path = form.dataset.path || "/api/transactions";
-            const applyToFuturePlanned = method === "PATCH" && Boolean(form.dataset.recurrenceId)
-              ? window.confirm(recurrenceScopeMessage)
-              : false;
+            const applyToFuturePlanned = method === "PATCH" && Boolean(form.dataset.recurrenceId) ? window.confirm(recurrenceScopeMessage) : false;
             let response;
             if (statusNode) statusNode.textContent = "Salvando...";
             if (mode === "fixed" && method === "POST") {
               const item = payload(0, 1, false);
-              response = await send("/api/recurrences", "POST", {
-                frequency: form.frequency.value,
-                interval: Math.max(1, Number(form.interval.value || 1)),
-                startOn: form.plannedOn.value,
-                endOn: form.endOn.value || undefined,
-                amountMinor: item.amountMinor,
-                description: String(new FormData(form).get("description") || ""),
-                kind: item.kind,
-                accountId: item.accountId,
-                categoryId: item.categoryId
-              });
+              response = await send("/api/recurrences", "POST", { frequency: form.frequency.value, interval: Math.max(1, Number(form.interval.value || 1)), startOn: form.plannedOn.value, endOn: form.endOn.value || undefined, amountMinor: item.amountMinor, description: String(new FormData(form).get("description") || ""), kind: item.kind, accountId: item.accountId, categoryId: item.categoryId });
             } else if (mode === "installment" && method === "POST") {
               const totalCount = Math.max(2, Number(form.installments.value || 2));
               const startParcel = Math.min(Math.max(1, Number(form.installmentStart.value || 1)), totalCount);
               const responses = [];
               let monthOffset = 0;
-              for (let parcelNumber = startParcel; parcelNumber <= totalCount; parcelNumber += 1, monthOffset += 1) {
-                responses.push(await send("/api/transactions", "POST", installmentPayload(parcelNumber, totalCount, monthOffset)));
-              }
+              for (let parcelNumber = startParcel; parcelNumber <= totalCount; parcelNumber += 1, monthOffset += 1) responses.push(await send("/api/transactions", "POST", installmentPayload(parcelNumber, totalCount, monthOffset)));
               response = responses.find((item) => !item.ok) || responses[responses.length - 1];
             } else {
               response = await send(path, method, payload(0, 1, applyToFuturePlanned));
@@ -316,20 +332,12 @@ export function recurrencesSectionScript(): string {
             delete form.dataset.recurrenceId;
           }
 
-          document.querySelectorAll('[data-open-modal="purchase"]').forEach((button) => {
-            button.addEventListener("click", clearCurrentPurchase);
-          });
-
+          document.querySelectorAll('[data-open-modal="purchase"]').forEach((button) => button.addEventListener("click", clearCurrentPurchase));
           document.querySelectorAll("[data-purchase]").forEach((node) => {
             const purchase = JSON.parse(node.textContent);
             const editButton = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
             if (!editButton) return;
-            editButton.addEventListener("click", () => {
-              form.dataset.currentPurchaseId = purchase.id;
-              if (purchase.recurrenceId) form.dataset.recurrenceId = purchase.recurrenceId;
-              else delete form.dataset.recurrenceId;
-              normalizeCardInstrumentLabels();
-            });
+            editButton.addEventListener("click", () => { form.dataset.currentPurchaseId = purchase.id; if (purchase.recurrenceId) form.dataset.recurrenceId = purchase.recurrenceId; else delete form.dataset.recurrenceId; normalizeCardInstrumentLabels(); });
           });
 
           form.addEventListener("submit", async (event) => {
@@ -337,22 +345,14 @@ export function recurrencesSectionScript(): string {
             if (method !== "PATCH" || !form.dataset.recurrenceId) return;
             const applyToRecurrence = window.confirm(recurrenceScopeMessage);
             if (!applyToRecurrence) return;
-
             event.preventDefault();
             event.stopImmediatePropagation();
-
             const data = new FormData(form);
-            const payload = {
-              description: String(data.get("description") || ""),
-              amountMinor: moneyToMinor(data.get("amountMinor")),
-              startOn: String(data.get("occurredOn") || ""),
-              editScope: "recurrence_and_future_pending"
-            };
+            const payload = { description: String(data.get("description") || ""), amountMinor: moneyToMinor(data.get("amountMinor")), startOn: String(data.get("occurredOn") || ""), editScope: "recurrence_and_future_pending" };
             const categoryId = String(data.get("categoryId") || "");
             if (categoryId) payload.categoryId = categoryId;
             const cardInstrumentId = String(data.get("cardInstrumentId") || "");
             if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
-
             const response = await send("/api/recurrences/" + form.dataset.recurrenceId, "PATCH", payload);
             if (response.ok) window.setTimeout(() => window.location.reload(), 450);
             else window.alert(await readMessage(response));
@@ -361,13 +361,13 @@ export function recurrencesSectionScript(): string {
 
         normalizeCardInstrumentLabels();
         moveStatementQuickActionsToHeading();
+        setupCardPurchaseMoveAction();
         setupTransactionFormOverride();
         setupCardPurchaseFormOverride();
 
         const modal = document.querySelector("[data-recurrence-modal]");
         const modalStatus = modal && modal.querySelector("[data-recurrence-modal-status]");
         const installmentsForm = modal && modal.querySelector("[data-recurrence-installments-form]");
-
         installmentsForm && installmentsForm.addEventListener("submit", async (event) => {
           event.preventDefault();
           const data = new FormData(installmentsForm);
@@ -380,21 +380,7 @@ export function recurrencesSectionScript(): string {
           if (modalStatus) modalStatus.textContent = response.ok ? "Parcelas geradas. Atualizando..." : await readMessage(response);
           if (response.ok) window.setTimeout(() => window.location.reload(), 450);
         });
-
-        document.querySelectorAll("[data-recurrence-action]").forEach((button) => {
-          button.addEventListener("click", async () => {
-            const confirmation = button.dataset.recurrenceActionConfirm;
-            if (confirmation && !window.confirm(confirmation)) return;
-            button.disabled = true;
-            const response = await send(button.dataset.recurrenceActionPath, button.dataset.recurrenceActionMethod || "POST", {});
-            if (!response.ok) {
-              window.alert(await readMessage(response));
-              button.disabled = false;
-              return;
-            }
-            window.setTimeout(() => window.location.reload(), 450);
-          });
-        });
+        document.querySelectorAll("[data-recurrence-action]").forEach((button) => button.addEventListener("click", async () => { const confirmation = button.dataset.recurrenceActionConfirm; if (confirmation && !window.confirm(confirmation)) return; button.disabled = true; const response = await send(button.dataset.recurrenceActionPath, button.dataset.recurrenceActionMethod || "POST", {}); if (!response.ok) { window.alert(await readMessage(response)); button.disabled = false; return; } window.setTimeout(() => window.location.reload(), 450); }));
       })();
     </script>
   `;
@@ -407,20 +393,12 @@ function renderFrequencyOptions(selected?: string): string {
     ["monthly", "Mensal"],
     ["yearly", "Anual"],
   ]
-    .map(
-      ([value, label]) =>
-        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
-    )
+    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
     .join("");
 }
 
 function renderCategoryOptions(categories: RecurrenceSectionCategory[]): string {
-  return categories
-    .map(
-      (category) =>
-        `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`,
-    )
-    .join("");
+  return categories.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("");
 }
 
 function renderRepeatIcon(): string {
