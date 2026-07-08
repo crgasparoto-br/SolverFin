@@ -72,6 +72,10 @@ interface PurchaseForMoveRow {
   updatedAt: Date;
 }
 
+interface InstallmentAmountForMoveRow {
+  amountMinor: number;
+}
+
 const LOCKED_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
 const invoicePeriodPattern = /^\d{4}-\d{2}$/;
 
@@ -121,6 +125,7 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   }
 
   const destinationInvoice = existingDestinationInvoice ?? buildNewInvoice(context, cardId, destinationPeriod, current);
+  const invoiceMoveAmountMinor = await resolveInvoiceMoveAmountMinor(context, current);
   const destinationOccurredOn = resolveMovedPurchaseDate(current, destinationPeriod);
   const now = new Date().toISOString();
 
@@ -178,13 +183,13 @@ export async function moveCardPurchaseInvoicePeriodForContext(
     await executeQuery(
       `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" - $4, "updatedAt" = $5
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [originInvoice.id, context.organizationId, context.financialProfileId, current.amountMinor, now],
+      [originInvoice.id, context.organizationId, context.financialProfileId, invoiceMoveAmountMinor, now],
     );
 
     await executeQuery(
       `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4, "updatedAt" = $5
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [destinationInvoice.id, context.organizationId, context.financialProfileId, current.amountMinor, now],
+      [destinationInvoice.id, context.organizationId, context.financialProfileId, invoiceMoveAmountMinor, now],
     );
 
     await insertAuditLogEntry(executeQuery, {
@@ -292,6 +297,29 @@ async function findInvoiceByPeriodForMove(
   );
 
   return rows[0];
+}
+
+async function resolveInvoiceMoveAmountMinor(
+  context: TenantContext,
+  purchase: PurchaseForMoveRow,
+): Promise<number> {
+  if (purchase.installmentId === null) {
+    return purchase.amountMinor;
+  }
+
+  const rows = await query<InstallmentAmountForMoveRow>(
+    `select "amountMinor"
+       from "Installment"
+      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [purchase.installmentId, context.organizationId, context.financialProfileId],
+  );
+  const row = rows[0];
+
+  if (row === undefined) {
+    throw notFoundError();
+  }
+
+  return row.amountMinor;
 }
 
 function buildNewInvoice(
