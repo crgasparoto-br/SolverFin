@@ -89,7 +89,9 @@ export async function moveCardPurchaseInvoicePeriodForContext(
     findCardForMove(context, cardId),
     findPurchaseForMove(context, cardId, transactionId),
   ]);
-  const originInvoice = current.invoiceId ? await findInvoiceForMove(context, current.invoiceId) : undefined;
+  const originInvoice = current.invoiceId
+    ? await findInvoiceForMove(context, current.invoiceId)
+    : undefined;
 
   if (!originInvoice || originInvoice.cardId !== cardId || current.invoiceId === null) {
     throw new InvoiceContractError(
@@ -124,8 +126,13 @@ export async function moveCardPurchaseInvoicePeriodForContext(
     assertInvoiceEditable(existingDestinationInvoice, "CARD_PURCHASE_DESTINATION_INVOICE_LOCKED");
   }
 
-  const destinationInvoice = existingDestinationInvoice ?? buildNewInvoice(context, cardId, destinationPeriod, current);
-  const invoiceMoveAmountMinor = await resolveInvoiceMoveAmountMinor(context, current, originInvoice);
+  const destinationInvoice =
+    existingDestinationInvoice ?? buildNewInvoice(context, cardId, destinationPeriod, current);
+  const invoiceMoveAmountMinor = await resolveInvoiceMoveAmountMinor(
+    context,
+    current,
+    originInvoice,
+  );
   const destinationOccurredOn = resolveMovedPurchaseDate(current, destinationPeriod);
   const now = new Date().toISOString();
 
@@ -183,13 +190,25 @@ export async function moveCardPurchaseInvoicePeriodForContext(
     await executeQuery(
       `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" - $4, "updatedAt" = $5
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [originInvoice.id, context.organizationId, context.financialProfileId, invoiceMoveAmountMinor, now],
+      [
+        originInvoice.id,
+        context.organizationId,
+        context.financialProfileId,
+        invoiceMoveAmountMinor,
+        now,
+      ],
     );
 
     await executeQuery(
       `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4, "updatedAt" = $5
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [destinationInvoice.id, context.organizationId, context.financialProfileId, invoiceMoveAmountMinor, now],
+      [
+        destinationInvoice.id,
+        context.organizationId,
+        context.financialProfileId,
+        invoiceMoveAmountMinor,
+        now,
+      ],
     );
 
     await insertAuditLogEntry(executeQuery, {
@@ -293,7 +312,13 @@ async function findInvoiceByPeriodForMove(
       where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3
         and "periodStartOn" = $4 and "periodEndOn" = $5
       limit 1`,
-    [context.organizationId, context.financialProfileId, cardId, period.periodStartOn, period.periodEndOn],
+    [
+      context.organizationId,
+      context.financialProfileId,
+      cardId,
+      period.periodStartOn,
+      period.periodEndOn,
+    ],
   );
 
   return rows[0];
@@ -409,7 +434,10 @@ function resolveDestinationPeriod(card: CardForMoveRow, invoicePeriod: string): 
   return calculateInvoicePeriod(card, closingDate);
 }
 
-function resolveMovedPurchaseDate(purchase: PurchaseForMoveRow, destinationPeriod: InvoicePeriod): string {
+function resolveMovedPurchaseDate(
+  purchase: PurchaseForMoveRow,
+  destinationPeriod: InvoicePeriod,
+): string {
   const originalDay = Number(toDateOnly(purchase.occurredOn).slice(8, 10));
   const destinationYearMonth = destinationPeriod.periodEndOn.slice(0, 7);
   const [year, month] = destinationYearMonth.split("-").map(Number) as [number, number];
