@@ -125,7 +125,7 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   }
 
   const destinationInvoice = existingDestinationInvoice ?? buildNewInvoice(context, cardId, destinationPeriod, current);
-  const invoiceMoveAmountMinor = await resolveInvoiceMoveAmountMinor(context, current);
+  const invoiceMoveAmountMinor = await resolveInvoiceMoveAmountMinor(context, current, originInvoice);
   const destinationOccurredOn = resolveMovedPurchaseDate(current, destinationPeriod);
   const now = new Date().toISOString();
 
@@ -302,16 +302,30 @@ async function findInvoiceByPeriodForMove(
 async function resolveInvoiceMoveAmountMinor(
   context: TenantContext,
   purchase: PurchaseForMoveRow,
+  originInvoice: InvoiceForMoveRow,
 ): Promise<number> {
-  if (purchase.installmentId === null) {
-    return purchase.amountMinor;
+  if (purchase.installmentId !== null) {
+    return findInstallmentAmountMinor(context, purchase.installmentId);
   }
 
+  const installmentAmountMinor = await findInstallmentAmountMinorByTransactionAndDueOn(
+    context,
+    purchase,
+    toDateOnly(originInvoice.dueOn),
+  );
+
+  return installmentAmountMinor ?? purchase.amountMinor;
+}
+
+async function findInstallmentAmountMinor(
+  context: TenantContext,
+  installmentId: EntityId,
+): Promise<number> {
   const rows = await query<InstallmentAmountForMoveRow>(
     `select "amountMinor"
        from "Installment"
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [purchase.installmentId, context.organizationId, context.financialProfileId],
+    [installmentId, context.organizationId, context.financialProfileId],
   );
   const row = rows[0];
 
@@ -320,6 +334,46 @@ async function resolveInvoiceMoveAmountMinor(
   }
 
   return row.amountMinor;
+}
+
+async function findInstallmentAmountMinorByTransactionAndDueOn(
+  context: TenantContext,
+  purchase: PurchaseForMoveRow,
+  dueOn: string,
+): Promise<number | undefined> {
+  const rows = await query<InstallmentAmountForMoveRow>(
+    `select "amountMinor"
+       from "Installment"
+      where "organizationId" = $1 and "financialProfileId" = $2
+        and "transactionId" = $3 and "dueOn" = $4
+      limit 1`,
+    [context.organizationId, context.financialProfileId, purchase.id, dueOn],
+  );
+
+  if (rows[0] !== undefined) {
+    return rows[0].amountMinor;
+  }
+
+  const fallbackRows = await query<InstallmentAmountForMoveRow>(
+    `select "amountMinor"
+       from "Installment"
+      where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3
+        and ($4::uuid is null or "cardInstrumentId" = $4)
+        and "recurrenceId" is null and "dueOn" = $5 and "totalInstallments" > 1
+        and "amountMinor" <= $6
+      order by "updatedAt" desc
+      limit 1`,
+    [
+      context.organizationId,
+      context.financialProfileId,
+      purchase.cardId,
+      purchase.cardInstrumentId,
+      dueOn,
+      purchase.amountMinor,
+    ],
+  );
+
+  return fallbackRows[0]?.amountMinor;
 }
 
 function buildNewInvoice(
