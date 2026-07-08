@@ -221,7 +221,7 @@ async function assertMoveInstallmentPurchaseSelectedOccurrence(
   assert.equal(result.transaction.cardInstrumentId, instrument.id);
   assert.equal(result.transaction.amountMinor, 6_000);
   assert.equal(await readInvoiceTotal(purchase.invoice.id), 0);
-  assert.equal(result.destinationInvoice.totalExpensesMinor, 6_000);
+  assert.equal(result.destinationInvoice.totalExpensesMinor, 2_000);
 }
 
 async function assertMoveRecurringMaterializedOccurrence(
