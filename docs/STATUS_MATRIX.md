@@ -25,6 +25,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/PAYABLES_RECEIVABLES.md`
 - `docs/API_PAYABLES_RECEIVABLES.md`
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
+- `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304 e #338.
 
 ## Decisao atual sobre pagar/receber
@@ -82,11 +83,11 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Cartoes / Faturas
 
 - Dominio/API/persistencia: Feito.
-- UI: Feito.
+- UI: Parcial para mover compra entre faturas; demais fluxos principais feitos.
 - Testes: integracao feita; unitarios parciais.
-- Documentacao: Feito para o modelo atual de cartao agrupador em `docs/CARDS.md`.
-- Nota: cadastro/manutencao do cartao agrupador fica em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao.
-- Lacuna restante: mover uma compra para outra fatura/periodo pela UI.
+- Documentacao: Feito para o modelo atual de cartao agrupador em `docs/CARDS.md` e para o contrato de movimentacao em `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`.
+- Nota: cadastro/manutencao do cartao agrupador fica em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao. O backend ja possui contrato para mover compra entre faturas/periodos; a acao visual em `/cartoes` ainda precisa ser exposta.
+- Lacuna restante: expor na UI a acao de mover compra para outra fatura/periodo usando o contrato backend dedicado.
 
 ### Orcamentos
 
@@ -234,12 +235,13 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Resumo da fatura: Sim.
 - Registrar compra: Sim.
 - Editar compra: Sim.
+- Mover compra entre faturas/periodos: Sim por API; pendente na UI.
 - Filtrar compras: Sim.
 - Fechar fatura: Sim.
 - Pagar fatura: Sim.
 - Cadastro, edicao, bloqueio e arquivamento de cartao agrupador/instrumentos: Sim, em `/contas-cartoes`.
 - Excluir: Nao.
-- Lacuna restante: mover compra para outra fatura/periodo pela UI.
+- Lacuna restante: expor na UI a acao de mover compra para outra fatura/periodo.
 
 ### Orcamentos (`/orcamentos`)
 
@@ -281,6 +283,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Gestao de perfis financeiros existe em `/configuracoes`, mas seletor global persistido e multiusuario avancado seguem fora do fluxo atual.
 - A transicao de `PayableReceivable` tem plano documentado, mas o dominio/API legado permanece por compatibilidade.
 - Importacao, deduplicacao, conciliacao, inbox, regras automaticas e fila revisavel ja possuem primeiras APIs/fluxos; as principais lacunas agora sao preview de importacao amigavel, OFX operacional, payload estruturado completo das sugestoes e politica operacional final de privacidade/retencao.
+- Cartoes ja possuem contrato backend para mover compras entre faturas/periodos; falta expor a acao na UI de `/cartoes`.
 
 ## Proximas implementacoes sugeridas
 
@@ -288,6 +291,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 2. Evoluir payload estruturado de `AiSuggestion` para aplicar categorizacao e regras com efeito especifico apos revisao.
 3. Ampliar relatorios para outras visoes financeiras alem de parcelas.
 4. Implementar manutencao direta controlada de parcelas ja geradas.
-5. Evoluir telas dedicadas de detalhe/uso para contas, categorias, lancamentos, cartoes e orcamentos.
-6. Implementar provider real de autenticacao produtiva e sessao persistente/revogavel.
-7. Consolidar consentimentos, retencao, mascaramento e exportacao/exclusao antes de ampliar IA e importacoes com dados sensiveis.
+5. Expor em `/cartoes` a acao de mover compra entre faturas/periodos usando o contrato dedicado.
+6. Evoluir telas dedicadas de detalhe/uso para contas, categorias, lancamentos, cartoes e orcamentos.
+7. Implementar provider real de autenticacao produtiva e sessao persistente/revogavel.
+8. Consolidar consentimentos, retencao, mascaramento e exportacao/exclusao antes de ampliar IA e importacoes com dados sensiveis.

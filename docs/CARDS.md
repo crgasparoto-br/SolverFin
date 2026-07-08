@@ -104,6 +104,41 @@ Compras de faturas `closed`, `paid` ou `cancelled` tem a acao de edicao desabili
 
 A `Installment` tecnica vinculada a uma compra recorrente materializada (mesma `Transaction` que ja aparece como compra operacional com indicador de recorrencia) nao e exibida em nenhuma area da tela `Cartoes`; ela e filtrada da secao de historico de parcelas.
 
+## Movimentacao de compra entre faturas/periodos
+
+A movimentacao de uma compra para outro periodo de fatura usa o contrato dedicado:
+
+```text
+POST /api/credit-card-accounts/:cardId/purchases/:transactionId/move-invoice-period
+```
+
+Payload:
+
+```json
+{
+  "invoicePeriod": "2026-08"
+}
+```
+
+`invoicePeriod` representa o mes de fechamento da fatura (`AAAA-MM`). A API calcula o periodo real pelo mesmo dominio usado no registro normal de compras, considerando `closingDay` e `dueDay` do cartao agrupador. O cliente nao envia `invoiceId` de destino.
+
+Comportamento:
+
+- valida tenant, perfil financeiro, cartao, compra e fatura de origem;
+- rejeita periodo invalido com `CARD_PURCHASE_INVOICE_PERIOD_INVALID`;
+- rejeita movimentacao para o mesmo periodo com `CARD_PURCHASE_INVOICE_PERIOD_UNCHANGED`;
+- rejeita origem travada com `CARD_PURCHASE_INVOICE_LOCKED`;
+- rejeita destino travado com `CARD_PURCHASE_DESTINATION_INVOICE_LOCKED`;
+- resolve ou cria fatura destino aberta para o periodo calculado;
+- move somente a compra/ocorrencia selecionada;
+- preserva `cardId`, `cardInstrumentId`, categoria, descricao, valor, moeda, status, recorrencia e demais vinculos da compra;
+- ajusta os totais da fatura de origem e da fatura destino na mesma transacao;
+- registra auditoria redigida da operacao.
+
+Para compras recorrentes materializadas, a movimentacao afeta apenas a ocorrencia ja gerada. A regra da recorrencia nao e alterada.
+
+Para compras parceladas, a movimentacao desta entrega e limitada a compra/ocorrencia selecionada. Movimentar um conjunto completo de parcelas continua fora de escopo ate existir contrato especifico de lote.
+
 ## Fluxo legado
 
 O fluxo antigo de criar cartoes separados e vincular adicionais manualmente nao e o comportamento principal.
@@ -123,6 +158,7 @@ PATCH /api/credit-card-accounts/:cardId
 POST /api/credit-card-accounts/:cardId/instruments
 PATCH /api/credit-card-accounts/:cardId/default-instrument
 POST /api/credit-card-accounts/:cardId/archive
+POST /api/credit-card-accounts/:cardId/purchases/:transactionId/move-invoice-period
 PATCH /api/credit-card-instruments/:instrumentId
 POST /api/credit-card-instruments/:instrumentId/archive
 ```
@@ -178,4 +214,5 @@ A cobertura automatizada deve proteger pelo menos:
 - fatura exibindo origem por instrumento;
 - parcelas e recorrencias preservando o instrumento da compra;
 - recorrencias preservando o instrumento definido na criacao;
+- movimentacao segura de compra para outro periodo de fatura;
 - tela `Contas e Cartoes` com lista hierarquica, criacao, edicao, default, arquivamento, estado bloqueado/inativo e ausencia do fluxo legado.
