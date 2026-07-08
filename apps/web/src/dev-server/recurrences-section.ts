@@ -96,14 +96,14 @@ export function renderRecurrenceEditModal(
 }
 
 export function recurrencesSectionStyles(): string {
-  return `.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.72rem;font-weight:900;gap:4px;line-height:1;margin-left:8px;padding:3px 7px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:13px;width:13px}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}.modal-panel form[data-form] label:has([name=editScope]){display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}}`;
+  return `.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.72rem;font-weight:900;gap:4px;line-height:1;margin-left:8px;padding:3px 7px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:13px;width:13px}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}.modal-panel form[data-form] label:has([name=editScope]){display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}.statement-heading-actions{align-items:center;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.account-summary .quick-actions[data-actions-moved=true]{display:none}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}.statement-heading-actions{justify-content:stretch}.statement-heading-actions button{width:100%}}`;
 }
 
 export function recurrencesSectionScript(): string {
   return `
     <script>
       (function () {
-        const recurrenceScopeMessage = "Este lançamento é recorrente.\n\nOK: aplicar esta alteração também na recorrência e nos lançamentos futuros planejados.\nCancelar: alterar somente este registro.";
+        const recurrenceScopeMessage = "Este lançamento faz parte de uma recorrência.\\n\\nOK: aplicar também na recorrência e nos lançamentos futuros.\\nCancelar: alterar somente este lançamento.";
 
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
@@ -112,6 +112,29 @@ export function recurrencesSectionScript(): string {
 
         function minorToMoneyInput(amountMinor) {
           return (amountMinor / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function normalizeCardInstrumentLabels() {
+          document.querySelectorAll('select[name="cardInstrumentId"] option').forEach((option) => {
+            option.textContent = String(option.textContent || "").replace(/\\s*·\\s*limite\\s+.+$/i, "");
+          });
+        }
+
+        function moveStatementQuickActionsToHeading() {
+          const heading = document.querySelector(".statement-heading");
+          const quickActions = document.querySelector(".account-summary .quick-actions");
+          if (!heading || !quickActions || heading.querySelector(".statement-heading-actions")) return;
+
+          const buttons = Array.from(quickActions.querySelectorAll("button[data-open-modal]"));
+          if (buttons.length === 0) return;
+
+          const target = document.createElement("div");
+          target.className = "statement-heading-actions";
+          target.setAttribute("aria-label", "Ações rápidas do extrato");
+
+          buttons.forEach((button) => target.appendChild(button));
+          heading.appendChild(target);
+          quickActions.dataset.actionsMoved = "true";
         }
 
         document.querySelectorAll("[data-recurrence-modal] [data-money]").forEach((input) => {
@@ -305,6 +328,7 @@ export function recurrencesSectionScript(): string {
               form.dataset.currentPurchaseId = purchase.id;
               if (purchase.recurrenceId) form.dataset.recurrenceId = purchase.recurrenceId;
               else delete form.dataset.recurrenceId;
+              normalizeCardInstrumentLabels();
             });
           });
 
@@ -335,6 +359,8 @@ export function recurrencesSectionScript(): string {
           }, true);
         }
 
+        normalizeCardInstrumentLabels();
+        moveStatementQuickActionsToHeading();
         setupTransactionFormOverride();
         setupCardPurchaseFormOverride();
 
