@@ -26,7 +26,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/API_PAYABLES_RECEIVABLES.md`
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304 e #338.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412 e #414.
 
 ## Decisao atual sobre pagar/receber
 
@@ -58,11 +58,11 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Lancamentos / Extrato da conta
 
 - Dominio/API/persistencia: Feito.
-- UI: Parcial.
+- UI: Feito para o fluxo atual.
 - Testes: integracao feita; unitarios parciais.
-- Documentacao: Parcial.
+- Documentacao: Feito para o fluxo atual.
 - Nota: web preserva Extrato da conta com resumo, agrupamento por data, criacao, detalhe via acao, edicao e cancelamento/estorno. Tambem e a tela ativa para compromissos previstos de conta corrente.
-- Lacuna restante: decidir se os chips de status serao filtros interativos ou apenas indicadores.
+- Decisao: os chips **Pendentes**, **Nao conciliados** e **Conciliados** sao indicadores de resumo; nao sao filtros interativos no estado atual.
 
 ### Recorrencias
 
@@ -83,11 +83,10 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Cartoes / Faturas
 
 - Dominio/API/persistencia: Feito.
-- UI: Parcial para mover compra entre faturas; demais fluxos principais feitos.
-- Testes: integracao feita; unitarios parciais.
+- UI: Feito para o fluxo atual, incluindo acao visual para mover compra entre faturas/periodos quando a fatura e editavel.
+- Testes: integracao feita; unitarios parciais; web parcial para a acao de movimentacao.
 - Documentacao: Feito para o modelo atual de cartao agrupador em `docs/CARDS.md` e para o contrato de movimentacao em `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`.
-- Nota: cadastro/manutencao do cartao agrupador fica em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao. O backend ja possui contrato para mover compra entre faturas/periodos; a acao visual em `/cartoes` ainda precisa ser exposta.
-- Lacuna restante: expor na UI a acao de mover compra para outra fatura/periodo usando o contrato backend dedicado.
+- Nota: cadastro/manutencao do cartao agrupador fica em Contas e Cartoes; `/cartoes` cobre compra, fatura, conciliacao, fechamento e pagamento, e e a tela ativa para compromissos de cartao. O backend possui contrato para mover compra entre faturas/periodos e a UI expoe a acao apenas para compras editaveis, solicitando o periodo destino `AAAA-MM` sem calcular `invoiceId` no frontend.
 
 ### Orcamentos
 
@@ -215,7 +214,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Editar: Sim.
 - Cancelar/estornar: Sim.
 - Excluir: Nao.
-- Lacuna restante: decidir se chips de status viram filtros interativos.
+- Decisao: chips de status sao indicadores de resumo, nao filtros interativos.
 
 ### Recorrencias e parcelas
 
@@ -235,13 +234,12 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Resumo da fatura: Sim.
 - Registrar compra: Sim.
 - Editar compra: Sim.
-- Mover compra entre faturas/periodos: Sim por API; pendente na UI.
+- Mover compra entre faturas/periodos: Sim, por acao visual que solicita `AAAA-MM` e chama o endpoint dedicado sem enviar `invoiceId`.
 - Filtrar compras: Sim.
 - Fechar fatura: Sim.
 - Pagar fatura: Sim.
 - Cadastro, edicao, bloqueio e arquivamento de cartao agrupador/instrumentos: Sim, em `/contas-cartoes`.
 - Excluir: Nao.
-- Lacuna restante: expor na UI a acao de mover compra para outra fatura/periodo.
 
 ### Orcamentos (`/orcamentos`)
 
@@ -258,40 +256,3 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Consultar parcelas por periodo: Sim.
 - Filtrar por cartao, categoria e status: Sim, conforme filtros aceitos pela API de parcelas.
 - Ver indicadores consolidados: Sim, para abertas/planejadas, postadas/fechadas, vencidas, futuras e total mensal.
-- Agrupar por mes, cartao e categoria: Sim.
-- Editar parcelas ou lancamentos: Nao; a tela e somente leitura.
-- Lacuna restante: ampliar relatorios para outras visoes financeiras alem de parcelas.
-
-### Importacao, inbox e revisao
-
-- CSV persistido: Sim, por API.
-- OFX persistido: Nao.
-- Preview/aceite amigavel de importacao na UI: Nao.
-- Inbox de mensagens bancarias: Sim, fluxo inicial em `/inbox`.
-- Fila de revisao por API: Sim, em `/api/ai-review-queue`.
-- Fila de revisao na UI: Parcial, integrada na Inbox.
-- Deduplicacao/conciliacao deterministica por API: Sim, para lote CSV.
-- Revisao de deduplicacao/conciliacao na UI: Sim, via Inbox.
-- Cadastro de regras automaticas pelo usuario: Sim, fluxo inicial em Configuracoes.
-- Provedor real de IA: Pendente.
-
-## Ambiguidades e encaminhamentos
-
-- Exclusao fisica de dados financeiros nao aparece como padrao atual; a arquitetura favorece exclusao logica, arquivamento, inativacao ou cancelamento auditavel.
-- Chips de status do Extrato da conta existem visualmente, mas ainda precisam ser confirmados como filtros interativos ou indicadores.
-- Autenticacao produtiva tem ADR aceita, mas provider real e sessao persistente ainda precisam ser implementados.
-- Gestao de perfis financeiros existe em `/configuracoes`, mas seletor global persistido e multiusuario avancado seguem fora do fluxo atual.
-- A transicao de `PayableReceivable` tem plano documentado, mas o dominio/API legado permanece por compatibilidade.
-- Importacao, deduplicacao, conciliacao, inbox, regras automaticas e fila revisavel ja possuem primeiras APIs/fluxos; as principais lacunas agora sao preview de importacao amigavel, OFX operacional, payload estruturado completo das sugestoes e politica operacional final de privacidade/retencao.
-- Cartoes ja possuem contrato backend para mover compras entre faturas/periodos; falta expor a acao na UI de `/cartoes`.
-
-## Proximas implementacoes sugeridas
-
-1. Criar UI de preview/revisao especifica para importacoes CSV antes da fila geral.
-2. Evoluir payload estruturado de `AiSuggestion` para aplicar categorizacao e regras com efeito especifico apos revisao.
-3. Ampliar relatorios para outras visoes financeiras alem de parcelas.
-4. Implementar manutencao direta controlada de parcelas ja geradas.
-5. Expor em `/cartoes` a acao de mover compra entre faturas/periodos usando o contrato dedicado.
-6. Evoluir telas dedicadas de detalhe/uso para contas, categorias, lancamentos, cartoes e orcamentos.
-7. Implementar provider real de autenticacao produtiva e sessao persistente/revogavel.
-8. Consolidar consentimentos, retencao, mascaramento e exportacao/exclusao antes de ampliar IA e importacoes com dados sensiveis.
