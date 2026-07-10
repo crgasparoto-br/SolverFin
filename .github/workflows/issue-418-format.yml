@@ -21,7 +21,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: node scripts/apply-issue-418-finishing.mjs
+      - run: node scripts/apply-issue-418-finishing-v2.mjs
       - run: npm run format
       - name: Commit formatted files
         run: |
