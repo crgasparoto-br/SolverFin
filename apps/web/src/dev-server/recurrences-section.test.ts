@@ -66,3 +66,5 @@ assert.match(script, /applyToFuturePlanned/);
 assert.match(script, /requestPayload\.editScope = "current_and_future"/);
 assert.match(script, /event\.key !== "Tab"/);
 assert.match(script, /scopeModal\.addEventListener\("cancel"/);
+assert.match(script, /if \(!scopeOperation \|\| scopeBusy\) return/);
+assert.match(script, /button\.disabled = busy/);
