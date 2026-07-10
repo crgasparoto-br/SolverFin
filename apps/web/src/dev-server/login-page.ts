@@ -1,6 +1,6 @@
 import { faviconLinks } from "./pages.js";
 
-export function renderLoginPage(errorMessage?: string): string {
+export function renderLoginPage(errorMessage?: string, passwordResetUrl?: string): string {
   return `<!doctype html>
 <html lang="pt-BR">
   <head>
@@ -26,6 +26,7 @@ export function renderLoginPage(errorMessage?: string): string {
         <form id="login-form" data-auth-panel="login" method="post" action="/api/session">
           <label>Email<input name="email" type="email" autocomplete="username" placeholder="voce@email.com" required /></label>
           <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha cadastrada" required /></label>
+          ${renderPasswordResetAction(passwordResetUrl)}
           <button type="submit">Entrar</button>
         </form>
         <form id="register-form" data-auth-panel="register" method="post" action="/api/users" hidden>
@@ -48,6 +49,12 @@ export function renderLoginPage(errorMessage?: string): string {
             panel.hidden = panel.dataset.authPanel !== target;
           });
         });
+      });
+
+      const unavailablePasswordReset = document.querySelector("[data-password-reset-unavailable]");
+      unavailablePasswordReset?.addEventListener("click", () => {
+        const help = document.querySelector("#password-reset-help");
+        if (help) help.hidden = false;
       });
 
       async function submitAuthForm(event) {
@@ -80,6 +87,17 @@ export function renderLoginPage(errorMessage?: string): string {
 </html>`;
 }
 
+function renderPasswordResetAction(passwordResetUrl?: string): string {
+  if (passwordResetUrl) {
+    return `<div class="password-recovery"><a class="forgot-password" href="${escapeHtml(passwordResetUrl)}" rel="noreferrer">Esqueci minha senha</a></div>`;
+  }
+
+  return `<div class="password-recovery">
+    <button type="button" class="forgot-password" data-password-reset-unavailable aria-controls="password-reset-help">Esqueci minha senha</button>
+    <p id="password-reset-help" class="recovery-help" role="status" hidden>A recuperação de senha não está disponível neste ambiente. Procure o responsável pelo seu acesso.</p>
+  </div>`;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -105,6 +123,11 @@ function loginCss(): string {
     form, label { display: grid; gap: 10px; } label { font-weight: 700; }
     input { border: 1px solid var(--line); border-radius: 8px; font: inherit; min-height: 44px; padding: 0 12px; width: 100%; }
     button { align-items: center; background: var(--primary); border: 0; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; }
+    .password-recovery { align-items: flex-end; display: flex; flex-direction: column; gap: 8px; margin-top: -2px; }
+    .forgot-password { color: var(--cyan); font-size: .92rem; font-weight: 800; text-decoration: none; }
+    .forgot-password:hover, .forgot-password:focus-visible { text-decoration: underline; }
+    button.forgot-password { background: transparent; border-radius: 4px; min-height: auto; padding: 2px 0; }
+    .recovery-help { color: var(--muted); font-size: .88rem; line-height: 1.45; max-width: 34rem; text-align: right; }
     .error { background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }
     [hidden] { display: none !important; }
   `;
