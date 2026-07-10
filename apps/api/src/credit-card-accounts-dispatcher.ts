@@ -2,17 +2,14 @@ import { TenantAuthorizationError, TenantError, type TenantContext } from "@solv
 
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
-import {
-  handleCreditCardAccountsApiRequest as handleBaseCreditCardAccountsApiRequest,
-} from "./credit-card-accounts-router.js";
+import { handleCreditCardAccountsApiRequest as handleBaseCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { updateRecurringAccountTransactionForContext } from "./repositories/recurring-account-transaction-edit.js";
 import { updateRecurringCardPurchaseForContext } from "./repositories/recurring-card-purchase-edit.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
-const RECURRING_PURCHASE_PATH =
-  /^\/api\/credit-card-accounts\/([^/]+)\/purchases\/([^/]+)$/;
+const RECURRING_PURCHASE_PATH = /^\/api\/credit-card-accounts\/([^/]+)\/purchases\/([^/]+)$/;
 const RECURRING_TRANSACTION_PATH = /^\/api\/transactions\/([^/]+)$/;
 
 export async function handleCreditCardAccountsApiRequest(
@@ -26,9 +23,7 @@ export async function handleCreditCardAccountsApiRequest(
     purchaseMatch !== null &&
     body?.editScope === "current_and_future";
   const isExpandedAccountEdit =
-    request.method === "PATCH" &&
-    transactionMatch !== null &&
-    body?.applyToFuturePlanned === true;
+    request.method === "PATCH" && transactionMatch !== null && body?.applyToFuturePlanned === true;
 
   if (!isExpandedCardEdit && !isExpandedAccountEdit) {
     return handleBaseCreditCardAccountsApiRequest(request);

@@ -262,12 +262,7 @@ export async function updateRecurringAccountTransactionForContext(
       legacyOffset += 1;
       const nextPlannedOn =
         row.sequenceNumber !== null
-          ? addRecurrenceFrequency(
-              recurrenceStartOn,
-              frequency,
-              row.sequenceNumber - 1,
-              interval,
-            )
+          ? addRecurrenceFrequency(recurrenceStartOn, frequency, row.sequenceNumber - 1, interval)
           : addRecurrenceFrequency(plannedOn, frequency, legacyOffset, interval);
 
       await executeQuery(
@@ -334,7 +329,8 @@ export async function updateRecurringAccountTransactionForContext(
       entityKind: "recurrence",
       entityId: selected.recurrenceId,
       redactedChanges: {
-        schedule: recurrenceStartOn !== toDateOnly(selected.recurrenceStartOn) ? "changed" : "unchanged",
+        schedule:
+          recurrenceStartOn !== toDateOnly(selected.recurrenceStartOn) ? "changed" : "unchanged",
         futureOccurrences: eligible.length > 0 ? "changed" : "unchanged",
       },
     });
@@ -432,7 +428,15 @@ async function syncInstallment(
   await executeQuery(
     `update "Installment" set "dueOn" = $4, "amountMinor" = $5, "currency" = $6, "updatedAt" = $7
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [installmentId, context.organizationId, context.financialProfileId, dueOn, amountMinor, currency, now],
+    [
+      installmentId,
+      context.organizationId,
+      context.financialProfileId,
+      dueOn,
+      amountMinor,
+      currency,
+      now,
+    ],
   );
 }
 

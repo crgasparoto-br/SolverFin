@@ -8,10 +8,7 @@ import {
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
-import {
-  InvoiceContractError,
-  type UpdateCardPurchasePayload,
-} from "./card-invoice-contracts.js";
+import { InvoiceContractError, type UpdateCardPurchasePayload } from "./card-invoice-contracts.js";
 
 export type RecurringCardPurchaseSkipReason =
   | "installment_locked"
@@ -182,7 +179,9 @@ export async function updateRecurringCardPurchaseForContext(
         ? selected.description
         : normalizeDescription(payload.description);
     const categoryId =
-      payload.categoryId === undefined ? selected.categoryId : normalizeOptionalId(payload.categoryId);
+      payload.categoryId === undefined
+        ? selected.categoryId
+        : normalizeOptionalId(payload.categoryId);
     const cardInstrumentId = payload.cardInstrumentId ?? selected.cardInstrumentId;
 
     if (payload.cardInstrumentId !== undefined) {
@@ -223,12 +222,7 @@ export async function updateRecurringCardPurchaseForContext(
       legacyOffset += 1;
       const dueOn =
         row.sequenceNumber !== null
-          ? addRecurrenceFrequency(
-              recurrenceStartOn,
-              frequency,
-              row.sequenceNumber - 1,
-              interval,
-            )
+          ? addRecurrenceFrequency(recurrenceStartOn, frequency, row.sequenceNumber - 1, interval)
           : addRecurrenceFrequency(occurredOn, frequency, legacyOffset, interval);
       const reason = futureSkipReason(row, dueOn);
 
@@ -281,13 +275,7 @@ export async function updateRecurringCardPurchaseForContext(
 
     const selectedAmountDelta = amountMinor - selected.amountMinor;
     if (selectedAmountDelta !== 0) {
-      await adjustInvoiceTotal(
-        executeQuery,
-        context,
-        selected.invoiceId,
-        selectedAmountDelta,
-        now,
-      );
+      await adjustInvoiceTotal(executeQuery, context, selected.invoiceId, selectedAmountDelta, now);
     }
 
     await executeQuery(
@@ -386,7 +374,8 @@ export async function updateRecurringCardPurchaseForContext(
       entityId: selected.recurrenceId,
       redactedChanges: {
         amountMinor: amountMinor !== selected.amountMinor ? "changed" : "unchanged",
-        schedule: recurrenceStartOn !== toDateOnly(selected.recurrenceStartOn) ? "changed" : "unchanged",
+        schedule:
+          recurrenceStartOn !== toDateOnly(selected.recurrenceStartOn) ? "changed" : "unchanged",
         futureOccurrences: updates.length > 0 ? "changed" : "unchanged",
       },
     });
