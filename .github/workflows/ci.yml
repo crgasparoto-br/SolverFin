@@ -166,7 +166,7 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Apply finishing adjustments
-        run: node scripts/apply-issue-418-finishing.mjs
+        run: node scripts/apply-issue-418-finishing-v2.mjs
 
       - name: Format changed files
         run: >-
