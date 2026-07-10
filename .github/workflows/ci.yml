@@ -168,7 +168,6 @@ jobs:
       - name: Format changed files
         run: >-
           npx prettier --write
-          .env.example
           apps/web/src/dev-server.ts
           apps/web/src/dev-server/login-page.ts
           apps/web/src/dev-server/password-reset.ts
