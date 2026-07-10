@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
 
-import { recurrencesSectionScript, recurrencesSectionStyles } from "./recurrences-section.js";
+import {
+  recurrencesSectionScript,
+  recurrencesSectionStyles,
+  renderRecurrenceEditModal,
+} from "./recurrences-section.js";
 
 const script = recurrencesSectionScript();
 const styles = recurrencesSectionStyles();
+const accountScopeModal = renderRecurrenceEditModal([], "account");
+const cardScopeModal = renderRecurrenceEditModal([], "card");
 
 assert.match(
   script,
@@ -16,29 +22,34 @@ assert.match(
   "deve conter regra especifica para remover o trecho de limite do label do instrumento",
 );
 assert.match(
-  script,
+  accountScopeModal,
   /Este lançamento faz parte de uma recorrência/,
   "deve perguntar o escopo ao editar lançamento recorrente",
 );
 assert.match(
-  script,
-  /alterar somente este lançamento/,
-  "a confirmação deve deixar clara a opção de alterar apenas o lançamento editado",
+  accountScopeModal,
+  /Alterar somente este lançamento/,
+  "o modal deve deixar clara a opção de alterar apenas o lançamento editado",
 );
 assert.match(
-  script,
+  accountScopeModal,
+  /Alterar este lançamento e os próximos/,
+  "o modal deve deixar clara a opção de alterar o lançamento e os próximos",
+);
+assert.match(
+  cardScopeModal,
   /Esta compra faz parte de uma recorrência/,
   "deve perguntar o escopo ao editar compra recorrente no cartão",
 );
 assert.match(
-  script,
-  /OK: Sim, alterar também a recorrência e as compras futuras/,
-  "a confirmação de cartão deve deixar clara a opção Sim para alterar a recorrência",
+  cardScopeModal,
+  /Alterar esta compra e as próximas/,
+  "o modal de cartão deve deixar clara a opção de alterar a compra e as futuras",
 );
 assert.match(
-  script,
-  /Cancelar: Não, alterar somente esta compra/,
-  "a confirmação de cartão deve deixar clara a opção Não para alterar somente a compra",
+  cardScopeModal,
+  /Alterar somente esta compra/,
+  "o modal de cartão deve deixar clara a opção de alterar somente a compra",
 );
 assert.match(
   script,

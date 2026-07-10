@@ -30,3 +30,15 @@ A web continua usando o proxy autenticado do servidor SSR. As chamadas seguem a 
 ## Limite conhecido
 
 O backend ainda nao expoe uma rota de leitura dedicada para listar parcelas historicas de uma recorrencia — so os lancamentos ja materializados (visiveis na lista normal) e o que a acao "Gerar parcelas" retorna na hora.
+
+## Modal de escopo da edição
+
+Ao salvar uma ocorrência que possui recurrenceId, a interface valida o formulário e abre um diálogo com opções explícitas:
+
+- alterar somente o lançamento ou compra selecionado;
+- alterar o selecionado e as próximas ocorrências elegíveis;
+- voltar para a edição sem salvar.
+
+Fechar, voltar ou pressionar Escape não envia requisições e preserva o formulário. Durante o salvamento, as ações ficam desabilitadas para impedir envio duplicado. Erros permanecem no diálogo e ocorrências ignoradas são resumidas em linguagem clara.
+
+No cartão, o escopo ampliado faz uma única chamada ao endpoint da compra com editScope: current_and_future; o frontend não coordena salvamentos separados. No extrato, o escopo ampliado envia applyToFuturePlanned: true.

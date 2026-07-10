@@ -7,7 +7,7 @@ import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.j
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { handleAutomationRulesApiRequest } from "./automation-rules-router.js";
 import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js";
-import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
+import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-dispatcher.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";

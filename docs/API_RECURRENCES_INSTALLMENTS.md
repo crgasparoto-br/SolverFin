@@ -233,3 +233,24 @@ O pacote `@solverfin/domain` cobre:
 - isolamento por tenant.
 
 Todos os exemplos usam dados ficticios.
+
+## Edição de ocorrência atual e próximas
+
+A edição ampliada é sempre relativa à ocorrência selecionada. Quando houver uma parcela vinculada, a posição é determinada por sequenceNumber; o critério por data é usado apenas para dados legados sem parcela vinculada.
+
+### Lançamentos de conta
+
+PATCH /api/transactions/:transactionId aceita applyToFuturePlanned: true. A operação atualiza, em uma única transação de banco:
+
+- o lançamento selecionado e sua parcela;
+- a regra da recorrência, incluindo o recálculo de startOn pela posição da ocorrência;
+- somente lançamentos posteriores ainda planejados;
+- a auditoria da ocorrência e da recorrência.
+
+### Compras de cartão
+
+PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId aceita editScope: current_and_future. A operação é atômica e atualiza a compra selecionada, sua parcela, o total da fatura atual, a recorrência, as compras posteriores elegíveis, suas parcelas e os totais das faturas afetadas.
+
+A resposta ampliada contém transactionUpdated, recurrence, updatedCount, skippedCount e skipped. Os motivos estáveis de itens ignorados incluem installment_locked, transaction_missing, transaction_locked, invoice_missing, invoice_locked e invoice_period_mismatch.
+
+Falhas na ocorrência selecionada, validação, categoria, instrumento, período de fatura ou persistência provocam rollback integral. Ocorrências futuras bloqueadas são preservadas e retornadas no resumo de itens ignorados.
