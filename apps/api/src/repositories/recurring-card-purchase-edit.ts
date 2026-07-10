@@ -6,7 +6,7 @@ import {
   type TenantContext,
 } from "@solverfin/domain";
 
-import { query, withTransaction } from "../db.js";
+import { withTransaction, type query } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { InvoiceContractError, type UpdateCardPurchasePayload } from "./card-invoice-contracts.js";
 
@@ -358,9 +358,9 @@ export async function updateRecurringCardPurchaseForContext(
       entityKind: "transaction",
       entityId: selected.id,
       redactedChanges: {
-        recurringEditScope: "current_and_future",
+        recurringEditScope: "changed",
         selectedOccurrence: "changed",
-        futureOccurrences: updates.length > 0 ? "changed" : "unchanged",
+        ...(updates.length > 0 ? { futureOccurrences: "changed" as const } : {}),
       },
     });
     await insertAuditLogEntry(executeQuery, {
@@ -373,10 +373,11 @@ export async function updateRecurringCardPurchaseForContext(
       entityKind: "recurrence",
       entityId: selected.recurrenceId,
       redactedChanges: {
-        amountMinor: amountMinor !== selected.amountMinor ? "changed" : "unchanged",
-        schedule:
-          recurrenceStartOn !== toDateOnly(selected.recurrenceStartOn) ? "changed" : "unchanged",
-        futureOccurrences: updates.length > 0 ? "changed" : "unchanged",
+        ...(amountMinor !== selected.amountMinor ? { amountMinor: "changed" as const } : {}),
+        ...(recurrenceStartOn !== toDateOnly(selected.recurrenceStartOn)
+          ? { schedule: "changed" as const }
+          : {}),
+        ...(updates.length > 0 ? { futureOccurrences: "changed" as const } : {}),
       },
     });
 

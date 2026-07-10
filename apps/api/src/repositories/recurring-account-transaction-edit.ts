@@ -6,7 +6,7 @@ import {
   type TenantContext,
 } from "@solverfin/domain";
 
-import { query, withTransaction } from "../db.js";
+import { withTransaction, type query } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 
 export interface RecurringAccountTransactionEditPayload {
@@ -314,9 +314,9 @@ export async function updateRecurringAccountTransactionForContext(
       entityKind: "transaction",
       entityId: selected.id,
       redactedChanges: {
-        recurringEditScope: "current_and_future",
+        recurringEditScope: "changed",
         selectedOccurrence: "changed",
-        futureOccurrences: eligible.length > 0 ? "changed" : "unchanged",
+        ...(eligible.length > 0 ? { futureOccurrences: "changed" as const } : {}),
       },
     });
     await insertAuditLogEntry(executeQuery, {
@@ -329,9 +329,10 @@ export async function updateRecurringAccountTransactionForContext(
       entityKind: "recurrence",
       entityId: selected.recurrenceId,
       redactedChanges: {
-        schedule:
-          recurrenceStartOn !== toDateOnly(selected.recurrenceStartOn) ? "changed" : "unchanged",
-        futureOccurrences: eligible.length > 0 ? "changed" : "unchanged",
+        ...(recurrenceStartOn !== toDateOnly(selected.recurrenceStartOn)
+          ? { schedule: "changed" as const }
+          : {}),
+        ...(eligible.length > 0 ? { futureOccurrences: "changed" as const } : {}),
       },
     });
 
