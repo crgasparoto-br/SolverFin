@@ -8,6 +8,7 @@ const requiredKeys = [
   "POSTGRES_PASSWORD",
   "POSTGRES_PORT",
   "DATABASE_URL",
+  "AUTH_PASSWORD_RESET_URL",
   "OIDC_ISSUER_URL",
   "OIDC_AUDIENCE",
   "OIDC_JWKS_URI",
@@ -86,15 +87,24 @@ function validateEnvExample(entries) {
     throw new Error("DATABASE_URL in .env.example must use the postgresql:// scheme.");
   }
 
+  const passwordResetUrl = entries.get("AUTH_PASSWORD_RESET_URL");
   const oidcIssuer = entries.get("OIDC_ISSUER_URL");
   const oidcJwksUri = entries.get("OIDC_JWKS_URI");
 
-  if (!oidcIssuer.startsWith("https://") || !oidcJwksUri.startsWith("https://")) {
-    throw new Error("OIDC issuer and JWKS URI placeholders must use https:// URLs.");
+  if (
+    !passwordResetUrl.startsWith("https://") ||
+    !oidcIssuer.startsWith("https://") ||
+    !oidcJwksUri.startsWith("https://")
+  ) {
+    throw new Error("Authentication URL placeholders must use https:// URLs.");
   }
 
-  if (!oidcIssuer.includes("example.invalid") || !oidcJwksUri.includes("example.invalid")) {
-    throw new Error("OIDC placeholders in .env.example must use example.invalid hosts.");
+  if (
+    !passwordResetUrl.includes("example.invalid") ||
+    !oidcIssuer.includes("example.invalid") ||
+    !oidcJwksUri.includes("example.invalid")
+  ) {
+    throw new Error("Authentication URL placeholders must use example.invalid hosts.");
   }
 
   for (const [key, value] of entries) {
