@@ -54,6 +54,9 @@ export function renderRecurrenceEditModal(
   targetKind: RecurrenceSectionTargetKind,
   cardInstrumentOptions = "",
 ): string {
+  const isCard = targetKind === "card";
+  const itemName = isCard ? "compra" : "lançamento";
+
   return `
     <dialog data-recurrence-modal>
       <section class="modal-panel">
@@ -92,20 +95,33 @@ export function renderRecurrenceEditModal(
         <p class="muted" aria-live="polite" data-recurrence-modal-status></p>
       </section>
     </dialog>
+    <dialog data-recurrence-scope-modal data-target-kind="${targetKind}" aria-labelledby="recurrence-scope-title">
+      <section class="modal-panel recurrence-scope-panel">
+        <button type="button" class="close-form" data-recurrence-scope-cancel aria-label="Fechar">Fechar</button>
+        <div>
+          <p class="eyebrow">Escolha o alcance</p>
+          <h2 id="recurrence-scope-title">O que deseja alterar?</h2>
+          <p class="muted">Esta ${itemName} faz parte de uma recorrência. Escolha uma opção antes de salvar.</p>
+        </div>
+        <div class="recurrence-scope-actions">
+          <button type="button" data-recurrence-scope="current" autofocus>Alterar somente esta ${itemName}</button>
+          <button type="button" class="secondary-button" data-recurrence-scope="current_and_future">Alterar esta ${itemName} e ${isCard ? "as" : "os"} próximas${isCard ? "" : ""}</button>
+          <button type="button" class="ghost-button" data-recurrence-scope-cancel>Voltar para a edição</button>
+        </div>
+        <p class="muted" aria-live="polite" data-recurrence-scope-status></p>
+      </section>
+    </dialog>
   `;
 }
 
 export function recurrencesSectionStyles(): string {
-  return `.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.72rem;font-weight:900;gap:4px;line-height:1;margin-left:8px;padding:3px 7px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:13px;width:13px}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}.modal-panel form[data-form] label:has([name=editScope]){display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}.statement-heading-actions{align-items:center;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.account-summary .quick-actions[data-actions-moved=true]{display:none}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}.statement-heading-actions{justify-content:stretch}.statement-heading-actions button{width:100%}}`;
+  return `.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.72rem;font-weight:900;gap:4px;line-height:1;margin-left:8px;padding:3px 7px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:13px;width:13px}.secondary-button{background:var(--soft);border:1px solid #d4e6ec;color:var(--primary)}.ghost-button{background:transparent;border:1px solid #cbd5e1;color:var(--text)}.modal-panel form[data-form] label:has([name=editScope]){display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}.recurrence-scope-panel{max-width:560px}.recurrence-scope-actions{display:grid;gap:10px}.recurrence-scope-actions button{min-height:44px;text-align:left}.recurrence-scope-panel [data-recurrence-scope-status].error{color:var(--danger,#b91c1c)}.recurrence-scope-panel [data-recurrence-scope-status].success{color:var(--success,#15803d)}.statement-heading-actions{align-items:center;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.account-summary .quick-actions[data-actions-moved=true]{display:none}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}.statement-heading-actions{justify-content:stretch}.statement-heading-actions button{width:100%}}`;
 }
 
 export function recurrencesSectionScript(): string {
   return `
     <script>
       (function () {
-        const recurrenceScopeMessage = "Este lançamento faz parte de uma recorrência.\\n\\nOK: aplicar também na recorrência e nos lançamentos futuros.\\nCancelar: alterar somente este lançamento.";
-        const cardPurchaseRecurrenceMessage = "Esta compra faz parte de uma recorrência.\\n\\nOK: Sim, alterar também a recorrência e as compras futuras.\\nCancelar: Não, alterar somente esta compra.";
-
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
           return Math.round(parseFloat(normalized || "0") * 100);
@@ -196,9 +212,20 @@ export function recurrencesSectionScript(): string {
           return fetch(path, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
         }
 
-        async function readMessage(response) {
+        async function readResponse(response) {
           const body = await response.json().catch(() => ({}));
-          return response.ok ? "Ação concluída. Atualizando..." : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
+          if (!response.ok) {
+            return { body, message: (body.error && body.error.message) || "Não foi possível concluir a ação." };
+          }
+          if (Number(body.skippedCount || 0) > 0) {
+            const count = Number(body.skippedCount);
+            return { body, message: "Alteração salva. " + count + (count === 1 ? " ocorrência não foi alterada por estar bloqueada ou conciliada." : " ocorrências não foram alteradas por estarem bloqueadas ou conciliadas.") };
+          }
+          return { body, message: "Ação concluída. Atualizando..." };
+        }
+
+        async function readMessage(response) {
+          return (await readResponse(response)).message;
         }
 
         function addMonths(dateValue, months) {
@@ -218,6 +245,86 @@ export function recurrencesSectionScript(): string {
         function getLastDayOfMonth(year, month) {
           return new Date(Date.UTC(year, month, 0)).getUTCDate();
         }
+
+        const scopeModal = document.querySelector("[data-recurrence-scope-modal]");
+        const scopeStatus = scopeModal && scopeModal.querySelector("[data-recurrence-scope-status]");
+        const scopeButtons = scopeModal ? Array.from(scopeModal.querySelectorAll("[data-recurrence-scope]")) : [];
+        const scopeCancelButtons = scopeModal ? Array.from(scopeModal.querySelectorAll("[data-recurrence-scope-cancel]")) : [];
+        let scopeOperation = null;
+        let scopeOrigin = null;
+        let scopeBusy = false;
+
+        function setScopeBusy(busy) {
+          scopeBusy = busy;
+          scopeButtons.concat(scopeCancelButtons).forEach((button) => { button.disabled = busy; });
+        }
+
+        function closeScopeModal() {
+          if (!scopeModal || scopeBusy) return;
+          scopeModal.close();
+          scopeOperation = null;
+          if (scopeOrigin && typeof scopeOrigin.focus === "function") scopeOrigin.focus();
+          scopeOrigin = null;
+        }
+
+        function openScopeModal(origin, operation) {
+          if (!scopeModal || scopeModal.open) return;
+          scopeOrigin = origin;
+          scopeOperation = operation;
+          setScopeBusy(false);
+          if (scopeStatus) {
+            scopeStatus.textContent = "";
+            scopeStatus.className = "muted";
+          }
+          scopeModal.showModal();
+          const currentButton = scopeModal.querySelector('[data-recurrence-scope="current"]');
+          if (currentButton) currentButton.focus();
+        }
+
+        scopeCancelButtons.forEach((button) => button.addEventListener("click", closeScopeModal));
+        scopeModal && scopeModal.addEventListener("cancel", (event) => {
+          event.preventDefault();
+          closeScopeModal();
+        });
+        scopeModal && scopeModal.addEventListener("keydown", (event) => {
+          if (event.key !== "Tab") return;
+          const focusable = Array.from(scopeModal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        });
+        scopeButtons.forEach((button) => button.addEventListener("click", async () => {
+          if (!scopeOperation || scopeBusy) return;
+          setScopeBusy(true);
+          if (scopeStatus) {
+            scopeStatus.textContent = "Salvando...";
+            scopeStatus.className = "muted";
+          }
+          try {
+            const result = await scopeOperation(button.dataset.recurrenceScope);
+            if (scopeStatus) {
+              scopeStatus.textContent = result.message;
+              scopeStatus.className = result.ok ? "success" : "error";
+            }
+            if (result.ok) {
+              window.setTimeout(() => window.location.reload(), result.skippedCount > 0 ? 1200 : 450);
+              return;
+            }
+          } catch (_error) {
+            if (scopeStatus) {
+              scopeStatus.textContent = "Não foi possível concluir a alteração. Tente novamente.";
+              scopeStatus.className = "error";
+            }
+          }
+          setScopeBusy(false);
+        }));
 
         function setupTransactionFormOverride() {
           const form = document.querySelector("[data-form]");
@@ -280,27 +387,41 @@ export function recurrencesSectionScript(): string {
           form.addEventListener("submit", async (event) => {
             event.preventDefault();
             event.stopImmediatePropagation();
+            if (!form.checkValidity()) {
+              form.reportValidity();
+              return;
+            }
             const mode = form.repeatMode.value;
             const method = form.dataset.method || "POST";
             const path = form.dataset.path || "/api/transactions";
-            const applyToFuturePlanned = method === "PATCH" && Boolean(form.dataset.recurrenceId) ? window.confirm(recurrenceScopeMessage) : false;
-            let response;
-            if (statusNode) statusNode.textContent = "Salvando...";
-            if (mode === "fixed" && method === "POST") {
-              const item = payload(0, 1, false);
-              response = await send("/api/recurrences", "POST", { frequency: form.frequency.value, interval: Math.max(1, Number(form.interval.value || 1)), startOn: form.plannedOn.value, endOn: form.endOn.value || undefined, amountMinor: item.amountMinor, description: String(new FormData(form).get("description") || ""), kind: item.kind, accountId: item.accountId, categoryId: item.categoryId });
-            } else if (mode === "installment" && method === "POST") {
-              const totalCount = Math.max(2, Number(form.installments.value || 2));
-              const startParcel = Math.min(Math.max(1, Number(form.installmentStart.value || 1)), totalCount);
-              const responses = [];
-              let monthOffset = 0;
-              for (let parcelNumber = startParcel; parcelNumber <= totalCount; parcelNumber += 1, monthOffset += 1) responses.push(await send("/api/transactions", "POST", installmentPayload(parcelNumber, totalCount, monthOffset)));
-              response = responses.find((item) => !item.ok) || responses[responses.length - 1];
-            } else {
-              response = await send(path, method, payload(0, 1, applyToFuturePlanned));
+            const execute = async (scope) => {
+              let response;
+              if (mode === "fixed" && method === "POST") {
+                const item = payload(0, 1, false);
+                response = await send("/api/recurrences", "POST", { frequency: form.frequency.value, interval: Math.max(1, Number(form.interval.value || 1)), startOn: form.plannedOn.value, endOn: form.endOn.value || undefined, amountMinor: item.amountMinor, description: String(new FormData(form).get("description") || ""), kind: item.kind, accountId: item.accountId, categoryId: item.categoryId });
+              } else if (mode === "installment" && method === "POST") {
+                const totalCount = Math.max(2, Number(form.installments.value || 2));
+                const startParcel = Math.min(Math.max(1, Number(form.installmentStart.value || 1)), totalCount);
+                const responses = [];
+                let monthOffset = 0;
+                for (let parcelNumber = startParcel; parcelNumber <= totalCount; parcelNumber += 1, monthOffset += 1) responses.push(await send("/api/transactions", "POST", installmentPayload(parcelNumber, totalCount, monthOffset)));
+                response = responses.find((item) => !item.ok) || responses[responses.length - 1];
+              } else {
+                response = await send(path, method, payload(0, 1, scope === "current_and_future"));
+              }
+              const result = await readResponse(response);
+              return { ok: response.ok, message: result.message, skippedCount: Number(result.body.skippedCount || 0) };
+            };
+
+            if (method === "PATCH" && Boolean(form.dataset.recurrenceId)) {
+              openScopeModal(form.querySelector('button[type="submit"]'), execute);
+              return;
             }
-            if (statusNode) statusNode.textContent = await readMessage(response);
-            if (response.ok) window.setTimeout(() => window.location.reload(), 450);
+
+            if (statusNode) statusNode.textContent = "Salvando...";
+            const result = await execute("current");
+            if (statusNode) statusNode.textContent = result.message;
+            if (result.ok) window.setTimeout(() => window.location.reload(), 450);
           }, true);
         }
 
@@ -342,19 +463,26 @@ export function recurrencesSectionScript(): string {
             const purchase = purchasesById.get(currentPurchaseId);
             const recurrenceId = form.dataset.recurrenceId || (purchase && purchase.recurrenceId) || "";
             if (method !== "PATCH" || !recurrenceId) return;
-            const applyToRecurrence = window.confirm(cardPurchaseRecurrenceMessage);
-            if (!applyToRecurrence) return;
             event.preventDefault();
             event.stopImmediatePropagation();
-            const data = new FormData(form);
-            const payload = { description: String(data.get("description") || ""), amountMinor: moneyToMinor(data.get("amountMinor")), startOn: String(data.get("occurredOn") || ""), editScope: "recurrence_and_future_pending" };
-            const categoryId = String(data.get("categoryId") || "");
-            if (categoryId) payload.categoryId = categoryId;
-            const cardInstrumentId = String(data.get("cardInstrumentId") || "");
-            if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
-            const response = await send("/api/recurrences/" + recurrenceId, "PATCH", payload);
-            if (response.ok) window.setTimeout(() => window.location.reload(), 450);
-            else window.alert(await readMessage(response));
+            if (!form.checkValidity()) {
+              form.reportValidity();
+              return;
+            }
+            const execute = async (scope) => {
+              const data = new FormData(form);
+              const requestPayload = { description: String(data.get("description") || ""), amountMinor: moneyToMinor(data.get("amountMinor")), occurredOn: String(data.get("occurredOn") || "") };
+              const categoryId = String(data.get("categoryId") || "");
+              requestPayload.categoryId = categoryId || null;
+              const cardInstrumentId = String(data.get("cardInstrumentId") || "");
+              if (cardInstrumentId) requestPayload.cardInstrumentId = cardInstrumentId;
+              if (scope === "current_and_future") requestPayload.editScope = "current_and_future";
+              const path = form.dataset.path || form.getAttribute("data-path");
+              const response = await send(path, "PATCH", requestPayload);
+              const result = await readResponse(response);
+              return { ok: response.ok, message: result.message, skippedCount: Number(result.body.skippedCount || 0) };
+            };
+            openScopeModal(form.querySelector('button[type="submit"]'), execute);
           }, true);
         }
 
