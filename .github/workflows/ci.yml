@@ -146,3 +146,51 @@ jobs:
 
       - name: Run API integration tests
         run: npm run test:integration --workspace @solverfin/api
+
+  format-issue-418-artifact:
+    name: Format issue 418 artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply finishing adjustments
+        run: node scripts/apply-issue-418-finishing.mjs
+
+      - name: Format changed files
+        run: >-
+          npx prettier --write
+          apps/api/src/credit-card-accounts-dispatcher.ts
+          apps/api/src/repositories/recurring-account-transaction-edit.ts
+          apps/api/src/repositories/recurring-card-purchase-edit.ts
+          apps/api/src/server.ts
+          apps/web/src/dev-server/recurrences-section.ts
+          apps/web/src/dev-server/recurrences-section.test.ts
+          docs/API_RECURRENCES_INSTALLMENTS.md
+          docs/RECURRENCES_INSTALLMENTS_WEB.md
+
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-418-formatted-files
+          retention-days: 1
+          path: |
+            apps/api/src/credit-card-accounts-dispatcher.ts
+            apps/api/src/repositories/recurring-account-transaction-edit.ts
+            apps/api/src/repositories/recurring-card-purchase-edit.ts
+            apps/api/src/server.ts
+            apps/web/src/dev-server/recurrences-section.ts
+            apps/web/src/dev-server/recurrences-section.test.ts
+            docs/API_RECURRENCES_INSTALLMENTS.md
+            docs/RECURRENCES_INSTALLMENTS_WEB.md
