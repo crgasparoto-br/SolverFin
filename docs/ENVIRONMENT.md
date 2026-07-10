@@ -39,6 +39,7 @@ Regras praticas para ambientes:
 - `POSTGRES_PASSWORD`: obrigatoria. Exemplo seguro: `solverfin_dev_password`. Senha local ficticia do PostgreSQL.
 - `POSTGRES_PORT`: obrigatoria. Exemplo seguro: `5432`. Porta publicada na maquina local.
 - `DATABASE_URL`: obrigatoria. Exemplo seguro: `postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public`. String de conexao local para Prisma/API quando existirem.
+- `AUTH_PASSWORD_RESET_URL`: obrigatoria no contrato versionado e recomendada em todos os ambientes com usuarios reais. Define a pagina de recuperacao de conta do provider gerenciado. Use HTTPS fora de ambiente local e nao inclua tokens ou credenciais na URL.
 
 ## Autenticacao produtiva
 
@@ -46,25 +47,29 @@ A ADR `docs/adr/0004-autenticacao-produtiva.md` define que producao deve usar
 provider gerenciado compativel com OIDC/OAuth2, com credenciais delegadas e
 sessao propria persistente no SolverFin.
 
-A issue de implementacao deve adicionar variaveis especificas do provider e da
-sessao produtiva. Nomes esperados, ainda nao obrigatorios no MVP local:
+Variaveis atualmente usadas pelo contrato de autenticacao:
 
-- `AUTH_PROVIDER_ISSUER_URL`: URL do issuer confiavel.
-- `AUTH_PROVIDER_CLIENT_ID`: identificador publico da aplicacao no provider.
-- `AUTH_PROVIDER_CLIENT_SECRET`: segredo do cliente quando o fluxo escolhido
-  exigir segredo no backend.
-- `AUTH_PROVIDER_JWKS_URL`: endpoint de chaves publicas quando nao derivado do
-  issuer.
-- `AUTH_PROVIDER_REDIRECT_URI`: callback autorizado para o ambiente.
-- `AUTH_SESSION_SECRET`: segredo usado para assinatura/derivacao operacional de
-  sessao, quando aplicavel.
+- `OIDC_ISSUER_URL`: URL do issuer confiavel.
+- `OIDC_AUDIENCE`: identificador esperado pela API nos tokens emitidos.
+- `OIDC_JWKS_URI`: endpoint HTTPS das chaves publicas do provider.
+- `AUTH_PASSWORD_RESET_URL`: pagina publica do provider para recuperar conta ou redefinir senha.
+- `AUTH_SESSION_TTL_MINUTES`: timeout absoluto da sessao local.
 - `AUTH_SESSION_IDLE_TIMEOUT_MINUTES`: timeout por inatividade.
-- `AUTH_SESSION_ABSOLUTE_TIMEOUT_MINUTES`: timeout absoluto.
+- `AUTH_ALLOW_DEMO`: opt-in para demonstracao nao produtiva fora de ambiente local/teste.
+
+Configuracoes adicionais podem ser necessarias quando o cliente OIDC completo for integrado:
+
+- `AUTH_PROVIDER_CLIENT_ID`: identificador publico da aplicacao no provider.
+- `AUTH_PROVIDER_CLIENT_SECRET`: segredo do cliente quando o fluxo escolhido exigir segredo no backend.
+- `AUTH_PROVIDER_REDIRECT_URI`: callback autorizado para o ambiente.
+- `AUTH_SESSION_SECRET`: segredo usado para assinatura/derivacao operacional de sessao, quando aplicavel.
 
 Essas variaveis devem usar placeholders ficticios em exemplos versionados e
 secrets reais apenas nos ambientes que precisam deles. O processo produtivo deve
 falhar cedo se variaveis obrigatorias do provider estiverem ausentes ou
 incoerentes.
+
+A URL de recuperacao e configuracao publica, nao um secret. Mesmo assim, deve ser tratada como entrada nao confiavel: o web server aceita apenas HTTP/HTTPS, rejeita credenciais embutidas e exige HTTPS fora de `development`, `local` e `test`.
 
 ## Setup local
 
@@ -106,9 +111,11 @@ Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` qu
 
 A validacao retorna apenas variaveis aprovadas e lanca `EnvironmentValidationError` quando algo estiver ausente ou invalido. As mensagens citam nomes de variaveis, mas nao valores sensiveis.
 
+A validacao especifica da URL de recuperacao fica no web server porque ela controla a renderizacao de um link externo e precisa manter um fallback seguro quando a configuracao estiver ausente ou invalida.
+
 ## Fora do escopo atual
 
 - Gerenciador externo de secrets.
 - Rotacao automatica de chaves.
 - Secrets de producao.
-- Validacao de provedores de IA, autenticacao ou deploy, que devem ser adicionadas pelas issues especificas.
+- Validacao completa de provedores de IA ou deploy, que deve ser adicionada pelas issues especificas.
