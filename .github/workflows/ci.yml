@@ -146,3 +146,61 @@ jobs:
 
       - name: Run API integration tests
         run: npm run test:integration --workspace @solverfin/api
+
+  capture-test-log:
+    name: Capture test log for issue 416
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare database
+        run: |
+          npm run prisma:generate
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Capture test output
+        run: |
+          set +e
+          npm run test > issue-416-test.log 2>&1
+          echo $? > issue-416-test-exit-code.txt
+          exit 0
+
+      - name: Upload test output
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-416-test-log
+          retention-days: 1
+          path: |
+            issue-416-test.log
+            issue-416-test-exit-code.txt
