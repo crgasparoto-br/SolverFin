@@ -41,6 +41,14 @@ A rota `POST /api/session/oidc` recebe a resposta validada do fluxo OIDC/OAuth2 
 
 Esse fluxo nao recebe, armazena nem verifica senha produtiva. Usuarios produtivos podem ter `passwordHash` nulo porque credenciais reais ficam delegadas ao provider gerenciado.
 
+## Recuperacao de senha
+
+A tela de login exibe a acao **Esqueci minha senha**. O SolverFin nao cria token, endpoint, email ou armazenamento proprio para redefinicao de senha produtiva; a acao encaminha o usuario para o fluxo administrado pelo provider de identidade, conforme a ADR de autenticacao.
+
+A URL deve ser configurada em `AUTH_PASSWORD_RESET_URL`. Apenas URLs HTTP/HTTPS sem credenciais embutidas sao aceitas. Fora dos ambientes `development`, `local` e `test`, a URL precisa usar HTTPS. Se a configuracao estiver ausente ou invalida, a acao permanece visivel e informa ao usuario que deve procurar o responsavel pelo acesso.
+
+A URL pode incluir parametros exigidos pelo provider, como identificador do cliente ou destino de retorno, desde que o valor completo seja configurado no ambiente e nao contenha segredo.
+
 ## Sessoes persistentes
 
 A sessao local e enviada nas rotas privadas com:
@@ -82,6 +90,7 @@ Acoes administrativas globais devem reutilizar o guard master e registrar audito
 AUTH_SESSION_TTL_MINUTES=60
 AUTH_SESSION_IDLE_TIMEOUT_MINUTES=30
 AUTH_ALLOW_DEMO=false
+AUTH_PASSWORD_RESET_URL=https://identity.example.invalid/solverfin/reset-password
 SOLVERFIN_MASTER_EMAILS=master@solverfin.example.invalid
 OIDC_ISSUER_URL=https://identity.example.invalid/solverfin
 OIDC_AUDIENCE=solverfin-api
@@ -93,6 +102,8 @@ OIDC_JWKS_URI=https://identity.example.invalid/solverfin/.well-known/jwks.json
 `AUTH_SESSION_IDLE_TIMEOUT_MINUTES` controla o timeout por inatividade das sessoes persistidas. Quando ausente ou invalido, o padrao e 30 minutos.
 
 `AUTH_ALLOW_DEMO=true` deve ser usado apenas em demonstracoes nao produtivas e controladas. Ele nao torna a autenticacao demo adequada para producao.
+
+`AUTH_PASSWORD_RESET_URL` define a pagina do provider gerenciado usada pela acao **Esqueci minha senha**. Use HTTPS em preview, staging e producao. A variavel nao e segredo, mas nao deve carregar tokens, senhas ou credenciais na URL.
 
 `SOLVERFIN_MASTER_EMAILS` controla quem pode acessar recursos Admin globais. Em producao, configure apenas emails reais de usuarios autorizados em ambiente protegido. Variavel ausente ou vazia nao libera acesso Admin para ninguem.
 
@@ -153,5 +164,7 @@ O pacote `@solverfin/api` cobre:
 - configuracao OIDC produtiva para ambientes nao locais;
 - validacao de JWT OIDC assinado, audience invalida, token expirado e `state` invalido;
 - configuracao e guard de usuario master para Admin global, incluindo falha segura quando `SOLVERFIN_MASTER_EMAILS` esta ausente, usuario comum e usuario desabilitado.
+
+O pacote `@solverfin/web` cobre a renderizacao da acao **Esqueci minha senha**, o escape da URL e a rejeicao de protocolo inseguro, credenciais embutidas e HTTP fora de ambiente local.
 
 Todos os testes usam usuarios ficticios e nao dependem de segredos reais.
