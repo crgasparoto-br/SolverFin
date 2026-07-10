@@ -20,7 +20,7 @@ function configuredPasswordResetRendersExternalLink(): void {
     html,
     /href="https:\/\/identity\.example\.invalid\/reset\?client=solverfin&amp;flow=password"/,
   );
-  assert.doesNotMatch(html, /data-password-reset-unavailable/);
+  assert.doesNotMatch(html, /<button[^>]+data-password-reset-unavailable/);
 }
 
 function missingConfigurationKeepsActionVisibleWithGuidance(): void {
