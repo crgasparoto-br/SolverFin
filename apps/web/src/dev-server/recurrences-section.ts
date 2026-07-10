@@ -55,7 +55,13 @@ export function renderRecurrenceEditModal(
   cardInstrumentOptions = "",
 ): string {
   const isCard = targetKind === "card";
-  const itemName = isCard ? "compra" : "lançamento";
+  const scopeSubject = isCard ? "Esta compra" : "Este lançamento";
+  const currentScopeLabel = isCard
+    ? "Alterar somente esta compra"
+    : "Alterar somente este lançamento";
+  const futureScopeLabel = isCard
+    ? "Alterar esta compra e as próximas"
+    : "Alterar este lançamento e os próximos";
 
   return `
     <dialog data-recurrence-modal>
@@ -101,11 +107,11 @@ export function renderRecurrenceEditModal(
         <div>
           <p class="eyebrow">Escolha o alcance</p>
           <h2 id="recurrence-scope-title">O que deseja alterar?</h2>
-          <p class="muted">Esta ${itemName} faz parte de uma recorrência. Escolha uma opção antes de salvar.</p>
+          <p class="muted">${scopeSubject} faz parte de uma recorrência. Escolha uma opção antes de salvar.</p>
         </div>
         <div class="recurrence-scope-actions">
-          <button type="button" data-recurrence-scope="current" autofocus>Alterar somente esta ${itemName}</button>
-          <button type="button" class="secondary-button" data-recurrence-scope="current_and_future">Alterar esta ${itemName} e ${isCard ? "as" : "os"} próximas${isCard ? "" : ""}</button>
+          <button type="button" data-recurrence-scope="current" autofocus>${currentScopeLabel}</button>
+          <button type="button" class="secondary-button" data-recurrence-scope="current_and_future">${futureScopeLabel}</button>
           <button type="button" class="ghost-button" data-recurrence-scope-cancel>Voltar para a edição</button>
         </div>
         <p class="muted" aria-live="polite" data-recurrence-scope-status></p>

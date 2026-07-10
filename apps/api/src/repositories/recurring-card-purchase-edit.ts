@@ -424,7 +424,7 @@ async function findSelectedPurchaseForUpdate(
        r."frequency" as "recurrenceFrequency", r."interval" as "recurrenceInterval",
        r."startOn" as "recurrenceStartOn"
      from "Transaction" t
-     left join "Invoice" inv
+     join "Invoice" inv
        on inv."id" = t."invoiceId"
       and inv."organizationId" = t."organizationId"
       and inv."financialProfileId" = t."financialProfileId"
@@ -432,14 +432,14 @@ async function findSelectedPurchaseForUpdate(
        on i."id" = t."installmentId"
       and i."organizationId" = t."organizationId"
       and i."financialProfileId" = t."financialProfileId"
-     left join "Recurrence" r
+     join "Recurrence" r
        on r."id" = t."recurrenceId"
       and r."organizationId" = t."organizationId"
       and r."financialProfileId" = t."financialProfileId"
      where t."id" = $1 and t."cardId" = $2
        and t."organizationId" = $3 and t."financialProfileId" = $4
        and t."accountId" is null
-     for update of t, inv, r`,
+     for update of t, r`,
     [transactionId, cardId, context.organizationId, context.financialProfileId],
   );
 
@@ -472,10 +472,11 @@ async function listFutureOccurrencesForUpdate(
      where t."organizationId" = $1 and t."financialProfileId" = $2
        and t."recurrenceId" = $3 and t."id" <> $4
        and t."cardId" is not null and t."accountId" is null
-       and (($5::int is not null and i."sequenceNumber" > $5)
+       and (($5::int is not null and (i."sequenceNumber" > $5
+         or (i."sequenceNumber" is null and t."plannedOn" > $6)))
          or ($5::int is null and t."plannedOn" > $6))
      order by coalesce(i."sequenceNumber", 2147483647), t."plannedOn", t."createdAt"
-     for update of t, inv`,
+     for update of t`,
     [
       context.organizationId,
       context.financialProfileId,
