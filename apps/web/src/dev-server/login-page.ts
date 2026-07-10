@@ -1,9 +1,6 @@
 import { faviconLinks } from "./pages.js";
 
-export function renderLoginPage(
-  errorMessage?: string,
-  passwordResetUrl?: string,
-): string {
+export function renderLoginPage(errorMessage?: string, passwordResetUrl?: string): string {
   return `<!doctype html>
 <html lang="pt-BR">
   <head>
