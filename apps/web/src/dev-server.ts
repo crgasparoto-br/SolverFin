@@ -12,6 +12,7 @@ import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
+import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
 import { renderReportsPage } from "./dev-server/reports-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
@@ -46,6 +47,7 @@ interface StatementRecurrenceRecord {
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.PORT ?? 5173);
 const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000";
+const passwordResetUrl = resolvePasswordResetUrl();
 const monthPattern = /^\d{4}-\d{2}$/;
 const manifest = buildSolverFinWebManifest();
 
@@ -93,7 +95,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (route.kind === "login") {
-    sendHtml(response, 200, renderLoginPage(url.searchParams.get("erro") ?? undefined));
+    sendHtml(
+      response,
+      200,
+      renderLoginPage(url.searchParams.get("erro") ?? undefined, passwordResetUrl),
+    );
     return;
   }
 
