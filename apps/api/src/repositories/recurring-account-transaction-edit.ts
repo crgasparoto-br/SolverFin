@@ -401,7 +401,8 @@ async function findFutureForUpdate(
       and i."financialProfileId" = t."financialProfileId"
      where t."organizationId" = $1 and t."financialProfileId" = $2
        and t."recurrenceId" = $3 and t."id" <> $4 and t."cardId" is null
-       and (($5::int is not null and i."sequenceNumber" > $5)
+       and (($5::int is not null and (i."sequenceNumber" > $5
+         or (i."sequenceNumber" is null and t."plannedOn" > $6)))
          or ($5::int is null and t."plannedOn" > $6))
      order by coalesce(i."sequenceNumber", 2147483647), t."plannedOn", t."createdAt"
      for update of t`,
