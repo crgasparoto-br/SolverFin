@@ -33,7 +33,22 @@ jobs:
       - run: node scripts/apply-fix-418-card-modal.mjs
       - run: npm ci --no-audit --no-fund
       - run: npx prettier --write apps/web/src/dev-server/cards-page.ts apps/web/src/dev-server/recurrences-section.ts apps/web/src/dev-server/cards-page.test.ts apps/web/src/dev-server/cards-page-recurring-render.test.ts apps/web/src/dev-server/recurrence-card-instrument-script.test.ts
-      - run: npm run test --workspace @solverfin/web
+      - name: Capture web test output
+        run: |
+          set +e
+          npm run test --workspace @solverfin/web > web-test.log 2>&1
+          echo $? > web-test.exit
+          exit 0
+      - name: Upload web test diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-418-card-modal-web-test
+          retention-days: 1
+          path: |
+            web-test.log
+            web-test.exit
+      - name: Verify web tests
+        run: test "$(cat web-test.exit)" = "0"
       - name: Commit product fix and remove temporary automation
         run: |
           git config user.name "github-actions[bot]"
