@@ -1,5 +1,6 @@
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
 import { listPrivateShellRoutes } from "../app-shell/routes.js";
+import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 
 export interface ShellDocumentInput {
   body: string;
@@ -57,6 +58,7 @@ export function renderAuthenticatedShell(
     ${navigationScript()}
     ${masterNavigationScript()}
     ${cardPurchaseEditRouteScript()}
+    ${recurringCardScopeControllerScript()}
   `;
 }
 
