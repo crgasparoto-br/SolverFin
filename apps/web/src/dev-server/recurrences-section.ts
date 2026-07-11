@@ -438,11 +438,15 @@ export function recurrencesSectionScript(): string {
           function clearCurrentPurchase() {
             delete form.dataset.currentPurchaseId;
             delete form.dataset.recurrenceId;
+            if (form.currentPurchaseId) form.currentPurchaseId.value = "";
+            if (form.recurrenceId) form.recurrenceId.value = "";
           }
           function setCurrentPurchase(purchase) {
             form.dataset.currentPurchaseId = purchase.id;
             if (purchase.recurrenceId) form.dataset.recurrenceId = purchase.recurrenceId;
             else delete form.dataset.recurrenceId;
+            if (form.currentPurchaseId) form.currentPurchaseId.value = purchase.id;
+            if (form.recurrenceId) form.recurrenceId.value = purchase.recurrenceId || "";
             normalizeCardInstrumentLabels();
           }
           function purchaseIdFromPath(path) {
@@ -460,14 +464,18 @@ export function recurrencesSectionScript(): string {
           document.addEventListener("click", (event) => {
             const target = event.target && event.target.closest ? event.target.closest("[data-edit-purchase]") : null;
             if (!target || target.disabled) return;
-            const purchase = purchasesById.get(target.dataset.editPurchase);
-            if (purchase) setCurrentPurchase(purchase);
+            const purchase = purchasesById.get(target.dataset.editPurchase) || { id: target.dataset.editPurchase, recurrenceId: target.dataset.recurrenceId || "" };
+            if (purchase && purchase.id) setCurrentPurchase(purchase);
           }, true);
           form.addEventListener("submit", async (event) => {
-            const method = form.dataset.method || "POST";
-            const currentPurchaseId = form.dataset.currentPurchaseId || purchaseIdFromPath(form.dataset.path || form.getAttribute("data-path") || "");
+            const formData = new FormData(form);
+            const path = form.dataset.path || form.getAttribute("data-path") || "";
+            const purchaseIdFromForm = String(formData.get("currentPurchaseId") || "");
+            const currentPurchaseId = form.dataset.currentPurchaseId || purchaseIdFromForm || purchaseIdFromPath(path);
+            const method = form.dataset.method || (currentPurchaseId ? "PATCH" : "POST");
             const purchase = purchasesById.get(currentPurchaseId);
-            const recurrenceId = form.dataset.recurrenceId || (purchase && purchase.recurrenceId) || "";
+            const editButton = currentPurchaseId ? document.querySelector('[data-edit-purchase="' + currentPurchaseId + '"]') : null;
+            const recurrenceId = form.dataset.recurrenceId || String(formData.get("recurrenceId") || "") || (purchase && purchase.recurrenceId) || (editButton && editButton.dataset.recurrenceId) || "";
             if (method !== "PATCH" || !recurrenceId) return;
             event.preventDefault();
             event.stopImmediatePropagation();

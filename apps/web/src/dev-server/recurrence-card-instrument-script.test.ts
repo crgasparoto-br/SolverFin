@@ -16,6 +16,8 @@ assert.doesNotMatch(
 );
 assert.match(script, /setupCardPurchaseFormOverride/);
 assert.match(script, /form\.dataset\.recurrenceId/);
+assert.match(script, /formData\.get\("recurrenceId"\)/);
+assert.match(script, /editButton && editButton\.dataset\.recurrenceId/);
 assert.match(script, /requestPayload\.editScope = "current_and_future"/);
 assert.match(script, /requestPayload\.cardInstrumentId = cardInstrumentId/);
 assert.doesNotMatch(script, /editScope: "recurrence_and_future_pending"/);

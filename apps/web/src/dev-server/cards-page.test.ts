@@ -201,7 +201,9 @@ async function cardsPageRendersInvoiceWorkspace(): Promise<void> {
   assert.match(html, /Conta Principal/);
   assert.match(html, /Pagamento da fatura/);
   assert.match(html, /Confirmar pagamento/);
-  assert.match(html, /data-edit-purchase="purchase-1"/);
+  assert.match(html, /data-edit-purchase="purchase-1" data-recurrence-id="recurrence-card-1"/);
+  assert.match(html, /name="currentPurchaseId"/);
+  assert.match(html, /name="recurrenceId"/);
   assert.match(html, /name="cardInstrumentId"/);
   assert.match(html, /value="instrument-main" selected/);
   assert.match(html, /Físico - Titular principal · final 1234 · limite R\$\s+2\.000,00/);
