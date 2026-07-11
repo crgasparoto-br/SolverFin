@@ -39,7 +39,12 @@ interface StatementAccountRecord {
   status: string;
 }
 
-interface StatementRecurrenceRecord {
+interface CardMaterializationRecord {
+  id: string;
+  status: string;
+}
+
+interface RecurrenceMaterializationRecord {
   id: string;
   status: string;
 }
@@ -124,6 +129,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/cartoes" && token) {
+    await materializeCardInvoiceRecurrences(token, url);
     sendHtml(response, 200, await renderCardsPageWithMonthNavigation(token, url));
     return;
   }
@@ -157,16 +163,47 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   sendHtml(response, 404, renderNotFoundPage());
 }
 
+export async function materializeCardInvoiceRecurrences(
+  token: string,
+  url: URL,
+): Promise<void> {
+  const month = resolveRequestedMonth(url);
+  const cardsResult = await apiGet<{ cards: CardMaterializationRecord[] }>(
+    token,
+    "/api/cards?status=all",
+  );
+
+  if (!cardsResult.ok) {
+    return;
+  }
+
+  const cards = cardsResult.data.cards;
+  const cardId =
+    url.searchParams.get("cardId") ??
+    cards.find((card) => card.status === "active")?.id ??
+    cards[0]?.id;
+
+  if (!cardId) {
+    return;
+  }
+
+  const recurrencesResult = await apiGet<{ recurrences: RecurrenceMaterializationRecord[] }>(
+    token,
+    `/api/recurrences?${new URLSearchParams({ cardId, status: "all" }).toString()}`,
+  );
+
+  if (!recurrencesResult.ok) {
+    return;
+  }
+
+  await materializeActiveRecurrences(token, recurrencesResult.data.recurrences, month);
+}
+
 export async function materializeAccountStatementRecurrences(
   token: string,
   url: URL,
 ): Promise<void> {
-  const month = resolveStatementMonth(url);
-
-  if (month === undefined) {
-    return;
-  }
-
+  const month = resolveRequestedMonth(url);
   const accountsResult = await apiGet<{ accounts: StatementAccountRecord[] }>(
     token,
     "/api/accounts",
@@ -184,7 +221,7 @@ export async function materializeAccountStatementRecurrences(
     return;
   }
 
-  const recurrencesResult = await apiGet<{ recurrences: StatementRecurrenceRecord[] }>(
+  const recurrencesResult = await apiGet<{ recurrences: RecurrenceMaterializationRecord[] }>(
     token,
     `/api/recurrences?${new URLSearchParams({ accountId, status: "all" }).toString()}`,
   );
@@ -193,10 +230,16 @@ export async function materializeAccountStatementRecurrences(
     return;
   }
 
+  await materializeActiveRecurrences(token, recurrencesResult.data.recurrences, month);
+}
+
+async function materializeActiveRecurrences(
+  token: string,
+  recurrences: readonly RecurrenceMaterializationRecord[],
+  month: string,
+): Promise<void> {
   const through = monthToLastDay(month);
-  const activeRecurrences = recurrencesResult.data.recurrences.filter(
-    (recurrence) => recurrence.status === "active",
-  );
+  const activeRecurrences = recurrences.filter((recurrence) => recurrence.status === "active");
 
   await Promise.all(
     activeRecurrences.map((recurrence) =>
@@ -215,17 +258,17 @@ export async function materializeAccountStatementRecurrences(
   );
 }
 
-function resolveStatementMonth(url: URL): string | undefined {
+function resolveRequestedMonth(url: URL): string {
   const requestedMonth = url.searchParams.get("month");
 
   if (monthPattern.test(requestedMonth ?? "")) {
-    return requestedMonth ?? undefined;
+    return requestedMonth as string;
   }
 
   const startsOnMonth = url.searchParams.get("startsOn")?.slice(0, 7);
 
   if (monthPattern.test(startsOnMonth ?? "")) {
-    return startsOnMonth;
+    return startsOnMonth as string;
   }
 
   return new Date().toISOString().slice(0, 7);
