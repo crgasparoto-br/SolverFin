@@ -51,7 +51,7 @@ export async function renderCardsPageWithMonthNavigation(
   }
 
   html = upsertInvoiceMonthInput(html, selectedMonth);
-  html = replaceInvoicePeriodLabel(html, selectedMonth);
+  html = upsertCurrentMonthButton(html);
   html = injectInvoiceMonthNavigationScript(html);
 
   if (requestedMonth && selectedCardId && !invoiceExistsForMonth) {
@@ -147,19 +147,30 @@ function upsertInvoiceMonthInput(html: string, month: string): string {
   const existingMarker = "data-invoice-month-input";
   if (html.includes(existingMarker)) return replaceInputValue(html, existingMarker, month);
 
+  const monthLabel = escapeHtml(formatInvoiceMonth(month));
+  const input = `<input id="filter-invoice-month" type="month" name="month" value="${escapeHtml(month)}" data-invoice-month-input aria-label="Fatura ${monthLabel}" required />`;
+  const periodMarker = /<span class="month-current" data-invoice-period-text>[\s\S]*?<\/span>/;
+
+  if (periodMarker.test(html)) {
+    return html.replace(periodMarker, input);
+  }
+
   const formStart = html.indexOf('<form class="filter-form"');
   const formEnd = formStart >= 0 ? html.indexOf("</form>", formStart) : -1;
   if (formEnd < 0) return html;
 
-  const input = `          <input type="hidden" name="month" value="${escapeHtml(month)}" data-invoice-month-input />\n`;
-  return html.slice(0, formEnd) + input + html.slice(formEnd);
+  return html.slice(0, formEnd) + `          ${input}\n` + html.slice(formEnd);
 }
 
-function replaceInvoicePeriodLabel(html: string, month: string): string {
-  return html.replace(
-    /(<span class="month-current" data-invoice-period-text>)[\s\S]*?(<\/span>)/,
-    `$1${escapeHtml(formatInvoiceMonth(month))}$2`,
-  );
+function upsertCurrentMonthButton(html: string): string {
+  if (html.includes("data-invoice-current")) return html;
+
+  const invoiceInputMarker = '<input type="hidden" name="invoiceId"';
+  const invoiceInputIndex = html.indexOf(invoiceInputMarker);
+  if (invoiceInputIndex < 0) return html;
+
+  const button = '          <button type="button" class="ghost-btn" data-invoice-current>Mês atual</button>\n';
+  return html.slice(0, invoiceInputIndex) + button + html.slice(invoiceInputIndex);
 }
 
 function replaceInputValue(html: string, marker: string, value: string): string {
@@ -233,32 +244,47 @@ function injectInvoiceMonthNavigationScript(html: string): string {
         const monthInput = form && form.querySelector("[data-invoice-month-input]");
         if (!form || !monthInput) return;
 
+        function currentMonth() {
+          return new Date().toISOString().slice(0, 7);
+        }
+
         function shiftMonth(value, delta) {
-          const match = /^\\d{4}-(0[1-9]|1[0-2])$/.test(value) ? value : new Date().toISOString().slice(0, 7);
+          const match = /^\\d{4}-(0[1-9]|1[0-2])$/.test(value) ? value : currentMonth();
           const year = Number(match.slice(0, 4));
           const monthIndex = Number(match.slice(5, 7)) - 1 + delta;
           return new Date(Date.UTC(year, monthIndex, 1)).toISOString().slice(0, 7);
         }
 
-        document.addEventListener("click", (event) => {
-          const button = event.target && event.target.closest
-            ? event.target.closest("[data-invoice-step]")
-            : null;
-          if (!button || !form.contains(button)) return;
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          monthInput.value = shiftMonth(monthInput.value, Number(button.dataset.invoiceStep || 0));
+        function clearInvoice() {
           const invoiceInput = form.querySelector("[data-invoice-input]");
           if (invoiceInput) invoiceInput.value = "";
+        }
+
+        document.addEventListener("click", (event) => {
+          const target = event.target && event.target.closest ? event.target.closest("[data-invoice-step],[data-invoice-current]") : null;
+          if (!target || !form.contains(target)) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          monthInput.value = target.matches("[data-invoice-current]")
+            ? currentMonth()
+            : shiftMonth(monthInput.value, Number(target.dataset.invoiceStep || 0));
+          clearInvoice();
           form.requestSubmit();
         }, true);
 
         document.addEventListener("change", (event) => {
           const target = event.target;
-          if (!target || target.name !== "cardId" || !form.contains(target)) return;
-          monthInput.value = "";
-          const invoiceInput = form.querySelector("[data-invoice-input]");
-          if (invoiceInput) invoiceInput.value = "";
+          if (!target || !form.contains(target)) return;
+
+          if (target === monthInput) {
+            clearInvoice();
+            form.requestSubmit();
+            return;
+          }
+
+          if (target.name === "cardId") {
+            clearInvoice();
+          }
         }, true);
       })();
     </script>

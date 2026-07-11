@@ -10,6 +10,10 @@ import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
+import {
+  enhanceCardListSorting,
+  enhanceStatementListSorting,
+} from "./dev-server/list-sorting-enhancement.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
@@ -130,13 +134,15 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/cartoes" && token) {
     await materializeCardInvoiceRecurrences(token, url);
-    sendHtml(response, 200, await renderCardsPageWithMonthNavigation(token, url));
+    const html = await renderCardsPageWithMonthNavigation(token, url);
+    sendHtml(response, 200, enhanceCardListSorting(html, url));
     return;
   }
 
   if (url.pathname === "/lancamentos" && token) {
     await materializeAccountStatementRecurrences(token, url);
-    sendHtml(response, 200, await renderTransactionsPage(token, url));
+    const html = await renderTransactionsPage(token, url);
+    sendHtml(response, 200, enhanceStatementListSorting(html, url));
     return;
   }
 
