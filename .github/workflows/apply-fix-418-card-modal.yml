@@ -4,9 +4,17 @@ on:
   push:
     branches:
       - fix/418-recurring-edit-scope-modal
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   apply:
