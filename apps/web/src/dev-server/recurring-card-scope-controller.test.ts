@@ -11,7 +11,6 @@ void main().catch((error: unknown) => {
 async function main(): Promise<void> {
   await assertScopeRequest("card", "current", {
     expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1/current-only",
-    expectedScope: undefined,
   });
   await assertScopeRequest("card", "current_and_future", {
     expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1",
@@ -19,7 +18,6 @@ async function main(): Promise<void> {
   });
   await assertScopeRequest("account", "current", {
     expectedPath: "/api/transactions/transaction-1/current-only",
-    expectedApplyToFuture: undefined,
   });
   await assertScopeRequest("account", "current_and_future", {
     expectedPath: "/api/transactions/transaction-1",
