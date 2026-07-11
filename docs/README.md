@@ -54,6 +54,7 @@ ADRs registram decisoes duradouras. Crie ou atualize ADRs quando a mudanca alter
 
 - [`adr/0001-stack-inicial.md`](./adr/0001-stack-inicial.md)
 - [`adr/0004-autenticacao-produtiva.md`](./adr/0004-autenticacao-produtiva.md)
+- [`adr/0005-financial-indexes-shared-domain.md`](./adr/0005-financial-indexes-shared-domain.md)
 
 ## Regras de manutencao documental
 
