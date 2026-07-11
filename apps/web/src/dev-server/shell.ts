@@ -169,28 +169,6 @@ function cardPurchaseEditRouteScript(): string {
   return `
     <script>
       (function () {
-        function moneyToMinor(value) {
-          const normalized = String(value).replace(/\\./g, "").replace(",", ".");
-          return Math.round(parseFloat(normalized || "0") * 100);
-        }
-
-        function statusNodeFor(form) {
-          let status = form.querySelector("[data-form-status]");
-          if (!status) {
-            status = document.createElement("p");
-            status.className = "form-status muted full";
-            status.setAttribute("data-form-status", "");
-            status.setAttribute("aria-live", "polite");
-            form.appendChild(status);
-          }
-          return status;
-        }
-
-        async function readMessage(response) {
-          const body = await response.json().catch(() => ({}));
-          return response.ok ? "Ação concluída. Atualizando..." : ((body.error && body.error.message) || "Não foi possível concluir a ação.");
-        }
-
         function findPurchase(id) {
           const node = Array.from(document.querySelectorAll("[data-purchase]")).find((candidate) => candidate.dataset.purchase === id);
           if (!node) return undefined;
@@ -220,41 +198,6 @@ function cardPurchaseEditRouteScript(): string {
               if (purchase.cardInstrumentId) instrumentInput.value = purchase.cardInstrumentId;
             }
           }, 0);
-        }, true);
-
-        document.addEventListener("submit", async (event) => {
-          const form = event.target;
-          if (!form || !form.matches || !form.matches("[data-purchase-form]")) return;
-
-          const path = form.dataset.path || form.getAttribute("data-path") || "";
-          const method = form.dataset.method || "POST";
-          const isCardPurchaseEditPath = path.startsWith("/api/credit-card-accounts/") && path.includes("/purchases/");
-          if (method !== "PATCH" || !isCardPurchaseEditPath) return;
-
-          event.preventDefault();
-          event.stopImmediatePropagation();
-
-          const data = new FormData(form);
-          const categoryId = String(data.get("categoryId") || "");
-          const cardInstrumentId = String(data.get("cardInstrumentId") || "");
-          const payload = {
-            amountMinor: moneyToMinor(data.get("amountMinor")),
-            occurredOn: String(data.get("occurredOn")),
-            description: String(data.get("description") || ""),
-          };
-          if (categoryId) payload.categoryId = categoryId;
-          if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
-
-          const status = statusNodeFor(form);
-          status.textContent = "Salvando...";
-          const response = await fetch(path, {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          status.className = response.ok ? "form-status success full" : "form-status error full";
-          status.textContent = await readMessage(response);
-          if (response.ok) window.setTimeout(() => window.location.reload(), 450);
         }, true);
       })();
     </script>

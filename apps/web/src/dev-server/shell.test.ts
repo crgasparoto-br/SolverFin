@@ -45,6 +45,9 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /<a href="\/configuracoes" data-nav-priority="primary" >Configurações<\/a>/);
     assert.match(html, /fetch\("\/api\/session", \{ method: "DELETE" \}\)/);
     assert.match(html, /window\.location\.assign\("\/login"\)/);
+    assert.match(html, /form\.dataset\.method = "PATCH"/);
+    assert.doesNotMatch(html, /document\.addEventListener\("submit"/);
+    assert.doesNotMatch(html, /event\.stopImmediatePropagation\(\)/);
   });
 
   it("renders every private route in the shared navigation", () => {
