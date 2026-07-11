@@ -3,7 +3,10 @@ import { runInNewContext } from "node:vm";
 
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 
-void main();
+void main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});
 
 async function main(): Promise<void> {
   await assertScopeRequest("current", "current_only");
@@ -106,21 +109,29 @@ async function assertScopeRequest(
   assert.equal(payload.editScope, expectedScope);
 }
 
-function fakeButton() {
-  const button = {
-    dataset: {} as Record<string, string>,
+interface FakeButton {
+  dataset: Record<string, string>;
+  disabled: boolean;
+  textContent: string;
+  closest(selector: string): FakeButton | null;
+}
+
+function fakeButton(): FakeButton {
+  const button: FakeButton = {
+    dataset: {},
     disabled: false,
     textContent: "",
-    closest: (selector: string) =>
-      selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope
-        ? button
-        : null,
+    closest: () => null,
   };
+  button.closest = (selector: string) =>
+    selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope
+      ? button
+      : null;
   return button;
 }
 
 interface FakeEvent {
-  target: ReturnType<typeof fakeButton>;
+  target: FakeButton;
   preventDefault(): void;
   stopImmediatePropagation(): void;
 }
