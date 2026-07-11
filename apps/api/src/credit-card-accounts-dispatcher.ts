@@ -1,4 +1,10 @@
-import { TenantAuthorizationError, TenantError, type TenantContext } from "@solverfin/domain";
+import {
+  TenantAuthorizationError,
+  TenantError,
+  type TenantContext,
+  type TransactionKind,
+  type TransactionStatus,
+} from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
@@ -7,19 +13,27 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { updateRecurringAccountTransactionForContext } from "./repositories/recurring-account-transaction-edit.js";
 import { updateRecurringCardPurchaseForContext } from "./repositories/recurring-card-purchase-edit.js";
+import { updateTransactionForContext } from "./repositories/transactions.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
 const RECURRING_PURCHASE_PATH = /^\/api\/credit-card-accounts\/([^/]+)\/purchases\/([^/]+)$/;
+const CURRENT_ONLY_PURCHASE_PATH =
+  /^\/api\/credit-card-accounts\/([^/]+)\/purchases\/([^/]+)\/current-only$/;
 const RECURRING_TRANSACTION_PATH = /^\/api\/transactions\/([^/]+)$/;
+const CURRENT_ONLY_TRANSACTION_PATH = /^\/api\/transactions\/([^/]+)\/current-only$/;
 
 export async function handleCreditCardAccountsApiRequest(
   request: ApiRequest,
 ): Promise<ApiResponse | undefined> {
   const body = readObjectBody(request.body);
+  const currentOnlyPurchaseMatch = CURRENT_ONLY_PURCHASE_PATH.exec(request.pathname);
+  const currentOnlyTransactionMatch = CURRENT_ONLY_TRANSACTION_PATH.exec(request.pathname);
   const purchaseMatch = RECURRING_PURCHASE_PATH.exec(request.pathname);
   const transactionMatch = RECURRING_TRANSACTION_PATH.exec(request.pathname);
   const isCurrentOnlyCardEdit =
-    request.method === "PATCH" && purchaseMatch !== null && body?.editScope === "current_only";
+    request.method === "PATCH" && currentOnlyPurchaseMatch !== null && body !== undefined;
+  const isCurrentOnlyAccountEdit =
+    request.method === "PATCH" && currentOnlyTransactionMatch !== null && body !== undefined;
   const isExpandedCardEdit =
     request.method === "PATCH" &&
     purchaseMatch !== null &&
@@ -27,14 +41,15 @@ export async function handleCreditCardAccountsApiRequest(
   const isExpandedAccountEdit =
     request.method === "PATCH" && transactionMatch !== null && body?.applyToFuturePlanned === true;
 
-  if (isCurrentOnlyCardEdit && body) {
+  if (isCurrentOnlyCardEdit && currentOnlyPurchaseMatch && body) {
     return handleBaseCreditCardAccountsApiRequest({
       ...request,
+      pathname: `/api/credit-card-accounts/${currentOnlyPurchaseMatch[1]}/purchases/${currentOnlyPurchaseMatch[2]}`,
       body: omitEditScope(body),
     });
   }
 
-  if (!isExpandedCardEdit && !isExpandedAccountEdit) {
+  if (!isCurrentOnlyAccountEdit && !isExpandedCardEdit && !isExpandedAccountEdit) {
     return handleBaseCreditCardAccountsApiRequest(request);
   }
 
@@ -42,6 +57,35 @@ export async function handleCreditCardAccountsApiRequest(
 
   try {
     const context = await resolveContext(request);
+
+    if (isCurrentOnlyAccountEdit && currentOnlyTransactionMatch && body) {
+      const transaction = await updateTransactionForContext(
+        context,
+        decodeURIComponent(currentOnlyTransactionMatch[1] ?? ""),
+        {
+          ...(body.kind !== undefined ? { kind: String(body.kind) as TransactionKind } : {}),
+          ...(body.status !== undefined
+            ? { status: String(body.status) as TransactionStatus }
+            : {}),
+          ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
+          ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
+          ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
+          ...(body.effectiveOn !== undefined
+            ? { effectiveOn: readOptionalString(body.effectiveOn) }
+            : {}),
+          ...(body.description !== undefined ? { description: String(body.description) } : {}),
+          ...(body.note !== undefined ? { note: readOptionalString(body.note) } : {}),
+          ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+          ...(body.destinationAccountId !== undefined
+            ? { destinationAccountId: String(body.destinationAccountId) }
+            : {}),
+          ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+          ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+        },
+      );
+
+      return json(200, { transaction, editScope: "current_only" });
+    }
 
     if (isExpandedAccountEdit && transactionMatch) {
       const result = await updateRecurringAccountTransactionForContext(
@@ -115,11 +159,12 @@ function readObjectBody(body: unknown): Record<string, unknown> | undefined {
 function omitEditScope(body: Record<string, unknown>): Record<string, unknown> {
   const currentOnlyBody = { ...body };
   delete currentOnlyBody.editScope;
+  delete currentOnlyBody.applyToFuturePlanned;
   return currentOnlyBody;
 }
 
 function readOptionalString(value: unknown): string | null {
-  return value === null ? null : String(value);
+  return value === null || value === "" ? null : String(value);
 }
 
 function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
