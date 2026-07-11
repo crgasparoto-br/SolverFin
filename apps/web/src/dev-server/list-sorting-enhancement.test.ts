@@ -1,0 +1,62 @@
+import assert from "node:assert/strict";
+
+import {
+  enhanceCardListSorting,
+  enhanceStatementListSorting,
+  resolveListSort,
+} from "./list-sorting-enhancement.js";
+
+assert.equal(resolveListSort("amount_desc", "date_asc"), "amount_desc");
+assert.equal(resolveListSort("invalid", "date_asc"), "date_asc");
+
+const statementHtml = documentHtml(`
+  <form class="filter-form" method="get" action="/lancamentos"><input name="month" value="2026-07" /></form>
+  <div class="statement-table" role="table" aria-label="Extrato bancário">
+    <div class="statement-row statement-head"></div>
+    ${statementRow("a", "2026-07-02", "Zebra", 1000)}
+    ${statementRow("b", "2026-07-01", "Aluguel", 5000)}
+    ${statementRow("c", "2026-07-03", "Mercado", 3000)}
+  </div>
+`);
+
+const statementSorted = enhanceStatementListSorting(
+  statementHtml,
+  new URL("http://solverfin.test/lancamentos?sort=amount_desc"),
+);
+assert.ok(statementSorted.indexOf('data-transaction="b"') < statementSorted.indexOf('data-transaction="c"'));
+assert.ok(statementSorted.indexOf('data-transaction="c"') < statementSorted.indexOf('data-transaction="a"'));
+assert.match(statementSorted, /name="sort" data-list-sort/);
+assert.match(statementSorted, /value="amount_desc" selected/);
+
+const cardHtml = documentHtml(`
+  <form class="filter-form" method="get" action="/cartoes"><input name="month" value="2026-07" /></form>
+  <div class="purchase-list" aria-label="Compras da fatura">
+    ${purchaseRow("a", "2026-07-02", "Zebra", 1000)}
+    ${purchaseRow("b", "2026-07-01", "Aluguel", 5000)}
+    ${purchaseRow("c", "2026-07-03", "Mercado", 3000)}
+  </div>
+`);
+
+const cardSorted = enhanceCardListSorting(
+  cardHtml,
+  new URL("http://solverfin.test/cartoes?sort=description_asc"),
+);
+assert.ok(cardSorted.indexOf('data-purchase="b"') < cardSorted.indexOf('data-purchase="c"'));
+assert.ok(cardSorted.indexOf('data-purchase="c"') < cardSorted.indexOf('data-purchase="a"'));
+assert.match(cardSorted, /value="description_asc" selected/);
+
+function statementRow(id: string, date: string, description: string, amountMinor: number): string {
+  return `<article class="statement-row statement-body"><script type="application/json" data-transaction="${id}">${escapedJson({ id, effectiveOn: date, plannedOn: date, occurredOn: date, description, amountMinor })}</script></article>`;
+}
+
+function purchaseRow(id: string, date: string, description: string, amountMinor: number): string {
+  return `<article class="purchase-row"><script type="application/json" data-purchase="${id}">${escapedJson({ id, occurredOn: date, description, amountMinor })}</script></article>`;
+}
+
+function escapedJson(value: unknown): string {
+  return JSON.stringify(value).replace(/&/g, "&amp;").replace(/\"/g, "&quot;");
+}
+
+function documentHtml(content: string): string {
+  return `<!doctype html><html><head></head><body>${content}</body></html>`;
+}
