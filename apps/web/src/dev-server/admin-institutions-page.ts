@@ -452,24 +452,24 @@ function adminPageStyles(): string {
   return `
     ${sharedShellStyles()}
     ${sharedDialogStyles()}
-    main { display: grid; gap: 18px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; }
-    .admin-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; }
-    .admin-heading > div { display: grid; gap: 6px; max-width: 760px; }
-    .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 6px; padding: 14px 16px; }
-    .metric-card span { color: var(--muted); font-size: 0.78rem; font-weight: 800; text-transform: uppercase; }
-    .metric-card strong { color: var(--text); font-size: 1.55rem; line-height: 1; }
-    .metric-card p { color: var(--muted); margin: 0; }
+    main { display: grid; gap: 14px; margin: 0 auto; max-width: 1440px; padding: 18px 20px; width: 100%; }
+    .admin-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
+    .admin-heading > div { display: grid; gap: 4px; max-width: 760px; }
+    .summary-grid { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); display: grid; gap: 5px; padding: 12px 14px; }
+    .metric-card span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+    .metric-card strong { color: var(--text); font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
+    .metric-card p { color: var(--muted); font-size: 0.8125rem; margin: 0; }
     .filters-grid { display: grid; gap: 12px; grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(150px, 1fr)); }
     .filters-grid .wide { grid-column: span 2; }
     .filter-actions { align-items: end; display: flex; gap: 10px; }
     .admin-actions-panel { align-items: center; display: flex; justify-content: space-between; }
     .list-panel { gap: 12px; }
-    .section-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; }
-    .section-heading > div { display: grid; gap: 4px; }
-    .section-heading > span { color: var(--muted); font-size: 0.88rem; font-weight: 800; white-space: nowrap; }
-    .admin-institution-list { display: grid; gap: 8px; }
-    .admin-institution-row { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 10px; grid-template-columns: 58px minmax(220px, .85fr) minmax(460px, 1.25fr) minmax(84px, auto); min-height: 68px; padding: 8px 10px; }
+    .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
+    .section-heading > div { display: grid; gap: 3px; }
+    .section-heading > span { color: var(--muted); font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+    .admin-institution-list { display: grid; gap: 6px; }
+    .admin-institution-row { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); display: grid; gap: 10px; grid-template-columns: 52px minmax(200px, .85fr) minmax(420px, 1.25fr) minmax(80px, auto); min-height: 58px; padding: 6px 10px; }
     .institution-logo-trigger { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); display: flex; font-weight: 900; justify-content: center; min-height: 52px; overflow: hidden; padding: 0; position: relative; width: 52px; }
     .institution-logo-trigger:hover, .institution-logo-trigger:focus-visible { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,.18); }
     .institution-logo-trigger img { height: 40px; max-width: 40px; object-fit: contain; }
@@ -488,7 +488,7 @@ function adminPageStyles(): string {
     .institution-meta dd { font-size: 0.76rem; line-height: 1.24; margin: 0; min-width: 0; overflow-wrap: anywhere; }
     .institution-actions { display: flex; justify-content: flex-end; }
     .status-form { display: flex; justify-content: flex-start; }
-    .status-form button { font-size: 0.82rem; min-height: 38px; min-width: 82px; padding: 0 12px; }
+    .status-form button { font-size: 0.8125rem; min-height: 32px; min-width: 72px; padding: 0 10px; }
     .logo-upload-dialog { max-width: 560px; }
     .logo-dialog-layout { align-items: center; display: grid; gap: 16px; grid-template-columns: 84px 1fr; margin-bottom: 16px; }
     .logo-dialog-preview { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); display: flex; font-size: 1.1rem; font-weight: 900; height: 84px; justify-content: center; overflow: hidden; width: 84px; }
@@ -499,7 +499,7 @@ function adminPageStyles(): string {
     .form-status { margin: 0; }
     @media (max-width: 1240px) { .admin-institution-row { grid-template-columns: 56px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 2 / -1; } .institution-actions { justify-content: flex-start; } }
     @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { main { padding: 18px 16px 28px; } .admin-heading, .admin-actions-panel, .section-heading, .filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .summary-grid { grid-template-columns: 1fr; } .admin-institution-row { align-items: start; grid-template-columns: 52px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: 1fr; } .logo-dialog-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { main { padding: 14px 14px 24px; } .admin-heading, .admin-actions-panel, .section-heading, .filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .summary-grid { grid-template-columns: 1fr; } .admin-institution-row { align-items: start; grid-template-columns: 52px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: 1fr; } .logo-dialog-layout { grid-template-columns: 1fr; } }
   `;
 }
 
