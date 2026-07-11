@@ -52,7 +52,7 @@ function accountsCardsDirectEnhancementScript(): string {
             const style = document.createElement("style");
             style.id = "accounts-cards-direct-enhancement-style";
             style.textContent = [
-              ".active-filter-switch { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); cursor: pointer; display: inline-flex; font: inherit; font-size: .84rem; font-weight: 800; gap: 10px; justify-content: center; line-height: 1.15; min-height: 44px; padding: 0 14px; text-align: left; user-select: none; width: fit-content; }",
+              ".active-filter-switch { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 6px; color: var(--primary); cursor: pointer; display: inline-flex; font: inherit; font-size: 0.8125rem; font-weight: 600; gap: 8px; justify-content: center; line-height: 1.15; min-height: 34px; padding: 0 10px; text-align: left; user-select: none; width: fit-content; }",
               ".active-filter-input { border: 0; height: 1px; margin: 0; opacity: 0; padding: 0; position: absolute; width: 1px; }",
               ".active-filter-switch .toggle-track { align-items: center; background: #cbd5e1; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 20px; padding: 2px; width: 38px; }",
               ".active-filter-switch .toggle-thumb { background: #fff; border-radius: 999px; box-shadow: 0 1px 3px rgba(15, 23, 42, .24); display: block; height: 16px; transform: translateX(0); transition: transform .18s ease; width: 16px; }",

@@ -1,5 +1,6 @@
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
-import { listPrivateShellRoutes } from "../app-shell/routes.js";
+import { listPrivateShellRoutes, type ShellRouteId } from "../app-shell/routes.js";
+import { icon } from "./icons.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 
 export interface ShellDocumentInput {
@@ -45,12 +46,24 @@ export function renderAuthenticatedShell(
   return `
     <div class="app-shell">
       <aside class="sidebar">
-        <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin"><img src="/icons/solverfin-192.png" width="28" height="28" alt="" />SolverFin</a>
+        <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin">
+          <img src="/icons/solverfin-192.png" width="24" height="24" alt="" />SolverFin
+        </a>
         <nav aria-label="Menu principal" class="${isActivePathnameSecondary(input.activePathname, input.showAdminNavigation === true) ? "nav-open" : ""}">${renderNavigation(input.activePathname, input.showAdminNavigation === true)}</nav>
-        <button class="logout" type="button" data-logout>Sair</button>
+        <button class="logout" type="button" data-logout title="Encerrar sessão">
+          ${icon("log-out", 14)} Sair
+        </button>
       </aside>
       <div class="main-area">
-        <header class="topbar"><div><strong>${escapeHtml(input.currentLabel)}</strong><span>Usuário Demo SolverFin</span></div><button type="button" data-logout>Sair</button></header>
+        <header class="topbar">
+          <div>
+            <strong>${escapeHtml(input.currentLabel)}</strong>
+            <span>Usuário Demo SolverFin</span>
+          </div>
+          <button type="button" data-logout title="Encerrar sessão">
+            ${icon("log-out", 13)} Sair
+          </button>
+        </header>
         <main>${input.content}</main>
       </div>
     </div>
@@ -70,6 +83,29 @@ export function faviconLinks(): string {
   `;
 }
 
+/** Map each route id to a Lucide icon name */
+const routeIconMap: Partial<Record<ShellRouteId, Parameters<typeof icon>[0]>> = {
+  dashboard: "layout-dashboard",
+  transactions: "receipt",
+  cards: "credit-card",
+  accountsCards: "wallet",
+  categories: "tag",
+  budgets: "pie-chart",
+  inbox: "inbox",
+  reports: "bar-chart-2",
+  settings: "settings",
+  adminInstitutions: "building-2",
+};
+
+/** Map each navigation group to a section label */
+const groupLabelMap: Record<string, string> = {
+  main: "Rotina",
+  manage: "Organizar",
+  review: "Revisar",
+  settings: "Ajustes",
+  admin: "Admin",
+};
+
 function isActivePathnameSecondary(activePathname: string, includeMasterRoutes: boolean): boolean {
   const activeRoute = listPrivateShellRoutes({ includeMaster: includeMasterRoutes }).find(
     (route) => route.path === activePathname,
@@ -84,20 +120,40 @@ function renderNavigation(activePathname: string, includeMasterRoutes: boolean):
     .filter((route) => !isPrimaryMobileRoute(route))
     .map((route) => `nav-secondary-${route.id}`);
 
-  const links = routes
-    .map((route) => {
+  // Group routes by navigationGroup to render section labels
+  const groups: Record<string, typeof routes> = {};
+  for (const route of routes) {
+    const g = route.navigationGroup;
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(route);
+  }
+
+  const groupOrder = ["main", "manage", "review", "settings", "admin"];
+  let html = "";
+
+  for (const groupKey of groupOrder) {
+    const groupRoutes = groups[groupKey];
+    if (!groupRoutes || groupRoutes.length === 0) continue;
+
+    const label = groupLabelMap[groupKey];
+    if (label) {
+      html += `<span class="nav-section-label">${escapeHtml(label)}</span>`;
+    }
+
+    for (const route of groupRoutes) {
       const isActive = route.path === activePathname;
       const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
       const id = priority === "secondary" ? ` id="nav-secondary-${route.id}"` : "";
+      const routeIcon = routeIconMap[route.id];
+      const iconHtml = routeIcon ? icon(routeIcon, 15) : "";
 
-      return `<a href="${route.path}"${id} data-nav-priority="${priority}" ${isActive ? `aria-current="page"` : ""}>${escapeHtml(route.label)}</a>`;
-    })
-    .join("");
+      html += `<a href="${route.path}"${id} data-nav-priority="${priority}" title="${escapeHtml(route.description)}" ${isActive ? `aria-current="page"` : ""}>${iconHtml}${escapeHtml(route.label)}</a>`;
+    }
+  }
 
-  return `
-    ${links}
-    <button type="button" class="nav-more-toggle" data-nav-more aria-expanded="${activeIsSecondary}" aria-controls="${secondaryIds.join(" ")}">${activeIsSecondary ? "Menos rotas" : "Mais rotas"}</button>
-  `;
+  html += `<button type="button" class="nav-more-toggle" data-nav-more aria-expanded="${activeIsSecondary}" aria-controls="${secondaryIds.join(" ")}">${activeIsSecondary ? "Menos" : "Mais"}</button>`;
+
+  return html;
 }
 
 function logoutScript(): string {
@@ -122,7 +178,7 @@ function navigationScript(): string {
         button.addEventListener("click", () => {
           const isOpen = nav.classList.toggle("nav-open");
           button.setAttribute("aria-expanded", String(isOpen));
-          button.textContent = isOpen ? "Menos rotas" : "Mais rotas";
+          button.textContent = isOpen ? "Menos" : "Mais";
         });
       });
     </script>
@@ -147,7 +203,8 @@ function masterNavigationScript(): string {
           link.href = "/admin/instituicoes";
           link.id = "nav-secondary-adminInstitutions";
           link.dataset.navPriority = "secondary";
-          link.textContent = ["Admin", "Instituições"].join(" - ");
+          link.title = "Gerenciar instituições financeiras";
+          link.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg> Admin - Instituições';
 
           const toggle = nav.querySelector("[data-nav-more]");
           nav.insertBefore(link, toggle);

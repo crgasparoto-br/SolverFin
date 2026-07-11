@@ -1,6 +1,7 @@
 import { formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { icon } from "./icons.js";
 import { findInstitution, institutions, renderInstitutionIcon } from "./institutions.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
@@ -134,12 +135,12 @@ function renderAccountItem(account: AccountRecord): string {
       </div>
       <div class="amount-stack"><span>Saldo inicial</span><strong>${formatMoney(account.openingBalanceMinor ?? 0)}</strong></div>
       <div class="item-actions" aria-label="Ações de ${escapeHtml(account.name)}">
-        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar cadastro de ${escapeHtml(account.name)}">${renderEditIcon()}</button>
+        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar cadastro de ${escapeHtml(account.name)}" title="Editar conta">${renderEditIcon()}</button>
         <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
-          <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(account.name)}"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
+          <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(account.name)}" title="Arquivar conta"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
         </form>
         <form data-api-form data-api-method="DELETE" data-api-path="/api/accounts/${escapeHtml(account.id)}" data-confirm="Excluir ${escapeHtml(account.name)}? Só é possível excluir contas sem lançamentos, cartões, recorrências ou contas a pagar/receber vinculadas." class="inline-action-form">
-          <button type="submit" class="icon-button danger-icon-button" aria-label="Excluir ${escapeHtml(account.name)}">${renderTrashIcon()}</button>
+          <button type="submit" class="icon-button danger-icon-button" aria-label="Excluir ${escapeHtml(account.name)}" title="Excluir conta">${renderTrashIcon()}</button>
         </form>
       </div>
       ${renderAccountEditDialog(account, editDialogId)}
@@ -188,13 +189,13 @@ function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]
       </div>
       <div class="amount-stack"><span>Limite total</span><strong>${formatMoney(card.creditLimitMinor ?? 0)}</strong></div>
       <div class="item-actions" aria-label="Ações de ${escapeHtml(card.name)}">
-        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar cadastro de ${escapeHtml(card.name)}">${renderEditIcon()}</button>
-        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(newInstrumentDialogId)}" aria-label="Adicionar instrumento em ${escapeHtml(card.name)}"${isArchived ? " disabled" : ""}>${renderAddIcon()}</button>
+        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar cadastro de ${escapeHtml(card.name)}" title="Editar cartão">${renderEditIcon()}</button>
+        <button type="button" class="icon-button" data-open-dialog="${escapeHtml(newInstrumentDialogId)}" aria-label="Adicionar instrumento em ${escapeHtml(card.name)}" title="Adicionar instrumento"${isArchived ? " disabled" : ""}>${renderAddIcon()}</button>
         <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
-          <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(card.name)}"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
+          <button type="submit" class="icon-button danger-icon-button" aria-label="Inativar ${escapeHtml(card.name)}" title="Arquivar cartão"${isArchived ? " disabled" : ""}>${renderArchiveIcon()}</button>
         </form>
         <form data-api-form data-api-method="DELETE" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}" data-confirm="Excluir ${escapeHtml(card.name)}? Só é possível excluir cartões sem compras, faturas, parcelas ou recorrências vinculadas." class="inline-action-form">
-          <button type="submit" class="icon-button danger-icon-button" aria-label="Excluir ${escapeHtml(card.name)}">${renderTrashIcon()}</button>
+          <button type="submit" class="icon-button danger-icon-button" aria-label="Excluir ${escapeHtml(card.name)}" title="Excluir cartão">${renderTrashIcon()}</button>
         </form>
       </div>
       ${renderCardEditDialog(card, accounts, editDialogId)}
@@ -810,23 +811,23 @@ function findCardBrand(key: string | undefined) {
 }
 
 function renderEditIcon(): string {
-  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
+  return icon("pencil", 14);
 }
 
 function renderAddIcon(): string {
-  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>`;
+  return icon("plus", 14);
 }
 
 function renderArchiveIcon(): string {
-  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M5 5h14v4H5V5zm2 6h10v8H7v-8zm2 2v4h6v-4H9zM7 7v1h10V7H7z" fill="currentColor"/></svg>`;
+  return icon("archive", 14);
 }
 
 function renderTrashIcon(): string {
-  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h10l-.7 11H7.7L7 9zm3 2 .3 7h1.5l-.2-7H10zm3.4 0-.2 7h1.5l.3-7h-1.6z" fill="currentColor"/></svg>`;
+  return icon("trash-2", 14);
 }
 
 function renderDefaultIcon(): string {
-  return `<svg aria-hidden="true" class="action-icon" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z" fill="currentColor"/></svg>`;
+  return icon("star", 14);
 }
 
 function renderCardBrandIcon(key: string): string {
@@ -934,29 +935,29 @@ interface CardInstrumentRecord {
 function baseCss(): string {
   return `
     ${sharedShellStyles()}
-    main { display: grid; gap: 18px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; }
-    .master-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; } .master-heading > div:first-child { display: grid; gap: 6px; max-width: 720px; } .master-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-    .master-toolbar, .master-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 16px; padding: 16px; }
+    main { display: grid; gap: 14px; margin: 0 auto; max-width: 1440px; padding: 18px 20px; width: 100%; }
+    .master-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .master-heading > div:first-child { display: grid; gap: 4px; max-width: 720px; } .master-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .master-toolbar, .master-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: grid; gap: 12px; padding: 14px; }
     [hidden] { display: none !important; }
-    .tab-list { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: 8px; display: flex; gap: 6px; padding: 6px; } .tab-button { background: transparent; color: var(--primary); flex: 1 1 0; gap: 8px; min-width: 0; } .tab-button[aria-selected="true"] { background: var(--surface); border: 1px solid #d4e6ec; color: var(--text); } .tab-button span, .section-heading > span, .status-pill, .dialog-subsection-heading > span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: .78rem; font-weight: 800; padding: 5px 9px; white-space: nowrap; }
-    .filter-row { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(12rem, .25fr); }
-    .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .section-heading > div { display: grid; gap: 4px; }
-    .master-list { display: grid; gap: 12px; } .master-item { align-items: start; border-top: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 44px minmax(0, 1fr) minmax(9rem, auto) auto; padding-top: 14px; } .master-item:first-child { border-top: 0; padding-top: 0; }
-    .identity-mark { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 12px; color: white; display: flex; height: 44px; justify-content: center; overflow: hidden; width: 44px; } .card-mark { background: #f8fafc; }
-    .brand-icon { display: block; height: 44px; width: 44px; } .card-brand-icon { filter: drop-shadow(0 1px 2px rgba(15,23,42,.14)); }
-    .brand-icon-wrap { align-items: center; background: #fff; display: flex; height: 44px; justify-content: center; width: 44px; } .institution-logo-img { background: #fff; border-radius: 10px; object-fit: contain; padding: 5px; }
-    .item-main { display: grid; gap: 5px; min-width: 0; } .item-main p { color: var(--muted); line-height: 1.45; } .item-title-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; } .amount-stack { display: grid; gap: 3px; justify-items: end; text-align: right; white-space: nowrap; } .amount-stack span { color: var(--muted); font-size: .76rem; font-weight: 800; text-transform: uppercase; } .amount-stack strong { color: var(--text); }
-    .instrument-list { border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 0; margin-top: 6px; overflow: hidden; } .instrument-list.is-empty { padding: 10px 12px; }
-    .instrument-warning { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); font-size: .88rem; font-weight: 700; margin-top: 8px; padding: 9px 12px; }
-    .instrument-item { align-items: center; background: var(--surface-soft); border-top: 1px solid var(--line); display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; } .instrument-item:first-child { border-top: 0; } .instrument-meta { font-size: .88rem; }
-    .instrument-side { display: grid; gap: 8px; justify-items: end; } .instrument-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; } .instrument-pill { background: #e0f2fe; border-radius: 999px; color: #075985; font-size: .72rem; font-weight: 800; padding: 4px 8px; white-space: nowrap; } .instrument-pill.is-archived { background: #f1f5f9; color: #475569; }
-    .instrument-actions { display: flex; gap: 6px; justify-content: flex-end; } .instrument-actions .icon-button { min-height: 36px; width: 36px; }
-    .item-actions { display: flex; gap: 8px; justify-content: flex-end; } .inline-action-form { display: block; gap: 0; } .icon-button { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); min-height: 44px; padding: 0; width: 44px; } .danger-icon-button { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 20px; width: 20px; }
-    .edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
-    .dialog-subsection { border-top: 1px solid var(--line); display: grid; gap: 12px; margin-top: 18px; padding-top: 18px; } .dialog-subsection-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .dialog-subsection-heading > div { display: grid; gap: 4px; } .dialog-subsection h3 { font-size: 1rem; margin: 0; } .dialog-instrument-forms { display: grid; gap: 12px; } .instrument-edit-form { background: var(--surface-soft); border: 1px solid var(--line); border-radius: 8px; margin-top: 0; padding: 12px; } .instrument-edit-heading { align-items: center; display: flex; gap: 10px; grid-column: 1 / -1; justify-content: space-between; }
+    .tab-list { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: var(--radius); display: flex; gap: 4px; padding: 4px; } .tab-button { background: transparent; color: var(--primary); flex: 1 1 0; font-size: 0.8125rem; gap: 6px; min-height: 30px; min-width: 0; padding: 0 10px; } .tab-button[aria-selected="true"] { background: var(--surface); border: 1px solid #d4e6ec; color: var(--text); font-weight: 600; } .tab-button span, .section-heading > span, .status-pill, .dialog-subsection-heading > span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: 0.6875rem; font-weight: 700; padding: 2px 7px; white-space: nowrap; }
+    .filter-row { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(10rem, .22fr); }
+    .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; } .section-heading > div { display: grid; gap: 3px; }
+    .master-list { display: grid; gap: 0; } .master-item { align-items: start; border-top: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: 36px minmax(0, 1fr) minmax(8rem, auto) auto; padding: 10px 0; } .master-item:first-child { border-top: 0; padding-top: 0; }
+    .identity-mark { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: white; display: flex; height: 36px; justify-content: center; overflow: hidden; width: 36px; } .card-mark { background: #f8fafc; }
+    .brand-icon { display: block; height: 36px; width: 36px; } .card-brand-icon { filter: drop-shadow(0 1px 2px rgba(15,23,42,.14)); }
+    .brand-icon-wrap { align-items: center; background: #fff; display: flex; height: 36px; justify-content: center; width: 36px; } .institution-logo-img { background: #fff; border-radius: 7px; object-fit: contain; padding: 4px; }
+    .item-main { display: grid; gap: 3px; min-width: 0; } .item-main p { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; } .item-title-row { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; } .amount-stack { display: grid; gap: 2px; justify-items: end; text-align: right; white-space: nowrap; } .amount-stack span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; } .amount-stack strong { color: var(--text); font-size: 0.875rem; }
+    .instrument-list { border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 0; margin-top: 6px; overflow: hidden; } .instrument-list.is-empty { padding: 8px 10px; font-size: 0.8125rem; color: var(--muted); }
+    .instrument-warning { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: var(--radius); color: var(--danger); font-size: 0.8125rem; font-weight: 600; margin-top: 6px; padding: 7px 10px; }
+    .instrument-item { align-items: center; background: var(--surface-soft); border-top: 1px solid var(--line); display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) auto; padding: 8px 10px; } .instrument-item:first-child { border-top: 0; } .instrument-meta { font-size: 0.8125rem; }
+    .instrument-side { display: grid; gap: 6px; justify-items: end; } .instrument-tags { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; } .instrument-pill { background: #e0f2fe; border-radius: 999px; color: #075985; font-size: 0.6875rem; font-weight: 700; padding: 2px 7px; white-space: nowrap; } .instrument-pill.is-archived { background: #f1f5f9; color: #475569; }
+    .instrument-actions { display: flex; gap: 4px; justify-content: flex-end; }
+    .item-actions { display: flex; gap: 6px; justify-content: flex-end; } .inline-action-form { display: block; gap: 0; } .icon-button { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--primary); min-height: 28px; padding: 0; width: 28px; transition: background 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out; } .icon-button:hover { background: var(--primary-soft); border-color: #c8dde5; } .danger-icon-button { color: var(--muted); } .danger-icon-button:hover { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 14px; width: 14px; }
+    .edit-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 10px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
+    .dialog-subsection { border-top: 1px solid var(--line); display: grid; gap: 10px; margin-top: 14px; padding-top: 14px; } .dialog-subsection-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; } .dialog-subsection-heading > div { display: grid; gap: 3px; } .dialog-subsection h3 { font-size: 0.875rem; margin: 0; } .dialog-instrument-forms { display: grid; gap: 10px; } .instrument-edit-form { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); margin-top: 0; padding: 10px; } .instrument-edit-heading { align-items: center; display: flex; gap: 8px; grid-column: 1 / -1; justify-content: space-between; }
     .filter-empty-state { margin-top: 4px; }
-    .master-dialog { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 760px; padding: 20px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.38); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 12px; } .dialog-heading { display: grid; gap: 4px; }
-    @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .master-heading { align-items: stretch; display: grid; } .master-item { grid-template-columns: 44px minmax(0, 1fr) auto; } .item-actions { grid-column: 2 / -1; justify-content: flex-start; } }
-    @media (max-width: 760px) { h1 { font-size: 1.65rem; } .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading, .instrument-item, .dialog-subsection-heading, .instrument-edit-heading { display: grid; grid-template-columns: 1fr; } .item-actions { grid-column: auto; justify-content: flex-start; } .instrument-side { justify-items: start; } .instrument-tags, .instrument-actions { justify-content: flex-start; } .amount-stack { justify-items: start; text-align: left; white-space: normal; } }
+    .master-dialog { border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 720px; padding: 18px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.42); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 10px; } .dialog-heading { display: grid; gap: 3px; }
+    @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .master-heading { align-items: stretch; display: grid; } .master-item { grid-template-columns: 36px minmax(0, 1fr) auto; } .item-actions { grid-column: 2 / -1; justify-content: flex-start; } }
+    @media (max-width: 760px) { .tab-list, .master-actions { display: grid; } .filter-row, .edit-grid, .master-item, .section-heading, .instrument-item, .dialog-subsection-heading, .instrument-edit-heading { display: grid; grid-template-columns: 1fr; } .item-actions { grid-column: auto; justify-content: flex-start; } .instrument-side { justify-items: start; } .instrument-tags, .instrument-actions { justify-content: flex-start; } .amount-stack { justify-items: start; text-align: left; white-space: normal; } }
   `;
 }
