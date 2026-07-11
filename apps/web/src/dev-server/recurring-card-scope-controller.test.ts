@@ -9,13 +9,32 @@ void main().catch((error: unknown) => {
 });
 
 async function main(): Promise<void> {
-  await assertScopeRequest("current", "current_only");
-  await assertScopeRequest("current_and_future", "current_and_future");
+  await assertScopeRequest("card", "current", {
+    expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1/current-only",
+    expectedScope: undefined,
+  });
+  await assertScopeRequest("card", "current_and_future", {
+    expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1",
+    expectedScope: "current_and_future",
+  });
+  await assertScopeRequest("account", "current", {
+    expectedPath: "/api/transactions/transaction-1/current-only",
+    expectedApplyToFuture: undefined,
+  });
+  await assertScopeRequest("account", "current_and_future", {
+    expectedPath: "/api/transactions/transaction-1",
+    expectedApplyToFuture: true,
+  });
 }
 
 async function assertScopeRequest(
+  targetKind: "card" | "account",
   buttonKind: "current" | "current_and_future",
-  expectedScope: string,
+  expected: {
+    expectedPath: string;
+    expectedScope?: string;
+    expectedApplyToFuture?: boolean;
+  },
 ): Promise<void> {
   const requests: Array<{ path: string; init: { body?: string } }> = [];
   let clickListener: ((event: FakeEvent) => Promise<void>) | undefined;
@@ -24,6 +43,7 @@ async function assertScopeRequest(
   const futureButton = fakeButton();
   const status = { className: "", textContent: "" };
   const modal = {
+    dataset: { targetKind },
     contains: (node: unknown) => node === currentButton || node === futureButton,
     querySelector: (selector: string) => {
       if (selector === '[data-recurrence-scope="current"]') return currentButton;
@@ -35,7 +55,10 @@ async function assertScopeRequest(
   const form = {
     dataset: {
       method: "PATCH",
-      path: "/api/credit-card-accounts/card-1/purchases/purchase-1",
+      path:
+        targetKind === "card"
+          ? "/api/credit-card-accounts/card-1/purchases/purchase-1"
+          : "/api/transactions/transaction-1",
       recurrenceId: "recurrence-1",
     },
     getAttribute: () => "",
@@ -48,7 +71,14 @@ async function assertScopeRequest(
       const values: Record<string, string> = {
         amountMinor: "12,34",
         occurredOn: "2026-07-10",
+        plannedOn: "2026-07-10",
+        effectiveOn: "",
         description: "Assinatura",
+        note: "Observação",
+        kind: "expense",
+        status: "planned",
+        accountId: "account-1",
+        destinationAccountId: "",
         categoryId: "category-1",
         cardInstrumentId: "instrument-1",
         recurrenceId: "recurrence-1",
@@ -59,8 +89,9 @@ async function assertScopeRequest(
 
   const document = {
     querySelector: (selector: string) => {
-      if (selector === '[data-recurrence-scope-modal][data-target-kind="card"]') return modal;
-      if (selector === "[data-purchase-form]") return form;
+      if (selector === "[data-recurrence-scope-modal]") return modal;
+      if (selector === "[data-purchase-form]" && targetKind === "card") return form;
+      if (selector === "[data-form]" && targetKind === "account") return form;
       return null;
     },
     addEventListener: (type: string, listener: (event: FakeEvent) => Promise<void>) => {
@@ -104,9 +135,10 @@ async function assertScopeRequest(
   assert.equal(prevented, true);
   assert.equal(propagationStopped, true);
   assert.equal(requests.length, 1);
-  assert.equal(requests[0]?.path, form.dataset.path);
+  assert.equal(requests[0]?.path, expected.expectedPath);
   const payload = JSON.parse(requests[0]?.init.body ?? "{}") as Record<string, unknown>;
-  assert.equal(payload.editScope, expectedScope);
+  assert.equal(payload.editScope, expected.expectedScope);
+  assert.equal(payload.applyToFuturePlanned, expected.expectedApplyToFuture);
 }
 
 interface FakeButton {
