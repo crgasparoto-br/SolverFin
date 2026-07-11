@@ -32,6 +32,7 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: node scripts/apply-fix-418-card-modal.mjs
       - run: npm ci --no-audit --no-fund
+      - run: npm run build:packages
       - run: npx prettier --write apps/web/src/dev-server/cards-page.ts apps/web/src/dev-server/recurrences-section.ts apps/web/src/dev-server/cards-page.test.ts apps/web/src/dev-server/cards-page-recurring-render.test.ts apps/web/src/dev-server/recurrence-card-instrument-script.test.ts
       - name: Capture web test output
         run: |
