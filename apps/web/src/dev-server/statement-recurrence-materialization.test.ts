@@ -11,6 +11,7 @@ try {
   await materializesActiveAccountRecurrencesThroughSelectedMonth();
   await usesFirstActiveAccountWhenStatementHasNoAccountFilter();
   await materializesActiveCardRecurrencesThroughSelectedMonth();
+  await serializesMultipleCardRecurrencesAndRetriesTransientFailure();
   await usesFirstActiveCardWhenInvoiceHasNoCardFilter();
 } finally {
   globalThis.fetch = originalFetch;
@@ -152,6 +153,69 @@ async function materializesActiveCardRecurrencesThroughSelectedMonth(): Promise<
       authorization: "Bearer session-token",
     },
   ]);
+}
+
+async function serializesMultipleCardRecurrencesAndRetriesTransientFailure(): Promise<void> {
+  const requestOrder: string[] = [];
+  const attempts = new Map<string, number>();
+  let inFlight = 0;
+  let maxInFlight = 0;
+
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = resolveFetchUrl(input);
+
+    if (url.pathname === "/api/cards") {
+      return jsonResponse({ cards: [{ id: "card-1", status: "active" }] });
+    }
+
+    if (url.pathname === "/api/recurrences") {
+      return jsonResponse({
+        recurrences: [
+          { id: "card-recurrence-1", status: "active" },
+          { id: "card-recurrence-2", status: "active" },
+          { id: "card-recurrence-3", status: "active" },
+          { id: "card-recurrence-paused", status: "paused" },
+        ],
+      });
+    }
+
+    if (url.pathname.endsWith("/generate-installments")) {
+      const recurrenceId = url.pathname.split("/").at(-2) ?? "";
+      requestOrder.push(recurrenceId);
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await Promise.resolve();
+      inFlight -= 1;
+
+      const attempt = (attempts.get(recurrenceId) ?? 0) + 1;
+      attempts.set(recurrenceId, attempt);
+
+      if (recurrenceId === "card-recurrence-2" && attempt === 1) {
+        return jsonResponse({ error: { code: "INVOICE_WRITE_CONFLICT" } }, 409);
+      }
+
+      return jsonResponse({ installments: [], transactions: [] }, 201);
+    }
+
+    throw new Error(`Unexpected request: ${url.pathname}${url.search}`);
+  };
+
+  await materializeCardInvoiceRecurrences(
+    "session-token",
+    new URL("http://solverfin.test/cartoes?cardId=card-1&month=2026-12"),
+  );
+
+  assert.equal(maxInFlight, 1, "recurrences sharing an invoice must be materialized sequentially");
+  assert.deepEqual(requestOrder, [
+    "card-recurrence-1",
+    "card-recurrence-2",
+    "card-recurrence-2",
+    "card-recurrence-3",
+  ]);
+  assert.equal(attempts.get("card-recurrence-1"), 1);
+  assert.equal(attempts.get("card-recurrence-2"), 2);
+  assert.equal(attempts.get("card-recurrence-3"), 1);
+  assert.equal(attempts.has("card-recurrence-paused"), false);
 }
 
 async function usesFirstActiveCardWhenInvoiceHasNoCardFilter(): Promise<void> {
