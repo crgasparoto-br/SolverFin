@@ -1,6 +1,7 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { icon } from "./icons.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
 import {
   recurrencesSectionScript,
@@ -97,7 +98,7 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
           <h1>Cartões de Crédito</h1>
           <p class="muted">Acompanhe a fatura do cartão, registre compras e faça a baixa do pagamento.</p>
         </div>
-        <button type="button" data-open-modal="purchase"${selectedCard ? "" : " disabled"}>Nova compra</button>
+        <button type="button" data-open-modal="purchase"${selectedCard ? "" : " disabled"} title="Registrar nova compra no cartão">${icon("plus", 14)} Nova compra</button>
       </section>
 
       <section class="panel card-filter">
@@ -106,9 +107,9 @@ export async function renderCardsPage(token: string, url?: URL): Promise<string>
           <div class="month-field">
             <label id="invoice-period-label">Fatura</label>
             <div class="month-nav">
-              <button type="button" class="icon-btn" data-invoice-step="-1" aria-label="Fatura anterior">&#8249;</button>
+              <button type="button" class="icon-btn" data-invoice-step="-1" aria-label="Fatura anterior" title="Fatura anterior">${icon("chevron-left", 14)}</button>
               <span class="month-current" data-invoice-period-text>${selectedInvoice ? escapeHtml(formatMonthYear(selectedInvoice.periodEndOn)) : "Sem faturas"}</span>
-              <button type="button" class="icon-btn" data-invoice-step="1" aria-label="Próxima fatura">&#8250;</button>
+              <button type="button" class="icon-btn" data-invoice-step="1" aria-label="Próxima fatura" title="Próxima fatura">${icon("chevron-right", 14)}</button>
             </div>
           </div>
           <input type="hidden" name="invoiceId" value="${escapeHtml(selectedInvoice?.id ?? "")}" data-invoice-input />
@@ -239,7 +240,7 @@ function renderSummaryPanel(
         </dl>
         <div class="invoice-actions">
           ${canClose ? renderActionButton("Fechar fatura", `/api/invoices/${invoice.id}/close`, "Fechar esta fatura?") : ""}
-          ${canPay ? `<button type="button" data-open-modal="payment">Lançar pagamento</button>` : `<p class="muted">Pagamento indisponível para faturas ${escapeHtml(formatGenericStatus(invoice.status).toLowerCase())}.</p>`}
+          ${canPay ? `<button type="button" data-open-modal="payment" title="Registrar pagamento desta fatura">${icon("credit-card", 14)} Lançar pagamento</button>` : `<p class="muted">Pagamento indisponível para faturas ${escapeHtml(formatGenericStatus(invoice.status).toLowerCase())}.</p>`}
         </div>
       </section>
 
@@ -437,7 +438,7 @@ function renderPurchaseModal(
           <label data-purchase-field="interval" hidden>A cada<input name="interval" type="number" min="1" max="60" value="1" /></label>
           <label data-purchase-field="frequency" hidden>Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label>
           <label data-purchase-field="endOn" hidden>Fim opcional<input name="endOn" type="date" /></label>
-          <button type="submit" class="full"${selectedCard && instruments.length > 0 ? "" : " disabled"}>Salvar compra</button>
+          <button type="submit" class="full"${selectedCard && instruments.length > 0 ? "" : " disabled"} title="Salvar esta compra">${icon("save", 14)} Salvar compra</button>
         </form>
       </section>
     </dialog>
@@ -462,7 +463,7 @@ function renderPaymentModal(
           <label>Pago em<input name="paidOn" type="date" required /></label>
           <label>Valor pago (R$)<input name="amountMinor" data-money inputmode="decimal" value="${formatMoneyInput(amountDueMinor)}" required /></label>
           <label class="full">Descrição<input name="description" value="Pagamento da fatura ${invoice ? formatDate(invoice.periodEndOn) : ""}" /></label>
-          <button type="submit" class="full">Confirmar pagamento</button>
+          <button type="submit" class="full" title="Confirmar o pagamento da fatura">${icon("check", 14)} Confirmar pagamento</button>
         </form>
       </section>
     </dialog>
@@ -470,7 +471,9 @@ function renderPaymentModal(
 }
 
 function renderActionButton(label: string, path: string, confirmation?: string): string {
-  return `<button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="${escapeHtml(path)}"${confirmation ? ` data-api-confirm="${escapeHtml(confirmation)}"` : ""}>${escapeHtml(label)}</button>`;
+  const isClose = path.includes("/close");
+  const iconHtml = isClose ? icon("lock", 13) + " " : icon("check", 13) + " ";
+  return `<button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="${escapeHtml(path)}"${confirmation ? ` data-api-confirm="${escapeHtml(confirmation)}"` : ""} title="${escapeHtml(confirmation ?? label)}">${iconHtml}${escapeHtml(label)}</button>`;
 }
 
 function renderEmptyState(title: string, description: string): string {

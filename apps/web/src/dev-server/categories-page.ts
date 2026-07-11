@@ -1,4 +1,5 @@
 import { apiGet } from "./api.js";
+import { icon } from "./icons.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
@@ -46,7 +47,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
             <h1 id="categories-title">Categorias</h1>
             <p class="sf-muted">Classifique receitas, despesas e transferencias com uma hierarquia simples para manter relatorios e lancamentos consistentes.</p>
           </div>
-          <button class="sf-button" type="button" data-open-category-modal>Nova categoria</button>
+          <button class="sf-button" type="button" data-open-category-modal title="Criar nova categoria">${icon("plus", 14)} Nova categoria</button>
         </section>
 
         <section class="categories-workspace">
@@ -116,7 +117,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
               <div class="dialog-actions">
                 <button class="sf-button secondary" type="button" data-close-category-modal>Cancelar</button>
                 <button class="secondary-button danger-action" type="button" data-category-status-action hidden></button>
-                <button class="sf-button" type="submit" data-category-submit>Criar categoria</button>
+                <button class="sf-button" type="submit" data-category-submit title="Salvar categoria">${icon("save", 14)} Criar categoria</button>
               </div>
             </form>
           </div>
@@ -161,8 +162,8 @@ function renderFilterButton(label: string, filter: string, pressed = false): str
 function renderCategoryCollapseActions(): string {
   return `
     <div class="category-collapse-actions" aria-label="Controles da hierarquia">
-      <button class="secondary-button compact-button" type="button" data-expand-all-categories>Abrir todos</button>
-      <button class="secondary-button compact-button" type="button" data-collapse-all-categories>Fechar todos</button>
+              <button class="secondary-button compact-button" type="button" data-expand-all-categories title="Expandir todas as categorias">${icon("chevron-down", 12)} Abrir todos</button>
+      <button class="secondary-button compact-button" type="button" data-collapse-all-categories title="Recolher todas as categorias">${icon("chevron-up", 12)} Fechar todos</button>
     </div>
   `;
 }
@@ -250,11 +251,11 @@ function renderCategoryActionMenu(category: CategoryRecord): string {
 
   return `
     <div class="category-action-menu">
-      <button class="category-menu-button icon-button" type="button" data-category-menu-button aria-expanded="false" aria-label="Abrir acoes da categoria ${escapeHtml(category.name)}">...</button>
+              <button class="category-menu-button icon-button" type="button" data-category-menu-button aria-expanded="false" aria-label="Abrir acoes da categoria ${escapeHtml(category.name)}" title="Mais ações">${icon("more-vertical", 14)}</button>
       <div class="category-menu-popover" data-category-menu role="menu" hidden>
-        <button type="button" role="menuitem" data-category-menu-action="edit" ${renderCategoryDataAttributes(category)}>Editar</button>
-        <button type="button" role="menuitem" data-category-menu-action="request" data-api-method="POST" data-api-path="${escapeHtml(statusPath)}"${statusConfirm ? ` data-api-confirm="${escapeHtml(statusConfirm)}"` : ""}>${statusLabel}</button>
-        <button class="danger-menu-item" type="button" role="menuitem" data-category-menu-action="request" data-api-method="DELETE" data-api-path="/api/categories/${escapeHtml(category.id)}" data-api-confirm="Excluir esta categoria? Ela so sera removida se nao tiver subcategorias, lancamentos ou outros registros vinculados.">Excluir</button>
+        <button type="button" role="menuitem" data-category-menu-action="edit" ${renderCategoryDataAttributes(category)} title="Editar categoria">${icon("pencil", 13)} Editar</button>
+        <button type="button" role="menuitem" data-category-menu-action="request" data-api-method="POST" data-api-path="${escapeHtml(statusPath)}"${statusConfirm ? ` data-api-confirm="${escapeHtml(statusConfirm)}"` : ""} title="${isArchived ? "Restaurar categoria" : "Arquivar categoria"}">${isArchived ? icon("refresh-cw", 13) : icon("archive", 13)} ${statusLabel}</button>
+        <button class="danger-menu-item" type="button" role="menuitem" data-category-menu-action="request" data-api-method="DELETE" data-api-path="/api/categories/${escapeHtml(category.id)}" data-api-confirm="Excluir esta categoria? Ela so sera removida se nao tiver subcategorias, lancamentos ou outros registros vinculados." title="Excluir categoria">${icon("trash-2", 13)} Excluir</button>
       </div>
     </div>
   `;
@@ -270,7 +271,7 @@ function renderCategoryCollapseButton(category: CategoryRecord, childrenId: stri
       aria-controls="${escapeHtml(childrenId)}"
       aria-label="Ocultar subcategorias de ${escapeHtml(category.name)}"
     >
-      <span aria-hidden="true">v</span>
+      ${icon("chevron-down", 12)}
     </button>
   `;
 }
@@ -493,7 +494,7 @@ function categoryPageScript(): string {
         filterParentCategoryOptions(categoryForm.elements.kind.value);
         modalEyebrow.textContent = "Novo cadastro";
         modalTitle.textContent = "Nova categoria";
-        submitButton.textContent = "Criar categoria";
+        submitButton.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 21 17 13 7 13 7 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 3 7 8 15 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Criar categoria';
         statusActionButton.hidden = true;
         resetStatus();
         openModal(trigger);
@@ -509,9 +510,12 @@ function categoryPageScript(): string {
         filterParentCategoryOptions(categoryForm.elements.kind.value, button.dataset.categoryParentId || "");
         modalEyebrow.textContent = "Editar categoria";
         modalTitle.textContent = button.dataset.categoryName || "Categoria";
-        submitButton.textContent = "Salvar edicao";
+        submitButton.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 21 17 13 7 13 7 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 3 7 8 15 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Salvar edi\u00e7\u00e3o';
         statusActionButton.hidden = false;
-        statusActionButton.textContent = button.dataset.categoryStatusValue === "archived" ? "Restaurar categoria" : "Arquivar categoria";
+        const isArchived = button.dataset.categoryStatusValue === "archived";
+        const archiveIconSvg = '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><polyline points="21 8 21 21 3 21 3 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="3" width="22" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        const restoreIconSvg = '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><polyline points="23 4 23 10 17 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        statusActionButton.innerHTML = isArchived ? restoreIconSvg + " Restaurar categoria" : archiveIconSvg + " Arquivar categoria";
         statusActionButton.dataset.apiPath = "/api/categories/" + button.dataset.categoryId + (button.dataset.categoryStatusValue === "archived" ? "/restore" : "/archive");
         statusActionButton.dataset.apiConfirm = button.dataset.categoryStatusValue === "archived" ? "" : "Arquivar esta categoria? Novos lancamentos nao devem usa-la.";
         resetStatus();

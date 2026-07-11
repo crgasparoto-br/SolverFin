@@ -90,13 +90,13 @@ export function renderRecurrenceEditModal(
               ? `<label>Instrumento<select name="cardInstrumentId">${cardInstrumentOptions}</select></label><label class="full">Aplicar alteração<select name="editScope"><option value="recurrence_only">Somente novas ocorrências</option><option value="recurrence_and_future_pending">Novas ocorrências e futuras pendentes</option></select></label>`
               : ""
           }
-          <button type="submit" class="full">Salvar recorrência</button>
+          <button type="submit" class="full" title="Salvar alterações da recorrência"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 21 17 13 7 13 7 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 3 7 8 15 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Salvar recorrência</button>
         </form>
         <form data-recurrence-installments-form>
           <input type="hidden" name="id" />
           <label>Gerar parcelas até<input name="through" type="date" required /></label>
           <label>Limite<input name="maxOccurrences" type="number" min="1" max="60" value="12" /></label>
-          <button type="submit" class="full secondary-button">Gerar parcelas</button>
+          <button type="submit" class="full secondary-button" title="Gerar parcelas da recorrência"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M17 2.1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12.6V12a9 9 0 0 1 9-9h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 21.9l-4-4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 11.4v.6a9 9 0 0 1-9 9H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Gerar parcelas</button>
         </form>
         <p class="muted" aria-live="polite" data-recurrence-modal-status></p>
       </section>
