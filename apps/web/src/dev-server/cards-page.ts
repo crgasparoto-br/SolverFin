@@ -399,7 +399,7 @@ function renderPurchaseRow(
       <details class="actions">
         <summary aria-label="Ações da compra ${escapeHtml(purchase.description)}">${renderDotsIcon()}</summary>
         <div class="actions-menu" role="menu">
-          <button type="button" class="actions-item" data-edit-purchase="${escapeHtml(purchase.id)}"${invoiceLocked ? " disabled" : ""}>${renderEditIcon()}<span>Editar</span></button>
+          <button type="button" class="actions-item" data-edit-purchase="${escapeHtml(purchase.id)}"${purchase.recurrenceId ? ` data-recurrence-id="${escapeHtml(purchase.recurrenceId)}"` : ""}${invoiceLocked ? " disabled" : ""}>${renderEditIcon()}<span>Editar</span></button>
           ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
         </div>
       </details>
@@ -422,6 +422,8 @@ function renderPurchaseModal(
           <h2 data-purchase-modal-title>Nova compra</h2>
         </div>
         <form data-purchase-form data-path="/api/credit-card-accounts/${escapeHtml(selectedCard?.id ?? "")}/purchases">
+          <input type="hidden" name="currentPurchaseId" />
+          <input type="hidden" name="recurrenceId" />
           <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
           <label>Data<input name="occurredOn" type="date" required /></label>
           <label class="full">Descrição<input name="description" placeholder="Compra no cartão" required /></label>
@@ -735,6 +737,8 @@ function clientScript(): string {
         if (button.dataset.openModal === "purchase") {
           purchaseForm.reset();
           purchaseForm.dataset.method = "POST";
+          delete purchaseForm.dataset.currentPurchaseId;
+          delete purchaseForm.dataset.recurrenceId;
           if (purchaseRepeatModeLabel) purchaseRepeatModeLabel.hidden = false;
           if (purchaseInstrumentLabel) purchaseInstrumentLabel.hidden = false;
           syncPurchaseFieldVisibility();
@@ -752,6 +756,11 @@ function clientScript(): string {
           form.reset();
           form.dataset.path = "/api/credit-card-accounts/" + purchase.cardId + "/purchases/" + purchase.id;
           form.dataset.method = "PATCH";
+          form.dataset.currentPurchaseId = purchase.id;
+          if (purchase.recurrenceId) form.dataset.recurrenceId = purchase.recurrenceId;
+          else delete form.dataset.recurrenceId;
+          if (form.currentPurchaseId) form.currentPurchaseId.value = purchase.id;
+          if (form.recurrenceId) form.recurrenceId.value = purchase.recurrenceId || "";
           form.amountMinor.value = minorToMoneyInput(purchase.amountMinor);
           form.occurredOn.value = purchase.occurredOn;
           form.description.value = purchase.description;
