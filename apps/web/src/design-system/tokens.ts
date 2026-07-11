@@ -32,6 +32,7 @@ export const solverFinRadii = {
   sm: "0.25rem",
   md: "0.375rem",
   lg: "0.5rem",
+  xl: "0.75rem",
   full: "999px",
 } as const;
 
@@ -39,12 +40,12 @@ export const solverFinTypography = {
   fontFamily:
     "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
   sizes: {
-    xs: "0.75rem",
-    sm: "0.875rem",
-    md: "1rem",
-    lg: "1.125rem",
-    xl: "1.25rem",
-    "2xl": "1.5rem",
+    xs: "0.6875rem",
+    sm: "0.8125rem",
+    md: "0.875rem",
+    lg: "1rem",
+    xl: "1.125rem",
+    "2xl": "1.375rem",
   },
   weights: {
     regular: 400,
@@ -60,7 +61,8 @@ export const solverFinTypography = {
 } as const;
 
 export const solverFinShadows = {
-  focus: `0 0 0 3px ${solverFinColors.accent}55`,
+  sm: "0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06)",
+  focus: `0 0 0 3px rgba(34, 211, 238, 0.35)`,
   dialog: "0 24px 80px rgba(15, 23, 42, 0.24)",
   toast: "0 16px 40px rgba(15, 23, 42, 0.18)",
 } as const;

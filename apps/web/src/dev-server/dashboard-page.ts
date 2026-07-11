@@ -1,6 +1,7 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet, type ApiFailure, type ApiSuccess } from "./api.js";
+import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
 
@@ -54,9 +55,9 @@ export async function renderDashboardPage(token: string): Promise<string> {
       </div>
       ${renderNextActions(transactions, pendingReview, openInvoices)}
       <div class="quick-links" aria-label="Atalhos da rotina">
-        <a class="button-link secondary-link" href="/lancamentos">Extrato</a>
-        <a class="button-link secondary-link" href="/cartoes">Cartões</a>
-        <a class="button-link secondary-link" href="/inbox">Inbox e revisão</a>
+        <a class="button-link secondary-link" href="/lancamentos" title="Ver extrato da conta">${icon("receipt", 14)} Extrato</a>
+        <a class="button-link secondary-link" href="/cartoes" title="Ver cartões de crédito">${icon("credit-card", 14)} Cartões</a>
+        <a class="button-link secondary-link" href="/inbox" title="Inbox e revisão de sugestões">${icon("inbox", 14)} Inbox</a>
       </div>
     </section>
     <section class="panel list-panel">
@@ -233,26 +234,26 @@ function formatDate(date: string): string {
 function dashboardStyles(): string {
   return `
     ${sharedShellStyles()}
-    main { display: grid; gap: 20px; margin: 0 auto; max-width: 1440px; padding: 24px; width: 100%; }
-    .dashboard-heading { align-items: end; display: flex; gap: 16px; justify-content: space-between; }
-    .demo-pill { background: var(--success-bg); border-radius: 999px; color: var(--success); font-weight: 800; padding: 8px 12px; white-space: nowrap; }
-    .secondary-link { background: var(--primary-soft); border: 1px solid #d4e6ec; color: var(--primary); }
-    .summary-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .metric-card { display: grid; gap: 8px; min-width: 0; }
-    .metric-card span { color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; }
-    .metric-card strong { color: var(--primary); font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; }
-    .metric-card p { color: var(--muted); line-height: 1.45; }
-    .next-actions { gap: 14px; }
-    .section-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
-    .quick-links { display: flex; flex-wrap: wrap; gap: 8px; }
-    .rows { display: grid; gap: 10px; }
-    .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; min-width: 0; padding-top: 10px; }
+    main { display: grid; gap: 16px; margin: 0 auto; max-width: 1440px; padding: 20px; width: 100%; }
+    .dashboard-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
+    .demo-pill { background: var(--success-bg); border-radius: 999px; color: var(--success); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; white-space: nowrap; }
+    .secondary-link { background: var(--surface); border: 1px solid var(--line); color: var(--primary); }
+    .secondary-link:hover { background: var(--primary-soft); border-color: #c8dde5; }
+    .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .metric-card { display: grid; gap: 6px; min-width: 0; padding: 14px 16px; }
+    .metric-card span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .metric-card strong { color: var(--primary); font-size: 1.25rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+    .metric-card p { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
+    .next-actions { gap: 12px; }
+    .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
+    .quick-links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .rows { display: grid; gap: 0; }
+    .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; min-width: 0; padding: 8px 0; }
     .row:first-child { border-top: 0; padding-top: 0; }
-    .row div { display: grid; gap: 4px; min-width: 0; }
-    .row span { color: var(--muted); line-height: 1.45; }
-    .row strong { overflow-wrap: anywhere; }
+    .row div { display: grid; gap: 2px; min-width: 0; }
+    .row span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
+    .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
     .row > strong { text-align: right; white-space: nowrap; }
-    .error { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }
     @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 760px) { .summary-grid { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } }
   `;
