@@ -5,7 +5,7 @@ import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-pag
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { apiGet, handleApiRequest } from "./dev-server/api.js";
-import { renderCardsPage } from "./dev-server/cards-page.js";
+import { renderCardsPageWithMonthNavigation } from "./dev-server/cards-page-month-navigation.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
@@ -124,7 +124,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/cartoes" && token) {
-    sendHtml(response, 200, await renderCardsPage(token, url));
+    sendHtml(response, 200, await renderCardsPageWithMonthNavigation(token, url));
     return;
   }
 
