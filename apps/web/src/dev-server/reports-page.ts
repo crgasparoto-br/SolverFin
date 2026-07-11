@@ -1,6 +1,7 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
 
@@ -31,7 +32,7 @@ export async function renderReportsPage(token: string, url?: URL): Promise<strin
           <label>Status<select name="status">${renderStatusOptions(filters.status)}</select></label>
           <label>Cartão<select name="cardId"><option value="">Todos os cartões</option>${renderCardOptions(cards, filters.cardId)}</select></label>
           <label>Categoria<select name="categoryId"><option value="">Todas as categorias</option>${renderCategoryOptions(categories, filters.categoryId)}</select></label>
-          <button type="submit">Atualizar relatório</button>
+          <button type="submit" title="Aplicar filtros e atualizar o relatório">${icon("refresh-cw", 14)} Atualizar relatório</button>
         </form>
       </section>
 

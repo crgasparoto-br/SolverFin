@@ -1,6 +1,7 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { icon } from "./icons.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
@@ -73,7 +74,7 @@ export async function renderInboxPage(token: string): Promise<string> {
             <h1>Inbox</h1>
             <p class="muted">Cole mensagens fictícias ou autorizadas, revise importações, deduplicação, conciliação e sugestões de regras automáticas antes de confirmar.</p>
           </div>
-          <button type="button" data-open-dialog="new-inbox-message-dialog">Registrar mensagem</button>
+          <button type="button" data-open-dialog="new-inbox-message-dialog" title="Registrar nova mensagem na inbox">${icon("send", 14)} Registrar mensagem</button>
         </section>
         <section class="panel list-panel">
           <div class="section-heading">
@@ -142,7 +143,7 @@ function renderNewMessageDialog(accounts: AccountRecord[], categories: CategoryR
           <input name="consentAccepted" type="checkbox" value="true" required />
           Confirmo que tenho autorização para processar esta mensagem neste perfil financeiro.
         </label>
-        <button type="submit">Enviar para revisão</button>
+        <button type="submit" title="Enviar mensagem para revisão">${icon("send", 14)} Enviar para revisão</button>
       </form>
       <p class="muted small-note">O texto bruto é descartado após a normalização. A tela mostra apenas resumo mascarado, status e explicação da sugestão.</p>
     </dialog>
@@ -169,8 +170,8 @@ function renderReviewSuggestionRow(item: ReviewQueueItem): string {
         <p>${escapeHtml(item.explanation)}</p>
       </div>
       <div class="maintenance-actions" aria-label="Ações da sugestão ${escapeHtml(item.id)}">
-        <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="${escapeHtml(reviewApiBase)}/${escapeHtml(item.id)}/approve" data-api-confirm="Aprovar esta sugestão?">Aprovar</button>
-        <button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(reviewApiBase)}/${escapeHtml(item.id)}/reject" data-api-confirm="Rejeitar esta sugestão?">Rejeitar</button>
+        <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="${escapeHtml(reviewApiBase)}/${escapeHtml(item.id)}/approve" data-api-confirm="Aprovar esta sugestão?" title="Aprovar esta sugestão">${icon("check", 13)} Aprovar</button>
+        <button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(reviewApiBase)}/${escapeHtml(item.id)}/reject" data-api-confirm="Rejeitar esta sugestão?" title="Rejeitar esta sugestão">${icon("x", 13)} Rejeitar</button>
       </div>
     </article>
   `;
@@ -220,7 +221,9 @@ function renderError(error: string): string {
 }
 
 function renderActionButton(label: string, path: string, confirmation: string): string {
-  return `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(path)}" data-api-confirm="${escapeHtml(confirmation)}">${escapeHtml(label)}</button>`;
+  const isDiscard = path.includes("/discard");
+  const iconHtml = isDiscard ? icon("trash-2", 13) + " " : "";
+  return `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(path)}" data-api-confirm="${escapeHtml(confirmation)}" title="${escapeHtml(confirmation)}">${iconHtml}${escapeHtml(label)}</button>`;
 }
 
 function renderAccountOptions(accounts: AccountRecord[]): string {

@@ -1,4 +1,5 @@
 import { apiGet } from "./api.js";
+import { icon } from "./icons.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
@@ -79,7 +80,7 @@ export async function renderSettingsPage(token: string): Promise<string> {
           <h1>Perfis financeiros</h1>
           <p class="muted">Escolha, crie ou arquive contextos como pessoal, família, MEI e negócio sem misturar dados financeiros.</p>
         </div>
-        <button type="button" data-open-dialog="new-profile-dialog">Novo perfil</button>
+        <button type="button" data-open-dialog="new-profile-dialog" title="Criar novo perfil financeiro">${icon("plus", 14)} Novo perfil</button>
       </section>
       <section class="panel list-panel">
         <div class="section-heading">
@@ -105,8 +106,8 @@ export async function renderSettingsPage(token: string): Promise<string> {
           <p class="muted">Cadastre regras determinísticas para gerar sugestões revisáveis. Nenhuma regra confirma lançamento final sem aprovação humana.</p>
         </div>
         <div class="heading-actions">
-          <button type="button" data-open-dialog="new-automation-rule-dialog">Nova regra</button>
-          <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-confirm="Executar regras sobre sugestões pendentes?">Aplicar regras</button>
+          <button type="button" data-open-dialog="new-automation-rule-dialog" title="Criar nova regra automática">${icon("plus", 14)} Nova regra</button>
+          <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-confirm="Executar regras sobre sugestões pendentes?" title="Aplicar regras sobre sugestões pendentes">${icon("play", 14)} Aplicar regras</button>
         </div>
       </section>
       <section class="panel list-panel">
@@ -149,7 +150,7 @@ function renderNewProfileDialog(): string {
             ${renderProfileKindOptions()}
           </select>
         </label>
-        <button type="submit">Criar perfil</button>
+        <button type="submit" title="Salvar novo perfil">${icon("save", 14)} Criar perfil</button>
       </form>
     </dialog>
   `;
@@ -201,7 +202,7 @@ function renderNewAutomationRuleDialog(
           </select>
         </label>
         <label class="full-span">Explicação opcional<input name="explanation" placeholder="Ex.: Compras com este texto costumam ser alimentação." /></label>
-        <button type="submit">Criar regra</button>
+        <button type="submit" title="Salvar nova regra automática">${icon("save", 14)} Criar regra</button>
       </form>
     </dialog>
   `;
@@ -221,7 +222,7 @@ function renderProfileEditDialog(profile: FinancialProfileRecord): string {
       <form data-api-form data-api-method="PATCH" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}" class="edit-grid">
         <label>Nome<input name="name" value="${escapeHtml(profile.name)}" required /></label>
         <label>Tipo<select name="kind">${renderProfileKindOptions(profile.kind)}</select></label>
-        <button type="submit">Salvar perfil</button>
+        <button type="submit" title="Salvar alterações do perfil">${icon("save", 14)} Salvar perfil</button>
       </form>
     </dialog>
   `;
@@ -257,7 +258,7 @@ function renderProfileRow(
           <button type="button" class="icon-button" data-open-dialog="edit-profile-dialog-${escapeHtml(profile.id)}" aria-label="Editar perfil ${escapeHtml(profile.name)}">${renderEditIcon()}</button>
           ${
             isActive
-              ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}/archive" data-api-confirm="Arquivar este perfil financeiro?">Arquivar perfil</button>`
+              ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}/archive" data-api-confirm="Arquivar este perfil financeiro?" title="Arquivar este perfil">${icon("archive", 13)} Arquivar perfil</button>`
               : ""
           }
         </div>
@@ -283,7 +284,7 @@ function renderAutomationRuleRow(rule: AutomationRuleRecord): string {
         ${rule.explanation ? `<p class="muted">${escapeHtml(rule.explanation)}</p>` : ""}
         ${
           isActive
-            ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-confirm="Inativar esta regra automática?">Inativar regra</button>`
+            ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-confirm="Inativar esta regra automática?" title="Inativar esta regra automática">${icon("archive", 13)} Inativar regra</button>`
             : ""
         }
       </div>

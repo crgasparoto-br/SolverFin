@@ -11,12 +11,14 @@ export function recurringCardScopeControllerScript(): string {
         const status = modal.querySelector("[data-recurrence-scope-status]");
         let busy = false;
 
+        const editOneIcon = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+        const editAllIcon = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M17 2.1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12.6V12a9 9 0 0 1 9-9h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 21.9l-4-4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 11.4v.6a9 9 0 0 1-9 9H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         if (currentButton) {
-          currentButton.textContent = "Alterar somente este lançamento";
+          currentButton.innerHTML = editOneIcon + "Alterar somente este lançamento";
           currentButton.dataset.explicitEditScope = "current_only";
         }
         if (futureButton) {
-          futureButton.textContent = "Alterar este lançamento e os próximos";
+          futureButton.innerHTML = editAllIcon + "Alterar este lançamento e os próximos";
           futureButton.dataset.explicitEditScope = "current_and_future";
         }
 

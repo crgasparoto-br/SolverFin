@@ -46,8 +46,8 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
           <p class="muted">Mantenha contas, dinheiro, investimentos e cartões em um único cadastro mestre.</p>
         </div>
         <div class="master-actions" aria-label="Ações principais">
-          <button type="button" data-open-dialog="new-account-dialog">Adicionar conta</button>
-          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>
+          <button type="button" data-open-dialog="new-account-dialog" title="Adicionar nova conta">${icon("plus", 14)} Adicionar conta</button>
+          <button type="button" data-open-dialog="new-card-dialog" title="Adicionar novo cartão">${icon("plus", 14)} Adicionar cartão</button>
         </div>
       </section>
 
@@ -295,7 +295,7 @@ function renderAccountEditDialog(account: AccountRecord, dialogId: string): stri
         <label>Moeda<select name="currency">${renderCurrencyOptions(account.currency)}</select></label>
         <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor ?? 0)}" inputmode="decimal" /></label>
         <label>Nº Conta<input name="maskedIdentifier" value="${escapeHtml(account.maskedIdentifier ?? "")}" /></label>
-        <button type="submit">Salvar conta</button>
+        <button type="submit" title="Salvar alterações da conta">${icon("save", 14)} Salvar conta</button>
       </form>
     </dialog>
   `;
@@ -323,7 +323,7 @@ function renderCardEditDialog(
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
         <label>Limite total (R$)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
-        <button type="submit">Salvar cartão</button>
+        <button type="submit" title="Salvar alterações do cartão">${icon("save", 14)} Salvar cartão</button>
       </form>
       ${renderCardInlineInstrumentForms(card)}
     </dialog>
@@ -382,7 +382,7 @@ function renderCardInlineInstrumentForm(instrument: CardInstrumentRecord): strin
       <label>Nome do instrumento<input name="name" value="${escapeHtml(instrument.name ?? "")}" /></label>
       <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
       <label>Limite do instrumento (R$)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
-      <button type="submit">Salvar instrumento</button>
+      <button type="submit" title="Salvar alterações do instrumento">${icon("save", 14)} Salvar instrumento</button>
     </form>
   `;
 }
@@ -403,7 +403,7 @@ function renderCardInstrumentCreateDialog(card: CreditCardAccountRecord, dialogI
         <label>Nome do instrumento<input name="name" placeholder="Virtual titular" /></label>
         <label>Final mascarado<input name="maskedIdentifier" placeholder="**** 1234" /></label>
         <label>Limite do instrumento (R$)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
-        <button type="submit">Criar instrumento</button>
+        <button type="submit" title="Criar novo instrumento">${icon("save", 14)} Criar instrumento</button>
       </form>
     </dialog>
   `;
@@ -429,7 +429,7 @@ function renderCardInstrumentEditDialog(instrument: CardInstrumentRecord): strin
         <label>Nome do instrumento<input name="name" value="${escapeHtml(instrument.name ?? "")}" /></label>
         <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
         <label>Limite do instrumento (R$)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
-        <button type="submit">Salvar instrumento</button>
+        <button type="submit" title="Salvar alterações do instrumento">${icon("save", 14)} Salvar instrumento</button>
       </form>
     </dialog>
   `;
@@ -447,7 +447,7 @@ function renderAccountDialog(): string {
         <label>Moeda<select name="currency">${renderCurrencyOptions()}</select></label>
         <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <label>Nº Conta<input name="maskedIdentifier" placeholder="Ag 0001 · Conta 12345" /></label>
-        <button type="submit">Criar conta</button>
+        <button type="submit" title="Salvar nova conta">${icon("save", 14)} Criar conta</button>
       </form>
     </dialog>
   `;
@@ -471,7 +471,7 @@ function renderCardDialog(accounts: AccountRecord[]): string {
         <label>Nome do instrumento<input name="instrumentName" placeholder="Físico titular" /></label>
         <label>Final mascarado<input name="instrumentMaskedIdentifier" placeholder="**** 1234" /></label>
         <label>Limite do instrumento (R$)<input name="instrumentCreditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
-        <button type="submit">Criar cartão</button>
+        <button type="submit" title="Salvar novo cartão">${icon("save", 14)} Criar cartão</button>
       </form>
     </dialog>
   `;

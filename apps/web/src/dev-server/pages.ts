@@ -223,7 +223,7 @@ export async function renderAccountsPage(token: string): Promise<string> {
               </select>
             </label>
             <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money type="text" inputmode="decimal" placeholder="0,00" /></label>
-            <button type="submit">Criar conta</button>
+            <button type="submit" title="Salvar nova conta">${icon("save", 14)} Criar conta</button>
           </form>
         </section>
       </section>
@@ -281,7 +281,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
                 ${renderCategoryParentOptions(categoryItems)}
               </select>
             </label>
-            <button type="submit">Criar categoria</button>
+            <button type="submit" title="Salvar nova categoria">${icon("save", 14)} Criar categoria</button>
           </form>
         </section>
       </section>
@@ -319,7 +319,7 @@ export async function renderTransactionsPage(token: string): Promise<string> {
           <h1>Extrato da conta</h1>
           <p class="muted">Acompanhe saldos, entradas, saídas e transferências do perfil ativo.</p>
         </div>
-        <a class="button-link" href="#novo-lancamento">Novo lançamento</a>
+        <a class="button-link" href="#novo-lancamento" title="Ir para o formulário de novo lançamento">${icon("plus", 14)} Novo lançamento</a>
       </section>
       <section class="statement-layout">
         <aside class="statement-sidebar" aria-label="Resumo da conta">
@@ -425,7 +425,7 @@ export async function renderTransactionsPage(token: string): Promise<string> {
                 </select>
               </label>
               <label class="full-span">Descrição<input name="description" placeholder="Ex.: Energia elétrica, salário, transferência" /></label>
-              <button type="submit">Adicionar ao extrato</button>
+              <button type="submit" title="Registrar este lançamento no extrato">${icon("save", 14)} Adicionar ao extrato</button>
             </form>
           </section>
         </div>
@@ -484,7 +484,7 @@ export async function renderCardsPage(token: string): Promise<string> {
                 ${renderAccountOptions(accountOptions)}
               </select>
             </label>
-            <button type="submit">Criar cartão</button>
+            <button type="submit" title="Salvar novo cartão">${icon("save", 14)} Criar cartão</button>
           </form>
         </section>
       </section>
@@ -555,7 +555,7 @@ function renderNewBudgetDialog(categories: CategoryRecord[]): string {
         <label>Início do período<input name="periodStartOn" type="date" required /></label>
         <label>Fim do período<input name="periodEndOn" type="date" required /></label>
         <label>Valor planejado (R$)<input name="plannedAmountMinor" data-money type="text" inputmode="decimal" required placeholder="0,00" /></label>
-        <button type="submit">Criar orçamento</button>
+        <button type="submit" title="Salvar novo orçamento">${icon("save", 14)} Criar orçamento</button>
       </form>
     </dialog>
   `;
@@ -577,7 +577,7 @@ function renderBudgetEditDialog(budget: BudgetRecord, categories: CategoryRecord
         <label>Início<input name="periodStartOn" type="date" value="${escapeHtml(budget.periodStartOn)}" required /></label>
         <label>Fim<input name="periodEndOn" type="date" value="${escapeHtml(budget.periodEndOn)}" required /></label>
         <label>Valor (R$)<input name="plannedAmountMinor" data-money value="${formatMoneyInput(budget.plannedAmountMinor)}" inputmode="decimal" required /></label>
-        <button type="submit">Salvar edição</button>
+        <button type="submit" title="Salvar edições do orçamento">${icon("save", 14)} Salvar edição</button>
       </form>
     </dialog>
   `;
@@ -591,12 +591,12 @@ function renderAccountRow(account: AccountRecord): string {
         <strong>${formatMoney(account.openingBalanceMinor)}</strong>
       </div>
       <div class="maintenance-actions" aria-label="Ações da conta ${escapeHtml(account.name)}">
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/accounts/${escapeHtml(account.id)}">Abrir detalhe</button>
+          <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/accounts/${escapeHtml(account.id)}" title="Ver detalhes desta conta">${icon("info", 13)} Abrir detalhe</button>
         <form data-api-form data-api-method="PATCH" data-api-path="/api/accounts/${escapeHtml(account.id)}" class="inline-edit-form">
           <label>Nome<input name="name" value="${escapeHtml(account.name)}" required /></label>
           <label>Tipo<select name="kind">${renderAccountKindOptions(account.kind)}</select></label>
           <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor)}" inputmode="decimal" /></label>
-          <button type="submit">Salvar edição</button>
+          <button type="submit" title="Salvar alterações da conta">${icon("save", 14)} Salvar edição</button>
         </form>
         ${account.status === "active" ? renderActionButton("Arquivar conta", `/api/accounts/${account.id}/archive`, "Arquivar esta conta? Ela deixará de aparecer nas operações ativas.") : ""}
       </div>
@@ -649,12 +649,12 @@ function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRe
         <span class="category-path">${escapeHtml(getCategoryDisplayName(category, categories))}</span>
       </div>
       <div class="maintenance-actions" aria-label="Ações da categoria ${escapeHtml(category.name)}">
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/categories/${escapeHtml(category.id)}">Abrir detalhe</button>
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/categories/${escapeHtml(category.id)}" title="Ver detalhes desta categoria">${icon("info", 13)} Abrir detalhe</button>
         <form data-api-form data-api-method="PATCH" data-api-path="/api/categories/${escapeHtml(category.id)}" class="inline-edit-form">
           <label>Nome<input name="name" value="${escapeHtml(category.name)}" required /></label>
           <label>Tipo<select name="kind">${renderCategoryKindOptions(category.kind)}</select></label>
           <label>Categoria superior<select name="parentCategoryId"><option value="">Categoria principal</option>${renderCategoryParentOptions(categories, category)}</select></label>
-          <button type="submit">Salvar edição</button>
+          <button type="submit" title="Salvar alterações da categoria">${icon("save", 14)} Salvar edição</button>
         </form>
         ${isArchived ? renderActionButton("Restaurar categoria", `/api/categories/${category.id}/restore`) : renderActionButton("Arquivar categoria", `/api/categories/${category.id}/archive`, "Arquivar esta categoria? Novos lançamentos não devem usá-la.")}
       </div>
@@ -682,13 +682,13 @@ function renderStatementRow(
       </div>
       <strong class="statement-amount ${amountClass}">${formatMoney(amountMinor)}</strong>
       <div class="statement-actions" aria-label="Ações do lançamento ${escapeHtml(description)}">
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/transactions/${escapeHtml(transaction.id)}">Abrir detalhe</button>
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/transactions/${escapeHtml(transaction.id)}" title="Ver detalhes deste lançamento">${icon("info", 13)} Abrir detalhe</button>
         <form data-api-form data-api-method="PATCH" data-api-path="/api/transactions/${escapeHtml(transaction.id)}" class="inline-edit-form statement-edit-form">
           <label>Descrição<input name="description" value="${escapeHtml(description)}" /></label>
           <label>Status<select name="status">${renderTransactionStatusOptions(transaction.status)}</select></label>
           <label>Conta<select name="accountId">${renderAccountOptions(accounts, transaction.accountId)}</select></label>
           <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories, transaction.categoryId)}</select></label>
-          <button type="submit">Salvar edição</button>
+          <button type="submit" title="Salvar alterações do lançamento">${icon("save", 14)} Salvar edição</button>
         </form>
         ${transaction.status === "voided" ? "" : renderActionButton("Cancelar lançamento", `/api/transactions/${transaction.id}/void`, "Cancelar ou estornar este lançamento financeiro?")}
       </div>
@@ -709,13 +709,13 @@ function renderCardRow(
         <div><strong>${escapeHtml(card.name)}</strong><span>Fecha dia ${card.closingDay}, vence dia ${card.dueDay} - ${escapeHtml(formatGenericStatus(card.status))}</span></div>
       </div>
       <div class="maintenance-actions" aria-label="Ações do cartão ${escapeHtml(card.name)}">
-        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/cards/${escapeHtml(card.id)}">Abrir detalhe</button>
+        <button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/cards/${escapeHtml(card.id)}" title="Ver detalhes deste cartão">${icon("info", 13)} Abrir detalhe</button>
         <form data-api-form data-api-method="PATCH" data-api-path="/api/cards/${escapeHtml(card.id)}" class="inline-edit-form">
           <label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label>
           <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label>
           <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
           <label>Conta de pagamento<select name="paymentAccountId"><option value="">-</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
-          <button type="submit">Salvar edição</button>
+          <button type="submit" title="Salvar alterações do cartão">${icon("save", 14)} Salvar edição</button>
         </form>
         ${canMutate ? renderActionButton("Bloquear cartão", `/api/cards/${card.id}/block`, "Bloquear este cartão?") : ""}
         ${canMutate ? renderActionButton("Arquivar cartão", `/api/cards/${card.id}/archive`, "Arquivar este cartão?") : ""}
@@ -732,7 +732,7 @@ function renderCardPurchaseForm(card: CardRecord, categories: CategoryRecord[]):
       <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
       <label>Descrição<input name="description" placeholder="Compra no cartão" required /></label>
       <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
-      <button type="submit">Registrar compra</button>
+      <button type="submit" title="Registrar esta compra no cartão">${icon("save", 14)} Registrar compra</button>
     </form>
   `;
 }
