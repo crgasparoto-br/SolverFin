@@ -4,6 +4,10 @@
 
 Aceito.
 
+## Data
+
+2026-07-11.
+
 ## Contexto
 
 O SolverFin precisa calcular remuneracao prevista de contas com base no CDI e, futuramente, utilizar os mesmos indices no modulo de investimentos.
@@ -28,6 +32,16 @@ A remuneracao de contas sera tratada como previsao conciliavel. O usuario podera
 - os calculos de remuneracao de contas e investimentos permanecerao separados;
 - sera necessario garantir idempotencia por indice e data de referencia;
 - valores ajustados manualmente nao poderao ser sobrescritos por processamentos automaticos.
+
+## Alternativas consideradas
+
+### Armazenar o CDI dentro do extrato
+
+Rejeitada por acoplar um dado financeiro reutilizavel a uma unica interface e dificultar a evolucao do modulo de investimentos.
+
+### Criar bases independentes para extrato e investimentos
+
+Rejeitada por duplicar importacao, validacao, historico e auditoria dos mesmos indices.
 
 ## Referencias
 
