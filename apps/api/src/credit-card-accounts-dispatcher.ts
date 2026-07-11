@@ -18,12 +18,21 @@ export async function handleCreditCardAccountsApiRequest(
   const body = readObjectBody(request.body);
   const purchaseMatch = RECURRING_PURCHASE_PATH.exec(request.pathname);
   const transactionMatch = RECURRING_TRANSACTION_PATH.exec(request.pathname);
+  const isCurrentOnlyCardEdit =
+    request.method === "PATCH" && purchaseMatch !== null && body?.editScope === "current_only";
   const isExpandedCardEdit =
     request.method === "PATCH" &&
     purchaseMatch !== null &&
     body?.editScope === "current_and_future";
   const isExpandedAccountEdit =
     request.method === "PATCH" && transactionMatch !== null && body?.applyToFuturePlanned === true;
+
+  if (isCurrentOnlyCardEdit && body) {
+    return handleBaseCreditCardAccountsApiRequest({
+      ...request,
+      body: omitEditScope(body),
+    });
+  }
 
   if (!isExpandedCardEdit && !isExpandedAccountEdit) {
     return handleBaseCreditCardAccountsApiRequest(request);
@@ -101,6 +110,12 @@ function readObjectBody(body: unknown): Record<string, unknown> | undefined {
   }
 
   return body as Record<string, unknown>;
+}
+
+function omitEditScope(body: Record<string, unknown>): Record<string, unknown> {
+  const currentOnlyBody = { ...body };
+  delete currentOnlyBody.editScope;
+  return currentOnlyBody;
 }
 
 function readOptionalString(value: unknown): string | null {
