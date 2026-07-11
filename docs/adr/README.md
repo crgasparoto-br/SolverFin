@@ -35,3 +35,4 @@ Cada ADR deve ter:
 - `0002-mvp-web-runtime-and-session.md` - Runtime web e sessao local do MVP.
 - `0003-epic-133-mvp-consolidation.md` - Consolidacao do MVP navegavel da epica #133.
 - `0004-autenticacao-produtiva.md` - Autenticacao produtiva definitiva.
+- `0005-financial-indexes-shared-domain.md` - Indices financeiros compartilhados entre extrato e investimentos.
