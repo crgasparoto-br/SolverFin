@@ -241,10 +241,22 @@ async function materializeActiveRecurrences(
   const through = monthToLastDay(month);
   const activeRecurrences = recurrences.filter((recurrence) => recurrence.status === "active");
 
-  await Promise.all(
-    activeRecurrences.map((recurrence) =>
-      fetch(
-        `${apiBaseUrl}/api/recurrences/${encodeURIComponent(recurrence.id)}/generate-installments`,
+  // Card recurrences can share the same invoice period. Process them in order so
+  // the first occurrence creates the invoice and the following ones reuse it.
+  for (const recurrence of activeRecurrences) {
+    await materializeRecurrenceWithRetry(token, recurrence.id, through);
+  }
+}
+
+async function materializeRecurrenceWithRetry(
+  token: string,
+  recurrenceId: string,
+  through: string,
+): Promise<void> {
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/recurrences/${encodeURIComponent(recurrenceId)}/generate-installments`,
         {
           method: "POST",
           headers: {
@@ -253,9 +265,33 @@ async function materializeActiveRecurrences(
           },
           body: JSON.stringify({ through }),
         },
-      ).catch(() => undefined),
-    ),
-  );
+      );
+
+      if (response.ok) {
+        return;
+      }
+
+      const retryable = response.status === 409 || response.status >= 500;
+      if (attempt < 2 && retryable) {
+        continue;
+      }
+
+      console.error("Recurring materialization request failed", {
+        recurrenceId,
+        status: response.status,
+      });
+      return;
+    } catch {
+      if (attempt < 2) {
+        continue;
+      }
+
+      console.error("Recurring materialization request failed", {
+        recurrenceId,
+        status: "network_error",
+      });
+    }
+  }
 }
 
 function resolveRequestedMonth(url: URL): string {
