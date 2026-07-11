@@ -1,0 +1,35 @@
+name: Apply issue 418 card modal hotfix
+
+on:
+  push:
+    branches:
+      - fix/418-recurring-edit-scope-modal
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/418-recurring-edit-scope-modal
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: node scripts/apply-fix-418-card-modal.mjs
+      - run: npm ci --no-audit --no-fund
+      - run: npx prettier --write apps/web/src/dev-server/cards-page.ts apps/web/src/dev-server/recurrences-section.ts apps/web/src/dev-server/cards-page.test.ts apps/web/src/dev-server/cards-page-recurring-render.test.ts apps/web/src/dev-server/recurrence-card-instrument-script.test.ts
+      - run: npm run test --workspace @solverfin/web
+      - name: Commit product fix and remove temporary automation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(cards): always open scope modal for recurring purchases"
+          git push origin HEAD:fix/418-recurring-edit-scope-modal
