@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
-import vm from "node:vm";
+import { runInNewContext } from "node:vm";
 
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 
-await assertScopeRequest("current", "current_only");
-await assertScopeRequest("current_and_future", "current_and_future");
+void main();
+
+async function main(): Promise<void> {
+  await assertScopeRequest("current", "current_only");
+  await assertScopeRequest("current_and_future", "current_and_future");
+}
 
 async function assertScopeRequest(
   buttonKind: "current" | "current_and_future",
@@ -65,7 +69,7 @@ async function assertScopeRequest(
     .replace(/^\s*<script>\s*/, "")
     .replace(/\s*<\/script>\s*$/, "");
 
-  vm.runInNewContext(script, {
+  runInNewContext(script, {
     document,
     fetch: async (path: string, init: { body?: string }) => {
       requests.push({ path, init });
@@ -84,7 +88,7 @@ async function assertScopeRequest(
   let prevented = false;
   let propagationStopped = false;
   const target = buttonKind === "current" ? currentButton : futureButton;
-  await clickListener({
+  await clickListener!({
     target,
     preventDefault: () => {
       prevented = true;
