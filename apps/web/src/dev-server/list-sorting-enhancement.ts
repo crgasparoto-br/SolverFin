@@ -80,7 +80,12 @@ function sortStatementRows(html: string, sort: ListSort): string {
   if (end < 0) return html;
 
   const section = html.slice(start, end);
-  const sortedSection = sortBlocks(section, '<article class="statement-row statement-body"', "article", sort);
+  const sortedSection = sortBlocks(
+    section,
+    '<article class="statement-row statement-body"',
+    "article",
+    sort,
+  );
   return html.slice(0, start) + sortedSection + html.slice(end);
 }
 
@@ -138,7 +143,10 @@ function sortBlocks(
 
 function parseSortableBlock(content: string, originalIndex: number): SortableBlock {
   const record = parseEmbeddedRecord(content);
-  const date = stringValue(record?.effectiveOn) || stringValue(record?.plannedOn) || stringValue(record?.occurredOn);
+  const date =
+    stringValue(record?.effectiveOn) ||
+    stringValue(record?.plannedOn) ||
+    stringValue(record?.occurredOn);
   const amountMinor = Math.abs(numberValue(record?.amountMinor));
   const description = stringValue(record?.description).trim();
 
@@ -164,7 +172,11 @@ function parseEmbeddedRecord(content: string): Record<string, unknown> | undefin
   }
 }
 
-function compareSortableBlocks(left: SortableBlock, right: SortableBlock, sort: ListSort): number {
+function compareSortableBlocks(
+  left: SortableBlock,
+  right: SortableBlock,
+  sort: ListSort,
+): number {
   let comparison = 0;
 
   if (sort === "date_asc") comparison = left.date.localeCompare(right.date);
@@ -172,10 +184,14 @@ function compareSortableBlocks(left: SortableBlock, right: SortableBlock, sort: 
   if (sort === "amount_desc") comparison = right.amountMinor - left.amountMinor;
   if (sort === "amount_asc") comparison = left.amountMinor - right.amountMinor;
   if (sort === "description_asc") {
-    comparison = left.description.localeCompare(right.description, "pt-BR", { sensitivity: "base" });
+    comparison = left.description.localeCompare(right.description, "pt-BR", {
+      sensitivity: "base",
+    });
   }
   if (sort === "description_desc") {
-    comparison = right.description.localeCompare(left.description, "pt-BR", { sensitivity: "base" });
+    comparison = right.description.localeCompare(left.description, "pt-BR", {
+      sensitivity: "base",
+    });
   }
 
   if (comparison !== 0) return comparison;
@@ -227,6 +243,14 @@ function injectSortAssets(html: string): string {
         form.filter-form[action="/lancamentos"],form.filter-form[action="/cartoes"]{grid-template-columns:minmax(14rem,1.2fr) minmax(13rem,1fr) auto minmax(12rem,.8fr)}
         .sort-field{min-width:12rem}
         form.filter-form[action="/cartoes"] .month-nav input[type="month"]{background:transparent;border:0;font-weight:800;min-height:34px;padding:0 4px;text-align:center}
+        button.account-select-trigger:hover:not(:disabled),button.account-select-trigger:focus-visible,button.account-select-trigger[aria-expanded="true"]{background:var(--primary-soft);border-color:#c8dde5;color:var(--text)}
+        .purchase-row,.statement-row.statement-body{transition:background 120ms ease-out,border-color 120ms ease-out}
+        .purchase-row:hover,.statement-row.statement-body:hover{background:#f6fafb}
+        .toggle-chip:hover:not(:disabled),.toggle-chip:focus-visible{background:#f1f7f9;border-color:#a5cbd6;color:var(--primary)}
+        .toggle-chip[aria-pressed="true"]:hover:not(:disabled){background:#dceef3}
+        .ghost-button:hover:not(:disabled),.ghost-button:focus-visible,.recurrence-scope-actions .secondary-button:hover:not(:disabled),.recurrence-scope-actions .secondary-button:focus-visible{background:var(--primary-soft);border-color:#c8dde5;color:var(--primary)}
+        .actions-item:hover:not(:disabled),.actions-item:focus-visible{background:var(--primary-soft);color:var(--text)}
+        .actions-item.danger:hover:not(:disabled),.actions-item.danger:focus-visible{background:var(--danger-bg);color:var(--danger)}
         @media(max-width:900px){form.filter-form[action="/lancamentos"],form.filter-form[action="/cartoes"]{grid-template-columns:1fr 1fr}.sort-field{min-width:0}}
         @media(max-width:760px){form.filter-form[action="/lancamentos"],form.filter-form[action="/cartoes"]{grid-template-columns:1fr}}
       </style>`;
