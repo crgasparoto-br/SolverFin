@@ -27,9 +27,22 @@ assert.ok(statementSorted.indexOf('data-transaction="b"') < statementSorted.inde
 assert.ok(statementSorted.indexOf('data-transaction="c"') < statementSorted.indexOf('data-transaction="a"'));
 assert.match(statementSorted, /name="sort" data-list-sort/);
 assert.match(statementSorted, /value="amount_desc" selected/);
+assert.match(
+  statementSorted,
+  /\.purchase-row:hover,\.statement-row\.statement-body:hover\{background:#f6fafb\}/,
+);
+assert.match(
+  statementSorted,
+  /\.ghost-button:hover:not\(:disabled\),\.ghost-button:focus-visible,[^}]+background:var\(--primary-soft\)/,
+);
+assert.match(
+  statementSorted,
+  /\.actions-item:hover:not\(:disabled\),\.actions-item:focus-visible\{background:var\(--primary-soft\);color:var\(--text\)\}/,
+);
 
 const cardHtml = documentHtml(`
   <form class="filter-form" method="get" action="/cartoes"><input name="month" value="2026-07" /></form>
+  <button type="button" class="toggle-chip" aria-pressed="true">Conciliados</button>
   <div class="purchase-list" aria-label="Compras da fatura">
     ${purchaseRow("a", "2026-07-02", "Zebra", 1000)}
     ${purchaseRow("b", "2026-07-01", "Aluguel", 5000)}
@@ -44,6 +57,14 @@ const cardSorted = enhanceCardListSorting(
 assert.ok(cardSorted.indexOf('data-purchase="b"') < cardSorted.indexOf('data-purchase="c"'));
 assert.ok(cardSorted.indexOf('data-purchase="c"') < cardSorted.indexOf('data-purchase="a"'));
 assert.match(cardSorted, /value="description_asc" selected/);
+assert.match(
+  cardSorted,
+  /\.toggle-chip:hover:not\(:disabled\),\.toggle-chip:focus-visible\{background:#f1f7f9;border-color:#a5cbd6;color:var\(--primary\)\}/,
+);
+assert.match(
+  cardSorted,
+  /\.toggle-chip\[aria-pressed="true"\]:hover:not\(:disabled\)\{background:#dceef3\}/,
+);
 
 function statementRow(id: string, date: string, description: string, amountMinor: number): string {
   return `<article class="statement-row statement-body"><script type="application/json" data-transaction="${id}">${escapedJson({ id, effectiveOn: date, plannedOn: date, occurredOn: date, description, amountMinor })}</script></article>`;
