@@ -18,11 +18,14 @@ const html = `<!doctype html>
 
 const enhanced = enhanceAccountsCardsTabs(html);
 
+assert.match(enhanced, /data-accounts-cards-neutral-styles/);
 assert.match(enhanced, /data-accounts-cards-direct-enhancement/);
 assert.ok(
-  enhanced.includes(
-    ".tab-list { background: #f8fafc; border-color: #e2e8f0; }",
-  ),
+  enhanced.indexOf("data-accounts-cards-neutral-styles") < enhanced.indexOf("</head>"),
+  "a paleta neutra deve ser entregue no HTML inicial, antes do body",
+);
+assert.ok(
+  enhanced.includes(".tab-list { background: #f8fafc; border-color: #e2e8f0; }"),
 );
 assert.ok(
   enhanced.includes(
@@ -49,7 +52,11 @@ assert.ok(
     '.active-filter-switch[aria-pressed="true"] .toggle-track { background: #94a3b8; }',
   ),
 );
-assert.doesNotMatch(
-  enhanced,
-  /button\.tab-button[^\n"]*var\(--primary(?:-soft)?\)/,
+assert.doesNotMatch(enhanced, /button\.tab-button[^\n"]*var\(--primary(?:-soft)?\)/);
+
+const enhancedTwice = enhanceAccountsCardsTabs(enhanced);
+assert.equal(
+  enhancedTwice.match(/data-accounts-cards-neutral-styles/g)?.length,
+  1,
+  "a paleta neutra não deve ser injetada mais de uma vez",
 );
