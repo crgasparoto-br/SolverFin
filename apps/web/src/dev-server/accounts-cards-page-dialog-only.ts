@@ -99,7 +99,7 @@ function removeStandaloneNewInstrumentButtons(html: string): string {
 
 function removeInlineInstrumentSections(html: string): string {
   return html.replace(
-    /\n\s*<section class="dialog-subsection" aria-label="Instrumentos de [^"]+">[\s\S]*?<\/section>/g,
+    /\s*<section class="dialog-subsection" aria-label="Instrumentos de [^"]+">[\s\S]*?<\/section>/g,
     "",
   );
 }
