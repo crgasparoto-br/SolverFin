@@ -8,17 +8,36 @@ interface CategoryFilterPresentation {
 
 const categoryFilterPresentations: readonly CategoryFilterPresentation[] = [
   { filter: "all", iconName: "layers", tooltip: "Mostrar todas as categorias" },
-  { filter: "expense", iconName: "arrow-down", tooltip: "Mostrar categorias de despesas" },
-  { filter: "income", iconName: "arrow-up", tooltip: "Mostrar categorias de receitas" },
-  { filter: "transfer", iconName: "repeat", tooltip: "Mostrar categorias de transferências" },
-  { filter: "archived", iconName: "archive", tooltip: "Mostrar categorias arquivadas" },
+  {
+    filter: "expense",
+    iconName: "arrow-down",
+    tooltip: "Mostrar categorias de despesas",
+  },
+  {
+    filter: "income",
+    iconName: "arrow-up",
+    tooltip: "Mostrar categorias de receitas",
+  },
+  {
+    filter: "transfer",
+    iconName: "repeat",
+    tooltip: "Mostrar categorias de transferências",
+  },
+  {
+    filter: "archived",
+    iconName: "archive",
+    tooltip: "Mostrar categorias arquivadas",
+  },
 ];
 
 export function enhanceCategoriesIconsAndTooltips(html: string): string {
   if (!html.includes("<title>Categorias - SolverFin</title>")) return html;
   if (html.includes("data-categories-icons-enhanced")) return html;
 
-  let enhanced = html.replace("<main>", "<main data-categories-icons-enhanced>");
+  let enhanced = html.replace(
+    "<main>",
+    "<main data-categories-icons-enhanced>",
+  );
 
   enhanced = enhanced.replace(
     '<a class="sf-button" href="/categorias">Tentar novamente</a>',
@@ -30,9 +49,12 @@ export function enhanceCategoriesIconsAndTooltips(html: string): string {
       `(<button class="filter-chip" type="button" data-category-filter="${presentation.filter}" aria-pressed="(?:true|false)")>([^<]*)</button>`,
     );
 
-    enhanced = enhanced.replace(filterPattern, (_match, opening: string, label: string) => {
-      return `${opening} title="${presentation.tooltip}">${icon(presentation.iconName, 12)} ${label}</button>`;
-    });
+    enhanced = enhanced.replace(
+      filterPattern,
+      (_match, opening: string, label: string) => {
+        return `${opening} title="${presentation.tooltip}">${icon(presentation.iconName, 12)} ${label}</button>`;
+      },
+    );
   }
 
   enhanced = enhanced.replace(
@@ -59,11 +81,11 @@ export function enhanceCategoriesIconsAndTooltips(html: string): string {
   );
 
   enhanced = enhanced.replace(
-    '        statusActionButton.hidden = true;',
+    "        statusActionButton.hidden = true;",
     '        submitButton.title = "Criar categoria";\n        statusActionButton.hidden = true;',
   );
   enhanced = enhanced.replace(
-    '        statusActionButton.hidden = false;',
+    "        statusActionButton.hidden = false;",
     '        submitButton.title = "Salvar alterações da categoria";\n        statusActionButton.hidden = false;',
   );
   enhanced = enhanced.replace(
@@ -80,7 +102,10 @@ export function enhanceCategoriesIconsAndTooltips(html: string): string {
           const collapseIcon = toggle.querySelector("svg");
           if (collapseIcon) collapseIcon.style.transform = collapsed ? "rotate(-90deg)" : "rotate(0deg)";`;
 
-  enhanced = enhanced.replace(currentCollapseStateUpdate, enhancedCollapseStateUpdate);
+  enhanced = enhanced.replace(
+    currentCollapseStateUpdate,
+    enhancedCollapseStateUpdate,
+  );
   enhanced = enhanced.replace(
     "</style>",
     `
