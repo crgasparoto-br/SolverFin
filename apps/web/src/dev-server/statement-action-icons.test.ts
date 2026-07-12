@@ -20,18 +20,15 @@ const reconciledRow = fakeStatementRow(
   { status: "reconciled", effectiveOn: "2026-07-01" },
   "R$ 10,00",
 );
-const postedRow = fakeStatementRow(
-  { status: "posted", effectiveOn: "2026-07-02" },
-  "R$ 5,00",
-);
+const postedRow = fakeStatementRow({ status: "posted", effectiveOn: "2026-07-02" }, "R$ 5,00");
 const pendingRow = fakeStatementRow({ status: "suggested" }, "-R$ 15,00");
 const plannedRow = fakeStatementRow({ status: "planned" }, "R$ 20,00");
 const statementRows = [reconciledRow, postedRow, pendingRow, plannedRow];
 const injectedStyles: FakeStyleElement[] = [];
 const quickActionSelector =
-  '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
-const currentMonthSelector = '[data-month-current], [data-invoice-current]';
-const monthInputSelector = '#filter-month, [data-invoice-month-input]';
+  ".statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]";
+const currentMonthSelector = "[data-month-current], [data-invoice-current]";
+const monthInputSelector = "#filter-month, [data-invoice-month-input]";
 const statementRowSelector = ".statement-row.statement-body";
 
 const document = {
@@ -138,11 +135,7 @@ assertStatementStatus(plannedRow.status, "planned", "Previsto");
 assert.match(pendingRow.balance.className, /\bdebit\b/);
 assert.doesNotMatch(plannedRow.balance.className, /\bdebit\b/);
 
-function assertStatementStatus(
-  status: FakeStatusNode,
-  tone: string,
-  label: string,
-): void {
+function assertStatementStatus(status: FakeStatusNode, tone: string, label: string): void {
   assert.equal(status.className, `statement-status statement-status-${tone} col-status`);
   assert.match(status.innerHTML, /<svg/);
   assert.equal(status.attributes.role, "img");
@@ -243,10 +236,7 @@ interface FakeRecurrenceIndicator {
   setAttribute(name: string, value: string): void;
 }
 
-function fakeRecurrenceIndicator(
-  label: FakeLabel,
-  svg: FakeSvg,
-): FakeRecurrenceIndicator {
+function fakeRecurrenceIndicator(label: FakeLabel, svg: FakeSvg): FakeRecurrenceIndicator {
   const attributes: Record<string, string> = {};
   return {
     dataset: {},
@@ -284,9 +274,7 @@ interface FakeStatementRow {
   status: FakeStatusNode;
   transaction: FakeTransactionNode;
   balance: FakeBalanceNode;
-  querySelector(
-    selector: string,
-  ): FakeStatusNode | FakeTransactionNode | FakeBalanceNode | null;
+  querySelector(selector: string): FakeStatusNode | FakeTransactionNode | FakeBalanceNode | null;
 }
 
 function fakeStatementRow(
