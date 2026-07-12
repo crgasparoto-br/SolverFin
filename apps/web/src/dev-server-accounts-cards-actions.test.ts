@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 
-await accountsCardsPageRendersDialogOnlyInstrumentActions();
+await accountsCardsPageRendersDialogInstrumentList();
 
-async function accountsCardsPageRendersDialogOnlyInstrumentActions(): Promise<void> {
+async function accountsCardsPageRendersDialogInstrumentList(): Promise<void> {
   const originalFetch = globalThis.fetch;
 
   globalThis.fetch = (async (input: string | URL | Request) => {
@@ -62,37 +62,59 @@ async function accountsCardsPageRendersDialogOnlyInstrumentActions(): Promise<vo
 
   try {
     const html = enhanceAccountsCardsTabs(await renderAccountsCardsPage("session-token"));
+    const cardDialogStart = html.indexOf('<dialog id="edit-card-dialog-card-unused"');
+    const cardDialogEnd = html.indexOf("</dialog>", cardDialogStart);
+    const dialogHtml = html.slice(cardDialogStart, cardDialogEnd);
+    const cardArticleStart = html.indexOf('<article class="master-item card-account-item"');
+    const cardSummaryHtml = html.slice(cardArticleStart, cardDialogStart);
 
-    const expectedPatterns = [
-      /data-api-method="DELETE" data-api-path="\/api\/accounts\/account-unused"/,
-      /aria-label="Excluir Conta sem uso"/,
-      /data-api-method="DELETE" data-api-path="\/api\/credit-card-accounts\/card-unused"/,
-      /aria-label="Excluir Cartão sem uso"/,
-      /Só é possível excluir contas sem lançamentos/,
-      /Só é possível excluir cartões sem compras/,
-      /Instrumentos do cartão/,
-      /Dados dos instrumentos/,
-      /class="edit-grid instrument-edit-form"/,
-      /<strong>Físico titular<\/strong>/,
-      /<button type="submit">Salvar instrumento<\/button>/,
+    assert.ok(cardDialogStart >= 0);
+    assert.ok(cardDialogEnd > cardDialogStart);
+    assert.doesNotMatch(cardSummaryHtml, /class="instrument-list/);
+    assert.match(dialogHtml, /class="dialog-subsection dialog-instrument-list"/);
+    assert.match(dialogHtml, /<h3>Lista de instrumentos<\/h3>/);
+    assert.match(dialogHtml, /class="instrument-list"/);
+    assert.match(dialogHtml, /data-card-instrument/);
+    assert.match(dialogHtml, /<strong>Físico titular<\/strong>/);
+    assert.match(dialogHtml, /Físico · Titular principal · \*\*\*\* 1111 · limite R\$ 3\.000,00/);
+    assert.match(dialogHtml, /class="instrument-pill">Default<\/span>/);
+    assert.match(dialogHtml, /class="instrument-actions" aria-label="Ações de Físico titular"/);
+    assert.match(
+      dialogHtml,
+      /data-open-dialog="edit-card-instrument-dialog-instrument-physical"/,
+    );
+    assert.ok(
+      dialogHtml.indexOf("<strong>Físico titular</strong>") <
+        dialogHtml.indexOf('class="instrument-actions"'),
+      "os botões devem aparecer no fim da linha do instrumento",
+    );
+
+    assert.match(
+      html,
+      /id="edit-card-instrument-dialog-instrument-physical" class="master-dialog"/,
+    );
+    assert.match(
+      html,
+      /data-api-method="PATCH" data-api-path="\/api\/credit-card-instruments\/instrument-physical" class="edit-grid"/,
+    );
+    assert.doesNotMatch(dialogHtml, /class="edit-grid instrument-edit-form"/);
+    assert.match(
+      html,
       /data-toggle-instrument-create="new-card-instrument-form-card-unused"/,
+    );
+    assert.match(
+      html,
       /id="new-card-instrument-form-card-unused" hidden data-api-form data-api-path="\/api\/credit-card-accounts\/card-unused\/instruments"/,
-      /<button type="submit">Criar instrumento<\/button>/,
-    ];
-
-    const absentPatterns = [
-      /<div class="instrument-list/,
-      /data-card-instrument/,
+    );
+    assert.doesNotMatch(
+      html,
       /data-open-dialog="new-card-instrument-dialog-card-unused"/,
-      /id="new-card-instrument-dialog-card-unused"/,
-    ];
-
-    expectedPatterns.forEach((pattern) => assert.match(html, pattern));
-    absentPatterns.forEach((pattern) => assert.doesNotMatch(html, pattern));
-    assert.equal(
-      (html.match(/data-api-path="\/api\/credit-card-instruments\/instrument-physical"/g) ?? [])
-        .length,
-      1,
+    );
+    assert.doesNotMatch(html, /id="new-card-instrument-dialog-card-unused"/);
+    assert.match(html, /data-card-instruments-dialog-list/);
+    assert.match(
+      html,
+      /\.dialog-instrument-list \.instrument-actions \{ flex: 0 0 auto; margin-left: auto; \}/,
     );
   } finally {
     globalThis.fetch = originalFetch;
