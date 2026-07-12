@@ -34,7 +34,7 @@ export interface StatementFilters {
 export interface StatementRow {
   transaction: TransactionRecord;
   amountMinor: number;
-  balanceAfterMinor?: number;
+  balanceAfterMinor: number;
 }
 
 export interface StatementSummary {
@@ -137,13 +137,12 @@ export function buildRows(
     .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))
     .map((transaction) => {
       const amountMinor = signedAmount(transaction, selectedAccount?.id);
-      const effective = transaction.effectiveOn !== undefined;
-      if (effective) balance += amountMinor;
+      balance += amountMinor;
 
       return {
         transaction,
         amountMinor,
-        ...(effective ? { balanceAfterMinor: balance } : {}),
+        balanceAfterMinor: balance,
       };
     });
 }
