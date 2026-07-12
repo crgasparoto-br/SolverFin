@@ -27,7 +27,9 @@ const document = {
   },
 };
 
-runInNewContext(statementActionIconsController(), { document });
+const controller = statementActionIconsController();
+assert.doesNotMatch(controller, /data-invoice-current/);
+runInNewContext(controller, { document });
 
 assert.match(transferButton.insertedHtml, /data-statement-action-icon/);
 assert.match(transferButton.insertedHtml, /m17 2 4 4-4 4/);
