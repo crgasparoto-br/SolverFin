@@ -32,7 +32,7 @@ async function assertExistingInvoiceMonth(): Promise<void> {
   assert.match(html, /name="month" value="2026-06" data-invoice-month-input/);
   assert.match(html, /Compra de junho/);
   assert.doesNotMatch(html, /Compra de julho/);
-  assertMonthNavigation(html);
+  assertMonthNavigation(html, "2026-05", "2026-07", "amount_desc");
 }
 
 async function assertMissingInvoiceMonth(): Promise<void> {
@@ -46,7 +46,7 @@ async function assertMissingInvoiceMonth(): Promise<void> {
   assert.match(html, /Nenhuma fatura em Agosto de 2026/);
   assert.doesNotMatch(html, /data-modal="payment"/);
   assert.match(html, /name="invoiceId" value="" data-invoice-input/);
-  assertMonthNavigation(html);
+  assertMonthNavigation(html, "2026-07", "2026-09");
 }
 
 async function assertInitialMonthState(): Promise<void> {
@@ -57,22 +57,51 @@ async function assertInitialMonthState(): Promise<void> {
   );
 
   assert.match(html, /name="month" value="2026-07" data-invoice-month-input/);
-  assertMonthNavigation(html);
+  assertMonthNavigation(html, "2026-06", "2026-08");
 }
 
-function assertMonthNavigation(html: string): void {
+function assertMonthNavigation(
+  html: string,
+  previousMonth: string,
+  nextMonth: string,
+  sort?: string,
+): void {
+  const sortSuffix = sort ? `&amp;sort=${sort}` : "";
+
   assert.match(html, /<input[^>]*type="month"[^>]*data-invoice-month-input/);
-  assert.equal((html.match(/data-invoice-current/g) ?? []).length >= 1, true);
-  assert.match(html, /data-month-step="-1"/);
-  assert.match(html, /data-month-step="1"/);
+  assert.match(html, /class="month-picker-button" data-open-month-picker/);
+  assert.match(html, /aria-label="Abrir calendário da fatura"/);
+  assert.match(
+    html,
+    new RegExp(
+      `href="/cartoes\\?cardId=card-1&amp;month=${previousMonth}${sortSuffix}" aria-label="Fatura anterior"`,
+    ),
+  );
+  assert.match(
+    html,
+    new RegExp(
+      `href="/cartoes\\?cardId=card-1&amp;month=${nextMonth}${sortSuffix}" aria-label="Próxima fatura"`,
+    ),
+  );
+  assert.equal((html.match(/data-invoice-current/g) ?? []).length, 1);
+  assert.match(
+    html,
+    new RegExp(
+      `class="ghost-btn month-current-link" href="/cartoes\\?cardId=card-1&amp;month=\\d{4}-\\d{2}${sortSuffix}" data-invoice-current role="button">Mês atual</a>`,
+    ),
+  );
   assert.doesNotMatch(html, /data-invoice-step=/);
+  assert.doesNotMatch(html, /data-month-step=/);
+  assert.doesNotMatch(html, /querySelectorAll\('\[data-month-step\]'\)/);
   assert.match(html, /data-invoice-month-navigation-controller/);
-  assert.match(html, /querySelectorAll\('\[data-month-step\]'\)/);
-  assert.match(html, /querySelector\('\[data-invoice-current\]'\)/);
+  assert.match(html, /querySelector\('\[data-open-month-picker\]'\)/);
+  assert.match(html, /typeof monthInput\.showPicker === 'function'/);
+  assert.match(html, /invoiceInput\.disabled = true/);
   assert.match(html, /form\.requestSubmit\(\)/);
-  assert.match(html, /invoiceInput\.value=''/);
-  assert.match(html, /appearance:auto/);
-  assert.match(html, /::-webkit-calendar-picker-indicator/);
+  assert.match(html, /-webkit-appearance:none/);
+  assert.match(html, /month-picker-button/);
+  assert.doesNotMatch(html, /month-nav input\[type="month"\]\{background:transparent/);
+  assert.doesNotMatch(html, /invoiceId=[^"&]+/);
 }
 
 function installFetch(): void {
