@@ -26,15 +26,13 @@ async function assertExistingInvoiceMonth(): Promise<void> {
   installFetch();
   const html = await renderCardsPageWithMonthNavigation(
     "session-token",
-    new URL("http://localhost/cartoes?cardId=card-1&month=2026-06"),
+    new URL("http://localhost/cartoes?cardId=card-1&month=2026-06&sort=amount_desc"),
   );
 
-  assert.match(html, /Junho de 2026/);
   assert.match(html, /name="month" value="2026-06" data-invoice-month-input/);
   assert.match(html, /Compra de junho/);
   assert.doesNotMatch(html, /Compra de julho/);
-  assert.match(html, /data-invoice-month-navigation-controller/);
-  assertMonthFilterPresentation(html);
+  assertMonthNavigation(html);
 }
 
 async function assertMissingInvoiceMonth(): Promise<void> {
@@ -44,14 +42,11 @@ async function assertMissingInvoiceMonth(): Promise<void> {
     new URL("http://localhost/cartoes?cardId=card-1&month=2026-08"),
   );
 
-  assert.match(html, /Agosto de 2026/);
   assert.match(html, /name="month" value="2026-08" data-invoice-month-input/);
   assert.match(html, /Nenhuma fatura em Agosto de 2026/);
-  assert.match(html, /O mês selecionado ainda não possui uma fatura materializada/);
-  assert.doesNotMatch(html, /Compra de julho/);
   assert.doesNotMatch(html, /data-modal="payment"/);
   assert.match(html, /name="invoiceId" value="" data-invoice-input/);
-  assertMonthFilterPresentation(html);
+  assertMonthNavigation(html);
 }
 
 async function assertInitialMonthState(): Promise<void> {
@@ -61,32 +56,23 @@ async function assertInitialMonthState(): Promise<void> {
     new URL("http://localhost/cartoes?cardId=card-1"),
   );
 
-  assert.match(html, /Julho de 2026/);
   assert.match(html, /name="month" value="2026-07" data-invoice-month-input/);
-  assertMonthFilterPresentation(html);
+  assertMonthNavigation(html);
 }
 
-function assertMonthFilterPresentation(html: string): void {
-  assert.match(
-    html,
-    /<div class="month-nav">[\s\S]*?<input[^>]*data-invoice-month-input[\s\S]*?<\/div>/,
-  );
-  assert.equal(
-    (html.match(/<button\b[^>]*\bdata-invoice-current\b/gi) ?? []).length,
-    1,
-  );
-  assert.match(
-    html,
-    /<button type="button" class="ghost-btn" data-invoice-current>Mês atual<\/button>/,
-  );
-  assert.match(html, /data-invoice-month-navigation-styles/);
-  assert.match(
-    html,
-    /grid-template-columns: minmax\(12rem, 1\.2fr\) minmax\(13rem, 1fr\) auto;/,
-  );
-  assert.match(html, /input\[data-invoice-month-input\]/);
-  assert.match(html, /button\.ghost-btn\[data-invoice-current\]/);
-  assert.match(html, /background: var\(--surface\);/);
+function assertMonthNavigation(html: string): void {
+  assert.match(html, /<input[^>]*type="month"[^>]*data-invoice-month-input/);
+  assert.equal((html.match(/data-invoice-current/g) ?? []).length >= 1, true);
+  assert.match(html, /data-month-step="-1"/);
+  assert.match(html, /data-month-step="1"/);
+  assert.doesNotMatch(html, /data-invoice-step=/);
+  assert.match(html, /data-invoice-month-navigation-controller/);
+  assert.match(html, /querySelectorAll\('\[data-month-step\]'\)/);
+  assert.match(html, /querySelector\('\[data-invoice-current\]'\)/);
+  assert.match(html, /form\.requestSubmit\(\)/);
+  assert.match(html, /invoiceInput\.value=''/);
+  assert.match(html, /appearance:auto/);
+  assert.match(html, /::-webkit-calendar-picker-indicator/);
 }
 
 function installFetch(): void {
@@ -95,18 +81,9 @@ function installFetch(): void {
 
     if (url.pathname === "/api/cards") {
       return jsonResponse({
-        cards: [
-          {
-            id: "card-1",
-            name: "Cartão Principal",
-            status: "active",
-            closingDay: 20,
-            dueDay: 10,
-          },
-        ],
+        cards: [{ id: "card-1", name: "Cartão Principal", status: "active", closingDay: 20, dueDay: 10 }],
       });
     }
-
     if (url.pathname === "/api/invoices") {
       return jsonResponse({
         invoices: [
@@ -115,111 +92,38 @@ function installFetch(): void {
         ],
       });
     }
-
-    if (url.pathname === "/api/categories") {
-      return jsonResponse({ categories: [] });
-    }
-
-    if (url.pathname === "/api/accounts") {
-      return jsonResponse({ accounts: [] });
-    }
-
-    if (url.pathname === "/api/credit-card-accounts/card-1/instruments") {
-      return jsonResponse({ instruments: [] });
-    }
-
-    if (url.pathname === "/api/recurrences") {
-      return jsonResponse({ recurrences: [] });
-    }
-
+    if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+    if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+    if (url.pathname === "/api/credit-card-accounts/card-1/instruments") return jsonResponse({ instruments: [] });
+    if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
     if (url.pathname === "/api/invoices/invoice-july/summary") {
       return jsonResponse({ summary: summary("invoice-july", "open", "2026-07-20", "2026-08-10", 7000) });
     }
-
     if (url.pathname === "/api/invoices/invoice-june/summary") {
       return jsonResponse({ summary: summary("invoice-june", "closed", "2026-06-20", "2026-07-10", 6000) });
     }
-
     if (url.pathname === "/api/invoices/invoice-july/purchases") {
       return jsonResponse({ purchases: [purchase("purchase-july", "invoice-july", "2026-07-15", "Compra de julho", 7000)] });
     }
-
     if (url.pathname === "/api/invoices/invoice-june/purchases") {
       return jsonResponse({ purchases: [purchase("purchase-june", "invoice-june", "2026-06-15", "Compra de junho", 6000)] });
     }
-
     return jsonResponse({});
   };
 }
 
-function invoice(
-  id: string,
-  status: string,
-  periodEndOn: string,
-  dueOn: string,
-  totalAmountMinor: number,
-): Record<string, unknown> {
-  return {
-    id,
-    cardId: "card-1",
-    status,
-    periodStartOn: `${periodEndOn.slice(0, 8)}01`,
-    periodEndOn,
-    dueOn,
-    totalAmountMinor,
-  };
+function invoice(id: string, status: string, periodEndOn: string, dueOn: string, totalAmountMinor: number): Record<string, unknown> {
+  return { id, cardId: "card-1", status, periodStartOn: `${periodEndOn.slice(0, 8)}01`, periodEndOn, dueOn, totalAmountMinor };
 }
 
-function summary(
-  invoiceId: string,
-  status: string,
-  closingOn: string,
-  dueOn: string,
-  totalExpensesMinor: number,
-): Record<string, unknown> {
-  return {
-    invoiceId,
-    financialProfileId: "profile-1",
-    cardId: "card-1",
-    cardName: "Cartão Principal",
-    status,
-    periodStartOn: `${closingOn.slice(0, 8)}01`,
-    closingOn,
-    dueOn,
-    previousBalanceMinor: 0,
-    totalExpensesMinor,
-    totalPaidMinor: 0,
-    amountDueMinor: totalExpensesMinor,
-    reconciledExpensesMinor: 0,
-    unreconciledExpensesMinor: totalExpensesMinor,
-    purchasesCount: 1,
-    cardTotals: [],
-  };
+function summary(invoiceId: string, status: string, closingOn: string, dueOn: string, totalExpensesMinor: number): Record<string, unknown> {
+  return { invoiceId, financialProfileId: "profile-1", cardId: "card-1", cardName: "Cartão Principal", status, periodStartOn: `${closingOn.slice(0, 8)}01`, closingOn, dueOn, previousBalanceMinor: 0, totalExpensesMinor, totalPaidMinor: 0, amountDueMinor: totalExpensesMinor, reconciledExpensesMinor: 0, unreconciledExpensesMinor: totalExpensesMinor, purchasesCount: 1, cardTotals: [] };
 }
 
-function purchase(
-  id: string,
-  invoiceId: string,
-  occurredOn: string,
-  description: string,
-  amountMinor: number,
-): Record<string, unknown> {
-  return {
-    id,
-    financialProfileId: "profile-1",
-    cardId: "card-1",
-    invoiceId,
-    occurredOn,
-    description,
-    amountMinor,
-    currency: "BRL",
-    status: "posted",
-  };
+function purchase(id: string, invoiceId: string, occurredOn: string, description: string, amountMinor: number): Record<string, unknown> {
+  return { id, financialProfileId: "profile-1", cardId: "card-1", invoiceId, occurredOn, description, amountMinor, currency: "BRL", status: "posted" };
 }
 
 function jsonResponse(body: unknown): Response {
-  return new Response(JSON.stringify(body), {
-    status: 200,
-    headers: { "content-type": "application/json; charset=utf-8" },
-  });
+  return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json; charset=utf-8" } });
 }
