@@ -1,111 +1,73 @@
 import { popupActionIconsController } from "./popup-action-icons.js";
 import { statementActionIconsController } from "./statement-action-icons.js";
 
-const RECURRENCE_SCOPE_LAYOUT_CSS = `
+const RECURRENCE_SCOPE_COMPACT_CSS = `
   [data-recurrence-scope-modal] .recurrence-scope-panel {
     box-sizing: border-box;
-    gap: 18px;
-    max-width: 600px;
-    width: min(600px, calc(100vw - 32px));
+    gap: 14px;
+    max-width: 460px;
+    padding: 18px;
+    width: min(460px, calc(100vw - 24px));
   }
 
   [data-recurrence-scope-modal] .recurrence-scope-panel > div:first-of-type {
     display: grid;
-    gap: 5px;
-    padding-right: 34px;
+    gap: 4px;
+    padding-right: 32px;
   }
 
   [data-recurrence-scope-modal] .recurrence-scope-panel > div:first-of-type .muted {
+    font-size: 0.8125rem;
     line-height: 1.45;
-    max-width: 48rem;
   }
 
   [data-recurrence-scope-modal] .recurrence-scope-actions {
-    align-items: stretch;
     display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
-  [data-recurrence-scope-modal] .recurrence-scope-option {
-    align-items: start;
-    background: var(--surface, #fff) !important;
-    border: 1px solid var(--line, #cbd5e1) !important;
-    border-radius: var(--radius, 8px);
-    color: var(--text, #0f172a) !important;
-    display: grid;
-    gap: 10px;
-    grid-template-columns: auto minmax(0, 1fr);
-    min-height: 104px !important;
-    padding: 14px 16px !important;
+  [data-recurrence-scope-modal] .recurrence-scope-choice {
+    align-items: center;
+    display: flex;
+    font-size: 0.875rem;
+    font-weight: 650;
+    gap: 8px;
+    justify-content: flex-start;
+    line-height: 1.3;
+    min-height: 44px !important;
+    padding: 8px 12px !important;
     text-align: left !important;
     width: 100%;
   }
 
-  [data-recurrence-scope-modal] .recurrence-scope-option:hover,
-  [data-recurrence-scope-modal] .recurrence-scope-option:focus-visible {
-    background: var(--primary-soft, #eff6ff) !important;
-    border-color: #94a3b8 !important;
-    box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.16);
-  }
-
-  [data-recurrence-scope-modal] .recurrence-scope-option > svg {
-    color: var(--primary, #0369a1);
-    height: 20px;
-    margin: 2px 0 0 !important;
-    width: 20px;
-  }
-
-  [data-recurrence-scope-modal] .recurrence-scope-option-copy {
-    display: grid;
-    gap: 5px;
-    min-width: 0;
-  }
-
-  [data-recurrence-scope-modal] .recurrence-scope-option-title {
-    font-size: 0.875rem;
-    font-weight: 700;
-    line-height: 1.3;
-  }
-
-  [data-recurrence-scope-modal] .recurrence-scope-option-description {
-    color: var(--muted, #64748b);
-    font-size: 0.75rem;
-    font-weight: 500;
-    line-height: 1.45;
+  [data-recurrence-scope-modal] .recurrence-scope-choice > svg {
+    flex: 0 0 auto;
+    height: 16px;
+    margin: 0 !important;
+    width: 16px;
   }
 
   [data-recurrence-scope-modal] .recurrence-scope-back {
-    grid-column: 1 / -1;
-    justify-self: center;
-    min-height: 34px !important;
-    min-width: 180px;
-    padding: 0 14px !important;
+    font-size: 0.8125rem;
+    justify-self: end;
+    margin-top: 2px;
+    min-height: 32px !important;
+    padding: 0 12px !important;
     text-align: center !important;
     width: auto !important;
   }
 
-  [data-recurrence-scope-modal] [data-recurrence-scope-status] {
-    min-height: 1.25rem;
+  [data-recurrence-scope-modal] [data-recurrence-scope-status]:empty {
+    display: none;
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 480px) {
     [data-recurrence-scope-modal] .recurrence-scope-panel {
-      gap: 14px;
-      width: min(100%, calc(100vw - 20px));
-    }
-
-    [data-recurrence-scope-modal] .recurrence-scope-actions {
-      grid-template-columns: 1fr;
-    }
-
-    [data-recurrence-scope-modal] .recurrence-scope-option {
-      min-height: 88px !important;
-      padding: 12px 14px !important;
+      padding: 16px;
+      width: min(100%, calc(100vw - 16px));
     }
 
     [data-recurrence-scope-modal] .recurrence-scope-back {
-      grid-column: 1;
       justify-self: stretch;
       width: 100% !important;
     }
@@ -125,85 +87,37 @@ export function recurringCardScopeControllerScript(): string {
         const isCard = targetKind === "card";
         const currentButton = modal.querySelector('[data-recurrence-scope="current"]');
         const futureButton = modal.querySelector('[data-recurrence-scope="current_and_future"]');
-        const actions = modal.querySelector(".recurrence-scope-actions");
-        const backButton = actions && actions.querySelector
-          ? actions.querySelector("[data-recurrence-scope-cancel]")
-          : null;
+        const backButton = modal.querySelector('.recurrence-scope-actions [data-recurrence-scope-cancel]');
         const status = modal.querySelector("[data-recurrence-scope-status]");
         let busy = false;
 
-        const scopeLayoutCss = ${JSON.stringify(RECURRENCE_SCOPE_LAYOUT_CSS)};
-        const currentLabel = isCard
-          ? "Alterar somente esta compra"
-          : "Alterar somente este lançamento";
-        const futureLabel = isCard
-          ? "Alterar esta compra e as próximas"
-          : "Alterar este lançamento e os próximos";
-        const currentDescription = isCard
-          ? "Aplica a alteração apenas nesta compra e mantém as demais compras da recorrência como estão."
-          : "Aplica a alteração apenas neste lançamento e mantém os demais lançamentos da recorrência como estão.";
-        const futureDescription = isCard
-          ? "Aplica a alteração nesta compra e também em todas as próximas compras ainda editáveis."
-          : "Aplica a alteração neste lançamento e também em todos os próximos lançamentos ainda editáveis.";
-
-        const editOneIcon = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-        const editAllIcon = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M17 3l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12a9 9 0 0 1 9-9h9M7 21l-4-4 4-4M21 12a9 9 0 0 1-9 9H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        const scopeLayoutCss = ${JSON.stringify(RECURRENCE_SCOPE_COMPACT_CSS)};
+        const currentLabel = isCard ? "Somente esta compra" : "Somente este lançamento";
+        const futureLabel = isCard ? "Esta compra e as próximas" : "Este lançamento e os próximos";
+        const editOneIcon = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+        const editAllIcon = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M17 3l4 4-4 4M3 12a9 9 0 0 1 9-9h9M7 21l-4-4 4-4M21 12a9 9 0 0 1-9 9H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
         function ensureScopeLayoutStyles() {
           if (!document.head || typeof document.createElement !== "function") return;
-          if (
-            typeof document.querySelector === "function" &&
-            document.querySelector("[data-recurrence-scope-layout-styles]")
-          ) {
-            return;
-          }
+          if (document.querySelector("[data-recurrence-scope-layout-styles]")) return;
           const style = document.createElement("style");
           style.setAttribute("data-recurrence-scope-layout-styles", "");
           style.textContent = scopeLayoutCss;
           document.head.appendChild(style);
         }
 
-        function scopeChoiceMarkup(icon, label, description) {
-          return icon +
-            '<span class="recurrence-scope-option-copy">' +
-              '<span class="recurrence-scope-option-title">' + label + '</span>' +
-              '<span class="recurrence-scope-option-description">' + description + '</span>' +
-            '</span>';
-        }
-
-        function decorateScopeButton(button, icon, label, description, scope) {
+        function prepareScopeButton(button, icon, label, scope) {
           if (!button) return;
-          button.innerHTML = scopeChoiceMarkup(icon, label, description);
+          button.innerHTML = icon + '<span>' + label + '</span>';
           button.dataset.explicitEditScope = scope;
-          if (button.classList && typeof button.classList.add === "function") {
-            button.classList.add("recurrence-scope-option");
-          }
-          if (typeof button.setAttribute === "function") {
-            button.setAttribute("aria-label", label + ". " + description);
-          }
+          button.classList?.add("recurrence-scope-choice");
+          button.setAttribute?.("aria-label", label);
         }
 
         ensureScopeLayoutStyles();
-        if (actions && actions.classList && typeof actions.classList.add === "function") {
-          actions.classList.add("recurrence-scope-actions-refactored");
-        }
-        if (backButton && backButton.classList && typeof backButton.classList.add === "function") {
-          backButton.classList.add("recurrence-scope-back");
-        }
-        decorateScopeButton(
-          currentButton,
-          editOneIcon,
-          currentLabel,
-          currentDescription,
-          "current_only",
-        );
-        decorateScopeButton(
-          futureButton,
-          editAllIcon,
-          futureLabel,
-          futureDescription,
-          "current_and_future",
-        );
+        prepareScopeButton(currentButton, editOneIcon, currentLabel, "current_only");
+        prepareScopeButton(futureButton, editAllIcon, futureLabel, "current_and_future");
+        backButton?.classList?.add("recurrence-scope-back");
 
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
