@@ -243,6 +243,7 @@ function injectSortAssets(html: string): string {
         form.filter-form[action="/lancamentos"],form.filter-form[action="/cartoes"]{grid-template-columns:minmax(14rem,1.2fr) minmax(13rem,1fr) auto minmax(12rem,.8fr)}
         .sort-field{min-width:12rem}
         form.filter-form[action="/cartoes"] .month-nav input[type="month"]{background:transparent;border:0;font-weight:800;min-height:34px;padding:0 4px;text-align:center}
+        button.account-select-trigger:hover:not(:disabled),button.account-select-trigger:focus-visible,button.account-select-trigger[aria-expanded="true"]{background:var(--primary-soft);border-color:#c8dde5;color:var(--text)}
         .purchase-row,.statement-row.statement-body{transition:background 120ms ease-out,border-color 120ms ease-out}
         .purchase-row:hover,.statement-row.statement-body:hover{background:#f6fafb}
         .toggle-chip:hover:not(:disabled),.toggle-chip:focus-visible{background:#f1f7f9;border-color:#a5cbd6;color:var(--primary)}
