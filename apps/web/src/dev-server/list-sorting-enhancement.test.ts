@@ -29,6 +29,10 @@ assert.match(statementSorted, /name="sort" data-list-sort/);
 assert.match(statementSorted, /value="amount_desc" selected/);
 assert.match(
   statementSorted,
+  /button\.account-select-trigger:hover:not\(:disabled\),button\.account-select-trigger:focus-visible,button\.account-select-trigger\[aria-expanded="true"\]\{background:var\(--primary-soft\);border-color:#c8dde5;color:var\(--text\)\}/,
+);
+assert.match(
+  statementSorted,
   /\.purchase-row:hover,\.statement-row\.statement-body:hover\{background:#f6fafb\}/,
 );
 assert.match(
@@ -57,6 +61,10 @@ const cardSorted = enhanceCardListSorting(
 assert.ok(cardSorted.indexOf('data-purchase="b"') < cardSorted.indexOf('data-purchase="c"'));
 assert.ok(cardSorted.indexOf('data-purchase="c"') < cardSorted.indexOf('data-purchase="a"'));
 assert.match(cardSorted, /value="description_asc" selected/);
+assert.match(
+  cardSorted,
+  /button\.account-select-trigger:hover:not\(:disabled\),button\.account-select-trigger:focus-visible,button\.account-select-trigger\[aria-expanded="true"\]\{background:var\(--primary-soft\);border-color:#c8dde5;color:var\(--text\)\}/,
+);
 assert.match(
   cardSorted,
   /\.toggle-chip:hover:not\(:disabled\),\.toggle-chip:focus-visible\{background:#f1f7f9;border-color:#a5cbd6;color:var\(--primary\)\}/,
