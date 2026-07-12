@@ -9,6 +9,7 @@ export function statementActionIconsController(): string {
   return `
     (function () {
       const quickActionSelector = '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
+      const currentMonthSelector = '[data-month-current], [data-invoice-current]';
       const quickActionIcons = {
         transfer: ${JSON.stringify(icon("repeat", 14))},
         expense: ${JSON.stringify(icon("arrow-down", 14))},
@@ -19,6 +20,8 @@ export function statementActionIconsController(): string {
         expense: "Registrar nova despesa",
         income: "Registrar nova receita",
       };
+      const currentMonthIcon = ${JSON.stringify(icon("calendar", 14))};
+      const currentMonthTooltip = "Ir para o mês atual";
 
       function markedIcon(svg) {
         return String(svg || "").replace(
@@ -41,6 +44,17 @@ export function statementActionIconsController(): string {
           !button.getAttribute("title")
         ) {
           button.setAttribute("title", quickActionTitles[kind]);
+        }
+      }
+
+      function decorateCurrentMonthButton(button) {
+        if (!button || typeof button.querySelector !== "function") return;
+        if (!button.querySelector("svg") && typeof button.insertAdjacentHTML === "function") {
+          button.insertAdjacentHTML("afterbegin", markedIcon(currentMonthIcon));
+        }
+        if (typeof button.setAttribute === "function") {
+          button.setAttribute("title", currentMonthTooltip);
+          button.setAttribute("aria-label", currentMonthTooltip);
         }
       }
 
@@ -81,6 +95,7 @@ export function statementActionIconsController(): string {
       function decorateStatement(root) {
         if (!root || typeof root.querySelectorAll !== "function") return;
         root.querySelectorAll(quickActionSelector).forEach(decorateQuickAction);
+        root.querySelectorAll(currentMonthSelector).forEach(decorateCurrentMonthButton);
         root.querySelectorAll(".recurrence-indicator").forEach(decorateRecurrenceIndicator);
       }
 
@@ -94,6 +109,9 @@ export function statementActionIconsController(): string {
                 if (!node || typeof node !== "object") return;
                 if (typeof node.matches === "function" && node.matches(quickActionSelector)) {
                   decorateQuickAction(node);
+                }
+                if (typeof node.matches === "function" && node.matches(currentMonthSelector)) {
+                  decorateCurrentMonthButton(node);
                 }
                 if (typeof node.matches === "function" && node.matches(".recurrence-indicator")) {
                   decorateRecurrenceIndicator(node);
