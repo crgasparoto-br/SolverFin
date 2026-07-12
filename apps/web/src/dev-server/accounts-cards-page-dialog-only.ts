@@ -34,7 +34,7 @@ export function keepCardInstrumentsInsideEditDialog(html: string): string {
   );
   nextHtml = removeInlineInstrumentSections(nextHtml);
   nextHtml = removeNestedDivByClass(nextHtml, "instrument-list");
-  nextHtml = nextHtml.replace(/\n\s*<p class="instrument-warning"[\s\S]*?<\/p>/g, "");
+  nextHtml = nextHtml.replace(/\s*<p class="instrument-warning"[\s\S]*?<\/p>/g, "");
   nextHtml = removeStandaloneNewInstrumentButtons(nextHtml);
 
   instrumentLists.forEach((instrumentList) => {
@@ -52,7 +52,7 @@ export function keepCardInstrumentsInsideEditDialog(html: string): string {
 
 function collectCreateInstrumentDialogs(html: string): InstrumentCreateDialog[] {
   const dialogPattern =
-    /\n\s*<dialog id="new-card-instrument-dialog-([^"]+)" class="master-dialog" aria-labelledby="[^"]+">[\s\S]*?<\/dialog>/g;
+    /\s*<dialog id="new-card-instrument-dialog-([^"]+)" class="master-dialog" aria-labelledby="[^"]+">[\s\S]*?<\/dialog>/g;
   const createDialogs: InstrumentCreateDialog[] = [];
 
   for (const match of html.matchAll(dialogPattern)) {
@@ -92,7 +92,7 @@ function collectCardInstrumentLists(html: string): CardInstrumentList[] {
 
 function removeStandaloneNewInstrumentButtons(html: string): string {
   return html.replace(
-    /\n\s*<button type="button" class="icon-button" data-open-dialog="new-card-instrument-dialog-[^"]+" aria-label="Adicionar instrumento em [^"]+"(?: disabled)?>[\s\S]*?<\/button>/g,
+    /\s*<button type="button" class="icon-button" data-open-dialog="new-card-instrument-dialog-[^"]+" aria-label="Adicionar instrumento em [^"]+"(?: disabled)?>[\s\S]*?<\/button>/g,
     "",
   );
 }
