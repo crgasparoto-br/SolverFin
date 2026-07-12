@@ -24,11 +24,11 @@ const document = {
 runInNewContext(statementActionIconsController(), { document });
 
 assert.match(transferButton.insertedHtml, /data-statement-action-icon/);
-assert.match(transferButton.insertedHtml, /M17 2\.1l4 4-4 4/);
+assert.match(transferButton.insertedHtml, /m17 2 4 4-4 4/);
 assert.equal(transferButton.attributes.title, "Transferir entre contas");
 assert.match(expenseButton.insertedHtml, /M12 5v14/);
 assert.equal(expenseButton.attributes.title, "Registrar nova despesa");
-assert.match(incomeButton.insertedHtml, /m18 15-6-6-6 6/);
+assert.match(incomeButton.insertedHtml, /m5 12 7-7 7 7/);
 assert.equal(incomeButton.attributes.title, "Registrar nova receita");
 
 assert.equal(recurrenceIndicator.attributes.title, "Lançamento recorrente");
