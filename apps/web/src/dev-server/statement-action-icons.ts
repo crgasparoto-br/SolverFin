@@ -21,11 +21,13 @@ const MONTH_TYPOGRAPHY_CSS = `
   }
 `;
 
-const STATEMENT_PRESENTATION_CSS = `
+const GLOBAL_CONTENT_WIDTH_CSS = `
   main {
     max-width: 1800px !important;
   }
+`;
 
+const STATEMENT_PRESENTATION_CSS = `
   .statement-layout {
     grid-template-columns: minmax(280px, 320px) minmax(0, 1fr) !important;
   }
@@ -176,9 +178,10 @@ export function resolveStatementStatusPresentation(transaction: {
 
 /**
  * Adds the missing visual affordances to the bank statement without coupling
- * browser-only enhancements to the server renderer. It decorates quick actions,
- * normalizes month inputs, reduces recurrence/status badges to accessible icons,
- * and applies the responsive statement layout refinements.
+ * browser-only enhancements to the server renderer. The content width rule is
+ * intentionally global because this controller is loaded by the authenticated
+ * shell on every page. Statement-specific rules remain scoped to statement
+ * selectors.
  */
 export function statementActionIconsController(): string {
   return `
@@ -202,6 +205,8 @@ export function statementActionIconsController(): string {
       const currentMonthTooltip = "Exibir o mês atual";
       const monthTypographyStyleId = "solverfin-month-typography";
       const monthTypographyCss = ${JSON.stringify(MONTH_TYPOGRAPHY_CSS)};
+      const globalContentWidthStyleId = "solverfin-global-content-width";
+      const globalContentWidthCss = ${JSON.stringify(GLOBAL_CONTENT_WIDTH_CSS)};
       const statementPresentationStyleId = "solverfin-statement-presentation";
       const statementPresentationCss = ${JSON.stringify(STATEMENT_PRESENTATION_CSS)};
       const statusPresentations = ${JSON.stringify(STATEMENT_STATUS_PRESENTATIONS)};
@@ -353,6 +358,7 @@ export function statementActionIconsController(): string {
 
       if (typeof document.querySelectorAll === "function") {
         ensureStyle(monthTypographyStyleId, monthTypographyCss);
+        ensureStyle(globalContentWidthStyleId, globalContentWidthCss);
         ensureStyle(statementPresentationStyleId, statementPresentationCss);
         decorateStatement(document);
 
