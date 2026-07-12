@@ -40,8 +40,8 @@ assert.equal(incomeButton.attributes.title, "Registrar nova receita");
 for (const button of [statementCurrentMonthButton, cardsCurrentMonthButton]) {
   assert.match(button.insertedHtml, /data-statement-action-icon/);
   assert.match(button.insertedHtml, /x="3" y="4"/);
-  assert.equal(button.attributes.title, "Ir para o mês atual");
-  assert.equal(button.attributes["aria-label"], "Ir para o mês atual");
+  assert.equal(button.attributes.title, "Exibir o mês atual");
+  assert.equal(button.attributes["aria-label"], "Exibir o mês atual");
 }
 
 assert.equal(recurrenceIndicator.attributes.title, "Lançamento recorrente");
