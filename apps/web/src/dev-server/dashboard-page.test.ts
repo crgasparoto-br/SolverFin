@@ -64,6 +64,8 @@ describe("dev-server dashboard page", () => {
 
     const html = await renderDashboardPage("session-token");
 
+    assert.match(html, /Visão geral financeira/);
+    assert.doesNotMatch(html, /Demo seguro|Perfil pessoal demo/);
     assert.match(html, /Próximas ações/);
     assert.match(html, /2 lançamentos previstos no Extrato/);
     assert.match(html, /Próximo vencimento em 05\/07\/2026/);
@@ -112,6 +114,7 @@ describe("dev-server dashboard page", () => {
     const html = await renderDashboardPage("session-token");
 
     assert.match(html, /Nenhuma pendência agora\./);
+    assert.doesNotMatch(html, /Demo seguro|Perfil pessoal demo/);
     assert.doesNotMatch(html, /\/pagar-receber/);
 
     globalThis.fetch = originalFetch;
