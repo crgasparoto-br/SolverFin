@@ -142,9 +142,9 @@ function replaceMonthNavigation(
   const nextHref = buildMonthHref(url, cardId, nextMonth);
   const monthLabel = formatInvoiceMonth(month);
   const navigation = `<div class="month-nav">
-              <a class="icon-btn month-nav-link" href="${escapeHtml(previousHref)}" aria-label="Fatura anterior" title="Fatura anterior">${renderChevronIcon("left")}</a>
-              <span class="month-input-wrap"><input id="filter-invoice-month" type="month" name="month" value="${escapeHtml(month)}" data-invoice-month-input aria-label="Fatura ${escapeHtml(monthLabel)}" required /><button type="button" class="month-picker-button" data-open-month-picker aria-label="Abrir calendário da fatura" title="Abrir calendário">${renderCalendarIcon()}</button></span>
-              <a class="icon-btn month-nav-link" href="${escapeHtml(nextHref)}" aria-label="Próxima fatura" title="Próxima fatura">${renderChevronIcon("right")}</a>
+              <a class="icon-btn month-nav-link" href="${escapeHtml(previousHref)}" aria-label="Fatura anterior" title="Fatura anterior">&#8249;</a>
+              <input id="filter-invoice-month" type="month" name="month" value="${escapeHtml(month)}" data-invoice-month-input aria-label="Fatura ${escapeHtml(monthLabel)}" required />
+              <a class="icon-btn month-nav-link" href="${escapeHtml(nextHref)}" aria-label="Próxima fatura" title="Próxima fatura">&#8250;</a>
             </div>`;
 
   return html.replace(/<div class="month-nav">[\s\S]*?<\/div>/, navigation);
@@ -172,32 +172,20 @@ function buildMonthHref(url: URL, cardId: string | undefined, month: string): st
   return `/cartoes?${params.toString()}`;
 }
 
-function renderCalendarIcon(): string {
-  return `<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 2.8v3.4M14 2.8v3.4M3 8h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
-}
-
-function renderChevronIcon(direction: "left" | "right"): string {
-  const path = direction === "left" ? "M12.5 5 7.5 10l5 5" : "M7.5 5l5 5-5 5";
-  return `<svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="${path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-}
-
 function injectStyles(html: string): string {
   if (html.includes("data-invoice-month-navigation-styles")) return html;
   const styles = `
     <style data-invoice-month-navigation-styles>
       .card-filter .filter-form{grid-template-columns:minmax(12rem,1.2fr) minmax(13rem,1fr) auto}
       .card-filter .month-field{display:grid;gap:6px}
-      .card-filter .month-nav{background:var(--surface);border:1px solid var(--line);grid-template-columns:auto minmax(10rem,1fr) auto}
-      .card-filter .month-nav-link{align-items:center;display:inline-flex;justify-content:center;text-decoration:none}
-      .card-filter .month-input-wrap{align-items:center;display:grid;grid-template-columns:minmax(0,1fr) auto;position:relative}
-      .card-filter .month-nav input[data-invoice-month-input]{-webkit-appearance:none;appearance:none;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:6px;color:var(--text);color-scheme:light;cursor:pointer;font:inherit;font-weight:600;min-height:34px;min-width:0;padding:4px 8px;text-align:center;width:100%}
-      .card-filter .month-nav input[data-invoice-month-input]::-webkit-calendar-picker-indicator{display:none}
-      .card-filter .month-picker-button{align-items:center;background:transparent;border:0;color:#475569;display:inline-flex;height:30px;justify-content:center;margin-left:-34px;padding:0;position:relative;width:30px;z-index:1}
-      .card-filter .month-picker-button:hover,.card-filter .month-picker-button:focus-visible{background:#f1f5f9;border-radius:5px;color:#0f172a}
-      .card-filter .month-nav input[data-invoice-month-input]:hover{background:#f8fafc!important;border-color:#94a3b8!important}
-      .card-filter .month-nav input[data-invoice-month-input]:focus-visible{border-color:#64748b!important;outline:2px solid #cbd5e1;outline-offset:1px}
-      .card-filter .month-current-link{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--text);display:inline-flex;font-size:.8125rem;font-weight:600;justify-content:center;min-height:36px;padding:0 12px;text-decoration:none}
-      .card-filter .month-current-link:hover,.card-filter .month-current-link:focus-visible{background:#f1f5f9;border-color:#cbd5e1}
+      .card-filter .month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:4px;grid-template-columns:auto minmax(0,1fr) auto;padding:3px}
+      .card-filter .month-nav-link{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);display:inline-flex;justify-content:center;min-height:30px;min-width:30px;padding:0;text-decoration:none}
+      .card-filter .month-nav-link:hover,.card-filter .month-nav-link:focus-visible{background:var(--primary-soft)}
+      .card-filter .month-nav input[data-invoice-month-input]{background:transparent!important;border:0!important;border-radius:0;color:var(--text);font-size:.875rem;font-weight:400!important;min-height:30px;min-width:0;padding:0 2px!important;text-align:center;width:100%}
+      .card-filter .month-nav input[data-invoice-month-input]:focus{border-radius:4px;outline:2px solid var(--cyan)}
+      .card-filter .month-nav input[data-invoice-month-input]::-webkit-calendar-picker-indicator{cursor:pointer;display:block;opacity:1}
+      .card-filter .month-current-link{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);display:inline-flex;justify-content:center;min-height:36px;padding:0 12px;text-decoration:none}
+      .card-filter .month-current-link:hover,.card-filter .month-current-link:focus-visible{background:var(--primary-soft)}
       @media(max-width:760px){.card-filter .filter-form{grid-template-columns:1fr}}
     </style>`;
   return html.replace("</head>", `${styles}</head>`);
@@ -212,11 +200,6 @@ function injectController(html: string): string {
         const monthInput = form?.querySelector('[data-invoice-month-input]');
         const invoiceInput = form?.querySelector('[data-invoice-input]');
         if (!form || !(monthInput instanceof HTMLInputElement)) return;
-        form.querySelector('[data-open-month-picker]')?.addEventListener('click', () => {
-          monthInput.focus();
-          if (typeof monthInput.showPicker === 'function') monthInput.showPicker();
-          else monthInput.click();
-        });
         monthInput.addEventListener('change', () => {
           if (!/^\\d{4}-(0[1-9]|1[0-2])$/.test(monthInput.value)) return;
           if (invoiceInput instanceof HTMLInputElement) invoiceInput.disabled = true;

@@ -68,9 +68,11 @@ function assertMonthNavigation(
 ): void {
   const sortSuffix = sort ? `&amp;sort=${sort}` : "";
 
-  assert.match(html, /<input[^>]*type="month"[^>]*data-invoice-month-input/);
-  assert.match(html, /class="month-picker-button" data-open-month-picker/);
-  assert.match(html, /aria-label="Abrir calendário da fatura"/);
+  assert.match(
+    html,
+    /<div class="month-nav">[\s\S]*?<a class="icon-btn month-nav-link"[\s\S]*?&#8249;<\/a>[\s\S]*?<input[^>]*type="month"[^>]*data-invoice-month-input[\s\S]*?<a class="icon-btn month-nav-link"[\s\S]*?&#8250;<\/a>[\s\S]*?<\/div>/,
+  );
+  assert.doesNotMatch(html, /month-picker-button|data-open-month-picker|Abrir calendário da fatura/);
   assert.match(
     html,
     new RegExp(
@@ -90,17 +92,26 @@ function assertMonthNavigation(
       `class="ghost-btn month-current-link" href="/cartoes\\?cardId=card-1&amp;month=\\d{4}-\\d{2}${sortSuffix}" data-invoice-current role="button">Mês atual</a>`,
     ),
   );
-  assert.doesNotMatch(html, /data-invoice-step=/);
-  assert.doesNotMatch(html, /data-month-step=/);
-  assert.doesNotMatch(html, /querySelectorAll\('\[data-month-step\]'\)/);
+  assert.doesNotMatch(html, /data-invoice-step=|data-month-step=/);
   assert.match(html, /data-invoice-month-navigation-controller/);
-  assert.match(html, /querySelector\('\[data-open-month-picker\]'\)/);
-  assert.match(html, /typeof monthInput\.showPicker === 'function'/);
+  assert.doesNotMatch(html, /showPicker|querySelector\('\[data-open-month-picker\]'\)/);
   assert.match(html, /invoiceInput\.disabled = true/);
   assert.match(html, /form\.requestSubmit\(\)/);
-  assert.match(html, /-webkit-appearance:none/);
-  assert.match(html, /month-picker-button/);
-  assert.doesNotMatch(html, /month-nav input\[type="month"\]\{background:transparent/);
+
+  assert.match(
+    html,
+    /\.card-filter \.month-nav\{align-items:center;background:var\(--bg\);border:1px solid var\(--line\);border-radius:var\(--radius\);display:grid;gap:4px;grid-template-columns:auto minmax\(0,1fr\) auto;padding:3px\}/,
+  );
+  assert.match(
+    html,
+    /\.card-filter \.month-nav input\[data-invoice-month-input\]\{background:transparent!important;border:0!important;[^}]*font-size:\.875rem;[^}]*min-height:30px;/,
+  );
+  assert.match(html, /::-webkit-calendar-picker-indicator\{cursor:pointer;display:block;opacity:1\}/);
+  assert.match(
+    html,
+    /\.card-filter \.month-current-link\{[^}]*background:var\(--surface\);[^}]*border:1px solid var\(--line\);[^}]*color:var\(--primary\);/,
+  );
+  assert.doesNotMatch(html, /-webkit-appearance:none|calendar-picker-indicator\{display:none\}/);
   assert.doesNotMatch(html, /invoiceId=[^"&]+/);
 }
 
