@@ -16,78 +16,80 @@ function injectActiveFilter(html: string): string {
   if (html.includes("active-filter-switch")) return html;
 
   const activeFilterToggleHtml = `          <label class="active-filter-switch" data-active-filter aria-pressed="false">
-            <input type="checkbox" class="active-filter-input" data-active-filter-input />
-            <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
-            <span>Exibir apenas ativos</span>
-          </label>`;
+             <input type="checkbox" class="active-filter-input" data-active-filter-input />
+             <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+             <span>Exibir apenas ativos</span>
+           </label>`;
   const htmlWithoutStatusFilter = html.replace(
     `          <label>Status
-            <select data-master-status>
-              <option value="all">Todos</option>
-              <option value="active">Ativos</option>
-              <option value="inactive">Inativos</option>
-            </select>
-          </label>`,
+             <select data-master-status>
+               <option value="all">Todos</option>
+               <option value="active">Ativos</option>
+               <option value="inactive">Inativos</option>
+             </select>
+           </label>`,
     "",
   );
 
   return htmlWithoutStatusFilter.replace(
     `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>`,
     `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>
-${activeFilterToggleHtml}`,
+ ${activeFilterToggleHtml}`,
   );
 }
 
 function accountsCardsDirectEnhancementScript(): string {
   return `
-      <script data-accounts-cards-direct-enhancement>
-        (() => {
-          if (window.__solverFinAccountsCardsDirect === true) return;
-          window.__solverFinAccountsCardsDirect = true;
+       <script data-accounts-cards-direct-enhancement>
+         (() => {
+           if (window.__solverFinAccountsCardsDirect === true) return;
+           window.__solverFinAccountsCardsDirect = true;
 
-          const activeFilterStorageKey = "solverfin.accountsCards.activeOnly";
+           const activeFilterStorageKey = "solverfin.accountsCards.activeOnly";
 
-          function ensureStyles() {
-            if (document.getElementById("accounts-cards-direct-enhancement-style")) return;
-            const style = document.createElement("style");
-            style.id = "accounts-cards-direct-enhancement-style";
-            style.textContent = [
-              ".active-filter-switch { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 6px; color: var(--primary); cursor: pointer; display: inline-flex; font: inherit; font-size: 0.8125rem; font-weight: 600; gap: 8px; justify-content: center; line-height: 1.15; min-height: 34px; padding: 0 10px; text-align: left; user-select: none; width: fit-content; }",
-              ".active-filter-input { border: 0; height: 1px; margin: 0; opacity: 0; padding: 0; position: absolute; width: 1px; }",
-              ".active-filter-switch .toggle-track { align-items: center; background: #cbd5e1; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 20px; padding: 2px; width: 38px; }",
-              ".active-filter-switch .toggle-thumb { background: #fff; border-radius: 999px; box-shadow: 0 1px 3px rgba(15, 23, 42, .24); display: block; height: 16px; transform: translateX(0); transition: transform .18s ease; width: 16px; }",
-              ".active-filter-switch[aria-pressed=\\"true\\"] .toggle-track { background: var(--primary); }",
-              ".active-filter-switch[aria-pressed=\\"true\\"] .toggle-thumb { transform: translateX(18px); }",
-              "@media (max-width: 760px) { .active-filter-switch { width: 100%; } }",
-            ].join("");
-            document.head.appendChild(style);
-          }
+           function ensureStyles() {
+             if (document.getElementById("accounts-cards-direct-enhancement-style")) return;
+             const style = document.createElement("style");
+             style.id = "accounts-cards-direct-enhancement-style";
+             style.textContent = [
+               ".active-filter-switch { align-items: center; align-self: stretch; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 6px; color: var(--primary); cursor: pointer; display: inline-flex; font: inherit; font-size: 0.8125rem; font-weight: 600; gap: 8px; justify-content: center; line-height: 1.15; min-height: 34px; padding: 0 10px; text-align: left; user-select: none; width: fit-content; }",
+               ".active-filter-input { border: 0; height: 1px; margin: 0; opacity: 0; padding: 0; position: absolute; width: 1px; }",
+               ".active-filter-switch .toggle-track { align-items: center; background: #cbd5e1; border-radius: 999px; display: inline-flex; flex: 0 0 auto; height: 20px; padding: 2px; width: 38px; }",
+               ".active-filter-switch .toggle-thumb { background: #fff; border-radius: 999px; box-shadow: 0 1px 3px rgba(15, 23, 42, .24); display: block; height: 16px; transform: translateX(0); transition: transform .18s ease; width: 16px; }",
+               ".active-filter-switch[aria-pressed=\"true\"] .toggle-track { background: var(--primary); }",
+               ".active-filter-switch[aria-pressed=\"true\"] .toggle-thumb { transform: translateX(18px); }",
+               "button.tab-button:hover:not(:disabled), button.tab-button:focus-visible { background: #f1f7f9; border-color: #c8dde5; color: var(--primary); }",
+               "button.tab-button[aria-selected=\"true\"]:hover:not(:disabled), button.tab-button[aria-selected=\"true\"]:focus-visible { background: var(--surface); border-color: #bfd6de; color: var(--text); }",
+               "@media (max-width: 760px) { .active-filter-switch { width: 100%; } }",
+             ].join("");
+             document.head.appendChild(style);
+           }
 
-          function wireActiveFilter() {
-            const button = document.querySelector("[data-active-filter]");
-            const input = button ? button.querySelector("[data-active-filter-input]") : null;
-            if (!button || !input) return;
-            let activeOnly = false;
-            try { activeOnly = window.localStorage.getItem(activeFilterStorageKey) === "true"; } catch (_error) { activeOnly = false; }
-            input.checked = activeOnly;
-            button.setAttribute("aria-pressed", String(activeOnly));
-            input.dispatchEvent(new Event("change", { bubbles: true }));
-            input.addEventListener("change", () => {
-              button.setAttribute("aria-pressed", String(input.checked === true));
-              try { window.localStorage.setItem(activeFilterStorageKey, String(input.checked === true)); } catch (_error) {}
-            });
-          }
+           function wireActiveFilter() {
+             const button = document.querySelector("[data-active-filter]");
+             const input = button ? button.querySelector("[data-active-filter-input]") : null;
+             if (!button || !input) return;
+             let activeOnly = false;
+             try { activeOnly = window.localStorage.getItem(activeFilterStorageKey) === "true"; } catch (_error) { activeOnly = false; }
+             input.checked = activeOnly;
+             button.setAttribute("aria-pressed", String(activeOnly));
+             input.dispatchEvent(new Event("change", { bubbles: true }));
+             input.addEventListener("change", () => {
+               button.setAttribute("aria-pressed", String(input.checked === true));
+               try { window.localStorage.setItem(activeFilterStorageKey, String(input.checked === true)); } catch (_error) {}
+             });
+           }
 
-          function boot() {
-            ensureStyles();
-            wireActiveFilter();
-          }
+           function boot() {
+             ensureStyles();
+             wireActiveFilter();
+           }
 
-          if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", boot);
-          } else {
-            boot();
-          }
-        })();
-      </script>`;
+           if (document.readyState === "loading") {
+             document.addEventListener("DOMContentLoaded", boot);
+           } else {
+             boot();
+           }
+         })();
+       </script>`;
 }
