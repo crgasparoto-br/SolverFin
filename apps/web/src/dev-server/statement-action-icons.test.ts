@@ -16,8 +16,14 @@ const cardsMonthInput = fakeStyledNode();
 const recurrenceLabel = fakeLabel();
 const recurrenceSvg = fakeSvg();
 const recurrenceIndicator = fakeRecurrenceIndicator(recurrenceLabel, recurrenceSvg);
-const reconciledRow = fakeStatementRow({ status: "reconciled", effectiveOn: "2026-07-01" }, "R$ 10,00");
-const postedRow = fakeStatementRow({ status: "posted", effectiveOn: "2026-07-02" }, "R$ 5,00");
+const reconciledRow = fakeStatementRow(
+  { status: "reconciled", effectiveOn: "2026-07-01" },
+  "R$ 10,00",
+);
+const postedRow = fakeStatementRow(
+  { status: "posted", effectiveOn: "2026-07-02" },
+  "R$ 5,00",
+);
 const pendingRow = fakeStatementRow({ status: "suggested" }, "-R$ 15,00");
 const plannedRow = fakeStatementRow({ status: "planned" }, "R$ 20,00");
 const statementRows = [reconciledRow, postedRow, pendingRow, plannedRow];
@@ -53,11 +59,10 @@ const document = {
   },
 };
 
-assert.deepEqual(resolveStatementStatusPresentation({ status: "reconciled" }), {
-  label: "Conciliado",
-  tone: "ok",
-  icon: resolveStatementStatusPresentation({ status: "reconciled" }).icon,
-});
+const reconciledPresentation = resolveStatementStatusPresentation({ status: "reconciled" });
+assert.equal(reconciledPresentation.label, "Conciliado");
+assert.equal(reconciledPresentation.tone, "ok");
+assert.match(reconciledPresentation.icon, /<svg/);
 assert.equal(
   resolveStatementStatusPresentation({ status: "posted", effectiveOn: "2026-07-01" }).label,
   "Efetivado não conciliado",
@@ -279,7 +284,9 @@ interface FakeStatementRow {
   status: FakeStatusNode;
   transaction: FakeTransactionNode;
   balance: FakeBalanceNode;
-  querySelector(selector: string): FakeStatusNode | FakeTransactionNode | FakeBalanceNode | null;
+  querySelector(
+    selector: string,
+  ): FakeStatusNode | FakeTransactionNode | FakeBalanceNode | null;
 }
 
 function fakeStatementRow(
