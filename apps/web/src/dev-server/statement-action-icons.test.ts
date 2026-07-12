@@ -6,16 +6,22 @@ import { statementActionIconsController } from "./statement-action-icons.js";
 const transferButton = fakeButton("transfer");
 const expenseButton = fakeButton("expense");
 const incomeButton = fakeButton("income");
+const statementCurrentMonthButton = fakeButton();
+const cardsCurrentMonthButton = fakeButton();
 const recurrenceLabel = fakeLabel();
 const recurrenceSvg = fakeSvg();
 const recurrenceIndicator = fakeRecurrenceIndicator(recurrenceLabel, recurrenceSvg);
 const quickActionSelector =
   '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
+const currentMonthSelector = '[data-month-current], [data-invoice-current]';
 
 const document = {
   body: {},
   querySelectorAll: (selector: string) => {
     if (selector === quickActionSelector) return [transferButton, expenseButton, incomeButton];
+    if (selector === currentMonthSelector) {
+      return [statementCurrentMonthButton, cardsCurrentMonthButton];
+    }
     if (selector === ".recurrence-indicator") return [recurrenceIndicator];
     return [];
   },
@@ -30,6 +36,13 @@ assert.match(expenseButton.insertedHtml, /M12 5v14/);
 assert.equal(expenseButton.attributes.title, "Registrar nova despesa");
 assert.match(incomeButton.insertedHtml, /m5 12 7-7 7 7/);
 assert.equal(incomeButton.attributes.title, "Registrar nova receita");
+
+for (const button of [statementCurrentMonthButton, cardsCurrentMonthButton]) {
+  assert.match(button.insertedHtml, /data-statement-action-icon/);
+  assert.match(button.insertedHtml, /x="3" y="4"/);
+  assert.equal(button.attributes.title, "Ir para o mês atual");
+  assert.equal(button.attributes["aria-label"], "Ir para o mês atual");
+}
 
 assert.equal(recurrenceIndicator.attributes.title, "Lançamento recorrente");
 assert.equal(recurrenceIndicator.attributes["aria-label"], "Lançamento recorrente");
@@ -46,7 +59,7 @@ assert.equal(recurrenceSvg.style.width, "14px");
 assert.equal(recurrenceSvg.style.height, "14px");
 
 interface FakeButton {
-  dataset: { quickKind: string };
+  dataset: Record<string, string>;
   insertedHtml: string;
   attributes: Record<string, string>;
   querySelector(selector: string): object | null;
@@ -55,11 +68,11 @@ interface FakeButton {
   setAttribute(name: string, value: string): void;
 }
 
-function fakeButton(kind: string): FakeButton {
+function fakeButton(kind?: string): FakeButton {
   let insertedHtml = "";
   const attributes: Record<string, string> = {};
   return {
-    dataset: { quickKind: kind },
+    dataset: kind ? { quickKind: kind } : {},
     get insertedHtml() {
       return insertedHtml;
     },
