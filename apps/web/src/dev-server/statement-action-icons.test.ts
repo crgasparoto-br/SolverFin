@@ -20,15 +20,18 @@ const reconciledRow = fakeStatementRow(
   { status: "reconciled", effectiveOn: "2026-07-01" },
   "R$ 10,00",
 );
-const postedRow = fakeStatementRow({ status: "posted", effectiveOn: "2026-07-02" }, "R$ 5,00");
+const postedRow = fakeStatementRow(
+  { status: "posted", effectiveOn: "2026-07-02" },
+  "R$ 5,00",
+);
 const pendingRow = fakeStatementRow({ status: "suggested" }, "-R$ 15,00");
 const plannedRow = fakeStatementRow({ status: "planned" }, "R$ 20,00");
 const statementRows = [reconciledRow, postedRow, pendingRow, plannedRow];
 const injectedStyles: FakeStyleElement[] = [];
 const quickActionSelector =
-  ".statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]";
-const currentMonthSelector = "[data-month-current], [data-invoice-current]";
-const monthInputSelector = "#filter-month, [data-invoice-month-input]";
+  '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
+const currentMonthSelector = '[data-month-current], [data-invoice-current]';
+const monthInputSelector = '#filter-month, [data-invoice-month-input]';
 const statementRowSelector = ".statement-row.statement-body";
 
 const document = {
@@ -88,7 +91,7 @@ for (const button of [statementCurrentMonthButton, cardsCurrentMonthButton]) {
 
 assert.equal(statementMonthInput.style.fontWeight, "400");
 assert.equal(cardsMonthInput.style.fontWeight, "400");
-assert.equal(injectedStyles.length, 2);
+assert.equal(injectedStyles.length, 3);
 
 const monthTypographyStyle = injectedStyles.find(
   (style) => style.id === "solverfin-month-typography",
@@ -100,11 +103,18 @@ assert.match(monthTypographyStyle.textContent, /::-webkit-datetime-edit-month-fi
 assert.match(monthTypographyStyle.textContent, /::-webkit-datetime-edit-year-field/);
 assert.match(monthTypographyStyle.textContent, /font-weight: 400 !important/);
 
+const globalContentWidthStyle = injectedStyles.find(
+  (style) => style.id === "solverfin-global-content-width",
+);
+assert.ok(globalContentWidthStyle);
+assert.match(globalContentWidthStyle.textContent, /main\s*\{/);
+assert.match(globalContentWidthStyle.textContent, /max-width: 1800px !important/);
+
 const statementPresentationStyle = injectedStyles.find(
   (style) => style.id === "solverfin-statement-presentation",
 );
 assert.ok(statementPresentationStyle);
-assert.match(statementPresentationStyle.textContent, /max-width: 1800px !important/);
+assert.doesNotMatch(statementPresentationStyle.textContent, /main\s*\{/);
 assert.match(statementPresentationStyle.textContent, /minmax\(280px, 320px\)/);
 assert.match(statementPresentationStyle.textContent, /white-space: nowrap/);
 assert.match(statementPresentationStyle.textContent, /font-variant-numeric: tabular-nums/);
@@ -112,7 +122,7 @@ assert.match(statementPresentationStyle.textContent, /\.statement-status:hover::
 assert.match(statementPresentationStyle.textContent, /@media \(max-width: 1180px\)/);
 
 runInNewContext(controller, { document });
-assert.equal(injectedStyles.length, 2);
+assert.equal(injectedStyles.length, 3);
 
 assert.equal(recurrenceIndicator.attributes.title, "Lançamento recorrente");
 assert.equal(recurrenceIndicator.attributes["aria-label"], "Lançamento recorrente");
@@ -135,7 +145,11 @@ assertStatementStatus(plannedRow.status, "planned", "Previsto");
 assert.match(pendingRow.balance.className, /\bdebit\b/);
 assert.doesNotMatch(plannedRow.balance.className, /\bdebit\b/);
 
-function assertStatementStatus(status: FakeStatusNode, tone: string, label: string): void {
+function assertStatementStatus(
+  status: FakeStatusNode,
+  tone: string,
+  label: string,
+): void {
   assert.equal(status.className, `statement-status statement-status-${tone} col-status`);
   assert.match(status.innerHTML, /<svg/);
   assert.equal(status.attributes.role, "img");
@@ -236,7 +250,10 @@ interface FakeRecurrenceIndicator {
   setAttribute(name: string, value: string): void;
 }
 
-function fakeRecurrenceIndicator(label: FakeLabel, svg: FakeSvg): FakeRecurrenceIndicator {
+function fakeRecurrenceIndicator(
+  label: FakeLabel,
+  svg: FakeSvg,
+): FakeRecurrenceIndicator {
   const attributes: Record<string, string> = {};
   return {
     dataset: {},
@@ -274,7 +291,9 @@ interface FakeStatementRow {
   status: FakeStatusNode;
   transaction: FakeTransactionNode;
   balance: FakeBalanceNode;
-  querySelector(selector: string): FakeStatusNode | FakeTransactionNode | FakeBalanceNode | null;
+  querySelector(
+    selector: string,
+  ): FakeStatusNode | FakeTransactionNode | FakeBalanceNode | null;
 }
 
 function fakeStatementRow(
