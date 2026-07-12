@@ -4,7 +4,7 @@ export function enhanceAccountsCardsTabs(html: string): string {
   if (!html.includes('data-tab-panel="accounts"')) return html;
 
   let enhanced = keepCardInstrumentsInsideEditDialog(injectActiveFilter(html));
-  enhanced = injectNeutralAccountStyles(enhanced);
+  enhanced = injectNeutralStyles(enhanced);
 
   if (!enhanced.includes("data-accounts-cards-direct-enhancement")) {
     enhanced = enhanced.replace("</body>", `${accountsCardsDirectEnhancementScript()}</body>`);
@@ -39,11 +39,11 @@ ${activeFilterToggleHtml}`,
   );
 }
 
-function injectNeutralAccountStyles(html: string): string {
-  if (html.includes("data-accounts-cards-neutral-action-styles")) return html;
+function injectNeutralStyles(html: string): string {
+  if (html.includes("data-accounts-cards-neutral-styles")) return html;
 
   const styles = `
-      <style data-accounts-cards-neutral-action-styles>
+      <style data-accounts-cards-neutral-styles>
         .tab-list { background: #f8fafc; border-color: #e2e8f0; }
         button.tab-button { background: transparent; border: 1px solid transparent; color: #475569; }
         button.tab-button span { background: #f1f5f9; color: #64748b; }

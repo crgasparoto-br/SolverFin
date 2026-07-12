@@ -23,7 +23,7 @@ const html = `<!doctype html>
 describe("accounts and cards contrast enhancement", () => {
   it("injects neutral styles in the document head", () => {
     const enhanced = enhanceAccountsCardsTabs(html);
-    const styleIndex = enhanced.indexOf("data-accounts-cards-neutral-action-styles");
+    const styleIndex = enhanced.indexOf("data-accounts-cards-neutral-styles");
     const bodyIndex = enhanced.indexOf("<body>");
 
     assert.ok(styleIndex >= 0);
