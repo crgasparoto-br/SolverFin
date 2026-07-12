@@ -22,10 +22,9 @@ export async function renderDashboardPage(token: string): Promise<string> {
   return renderAuthenticatedPage(`
     <section class="dashboard-heading">
       <div>
-        <p class="eyebrow">Perfil pessoal demo</p>
+        <p class="eyebrow">Visão geral financeira</p>
         <h1>Resumo financeiro</h1>
       </div>
-      <span class="demo-pill">Demo seguro</span>
     </section>
     <section class="summary-grid" aria-label="Indicadores principais">
       ${renderMetricCard(
@@ -236,7 +235,6 @@ function dashboardStyles(): string {
     ${sharedShellStyles()}
     main { display: grid; gap: 16px; margin: 0 auto; max-width: 1440px; padding: 20px; width: 100%; }
     .dashboard-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
-    .demo-pill { background: var(--success-bg); border-radius: 999px; color: var(--success); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; white-space: nowrap; }
     .secondary-link { background: var(--surface); border: 1px solid var(--line); color: var(--primary); }
     .secondary-link:hover { background: var(--primary-soft); border-color: #c8dde5; }
     .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
