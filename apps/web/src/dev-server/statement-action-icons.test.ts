@@ -8,12 +8,15 @@ const expenseButton = fakeButton("expense");
 const incomeButton = fakeButton("income");
 const statementCurrentMonthButton = fakeButton();
 const cardsCurrentMonthButton = fakeButton();
+const statementMonthInput = fakeStyledNode();
+const cardsMonthInput = fakeStyledNode();
 const recurrenceLabel = fakeLabel();
 const recurrenceSvg = fakeSvg();
 const recurrenceIndicator = fakeRecurrenceIndicator(recurrenceLabel, recurrenceSvg);
 const quickActionSelector =
   '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
 const currentMonthSelector = '[data-month-current], [data-invoice-current]';
+const monthInputSelector = '#filter-month, [data-invoice-month-input]';
 
 const document = {
   body: {},
@@ -22,6 +25,7 @@ const document = {
     if (selector === currentMonthSelector) {
       return [statementCurrentMonthButton, cardsCurrentMonthButton];
     }
+    if (selector === monthInputSelector) return [statementMonthInput, cardsMonthInput];
     if (selector === ".recurrence-indicator") return [recurrenceIndicator];
     return [];
   },
@@ -45,6 +49,9 @@ for (const button of [statementCurrentMonthButton, cardsCurrentMonthButton]) {
   assert.equal(button.attributes.title, "Exibir o mês atual");
   assert.equal(button.attributes["aria-label"], "Exibir o mês atual");
 }
+
+assert.equal(statementMonthInput.style.fontWeight, "400");
+assert.equal(cardsMonthInput.style.fontWeight, "400");
 
 assert.equal(recurrenceIndicator.attributes.title, "Lançamento recorrente");
 assert.equal(recurrenceIndicator.attributes["aria-label"], "Lançamento recorrente");
@@ -92,6 +99,14 @@ function fakeButton(kind?: string): FakeButton {
       attributes[name] = value;
     },
   };
+}
+
+interface FakeStyledNode {
+  style: Record<string, string>;
+}
+
+function fakeStyledNode(): FakeStyledNode {
+  return { style: {} };
 }
 
 interface FakeLabel {
