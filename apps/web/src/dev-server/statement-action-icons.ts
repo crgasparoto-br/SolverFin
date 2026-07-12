@@ -1,5 +1,26 @@
 import { icon } from "./icons.js";
 
+const MONTH_TYPOGRAPHY_CSS = `
+  #filter-month,
+  [data-invoice-month-input],
+  .month-current,
+  #filter-month::-webkit-datetime-edit,
+  [data-invoice-month-input]::-webkit-datetime-edit,
+  #filter-month::-webkit-datetime-edit-fields-wrapper,
+  [data-invoice-month-input]::-webkit-datetime-edit-fields-wrapper,
+  #filter-month::-webkit-datetime-edit-month-field,
+  [data-invoice-month-input]::-webkit-datetime-edit-month-field,
+  #filter-month::-webkit-datetime-edit-year-field,
+  [data-invoice-month-input]::-webkit-datetime-edit-year-field,
+  #filter-month::-webkit-datetime-edit-text,
+  [data-invoice-month-input]::-webkit-datetime-edit-text {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+  }
+`;
+
 /**
  * Adds the missing visual affordances to the bank statement actions without
  * coupling the behavior to the statement renderer. It also reduces the
@@ -24,12 +45,29 @@ export function statementActionIconsController(): string {
       };
       const currentMonthIcon = ${JSON.stringify(icon("calendar", 14))};
       const currentMonthTooltip = "Exibir o mês atual";
+      const monthTypographyStyleId = "solverfin-month-typography";
+      const monthTypographyCss = ${JSON.stringify(MONTH_TYPOGRAPHY_CSS)};
 
       function markedIcon(svg) {
         return String(svg || "").replace(
           "<svg",
           '<svg data-statement-action-icon style="display:inline-block;flex-shrink:0;margin-right:5px;vertical-align:middle"',
         );
+      }
+
+      function ensureMonthTypographyStyle() {
+        if (!document.head || typeof document.createElement !== "function") return;
+        if (
+          typeof document.getElementById === "function" &&
+          document.getElementById(monthTypographyStyleId)
+        ) {
+          return;
+        }
+
+        const style = document.createElement("style");
+        style.id = monthTypographyStyleId;
+        style.textContent = monthTypographyCss;
+        document.head.appendChild(style);
       }
 
       function decorateQuickAction(button) {
@@ -108,6 +146,7 @@ export function statementActionIconsController(): string {
       }
 
       if (typeof document.querySelectorAll === "function") {
+        ensureMonthTypographyStyle();
         decorateStatement(document);
 
         if (typeof MutationObserver !== "undefined" && document.body) {
