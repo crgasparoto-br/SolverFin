@@ -6,6 +6,11 @@ interface InstrumentCreateDialog {
   formHtml: string;
 }
 
+interface CardInstrumentList {
+  cardId: string;
+  listHtml: string;
+}
+
 export async function renderAccountsCardsPage(token: string): Promise<string> {
   const html = await renderBaseAccountsCardsPage(token);
 
@@ -13,7 +18,10 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
 }
 
 export function keepCardInstrumentsInsideEditDialog(html: string): string {
+  if (html.includes("data-card-instruments-dialog-list")) return html;
+
   const createDialogs = collectCreateInstrumentDialogs(html);
+  const instrumentLists = collectCardInstrumentLists(html);
   let nextHtml = html;
 
   createDialogs.forEach((dialog) => {
@@ -24,21 +32,27 @@ export function keepCardInstrumentsInsideEditDialog(html: string): string {
     "Cadastre o cartão agrupador e acompanhe os instrumentos internos usados nas compras.",
     "Cadastre o cartão agrupador e gerencie seus instrumentos pelo pop-up de edição.",
   );
+  nextHtml = removeInlineInstrumentSections(nextHtml);
   nextHtml = removeNestedDivByClass(nextHtml, "instrument-list");
-  nextHtml = nextHtml.replace(/\n\s*<p class="instrument-warning"[\s\S]*?<\/p>/g, "");
+  nextHtml = nextHtml.replace(/\s*<p class="instrument-warning"[\s\S]*?<\/p>/g, "");
   nextHtml = removeStandaloneNewInstrumentButtons(nextHtml);
-  nextHtml = removeInstrumentEditDialogs(nextHtml);
+
+  instrumentLists.forEach((instrumentList) => {
+    nextHtml = insertDialogInstrumentList(nextHtml, instrumentList);
+  });
 
   createDialogs.forEach((dialog) => {
     nextHtml = insertInlineCreateInstrumentForm(nextHtml, dialog);
   });
+
+  nextHtml = installDialogInstrumentListStyles(nextHtml);
 
   return installInlineCreateInstrumentScript(nextHtml);
 }
 
 function collectCreateInstrumentDialogs(html: string): InstrumentCreateDialog[] {
   const dialogPattern =
-    /\n\s*<dialog id="new-card-instrument-dialog-([^"]+)" class="master-dialog" aria-labelledby="[^"]+">[\s\S]*?<\/dialog>/g;
+    /\s*<dialog id="new-card-instrument-dialog-([^"]+)" class="master-dialog" aria-labelledby="[^"]+">[\s\S]*?<\/dialog>/g;
   const createDialogs: InstrumentCreateDialog[] = [];
 
   for (const match of html.matchAll(dialogPattern)) {
@@ -59,18 +73,48 @@ function collectCreateInstrumentDialogs(html: string): InstrumentCreateDialog[] 
   return createDialogs;
 }
 
+function collectCardInstrumentLists(html: string): CardInstrumentList[] {
+  const cardArticlePattern =
+    /<article class="master-item card-account-item"[\s\S]*?<\/article>/g;
+  const instrumentLists: CardInstrumentList[] = [];
+
+  for (const match of html.matchAll(cardArticlePattern)) {
+    const articleHtml = match[0];
+    const cardId = articleHtml.match(/<dialog id="edit-card-dialog-([^"]+)"/)?.[1];
+    const listHtml = extractNestedDivByClass(articleHtml, "instrument-list");
+
+    if (!cardId || !listHtml) continue;
+    instrumentLists.push({ cardId, listHtml });
+  }
+
+  return instrumentLists;
+}
+
 function removeStandaloneNewInstrumentButtons(html: string): string {
   return html.replace(
-    /\n\s*<button type="button" class="icon-button" data-open-dialog="new-card-instrument-dialog-[^"]+" aria-label="Adicionar instrumento em [^"]+"(?: disabled)?>[\s\S]*?<\/button>/g,
+    /\s*<button type="button" class="icon-button" data-open-dialog="new-card-instrument-dialog-[^"]+" aria-label="Adicionar instrumento em [^"]+"(?: disabled)?>[\s\S]*?<\/button>/g,
     "",
   );
 }
 
-function removeInstrumentEditDialogs(html: string): string {
+function removeInlineInstrumentSections(html: string): string {
   return html.replace(
-    /\n\s*<dialog id="edit-card-instrument-dialog-[^"]+" class="master-dialog" aria-labelledby="[^"]+">[\s\S]*?<\/dialog>/g,
+    /\s*<section class="dialog-subsection" aria-label="Instrumentos de [^"]+">[\s\S]*?<\/section>/g,
     "",
   );
+}
+
+function extractNestedDivByClass(html: string, className: string): string | undefined {
+  const start = html.indexOf(`<div class="${className}`);
+  if (start === -1) return undefined;
+
+  const openTagEnd = html.indexOf(">", start);
+  if (openTagEnd === -1) return undefined;
+
+  const end = findClosingDivEnd(html, openTagEnd + 1);
+  if (end === -1) return undefined;
+
+  return html.slice(start, end);
 }
 
 function removeNestedDivByClass(html: string, className: string): string {
@@ -118,6 +162,33 @@ function findClosingDivEnd(html: string, startIndex: number): number {
   return -1;
 }
 
+function insertDialogInstrumentList(html: string, instrumentList: CardInstrumentList): string {
+  const editDialogNeedle = `<dialog id="edit-card-dialog-${instrumentList.cardId}"`;
+  const dialogStart = html.indexOf(editDialogNeedle);
+  if (dialogStart === -1) return html;
+
+  const dialogEnd = html.indexOf("</dialog>", dialogStart);
+  if (dialogEnd === -1) return html;
+
+  const listSection = renderDialogInstrumentListSection(instrumentList);
+
+  return `${html.slice(0, dialogEnd)}${listSection}${html.slice(dialogEnd)}`;
+}
+
+function renderDialogInstrumentListSection(instrumentList: CardInstrumentList): string {
+  return `
+      <section class="dialog-subsection dialog-instrument-list" aria-label="Instrumentos cadastrados no cartão">
+        <div class="dialog-subsection-heading">
+          <div>
+            <p class="eyebrow">Instrumentos do cartão</p>
+            <h3>Lista de instrumentos</h3>
+          </div>
+        </div>
+        ${instrumentList.listHtml}
+      </section>
+`;
+}
+
 function insertInlineCreateInstrumentForm(html: string, dialog: InstrumentCreateDialog): string {
   const editDialogNeedle = `<dialog id="edit-card-dialog-${dialog.cardId}"`;
   const dialogStart = html.indexOf(editDialogNeedle);
@@ -150,6 +221,29 @@ function renderInlineCreateInstrumentSection(dialog: InstrumentCreateDialog): st
         ${formHtml}
       </section>
 `;
+}
+
+function installDialogInstrumentListStyles(html: string): string {
+  const styles = `
+    <style data-card-instruments-dialog-list>
+      .dialog-instrument-list .instrument-list { margin-top: 0; max-height: min(38vh, 340px); overflow: auto; }
+      .dialog-instrument-list .instrument-item { background: var(--surface); padding: 8px 10px; }
+      .dialog-instrument-list .instrument-side { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+      .dialog-instrument-list .instrument-tags { justify-content: flex-end; }
+      .dialog-instrument-list .instrument-actions { flex: 0 0 auto; margin-left: auto; }
+      .dialog-instrument-list .instrument-actions .icon-button { background: #fff; border-color: #e2e8f0; color: #64748b; }
+      .dialog-instrument-list .instrument-actions .icon-button:hover:not(:disabled), .dialog-instrument-list .instrument-actions .icon-button:focus-visible { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }
+      .dialog-instrument-list .instrument-actions .danger-icon-button:hover:not(:disabled), .dialog-instrument-list .instrument-actions .danger-icon-button:focus-visible { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
+      @media (max-width: 760px) {
+        .dialog-instrument-list .instrument-side { align-items: flex-start; justify-content: flex-start; }
+        .dialog-instrument-list .instrument-tags { justify-content: flex-start; }
+        .dialog-instrument-list .instrument-actions { margin-left: 0; }
+      }
+    </style>`;
+
+  if (html.includes("</head>")) return html.replace("</head>", `${styles}</head>`);
+
+  return `${styles}${html}`;
 }
 
 function installInlineCreateInstrumentScript(html: string): string {
