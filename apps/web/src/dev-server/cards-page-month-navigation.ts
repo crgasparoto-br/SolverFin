@@ -47,9 +47,8 @@ export async function renderCardsPageWithMonthNavigation(
   const selectedMonth =
     requestedMonth ?? monthFromInvoiceOptions(html, selectedInvoiceId) ?? currentMonth();
 
-  html = replaceLegacyStepAttributes(html);
-  html = upsertInvoiceMonthInput(html, selectedMonth);
-  html = upsertCurrentMonthButton(html);
+  html = replaceMonthNavigation(html, url, selectedCardId, selectedMonth);
+  html = upsertCurrentMonthLink(html, url, selectedCardId);
   html = injectStyles(html);
   html = injectController(html);
 
@@ -131,26 +130,55 @@ function monthFromPortugueseLabel(label: string | undefined): string | undefined
   return index < 0 ? undefined : `${match[2]}-${String(index + 1).padStart(2, "0")}`;
 }
 
-function replaceLegacyStepAttributes(html: string): string {
-  return html.replace(/data-invoice-step=/g, "data-month-step=");
+function replaceMonthNavigation(
+  html: string,
+  url: URL,
+  cardId: string | undefined,
+  month: string,
+): string {
+  const previousMonth = shiftInvoiceMonth(month, -1);
+  const nextMonth = shiftInvoiceMonth(month, 1);
+  const previousHref = buildMonthHref(url, cardId, previousMonth);
+  const nextHref = buildMonthHref(url, cardId, nextMonth);
+  const monthLabel = formatInvoiceMonth(month);
+  const navigation = `<div class="month-nav">
+              <a class="icon-btn month-nav-link" href="${escapeHtml(previousHref)}" aria-label="Fatura anterior" title="Fatura anterior">${renderChevronIcon("left")}</a>
+              <span class="month-input-wrap"><input id="filter-invoice-month" type="month" name="month" value="${escapeHtml(month)}" data-invoice-month-input aria-label="Fatura ${escapeHtml(monthLabel)}" required /><button type="button" class="month-picker-button" data-open-month-picker aria-label="Abrir calendário da fatura" title="Abrir calendário">${renderCalendarIcon()}</button></span>
+              <a class="icon-btn month-nav-link" href="${escapeHtml(nextHref)}" aria-label="Próxima fatura" title="Próxima fatura">${renderChevronIcon("right")}</a>
+            </div>`;
+
+  return html.replace(/<div class="month-nav">[\s\S]*?<\/div>/, navigation);
 }
 
-function upsertInvoiceMonthInput(html: string, month: string): string {
-  if (html.includes("data-invoice-month-input")) {
-    return replaceInputValue(html, "data-invoice-month-input", month);
-  }
-  const input = `<input id="filter-invoice-month" type="month" name="month" value="${escapeHtml(month)}" data-invoice-month-input aria-label="Fatura ${escapeHtml(formatInvoiceMonth(month))}" required />`;
-  const marker = /<span class="month-current" data-invoice-period-text>[\s\S]*?<\/span>/;
-  return marker.test(html) ? html.replace(marker, input) : html;
-}
-
-function upsertCurrentMonthButton(html: string): string {
-  if (html.includes("data-invoice-current")) return html;
+function upsertCurrentMonthLink(html: string, url: URL, cardId: string | undefined): string {
+  let nextHtml = html
+    .replace(/\s*<button\b[^>]*data-invoice-current[^>]*>[\s\S]*?<\/button>/g, "")
+    .replace(/\s*<a\b[^>]*data-invoice-current[^>]*>[\s\S]*?<\/a>/g, "");
   const marker = '<input type="hidden" name="invoiceId"';
-  const index = html.indexOf(marker);
-  if (index < 0) return html;
-  const button = '          <button type="button" class="ghost-btn" data-invoice-current>Mês atual</button>\n';
-  return html.slice(0, index) + button + html.slice(index);
+  const index = nextHtml.indexOf(marker);
+  if (index < 0) return nextHtml;
+  const href = buildMonthHref(url, cardId, currentMonth());
+  const link = `          <a class="ghost-btn month-current-link" href="${escapeHtml(href)}" data-invoice-current role="button">Mês atual</a>\n`;
+  nextHtml = nextHtml.slice(0, index) + link + nextHtml.slice(index);
+  return nextHtml;
+}
+
+function buildMonthHref(url: URL, cardId: string | undefined, month: string): string {
+  const params = new URLSearchParams(url.searchParams);
+  params.delete("invoiceId");
+  if (cardId) params.set("cardId", cardId);
+  else params.delete("cardId");
+  params.set("month", month);
+  return `/cartoes?${params.toString()}`;
+}
+
+function renderCalendarIcon(): string {
+  return `<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 2.8v3.4M14 2.8v3.4M3 8h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+}
+
+function renderChevronIcon(direction: "left" | "right"): string {
+  const path = direction === "left" ? "M12.5 5 7.5 10l5 5" : "M7.5 5l5 5-5 5";
+  return `<svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="${path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 function injectStyles(html: string): string {
@@ -159,13 +187,17 @@ function injectStyles(html: string): string {
     <style data-invoice-month-navigation-styles>
       .card-filter .filter-form{grid-template-columns:minmax(12rem,1.2fr) minmax(13rem,1fr) auto}
       .card-filter .month-field{display:grid;gap:6px}
-      .card-filter .month-nav{background:var(--surface);border:1px solid var(--line)}
-      .card-filter .month-nav input[data-invoice-month-input]{appearance:auto;background:var(--surface)!important;border:1px solid transparent!important;color:var(--text);cursor:pointer;font:inherit;min-height:34px;padding:4px 8px;text-align:center}
-      .card-filter .month-nav input[data-invoice-month-input]:hover{background:#f8fafc!important;border-color:#e2e8f0!important}
-      .card-filter .month-nav input[data-invoice-month-input]:focus-visible{border-color:#94a3b8!important;outline:2px solid #cbd5e1;outline-offset:1px}
-      .card-filter .month-nav input[data-invoice-month-input]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:1}
-      .card-filter button.ghost-btn[data-invoice-current]{background:var(--surface);border:1px solid var(--line);color:var(--text)}
-      .card-filter button.ghost-btn[data-invoice-current]:hover{background:#f1f5f9}
+      .card-filter .month-nav{background:var(--surface);border:1px solid var(--line);grid-template-columns:auto minmax(10rem,1fr) auto}
+      .card-filter .month-nav-link{align-items:center;display:inline-flex;justify-content:center;text-decoration:none}
+      .card-filter .month-input-wrap{align-items:center;display:grid;grid-template-columns:minmax(0,1fr) auto;position:relative}
+      .card-filter .month-nav input[data-invoice-month-input]{-webkit-appearance:none;appearance:none;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:6px;color:var(--text);color-scheme:light;cursor:pointer;font:inherit;font-weight:600;min-height:34px;min-width:0;padding:4px 8px;text-align:center;width:100%}
+      .card-filter .month-nav input[data-invoice-month-input]::-webkit-calendar-picker-indicator{display:none}
+      .card-filter .month-picker-button{align-items:center;background:transparent;border:0;color:#475569;display:inline-flex;height:30px;justify-content:center;margin-left:-34px;padding:0;position:relative;width:30px;z-index:1}
+      .card-filter .month-picker-button:hover,.card-filter .month-picker-button:focus-visible{background:#f1f5f9;border-radius:5px;color:#0f172a}
+      .card-filter .month-nav input[data-invoice-month-input]:hover{background:#f8fafc!important;border-color:#94a3b8!important}
+      .card-filter .month-nav input[data-invoice-month-input]:focus-visible{border-color:#64748b!important;outline:2px solid #cbd5e1;outline-offset:1px}
+      .card-filter .month-current-link{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--text);display:inline-flex;font-size:.8125rem;font-weight:600;justify-content:center;min-height:36px;padding:0 12px;text-decoration:none}
+      .card-filter .month-current-link:hover,.card-filter .month-current-link:focus-visible{background:#f1f5f9;border-color:#cbd5e1}
       @media(max-width:760px){.card-filter .filter-form{grid-template-columns:1fr}}
     </style>`;
   return html.replace("</head>", `${styles}</head>`);
@@ -176,18 +208,20 @@ function injectController(html: string): string {
   const script = `
     <script data-invoice-month-navigation-controller>
       (() => {
-        const form=document.querySelector('form.filter-form[action="/cartoes"]');
-        const monthInput=form?.querySelector('[data-invoice-month-input]');
-        const invoiceInput=form?.querySelector('[data-invoice-input]');
-        if(!form||!(monthInput instanceof HTMLInputElement))return;
-        const currentMonth=()=>{const now=new Date();return String(now.getFullYear())+'-'+String(now.getMonth()+1).padStart(2,'0')};
-        const normalize=(value)=>/^\\d{4}-(0[1-9]|1[0-2])$/.test(value)?value:currentMonth();
-        const shift=(value,delta)=>{const month=normalize(value);const date=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1+delta,1);return String(date.getFullYear())+'-'+String(date.getMonth()+1).padStart(2,'0')};
-        const submit=(month)=>{monthInput.value=month;if(invoiceInput instanceof HTMLInputElement)invoiceInput.value='';form.requestSubmit()};
-        form.querySelectorAll('[data-month-step]').forEach((button)=>button.addEventListener('click',(event)=>{event.preventDefault();submit(shift(monthInput.value,Number(button.dataset.monthStep||0))) }));
-        form.querySelector('[data-invoice-current]')?.addEventListener('click',(event)=>{event.preventDefault();submit(currentMonth())});
-        monthInput.addEventListener('change',()=>submit(normalize(monthInput.value)));
-        form.addEventListener('change',(event)=>{const target=event.target;if(target instanceof HTMLInputElement&&target.name==='cardId'&&invoiceInput instanceof HTMLInputElement)invoiceInput.value=''});
+        const form = document.querySelector('form.filter-form[action="/cartoes"]');
+        const monthInput = form?.querySelector('[data-invoice-month-input]');
+        const invoiceInput = form?.querySelector('[data-invoice-input]');
+        if (!form || !(monthInput instanceof HTMLInputElement)) return;
+        form.querySelector('[data-open-month-picker]')?.addEventListener('click', () => {
+          monthInput.focus();
+          if (typeof monthInput.showPicker === 'function') monthInput.showPicker();
+          else monthInput.click();
+        });
+        monthInput.addEventListener('change', () => {
+          if (!/^\\d{4}-(0[1-9]|1[0-2])$/.test(monthInput.value)) return;
+          if (invoiceInput instanceof HTMLInputElement) invoiceInput.disabled = true;
+          form.requestSubmit();
+        });
       })();
     </script>`;
   return html.replace("</body>", `${script}</body>`);
