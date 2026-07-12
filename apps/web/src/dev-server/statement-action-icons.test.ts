@@ -13,6 +13,7 @@ const cardsMonthInput = fakeStyledNode();
 const recurrenceLabel = fakeLabel();
 const recurrenceSvg = fakeSvg();
 const recurrenceIndicator = fakeRecurrenceIndicator(recurrenceLabel, recurrenceSvg);
+const injectedStyles: FakeStyleElement[] = [];
 const quickActionSelector =
   '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
 const currentMonthSelector = '[data-month-current], [data-invoice-current]';
@@ -20,6 +21,17 @@ const monthInputSelector = '#filter-month, [data-invoice-month-input]';
 
 const document = {
   body: {},
+  head: {
+    appendChild: (node: FakeStyleElement) => {
+      injectedStyles.push(node);
+    },
+  },
+  createElement: (tagName: string): FakeStyleElement => {
+    assert.equal(tagName, "style");
+    return { id: "", textContent: "" };
+  },
+  getElementById: (id: string): FakeStyleElement | null =>
+    injectedStyles.find((style) => style.id === id) ?? null,
   querySelectorAll: (selector: string) => {
     if (selector === quickActionSelector) return [transferButton, expenseButton, incomeButton];
     if (selector === currentMonthSelector) {
@@ -52,6 +64,16 @@ for (const button of [statementCurrentMonthButton, cardsCurrentMonthButton]) {
 
 assert.equal(statementMonthInput.style.fontWeight, "400");
 assert.equal(cardsMonthInput.style.fontWeight, "400");
+assert.equal(injectedStyles.length, 1);
+assert.equal(injectedStyles[0]?.id, "solverfin-month-typography");
+assert.match(injectedStyles[0]?.textContent ?? "", /\.month-current/);
+assert.match(injectedStyles[0]?.textContent ?? "", /::-webkit-datetime-edit/);
+assert.match(injectedStyles[0]?.textContent ?? "", /::-webkit-datetime-edit-month-field/);
+assert.match(injectedStyles[0]?.textContent ?? "", /::-webkit-datetime-edit-year-field/);
+assert.match(injectedStyles[0]?.textContent ?? "", /font-weight: 400 !important/);
+
+runInNewContext(controller, { document });
+assert.equal(injectedStyles.length, 1);
 
 assert.equal(recurrenceIndicator.attributes.title, "Lançamento recorrente");
 assert.equal(recurrenceIndicator.attributes["aria-label"], "Lançamento recorrente");
@@ -107,6 +129,11 @@ interface FakeStyledNode {
 
 function fakeStyledNode(): FakeStyledNode {
   return { style: {} };
+}
+
+interface FakeStyleElement {
+  id: string;
+  textContent: string;
 }
 
 interface FakeLabel {
