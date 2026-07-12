@@ -58,7 +58,7 @@ export function renderAuthenticatedShell(
         <header class="topbar">
           <div>
             <strong>${escapeHtml(input.currentLabel)}</strong>
-            <span>Usuário Demo SolverFin</span>
+            <span data-current-user-name aria-live="polite">Usuário</span>
           </div>
           <button type="button" data-logout title="Encerrar sessão">
             ${icon("log-out", 13)} Sair
@@ -69,7 +69,7 @@ export function renderAuthenticatedShell(
     </div>
     ${logoutScript()}
     ${navigationScript()}
-    ${masterNavigationScript()}
+    ${currentUserScript()}
     ${cardPurchaseEditRouteScript()}
     ${recurringCardScopeControllerScript()}
   `;
@@ -185,19 +185,25 @@ function navigationScript(): string {
   `;
 }
 
-function masterNavigationScript(): string {
+function currentUserScript(): string {
   return `
     <script>
       (async () => {
+        const userName = document.querySelector("[data-current-user-name]");
         const nav = document.querySelector('nav[aria-label="Menu principal"]');
-        if (!nav || nav.querySelector('a[href="/admin/instituicoes"]')) return;
 
         try {
           const response = await fetch("/api/me");
           if (!response.ok) return;
 
           const body = await response.json();
-          if (!body.user || body.user.isMaster !== true) return;
+          if (!body.user) return;
+
+          const displayName = typeof body.user.displayName === "string" ? body.user.displayName.trim() : "";
+          const email = typeof body.user.email === "string" ? body.user.email.trim() : "";
+          if (userName) userName.textContent = displayName || email || "Usuário";
+
+          if (!nav || body.user.isMaster !== true || nav.querySelector('a[href="/admin/instituicoes"]')) return;
 
           const link = document.createElement("a");
           link.href = "/admin/instituicoes";
@@ -217,7 +223,7 @@ function masterNavigationScript(): string {
             toggle.setAttribute("aria-controls", Array.from(controls).join(" "));
           }
         } catch {
-          // Keep regular navigation usable if the profile endpoint is unavailable.
+          // Keep the authenticated shell usable if the profile endpoint is unavailable.
         }
       })();
     </script>
