@@ -21,7 +21,7 @@ export function statementActionIconsController(): string {
         income: "Registrar nova receita",
       };
       const currentMonthIcon = ${JSON.stringify(icon("calendar", 14))};
-      const currentMonthTooltip = "Ir para o mês atual";
+      const currentMonthTooltip = "Exibir o mês atual";
 
       function markedIcon(svg) {
         return String(svg || "").replace(
