@@ -34,6 +34,11 @@ describe("authenticated SSR shell", () => {
 
     assert.match(html, /<title>Extrato da conta - SolverFin<\/title>/);
     assert.match(html, /<strong>Extrato da conta<\/strong>/);
+    assert.match(html, /<span data-current-user-name aria-live="polite">Usuário<\/span>/);
+    assert.doesNotMatch(html, /Usuário Demo SolverFin/);
+    assert.match(html, /const displayName = typeof body\.user\.displayName/);
+    assert.match(html, /const email = typeof body\.user\.email/);
+    assert.match(html, /userName\.textContent = displayName \|\| email \|\| "Usuário"/);
     assert.match(html, /<style>\.test-marker \{ color: #0f3d4c; \}<\/style>/);
     assert.match(html, /<main><section>Conteúdo da página<\/section><\/main>/);
     assert.match(
@@ -129,7 +134,7 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /aria-expanded="true"[^>]*>Menos rotas<\/button>/);
   });
 
-  it("can add the admin institutions route when the current user is master", () => {
+  it("loads the current user and can add the admin institutions route when the user is master", () => {
     const html = renderAuthenticatedShellDocument({
       activePathname: "/dashboard",
       content: "<section>Conteúdo da página</section>",
