@@ -52,6 +52,7 @@ export async function renderCardsPageWithMonthNavigation(
 
   html = upsertInvoiceMonthInput(html, selectedMonth);
   html = upsertCurrentMonthButton(html);
+  html = injectInvoiceMonthNavigationStyles(html);
   html = injectInvoiceMonthNavigationScript(html);
 
   if (requestedMonth && selectedCardId && !invoiceExistsForMonth) {
@@ -163,7 +164,7 @@ function upsertInvoiceMonthInput(html: string, month: string): string {
 }
 
 function upsertCurrentMonthButton(html: string): string {
-  if (html.includes("data-invoice-current")) return html;
+  if (/<button\b[^>]*\bdata-invoice-current\b/i.test(html)) return html;
 
   const invoiceInputMarker = '<input type="hidden" name="invoiceId"';
   const invoiceInputIndex = html.indexOf(invoiceInputMarker);
@@ -171,6 +172,50 @@ function upsertCurrentMonthButton(html: string): string {
 
   const button = '          <button type="button" class="ghost-btn" data-invoice-current>Mês atual</button>\n';
   return html.slice(0, invoiceInputIndex) + button + html.slice(invoiceInputIndex);
+}
+
+function injectInvoiceMonthNavigationStyles(html: string): string {
+  const marker = "data-invoice-month-navigation-styles";
+  if (html.includes(marker)) return html;
+
+  const styles = `
+    <style ${marker}>
+      .card-filter .filter-form {
+        grid-template-columns: minmax(12rem, 1.2fr) minmax(13rem, 1fr) auto;
+      }
+      .card-filter .month-field {
+        display: grid;
+        gap: 6px;
+      }
+      .card-filter .month-nav input[data-invoice-month-input] {
+        background: transparent;
+        border: 0;
+        font-size: 0.875rem;
+        min-height: 30px;
+        text-align: center;
+      }
+      .card-filter .month-nav input[data-invoice-month-input]:focus {
+        border-radius: 4px;
+        outline: 2px solid var(--cyan);
+      }
+      .card-filter button.ghost-btn[data-invoice-current] {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        color: var(--primary);
+      }
+      .card-filter button.ghost-btn[data-invoice-current]:hover {
+        background: var(--primary-soft);
+      }
+      @media (max-width: 760px) {
+        .card-filter .filter-form {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  `;
+
+  if (html.includes("</head>")) return html.replace("</head>", `${styles}</head>`);
+  return html.replace("</body>", `${styles}</body>`);
 }
 
 function replaceInputValue(html: string, marker: string, value: string): string {

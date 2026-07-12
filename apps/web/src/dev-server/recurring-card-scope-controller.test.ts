@@ -9,6 +9,7 @@ void main().catch((error: unknown) => {
 });
 
 async function main(): Promise<void> {
+  assertPopupIconEnhancer();
   await assertScopeRequest("card", "current", {
     expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1/current-only",
   });
@@ -23,6 +24,19 @@ async function main(): Promise<void> {
     expectedPath: "/api/transactions/transaction-1",
     expectedApplyToFuture: true,
   });
+}
+
+function assertPopupIconEnhancer(): void {
+  const script = recurringCardScopeControllerScript();
+
+  assert.match(script, /dialog button, \[role="dialog"\] button, \.category-modal button/);
+  assert.match(script, /data-close-category-modal/);
+  assert.match(script, /data-recurrence-scope-cancel/);
+  assert.match(script, /formMethod === "dialog"/);
+  assert.match(script, /button\.querySelector\("svg"\)/);
+  assert.match(script, /MutationObserver/);
+  assert.match(script, /popupSaveIcon/);
+  assert.match(script, /popupConfirmIcon/);
 }
 
 async function assertScopeRequest(
@@ -113,6 +127,8 @@ async function assertScopeRequest(
 
   assert.equal(currentButton.textContent, "Alterar somente este lançamento");
   assert.equal(futureButton.textContent, "Alterar este lançamento e os próximos");
+  assert.match(currentButton.innerHTML, /<svg/);
+  assert.match(futureButton.innerHTML, /<svg/);
   assert.equal(currentButton.dataset.explicitEditScope, "current_only");
   assert.equal(futureButton.dataset.explicitEditScope, "current_and_future");
   assert.ok(clickListener);
@@ -142,14 +158,23 @@ async function assertScopeRequest(
 interface FakeButton {
   dataset: Record<string, string>;
   disabled: boolean;
+  innerHTML: string;
   textContent: string;
   closest(selector: string): FakeButton | null;
 }
 
 function fakeButton(): FakeButton {
+  let html = "";
   const button: FakeButton = {
     dataset: {},
     disabled: false,
+    get innerHTML() {
+      return html;
+    },
+    set innerHTML(value: string) {
+      html = value;
+      this.textContent = value.replace(/<[^>]+>/g, "").trim();
+    },
     textContent: "",
     closest: () => null,
   };

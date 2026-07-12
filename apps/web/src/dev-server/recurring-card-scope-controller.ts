@@ -1,6 +1,11 @@
+import { popupActionIconsController } from "./popup-action-icons.js";
+import { statementActionIconsController } from "./statement-action-icons.js";
+
 export function recurringCardScopeControllerScript(): string {
   return `
     <script>
+      ${popupActionIconsController()}
+      ${statementActionIconsController()}
       (function () {
         const modal = document.querySelector("[data-recurrence-scope-modal]");
         if (!modal) return;
