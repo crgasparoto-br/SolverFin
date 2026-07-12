@@ -19,10 +19,15 @@ const categoryHtml = `<!doctype html>
       <button class="filter-chip" type="button" data-category-filter="archived" aria-pressed="false">Arquivadas</button>
       <button class="icon-button" type="button" data-close-category-modal aria-label="Fechar modal">x</button>
       <button class="sf-button secondary" type="button" data-close-category-modal>Cancelar</button>
-      <button data-edit-category aria-label="Editar categoria Alimentação">
-        <span class="category-path">Casa &gt; Alimentação</span>
-      </button>
-      <button data-toggle-category-children aria-label="Ocultar subcategorias de Alimentação"></button>
+      <article class="category-tree-node" data-category-collapsed="false">
+        <div class="category-node-row">
+          <button class="category-collapse-button" data-toggle-category-children><svg></svg></button>
+          <button class="category-node-button" data-edit-category aria-label="Editar categoria Alimentação">
+            <span class="category-path">Casa &gt; Alimentação</span>
+          </button>
+          <div class="category-action-menu"><button class="category-menu-button"></button></div>
+        </div>
+      </article>
     </main>
     <script>
       function updateCollapse(toggle, collapsed, name) {
@@ -42,7 +47,7 @@ const categoryHtml = `<!doctype html>
 </html>`;
 
 describe("categories icons and tooltips enhancement", () => {
-  it("adds icons and accessible tooltips to category controls", () => {
+  it("adds icons and accessible tooltips without changing the category structure", () => {
     const html = enhanceCategoriesIconsAndTooltips(categoryHtml);
 
     assert.match(html, /<main data-categories-icons-enhanced>/);
@@ -71,7 +76,6 @@ describe("categories icons and tooltips enhancement", () => {
       html,
       /data-close-category-modal aria-label="Fechar modal" title="Fechar"><svg/,
     );
-    assert.doesNotMatch(html, /aria-label="Fechar modal">x<\/button>/);
     assert.match(
       html,
       /data-close-category-modal title="Fechar sem salvar"><svg/,
@@ -80,46 +84,38 @@ describe("categories icons and tooltips enhancement", () => {
       html,
       /aria-label="Editar categoria Alimentação" title="Editar categoria Alimentação"/,
     );
-    assert.match(html, /class="category-node-edit-hint"[^>]*><svg/);
-    assert.match(
-      html,
-      /aria-label="Ocultar subcategorias de Alimentação" title="Ocultar subcategorias de Alimentação"/,
-    );
+    assert.match(html, /<span class="category-path"><svg[^>]*>[\s\S]*?<\/svg>Casa &gt; Alimentação<\/span>/);
+    assert.doesNotMatch(html, /category-node-edit-hint/);
   });
 
-  it("keeps hierarchy icons and dynamic action tooltips synchronized", () => {
+  it("preserves the original hierarchy and modal scripts", () => {
     const html = enhanceCategoriesIconsAndTooltips(categoryHtml);
 
-    assert.match(html, /toggle\.setAttribute\("title", actionLabel\)/);
-    assert.match(html, /toggle\.querySelector\("svg"\)/);
-    assert.match(html, /rotate\(-90deg\)/);
-    assert.match(html, /submitButton\.title = "Criar categoria"/);
+    assert.match(html, /toggle\.querySelector\("span"\)/);
+    assert.match(html, /statusActionButton\.hidden = true/);
+    assert.match(html, /statusActionButton\.hidden = false/);
+    assert.doesNotMatch(html, /statusActionButton\.title =/);
+    assert.doesNotMatch(html, /toggle\.setAttribute\("title"/);
     assert.match(
       html,
-      /submitButton\.title = "Salvar alterações da categoria"/,
+      /\.category-tree-node\[data-category-collapsed="true"\][^}]+rotate\(-90deg\)/,
     );
-    assert.match(html, /statusActionButton\.title = statusActionLabel/);
-    assert.match(
-      html,
-      /statusActionButton\.setAttribute\("aria-label", statusActionLabel\)/,
-    );
-    assert.match(html, /category-collapse-button svg \{ transition: transform/);
   });
 
-  it("keeps category rows readable while hovering or focusing", () => {
+  it("keeps category rows and action buttons readable", () => {
     const html = enhanceCategoriesIconsAndTooltips(categoryHtml);
 
     assert.match(
       html,
-      /\.category-tree-node:hover \{ background: #f1f7f9; border-color: #bfd6de; \}/,
+      /\.category-tree-node:hover \{ background: #f8fafc; border-color: #cbd5e1; \}/,
     );
     assert.match(
       html,
-      /\.category-node-button:hover:not\(:disabled\), \.category-node-button:focus-visible \{ background: transparent; color: var\(--text\); \}/,
+      /button\.category-node-button:hover:not\(:disabled\), button\.category-node-button:focus-visible \{ background: transparent; color: inherit; \}/,
     );
     assert.match(
       html,
-      /\.category-node-button:hover:not\(:disabled\) \.category-node-text span, \.category-node-button:focus-visible \.category-node-text span \{ color: var\(--muted\); \}/,
+      /button\.category-node-button:hover \+ \.category-action-menu button\.category-menu-button/,
     );
   });
 

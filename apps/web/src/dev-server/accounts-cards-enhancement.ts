@@ -51,6 +51,8 @@ function injectNeutralStyles(html: string): string {
         button.tab-button[aria-selected="true"] { background: #ffffff; border-color: #cbd5e1; color: #0f172a; box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
         button.tab-button[aria-selected="true"]:hover:not(:disabled), button.tab-button[aria-selected="true"]:focus-visible { background: #ffffff; border-color: #94a3b8; color: #0f172a; }
         button.tab-button[aria-selected="true"] span { background: #e2e8f0; color: #334155; }
+        button.icon-button[data-open-dialog^="edit-account-dialog-"] { background: #ffffff; border-color: #e2e8f0; color: #64748b; }
+        button.icon-button[data-open-dialog^="edit-account-dialog-"]:hover:not(:disabled), button.icon-button[data-open-dialog^="edit-account-dialog-"]:focus-visible { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }
         .active-filter-switch { align-items: center; align-self: stretch; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; color: #475569; cursor: pointer; display: inline-flex; font: inherit; font-size: 0.8125rem; font-weight: 600; gap: 8px; justify-content: center; line-height: 1.15; min-height: 34px; padding: 0 10px; text-align: left; user-select: none; width: fit-content; }
         .active-filter-switch:hover, .active-filter-switch:focus-within { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }
         .active-filter-switch[aria-pressed="true"] { background: #ffffff; border-color: #cbd5e1; color: #334155; }
