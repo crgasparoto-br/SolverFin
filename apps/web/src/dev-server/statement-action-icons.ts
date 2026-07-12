@@ -11,6 +11,7 @@ export function statementActionIconsController(): string {
       const quickActionSelector = '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
       const invoiceCurrentAttribute = "data-invoice-" + "current";
       const currentMonthSelector = '[data-month-current], [' + invoiceCurrentAttribute + ']';
+      const monthInputSelector = '#filter-month, [data-invoice-month-input]';
       const quickActionIcons = {
         transfer: ${JSON.stringify(icon("repeat", 14))},
         expense: ${JSON.stringify(icon("arrow-down", 14))},
@@ -59,6 +60,11 @@ export function statementActionIconsController(): string {
         }
       }
 
+      function normalizeMonthInput(input) {
+        if (!input || !input.style) return;
+        input.style.fontWeight = "400";
+      }
+
       function decorateRecurrenceIndicator(indicator) {
         if (!indicator || typeof indicator.querySelector !== "function") return;
         if (indicator.dataset && indicator.dataset.recurrenceIconOnly === "true") return;
@@ -97,6 +103,7 @@ export function statementActionIconsController(): string {
         if (!root || typeof root.querySelectorAll !== "function") return;
         root.querySelectorAll(quickActionSelector).forEach(decorateQuickAction);
         root.querySelectorAll(currentMonthSelector).forEach(decorateCurrentMonthButton);
+        root.querySelectorAll(monthInputSelector).forEach(normalizeMonthInput);
         root.querySelectorAll(".recurrence-indicator").forEach(decorateRecurrenceIndicator);
       }
 
@@ -113,6 +120,9 @@ export function statementActionIconsController(): string {
                 }
                 if (typeof node.matches === "function" && node.matches(currentMonthSelector)) {
                   decorateCurrentMonthButton(node);
+                }
+                if (typeof node.matches === "function" && node.matches(monthInputSelector)) {
+                  normalizeMonthInput(node);
                 }
                 if (typeof node.matches === "function" && node.matches(".recurrence-indicator")) {
                   decorateRecurrenceIndicator(node);
