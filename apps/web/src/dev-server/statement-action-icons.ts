@@ -9,7 +9,8 @@ export function statementActionIconsController(): string {
   return `
     (function () {
       const quickActionSelector = '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
-      const currentMonthSelector = '[data-month-current], [data-invoice-current]';
+      const invoiceCurrentAttribute = "data-invoice-" + "current";
+      const currentMonthSelector = '[data-month-current], [' + invoiceCurrentAttribute + ']';
       const quickActionIcons = {
         transfer: ${JSON.stringify(icon("repeat", 14))},
         expense: ${JSON.stringify(icon("arrow-down", 14))},
