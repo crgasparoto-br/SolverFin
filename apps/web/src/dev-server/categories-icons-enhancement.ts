@@ -113,6 +113,11 @@ export function enhanceCategoriesIconsAndTooltips(html: string): string {
       .category-node-edit-hint { align-items: center; display: inline-flex; gap: 4px; justify-self: end; min-width: 0; }
       .category-node-edit-hint > svg { flex: 0 0 auto; }
       .category-collapse-button svg { transition: transform .15s ease; }
+      .category-tree-node { transition: background 120ms ease-out, border-color 120ms ease-out; }
+      .category-tree-node:hover { background: #f1f7f9; border-color: #bfd6de; }
+      .category-tree-child:hover { background: #f6fafb; }
+      .category-node-button:hover:not(:disabled), .category-node-button:focus-visible { background: transparent; color: var(--text); }
+      .category-node-button:hover:not(:disabled) .category-node-text span, .category-node-button:focus-visible .category-node-text span { color: var(--muted); }
     </style>`,
   );
 
