@@ -47,17 +47,44 @@ describe("categories icons and tooltips enhancement", () => {
 
     assert.match(html, /<main data-categories-icons-enhanced>/);
     assert.match(html, /title="Recarregar categorias"[^>]*><svg/);
-    assert.match(html, /data-category-filter="all"[^>]*title="Mostrar todas as categorias"[^>]*><svg/);
-    assert.match(html, /data-category-filter="expense"[^>]*title="Mostrar categorias de despesas"[^>]*><svg/);
-    assert.match(html, /data-category-filter="income"[^>]*title="Mostrar categorias de receitas"[^>]*><svg/);
-    assert.match(html, /data-category-filter="transfer"[^>]*title="Mostrar categorias de transferências"[^>]*><svg/);
-    assert.match(html, /data-category-filter="archived"[^>]*title="Mostrar categorias arquivadas"[^>]*><svg/);
-    assert.match(html, /data-close-category-modal aria-label="Fechar modal" title="Fechar"><svg/);
+    assert.match(
+      html,
+      /data-category-filter="all"[^>]*title="Mostrar todas as categorias"[^>]*><svg/,
+    );
+    assert.match(
+      html,
+      /data-category-filter="expense"[^>]*title="Mostrar categorias de despesas"[^>]*><svg/,
+    );
+    assert.match(
+      html,
+      /data-category-filter="income"[^>]*title="Mostrar categorias de receitas"[^>]*><svg/,
+    );
+    assert.match(
+      html,
+      /data-category-filter="transfer"[^>]*title="Mostrar categorias de transferências"[^>]*><svg/,
+    );
+    assert.match(
+      html,
+      /data-category-filter="archived"[^>]*title="Mostrar categorias arquivadas"[^>]*><svg/,
+    );
+    assert.match(
+      html,
+      /data-close-category-modal aria-label="Fechar modal" title="Fechar"><svg/,
+    );
     assert.doesNotMatch(html, /aria-label="Fechar modal">x<\/button>/);
-    assert.match(html, /data-close-category-modal title="Fechar sem salvar"><svg/);
-    assert.match(html, /aria-label="Editar categoria Alimentação" title="Editar categoria Alimentação"/);
+    assert.match(
+      html,
+      /data-close-category-modal title="Fechar sem salvar"><svg/,
+    );
+    assert.match(
+      html,
+      /aria-label="Editar categoria Alimentação" title="Editar categoria Alimentação"/,
+    );
     assert.match(html, /class="category-node-edit-hint"[^>]*><svg/);
-    assert.match(html, /aria-label="Ocultar subcategorias de Alimentação" title="Ocultar subcategorias de Alimentação"/);
+    assert.match(
+      html,
+      /aria-label="Ocultar subcategorias de Alimentação" title="Ocultar subcategorias de Alimentação"/,
+    );
   });
 
   it("keeps hierarchy icons and dynamic action tooltips synchronized", () => {
@@ -67,9 +94,15 @@ describe("categories icons and tooltips enhancement", () => {
     assert.match(html, /toggle\.querySelector\("svg"\)/);
     assert.match(html, /rotate\(-90deg\)/);
     assert.match(html, /submitButton\.title = "Criar categoria"/);
-    assert.match(html, /submitButton\.title = "Salvar alterações da categoria"/);
+    assert.match(
+      html,
+      /submitButton\.title = "Salvar alterações da categoria"/,
+    );
     assert.match(html, /statusActionButton\.title = statusActionLabel/);
-    assert.match(html, /statusActionButton\.setAttribute\("aria-label", statusActionLabel\)/);
+    assert.match(
+      html,
+      /statusActionButton\.setAttribute\("aria-label", statusActionLabel\)/,
+    );
     assert.match(html, /category-collapse-button svg \{ transition: transform/);
   });
 
@@ -78,7 +111,9 @@ describe("categories icons and tooltips enhancement", () => {
 
     assert.equal(enhanceCategoriesIconsAndTooltips(enhanced), enhanced);
     assert.equal(
-      enhanceCategoriesIconsAndTooltips("<title>Dashboard - SolverFin</title><main></main>"),
+      enhanceCategoriesIconsAndTooltips(
+        "<title>Dashboard - SolverFin</title><main></main>",
+      ),
       "<title>Dashboard - SolverFin</title><main></main>",
     );
   });
