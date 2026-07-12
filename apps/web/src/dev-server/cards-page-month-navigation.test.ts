@@ -34,6 +34,7 @@ async function assertExistingInvoiceMonth(): Promise<void> {
   assert.match(html, /Compra de junho/);
   assert.doesNotMatch(html, /Compra de julho/);
   assert.match(html, /data-invoice-month-navigation-controller/);
+  assertMonthFilterPresentation(html);
 }
 
 async function assertMissingInvoiceMonth(): Promise<void> {
@@ -50,6 +51,7 @@ async function assertMissingInvoiceMonth(): Promise<void> {
   assert.doesNotMatch(html, /Compra de julho/);
   assert.doesNotMatch(html, /data-modal="payment"/);
   assert.match(html, /name="invoiceId" value="" data-invoice-input/);
+  assertMonthFilterPresentation(html);
 }
 
 async function assertInitialMonthState(): Promise<void> {
@@ -61,6 +63,30 @@ async function assertInitialMonthState(): Promise<void> {
 
   assert.match(html, /Julho de 2026/);
   assert.match(html, /name="month" value="2026-07" data-invoice-month-input/);
+  assertMonthFilterPresentation(html);
+}
+
+function assertMonthFilterPresentation(html: string): void {
+  assert.match(
+    html,
+    /<div class="month-nav">[\s\S]*?<input[^>]*data-invoice-month-input[\s\S]*?<\/div>/,
+  );
+  assert.equal(
+    (html.match(/<button\b[^>]*\bdata-invoice-current\b/gi) ?? []).length,
+    1,
+  );
+  assert.match(
+    html,
+    /<button type="button" class="ghost-btn" data-invoice-current>Mês atual<\/button>/,
+  );
+  assert.match(html, /data-invoice-month-navigation-styles/);
+  assert.match(
+    html,
+    /grid-template-columns: minmax\(12rem, 1\.2fr\) minmax\(13rem, 1fr\) auto;/,
+  );
+  assert.match(html, /input\[data-invoice-month-input\]/);
+  assert.match(html, /button\.ghost-btn\[data-invoice-current\]/);
+  assert.match(html, /background: var\(--surface\);/);
 }
 
 function installFetch(): void {
