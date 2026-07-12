@@ -106,6 +106,23 @@ describe("categories icons and tooltips enhancement", () => {
     assert.match(html, /category-collapse-button svg \{ transition: transform/);
   });
 
+  it("keeps category rows readable while hovering or focusing", () => {
+    const html = enhanceCategoriesIconsAndTooltips(categoryHtml);
+
+    assert.match(
+      html,
+      /\.category-tree-node:hover \{ background: #f1f7f9; border-color: #bfd6de; \}/,
+    );
+    assert.match(
+      html,
+      /\.category-node-button:hover:not\(:disabled\), \.category-node-button:focus-visible \{ background: transparent; color: var\(--text\); \}/,
+    );
+    assert.match(
+      html,
+      /\.category-node-button:hover:not\(:disabled\) \.category-node-text span, \.category-node-button:focus-visible \.category-node-text span \{ color: var\(--muted\); \}/,
+    );
+  });
+
   it("is idempotent and ignores unrelated pages", () => {
     const enhanced = enhanceCategoriesIconsAndTooltips(categoryHtml);
 
