@@ -8,24 +8,9 @@ const LARGE_AMOUNT_MINOR = 999_999_999;
 const aggregateIncomeCount = 47;
 const transactions = [
   transaction("max-income", "income", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-01"),
-  transaction(
-    "balance-to-zero",
-    "expense",
-    MAX_PERSISTED_AMOUNT_MINOR,
-    "2026-07-02",
-  ),
-  transaction(
-    "negative-balance",
-    "expense",
-    MAX_PERSISTED_AMOUNT_MINOR,
-    "2026-07-03",
-  ),
-  transaction(
-    "back-to-zero",
-    "income",
-    MAX_PERSISTED_AMOUNT_MINOR,
-    "2026-07-04",
-  ),
+  transaction("balance-to-zero", "expense", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-02"),
+  transaction("negative-balance", "expense", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-03"),
+  transaction("back-to-zero", "income", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-04"),
   transaction("zero-value", "income", 0, "2026-07-05"),
   transaction("medium-income", "income", MEDIUM_AMOUNT_MINOR, "2026-07-06"),
   transaction("medium-expense", "expense", MEDIUM_AMOUNT_MINOR, "2026-07-07"),
@@ -52,8 +37,7 @@ const negativeSummaryTransactions = [
 
 assert.ok(
   transactions.every(
-    (item) =>
-      item.amountMinor >= 0 && item.amountMinor <= MAX_PERSISTED_AMOUNT_MINOR,
+    (item) => item.amountMinor >= 0 && item.amountMinor <= MAX_PERSISTED_AMOUNT_MINOR,
   ),
   "every persisted fixture must remain inside the signed 32-bit Int limit",
 );
@@ -83,10 +67,8 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     });
   }
 
-  if (url.pathname === "/api/categories")
-    return jsonResponse({ categories: [] });
-  if (url.pathname === "/api/recurrences")
-    return jsonResponse({ recurrences: [] });
+  if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+  if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
   if (url.pathname === "/api/transactions") {
     return jsonResponse({
       transactions:
@@ -101,15 +83,11 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
 
 const html = await renderTransactionsPage(
   "session-token",
-  new URL(
-    "http://solverfin.test/lancamentos?accountId=account-long-values&month=2026-07",
-  ),
+  new URL("http://solverfin.test/lancamentos?accountId=account-long-values&month=2026-07"),
 );
 const negativeSummaryHtml = await renderTransactionsPage(
   "session-token",
-  new URL(
-    "http://solverfin.test/lancamentos?accountId=account-negative&month=2026-07",
-  ),
+  new URL("http://solverfin.test/lancamentos?accountId=account-negative&month=2026-07"),
 );
 globalThis.fetch = originalFetch;
 
@@ -120,10 +98,7 @@ const backToZeroRow = extractRow(html, "back-to-zero");
 const zeroValueRow = extractRow(html, "zero-value");
 const mediumIncomeRow = extractRow(html, "medium-income");
 const largeIncomeRow = extractRow(html, "large-income");
-const aggregateFinalRow = extractRow(
-  html,
-  `aggregate-income-${aggregateIncomeCount}`,
-);
+const aggregateFinalRow = extractRow(html, `aggregate-income-${aggregateIncomeCount}`);
 
 assert.match(maxIncomeRow, /col-amount[^>]*>R\$\s*21\.474\.836,47<\/strong>/);
 assert.match(zeroBalanceRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
@@ -137,8 +112,7 @@ assert.match(zeroValueRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
 assert.match(mediumIncomeRow, /col-amount[^>]*>R\$\s*999\.999,99<\/strong>/);
 assert.match(largeIncomeRow, /col-amount[^>]*>R\$\s*9\.999\.999,99<\/strong>/);
 
-const expectedAggregateBalanceMinor =
-  aggregateIncomeCount * MAX_PERSISTED_AMOUNT_MINOR;
+const expectedAggregateBalanceMinor = aggregateIncomeCount * MAX_PERSISTED_AMOUNT_MINOR;
 assert.equal(expectedAggregateBalanceMinor, 100_931_731_409);
 assert.match(
   aggregateFinalRow,
@@ -169,32 +143,16 @@ assert.match(expenses, /(?:-R\$\s*53\.949\.672,92|R\$\s*-53\.949\.672,92)/);
 const unreconciled = extractStatusLine(html, "Não conciliados");
 assert.match(unreconciled, /<strong>R\$\s*1\.117\.216\.659,93<\/strong>/);
 
-const negativeSummaryBalance = extractElement(
-  negativeSummaryHtml,
-  "section",
-  "summary-balance",
-);
-assert.match(
-  negativeSummaryBalance,
-  /(?:-R\$\s*21\.474\.836,47|R\$\s*-21\.474\.836,47)/,
-);
+const negativeSummaryBalance = extractElement(negativeSummaryHtml, "section", "summary-balance");
+assert.match(negativeSummaryBalance, /(?:-R\$\s*21\.474\.836,47|R\$\s*-21\.474\.836,47)/);
 
 assert.match(
   html,
   /\.summary-balance strong, \.summary-total strong, \.status-line strong, \.col-amount, \.col-balance \{[^}]*white-space:\s*nowrap/,
 );
-assert.match(
-  html,
-  /\.statement-layout \.summary-totals\s*\{\s*grid-template-columns:\s*1fr/,
-);
-assert.match(
-  html,
-  /\.statement-layout \.status-line strong\s*\{[^}]*grid-column:\s*1 \/ -1/,
-);
-assert.match(
-  html,
-  /\.statement-table \.statement-row\s*\{[^}]*min-width:\s*70rem/,
-);
+assert.match(html, /\.statement-layout \.summary-totals\s*\{\s*grid-template-columns:\s*1fr/);
+assert.match(html, /\.statement-layout \.status-line strong\s*\{[^}]*grid-column:\s*1 \/ -1/);
+assert.match(html, /\.statement-table \.statement-row\s*\{[^}]*min-width:\s*70rem/);
 assert.match(
   html,
   /@media \(max-width: 760px\)[\s\S]*\.statement-row\.statement-body \{ min-width:\s*0/,
@@ -235,10 +193,7 @@ function extractRow(pageHtml: string, transactionId: string): string {
   const markerIndex = pageHtml.indexOf(marker);
   assert.notEqual(markerIndex, -1, `row ${transactionId} should be rendered`);
 
-  const start = pageHtml.lastIndexOf(
-    '<article class="statement-row statement-body"',
-    markerIndex,
-  );
+  const start = pageHtml.lastIndexOf('<article class="statement-row statement-body"', markerIndex);
   const end = pageHtml.indexOf("</article>", markerIndex);
   assert.notEqual(start, -1);
   assert.notEqual(end, -1);
@@ -246,14 +201,10 @@ function extractRow(pageHtml: string, transactionId: string): string {
   return pageHtml.slice(start, end + "</article>".length);
 }
 
-function extractElement(
-  pageHtml: string,
-  tag: string,
-  className: string,
-): string {
-  const match = new RegExp(
-    `<${tag} class="${className}"[^>]*>([\\s\\S]*?)<\\/${tag}>`,
-  ).exec(pageHtml);
+function extractElement(pageHtml: string, tag: string, className: string): string {
+  const match = new RegExp(`<${tag} class="${className}"[^>]*>([\\s\\S]*?)<\\/${tag}>`).exec(
+    pageHtml,
+  );
   assert.ok(match, `${className} should be rendered`);
   return match[0];
 }

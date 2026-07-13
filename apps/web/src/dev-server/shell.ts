@@ -1,8 +1,5 @@
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
-import {
-  listPrivateShellRoutes,
-  type ShellRouteId,
-} from "../app-shell/routes.js";
+import { listPrivateShellRoutes, type ShellRouteId } from "../app-shell/routes.js";
 import { icon } from "./icons.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 import {
@@ -39,9 +36,7 @@ export function renderShellDocument(input: ShellDocumentInput): string {
 </html>`;
 }
 
-export function renderAuthenticatedShellDocument(
-  input: AuthenticatedShellDocumentInput,
-): string {
+export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocumentInput): string {
   return renderShellDocument({
     body: renderAuthenticatedShell(input),
     styles: `${input.styles}\n${statementPresentationStyles()}`,
@@ -94,19 +89,18 @@ export function faviconLinks(): string {
 }
 
 /** Map each route id to a Lucide icon name */
-const routeIconMap: Partial<Record<ShellRouteId, Parameters<typeof icon>[0]>> =
-  {
-    dashboard: "layout-dashboard",
-    transactions: "receipt",
-    cards: "credit-card",
-    accountsCards: "wallet",
-    categories: "tag",
-    budgets: "pie-chart",
-    inbox: "inbox",
-    reports: "bar-chart-2",
-    settings: "settings",
-    adminInstitutions: "building-2",
-  };
+const routeIconMap: Partial<Record<ShellRouteId, Parameters<typeof icon>[0]>> = {
+  dashboard: "layout-dashboard",
+  transactions: "receipt",
+  cards: "credit-card",
+  accountsCards: "wallet",
+  categories: "tag",
+  budgets: "pie-chart",
+  inbox: "inbox",
+  reports: "bar-chart-2",
+  settings: "settings",
+  adminInstitutions: "building-2",
+};
 
 /** Map each navigation group to a section label */
 const groupLabelMap: Record<string, string> = {
@@ -117,25 +111,16 @@ const groupLabelMap: Record<string, string> = {
   admin: "Admin",
 };
 
-function isActivePathnameSecondary(
-  activePathname: string,
-  includeMasterRoutes: boolean,
-): boolean {
+function isActivePathnameSecondary(activePathname: string, includeMasterRoutes: boolean): boolean {
   const activeRoute = listPrivateShellRoutes({
     includeMaster: includeMasterRoutes,
   }).find((route) => route.path === activePathname);
   return activeRoute !== undefined && !isPrimaryMobileRoute(activeRoute);
 }
 
-function renderNavigation(
-  activePathname: string,
-  includeMasterRoutes: boolean,
-): string {
+function renderNavigation(activePathname: string, includeMasterRoutes: boolean): string {
   const routes = listPrivateShellRoutes({ includeMaster: includeMasterRoutes });
-  const activeIsSecondary = isActivePathnameSecondary(
-    activePathname,
-    includeMasterRoutes,
-  );
+  const activeIsSecondary = isActivePathnameSecondary(activePathname, includeMasterRoutes);
   const secondaryIds = routes
     .filter((route) => !isPrimaryMobileRoute(route))
     .map((route) => `nav-secondary-${route.id}`);
@@ -163,8 +148,7 @@ function renderNavigation(
     for (const route of groupRoutes) {
       const isActive = route.path === activePathname;
       const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
-      const id =
-        priority === "secondary" ? ` id="nav-secondary-${route.id}"` : "";
+      const id = priority === "secondary" ? ` id="nav-secondary-${route.id}"` : "";
       const routeIcon = routeIconMap[route.id];
       const iconHtml = routeIcon ? icon(routeIcon, 15) : "";
 

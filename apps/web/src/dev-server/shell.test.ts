@@ -4,10 +4,7 @@ import { describe, it } from "node:test";
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
 import { listPrivateShellRoutes } from "../app-shell/routes.js";
 import { privateRoutes } from "./routes.js";
-import {
-  renderAuthenticatedShellDocument,
-  renderShellDocument,
-} from "./shell.js";
+import { renderAuthenticatedShellDocument, renderShellDocument } from "./shell.js";
 
 describe("SSR shell document", () => {
   it("renders a shared HTML document with escaped title and provided body", () => {
@@ -19,10 +16,7 @@ describe("SSR shell document", () => {
 
     assert.match(html, /<!doctype html>/);
     assert.match(html, /<html lang="pt-BR">/);
-    assert.match(
-      html,
-      /<link rel="manifest" href="\/manifest\.webmanifest" \/>/,
-    );
+    assert.match(html, /<link rel="manifest" href="\/manifest\.webmanifest" \/>/);
     assert.match(html, /<title>Entrar &amp; revisar<\/title>/);
     assert.match(html, /<style>\.test-marker \{ color: #0f3d4c; \}<\/style>/);
     assert.match(html, /<body><main>Conteúdo público<\/main><\/body>/);
@@ -42,27 +36,15 @@ describe("authenticated SSR shell", () => {
 
     assert.match(html, /<title>Extrato da conta - SolverFin<\/title>/);
     assert.match(html, /<strong>Extrato da conta<\/strong>/);
-    assert.match(
-      html,
-      /<span data-current-user-name aria-live="polite">Usuário<\/span>/,
-    );
+    assert.match(html, /<span data-current-user-name aria-live="polite">Usuário<\/span>/);
     assert.doesNotMatch(html, /Usuário Demo SolverFin/);
     assert.match(html, /const displayName = typeof body\.user\.displayName/);
     assert.match(html, /const email = typeof body\.user\.email/);
-    assert.match(
-      html,
-      /userName\.textContent = displayName \|\| email \|\| "Usuário"/,
-    );
+    assert.match(html, /userName\.textContent = displayName \|\| email \|\| "Usuário"/);
     assert.match(html, /\.test-marker \{ color: #0f3d4c; \}/);
-    assert.match(
-      html,
-      /\.statement-tooltip-layer\s*\{[\s\S]*position:\s*fixed/,
-    );
+    assert.match(html, /\.statement-tooltip-layer\s*\{[\s\S]*position:\s*fixed/);
     assert.match(html, /\.statement-status::after\s*\{\s*content:\s*none/);
-    assert.match(
-      html,
-      /document\.querySelectorAll\("\.statement-status\[data-tooltip\]"\)/,
-    );
+    assert.match(html, /document\.querySelectorAll\("\.statement-status\[data-tooltip\]"\)/);
     assert.match(html, /<main><section>Conteúdo da página<\/section><\/main>/);
     assert.match(transactionsLink.attributes, /data-nav-priority="primary"/);
     assert.match(transactionsLink.attributes, /aria-current="page"/);
@@ -106,20 +88,14 @@ describe("authenticated SSR shell", () => {
         const link = findNavigationLink(html, route.path);
         const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
 
-        assert.match(
-          link.attributes,
-          new RegExp(`data-nav-priority="${priority}"`),
-        );
+        assert.match(link.attributes, new RegExp(`data-nav-priority="${priority}"`));
         assert.equal(
           link.attributes.includes('aria-current="page"'),
           route.path === activePathname,
         );
 
         if (priority === "secondary") {
-          assert.match(
-            link.attributes,
-            new RegExp(`id="nav-secondary-${route.id}"`),
-          );
+          assert.match(link.attributes, new RegExp(`id="nav-secondary-${route.id}"`));
         }
       }
     }
@@ -136,16 +112,10 @@ describe("authenticated SSR shell", () => {
     for (const route of listPrivateShellRoutes()) {
       const link = findNavigationLink(html, route.path);
       const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
-      assert.match(
-        link.attributes,
-        new RegExp(`data-nav-priority="${priority}"`),
-      );
+      assert.match(link.attributes, new RegExp(`data-nav-priority="${priority}"`));
 
       if (priority === "secondary") {
-        assert.match(
-          link.attributes,
-          new RegExp(`id="nav-secondary-${route.id}"`),
-        );
+        assert.match(link.attributes, new RegExp(`id="nav-secondary-${route.id}"`));
       }
     }
   });
@@ -158,10 +128,7 @@ describe("authenticated SSR shell", () => {
       styles: ".test-marker { color: #0f3d4c; }",
     });
 
-    assert.doesNotMatch(
-      html,
-      /<nav aria-label="Menu principal" class="nav-open">/,
-    );
+    assert.doesNotMatch(html, /<nav aria-label="Menu principal" class="nav-open">/);
     assert.match(html, /aria-expanded="false"[^>]*>Mais<\/button>/);
   });
 
@@ -192,13 +159,8 @@ describe("authenticated SSR shell", () => {
   });
 });
 
-function findNavigationLink(
-  html: string,
-  path: string,
-): { attributes: string; content: string } {
-  const match = new RegExp(
-    `<a href="${escapeRegExp(path)}"([^>]*)>([\\s\\S]*?)<\\/a>`,
-  ).exec(html);
+function findNavigationLink(html: string, path: string): { attributes: string; content: string } {
+  const match = new RegExp(`<a href="${escapeRegExp(path)}"([^>]*)>([\\s\\S]*?)<\\/a>`).exec(html);
 
   assert.ok(match, `Expected navigation link for ${path}`);
 

@@ -38,30 +38,11 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
         transaction("posted-income", "income", "posted", 20000, "2026-07-01", {
           effectiveOn: "2026-07-01",
         }),
-        transaction(
-          "planned-expense",
-          "expense",
-          "planned",
-          30000,
-          "2026-07-02",
-        ),
-        transaction(
-          "suggested-expense",
-          "expense",
-          "suggested",
-          1000,
-          "2026-07-03",
-        ),
-        transaction(
-          "reconciled-income",
-          "income",
-          "reconciled",
-          5000,
-          "2026-07-04",
-          {
-            effectiveOn: "2026-07-04",
-          },
-        ),
+        transaction("planned-expense", "expense", "planned", 30000, "2026-07-02"),
+        transaction("suggested-expense", "expense", "suggested", 1000, "2026-07-03"),
+        transaction("reconciled-income", "income", "reconciled", 5000, "2026-07-04", {
+          effectiveOn: "2026-07-04",
+        }),
       ],
     });
   }
@@ -71,9 +52,7 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
 
 const html = await renderTransactionsPage(
   "session-token",
-  new URL(
-    "http://solverfin.test/lancamentos?accountId=account-1&month=2026-07",
-  ),
+  new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-07"),
 );
 
 globalThis.fetch = originalFetch;
@@ -106,41 +85,20 @@ assertRowPresentation(html, "reconciled-income", {
 
 assert.match(html, /Saldo atual[\s\S]*R\$\s*350,00/);
 assert.doesNotMatch(html, /<strong class="col-balance">Previsto<\/strong>/);
-assert.doesNotMatch(
-  html,
-  /account-summary[\s\S]*<section class="quick-actions"/,
-);
+assert.doesNotMatch(html, /account-summary[\s\S]*<section class="quick-actions"/);
 assert.match(html, /statement-heading-actions/);
-assert.match(
-  html,
-  /grid-template-columns:\s*minmax\(260px, 320px\) minmax\(0,1fr\)/,
-);
+assert.match(html, /grid-template-columns:\s*minmax\(260px, 320px\) minmax\(0,1fr\)/);
 assert.match(html, /@media \(max-width: 1279px\)/);
 assert.match(html, /font-variant-numeric:\s*tabular-nums/);
 assert.match(html, /\.statement-status::after\s*\{\s*content:\s*none/);
 assert.match(html, /\.statement-tooltip-layer\s*\{[\s\S]*position:\s*fixed/);
 assert.match(html, /trigger\.setAttribute\("aria-describedby", tooltipId\)/);
 assert.match(html, /activeTrigger\.getBoundingClientRect\(\)/);
-assert.match(
-  html,
-  /document\.addEventListener\("scroll", positionTooltip, true\)/,
-);
-assert.match(
-  html,
-  /\.statement-layout \.summary-totals\s*\{\s*grid-template-columns:\s*1fr/,
-);
-assert.match(
-  html,
-  /\.statement-layout \.status-line strong\s*\{[\s\S]*grid-column:\s*1 \/ -1/,
-);
-assert.match(
-  html,
-  /\.statement-table \.statement-row\s*\{[\s\S]*min-width:\s*70rem/,
-);
-assert.match(
-  html,
-  /\.statement-table \.col-amount,[\s\S]*min-width:\s*max-content/,
-);
+assert.match(html, /document\.addEventListener\("scroll", positionTooltip, true\)/);
+assert.match(html, /\.statement-layout \.summary-totals\s*\{\s*grid-template-columns:\s*1fr/);
+assert.match(html, /\.statement-layout \.status-line strong\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
+assert.match(html, /\.statement-table \.statement-row\s*\{[\s\S]*min-width:\s*70rem/);
+assert.match(html, /\.statement-table \.col-amount,[\s\S]*min-width:\s*max-content/);
 assert.match(html, /\.main-area\s*>\s*main\s*\{[\s\S]*max-width:\s*1800px/);
 assert.match(html, /body\s*\{[\s\S]*overflow-x:\s*hidden/);
 
@@ -157,20 +115,14 @@ function assertRowPresentation(
 ): void {
   const row = extractRow(pageHtml, transactionId);
 
-  assert.match(
-    row,
-    new RegExp(`statement-status statement-status-${expected.tone} col-status`),
-  );
+  assert.match(row, new RegExp(`statement-status statement-status-${expected.tone} col-status`));
   assert.match(row, /role="img"/);
   assert.match(row, /tabindex="0"/);
   assert.match(row, new RegExp(`aria-label="${expected.statusLabel}"`));
   assert.match(row, new RegExp(`title="${expected.statusLabel}"`));
   assert.match(row, new RegExp(`data-tooltip="${expected.statusLabel}"`));
   assert.match(row, /statement-status[\s\S]*<svg/);
-  assert.match(
-    row,
-    new RegExp(`data-balance-minor="${expected.balanceMinor}"`),
-  );
+  assert.match(row, new RegExp(`data-balance-minor="${expected.balanceMinor}"`));
   assert.match(row, expected.balanceText);
 
   if (expected.negative) {
@@ -185,10 +137,7 @@ function extractRow(pageHtml: string, transactionId: string): string {
   const markerIndex = pageHtml.indexOf(marker);
   assert.notEqual(markerIndex, -1, `row ${transactionId} should be rendered`);
 
-  const start = pageHtml.lastIndexOf(
-    '<article class="statement-row statement-body"',
-    markerIndex,
-  );
+  const start = pageHtml.lastIndexOf('<article class="statement-row statement-body"', markerIndex);
   const end = pageHtml.indexOf("</article>", markerIndex);
   assert.notEqual(start, -1);
   assert.notEqual(end, -1);
