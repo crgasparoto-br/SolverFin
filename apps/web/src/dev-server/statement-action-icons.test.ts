@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { runInNewContext } from "node:vm";
 
-import {
-  resolveStatementStatusPresentation,
-  statementActionIconsController,
-} from "./statement-action-icons.js";
+import { statementActionIconsController } from "./statement-action-icons.js";
 
 const transferButton = fakeButton("transfer");
 const expenseButton = fakeButton("expense");
@@ -16,23 +13,11 @@ const cardsMonthInput = fakeStyledNode();
 const recurrenceLabel = fakeLabel();
 const recurrenceSvg = fakeSvg();
 const recurrenceIndicator = fakeRecurrenceIndicator(recurrenceLabel, recurrenceSvg);
-const reconciledRow = fakeStatementRow(
-  { status: "reconciled", effectiveOn: "2026-07-01" },
-  "R$ 10,00",
-);
-const postedRow = fakeStatementRow(
-  { status: "posted", effectiveOn: "2026-07-02" },
-  "R$ 5,00",
-);
-const pendingRow = fakeStatementRow({ status: "suggested" }, "-R$ 15,00");
-const plannedRow = fakeStatementRow({ status: "planned" }, "R$ 20,00");
-const statementRows = [reconciledRow, postedRow, pendingRow, plannedRow];
 const injectedStyles: FakeStyleElement[] = [];
 const quickActionSelector =
   '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
 const currentMonthSelector = '[data-month-current], [data-invoice-current]';
 const monthInputSelector = '#filter-month, [data-invoice-month-input]';
-const statementRowSelector = ".statement-row.statement-body";
 
 const document = {
   body: {},
@@ -54,24 +39,14 @@ const document = {
     }
     if (selector === monthInputSelector) return [statementMonthInput, cardsMonthInput];
     if (selector === ".recurrence-indicator") return [recurrenceIndicator];
-    if (selector === statementRowSelector) return statementRows;
     return [];
   },
 };
 
-const reconciledPresentation = resolveStatementStatusPresentation({ status: "reconciled" });
-assert.equal(reconciledPresentation.label, "Conciliado");
-assert.equal(reconciledPresentation.tone, "ok");
-assert.match(reconciledPresentation.icon, /<svg/);
-assert.equal(
-  resolveStatementStatusPresentation({ status: "posted", effectiveOn: "2026-07-01" }).label,
-  "Efetivado não conciliado",
-);
-assert.equal(resolveStatementStatusPresentation({ status: "suggested" }).label, "Pendente");
-assert.equal(resolveStatementStatusPresentation({ status: "planned" }).label, "Previsto");
-
 const controller = statementActionIconsController();
 assert.doesNotMatch(controller, /data-invoice-current/);
+assert.doesNotMatch(controller, /statement-status/);
+assert.doesNotMatch(controller, /solverfin-global-content-width/);
 runInNewContext(controller, { document });
 
 assert.match(transferButton.insertedHtml, /data-statement-action-icon/);
@@ -91,38 +66,16 @@ for (const button of [statementCurrentMonthButton, cardsCurrentMonthButton]) {
 
 assert.equal(statementMonthInput.style.fontWeight, "400");
 assert.equal(cardsMonthInput.style.fontWeight, "400");
-assert.equal(injectedStyles.length, 3);
-
-const monthTypographyStyle = injectedStyles.find(
-  (style) => style.id === "solverfin-month-typography",
-);
-assert.ok(monthTypographyStyle);
-assert.match(monthTypographyStyle.textContent, /\.month-current/);
-assert.match(monthTypographyStyle.textContent, /::-webkit-datetime-edit/);
-assert.match(monthTypographyStyle.textContent, /::-webkit-datetime-edit-month-field/);
-assert.match(monthTypographyStyle.textContent, /::-webkit-datetime-edit-year-field/);
-assert.match(monthTypographyStyle.textContent, /font-weight: 400 !important/);
-
-const globalContentWidthStyle = injectedStyles.find(
-  (style) => style.id === "solverfin-global-content-width",
-);
-assert.ok(globalContentWidthStyle);
-assert.match(globalContentWidthStyle.textContent, /main\s*\{/);
-assert.match(globalContentWidthStyle.textContent, /max-width: 1800px !important/);
-
-const statementPresentationStyle = injectedStyles.find(
-  (style) => style.id === "solverfin-statement-presentation",
-);
-assert.ok(statementPresentationStyle);
-assert.doesNotMatch(statementPresentationStyle.textContent, /main\s*\{/);
-assert.match(statementPresentationStyle.textContent, /minmax\(280px, 320px\)/);
-assert.match(statementPresentationStyle.textContent, /white-space: nowrap/);
-assert.match(statementPresentationStyle.textContent, /font-variant-numeric: tabular-nums/);
-assert.match(statementPresentationStyle.textContent, /\.statement-status:hover::after/);
-assert.match(statementPresentationStyle.textContent, /@media \(max-width: 1180px\)/);
+assert.equal(injectedStyles.length, 1);
+assert.equal(injectedStyles[0]?.id, "solverfin-month-typography");
+assert.match(injectedStyles[0]?.textContent ?? "", /\.month-current/);
+assert.match(injectedStyles[0]?.textContent ?? "", /::-webkit-datetime-edit/);
+assert.match(injectedStyles[0]?.textContent ?? "", /::-webkit-datetime-edit-month-field/);
+assert.match(injectedStyles[0]?.textContent ?? "", /::-webkit-datetime-edit-year-field/);
+assert.match(injectedStyles[0]?.textContent ?? "", /font-weight: 400 !important/);
 
 runInNewContext(controller, { document });
-assert.equal(injectedStyles.length, 3);
+assert.equal(injectedStyles.length, 1);
 
 assert.equal(recurrenceIndicator.attributes.title, "Lançamento recorrente");
 assert.equal(recurrenceIndicator.attributes["aria-label"], "Lançamento recorrente");
@@ -137,29 +90,6 @@ assert.equal(recurrenceSvg.attributes.width, "14");
 assert.equal(recurrenceSvg.attributes.height, "14");
 assert.equal(recurrenceSvg.style.width, "14px");
 assert.equal(recurrenceSvg.style.height, "14px");
-
-assertStatementStatus(reconciledRow.status, "ok", "Conciliado");
-assertStatementStatus(postedRow.status, "posted", "Efetivado não conciliado");
-assertStatementStatus(pendingRow.status, "pending", "Pendente");
-assertStatementStatus(plannedRow.status, "planned", "Previsto");
-assert.match(pendingRow.balance.className, /\bdebit\b/);
-assert.doesNotMatch(plannedRow.balance.className, /\bdebit\b/);
-
-function assertStatementStatus(
-  status: FakeStatusNode,
-  tone: string,
-  label: string,
-): void {
-  assert.equal(status.className, `statement-status statement-status-${tone} col-status`);
-  assert.match(status.innerHTML, /<svg/);
-  assert.equal(status.attributes.role, "img");
-  assert.equal(status.attributes.tabindex, "0");
-  assert.equal(status.attributes["aria-label"], label);
-  assert.equal(status.attributes.title, label);
-  assert.equal(status.attributes["data-tooltip"], label);
-  assert.equal(status.dataset.statementStatusIcon, "true");
-  assert.doesNotMatch(status.innerHTML, new RegExp(label));
-}
 
 interface FakeButton {
   dataset: Record<string, string>;
@@ -266,65 +196,6 @@ function fakeRecurrenceIndicator(
     },
     setAttribute: (name: string, value: string) => {
       attributes[name] = value;
-    },
-  };
-}
-
-interface FakeStatusNode {
-  dataset: Record<string, string>;
-  className: string;
-  innerHTML: string;
-  attributes: Record<string, string>;
-  setAttribute(name: string, value: string): void;
-}
-
-interface FakeTransactionNode {
-  textContent: string;
-}
-
-interface FakeBalanceNode {
-  textContent: string;
-  className: string;
-}
-
-interface FakeStatementRow {
-  status: FakeStatusNode;
-  transaction: FakeTransactionNode;
-  balance: FakeBalanceNode;
-  querySelector(
-    selector: string,
-  ): FakeStatusNode | FakeTransactionNode | FakeBalanceNode | null;
-}
-
-function fakeStatementRow(
-  transaction: { status: string; effectiveOn?: string },
-  balanceText: string,
-): FakeStatementRow {
-  const attributes: Record<string, string> = {};
-  const status: FakeStatusNode = {
-    dataset: {},
-    className: "chip col-status",
-    innerHTML: "Texto anterior",
-    attributes,
-    setAttribute: (name: string, value: string) => {
-      attributes[name] = value;
-    },
-  };
-  const transactionNode: FakeTransactionNode = { textContent: JSON.stringify(transaction) };
-  const balance: FakeBalanceNode = {
-    textContent: balanceText,
-    className: "col-balance",
-  };
-
-  return {
-    status,
-    transaction: transactionNode,
-    balance,
-    querySelector: (selector: string) => {
-      if (selector === ".col-status") return status;
-      if (selector === "[data-transaction]") return transactionNode;
-      if (selector === ".col-balance") return balance;
-      return null;
     },
   };
 }
