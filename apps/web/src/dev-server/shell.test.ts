@@ -27,7 +27,7 @@ describe("authenticated SSR shell", () => {
   it("renders the shared shell with active navigation and logout handling", () => {
     const html = renderAuthenticatedShellDocument({
       activePathname: "/lancamentos",
-      content: "<section>Conteúdo da página</section>",
+      content: '<section class="statement-layout">Conteúdo da página</section>',
       currentLabel: "Extrato da conta",
       styles: ".test-marker { color: #0f3d4c; }",
     });
@@ -45,7 +45,10 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /\.statement-tooltip-layer\s*\{[\s\S]*position:\s*fixed/);
     assert.match(html, /\.statement-status::after\s*\{\s*content:\s*none/);
     assert.match(html, /document\.querySelectorAll\("\.statement-status\[data-tooltip\]"\)/);
-    assert.match(html, /<main><section>Conteúdo da página<\/section><\/main>/);
+    assert.match(
+      html,
+      /<main><section class="statement-layout">Conteúdo da página<\/section><\/main>/,
+    );
     assert.match(transactionsLink.attributes, /data-nav-priority="primary"/);
     assert.match(transactionsLink.attributes, /aria-current="page"/);
     assert.match(transactionsLink.content, /Extrato da conta/);
@@ -59,6 +62,19 @@ describe("authenticated SSR shell", () => {
     assert.doesNotMatch(html, /document\.addEventListener\("submit"/);
     assert.match(html, /event\.target\.closest[\s\S]*data-explicit-edit-scope/);
     assert.match(html, /event\.stopImmediatePropagation\(\)/);
+  });
+
+  it("keeps statement presentation assets out of unrelated authenticated pages", () => {
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/dashboard",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Dashboard",
+      styles: ".test-marker { color: #0f3d4c; }",
+    });
+
+    assert.doesNotMatch(html, /statement-tooltip-layer/);
+    assert.doesNotMatch(html, /statement-status::after/);
+    assert.doesNotMatch(html, /restoreNativeTitle/);
   });
 
   it("renders every private route in the shared navigation", () => {
