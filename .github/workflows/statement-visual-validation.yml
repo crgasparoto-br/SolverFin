@@ -6,7 +6,8 @@ on:
       - main
     paths:
       - "apps/web/**"
-      - "scripts/validate-statement-ui.mjs"
+      - "scripts/run-statement-visual-validation.mjs"
+      - "scripts/statement-visual/**"
       - ".github/workflows/statement-visual-validation.yml"
       - "package.json"
   workflow_dispatch:
@@ -72,7 +73,10 @@ jobs:
           echo $! > /tmp/solverfin-dev.pid
           for attempt in $(seq 1 90); do
             if curl -sS -o /dev/null http://127.0.0.1:4000/api/me && curl -fsS http://127.0.0.1:5173/health >/dev/null; then
-              exit 0
+              sleep 8
+              if curl -sS -o /dev/null http://127.0.0.1:4000/api/me && curl -fsS http://127.0.0.1:5173/health >/dev/null; then
+                exit 0
+              fi
             fi
             sleep 1
           done
