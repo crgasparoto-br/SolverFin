@@ -24,7 +24,9 @@ assert.ok(
   enhanced.indexOf("data-accounts-cards-neutral-styles") < enhanced.indexOf("</head>"),
   "a paleta neutra deve ser entregue no HTML inicial, antes do body",
 );
-assert.ok(enhanced.includes(".tab-list { background: #f8fafc; border-color: #e2e8f0; }"));
+assert.ok(
+  enhanced.includes(".tab-list { background: #f8fafc; border-color: #e2e8f0; }"),
+);
 assert.ok(
   enhanced.includes(
     "button.tab-button { background: transparent; border: 1px solid transparent; color: #475569; }",

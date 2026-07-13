@@ -131,7 +131,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/categorias" && token) {
-    sendHtml(response, 200, enhanceCategoriesIconsAndTooltips(await renderCategoriesPage(token)));
+    sendHtml(
+      response,
+      200,
+      enhanceCategoriesIconsAndTooltips(await renderCategoriesPage(token)),
+    );
     return;
   }
 
@@ -173,7 +177,10 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   sendHtml(response, 404, renderNotFoundPage());
 }
 
-export async function materializeCardInvoiceRecurrences(token: string, url: URL): Promise<void> {
+export async function materializeCardInvoiceRecurrences(
+  token: string,
+  url: URL,
+): Promise<void> {
   const month = resolveRequestedMonth(url);
   const cardsResult = await apiGet<{ cards: CardMaterializationRecord[] }>(
     token,

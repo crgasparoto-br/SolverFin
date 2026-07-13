@@ -35,9 +35,7 @@ describe("card instrument subtotals", () => {
   it("lists instruments before the consolidated card total", () => {
     const enhanced = enhanceCardInstrumentSubtotals(html);
     const instrumentIndex = enhanced.indexOf('class="summary-row instrument-summary-row"');
-    const totalIndex = enhanced.indexOf(
-      'class="summary-row summary-row-strong instrument-card-total"',
-    );
+    const totalIndex = enhanced.indexOf('class="summary-row summary-row-strong instrument-card-total"');
     assert.ok(instrumentIndex >= 0 && totalIndex > instrumentIndex);
     assert.match(enhanced, /Cartão Principal - final 9999 · Total/);
     assert.match(enhanced, /-R\$ 175,00/);
@@ -45,9 +43,7 @@ describe("card instrument subtotals", () => {
 
   it("preserves the purchase order received from the sorting enhancement", () => {
     const enhanced = enhanceCardInstrumentSubtotals(html);
-    const groupStart = enhanced.indexOf(
-      'data-instrument-purchase-group data-instrument-id="instrument-main"',
-    );
+    const groupStart = enhanced.indexOf('data-instrument-purchase-group data-instrument-id="instrument-main"');
     const groupEnd = enhanced.indexOf("</details>", groupStart);
     const group = enhanced.slice(groupStart, groupEnd);
     assert.ok(group.indexOf('data-purchase="p2"') < group.indexOf('data-purchase="p1"'));

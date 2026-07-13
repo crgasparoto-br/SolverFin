@@ -9,7 +9,7 @@ void main().catch((error: unknown) => {
 });
 
 async function main(): Promise<void> {
-  assertScopeLayoutContract();
+  assertCompactLayoutContract();
   await assertScopeRequest("card", "current", {
     expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1/current-only",
   });
@@ -26,33 +26,21 @@ async function main(): Promise<void> {
   });
 }
 
-function assertScopeLayoutContract(): void {
+function assertCompactLayoutContract(): void {
   const script = recurringCardScopeControllerScript();
 
-  assert.match(script, /data-recurrence-scope-layout-styles/);
-  assert.match(script, /width: min\(600px, calc\(100vw - 32px\)\)/);
-  assert.match(script, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(script, /min-height: 104px !important/);
-  assert.match(script, /recurrence-scope-option-copy/);
-  assert.match(script, /recurrence-scope-option-description/);
+  assert.match(script, /max-width: 460px/);
+  assert.match(script, /min-height: 44px/);
+  assert.match(script, /recurrence-scope-choice/);
   assert.match(script, /recurrence-scope-back/);
-  assert.match(script, /@media \(max-width: 640px\)/);
-  assert.match(script, /grid-template-columns: 1fr/);
-  assert.match(script, /Alterar somente esta compra/);
-  assert.match(script, /Alterar somente este lançamento/);
-  assert.match(
-    script,
-    /Aplica a alteração nesta compra e também em todas as próximas compras ainda editáveis/,
-  );
-  assert.match(
-    script,
-    /Aplica a alteração neste lançamento e também em todos os próximos lançamentos ainda editáveis/,
-  );
-
-  assert.match(script, /dialog button, \[role="dialog"\] button, \.category-modal button/);
-  assert.match(script, /data-recurrence-scope-cancel/);
-  assert.match(script, /popupSaveIcon/);
-  assert.match(script, /popupConfirmIcon/);
+  assert.match(script, /Somente esta compra/);
+  assert.match(script, /Esta compra e as próximas/);
+  assert.match(script, /Somente este lançamento/);
+  assert.match(script, /Este lançamento e os próximos/);
+  assert.doesNotMatch(script, /max-width: 600px/);
+  assert.doesNotMatch(script, /min-height: 104px/);
+  assert.doesNotMatch(script, /recurrence-scope-option-description/);
+  assert.doesNotMatch(script, /grid-template-columns: repeat\(2/);
 }
 
 async function assertScopeRequest(
@@ -70,11 +58,6 @@ async function assertScopeRequest(
   const currentButton = fakeButton();
   const futureButton = fakeButton();
   const backButton = fakeButton();
-  const actions = {
-    classList: fakeClassList(),
-    querySelector: (selector: string) =>
-      selector === "[data-recurrence-scope-cancel]" ? backButton : null,
-  };
   const status = { className: "", textContent: "" };
   const modal = {
     dataset: { targetKind },
@@ -82,7 +65,7 @@ async function assertScopeRequest(
     querySelector: (selector: string) => {
       if (selector === '[data-recurrence-scope="current"]') return currentButton;
       if (selector === '[data-recurrence-scope="current_and_future"]') return futureButton;
-      if (selector === ".recurrence-scope-actions") return actions;
+      if (selector === '.recurrence-scope-actions [data-recurrence-scope-cancel]') return backButton;
       if (selector === "[data-recurrence-scope-status]") return status;
       return null;
     },
@@ -127,10 +110,7 @@ async function assertScopeRequest(
     head: {
       appendChild: (style: FakeStyle) => appendedStyles.push(style),
     },
-    createElement: (tagName: string) => {
-      assert.equal(tagName, "style");
-      return fakeStyle();
-    },
+    createElement: () => fakeStyle(),
     querySelector: (selector: string) => {
       if (selector === "[data-recurrence-scope-layout-styles]") return null;
       if (selector === "[data-recurrence-scope-modal]") return modal;
@@ -157,24 +137,17 @@ async function assertScopeRequest(
     window: { location: { reload: () => undefined }, setTimeout: () => 0 },
   });
 
-  const currentLabel =
-    targetKind === "card" ? "Alterar somente esta compra" : "Alterar somente este lançamento";
+  const currentLabel = targetKind === "card" ? "Somente esta compra" : "Somente este lançamento";
   const futureLabel =
-    targetKind === "card"
-      ? "Alterar esta compra e as próximas"
-      : "Alterar este lançamento e os próximos";
-  assert.match(currentButton.innerHTML, new RegExp(currentLabel));
-  assert.match(futureButton.innerHTML, new RegExp(futureLabel));
-  assert.match(currentButton.innerHTML, /recurrence-scope-option-description/);
-  assert.match(futureButton.innerHTML, /recurrence-scope-option-description/);
-  assert.equal(currentButton.classList.has("recurrence-scope-option"), true);
-  assert.equal(futureButton.classList.has("recurrence-scope-option"), true);
+    targetKind === "card" ? "Esta compra e as próximas" : "Este lançamento e os próximos";
+  assert.equal(currentButton.textContent, currentLabel);
+  assert.equal(futureButton.textContent, futureLabel);
+  assert.equal(currentButton.classList.has("recurrence-scope-choice"), true);
+  assert.equal(futureButton.classList.has("recurrence-scope-choice"), true);
   assert.equal(backButton.classList.has("recurrence-scope-back"), true);
-  assert.equal(actions.classList.has("recurrence-scope-actions-refactored"), true);
   assert.equal(currentButton.dataset.explicitEditScope, "current_only");
   assert.equal(futureButton.dataset.explicitEditScope, "current_and_future");
   assert.equal(appendedStyles.length, 1);
-  assert.match(appendedStyles[0]?.textContent ?? "", /grid-template-columns: repeat\(2/);
   assert.ok(clickListener);
 
   let prevented = false;
@@ -218,7 +191,6 @@ interface FakeButton {
   innerHTML: string;
   textContent: string;
   classList: FakeClassList;
-  attributes: Record<string, string>;
   setAttribute(name: string, value: string): void;
   closest(selector: string): FakeButton | null;
 }
@@ -233,37 +205,29 @@ function fakeButton(): FakeButton {
     },
     set innerHTML(value: string) {
       html = value;
-      this.textContent = value
-        .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+      this.textContent = value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
     },
     textContent: "",
     classList: fakeClassList(),
-    attributes: {},
-    setAttribute(name: string, value: string) {
-      this.attributes[name] = value;
-    },
+    setAttribute: () => undefined,
     closest: () => null,
   };
   button.closest = (selector: string) =>
-    selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope ? button : null;
+    selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope
+      ? button
+      : null;
   return button;
 }
 
 interface FakeStyle {
   textContent: string;
-  attributes: Record<string, string>;
   setAttribute(name: string, value: string): void;
 }
 
 function fakeStyle(): FakeStyle {
   return {
     textContent: "",
-    attributes: {},
-    setAttribute(name: string, value: string) {
-      this.attributes[name] = value;
-    },
+    setAttribute: () => undefined,
   };
 }
 

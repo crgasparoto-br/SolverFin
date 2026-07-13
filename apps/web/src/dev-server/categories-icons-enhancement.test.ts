@@ -72,16 +72,19 @@ describe("categories icons and tooltips enhancement", () => {
       html,
       /data-category-filter="archived"[^>]*title="Mostrar categorias arquivadas"[^>]*><svg/,
     );
-    assert.match(html, /data-close-category-modal aria-label="Fechar modal" title="Fechar"><svg/);
-    assert.match(html, /data-close-category-modal title="Fechar sem salvar"><svg/);
+    assert.match(
+      html,
+      /data-close-category-modal aria-label="Fechar modal" title="Fechar"><svg/,
+    );
+    assert.match(
+      html,
+      /data-close-category-modal title="Fechar sem salvar"><svg/,
+    );
     assert.match(
       html,
       /aria-label="Editar categoria Alimentação" title="Editar categoria Alimentação"/,
     );
-    assert.match(
-      html,
-      /<span class="category-path"><svg[^>]*>[\s\S]*?<\/svg>Casa &gt; Alimentação<\/span>/,
-    );
+    assert.match(html, /<span class="category-path"><svg[^>]*>[\s\S]*?<\/svg>Casa &gt; Alimentação<\/span>/);
     assert.doesNotMatch(html, /category-node-edit-hint/);
   });
 
@@ -121,7 +124,9 @@ describe("categories icons and tooltips enhancement", () => {
 
     assert.equal(enhanceCategoriesIconsAndTooltips(enhanced), enhanced);
     assert.equal(
-      enhanceCategoriesIconsAndTooltips("<title>Dashboard - SolverFin</title><main></main>"),
+      enhanceCategoriesIconsAndTooltips(
+        "<title>Dashboard - SolverFin</title><main></main>",
+      ),
       "<title>Dashboard - SolverFin</title><main></main>",
     );
   });

@@ -62,7 +62,7 @@ function fakeButton(options: FakeButtonOptions): FakePopupButton {
   const attributes = new Set(options.attributes ?? []);
   const form = options.formMethod
     ? {
-        getAttribute: (name: string) => (name === "method" ? (options.formMethod ?? null) : null),
+        getAttribute: (name: string) => (name === "method" ? options.formMethod ?? null : null),
       }
     : null;
   let insertedHtml = "";
@@ -78,9 +78,7 @@ function fakeButton(options: FakeButtonOptions): FakePopupButton {
       insertedHtml = value;
     },
     querySelector: (selector: string) =>
-      selector === "svg" && (options.existingSvg === true || insertedHtml.includes("<svg"))
-        ? {}
-        : null,
+      selector === "svg" && (options.existingSvg === true || insertedHtml.includes("<svg")) ? {} : null,
     insertAdjacentHTML: (_position: string, html: string) => {
       insertedHtml = html + insertedHtml;
     },
@@ -96,7 +94,7 @@ function fakeButton(options: FakeButtonOptions): FakePopupButton {
         .split(",")
         .map((value) => value.trim().replace(/^\[|\]$/g, ""))
         .some((attribute) => attributes.has(attribute)),
-    getAttribute: (name: string) => (name === "type" ? (options.type ?? "button") : null),
+    getAttribute: (name: string) => (name === "type" ? options.type ?? "button" : null),
   };
 
   return button;

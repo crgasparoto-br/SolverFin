@@ -35,7 +35,8 @@ export function enhanceCardInstrumentSubtotals(html: string): string {
   if (openingTagEnd < 0 || closingTagStart < 0) return html;
 
   const groupedRows = groups.map(renderInstrumentPurchaseGroup).join("");
-  let nextHtml = html.slice(0, openingTagEnd + 1) + groupedRows + html.slice(closingTagStart);
+  let nextHtml =
+    html.slice(0, openingTagEnd + 1) + groupedRows + html.slice(closingTagStart);
   nextHtml = injectInstrumentSummaryBreakdown(nextHtml, groups);
   return injectInstrumentAssets(nextHtml);
 }
@@ -45,9 +46,7 @@ function readInstrumentLabels(html: string): Map<string, string> {
   const selectMatch = /<select name="cardInstrumentId"[^>]*>([\s\S]*?)<\/select>/.exec(html);
   if (!selectMatch?.[1]) return labels;
 
-  for (const option of selectMatch[1].matchAll(
-    /<option value="([^"]+)"[^>]*>([\s\S]*?)<\/option>/g,
-  )) {
+  for (const option of selectMatch[1].matchAll(/<option value="([^"]+)"[^>]*>([\s\S]*?)<\/option>/g)) {
     const instrumentId = decodeHtml(option[1] ?? "").trim();
     const label = stripHtml(decodeHtml(option[2] ?? "")).trim();
     if (instrumentId && label && label !== "Nenhum instrumento ativo") {
@@ -115,7 +114,10 @@ function renderInstrumentPurchaseGroup(group: InstrumentPurchaseGroup): string {
     </details>`;
 }
 
-function injectInstrumentSummaryBreakdown(html: string, groups: InstrumentPurchaseGroup[]): string {
+function injectInstrumentSummaryBreakdown(
+  html: string,
+  groups: InstrumentPurchaseGroup[],
+): string {
   const heading = "<h2>Totais por cartão (R$)</h2>";
   const headingIndex = html.indexOf(heading);
   if (headingIndex < 0) return html;

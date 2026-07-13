@@ -37,7 +37,10 @@ export function enhanceCardListSorting(html: string, url: URL): string {
   return injectSortAssets(nextHtml);
 }
 
-export function resolveListSort(value: string | null | undefined, fallback: ListSort): ListSort {
+export function resolveListSort(
+  value: string | null | undefined,
+  fallback: ListSort,
+): ListSort {
   return SUPPORTED_SORTS.has(value as ListSort) ? (value as ListSort) : fallback;
 }
 
@@ -115,7 +118,12 @@ function sortCardPurchaseRows(html: string, sort: ListSort): string {
   return html.slice(0, listStart) + sortedList + html.slice(listEnd);
 }
 
-function sortBlocks(fragment: string, marker: string, tagName: string, sort: ListSort): string {
+function sortBlocks(
+  fragment: string,
+  marker: string,
+  tagName: string,
+  sort: ListSort,
+): string {
   const elements = collectElements(fragment, marker, tagName);
   if (elements.length < 2) return fragment;
 
@@ -152,10 +160,9 @@ function parseSortableBlock(content: string, originalIndex: number): SortableBlo
 }
 
 function parseEmbeddedRecord(content: string): Record<string, unknown> | undefined {
-  const match =
-    /<script type="application\/json" data-(?:transaction|purchase)="[^"]*">([\s\S]*?)<\/script>/.exec(
-      content,
-    );
+  const match = /<script type="application\/json" data-(?:transaction|purchase)="[^"]*">([\s\S]*?)<\/script>/.exec(
+    content,
+  );
   if (!match?.[1]) return undefined;
 
   try {
@@ -165,7 +172,11 @@ function parseEmbeddedRecord(content: string): Record<string, unknown> | undefin
   }
 }
 
-function compareSortableBlocks(left: SortableBlock, right: SortableBlock, sort: ListSort): number {
+function compareSortableBlocks(
+  left: SortableBlock,
+  right: SortableBlock,
+  sort: ListSort,
+): number {
   let comparison = 0;
 
   if (sort === "date_asc") comparison = left.date.localeCompare(right.date);
