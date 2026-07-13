@@ -249,7 +249,9 @@ export function recurringCardScopeControllerScript(): string {
         }
 
         modal.addEventListener("cancel", (event) => {
-          if (busy) event.preventDefault();
+          if (!busy) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
         }, true);
 
         document.addEventListener("click", async (event) => {
