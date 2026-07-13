@@ -34,13 +34,28 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Generate Prettier patch
-        run: |
-          npx prettier . --write
-          git diff --binary > prettier.patch
+      - name: Format repository
+        run: npx prettier . --write
 
-      - name: Upload Prettier patch
+      - name: Upload formatted files
         uses: actions/upload-artifact@v4
         with:
-          name: prettier-patch
-          path: prettier.patch
+          name: formatted-files
+          path: |
+            SUGESTOES_UI_UX.md
+            apps/web/src/dev-server-accounts-cards-actions.test.ts
+            apps/web/src/dev-server.ts
+            apps/web/src/dev-server/accounts-cards-hover-contrast.test.ts
+            apps/web/src/dev-server/accounts-cards-page-dialog-only.ts
+            apps/web/src/dev-server/card-instrument-subtotals-enhancement.test.ts
+            apps/web/src/dev-server/card-instrument-subtotals-enhancement.ts
+            apps/web/src/dev-server/cards-page-month-navigation.test.ts
+            apps/web/src/dev-server/cards-page-month-navigation.ts
+            apps/web/src/dev-server/categories-icons-enhancement.test.ts
+            apps/web/src/dev-server/icons.ts
+            apps/web/src/dev-server/list-sorting-enhancement.test.ts
+            apps/web/src/dev-server/list-sorting-enhancement.ts
+            apps/web/src/dev-server/popup-action-icons.test.ts
+            apps/web/src/dev-server/recurring-card-scope-controller.test.ts
+            apps/web/src/dev-server/shell.test.ts
+            apps/web/src/dev-server/statement-action-icons.test.ts
