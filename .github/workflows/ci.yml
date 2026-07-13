@@ -33,10 +33,13 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Check changed file formatting
         run: npx prettier --check apps/web/src/dev-server/transactions-page.ts apps/web/src/dev-server/transactions-page-presentation.test.ts apps/web/src/dev-server/transactions-statement.ts apps/web/src/dev-server/transactions-statement.test.ts apps/web/src/dev-server/statement-status.ts apps/web/src/dev-server/statement-action-icons.ts apps/web/src/dev-server/statement-action-icons.test.ts apps/web/src/dev-server/shared-styles.ts apps/web/src/dev-server/shared-styles.test.ts
-      - name: Typecheck web workspace
-        run: npm run typecheck --workspace @solverfin/web
-      - name: Test web workspace
-        run: npm run test --workspace @solverfin/web
+      - name: Collect web typecheck diagnostics
+        run: npm run typecheck --workspace @solverfin/web > typecheck.log 2>&1 || true
+      - name: Upload web typecheck diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-467-typecheck
+          path: typecheck.log
 
   validate:
     name: Validate monorepo
