@@ -6,7 +6,18 @@ on:
       - main
 
 jobs:
-  workspace-tests:
+  workspace-test:
+    name: Test ${{ matrix.workspace }}
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - "@solverfin/api"
+          - "@solverfin/web"
+          - "@solverfin/ai"
+          - "@solverfin/config"
+          - "@solverfin/domain"
+          - "@solverfin/shared"
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
@@ -38,42 +49,5 @@ jobs:
           npm run build:packages --silent
           npm run db:deploy --silent
           npm run db:seed --silent
-      - id: api
-        name: Test API workspace
-        continue-on-error: true
-        run: npm run test --workspace @solverfin/api --if-present
-      - id: web
-        name: Test web workspace
-        continue-on-error: true
-        run: npm run test --workspace @solverfin/web --if-present
-      - id: ai
-        name: Test AI workspace
-        continue-on-error: true
-        run: npm run test --workspace @solverfin/ai --if-present
-      - id: config
-        name: Test config workspace
-        continue-on-error: true
-        run: npm run test --workspace @solverfin/config --if-present
-      - id: domain
-        name: Test domain workspace
-        continue-on-error: true
-        run: npm run test --workspace @solverfin/domain --if-present
-      - id: shared
-        name: Test shared workspace
-        continue-on-error: true
-        run: npm run test --workspace @solverfin/shared --if-present
-      - name: Report workspace failures
-        if: always()
-        run: |
-          echo "api=${{ steps.api.outcome }}"
-          echo "web=${{ steps.web.outcome }}"
-          echo "ai=${{ steps.ai.outcome }}"
-          echo "config=${{ steps.config.outcome }}"
-          echo "domain=${{ steps.domain.outcome }}"
-          echo "shared=${{ steps.shared.outcome }}"
-          test "${{ steps.api.outcome }}" = success
-          test "${{ steps.web.outcome }}" = success
-          test "${{ steps.ai.outcome }}" = success
-          test "${{ steps.config.outcome }}" = success
-          test "${{ steps.domain.outcome }}" = success
-          test "${{ steps.shared.outcome }}" = success
+      - name: Test workspace
+        run: npm run test --workspace "${{ matrix.workspace }}" --if-present
