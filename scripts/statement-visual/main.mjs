@@ -195,18 +195,26 @@ async function captureTooltip(scenario) {
       browser.cdp,
       `(() => {
         const target = document.querySelector('[data-visual-target="true"]');
-        const all = Array.from(document.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])')).filter((element) => !element.hidden && element.getClientRects().length > 0);
-        const index = all.indexOf(target);
-        if (index < 1) throw new Error("No previous focus target");
-        all[index - 1].focus();
-        return index;
+        const sentinel = document.createElement("button");
+        sentinel.type = "button";
+        sentinel.dataset.visualTabSentinel = "true";
+        sentinel.setAttribute("aria-label", "Sentinela temporária da validação por Tab");
+        sentinel.style.cssText = "position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;padding:0;border:0";
+        target.before(sentinel);
+        sentinel.focus();
+        return document.activeElement === sentinel;
       })()`,
     );
-    for (let attempt = 0; attempt < 4; attempt += 1) {
-      await browser.cdp.send("Input.dispatchKeyEvent", { type: "rawKeyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
-      await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
-      if (await evaluate(browser.cdp, `document.activeElement === document.querySelector('[data-visual-target="true"]')`)) break;
-    }
+    await browser.cdp.send("Input.dispatchKeyEvent", { type: "rawKeyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+    await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+    await evaluate(
+      browser.cdp,
+      `(() => {
+        const sentinel = document.querySelector('[data-visual-tab-sentinel="true"]');
+        if (sentinel) sentinel.remove();
+        return true;
+      })()`,
+    );
   } else {
     await evaluate(browser.cdp, `document.querySelector('[data-visual-target="true"]').focus()`);
   }
