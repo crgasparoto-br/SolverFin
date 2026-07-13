@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  issue-467-web-diagnostics:
-    name: Issue 467 web diagnostics
+  issue-467-web:
+    name: Issue 467 web checks
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -34,10 +34,7 @@ jobs:
         run: npm run build:packages
       - name: Typecheck web workspace
         run: npm run typecheck --workspace @solverfin/web
-      - name: Collect web test diagnostics
-        run: npm run test --workspace @solverfin/web > web-tests.log 2>&1 || true
-      - name: Upload web test diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-467-web-tests
-          path: web-tests.log
+      - name: Compile web tests
+        run: rm -rf .tmp-tests/web && npx tsc -p apps/web/tsconfig.test.json
+      - name: Test issue 467 behavior
+        run: node scripts/run-compiled-tests.mjs .tmp-tests/web --include transactions-page-presentation.test.js --include transactions-page.test.js --include transactions-statement.test.js --include shared-styles.test.js --include statement-action-icons.test.js
