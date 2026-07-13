@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { renderTransactionsPage } from "./transactions-page.js";
 
 const MAX_PERSISTED_AMOUNT_MINOR = 2_147_483_647;
+const MEDIUM_AMOUNT_MINOR = 99_999_999;
+const LARGE_AMOUNT_MINOR = 999_999_999;
 const aggregateIncomeCount = 47;
 const transactions = [
   transaction("max-income", "income", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-01"),
@@ -25,13 +27,26 @@ const transactions = [
     "2026-07-04",
   ),
   transaction("zero-value", "income", 0, "2026-07-05"),
+  transaction("medium-income", "income", MEDIUM_AMOUNT_MINOR, "2026-07-06"),
+  transaction("medium-expense", "expense", MEDIUM_AMOUNT_MINOR, "2026-07-07"),
+  transaction("large-income", "income", LARGE_AMOUNT_MINOR, "2026-07-08"),
+  transaction("large-expense", "expense", LARGE_AMOUNT_MINOR, "2026-07-09"),
   ...Array.from({ length: aggregateIncomeCount }, (_, index) =>
     transaction(
       `aggregate-income-${index + 1}`,
       "income",
       MAX_PERSISTED_AMOUNT_MINOR,
-      "2026-07-06",
+      "2026-07-10",
     ),
+  ),
+];
+const negativeSummaryTransactions = [
+  transaction(
+    "negative-summary",
+    "expense",
+    MAX_PERSISTED_AMOUNT_MINOR,
+    "2026-07-01",
+    "account-negative",
   ),
 ];
 
@@ -57,6 +72,13 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
           status: "active",
           openingBalanceMinor: 0,
         },
+        {
+          id: "account-negative",
+          name: "Conta negativa",
+          kind: "checking",
+          status: "active",
+          openingBalanceMinor: 0,
+        },
       ],
     });
   }
@@ -65,8 +87,14 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     return jsonResponse({ categories: [] });
   if (url.pathname === "/api/recurrences")
     return jsonResponse({ recurrences: [] });
-  if (url.pathname === "/api/transactions")
-    return jsonResponse({ transactions });
+  if (url.pathname === "/api/transactions") {
+    return jsonResponse({
+      transactions:
+        url.searchParams.get("accountId") === "account-negative"
+          ? negativeSummaryTransactions
+          : transactions,
+    });
+  }
 
   return jsonResponse({});
 };
@@ -77,6 +105,12 @@ const html = await renderTransactionsPage(
     "http://solverfin.test/lancamentos?accountId=account-long-values&month=2026-07",
   ),
 );
+const negativeSummaryHtml = await renderTransactionsPage(
+  "session-token",
+  new URL(
+    "http://solverfin.test/lancamentos?accountId=account-negative&month=2026-07",
+  ),
+);
 globalThis.fetch = originalFetch;
 
 const maxIncomeRow = extractRow(html, "max-income");
@@ -84,6 +118,8 @@ const zeroBalanceRow = extractRow(html, "balance-to-zero");
 const negativeBalanceRow = extractRow(html, "negative-balance");
 const backToZeroRow = extractRow(html, "back-to-zero");
 const zeroValueRow = extractRow(html, "zero-value");
+const mediumIncomeRow = extractRow(html, "medium-income");
+const largeIncomeRow = extractRow(html, "large-income");
 const aggregateFinalRow = extractRow(
   html,
   `aggregate-income-${aggregateIncomeCount}`,
@@ -98,6 +134,8 @@ assert.match(
 assert.match(backToZeroRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
 assert.match(zeroValueRow, /col-amount[^>]*>R\$\s*0,00<\/strong>/);
 assert.match(zeroValueRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
+assert.match(mediumIncomeRow, /col-amount[^>]*>R\$\s*999\.999,99<\/strong>/);
+assert.match(largeIncomeRow, /col-amount[^>]*>R\$\s*9\.999\.999,99<\/strong>/);
 
 const expectedAggregateBalanceMinor =
   aggregateIncomeCount * MAX_PERSISTED_AMOUNT_MINOR;
@@ -110,23 +148,36 @@ assert.match(
 );
 
 const expectedIncomeMinor =
-  (aggregateIncomeCount + 2) * MAX_PERSISTED_AMOUNT_MINOR;
-const expectedExpenseMinor = 2 * MAX_PERSISTED_AMOUNT_MINOR;
-assert.equal(expectedIncomeMinor, 105_226_698_703);
-assert.equal(expectedExpenseMinor, 4_294_967_294);
+  (aggregateIncomeCount + 2) * MAX_PERSISTED_AMOUNT_MINOR +
+  MEDIUM_AMOUNT_MINOR +
+  LARGE_AMOUNT_MINOR;
+const expectedExpenseMinor =
+  2 * MAX_PERSISTED_AMOUNT_MINOR + MEDIUM_AMOUNT_MINOR + LARGE_AMOUNT_MINOR;
+assert.equal(expectedIncomeMinor, 106_326_698_701);
+assert.equal(expectedExpenseMinor, 5_394_967_292);
 
 const summaryBalance = extractElement(html, "section", "summary-balance");
 assert.match(summaryBalance, /Saldo atual/);
 assert.match(summaryBalance, /R\$\s*1\.009\.317\.314,09/);
 
 const receipts = extractSummaryTotal(html, "Receitas");
-assert.match(receipts, /R\$\s*1\.052\.266\.987,03/);
+assert.match(receipts, /R\$\s*1\.063\.266\.987,01/);
 
 const expenses = extractSummaryTotal(html, "Despesas");
-assert.match(expenses, /(?:-R\$\s*42\.949\.672,94|R\$\s*-42\.949\.672,94)/);
+assert.match(expenses, /(?:-R\$\s*53\.949\.672,92|R\$\s*-53\.949\.672,92)/);
 
 const unreconciled = extractStatusLine(html, "Não conciliados");
-assert.match(unreconciled, /<strong>R\$\s*1\.095\.216\.659,97<\/strong>/);
+assert.match(unreconciled, /<strong>R\$\s*1\.117\.216\.659,93<\/strong>/);
+
+const negativeSummaryBalance = extractElement(
+  negativeSummaryHtml,
+  "section",
+  "summary-balance",
+);
+assert.match(
+  negativeSummaryBalance,
+  /(?:-R\$\s*21\.474\.836,47|R\$\s*-21\.474\.836,47)/,
+);
 
 assert.match(
   html,
@@ -154,6 +205,7 @@ function transaction(
   kind: "income" | "expense",
   amountMinor: number,
   date: string,
+  accountId = "account-long-values",
 ): {
   id: string;
   description: string;
@@ -174,7 +226,7 @@ function transaction(
     occurredOn: date,
     plannedOn: date,
     effectiveOn: date,
-    accountId: "account-long-values",
+    accountId,
   };
 }
 
