@@ -41,7 +41,10 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /const displayName = typeof body\.user\.displayName/);
     assert.match(html, /const email = typeof body\.user\.email/);
     assert.match(html, /userName\.textContent = displayName \|\| email \|\| "Usuário"/);
-    assert.match(html, /<style>\.test-marker \{ color: #0f3d4c; \}<\/style>/);
+    assert.match(html, /\.test-marker \{ color: #0f3d4c; \}/);
+    assert.match(html, /\.statement-tooltip-layer\s*\{[\s\S]*position:\s*fixed/);
+    assert.match(html, /\.statement-status::after\s*\{\s*content:\s*none/);
+    assert.match(html, /document\.querySelectorAll\("\.statement-status\[data-tooltip\]"\)/);
     assert.match(html, /<main><section>Conteúdo da página<\/section><\/main>/);
     assert.match(transactionsLink.attributes, /data-nav-priority="primary"/);
     assert.match(transactionsLink.attributes, /aria-current="page"/);
