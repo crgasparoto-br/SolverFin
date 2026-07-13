@@ -91,7 +91,7 @@ function collectCardInstrumentLists(html: string): CardInstrumentList[] {
 
 function removeStandaloneNewInstrumentButtons(html: string): string {
   return html.replace(
-    /\s*<button type="button" class="icon-button" data-open-dialog="new-card-instrument-dialog-[^"]+" aria-label="Adicionar instrumento em [^"]+"(?: disabled)?>[\s\S]*?<\/button>/g,
+    /\s*<button\b(?=[^>]*\bclass="icon-button")(?=[^>]*\bdata-open-dialog="new-card-instrument-dialog-[^"]+")[^>]*>[\s\S]*?<\/button>/g,
     "",
   );
 }
