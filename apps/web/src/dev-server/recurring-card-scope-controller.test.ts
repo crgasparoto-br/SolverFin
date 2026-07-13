@@ -10,6 +10,7 @@ void main().catch((error: unknown) => {
 
 async function main(): Promise<void> {
   assertCompactLayoutContract();
+  assertAccountEditContract();
   await assertScopeRequest("card", "current", {
     expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1/current-only",
   });
@@ -18,7 +19,7 @@ async function main(): Promise<void> {
     expectedScope: "current_and_future",
   });
   await assertScopeRequest("account", "current", {
-    expectedPath: "/api/transactions/transaction-1/current-only",
+    expectedPath: "/api/transactions/transaction-1",
   });
   await assertScopeRequest("account", "current_and_future", {
     expectedPath: "/api/transactions/transaction-1",
@@ -37,10 +38,29 @@ function assertCompactLayoutContract(): void {
   assert.match(script, /Esta compra e as próximas/);
   assert.match(script, /Somente este lançamento/);
   assert.match(script, /Este lançamento e os próximos/);
+  assert.match(script, /cancelButtons/);
+  assert.match(script, /if \(busy\) event\.preventDefault\(\)/);
   assert.doesNotMatch(script, /max-width: 600px/);
   assert.doesNotMatch(script, /min-height: 104px/);
   assert.doesNotMatch(script, /recurrence-scope-option-description/);
   assert.doesNotMatch(script, /grid-template-columns: repeat\(2/);
+}
+
+function assertAccountEditContract(): void {
+  const script = recurringCardScopeControllerScript();
+
+  assert.match(script, /data-edit-account-field/);
+  assert.match(script, /data-edit-account-select/);
+  assert.match(script, /transaction\.accountId \|\| createAccountId/);
+  assert.match(script, /accountField\.hidden = !editing/);
+  assert.match(script, /accountSelect\.disabled = !editing/);
+  assert.match(script, /accountInput\.disabled = editing/);
+  assert.match(script, /Revise a conta usada neste lançamento\./);
+  assert.match(script, /A conta vem do filtro principal\./);
+  assert.match(
+    script,
+    /const requestPath = isCard && scope === "current_only" \? path \+ "\/current-only" : path/,
+  );
 }
 
 async function assertScopeRequest(
@@ -70,6 +90,9 @@ async function assertScopeRequest(
       if (selector === "[data-recurrence-scope-status]") return status;
       return null;
     },
+    querySelectorAll: (selector: string) =>
+      selector === "[data-recurrence-scope-cancel]" ? [backButton] : [],
+    addEventListener: () => undefined,
   };
   const form = {
     dataset: {
@@ -171,6 +194,10 @@ async function assertScopeRequest(
   const payload = JSON.parse(requests[0]?.init.body ?? "{}") as Record<string, unknown>;
   assert.equal(payload.editScope, expected.expectedScope);
   assert.equal(payload.applyToFuturePlanned, expected.expectedApplyToFuture);
+  if (targetKind === "account") assert.equal(payload.accountId, "account-1");
+  assert.equal(currentButton.disabled, true);
+  assert.equal(futureButton.disabled, true);
+  assert.equal(backButton.disabled, true);
 }
 
 interface FakeClassList {
