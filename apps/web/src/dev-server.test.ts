@@ -268,7 +268,7 @@ function adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu(): void {
     showAdminNavigation: true,
   });
 
-  assert.doesNotMatch(commonShell, /Admin - Instituições/);
+  assert.doesNotMatch(commonShell, /<a[^>]+href="\/admin\/instituicoes"/);
   assert.match(masterShell, /Admin - Instituições/);
   assert.match(masterShell, /\/admin\/instituicoes/);
 }
