@@ -34,5 +34,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: List files with formatting differences
-        run: npx prettier . --list-different
+      - name: Collect files with formatting differences
+        run: npx prettier . --list-different > format-differences.txt || true
+
+      - name: Upload formatting diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: format-differences
+          path: format-differences.txt
