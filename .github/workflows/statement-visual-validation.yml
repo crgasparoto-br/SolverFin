@@ -71,7 +71,7 @@ jobs:
           npm run dev:all > /tmp/solverfin-dev.log 2>&1 &
           echo $! > /tmp/solverfin-dev.pid
           for attempt in $(seq 1 90); do
-            if curl -fsS http://127.0.0.1:4000/health >/dev/null && curl -fsS http://127.0.0.1:5173/health >/dev/null; then
+            if curl -sS -o /dev/null http://127.0.0.1:4000/api/me && curl -fsS http://127.0.0.1:5173/health >/dev/null; then
               exit 0
             fi
             sleep 1
