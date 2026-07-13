@@ -39,7 +39,8 @@ function assertCompactLayoutContract(): void {
   assert.match(script, /Somente este lançamento/);
   assert.match(script, /Este lançamento e os próximos/);
   assert.match(script, /cancelButtons/);
-  assert.match(script, /if \(busy\) event\.preventDefault\(\)/);
+  assert.match(script, /if \(!busy\) return/);
+  assert.match(script, /event\.stopImmediatePropagation\(\)/);
   assert.doesNotMatch(script, /max-width: 600px/);
   assert.doesNotMatch(script, /min-height: 104px/);
   assert.doesNotMatch(script, /recurrence-scope-option-description/);
