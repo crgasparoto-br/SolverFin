@@ -41,6 +41,12 @@ export function statementPresentationStyles(): string {
     .statement-table .col-amount,
     .statement-table .col-balance { min-width: max-content; }
 
+    @media (min-width: 761px) and (max-width: 900px) {
+      .account-filter .filter-form { grid-template-columns: 1fr; }
+      .account-filter .month-nav input[type="month"] { min-width: 10rem; }
+      .account-filter .ghost-btn { justify-self: start; }
+    }
+
     @media (max-width: 760px) {
       .statement-table .statement-row.statement-body { min-width: 0; }
       .statement-table .statement-row.statement-body .col-amount,
