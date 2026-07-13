@@ -240,7 +240,7 @@ function injectSortAssets(html: string): string {
         .ghost-button:hover:not(:disabled),.ghost-button:focus-visible,.recurrence-scope-actions .secondary-button:hover:not(:disabled),.recurrence-scope-actions .secondary-button:focus-visible{background:var(--primary-soft);border-color:#c8dde5;color:var(--primary)}
         .actions-item:hover:not(:disabled),.actions-item:focus-visible{background:var(--primary-soft);color:var(--text)}
         .actions-item.danger:hover:not(:disabled),.actions-item.danger:focus-visible{background:var(--danger-bg);color:var(--danger)}
-        @media(max-width:900px){form.filter-form[action="/lancamentos"],form.filter-form[action="/cartoes"]{grid-template-columns:1fr 1fr}.sort-field{min-width:0}}
+        @media(max-width:900px){form.filter-form[action="/lancamentos"]{grid-template-columns:1fr}form.filter-form[action="/lancamentos"] .month-nav input[type="month"]{min-width:10rem}form.filter-form[action="/cartoes"]{grid-template-columns:1fr 1fr}.sort-field{min-width:0}}
         @media(max-width:760px){form.filter-form[action="/lancamentos"],form.filter-form[action="/cartoes"]{grid-template-columns:1fr}}
       </style>`;
     nextHtml = nextHtml.replace("</head>", `${styles}</head>`);

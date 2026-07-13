@@ -47,6 +47,10 @@ assert.match(
   statementSorted,
   /\.actions-item:hover:not\(:disabled\),\.actions-item:focus-visible\{background:var\(--primary-soft\);color:var\(--text\)\}/,
 );
+assert.match(
+  statementSorted,
+  /@media\(max-width:900px\)\{form\.filter-form\[action="\/lancamentos"\]\{grid-template-columns:1fr\}form\.filter-form\[action="\/lancamentos"\] \.month-nav input\[type="month"\]\{min-width:10rem\}/,
+);
 
 const cardHtml = documentHtml(`
   <form class="filter-form" method="get" action="/cartoes"><input name="month" value="2026-07" /></form>
