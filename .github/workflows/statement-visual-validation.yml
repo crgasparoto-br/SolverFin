@@ -1,0 +1,118 @@
+name: Statement visual validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "apps/web/**"
+      - "scripts/validate-statement-ui.mjs"
+      - ".github/workflows/statement-visual-validation.yml"
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: statement-visual-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual-validation:
+    name: Chrome visual validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NODE_ENV: development
+      AUTH_ALLOW_DEMO: "true"
+      DATABASE_URL: postgresql://solverfin:solverfin_visual_password@localhost:5432/solverfin_visual?schema=public
+      API_BASE_URL: http://127.0.0.1:4000
+      HOST: 127.0.0.1
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_visual
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_visual_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_visual"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare database
+        run: |
+          npm run prisma:generate
+          npm run build:packages
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Start SolverFin
+        run: |
+          npm run dev:all > /tmp/solverfin-dev.log 2>&1 &
+          echo $! > /tmp/solverfin-dev.pid
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:4000/health >/dev/null && curl -fsS http://127.0.0.1:5173/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/solverfin-dev.log
+          exit 1
+
+      - name: Locate Chrome
+        id: chrome
+        shell: bash
+        run: |
+          chrome_bin="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)"
+          test -n "$chrome_bin"
+          echo "path=$chrome_bin" >> "$GITHUB_OUTPUT"
+          "$chrome_bin" --version
+
+      - name: Validate statement UI in Chrome
+        env:
+          CHROME_BIN: ${{ steps.chrome.outputs.path }}
+          SOLVERFIN_WEB_URL: http://127.0.0.1:5173
+          STATEMENT_VISUAL_OUTPUT: artifacts/statement-visual
+        run: npm run qa:statement-visual
+
+      - name: Preserve server log
+        if: always()
+        run: |
+          mkdir -p artifacts/statement-visual
+          cp /tmp/solverfin-dev.log artifacts/statement-visual/server.log || true
+
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: statement-visual-evidence-${{ github.sha }}
+          path: artifacts/statement-visual
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Stop SolverFin
+        if: always()
+        run: |
+          if test -f /tmp/solverfin-dev.pid; then
+            kill "$(cat /tmp/solverfin-dev.pid)" || true
+          fi
