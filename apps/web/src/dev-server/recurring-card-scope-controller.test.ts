@@ -65,7 +65,8 @@ async function assertScopeRequest(
     querySelector: (selector: string) => {
       if (selector === '[data-recurrence-scope="current"]') return currentButton;
       if (selector === '[data-recurrence-scope="current_and_future"]') return futureButton;
-      if (selector === '.recurrence-scope-actions [data-recurrence-scope-cancel]') return backButton;
+      if (selector === ".recurrence-scope-actions [data-recurrence-scope-cancel]")
+        return backButton;
       if (selector === "[data-recurrence-scope-status]") return status;
       return null;
     },
@@ -205,7 +206,10 @@ function fakeButton(): FakeButton {
     },
     set innerHTML(value: string) {
       html = value;
-      this.textContent = value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      this.textContent = value
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     },
     textContent: "",
     classList: fakeClassList(),
@@ -213,9 +217,7 @@ function fakeButton(): FakeButton {
     closest: () => null,
   };
   button.closest = (selector: string) =>
-    selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope
-      ? button
-      : null;
+    selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope ? button : null;
   return button;
 }
 

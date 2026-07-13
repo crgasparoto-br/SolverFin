@@ -85,7 +85,10 @@ describe("authenticated SSR shell", () => {
         const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
 
         assert.match(link.attributes, new RegExp(`data-nav-priority="${priority}"`));
-        assert.equal(link.attributes.includes('aria-current="page"'), route.path === activePathname);
+        assert.equal(
+          link.attributes.includes('aria-current="page"'),
+          route.path === activePathname,
+        );
 
         if (priority === "secondary") {
           assert.match(link.attributes, new RegExp(`id="nav-secondary-${route.id}"`));
@@ -152,13 +155,8 @@ describe("authenticated SSR shell", () => {
   });
 });
 
-function findNavigationLink(
-  html: string,
-  path: string,
-): { attributes: string; content: string } {
-  const match = new RegExp(
-    `<a href="${escapeRegExp(path)}"([^>]*)>([\\s\\S]*?)<\\/a>`,
-  ).exec(html);
+function findNavigationLink(html: string, path: string): { attributes: string; content: string } {
+  const match = new RegExp(`<a href="${escapeRegExp(path)}"([^>]*)>([\\s\\S]*?)<\\/a>`).exec(html);
 
   assert.ok(match, `Expected navigation link for ${path}`);
 

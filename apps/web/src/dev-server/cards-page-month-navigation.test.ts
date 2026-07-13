@@ -72,7 +72,10 @@ function assertMonthNavigation(
     html,
     /<div class="month-nav">[\s\S]*?<a class="icon-btn month-nav-link"[\s\S]*?&#8249;<\/a>[\s\S]*?<input[^>]*type="month"[^>]*data-invoice-month-input[\s\S]*?<a class="icon-btn month-nav-link"[\s\S]*?&#8250;<\/a>[\s\S]*?<\/div>/,
   );
-  assert.doesNotMatch(html, /month-picker-button|data-open-month-picker|Abrir calendário da fatura/);
+  assert.doesNotMatch(
+    html,
+    /month-picker-button|data-open-month-picker|Abrir calendário da fatura/,
+  );
   assert.match(
     html,
     new RegExp(
@@ -106,7 +109,10 @@ function assertMonthNavigation(
     html,
     /\.card-filter \.month-nav input\[data-invoice-month-input\]\{background:transparent!important;border:0!important;[^}]*font-size:\.875rem;[^}]*min-height:30px;/,
   );
-  assert.match(html, /::-webkit-calendar-picker-indicator\{cursor:pointer;display:block;opacity:1\}/);
+  assert.match(
+    html,
+    /::-webkit-calendar-picker-indicator\{cursor:pointer;display:block;opacity:1\}/,
+  );
   assert.match(
     html,
     /\.card-filter \.month-current-link\{[^}]*background:var\(--surface\);[^}]*border:1px solid var\(--line\);[^}]*color:var\(--primary\);/,
@@ -121,7 +127,9 @@ function installFetch(): void {
 
     if (url.pathname === "/api/cards") {
       return jsonResponse({
-        cards: [{ id: "card-1", name: "Cartão Principal", status: "active", closingDay: 20, dueDay: 10 }],
+        cards: [
+          { id: "card-1", name: "Cartão Principal", status: "active", closingDay: 20, dueDay: 10 },
+        ],
       });
     }
     if (url.pathname === "/api/invoices") {
@@ -134,36 +142,105 @@ function installFetch(): void {
     }
     if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
     if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
-    if (url.pathname === "/api/credit-card-accounts/card-1/instruments") return jsonResponse({ instruments: [] });
+    if (url.pathname === "/api/credit-card-accounts/card-1/instruments")
+      return jsonResponse({ instruments: [] });
     if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
     if (url.pathname === "/api/invoices/invoice-july/summary") {
-      return jsonResponse({ summary: summary("invoice-july", "open", "2026-07-20", "2026-08-10", 7000) });
+      return jsonResponse({
+        summary: summary("invoice-july", "open", "2026-07-20", "2026-08-10", 7000),
+      });
     }
     if (url.pathname === "/api/invoices/invoice-june/summary") {
-      return jsonResponse({ summary: summary("invoice-june", "closed", "2026-06-20", "2026-07-10", 6000) });
+      return jsonResponse({
+        summary: summary("invoice-june", "closed", "2026-06-20", "2026-07-10", 6000),
+      });
     }
     if (url.pathname === "/api/invoices/invoice-july/purchases") {
-      return jsonResponse({ purchases: [purchase("purchase-july", "invoice-july", "2026-07-15", "Compra de julho", 7000)] });
+      return jsonResponse({
+        purchases: [
+          purchase("purchase-july", "invoice-july", "2026-07-15", "Compra de julho", 7000),
+        ],
+      });
     }
     if (url.pathname === "/api/invoices/invoice-june/purchases") {
-      return jsonResponse({ purchases: [purchase("purchase-june", "invoice-june", "2026-06-15", "Compra de junho", 6000)] });
+      return jsonResponse({
+        purchases: [
+          purchase("purchase-june", "invoice-june", "2026-06-15", "Compra de junho", 6000),
+        ],
+      });
     }
     return jsonResponse({});
   };
 }
 
-function invoice(id: string, status: string, periodEndOn: string, dueOn: string, totalAmountMinor: number): Record<string, unknown> {
-  return { id, cardId: "card-1", status, periodStartOn: `${periodEndOn.slice(0, 8)}01`, periodEndOn, dueOn, totalAmountMinor };
+function invoice(
+  id: string,
+  status: string,
+  periodEndOn: string,
+  dueOn: string,
+  totalAmountMinor: number,
+): Record<string, unknown> {
+  return {
+    id,
+    cardId: "card-1",
+    status,
+    periodStartOn: `${periodEndOn.slice(0, 8)}01`,
+    periodEndOn,
+    dueOn,
+    totalAmountMinor,
+  };
 }
 
-function summary(invoiceId: string, status: string, closingOn: string, dueOn: string, totalExpensesMinor: number): Record<string, unknown> {
-  return { invoiceId, financialProfileId: "profile-1", cardId: "card-1", cardName: "Cartão Principal", status, periodStartOn: `${closingOn.slice(0, 8)}01`, closingOn, dueOn, previousBalanceMinor: 0, totalExpensesMinor, totalPaidMinor: 0, amountDueMinor: totalExpensesMinor, reconciledExpensesMinor: 0, unreconciledExpensesMinor: totalExpensesMinor, purchasesCount: 1, cardTotals: [] };
+function summary(
+  invoiceId: string,
+  status: string,
+  closingOn: string,
+  dueOn: string,
+  totalExpensesMinor: number,
+): Record<string, unknown> {
+  return {
+    invoiceId,
+    financialProfileId: "profile-1",
+    cardId: "card-1",
+    cardName: "Cartão Principal",
+    status,
+    periodStartOn: `${closingOn.slice(0, 8)}01`,
+    closingOn,
+    dueOn,
+    previousBalanceMinor: 0,
+    totalExpensesMinor,
+    totalPaidMinor: 0,
+    amountDueMinor: totalExpensesMinor,
+    reconciledExpensesMinor: 0,
+    unreconciledExpensesMinor: totalExpensesMinor,
+    purchasesCount: 1,
+    cardTotals: [],
+  };
 }
 
-function purchase(id: string, invoiceId: string, occurredOn: string, description: string, amountMinor: number): Record<string, unknown> {
-  return { id, financialProfileId: "profile-1", cardId: "card-1", invoiceId, occurredOn, description, amountMinor, currency: "BRL", status: "posted" };
+function purchase(
+  id: string,
+  invoiceId: string,
+  occurredOn: string,
+  description: string,
+  amountMinor: number,
+): Record<string, unknown> {
+  return {
+    id,
+    financialProfileId: "profile-1",
+    cardId: "card-1",
+    invoiceId,
+    occurredOn,
+    description,
+    amountMinor,
+    currency: "BRL",
+    status: "posted",
+  };
 }
 
 function jsonResponse(body: unknown): Response {
-  return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json; charset=utf-8" } });
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
 }

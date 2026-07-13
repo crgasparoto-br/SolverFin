@@ -23,8 +23,12 @@ const statementSorted = enhanceStatementListSorting(
   statementHtml,
   new URL("http://solverfin.test/lancamentos?sort=amount_desc"),
 );
-assert.ok(statementSorted.indexOf('data-transaction="b"') < statementSorted.indexOf('data-transaction="c"'));
-assert.ok(statementSorted.indexOf('data-transaction="c"') < statementSorted.indexOf('data-transaction="a"'));
+assert.ok(
+  statementSorted.indexOf('data-transaction="b"') < statementSorted.indexOf('data-transaction="c"'),
+);
+assert.ok(
+  statementSorted.indexOf('data-transaction="c"') < statementSorted.indexOf('data-transaction="a"'),
+);
 assert.match(statementSorted, /name="sort" data-list-sort/);
 assert.match(statementSorted, /value="amount_desc" selected/);
 assert.match(
