@@ -1,63 +1,144 @@
 name: CI
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
-      - review/main-issue-467-extrato
+      - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: ci-format-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  apply-formatting:
-    name: Apply formatting
+  issue-467-web:
+    name: Issue 467 web checks
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
-      - name: Checkout work branch
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: review/main-issue-467-extrato
-          fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
+      - name: Check changed file formatting
+        run: npx prettier --check apps/web/src/dev-server/transactions-page.ts apps/web/src/dev-server/transactions-page-presentation.test.ts apps/web/src/dev-server/transactions-statement.ts apps/web/src/dev-server/transactions-statement.test.ts apps/web/src/dev-server/statement-status.ts apps/web/src/dev-server/statement-action-icons.ts apps/web/src/dev-server/statement-action-icons.test.ts apps/web/src/dev-server/shared-styles.ts apps/web/src/dev-server/shared-styles.test.ts
+      - name: Typecheck web workspace
+        run: npm run typecheck --workspace @solverfin/web
+      - name: Test web workspace
+        run: npm run test --workspace @solverfin/web
 
-      - name: Format repository files
-        run: npx prettier . --write
-
-      - name: Commit formatting-only changes
+  validate:
+    name: Validate monorepo
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Show tool versions
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            SUGESTOES_UI_UX.md \
-            apps/web/src/dev-server-accounts-cards-actions.test.ts \
-            apps/web/src/dev-server.ts \
-            apps/web/src/dev-server/accounts-cards-hover-contrast.test.ts \
-            apps/web/src/dev-server/accounts-cards-page-dialog-only.ts \
-            apps/web/src/dev-server/card-instrument-subtotals-enhancement.test.ts \
-            apps/web/src/dev-server/card-instrument-subtotals-enhancement.ts \
-            apps/web/src/dev-server/cards-page-month-navigation.test.ts \
-            apps/web/src/dev-server/cards-page-month-navigation.ts \
-            apps/web/src/dev-server/categories-icons-enhancement.test.ts \
-            apps/web/src/dev-server/icons.ts \
-            apps/web/src/dev-server/list-sorting-enhancement.test.ts \
-            apps/web/src/dev-server/list-sorting-enhancement.ts \
-            apps/web/src/dev-server/popup-action-icons.test.ts \
-            apps/web/src/dev-server/recurring-card-scope-controller.test.ts \
-            apps/web/src/dev-server/shell.test.ts \
-            apps/web/src/dev-server/statement-action-icons.test.ts
-          git diff --cached --quiet || git commit -m "style: normalizar formatação exigida pelo CI"
-          git push origin HEAD:review/main-issue-467-extrato
+          node --version
+          npm --version
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check environment example
+        run: npm run env:check
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+      - name: Check demo seed script
+        run: npm run db:seed:check
+      - name: Check formatting
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - name: Apply migrations
+        run: npm run db:deploy
+      - name: Seed demo data
+        run: npm run db:seed
+      - name: Test
+        run: npm run test
+      - name: Build
+        run: npm run build
+
+  integration-api-postgres:
+    name: Integration API + PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - name: Build packages
+        run: npm run build:packages
+      - name: Apply migrations
+        run: npm run db:deploy
+      - name: Seed demo data
+        run: npm run db:seed
+      - name: Run API integration tests
+        run: npm run test:integration --workspace @solverfin/api
