@@ -27,6 +27,15 @@ describe("shared shell styles", () => {
     assert.match(css, /\.topbar/);
   });
 
+  it("applies the authenticated content width globally", () => {
+    const css = sharedShellStyles();
+
+    assert.match(css, /\.main-area\s*>\s*main\s*\{/);
+    assert.match(css, /max-width:\s*1800px/);
+    assert.match(css, /width:\s*100%/);
+    assert.match(css, /overflow-x:\s*hidden/);
+  });
+
   for (const moduleFileName of consumingModules) {
     it(`${moduleFileName} composes its styles from sharedShellStyles()`, () => {
       const source = readFileSync(join(currentDir, moduleFileName), "utf8");
