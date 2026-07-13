@@ -4,7 +4,7 @@ import { join } from "node:path";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 
 try {
-  await import("./validate-statement-ui.mjs");
+  await import("./statement-visual/main.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? error.stack ?? error.message : String(error);
