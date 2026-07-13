@@ -6,9 +6,24 @@ const MAX_PERSISTED_AMOUNT_MINOR = 2_147_483_647;
 const aggregateIncomeCount = 47;
 const transactions = [
   transaction("max-income", "income", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-01"),
-  transaction("balance-to-zero", "expense", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-02"),
-  transaction("negative-balance", "expense", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-03"),
-  transaction("back-to-zero", "income", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-04"),
+  transaction(
+    "balance-to-zero",
+    "expense",
+    MAX_PERSISTED_AMOUNT_MINOR,
+    "2026-07-02",
+  ),
+  transaction(
+    "negative-balance",
+    "expense",
+    MAX_PERSISTED_AMOUNT_MINOR,
+    "2026-07-03",
+  ),
+  transaction(
+    "back-to-zero",
+    "income",
+    MAX_PERSISTED_AMOUNT_MINOR,
+    "2026-07-04",
+  ),
   transaction("zero-value", "income", 0, "2026-07-05"),
   ...Array.from({ length: aggregateIncomeCount }, (_, index) =>
     transaction(
@@ -22,7 +37,8 @@ const transactions = [
 
 assert.ok(
   transactions.every(
-    (item) => item.amountMinor >= 0 && item.amountMinor <= MAX_PERSISTED_AMOUNT_MINOR,
+    (item) =>
+      item.amountMinor >= 0 && item.amountMinor <= MAX_PERSISTED_AMOUNT_MINOR,
   ),
   "every persisted fixture must remain inside the signed 32-bit Int limit",
 );
@@ -45,9 +61,12 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     });
   }
 
-  if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
-  if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
-  if (url.pathname === "/api/transactions") return jsonResponse({ transactions });
+  if (url.pathname === "/api/categories")
+    return jsonResponse({ categories: [] });
+  if (url.pathname === "/api/recurrences")
+    return jsonResponse({ recurrences: [] });
+  if (url.pathname === "/api/transactions")
+    return jsonResponse({ transactions });
 
   return jsonResponse({});
 };
@@ -65,7 +84,10 @@ const zeroBalanceRow = extractRow(html, "balance-to-zero");
 const negativeBalanceRow = extractRow(html, "negative-balance");
 const backToZeroRow = extractRow(html, "back-to-zero");
 const zeroValueRow = extractRow(html, "zero-value");
-const aggregateFinalRow = extractRow(html, `aggregate-income-${aggregateIncomeCount}`);
+const aggregateFinalRow = extractRow(
+  html,
+  `aggregate-income-${aggregateIncomeCount}`,
+);
 
 assert.match(maxIncomeRow, /col-amount[^>]*>R\$\s*21\.474\.836,47<\/strong>/);
 assert.match(zeroBalanceRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
@@ -77,7 +99,8 @@ assert.match(backToZeroRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
 assert.match(zeroValueRow, /col-amount[^>]*>R\$\s*0,00<\/strong>/);
 assert.match(zeroValueRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
 
-const expectedAggregateBalanceMinor = aggregateIncomeCount * MAX_PERSISTED_AMOUNT_MINOR;
+const expectedAggregateBalanceMinor =
+  aggregateIncomeCount * MAX_PERSISTED_AMOUNT_MINOR;
 assert.equal(expectedAggregateBalanceMinor, 100_931_731_409);
 assert.match(
   aggregateFinalRow,
@@ -86,7 +109,8 @@ assert.match(
   ),
 );
 
-const expectedIncomeMinor = (aggregateIncomeCount + 2) * MAX_PERSISTED_AMOUNT_MINOR;
+const expectedIncomeMinor =
+  (aggregateIncomeCount + 2) * MAX_PERSISTED_AMOUNT_MINOR;
 const expectedExpenseMinor = 2 * MAX_PERSISTED_AMOUNT_MINOR;
 assert.equal(expectedIncomeMinor, 105_226_698_703);
 assert.equal(expectedExpenseMinor, 4_294_967_294);
@@ -108,10 +132,22 @@ assert.match(
   html,
   /\.summary-balance strong, \.summary-total strong, \.status-line strong, \.col-amount, \.col-balance \{[^}]*white-space:\s*nowrap/,
 );
-assert.match(html, /\.statement-layout \.summary-totals\s*\{\s*grid-template-columns:\s*1fr/);
-assert.match(html, /\.statement-layout \.status-line strong\s*\{[^}]*grid-column:\s*1 \/ -1/);
-assert.match(html, /\.statement-table \.statement-row\s*\{[^}]*min-width:\s*70rem/);
-assert.match(html, /@media \(max-width: 760px\)[\s\S]*\.statement-row\.statement-body \{ min-width:\s*0/);
+assert.match(
+  html,
+  /\.statement-layout \.summary-totals\s*\{\s*grid-template-columns:\s*1fr/,
+);
+assert.match(
+  html,
+  /\.statement-layout \.status-line strong\s*\{[^}]*grid-column:\s*1 \/ -1/,
+);
+assert.match(
+  html,
+  /\.statement-table \.statement-row\s*\{[^}]*min-width:\s*70rem/,
+);
+assert.match(
+  html,
+  /@media \(max-width: 760px\)[\s\S]*\.statement-row\.statement-body \{ min-width:\s*0/,
+);
 
 function transaction(
   id: string,
@@ -147,7 +183,10 @@ function extractRow(pageHtml: string, transactionId: string): string {
   const markerIndex = pageHtml.indexOf(marker);
   assert.notEqual(markerIndex, -1, `row ${transactionId} should be rendered`);
 
-  const start = pageHtml.lastIndexOf('<article class="statement-row statement-body"', markerIndex);
+  const start = pageHtml.lastIndexOf(
+    '<article class="statement-row statement-body"',
+    markerIndex,
+  );
   const end = pageHtml.indexOf("</article>", markerIndex);
   assert.notEqual(start, -1);
   assert.notEqual(end, -1);
@@ -155,7 +194,11 @@ function extractRow(pageHtml: string, transactionId: string): string {
   return pageHtml.slice(start, end + "</article>".length);
 }
 
-function extractElement(pageHtml: string, tag: string, className: string): string {
+function extractElement(
+  pageHtml: string,
+  tag: string,
+  className: string,
+): string {
   const match = new RegExp(
     `<${tag} class="${className}"[^>]*>([\\s\\S]*?)<\\/${tag}>`,
   ).exec(pageHtml);
