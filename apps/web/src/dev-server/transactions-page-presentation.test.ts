@@ -90,7 +90,15 @@ assert.match(html, /statement-heading-actions/);
 assert.match(html, /grid-template-columns:\s*minmax\(260px, 320px\) minmax\(0,1fr\)/);
 assert.match(html, /@media \(max-width: 1279px\)/);
 assert.match(html, /font-variant-numeric:\s*tabular-nums/);
-assert.match(html, /\.statement-status:hover::after, \.statement-status:focus::after/);
+assert.match(html, /\.statement-status::after\s*\{\s*content:\s*none/);
+assert.match(html, /\.statement-tooltip-layer\s*\{[\s\S]*position:\s*fixed/);
+assert.match(html, /trigger\.setAttribute\("aria-describedby", tooltipId\)/);
+assert.match(html, /activeTrigger\.getBoundingClientRect\(\)/);
+assert.match(html, /document\.addEventListener\("scroll", positionTooltip, true\)/);
+assert.match(html, /\.statement-layout \.summary-totals\s*\{\s*grid-template-columns:\s*1fr/);
+assert.match(html, /\.statement-layout \.status-line strong\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
+assert.match(html, /\.statement-table \.statement-row\s*\{[\s\S]*min-width:\s*70rem/);
+assert.match(html, /\.statement-table \.col-amount,[\s\S]*min-width:\s*max-content/);
 assert.match(html, /\.main-area\s*>\s*main\s*\{[\s\S]*max-width:\s*1800px/);
 assert.match(html, /body\s*\{[\s\S]*overflow-x:\s*hidden/);
 
