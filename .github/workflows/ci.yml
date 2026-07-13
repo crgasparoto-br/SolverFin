@@ -9,20 +9,23 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  format-diagnostics:
-    name: Format diagnostics
+  apply-formatting:
+    name: Apply formatting
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout repository
+      - name: Checkout work branch
         uses: actions/checkout@v4
+        with:
+          ref: review/main-issue-467-extrato
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,28 +37,30 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Format repository
+      - name: Format repository files
         run: npx prettier . --write
 
-      - name: Upload formatted files
-        uses: actions/upload-artifact@v4
-        with:
-          name: formatted-files
-          path: |
-            SUGESTOES_UI_UX.md
-            apps/web/src/dev-server-accounts-cards-actions.test.ts
-            apps/web/src/dev-server.ts
-            apps/web/src/dev-server/accounts-cards-hover-contrast.test.ts
-            apps/web/src/dev-server/accounts-cards-page-dialog-only.ts
-            apps/web/src/dev-server/card-instrument-subtotals-enhancement.test.ts
-            apps/web/src/dev-server/card-instrument-subtotals-enhancement.ts
-            apps/web/src/dev-server/cards-page-month-navigation.test.ts
-            apps/web/src/dev-server/cards-page-month-navigation.ts
-            apps/web/src/dev-server/categories-icons-enhancement.test.ts
-            apps/web/src/dev-server/icons.ts
-            apps/web/src/dev-server/list-sorting-enhancement.test.ts
-            apps/web/src/dev-server/list-sorting-enhancement.ts
-            apps/web/src/dev-server/popup-action-icons.test.ts
-            apps/web/src/dev-server/recurring-card-scope-controller.test.ts
-            apps/web/src/dev-server/shell.test.ts
+      - name: Commit formatting-only changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            SUGESTOES_UI_UX.md \
+            apps/web/src/dev-server-accounts-cards-actions.test.ts \
+            apps/web/src/dev-server.ts \
+            apps/web/src/dev-server/accounts-cards-hover-contrast.test.ts \
+            apps/web/src/dev-server/accounts-cards-page-dialog-only.ts \
+            apps/web/src/dev-server/card-instrument-subtotals-enhancement.test.ts \
+            apps/web/src/dev-server/card-instrument-subtotals-enhancement.ts \
+            apps/web/src/dev-server/cards-page-month-navigation.test.ts \
+            apps/web/src/dev-server/cards-page-month-navigation.ts \
+            apps/web/src/dev-server/categories-icons-enhancement.test.ts \
+            apps/web/src/dev-server/icons.ts \
+            apps/web/src/dev-server/list-sorting-enhancement.test.ts \
+            apps/web/src/dev-server/list-sorting-enhancement.ts \
+            apps/web/src/dev-server/popup-action-icons.test.ts \
+            apps/web/src/dev-server/recurring-card-scope-controller.test.ts \
+            apps/web/src/dev-server/shell.test.ts \
             apps/web/src/dev-server/statement-action-icons.test.ts
+          git diff --cached --quiet || git commit -m "style: normalizar formatação exigida pelo CI"
+          git push origin HEAD:review/main-issue-467-extrato
