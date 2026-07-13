@@ -103,10 +103,7 @@ assert.match(html, /\.main-area\s*>\s*main\s*\{[\s\S]*max-width:\s*1800px/);
 assert.match(html, /body\s*\{[\s\S]*overflow-x:\s*hidden/);
 assert.match(html, /@media \(min-width: 761px\) and \(max-width: 900px\)/);
 assert.match(html, /\.account-filter \.filter-form\s*\{\s*grid-template-columns:\s*1fr/);
-assert.match(
-  html,
-  /\.account-filter \.month-nav input\[type="month"\]\s*\{\s*min-width:\s*10rem/,
-);
+assert.match(html, /\.account-filter \.month-nav input\[type="month"\]\s*\{\s*min-width:\s*10rem/);
 
 function assertRowPresentation(
   pageHtml: string,
