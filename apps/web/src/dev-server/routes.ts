@@ -17,6 +17,7 @@ export const implementedRoutes = new Set(
 const retiredPrivateRouteRedirects = new Map([
   ["/pagar-receber", "/lancamentos"],
   ["/app/pagar-receber", "/lancamentos"],
+  ["/contas", "/contas-cartoes"],
 ]);
 
 const legacyAppRouteRedirects = new Map([
