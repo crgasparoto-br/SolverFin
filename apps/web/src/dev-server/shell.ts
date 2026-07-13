@@ -2,6 +2,10 @@ import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
 import { listPrivateShellRoutes, type ShellRouteId } from "../app-shell/routes.js";
 import { icon } from "./icons.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
+import {
+  statementPresentationScript,
+  statementPresentationStyles,
+} from "./statement-presentation.js";
 
 export interface ShellDocumentInput {
   body: string;
@@ -35,7 +39,7 @@ export function renderShellDocument(input: ShellDocumentInput): string {
 export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocumentInput): string {
   return renderShellDocument({
     body: renderAuthenticatedShell(input),
-    styles: input.styles,
+    styles: `${input.styles}\n${statementPresentationStyles()}`,
     title: `${input.currentLabel} - SolverFin`,
   });
 }
@@ -71,6 +75,7 @@ export function renderAuthenticatedShell(
     ${navigationScript()}
     ${currentUserScript()}
     ${cardPurchaseEditRouteScript()}
+    ${statementPresentationScript()}
     ${recurringCardScopeControllerScript()}
   `;
 }
