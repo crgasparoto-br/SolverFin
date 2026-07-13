@@ -1,0 +1,48 @@
+name: Temporary format statement month fix
+
+on:
+  push:
+    branches:
+      - review/main-issue-467-extrato
+    paths:
+      - ".github/workflows/temporary-format-statement-month-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  format-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: review/main-issue-467-extrato
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format changed files
+        run: |
+          npx prettier --write \
+            apps/web/src/dev-server/statement-presentation.ts \
+            apps/web/src/dev-server/transactions-page-presentation.test.ts
+          npm run format:check
+
+      - name: Commit formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/web/src/dev-server/statement-presentation.ts \
+            apps/web/src/dev-server/transactions-page-presentation.test.ts
+          git commit -m "style(web): formatar ajuste responsivo do mês"
+          git push origin HEAD:review/main-issue-467-extrato
