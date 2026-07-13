@@ -29,7 +29,7 @@ accountsCardsEnhancementKeepsOnlyActiveFilter();
 accountsCardsPageDoesNotFetchRetiredLinks();
 accountAndCardInstitutionSelectsUseGlobalCatalog();
 institutionIconsUseExplicitLogoSources();
-legacyAccountsRouteDoesNotAppearAsPrivateRoute();
+legacyAccountsRouteRedirectsToCanonicalPage();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
 rootRouteRedirectsBasedOnSession();
@@ -428,10 +428,11 @@ function assertLocalInstitutionLogo(src: string): void {
   assert.fail(`${src} must use png, svg or webp`);
 }
 
-function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
+function legacyAccountsRouteRedirectsToCanonicalPage(): void {
   const authenticatedRoute = resolveRoute("/contas", true);
 
-  assert.equal(authenticatedRoute.statusCode, 404);
+  assert.equal(authenticatedRoute.statusCode, 302);
+  assert.equal(authenticatedRoute.location, "/contas-cartoes");
   assert.equal(privateRoutes.has("/contas"), false);
 }
 
