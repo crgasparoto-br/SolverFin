@@ -75,7 +75,10 @@ describe("dev-server dashboard page", () => {
     assert.match(html, /href="\/inbox">Abrir inbox/);
     assert.match(html, /href="\/cartoes">Ver cartões/);
     assert.match(html, /class="quick-links"/);
-    assert.match(html, /href="\/lancamentos">Extrato/);
+    assert.match(
+      html,
+      /href="\/lancamentos" title="Ver extrato da conta">[\s\S]*?Extrato<\/a>/,
+    );
     assert.doesNotMatch(html, /\/pagar-receber/);
     assert.equal(calledPaths.includes("/api/payables-receivables"), false);
 
