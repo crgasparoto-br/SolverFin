@@ -34,11 +34,13 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Collect files with formatting differences
-        run: npx prettier . --list-different > format-differences.txt || true
+      - name: Generate Prettier patch
+        run: |
+          npx prettier . --write
+          git diff --binary > prettier.patch
 
-      - name: Upload formatting diagnostics
+      - name: Upload Prettier patch
         uses: actions/upload-artifact@v4
         with:
-          name: format-differences
-          path: format-differences.txt
+          name: prettier-patch
+          path: prettier.patch
