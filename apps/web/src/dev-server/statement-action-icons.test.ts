@@ -15,9 +15,9 @@ const recurrenceSvg = fakeSvg();
 const recurrenceIndicator = fakeRecurrenceIndicator(recurrenceLabel, recurrenceSvg);
 const injectedStyles: FakeStyleElement[] = [];
 const quickActionSelector =
-  '.statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]';
-const currentMonthSelector = '[data-month-current], [data-invoice-current]';
-const monthInputSelector = '#filter-month, [data-invoice-month-input]';
+  ".statement-heading-actions button[data-open-modal][data-quick-kind], .account-summary .quick-actions button[data-open-modal][data-quick-kind]";
+const currentMonthSelector = "[data-month-current], [data-invoice-current]";
+const monthInputSelector = "#filter-month, [data-invoice-month-input]";
 
 const document = {
   body: {},
@@ -180,10 +180,7 @@ interface FakeRecurrenceIndicator {
   setAttribute(name: string, value: string): void;
 }
 
-function fakeRecurrenceIndicator(
-  label: FakeLabel,
-  svg: FakeSvg,
-): FakeRecurrenceIndicator {
+function fakeRecurrenceIndicator(label: FakeLabel, svg: FakeSvg): FakeRecurrenceIndicator {
   const attributes: Record<string, string> = {};
   return {
     dataset: {},
