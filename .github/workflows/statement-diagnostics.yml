@@ -1,0 +1,79 @@
+name: Statement diagnostics
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  workspace-tests:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --silent
+      - name: Prepare test database
+        run: |
+          npm run prisma:generate --silent
+          npm run build:packages --silent
+          npm run db:deploy --silent
+          npm run db:seed --silent
+      - id: api
+        name: Test API workspace
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/api --if-present
+      - id: web
+        name: Test web workspace
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/web --if-present
+      - id: ai
+        name: Test AI workspace
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/ai --if-present
+      - id: config
+        name: Test config workspace
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/config --if-present
+      - id: domain
+        name: Test domain workspace
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/domain --if-present
+      - id: shared
+        name: Test shared workspace
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/shared --if-present
+      - name: Report workspace failures
+        if: always()
+        run: |
+          echo "api=${{ steps.api.outcome }}"
+          echo "web=${{ steps.web.outcome }}"
+          echo "ai=${{ steps.ai.outcome }}"
+          echo "config=${{ steps.config.outcome }}"
+          echo "domain=${{ steps.domain.outcome }}"
+          echo "shared=${{ steps.shared.outcome }}"
+          test "${{ steps.api.outcome }}" = success
+          test "${{ steps.web.outcome }}" = success
+          test "${{ steps.ai.outcome }}" = success
+          test "${{ steps.config.outcome }}" = success
+          test "${{ steps.domain.outcome }}" = success
+          test "${{ steps.shared.outcome }}" = success
