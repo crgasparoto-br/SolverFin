@@ -1,9 +1,9 @@
 name: Issue 467 web tests diagnostics
 
 on:
-  push:
+  pull_request:
     branches:
-      - review/main-issue-467-extrato
+      - main
 
 permissions:
   contents: read
