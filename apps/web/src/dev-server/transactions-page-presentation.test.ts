@@ -91,6 +91,8 @@ assert.match(html, /grid-template-columns:\s*minmax\(260px, 320px\) minmax\(0,1f
 assert.match(html, /@media \(max-width: 1279px\)/);
 assert.match(html, /font-variant-numeric:\s*tabular-nums/);
 assert.match(html, /\.statement-status:hover::after, \.statement-status:focus::after/);
+assert.match(html, /\.main-area\s*>\s*main\s*\{[\s\S]*max-width:\s*1800px/);
+assert.match(html, /body\s*\{[\s\S]*overflow-x:\s*hidden/);
 
 function assertRowPresentation(
   pageHtml: string,
