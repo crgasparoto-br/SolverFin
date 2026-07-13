@@ -24,7 +24,11 @@ export function resolveStatementStatusPresentation(
   }
 
   if (transaction.status === "suggested") {
-    return { label: "Pendente", tone: "pending", iconHtml: icon("alert-triangle", 15) };
+    return {
+      label: "Pendente",
+      tone: "pending",
+      iconHtml: icon("alert-triangle", 15),
+    };
   }
 
   return { label: "Previsto", tone: "planned", iconHtml: icon("clock", 15) };
