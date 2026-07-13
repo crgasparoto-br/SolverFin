@@ -96,8 +96,14 @@ async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void>
 async function budgetsExposeUsageAndArchiveActions(): Promise<void> {
   const html = await renderBudgetsPage("token");
 
-  assert.match(html, /Consultar uso/);
-  assert.match(html, /Arquivar orçamento/);
+  assert.match(
+    html,
+    /data-api-path="\/api\/budgets\/budget-1\/usage" title="Ver uso do orçamento">[\s\S]*?Uso<\/button>/,
+  );
+  assert.match(
+    html,
+    /data-api-path="\/api\/budgets\/budget-1\/archive" data-api-confirm="Arquivar este orçamento\?"/,
+  );
   assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-1"/);
   assert.match(html, /data-open-dialog="new-budget-dialog"/);
   assert.match(html, /id="edit-budget-dialog-budget-1"/);
