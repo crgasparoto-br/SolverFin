@@ -2,6 +2,9 @@ import { icon } from "./icons.js";
 
 import type { TransactionRecord } from "./transactions-statement.js";
 
+const POSTED_ICON =
+  '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>';
+
 export interface StatementStatusPresentation {
   label: string;
   tone: "ok" | "posted" | "pending" | "planned";
@@ -19,7 +22,7 @@ export function resolveStatementStatusPresentation(
     return {
       label: "Efetivado não conciliado",
       tone: "posted",
-      iconHtml: icon("circle", 15),
+      iconHtml: POSTED_ICON,
     };
   }
 
