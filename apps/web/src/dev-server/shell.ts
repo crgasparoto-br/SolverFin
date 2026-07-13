@@ -37,9 +37,13 @@ export function renderShellDocument(input: ShellDocumentInput): string {
 }
 
 export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocumentInput): string {
+  const statementStyles = hasStatementPresentation(input.content)
+    ? `\n${statementPresentationStyles()}`
+    : "";
+
   return renderShellDocument({
     body: renderAuthenticatedShell(input),
-    styles: `${input.styles}\n${statementPresentationStyles()}`,
+    styles: `${input.styles}${statementStyles}`,
     title: `${input.currentLabel} - SolverFin`,
   });
 }
@@ -75,7 +79,7 @@ export function renderAuthenticatedShell(
     ${navigationScript()}
     ${currentUserScript()}
     ${cardPurchaseEditRouteScript()}
-    ${statementPresentationScript()}
+    ${hasStatementPresentation(input.content) ? statementPresentationScript() : ""}
     ${recurringCardScopeControllerScript()}
   `;
 }
@@ -110,6 +114,10 @@ const groupLabelMap: Record<string, string> = {
   settings: "Ajustes",
   admin: "Admin",
 };
+
+function hasStatementPresentation(content: string): boolean {
+  return content.includes('class="statement-layout"');
+}
 
 function isActivePathnameSecondary(activePathname: string, includeMasterRoutes: boolean): boolean {
   const activeRoute = listPrivateShellRoutes({
@@ -222,7 +230,7 @@ function currentUserScript(): string {
 
           if (toggle) {
             const controls = new Set(
-              (toggle.getAttribute("aria-controls") || "").split(/\\s+/).filter(Boolean),
+              (toggle.getAttribute("aria-controls") || "").split(/\s+/).filter(Boolean),
             );
             controls.add(link.id);
             toggle.setAttribute("aria-controls", Array.from(controls).join(" "));
