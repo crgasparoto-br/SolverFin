@@ -1,7 +1,6 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
-import { icon } from "./icons.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
 import {
   recurrencesSectionScript,

@@ -87,7 +87,7 @@ function purchaseRow(id: string, date: string, description: string, amountMinor:
 }
 
 function escapedJson(value: unknown): string {
-  return JSON.stringify(value).replace(/&/g, "&amp;").replace(/\"/g, "&quot;");
+  return JSON.stringify(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
 function documentHtml(content: string): string {
