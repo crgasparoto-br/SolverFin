@@ -54,7 +54,8 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /window\.location\.assign\("\/login"\)/);
     assert.match(html, /form\.dataset\.method = "PATCH"/);
     assert.doesNotMatch(html, /document\.addEventListener\("submit"/);
-    assert.doesNotMatch(html, /event\.stopImmediatePropagation\(\)/);
+    assert.match(html, /event\.target\.closest[\s\S]*data-explicit-edit-scope/);
+    assert.match(html, /event\.stopImmediatePropagation\(\)/);
   });
 
   it("renders every private route in the shared navigation", () => {
