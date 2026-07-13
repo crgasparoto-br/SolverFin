@@ -202,8 +202,11 @@ async function captureTooltip(scenario) {
         return index;
       })()`,
     );
-    await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
-    await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await browser.cdp.send("Input.dispatchKeyEvent", { type: "rawKeyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+      await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+      if (await evaluate(browser.cdp, `document.activeElement === document.querySelector('[data-visual-target="true"]')`)) break;
+    }
   } else {
     await evaluate(browser.cdp, `document.querySelector('[data-visual-target="true"]').focus()`);
   }
