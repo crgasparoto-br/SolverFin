@@ -200,7 +200,10 @@ function injectStyles(html: string): string {
       .card-filter .month-nav input[data-invoice-month-input]::-webkit-calendar-picker-indicator{cursor:pointer;display:block;opacity:1}
       .card-filter .month-current-link{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);display:inline-flex;justify-content:center;min-height:36px;padding:0 12px;text-decoration:none}
       .card-filter .month-current-link:hover,.card-filter .month-current-link:focus-visible{background:var(--primary-soft)}
-      @media(max-width:760px){.card-filter .filter-form{grid-template-columns:1fr}}
+      .cards-layout,.invoice-summary,.invoice-panel,.summary-block,.summary-list,.summary-row{min-width:0}
+      .summary-list{margin:0}
+      .summary-row dd{margin:0;max-width:100%;overflow-x:auto;white-space:nowrap}
+      @media(max-width:760px){.card-filter .filter-form{grid-template-columns:1fr}.summary-row{display:grid;grid-template-columns:minmax(0,1fr) auto}.summary-row dt,.summary-row dd{min-width:0}}
     </style>`;
   return html.replace("</head>", `${styles}</head>`);
 }
