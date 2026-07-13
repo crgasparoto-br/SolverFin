@@ -1,0 +1,26 @@
+name: Statement diagnostics
+
+on:
+  push:
+    branches:
+      - review/main-issue-467-extrato
+
+jobs:
+  long-values:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --silent
+      - name: Build shared packages
+        run: npm run build:packages --silent
+      - name: Compile web tests
+        run: |
+          rm -rf .tmp-tests/web
+          npx tsc -p apps/web/tsconfig.test.json --pretty false
+      - name: Run long-value statement test
+        run: node .tmp-tests/web/dev-server/transactions-page-long-values.test.js
