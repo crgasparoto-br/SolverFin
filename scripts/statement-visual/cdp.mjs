@@ -112,9 +112,9 @@ export async function launchChrome({ baseUrl, chromePath, debugPort = 9222 }) {
     version: execFileSync(chromePath, ["--version"], { encoding: "utf8" }).trim(),
     async close(outputDir) {
       cdp.close();
-      chrome.kill("SIGTERM");
+      await stopProcess(chrome);
       if (stderr.trim()) await writeFile(join(outputDir, "chrome-stderr.log"), stderr);
-      await rm(profile, { recursive: true, force: true });
+      await removeProfile(profile, outputDir);
     },
   };
 }
@@ -161,6 +161,31 @@ export async function screenshot(cdp, path) {
 
 export function sleep(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function stopProcess(process) {
+  if (process.exitCode !== null) return;
+  const exited = new Promise((resolve) => process.once("exit", resolve));
+  process.kill("SIGTERM");
+  await Promise.race([exited, sleep(3_000)]);
+  if (process.exitCode !== null) return;
+  process.kill("SIGKILL");
+  await Promise.race([exited, sleep(2_000)]);
+}
+
+async function removeProfile(profile, outputDir) {
+  let lastError;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    try {
+      await rm(profile, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      lastError = error;
+      await sleep(200 * (attempt + 1));
+    }
+  }
+  const message = lastError instanceof Error ? lastError.stack ?? lastError.message : String(lastError);
+  await writeFile(join(outputDir, "chrome-profile-cleanup-warning.log"), `${message}\n`);
 }
 
 async function waitForExpression(cdp, expression, timeout = 10_000) {
