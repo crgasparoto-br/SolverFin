@@ -37,6 +37,7 @@ export function sharedShellStyles(): string {
     body {
       margin: 0;
       min-height: 100vh;
+      overflow-x: hidden;
       background: var(--bg);
       color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -235,6 +236,12 @@ export function sharedShellStyles(): string {
 
     /* ── Main area ── */
     .main-area { min-width: 0; display: flex; flex-direction: column; }
+    .main-area > main {
+      margin-inline: auto;
+      max-width: 1800px;
+      min-width: 0;
+      width: 100%;
+    }
 
     /* ── Topbar ── */
     .topbar {
