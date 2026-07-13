@@ -1,18 +1,15 @@
 name: CI
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
-      - main
+      - review/main-issue-467-extrato
 
 permissions:
   contents: write
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-format-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
