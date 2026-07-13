@@ -9,10 +9,7 @@ interface InvoiceRecord {
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
-export async function renderCardsPageWithMonthNavigation(
-  token: string,
-  url: URL,
-): Promise<string> {
+export async function renderCardsPageWithMonthNavigation(token: string, url: URL): Promise<string> {
   const requestedMonth = normalizeInvoiceMonth(url.searchParams.get("month"));
   const requestedCardId = url.searchParams.get("cardId") ?? undefined;
   const invoicesResult = requestedMonth
@@ -106,13 +103,20 @@ function readInputValue(html: string, marker: string): string | undefined {
   return /\bvalue="([^"]*)"/.exec(html.slice(inputStart, inputEnd + 1))?.[1];
 }
 
-function monthFromInvoiceOptions(html: string, selectedInvoiceId: string | undefined): string | undefined {
+function monthFromInvoiceOptions(
+  html: string,
+  selectedInvoiceId: string | undefined,
+): string | undefined {
   if (!selectedInvoiceId) return undefined;
-  const match = /<script type="application\/json" data-invoice-options>([\s\S]*?)<\/script>/.exec(html);
+  const match = /<script type="application\/json" data-invoice-options>([\s\S]*?)<\/script>/.exec(
+    html,
+  );
   if (!match?.[1]) return undefined;
   try {
     const options = JSON.parse(match[1]) as Array<{ id?: string; label?: string }>;
-    return monthFromPortugueseLabel(options.find((option) => option.id === selectedInvoiceId)?.label);
+    return monthFromPortugueseLabel(
+      options.find((option) => option.id === selectedInvoiceId)?.label,
+    );
   } catch {
     return undefined;
   }
@@ -123,8 +127,18 @@ function monthFromPortugueseLabel(label: string | undefined): string | undefined
   const match = /^([A-Za-zÀ-ÿ]+) de (\d{4})$/.exec(label.trim());
   if (!match?.[1] || !match[2]) return undefined;
   const months = [
-    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+    "janeiro",
+    "fevereiro",
+    "março",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro",
   ];
   const index = months.indexOf(match[1].toLocaleLowerCase("pt-BR"));
   return index < 0 ? undefined : `${match[2]}-${String(index + 1).padStart(2, "0")}`;
@@ -186,7 +200,10 @@ function injectStyles(html: string): string {
       .card-filter .month-nav input[data-invoice-month-input]::-webkit-calendar-picker-indicator{cursor:pointer;display:block;opacity:1}
       .card-filter .month-current-link{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);display:inline-flex;justify-content:center;min-height:36px;padding:0 12px;text-decoration:none}
       .card-filter .month-current-link:hover,.card-filter .month-current-link:focus-visible{background:var(--primary-soft)}
-      @media(max-width:760px){.card-filter .filter-form{grid-template-columns:1fr}}
+      .cards-layout,.invoice-summary,.invoice-panel,.summary-block,.summary-list,.summary-row{min-width:0}
+      .summary-list{margin:0}
+      .summary-row dd{margin:0;max-width:100%;overflow-x:auto;white-space:nowrap}
+      @media(max-width:760px){.card-filter .filter-form{grid-template-columns:1fr}.summary-row{display:grid;grid-template-columns:minmax(0,1fr) auto}.summary-row dt,.summary-row dd{min-width:0}}
     </style>`;
   return html.replace("</head>", `${styles}</head>`);
 }
@@ -225,12 +242,27 @@ function replaceInputValue(html: string, marker: string, value: string): string 
 function renderMissingInvoiceMonth(html: string, month: string): string {
   const label = formatInvoiceMonth(month);
   let nextHtml = replaceInputValue(html, "data-invoice-input", "");
-  nextHtml = replaceElement(nextHtml, '<aside class="panel invoice-summary" aria-label="Resumo da fatura">', "aside", `<aside class="panel invoice-summary" aria-label="Resumo da fatura"><div class="empty-state"><strong>Nenhuma fatura em ${escapeHtml(label)}.</strong><p class="muted">Registre uma compra neste período para gerar a fatura automaticamente.</p></div></aside>`);
-  nextHtml = replaceElement(nextHtml, '<div class="purchase-list" aria-label="Compras da fatura">', "div", `<div class="purchase-list" aria-label="Compras da fatura"><div class="empty-state"><strong>Nenhuma compra nesta fatura.</strong><p class="muted">O mês selecionado ainda não possui uma fatura materializada.</p></div></div>`);
+  nextHtml = replaceElement(
+    nextHtml,
+    '<aside class="panel invoice-summary" aria-label="Resumo da fatura">',
+    "aside",
+    `<aside class="panel invoice-summary" aria-label="Resumo da fatura"><div class="empty-state"><strong>Nenhuma fatura em ${escapeHtml(label)}.</strong><p class="muted">Registre uma compra neste período para gerar a fatura automaticamente.</p></div></aside>`,
+  );
+  nextHtml = replaceElement(
+    nextHtml,
+    '<div class="purchase-list" aria-label="Compras da fatura">',
+    "div",
+    `<div class="purchase-list" aria-label="Compras da fatura"><div class="empty-state"><strong>Nenhuma compra nesta fatura.</strong><p class="muted">O mês selecionado ainda não possui uma fatura materializada.</p></div></div>`,
+  );
   return replaceElement(nextHtml, '<dialog data-modal="payment">', "dialog", "");
 }
 
-function replaceElement(html: string, marker: string, tagName: string, replacement: string): string {
+function replaceElement(
+  html: string,
+  marker: string,
+  tagName: string,
+  replacement: string,
+): string {
   const start = html.indexOf(marker);
   if (start < 0) return html;
   const end = findElementEnd(html, start, tagName);
@@ -251,5 +283,10 @@ function findElementEnd(html: string, start: number, tagName: string): number {
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }

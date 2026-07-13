@@ -34,6 +34,7 @@
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
     "test": "npm run build:packages && npm run test --workspaces --if-present",
     "test:integration": "npm run build:packages && npm run db:deploy && npm run db:seed && npm run test:integration --workspace @solverfin/api",
+    "qa:statement-visual": "node scripts/run-statement-visual-validation.mjs",
     "build": "npm run build:packages && npm run build --workspace @solverfin/api --workspace @solverfin/web",
     "validate": "npm run env:check && npm run prisma:validate && npm run db:seed:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
   },

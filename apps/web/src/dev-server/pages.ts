@@ -756,9 +756,6 @@ function renderBudgetRow(budget: BudgetRecord): string {
   `;
 }
 
-function renderEditIcon(): string {
-  return `<svg class="action-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
-}
 
 function renderActionButton(label: string, path: string, confirmation?: string): string {
   const isArchive = path.includes("/archive");

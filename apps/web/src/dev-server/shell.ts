@@ -2,6 +2,10 @@ import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
 import { listPrivateShellRoutes, type ShellRouteId } from "../app-shell/routes.js";
 import { icon } from "./icons.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
+import {
+  statementPresentationScript,
+  statementPresentationStyles,
+} from "./statement-presentation.js";
 
 export interface ShellDocumentInput {
   body: string;
@@ -33,9 +37,13 @@ export function renderShellDocument(input: ShellDocumentInput): string {
 }
 
 export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocumentInput): string {
+  const statementStyles = hasStatementPresentation(input.content)
+    ? `\n${statementPresentationStyles()}`
+    : "";
+
   return renderShellDocument({
     body: renderAuthenticatedShell(input),
-    styles: input.styles,
+    styles: `${input.styles}${statementStyles}`,
     title: `${input.currentLabel} - SolverFin`,
   });
 }
@@ -71,6 +79,7 @@ export function renderAuthenticatedShell(
     ${navigationScript()}
     ${currentUserScript()}
     ${cardPurchaseEditRouteScript()}
+    ${hasStatementPresentation(input.content) ? statementPresentationScript() : ""}
     ${recurringCardScopeControllerScript()}
   `;
 }
@@ -106,10 +115,14 @@ const groupLabelMap: Record<string, string> = {
   admin: "Admin",
 };
 
+function hasStatementPresentation(content: string): boolean {
+  return content.includes('class="statement-layout"');
+}
+
 function isActivePathnameSecondary(activePathname: string, includeMasterRoutes: boolean): boolean {
-  const activeRoute = listPrivateShellRoutes({ includeMaster: includeMasterRoutes }).find(
-    (route) => route.path === activePathname,
-  );
+  const activeRoute = listPrivateShellRoutes({
+    includeMaster: includeMasterRoutes,
+  }).find((route) => route.path === activePathname);
   return activeRoute !== undefined && !isPrimaryMobileRoute(activeRoute);
 }
 

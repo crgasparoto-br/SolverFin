@@ -55,6 +55,19 @@ describe("dev-server route contract", () => {
     }
   });
 
+  it("redirects the short accounts route to the implemented accounts and cards page", () => {
+    assert.deepEqual(resolveRoute("/contas", true), {
+      statusCode: 302,
+      kind: "placeholder",
+      location: "/contas-cartoes",
+    });
+    assert.deepEqual(resolveRoute("/contas", false), {
+      statusCode: 302,
+      kind: "login",
+      location: "/login",
+    });
+  });
+
   it("resolves public and private entry points by session state", () => {
     assert.deepEqual(resolveRoute("/", true), {
       statusCode: 302,

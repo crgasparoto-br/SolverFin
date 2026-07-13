@@ -23,8 +23,12 @@ const statementSorted = enhanceStatementListSorting(
   statementHtml,
   new URL("http://solverfin.test/lancamentos?sort=amount_desc"),
 );
-assert.ok(statementSorted.indexOf('data-transaction="b"') < statementSorted.indexOf('data-transaction="c"'));
-assert.ok(statementSorted.indexOf('data-transaction="c"') < statementSorted.indexOf('data-transaction="a"'));
+assert.ok(
+  statementSorted.indexOf('data-transaction="b"') < statementSorted.indexOf('data-transaction="c"'),
+);
+assert.ok(
+  statementSorted.indexOf('data-transaction="c"') < statementSorted.indexOf('data-transaction="a"'),
+);
 assert.match(statementSorted, /name="sort" data-list-sort/);
 assert.match(statementSorted, /value="amount_desc" selected/);
 assert.match(
@@ -42,6 +46,10 @@ assert.match(
 assert.match(
   statementSorted,
   /\.actions-item:hover:not\(:disabled\),\.actions-item:focus-visible\{background:var\(--primary-soft\);color:var\(--text\)\}/,
+);
+assert.match(
+  statementSorted,
+  /@media\(max-width:900px\)\{form\.filter-form\[action="\/lancamentos"\]\{grid-template-columns:1fr\}form\.filter-form\[action="\/lancamentos"\] \.month-nav input\[type="month"\]\{min-width:10rem\}/,
 );
 
 const cardHtml = documentHtml(`
@@ -83,7 +91,7 @@ function purchaseRow(id: string, date: string, description: string, amountMinor:
 }
 
 function escapedJson(value: unknown): string {
-  return JSON.stringify(value).replace(/&/g, "&amp;").replace(/\"/g, "&quot;");
+  return JSON.stringify(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
 function documentHtml(content: string): string {

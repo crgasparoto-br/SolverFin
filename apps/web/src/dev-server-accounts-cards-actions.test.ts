@@ -76,13 +76,13 @@ async function accountsCardsPageRendersDialogInstrumentList(): Promise<void> {
     assert.match(dialogHtml, /class="instrument-list"/);
     assert.match(dialogHtml, /data-card-instrument/);
     assert.match(dialogHtml, /<strong>Físico titular<\/strong>/);
-    assert.match(dialogHtml, /Físico · Titular principal · \*\*\*\* 1111 · limite R\$ 3\.000,00/);
-    assert.match(dialogHtml, /class="instrument-pill">Default<\/span>/);
-    assert.match(dialogHtml, /class="instrument-actions" aria-label="Ações de Físico titular"/);
     assert.match(
       dialogHtml,
-      /data-open-dialog="edit-card-instrument-dialog-instrument-physical"/,
+      /Físico · Titular principal · \*\*\*\* 1111 · limite R\$[ \u00a0]3\.000,00/,
     );
+    assert.match(dialogHtml, /class="instrument-pill">Default<\/span>/);
+    assert.match(dialogHtml, /class="instrument-actions" aria-label="Ações de Físico titular"/);
+    assert.match(dialogHtml, /data-open-dialog="edit-card-instrument-dialog-instrument-physical"/);
     assert.ok(
       dialogHtml.indexOf("<strong>Físico titular</strong>") <
         dialogHtml.indexOf('class="instrument-actions"'),
@@ -98,18 +98,12 @@ async function accountsCardsPageRendersDialogInstrumentList(): Promise<void> {
       /data-api-method="PATCH" data-api-path="\/api\/credit-card-instruments\/instrument-physical" class="edit-grid"/,
     );
     assert.doesNotMatch(dialogHtml, /class="edit-grid instrument-edit-form"/);
-    assert.match(
-      html,
-      /data-toggle-instrument-create="new-card-instrument-form-card-unused"/,
-    );
+    assert.match(html, /data-toggle-instrument-create="new-card-instrument-form-card-unused"/);
     assert.match(
       html,
       /id="new-card-instrument-form-card-unused" hidden data-api-form data-api-path="\/api\/credit-card-accounts\/card-unused\/instruments"/,
     );
-    assert.doesNotMatch(
-      html,
-      /data-open-dialog="new-card-instrument-dialog-card-unused"/,
-    );
+    assert.doesNotMatch(html, /data-open-dialog="new-card-instrument-dialog-card-unused"/);
     assert.doesNotMatch(html, /id="new-card-instrument-dialog-card-unused"/);
     assert.match(html, /data-card-instruments-dialog-list/);
     assert.match(

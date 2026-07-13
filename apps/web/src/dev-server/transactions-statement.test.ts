@@ -35,6 +35,7 @@ filtersKeepCurrentAndLegacyFallbacks();
 transactionQueryKeepsPreviousBalanceWindow();
 statementTransactionFilterKeepsAccountOrAccountOnlyRecords();
 statementCalculationsIgnoreVoidedAndPendingOpeningEntries();
+projectedBalancesIncludePlannedEntriesAndTransfers();
 transferSignedAmountDependsOnSelectedAccount();
 
 function periodHelpersResolveMonthBoundaries(): void {
@@ -151,7 +152,7 @@ function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
   );
   assert.deepEqual(
     rows.map((row) => row.balanceAfterMinor),
-    [125000, undefined, 165000],
+    [125000, 135000, 175000],
   );
 
   assert.deepEqual(summarize(rows, openingMinor), {
@@ -167,6 +168,42 @@ function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
     reconciledCount: 1,
     unreconciledCount: 1,
   });
+}
+
+function projectedBalancesIncludePlannedEntriesAndTransfers(): void {
+  const plannedExpense = pendingTransaction("planned-expense", "expense", 15000, "2026-06-01");
+  const plannedIncome = pendingTransaction("planned-income", "income", 5000, "2026-06-02");
+  const outboundTransfer = pendingTransaction(
+    "planned-transfer-out",
+    "transfer",
+    25000,
+    "2026-06-03",
+    { destinationAccountId: "account-2" },
+  );
+  const inboundTransfer = pendingTransaction(
+    "planned-transfer-in",
+    "transfer",
+    30000,
+    "2026-06-04",
+    { accountId: "account-2", destinationAccountId: "account-1" },
+  );
+
+  const originRows = buildRows(
+    [plannedExpense, plannedIncome, outboundTransfer, inboundTransfer],
+    { ...account, openingBalanceMinor: 10000 },
+    10000,
+  );
+
+  assert.deepEqual(
+    originRows.map((row) => row.balanceAfterMinor),
+    [-5000, 0, -25000, 5000],
+  );
+
+  const destinationRows = buildRows([outboundTransfer], destinationAccount, 0);
+  assert.deepEqual(
+    destinationRows.map((row) => row.balanceAfterMinor),
+    [25000],
+  );
 }
 
 function transferSignedAmountDependsOnSelectedAccount(): void {
@@ -207,6 +244,7 @@ function pendingTransaction(
   kind: string,
   amountMinor: number,
   date: string,
+  overrides: Partial<TransactionRecord> = {},
 ): TransactionRecord {
   return {
     id,
@@ -217,5 +255,6 @@ function pendingTransaction(
     occurredOn: date,
     plannedOn: date,
     accountId: "account-1",
+    ...overrides,
   };
 }

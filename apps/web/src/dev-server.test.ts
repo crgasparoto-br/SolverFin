@@ -29,7 +29,7 @@ accountsCardsEnhancementKeepsOnlyActiveFilter();
 accountsCardsPageDoesNotFetchRetiredLinks();
 accountAndCardInstitutionSelectsUseGlobalCatalog();
 institutionIconsUseExplicitLogoSources();
-legacyAccountsRouteDoesNotAppearAsPrivateRoute();
+legacyAccountsRouteRedirectsToCanonicalPage();
 sidebarMenuUsesPtBrLabels();
 dashboardDoesNotRenderOnUnknownRoute();
 rootRouteRedirectsBasedOnSession();
@@ -183,12 +183,18 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
     assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/instruments"/);
     assert.match(html, /<label>Tipo<select name="type" required>/);
     assert.match(html, /<label>Titularidade<select name="holder" required>/);
-    assert.match(html, /<button type="submit">Criar instrumento<\/button>/);
+    assert.match(
+      html,
+      /<button type="submit" title="Criar novo instrumento">[\s\S]*?Criar instrumento<\/button>/,
+    );
     assert.match(html, /aria-label="Editar instrumento Físico titular"/);
     assert.match(html, /aria-label="Editar instrumento Virtual adicional"/);
     assert.match(html, /data-api-path="\/api\/credit-card-instruments\/instrument-physical"/);
     assert.match(html, /data-api-path="\/api\/credit-card-instruments\/instrument-virtual"/);
-    assert.match(html, /<button type="submit">Salvar instrumento<\/button>/);
+    assert.match(
+      html,
+      /<button type="submit" title="Salvar alterações do instrumento">[\s\S]*?Salvar instrumento<\/button>/,
+    );
     assert.equal(
       (html.match(/\/api\/credit-card-accounts\/card-c6\/default-instrument/g) ?? []).length,
       1,
@@ -262,7 +268,7 @@ function adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu(): void {
     showAdminNavigation: true,
   });
 
-  assert.doesNotMatch(commonShell, /Admin - Instituições/);
+  assert.doesNotMatch(commonShell, /<a[^>]+href="\/admin\/instituicoes"/);
   assert.match(masterShell, /Admin - Instituições/);
   assert.match(masterShell, /\/admin\/instituicoes/);
 }
@@ -422,10 +428,11 @@ function assertLocalInstitutionLogo(src: string): void {
   assert.fail(`${src} must use png, svg or webp`);
 }
 
-function legacyAccountsRouteDoesNotAppearAsPrivateRoute(): void {
+function legacyAccountsRouteRedirectsToCanonicalPage(): void {
   const authenticatedRoute = resolveRoute("/contas", true);
 
-  assert.equal(authenticatedRoute.statusCode, 404);
+  assert.equal(authenticatedRoute.statusCode, 302);
+  assert.equal(authenticatedRoute.location, "/contas-cartoes");
   assert.equal(privateRoutes.has("/contas"), false);
 }
 

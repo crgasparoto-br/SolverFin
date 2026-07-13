@@ -1,7 +1,6 @@
 import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
-import { icon } from "./icons.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
 import {
   recurrencesSectionScript,
@@ -13,6 +12,7 @@ import {
 } from "./recurrences-section.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
+import { renderStatementStatus } from "./statement-status.js";
 import {
   buildRows,
   buildTransactionQuery,
@@ -88,6 +88,11 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
           <h1>Extrato Bancário</h1>
           <p class="muted">Acompanhe lançamentos, saldo e pendências por conta e mês.</p>
         </div>
+        <div class="statement-heading-actions" aria-label="Ações rápidas">
+          <button type="button" data-open-modal data-quick-kind="transfer"${selectedAccount ? "" : " disabled"}>Transferir</button>
+          <button type="button" data-open-modal data-quick-kind="expense"${selectedAccount ? "" : " disabled"}>Nova despesa</button>
+          <button type="button" data-open-modal data-quick-kind="income"${selectedAccount ? "" : " disabled"}>Nova receita</button>
+        </div>
       </section>
 
       <section class="panel account-filter">
@@ -155,8 +160,8 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
 function renderTableHeader(): string {
   return `
     <div class="statement-row statement-head" role="row">
-      <span>Data</span><span>Histórico</span><span>Categoria</span><span>Tipo</span>
-      <span>Situação</span><span>Valor</span><span>Saldo</span><span>Ações</span>
+      <span class="col-date">Data</span><span class="col-description">Histórico</span><span class="col-category">Categoria</span><span class="col-kind">Tipo</span>
+      <span class="col-status">Situação</span><span class="col-amount">Valor</span><span class="col-balance">Saldo</span><span class="col-actions">Ações</span>
     </div>
   `;
 }
@@ -173,12 +178,6 @@ function renderRow(
     ? (categories.find((category) => category.id === transaction.categoryId)?.name ??
       "Categoria não localizada")
     : "Sem categoria";
-  const statusTone =
-    transaction.status === "reconciled"
-      ? "ok"
-      : transaction.effectiveOn !== undefined
-        ? "posted"
-        : "pending";
   const nextStatus = transaction.status === "reconciled" ? "posted" : "reconciled";
   const date = statementDate(transaction);
   const recurrence = transaction.recurrenceId
@@ -194,9 +193,9 @@ function renderRow(
       </div>
       <span class="col-category">${escapeHtml(categoryName)}</span>
       <span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
-      <span class="chip chip-${statusTone} col-status">${escapeHtml(formatStatus(transaction))}</span>
+      ${renderStatementStatus(transaction)}
       <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${formatMoney(row.amountMinor)}</strong>
-      <strong class="col-balance">${row.balanceAfterMinor === undefined ? "Previsto" : formatMoney(row.balanceAfterMinor)}</strong>
+      <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${formatMoney(row.balanceAfterMinor)}</strong>
       <details class="actions col-actions">
         <summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary>
         <div class="actions-menu" role="menu">
@@ -773,12 +772,6 @@ function renderSummaryPanel(
         ${summaryTotal("Receitas", summary.incomeMinor, "credit")}
         ${summaryTotal("Despesas", -summary.expenseMinor, "debit")}
       </div>
-      <section class="quick-actions" aria-label="Ações rápidas">
-        <h3>Ações rápidas</h3>
-        <button type="button" data-open-modal data-quick-kind="transfer"${selectedAccount ? "" : " disabled"}>Transferir</button>
-        <button type="button" data-open-modal data-quick-kind="expense"${selectedAccount ? "" : " disabled"}>Nova despesa</button>
-        <button type="button" data-open-modal data-quick-kind="income"${selectedAccount ? "" : " disabled"}>Nova receita</button>
-      </section>
       <section class="status-overview" aria-label="Status dos lançamentos">
         <h3>Status</h3>
         ${statusLine("Conciliados", summary.reconciledCount, summary.reconciledMinor, "ok")}
@@ -812,13 +805,6 @@ function formatKind(kind: string): string {
   return kind;
 }
 
-function formatStatus(transaction: TransactionRecord): string {
-  if (transaction.status === "reconciled") return "Conciliado";
-  if (transaction.effectiveOn !== undefined) return "Efetivado";
-  if (transaction.status === "suggested") return "Pendente";
-  return "Previsto";
-}
-
 function formatMoney(amountMinor: number): string {
   return formatMinorCurrency(amountMinor);
 }
@@ -843,7 +829,7 @@ function serializeScriptJson(value: unknown): string {
 function css(): string {
   return `
     ${sharedShellStyles()}
-    main { display: grid; gap: 14px; margin: 0 auto; max-width: 1440px; padding: 18px 20px; width: 100%; }
+    main { display: grid; gap: 14px; margin: 0 auto; min-width: 0; padding: 18px 20px; width: 100%; }
     [hidden] { display: none !important; }
     .warning { color: var(--warning); font-weight: 600; }
     .account-filter { background: var(--surface); color: var(--text); }
@@ -869,38 +855,48 @@ function css(): string {
     .icon-btn:hover { background: var(--primary-soft); }
     .ghost-btn { background: var(--surface); border: 1px solid var(--line); color: var(--primary); }
     .ghost-btn:hover { background: var(--primary-soft); }
-    .statement-layout { align-items: start; display: grid; gap: 12px; grid-template-columns: 220px minmax(0,1fr); }
+    .statement-layout { align-items: start; display: grid; gap: 12px; grid-template-columns: minmax(260px, 320px) minmax(0,1fr); }
     .account-summary { display: grid; gap: 12px; position: sticky; top: 68px; }
     .account-summary h2 { font-size: 0.9375rem; }
     .summary-balance { background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: var(--radius); display: grid; gap: 4px; padding: 12px; }
     .summary-balance span, .summary-total span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
-    .summary-balance strong { font-size: 1.25rem; overflow-wrap: anywhere; }
+    .summary-balance strong, .summary-total strong, .status-line strong, .col-amount, .col-balance { font-variant-numeric: tabular-nums; overflow-wrap: normal; white-space: nowrap; word-break: normal; }
+    .summary-balance strong { font-size: 1.125rem; }
     .summary-balance p { color: var(--muted); font-size: 0.8125rem; }
     .summary-totals { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
-    .summary-total { border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 3px; padding: 10px; }
-    .summary-total strong { font-size: 0.875rem; overflow-wrap: anywhere; }
-    .quick-actions, .status-overview { border-top: 1px solid var(--line); display: grid; gap: 8px; padding-top: 12px; }
-    .quick-actions h3, .status-overview h3 { font-size: 0.8125rem; }
-    .quick-actions button { background: var(--surface); border: 1px solid var(--line); color: var(--primary); font-size: 0.8125rem; gap: 6px; justify-content: flex-start; min-height: 30px; padding: 0 10px; }
-    .quick-actions button:hover { background: var(--primary-soft); }
+    .summary-total { border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 3px; min-width: 0; padding: 10px; }
+    .summary-total strong { font-size: 0.8125rem; }
+    .status-overview { border-top: 1px solid var(--line); display: grid; gap: 8px; padding-top: 12px; }
+    .status-overview h3 { font-size: 0.8125rem; }
     .status-line { align-items: center; display: grid; gap: 6px; grid-template-columns: auto minmax(0,1fr) auto; }
     .status-line p { color: var(--muted); font-size: 0.8125rem; font-weight: 600; }
     .status-line strong { font-size: 0.8125rem; }
     .statement-panel { padding: 0; overflow: hidden; }
     .statement-toolbar { align-items: center; border-bottom: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; padding: 12px 14px; }
     .statement-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
+    .statement-heading-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .chip { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); display: inline-flex; gap: 5px; font-size: 0.75rem; font-weight: 700; padding: 3px 9px; white-space: nowrap; }
     .chip-pending { background: var(--warning-bg); border-color: #fde68a; color: var(--warning); }
     .chip-ok { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); }
     .chip-posted { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
-    .statement-table { display: grid; overflow-x: auto; }
-    .statement-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 8px; grid-template-columns: 6rem minmax(8rem,1.3fr) minmax(7rem,0.9fr) 7rem 6rem 8rem 8rem 3rem; padding: 8px 12px; }
+    .statement-table { display: grid; max-width: 100%; overflow-x: auto; }
+    .statement-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 8px; grid-template-columns: 6rem minmax(8rem,1.3fr) minmax(7rem,0.9fr) 7rem 4.5rem 8rem 8rem 3rem; padding: 8px 12px; }
     .statement-head { background: #f1f7fa; color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+    .statement-head .col-amount, .statement-head .col-balance, .col-amount, .col-balance { text-align: right; }
     .description { display: grid; gap: 2px; }
     .description span { color: var(--muted); font-size: 0.8125rem; }
     .credit { color: var(--success) !important; }
     .debit { color: var(--danger) !important; }
+    .statement-status { align-items: center; border: 1px solid currentColor; border-radius: 999px; cursor: default; display: inline-flex; height: 26px; justify-content: center; justify-self: start; padding: 0; position: relative; width: 26px; }
+    .statement-status svg { flex-shrink: 0; height: 15px; width: 15px; }
+    .statement-status::after { background: var(--text); border-radius: 4px; color: var(--surface); content: attr(data-tooltip); font-size: 0.75rem; font-weight: 600; left: 50%; opacity: 0; padding: 5px 7px; pointer-events: none; position: absolute; top: calc(100% + 6px); transform: translate(-50%, -2px); transition: opacity .15s ease, transform .15s ease; visibility: hidden; white-space: nowrap; z-index: 60; }
+    .statement-status:hover::after, .statement-status:focus::after { opacity: 1; transform: translate(-50%, 0); visibility: visible; }
+    .statement-status:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+    .statement-status-ok { background: var(--success-bg); color: var(--success); }
+    .statement-status-posted { background: #e0f2fe; color: #0369a1; }
+    .statement-status-pending { background: var(--warning-bg); color: var(--warning); }
+    .statement-status-planned { background: var(--primary-soft); color: var(--primary); }
     .actions { position: relative; }
     .actions summary { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); cursor: pointer; display: inline-flex; height: 28px; justify-content: center; list-style: none; width: 28px; }
     .actions summary::-webkit-details-marker { display: none; }
@@ -928,9 +924,9 @@ function css(): string {
     .status-icon-btn[data-status-option=planned].active { background: var(--warning-bg); border-color: #fde68a; color: var(--warning); }
     .status-label { color: var(--muted); font-size: 0.75rem; font-weight: 600; }
     .error-page { min-height: 100vh; place-content: center; }
-    @media (max-width: 1550px) { .statement-layout { grid-template-columns: 1fr; } .account-summary { position: static; } }
+    @media (max-width: 1279px) { .statement-layout { grid-template-columns: 1fr; } .account-summary { position: static; } }
     @media (max-width: 1024px) { .filter-form { grid-template-columns: repeat(2, minmax(0,1fr)); } .modal-panel form[data-form] { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-    @media (max-width: 760px) { main { padding: 14px 14px 24px; } .filter-form, .modal-panel form[data-form], .summary-totals { grid-template-columns: 1fr; } .statement-heading, .statement-toolbar { align-items: stretch; display: grid; } .save-row { align-items: stretch; flex-direction: column; } .statement-table { overflow-x: visible; } .statement-head { display: none; } .statement-row.statement-body { align-items: center; display: flex; flex-wrap: wrap; gap: 5px 8px; padding: 10px; } .statement-row.statement-body .col-date { color: var(--muted); flex: 0 0 auto; font-size: 0.75rem; order: 1; } .statement-row.statement-body .col-actions { margin-left: auto; order: 2; } .statement-row.statement-body .col-description { flex: 1 1 100%; order: 3; } .statement-row.statement-body .col-category, .statement-row.statement-body .col-kind { color: var(--muted); font-size: 0.75rem; order: 4; } .statement-row.statement-body .col-status { order: 5; } .statement-row.statement-body .col-amount { font-size: 0.9375rem; margin-left: auto; order: 6; } .statement-row.statement-body .col-balance { color: var(--muted); font-size: 0.75rem; order: 7; } }
+    @media (max-width: 760px) { main { padding: 14px 14px 24px; } .filter-form, .modal-panel form[data-form], .summary-totals { grid-template-columns: 1fr; } .statement-heading, .statement-toolbar { align-items: stretch; display: grid; } .statement-heading-actions { justify-content: stretch; } .statement-heading-actions button { flex: 1 1 auto; } .save-row { align-items: stretch; flex-direction: column; } .statement-table { overflow-x: visible; } .statement-head { display: none; } .statement-row.statement-body { align-items: center; display: flex; flex-wrap: wrap; gap: 5px 8px; padding: 10px; } .statement-row.statement-body .col-date { color: var(--muted); flex: 0 0 auto; font-size: 0.75rem; order: 1; } .statement-row.statement-body .col-actions { margin-left: auto; order: 2; } .statement-row.statement-body .col-description { flex: 1 1 100%; order: 3; } .statement-row.statement-body .col-category, .statement-row.statement-body .col-kind { color: var(--muted); font-size: 0.75rem; order: 4; } .statement-row.statement-body .col-status { order: 5; } .statement-row.statement-body .col-amount { font-size: 0.9375rem; margin-left: auto; order: 6; } .statement-row.statement-body .col-balance { color: var(--muted); font-size: 0.75rem; order: 7; } }
     ${recurrencesSectionStyles()}
   `;
 }
