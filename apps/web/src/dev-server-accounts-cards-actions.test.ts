@@ -76,7 +76,10 @@ async function accountsCardsPageRendersDialogInstrumentList(): Promise<void> {
     assert.match(dialogHtml, /class="instrument-list"/);
     assert.match(dialogHtml, /data-card-instrument/);
     assert.match(dialogHtml, /<strong>Físico titular<\/strong>/);
-    assert.match(dialogHtml, /Físico · Titular principal · \*\*\*\* 1111 · limite R\$ 3\.000,00/);
+    assert.match(
+      dialogHtml,
+      /Físico · Titular principal · \*\*\*\* 1111 · limite R\$[ \u00a0]3\.000,00/,
+    );
     assert.match(dialogHtml, /class="instrument-pill">Default<\/span>/);
     assert.match(dialogHtml, /class="instrument-actions" aria-label="Ações de Físico titular"/);
     assert.match(dialogHtml, /data-open-dialog="edit-card-instrument-dialog-instrument-physical"/);
