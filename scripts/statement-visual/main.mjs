@@ -2,14 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 import {
   pageMeasurementExpression,
@@ -65,8 +58,16 @@ try {
         width,
         height: width === 390 ? 1000 : 900,
       });
-      check(!evidence.measurements.globalOverflow, `${route} has global overflow at ${width}px`, evidence);
-      check(evidence.measurements.mainWidth > 0, `${route} has no measurable main at ${width}px`, evidence);
+      check(
+        !evidence.measurements.globalOverflow,
+        `${route} has global overflow at ${width}px`,
+        evidence,
+      );
+      check(
+        evidence.measurements.mainWidth > 0,
+        `${route} has no measurable main at ${width}px`,
+        evidence,
+      );
       check(
         evidence.measurements.outsideEssential.length === 0,
         `${route} has essential content outside the viewport at ${width}px`,
@@ -154,17 +155,39 @@ async function capturePage(scenario) {
 function validateStatement(evidence, width) {
   const value = evidence.measurements;
   check(!value.globalOverflow, `Statement has global overflow at ${width}px`, value);
-  check(value.moneyProblems.length === 0, `Statement money is clipped or wrapped at ${width}px`, value.moneyProblems);
+  check(
+    value.moneyProblems.length === 0,
+    `Statement money is clipped or wrapped at ${width}px`,
+    value.moneyProblems,
+  );
   check(value.overlaps.length === 0, `Statement summary overlaps at ${width}px`, value.overlaps);
-  check(value.outsideEssential.length === 0, `Statement content escapes local overflow at ${width}px`, value.outsideEssential);
+  check(
+    value.outsideEssential.length === 0,
+    `Statement content escapes local overflow at ${width}px`,
+    value.outsideEssential,
+  );
   check(value.balanceHierarchy, `Balance hierarchy is not preserved at ${width}px`, value);
-  if (width <= 768) check(value.layoutMode === "stacked", `Statement is not stacked at ${width}px`, value);
-  if (width >= 1366) check(value.layoutMode === "side-by-side", `Statement is not side-by-side at ${width}px`, value);
+  if (width <= 768)
+    check(value.layoutMode === "stacked", `Statement is not stacked at ${width}px`, value);
+  if (width >= 1366)
+    check(
+      value.layoutMode === "side-by-side",
+      `Statement is not side-by-side at ${width}px`,
+      value,
+    );
   if (width === 1920) {
-    check(value.mainWidth >= 1680 && value.mainWidth <= 1800.5, `Main width at 1920px is ${value.mainWidth}`, value);
+    check(
+      value.mainWidth >= 1680 && value.mainWidth <= 1800.5,
+      `Main width at 1920px is ${value.mainWidth}`,
+      value,
+    );
   }
   if (width === 768 || width === 1366) {
-    check(value.table.hasLocalHorizontalScroll, `Table lacks local scroll at ${width}px`, value.table);
+    check(
+      value.table.hasLocalHorizontalScroll,
+      `Table lacks local scroll at ${width}px`,
+      value.table,
+    );
   }
 }
 
@@ -189,7 +212,10 @@ async function captureTooltip(scenario) {
   );
 
   if (scenario.activation === "hover") {
-    await evaluate(browser.cdp, `document.querySelector('[data-visual-target="true"]').dispatchEvent(new MouseEvent("mouseenter"))`);
+    await evaluate(
+      browser.cdp,
+      `document.querySelector('[data-visual-target="true"]').dispatchEvent(new MouseEvent("mouseenter"))`,
+    );
   } else if (scenario.activation === "tab") {
     await evaluate(
       browser.cdp,
@@ -205,8 +231,20 @@ async function captureTooltip(scenario) {
         return document.activeElement === sentinel;
       })()`,
     );
-    await browser.cdp.send("Input.dispatchKeyEvent", { type: "rawKeyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
-    await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+    await browser.cdp.send("Input.dispatchKeyEvent", {
+      type: "rawKeyDown",
+      key: "Tab",
+      code: "Tab",
+      windowsVirtualKeyCode: 9,
+      nativeVirtualKeyCode: 9,
+    });
+    await browser.cdp.send("Input.dispatchKeyEvent", {
+      type: "keyUp",
+      key: "Tab",
+      code: "Tab",
+      windowsVirtualKeyCode: 9,
+      nativeVirtualKeyCode: 9,
+    });
     await evaluate(
       browser.cdp,
       `(() => {
@@ -230,9 +268,19 @@ async function captureTooltip(scenario) {
   check(measurements.tooltipParentIsBody, `${scenario.name}: tooltip is not in body`, measurements);
   check(measurements.insideViewport, `${scenario.name}: tooltip clipped`, measurements);
   check(Boolean(measurements.ariaLabel), `${scenario.name}: aria-label missing`, measurements);
-  check(Boolean(measurements.describedBy), `${scenario.name}: aria-describedby missing`, measurements);
-  if (scenario.activation === "tab") check(measurements.activeIsTarget, `${scenario.name}: Tab did not focus indicator`, measurements);
-  if (scenario.scrollTable) check(measurements.tableScrollLeft > 0, `${scenario.name}: table did not scroll`, measurements);
+  check(
+    Boolean(measurements.describedBy),
+    `${scenario.name}: aria-describedby missing`,
+    measurements,
+  );
+  if (scenario.activation === "tab")
+    check(
+      measurements.activeIsTarget,
+      `${scenario.name}: Tab did not focus indicator`,
+      measurements,
+    );
+  if (scenario.scrollTable)
+    check(measurements.tableScrollLeft > 0, `${scenario.name}: table did not scroll`, measurements);
 }
 
 function check(condition, message, context) {

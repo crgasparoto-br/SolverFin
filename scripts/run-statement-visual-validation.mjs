@@ -7,7 +7,7 @@ try {
   await import("./statement-visual/main.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
-  const message = error instanceof Error ? error.stack ?? error.message : String(error);
+  const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
   await writeFile(join(outputDir, "fatal-error.log"), `${message}\n`);
   console.error(message);
   process.exitCode = 1;

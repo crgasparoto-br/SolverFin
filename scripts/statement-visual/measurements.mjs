@@ -112,9 +112,22 @@ export function tooltipMeasurementExpression() {
 }
 
 export function renderReport(report) {
-  const pages = report.pages.map((item) => `| ${item.name} | ${item.measurements.viewportWidth} | ${item.measurements.mainWidth.toFixed(1)} | ${item.measurements.rootScrollWidth}/${item.measurements.rootClientWidth}/${item.measurements.bodyScrollWidth} | ${item.measurements.layoutMode} | ${item.measurements.table.hasLocalHorizontalScroll ? "sim" : "nao"} | ${item.screenshot} |`).join("\n");
-  const tooltips = report.tooltips.map((item) => `| ${item.name} | ${item.activation} | ${item.measurements.tooltipVisible ? "sim" : "nao"} | ${item.measurements.insideViewport ? "sim" : "nao"} | ${item.measurements.activeIsTarget ? "sim" : "nao"} | ${item.measurements.tableScrollLeft.toFixed(0)} | ${item.screenshot} |`).join("\n");
-  const failures = report.failures.length === 0 ? "Nenhuma falha detectada." : report.failures.map((item) => `- ${item.message}`).join("\n");
+  const pages = report.pages
+    .map(
+      (item) =>
+        `| ${item.name} | ${item.measurements.viewportWidth} | ${item.measurements.mainWidth.toFixed(1)} | ${item.measurements.rootScrollWidth}/${item.measurements.rootClientWidth}/${item.measurements.bodyScrollWidth} | ${item.measurements.layoutMode} | ${item.measurements.table.hasLocalHorizontalScroll ? "sim" : "nao"} | ${item.screenshot} |`,
+    )
+    .join("\n");
+  const tooltips = report.tooltips
+    .map(
+      (item) =>
+        `| ${item.name} | ${item.activation} | ${item.measurements.tooltipVisible ? "sim" : "nao"} | ${item.measurements.insideViewport ? "sim" : "nao"} | ${item.measurements.activeIsTarget ? "sim" : "nao"} | ${item.measurements.tableScrollLeft.toFixed(0)} | ${item.screenshot} |`,
+    )
+    .join("\n");
+  const failures =
+    report.failures.length === 0
+      ? "Nenhuma falha detectada."
+      : report.failures.map((item) => `- ${item.message}`).join("\n");
   return `# Evidencia visual das issues #470, #471 e #472
 
 - Commit: \`${report.commit}\`

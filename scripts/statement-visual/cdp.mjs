@@ -10,7 +10,10 @@ export class CdpClient {
     }
     const socket = new globalThis.WebSocket(url);
     await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("Chrome DevTools connection timeout")), 10_000);
+      const timer = setTimeout(
+        () => reject(new Error("Chrome DevTools connection timeout")),
+        10_000,
+      );
       socket.addEventListener("open", () => {
         clearTimeout(timer);
         resolve();
@@ -145,7 +148,9 @@ export async function evaluate(cdp, expression) {
     returnByValue: true,
   });
   if (response.exceptionDetails) {
-    throw new Error(response.exceptionDetails.exception?.description ?? response.exceptionDetails.text);
+    throw new Error(
+      response.exceptionDetails.exception?.description ?? response.exceptionDetails.text,
+    );
   }
   return response.result.value;
 }
@@ -184,7 +189,8 @@ async function removeProfile(profile, outputDir) {
       await sleep(200 * (attempt + 1));
     }
   }
-  const message = lastError instanceof Error ? lastError.stack ?? lastError.message : String(lastError);
+  const message =
+    lastError instanceof Error ? (lastError.stack ?? lastError.message) : String(lastError);
   await writeFile(join(outputDir, "chrome-profile-cleanup-warning.log"), `${message}\n`);
 }
 
