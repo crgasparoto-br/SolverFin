@@ -40,8 +40,14 @@ function assertScopeLayoutContract(): void {
   assert.match(script, /grid-template-columns: 1fr/);
   assert.match(script, /Alterar somente esta compra/);
   assert.match(script, /Alterar somente este lançamento/);
-  assert.match(script, /Aplica a alteração nesta compra e também em todas as próximas compras ainda editáveis/);
-  assert.match(script, /Aplica a alteração neste lançamento e também em todos os próximos lançamentos ainda editáveis/);
+  assert.match(
+    script,
+    /Aplica a alteração nesta compra e também em todas as próximas compras ainda editáveis/,
+  );
+  assert.match(
+    script,
+    /Aplica a alteração neste lançamento e também em todos os próximos lançamentos ainda editáveis/,
+  );
 
   assert.match(script, /dialog button, \[role="dialog"\] button, \.category-modal button/);
   assert.match(script, /data-recurrence-scope-cancel/);
@@ -151,12 +157,12 @@ async function assertScopeRequest(
     window: { location: { reload: () => undefined }, setTimeout: () => 0 },
   });
 
-  const currentLabel = targetKind === "card"
-    ? "Alterar somente esta compra"
-    : "Alterar somente este lançamento";
-  const futureLabel = targetKind === "card"
-    ? "Alterar esta compra e as próximas"
-    : "Alterar este lançamento e os próximos";
+  const currentLabel =
+    targetKind === "card" ? "Alterar somente esta compra" : "Alterar somente este lançamento";
+  const futureLabel =
+    targetKind === "card"
+      ? "Alterar esta compra e as próximas"
+      : "Alterar este lançamento e os próximos";
   assert.match(currentButton.innerHTML, new RegExp(currentLabel));
   assert.match(futureButton.innerHTML, new RegExp(futureLabel));
   assert.match(currentButton.innerHTML, /recurrence-scope-option-description/);
@@ -227,7 +233,10 @@ function fakeButton(): FakeButton {
     },
     set innerHTML(value: string) {
       html = value;
-      this.textContent = value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      this.textContent = value
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     },
     textContent: "",
     classList: fakeClassList(),
@@ -238,9 +247,7 @@ function fakeButton(): FakeButton {
     closest: () => null,
   };
   button.closest = (selector: string) =>
-    selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope
-      ? button
-      : null;
+    selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope ? button : null;
   return button;
 }
 

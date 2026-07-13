@@ -74,8 +74,7 @@ function collectCreateInstrumentDialogs(html: string): InstrumentCreateDialog[] 
 }
 
 function collectCardInstrumentLists(html: string): CardInstrumentList[] {
-  const cardArticlePattern =
-    /<article class="master-item card-account-item"[\s\S]*?<\/article>/g;
+  const cardArticlePattern = /<article class="master-item card-account-item"[\s\S]*?<\/article>/g;
   const instrumentLists: CardInstrumentList[] = [];
 
   for (const match of html.matchAll(cardArticlePattern)) {
