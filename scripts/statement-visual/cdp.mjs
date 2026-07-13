@@ -124,7 +124,7 @@ export async function setViewport(cdp, width, height) {
     width,
     height,
     deviceScaleFactor: 1,
-    mobile: width <= 760,
+    mobile: false,
     screenWidth: width,
     screenHeight: height,
   });
