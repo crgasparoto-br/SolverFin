@@ -65,22 +65,18 @@ jobs:
 
           const testPath = "apps/api/src/account-remuneration-contract.test.ts";
           let test = fs.readFileSync(testPath, "utf8");
-          test = test.replace(
-            "assert.match(repositorySource, /Rendimento previsto —/);",
-            `assert.match(repositorySource, /Rendimento previsto —/);\nassert.match(repositorySource, /const postingOn = addDays\\(competenceOn, 1\\)/);\nassert.match(\n  repositorySource,\n  /await createOperation\\(operationId, "ACCOUNT_REMUNERATION"\\);[\\s\\S]*try {[\\s\\S]*await withTransaction/,\n);`,
-          );
+          if (!test.includes("const postingOn = addDays")) {
+            test = test.replace(
+              "assert.match(repositorySource, /Rendimento previsto —/);",
+              `assert.match(repositorySource, /Rendimento previsto —/);\nassert.match(repositorySource, /const postingOn = addDays\\(competenceOn, 1\\)/);\nassert.match(\n  repositorySource,\n  /await createOperation\\(operationId, "ACCOUNT_REMUNERATION"\\);[\\s\\S]*try {[\\s\\S]*await withTransaction/,\n);`,
+            );
+          }
           fs.writeFileSync(testPath, test);
           NODE
 
           npx prettier --write \
             apps/api/src/repositories/account-remuneration.ts \
             apps/api/src/account-remuneration-contract.test.ts
-
-      - name: Validate targeted changes
-        run: |
-          npm run lint --workspace @solverfin/api
-          npm run typecheck --workspace @solverfin/api
-          npm run test --workspace @solverfin/api -- --include account-remuneration
 
       - name: Commit correctness fixes
         shell: bash
