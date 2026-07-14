@@ -5,6 +5,7 @@ export function enhanceAccountsCardsTabs(html: string): string {
 
   let enhanced = keepCardInstrumentsInsideEditDialog(injectActiveFilter(html));
   enhanced = injectNeutralStyles(enhanced);
+  enhanced = injectAccountRemunerationStyles(enhanced);
 
   if (!enhanced.includes("data-accounts-cards-direct-enhancement")) {
     enhanced = enhanced.replace("</body>", `${accountsCardsDirectEnhancementScript()}</body>`);
@@ -17,25 +18,25 @@ function injectActiveFilter(html: string): string {
   if (html.includes("active-filter-switch")) return html;
 
   const activeFilterToggleHtml = `          <label class="active-filter-switch" data-active-filter aria-pressed="false">
-            <input type="checkbox" class="active-filter-input" data-active-filter-input />
-            <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
-            <span>Exibir apenas ativos</span>
-          </label>`;
+             <input type="checkbox" class="active-filter-input" data-active-filter-input />
+             <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+             <span>Exibir apenas ativos</span>
+           </label>`;
   const htmlWithoutStatusFilter = html.replace(
     `          <label>Status
-            <select data-master-status>
-              <option value="all">Todos</option>
-              <option value="active">Ativos</option>
-              <option value="inactive">Inativos</option>
-            </select>
-          </label>`,
+             <select data-master-status>
+               <option value="all">Todos</option>
+               <option value="active">Ativos</option>
+               <option value="inactive">Inativos</option>
+             </select>
+           </label>`,
     "",
   );
 
   return htmlWithoutStatusFilter.replace(
     `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>`,
     `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>
-${activeFilterToggleHtml}`,
+ ${activeFilterToggleHtml}`,
   );
 }
 
@@ -67,6 +68,21 @@ function injectNeutralStyles(html: string): string {
   return html.replace("</head>", `${styles}</head>`);
 }
 
+function injectAccountRemunerationStyles(html: string): string {
+  if (html.includes("data-account-remuneration-account-form-styles")) return html;
+
+  const styles = `
+      <style data-account-remuneration-account-form-styles>
+        .account-remuneration-fieldset { border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 10px; grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 4px 0; padding: 12px; }
+        .account-remuneration-fieldset legend { font-size: .8125rem; font-weight: 800; padding: 0 6px; }
+        .account-remuneration-fieldset .remuneration-help { color: var(--muted); font-size: .75rem; grid-column: 1 / -1; line-height: 1.45; margin: 0; }
+        .account-remuneration-fieldset select:disabled, .account-remuneration-fieldset input:disabled { cursor: not-allowed; opacity: .65; }
+        @media (max-width: 680px) { .account-remuneration-fieldset { grid-template-columns: 1fr; } .account-remuneration-fieldset .remuneration-help { grid-column: auto; } }
+      </style>`;
+
+  return html.replace("</head>", `${styles}</head>`);
+}
+
 function accountsCardsDirectEnhancementScript(): string {
   return `
       <script data-accounts-cards-direct-enhancement>
@@ -91,14 +107,212 @@ function accountsCardsDirectEnhancementScript(): string {
             });
           }
 
-          function boot() {
+          function escapeHtml(value) {
+            return String(value ?? "")
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#39;");
+          }
+
+          function accountIdFromForm(form) {
+            const match = /^\\/api\\/accounts\\/([^/]+)$/.exec(String(form.dataset.apiPath || ""));
+            return match ? decodeURIComponent(match[1]) : undefined;
+          }
+
+          function renderCategoryOptions(categories, selected) {
+            return categories.map((category) =>
+              '<option value="' + escapeHtml(category.id) + '"' + (category.id === selected ? ' selected' : '') + '>' + escapeHtml(category.name) + '</option>'
+            ).join("");
+          }
+
+          function appendRemunerationFields(form, configuration, categories) {
+            if (form.querySelector("[data-account-remuneration-fields]")) return;
+            const enabled = configuration && configuration.enabled === true;
+            const percentage = configuration && configuration.remunerationPercent !== undefined ? configuration.remunerationPercent : 100;
+            const startsOn = configuration && configuration.startsOn ? configuration.startsOn : new Date().toISOString().slice(0, 10);
+            const categoryId = configuration && configuration.categoryId ? configuration.categoryId : "";
+            const fieldset = document.createElement("fieldset");
+            fieldset.className = "account-remuneration-fieldset";
+            fieldset.setAttribute("data-account-remuneration-fields", "");
+            fieldset.innerHTML =
+              '<legend>Remuneração da conta</legend>' +
+              '<label>Situação<select name="remunerationEnabled"><option value="false"' + (enabled ? '' : ' selected') + '>Desativada</option><option value="true"' + (enabled ? ' selected' : '') + '>Ativa</option></select></label>' +
+              '<label>Indexador<select name="remunerationIndexKind"><option value="cdi">CDI</option></select></label>' +
+              '<label>Percentual de remuneração sobre o CDI<input name="remunerationPercent" type="number" min="0.0001" max="1000" step="0.0001" value="' + escapeHtml(percentage) + '" /></label>' +
+              '<label>Data inicial<input name="remunerationStartsOn" type="date" value="' + escapeHtml(startsOn) + '" /></label>' +
+              '<label>Categoria de receita<select name="remunerationCategoryId"><option value="">Sem categoria padrão</option>' + renderCategoryOptions(categories, categoryId) + '</select></label>' +
+              '<p class="remuneration-help">O cálculo usa o saldo final da competência e a taxa diária oficial do CDI. Contas fora de BRL permanecem não elegíveis.</p>';
+            const submit = form.querySelector('button[type="submit"]');
+            if (submit) form.insertBefore(fieldset, submit);
+            else form.appendChild(fieldset);
+            wireRemunerationAvailability(form);
+          }
+
+          function wireRemunerationAvailability(form) {
+            const enabled = form.elements.remunerationEnabled;
+            const percentage = form.elements.remunerationPercent;
+            const startsOn = form.elements.remunerationStartsOn;
+            const category = form.elements.remunerationCategoryId;
+            const currency = form.elements.currency;
+            if (!enabled || !percentage || !startsOn) return;
+
+            const sync = () => {
+              const supportsCdi = !currency || currency.value === "BRL";
+              if (!supportsCdi) enabled.value = "false";
+              enabled.disabled = !supportsCdi;
+              const active = supportsCdi && enabled.value === "true";
+              percentage.disabled = !active;
+              startsOn.disabled = !active;
+              if (category) category.disabled = !active;
+              percentage.required = active;
+              startsOn.required = active;
+            };
+            enabled.addEventListener("change", sync);
+            if (currency) currency.addEventListener("change", sync);
+            sync();
+          }
+
+          function readAccountPayload(form) {
+            const payload = {};
+            new FormData(form).forEach((value, key) => {
+              if (key.startsWith("remuneration") || value === "") return;
+              const field = form.querySelector('[name="' + key + '"]');
+              if (field && field.dataset.money !== undefined) {
+                payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);
+              } else if (field && field.type === "number") {
+                payload[key] = Number(value);
+              } else {
+                payload[key] = value;
+              }
+            });
+            return payload;
+          }
+
+          function readRemunerationPayload(form) {
+            const enabled = form.elements.remunerationEnabled && form.elements.remunerationEnabled.value === "true";
+            const payload = { enabled };
+            if (enabled) {
+              payload.remunerationPercent = Number(form.elements.remunerationPercent.value);
+              payload.startsOn = String(form.elements.remunerationStartsOn.value || "");
+              const categoryId = String(form.elements.remunerationCategoryId && form.elements.remunerationCategoryId.value || "");
+              if (categoryId) payload.categoryId = categoryId;
+            }
+            return payload;
+          }
+
+          function statusFor(form) {
+            let status = form.querySelector(":scope > [data-form-status]");
+            if (!status) {
+              status = document.createElement("p");
+              status.className = "form-status muted";
+              status.setAttribute("data-form-status", "");
+              status.setAttribute("aria-live", "polite");
+              form.appendChild(status);
+            }
+            return status;
+          }
+
+          async function readError(response) {
+            const body = await response.json().catch(() => ({}));
+            return { body, message: body && body.error && body.error.message ? body.error.message : "Não foi possível concluir a operação." };
+          }
+
+          function wireCombinedAccountSubmit(form) {
+            if (form.dataset.accountRemunerationSubmit === "true") return;
+            form.dataset.accountRemunerationSubmit = "true";
+            form.addEventListener("submit", async (event) => {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              if (!form.reportValidity()) return;
+
+              const status = statusFor(form);
+              const submit = form.querySelector('button[type="submit"]');
+              if (submit) submit.disabled = true;
+              status.className = "form-status muted";
+              status.textContent = "Salvando conta e remuneração...";
+
+              const method = form.dataset.apiMethod || "POST";
+              const accountResponse = await fetch(form.dataset.apiPath, {
+                method,
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(readAccountPayload(form))
+              });
+              const accountResult = await readError(accountResponse);
+              if (!accountResponse.ok) {
+                status.className = "form-status error";
+                status.textContent = accountResult.message;
+                if (submit) submit.disabled = false;
+                return;
+              }
+
+              const accountId = accountIdFromForm(form) || (accountResult.body.account && accountResult.body.account.id);
+              if (!accountId) {
+                status.className = "form-status error";
+                status.textContent = "A conta foi salva, mas não foi possível identificar o cadastro para configurar a remuneração.";
+                if (submit) submit.disabled = false;
+                return;
+              }
+
+              const configurationResponse = await fetch("/api/account-remuneration/configurations/" + encodeURIComponent(accountId), {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(readRemunerationPayload(form))
+              });
+              const configurationResult = await readError(configurationResponse);
+              if (!configurationResponse.ok) {
+                status.className = "form-status error";
+                status.textContent = "A conta foi salva, mas a remuneração não: " + configurationResult.message;
+                if (submit) submit.disabled = false;
+                return;
+              }
+
+              status.className = "form-status success";
+              status.textContent = "Conta e remuneração salvas. Atualizando a tela...";
+              window.setTimeout(() => window.location.reload(), 450);
+            }, true);
+          }
+
+          async function wireAccountRemunerationForms() {
+            const forms = Array.from(document.querySelectorAll('form.edit-grid[data-api-path="/api/accounts"], form.edit-grid[data-api-path^="/api/accounts/"]'))
+              .filter((form) => /^\\/api\\/accounts(?:\\/[^/]+)?$/.test(String(form.dataset.apiPath || "")));
+            if (forms.length === 0) return;
+
+            let configurations = [];
+            let categories = [];
+            try {
+              const [configurationResponse, categoryResponse] = await Promise.all([
+                fetch("/api/account-remuneration/configurations"),
+                fetch("/api/categories?status=all")
+              ]);
+              if (configurationResponse.ok) configurations = (await configurationResponse.json()).configurations || [];
+              if (categoryResponse.ok) {
+                const records = (await categoryResponse.json()).categories || [];
+                categories = records.filter((category) => category.status === "active" && category.kind === "income");
+              }
+            } catch (_error) {
+              configurations = [];
+              categories = [];
+            }
+
+            const byAccount = new Map(configurations.map((configuration) => [configuration.accountId, configuration]));
+            forms.forEach((form) => {
+              const accountId = accountIdFromForm(form);
+              appendRemunerationFields(form, accountId ? byAccount.get(accountId) : undefined, categories);
+              wireCombinedAccountSubmit(form);
+            });
+          }
+
+          async function boot() {
             wireActiveFilter();
+            await wireAccountRemunerationForms();
           }
 
           if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", boot);
+            document.addEventListener("DOMContentLoaded", () => { void boot(); });
           } else {
-            boot();
+            void boot();
           }
         })();
       </script>`;
