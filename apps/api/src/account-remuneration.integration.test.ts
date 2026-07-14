@@ -114,9 +114,7 @@ async function main(): Promise<void> {
   assert.equal(preserved.originalAmountMinor, 551);
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(
-      `select pg_advisory_xact_lock(hashtext('solverfin:account-remuneration'))`,
-    );
+    await executeQuery(`select pg_advisory_xact_lock(hashtext('solverfin:account-remuneration'))`);
 
     await assert.rejects(
       () => processAccountRemunerations(PROCESSING_ON),
