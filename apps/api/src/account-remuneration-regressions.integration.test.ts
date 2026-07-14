@@ -22,8 +22,8 @@ const CONTEXT: TenantContext = {
   userId: "11111111-1111-4111-8111-111111111111",
 };
 
-const COMPETENCE_ON = "2099-01-04";
-const PROCESSING_ON = "2099-01-05";
+const COMPETENCE_ON = "2037-01-04";
+const PROCESSING_ON = "2037-01-05";
 
 void main()
   .catch((error: unknown) => {
@@ -69,7 +69,7 @@ async function main(): Promise<void> {
 
   await importCdiRates(
     { startsOn: COMPETENCE_ON, endsOn: COMPETENCE_ON },
-    buildCdiFetcher([{ data: "04/01/2099", valor: "0,055131" }]),
+    buildCdiFetcher([{ data: "04/01/2037", valor: "0,055131" }]),
   );
 
   const firstProcessing = await processAccountRemunerations(PROCESSING_ON);
@@ -132,20 +132,20 @@ async function main(): Promise<void> {
 
   let requestedUrl = "";
   const incrementalResult = await importCdiRates(
-    { startsOn: "2000-01-01", endsOn: "2099-01-06" },
+    { startsOn: "2000-01-01", endsOn: "2037-01-06" },
     async (input) => {
       requestedUrl = String(input);
-      return new Response(JSON.stringify([{ data: "05/01/2099", valor: "0,055131" }]), {
+      return new Response(JSON.stringify([{ data: "05/01/2037", valor: "0,055131" }]), {
         status: 200,
         headers: { "content-type": "application/json" },
       });
     },
   );
-  assert.equal(new URL(requestedUrl).searchParams.get("dataInicial"), "05/01/2099");
+  assert.equal(new URL(requestedUrl).searchParams.get("dataInicial"), "05/01/2037");
   assert.equal(incrementalResult.importedCount, 1);
 
   let noOpFetcherCalled = false;
-  const noOpResult = await importCdiRates({ endsOn: "2099-01-05" }, async () => {
+  const noOpResult = await importCdiRates({ endsOn: "2037-01-05" }, async () => {
     noOpFetcherCalled = true;
     throw new Error("the provider must not be called for an up-to-date series");
   });
@@ -159,8 +159,8 @@ async function main(): Promise<void> {
     await assert.rejects(
       () =>
         importCdiRates(
-          { endsOn: "2099-01-06" },
-          buildCdiFetcher([{ data: "06/01/2099", valor: "0,055131" }]),
+          { endsOn: "2037-01-06" },
+          buildCdiFetcher([{ data: "06/01/2037", valor: "0,055131" }]),
         ),
       (error: unknown) =>
         error instanceof Error &&
