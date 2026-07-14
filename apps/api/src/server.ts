@@ -1,6 +1,8 @@
 import "./load-env.js";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
+import { handleAccountRemunerationApiRequest } from "./account-remuneration-router.js";
+import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
 import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
@@ -27,6 +29,7 @@ const server = createServer((request, response) => {
 
 server.listen(port, host, () => {
   console.log(`@solverfin/api listening on http://${host}:${port}`);
+  startAccountRemunerationScheduler();
 });
 
 async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -43,24 +46,29 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
       if (legacyResult) {
         writeResponse(response, legacyResult);
-
         return;
       }
     }
 
     const apiRequest: ApiRequest = {
-      method: request.method ?? "GET",
+      method,
       pathname: url.pathname,
       query: url.searchParams,
       headers,
       body,
     };
 
+    const accountRemunerationResult = await handleAccountRemunerationApiRequest(apiRequest);
+
+    if (accountRemunerationResult) {
+      writeResponse(response, accountRemunerationResult);
+      return;
+    }
+
     const accountsResult = await handleAccountsApiRequest(apiRequest);
 
     if (accountsResult) {
       writeResponse(response, accountsResult);
-
       return;
     }
 
@@ -68,7 +76,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (adminInstitutionsResult) {
       writeResponse(response, adminInstitutionsResult);
-
       return;
     }
 
@@ -76,7 +83,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (financialProfilesResult) {
       writeResponse(response, financialProfilesResult);
-
       return;
     }
 
@@ -84,7 +90,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (bankMessageInboxResult) {
       writeResponse(response, bankMessageInboxResult);
-
       return;
     }
 
@@ -92,7 +97,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (importBatchesResult) {
       writeResponse(response, importBatchesResult);
-
       return;
     }
 
@@ -100,7 +104,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (installmentsResult) {
       writeResponse(response, installmentsResult);
-
       return;
     }
 
@@ -108,7 +111,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (aiReviewQueueResult) {
       writeResponse(response, aiReviewQueueResult);
-
       return;
     }
 
@@ -116,7 +118,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (automationRulesResult) {
       writeResponse(response, automationRulesResult);
-
       return;
     }
 
@@ -125,7 +126,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (deduplicationReconciliationResult) {
       writeResponse(response, deduplicationReconciliationResult);
-
       return;
     }
 
@@ -133,7 +133,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (payablesReceivablesResult) {
       writeResponse(response, payablesReceivablesResult);
-
       return;
     }
 
@@ -141,7 +140,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (creditCardAccountsResult) {
       writeResponse(response, creditCardAccountsResult);
-
       return;
     }
 
@@ -149,7 +147,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (result) {
       writeResponse(response, result);
-
       return;
     }
 
@@ -191,7 +188,6 @@ async function dispatchLegacyRoute(
     headers,
     body,
   } as MvpApiRequest;
-
   const mvpResponse = await handleMvpApiRequest(mvpRequest);
 
   return {
@@ -206,7 +202,6 @@ function writeResponse(response: ServerResponse, apiResponse: ApiResponse): void
 
   if (apiResponse.body === undefined) {
     response.end();
-
     return;
   }
 
