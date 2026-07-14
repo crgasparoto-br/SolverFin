@@ -85,7 +85,20 @@ jobs:
         run: npm run db:seed
 
       - name: Test
-        run: npm run test
+        shell: bash
+        run: |
+          mkdir -p artifacts/ci
+          set -o pipefail
+          npm run test 2>&1 | tee artifacts/ci/test.log
+
+      - name: Upload failing test output
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-test-failure-${{ github.sha }}
+          path: artifacts/ci/test.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Build
         run: npm run build
