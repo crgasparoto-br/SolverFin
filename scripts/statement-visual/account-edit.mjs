@@ -8,22 +8,39 @@ import { accountEditFixtureExpression, loginExpression } from "./fixtures.mjs";
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
+const diagnosticPath = join(outputDir, "issue-473-diagnostic.json");
 
 if (!chromePath) throw new Error("CHROME_BIN is required for visual validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
+const diagnostic = {
+  commit: process.env.GITHUB_SHA ?? "local",
+  generatedAt: new Date().toISOString(),
+  stage: "browser-launched",
+};
 let evidence;
+
+async function saveDiagnostic(values = {}) {
+  Object.assign(diagnostic, values);
+  await writeFile(diagnosticPath, `${JSON.stringify(diagnostic, null, 2)}\n`);
+}
 
 try {
   await setViewport(browser.cdp, 1366, 1000);
   await navigate(browser.cdp, `${baseUrl}/login`);
+  await saveDiagnostic({ stage: "login-page-loaded" });
+
   const login = await evaluate(browser.cdp, loginExpression());
+  await saveDiagnostic({ login, stage: "login-finished" });
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
+
   const fixtureIds = await evaluate(browser.cdp, accountEditFixtureExpression());
+  await saveDiagnostic({ fixtureIds, stage: "fixture-created" });
   const sourceRoute = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.sourceAccountId)}&month=2026-07`;
 
   await navigate(browser.cdp, `${baseUrl}${sourceRoute}`);
   await sleep(350);
+  await saveDiagnostic({ sourceRoute, stage: "source-statement-loaded" });
 
   const modalState = await evaluate(
     browser.cdp,
@@ -43,10 +60,12 @@ try {
         selectedAccountId: select ? select.value : "",
         targetOptionAvailable: Boolean(targetOption),
         hiddenInputDisabled: Boolean(hiddenInput && hiddenInput.disabled),
-        guidance: dialog ? dialog.querySelector(".modal-panel > div .muted")?.textContent || "" : ""
+        guidance: dialog ? dialog.querySelector(".modal-panel > div .muted")?.textContent || "" : "",
+        availableAccountIds: select ? Array.from(select.options).map((option) => option.value) : []
       };
     })()`,
   );
+  await saveDiagnostic({ modalState, stage: "modal-state-captured" });
 
   assert.equal(modalState.dialogOpen, true);
   assert.equal(modalState.fieldVisible, true);
@@ -57,6 +76,7 @@ try {
   assert.match(modalState.guidance, /Revise a conta usada neste lançamento/);
 
   await screenshot(browser.cdp, join(outputDir, "issue-473-edit-account-before-save.png"));
+  await saveDiagnostic({ stage: "before-save-screenshot-created" });
 
   const submitted = await evaluate(
     browser.cdp,
@@ -71,6 +91,7 @@ try {
       return { selectedAccountId: select.value, submitDisabled: submitButton.disabled };
     })()`,
   );
+  await saveDiagnostic({ submitted, stage: "form-submitted" });
 
   assert.equal(submitted.selectedAccountId, fixtureIds.targetAccountId);
   assert.equal(submitted.submitDisabled, true);
@@ -93,6 +114,7 @@ try {
       };
     })()`,
   );
+  await saveDiagnostic({ persistence, stage: "persistence-checked" });
 
   assert.equal(persistence.remainsInSource, false);
   assert.equal(persistence.targetTransaction?.accountId, fixtureIds.targetAccountId);
@@ -104,6 +126,7 @@ try {
     browser.cdp,
     `Boolean(document.querySelector('[data-edit="${fixtureIds.transactionId}"]'))`,
   );
+  await saveDiagnostic({ targetRoute, visibleInTarget, stage: "target-statement-checked" });
   assert.equal(visibleInTarget, true);
   await screenshot(browser.cdp, join(outputDir, "issue-473-edit-account-after-save.png"));
 
@@ -119,6 +142,17 @@ try {
       "issue-473-edit-account-after-save.png",
     ],
   };
+  await saveDiagnostic({ stage: "completed" });
+} catch (error) {
+  await saveDiagnostic({
+    stage: "failed",
+    failure: {
+      name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    },
+  });
+  throw error;
 } finally {
   await browser.close(outputDir);
 }
