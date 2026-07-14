@@ -1,7 +1,7 @@
 import {
   importCdiRates,
   processAccountRemunerations,
-} from "./repositories/account-remuneration.js";
+} from "./repositories/account-remuneration-v2.js";
 
 const CHECK_INTERVAL_MS = 15 * 60 * 1_000;
 let lastCompletedDate: string | undefined;
@@ -32,13 +32,7 @@ export async function runDailyAccountRemunerationCycle(now = new Date()): Promis
     return false;
   }
 
-  const startsOn = new Date(`${today}T00:00:00.000Z`);
-  startsOn.setUTCDate(startsOn.getUTCDate() - 10);
-
-  await importCdiRates({
-    startsOn: startsOn.toISOString().slice(0, 10),
-    endsOn: today,
-  });
+  await importCdiRates({ endsOn: today });
   await processAccountRemunerations(today);
   lastCompletedDate = today;
   return true;
