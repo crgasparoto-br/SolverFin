@@ -49,9 +49,7 @@ async function main(): Promise<void> {
   await assertTransferCannotUseTheSameAccount(source.id, destination.id);
 }
 
-async function assertMissingAccountIsRejected(
-  sourceAccountId: string,
-): Promise<void> {
+async function assertMissingAccountIsRejected(sourceAccountId: string): Promise<void> {
   const transaction = await createTransactionForContext(PERSONAL_CONTEXT, {
     accountId: sourceAccountId,
     kind: "expense",
@@ -71,10 +69,7 @@ async function assertMissingAccountIsRejected(
     "TENANT_RESOURCE_NOT_FOUND",
   );
 
-  const after = await getTransactionForContext(
-    PERSONAL_CONTEXT,
-    transaction.id,
-  );
+  const after = await getTransactionForContext(PERSONAL_CONTEXT, transaction.id);
   assert.equal(after.accountId, sourceAccountId);
   assert.equal(after.destinationAccountId, undefined);
   assert.equal(after.description, transaction.description);

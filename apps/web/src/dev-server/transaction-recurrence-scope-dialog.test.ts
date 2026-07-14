@@ -56,13 +56,7 @@ function createHarness() {
   const formStatusNode = { textContent: "" };
   let activeElement: FakeButton | null = null;
 
-  for (const button of [
-    currentButton,
-    futureButton,
-    backButton,
-    closeButton,
-    submitButton,
-  ]) {
+  for (const button of [currentButton, futureButton, backButton, closeButton, submitButton]) {
     button.onFocus = () => {
       activeElement = button;
     };
@@ -111,10 +105,7 @@ function createHarness() {
       if (selector === 'button[type="submit"]') return submitButton;
       return null;
     },
-    addEventListener(
-      type: string,
-      listener: (event: FakeSubmitEvent) => Promise<void>,
-    ): void {
+    addEventListener(type: string, listener: (event: FakeSubmitEvent) => Promise<void>): void {
       if (type === "submit") submitListener = listener;
     },
     checkValidity: () => true,
@@ -149,9 +140,7 @@ function createHarness() {
     document,
     FormData: FakeFormData,
     moneyToMinor: (value: unknown) =>
-      Math.round(
-        Number(String(value).replace(/\./g, "").replace(",", ".")) * 100,
-      ),
+      Math.round(Number(String(value).replace(/\./g, "").replace(",", ".")) * 100),
     addMonths: (value: string) => value,
     send: async (path: string, method: string, body: unknown) => {
       requests.push({ path, method, body });
@@ -185,8 +174,7 @@ function extractTransactionScopeController(): string {
   const script = recurrencesSectionScript()
     .replace(/^\s*<script>\s*/, "")
     .replace(/\s*<\/script>\s*$/, "");
-  const startMarker =
-    'const scopeModal = document.querySelector("[data-recurrence-scope-modal]");';
+  const startMarker = 'const scopeModal = document.querySelector("[data-recurrence-scope-modal]");';
   const endMarker = "function setupCardPurchaseFormOverride()";
   const start = script.indexOf(startMarker);
   const end = script.indexOf(endMarker);
@@ -254,17 +242,12 @@ function fakeModal(input: {
   closeButton: FakeButton;
   statusNode: { className: string; textContent: string };
 }) {
-  const listeners = new Map<
-    string,
-    Array<(event: FakeCancelableEvent) => unknown>
-  >();
+  const listeners = new Map<string, Array<(event: FakeCancelableEvent) => unknown>>();
   return {
     open: false,
     querySelector(selector: string) {
-      if (selector === '[data-recurrence-scope="current"]')
-        return input.currentButton;
-      if (selector === "[data-recurrence-scope-status]")
-        return input.statusNode;
+      if (selector === '[data-recurrence-scope="current"]') return input.currentButton;
+      if (selector === "[data-recurrence-scope-status]") return input.statusNode;
       return null;
     },
     querySelectorAll(selector: string) {
@@ -275,19 +258,11 @@ function fakeModal(input: {
         return [input.closeButton, input.backButton];
       }
       if (selector.startsWith("button:not")) {
-        return [
-          input.closeButton,
-          input.currentButton,
-          input.futureButton,
-          input.backButton,
-        ];
+        return [input.closeButton, input.currentButton, input.futureButton, input.backButton];
       }
       return [];
     },
-    addEventListener(
-      type: string,
-      listener: (event: FakeCancelableEvent) => unknown,
-    ) {
+    addEventListener(type: string, listener: (event: FakeCancelableEvent) => unknown) {
       const registered = listeners.get(type) ?? [];
       registered.push(listener);
       listeners.set(type, registered);
