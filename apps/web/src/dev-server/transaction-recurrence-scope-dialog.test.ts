@@ -56,7 +56,13 @@ function createHarness() {
   const formStatusNode = { textContent: "" };
   let activeElement: FakeButton | null = null;
 
-  for (const button of [currentButton, futureButton, backButton, closeButton, submitButton]) {
+  for (const button of [
+    currentButton,
+    futureButton,
+    backButton,
+    closeButton,
+    submitButton,
+  ]) {
     button.onFocus = () => {
       activeElement = button;
     };
@@ -143,13 +149,18 @@ function createHarness() {
     document,
     FormData: FakeFormData,
     moneyToMinor: (value: unknown) =>
-      Math.round(Number(String(value).replace(/\./g, "").replace(",", ".")) * 100),
+      Math.round(
+        Number(String(value).replace(/\./g, "").replace(",", ".")) * 100,
+      ),
     addMonths: (value: string) => value,
     send: async (path: string, method: string, body: unknown) => {
       requests.push({ path, method, body });
       return { ok: true, json: async () => ({}) };
     },
-    readResponse: async () => ({ body: {}, message: "Ação concluída. Atualizando..." }),
+    readResponse: async () => ({
+      body: {},
+      message: "Ação concluída. Atualizando...",
+    }),
     window: {
       location: { reload: () => undefined },
       setTimeout: () => 0,
@@ -243,12 +254,17 @@ function fakeModal(input: {
   closeButton: FakeButton;
   statusNode: { className: string; textContent: string };
 }) {
-  const listeners = new Map<string, Array<(event: FakeCancelableEvent) => unknown>>();
+  const listeners = new Map<
+    string,
+    Array<(event: FakeCancelableEvent) => unknown>
+  >();
   return {
     open: false,
     querySelector(selector: string) {
-      if (selector === '[data-recurrence-scope="current"]') return input.currentButton;
-      if (selector === "[data-recurrence-scope-status]") return input.statusNode;
+      if (selector === '[data-recurrence-scope="current"]')
+        return input.currentButton;
+      if (selector === "[data-recurrence-scope-status]")
+        return input.statusNode;
       return null;
     },
     querySelectorAll(selector: string) {
@@ -259,11 +275,19 @@ function fakeModal(input: {
         return [input.closeButton, input.backButton];
       }
       if (selector.startsWith("button:not")) {
-        return [input.closeButton, input.currentButton, input.futureButton, input.backButton];
+        return [
+          input.closeButton,
+          input.currentButton,
+          input.futureButton,
+          input.backButton,
+        ];
       }
       return [];
     },
-    addEventListener(type: string, listener: (event: FakeCancelableEvent) => unknown) {
+    addEventListener(
+      type: string,
+      listener: (event: FakeCancelableEvent) => unknown,
+    ) {
       const registered = listeners.get(type) ?? [];
       registered.push(listener);
       listeners.set(type, registered);
