@@ -1,0 +1,49 @@
+name: Issue 434 diagnostics
+
+on:
+  push:
+    branches:
+      - feat/434-account-remuneration-cdi
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Capture build diagnostics
+        shell: bash
+        run: |
+          set +e
+          npm run build:packages > issue-434-build.log 2>&1
+          echo $? > issue-434-build.exit
+          npm run format:check > issue-434-format.log 2>&1
+          echo $? > issue-434-format.exit
+          exit 0
+
+      - name: Upload diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-434-diagnostics
+          path: |
+            issue-434-build.log
+            issue-434-build.exit
+            issue-434-format.log
+            issue-434-format.exit
+          if-no-files-found: error
+          retention-days: 1
