@@ -34,6 +34,7 @@ jobs:
           echo $? > issue-434-build.exit
           npm run format:check > issue-434-format.log 2>&1
           echo $? > issue-434-format.exit
+          tar --exclude=.git --exclude=node_modules --exclude=solverfin-source.tar.gz -czf solverfin-source.tar.gz .
           exit 0
 
       - name: Upload diagnostics
@@ -45,5 +46,6 @@ jobs:
             issue-434-build.exit
             issue-434-format.log
             issue-434-format.exit
+            solverfin-source.tar.gz
           if-no-files-found: error
           retention-days: 1
