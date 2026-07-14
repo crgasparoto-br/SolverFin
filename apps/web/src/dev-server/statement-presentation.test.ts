@@ -38,10 +38,7 @@ async function assertChangedAccountAndDuplicateSubmission(): Promise<void> {
   const request = harness.requests[0];
   assert.equal(request?.path, "/api/transactions/transaction-1");
   assert.equal(request?.init.method, "PATCH");
-  const payload = JSON.parse(request?.init.body ?? "{}") as Record<
-    string,
-    unknown
-  >;
+  const payload = JSON.parse(request?.init.body ?? "{}") as Record<string, unknown>;
   assert.equal(payload.accountId, "account-target");
   assert.equal(payload.destinationAccountId, undefined);
 
@@ -49,18 +46,13 @@ async function assertChangedAccountAndDuplicateSubmission(): Promise<void> {
   await firstSubmission;
 
   assert.equal(harness.reloadCount, 1);
-  assert.equal(
-    harness.statusNode.textContent,
-    "Ação concluída. Atualizando...",
-  );
+  assert.equal(harness.statusNode.textContent, "Ação concluída. Atualizando...");
   assert.equal(harness.submitButton.disabled, true);
 }
 
 async function assertApiFailureRestoresTheForm(): Promise<void> {
   const harness = createHarness({
-    fetchResponse: Promise.resolve(
-      errorResponse("Conta selecionada não está ativa."),
-    ),
+    fetchResponse: Promise.resolve(errorResponse("Conta selecionada não está ativa.")),
   });
   harness.form.values.accountId = "account-archived";
   const originalDescription = harness.form.values.description;
@@ -71,10 +63,7 @@ async function assertApiFailureRestoresTheForm(): Promise<void> {
   assert.equal(harness.requests.length, 1);
   assert.equal(harness.submitButton.disabled, false);
   assert.equal(harness.form.attributes.get("aria-busy"), "false");
-  assert.equal(
-    harness.statusNode.textContent,
-    "Conta selecionada não está ativa.",
-  );
+  assert.equal(harness.statusNode.textContent, "Conta selecionada não está ativa.");
   assert.equal(harness.statusNode.className, "form-status error full");
   assert.equal(harness.form.values.accountId, "account-archived");
   assert.equal(harness.form.values.description, originalDescription);
@@ -84,9 +73,7 @@ async function assertApiFailureRestoresTheForm(): Promise<void> {
 async function assertTransferPayloadAndValidationError(): Promise<void> {
   const harness = createHarness({
     fetchResponse: Promise.resolve(
-      errorResponse(
-        "Transfer transactions require different source and destination accounts.",
-      ),
+      errorResponse("Transfer transactions require different source and destination accounts."),
     ),
   });
   harness.form.values.kind = "transfer";
@@ -95,17 +82,11 @@ async function assertTransferPayloadAndValidationError(): Promise<void> {
 
   await harness.submit(fakeSubmitEvent(harness.form));
 
-  const payload = JSON.parse(harness.requests[0]?.init.body ?? "{}") as Record<
-    string,
-    unknown
-  >;
+  const payload = JSON.parse(harness.requests[0]?.init.body ?? "{}") as Record<string, unknown>;
   assert.equal(payload.kind, "transfer");
   assert.equal(payload.accountId, "account-same");
   assert.equal(payload.destinationAccountId, "account-same");
-  assert.match(
-    harness.statusNode.textContent,
-    /different source and destination/i,
-  );
+  assert.match(harness.statusNode.textContent, /different source and destination/i);
   assert.equal(harness.submitButton.disabled, false);
 }
 
@@ -171,9 +152,7 @@ function createHarness(options: HarnessOptions = {}) {
       return null;
     },
     getAttribute(name: string) {
-      return name === "data-path"
-        ? this.dataset.path
-        : (this.attributes.get(name) ?? null);
+      return name === "data-path" ? this.dataset.path : (this.attributes.get(name) ?? null);
     },
     setAttribute(name: string, value: string) {
       this.attributes.set(name, value);
@@ -197,18 +176,12 @@ function createHarness(options: HarnessOptions = {}) {
   const document = {
     querySelector(selector: string) {
       if (selector === "[data-form]") return form;
-      if (
-        selector === '[data-recurrence-scope-modal][data-target-kind="account"]'
-      )
-        return {};
+      if (selector === '[data-recurrence-scope-modal][data-target-kind="account"]') return {};
       return null;
     },
     querySelectorAll: () => [],
     getElementById: () => null,
-    addEventListener(
-      type: string,
-      listener: (event: FakeSubmitEvent) => Promise<void>,
-    ) {
+    addEventListener(type: string, listener: (event: FakeSubmitEvent) => Promise<void>) {
       if (type === "submit") submitListener = listener;
     },
   };
