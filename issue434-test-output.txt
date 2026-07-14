@@ -30,18 +30,18 @@
 [test] account-remuneration-contract.test.js
 
 [test] account-remuneration-scheduler.test.js
-◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
 TAP version 13
 # Subtest: runs once per UTC date after the configured hour
 ok 1 - runs once per UTC date after the configured hour
   ---
-  duration_ms: 1.020735
+  duration_ms: 1.021627
   type: 'test'
   ...
 # Subtest: does not run before the configured UTC hour
 ok 2 - does not run before the configured UTC hour
   ---
-  duration_ms: 0.195046
+  duration_ms: 0.163674
   type: 'test'
   ...
 1..2
@@ -52,29 +52,29 @@ ok 2 - does not run before the configured UTC hour
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 9.097788
+# duration_ms 9.153544
 
 [test] accounts-router.test.js
-◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
 
 [test] admin-auth.test.js
 
 [test] admin-institutions-logo-router.test.js
-◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
-
-[test] admin-institutions-router.test.js
 ◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
 
+[test] admin-institutions-router.test.js
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+
 [test] auth.test.js
-◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
 
 [test] errors.test.js
 
 [test] financial-institutions-repository.test.js
-◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
 
 [test] institution-admin-contract.test.js
-◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
 node:internal/modules/run_main:123
     triggerUncaughtException(
     ^
@@ -536,31 +536,31 @@ TAP version 13
 # Subtest: parses BCB SGS CDI entries and normalizes dates and factors
 ok 1 - parses BCB SGS CDI entries and normalizes dates and factors
   ---
-  duration_ms: 8.987787
+  duration_ms: 10.221443
   type: 'test'
   ...
 # Subtest: rejects duplicate or malformed CDI entries
 ok 2 - rejects duplicate or malformed CDI entries
   ---
-  duration_ms: 0.553969
+  duration_ms: 0.534161
   type: 'test'
   ...
 # Subtest: calculates account remuneration using CDI rate and configured percentage
 ok 3 - calculates account remuneration using CDI rate and configured percentage
   ---
-  duration_ms: 0.283262
+  duration_ms: 0.31275
   type: 'test'
   ...
 # Subtest: does not generate remuneration for zero or negative balances
 ok 4 - does not generate remuneration for zero or negative balances
   ---
-  duration_ms: 0.853402
+  duration_ms: 0.884089
   type: 'test'
   ...
 # Subtest: validates account remuneration percentage
 ok 5 - validates account remuneration percentage
   ---
-  duration_ms: 0.206397
+  duration_ms: 0.204539
   type: 'test'
   ...
 1..5
@@ -571,7 +571,7 @@ ok 5 - validates account remuneration percentage
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 20.196351
+# duration_ms 21.585044
 
 [test] imports.test.js
 
