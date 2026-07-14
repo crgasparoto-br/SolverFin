@@ -60,7 +60,9 @@ export async function renderAccountRemunerationPage(token: string): Promise<stri
     <section class="configuration-list" aria-label="Configurações por conta">
       ${
         configurations.length > 0
-          ? configurations.map((configuration) => renderConfiguration(configuration, categories)).join("")
+          ? configurations
+              .map((configuration) => renderConfiguration(configuration, categories))
+              .join("")
           : renderEmptyState()
       }
     </section>
