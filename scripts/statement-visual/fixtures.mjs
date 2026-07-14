@@ -111,13 +111,13 @@ export function accountEditFixtureExpression() {
     const sourceAccount = (await request("/api/accounts", "POST", {
       name: "QA Issue 473 - Origem " + suffix,
       kind: "checking",
-      openingBalanceMinor: 0,
+      openingBalanceMinor: 50000,
       currency: "BRL"
     })).account;
     const targetAccount = (await request("/api/accounts", "POST", {
       name: "QA Issue 473 - Destino " + suffix,
       kind: "checking",
-      openingBalanceMinor: 0,
+      openingBalanceMinor: 100000,
       currency: "BRL"
     })).account;
     const transaction = (await request("/api/transactions", "POST", {
@@ -131,11 +131,24 @@ export function accountEditFixtureExpression() {
       description: "QA issue 473 troca de conta",
       currency: "BRL"
     })).transaction;
+    const transfer = (await request("/api/transactions", "POST", {
+      accountId: sourceAccount.id,
+      destinationAccountId: targetAccount.id,
+      kind: "transfer",
+      amountMinor: 20000,
+      occurredOn: "2026-07-16",
+      plannedOn: "2026-07-16",
+      effectiveOn: "2026-07-16",
+      status: "posted",
+      description: "QA issue 473 transferencia",
+      currency: "BRL"
+    })).transaction;
 
     return {
       sourceAccountId: sourceAccount.id,
       targetAccountId: targetAccount.id,
-      transactionId: transaction.id
+      transactionId: transaction.id,
+      transferId: transfer.id
     };
   })()`;
 }
