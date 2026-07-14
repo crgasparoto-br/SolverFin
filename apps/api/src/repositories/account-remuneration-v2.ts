@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { calculateAccountRemuneration, type TenantContext } from "@solverfin/domain";
+import { calculateAccountRemuneration } from "@solverfin/domain";
 
 import { query, withTransaction } from "../db.js";
 import {
