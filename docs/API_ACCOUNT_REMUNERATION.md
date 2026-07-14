@@ -16,7 +16,11 @@ A regra funcional e as decisões de domínio permanecem em [`ACCOUNT_REMUNERATIO
 
 O endpoint do provider pode ser sobrescrito por `BCB_SGS_CDI_URL` apenas para testes controlados ou migração de provider.
 
+Quando já existe taxa CDI confirmada, qualquer importação normal começa obrigatoriamente no dia seguinte à maior `referenceOn` armazenada. O campo `startsOn` é utilizado apenas no primeiro carregamento, quando a base ainda está vazia. Assim, uma execução manual ou automática não pode pular lacunas por receber uma data inicial mais recente.
+
 ## Configuração por conta
+
+A configuração está disponível tanto na página dedicada de remuneração quanto nos formulários de criação e edição de contas.
 
 ### `GET /api/account-remuneration/configurations`
 
@@ -57,10 +61,12 @@ Cria ou atualiza a configuração da conta no perfil corrente.
 Regras:
 
 - somente contas ativas e em `BRL` podem ser habilitadas;
+- o indexador disponível nesta versão é o CDI;
 - o percentual deve ser maior que zero e menor ou igual a `1000`;
 - a data inicial e o percentual são obrigatórios quando `enabled=true`;
 - a categoria, quando informada, deve ser uma categoria ativa de receita do mesmo tenant;
-- alteração de percentual ou data inicial afeta apenas competências ainda não processadas.
+- alteração de percentual ou data inicial afeta apenas competências ainda não processadas;
+- contas existentes permanecem desativadas até configuração explícita.
 
 ## Administração global
 
@@ -74,7 +80,9 @@ Retorna:
 - última importação;
 - último processamento;
 - quantidade de configurações ativas;
-- quantidade de configurações pendentes por falta de taxa.
+- quantidade de competências com taxa disponível ainda não processadas;
+- quantidade de configurações sem qualquer taxa disponível;
+- `pendingConfigurations`, mantido por compatibilidade, como soma das duas pendências anteriores.
 
 ### `POST /api/admin/financial-indexes/cdi/import`
 
@@ -85,7 +93,7 @@ Retorna:
 }
 ```
 
-Quando o período não é informado, a API consulta os últimos dez dias até a data atual. Taxas já persistidas não são atualizadas nem duplicadas.
+Na primeira importação, `startsOn` define o início do carregamento. Depois disso, a API sempre consulta a partir do dia seguinte à última taxa armazenada até `endsOn`, ou até a data atual quando `endsOn` não for informado. Taxas já persistidas não são atualizadas nem duplicadas.
 
 ### `POST /api/admin/account-remunerations/process`
 
@@ -99,13 +107,19 @@ O processamento:
 
 1. adquire lock transacional para impedir duas execuções concorrentes;
 2. seleciona configurações ativas e taxas confirmadas anteriores à data de processamento;
-3. ignora competências já registradas;
+3. ignora competências que já possuem qualquer resultado registrado;
 4. calcula o saldo final efetivo da conta até a competência;
 5. aplica a taxa diária do CDI e o percentual configurado;
-6. cria uma receita `PLANNED` com origem `ACCOUNT_REMUNERATION` na data de processamento;
-7. persiste saldo-base, taxa, percentual e valor original em `AccountRemuneration`.
+6. cria uma receita `PLANNED` com origem `ACCOUNT_REMUNERATION` quando o valor é positivo;
+7. persiste saldo-base, taxa, percentual, valor original e resultado da competência em `AccountRemuneration`.
 
-Contas com saldo-base igual ou inferior a zero não geram rendimento.
+Resultados possíveis:
+
+- `CREATED`: lançamento previsto criado;
+- `SKIPPED_NON_POSITIVE_BALANCE`: saldo-base nulo ou negativo;
+- `SKIPPED_ZERO_AMOUNT`: saldo positivo, mas rendimento arredondado para zero centavo.
+
+Os resultados sem lançamento também são persistidos. Portanto, um lançamento retroativo incluído depois não recalcula nem transforma automaticamente uma competência antiga em rendimento.
 
 ## Execução automática
 
@@ -118,7 +132,7 @@ ACCOUNT_REMUNERATION_DAILY_HOUR_UTC=10
 
 O ciclo automático:
 
-- consulta os últimos dez dias da série CDI;
+- consulta a série CDI desde o dia seguinte à última taxa confirmada;
 - importa apenas datas ausentes;
 - processa competências pendentes;
 - executa no máximo uma vez por data UTC em cada instância;
@@ -128,15 +142,21 @@ Em produção, prefira habilitar o scheduler em apenas uma instância da API.
 
 ## Ajuste manual e conciliação
 
-O rendimento é um lançamento previsto comum no extrato:
+O rendimento é um lançamento previsto conciliável pelo fluxo do extrato:
 
-- pode ser editado;
-- pode ser efetivado e conciliado pelo fluxo existente;
-- preserva o valor originalmente calculado em `AccountRemuneration.originalAmountMinor`;
+- o valor atual pode ser substituído pelo crédito efetivo do banco;
+- categoria, situação de efetivação/conciliação e data efetiva podem ser ajustadas;
+- conta, tipo, origem, moeda, data prevista e descrição técnica permanecem protegidos;
+- o valor originalmente calculado permanece em `AccountRemuneration.originalAmountMinor`;
 - alterações de `Transaction.amountMinor` marcam automaticamente `manuallyAdjusted`, `adjustedAt` e `adjustedByUserId` por trigger de banco;
-- reprocessamentos não sobrescrevem o lançamento nem o ajuste manual.
+- reprocessamentos não sobrescrevem o lançamento nem o ajuste manual;
+- a ação de clonar é removida para lançamentos de remuneração no extrato.
 
 A descrição do lançamento apresenta percentual do CDI, competência, saldo-base, taxa diária e valor original para consulta direta no extrato.
+
+## Prisma
+
+O schema utiliza o formato multifile. Os modelos de índices e remuneração ficam em `prisma/account-remuneration.prisma`, enquanto o schema principal permanece em `prisma/schema.prisma`. Os comandos Prisma do repositório usam `--schema ./prisma` para validar, gerar o client e aplicar migrations considerando todos os arquivos.
 
 ## Erros operacionais relevantes
 
@@ -145,6 +165,7 @@ A descrição do lançamento apresenta percentual do CDI, competência, saldo-ba
 - `ACCOUNT_REMUNERATION_CURRENCY_UNSUPPORTED`: conta fora de BRL;
 - `ACCOUNT_REMUNERATION_CATEGORY_INVALID`: categoria fora do tenant ou não classificada como receita;
 - `FINANCIAL_INDEX_PROVIDER_UNAVAILABLE`: indisponibilidade ou resposta inválida da fonte oficial;
-- `FINANCIAL_INDEX_PERIOD_INVALID`: período de importação inválido.
+- `FINANCIAL_INDEX_PERIOD_INVALID`: período de importação inválido;
+- proteção de banco rejeita alteração da identidade de um lançamento de remuneração.
 
 Todas as importações e processamentos geram registro em `FinancialIndexOperation`, incluindo contagens, estado, mensagem e falhas.
