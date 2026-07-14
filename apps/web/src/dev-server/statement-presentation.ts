@@ -67,6 +67,23 @@ export function statementPresentationScript(): string {
           return Math.round(parseFloat(normalized || "0") * 100);
         }
 
+        function cleanupLegacyTransactionEditControls() {
+          const form = document.querySelector("[data-form]");
+          if (!form) return;
+
+          const legacyScope = form.querySelector('[name="editScope"]');
+          const legacyScopeField = legacyScope && typeof legacyScope.closest === "function"
+            ? legacyScope.closest("label")
+            : null;
+          legacyScopeField?.remove();
+
+          const dialog = typeof form.closest === "function" ? form.closest("dialog") : null;
+          const guidance = dialog && typeof dialog.querySelector === "function"
+            ? dialog.querySelector(".modal-panel > div .muted")
+            : null;
+          if (guidance) guidance.textContent = "A conta vem do filtro principal.";
+        }
+
         function setupNonRecurringTransactionSave() {
           const form = document.querySelector("[data-form]");
           const accountScopeModal = document.querySelector('[data-recurrence-scope-modal][data-target-kind="account"]');
@@ -159,6 +176,7 @@ export function statementPresentationScript(): string {
           }, true);
         }
 
+        cleanupLegacyTransactionEditControls();
         setupNonRecurringTransactionSave();
 
         const triggers = Array.from(document.querySelectorAll(".statement-status[data-tooltip]"));
