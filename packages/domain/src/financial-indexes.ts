@@ -1,11 +1,9 @@
-import type { ISODate } from "./index.js";
-
 export type FinancialIndexKind = "cdi";
 export type FinancialIndexRateStatus = "confirmed" | "rejected";
 
 export interface FinancialIndexRateInput {
   kind: FinancialIndexKind;
-  referenceOn: ISODate;
+  referenceOn: string;
   dailyRatePercent: number;
   dailyFactor: number;
   source: string;
@@ -44,7 +42,9 @@ export class FinancialIndexError extends Error {
   }
 }
 
-export function parseBcbSgsCdiResponse(payload: unknown): FinancialIndexRateInput[] {
+export function parseBcbSgsCdiResponse(
+  payload: unknown,
+): FinancialIndexRateInput[] {
   if (!Array.isArray(payload)) {
     throw new FinancialIndexError(
       "FINANCIAL_INDEX_RESPONSE_INVALID",
@@ -66,7 +66,9 @@ export function parseBcbSgsCdiResponse(payload: unknown): FinancialIndexRateInpu
     uniqueDates.add(rate.referenceOn);
   }
 
-  return rates.sort((left, right) => left.referenceOn.localeCompare(right.referenceOn));
+  return rates.sort((left, right) =>
+    left.referenceOn.localeCompare(right.referenceOn),
+  );
 }
 
 export function calculateAccountRemuneration(
@@ -85,7 +87,8 @@ export function calculateAccountRemuneration(
     "CDI daily rate must be greater than zero.",
   );
   const remunerationPercent = validatePercentage(input.remunerationPercent);
-  const appliedDailyRatePercent = dailyRatePercent * (remunerationPercent / 100);
+  const appliedDailyRatePercent =
+    dailyRatePercent * (remunerationPercent / 100);
   const amountMinor =
     input.balanceMinor > 0
       ? Math.round(input.balanceMinor * (appliedDailyRatePercent / 100))
@@ -126,7 +129,7 @@ function parseBcbSgsCdiEntry(entry: unknown): FinancialIndexRateInput {
   };
 }
 
-function parseBrazilianDate(value: string): ISODate {
+function parseBrazilianDate(value: string): string {
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
 
   if (!match) {
@@ -140,7 +143,10 @@ function parseBrazilianDate(value: string): ISODate {
   const normalized = `${year}-${month}-${day}`;
   const date = new Date(`${normalized}T00:00:00.000Z`);
 
-  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== normalized) {
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== normalized
+  ) {
     throw new FinancialIndexError(
       "FINANCIAL_INDEX_DATE_INVALID",
       "BCB SGS CDI date is invalid.",
