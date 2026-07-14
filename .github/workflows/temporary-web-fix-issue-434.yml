@@ -32,25 +32,27 @@ jobs:
       - name: Make status filter removal indentation independent
         run: |
           python - <<'PY'
-          import re
           from pathlib import Path
 
           path = Path('apps/web/src/dev-server/accounts-cards-enhancement.ts')
-          source = path.read_text()
-          pattern = re.compile(
-              r'  const htmlWithoutStatusFilter = html\.replace\(\n'
-              r'\s*`[\s\S]*?<select data-master-status>[\s\S]*?</label>`,\n'
-              r'\s*"",\n'
-              r'\s*\);'
+          lines = path.read_text().splitlines()
+          start = next(
+              index
+              for index, line in enumerate(lines)
+              if 'const htmlWithoutStatusFilter = html.replace(' in line
           )
-          replacement = '''  const htmlWithoutStatusFilter = html.replace(
-            /<label>\\s*Status\\s*<select data-master-status>[\\s\\S]*?<\\/select>\\s*<\\/label>/,
-            "",
-          );'''
-          updated, count = pattern.subn(lambda _match: replacement, source, count=1)
-          if count != 1:
-              raise SystemExit(f'expected one active filter block, found {count}')
-          path.write_text(updated)
+          end = next(
+              index
+              for index in range(start + 1, len(lines))
+              if lines[index].strip() == ');'
+          )
+          replacement = [
+              '  const htmlWithoutStatusFilter = html.replace(',
+              r'    /<label>\s*Status\s*<select data-master-status>[\s\S]*?<\/select>\s*<\/label>/',
+              '    "",',
+              '  );',
+          ]
+          path.write_text('\n'.join(lines[:start] + replacement + lines[end + 1:]) + '\n')
           PY
           npx prettier apps/web/src/dev-server/accounts-cards-enhancement.ts --write
 
