@@ -11,7 +11,7 @@ import {
   saveAccountRemunerationConfiguration,
   type ImportCdiRatesInput,
   type SaveAccountRemunerationConfigurationInput,
-} from "./repositories/account-remuneration.js";
+} from "./repositories/account-remuneration-v2.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
@@ -97,8 +97,7 @@ async function handleAdminRequest(request: ApiRequest): Promise<ApiResponse | un
 
   if (request.method === "POST" && request.pathname === ADMIN_IMPORT_PATH) {
     const body = requireObjectBody(request.body);
-    const period = parseImportPeriod(body);
-    return json(200, await importCdiRates(period));
+    return json(200, await importCdiRates(parseImportPeriod(body)));
   }
 
   if (request.method === "POST" && request.pathname === ADMIN_PROCESS_PATH) {
@@ -136,13 +135,12 @@ function parseConfigurationPayload(
 }
 
 function parseImportPeriod(body: Record<string, unknown>): ImportCdiRatesInput {
-  const today = new Date().toISOString().slice(0, 10);
-  const defaultStart = new Date(`${today}T00:00:00.000Z`);
-  defaultStart.setUTCDate(defaultStart.getUTCDate() - 10);
+  const startsOn = readOptionalString(body.startsOn);
+  const endsOn = readOptionalString(body.endsOn);
 
   return {
-    startsOn: readOptionalString(body.startsOn) ?? defaultStart.toISOString().slice(0, 10),
-    endsOn: readOptionalString(body.endsOn) ?? today,
+    ...(startsOn !== undefined ? { startsOn } : {}),
+    ...(endsOn !== undefined ? { endsOn } : {}),
   };
 }
 
