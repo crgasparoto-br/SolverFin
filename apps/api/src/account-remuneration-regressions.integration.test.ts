@@ -174,6 +174,12 @@ async function main(): Promise<void> {
     status.pendingConfigurations,
     status.pendingCompetences + status.configurationsWithoutRates,
   );
+
+  await Promise.all(
+    [negativeAccount, tinyAccount, protectedAccount].map((account) =>
+      saveAccountRemunerationConfiguration(CONTEXT, account.id, { enabled: false }),
+    ),
+  );
 }
 
 function buildCdiFetcher(entries: unknown[]): typeof fetch {
