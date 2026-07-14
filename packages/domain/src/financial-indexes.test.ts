@@ -46,15 +46,13 @@ test("rejects duplicate or malformed CDI entries", () => {
         { data: "13/07/2026", valor: "0,055131" },
       ]),
     (error: unknown) =>
-      error instanceof FinancialIndexError &&
-      error.code === "FINANCIAL_INDEX_RESPONSE_INVALID",
+      error instanceof FinancialIndexError && error.code === "FINANCIAL_INDEX_RESPONSE_INVALID",
   );
 
   assert.throws(
     () => parseBcbSgsCdiResponse([{ data: "31/02/2026", valor: "0,055131" }]),
     (error: unknown) =>
-      error instanceof FinancialIndexError &&
-      error.code === "FINANCIAL_INDEX_DATE_INVALID",
+      error instanceof FinancialIndexError && error.code === "FINANCIAL_INDEX_DATE_INVALID",
   );
 });
 
@@ -93,7 +91,6 @@ test("validates account remuneration percentage", () => {
   assert.throws(
     () => validateRemunerationPercentage(0),
     (error: unknown) =>
-      error instanceof FinancialIndexError &&
-      error.code === "ACCOUNT_REMUNERATION_PERCENT_INVALID",
+      error instanceof FinancialIndexError && error.code === "ACCOUNT_REMUNERATION_PERCENT_INVALID",
   );
 });
