@@ -138,7 +138,13 @@ try {
       };
     })()`,
   );
-  await saveDiagnostic({ createState, cloneState, initialState, modalState, stage: "modal-state-captured" });
+  await saveDiagnostic({
+    createState,
+    cloneState,
+    initialState,
+    modalState,
+    stage: "modal-state-captured",
+  });
 
   assert.equal(modalState.dialogOpen, true);
   assert.equal(modalState.fieldVisible, true);
@@ -265,7 +271,12 @@ try {
   assert.notEqual(transferEditState.sourceAccountId, transferEditState.filterAccountId);
   assert.equal(transferEditState.fieldVisible, true);
 
-  await saveDiagnostic({ targetRoute, targetState, transferEditState, stage: "target-statement-checked" });
+  await saveDiagnostic({
+    targetRoute,
+    targetState,
+    transferEditState,
+    stage: "target-statement-checked",
+  });
   await screenshot(browser.cdp, join(outputDir, "issue-473-edit-account-after-save.png"));
 
   evidence = {
