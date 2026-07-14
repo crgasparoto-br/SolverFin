@@ -32,28 +32,27 @@ jobs:
       - name: Make status filter removal indentation independent
         run: |
           python - <<'PY'
+          import re
           from pathlib import Path
+
           path = Path('apps/web/src/dev-server/accounts-cards-enhancement.ts')
           source = path.read_text()
-          old = '''  const htmlWithoutStatusFilter = html.replace(
-              `          <label>Status
-                   <select data-master-status>
-                     <option value="all">Todos</option>
-                     <option value="active">Ativos</option>
-                     <option value="inactive">Inativos</option>
-                   </select>
-                 </label>`,
-              "",
-            );'''
-          new = '''  const htmlWithoutStatusFilter = html.replace(
-              /<label>\\s*Status\\s*<select data-master-status>[\\s\\S]*?<\\/select>\\s*<\\/label>/,
-              "",
-            );'''
-          if old not in source:
-              raise SystemExit('expected active filter block not found')
-          path.write_text(source.replace(old, new))
+          pattern = re.compile(
+              r'  const htmlWithoutStatusFilter = html\.replace\(\n'
+              r'\s*`[\s\S]*?<select data-master-status>[\s\S]*?</label>`,\n'
+              r'\s*"",\n'
+              r'\s*\);'
+          )
+          replacement = '''  const htmlWithoutStatusFilter = html.replace(
+            /<label>\\s*Status\\s*<select data-master-status>[\\s\\S]*?<\\/select>\\s*<\\/label>/,
+            "",
+          );'''
+          updated, count = pattern.subn(replacement, source, count=1)
+          if count != 1:
+              raise SystemExit(f'expected one active filter block, found {count}')
+          path.write_text(updated)
           PY
-          npm run format -- apps/web/src/dev-server/accounts-cards-enhancement.ts
+          npx prettier apps/web/src/dev-server/accounts-cards-enhancement.ts --write
 
       - name: Validate web tests
         run: npm run test --workspace @solverfin/web
