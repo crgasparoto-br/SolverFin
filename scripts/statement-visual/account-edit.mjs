@@ -49,9 +49,10 @@ try {
       if (!editButton) throw new Error("Edit button for the issue #473 fixture was not found");
       editButton.click();
       const dialog = document.querySelector("[data-modal]");
+      const form = document.querySelector("[data-form]");
       const field = document.querySelector("[data-edit-account-field]");
       const select = document.querySelector("[data-edit-account-select]");
-      const hiddenInput = document.querySelector('input[name="accountId"]');
+      const hiddenInput = form && form.querySelector('input[name="accountId"]');
       const targetOption = select && Array.from(select.options).find((option) => option.value === "${fixtureIds.targetAccountId}");
       return {
         dialogOpen: Boolean(dialog && dialog.open),
