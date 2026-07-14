@@ -47,7 +47,7 @@ jobs:
             /<label>\\s*Status\\s*<select data-master-status>[\\s\\S]*?<\\/select>\\s*<\\/label>/,
             "",
           );'''
-          updated, count = pattern.subn(replacement, source, count=1)
+          updated, count = pattern.subn(lambda _match: replacement, source, count=1)
           if count != 1:
               raise SystemExit(f'expected one active filter block, found {count}')
           path.write_text(updated)
