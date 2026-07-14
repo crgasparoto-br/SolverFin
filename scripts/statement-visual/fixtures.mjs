@@ -76,7 +76,7 @@ export function fixtureExpression() {
       });
     }
 
-    await request("/api/transactions", "POST", {
+    const accountEditTransaction = (await request("/api/transactions", "POST", {
       accountId: singleAccount.id,
       kind: "expense",
       amountMinor: maximum,
@@ -86,8 +86,13 @@ export function fixtureExpression() {
       status: "posted",
       description: "QA unica linha negativa",
       currency: "BRL"
-    });
+    })).transaction;
 
-    return { longAccountId: longAccount.id, singleAccountId: singleAccount.id };
+    return {
+      longAccountId: longAccount.id,
+      singleAccountId: singleAccount.id,
+      accountEditTransactionId: accountEditTransaction.id,
+      accountEditTargetAccountId: longAccount.id
+    };
   })()`;
 }
