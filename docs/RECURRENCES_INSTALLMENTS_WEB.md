@@ -1,3 +1,4 @@
+
 Ao salvar uma ocorrência que possui recurrenceId, a interface valida o formulário e abre um diálogo com opções explícitas:
 
 - alterar somente o lançamento ou compra selecionado;
