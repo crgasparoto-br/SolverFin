@@ -24,6 +24,11 @@ assert.match(repositorySource, /on conflict \("kind", "referenceOn"\) do nothing
 assert.match(repositorySource, /pg_try_advisory_xact_lock/);
 assert.match(repositorySource, /"effectiveOn" is not null/);
 assert.match(repositorySource, /Rendimento previsto —/);
+assert.match(repositorySource, /const postingOn = addDays\(competenceOn, 1\)/);
+assert.match(
+  repositorySource,
+  /await createOperation\(operationId, "ACCOUNT_REMUNERATION"\);[\s\S]*try {[\s\S]*await withTransaction/,
+);
 assert.match(repositorySource, /not exists \(\s*select 1 from "AccountRemuneration"/);
 
 assert.match(migrationSource, /AccountRemuneration_competence_key/);

@@ -327,6 +327,8 @@ export async function processAccountRemunerations(
   let pendingCount = 0;
   let skippedWithoutPositiveBalance = 0;
 
+  await createOperation(operationId, "ACCOUNT_REMUNERATION");
+
   try {
     await withTransaction(async (executeQuery) => {
       const lockRows = await executeQuery<{ acquired: boolean }>(
@@ -341,7 +343,6 @@ export async function processAccountRemunerations(
         );
       }
 
-      await createOperation(operationId, "ACCOUNT_REMUNERATION", executeQuery);
       const candidates = await listPendingCandidates(executeQuery, normalizedProcessedOn);
       processedCount = candidates.length;
 
@@ -384,19 +385,14 @@ export async function processAccountRemunerations(
       );
     });
   } catch (error) {
-    if (!operation) {
-      const existing = await findOperation(operationId);
-      if (existing) {
-        operation = await finishOperation(operationId, {
-          status: "FAILED",
-          processedCount,
-          createdCount,
-          pendingCount,
-          failureCount: 1,
-          message: readableError(error),
-        });
-      }
-    }
+    await finishOperation(operationId, {
+      status: "FAILED",
+      processedCount,
+      createdCount,
+      pendingCount,
+      failureCount: 1,
+      message: readableError(error),
+    });
     throw error;
   }
 
@@ -533,6 +529,7 @@ async function createRemunerationTransaction(
 ): Promise<void> {
   const transactionId = randomUUID();
   const competenceOn = toDateOnly(candidate.referenceOn);
+  const postingOn = addDays(competenceOn, 1);
   const description = buildRemunerationDescription(candidate, calculation, competenceOn);
   const now = new Date().toISOString();
 
@@ -551,7 +548,7 @@ async function createRemunerationTransaction(
       candidate.categoryId,
       calculation.amountMinor,
       candidate.currency,
-      processedOn,
+      postingOn,
       description,
       now,
     ],
@@ -759,6 +756,12 @@ function normalizeOptionalPercentage(value: number | undefined): number | undefi
 
 function normalizeOptionalDate(value: string | undefined): string | undefined {
   return value === undefined || value.trim() === "" ? undefined : normalizeDate(value);
+}
+
+function addDays(value: string, days: number): string {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 function normalizeDate(value: string): string {
