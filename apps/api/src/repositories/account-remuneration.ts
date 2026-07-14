@@ -808,7 +808,11 @@ function readableError(error: unknown): string {
 
 function requireRow<T>(row: T | undefined): T {
   if (!row) {
-    throw repositoryError("DATABASE_RESULT_MISSING", "A operação não retornou o registro esperado.", 500);
+    throw repositoryError(
+      "DATABASE_RESULT_MISSING",
+      "A operação não retornou o registro esperado.",
+      500,
+    );
   }
   return row;
 }
