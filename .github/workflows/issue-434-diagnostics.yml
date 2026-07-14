@@ -1,9 +1,9 @@
 name: Issue 434 diagnostics
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/434-account-remuneration-cdi
+      - main
 
 permissions:
   contents: read
