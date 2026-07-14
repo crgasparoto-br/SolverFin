@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -41,9 +41,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -59,27 +56,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
-      - name: Normalize issue 473 files
-        if: github.event_name == 'pull_request' && github.head_ref == 'feat/473-edit-transaction-account' && github.actor != 'github-actions[bot]'
-        run: |
-          npx prettier --write \
-            apps/api/src/transaction-account-validation.integration.test.ts \
-            apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts \
-            apps/web/src/dev-server/transactions-page-account-edit-source.test.ts \
-            apps/web/src/dev-server/transactions-page.ts
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/api/src/transaction-account-validation.integration.test.ts
-          git add apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts
-          git add apps/web/src/dev-server/transactions-page-account-edit-source.test.ts
-          git add apps/web/src/dev-server/transactions-page.ts
-          if git diff --cached --quiet; then
-            echo "No formatting changes required."
-          else
-            git commit -m "style: normalizar conclusão da issue 473"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
 
       - name: Check environment example
         run: npm run env:check
