@@ -3,10 +3,7 @@ import assert from "node:assert/strict";
 import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
-import {
-  archiveAccountForContext,
-  createAccountForContext,
-} from "./repositories/accounts.js";
+import { archiveAccountForContext, createAccountForContext } from "./repositories/accounts.js";
 import {
   createRecurrenceForContext,
   generateInstallmentsForContext,
@@ -124,7 +121,11 @@ async function assertCurrentAndFuture(
     applyToFuturePlanned: true,
   });
   const afterSameAccount = await readOccurrences(fixture.recurrenceId);
-  assert.equal(afterSameAccount.length, fixture.occurrences.length, "same-account edit must not duplicate rows");
+  assert.equal(
+    afterSameAccount.length,
+    fixture.occurrences.length,
+    "same-account edit must not duplicate rows",
+  );
   assert.deepEqual(
     afterSameAccount.map((row) => row.transactionId),
     after.map((row) => row.transactionId),
@@ -265,7 +266,10 @@ function assertPreservedNonAccountFields(before: OccurrenceRow[], after: Occurre
   }
 }
 
-async function assertRejectCode(action: () => Promise<unknown>, expectedCode: string): Promise<void> {
+async function assertRejectCode(
+  action: () => Promise<unknown>,
+  expectedCode: string,
+): Promise<void> {
   await assert.rejects(action, (error: unknown) => {
     return (
       typeof error === "object" &&
