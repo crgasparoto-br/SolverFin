@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { closePool, query } from "./db.js";
+import { closePool, query, withTransaction } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import {
   getFinancialIndexStatus,
@@ -143,6 +143,31 @@ async function main(): Promise<void> {
   );
   assert.equal(new URL(requestedUrl).searchParams.get("dataInicial"), "05/01/2099");
   assert.equal(incrementalResult.importedCount, 1);
+
+  let noOpFetcherCalled = false;
+  const noOpResult = await importCdiRates({ endsOn: "2099-01-05" }, async () => {
+    noOpFetcherCalled = true;
+    throw new Error("the provider must not be called for an up-to-date series");
+  });
+  assert.equal(noOpFetcherCalled, false);
+  assert.equal(noOpResult.receivedCount, 0);
+  assert.equal(noOpResult.importedCount, 0);
+  assert.equal(noOpResult.operation.status, "SUCCESS");
+
+  await withTransaction(async (executeQuery) => {
+    await executeQuery(`select pg_advisory_xact_lock(hashtext('solverfin:cdi-import'))`);
+    await assert.rejects(
+      () =>
+        importCdiRates(
+          { endsOn: "2099-01-06" },
+          buildCdiFetcher([{ data: "06/01/2099", valor: "0,055131" }]),
+        ),
+      (error: unknown) =>
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "FINANCIAL_INDEX_IMPORT_ALREADY_RUNNING",
+    );
+  });
 
   const status = await getFinancialIndexStatus();
   assert.equal(
