@@ -76,7 +76,7 @@ export function fixtureExpression() {
       });
     }
 
-    const accountEditTransaction = (await request("/api/transactions", "POST", {
+    await request("/api/transactions", "POST", {
       accountId: singleAccount.id,
       kind: "expense",
       amountMinor: maximum,
@@ -86,13 +86,56 @@ export function fixtureExpression() {
       status: "posted",
       description: "QA unica linha negativa",
       currency: "BRL"
+    });
+
+    return { longAccountId: longAccount.id, singleAccountId: singleAccount.id };
+  })()`;
+}
+
+export function accountEditFixtureExpression() {
+  return `(async () => {
+    async function request(path, method = "GET", body) {
+      const response = await fetch(path, {
+        method,
+        headers: body === undefined ? undefined : { "content-type": "application/json" },
+        body: body === undefined ? undefined : JSON.stringify(body)
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(method + " " + path + " failed with " + response.status + ": " + JSON.stringify(payload));
+      }
+      return payload;
+    }
+
+    const suffix = Date.now().toString(36);
+    const sourceAccount = (await request("/api/accounts", "POST", {
+      name: "QA Issue 473 - Origem " + suffix,
+      kind: "checking",
+      openingBalanceMinor: 0,
+      currency: "BRL"
+    })).account;
+    const targetAccount = (await request("/api/accounts", "POST", {
+      name: "QA Issue 473 - Destino " + suffix,
+      kind: "checking",
+      openingBalanceMinor: 0,
+      currency: "BRL"
+    })).account;
+    const transaction = (await request("/api/transactions", "POST", {
+      accountId: sourceAccount.id,
+      kind: "expense",
+      amountMinor: 12345,
+      occurredOn: "2026-07-15",
+      plannedOn: "2026-07-15",
+      effectiveOn: "2026-07-15",
+      status: "posted",
+      description: "QA issue 473 troca de conta",
+      currency: "BRL"
     })).transaction;
 
     return {
-      longAccountId: longAccount.id,
-      singleAccountId: singleAccount.id,
-      accountEditTransactionId: accountEditTransaction.id,
-      accountEditTargetAccountId: longAccount.id
+      sourceAccountId: sourceAccount.id,
+      targetAccountId: targetAccount.id,
+      transactionId: transaction.id
     };
   })()`;
 }
