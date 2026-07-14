@@ -116,6 +116,18 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Upload issue 473 diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-473-diagnostic-${{ github.sha }}
+          path: |
+            artifacts/statement-visual/issue-473-diagnostic.json
+            artifacts/statement-visual/issue-473-account-edit.json
+            artifacts/statement-visual/ISSUE-473.md
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Stop SolverFin
         if: always()
         run: |
