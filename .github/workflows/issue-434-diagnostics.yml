@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  format:
+  fix:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -29,10 +29,73 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Format account remuneration repository
-        run: npx prettier --write apps/api/src/repositories/account-remuneration.ts
+      - name: Apply integration fixes
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
 
-      - name: Commit formatting
+          function update(path, transform) {
+            const before = fs.readFileSync(path, "utf8");
+            const after = transform(before);
+            if (after !== before) fs.writeFileSync(path, after);
+          }
+
+          update("prisma/schema.prisma", (source) =>
+            source.includes("  ACCOUNT_REMUNERATION\n}\n\nenum RecurrenceFrequency")
+              ? source
+              : source.replace(
+                  "  AI_SUGGESTION\n}\n\nenum RecurrenceFrequency",
+                  "  AI_SUGGESTION\n  ACCOUNT_REMUNERATION\n}\n\nenum RecurrenceFrequency",
+                ),
+          );
+
+          update("packages/domain/src/transactions.ts", (source) =>
+            source.includes('  "account_remuneration",\n];')
+              ? source
+              : source.replace(
+                  '  "ai_suggestion",\n];',
+                  '  "ai_suggestion",\n  "account_remuneration",\n];',
+                ),
+          );
+
+          update("apps/api/src/account-remuneration-router.ts", (source) =>
+            source.replace(
+              "TenantAuthorizationError, TenantError, type TenantContext",
+              "TenantAuthorizationError, TenantError",
+            ),
+          );
+
+          for (const path of [
+            "apps/web/src/dev-server/account-remuneration-page.ts",
+            "apps/web/src/dev-server/admin-financial-indexes-page.ts",
+          ]) {
+            update(path, (source) => source.replace(/\/\\\"\/g/g, '/\"/g'));
+          }
+
+          update("apps/api/src/account-remuneration-contract.test.ts", (source) =>
+            source.replace(
+              'path.dirname(fileURLToPath(import.meta.url)), "..", "..", ".."',
+              'path.dirname(fileURLToPath(import.meta.url)), "..", ".."',
+            ),
+          );
+
+          update("apps/web/src/dev-server/routes.ts", (source) => {
+            const explicit = `const legacyAppRouteRedirects = new Map([\n  ["/app", "/dashboard"],\n  ["/app/lancamentos", "/lancamentos"],\n  ["/app/contas-cartoes", "/contas-cartoes"],\n  ["/app/categorias", "/categorias"],\n  ["/app/cartoes", "/cartoes"],\n  ["/app/orcamentos", "/orcamentos"],\n  ["/app/inbox", "/inbox"],\n  ["/app/relatorios", "/relatorios"],\n  ["/app/configuracoes", "/configuracoes"],\n]);`;
+            const derived = `const legacyAppRouteRedirects = new Map(\n  listPrivateShellRoutes().map((route) => [\n    route.path === "/dashboard" ? "/app" : \`/app\${route.path}\`,\n    route.path,\n  ]),\n);`;
+            return source.replace(explicit, derived);
+          });
+          NODE
+
+          npx prettier --write \
+            packages/domain/src/transactions.ts \
+            apps/api/src/account-remuneration-router.ts \
+            apps/api/src/account-remuneration-contract.test.ts \
+            apps/web/src/dev-server/account-remuneration-page.ts \
+            apps/web/src/dev-server/admin-financial-indexes-page.ts \
+            apps/web/src/dev-server/routes.ts
+
+      - name: Commit integration fixes
         shell: bash
         run: |
           if git diff --quiet; then
@@ -40,6 +103,13 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/api/src/repositories/account-remuneration.ts
-          git commit -m "style(api): format account remuneration repository"
+          git add \
+            prisma/schema.prisma \
+            packages/domain/src/transactions.ts \
+            apps/api/src/account-remuneration-router.ts \
+            apps/api/src/account-remuneration-contract.test.ts \
+            apps/web/src/dev-server/account-remuneration-page.ts \
+            apps/web/src/dev-server/admin-financial-indexes-page.ts \
+            apps/web/src/dev-server/routes.ts
+          git commit -m "fix: complete CDI remuneration integration"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
