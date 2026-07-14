@@ -529,7 +529,6 @@ async function createRemunerationTransaction(
 ): Promise<void> {
   const transactionId = randomUUID();
   const competenceOn = toDateOnly(candidate.referenceOn);
-  const postingOn = addDays(competenceOn, 1);
   const description = buildRemunerationDescription(candidate, calculation, competenceOn);
   const now = new Date().toISOString();
 
@@ -548,7 +547,7 @@ async function createRemunerationTransaction(
       candidate.categoryId,
       calculation.amountMinor,
       candidate.currency,
-      postingOn,
+      processedOn,
       description,
       now,
     ],
@@ -745,12 +744,6 @@ function normalizeOptionalPercentage(value: number | undefined): number | undefi
 
 function normalizeOptionalDate(value: string | undefined): string | undefined {
   return value === undefined || value.trim() === "" ? undefined : normalizeDate(value);
-}
-
-function addDays(value: string, days: number): string {
-  const date = new Date(`${value}T00:00:00.000Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
 }
 
 function normalizeDate(value: string): string {
