@@ -20,17 +20,12 @@ const retiredPrivateRouteRedirects = new Map([
   ["/contas", "/contas-cartoes"],
 ]);
 
-const legacyAppRouteRedirects = new Map([
-  ["/app", "/dashboard"],
-  ["/app/lancamentos", "/lancamentos"],
-  ["/app/contas-cartoes", "/contas-cartoes"],
-  ["/app/categorias", "/categorias"],
-  ["/app/cartoes", "/cartoes"],
-  ["/app/orcamentos", "/orcamentos"],
-  ["/app/inbox", "/inbox"],
-  ["/app/relatorios", "/relatorios"],
-  ["/app/configuracoes", "/configuracoes"],
-]);
+const legacyAppRouteRedirects = new Map(
+  listPrivateShellRoutes().map((route) => [
+    route.path === "/dashboard" ? "/app" : `/app${route.path}`,
+    route.path,
+  ]),
+);
 
 export function resolveRoute(
   pathname: string,

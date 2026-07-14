@@ -1,4 +1,4 @@
-import { TenantAuthorizationError, TenantError, type TenantContext } from "@solverfin/domain";
+import { TenantAuthorizationError, TenantError } from "@solverfin/domain";
 
 import { requireMasterUser } from "./admin-auth.js";
 import { auth, requireAuthenticatedRequest } from "./auth-service.js";

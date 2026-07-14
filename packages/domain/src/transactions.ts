@@ -143,6 +143,7 @@ const ALLOWED_TRANSACTION_SOURCES: readonly TransactionSource[] = [
   "installment",
   "import",
   "ai_suggestion",
+  "account_remuneration",
 ];
 
 export function createTransaction(input: CreateTransactionInput): TransactionMutationResult {
