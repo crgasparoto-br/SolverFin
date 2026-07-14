@@ -1,11 +1,18 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const repositorySource = readFileSync(
+const repoRoot = resolveRepoRoot();
+const serviceSource = readFileSync(
+  path.join(repoRoot, "apps", "api", "src", "repositories", "account-remuneration-service.ts"),
+  "utf8",
+);
+const compatibilitySource = readFileSync(
   path.join(repoRoot, "apps", "api", "src", "repositories", "account-remuneration.ts"),
+  "utf8",
+);
+const v2CompatibilitySource = readFileSync(
+  path.join(repoRoot, "apps", "api", "src", "repositories", "account-remuneration-v2.ts"),
   "utf8",
 );
 const migrationSource = readFileSync(
@@ -19,18 +26,32 @@ const migrationSource = readFileSync(
   "utf8",
 );
 
-assert.match(repositorySource, /bcdata\.sgs\.12/);
-assert.match(repositorySource, /on conflict \("kind", "referenceOn"\) do nothing/);
-assert.match(repositorySource, /pg_try_advisory_xact_lock/);
-assert.match(repositorySource, /"effectiveOn" is not null/);
-assert.match(repositorySource, /Rendimento previsto —/);
-assert.match(
-  repositorySource,
-  /await createOperation\(operationId, "ACCOUNT_REMUNERATION"\);[\s\S]*try {[\s\S]*await withTransaction/,
-);
-assert.match(repositorySource, /not exists \(\s*select 1 from "AccountRemuneration"/);
+assert.match(serviceSource, /bcdata\.sgs\.12/);
+assert.match(serviceSource, /on conflict \("kind", "referenceOn"\) do nothing/);
+assert.match(serviceSource, /solverfin:cdi-import/);
+assert.match(serviceSource, /FINANCIAL_INDEX_IMPORT_ALREADY_RUNNING/);
+assert.match(serviceSource, /nenhuma consulta externa foi necessária/);
+assert.match(serviceSource, /solverfin:account-remuneration/);
+assert.match(serviceSource, /"effectiveOn" is not null/);
+assert.match(serviceSource, /Rendimento previsto —/);
+assert.match(serviceSource, /SKIPPED_NON_POSITIVE_BALANCE/);
+assert.match(serviceSource, /SKIPPED_ZERO_AMOUNT/);
+assert.match(serviceSource, /not exists \(\s*select 1 from "AccountRemuneration"/);
+
+assert.match(compatibilitySource, /export \* from "\.\/account-remuneration-service\.js"/);
+assert.doesNotMatch(compatibilitySource, /function processAccountRemunerations/);
+assert.match(v2CompatibilitySource, /export \* from "\.\/account-remuneration-service\.js"/);
+assert.doesNotMatch(v2CompatibilitySource, /function processAccountRemunerations/);
 
 assert.match(migrationSource, /AccountRemuneration_competence_key/);
 assert.match(migrationSource, /originalAmountMinor/);
 assert.match(migrationSource, /manuallyAdjusted/);
 assert.match(migrationSource, /Transaction_account_remuneration_adjustment_trigger/);
+
+function resolveRepoRoot(): string {
+  const cwd = process.cwd();
+  if (existsSync(path.join(cwd, "apps", "api"))) return cwd;
+  const workspaceRoot = path.resolve(cwd, "..", "..");
+  if (existsSync(path.join(workspaceRoot, "apps", "api"))) return workspaceRoot;
+  throw new Error(`Unable to resolve repository root from ${cwd}.`);
+}
