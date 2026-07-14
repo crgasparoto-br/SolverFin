@@ -91,3 +91,64 @@ export function fixtureExpression() {
     return { longAccountId: longAccount.id, singleAccountId: singleAccount.id };
   })()`;
 }
+
+export function accountEditFixtureExpression() {
+  return `(async () => {
+    async function request(path, method = "GET", body) {
+      const response = await fetch(path, {
+        method,
+        headers: body === undefined ? undefined : { "content-type": "application/json" },
+        body: body === undefined ? undefined : JSON.stringify(body)
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(method + " " + path + " failed with " + response.status + ": " + JSON.stringify(payload));
+      }
+      return payload;
+    }
+
+    const suffix = Date.now().toString(36);
+    const sourceAccount = (await request("/api/accounts", "POST", {
+      name: "QA Issue 473 - Origem " + suffix,
+      kind: "checking",
+      openingBalanceMinor: 50000,
+      currency: "BRL"
+    })).account;
+    const targetAccount = (await request("/api/accounts", "POST", {
+      name: "QA Issue 473 - Destino " + suffix,
+      kind: "checking",
+      openingBalanceMinor: 100000,
+      currency: "BRL"
+    })).account;
+    const transaction = (await request("/api/transactions", "POST", {
+      accountId: sourceAccount.id,
+      kind: "expense",
+      amountMinor: 12345,
+      occurredOn: "2026-07-15",
+      plannedOn: "2026-07-15",
+      effectiveOn: "2026-07-15",
+      status: "posted",
+      description: "QA issue 473 troca de conta",
+      currency: "BRL"
+    })).transaction;
+    const transfer = (await request("/api/transactions", "POST", {
+      accountId: sourceAccount.id,
+      destinationAccountId: targetAccount.id,
+      kind: "transfer",
+      amountMinor: 20000,
+      occurredOn: "2026-07-16",
+      plannedOn: "2026-07-16",
+      effectiveOn: "2026-07-16",
+      status: "posted",
+      description: "QA issue 473 transferencia",
+      currency: "BRL"
+    })).transaction;
+
+    return {
+      sourceAccountId: sourceAccount.id,
+      targetAccountId: targetAccount.id,
+      transactionId: transaction.id,
+      transferId: transfer.id
+    };
+  })()`;
+}

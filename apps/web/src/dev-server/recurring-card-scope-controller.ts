@@ -61,6 +61,10 @@ const RECURRENCE_SCOPE_COMPACT_CSS = `
     display: none;
   }
 
+  [data-edit-account-field] {
+    grid-column: auto;
+  }
+
   @media (max-width: 480px) {
     [data-recurrence-scope-modal] .recurrence-scope-panel {
       padding: 16px;
@@ -87,6 +91,7 @@ export function recurringCardScopeControllerScript(): string {
         const isCard = targetKind === "card";
         const currentButton = modal.querySelector('[data-recurrence-scope="current"]');
         const futureButton = modal.querySelector('[data-recurrence-scope="current_and_future"]');
+        const cancelButtons = Array.from(modal.querySelectorAll("[data-recurrence-scope-cancel]"));
         const backButton = modal.querySelector('.recurrence-scope-actions [data-recurrence-scope-cancel]');
         const status = modal.querySelector("[data-recurrence-scope-status]");
         let busy = false;
@@ -114,10 +119,81 @@ export function recurringCardScopeControllerScript(): string {
           button.setAttribute?.("aria-label", label);
         }
 
+        function setupAccountEditField() {
+          if (isCard) return;
+          const form = document.querySelector("[data-form]");
+          if (!form || typeof form.querySelector !== "function") return;
+
+          const accountInput = form.querySelector('input[name="accountId"]');
+          const destinationSelect = form.querySelector('select[name="destinationAccountId"]');
+          const firstField = form.querySelector("label");
+          if (!accountInput || !destinationSelect || !firstField || form.querySelector("[data-edit-account-field]")) return;
+
+          const accountField = document.createElement("label");
+          accountField.hidden = true;
+          accountField.setAttribute("data-edit-account-field", "");
+          accountField.textContent = "Conta";
+
+          const accountSelect = document.createElement("select");
+          accountSelect.name = "accountId";
+          accountSelect.required = true;
+          accountSelect.disabled = true;
+          accountSelect.setAttribute("data-edit-account-select", "");
+
+          Array.from(destinationSelect.options || []).forEach((option) => {
+            if (!option.value) return;
+            const accountOption = document.createElement("option");
+            accountOption.value = option.value;
+            accountOption.textContent = option.textContent || option.value;
+            accountSelect.appendChild(accountOption);
+          });
+
+          accountField.appendChild(accountSelect);
+          form.insertBefore(accountField, firstField);
+
+          const createAccountId = accountInput.value;
+          const formDialog = typeof form.closest === "function" ? form.closest("dialog") : null;
+          const guidance = formDialog && typeof formDialog.querySelector === "function"
+            ? formDialog.querySelector(".modal-panel > div .muted")
+            : null;
+
+          function setAccountMode(transaction) {
+            const editing = Boolean(transaction);
+            accountField.hidden = !editing;
+            accountSelect.disabled = !editing;
+            accountInput.disabled = editing;
+
+            if (editing) {
+              accountSelect.value = transaction.accountId || createAccountId;
+              if (guidance) guidance.textContent = "Revise a conta usada neste lançamento.";
+              return;
+            }
+
+            accountInput.value = createAccountId;
+            accountSelect.value = createAccountId;
+            if (guidance) guidance.textContent = "A conta vem do filtro principal.";
+          }
+
+          document.querySelectorAll("[data-open-modal]").forEach((button) => {
+            button.addEventListener("click", () => setAccountMode(null));
+          });
+
+          document.querySelectorAll("[data-transaction]").forEach((node) => {
+            const transaction = JSON.parse(node.textContent || "{}");
+            const editButton = document.querySelector('[data-edit="' + transaction.id + '"]');
+            const cloneButton = document.querySelector('[data-clone="' + transaction.id + '"]');
+            editButton?.addEventListener("click", () => setAccountMode(transaction));
+            cloneButton?.addEventListener("click", () => setAccountMode(null));
+          });
+
+          setAccountMode(null);
+        }
+
         ensureScopeLayoutStyles();
         prepareScopeButton(currentButton, editOneIcon, currentLabel, "current_only");
         prepareScopeButton(futureButton, editAllIcon, futureLabel, "current_and_future");
         backButton?.classList?.add("recurrence-scope-back");
+        setupAccountEditField();
 
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
@@ -126,7 +202,7 @@ export function recurringCardScopeControllerScript(): string {
 
         function setBusy(nextBusy) {
           busy = nextBusy;
-          [currentButton, futureButton].forEach((button) => {
+          [currentButton, futureButton, ...cancelButtons].forEach((button) => {
             if (button) button.disabled = nextBusy;
           });
         }
@@ -172,6 +248,12 @@ export function recurringCardScopeControllerScript(): string {
           return payload;
         }
 
+        modal.addEventListener("cancel", (event) => {
+          if (!busy) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }, true);
+
         document.addEventListener("click", async (event) => {
           const button = event.target && event.target.closest
             ? event.target.closest("[data-explicit-edit-scope]")
@@ -197,7 +279,7 @@ export function recurringCardScopeControllerScript(): string {
           }
 
           const scope = button.dataset.explicitEditScope;
-          const requestPath = scope === "current_only" ? path + "/current-only" : path;
+          const requestPath = isCard && scope === "current_only" ? path + "/current-only" : path;
           const payload = targetKind === "card" ? cardPayload(data, scope) : accountPayload(data, scope);
 
           setBusy(true);

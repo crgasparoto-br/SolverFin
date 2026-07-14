@@ -188,7 +188,7 @@ function renderRow(
     <article class="statement-row statement-body" role="row">
       <time class="col-date" datetime="${escapeHtml(date)}">${formatDate(date)}</time>
       <div class="description col-description">
-        <strong>${escapeHtml(transaction.description || "(sem descrição)")}${recurrence ? renderRecurrenceIndicator() : ""}</strong>
+        <strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>
         ${renderTransferNote(transaction, selectedAccount, accounts)}
       </div>
       <span class="col-category">${escapeHtml(categoryName)}</span>
@@ -242,7 +242,7 @@ function renderModal(
         <div>
           <p class="eyebrow">Lançamento da conta</p>
           <h2 data-modal-title>${selectedAccount ? `Novo lançamento em ${escapeHtml(selectedAccount.name)}` : "Selecione uma conta"}</h2>
-          <p class="muted">A conta vem do filtro principal e não pode ser trocada neste modal.</p>
+          <p class="muted">A conta vem do filtro principal.</p>
         </div>
         <form data-form data-path="/api/transactions">
           <input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" />
@@ -261,7 +261,6 @@ function renderModal(
           <label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label>
           <label class="full">Descrição<input name="description" required /></label>
           <label class="full">Observação<textarea name="note" rows="3"></textarea></label>
-          <label class="full">Editar repetição<select name="editScope"><option>Somente este lançamento</option><option>Este e os próximos</option><option>Toda a repetição</option></select></label>
           <input type="hidden" name="status" value="posted" />
           <div class="full save-row">
             <div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">
