@@ -126,6 +126,11 @@ function createHarness(options: HarnessOptions = {}) {
   const requests: RequestRecord[] = [];
   const submitButton = { disabled: false };
   const statusNode = { className: "form-status muted full", textContent: "" };
+  const submitScope = {
+    addEventListener(type: string, listener: (event: FakeSubmitEvent) => Promise<void>) {
+      if (type === "submit") submitListener = listener;
+    },
+  };
   const form = {
     dataset: {
       method: options.method ?? "PATCH",
@@ -157,6 +162,9 @@ function createHarness(options: HarnessOptions = {}) {
     setAttribute(name: string, value: string) {
       this.attributes.set(name, value);
     },
+    closest(selector: string) {
+      return selector === "dialog" ? submitScope : null;
+    },
     checkValidity: () => true,
     reportValidity: () => undefined,
   };
@@ -181,9 +189,7 @@ function createHarness(options: HarnessOptions = {}) {
     },
     querySelectorAll: () => [],
     getElementById: () => null,
-    addEventListener(type: string, listener: (event: FakeSubmitEvent) => Promise<void>) {
-      if (type === "submit") submitListener = listener;
-    },
+    addEventListener: () => undefined,
   };
 
   const script = statementPresentationScript()
