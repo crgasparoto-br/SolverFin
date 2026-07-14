@@ -12,7 +12,8 @@ async function main(): Promise<void> {
   assertCompactLayoutContract();
   assertAccountEditContract();
   await assertScopeRequest("card", "current", {
-    expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1/current-only",
+    expectedPath:
+      "/api/credit-card-accounts/card-1/purchases/purchase-1/current-only",
   });
   await assertScopeRequest("card", "current_and_future", {
     expectedPath: "/api/credit-card-accounts/card-1/purchases/purchase-1",
@@ -82,11 +83,16 @@ async function assertScopeRequest(
   const status = { className: "", textContent: "" };
   const modal = {
     dataset: { targetKind },
-    contains: (node: unknown) => node === currentButton || node === futureButton,
+    contains: (node: unknown) =>
+      node === currentButton || node === futureButton,
     querySelector: (selector: string) => {
-      if (selector === '[data-recurrence-scope="current"]') return currentButton;
-      if (selector === '[data-recurrence-scope="current_and_future"]') return futureButton;
-      if (selector === ".recurrence-scope-actions [data-recurrence-scope-cancel]")
+      if (selector === '[data-recurrence-scope="current"]')
+        return currentButton;
+      if (selector === '[data-recurrence-scope="current_and_future"]')
+        return futureButton;
+      if (
+        selector === ".recurrence-scope-actions [data-recurrence-scope-cancel]"
+      )
         return backButton;
       if (selector === "[data-recurrence-scope-status]") return status;
       return null;
@@ -139,11 +145,15 @@ async function assertScopeRequest(
     querySelector: (selector: string) => {
       if (selector === "[data-recurrence-scope-layout-styles]") return null;
       if (selector === "[data-recurrence-scope-modal]") return modal;
-      if (selector === "[data-purchase-form]" && targetKind === "card") return form;
+      if (selector === "[data-purchase-form]" && targetKind === "card")
+        return form;
       if (selector === "[data-form]" && targetKind === "account") return form;
       return null;
     },
-    addEventListener: (type: string, listener: (event: FakeEvent) => Promise<void>) => {
+    addEventListener: (
+      type: string,
+      listener: (event: FakeEvent) => Promise<void>,
+    ) => {
       if (type === "click") clickListener = listener;
     },
   };
@@ -162,9 +172,12 @@ async function assertScopeRequest(
     window: { location: { reload: () => undefined }, setTimeout: () => 0 },
   });
 
-  const currentLabel = targetKind === "card" ? "Somente esta compra" : "Somente este lançamento";
+  const currentLabel =
+    targetKind === "card" ? "Somente esta compra" : "Somente este lançamento";
   const futureLabel =
-    targetKind === "card" ? "Esta compra e as próximas" : "Este lançamento e os próximos";
+    targetKind === "card"
+      ? "Esta compra e as próximas"
+      : "Este lançamento e os próximos";
   assert.equal(currentButton.textContent, currentLabel);
   assert.equal(futureButton.textContent, futureLabel);
   assert.equal(currentButton.classList.has("recurrence-scope-choice"), true);
@@ -192,7 +205,10 @@ async function assertScopeRequest(
   assert.equal(propagationStopped, true);
   assert.equal(requests.length, 1);
   assert.equal(requests[0]?.path, expected.expectedPath);
-  const payload = JSON.parse(requests[0]?.init.body ?? "{}") as Record<string, unknown>;
+  const payload = JSON.parse(requests[0]?.init.body ?? "{}") as Record<
+    string,
+    unknown
+  >;
   assert.equal(payload.editScope, expected.expectedScope);
   assert.equal(payload.applyToFuturePlanned, expected.expectedApplyToFuture);
   if (targetKind === "account") assert.equal(payload.accountId, "account-1");
@@ -209,7 +225,8 @@ interface FakeClassList {
 function fakeClassList(): FakeClassList {
   const values = new Set<string>();
   return {
-    add: (...classNames: string[]) => classNames.forEach((className) => values.add(className)),
+    add: (...classNames: string[]) =>
+      classNames.forEach((className) => values.add(className)),
     has: (className: string) => values.has(className),
   };
 }
@@ -245,7 +262,10 @@ function fakeButton(): FakeButton {
     closest: () => null,
   };
   button.closest = (selector: string) =>
-    selector === "[data-explicit-edit-scope]" && button.dataset.explicitEditScope ? button : null;
+    selector === "[data-explicit-edit-scope]" &&
+    button.dataset.explicitEditScope
+      ? button
+      : null;
   return button;
 }
 
