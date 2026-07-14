@@ -17,7 +17,10 @@ async function main(): Promise<void> {
     source,
     /A conta vem do filtro principal e não pode ser trocada neste modal\./,
   );
-  assert.match(source, /<p class="muted">A conta vem do filtro principal\.<\/p>/);
+  assert.match(
+    source,
+    /<p class="muted">A conta vem do filtro principal\.<\/p>/,
+  );
   assert.doesNotMatch(source, /<select name="editScope">/);
   assert.doesNotMatch(source, />Editar repetição</);
   assert.match(
