@@ -1,0 +1,609 @@
+
+> solverfin@0.1.0 test
+> npm run build:packages && npm run test --workspaces --if-present
+
+
+> solverfin@0.1.0 build:packages
+> npm run build --workspace @solverfin/shared --workspace @solverfin/config --workspace @solverfin/domain --workspace @solverfin/ai
+
+
+> @solverfin/shared@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/config@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/domain@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/ai@0.1.0 build
+> tsc --noEmit
+
+
+> @solverfin/api@0.1.0 test
+> rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/api --include .test.js --exclude .integration.test.js
+
+
+[test] account-remuneration-contract.test.js
+
+[test] account-remuneration-scheduler.test.js
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+TAP version 13
+# Subtest: runs once per UTC date after the configured hour
+ok 1 - runs once per UTC date after the configured hour
+  ---
+  duration_ms: 0.889732
+  type: 'test'
+  ...
+# Subtest: does not run before the configured UTC hour
+ok 2 - does not run before the configured UTC hour
+  ---
+  duration_ms: 0.155508
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7.957903
+
+[test] accounts-router.test.js
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+[test] admin-auth.test.js
+
+[test] admin-institutions-logo-router.test.js
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+[test] admin-institutions-router.test.js
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+
+[test] auth.test.js
+◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+
+[test] errors.test.js
+
+[test] financial-institutions-repository.test.js
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+
+[test] institution-admin-contract.test.js
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+503 !== 400
+
+    at file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/api/institution-admin-contract.test.js:43:16
+    at async withTemporaryEnv (file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/api/institution-admin-contract.test.js:99:9)
+    at async logoUploadRejectsInvalidFileForMaster (file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/api/institution-admin-contract.test.js:40:5)
+    at async file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/api/institution-admin-contract.test.js:12:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 503,
+  expected: 400,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.23.1
+institution-admin-contract.test.js failed with exit code 1.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /home/runner/work/SolverFin/SolverFin/apps/api
+npm error workspace @solverfin/api@0.1.0
+npm error location /home/runner/work/SolverFin/SolverFin/apps/api
+npm error command failed
+npm error command sh -c rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/api --include .test.js --exclude .integration.test.js
+
+
+> @solverfin/web@0.1.0 test
+> rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/web --include .test.js
+
+
+[test] accessibility.test.js
+
+[test] dashboard/availability.test.js
+
+[test] dev-server-accounts-cards-actions.test.js
+
+[test] dev-server-routing.test.js
+
+[test] dev-server.test.js
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /data-master-status/. Input:
+
+'\n' +
+  '    <style data-card-instruments-dialog-list>\n' +
+  '      .dialog-instrument-list .instrument-list { margin-top: 0; max-height: min(38vh, 340px); overflow: auto; }\n' +
+  '      .dialog-instrument-list .instrument-item { background: var(--surface); padding: 8px 10px; }\n' +
+  '      .dialog-instrument-list .instrument-side { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }\n' +
+  '      .dialog-instrument-list .instrument-tags { justify-content: flex-end; }\n' +
+  '      .dialog-instrument-list .instrument-actions { flex: 0 0 auto; margin-left: auto; }\n' +
+  '      .dialog-instrument-list .instrument-actions .icon-button { background: #fff; border-color: #e2e8f0; color: #64748b; }\n' +
+  '      .dialog-instrument-list .instrument-actions .icon-button:hover:not(:disabled), .dialog-instrument-list .instrument-actions .icon-button:focus-visible { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }\n' +
+  '      .dialog-instrument-list .instrument-actions .danger-icon-button:hover:not(:disabled), .dialog-instrument-list .instrument-actions .danger-icon-button:focus-visible { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }\n' +
+  '      @media (max-width: 760px) {\n' +
+  '        .dialog-instrument-list .instrument-side { align-items: flex-start; justify-content: flex-start; }\n' +
+  '        .dialog-instrument-list .instrument-tags { justify-content: flex-start; }\n' +
+  '        .dialog-instrument-list .instrument-actions { margin-left: 0; }\n' +
+  '      }\n' +
+  '    </style><html><body><div class="master-actions" aria-label="Ações principais">\n' +
+  '          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>\n' +
+  '           <label class="active-filter-switch" data-active-filter aria-pressed="false">\n' +
+  '             <input type="checkbox" class="active-filter-input" data-active-filter-input />\n' +
+  '             <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>\n' +
+  '             <span>Exibir apenas ativos</span>\n' +
+  '           </label>\n' +
+  '        </div>\n' +
+  '        <div class="filter-row">\n' +
+  '          <label>Status\n' +
+  '            <select data-master-status>\n' +
+  '              <option value="all">Todos</option>\n' +
+  '              <option value="active">Ativos</option>\n' +
+  '              <option value="inactive">Inativos</option>\n' +
+  '            </select>\n' +
+  '          </label>\n' +
+  '        </div><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador<input name="maskedIdentifier" /></label>\n' +
+  '        <button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section>\n' +
+  '    <script>\n' +
+  '      document.querySelectorAll("[data-toggle-instrument-create]").forEach((button) => {\n' +
+  '        button.addEventListener("click", () => {\n' +
+  '          const formId = button.dataset.toggleInstrumentCreate;\n' +
+  '          const form = formId ? document.getElementById(formId) : null;\n' +
+  '          if (!form) return;\n' +
+  '\n' +
+  '          const shouldShow = form.hidden;\n' +
+  '          form.hidden = !shouldShow;\n' +
+  '          button.setAttribute("aria-expanded", String(shouldShow));\n' +
+  '\n' +
+  '          if (shouldShow) {\n' +
+  '            const firstField = form.querySelector("input, select, button");\n' +
+  '            if (firstField && typeof firstField.focus === "function") firstField.focus();\n' +
+  '          }\n' +
+  '        });\n' +
+  '      });\n' +
+  '    </script>\n' +
+  '\n' +
+  '      <script data-accounts-cards-direct-enhancement>\n' +
+  '        (() => {\n' +
+  '          if (window.__solverFinAccountsCardsDirect === true) return;\n' +
+  '          window.__solverFinAccountsCardsDirect = true;\n' +
+  '\n' +
+  '          const activeFilterStorageKey = "solverfin.accountsCards.activeOnly";\n' +
+  '\n' +
+  '          function wireActiveFilter() {\n' +
+  '            const button = document.querySelector("[data-active-filter]");\n' +
+  '            const input = button ? button.querySelector("[data-active-filter-input]") : null;\n' +
+  '            if (!button || !input) return;\n' +
+  '            let activeOnly = false;\n' +
+  '            try { activeOnly = window.localStorage.getItem(activeFilterStorageKey) === "true"; } catch (_error) { activeOnly = false; }\n' +
+  '            input.checked = activeOnly;\n' +
+  '            button.setAttribute("aria-pressed", String(activeOnly));\n' +
+  '            input.dispatchEvent(new Event("change", { bubbles: true }));\n' +
+  '            input.addEventListener("change", () => {\n' +
+  '              button.setAttribute("aria-pressed", String(input.checked === true));\n' +
+  '              try { window.localStorage.setItem(activeFilterStorageKey, String(input.checked === true)); } catch (_error) {}\n' +
+  '            });\n' +
+  '          }\n' +
+  '\n' +
+  '          function escapeHtml(value) {\n' +
+  '            return String(value ?? "")\n' +
+  '              .replace(/&/g, "&amp;")\n' +
+  '              .replace(/</g, "&lt;")\n' +
+  '              .replace(/>/g, "&gt;")\n' +
+  '              .replace(/"/g, "&quot;")\n' +
+  `              .replace(/'/g, "&#39;");\n` +
+  '          }\n' +
+  '\n' +
+  '          function accountIdFromForm(form) {\n' +
+  '            const match = /^\\/api\\/accounts\\/([^/]+)$/.exec(String(form.dataset.apiPath || ""));\n' +
+  '            return match ? decodeURIComponent(match[1]) : undefined;\n' +
+  '          }\n' +
+  '\n' +
+  '          function renderCategoryOptions(categories, selected) {\n' +
+  '            return categories.map((category) =>\n' +
+  `              '<option value="' + escapeHtml(category.id) + '"' + (category.id === selected ? ' selected' : '') + '>' + escapeHtml(category.name) + '</option>'\n` +
+  '            ).join("");\n' +
+  '          }\n' +
+  '\n' +
+  '          function appendRemunerationFields(form, configuration, categories) {\n' +
+  '            if (form.querySelector("[data-account-remuneration-fields]")) return;\n' +
+  '            const enabled = configuration && configuration.enabled === true;\n' +
+  '            const percentage = configuration && configuration.remunerationPercent !== undefined ? configuration.remunerationPercent : 100;\n' +
+  '            const startsOn = configuration && configuration.startsOn ? configuration.startsOn : new Date().toISOString().slice(0, 10);\n' +
+  '            const categoryId = configuration && configuration.categoryId ? configuration.categoryId : "";\n' +
+  '            const fieldset = document.createElement("fieldset");\n' +
+  '            fieldset.className = "account-remuneration-fieldset";\n' +
+  '            fieldset.setAttribute("data-account-remuneration-fields", "");\n' +
+  '            fieldset.innerHTML =\n' +
+  "              '<legend>Remuneração da conta</legend>' +\n" +
+  `              '<label>Situação<select name="remunerationEnabled"><option value="false"' + (enabled ? '' : ' selected') + '>Desativada</option><option value="true"' + (enabled ? ' selected' : '') + '>Ativa</option></select></label>' +\n` +
+  `              '<label>Indexador<select name="remunerationIndexKind"><option value="cdi">CDI</option></select></label>' +\n` +
+  `              '<label>Percentual de remuneração sobre o CDI<input name="remunerationPercent" type="number" min="0.0001" max="1000" step="0.0001" value="' + escapeHtml(percentage) + '" /></label>' +\n` +
+  `              '<label>Data inicial<input name="remunerationStartsOn" type="date" value="' + escapeHtml(startsOn) + '" /></label>' +\n` +
+  `              '<label>Categoria de receita<select name="remunerationCategoryId"><option value="">Sem categoria padrão</option>' + renderCategoryOptions(categories, categoryId) + '</select></label>' +\n` +
+  `              '<p class="remuneration-help">O cálculo usa o saldo final da competência e a taxa diária oficial do CDI. Contas fora de BRL permanecem não elegíveis.</p>';\n` +
+  `            const submit = form.querySelector('button[type="submit"]');\n` +
+  '            if (submit) form.insertBefore(fieldset, submit);\n' +
+  '            else form.appendChild(fieldset);\n' +
+  '            wireRemunerationAvailability(form);\n' +
+  '          }\n' +
+  '\n' +
+  '          function wireRemunerationAvailability(form) {\n' +
+  '            const enabled = form.elements.remunerationEnabled;\n' +
+  '            const percentage = form.elements.remunerationPercent;\n' +
+  '            const startsOn = form.elements.remunerationStartsOn;\n' +
+  '            const category = form.elements.remunerationCategoryId;\n' +
+  '            const currency = form.elements.currency;\n' +
+  '            if (!enabled || !percentage || !startsOn) return;\n' +
+  '\n' +
+  '            const sync = () => {\n' +
+  '              const supportsCdi = !currency || currency.value === "BRL";\n' +
+  '              if (!supportsCdi) enabled.value = "false";\n' +
+  '              enabled.disabled = !supportsCdi;\n' +
+  '              const active = supportsCdi && enabled.value === "true";\n' +
+  '              percentage.disabled = !active;\n' +
+  '              startsOn.disabled = !active;\n' +
+  '              if (category) category.disabled = !active;\n' +
+  '              percentage.required = active;\n' +
+  '              startsOn.required = active;\n' +
+  '            };\n' +
+  '            enabled.addEventListener("change", sync);\n' +
+  '            if (currency) currency.addEventListener("change", sync);\n' +
+  '            sync();\n' +
+  '          }\n' +
+  '\n' +
+  '          function readAccountPayload(form) {\n' +
+  '            const payload = {};\n' +
+  '            new FormData(form).forEach((value, key) => {\n' +
+  '              if (key.startsWith("remuneration") || value === "") return;\n' +
+  `              const field = form.querySelector('[name="' + key + '"]');\n` +
+  '              if (field && field.dataset.money !== undefined) {\n' +
+  '                payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);\n' +
+  '              } else if (field && field.type === "number") {\n' +
+  '                payload[key] = Number(value);\n' +
+  '              } else {\n' +
+  '                payload[key] = value;\n' +
+  '              }\n' +
+  '            });\n' +
+  '            return payload;\n' +
+  '          }\n' +
+  '\n' +
+  '          function readRemunerationPayload(form) {\n' +
+  '            const enabled = form.elements.remunerationEnabled && form.elements.remunerationEnabled.value === "true";\n' +
+  '            const payload = { enabled };\n' +
+  '            if (enabled) {\n' +
+  '              payload.remunerationPercent = Number(form.elements.remunerationPercent.value);\n' +
+  '              payload.startsOn = String(form.elements.remunerationStartsOn.value || "");\n' +
+  '              const categoryId = String(form.elements.remunerationCategoryId && form.elements.remunerationCategoryId.value || "");\n' +
+  '              if (categoryId) payload.categoryId = categoryId;\n' +
+  '            }\n' +
+  '            return payload;\n' +
+  '          }\n' +
+  '\n' +
+  '          function statusFor(form) '... 5331 more characters
+
+    at accountsCardsEnhancementKeepsOnlyActiveFilter (file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/web/dev-server.test.js:245:12)
+    at file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/web/dev-server.test.js:19:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '\n' +
+    '    <style data-card-instruments-dialog-list>\n' +
+    '      .dialog-instrument-list .instrument-list { margin-top: 0; max-height: min(38vh, 340px); overflow: auto; }\n' +
+    '      .dialog-instrument-list .instrument-item { background: var(--surface); padding: 8px 10px; }\n' +
+    '      .dialog-instrument-list .instrument-side { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }\n' +
+    '      .dialog-instrument-list .instrument-tags { justify-content: flex-end; }\n' +
+    '      .dialog-instrument-list .instrument-actions { flex: 0 0 auto; margin-left: auto; }\n' +
+    '      .dialog-instrument-list .instrument-actions .icon-button { background: #fff; border-color: #e2e8f0; color: #64748b; }\n' +
+    '      .dialog-instrument-list .instrument-actions .icon-button:hover:not(:disabled), .dialog-instrument-list .instrument-actions .icon-button:focus-visible { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }\n' +
+    '      .dialog-instrument-list .instrument-actions .danger-icon-button:hover:not(:disabled), .dialog-instrument-list .instrument-actions .danger-icon-button:focus-visible { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }\n' +
+    '      @media (max-width: 760px) {\n' +
+    '        .dialog-instrument-list .instrument-side { align-items: flex-start; justify-content: flex-start; }\n' +
+    '        .dialog-instrument-list .instrument-tags { justify-content: flex-start; }\n' +
+    '        .dialog-instrument-list .instrument-actions { margin-left: 0; }\n' +
+    '      }\n' +
+    '    </style><html><body><div class="master-actions" aria-label="Ações principais">\n' +
+    '          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>\n' +
+    '           <label class="active-filter-switch" data-active-filter aria-pressed="false">\n' +
+    '             <input type="checkbox" class="active-filter-input" data-active-filter-input />\n' +
+    '             <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>\n' +
+    '             <span>Exibir apenas ativos</span>\n' +
+    '           </label>\n' +
+    '        </div>\n' +
+    '        <div class="filter-row">\n' +
+    '          <label>Status\n' +
+    '            <select data-master-status>\n' +
+    '              <option value="all">Todos</option>\n' +
+    '              <option value="active">Ativos</option>\n' +
+    '              <option value="inactive">Inativos</option>\n' +
+    '            </select>\n' +
+    '          </label>\n' +
+    '        </div><dialog id="new-card-dialog"><form data-api-form data-api-path="/api/cards" class="edit-grid"><label>Identificador<input name="maskedIdentifier" /></label>\n' +
+    '        <button type="submit">Criar cartão</button></form></dialog><section data-tab-panel="accounts"></section>\n' +
+    '    <script>\n' +
+    '      document.querySelectorAll("[data-toggle-instrument-create]").forEach((button) => {\n' +
+    '        button.addEventListener("click", () => {\n' +
+    '          const formId = button.dataset.toggleInstrumentCreate;\n' +
+    '          const form = formId ? document.getElementById(formId) : null;\n' +
+    '          if (!form) return;\n' +
+    '\n' +
+    '          const shouldShow = form.hidden;\n' +
+    '          form.hidden = !shouldShow;\n' +
+    '          button.setAttribute("aria-expanded", String(shouldShow));\n' +
+    '\n' +
+    '          if (shouldShow) {\n' +
+    '            const firstField = form.querySelector("input, select, button");\n' +
+    '            if (firstField && typeof firstField.focus === "function") firstField.focus();\n' +
+    '          }\n' +
+    '        });\n' +
+    '      });\n' +
+    '    </script>\n' +
+    '\n' +
+    '      <script data-accounts-cards-direct-enhancement>\n' +
+    '        (() => {\n' +
+    '          if (window.__solverFinAccountsCardsDirect === true) return;\n' +
+    '          window.__solverFinAccountsCardsDirect = true;\n' +
+    '\n' +
+    '          const activeFilterStorageKey = "solverfin.accountsCards.activeOnly";\n' +
+    '\n' +
+    '          function wireActiveFilter() {\n' +
+    '            const button = document.querySelector("[data-active-filter]");\n' +
+    '            const input = button ? button.querySelector("[data-active-filter-input]") : null;\n' +
+    '            if (!button || !input) return;\n' +
+    '            let activeOnly = false;\n' +
+    '            try { activeOnly = window.localStorage.getItem(activeFilterStorageKey) === "true"; } catch (_error) { activeOnly = false; }\n' +
+    '            input.checked = activeOnly;\n' +
+    '            button.setAttribute("aria-pressed", String(activeOnly));\n' +
+    '            input.dispatchEvent(new Event("change", { bubbles: true }));\n' +
+    '            input.addEventListener("change", () => {\n' +
+    '              button.setAttribute("aria-pressed", String(input.checked === true));\n' +
+    '              try { window.localStorage.setItem(activeFilterStorageKey, String(input.checked === true)); } catch (_error) {}\n' +
+    '            });\n' +
+    '          }\n' +
+    '\n' +
+    '          function escapeHtml(value) {\n' +
+    '            return String(value ?? "")\n' +
+    '              .replace(/&/g, "&amp;")\n' +
+    '              .replace(/</g, "&lt;")\n' +
+    '              .replace(/>/g, "&gt;")\n' +
+    '              .replace(/"/g, "&quot;")\n' +
+    `              .replace(/'/g, "&#39;");\n` +
+    '          }\n' +
+    '\n' +
+    '          function accountIdFromForm(form) {\n' +
+    '            const match = /^\\/api\\/accounts\\/([^/]+)$/.exec(String(form.dataset.apiPath || ""));\n' +
+    '            return match ? decodeURIComponent(match[1]) : undefined;\n' +
+    '          }\n' +
+    '\n' +
+    '          function renderCategoryOptions(categories, selected) {\n' +
+    '            return categories.map((category) =>\n' +
+    `              '<option value="' + escapeHtml(category.id) + '"' + (category.id === selected ? ' selected' : '') + '>' + escapeHtml(category.name) + '</option>'\n` +
+    '            ).join("");\n' +
+    '          }\n' +
+    '\n' +
+    '          function appendRemunerationFields(form, configuration, categories) {\n' +
+    '            if (form.querySelector("[data-account-remuneration-fields]")) return;\n' +
+    '            const enabled = configuration && configuration.enabled === true;\n' +
+    '            const percentage = configuration && configuration.remunerationPercent !== undefined ? configuration.remunerationPercent : 100;\n' +
+    '            const startsOn = configuration && configuration.startsOn ? configuration.startsOn : new Date().toISOString().slice(0, 10);\n' +
+    '            const categoryId = configuration && configuration.categoryId ? configuration.categoryId : "";\n' +
+    '            const fieldset = document.createElement("fieldset");\n' +
+    '            fieldset.className = "account-remuneration-fieldset";\n' +
+    '            fieldset.setAttribute("data-account-remuneration-fields", "");\n' +
+    '            fieldset.innerHTML =\n' +
+    "              '<legend>Remuneração da conta</legend>' +\n" +
+    `              '<label>Situação<select name="remunerationEnabled"><option value="false"' + (enabled ? '' : ' selected') + '>Desativada</option><option value="true"' + (enabled ? ' selected' : '') + '>Ativa</option></select></label>' +\n` +
+    `              '<label>Indexador<select name="remunerationIndexKind"><option value="cdi">CDI</option></select></label>' +\n` +
+    `              '<label>Percentual de remuneração sobre o CDI<input name="remunerationPercent" type="number" min="0.0001" max="1000" step="0.0001" value="' + escapeHtml(percentage) + '" /></label>' +\n` +
+    `              '<label>Data inicial<input name="remunerationStartsOn" type="date" value="' + escapeHtml(startsOn) + '" /></label>' +\n` +
+    `              '<label>Categoria de receita<select name="remunerationCategoryId"><option value="">Sem categoria padrão</option>' + renderCategoryOptions(categories, categoryId) + '</select></label>' +\n` +
+    `              '<p class="remuneration-help">O cálculo usa o saldo final da competência e a taxa diária oficial do CDI. Contas fora de BRL permanecem não elegíveis.</p>';\n` +
+    `            const submit = form.querySelector('button[type="submit"]');\n` +
+    '            if (submit) form.insertBefore(fieldset, submit);\n' +
+    '            else form.appendChild(fieldset);\n' +
+    '            wireRemunerationAvailability(form);\n' +
+    '          }\n' +
+    '\n' +
+    '          function wireRemunerationAvailability(form) {\n' +
+    '            const enabled = form.elements.remunerationEnabled;\n' +
+    '            const percentage = form.elements.remunerationPercent;\n' +
+    '            const startsOn = form.elements.remunerationStartsOn;\n' +
+    '            const category = form.elements.remunerationCategoryId;\n' +
+    '            const currency = form.elements.currency;\n' +
+    '            if (!enabled || !percentage || !startsOn) return;\n' +
+    '\n' +
+    '            const sync = () => {\n' +
+    '              const supportsCdi = !currency || currency.value === "BRL";\n' +
+    '              if (!supportsCdi) enabled.value = "false";\n' +
+    '              enabled.disabled = !supportsCdi;\n' +
+    '              const active = supportsCdi && enabled.value === "true";\n' +
+    '              percentage.disabled = !active;\n' +
+    '              startsOn.disabled = !active;\n' +
+    '              if (category) category.disabled = !active;\n' +
+    '              percentage.required = active;\n' +
+    '              startsOn.required = active;\n' +
+    '            };\n' +
+    '            enabled.addEventListener("change", sync);\n' +
+    '            if (currency) currency.addEventListener("change", sync);\n' +
+    '            sync();\n' +
+    '          }\n' +
+    '\n' +
+    '          function readAccountPayload(form) {\n' +
+    '            const payload = {};\n' +
+    '            new FormData(form).forEach((value, key) => {\n' +
+    '              if (key.startsWith("remuneration") || value === "") return;\n' +
+    `              const field = form.querySelector('[name="' + key + '"]');\n` +
+    '              if (field && field.dataset.money !== undefined) {\n' +
+    '                payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);\n' +
+    '              } else if (field && field.type === "number") {\n' +
+    '                payload[key] = Number(value);\n' +
+    '              } else {\n' +
+    '                payload[key] = value;\n' +
+    '              }\n' +
+    '            });\n' +
+    '            return payload;\n' +
+    '          }\n' +
+    '\n' +
+    '          function readRemunerationPayload(form) {\n' +
+    '            const enabled = form.elements.remunerationEnabled && form.elements.remunerationEnabled.value === "true";\n' +
+    '            const payload = { enabled };\n' +
+    '            if (enabled) {\n' +
+    '              payload.remunerationPercent = Number(form.elements.remunerationPercent.value);\n' +
+    '              payload.startsOn = String(form.elements.remunerationStartsOn.value || "");\n' +
+    '              const categoryId = String(form.elements.remunerationCategoryId && form.elements.remunerationCategoryId.value || "");\n' +
+    '              if (categoryId) payload.categoryId = categoryId;\n' +
+    '            }\n' +
+    '            return payload;\n' +
+    '          }\n' +
+    '\n' +
+    '          function statusFor(form) '... 5331 more characters,
+  expected: /data-master-status/,
+  operator: 'doesNotMatch',
+  diff: 'simple'
+}
+
+Node.js v22.23.1
+dev-server.test.js failed with exit code 1.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /home/runner/work/SolverFin/SolverFin/apps/web
+npm error workspace @solverfin/web@0.1.0
+npm error location /home/runner/work/SolverFin/SolverFin/apps/web
+npm error command failed
+npm error command sh -c rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/web --include .test.js
+
+
+> @solverfin/ai@0.1.0 test
+> rm -rf ../../.tmp-tests/ai && tsc -p tsconfig.test.json && node ../../.tmp-tests/ai/index.test.js && node ../../.tmp-tests/ai/extraction.test.js && node ../../.tmp-tests/ai/bank-message-parser.test.js && node ../../.tmp-tests/ai/assistant.test.js && node ../../.tmp-tests/ai/insights.test.js
+
+
+> @solverfin/config@0.1.0 test
+> echo "@solverfin/config: testes ainda serao configurados em issue propria"
+
+@solverfin/config: testes ainda serao configurados em issue propria
+
+> @solverfin/domain@0.1.0 test
+> rm -rf ../../.tmp-tests/domain && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/domain --include .test.js
+
+
+[test] accountant-export.test.js
+
+[test] accounts.test.js
+
+[test] ai-review-queue.test.js
+
+[test] audit.test.js
+
+[test] automation-rules.test.js
+
+[test] bank-message-inbox.test.js
+
+[test] budgets.test.js
+
+[test] card-instruments.test.js
+
+[test] card-purchases-instruments.test.js
+
+[test] cards-instruments-purchase.test.js
+
+[test] cards.test.js
+
+[test] categories.test.js
+
+[test] category-learning.test.js
+
+[test] daily-availability.test.js
+
+[test] deduplication.test.js
+
+[test] financial-assumptions.test.js
+
+[test] financial-indexes.test.js
+TAP version 13
+# Subtest: parses BCB SGS CDI entries and normalizes dates and factors
+ok 1 - parses BCB SGS CDI entries and normalizes dates and factors
+  ---
+  duration_ms: 8.557605
+  type: 'test'
+  ...
+# Subtest: rejects duplicate or malformed CDI entries
+ok 2 - rejects duplicate or malformed CDI entries
+  ---
+  duration_ms: 0.505991
+  type: 'test'
+  ...
+# Subtest: calculates account remuneration using CDI rate and configured percentage
+ok 3 - calculates account remuneration using CDI rate and configured percentage
+  ---
+  duration_ms: 0.284285
+  type: 'test'
+  ...
+# Subtest: does not generate remuneration for zero or negative balances
+ok 4 - does not generate remuneration for zero or negative balances
+  ---
+  duration_ms: 0.939133
+  type: 'test'
+  ...
+# Subtest: validates account remuneration percentage
+ok 5 - validates account remuneration percentage
+  ---
+  duration_ms: 0.188998
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18.611185
+
+[test] imports.test.js
+
+[test] payables-receivables-transition.test.js
+
+[test] payables-receivables.test.js
+
+[test] privacy-consent.test.js
+
+[test] reconciliation.test.js
+
+[test] recurrence-calendar.test.js
+
+[test] recurrences-card-generation.test.js
+
+[test] recurrences.test.js
+
+[test] soft-delete.test.js
+
+[test] statistical-recurrences.test.js
+
+[test] tenant-authorization.test.js
+
+[test] tenant.test.js
+
+[test] transactions.test.js
+
+[test] visual-identities.test.js
+
+31 compiled test file(s) passed.
+
+> @solverfin/shared@0.1.0 test
+> rm -rf ../../.tmp-tests/shared && tsc -p tsconfig.test.json && node ../../.tmp-tests/shared/masking.test.js && node ../../.tmp-tests/shared/formatting.test.js
+
+exit_code=1
