@@ -12,73 +12,28 @@ jobs:
   fix:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Apply correctness fixes
+      - name: Remove obsolete helper
         shell: bash
         run: |
           node <<'NODE'
           const fs = require("fs");
           const path = "apps/api/src/repositories/account-remuneration.ts";
           let source = fs.readFileSync(path, "utf8");
-
           source = source.replace(
-            "  let skippedWithoutPositiveBalance = 0;\n\n  try {",
-            '  let skippedWithoutPositiveBalance = 0;\n\n  await createOperation(operationId, "ACCOUNT_REMUNERATION");\n\n  try {',
-          );
-          source = source.replace(
-            '      await createOperation(operationId, "ACCOUNT_REMUNERATION", executeQuery);\n',
-            "",
-          );
-          source = source.replace(
-            `  } catch (error) {\n    if (!operation) {\n      const existing = await findOperation(operationId);\n      if (existing) {\n        operation = await finishOperation(operationId, {\n          status: "FAILED",\n          processedCount,\n          createdCount,\n          pendingCount,\n          failureCount: 1,\n          message: readableError(error),\n        });\n      }\n    }\n    throw error;\n  }`,
-            `  } catch (error) {\n    await finishOperation(operationId, {\n      status: "FAILED",\n      processedCount,\n      createdCount,\n      pendingCount,\n      failureCount: 1,\n      message: readableError(error),\n    });\n    throw error;\n  }`,
-          );
-          source = source.replace(
-            '  const competenceOn = toDateOnly(candidate.referenceOn);\n  const description =',
-            '  const competenceOn = toDateOnly(candidate.referenceOn);\n  const postingOn = addDays(competenceOn, 1);\n  const description =',
-          );
-          source = source.replace(
-            "      candidate.currency,\n      processedOn,\n      description,",
-            "      candidate.currency,\n      postingOn,\n      description,",
-          );
-          source = source.replace(
-            `function normalizeDate(value: string): string {`,
-            `function addDays(value: string, days: number): string {\n  const date = new Date(\`\${value}T00:00:00.000Z\`);\n  date.setUTCDate(date.getUTCDate() + days);\n  return date.toISOString().slice(0, 10);\n}\n\nfunction normalizeDate(value: string): string {`,
+            /\nasync function findOperation\(id: string\): Promise<OperationRecord \| undefined> \{[\s\S]*?\n\}\n\nasync function findLatestOperation/,
+            "\nasync function findLatestOperation",
           );
           fs.writeFileSync(path, source);
-
-          const testPath = "apps/api/src/account-remuneration-contract.test.ts";
-          let test = fs.readFileSync(testPath, "utf8");
-          if (!test.includes("const postingOn = addDays")) {
-            test = test.replace(
-              "assert.match(repositorySource, /Rendimento previsto —/);",
-              `assert.match(repositorySource, /Rendimento previsto —/);\nassert.match(repositorySource, /const postingOn = addDays\\(competenceOn, 1\\)/);\nassert.match(\n  repositorySource,\n  /await createOperation\\(operationId, "ACCOUNT_REMUNERATION"\\);[\\s\\S]*try {[\\s\\S]*await withTransaction/,\n);`,
-            );
-          }
-          fs.writeFileSync(testPath, test);
           NODE
 
-          npx prettier --write \
-            apps/api/src/repositories/account-remuneration.ts \
-            apps/api/src/account-remuneration-contract.test.ts
-
-      - name: Commit correctness fixes
+      - name: Commit cleanup
         shell: bash
         run: |
           if git diff --quiet; then
@@ -86,8 +41,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            apps/api/src/repositories/account-remuneration.ts \
-            apps/api/src/account-remuneration-contract.test.ts
-          git commit -m "fix(api): preserve remuneration dates and failure audit"
+          git add apps/api/src/repositories/account-remuneration.ts
+          git commit -m "refactor(api): remove obsolete remuneration lookup"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
