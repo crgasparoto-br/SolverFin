@@ -23,13 +23,7 @@ function injectActiveFilter(html: string): string {
              <span>Exibir apenas ativos</span>
            </label>`;
   const htmlWithoutStatusFilter = html.replace(
-    `          <label>Status
-             <select data-master-status>
-               <option value="all">Todos</option>
-               <option value="active">Ativos</option>
-               <option value="inactive">Inativos</option>
-             </select>
-           </label>`,
+    /\s*<label>Status\s*<select data-master-status>[\s\S]*?<\/select>\s*<\/label>/,
     "",
   );
 
@@ -77,7 +71,8 @@ function injectAccountRemunerationStyles(html: string): string {
         .account-remuneration-fieldset legend { font-size: .8125rem; font-weight: 800; padding: 0 6px; }
         .account-remuneration-fieldset .remuneration-help { color: var(--muted); font-size: .75rem; grid-column: 1 / -1; line-height: 1.45; margin: 0; }
         .account-remuneration-fieldset select:disabled, .account-remuneration-fieldset input:disabled { cursor: not-allowed; opacity: .65; }
-        @media (max-width: 680px) { .account-remuneration-fieldset { grid-template-columns: 1fr; } .account-remuneration-fieldset .remuneration-help { grid-column: auto; } }
+        .account-remuneration-load-error { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: var(--radius); color: var(--warning); font-size: .8125rem; grid-column: 1 / -1; line-height: 1.45; margin: 0; padding: 10px; }
+        @media (max-width: 680px) { .account-remuneration-fieldset { grid-template-columns: 1fr; } .account-remuneration-fieldset .remuneration-help, .account-remuneration-load-error { grid-column: auto; } }
       </style>`;
 
   return html.replace("</head>", `${styles}</head>`);
@@ -147,7 +142,20 @@ function accountsCardsDirectEnhancementScript(): string {
             const submit = form.querySelector('button[type="submit"]');
             if (submit) form.insertBefore(fieldset, submit);
             else form.appendChild(fieldset);
+            form.dataset.remunerationConfigurationLoaded = "true";
             wireRemunerationAvailability(form);
+          }
+
+          function appendRemunerationLoadError(form, message) {
+            if (form.querySelector("[data-account-remuneration-load-error]")) return;
+            const warning = document.createElement("p");
+            warning.className = "account-remuneration-load-error";
+            warning.setAttribute("data-account-remuneration-load-error", "");
+            warning.setAttribute("role", "alert");
+            warning.textContent = message;
+            const submit = form.querySelector('button[type="submit"]');
+            if (submit) form.insertBefore(warning, submit);
+            else form.appendChild(warning);
           }
 
           function wireRemunerationAvailability(form) {
@@ -223,6 +231,7 @@ function accountsCardsDirectEnhancementScript(): string {
             if (form.dataset.accountRemunerationSubmit === "true") return;
             form.dataset.accountRemunerationSubmit = "true";
             form.addEventListener("submit", async (event) => {
+              if (form.dataset.remunerationConfigurationLoaded !== "true") return;
               event.preventDefault();
               event.stopImmediatePropagation();
               if (!form.reportValidity()) return;
@@ -279,23 +288,41 @@ function accountsCardsDirectEnhancementScript(): string {
               .filter((form) => /^\\/api\\/accounts(?:\\/[^/]+)?$/.test(String(form.dataset.apiPath || "")));
             if (forms.length === 0) return;
 
-            let configurations = [];
-            let categories = [];
+            let configurationResponse;
+            let categoryResponse;
             try {
-              const [configurationResponse, categoryResponse] = await Promise.all([
+              [configurationResponse, categoryResponse] = await Promise.all([
                 fetch("/api/account-remuneration/configurations"),
                 fetch("/api/categories?status=all")
               ]);
-              if (configurationResponse.ok) configurations = (await configurationResponse.json()).configurations || [];
-              if (categoryResponse.ok) {
-                const records = (await categoryResponse.json()).categories || [];
-                categories = records.filter((category) => category.status === "active" && category.kind === "income");
-              }
             } catch (_error) {
-              configurations = [];
-              categories = [];
+              forms.forEach((form) => appendRemunerationLoadError(
+                form,
+                "Não foi possível carregar a remuneração pelo CDI. A conta pode ser salva sem alterar a configuração de remuneração existente."
+              ));
+              return;
             }
 
+            if (!configurationResponse.ok || !categoryResponse.ok) {
+              forms.forEach((form) => appendRemunerationLoadError(
+                form,
+                "Não foi possível carregar a remuneração pelo CDI. A conta pode ser salva sem alterar a configuração de remuneração existente."
+              ));
+              return;
+            }
+
+            const configurationBody = await configurationResponse.json().catch(() => undefined);
+            const categoryBody = await categoryResponse.json().catch(() => undefined);
+            if (!configurationBody || !Array.isArray(configurationBody.configurations) || !categoryBody || !Array.isArray(categoryBody.categories)) {
+              forms.forEach((form) => appendRemunerationLoadError(
+                form,
+                "A configuração de remuneração retornou dados inválidos. A conta pode ser salva sem alterar o CDI."
+              ));
+              return;
+            }
+
+            const configurations = configurationBody.configurations;
+            const categories = categoryBody.categories.filter((category) => category.status === "active" && category.kind === "income");
             const byAccount = new Map(configurations.map((configuration) => [configuration.accountId, configuration]));
             forms.forEach((form) => {
               const accountId = accountIdFromForm(form);
