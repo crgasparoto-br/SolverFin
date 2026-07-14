@@ -1,0 +1,80 @@
+model FinancialIndexRate {
+  id               String   @id @default(uuid()) @db.Uuid
+  kind             String   @db.VarChar(32)
+  referenceOn      DateTime @db.Date
+  dailyRatePercent Decimal  @db.Decimal(18, 12)
+  dailyFactor      Decimal  @db.Decimal(18, 12)
+  source           String   @db.VarChar(120)
+  status           String   @default("CONFIRMED") @db.VarChar(32)
+  importedAt       DateTime @default(now()) @db.Timestamp(3)
+  createdAt        DateTime @default(now()) @db.Timestamp(3)
+  updatedAt        DateTime @default(now()) @db.Timestamp(3)
+
+  @@unique([kind, referenceOn], map: "FinancialIndexRate_kind_referenceOn_key")
+  @@index([kind, referenceOn(sort: Desc)], map: "FinancialIndexRate_kind_referenceOn_idx")
+}
+
+model FinancialIndexOperation {
+  id             String    @id @default(uuid()) @db.Uuid
+  kind           String    @db.VarChar(48)
+  status         String    @db.VarChar(32)
+  startedAt      DateTime  @default(now()) @db.Timestamp(3)
+  completedAt    DateTime? @db.Timestamp(3)
+  importedCount  Int       @default(0)
+  processedCount Int       @default(0)
+  createdCount   Int       @default(0)
+  pendingCount   Int       @default(0)
+  failureCount   Int       @default(0)
+  message        String?   @db.VarChar(500)
+  createdAt      DateTime  @default(now()) @db.Timestamp(3)
+  updatedAt      DateTime  @default(now()) @db.Timestamp(3)
+
+  @@index([kind, startedAt(sort: Desc)], map: "FinancialIndexOperation_kind_startedAt_idx")
+}
+
+model AccountRemunerationConfiguration {
+  id                  String    @id @default(uuid()) @db.Uuid
+  organizationId      String    @db.Uuid
+  financialProfileId  String    @db.Uuid
+  accountId            String    @db.Uuid
+  enabled              Boolean   @default(false)
+  indexKind            String    @default("CDI") @db.VarChar(32)
+  remunerationPercent Decimal?  @db.Decimal(9, 4)
+  startsOn             DateTime? @db.Date
+  categoryId           String?   @db.Uuid
+  createdByUserId      String?   @db.Uuid
+  updatedByUserId      String?   @db.Uuid
+  createdAt            DateTime  @default(now()) @db.Timestamp(3)
+  updatedAt            DateTime  @default(now()) @db.Timestamp(3)
+
+  @@unique([organizationId, financialProfileId, accountId], map: "AccountRemunerationConfiguration_account_key")
+  @@index([organizationId, financialProfileId, enabled], map: "AccountRemunerationConfiguration_scope_enabled_idx")
+}
+
+model AccountRemuneration {
+  id                      String    @id @default(uuid()) @db.Uuid
+  organizationId          String    @db.Uuid
+  financialProfileId      String    @db.Uuid
+  accountId                String    @db.Uuid
+  financialIndexRateId     String    @db.Uuid
+  transactionId            String?   @unique(map: "AccountRemuneration_transactionId_key") @db.Uuid
+  indexKind                String    @default("CDI") @db.VarChar(32)
+  competenceOn             DateTime  @db.Date
+  processedOn              DateTime  @db.Date
+  status                   String    @default("CREATED") @db.VarChar(48)
+  balanceBaseMinor         Int
+  dailyRatePercent         Decimal   @db.Decimal(18, 12)
+  remunerationPercent      Decimal   @db.Decimal(9, 4)
+  appliedDailyRatePercent  Decimal   @db.Decimal(18, 12)
+  originalAmountMinor      Int
+  manuallyAdjusted         Boolean   @default(false)
+  adjustedAt               DateTime? @db.Timestamp(3)
+  adjustedByUserId         String?   @db.Uuid
+  createdAt                DateTime  @default(now()) @db.Timestamp(3)
+  updatedAt                DateTime  @default(now()) @db.Timestamp(3)
+
+  @@unique([organizationId, financialProfileId, accountId, competenceOn, indexKind], map: "AccountRemuneration_competence_key")
+  @@index([organizationId, financialProfileId, accountId, competenceOn(sort: Desc)], map: "AccountRemuneration_scope_account_competence_idx")
+  @@index([manuallyAdjusted, adjustedAt(sort: Desc)], map: "AccountRemuneration_adjusted_idx")
+  @@index([status, competenceOn(sort: Desc)], map: "AccountRemuneration_status_competence_idx")
+}
