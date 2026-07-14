@@ -11,7 +11,7 @@ import {
   saveAccountRemunerationConfiguration,
   type ImportCdiRatesInput,
   type SaveAccountRemunerationConfigurationInput,
-} from "./repositories/account-remuneration-v2.js";
+} from "./repositories/account-remuneration-service.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
