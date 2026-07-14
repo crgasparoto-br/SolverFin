@@ -62,6 +62,102 @@ export function statementPresentationScript(): string {
   return `
     <script>
       (function () {
+        function moneyToMinor(value) {
+          const normalized = String(value).replace(/\\./g, "").replace(",", ".");
+          return Math.round(parseFloat(normalized || "0") * 100);
+        }
+
+        function setupNonRecurringTransactionSave() {
+          const form = document.querySelector("[data-form]");
+          const accountScopeModal = document.querySelector('[data-recurrence-scope-modal][data-target-kind="account"]');
+          if (!form || !accountScopeModal) return;
+
+          const submitButton = form.querySelector('button[type="submit"]');
+          const statusNode = form.querySelector('[aria-live="polite"]');
+          let busy = false;
+
+          function setBusy(nextBusy) {
+            busy = nextBusy;
+            if (submitButton) submitButton.disabled = nextBusy;
+            form.setAttribute("aria-busy", String(nextBusy));
+          }
+
+          function setStatus(message, kind) {
+            if (!statusNode) return;
+            statusNode.textContent = message;
+            statusNode.className = "form-status " + kind + " full";
+          }
+
+          function buildPayload(data) {
+            const plannedOn = String(data.get("plannedOn") || "");
+            const effectiveOn = String(data.get("effectiveOn") || "");
+            const payload = {
+              kind: String(data.get("kind") || ""),
+              status: String(data.get("status") || ""),
+              amountMinor: moneyToMinor(data.get("amountMinor")),
+              occurredOn: effectiveOn || plannedOn,
+              plannedOn,
+              effectiveOn: effectiveOn || null,
+              accountId: String(data.get("accountId") || ""),
+              description: String(data.get("description") || ""),
+              note: String(data.get("note") || "") || null,
+            };
+            const destinationAccountId = String(data.get("destinationAccountId") || "");
+            const categoryId = String(data.get("categoryId") || "");
+            if (destinationAccountId) payload.destinationAccountId = destinationAccountId;
+            if (categoryId) payload.categoryId = categoryId;
+            return payload;
+          }
+
+          document.addEventListener("submit", async (event) => {
+            if (event.target !== form) return;
+
+            const data = new FormData(form);
+            const method = form.dataset.method || "POST";
+            const path = form.dataset.path || form.getAttribute("data-path") || "";
+            const recurrenceId = form.dataset.recurrenceId || String(data.get("recurrenceId") || "");
+            if (method !== "PATCH" || recurrenceId || !path) return;
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            if (busy) return;
+
+            if (!form.checkValidity()) {
+              form.reportValidity();
+              return;
+            }
+
+            setBusy(true);
+            setStatus("Salvando...", "muted");
+
+            try {
+              const response = await fetch(path, {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(buildPayload(data)),
+              });
+              const body = await response.json().catch(() => ({}));
+
+              if (!response.ok) {
+                setStatus(
+                  (body.error && body.error.message) || "Não foi possível concluir a alteração.",
+                  "error",
+                );
+                setBusy(false);
+                return;
+              }
+
+              setStatus("Ação concluída. Atualizando...", "success");
+              window.setTimeout(() => window.location.reload(), 450);
+            } catch (_error) {
+              setStatus("Não foi possível concluir a alteração. Tente novamente.", "error");
+              setBusy(false);
+            }
+          }, true);
+        }
+
+        setupNonRecurringTransactionSave();
+
         const triggers = Array.from(document.querySelectorAll(".statement-status[data-tooltip]"));
         if (triggers.length === 0) return;
 
