@@ -22,6 +22,9 @@ assert.match(accountsEnhancement, /Contas fora de BRL permanecem não elegíveis
 
 assert.match(statementEnhancement, /transaction\.source !== "account_remuneration"/);
 assert.match(statementEnhancement, /data-remuneration-protected/);
-assert.match(statementEnhancement, /Somente valor, categoria, situação e data efetiva/);
+assert.match(
+  statementEnhancement,
+  /altere somente o valor creditado, a categoria, a situação e a data efetiva/,
+);
 assert.match(statementEnhancement, /clone\.remove\(\)/);
 assert.match(statementEnhancement, /Remuneração CDI/);
