@@ -82,7 +82,8 @@ export type TransactionSource =
   | "recurrence"
   | "installment"
   | "import"
-  | "ai_suggestion";
+  | "ai_suggestion"
+  | "account_remuneration";
 
 export type RecurrenceFrequency = "daily" | "weekly" | "monthly" | "yearly";
 export type RecurrenceStatus = "active" | "paused" | "cancelled" | "completed";
@@ -257,4 +258,180 @@ export interface Budget extends Traceable, TenantScoped {
   plannedAmountMinor: number;
   currency: string;
   alertThresholdPercent?: number;
+}
+
+export interface ImportBatch extends Traceable, TenantScoped {
+  sourceKind: ImportSourceKind;
+  status: ImportStatus;
+  originalFileName?: string;
+  sourceHash: string;
+  receivedAt: ISODateTime;
+  completedAt?: ISODateTime;
+}
+
+export interface AiSuggestion extends Traceable, TenantScoped {
+  kind: AiSuggestionKind;
+  status: AiSuggestionStatus;
+  sourceEntityId?: EntityId;
+  targetEntityId?: EntityId;
+  confidence: number;
+  explanation: string;
+  provider?: string;
+  model?: string;
+  reviewedByUserId?: EntityId;
+  reviewedAt?: ISODateTime;
+}
+
+export interface Attachment extends Traceable, TenantScoped {
+  kind: AttachmentKind;
+  status: AttachmentStatus;
+  fileName: string;
+  mimeType: string;
+  storageKey: string;
+  linkedEntityId: EntityId;
+  linkedEntityKind: "transaction" | "invoice" | "import_batch" | "ai_suggestion";
+  redactedAt?: ISODateTime;
+}
+
+export interface AuditLogEntry extends TenantScoped {
+  id: EntityId;
+  occurredAt: ISODateTime;
+  actorKind: AuditActorKind;
+  actorId?: EntityId;
+  action: AuditAction;
+  entityKind: AuditEntityKind;
+  entityId: EntityId;
+  correlationId?: string;
+  reason?: string;
+  redactedChanges?: RedactedAuditChanges;
+}
+
+export type AuditLogEntryDraft = Omit<AuditLogEntry, "id">;
+
+export interface TransactionAuditInput {
+  action: Extract<AuditAction, "create" | "update" | "soft_delete" | "reconcile" | "unreconcile">;
+  actorKind: AuditActorKind;
+  actorId?: EntityId;
+  before?: Transaction;
+  after?: Transaction;
+  occurredAt: ISODateTime;
+  correlationId?: string;
+  reason?: string;
+}
+
+const AUDITED_TRANSACTION_FIELDS = [
+  "kind",
+  "status",
+  "source",
+  "amountMinor",
+  "currency",
+  "occurredOn",
+  "plannedOn",
+  "effectiveOn",
+  "description",
+  "accountId",
+  "destinationAccountId",
+  "categoryId",
+  "cardId",
+  "cardInstrumentId",
+  "invoiceId",
+  "recurrenceId",
+  "installmentId",
+  "importBatchId",
+  "aiSuggestionId",
+  "transferGroupId",
+  "reconciledAt",
+  "voidedAt",
+] as const satisfies readonly (keyof Transaction)[];
+
+export function isTransfer(transaction: Pick<Transaction, "kind">): boolean {
+  return transaction.kind === "transfer";
+}
+
+export function assertTransactionInvariant(transaction: Transaction): void {
+  if (transaction.amountMinor <= 0) {
+    throw new Error("Transaction amount must be positive.");
+  }
+
+  if (transaction.kind === "transfer") {
+    if (!transaction.accountId || !transaction.destinationAccountId) {
+      throw new Error("Transfer transactions require source and destination accounts.");
+    }
+
+    if (transaction.accountId === transaction.destinationAccountId) {
+      throw new Error("Transfer transactions require different source and destination accounts.");
+    }
+
+    return;
+  }
+
+  if (!transaction.accountId && !transaction.cardId) {
+    throw new Error("Income and expense transactions require an account or card.");
+  }
+
+  if (transaction.destinationAccountId) {
+    throw new Error("Only transfer transactions can define a destination account.");
+  }
+}
+
+export function buildRedactedTransactionChanges(
+  before: Transaction | undefined,
+  after: Transaction | undefined,
+): RedactedAuditChanges | undefined {
+  if (!before && !after) {
+    return undefined;
+  }
+
+  const changes: RedactedAuditChanges = {};
+
+  for (const field of AUDITED_TRANSACTION_FIELDS) {
+    const beforeValue = before?.[field];
+    const afterValue = after?.[field];
+
+    if (beforeValue === afterValue) {
+      continue;
+    }
+
+    if (beforeValue === undefined) {
+      changes[field] = "added";
+      continue;
+    }
+
+    if (afterValue === undefined) {
+      changes[field] = "removed";
+      continue;
+    }
+
+    changes[field] = "changed";
+  }
+
+  return Object.keys(changes).length > 0 ? changes : undefined;
+}
+
+export function buildTransactionAuditEntry(input: TransactionAuditInput): AuditLogEntryDraft {
+  const reference = input.after ?? input.before;
+
+  if (!reference) {
+    throw new Error("Transaction audit entries require a before or after transaction.");
+  }
+
+  if (input.before && input.after && input.before.organizationId !== input.after.organizationId) {
+    throw new Error("Transaction audit entries must reference the same tenant.");
+  }
+
+  const redactedChanges = buildRedactedTransactionChanges(input.before, input.after);
+
+  return {
+    organizationId: reference.organizationId,
+    financialProfileId: reference.financialProfileId,
+    occurredAt: input.occurredAt,
+    actorKind: input.actorKind,
+    action: input.action,
+    entityKind: "transaction",
+    entityId: reference.id,
+    ...(input.actorId !== undefined ? { actorId: input.actorId } : {}),
+    ...(input.correlationId !== undefined ? { correlationId: input.correlationId } : {}),
+    ...(input.reason !== undefined ? { reason: input.reason } : {}),
+    ...(redactedChanges !== undefined ? { redactedChanges } : {}),
+  };
 }
