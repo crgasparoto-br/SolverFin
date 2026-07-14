@@ -72,6 +72,9 @@ export function statementPresentationScript(): string {
           const accountScopeModal = document.querySelector('[data-recurrence-scope-modal][data-target-kind="account"]');
           if (!form || !accountScopeModal) return;
 
+          const submitScope = typeof form.closest === "function" ? form.closest("dialog") : null;
+          if (!submitScope) return;
+
           const submitButton = form.querySelector('button[type="submit"]');
           const statusNode = form.querySelector('[aria-live="polite"]');
           let busy = false;
@@ -109,7 +112,7 @@ export function statementPresentationScript(): string {
             return payload;
           }
 
-          document.addEventListener("submit", async (event) => {
+          submitScope.addEventListener("submit", async (event) => {
             if (event.target !== form) return;
 
             const data = new FormData(form);
