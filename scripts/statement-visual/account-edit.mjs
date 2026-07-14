@@ -2,23 +2,14 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-if (!chromePath)
-  throw new Error("CHROME_BIN is required for visual validation.");
+if (!chromePath) throw new Error("CHROME_BIN is required for visual validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let evidence;
@@ -27,11 +18,7 @@ try {
   await setViewport(browser.cdp, 1366, 1000);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
-  assert.equal(
-    login.ok,
-    true,
-    `Demo login failed: ${login.status} ${login.body}`,
-  );
+  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
   const fixtureIds = await evaluate(browser.cdp, fixtureExpression());
   const sourceRoute = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.singleAccountId)}&month=2026-07`;
 
@@ -69,10 +56,7 @@ try {
   assert.equal(modalState.hiddenInputDisabled, true);
   assert.match(modalState.guidance, /Revise a conta usada neste lançamento/);
 
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-473-edit-account-before-save.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-473-edit-account-before-save.png"));
 
   const submitted = await evaluate(
     browser.cdp,
@@ -88,10 +72,7 @@ try {
     })()`,
   );
 
-  assert.equal(
-    submitted.selectedAccountId,
-    fixtureIds.accountEditTargetAccountId,
-  );
+  assert.equal(submitted.selectedAccountId, fixtureIds.accountEditTargetAccountId);
   assert.equal(submitted.submitDisabled, true);
   await sleep(1100);
 
@@ -114,10 +95,7 @@ try {
   );
 
   assert.equal(persistence.remainsInSource, false);
-  assert.equal(
-    persistence.targetTransaction?.accountId,
-    fixtureIds.accountEditTargetAccountId,
-  );
+  assert.equal(persistence.targetTransaction?.accountId, fixtureIds.accountEditTargetAccountId);
 
   const targetRoute = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.accountEditTargetAccountId)}&month=2026-07`;
   await navigate(browser.cdp, `${baseUrl}${targetRoute}`);
@@ -127,10 +105,7 @@ try {
     `Boolean(document.querySelector('[data-edit="${fixtureIds.accountEditTransactionId}"]'))`,
   );
   assert.equal(visibleInTarget, true);
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-473-edit-account-after-save.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-473-edit-account-after-save.png"));
 
   evidence = {
     commit: process.env.GITHUB_SHA ?? "local",
