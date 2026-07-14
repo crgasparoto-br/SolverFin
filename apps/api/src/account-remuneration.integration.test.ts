@@ -8,7 +8,7 @@ import {
   importCdiRates,
   processAccountRemunerations,
   saveAccountRemunerationConfiguration,
-} from "./repositories/account-remuneration.js";
+} from "./repositories/account-remuneration-service.js";
 import { updateTransactionForContext } from "./repositories/transactions.js";
 
 const CONTEXT: TenantContext = {
@@ -90,12 +90,13 @@ async function main(): Promise<void> {
   assert.equal(transaction.originalAmountMinor, 551);
   assert.equal(transaction.manuallyAdjusted, false);
 
-  assert.equal(await countRemunerationTransactions(negativeAccount.id), 0);
+  assert.equal(await countRemunerationTransactions(negativeAccount.id), 1);
+  assert.equal(await countCreatedRemunerationTransactions(negativeAccount.id), 0);
   assert.equal(await countRemunerationTransactions(accountWithoutRate.id), 0);
 
   const secondProcessing = await processAccountRemunerations(PROCESSING_ON);
   assert.equal(secondProcessing.createdCount, 0);
-  assert.equal(await countRemunerationTransactions(positiveAccount.id), 1);
+  assert.equal(await countCreatedRemunerationTransactions(positiveAccount.id), 1);
 
   await updateTransactionForContext(CONTEXT, transaction.transactionId, {
     amountMinor: 777,
@@ -180,6 +181,20 @@ async function countRemunerationTransactions(accountId: string): Promise<number>
       where "organizationId" = $1
         and "financialProfileId" = $2
         and "accountId" = $3`,
+    [CONTEXT.organizationId, CONTEXT.financialProfileId, accountId],
+  );
+
+  return rows[0]?.count ?? 0;
+}
+
+async function countCreatedRemunerationTransactions(accountId: string): Promise<number> {
+  const rows = await query<{ count: number }>(
+    `select count(*)::int as "count"
+       from "AccountRemuneration"
+      where "organizationId" = $1
+        and "financialProfileId" = $2
+        and "accountId" = $3
+        and "transactionId" is not null`,
     [CONTEXT.organizationId, CONTEXT.financialProfileId, accountId],
   );
 
