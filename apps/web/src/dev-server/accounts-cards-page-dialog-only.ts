@@ -36,6 +36,7 @@ export function keepCardInstrumentsInsideEditDialog(html: string): string {
   nextHtml = removeNestedDivByClass(nextHtml, "instrument-list");
   nextHtml = nextHtml.replace(/\s*<p class="instrument-warning"[\s\S]*?<\/p>/g, "");
   nextHtml = removeStandaloneNewInstrumentButtons(nextHtml);
+  nextHtml = removeLegacyStatusFilter(nextHtml);
 
   instrumentLists.forEach((instrumentList) => {
     nextHtml = insertDialogInstrumentList(nextHtml, instrumentList);
@@ -48,6 +49,13 @@ export function keepCardInstrumentsInsideEditDialog(html: string): string {
   nextHtml = installDialogInstrumentListStyles(nextHtml);
 
   return installInlineCreateInstrumentScript(nextHtml);
+}
+
+function removeLegacyStatusFilter(html: string): string {
+  return html.replace(
+    /<label>\s*Status\s*<select data-master-status>[\s\S]*?<\/select>\s*<\/label>/,
+    "",
+  );
 }
 
 function collectCreateInstrumentDialogs(html: string): InstrumentCreateDialog[] {
