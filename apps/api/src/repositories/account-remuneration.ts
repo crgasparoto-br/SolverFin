@@ -673,17 +673,6 @@ async function finishOperation(
   return mapOperationRow(requireRow(rows[0]));
 }
 
-async function findOperation(id: string): Promise<OperationRecord | undefined> {
-  const rows = await query<OperationRow>(
-    `select "id", "kind", "status", "startedAt", "completedAt", "importedCount",
-            "processedCount", "createdCount", "pendingCount", "failureCount", "message"
-       from "FinancialIndexOperation" where "id" = $1`,
-    [id],
-  );
-
-  return rows[0] ? mapOperationRow(rows[0]) : undefined;
-}
-
 async function findLatestOperation(kind: string): Promise<OperationRecord | null> {
   const rows = await query<OperationRow>(
     `select "id", "kind", "status", "startedAt", "completedAt", "importedCount",
