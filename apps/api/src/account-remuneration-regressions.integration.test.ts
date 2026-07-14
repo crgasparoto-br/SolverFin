@@ -35,7 +35,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for remuneration integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for remuneration integration tests.",
+  );
 
   const suffix = Date.now().toString(36);
   const negativeAccount = await createAccountForContext(CONTEXT, {
@@ -106,10 +109,9 @@ async function main(): Promise<void> {
 
   await assert.rejects(
     () =>
-      query(
-        `update "Transaction" set "description" = 'Descrição adulterada' where "id" = $1`,
-        [protectedResult.transactionId],
-      ),
+      query(`update "Transaction" set "description" = 'Descrição adulterada' where "id" = $1`, [
+        protectedResult.transactionId,
+      ]),
     (error: unknown) =>
       error instanceof Error &&
       error.message.includes("Lançamentos de remuneração permitem alterar somente valor"),

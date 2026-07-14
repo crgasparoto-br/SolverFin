@@ -1,9 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import {
-  calculateAccountRemuneration,
-  type TenantContext,
-} from "@solverfin/domain";
+import { calculateAccountRemuneration, type TenantContext } from "@solverfin/domain";
 
 import { query, withTransaction } from "../db.js";
 import {
@@ -16,10 +13,7 @@ import {
   type SaveAccountRemunerationConfigurationInput,
 } from "./account-remuneration.js";
 
-export {
-  listAccountRemunerationConfigurations,
-  saveAccountRemunerationConfiguration,
-};
+export { listAccountRemunerationConfigurations, saveAccountRemunerationConfiguration };
 export type {
   AccountRemunerationConfigurationRecord,
   OperationRecord,
@@ -57,10 +51,7 @@ export interface ProcessAccountRemunerationsResult {
 
 type ExecuteQuery = typeof query;
 
-type RemunerationResultStatus =
-  | "CREATED"
-  | "SKIPPED_NON_POSITIVE_BALANCE"
-  | "SKIPPED_ZERO_AMOUNT";
+type RemunerationResultStatus = "CREATED" | "SKIPPED_NON_POSITIVE_BALANCE" | "SKIPPED_ZERO_AMOUNT";
 
 interface CandidateRow {
   id: string;
