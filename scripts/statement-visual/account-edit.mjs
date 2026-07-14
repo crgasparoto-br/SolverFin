@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
-import { fixtureExpression, loginExpression } from "./fixtures.mjs";
+import { accountEditFixtureExpression, loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -19,8 +19,8 @@ try {
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
-  const fixtureIds = await evaluate(browser.cdp, fixtureExpression());
-  const sourceRoute = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.singleAccountId)}&month=2026-07`;
+  const fixtureIds = await evaluate(browser.cdp, accountEditFixtureExpression());
+  const sourceRoute = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.sourceAccountId)}&month=2026-07`;
 
   await navigate(browser.cdp, `${baseUrl}${sourceRoute}`);
   await sleep(350);
@@ -28,14 +28,14 @@ try {
   const modalState = await evaluate(
     browser.cdp,
     `(() => {
-      const editButton = document.querySelector('[data-edit="${fixtureIds.accountEditTransactionId}"]');
+      const editButton = document.querySelector('[data-edit="${fixtureIds.transactionId}"]');
       if (!editButton) throw new Error("Edit button for the issue #473 fixture was not found");
       editButton.click();
       const dialog = document.querySelector("[data-modal]");
       const field = document.querySelector("[data-edit-account-field]");
       const select = document.querySelector("[data-edit-account-select]");
       const hiddenInput = document.querySelector('input[name="accountId"]');
-      const targetOption = select && Array.from(select.options).find((option) => option.value === "${fixtureIds.accountEditTargetAccountId}");
+      const targetOption = select && Array.from(select.options).find((option) => option.value === "${fixtureIds.targetAccountId}");
       return {
         dialogOpen: Boolean(dialog && dialog.open),
         fieldVisible: Boolean(field && !field.hidden),
@@ -51,7 +51,7 @@ try {
   assert.equal(modalState.dialogOpen, true);
   assert.equal(modalState.fieldVisible, true);
   assert.equal(modalState.selectEnabled, true);
-  assert.equal(modalState.selectedAccountId, fixtureIds.singleAccountId);
+  assert.equal(modalState.selectedAccountId, fixtureIds.sourceAccountId);
   assert.equal(modalState.targetOptionAvailable, true);
   assert.equal(modalState.hiddenInputDisabled, true);
   assert.match(modalState.guidance, /Revise a conta usada neste lançamento/);
@@ -65,14 +65,14 @@ try {
       const select = document.querySelector("[data-edit-account-select]");
       const submitButton = form && form.querySelector('button[type="submit"]');
       if (!form || !select || !submitButton) throw new Error("Account edit form is incomplete");
-      select.value = "${fixtureIds.accountEditTargetAccountId}";
+      select.value = "${fixtureIds.targetAccountId}";
       select.dispatchEvent(new Event("change", { bubbles: true }));
       form.requestSubmit();
       return { selectedAccountId: select.value, submitDisabled: submitButton.disabled };
     })()`,
   );
 
-  assert.equal(submitted.selectedAccountId, fixtureIds.accountEditTargetAccountId);
+  assert.equal(submitted.selectedAccountId, fixtureIds.targetAccountId);
   assert.equal(submitted.submitDisabled, true);
   await sleep(1100);
 
@@ -85,24 +85,24 @@ try {
         if (!response.ok) throw new Error(JSON.stringify(body));
         return body.transactions || [];
       }
-      const source = await list("${fixtureIds.singleAccountId}");
-      const target = await list("${fixtureIds.accountEditTargetAccountId}");
+      const source = await list("${fixtureIds.sourceAccountId}");
+      const target = await list("${fixtureIds.targetAccountId}");
       return {
-        remainsInSource: source.some((item) => item.id === "${fixtureIds.accountEditTransactionId}"),
-        targetTransaction: target.find((item) => item.id === "${fixtureIds.accountEditTransactionId}") || null
+        remainsInSource: source.some((item) => item.id === "${fixtureIds.transactionId}"),
+        targetTransaction: target.find((item) => item.id === "${fixtureIds.transactionId}") || null
       };
     })()`,
   );
 
   assert.equal(persistence.remainsInSource, false);
-  assert.equal(persistence.targetTransaction?.accountId, fixtureIds.accountEditTargetAccountId);
+  assert.equal(persistence.targetTransaction?.accountId, fixtureIds.targetAccountId);
 
-  const targetRoute = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.accountEditTargetAccountId)}&month=2026-07`;
+  const targetRoute = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.targetAccountId)}&month=2026-07`;
   await navigate(browser.cdp, `${baseUrl}${targetRoute}`);
   await sleep(350);
   const visibleInTarget = await evaluate(
     browser.cdp,
-    `Boolean(document.querySelector('[data-edit="${fixtureIds.accountEditTransactionId}"]'))`,
+    `Boolean(document.querySelector('[data-edit="${fixtureIds.transactionId}"]'))`,
   );
   assert.equal(visibleInTarget, true);
   await screenshot(browser.cdp, join(outputDir, "issue-473-edit-account-after-save.png"));
