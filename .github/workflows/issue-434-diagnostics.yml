@@ -6,15 +6,18 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnostics:
+  format:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
-      - name: Checkout repository
+      - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,26 +29,17 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Capture build diagnostics
+      - name: Format account remuneration repository
+        run: npx prettier --write apps/api/src/repositories/account-remuneration.ts
+
+      - name: Commit formatting
         shell: bash
         run: |
-          set +e
-          npm run build:packages > issue-434-build.log 2>&1
-          echo $? > issue-434-build.exit
-          npm run format:check > issue-434-format.log 2>&1
-          echo $? > issue-434-format.exit
-          tar --exclude=.git --exclude=node_modules --exclude=solverfin-source.tar.gz -czf solverfin-source.tar.gz .
-          exit 0
-
-      - name: Upload diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-434-diagnostics
-          path: |
-            issue-434-build.log
-            issue-434-build.exit
-            issue-434-format.log
-            issue-434-format.exit
-            solverfin-source.tar.gz
-          if-no-files-found: error
-          retention-days: 1
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/api/src/repositories/account-remuneration.ts
+          git commit -m "style(api): format account remuneration repository"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
