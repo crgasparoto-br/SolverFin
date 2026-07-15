@@ -1,3 +1,4 @@
+-- Serializa alterações de elegibilidade da conta e da configuração CDI por meio do lock da conta.
 CREATE OR REPLACE FUNCTION "guardAccountRemunerationConfiguration"()
 RETURNS TRIGGER AS $$
 DECLARE
