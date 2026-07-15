@@ -24,8 +24,7 @@ export interface ApiLogEvent {
 
 export type ApiLogger = (event: ApiLogEvent) => void;
 
-const DEFAULT_ERROR_MESSAGE =
-  "Não foi possível concluir a ação. Tente novamente.";
+const DEFAULT_ERROR_MESSAGE = "Não foi possível concluir a ação. Tente novamente.";
 const UNEXPECTED_ERROR_CODE = "API_UNEXPECTED_ERROR";
 const CORRELATION_ID_HEADER = "x-correlation-id";
 
@@ -118,21 +117,16 @@ function normalizeKnownDatabaseError(
   }
 
   const candidate = error as ApiErrorLike;
-  const mappings: Record<
-    string,
-    { code: string; statusCode: number; fallbackMessage: string }
-  > = {
+  const mappings: Record<string, { code: string; statusCode: number; fallbackMessage: string }> = {
     Account_remuneration_must_be_disabled: {
       code: "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
       statusCode: 409,
-      fallbackMessage:
-        "Desative a remuneração pelo CDI antes de alterar a conta.",
+      fallbackMessage: "Desative a remuneração pelo CDI antes de alterar a conta.",
     },
     Account_remuneration_currency_unsupported: {
       code: "ACCOUNT_REMUNERATION_CURRENCY_UNSUPPORTED",
       statusCode: 400,
-      fallbackMessage:
-        "A remuneração pelo CDI está disponível somente para contas em BRL.",
+      fallbackMessage: "A remuneração pelo CDI está disponível somente para contas em BRL.",
     },
     Account_remuneration_account_inactive: {
       code: "ACCOUNT_REMUNERATION_ACCOUNT_INELIGIBLE",
@@ -145,9 +139,7 @@ function normalizeKnownDatabaseError(
       fallbackMessage: "Conta não encontrada para este perfil.",
     },
   };
-  const mapping = candidate.constraint
-    ? mappings[candidate.constraint]
-    : undefined;
+  const mapping = candidate.constraint ? mappings[candidate.constraint] : undefined;
 
   if (!mapping) {
     return undefined;
@@ -180,10 +172,7 @@ function normalizeStatusCode(statusCode: number | undefined): number {
 function sanitizeMessage(message: string): string {
   const normalized = message.trim();
 
-  if (
-    !normalized ||
-    /\b(?:stack|password|token|secret|cartao|conta \d{4,})\b/i.test(normalized)
-  ) {
+  if (!normalized || /\b(?:stack|password|token|secret|cartao|conta \d{4,})\b/i.test(normalized)) {
     return DEFAULT_ERROR_MESSAGE;
   }
 
