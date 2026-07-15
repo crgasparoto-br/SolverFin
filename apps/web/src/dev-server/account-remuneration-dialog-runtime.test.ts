@@ -10,7 +10,7 @@ async function main(): Promise<void> {
     '<!doctype html><html><head></head><body><section data-tab-panel="accounts"></section></body></html>',
   );
   const script = extractEnhancementScript(html);
-  const harness = createHarness();
+  const harness = new FakeHarness();
   const configurationsByAccount = new Map<string, unknown>();
   const context: Record<string, unknown> = {
     document: harness.document,
@@ -34,9 +34,7 @@ async function main(): Promise<void> {
       harness.requests.push({ input: String(input), init });
       return (
         harness.responses.shift() ??
-        fakeResponse(false, {
-          error: { message: "Resposta de teste ausente." },
-        })
+        fakeResponse(false, { error: { message: "Resposta de teste ausente." } })
       );
     },
     console,
@@ -84,9 +82,7 @@ async function main(): Promise<void> {
   dialog.form.elements.startsOn.value = "2026-07-20";
   dialog.form.elements.categoryId.value = "income-1";
   harness.responses.push(
-    fakeResponse(false, {
-      error: { message: "Percentual recusado pela API." },
-    }),
+    fakeResponse(false, { error: { message: "Percentual recusado pela API." } }),
   );
   dialog.form.submit();
   await flushAsyncWork();
@@ -141,11 +137,9 @@ interface FakeResponse {
   json(): Promise<unknown>;
 }
 
-interface FakeControl {
-  value: string;
-  disabled?: boolean;
-  focused?: boolean;
-  focus(): void;
+interface FakeRequest {
+  input: string;
+  init: Record<string, unknown> | undefined;
 }
 
 interface FakeModel {
@@ -155,157 +149,117 @@ interface FakeModel {
   article: { appendChild(dialog: FakeDialog): void };
 }
 
-interface FakeDialog {
-  id: string;
-  className: string;
-  innerHTML: string;
-  open: boolean;
-  attributes: Map<string, string>;
-  form: FakeForm;
-  cancel: FakeCancelButton;
-  setAttribute(name: string, value: string): void;
-  querySelector(selector: string): unknown;
-  addEventListener(type: string, listener: () => void): void;
-  showModal(): void;
-  close(): void;
-  pressEscape(): void;
-}
-
-interface FakeCancelButton {
-  addEventListener(type: string, listener: () => void): void;
-  click(): void;
-}
-
-interface FakeFormElements {
-  enabled: FakeControl;
-  remunerationPercent: FakeControl;
-  startsOn: FakeControl;
-  categoryId: FakeControl;
-}
-
-interface FakeForm {
-  elements: FakeFormElements;
-  status: { className: string; textContent: string };
-  submitButton: { disabled: boolean };
-  reportValidity(): boolean;
-  querySelector(selector: string): unknown;
-  addEventListener(type: string, listener: (event: { preventDefault(): void }) => void): void;
-  submit(): void;
-}
-
-interface FakeRequest {
-  input: string;
-  init: Record<string, unknown> | undefined;
-}
-
-function createHarness(): {
-  document: { createElement(tagName: string): FakeDialog };
-  requests: FakeRequest[];
-  responses: FakeResponse[];
-  renderCount: number;
-} {
-  const harness = {
-    requests: [] as FakeRequest[],
-    responses: [] as FakeResponse[],
-    renderCount: 0,
-    document: {
-      createElement(tagName: string): FakeDialog {
-        assert.equal(tagName, "dialog");
-        return createDialogElement();
-      },
+class FakeHarness {
+  readonly requests: FakeRequest[] = [];
+  readonly responses: FakeResponse[] = [];
+  renderCount = 0;
+  readonly document = {
+    createElement: (tagName: string): FakeDialog => {
+      assert.equal(tagName, "dialog");
+      return new FakeDialog();
     },
   };
-  return harness;
 }
 
-function createDialogElement(): FakeDialog {
-  const closeListeners: Array<() => void> = [];
-  const form = createForm();
-  let cancelListener: (() => void) | undefined;
-  const dialog = {
-    id: "",
-    className: "",
-    innerHTML: "",
-    open: false,
-    attributes: new Map<string, string>(),
-    form,
-    cancel: {
-      addEventListener(type: string, listener: () => void): void {
-        if (type === "click") cancelListener = listener;
-      },
-      click(): void {
-        cancelListener?.();
-      },
-    },
-    setAttribute(name: string, value: string): void {
-      dialog.attributes.set(name, value);
-    },
-    querySelector(selector: string): unknown {
-      if (selector === "[data-account-remuneration-form]") return form;
-      if (selector === "[data-account-remuneration-cancel]") return dialog.cancel;
-      if (selector === "select, input, button") return form.elements.enabled;
-      return null;
-    },
-    addEventListener(type: string, listener: () => void): void {
-      if (type === "close") closeListeners.push(listener);
-    },
-    showModal(): void {
-      dialog.open = true;
-    },
-    close(): void {
-      dialog.open = false;
-      closeListeners.forEach((listener) => listener());
-    },
-    pressEscape(): void {
-      dialog.close();
-    },
-  } satisfies FakeDialog;
+class FakeControl {
+  disabled = false;
+  focused = false;
 
-  return dialog;
+  constructor(public value: string) {}
+
+  focus(): void {
+    this.focused = true;
+  }
 }
 
-function createForm(): FakeForm {
-  let submitListener: ((event: { preventDefault(): void }) => void) | undefined;
-  const control = (value: string): FakeControl => ({
-    value,
-    focus(): void {
-      this.focused = true;
-    },
-  });
-  const form = {
-    elements: {
-      enabled: control("false"),
-      remunerationPercent: control("100"),
-      startsOn: control("2026-07-15"),
-      categoryId: control(""),
-    },
-    status: { className: "", textContent: "" },
-    submitButton: { disabled: false },
-    reportValidity: () => true,
-    querySelector(selector: string): unknown {
-      if (selector === 'button[type="submit"]') return form.submitButton;
-      if (selector === "[data-account-remuneration-status]") return form.status;
-      return null;
-    },
-    addEventListener(type: string, listener: (event: { preventDefault(): void }) => void): void {
-      if (type === "submit") submitListener = listener;
-    },
-    submit(): void {
-      submitListener?.({ preventDefault(): void {} });
-    },
-  } satisfies FakeForm;
+class FakeCancelButton {
+  private clickListener: (() => void) | undefined;
 
-  return form;
+  addEventListener(type: string, listener: () => void): void {
+    if (type === "click") this.clickListener = listener;
+  }
+
+  click(): void {
+    this.clickListener?.();
+  }
+}
+
+class FakeForm {
+  readonly elements = {
+    enabled: new FakeControl("false"),
+    remunerationPercent: new FakeControl("100"),
+    startsOn: new FakeControl("2026-07-15"),
+    categoryId: new FakeControl(""),
+  };
+  readonly status = { className: "", textContent: "" };
+  readonly submitButton = { disabled: false };
+  private submitListener:
+    | ((event: { preventDefault(): void }) => void)
+    | undefined;
+
+  reportValidity(): boolean {
+    return true;
+  }
+
+  querySelector(selector: string): unknown {
+    if (selector === 'button[type="submit"]') return this.submitButton;
+    if (selector === "[data-account-remuneration-status]") return this.status;
+    return null;
+  }
+
+  addEventListener(
+    type: string,
+    listener: (event: { preventDefault(): void }) => void,
+  ): void {
+    if (type === "submit") this.submitListener = listener;
+  }
+
+  submit(): void {
+    this.submitListener?.({ preventDefault(): void {} });
+  }
+}
+
+class FakeDialog {
+  id = "";
+  className = "";
+  innerHTML = "";
+  open = false;
+  readonly attributes = new Map<string, string>();
+  readonly form = new FakeForm();
+  readonly cancel = new FakeCancelButton();
+  private readonly closeListeners: Array<() => void> = [];
+
+  setAttribute(name: string, value: string): void {
+    this.attributes.set(name, value);
+  }
+
+  querySelector(selector: string): unknown {
+    if (selector === "[data-account-remuneration-form]") return this.form;
+    if (selector === "[data-account-remuneration-cancel]") return this.cancel;
+    if (selector === "select, input, button") return this.form.elements.enabled;
+    return null;
+  }
+
+  addEventListener(type: string, listener: () => void): void {
+    if (type === "close") this.closeListeners.push(listener);
+  }
+
+  showModal(): void {
+    this.open = true;
+  }
+
+  close(): void {
+    this.open = false;
+    this.closeListeners.forEach((listener) => listener());
+  }
+
+  pressEscape(): void {
+    this.close();
+  }
 }
 
 function createModel(): FakeModel {
-  const action: FakeControl = {
-    value: "",
-    focused: false,
-    focus(): void {
-      this.focused = true;
-    },
-  };
+  const action = new FakeControl("");
   return {
     accountId: "account-1",
     name: "Conta principal",
