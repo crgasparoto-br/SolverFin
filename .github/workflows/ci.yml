@@ -36,7 +36,6 @@ jobs:
         run: |
           node <<'NODE'
           const fs = require('node:fs');
-
           const enhancementPath = 'apps/web/src/dev-server/accounts-cards-enhancement.ts';
           let enhancement = fs.readFileSync(enhancementPath, 'utf8');
           const oldHeading = `'<div class="dialog-heading"><p class="eyebrow">Remuneração pelo CDI</p><h2 id="' + escapeHtml(titleId) + '">' + escapeHtml(model.name) + '</h2></div>' +`;
@@ -63,25 +62,27 @@ jobs:
             apps/web/src/dev-server/account-remuneration-dialog-runtime.test.ts
 
       - name: Typecheck web
-        run: npm run typecheck --workspace @solverfin/web
-
-      - name: Test web
+        id: typecheck
+        continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
-          npm run test --workspace @solverfin/web 2>&1 | tee /tmp/issue-479-web.log
+          npm run typecheck --workspace @solverfin/web 2>&1 | tee /tmp/issue-479-typecheck.log
 
-      - name: Upload web failure log
-        if: failure()
+      - name: Upload typecheck log
+        if: steps.typecheck.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: issue-479-accessibility-log
-          path: /tmp/issue-479-web.log
-          if-no-files-found: ignore
+          name: issue-479-typecheck-log
+          path: /tmp/issue-479-typecheck.log
           retention-days: 1
 
+      - name: Test web
+        if: steps.typecheck.outcome == 'success'
+        run: npm run test --workspace @solverfin/web
+
       - name: Restore workflows and commit fix
-        if: success()
+        if: steps.typecheck.outcome == 'success' && success()
         run: |
           git checkout origin/main -- .github/workflows/ci.yml
           rm -f .github/workflows/issue-479-accessibility-final.yml
@@ -90,3 +91,7 @@ jobs:
           git add -A
           git commit -m "fix: tornar título do modal CDI diretamente acessível"
           git push origin HEAD:feat/479-account-cdi-modal
+
+      - name: Fail when typecheck failed
+        if: steps.typecheck.outcome == 'failure'
+        run: exit 1
