@@ -272,36 +272,6 @@ function installInlineCreateInstrumentScript(html: string): string {
           }
         });
       });
-
-      const labelAccountRemunerationDialog = (dialog) => {
-        if (!(dialog instanceof HTMLElement)) return;
-        const labelledBy = dialog.getAttribute("aria-labelledby");
-        const title = labelledBy ? document.getElementById(labelledBy) : null;
-        if (!title || title.dataset.accountRemunerationAccessibleTitle === "true") return;
-
-        const accountName = String(title.textContent || "Conta").trim() || "Conta";
-        title.textContent = "Remuneração pelo CDI — " + accountName;
-        title.dataset.accountRemunerationAccessibleTitle = "true";
-      };
-
-      document.querySelectorAll("[data-account-remuneration-dialog]").forEach(
-        labelAccountRemunerationDialog,
-      );
-
-      const accountRemunerationDialogObserver = new MutationObserver((records) => {
-        records.forEach((record) => {
-          record.addedNodes.forEach((node) => {
-            if (!(node instanceof HTMLElement)) return;
-            if (node.matches("[data-account-remuneration-dialog]")) {
-              labelAccountRemunerationDialog(node);
-            }
-            node.querySelectorAll("[data-account-remuneration-dialog]").forEach(
-              labelAccountRemunerationDialog,
-            );
-          });
-        });
-      });
-      accountRemunerationDialogObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 `;
 

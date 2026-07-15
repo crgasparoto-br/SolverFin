@@ -232,7 +232,7 @@ function accountsCardsDirectEnhancementScript(): string {
             dialog.setAttribute("aria-labelledby", titleId);
             dialog.setAttribute("data-account-remuneration-dialog", "");
             dialog.innerHTML =
-              '<div class="dialog-heading"><p class="eyebrow">Remuneração pelo CDI</p><h2 id="' + escapeHtml(titleId) + '">' + escapeHtml(model.name) + '</h2></div>' +
+              '<div class="dialog-heading"><p class="eyebrow" aria-hidden="true">Remuneração pelo CDI</p><h2 id="' + escapeHtml(titleId) + '">Remuneração pelo CDI — ' + escapeHtml(model.name) + '</h2></div>' +
               '<form class="edit-grid" data-account-remuneration-form>' +
                 '<label>Situação<select name="enabled"><option value="false"' + (enabled ? '' : ' selected') + '>Desativada</option><option value="true"' + (enabled ? ' selected' : '') + '>Ativa</option></select></label>' +
                 '<label>Percentual de remuneração sobre o CDI<input name="remunerationPercent" type="number" min="0.0001" max="1000" step="0.0001" value="' + escapeHtml(percentage) + '" required /></label>' +

@@ -68,8 +68,7 @@ async function main(): Promise<void> {
     dialog.attributes.get("aria-labelledby"),
     "account-remuneration-dialog-account-1-title",
   );
-  assert.match(html, /Remuneração pelo CDI —/);
-  assert.match(html, /MutationObserver/);
+  assert.match(dialog.innerHTML, /Remuneração pelo CDI — Conta principal/);
 
   runtime.openDialog(model, dialog);
   assert.equal(dialog.open, true);
