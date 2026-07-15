@@ -72,3 +72,5 @@ jobs:
           git add -A
           git commit -m "fix: tornar título do modal CDI diretamente acessível"
           git push origin HEAD:feat/479-account-cdi-modal
+
+# Execução temporária; o próprio job remove este arquivo.
