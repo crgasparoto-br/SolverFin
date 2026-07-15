@@ -1,4 +1,4 @@
-name: Issue 479 web diagnostic
+name: Issue 479 web correction
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  diagnose:
+  correct:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -25,20 +25,81 @@ jobs:
 
       - run: npm ci
 
-      - name: Run web tests and capture failure
+      - name: Apply modal accessibility correction
         shell: bash
         run: |
-          set +e
-          npm run test --workspace @solverfin/web > /tmp/issue-479-web-test.log 2>&1
-          status=$?
-          mkdir -p diagnostics
-          tail -n 240 /tmp/issue-479-web-test.log > diagnostics/issue-479-web-test.log
-          echo "exit_status=$status" >> diagnostics/issue-479-web-test.log
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          function replaceRequired(path, before, after) {
+            const source = fs.readFileSync(path, 'utf8');
+            if (!source.includes(before)) throw new Error(`Expected block not found in ${path}`);
+            fs.writeFileSync(path, source.replace(before, after));
+          }
+
+          replaceRequired(
+            'apps/web/src/dev-server/accounts-cards-enhancement.ts',
+            `'<div class="dialog-heading"><p class="eyebrow">Remuneração pelo CDI</p><h2 id="' + escapeHtml(titleId) + '">' + escapeHtml(model.name) + '</h2></div>' +`,
+            `'<div class="dialog-heading"><p class="eyebrow" aria-hidden="true">Remuneração pelo CDI</p><h2 id="' + escapeHtml(titleId) + '">Remuneração pelo CDI — ' + escapeHtml(model.name) + '</h2></div>' +`,
+          );
+
+          replaceRequired(
+            'apps/web/src/dev-server/accounts-cards-page-dialog-only.ts',
+            `
+              const labelAccountRemunerationDialog = (dialog) => {
+                if (!(dialog instanceof HTMLElement)) return;
+                const labelledBy = dialog.getAttribute("aria-labelledby");
+                const title = labelledBy ? document.getElementById(labelledBy) : null;
+                if (!title || title.dataset.accountRemunerationAccessibleTitle === "true") return;
+
+                const accountName = String(title.textContent || "Conta").trim() || "Conta";
+                title.textContent = "Remuneração pelo CDI — " + accountName;
+                title.dataset.accountRemunerationAccessibleTitle = "true";
+              };
+
+              document.querySelectorAll("[data-account-remuneration-dialog]").forEach(
+                labelAccountRemunerationDialog,
+              );
+
+              const accountRemunerationDialogObserver = new MutationObserver((records) => {
+                records.forEach((record) => {
+                  record.addedNodes.forEach((node) => {
+                    if (!(node instanceof HTMLElement)) return;
+                    if (node.matches("[data-account-remuneration-dialog]")) {
+                      labelAccountRemunerationDialog(node);
+                    }
+                    node.querySelectorAll("[data-account-remuneration-dialog]").forEach(
+                      labelAccountRemunerationDialog,
+                    );
+                  });
+                });
+              });
+              accountRemunerationDialogObserver.observe(document.body, { childList: true, subtree: true });`,
+            '',
+          );
+
+          replaceRequired(
+            'apps/web/src/dev-server/account-remuneration-dialog-runtime.test.ts',
+            `  assert.match(html, /MutationObserver/);\n`,
+            '',
+          );
+          NODE
+
+      - name: Format and validate web
+        run: |
+          npx prettier --write \
+            apps/web/src/dev-server/accounts-cards-enhancement.ts \
+            apps/web/src/dev-server/accounts-cards-page-dialog-only.ts \
+            apps/web/src/dev-server/account-remuneration-dialog-runtime.test.ts
+          npm run typecheck --workspace @solverfin/web
+          npm run test --workspace @solverfin/web
+
+      - name: Commit correction and remove temporary diagnostics
+        run: |
+          rm -f diagnostics/issue-479-web-test.log
+          rm .github/workflows/issue-479-web-diagnostic.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add diagnostics/issue-479-web-test.log
-          git commit -m "chore: registrar diagnóstico temporário da issue 479"
+          git add -A
+          git commit -m "fix: concluir interação acessível do modal CDI"
           git push origin HEAD:feat/479-account-cdi-modal
-          exit $status
-
-# Arquivo temporário: remover após a correção da falha.
