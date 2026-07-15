@@ -1,0 +1,38 @@
+name: Issue 479 final format
+
+on:
+  push:
+    branches:
+      - feat/479-account-cdi-modal
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/479-account-cdi-modal
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Format runtime test
+        run: npx prettier --write apps/web/src/dev-server/account-remuneration-dialog-runtime.test.ts
+
+      - name: Commit formatted test and remove workflow
+        run: |
+          rm .github/workflows/issue-479-final-format.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "style: formatar teste final da issue 479"
+          git push origin HEAD:feat/479-account-cdi-modal
