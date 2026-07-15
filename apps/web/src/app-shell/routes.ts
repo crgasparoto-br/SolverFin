@@ -25,6 +25,7 @@ export interface ShellRoute {
   requiresAuthentication: boolean;
   requiresFinancialProfile: boolean;
   requiresMaster?: boolean;
+  showInNavigation?: boolean;
   status: ShellRouteStatus;
 }
 
@@ -82,6 +83,7 @@ export const solverFinShellRoutes = [
     navigationGroup: "manage",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
+    showInNavigation: false,
     status: "available",
   },
   {
@@ -177,7 +179,10 @@ export function listShellRoutesByGroup(
   options: ListPrivateShellRoutesOptions = {},
 ): ShellRoute[] {
   return solverFinShellRoutes.filter(
-    (route) => route.navigationGroup === group && shouldIncludeRoute(route, options),
+    (route) =>
+      route.navigationGroup === group &&
+      route.showInNavigation !== false &&
+      shouldIncludeRoute(route, options),
   );
 }
 
@@ -185,6 +190,12 @@ export function listPrivateShellRoutes(options: ListPrivateShellRoutesOptions = 
   return solverFinShellRoutes.filter(
     (route) => route.requiresAuthentication && shouldIncludeRoute(route, options),
   );
+}
+
+export function listNavigablePrivateShellRoutes(
+  options: ListPrivateShellRoutesOptions = {},
+): ShellRoute[] {
+  return listPrivateShellRoutes(options).filter((route) => route.showInNavigation !== false);
 }
 
 export function listImplementedPrivateShellRoutes(
