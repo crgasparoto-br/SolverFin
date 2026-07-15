@@ -24,8 +24,7 @@ async function main(): Promise<void> {
       const parsed = body as { error?: { message?: string } };
       return {
         body,
-        message:
-          parsed.error?.message ?? "Não foi possível concluir a operação.",
+        message: parsed.error?.message ?? "Não foi possível concluir a operação.",
       };
     },
     renderAccount: () => {
@@ -63,10 +62,7 @@ async function main(): Promise<void> {
   );
 
   const runtime = context.runtime as {
-    createDialog: (
-      model: FakeModel,
-      configuration?: Record<string, unknown>,
-    ) => FakeDialog;
+    createDialog: (model: FakeModel, configuration?: Record<string, unknown>) => FakeDialog;
     openDialog: (model: FakeModel, dialog: FakeDialog) => void;
   };
   const model = createModel();
@@ -186,10 +182,7 @@ interface FakeForm {
   submitButton: { disabled: boolean };
   reportValidity(): boolean;
   querySelector(selector: string): unknown;
-  addEventListener(
-    type: string,
-    listener: (event: { preventDefault(): void }) => void,
-  ): void;
+  addEventListener(type: string, listener: (event: { preventDefault(): void }) => void): void;
   submit(): void;
 }
 
@@ -237,8 +230,7 @@ function createDialogElement(): FakeDialog {
     },
     querySelector(selector: string): unknown {
       if (selector === "[data-account-remuneration-form]") return form;
-      if (selector === "[data-account-remuneration-cancel]")
-        return dialog.cancel;
+      if (selector === "[data-account-remuneration-cancel]") return dialog.cancel;
       if (selector === "select, input, button") return form.elements.enabled;
       return null;
     },
@@ -283,10 +275,7 @@ function createForm(): FakeForm {
       if (selector === "[data-account-remuneration-status]") return form.status;
       return null;
     },
-    addEventListener(
-      type: string,
-      listener: (event: { preventDefault(): void }) => void,
-    ): void {
+    addEventListener(type: string, listener: (event: { preventDefault(): void }) => void): void {
       if (type === "submit") submitListener = listener;
     },
     submit(): void {
@@ -318,25 +307,15 @@ function fakeResponse(ok: boolean, body: unknown): FakeResponse {
 }
 
 function extractEnhancementScript(html: string): string {
-  const match =
-    /<script data-accounts-cards-direct-enhancement>([\s\S]*?)<\/script>/.exec(
-      html,
-    );
+  const match = /<script data-accounts-cards-direct-enhancement>([\s\S]*?)<\/script>/.exec(html);
   assert.ok(match?.[1], "script de remuneração não encontrado");
   return match[1];
 }
 
-function extractSegment(
-  source: string,
-  startMarker: string,
-  endMarker: string,
-): string {
+function extractSegment(source: string, startMarker: string, endMarker: string): string {
   const start = source.indexOf(startMarker);
   const end = source.indexOf(endMarker, start + startMarker.length);
-  assert.ok(
-    start >= 0 && end > start,
-    `segmento ${startMarker} não encontrado`,
-  );
+  assert.ok(start >= 0 && end > start, `segmento ${startMarker} não encontrado`);
   return source.slice(start, end);
 }
 
