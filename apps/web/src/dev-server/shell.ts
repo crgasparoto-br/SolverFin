@@ -233,7 +233,7 @@ function currentUserScript(): string {
 
           if (toggle) {
             const controls = new Set(
-              (toggle.getAttribute("aria-controls") || "").split(/\s+/).filter(Boolean),
+              (toggle.getAttribute("aria-controls") || "").trim().split(" ").filter(Boolean),
             );
             controls.add(link.id);
             toggle.setAttribute("aria-controls", Array.from(controls).join(" "));
