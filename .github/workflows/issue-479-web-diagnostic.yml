@@ -1,0 +1,42 @@
+name: Issue 479 web diagnostic
+
+on:
+  push:
+    branches:
+      - feat/479-account-cdi-modal
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/479-account-cdi-modal
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run web tests and capture failure
+        shell: bash
+        run: |
+          set +e
+          npm run test --workspace @solverfin/web > /tmp/issue-479-web-test.log 2>&1
+          status=$?
+          mkdir -p diagnostics
+          tail -n 240 /tmp/issue-479-web-test.log > diagnostics/issue-479-web-test.log
+          echo "exit_status=$status" >> diagnostics/issue-479-web-test.log
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add diagnostics/issue-479-web-test.log
+          git commit -m "chore: registrar diagnóstico temporário da issue 479"
+          git push origin HEAD:feat/479-account-cdi-modal
+          exit $status
