@@ -1,148 +1,90 @@
 import assert from "node:assert/strict";
-import vm from "node:vm";
+import { describe, it } from "node:test";
 
 import { enhanceAccountsCardsTabs } from "./accounts-cards-enhancement.js";
 
-void main();
+const enhancedHtml = enhanceAccountsCardsTabs(`<!doctype html><html><head></head><body>
+  <section data-tab-panel="accounts">
+    <div data-master-list>
+      <article data-master-item data-status="active">
+        <div class="item-main"><div class="item-title-row"><strong>Conta principal</strong></div></div>
+        <div class="item-actions"><button data-open-dialog="edit-account-dialog-account-1">Editar</button></div>
+        <form class="edit-grid" data-api-path="/api/accounts/account-1" data-api-method="PATCH">
+          <select name="currency"><option value="BRL" selected>BRL</option></select>
+          <input name="openingBalanceMinor" value="10000" />
+          <button type="submit">Salvar conta</button>
+        </form>
+      </article>
+    </div>
+  </section>
+</body></html>`);
 
-async function main(): Promise<void> {
-  const html = enhanceAccountsCardsTabs(`<!doctype html><html><head></head><body>
-    <section data-tab-panel="accounts">
-      <form class="edit-grid" data-api-path="/api/accounts/account-1" data-api-method="PUT">
-        <button type="submit">Salvar</button>
-      </form>
-    </section>
-  </body></html>`);
-  const script = extractEnhancementScript(html);
-  const inserted: FakeElement[] = [];
-  const submitListeners: unknown[] = [];
-  const submit = createFakeElement("button");
-  const form = {
-    dataset: { apiPath: "/api/accounts/account-1", apiMethod: "PUT" } as Record<string, string>,
-    elements: {},
-    querySelector(selector: string): FakeElement | null {
-      if (selector === 'button[type="submit"]') return submit;
-      return inserted.find((item) => item.matches(selector)) ?? null;
-    },
-    insertBefore(element: FakeElement): void {
-      inserted.push(element);
-    },
-    appendChild(element: FakeElement): void {
-      inserted.push(element);
-    },
-    addEventListener(type: string, listener: unknown): void {
-      if (type === "submit") submitListeners.push(listener);
-    },
-  };
+const script = extractEnhancementScript(enhancedHtml);
 
-  const document = {
-    readyState: "complete",
-    querySelector(): null {
-      return null;
-    },
-    querySelectorAll(selector: string): unknown[] {
-      return selector.includes("form.edit-grid") ? [form] : [];
-    },
-    createElement(tagName: string): FakeElement {
-      return createFakeElement(tagName);
-    },
-    addEventListener(): void {},
-  };
+describe("account remuneration modal integration", () => {
+  it("keeps CDI configuration separate from the account form", () => {
+    assert.match(enhancedHtml, /data-account-remuneration-modal-styles/);
+    assert.match(script, /data-account-remuneration-dialog/);
+    assert.match(script, /data-account-remuneration-form/);
+    assert.match(script, /Ativar CDI/);
+    assert.match(script, /Configurar CDI/);
+    assert.match(script, /CDI ativo/);
+    assert.match(script, /Percentual de remuneração sobre o CDI/);
+    assert.match(script, /O cálculo usa o saldo final do dia anterior\./);
+    assert.doesNotMatch(script, /wireCombinedAccountSubmit/);
+    assert.doesNotMatch(script, /data-account-remuneration-fields/);
+    assert.doesNotMatch(script, /Salvando conta e remuneração/);
+  });
 
-  const fetchCalls: string[] = [];
-  const context = {
-    document,
-    Event: class Event {
-      constructor(
-        readonly type: string,
-        readonly options?: Record<string, unknown>,
-      ) {}
-    },
-    FormData: class FormData {},
-    fetch: async (input: unknown) => {
-      const url = String(input);
-      fetchCalls.push(url);
-      if (url.includes("account-remuneration")) {
-        return fakeResponse(false, { error: { message: "temporariamente indisponível" } });
-      }
-      return fakeResponse(true, { categories: [] });
-    },
-    window: {
-      localStorage: { getItem: () => null, setItem: () => undefined },
-      location: { reload: () => undefined },
-      setTimeout: (callback: () => void) => callback(),
-    },
-    console,
-  };
+  it("submits only the remuneration contract and keeps persisted values on disable", () => {
+    const payloadFunction = extractFunction(script, "readRemunerationPayload");
 
-  vm.runInNewContext(script, context);
-  await new Promise((resolve) => setImmediate(resolve));
-  await new Promise((resolve) => setImmediate(resolve));
+    assert.match(payloadFunction, /enabled:/);
+    assert.match(payloadFunction, /remunerationPercent:/);
+    assert.match(payloadFunction, /startsOn/);
+    assert.match(payloadFunction, /categoryId/);
+    assert.doesNotMatch(payloadFunction, /openingBalanceMinor/);
+    assert.doesNotMatch(payloadFunction, /institutionKey/);
+    assert.doesNotMatch(payloadFunction, /currency:/);
+    assert.match(script, /method: "PUT"/);
+    assert.match(script, /\/api\/account-remuneration\/configurations/);
+    assert.match(script, /configuration && configuration\.remunerationPercent !== undefined \? configuration\.remunerationPercent : 100/);
+    assert.match(script, /configuration && configuration\.startsOn \? configuration\.startsOn : today\(\)/);
+  });
 
-  assert.equal(fetchCalls.length, 2);
-  assert.equal(
-    submitListeners.length,
-    0,
-    "a falha de carga não deve interceptar o submit da conta",
-  );
-  assert.equal(form.dataset.remunerationConfigurationLoaded, undefined);
-  assert.equal(
-    inserted.some((item) => item.attributes.has("data-account-remuneration-fields")),
-    false,
-  );
-  const warning = inserted.find((item) =>
-    item.attributes.has("data-account-remuneration-load-error"),
-  );
-  assert.ok(warning);
-  assert.match(warning.textContent, /sem alterar a configuração de remuneração existente/);
-}
+  it("degrades only CDI actions when configuration loading fails", () => {
+    assert.match(script, /Contas e cartões continuam disponíveis/);
+    assert.match(script, /data-account-remuneration-load-error/);
+    assert.match(script, /Tentar novamente/);
+    assert.match(script, /data-account-remuneration-retry/);
+    assert.match(script, /Disponível somente para contas em BRL/);
+    assert.match(script, /Contas arquivadas não podem configurar remuneração pelo CDI/);
+  });
 
-interface FakeElement {
-  tagName: string;
-  className: string;
-  textContent: string;
-  innerHTML: string;
-  attributes: Map<string, string>;
-  dataset: Record<string, string>;
-  setAttribute(name: string, value: string): void;
-  removeAttribute(name: string): void;
-  matches(selector: string): boolean;
-}
+  it("keeps the modal open and preserves entered values after API errors", () => {
+    const failureStart = script.indexOf("if (!response.ok)");
+    const failureReturn = script.indexOf("return;", failureStart);
+    const closeAfterFailure = script.indexOf("dialog.close();", failureStart);
 
-function createFakeElement(tagName: string): FakeElement {
-  const attributes = new Map<string, string>();
-  return {
-    tagName,
-    className: "",
-    textContent: "",
-    innerHTML: "",
-    attributes,
-    dataset: {},
-    setAttribute(name: string, value: string): void {
-      attributes.set(name, value);
-    },
-    removeAttribute(name: string): void {
-      attributes.delete(name);
-    },
-    matches(selector: string): boolean {
-      const match = /^\[([^\]]+)\]$/.exec(selector);
-      return match?.[1] ? attributes.has(match[1]) : false;
-    },
-  };
-}
-
-function fakeResponse(
-  ok: boolean,
-  body: unknown,
-): {
-  ok: boolean;
-  json: () => Promise<unknown>;
-} {
-  return { ok, json: async () => body };
-}
+    assert.ok(failureStart >= 0);
+    assert.ok(failureReturn > failureStart);
+    assert.ok(closeAfterFailure > failureReturn);
+    assert.match(script, /status\.textContent = result\.message/);
+    assert.match(script, /aria-live="polite"/);
+    assert.match(script, /dialog\.addEventListener\("close", \(\) => model\.action\.focus\(\)\)/);
+  });
+});
 
 function extractEnhancementScript(html: string): string {
   const match = /<script data-accounts-cards-direct-enhancement>([\s\S]*?)<\/script>/.exec(html);
   assert.ok(match?.[1], "script de remuneração não encontrado");
   return match[1];
+}
+
+function extractFunction(source: string, name: string): string {
+  const start = source.indexOf(`function ${name}`);
+  assert.ok(start >= 0, `função ${name} não encontrada`);
+  const end = source.indexOf("\n          }", start);
+  assert.ok(end > start, `fim da função ${name} não encontrado`);
+  return source.slice(start, end + 12);
 }
