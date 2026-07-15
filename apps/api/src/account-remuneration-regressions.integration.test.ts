@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import type { TenantContext } from "@solverfin/domain";
 
+import { resetAccountRemunerationTestData } from "./account-remuneration-test-support.js";
 import { closePool, query, withTransaction } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import {
@@ -39,6 +40,7 @@ async function main(): Promise<void> {
     process.env.DATABASE_URL,
     "DATABASE_URL is required for remuneration integration tests.",
   );
+  await resetAccountRemunerationTestData();
 
   const suffix = Date.now().toString(36);
   const negativeAccount = await createAccountForContext(CONTEXT, {
@@ -144,6 +146,27 @@ async function main(): Promise<void> {
   assert.equal(new URL(requestedUrl).searchParams.get("dataInicial"), "05/01/2037");
   assert.equal(incrementalResult.importedCount, 1);
 
+  let gapRequestedUrl = "";
+  const gapResult = await importCdiRates(
+    { startsOn: "2037-01-08", endsOn: "2037-01-08" },
+    async (input) => {
+      gapRequestedUrl = String(input);
+      return new Response(
+        JSON.stringify([
+          { data: "06/01/2037", valor: "0,055131" },
+          { data: "08/01/2037", valor: "0,055131" },
+        ]),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    },
+  );
+  assert.equal(
+    new URL(gapRequestedUrl).searchParams.get("dataInicial"),
+    "06/01/2037",
+    "a later manual startsOn must not skip dates after the latest stored rate",
+  );
+  assert.equal(gapResult.importedCount, 2);
+
   let noOpFetcherCalled = false;
   const noOpResult = await importCdiRates({ endsOn: "2037-01-05" }, async () => {
     noOpFetcherCalled = true;
@@ -174,6 +197,24 @@ async function main(): Promise<void> {
     status.pendingConfigurations,
     status.pendingCompetences + status.configurationsWithoutRates,
   );
+
+  const futureAccount = await createAccountForContext(CONTEXT, {
+    name: `Conta remunerada futura ${suffix}`,
+    kind: "checking",
+    openingBalanceMinor: 1_000_000,
+  });
+  const beforeFutureConfiguration = await getFinancialIndexStatus();
+  await saveAccountRemunerationConfiguration(CONTEXT, futureAccount.id, {
+    enabled: true,
+    remunerationPercent: 100,
+    startsOn: "2099-01-01",
+  });
+  const afterFutureConfiguration = await getFinancialIndexStatus();
+  assert.equal(
+    afterFutureConfiguration.configurationsWithoutRates,
+    beforeFutureConfiguration.configurationsWithoutRates,
+  );
+  await saveAccountRemunerationConfiguration(CONTEXT, futureAccount.id, { enabled: false });
 
   await Promise.all(
     [negativeAccount, tinyAccount, protectedAccount].map((account) =>

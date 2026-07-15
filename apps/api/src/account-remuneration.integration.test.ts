@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import type { TenantContext } from "@solverfin/domain";
 
+import { resetAccountRemunerationTestData } from "./account-remuneration-test-support.js";
 import { closePool, query, withTransaction } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import {
@@ -9,7 +10,11 @@ import {
   processAccountRemunerations,
   saveAccountRemunerationConfiguration,
 } from "./repositories/account-remuneration-service.js";
-import { updateTransactionForContext } from "./repositories/transactions.js";
+import {
+  getTransactionForContext,
+  listTransactionsForContext,
+  updateTransactionForContext,
+} from "./repositories/transactions.js";
 
 const CONTEXT: TenantContext = {
   organizationId: "22222222-2222-4222-8222-222222222222",
@@ -32,6 +37,7 @@ void main()
 
 async function main(): Promise<void> {
   assertIntegrationDatabaseConfigured();
+  await resetAccountRemunerationTestData();
 
   const suffix = Date.now().toString(36);
   const positiveAccount = await createAccountForContext(CONTEXT, {
@@ -108,6 +114,21 @@ async function main(): Promise<void> {
   assert.equal(adjusted.manuallyAdjusted, true);
   assert.ok(adjusted.adjustedAt);
   assert.equal(adjusted.adjustedByUserId, CONTEXT.userId);
+
+  const transactionDetail = await getTransactionForContext(CONTEXT, transaction.transactionId);
+  assert.equal(transactionDetail.accountRemuneration?.competenceOn, COMPETENCE_ON);
+  assert.equal(transactionDetail.accountRemuneration?.originalAmountMinor, 551);
+  assert.equal(transactionDetail.accountRemuneration?.manuallyAdjusted, true);
+
+  const listedTransactions = await listTransactionsForContext(CONTEXT, {
+    accountId: positiveAccount.id,
+    status: "all",
+  });
+  const listedRemuneration = listedTransactions.find(
+    (candidate) => candidate.id === transaction.transactionId,
+  );
+  assert.equal(listedRemuneration?.accountRemuneration?.balanceBaseMinor, 1_000_000);
+  assert.equal(listedRemuneration?.accountRemuneration?.dailyRatePercent, 0.055131);
 
   await processAccountRemunerations(PROCESSING_ON);
   const preserved = await readRemunerationTransaction(positiveAccount.id);
