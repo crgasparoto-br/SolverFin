@@ -66,6 +66,7 @@ Regras:
 - a data inicial e o percentual são obrigatórios quando `enabled=true`;
 - a categoria, quando informada, deve ser uma categoria ativa de receita do mesmo tenant;
 - alteração de percentual ou data inicial afeta apenas competências ainda não processadas;
+- os campos enviados são persistidos mesmo com `enabled=false`; as interfaces reenviam os valores carregados ao desativar, então percentual, data inicial e categoria ficam preservados para reativação;
 - contas existentes permanecem desativadas até configuração explícita.
 
 ## Administração global
@@ -81,8 +82,12 @@ Retorna:
 - último processamento;
 - quantidade de configurações ativas;
 - quantidade de competências com taxa disponível ainda não processadas;
-- quantidade de configurações sem qualquer taxa disponível;
+- quantidade de configurações já iniciadas sem qualquer taxa disponível;
 - `pendingConfigurations`, mantido por compatibilidade, como soma das duas pendências anteriores.
+
+Configurações cuja data inicial ainda está no futuro não são contabilizadas como pendência.
+Na interface, competências pendentes e contas sem taxa são apresentadas separadamente para não
+misturar unidades operacionais diferentes.
 
 ### `POST /api/admin/financial-indexes/cdi/import`
 
@@ -152,7 +157,29 @@ O rendimento é um lançamento previsto conciliável pelo fluxo do extrato:
 - reprocessamentos não sobrescrevem o lançamento nem o ajuste manual;
 - a ação de clonar é removida para lançamentos de remuneração no extrato.
 
-A descrição do lançamento apresenta percentual do CDI, competência, saldo-base, taxa diária e valor original para consulta direta no extrato.
+As respostas de `GET /api/transactions` e `GET /api/transactions/:transactionId` incluem
+`accountRemuneration` somente nos lançamentos dessa origem:
+
+```json
+{
+  "accountRemuneration": {
+    "indexKind": "cdi",
+    "competenceOn": "2026-07-14",
+    "processedOn": "2026-07-15",
+    "balanceBaseMinor": 1000000,
+    "dailyRatePercent": 0.055131,
+    "remunerationPercent": 100,
+    "appliedDailyRatePercent": 0.055131,
+    "originalAmountMinor": 551,
+    "manuallyAdjusted": true,
+    "adjustedAt": "2026-07-15T12:00:00.000Z"
+  }
+}
+```
+
+O extrato usa esse contrato para apresentar competência, saldo-base, taxa diária, percentual,
+valor original e o indicador `Ajustado manualmente`. A descrição textual continua preservada por
+compatibilidade, mas não é mais a única fonte visual da memória do cálculo.
 
 ## Prisma
 

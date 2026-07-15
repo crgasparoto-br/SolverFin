@@ -201,12 +201,12 @@ function accountsCardsDirectEnhancementScript(): string {
           function readRemunerationPayload(form) {
             const enabled = form.elements.remunerationEnabled && form.elements.remunerationEnabled.value === "true";
             const payload = { enabled };
-            if (enabled) {
-              payload.remunerationPercent = Number(form.elements.remunerationPercent.value);
-              payload.startsOn = String(form.elements.remunerationStartsOn.value || "");
-              const categoryId = String(form.elements.remunerationCategoryId && form.elements.remunerationCategoryId.value || "");
-              if (categoryId) payload.categoryId = categoryId;
-            }
+            const percentage = Number(form.elements.remunerationPercent && form.elements.remunerationPercent.value);
+            if (Number.isFinite(percentage) && percentage > 0) payload.remunerationPercent = percentage;
+            const startsOn = String(form.elements.remunerationStartsOn && form.elements.remunerationStartsOn.value || "");
+            if (startsOn) payload.startsOn = startsOn;
+            const categoryId = String(form.elements.remunerationCategoryId && form.elements.remunerationCategoryId.value || "");
+            if (categoryId) payload.categoryId = categoryId;
             return payload;
           }
 
