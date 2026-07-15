@@ -58,6 +58,36 @@ interface TransactionRow {
   updatedByUserId: string | null;
 }
 
+interface AccountRemunerationMetadataRow {
+  transactionId: string;
+  competenceOn: Date;
+  processedOn: Date;
+  balanceBaseMinor: number;
+  dailyRatePercent: string;
+  remunerationPercent: string;
+  appliedDailyRatePercent: string;
+  originalAmountMinor: number;
+  manuallyAdjusted: boolean;
+  adjustedAt: Date | null;
+}
+
+export interface AccountRemunerationTransactionMetadata {
+  indexKind: "cdi";
+  competenceOn: string;
+  processedOn: string;
+  balanceBaseMinor: number;
+  dailyRatePercent: number;
+  remunerationPercent: number;
+  appliedDailyRatePercent: number;
+  originalAmountMinor: number;
+  manuallyAdjusted: boolean;
+  adjustedAt?: string;
+}
+
+export type TransactionWithAccountRemuneration = Transaction & {
+  accountRemuneration?: AccountRemunerationTransactionMetadata;
+};
+
 interface AccountRow {
   id: string;
   organizationId: string;
@@ -115,7 +145,7 @@ const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId
 export async function listTransactionsForContext(
   context: TenantContext,
   filters: ListTransactionsFilters = {},
-): Promise<Transaction[]> {
+): Promise<TransactionWithAccountRemuneration[]> {
   const rows = await query<TransactionRow>(
     `select ${SELECT_COLUMNS} from "Transaction"
      where "organizationId" = $1 and "financialProfileId" = $2
@@ -123,16 +153,21 @@ export async function listTransactionsForContext(
     [context.organizationId, context.financialProfileId],
   );
 
-  return listTransactionsDomain(context, rows.map(mapTransactionRow), filters);
+  const transactions = listTransactionsDomain(context, rows.map(mapTransactionRow), filters);
+  return attachAccountRemunerationMetadata(context, transactions);
 }
 
 export async function getTransactionForContext(
   context: TenantContext,
   transactionId: EntityId,
-): Promise<Transaction> {
+): Promise<TransactionWithAccountRemuneration> {
   const transaction = await findTransactionRow(context, transactionId);
+  const scopedTransaction = getTransactionDomain(context, transaction);
+  const [enrichedTransaction] = await attachAccountRemunerationMetadata(context, [
+    scopedTransaction,
+  ]);
 
-  return getTransactionDomain(context, transaction);
+  return enrichedTransaction ?? scopedTransaction;
 }
 
 export async function createTransactionForContext(
@@ -171,7 +206,7 @@ export async function updateTransactionForContext(
   context: TenantContext,
   transactionId: EntityId,
   payload: UpdateTransactionPayloadWithMetadata,
-): Promise<Transaction> {
+): Promise<TransactionWithAccountRemuneration> {
   const currentTransaction = await findTransactionRow(context, transactionId);
 
   if (isCardInvoicePurchase(currentTransaction)) {
@@ -227,7 +262,55 @@ export async function updateTransactionForContext(
     }
   });
 
-  return transaction;
+  return getTransactionForContext(context, transactionId);
+}
+
+async function attachAccountRemunerationMetadata(
+  context: TenantContext,
+  transactions: readonly Transaction[],
+): Promise<TransactionWithAccountRemuneration[]> {
+  if (transactions.length === 0) return [];
+
+  const rows = await query<AccountRemunerationMetadataRow>(
+    `select ar."transactionId", ar."competenceOn", ar."processedOn",
+            ar."balanceBaseMinor", ar."dailyRatePercent", ar."remunerationPercent",
+            ar."appliedDailyRatePercent", ar."originalAmountMinor",
+            ar."manuallyAdjusted", ar."adjustedAt"
+       from "AccountRemuneration" ar
+      where ar."organizationId" = $1
+        and ar."financialProfileId" = $2
+        and ar."transactionId" = any($3::uuid[])`,
+    [
+      context.organizationId,
+      context.financialProfileId,
+      transactions.map((transaction) => transaction.id),
+    ],
+  );
+  const metadataByTransaction = new Map(
+    rows.map((row) => [row.transactionId, mapAccountRemunerationMetadata(row)]),
+  );
+
+  return transactions.map((transaction) => {
+    const accountRemuneration = metadataByTransaction.get(transaction.id);
+    return accountRemuneration ? { ...transaction, accountRemuneration } : transaction;
+  });
+}
+
+function mapAccountRemunerationMetadata(
+  row: AccountRemunerationMetadataRow,
+): AccountRemunerationTransactionMetadata {
+  return {
+    indexKind: "cdi",
+    competenceOn: toDateOnly(row.competenceOn),
+    processedOn: toDateOnly(row.processedOn),
+    balanceBaseMinor: row.balanceBaseMinor,
+    dailyRatePercent: Number(row.dailyRatePercent),
+    remunerationPercent: Number(row.remunerationPercent),
+    appliedDailyRatePercent: Number(row.appliedDailyRatePercent),
+    originalAmountMinor: row.originalAmountMinor,
+    manuallyAdjusted: row.manuallyAdjusted,
+    ...(row.adjustedAt ? { adjustedAt: row.adjustedAt.toISOString() } : {}),
+  };
 }
 
 export async function voidTransactionForContext(

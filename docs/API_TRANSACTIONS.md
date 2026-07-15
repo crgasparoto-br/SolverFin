@@ -58,7 +58,12 @@ recurrence
 installment
 import
 ai_suggestion
+account_remuneration
 ```
+
+Lançamentos com fonte `account_remuneration` podem incluir o objeto opcional
+`accountRemuneration`, com competência, memória do cálculo original e estado do ajuste manual. O
+contrato detalhado está em [`API_ACCOUNT_REMUNERATION.md`](./API_ACCOUNT_REMUNERATION.md).
 
 ## Tenant
 
