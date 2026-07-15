@@ -3,8 +3,6 @@ import vm from "node:vm";
 
 import { enhanceAccountsCardsTabs } from "./accounts-cards-enhancement.js";
 
-void main();
-
 async function main(): Promise<void> {
   const html = enhanceAccountsCardsTabs(
     '<!doctype html><html><head></head><body><section data-tab-panel="accounts"></section></body></html>',
@@ -284,3 +282,5 @@ async function flushAsyncWork(): Promise<void> {
   await new Promise((resolve) => setImmediate(resolve));
   await new Promise((resolve) => setImmediate(resolve));
 }
+
+void main();
