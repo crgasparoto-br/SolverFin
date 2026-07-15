@@ -1,5 +1,8 @@
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
-import { listPrivateShellRoutes, type ShellRouteId } from "../app-shell/routes.js";
+import {
+  listNavigablePrivateShellRoutes,
+  type ShellRouteId,
+} from "../app-shell/routes.js";
 import { icon } from "./icons.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 import {
@@ -120,14 +123,14 @@ function hasStatementPresentation(content: string): boolean {
 }
 
 function isActivePathnameSecondary(activePathname: string, includeMasterRoutes: boolean): boolean {
-  const activeRoute = listPrivateShellRoutes({
+  const activeRoute = listNavigablePrivateShellRoutes({
     includeMaster: includeMasterRoutes,
   }).find((route) => route.path === activePathname);
   return activeRoute !== undefined && !isPrimaryMobileRoute(activeRoute);
 }
 
 function renderNavigation(activePathname: string, includeMasterRoutes: boolean): string {
-  const routes = listPrivateShellRoutes({ includeMaster: includeMasterRoutes });
+  const routes = listNavigablePrivateShellRoutes({ includeMaster: includeMasterRoutes });
   const activeIsSecondary = isActivePathnameSecondary(activePathname, includeMasterRoutes);
   const secondaryIds = routes
     .filter((route) => !isPrimaryMobileRoute(route))
@@ -230,7 +233,7 @@ function currentUserScript(): string {
 
           if (toggle) {
             const controls = new Set(
-              (toggle.getAttribute("aria-controls") || "").split(/\\s+/).filter(Boolean),
+              (toggle.getAttribute("aria-controls") || "").split(/\s+/).filter(Boolean),
             );
             controls.add(link.id);
             toggle.setAttribute("aria-controls", Array.from(controls).join(" "));
