@@ -11,9 +11,9 @@ void main().catch((error: unknown) => {
 
 async function main(): Promise<void> {
   const styles = recurrencesSectionStyles();
-  const editForm = String.raw`\.modal-panel form\[data-form\]\[data-method=PATCH\]`;
+  const editForm = ".modal-panel form[data-form][data-method=PATCH]";
 
-  assert.match(styles, new RegExp(`${editForm} label:has\(\[name=repeatMode\]\)`));
+  assert.ok(styles.includes(`${editForm} label:has([name=repeatMode])`));
 
   for (const field of [
     "installments",
@@ -23,7 +23,7 @@ async function main(): Promise<void> {
     "frequency",
     "endOn",
   ]) {
-    assert.match(styles, new RegExp(`${editForm} \\[data-field=${field}\\]`));
+    assert.ok(styles.includes(`${editForm} [data-field=${field}]`));
   }
 
   assert.doesNotMatch(styles, /data-method=POST[^}]*display:none/);
