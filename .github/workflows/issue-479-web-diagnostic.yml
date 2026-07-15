@@ -40,3 +40,5 @@ jobs:
           git commit -m "chore: registrar diagnóstico temporário da issue 479"
           git push origin HEAD:feat/479-account-cdi-modal
           exit $status
+
+# Arquivo temporário: remover após a correção da falha.
