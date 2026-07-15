@@ -1,8 +1,5 @@
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
-import {
-  listNavigablePrivateShellRoutes,
-  type ShellRouteId,
-} from "../app-shell/routes.js";
+import { listNavigablePrivateShellRoutes, type ShellRouteId } from "../app-shell/routes.js";
 import { icon } from "./icons.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 import {

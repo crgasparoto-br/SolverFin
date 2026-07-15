@@ -48,8 +48,14 @@ describe("account remuneration modal integration", () => {
     assert.doesNotMatch(payloadFunction, /currency:/);
     assert.match(script, /method: "PUT"/);
     assert.match(script, /\/api\/account-remuneration\/configurations/);
-    assert.match(script, /configuration && configuration\.remunerationPercent !== undefined \? configuration\.remunerationPercent : 100/);
-    assert.match(script, /configuration && configuration\.startsOn \? configuration\.startsOn : today\(\)/);
+    assert.match(
+      script,
+      /configuration && configuration\.remunerationPercent !== undefined \? configuration\.remunerationPercent : 100/,
+    );
+    assert.match(
+      script,
+      /configuration && configuration\.startsOn \? configuration\.startsOn : today\(\)/,
+    );
   });
 
   it("degrades only CDI actions when configuration loading fails", () => {

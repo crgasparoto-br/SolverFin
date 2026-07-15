@@ -140,17 +140,10 @@ async function main(): Promise<void> {
     currency: "USD",
   });
   assert.equal(blockedCurrencyChange.statusCode, 409);
-  assert.equal(
-    readError(blockedCurrencyChange).code,
-    "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
-  );
+  assert.equal(readError(blockedCurrencyChange).code, "ACCOUNT_REMUNERATION_MUST_BE_DISABLED");
   assert.match(readError(blockedCurrencyChange).message ?? "", /Desative.*CDI/);
 
-  const blockedArchive = await apiRequest(
-    token,
-    "POST",
-    `/api/accounts/${account.id}/archive`,
-  );
+  const blockedArchive = await apiRequest(token, "POST", `/api/accounts/${account.id}/archive`);
   assert.equal(blockedArchive.statusCode, 409);
   assert.equal(readError(blockedArchive).code, "ACCOUNT_REMUNERATION_MUST_BE_DISABLED");
   assert.match(readError(blockedArchive).message ?? "", /Desative.*CDI/);
