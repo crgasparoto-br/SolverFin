@@ -104,7 +104,7 @@ export async function updateAccountForContext(
   accountId: EntityId,
   payload: UpdateAccountPayload,
 ): Promise<Account> {
-  const currentAccount = await findAccountRow(context, accountId);
+  const currentAccount = getAccountDomain(context, await findAccountRow(context, accountId));
   const hasTransactions = await accountHasTransactions(context, accountId);
   const updatedAccount = updateAccountDomain({
     context,
@@ -113,6 +113,24 @@ export async function updateAccountForContext(
     payload,
     hasTransactions,
   });
+
+  const currencyBecameIneligible =
+    currentAccount.currency !== updatedAccount.currency && updatedAccount.currency !== "BRL";
+  const statusBecameIneligible =
+    currentAccount.status !== updatedAccount.status && updatedAccount.status !== "active";
+
+  if (
+    (currencyBecameIneligible || statusBecameIneligible) &&
+    (await accountHasActiveRemuneration(context, accountId))
+  ) {
+    throw accountError(
+      "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
+      currencyBecameIneligible
+        ? "Desative a remuneração pelo CDI antes de alterar a moeda da conta."
+        : "Desative a remuneração pelo CDI antes de arquivar a conta.",
+      409,
+    );
+  }
 
   await persistAccountUpdate(updatedAccount);
 
@@ -123,7 +141,16 @@ export async function archiveAccountForContext(
   context: TenantContext,
   accountId: EntityId,
 ): Promise<Account> {
-  const currentAccount = await findAccountRow(context, accountId);
+  const currentAccount = getAccountDomain(context, await findAccountRow(context, accountId));
+
+  if (await accountHasActiveRemuneration(context, accountId)) {
+    throw accountError(
+      "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
+      "Desative a remuneração pelo CDI antes de arquivar a conta.",
+      409,
+    );
+  }
+
   const archivedAccount = archiveAccountDomain(context, currentAccount, new Date().toISOString());
 
   await persistAccountUpdate(archivedAccount);
@@ -195,6 +222,22 @@ async function accountHasTransactions(
        select 1 from "Transaction"
        where "organizationId" = $1 and "financialProfileId" = $2
          and ("accountId" = $3 or "destinationAccountId" = $3)
+     ) as "exists"`,
+    [context.organizationId, context.financialProfileId, accountId],
+  );
+
+  return rows[0]?.exists ?? false;
+}
+
+async function accountHasActiveRemuneration(
+  context: TenantContext,
+  accountId: EntityId,
+): Promise<boolean> {
+  const rows = await query<{ exists: boolean }>(
+    `select exists(
+       select 1 from "AccountRemunerationConfiguration"
+       where "organizationId" = $1 and "financialProfileId" = $2
+         and "accountId" = $3 and "enabled" = true
      ) as "exists"`,
     [context.organizationId, context.financialProfileId, accountId],
   );
