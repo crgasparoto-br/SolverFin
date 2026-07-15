@@ -12,6 +12,7 @@ export interface TransactionRecord {
   description: string;
   kind: string;
   status: string;
+  source?: string;
   amountMinor: number;
   occurredOn: string;
   plannedOn: string;
@@ -22,6 +23,18 @@ export interface TransactionRecord {
   cardId?: string;
   invoiceId?: string;
   recurrenceId?: string;
+  accountRemuneration?: {
+    indexKind: "cdi";
+    competenceOn: string;
+    processedOn: string;
+    balanceBaseMinor: number;
+    dailyRatePercent: number;
+    remunerationPercent: number;
+    appliedDailyRatePercent: number;
+    originalAmountMinor: number;
+    manuallyAdjusted: boolean;
+    adjustedAt?: string;
+  };
 }
 
 export interface StatementFilters {

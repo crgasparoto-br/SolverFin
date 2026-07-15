@@ -27,7 +27,8 @@ export function enhanceStatementListSorting(html: string, url: URL): string {
   const sort = resolveListSort(url.searchParams.get("sort"), "date_asc");
   let nextHtml = injectSortControl(html, "/lancamentos", sort);
   nextHtml = sortStatementRows(nextHtml, sort);
-  return injectSortAssets(nextHtml);
+  nextHtml = injectSortAssets(nextHtml);
+  return injectAccountRemunerationStatementAssets(nextHtml);
 }
 
 export function enhanceCardListSorting(html: string, url: URL): string {
@@ -79,7 +80,7 @@ function sortStatementRows(html: string, sort: ListSort): string {
   const section = html.slice(start, end);
   const sortedSection = sortBlocks(
     section,
-    '<article class="statement-row statement-body"',
+    '<article class="statement-row statement-body',
     "article",
     sort,
   );
@@ -254,6 +255,136 @@ function injectSortAssets(html: string): string {
           if (!target || !target.matches || !target.matches("[data-list-sort]")) return;
           if (target.form) target.form.requestSubmit();
         });
+      </script>`;
+    nextHtml = nextHtml.replace("</body>", `${script}</body>`);
+  }
+
+  return nextHtml;
+}
+
+function injectAccountRemunerationStatementAssets(html: string): string {
+  let nextHtml = html;
+
+  if (!nextHtml.includes("data-account-remuneration-statement-styles")) {
+    const styles = `
+      <style data-account-remuneration-statement-styles>
+        .statement-row.account-remuneration-row{border-left:3px solid var(--primary)}
+        .account-remuneration-badge{background:var(--primary-soft);border-radius:999px;color:var(--primary);display:inline-flex;font-size:.6875rem;font-weight:800;margin-left:6px;padding:2px 7px;vertical-align:middle}
+        .account-remuneration-audit{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:5px;padding:8px}
+        .account-remuneration-audit-heading{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between}
+        .account-remuneration-audit-heading>strong{font-size:.75rem}
+        .account-remuneration-adjustment{border-radius:999px;font-size:.6875rem;font-weight:800;padding:2px 7px}
+        .account-remuneration-adjustment.original{background:var(--primary-soft);color:var(--primary)}
+        .account-remuneration-adjustment.adjusted{background:var(--warning-bg);color:var(--warning)}
+        .account-remuneration-audit dl{display:grid;gap:5px;grid-template-columns:repeat(5,minmax(0,1fr));margin:0}
+        .account-remuneration-audit dl div{display:grid;gap:1px;min-width:0}
+        .account-remuneration-audit dt{color:var(--muted);font-size:.625rem;font-weight:700;text-transform:uppercase}
+        .account-remuneration-audit dd{font-size:.6875rem;font-weight:700;margin:0;overflow-wrap:anywhere}
+        [data-remuneration-protected="true"]{background:var(--surface-soft);cursor:not-allowed}
+        .remuneration-edit-notice{background:var(--primary-soft);border:1px solid #c8dde5;border-radius:var(--radius);color:var(--text);font-size:.8125rem;grid-column:1 / -1;line-height:1.45;padding:10px}
+        @media(max-width:760px){.account-remuneration-audit dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      </style>`;
+    nextHtml = nextHtml.replace("</head>", `${styles}</head>`);
+  }
+
+  if (!nextHtml.includes("data-account-remuneration-statement-controller")) {
+    const script = `
+      <script data-account-remuneration-statement-controller>
+        (() => {
+          const remunerationIds = new Set();
+          const form = document.querySelector("[data-form]");
+
+          function readRecord(node) {
+            try { return JSON.parse(node.textContent || "{}"); } catch (_error) { return {}; }
+          }
+
+          function unlockProtectedFields() {
+            if (!form) return;
+            form.dataset.remunerationProtected = "false";
+            form.querySelectorAll("[data-remuneration-protected]").forEach((field) => {
+              field.removeAttribute("data-remuneration-protected");
+              field.removeAttribute("aria-disabled");
+              if ("readOnly" in field) field.readOnly = false;
+            });
+            const notice = form.querySelector("[data-remuneration-edit-notice]");
+            if (notice) notice.remove();
+          }
+
+          function protectField(field) {
+            if (!field) return;
+            field.setAttribute("data-remuneration-protected", "true");
+            field.setAttribute("aria-disabled", "true");
+            field.dataset.remunerationValue = field.value;
+            if ("readOnly" in field) field.readOnly = true;
+          }
+
+          function lockRemunerationFields() {
+            if (!form) return;
+            unlockProtectedFields();
+            form.dataset.remunerationProtected = "true";
+            const repeatMode = form.elements.repeatMode;
+            if (repeatMode) repeatMode.value = "single";
+            [form.elements.kind, form.elements.plannedOn, form.elements.description, repeatMode].forEach(protectField);
+            const saveRow = form.querySelector(".save-row");
+            if (saveRow && !form.querySelector("[data-remuneration-edit-notice]")) {
+              const notice = document.createElement("p");
+              notice.className = "remuneration-edit-notice";
+              notice.setAttribute("data-remuneration-edit-notice", "");
+              notice.textContent = "Neste lançamento, altere somente o valor creditado, a categoria, a situação e a data efetiva. Conta, tipo, competência e memória do cálculo permanecem protegidos.";
+              saveRow.before(notice);
+            }
+          }
+
+          if (form) {
+            form.addEventListener("mousedown", (event) => {
+              const target = event.target;
+              if (target && target.matches && target.matches('select[data-remuneration-protected="true"]')) event.preventDefault();
+            }, true);
+            form.addEventListener("keydown", (event) => {
+              const target = event.target;
+              if (target && target.matches && target.matches('select[data-remuneration-protected="true"]')) event.preventDefault();
+            }, true);
+            form.addEventListener("change", (event) => {
+              const target = event.target;
+              if (target && target.matches && target.matches('[data-remuneration-protected="true"]')) {
+                target.value = target.dataset.remunerationValue || target.value;
+              }
+            }, true);
+          }
+
+          document.querySelectorAll("script[data-transaction]").forEach((node) => {
+            const transaction = readRecord(node);
+            if (transaction.source !== "account_remuneration") return;
+            remunerationIds.add(transaction.id);
+            const row = node.closest(".statement-row.statement-body");
+            if (!row) return;
+            row.classList.add("account-remuneration-row");
+            const description = row.querySelector(".description strong");
+            if (description && !description.querySelector(".account-remuneration-badge")) {
+              const badge = document.createElement("span");
+              badge.className = "account-remuneration-badge";
+              badge.textContent = "Remuneração CDI";
+              description.appendChild(badge);
+              const details = document.createElement("small");
+              details.className = "account-remuneration-details";
+              details.textContent = "A descrição preserva competência, saldo-base, taxa CDI, percentual aplicado e valor originalmente calculado.";
+              description.parentElement && description.parentElement.appendChild(details);
+            }
+            const clone = row.querySelector('[data-clone="' + transaction.id + '"]');
+            if (clone) clone.remove();
+          });
+
+          document.addEventListener("click", (event) => {
+            const target = event.target && event.target.closest ? event.target.closest("[data-edit], [data-open-modal]") : null;
+            if (!target) return;
+            const transactionId = target.getAttribute("data-edit");
+            if (transactionId && remunerationIds.has(transactionId)) {
+              window.setTimeout(lockRemunerationFields, 0);
+            } else {
+              unlockProtectedFields();
+            }
+          }, true);
+        })();
       </script>`;
     nextHtml = nextHtml.replace("</body>", `${script}</body>`);
   }

@@ -66,20 +66,30 @@ async function logoUploadRequiresAuthenticationBeforeValidation(): Promise<void>
 }
 
 async function logoUploadRejectsInvalidFileForMaster(): Promise<void> {
-  await withTemporaryEnv(MASTER_EMAILS_ENV_KEY, demoUser.email, async () => {
-    const response = await handleAdminInstitutionsApiRequest(
-      buildRequest(
-        "POST",
-        "/api/admin/institutions/bradesco/logo",
-        { mimeType: "image/svg+xml", contentBase64: validPngBase64 },
-        rememberSession("invalid-logo-master-session"),
-      ),
-    );
-
-    assert.ok(response);
-    assert.equal(response.statusCode, 400);
-    assert.equal(readErrorCode(response), "INSTITUTION_LOGO_UNSUPPORTED_TYPE");
+  setLogoStorageAdapterForTests({
+    async putObject() {
+      throw new Error("Invalid logo validation must run before storage.");
+    },
   });
+
+  try {
+    await withTemporaryEnv(MASTER_EMAILS_ENV_KEY, demoUser.email, async () => {
+      const response = await handleAdminInstitutionsApiRequest(
+        buildRequest(
+          "POST",
+          "/api/admin/institutions/bradesco/logo",
+          { mimeType: "image/svg+xml", contentBase64: validPngBase64 },
+          rememberSession("invalid-logo-master-session"),
+        ),
+      );
+
+      assert.ok(response);
+      assert.equal(response.statusCode, 400);
+      assert.equal(readErrorCode(response), "INSTITUTION_LOGO_UNSUPPORTED_TYPE");
+    });
+  } finally {
+    setLogoStorageAdapterForTests(undefined);
+  }
 }
 
 async function logoUploadStorageFailureKeepsPreviousState(): Promise<void> {

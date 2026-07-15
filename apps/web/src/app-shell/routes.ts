@@ -2,6 +2,7 @@ export type ShellRouteId =
   | "dashboard"
   | "transactions"
   | "accountsCards"
+  | "accountRemuneration"
   | "categories"
   | "cards"
   | "budgets"
@@ -9,6 +10,7 @@ export type ShellRouteId =
   | "reports"
   | "settings"
   | "adminInstitutions"
+  | "adminFinancialIndexes"
   | "signIn";
 
 export type ShellNavigationGroup = "main" | "manage" | "review" | "settings" | "admin" | "public";
@@ -73,6 +75,16 @@ export const solverFinShellRoutes = [
     status: "available",
   },
   {
+    id: "accountRemuneration",
+    path: "/remuneracao-contas",
+    label: "Remuneração pelo CDI",
+    description: "Configure contas remuneradas e o percentual aplicado sobre o CDI diário.",
+    navigationGroup: "manage",
+    requiresAuthentication: true,
+    requiresFinancialProfile: true,
+    status: "available",
+  },
+  {
     id: "categories",
     path: "/categorias",
     label: "Categorias",
@@ -127,6 +139,17 @@ export const solverFinShellRoutes = [
     path: "/admin/instituicoes",
     label: "Admin - Instituições",
     description: "Mantenha o catálogo global de instituições financeiras e logomarcas.",
+    navigationGroup: "admin",
+    requiresAuthentication: true,
+    requiresFinancialProfile: false,
+    requiresMaster: true,
+    status: "available",
+  },
+  {
+    id: "adminFinancialIndexes",
+    path: "/admin/indices-financeiros",
+    label: "Admin - Índices financeiros",
+    description: "Acompanhe a importação do CDI e o processamento das contas remuneradas.",
     navigationGroup: "admin",
     requiresAuthentication: true,
     requiresFinancialProfile: false,

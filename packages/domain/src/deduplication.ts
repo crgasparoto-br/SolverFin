@@ -19,7 +19,8 @@ export type DeduplicationSourceKind =
   | "installment"
   | "import"
   | "bank_message"
-  | "ai_suggestion";
+  | "ai_suggestion"
+  | "account_remuneration";
 export type DeduplicationReviewStatus = "needs_review" | "not_duplicate";
 export type DeduplicationReasonCode =
   | "DEDUP_EXACT_SOURCE_HASH"

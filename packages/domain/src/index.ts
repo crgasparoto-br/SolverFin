@@ -23,6 +23,7 @@ export * from "./privacy-consent.js";
 export * from "./soft-delete.js";
 export * from "./accountant-export.js";
 export * from "./visual-identities.js";
+export * from "./financial-indexes.js";
 
 export type EntityId = string;
 export type ISODate = string;
@@ -81,7 +82,8 @@ export type TransactionSource =
   | "recurrence"
   | "installment"
   | "import"
-  | "ai_suggestion";
+  | "ai_suggestion"
+  | "account_remuneration";
 
 export type RecurrenceFrequency = "daily" | "weekly" | "monthly" | "yearly";
 export type RecurrenceStatus = "active" | "paused" | "cancelled" | "completed";

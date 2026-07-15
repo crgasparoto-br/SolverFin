@@ -1,6 +1,8 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
+import { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
+import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
@@ -26,6 +28,8 @@ import { renderSettingsPage } from "./dev-server/settings-page.js";
 import { tryServeStaticAsset } from "./dev-server/static-assets.js";
 import { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
+export { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
+export { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 export { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
@@ -125,8 +129,18 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     return;
   }
 
+  if (url.pathname === "/admin/indices-financeiros" && token) {
+    sendHtml(response, 200, await renderAdminFinancialIndexesPage(token));
+    return;
+  }
+
   if (url.pathname === "/contas-cartoes" && token) {
     sendHtml(response, 200, enhanceAccountsCardsTabs(await renderAccountsCardsPage(token)));
+    return;
+  }
+
+  if (url.pathname === "/remuneracao-contas" && token) {
+    sendHtml(response, 200, await renderAccountRemunerationPage(token));
     return;
   }
 
@@ -248,8 +262,6 @@ async function materializeActiveRecurrences(
   const through = monthToLastDay(month);
   const activeRecurrences = recurrences.filter((recurrence) => recurrence.status === "active");
 
-  // Card recurrences can share the same invoice period. Process them in order so
-  // the first occurrence creates the invoice and the following ones reuse it.
   for (const recurrence of activeRecurrences) {
     await materializeRecurrenceWithRetry(token, recurrence.id, through);
   }
