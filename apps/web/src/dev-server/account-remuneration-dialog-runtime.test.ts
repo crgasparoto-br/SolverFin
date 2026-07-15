@@ -176,8 +176,15 @@ interface FakeCancelButton {
   click(): void;
 }
 
+interface FakeFormElements {
+  enabled: FakeControl;
+  remunerationPercent: FakeControl;
+  startsOn: FakeControl;
+  categoryId: FakeControl;
+}
+
 interface FakeForm {
-  elements: Record<string, FakeControl>;
+  elements: FakeFormElements;
   status: { className: string; textContent: string };
   submitButton: { disabled: boolean };
   reportValidity(): boolean;
@@ -186,14 +193,19 @@ interface FakeForm {
   submit(): void;
 }
 
+interface FakeRequest {
+  input: string;
+  init: Record<string, unknown> | undefined;
+}
+
 function createHarness(): {
   document: { createElement(tagName: string): FakeDialog };
-  requests: Array<{ input: string; init?: Record<string, unknown> }>;
+  requests: FakeRequest[];
   responses: FakeResponse[];
   renderCount: number;
 } {
   const harness = {
-    requests: [] as Array<{ input: string; init?: Record<string, unknown> }>,
+    requests: [] as FakeRequest[],
     responses: [] as FakeResponse[],
     renderCount: 0,
     document: {
