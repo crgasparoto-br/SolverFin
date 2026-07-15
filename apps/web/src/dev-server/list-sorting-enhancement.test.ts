@@ -52,6 +52,47 @@ assert.match(
   /@media\(max-width:900px\)\{form\.filter-form\[action="\/lancamentos"\]\{grid-template-columns:1fr\}form\.filter-form\[action="\/lancamentos"\] \.month-nav input\[type="month"\]\{min-width:10rem\}/,
 );
 
+const statementWithRemunerationHtml = documentHtml(`
+  <form class="filter-form" method="get" action="/lancamentos"><input name="month" value="2026-07" /></form>
+  <div class="statement-table" role="table" aria-label="Extrato bancário">
+    <div class="statement-row statement-head"></div>
+    ${statementRow("older", "2026-07-10", "Mercado", 3000)}
+    ${statementRow("remuneracao", "2026-07-14", "Rendimento previsto — 100% do CDI", 551, " account-remuneration-row")}
+    ${statementRow("newer", "2026-07-15", "Aluguel", 5000)}
+  </div>
+`);
+
+const statementDefaultSorted = enhanceStatementListSorting(
+  statementWithRemunerationHtml,
+  new URL("http://solverfin.test/lancamentos"),
+);
+assert.ok(
+  statementDefaultSorted.includes('data-transaction="remuneracao"'),
+  "remuneration rows must survive statement sorting",
+);
+assert.ok(statementDefaultSorted.includes("account-remuneration-row"));
+assert.ok(
+  statementDefaultSorted.indexOf('data-transaction="older"') <
+    statementDefaultSorted.indexOf('data-transaction="remuneracao"'),
+);
+assert.ok(
+  statementDefaultSorted.indexOf('data-transaction="remuneracao"') <
+    statementDefaultSorted.indexOf('data-transaction="newer"'),
+);
+
+const statementRemunerationDescSorted = enhanceStatementListSorting(
+  statementWithRemunerationHtml,
+  new URL("http://solverfin.test/lancamentos?sort=date_desc"),
+);
+assert.ok(
+  statementRemunerationDescSorted.indexOf('data-transaction="newer"') <
+    statementRemunerationDescSorted.indexOf('data-transaction="remuneracao"'),
+);
+assert.ok(
+  statementRemunerationDescSorted.indexOf('data-transaction="remuneracao"') <
+    statementRemunerationDescSorted.indexOf('data-transaction="older"'),
+);
+
 const cardHtml = documentHtml(`
   <form class="filter-form" method="get" action="/cartoes"><input name="month" value="2026-07" /></form>
   <button type="button" class="toggle-chip" aria-pressed="true">Conciliados</button>
@@ -82,8 +123,14 @@ assert.match(
   /\.toggle-chip\[aria-pressed="true"\]:hover:not\(:disabled\)\{background:#dceef3\}/,
 );
 
-function statementRow(id: string, date: string, description: string, amountMinor: number): string {
-  return `<article class="statement-row statement-body"><script type="application/json" data-transaction="${id}">${escapedJson({ id, effectiveOn: date, plannedOn: date, occurredOn: date, description, amountMinor })}</script></article>`;
+function statementRow(
+  id: string,
+  date: string,
+  description: string,
+  amountMinor: number,
+  extraClasses = "",
+): string {
+  return `<article class="statement-row statement-body${extraClasses}" role="row"><script type="application/json" data-transaction="${id}">${escapedJson({ id, effectiveOn: date, plannedOn: date, occurredOn: date, description, amountMinor })}</script></article>`;
 }
 
 function purchaseRow(id: string, date: string, description: string, amountMinor: number): string {

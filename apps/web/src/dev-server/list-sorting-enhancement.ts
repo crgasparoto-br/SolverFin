@@ -80,7 +80,7 @@ function sortStatementRows(html: string, sort: ListSort): string {
   const section = html.slice(start, end);
   const sortedSection = sortBlocks(
     section,
-    '<article class="statement-row statement-body"',
+    '<article class="statement-row statement-body',
     "article",
     sort,
   );
@@ -270,9 +270,19 @@ function injectAccountRemunerationStatementAssets(html: string): string {
       <style data-account-remuneration-statement-styles>
         .statement-row.account-remuneration-row{border-left:3px solid var(--primary)}
         .account-remuneration-badge{background:var(--primary-soft);border-radius:999px;color:var(--primary);display:inline-flex;font-size:.6875rem;font-weight:800;margin-left:6px;padding:2px 7px;vertical-align:middle}
-        .account-remuneration-details{color:var(--muted);display:block;font-size:.75rem;line-height:1.4;margin-top:4px}
+        .account-remuneration-audit{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:5px;padding:8px}
+        .account-remuneration-audit-heading{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between}
+        .account-remuneration-audit-heading>strong{font-size:.75rem}
+        .account-remuneration-adjustment{border-radius:999px;font-size:.6875rem;font-weight:800;padding:2px 7px}
+        .account-remuneration-adjustment.original{background:var(--primary-soft);color:var(--primary)}
+        .account-remuneration-adjustment.adjusted{background:var(--warning-bg);color:var(--warning)}
+        .account-remuneration-audit dl{display:grid;gap:5px;grid-template-columns:repeat(5,minmax(0,1fr));margin:0}
+        .account-remuneration-audit dl div{display:grid;gap:1px;min-width:0}
+        .account-remuneration-audit dt{color:var(--muted);font-size:.625rem;font-weight:700;text-transform:uppercase}
+        .account-remuneration-audit dd{font-size:.6875rem;font-weight:700;margin:0;overflow-wrap:anywhere}
         [data-remuneration-protected="true"]{background:var(--surface-soft);cursor:not-allowed}
         .remuneration-edit-notice{background:var(--primary-soft);border:1px solid #c8dde5;border-radius:var(--radius);color:var(--text);font-size:.8125rem;grid-column:1 / -1;line-height:1.45;padding:10px}
+        @media(max-width:760px){.account-remuneration-audit dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
       </style>`;
     nextHtml = nextHtml.replace("</head>", `${styles}</head>`);
   }
