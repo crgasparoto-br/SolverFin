@@ -35,6 +35,9 @@ testUpdateAccount();
 testUpdateAccountInstitutionKey();
 testArchiveAccount();
 testOtherTenantAccessIsRejected();
+testOpeningBalanceCanBeOmittedWhenTransactionsExist();
+testOpeningBalanceCanBeRepeatedWhenTransactionsExist();
+testInvalidOpeningBalanceIsValidatedBeforeLock();
 testOpeningBalanceIsLockedWhenTransactionsExist();
 
 function testCreateAccount(): void {
@@ -188,6 +191,49 @@ function testOtherTenantAccessIsRejected(): void {
   assertTenantAuthorizationError(
     () => archiveAccount(tenantA, otherTenantAccount, now),
     "TENANT_RESOURCE_NOT_FOUND",
+  );
+}
+
+function testOpeningBalanceCanBeOmittedWhenTransactionsExist(): void {
+  const account = createAccountFixture(tenantA, "account-balance-omitted", "active");
+  const updatedAccount = updateAccount({
+    context: tenantA,
+    account,
+    now,
+    hasTransactions: true,
+    payload: { name: "Conta atualizada sem saldo" },
+  });
+
+  assertEqual(updatedAccount.name, "Conta atualizada sem saldo", "name without opening balance");
+  assertEqual(updatedAccount.openingBalanceMinor, 0, "opening balance remains unchanged");
+}
+
+function testOpeningBalanceCanBeRepeatedWhenTransactionsExist(): void {
+  const account = createAccountFixture(tenantA, "account-balance-repeated", "active");
+  const updatedAccount = updateAccount({
+    context: tenantA,
+    account,
+    now,
+    hasTransactions: true,
+    payload: { openingBalanceMinor: account.openingBalanceMinor },
+  });
+
+  assertEqual(updatedAccount.openingBalanceMinor, 0, "identical opening balance is idempotent");
+}
+
+function testInvalidOpeningBalanceIsValidatedBeforeLock(): void {
+  const account = createAccountFixture(tenantA, "account-balance-invalid", "active");
+
+  assertAccountError(
+    () =>
+      updateAccount({
+        context: tenantA,
+        account,
+        now,
+        hasTransactions: true,
+        payload: { openingBalanceMinor: 0.5 },
+      }),
+    "ACCOUNT_OPENING_BALANCE_INVALID",
   );
 }
 
