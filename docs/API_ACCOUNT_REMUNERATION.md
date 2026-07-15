@@ -70,9 +70,10 @@ Regras:
 - a data inicial e o percentual são obrigatórios quando `enabled=true`;
 - a categoria, quando informada, deve ser uma categoria ativa de receita do mesmo tenant;
 - alteração de percentual ou data inicial afeta apenas competências ainda não processadas;
-- os campos enviados são persistidos mesmo com `enabled=false`; o modal reenvia os valores carregados ao desativar, então percentual, data inicial e categoria ficam preservados para reativação;
+- ao desativar com `enabled=false`, percentual, data inicial e categoria omitidos são preservados pelo banco; o modal também reenvia os valores carregados, permitindo futura reativação sem perda de configuração;
 - contas existentes permanecem desativadas até configuração explícita;
 - uma conta com CDI ativo não pode mudar de `BRL` para outra moeda nem ser arquivada antes da desativação da remuneração;
+- ativação do CDI e mudança de moeda/status são serializadas por bloqueio da conta no banco, impedindo estado concorrente com CDI ativo em conta inelegível;
 - erros de gravação mantêm o modal aberto, preservam os valores digitados e apresentam a mensagem localizada da API.
 
 Quando não existe configuração persistida, o modal inicia desativado, com `100%`, data atual e categoria vazia. O texto de apoio informa que o cálculo usa o saldo final do dia anterior.
