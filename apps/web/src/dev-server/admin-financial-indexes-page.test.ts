@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const pageSource = readFileSync(
-  path.join(repoRoot, "apps", "web", "src", "dev-server", "admin-financial-indexes-page.ts"),
-  "utf8",
-);
+import { renderFinancialIndexSummary } from "./admin-financial-indexes-page.js";
 
-assert.match(pageSource, /Fonte oficial BCB SGS 12/);
-assert.match(pageSource, /\/api\/admin\/financial-indexes\/cdi\/import/);
-assert.match(pageSource, /\/api\/admin\/account-remunerations\/process/);
-assert.match(pageSource, /A importação é idempotente/);
-assert.match(pageSource, /Último processamento/);
-assert.match(pageSource, /Falhas/);
+const summary = renderFinancialIndexSummary({
+  latestCdiRate: {
+    referenceOn: "2026-07-14",
+    dailyRatePercent: 0.055131,
+    source: "BCB_SGS_12",
+    importedAt: "2026-07-15T10:00:00.000Z",
+  },
+  latestImport: null,
+  latestProcessing: null,
+  activeConfigurations: 3,
+  pendingCompetences: 7,
+  configurationsWithoutRates: 2,
+  pendingConfigurations: 9,
+});
+
+assert.match(summary, /Competências pendentes[\s\S]*>7</);
+assert.match(summary, /Contas sem taxa[\s\S]*>2</);
+assert.doesNotMatch(summary, />9</);

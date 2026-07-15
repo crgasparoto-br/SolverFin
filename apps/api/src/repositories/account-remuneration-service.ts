@@ -245,7 +245,9 @@ export async function importCdiRates(
   const endsOn = normalizeDate(input.endsOn ?? today());
   const requestedStart = input.startsOn ? normalizeDate(input.startsOn) : addDays(endsOn, -10);
   const latest = await findLatestCdiReferenceDate();
-  const startsOn = latest ? maxDate(addDays(latest, 1), requestedStart) : requestedStart;
+  // Once rates exist, imports must resume at latest+1 so a later startsOn
+  // cannot leave permanent gaps in the series.
+  const startsOn = latest ? addDays(latest, 1) : requestedStart;
   const operationId = randomUUID();
 
   await createOperation(operationId, "CDI_IMPORT");
@@ -501,6 +503,7 @@ export async function getFinancialIndexStatus(): Promise<FinancialIndexStatusRec
          (select count(*)::int
             from "AccountRemunerationConfiguration" c
            where c."enabled" = true
+             and c."startsOn" < current_date
              and not exists (
                select 1 from "FinancialIndexRate" r
                 where r."kind" = c."indexKind"
@@ -900,10 +903,6 @@ function addDays(value: string, days: number): string {
   const date = new Date(`${value}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);
-}
-
-function maxDate(left: string, right: string): string {
-  return left > right ? left : right;
 }
 
 function today(): string {

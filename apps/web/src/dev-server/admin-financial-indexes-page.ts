@@ -28,6 +28,8 @@ interface FinancialIndexStatusRecord {
   latestImport: OperationRecord | null;
   latestProcessing: OperationRecord | null;
   activeConfigurations: number;
+  pendingCompetences: number;
+  configurationsWithoutRates: number;
   pendingConfigurations: number;
 }
 
@@ -54,18 +56,14 @@ export async function renderAdminFinancialIndexesPage(token: string): Promise<st
       <a class="button-link secondary" href="/admin/instituicoes">Instituições</a>
     </section>
 
-    <section class="summary-grid" aria-label="Resumo operacional">
-      ${summaryCard("Último CDI", status.latestCdiRate ? `${formatRate(status.latestCdiRate.dailyRatePercent)}%` : "Sem dados", status.latestCdiRate ? formatDate(status.latestCdiRate.referenceOn) : "Importe a série oficial")}
-      ${summaryCard("Contas ativas", String(status.activeConfigurations), "Configurações globais habilitadas")}
-      ${summaryCard("Pendências", String(status.pendingConfigurations), status.pendingConfigurations > 0 ? "Verifique a importação da taxa" : "Nenhuma pendência detectada")}
-    </section>
+    ${renderFinancialIndexSummary(status)}
 
     <section class="operation-grid">
       <article class="operation-card">
         <div>
           <p class="eyebrow">Fonte oficial BCB SGS 12</p>
           <h2>Importar CDI</h2>
-          <p class="muted">A importação é idempotente: datas já armazenadas não são duplicadas nem substituídas.</p>
+          <p class="muted">A importação é idempotente: datas já armazenadas não são duplicadas nem substituídas. Com taxas já importadas, a consulta continua automaticamente do dia seguinte à última data armazenada.</p>
         </div>
         <form data-operation-form data-path="/api/admin/financial-indexes/cdi/import">
           <label>Data inicial<input name="startsOn" type="date" value="${period.startsOn}" required /></label>
@@ -92,6 +90,16 @@ export async function renderAdminFinancialIndexesPage(token: string): Promise<st
     </section>
     ${script()}
   `);
+}
+
+export function renderFinancialIndexSummary(status: FinancialIndexStatusRecord): string {
+  return `
+    <section class="summary-grid" aria-label="Resumo operacional">
+      ${summaryCard("Último CDI", status.latestCdiRate ? `${formatRate(status.latestCdiRate.dailyRatePercent)}%` : "Sem dados", status.latestCdiRate ? formatDate(status.latestCdiRate.referenceOn) : "Importe a série oficial")}
+      ${summaryCard("Contas ativas", String(status.activeConfigurations), "Configurações globais habilitadas")}
+      ${summaryCard("Competências pendentes", String(status.pendingCompetences), status.pendingCompetences > 0 ? "Aguardam processamento" : "Nenhuma competência pendente")}
+      ${summaryCard("Contas sem taxa", String(status.configurationsWithoutRates), status.configurationsWithoutRates > 0 ? "Importe o CDI necessário" : "Todas as contas iniciadas possuem taxa")}
+    </section>`;
 }
 
 function summaryCard(label: string, value: string, description: string): string {
@@ -226,7 +234,7 @@ function css(): string {
     main { display: grid; gap: 14px; margin: 0 auto; max-width: 1280px; padding: 18px 20px; width: 100%; }
     .page-heading { align-items: center; display: flex; gap: 16px; justify-content: space-between; }
     .page-heading > div { display: grid; gap: 4px; max-width: 780px; }
-    .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .summary-card, .operation-card, .error-state { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
     .summary-card { display: grid; gap: 4px; padding: 14px; }
     .summary-card span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
