@@ -10,6 +10,7 @@ export interface ApiErrorLike {
   code?: string;
   statusCode?: number;
   message?: string;
+  constraint?: string;
 }
 
 export interface ApiLogEvent {
@@ -87,6 +88,12 @@ function normalizeApiError(
   error: unknown,
   fallbackMessage = DEFAULT_ERROR_MESSAGE,
 ): Required<Pick<ApiErrorLike, "code" | "statusCode" | "message">> {
+  const databaseError = normalizeKnownDatabaseError(error);
+
+  if (databaseError) {
+    return databaseError;
+  }
+
   if (isApiErrorLike(error)) {
     return {
       code: error.code ?? UNEXPECTED_ERROR_CODE,
@@ -99,6 +106,52 @@ function normalizeApiError(
     code: UNEXPECTED_ERROR_CODE,
     statusCode: 500,
     message: fallbackMessage,
+  };
+}
+
+function normalizeKnownDatabaseError(
+  error: unknown,
+): Required<Pick<ApiErrorLike, "code" | "statusCode" | "message">> | undefined {
+  if (typeof error !== "object" || error === null) {
+    return undefined;
+  }
+
+  const candidate = error as ApiErrorLike;
+  const mappings: Record<
+    string,
+    { code: string; statusCode: number; fallbackMessage: string }
+  > = {
+    Account_remuneration_must_be_disabled: {
+      code: "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
+      statusCode: 409,
+      fallbackMessage: "Desative a remuneração pelo CDI antes de alterar a conta.",
+    },
+    Account_remuneration_currency_unsupported: {
+      code: "ACCOUNT_REMUNERATION_CURRENCY_UNSUPPORTED",
+      statusCode: 400,
+      fallbackMessage: "A remuneração pelo CDI está disponível somente para contas em BRL.",
+    },
+    Account_remuneration_account_inactive: {
+      code: "ACCOUNT_REMUNERATION_ACCOUNT_INELIGIBLE",
+      statusCode: 409,
+      fallbackMessage: "A remuneração pelo CDI exige uma conta ativa.",
+    },
+    Account_remuneration_account_missing: {
+      code: "ACCOUNT_NOT_FOUND",
+      statusCode: 404,
+      fallbackMessage: "Conta não encontrada para este perfil.",
+    },
+  };
+  const mapping = candidate.constraint ? mappings[candidate.constraint] : undefined;
+
+  if (!mapping) {
+    return undefined;
+  }
+
+  return {
+    code: mapping.code,
+    statusCode: mapping.statusCode,
+    message: sanitizeMessage(candidate.message ?? mapping.fallbackMessage),
   };
 }
 
