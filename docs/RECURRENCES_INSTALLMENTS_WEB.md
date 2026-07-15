@@ -33,6 +33,8 @@ O backend ainda nao expoe uma rota de leitura dedicada para listar parcelas hist
 
 ## Modal de escopo da edição
 
+No Extrato, o campo **Repeticao** e os campos de parcelas ou recorrencia aparecem somente ao criar ou clonar um lancamento. Em qualquer edicao (`PATCH`), recorrente ou nao, esses controles ficam ocultos porque nao alteram o tipo de repeticao de um lancamento existente.
+
 Ao salvar uma ocorrência que possui recurrenceId, a interface valida o formulário e abre um diálogo com opções explícitas:
 
 - alterar somente o lançamento ou compra selecionado;
