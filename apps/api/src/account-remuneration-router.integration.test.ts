@@ -123,6 +123,38 @@ async function main(): Promise<void> {
   );
   assert.equal(adjusted.accountRemuneration?.manuallyAdjusted, true);
 
+  const idempotentAccountUpdate = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    name: `Conta remuneração atualizada ${suffix}`,
+    openingBalanceMinor: 1_000_000,
+  });
+  assert.equal(idempotentAccountUpdate.statusCode, 200);
+
+  const changedOpeningBalance = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    openingBalanceMinor: 1_000_001,
+  });
+  assert.equal(changedOpeningBalance.statusCode, 400);
+  assert.equal(readError(changedOpeningBalance).code, "ACCOUNT_OPENING_BALANCE_LOCKED");
+  assert.match(readError(changedOpeningBalance).message ?? "", /movimentações/);
+
+  const blockedCurrencyChange = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    currency: "USD",
+  });
+  assert.equal(blockedCurrencyChange.statusCode, 409);
+  assert.equal(
+    readError(blockedCurrencyChange).code,
+    "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
+  );
+  assert.match(readError(blockedCurrencyChange).message ?? "", /Desative.*CDI/);
+
+  const blockedArchive = await apiRequest(
+    token,
+    "POST",
+    `/api/accounts/${account.id}/archive`,
+  );
+  assert.equal(blockedArchive.statusCode, 409);
+  assert.equal(readError(blockedArchive).code, "ACCOUNT_REMUNERATION_MUST_BE_DISABLED");
+  assert.match(readError(blockedArchive).message ?? "", /Desative.*CDI/);
+
   const statusResponse = await apiRequest(token, "GET", "/api/admin/financial-indexes/status");
   assert.equal(statusResponse.statusCode, 200);
   const status = readBody<{
@@ -135,9 +167,20 @@ async function main(): Promise<void> {
     token,
     "PUT",
     `/api/account-remuneration/configurations/${account.id}`,
-    { enabled: false },
+    { enabled: false, remunerationPercent: 100, startsOn: COMPETENCE_ON },
   );
   assert.equal(disableConfigurationResponse.statusCode, 200);
+  const disabledConfiguration = readBody<{
+    configuration: { enabled: boolean; remunerationPercent?: number; startsOn?: string };
+  }>(disableConfigurationResponse).configuration;
+  assert.equal(disabledConfiguration.enabled, false);
+  assert.equal(disabledConfiguration.remunerationPercent, 100);
+  assert.equal(disabledConfiguration.startsOn, COMPETENCE_ON);
+
+  const allowedCurrencyChange = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    currency: "USD",
+  });
+  assert.equal(allowedCurrencyChange.statusCode, 200);
 
   process.env.SOLVERFIN_MASTER_EMAILS = "";
   const forbiddenResponse = await apiRequest(token, "GET", "/api/admin/financial-indexes/status");
@@ -184,4 +227,8 @@ function readBody<TBody>(response: Pick<ApiResponse, "body">): TBody {
   assert.equal(typeof response.body, "object");
   assert.notEqual(response.body, null);
   return response.body as TBody;
+}
+
+function readError(response: Pick<ApiResponse, "body">): { code?: string; message?: string } {
+  return readBody<{ error?: { code?: string; message?: string } }>(response).error ?? {};
 }
