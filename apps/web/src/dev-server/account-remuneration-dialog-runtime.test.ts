@@ -24,7 +24,8 @@ async function main(): Promise<void> {
       const parsed = body as { error?: { message?: string } };
       return {
         body,
-        message: parsed.error?.message ?? "Não foi possível concluir a operação.",
+        message:
+          parsed.error?.message ?? "Não foi possível concluir a operação.",
       };
     },
     renderAccount: () => {
@@ -34,7 +35,9 @@ async function main(): Promise<void> {
       harness.requests.push({ input: String(input), init });
       return (
         harness.responses.shift() ??
-        fakeResponse(false, { error: { message: "Resposta de teste ausente." } })
+        fakeResponse(false, {
+          error: { message: "Resposta de teste ausente." },
+        })
       );
     },
     console,
@@ -42,8 +45,16 @@ async function main(): Promise<void> {
 
   vm.runInNewContext(
     [
-      extractSegment(script, "function readRemunerationPayload", "async function saveConfiguration"),
-      extractSegment(script, "async function saveConfiguration", "async function loadAccountRemuneration"),
+      extractSegment(
+        script,
+        "function readRemunerationPayload",
+        "async function saveConfiguration",
+      ),
+      extractSegment(
+        script,
+        "async function saveConfiguration",
+        "async function loadAccountRemuneration",
+      ),
       extractSegment(script, "function createDialog", "function openDialog"),
       extractSegment(script, "function openDialog", "function renderAccount"),
       "globalThis.runtime = { createDialog, openDialog };",
@@ -52,7 +63,10 @@ async function main(): Promise<void> {
   );
 
   const runtime = context.runtime as {
-    createDialog: (model: FakeModel, configuration?: Record<string, unknown>) => FakeDialog;
+    createDialog: (
+      model: FakeModel,
+      configuration?: Record<string, unknown>,
+    ) => FakeDialog;
     openDialog: (model: FakeModel, dialog: FakeDialog) => void;
   };
   const model = createModel();
@@ -74,7 +88,9 @@ async function main(): Promise<void> {
   dialog.form.elements.startsOn.value = "2026-07-20";
   dialog.form.elements.categoryId.value = "income-1";
   harness.responses.push(
-    fakeResponse(false, { error: { message: "Percentual recusado pela API." } }),
+    fakeResponse(false, {
+      error: { message: "Percentual recusado pela API." },
+    }),
   );
   dialog.form.submit();
   await flushAsyncWork();
@@ -221,7 +237,8 @@ function createDialogElement(): FakeDialog {
     },
     querySelector(selector: string): unknown {
       if (selector === "[data-account-remuneration-form]") return form;
-      if (selector === "[data-account-remuneration-cancel]") return dialog.cancel;
+      if (selector === "[data-account-remuneration-cancel]")
+        return dialog.cancel;
       if (selector === "select, input, button") return form.elements.enabled;
       return null;
     },
@@ -301,15 +318,25 @@ function fakeResponse(ok: boolean, body: unknown): FakeResponse {
 }
 
 function extractEnhancementScript(html: string): string {
-  const match = /<script data-accounts-cards-direct-enhancement>([\s\S]*?)<\/script>/.exec(html);
+  const match =
+    /<script data-accounts-cards-direct-enhancement>([\s\S]*?)<\/script>/.exec(
+      html,
+    );
   assert.ok(match?.[1], "script de remuneração não encontrado");
   return match[1];
 }
 
-function extractSegment(source: string, startMarker: string, endMarker: string): string {
+function extractSegment(
+  source: string,
+  startMarker: string,
+  endMarker: string,
+): string {
   const start = source.indexOf(startMarker);
   const end = source.indexOf(endMarker, start + startMarker.length);
-  assert.ok(start >= 0 && end > start, `segmento ${startMarker} não encontrado`);
+  assert.ok(
+    start >= 0 && end > start,
+    `segmento ${startMarker} não encontrado`,
+  );
   return source.slice(start, end);
 }
 
