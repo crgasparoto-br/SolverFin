@@ -31,7 +31,9 @@ export class CdpClient {
     this.id = 1;
     this.pending = new Map();
     this.events = new Map();
-    socket.addEventListener("message", (event) => this.onMessage(String(event.data)));
+    socket.addEventListener("message", (event) =>
+      this.onMessage(String(event.data)),
+    );
   }
 
   send(method, params = {}) {
@@ -48,7 +50,10 @@ export class CdpClient {
 
   once(method, timeout = 15_000) {
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error(`CDP event timeout: ${method}`)), timeout);
+      const timer = setTimeout(
+        () => reject(new Error(`CDP event timeout: ${method}`)),
+        timeout,
+      );
       this.events.set(method, { resolve, reject, timer });
     });
   }
@@ -112,10 +117,14 @@ export async function launchChrome({ baseUrl, chromePath, debugPort = 0 }) {
       requestedPort: debugPort,
       output: () => `${stdout}${stderr}`,
     });
-    const response = await fetch(`${debugUrl}/json/new?${encodeURIComponent(`${baseUrl}/login`)}`, {
-      method: "PUT",
-    });
-    if (!response.ok) throw new Error(`Unable to create Chrome target: ${response.status}`);
+    const response = await fetch(
+      `${debugUrl}/json/new?${encodeURIComponent(`${baseUrl}/login`)}`,
+      {
+        method: "PUT",
+      },
+    );
+    if (!response.ok)
+      throw new Error(`Unable to create Chrome target: ${response.status}`);
     const target = await response.json();
     const cdp = await CdpClient.connect(target.webSocketDebuggerUrl);
     await cdp.send("Page.enable");
@@ -124,12 +133,16 @@ export async function launchChrome({ baseUrl, chromePath, debugPort = 0 }) {
 
     return {
       cdp,
-      version: execFileSync(chromePath, ["--version"], { encoding: "utf8" }).trim(),
+      version: execFileSync(chromePath, ["--version"], {
+        encoding: "utf8",
+      }).trim(),
       async close(outputDir) {
         cdp.close();
         await stopProcess(chrome);
-        if (stdout.trim()) await writeFile(join(outputDir, "chrome-stdout.log"), stdout);
-        if (stderr.trim()) await writeFile(join(outputDir, "chrome-stderr.log"), stderr);
+        if (stdout.trim())
+          await writeFile(join(outputDir, "chrome-stdout.log"), stdout);
+        if (stderr.trim())
+          await writeFile(join(outputDir, "chrome-stderr.log"), stderr);
         await removeProfile(profile, outputDir);
       },
     };
@@ -169,7 +182,8 @@ export async function evaluate(cdp, expression) {
   });
   if (response.exceptionDetails) {
     throw new Error(
-      response.exceptionDetails.exception?.description ?? response.exceptionDetails.text,
+      response.exceptionDetails.exception?.description ??
+        response.exceptionDetails.text,
     );
   }
   return response.result.value;
@@ -210,8 +224,13 @@ async function removeProfile(profile, outputDir) {
     }
   }
   const message =
-    lastError instanceof Error ? (lastError.stack ?? lastError.message) : String(lastError);
-  await writeFile(join(outputDir, "chrome-profile-cleanup-warning.log"), `${message}\n`);
+    lastError instanceof Error
+      ? (lastError.stack ?? lastError.message)
+      : String(lastError);
+  await writeFile(
+    join(outputDir, "chrome-profile-cleanup-warning.log"),
+    `${message}\n`,
+  );
 }
 
 async function waitForExpression(cdp, expression, timeout = 10_000) {
@@ -264,19 +283,31 @@ async function waitForChromeDebugUrl({
   const capturedOutput = output().trim();
   throw new Error(
     `Timed out waiting for the Chrome DevTools endpoint${
-      capturedOutput ? `\nChrome output:\n${truncate(capturedOutput, 4_000)}` : ""
+      capturedOutput
+        ? `\nChrome output:\n${truncate(capturedOutput, 4_000)}`
+        : ""
     }`,
   );
 }
 
 async function readDevToolsPort(profile) {
   try {
-    const contents = await readFile(join(profile, "DevToolsActivePort"), "utf8");
+    const contents = await readFile(
+      join(profile, "DevToolsActivePort"),
+      "utf8",
+    );
     const [portLine] = contents.trim().split(/\r?\n/);
     const port = Number(portLine);
-    return Number.isInteger(port) && port > 0 && port <= 65_535 ? port : undefined;
+    return Number.isInteger(port) && port > 0 && port <= 65_535
+      ? port
+      : undefined;
   } catch (error) {
-    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "ENOENT"
+    ) {
       return undefined;
     }
     throw error;
@@ -297,5 +328,7 @@ function formatChromeDiagnostics(chrome, stdout, stderr) {
 }
 
 function truncate(value, maxLength) {
-  return value.length <= maxLength ? value : `${value.slice(0, maxLength - 1)}…`;
+  return value.length <= maxLength
+    ? value
+    : `${value.slice(0, maxLength - 1)}…`;
 }
