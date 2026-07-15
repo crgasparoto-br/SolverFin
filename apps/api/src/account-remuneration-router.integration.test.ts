@@ -5,11 +5,7 @@ import { resetAccountRemunerationTestData } from "./account-remuneration-test-su
 import { closePool } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { importCdiRates } from "./repositories/account-remuneration-service.js";
-import {
-  handleApiRequest,
-  type ApiRequest,
-  type ApiResponse,
-} from "./router.js";
+import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 const COMPETENCE_ON = "2037-06-01";
 const PROCESSING_ON = "2037-06-02";
@@ -22,17 +18,13 @@ void main()
     process.exitCode = 1;
   })
   .finally(async () => {
-    if (previousMasterEmails === undefined)
-      delete process.env.SOLVERFIN_MASTER_EMAILS;
+    if (previousMasterEmails === undefined) delete process.env.SOLVERFIN_MASTER_EMAILS;
     else process.env.SOLVERFIN_MASTER_EMAILS = previousMasterEmails;
     await closePool();
   });
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for remuneration router tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for remuneration router tests.");
   await resetAccountRemunerationTestData();
   process.env.SOLVERFIN_MASTER_EMAILS = MASTER_EMAIL;
 
@@ -44,18 +36,14 @@ async function main(): Promise<void> {
     openingBalanceMinor: 1_000_000,
   });
   assert.equal(accountResponse.statusCode, 201);
-  const account = readBody<{ account: { id: string } }>(
-    accountResponse,
-  ).account;
+  const account = readBody<{ account: { id: string } }>(accountResponse).account;
 
   const categoryResponse = await apiRequest(token, "POST", "/api/categories", {
     name: `Receita remuneração ${suffix}`,
     kind: "income",
   });
   assert.equal(categoryResponse.statusCode, 201);
-  const category = readBody<{ category: { id: string } }>(
-    categoryResponse,
-  ).category;
+  const category = readBody<{ category: { id: string } }>(categoryResponse).category;
 
   const configurationResponse = await apiRequest(
     token,
@@ -80,21 +68,17 @@ async function main(): Promise<void> {
     readBody<{
       configurations: Array<{ accountId: string; enabled: boolean }>;
     }>(listConfigurationResponse).configurations.some(
-      (configuration) =>
-        configuration.accountId === account.id && configuration.enabled,
+      (configuration) => configuration.accountId === account.id && configuration.enabled,
     ),
   );
 
   await importCdiRates(
     { startsOn: COMPETENCE_ON, endsOn: COMPETENCE_ON },
     async () =>
-      new Response(
-        JSON.stringify([{ data: "01/06/2037", valor: "0,055131" }]),
-        {
-          status: 200,
-          headers: { "content-type": "application/json" },
-        },
-      ),
+      new Response(JSON.stringify([{ data: "01/06/2037", valor: "0,055131" }]), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
   );
 
   const processingResponse = await apiRequest(
@@ -154,64 +138,32 @@ async function main(): Promise<void> {
   );
   assert.equal(adjusted.accountRemuneration?.manuallyAdjusted, true);
 
-  const idempotentAccountUpdate = await apiRequest(
-    token,
-    "PATCH",
-    `/api/accounts/${account.id}`,
-    {
-      name: `Conta remuneração atualizada ${suffix}`,
-      openingBalanceMinor: 1_000_000,
-    },
-  );
+  const idempotentAccountUpdate = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    name: `Conta remuneração atualizada ${suffix}`,
+    openingBalanceMinor: 1_000_000,
+  });
   assert.equal(idempotentAccountUpdate.statusCode, 200);
 
-  const changedOpeningBalance = await apiRequest(
-    token,
-    "PATCH",
-    `/api/accounts/${account.id}`,
-    {
-      openingBalanceMinor: 1_000_001,
-    },
-  );
+  const changedOpeningBalance = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    openingBalanceMinor: 1_000_001,
+  });
   assert.equal(changedOpeningBalance.statusCode, 400);
-  assert.equal(
-    readError(changedOpeningBalance).code,
-    "ACCOUNT_OPENING_BALANCE_LOCKED",
-  );
+  assert.equal(readError(changedOpeningBalance).code, "ACCOUNT_OPENING_BALANCE_LOCKED");
   assert.match(readError(changedOpeningBalance).message ?? "", /movimentações/);
 
-  const blockedCurrencyChange = await apiRequest(
-    token,
-    "PATCH",
-    `/api/accounts/${account.id}`,
-    {
-      currency: "USD",
-    },
-  );
+  const blockedCurrencyChange = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    currency: "USD",
+  });
   assert.equal(blockedCurrencyChange.statusCode, 409);
-  assert.equal(
-    readError(blockedCurrencyChange).code,
-    "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
-  );
+  assert.equal(readError(blockedCurrencyChange).code, "ACCOUNT_REMUNERATION_MUST_BE_DISABLED");
   assert.match(readError(blockedCurrencyChange).message ?? "", /Desative.*CDI/);
 
-  const blockedArchive = await apiRequest(
-    token,
-    "POST",
-    `/api/accounts/${account.id}/archive`,
-  );
+  const blockedArchive = await apiRequest(token, "POST", `/api/accounts/${account.id}/archive`);
   assert.equal(blockedArchive.statusCode, 409);
-  assert.equal(
-    readError(blockedArchive).code,
-    "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
-  );
+  assert.equal(readError(blockedArchive).code, "ACCOUNT_REMUNERATION_MUST_BE_DISABLED");
   assert.match(readError(blockedArchive).message ?? "", /Desative.*CDI/);
 
-  const statusResponse = await apiRequest(
-    token,
-    "GET",
-    "/api/admin/financial-indexes/status",
-  );
+  const statusResponse = await apiRequest(token, "GET", "/api/admin/financial-indexes/status");
   assert.equal(statusResponse.statusCode, 200);
   const status = readBody<{
     status: { pendingCompetences: number; configurationsWithoutRates: number };
@@ -260,52 +212,33 @@ async function main(): Promise<void> {
   );
   assert.equal(disableAgainResponse.statusCode, 200);
 
-  const allowedCurrencyChange = await apiRequest(
-    token,
-    "PATCH",
-    `/api/accounts/${account.id}`,
-    {
-      currency: "USD",
-    },
-  );
+  const allowedCurrencyChange = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    currency: "USD",
+  });
   assert.equal(allowedCurrencyChange.statusCode, 200);
 
   await assertConcurrentAccountEligibility(token, suffix);
 
   process.env.SOLVERFIN_MASTER_EMAILS = "";
-  const forbiddenResponse = await apiRequest(
-    token,
-    "GET",
-    "/api/admin/financial-indexes/status",
-  );
+  const forbiddenResponse = await apiRequest(token, "GET", "/api/admin/financial-indexes/status");
   assert.equal(forbiddenResponse.statusCode, 403);
 }
 
-async function assertConcurrentAccountEligibility(
-  token: string,
-  suffix: string,
-): Promise<void> {
+async function assertConcurrentAccountEligibility(token: string, suffix: string): Promise<void> {
   const accountResponse = await apiRequest(token, "POST", "/api/accounts", {
     name: `Conta concorrente ${suffix}`,
     kind: "checking",
     openingBalanceMinor: 500_000,
   });
   assert.equal(accountResponse.statusCode, 201);
-  const account = readBody<{ account: { id: string } }>(
-    accountResponse,
-  ).account;
+  const account = readBody<{ account: { id: string } }>(accountResponse).account;
 
   const [enableResponse, currencyResponse] = await Promise.all([
-    apiRequest(
-      token,
-      "PUT",
-      `/api/account-remuneration/configurations/${account.id}`,
-      {
-        enabled: true,
-        remunerationPercent: 100,
-        startsOn: COMPETENCE_ON,
-      },
-    ),
+    apiRequest(token, "PUT", `/api/account-remuneration/configurations/${account.id}`, {
+      enabled: true,
+      remunerationPercent: 100,
+      startsOn: COMPETENCE_ON,
+    }),
     apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
       currency: "USD",
     }),
@@ -333,9 +266,7 @@ async function assertConcurrentAccountEligibility(
       accountCurrency: string;
       enabled: boolean;
     }>;
-  }>(configurationsResponse).configurations.find(
-    (item) => item.accountId === account.id,
-  );
+  }>(configurationsResponse).configurations.find((item) => item.accountId === account.id);
   assert.ok(configuration);
   assert.equal(
     configuration.enabled && configuration.accountCurrency !== "BRL",
@@ -369,8 +300,7 @@ async function apiRequest(
     body,
   };
   const response =
-    (await handleAccountRemunerationApiRequest(request)) ??
-    (await handleApiRequest(request));
+    (await handleAccountRemunerationApiRequest(request)) ?? (await handleApiRequest(request));
 
   return (
     response ?? {
@@ -391,8 +321,5 @@ function readError(response: Pick<ApiResponse, "body">): {
   code?: string;
   message?: string;
 } {
-  return (
-    readBody<{ error?: { code?: string; message?: string } }>(response).error ??
-    {}
-  );
+  return readBody<{ error?: { code?: string; message?: string } }>(response).error ?? {};
 }
