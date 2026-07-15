@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "npm run dev:web",
     "dev:web": "npm run build:packages && npm run dev --workspace @solverfin/web",
+    "start:web": "npm run start --workspace @solverfin/web",
     "dev:api": "node scripts/prepare-local-env.mjs && npm run build:packages && npm run dev --workspace @solverfin/api",
     "dev:all": "node scripts/prepare-local-env.mjs && node scripts/dev-all.mjs",
     "build:packages": "npm run build --workspace @solverfin/shared --workspace @solverfin/config --workspace @solverfin/domain --workspace @solverfin/ai",
