@@ -34,10 +34,7 @@ export function keepCardInstrumentsInsideEditDialog(html: string): string {
   );
   nextHtml = removeInlineInstrumentSections(nextHtml);
   nextHtml = removeNestedDivByClass(nextHtml, "instrument-list");
-  nextHtml = nextHtml.replace(
-    /\s*<p class="instrument-warning"[\s\S]*?<\/p>/g,
-    "",
-  );
+  nextHtml = nextHtml.replace(/\s*<p class="instrument-warning"[\s\S]*?<\/p>/g, "");
   nextHtml = removeStandaloneNewInstrumentButtons(nextHtml);
   nextHtml = removeLegacyStatusFilter(nextHtml);
 
@@ -61,9 +58,7 @@ function removeLegacyStatusFilter(html: string): string {
   );
 }
 
-function collectCreateInstrumentDialogs(
-  html: string,
-): InstrumentCreateDialog[] {
+function collectCreateInstrumentDialogs(html: string): InstrumentCreateDialog[] {
   const dialogPattern =
     /\s*<dialog id="new-card-instrument-dialog-([^"]+)" class="master-dialog" aria-labelledby="[^"]+">[\s\S]*?<\/dialog>/g;
   const createDialogs: InstrumentCreateDialog[] = [];
@@ -87,15 +82,12 @@ function collectCreateInstrumentDialogs(
 }
 
 function collectCardInstrumentLists(html: string): CardInstrumentList[] {
-  const cardArticlePattern =
-    /<article class="master-item card-account-item"[\s\S]*?<\/article>/g;
+  const cardArticlePattern = /<article class="master-item card-account-item"[\s\S]*?<\/article>/g;
   const instrumentLists: CardInstrumentList[] = [];
 
   for (const match of html.matchAll(cardArticlePattern)) {
     const articleHtml = match[0];
-    const cardId = articleHtml.match(
-      /<dialog id="edit-card-dialog-([^"]+)"/,
-    )?.[1];
+    const cardId = articleHtml.match(/<dialog id="edit-card-dialog-([^"]+)"/)?.[1];
     const listHtml = extractNestedDivByClass(articleHtml, "instrument-list");
 
     if (!cardId || !listHtml) continue;
@@ -119,10 +111,7 @@ function removeInlineInstrumentSections(html: string): string {
   );
 }
 
-function extractNestedDivByClass(
-  html: string,
-  className: string,
-): string | undefined {
+function extractNestedDivByClass(html: string, className: string): string | undefined {
   const start = html.indexOf(`<div class="${className}`);
   if (start === -1) return undefined;
 
@@ -180,10 +169,7 @@ function findClosingDivEnd(html: string, startIndex: number): number {
   return -1;
 }
 
-function insertDialogInstrumentList(
-  html: string,
-  instrumentList: CardInstrumentList,
-): string {
+function insertDialogInstrumentList(html: string, instrumentList: CardInstrumentList): string {
   const editDialogNeedle = `<dialog id="edit-card-dialog-${instrumentList.cardId}"`;
   const dialogStart = html.indexOf(editDialogNeedle);
   if (dialogStart === -1) return html;
@@ -196,9 +182,7 @@ function insertDialogInstrumentList(
   return `${html.slice(0, dialogEnd)}${listSection}${html.slice(dialogEnd)}`;
 }
 
-function renderDialogInstrumentListSection(
-  instrumentList: CardInstrumentList,
-): string {
+function renderDialogInstrumentListSection(instrumentList: CardInstrumentList): string {
   return `
       <section class="dialog-subsection dialog-instrument-list" aria-label="Instrumentos cadastrados no cartão">
         <div class="dialog-subsection-heading">
@@ -212,10 +196,7 @@ function renderDialogInstrumentListSection(
 `;
 }
 
-function insertInlineCreateInstrumentForm(
-  html: string,
-  dialog: InstrumentCreateDialog,
-): string {
+function insertInlineCreateInstrumentForm(html: string, dialog: InstrumentCreateDialog): string {
   const editDialogNeedle = `<dialog id="edit-card-dialog-${dialog.cardId}"`;
   const dialogStart = html.indexOf(editDialogNeedle);
   if (dialogStart === -1) return html;
@@ -228,9 +209,7 @@ function insertInlineCreateInstrumentForm(
   return `${html.slice(0, dialogEnd)}${createSection}${html.slice(dialogEnd)}`;
 }
 
-function renderInlineCreateInstrumentSection(
-  dialog: InstrumentCreateDialog,
-): string {
+function renderInlineCreateInstrumentSection(dialog: InstrumentCreateDialog): string {
   const formId = `new-card-instrument-form-${dialog.cardId}`;
   const formHtml = dialog.formHtml.replace(
     "<form data-api-form",
@@ -269,8 +248,7 @@ function installDialogInstrumentListStyles(html: string): string {
       }
     </style>`;
 
-  if (html.includes("</head>"))
-    return html.replace("</head>", `${styles}</head>`);
+  if (html.includes("</head>")) return html.replace("</head>", `${styles}</head>`);
 
   return `${styles}${html}`;
 }
@@ -327,8 +305,7 @@ function installInlineCreateInstrumentScript(html: string): string {
     </script>
 `;
 
-  if (html.includes("</body>"))
-    return html.replace("</body>", `${script}</body>`);
+  if (html.includes("</body>")) return html.replace("</body>", `${script}</body>`);
 
   return `${html}${script}`;
 }
