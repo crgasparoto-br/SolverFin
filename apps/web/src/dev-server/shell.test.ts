@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
-import { listPrivateShellRoutes } from "../app-shell/routes.js";
-import { privateRoutes } from "./routes.js";
+import { listNavigablePrivateShellRoutes } from "../app-shell/routes.js";
 import { renderAuthenticatedShellDocument, renderShellDocument } from "./shell.js";
 
 describe("SSR shell document", () => {
@@ -54,6 +53,7 @@ describe("authenticated SSR shell", () => {
     assert.match(transactionsLink.content, /Extrato da conta/);
     assert.doesNotMatch(html, /href="\/pagar-receber"/);
     assert.doesNotMatch(html, />Pagar e receber<\/a>/);
+    assert.doesNotMatch(html, /href="\/remuneracao-contas"/);
     assert.match(settingsLink.attributes, /data-nav-priority="primary"/);
     assert.match(settingsLink.content, /Configurações/);
     assert.match(html, /fetch\("\/api\/session", \{ method: "DELETE" \}\)/);
@@ -77,7 +77,7 @@ describe("authenticated SSR shell", () => {
     assert.doesNotMatch(html, /restoreNativeTitle/);
   });
 
-  it("renders every private route in the shared navigation", () => {
+  it("renders every navigable private route in the shared navigation", () => {
     const html = renderAuthenticatedShellDocument({
       activePathname: "/dashboard",
       content: "<section>Conteúdo da página</section>",
@@ -85,29 +85,30 @@ describe("authenticated SSR shell", () => {
       styles: ".test-marker { color: #0f3d4c; }",
     });
 
-    for (const [path, label] of privateRoutes.entries()) {
-      const link = findNavigationLink(html, path);
-      assert.match(link.content, new RegExp(escapeRegExp(label)));
+    for (const route of listNavigablePrivateShellRoutes()) {
+      const link = findNavigationLink(html, route.path);
+      assert.match(link.content, new RegExp(escapeRegExp(route.label)));
     }
+    assert.doesNotMatch(html, /href="\/remuneracao-contas"/);
   });
 
-  it("marks only the active private route in the shared navigation", () => {
-    for (const activePathname of privateRoutes.keys()) {
+  it("marks only the active navigable private route in the shared navigation", () => {
+    for (const activeRoute of listNavigablePrivateShellRoutes()) {
       const html = renderAuthenticatedShellDocument({
-        activePathname,
+        activePathname: activeRoute.path,
         content: "<section>Conteúdo da página</section>",
-        currentLabel: privateRoutes.get(activePathname) ?? "Dashboard",
+        currentLabel: activeRoute.label,
         styles: ".test-marker { color: #0f3d4c; }",
       });
 
-      for (const route of listPrivateShellRoutes()) {
+      for (const route of listNavigablePrivateShellRoutes()) {
         const link = findNavigationLink(html, route.path);
         const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
 
         assert.match(link.attributes, new RegExp(`data-nav-priority="${priority}"`));
         assert.equal(
           link.attributes.includes('aria-current="page"'),
-          route.path === activePathname,
+          route.path === activeRoute.path,
         );
 
         if (priority === "secondary") {
@@ -117,7 +118,7 @@ describe("authenticated SSR shell", () => {
     }
   });
 
-  it("classifies private routes into primary and secondary mobile navigation groups", () => {
+  it("classifies navigable private routes into primary and secondary mobile groups", () => {
     const html = renderAuthenticatedShellDocument({
       activePathname: "/dashboard",
       content: "<section>Conteúdo da página</section>",
@@ -125,7 +126,7 @@ describe("authenticated SSR shell", () => {
       styles: ".test-marker { color: #0f3d4c; }",
     });
 
-    for (const route of listPrivateShellRoutes()) {
+    for (const route of listNavigablePrivateShellRoutes()) {
       const link = findNavigationLink(html, route.path);
       const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
       assert.match(link.attributes, new RegExp(`data-nav-priority="${priority}"`));
