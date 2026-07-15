@@ -1,6 +1,11 @@
 import { spawn, spawnSync } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const initialBuild = spawnSync("tsc", ["-p", "tsconfig.json"], { stdio: "inherit" });
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const initialBuild = spawnSync(process.execPath, [path.join(scriptDir, "build-web.mjs")], {
+  stdio: "inherit",
+});
 if (initialBuild.status !== 0) process.exit(initialBuild.status ?? 1);
 
 const processes = [

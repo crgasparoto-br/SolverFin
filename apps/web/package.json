@@ -6,11 +6,12 @@
   "description": "Aplicacao web/PWA mobile-first do SolverFin.",
   "scripts": {
     "dev": "node ../../scripts/dev-web.mjs",
+    "start": "node dist/dev-server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/web --include .test.js",
-    "build": "tsc --noEmit"
+    "build": "node ../../scripts/build-web.mjs"
   },
   "dependencies": {
     "@solverfin/shared": "*"

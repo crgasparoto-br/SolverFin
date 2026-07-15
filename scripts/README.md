@@ -16,7 +16,19 @@ Regras:
 - `seed-demo.mjs`: aplica dados ficticios e seguros para demonstracao local, incluindo perfis pessoal, MEI e negocio, categorias, contas, orcamentos e transacoes coerentes para dashboards. Rode via `npm run db:seed` depois de aplicar as migrations.
 - `seed-default-categories.mjs`: repara a arvore inicial editavel de categorias padrao para perfis ativos, usando a fonte canonica de `packages/domain`. O script adiciona apenas categorias padrao ausentes, reaproveita equivalentes por tipo, pai e nome normalizado, preserva categorias editadas/arquivadas pelo usuario e pode ser executado repetidamente sem duplicar registros. Rode via `npm run db:repair:default-categories`.
 - `seed-default-categories-for-user.mjs`: aplica o mesmo reparo idempotente para os perfis ativos de um usuario informado por email. O script nao exclui nem substitui categorias existentes. Rode via `npm run db:repair:default-categories:user -- email@example.com`.
-- `dev-web.mjs`: compila a aplicacao web uma vez, mantem o TypeScript em modo watch e reinicia o servidor local com o watch nativo do Node quando `apps/web/dist` muda. Rode via `npm run dev:web`.
+- `build-web.mjs`: remove `apps/web/dist` e recompila a aplicacao web a partir de `apps/web/src`. Rode via `npm run build --workspace @solverfin/web`.
+- `dev-web.mjs`: executa o build limpo da aplicacao web, mantem o TypeScript em modo watch e reinicia o servidor local com o watch nativo do Node quando `apps/web/dist` muda. Rode via `npm run dev:web`.
+
+## Build e start do web SSR
+
+O artefato executado pelo servidor web fica em `apps/web/dist` e nao e versionado. Para iniciar o SSR fora do modo watch, primeiro gere um artefato novo e somente depois execute o start:
+
+```bash
+npm run build --workspace @solverfin/web
+npm run start:web
+```
+
+O build remove todo o `dist` anterior antes de compilar, evitando arquivos orfaos ou JavaScript desatualizado. O comando `npm run start:web` nao compila a aplicacao: ele executa diretamente `apps/web/dist/dev-server.js` e deve ser usado apenas depois de um build concluido com sucesso.
 
 ## Descoberta de testes compilados
 
