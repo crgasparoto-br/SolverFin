@@ -185,11 +185,12 @@ function renderRow(
     : undefined;
 
   return `
-    <article class="statement-row statement-body" role="row">
+    <article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row">
       <time class="col-date" datetime="${escapeHtml(date)}">${formatDate(date)}</time>
       <div class="description col-description">
-        <strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>
+        <strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}${transaction.accountRemuneration ? '<span class="account-remuneration-badge">Remuneração CDI</span>' : ""}</strong>
         ${renderTransferNote(transaction, selectedAccount, accounts)}
+        ${renderAccountRemunerationAudit(transaction)}
       </div>
       <span class="col-category">${escapeHtml(categoryName)}</span>
       <span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
@@ -210,6 +211,30 @@ function renderRow(
       <script type="application/json" data-transaction="${escapeHtml(transaction.id)}">${serializeScriptJson(transaction)}</script>
     </article>
   `;
+}
+
+export function renderAccountRemunerationAudit(transaction: TransactionRecord): string {
+  const remuneration = transaction.accountRemuneration;
+  if (!remuneration) return "";
+
+  return `
+    <section class="account-remuneration-audit" aria-label="Memória do cálculo da remuneração">
+      <div class="account-remuneration-audit-heading">
+        <strong>Memória do cálculo</strong>
+        <span class="account-remuneration-adjustment ${remuneration.manuallyAdjusted ? "adjusted" : "original"}">${remuneration.manuallyAdjusted ? "Ajustado manualmente" : "Valor original"}</span>
+      </div>
+      <dl>
+        <div><dt>Competência</dt><dd>${escapeHtml(formatDate(remuneration.competenceOn))}</dd></div>
+        <div><dt>Saldo-base</dt><dd>${escapeHtml(formatMinorCurrency(remuneration.balanceBaseMinor))}</dd></div>
+        <div><dt>CDI diário</dt><dd>${escapeHtml(formatPercentage(remuneration.dailyRatePercent, 8))}</dd></div>
+        <div><dt>Percentual aplicado</dt><dd>${escapeHtml(formatPercentage(remuneration.remunerationPercent, 4))}</dd></div>
+        <div><dt>Valor original</dt><dd>${escapeHtml(formatMinorCurrency(remuneration.originalAmountMinor))}</dd></div>
+      </dl>
+    </section>`;
+}
+
+function formatPercentage(value: number, maximumFractionDigits: number): string {
+  return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits }).format(value)}%`;
 }
 
 function renderTransferNote(
