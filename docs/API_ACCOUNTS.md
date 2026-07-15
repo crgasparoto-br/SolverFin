@@ -111,18 +111,35 @@ Padroes:
 ### PATCH /accounts/:accountId
 
 Permite atualizar nome, tipo, status, moeda, identificador mascarado e saldo
-inicial quando ainda nao houver movimentacoes vinculadas.
+inicial.
 
-Se ja existirem lancamentos da conta, alteracao de saldo inicial deve retornar:
+Quando a conta ja possui movimentacoes, o campo `openingBalanceMinor` e
+idempotente:
+
+- se for omitido, o saldo inicial persistido e mantido;
+- se repetir exatamente o valor persistido, a atualizacao e aceita;
+- se for informado com valor invalido, retorna `ACCOUNT_OPENING_BALANCE_INVALID`;
+- somente uma mudanca real do valor retorna:
 
 ```text
 400 ACCOUNT_OPENING_BALANCE_LOCKED
+```
+
+Uma conta com remuneracao CDI ativa deve permanecer ativa e em `BRL`. Antes de
+alterar a moeda para outra divisa ou mudar o status para arquivado, a remuneracao
+deve ser desativada por sua API dedicada. Caso contrario, retorna:
+
+```text
+409 ACCOUNT_REMUNERATION_MUST_BE_DISABLED
 ```
 
 ### POST /accounts/:accountId/archive
 
 Arquiva a conta. Hard delete fica fora do escopo do MVP, especialmente quando
 houver historico financeiro.
+
+O arquivamento tambem retorna `409 ACCOUNT_REMUNERATION_MUST_BE_DISABLED` quando
+a conta ainda possui configuracao CDI ativa.
 
 ## Erros de validacao
 
@@ -135,6 +152,7 @@ Erros controlados do contrato de dominio:
 400 ACCOUNT_CURRENCY_INVALID
 400 ACCOUNT_OPENING_BALANCE_INVALID
 400 ACCOUNT_OPENING_BALANCE_LOCKED
+409 ACCOUNT_REMUNERATION_MUST_BE_DISABLED
 404 TENANT_RESOURCE_NOT_FOUND
 403 TENANT_PAYLOAD_SCOPE_FORBIDDEN
 ```
@@ -144,7 +162,7 @@ financeiros sensiveis.
 
 ## Testes
 
-O pacote `@solverfin/domain` cobre:
+O pacote `@solverfin/domain` e a integracao da API cobrem:
 
 - criacao de conta;
 - validacao de nome e moeda;
@@ -152,6 +170,8 @@ O pacote `@solverfin/domain` cobre:
 - edicao de conta;
 - arquivamento;
 - bloqueio de acesso a conta de outro tenant;
-- bloqueio de edicao de saldo inicial quando ha movimentacoes.
+- atualizacao idempotente do saldo inicial quando ha movimentacoes;
+- bloqueio de mudanca real do saldo inicial quando ha movimentacoes;
+- bloqueio de moeda e arquivamento enquanto a remuneracao CDI estiver ativa.
 
 Todos os exemplos usam dados ficticios.
