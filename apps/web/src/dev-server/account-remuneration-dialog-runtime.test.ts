@@ -193,9 +193,7 @@ class FakeForm {
   };
   readonly status = { className: "", textContent: "" };
   readonly submitButton = { disabled: false };
-  private submitListener:
-    | ((event: { preventDefault(): void }) => void)
-    | undefined;
+  private submitListener: ((event: { preventDefault(): void }) => void) | undefined;
 
   reportValidity(): boolean {
     return true;
@@ -207,10 +205,7 @@ class FakeForm {
     return null;
   }
 
-  addEventListener(
-    type: string,
-    listener: (event: { preventDefault(): void }) => void,
-  ): void {
+  addEventListener(type: string, listener: (event: { preventDefault(): void }) => void): void {
     if (type === "submit") this.submitListener = listener;
   }
 
