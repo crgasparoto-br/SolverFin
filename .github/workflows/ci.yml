@@ -30,6 +30,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - run: npm ci --no-audit --no-fund
+      - run: npm run build:packages
 
       - name: Apply and format direct accessible title
         shell: bash
@@ -62,27 +63,12 @@ jobs:
             apps/web/src/dev-server/account-remuneration-dialog-runtime.test.ts
 
       - name: Typecheck web
-        id: typecheck
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run typecheck --workspace @solverfin/web 2>&1 | tee /tmp/issue-479-typecheck.log
-
-      - name: Upload typecheck log
-        if: steps.typecheck.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-479-typecheck-log
-          path: /tmp/issue-479-typecheck.log
-          retention-days: 1
+        run: npm run typecheck --workspace @solverfin/web
 
       - name: Test web
-        if: steps.typecheck.outcome == 'success'
         run: npm run test --workspace @solverfin/web
 
       - name: Restore workflows and commit fix
-        if: steps.typecheck.outcome == 'success' && success()
         run: |
           git checkout origin/main -- .github/workflows/ci.yml
           rm -f .github/workflows/issue-479-accessibility-final.yml
@@ -91,7 +77,3 @@ jobs:
           git add -A
           git commit -m "fix: tornar título do modal CDI diretamente acessível"
           git push origin HEAD:feat/479-account-cdi-modal
-
-      - name: Fail when typecheck failed
-        if: steps.typecheck.outcome == 'failure'
-        run: exit 1
