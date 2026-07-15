@@ -1,9 +1,9 @@
 name: Format issue 479
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/479-account-cdi-modal
+      - main
 
 permissions:
   contents: read
