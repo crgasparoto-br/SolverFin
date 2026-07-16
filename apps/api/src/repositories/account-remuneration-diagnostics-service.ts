@@ -84,7 +84,11 @@ export async function importCdiRates(
           receivedCount: 0,
           importedCount: 0,
         };
-        await persistCurrentFailedDiagnostics("CDI_IMPORT", diagnostics, executeQuery);
+        await persistCurrentFailedDiagnostics(
+          "CDI_IMPORT",
+          diagnostics,
+          executeQuery,
+        );
         return { ok: false, error };
       }
 
@@ -103,7 +107,10 @@ export async function importCdiRates(
         importedCount: result.importedCount,
       };
       const latestReferenceOn = await findLatestCdiReferenceDate(executeQuery);
-      const message = formatImportOutcomeMessage(diagnostics, latestReferenceOn);
+      const message = formatImportOutcomeMessage(
+        diagnostics,
+        latestReferenceOn,
+      );
       rolledBackOperation = {
         id: result.operation.id,
         kind: "CDI_IMPORT",
@@ -148,7 +155,10 @@ export async function processAccountRemunerations(
       try {
         result = await processBaseAccountRemunerations(normalizedProcessedOn);
       } catch (error) {
-        const snapshot = await readProcessingSnapshot(normalizedProcessedOn, executeQuery);
+        const snapshot = await readProcessingSnapshot(
+          normalizedProcessedOn,
+          executeQuery,
+        );
         const diagnostics: ProcessingOperationDiagnostics = {
           kind: "ACCOUNT_REMUNERATION",
           processedOn: normalizedProcessedOn,
@@ -163,7 +173,11 @@ export async function processAccountRemunerations(
           zeroAmountCompetences: 0,
           pendingCompetences: 0,
         };
-        await persistCurrentFailedDiagnostics("ACCOUNT_REMUNERATION", diagnostics, executeQuery);
+        await persistCurrentFailedDiagnostics(
+          "ACCOUNT_REMUNERATION",
+          diagnostics,
+          executeQuery,
+        );
         return { ok: false, error };
       }
 
@@ -174,7 +188,10 @@ export async function processAccountRemunerations(
           "O processamento foi desfeito porque não foi possível persistir o diagnóstico operacional.",
         diagnostics: null,
       };
-      const snapshot = await readProcessingSnapshot(normalizedProcessedOn, executeQuery);
+      const snapshot = await readProcessingSnapshot(
+        normalizedProcessedOn,
+        executeQuery,
+      );
       const alreadyRegisteredCompetences = Math.max(
         0,
         snapshot.alreadyRegisteredCompetences - result.processedCount,
@@ -185,7 +202,8 @@ export async function processAccountRemunerations(
         activeConfigurations: snapshot.activeConfigurations,
         notEligibleConfigurations: snapshot.notEligibleConfigurations,
         configurationsWithoutRates: snapshot.configurationsWithoutRates,
-        eligibleCompetences: alreadyRegisteredCompetences + result.processedCount,
+        eligibleCompetences:
+          alreadyRegisteredCompetences + result.processedCount,
         alreadyRegisteredCompetences,
         processedCompetences: result.processedCount,
         plannedTransactionsCreated: result.createdCount,
@@ -233,26 +251,38 @@ export async function getFinancialIndexStatus(): Promise<FinancialIndexStatusRec
 function assertImportPeriodOrder(startsOn: string, endsOn: string): void {
   if (startsOn <= endsOn) return;
 
-  throw Object.assign(new Error("A data inicial não pode ser posterior à data final."), {
-    code: "FINANCIAL_INDEX_PERIOD_INVALID",
-    statusCode: 400,
-  });
+  throw Object.assign(
+    new Error("A data inicial não pode ser posterior à data final."),
+    {
+      code: "FINANCIAL_INDEX_PERIOD_INVALID",
+      statusCode: 400,
+    },
+  );
 }
 
 function normalizeDate(value: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw Object.assign(new Error("Informe uma data válida no formato AAAA-MM-DD."), {
-      code: "FINANCIAL_INDEX_PERIOD_INVALID",
-      statusCode: 400,
-    });
+    throw Object.assign(
+      new Error("Informe uma data válida no formato AAAA-MM-DD."),
+      {
+        code: "FINANCIAL_INDEX_PERIOD_INVALID",
+        statusCode: 400,
+      },
+    );
   }
 
   const parsed = new Date(`${value}T00:00:00.000Z`);
-  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
-    throw Object.assign(new Error("Informe uma data válida no formato AAAA-MM-DD."), {
-      code: "FINANCIAL_INDEX_PERIOD_INVALID",
-      statusCode: 400,
-    });
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== value
+  ) {
+    throw Object.assign(
+      new Error("Informe uma data válida no formato AAAA-MM-DD."),
+      {
+        code: "FINANCIAL_INDEX_PERIOD_INVALID",
+        statusCode: 400,
+      },
+    );
   }
 
   return value;
