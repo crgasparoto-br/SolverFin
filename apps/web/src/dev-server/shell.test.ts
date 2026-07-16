@@ -87,13 +87,8 @@ describe("authenticated SSR shell", () => {
     assert.doesNotMatch(sidebar.slice(navigationIndex, navigationEndIndex), /class="logout"/);
     assert.match(
       html,
-      /@media \(min-width: 761px\)[\s\S]*\.sidebar\s*\{[\s\S]*overflow:\s*hidden;[\s\S]*\.sidebar > \.sidebar-navigation\s*\{[\s\S]*flex:\s*1 1 auto;[\s\S]*min-height:\s*0;[\s\S]*min-width:\s*0;[\s\S]*overflow-x:\s*hidden;[\s\S]*overflow-y:\s*auto;/,
+      /@media \(min-width: 761px\)[\s\S]*\.sidebar\s*\{[\s\S]*overflow:\s*hidden;[\s\S]*\.sidebar > \.sidebar-navigation\s*\{[\s\S]*flex:\s*1 1 auto;[\s\S]*min-height:\s*0;[\s\S]*min-width:\s*0;[\s\S]*overflow-x:\s*hidden;[\s\S]*overflow-y:\s*auto;[\s\S]*touch-action:\s*pan-y;/,
     );
-
-    for (const route of listNavigablePrivateShellRoutes({ includeMaster: true })) {
-      const link = findNavigationLink(sidebar, route.path);
-      assert.match(link.content, new RegExp(escapeRegExp(route.label)));
-    }
   });
 
   it("keeps statement presentation assets out of unrelated authenticated pages", () => {
@@ -109,7 +104,7 @@ describe("authenticated SSR shell", () => {
     assert.doesNotMatch(html, /restoreNativeTitle/);
   });
 
-  it("renders every navigable private route in the shared navigation", () => {
+  it("renders every common navigable private route in the shared navigation", () => {
     const html = renderAuthenticatedShellDocument({
       activePathname: "/dashboard",
       content: "<section>Conteúdo da página</section>",
@@ -122,6 +117,53 @@ describe("authenticated SSR shell", () => {
       assert.match(link.content, new RegExp(escapeRegExp(route.label)));
     }
     assert.doesNotMatch(html, /href="\/remuneracao-contas"/);
+    assert.doesNotMatch(html, /href="\/admin\/instituicoes"/);
+    assert.doesNotMatch(html, /href="\/admin\/indices-financeiros"/);
+  });
+
+  it("renders every master route from the catalog with icon, order and accessible metadata", () => {
+    const routes = listNavigablePrivateShellRoutes({ includeMaster: true });
+    const masterRoutes = routes.filter((route) => route.requiresMaster === true);
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/admin/indices-financeiros",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Admin - Índices financeiros",
+      styles: ".test-marker { color: #0f3d4c; }",
+      showAdminNavigation: true,
+    });
+    const sidebar = findSidebarContent(html);
+    const adminGroupLabels = sidebar.match(/data-nav-group="admin"/g) ?? [];
+    const toggle = findNavigationToggle(sidebar);
+    let previousIndex = -1;
+
+    assert.equal(adminGroupLabels.length, 1);
+
+    for (const route of routes) {
+      const link = findNavigationLink(sidebar, route.path);
+      const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
+      const elementId = `nav-${priority}-${route.id}`;
+
+      assert.match(link.attributes, new RegExp(`id="${elementId}"`));
+      assert.match(link.attributes, new RegExp(`data-nav-priority="${priority}"`));
+      assert.match(link.attributes, new RegExp(`title="${escapeRegExp(route.description)}"`));
+      assert.match(link.content, /<svg[^>]*aria-hidden="true"[^>]*>/);
+      assert.match(link.content, new RegExp(escapeRegExp(route.label)));
+
+      if (priority === "secondary") {
+        assert.match(toggle.attributes, new RegExp(`aria-controls="[^"]*${elementId}`));
+      }
+    }
+
+    for (const route of masterRoutes) {
+      const routeIndex = sidebar.indexOf(`href="${route.path}"`);
+      assert.ok(routeIndex > previousIndex);
+      previousIndex = routeIndex;
+    }
+
+    assert.match(
+      findNavigationLink(sidebar, "/admin/indices-financeiros").attributes,
+      /aria-current="page"/,
+    );
   });
 
   it("marks only the active navigable private route in the shared navigation", () => {
@@ -142,29 +184,6 @@ describe("authenticated SSR shell", () => {
           link.attributes.includes('aria-current="page"'),
           route.path === activeRoute.path,
         );
-
-        if (priority === "secondary") {
-          assert.match(link.attributes, new RegExp(`id="nav-secondary-${route.id}"`));
-        }
-      }
-    }
-  });
-
-  it("classifies navigable private routes into primary and secondary mobile groups", () => {
-    const html = renderAuthenticatedShellDocument({
-      activePathname: "/dashboard",
-      content: "<section>Conteúdo da página</section>",
-      currentLabel: "Dashboard",
-      styles: ".test-marker { color: #0f3d4c; }",
-    });
-
-    for (const route of listNavigablePrivateShellRoutes()) {
-      const link = findNavigationLink(html, route.path);
-      const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
-      assert.match(link.attributes, new RegExp(`data-nav-priority="${priority}"`));
-
-      if (priority === "secondary") {
-        assert.match(link.attributes, new RegExp(`id="nav-secondary-${route.id}"`));
       }
     }
   });
@@ -177,10 +196,7 @@ describe("authenticated SSR shell", () => {
       styles: ".test-marker { color: #0f3d4c; }",
     });
 
-    assert.match(
-      html,
-      /<nav aria-label="Menu principal" class="sidebar-navigation">/,
-    );
+    assert.match(html, /<nav aria-label="Menu principal" class="sidebar-navigation">/);
     assert.match(html, /aria-expanded="false"[^>]*>Mais<\/button>/);
   });
 
@@ -199,7 +215,20 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /aria-expanded="true"[^>]*>Menos<\/button>/);
   });
 
-  it("loads the current user and can add the admin institutions route when the user is master", () => {
+  it("uses a delegated More/Less handler so catalog navigation can be replaced safely", () => {
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/dashboard",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Dashboard",
+      styles: ".test-marker { color: #0f3d4c; }",
+    });
+
+    assert.match(html, /document\.addEventListener\("click", \(event\) =>/);
+    assert.match(html, /target\.closest\("\[data-nav-more\]"\)/);
+    assert.doesNotMatch(html, /querySelectorAll\("\[data-nav-more\]"\)\.forEach/);
+  });
+
+  it("upgrades master navigation from the catalog without hardcoded DOM links", () => {
     const html = renderAuthenticatedShellDocument({
       activePathname: "/dashboard",
       content: "<section>Conteúdo da página</section>",
@@ -209,8 +238,14 @@ describe("authenticated SSR shell", () => {
 
     assert.match(html, /fetch\("\/api\/me"\)/);
     assert.match(html, /body\.user\.isMaster !== true/);
-    assert.match(html, /link\.href = "\/admin\/instituicoes"/);
-    assert.match(html, /link\.innerHTML = .*Admin - Instituições/);
+    assert.match(html, /const masterNavigationHtml =/);
+    assert.match(html, /const masterRouteIds =/);
+    assert.match(html, /masterRouteIds\.every/);
+    assert.match(html, /nav\.innerHTML = masterNavigationHtml/);
+    assert.doesNotMatch(html, /document\.createElement\("a"\)/);
+    assert.doesNotMatch(html, /link\.href = "\/admin\/instituicoes"/);
+    assert.match(html, /href=\"\/admin\/instituicoes\"/);
+    assert.match(html, /href=\"\/admin\/indices-financeiros\"/);
   });
 });
 
@@ -219,6 +254,16 @@ function findSidebarContent(html: string): string {
 
   assert.ok(match, "Expected authenticated sidebar");
   return match[1] ?? "";
+}
+
+function findNavigationToggle(html: string): { attributes: string; content: string } {
+  const match = /<button([^>]*)data-nav-more([^>]*)>([\s\S]*?)<\/button>/.exec(html);
+
+  assert.ok(match, "Expected navigation More/Less toggle");
+  return {
+    attributes: `${match[1] ?? ""} data-nav-more${match[2] ?? ""}`,
+    content: match[3] ?? "",
+  };
 }
 
 function findNavigationLink(html: string, path: string): { attributes: string; content: string } {
