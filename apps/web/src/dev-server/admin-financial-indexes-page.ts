@@ -41,7 +41,8 @@ interface ProcessingOperationDiagnostics {
   pendingCompetences: number;
 }
 
-type OperationDiagnostics = ImportOperationDiagnostics | ProcessingOperationDiagnostics;
+type OperationDiagnostics =
+  ImportOperationDiagnostics | ProcessingOperationDiagnostics;
 
 interface OperationRecord {
   id: string;
@@ -73,7 +74,9 @@ interface FinancialIndexStatusRecord {
   pendingConfigurations: number;
 }
 
-export async function renderAdminFinancialIndexesPage(token: string): Promise<string> {
+export async function renderAdminFinancialIndexesPage(
+  token: string,
+): Promise<string> {
   const result = await apiGet<{ status: FinancialIndexStatusRecord }>(
     token,
     "/api/admin/financial-indexes/status",
@@ -132,7 +135,9 @@ export async function renderAdminFinancialIndexesPage(token: string): Promise<st
   `);
 }
 
-export function renderFinancialIndexSummary(status: FinancialIndexStatusRecord): string {
+export function renderFinancialIndexSummary(
+  status: FinancialIndexStatusRecord,
+): string {
   return `
     <section class="summary-grid" aria-label="Resumo operacional">
       ${summaryCard("Último CDI", status.latestCdiRate ? `${formatRate(status.latestCdiRate.dailyRatePercent)}%` : "Sem dados", status.latestCdiRate ? formatDate(status.latestCdiRate.referenceOn) : "Importe a série oficial")}
@@ -142,11 +147,18 @@ export function renderFinancialIndexSummary(status: FinancialIndexStatusRecord):
     </section>`;
 }
 
-function summaryCard(label: string, value: string, description: string): string {
+function summaryCard(
+  label: string,
+  value: string,
+  description: string,
+): string {
   return `<article class="summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><p>${escapeHtml(description)}</p></article>`;
 }
 
-export function renderOperation(label: string, operation: OperationRecord | null): string {
+export function renderOperation(
+  label: string,
+  operation: OperationRecord | null,
+): string {
   if (!operation) {
     return `<section class="last-operation"><strong>${escapeHtml(label)}</strong><p class="muted">Nenhuma execução registrada.</p></section>`;
   }
@@ -297,7 +309,9 @@ function defaultImportPeriod(): { startsOn: string; endsOn: string } {
 }
 
 function formatRate(value: number): string {
-  return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 8 }).format(value);
+  return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 8 }).format(
+    value,
+  );
 }
 
 function formatDate(value: string): string {
