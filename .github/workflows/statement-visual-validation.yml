@@ -20,57 +20,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  format-issue-490:
-    name: Format issue 490 files
-    if: github.actor != 'github-actions[bot]'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout feature branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Format issue files
-        run: |
-          npx prettier --write \
-            apps/web/src/dev-server/list-sorting-enhancement.ts \
-            apps/web/src/dev-server/list-sorting-enhancement.test.ts \
-            apps/web/src/dev-server/account-remuneration-compact-row.test.ts \
-            apps/web/src/dev-server/account-remuneration-details-actions.test.ts \
-            apps/web/src/dev-server/account-remuneration-two-line-layout.test.ts \
-            scripts/statement-visual/account-remuneration.mjs
-
-      - name: Commit formatted files
-        run: |
-          if git diff --quiet; then
-            echo "No formatting changes were required."
-            exit 0
-          fi
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add \
-            apps/web/src/dev-server/list-sorting-enhancement.ts \
-            apps/web/src/dev-server/list-sorting-enhancement.test.ts \
-            apps/web/src/dev-server/account-remuneration-compact-row.test.ts \
-            apps/web/src/dev-server/account-remuneration-details-actions.test.ts \
-            apps/web/src/dev-server/account-remuneration-two-line-layout.test.ts \
-            scripts/statement-visual/account-remuneration.mjs
-          git commit -m "style: format compact CDI remuneration changes"
-          git push origin HEAD:${{ github.head_ref }}
-
   visual-validation:
     name: Chrome visual validation
     runs-on: ubuntu-latest
