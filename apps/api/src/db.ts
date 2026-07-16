@@ -1,7 +1,20 @@
 import "./load-env.js";
 
+import { AsyncLocalStorage } from "node:async_hooks";
+
 import { Pool, type QueryResultRow } from "pg";
 
+export type QueryExecutor = <TRow extends QueryResultRow = QueryResultRow>(
+  text: string,
+  params?: readonly unknown[],
+) => Promise<TRow[]>;
+
+interface TransactionContext {
+  executeQuery: QueryExecutor;
+  savepointCounter: number;
+}
+
+const transactionStorage = new AsyncLocalStorage<TransactionContext>();
 let pool: Pool | undefined;
 
 export function getPool(): Pool {
@@ -14,38 +27,73 @@ export async function query<TRow extends QueryResultRow = QueryResultRow>(
   text: string,
   params: readonly unknown[] = [],
 ): Promise<TRow[]> {
+  const context = transactionStorage.getStore();
+  if (context) {
+    return context.executeQuery<TRow>(text, params);
+  }
+
   const result = await getPool().query<TRow>(text, params as unknown[]);
 
   return result.rows;
 }
 
 export async function withTransaction<TResult>(
-  run: (executeQuery: typeof query) => Promise<TResult>,
+  run: (executeQuery: QueryExecutor) => Promise<TResult>,
 ): Promise<TResult> {
+  const existingContext = transactionStorage.getStore();
+  if (existingContext) {
+    return runNestedTransaction(existingContext, run);
+  }
+
   const client = await getPool().connect();
+  const scopedQuery: QueryExecutor = async <
+    TRow extends QueryResultRow = QueryResultRow,
+  >(
+    text: string,
+    params: readonly unknown[] = [],
+  ): Promise<TRow[]> => {
+    const result = await client.query<TRow>(text, params as unknown[]);
+    return result.rows;
+  };
+  const context: TransactionContext = {
+    executeQuery: scopedQuery,
+    savepointCounter: 0,
+  };
 
   try {
     await client.query("BEGIN");
 
-    const scopedQuery = async <TRow extends QueryResultRow = QueryResultRow>(
-      text: string,
-      params: readonly unknown[] = [],
-    ): Promise<TRow[]> => {
-      const result = await client.query<TRow>(text, params as unknown[]);
-
-      return result.rows;
-    };
-
-    const result = await run(scopedQuery);
+    const result = await transactionStorage.run(context, () =>
+      run(scopedQuery),
+    );
 
     await client.query("COMMIT");
-
     return result;
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
   } finally {
     client.release();
+  }
+}
+
+async function runNestedTransaction<TResult>(
+  context: TransactionContext,
+  run: (executeQuery: QueryExecutor) => Promise<TResult>,
+): Promise<TResult> {
+  context.savepointCounter += 1;
+  const savepoint = `solverfin_nested_${context.savepointCounter}`;
+
+  await context.executeQuery(`SAVEPOINT ${savepoint}`);
+
+  try {
+    const result = await run(context.executeQuery);
+    await context.executeQuery(`RELEASE SAVEPOINT ${savepoint}`);
+    return result;
+  } catch (error) {
+    await context.executeQuery(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+    await context.executeQuery(`RELEASE SAVEPOINT ${savepoint}`);
+    throw error;
   }
 }
 
