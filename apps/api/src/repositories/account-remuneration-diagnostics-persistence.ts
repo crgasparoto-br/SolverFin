@@ -18,6 +18,11 @@ interface DiagnosticsRow {
   diagnostics: unknown;
 }
 
+export interface FutureCdiRepairResult {
+  rejectedRates: number;
+  disabledSyntheticConfigurations: number;
+}
+
 export async function readProcessingSnapshot(
   processedOn: string,
   executeQuery: QueryExecutor = query,
@@ -94,15 +99,58 @@ export async function readProcessingSnapshot(
   return row;
 }
 
+export async function repairFutureCdiTestContamination(
+  executeQuery: QueryExecutor = query,
+): Promise<FutureCdiRepairResult> {
+  const rejectedRates = await executeQuery<{ id: string }>(
+    `update "FinancialIndexRate"
+        set "status" = 'REJECTED',
+            "updatedAt" = now()
+      where "kind" = 'CDI'
+        and "status" = 'CONFIRMED'
+        and "referenceOn" = date '2038-04-14'
+        and "dailyRatePercent" = 0.055131
+        and "source" = 'BCB_SGS_12'
+      returning "id"`,
+  );
+
+  const disabledConfigurations = await executeQuery<{ id: string }>(
+    `update "AccountRemunerationConfiguration" c
+        set "enabled" = false,
+            "updatedAt" = now()
+       from "Account" a
+      where a."id" = c."accountId"
+        and a."organizationId" = c."organizationId"
+        and a."financialProfileId" = c."financialProfileId"
+        and c."enabled" = true
+        and c."startsOn" >= date '2037-01-01'
+        and (
+          a."name" like 'Conta remunerada positiva %'
+          or a."name" like 'Conta remunerada negativa %'
+          or a."name" like 'Conta remunerada sem taxa %'
+        )
+      returning c."id"`,
+  );
+
+  return {
+    rejectedRates: rejectedRates.length,
+    disabledSyntheticConfigurations: disabledConfigurations.length,
+  };
+}
+
 export async function findLatestCdiReferenceDate(
   executeQuery: QueryExecutor = query,
+  maximumReferenceOn?: string,
 ): Promise<string | null> {
   const rows = await executeQuery<{ referenceOn: Date }>(
     `select "referenceOn"
        from "FinancialIndexRate"
-      where "kind" = 'CDI' and "status" = 'CONFIRMED'
+      where "kind" = 'CDI'
+        and "status" = 'CONFIRMED'
+        and ($1::date is null or "referenceOn" <= $1::date)
       order by "referenceOn" desc
       limit 1`,
+    [maximumReferenceOn ?? null],
   );
 
   return rows[0] ? toDateOnly(rows[0].referenceOn) : null;
