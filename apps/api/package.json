@@ -10,7 +10,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/api --include .test.js --exclude .integration.test.js",
-    "test:integration": "rm -rf ../../.tmp-tests/api-integration && tsc -p tsconfig.test.json --outDir ../../.tmp-tests/api-integration && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/api-integration --include .integration.test.js",
+    "test:integration": "node ../../scripts/assert-integration-database.mjs && rm -rf ../../.tmp-tests/api-integration && tsc -p tsconfig.test.json --outDir ../../.tmp-tests/api-integration && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/api-integration --include .integration.test.js",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
