@@ -19,3 +19,8 @@ assert.match(
   source,
   /<details class="account-remuneration-audit">[\s\S]*<span class="account-remuneration-summary">Competência/,
 );
+assert.match(
+  source,
+  /\.account-remuneration-audit summary\{[^}]*font-size:\.6875rem[^}]*white-space:nowrap/,
+);
+assert.match(source, /\.account-remuneration-audit summary::after\{display:none\}/);
