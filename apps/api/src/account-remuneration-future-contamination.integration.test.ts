@@ -125,8 +125,8 @@ async function insertRate(referenceOn: string, dailyRatePercent: number): Promis
     `insert into "FinancialIndexRate"
       ("id", "kind", "referenceOn", "dailyRatePercent", "dailyFactor", "source", "status",
        "importedAt", "createdAt", "updatedAt")
-     values (gen_random_uuid(), 'CDI', $1::date, $2, 1 + ($2 / 100), 'BCB_SGS_12',
-             'CONFIRMED', now(), now(), now())
+     values (gen_random_uuid(), 'CDI', $1::date, $2::numeric, 1 + ($2::numeric / 100),
+             'BCB_SGS_12', 'CONFIRMED', now(), now(), now())
      on conflict ("kind", "referenceOn") do update set
        "dailyRatePercent" = excluded."dailyRatePercent",
        "dailyFactor" = excluded."dailyFactor",
