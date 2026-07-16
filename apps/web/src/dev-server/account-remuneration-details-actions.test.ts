@@ -58,6 +58,12 @@ assert.doesNotMatch(html, /<details class="account-remuneration-audit"[^>]* open
 assert.doesNotMatch(html, /<details class="actions col-actions"[^>]* open/);
 assert.doesNotMatch(html, /account-remuneration-badge">CDI/);
 
+const memoryStart = html.indexOf('<details class="account-remuneration-audit">');
+const memoryEnd = html.indexOf("</details>", memoryStart);
+const actionsStart = html.indexOf('<details class="actions col-actions">');
+assert.ok(memoryStart >= 0 && memoryEnd > memoryStart);
+assert.ok(actionsStart > memoryEnd, "calculation memory must remain a sibling before row actions");
+
 function escapedJson(value: unknown): string {
   return JSON.stringify(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
