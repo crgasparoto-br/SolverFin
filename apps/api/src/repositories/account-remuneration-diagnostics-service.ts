@@ -14,7 +14,7 @@ import {
 import {
   attachDiagnostics,
   findLatestCdiReferenceDate,
-  persistLatestFailedDiagnostics,
+  persistCurrentFailedDiagnostics,
   persistOperationDiagnostics,
   readProcessingSnapshot,
   readProviderPeriod,
@@ -56,8 +56,8 @@ export async function importCdiRates(
   const requestedStartsOn = normalizeDate(
     input.startsOn ?? addDays(endsOn, -DEFAULT_IMPORT_LOOKBACK_DAYS),
   );
+  assertImportPeriodOrder(requestedStartsOn, endsOn);
   const requestedPeriod = { startsOn: requestedStartsOn, endsOn };
-  const startedAt = new Date();
   let rolledBackOperation: RolledBackOperation | undefined;
 
   let transactionResult: TransactionResult<ImportCdiRatesResult>;
@@ -84,7 +84,7 @@ export async function importCdiRates(
           receivedCount: 0,
           importedCount: 0,
         };
-        await persistLatestFailedDiagnostics("CDI_IMPORT", startedAt, diagnostics, executeQuery);
+        await persistCurrentFailedDiagnostics("CDI_IMPORT", diagnostics, executeQuery);
         return { ok: false, error };
       }
 
@@ -139,7 +139,6 @@ export async function processAccountRemunerations(
   processedOn = today(),
 ): Promise<ProcessAccountRemunerationsResult> {
   const normalizedProcessedOn = normalizeDate(processedOn);
-  const startedAt = new Date();
   let rolledBackOperation: RolledBackOperation | undefined;
 
   let transactionResult: TransactionResult<ProcessAccountRemunerationsResult>;
@@ -164,12 +163,7 @@ export async function processAccountRemunerations(
           zeroAmountCompetences: 0,
           pendingCompetences: 0,
         };
-        await persistLatestFailedDiagnostics(
-          "ACCOUNT_REMUNERATION",
-          startedAt,
-          diagnostics,
-          executeQuery,
-        );
+        await persistCurrentFailedDiagnostics("ACCOUNT_REMUNERATION", diagnostics, executeQuery);
         return { ok: false, error };
       }
 
@@ -234,6 +228,15 @@ export async function getFinancialIndexStatus(): Promise<FinancialIndexStatusRec
   ]);
 
   return { ...status, latestImport, latestProcessing };
+}
+
+function assertImportPeriodOrder(startsOn: string, endsOn: string): void {
+  if (startsOn <= endsOn) return;
+
+  throw Object.assign(new Error("A data inicial não pode ser posterior à data final."), {
+    code: "FINANCIAL_INDEX_PERIOD_INVALID",
+    statusCode: 400,
+  });
 }
 
 function normalizeDate(value: string): string {
