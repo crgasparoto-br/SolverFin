@@ -20,6 +20,61 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  compact-control-issue-490:
+    name: Compact issue 490 details control
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Compact details control
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const path = "apps/web/src/dev-server/list-sorting-enhancement.ts";
+          let source = fs.readFileSync(path, "utf8");
+          const before = `        .account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;gap:5px;list-style:none;padding:2px 0}
+        .account-remuneration-audit summary::-webkit-details-marker{display:none}
+        .account-remuneration-audit summary::after{content:"›";font-size:1rem;line-height:1;transform:rotate(90deg);transition:transform 120ms ease-out}
+        .account-remuneration-audit[open] summary::after{transform:rotate(-90deg)}`;
+          const after = `        .account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.6875rem;font-weight:700;gap:2px;line-height:1.2;list-style:none;padding:0;white-space:nowrap}
+        .account-remuneration-audit summary::-webkit-details-marker{display:none}
+        .account-remuneration-audit summary::after{display:none}`;
+          if (!source.includes(before)) throw new Error("Account remuneration summary style marker was not found");
+          source = source.replace(before, after);
+          fs.writeFileSync(path, source);
+          NODE
+          npx prettier --write apps/web/src/dev-server/list-sorting-enhancement.ts
+
+      - name: Run focused web tests
+        run: |
+          npm run build:packages
+          npm run test --workspace @solverfin/web
+
+      - name: Commit compact control
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/src/dev-server/list-sorting-enhancement.ts
+          git commit -m "fix: keep CDI calculation control on one line"
+          git push origin HEAD:${{ github.head_ref }}
+
   visual-validation:
     name: Chrome visual validation
     runs-on: ubuntu-latest
