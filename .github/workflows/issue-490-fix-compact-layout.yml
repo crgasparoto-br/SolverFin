@@ -1,9 +1,11 @@
 name: Apply compact CDI two-line layout
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/490-compact-cdi-remuneration
+      - main
+    types:
+      - reopened
 
 permissions:
   contents: write
@@ -17,6 +19,7 @@ jobs:
       - name: Checkout feature branch
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -95,4 +98,4 @@ jobs:
           git rm .github/workflows/issue-490-fix-compact-layout.yml
           git add apps/web/src/dev-server/list-sorting-enhancement.ts
           git commit -m "fix: render collapsed CDI remuneration in two lines"
-          git push origin HEAD:feat/490-compact-cdi-remuneration
+          git push origin HEAD:${{ github.head_ref }}
