@@ -1,4 +1,4 @@
-import { withTransaction } from "../db.js";
+import { withSharedTransaction } from "../db.js";
 import {
   getFinancialIndexStatus as getBaseFinancialIndexStatus,
   importCdiRates as importBaseCdiRates,
@@ -62,7 +62,7 @@ export async function importCdiRates(
 
   let transactionResult: TransactionResult<ImportCdiRatesResult>;
   try {
-    transactionResult = await withTransaction(async (executeQuery) => {
+    transactionResult = await withSharedTransaction(async (executeQuery) => {
       let providerConsulted = false;
       let effectivePeriod: ImportOperationDiagnostics["effectivePeriod"] = null;
       const observedFetcher: typeof fetch = async (resource, init) => {
@@ -144,7 +144,7 @@ export async function processAccountRemunerations(
 
   let transactionResult: TransactionResult<ProcessAccountRemunerationsResult>;
   try {
-    transactionResult = await withTransaction(async (executeQuery) => {
+    transactionResult = await withSharedTransaction(async (executeQuery) => {
       let result: BaseProcessAccountRemunerationsResult;
       try {
         result = await processBaseAccountRemunerations(normalizedProcessedOn);

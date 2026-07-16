@@ -9,12 +9,12 @@ export type QueryExecutor = <TRow extends QueryResultRow = QueryResultRow>(
   params?: readonly unknown[],
 ) => Promise<TRow[]>;
 
-interface TransactionContext {
+interface SharedTransactionContext {
   executeQuery: QueryExecutor;
   savepointCounter: number;
 }
 
-const transactionStorage = new AsyncLocalStorage<TransactionContext>();
+const sharedTransactionStorage = new AsyncLocalStorage<SharedTransactionContext>();
 let pool: Pool | undefined;
 
 export function getPool(): Pool {
@@ -27,7 +27,7 @@ export async function query<TRow extends QueryResultRow = QueryResultRow>(
   text: string,
   params: readonly unknown[] = [],
 ): Promise<TRow[]> {
-  const context = transactionStorage.getStore();
+  const context = sharedTransactionStorage.getStore();
   if (context) {
     return context.executeQuery<TRow>(text, params);
   }
@@ -40,11 +40,35 @@ export async function query<TRow extends QueryResultRow = QueryResultRow>(
 export async function withTransaction<TResult>(
   run: (executeQuery: QueryExecutor) => Promise<TResult>,
 ): Promise<TResult> {
-  const existingContext = transactionStorage.getStore();
-  if (existingContext) {
-    return runNestedTransaction(existingContext, run);
+  const sharedContext = sharedTransactionStorage.getStore();
+  if (sharedContext) {
+    return runNestedTransaction(sharedContext, run);
   }
 
+  return runRootTransaction(run, false);
+}
+
+/**
+ * Runs a transaction whose connection is also used by repository helpers that
+ * call the global `query` function. Nested `withTransaction` calls become
+ * savepoints only inside this explicit scope. Regular transactions retain the
+ * repository's previous independent-connection behavior.
+ */
+export async function withSharedTransaction<TResult>(
+  run: (executeQuery: QueryExecutor) => Promise<TResult>,
+): Promise<TResult> {
+  const sharedContext = sharedTransactionStorage.getStore();
+  if (sharedContext) {
+    return runNestedTransaction(sharedContext, run);
+  }
+
+  return runRootTransaction(run, true);
+}
+
+async function runRootTransaction<TResult>(
+  run: (executeQuery: QueryExecutor) => Promise<TResult>,
+  shareWithGlobalQueries: boolean,
+): Promise<TResult> {
   const client = await getPool().connect();
   const scopedQuery: QueryExecutor = async <TRow extends QueryResultRow = QueryResultRow>(
     text: string,
@@ -53,7 +77,7 @@ export async function withTransaction<TResult>(
     const result = await client.query<TRow>(text, params as unknown[]);
     return result.rows;
   };
-  const context: TransactionContext = {
+  const context: SharedTransactionContext = {
     executeQuery: scopedQuery,
     savepointCounter: 0,
   };
@@ -61,7 +85,9 @@ export async function withTransaction<TResult>(
   try {
     await client.query("BEGIN");
 
-    const result = await transactionStorage.run(context, () => run(scopedQuery));
+    const result = shareWithGlobalQueries
+      ? await sharedTransactionStorage.run(context, () => run(scopedQuery))
+      : await run(scopedQuery);
 
     await client.query("COMMIT");
     return result;
@@ -74,7 +100,7 @@ export async function withTransaction<TResult>(
 }
 
 async function runNestedTransaction<TResult>(
-  context: TransactionContext,
+  context: SharedTransactionContext,
   run: (executeQuery: QueryExecutor) => Promise<TResult>,
 ): Promise<TResult> {
   context.savepointCounter += 1;

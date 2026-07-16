@@ -52,7 +52,10 @@ const alreadyUpdated: ImportOperationDiagnostics = {
   importedCount: 0,
 };
 assert.match(formatImportOutcomeMessage(alreadyUpdated, "2026-07-15"), /não foi consultado/i);
-assert.match(formatImportOutcomeMessage(alreadyUpdated, "2026-07-15"), /nenhum registro novo/i);
+assert.match(
+  formatImportOutcomeMessage(alreadyUpdated, "2026-07-15"),
+  /^Nenhuma alteração necessária/i,
+);
 
 const noRates: ImportOperationDiagnostics = {
   ...alreadyUpdated,
@@ -109,5 +112,5 @@ const noProcessing: ProcessingOperationDiagnostics = {
   nonPositiveBalanceCompetences: 0,
   zeroAmountCompetences: 0,
 };
-assert.match(formatProcessingOutcomeMessage(noProcessing), /nenhuma competência nova/i);
+assert.match(formatProcessingOutcomeMessage(noProcessing), /^Nenhuma alteração necessária/i);
 assert.match(formatProcessingOutcomeMessage(noProcessing), /nenhuma receita prevista/i);
