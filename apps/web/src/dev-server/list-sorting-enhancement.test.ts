@@ -103,10 +103,7 @@ const statementCompactRemuneration = enhanceStatementListSorting(
   `),
   new URL("http://solverfin.test/lancamentos"),
 );
-assert.match(
-  statementCompactRemuneration,
-  /<strong>Remuneração CDI<span class="account-remuneration-badge">CDI<\/span><\/strong>/,
-);
+assert.match(statementCompactRemuneration, /<strong>Remuneração CDI<\/strong>/);
 assert.match(statementCompactRemuneration, /Competência 15\/07\/2026 · 100% do CDI/);
 assert.match(
   statementCompactRemuneration,

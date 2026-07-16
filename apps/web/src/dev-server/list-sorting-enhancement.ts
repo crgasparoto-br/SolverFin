@@ -282,8 +282,7 @@ function compactAccountRemunerationRows(html: string): string {
     const remuneration = accountRemunerationRecord(record?.accountRemuneration);
     if (!remuneration) continue;
 
-    const compactTitle =
-      '<strong>Remuneração CDI<span class="account-remuneration-badge">CDI</span></strong>';
+    const compactTitle = "<strong>Remuneração CDI</strong>";
     let compactRow = row.content.replace(
       /(<div class="description col-description">\s*)<strong>[\s\S]*?<\/strong>/,
       `$1${compactTitle}`,
@@ -467,7 +466,7 @@ function injectAccountRemunerationStatementAssets(html: string): string {
             if (!row) return;
             row.classList.add("account-remuneration-row");
             const description = row.querySelector(".description strong");
-            if (description && !description.querySelector(".account-remuneration-badge")) {
+            if (description && !description.querySelector(".account-remuneration-badge") && !row.querySelector(".account-remuneration-summary")) {
               const badge = document.createElement("span");
               badge.className = "account-remuneration-badge";
               badge.textContent = "Remuneração CDI";
