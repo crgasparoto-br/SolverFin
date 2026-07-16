@@ -1,0 +1,56 @@
+name: Apply issue 490 patch from PR
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Reuse issue patch script
+        run: |
+          sed -n "/node <<'NODE'/,/^          NODE$/p" .github/workflows/issue-490-apply.yml \
+            | sed '1d;$d;s/^          //' > /tmp/issue-490-apply.cjs
+          node /tmp/issue-490-apply.cjs
+
+      - name: Format changed files
+        run: npx prettier --write apps/web/src/dev-server/list-sorting-enhancement.ts apps/web/src/dev-server/list-sorting-enhancement.test.ts
+
+      - name: Run focused web tests
+        run: npm run test --workspace @solverfin/web
+
+      - name: Commit implementation and remove temporary workflows
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/issue-490-apply.yml .github/workflows/issue-490-pr-apply.yml
+          git add apps/web/src/dev-server/list-sorting-enhancement.ts apps/web/src/dev-server/list-sorting-enhancement.test.ts
+          git commit -m "feat: compact CDI remuneration rows"
+          git push origin HEAD:${{ github.head_ref }}
