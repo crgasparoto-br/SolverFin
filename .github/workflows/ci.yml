@@ -66,6 +66,15 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
+      - name: Capture formatting diagnostics
+        run: npx prettier . --list-different > prettier-diagnostics.txt || true
+
+      - name: Upload formatting diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: prettier-diagnostics
+          path: prettier-diagnostics.txt
+
       - name: Check formatting
         run: npm run format:check
 
