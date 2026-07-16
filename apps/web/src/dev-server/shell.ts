@@ -1,5 +1,9 @@
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
-import { listNavigablePrivateShellRoutes, type ShellRouteId } from "../app-shell/routes.js";
+import {
+  listNavigablePrivateShellRoutes,
+  type ShellRoute,
+  type ShellRouteId,
+} from "../app-shell/routes.js";
 import { icon } from "./icons.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 import { sidebarLayoutStyles } from "./sidebar-layout.js";
@@ -78,7 +82,7 @@ export function renderAuthenticatedShell(
     </div>
     ${logoutScript()}
     ${navigationScript()}
-    ${currentUserScript()}
+    ${currentUserScript(input.activePathname)}
     ${cardPurchaseEditRouteScript()}
     ${hasStatementPresentation(input.content) ? statementPresentationScript() : ""}
     ${recurringCardScopeControllerScript()}
@@ -93,7 +97,7 @@ export function faviconLinks(): string {
   `;
 }
 
-/** Map each route id to a Lucide icon name */
+/** Map each visible route id to a Lucide icon name. */
 const routeIconMap: Partial<Record<ShellRouteId, Parameters<typeof icon>[0]>> = {
   dashboard: "layout-dashboard",
   transactions: "receipt",
@@ -105,9 +109,10 @@ const routeIconMap: Partial<Record<ShellRouteId, Parameters<typeof icon>[0]>> = 
   reports: "bar-chart-2",
   settings: "settings",
   adminInstitutions: "building-2",
+  adminFinancialIndexes: "trending-up",
 };
 
-/** Map each navigation group to a section label */
+/** Map each navigation group to a section label. */
 const groupLabelMap: Record<string, string> = {
   main: "Rotina",
   manage: "Organizar",
@@ -127,19 +132,36 @@ function isActivePathnameSecondary(activePathname: string, includeMasterRoutes: 
   return activeRoute !== undefined && !isPrimaryMobileRoute(activeRoute);
 }
 
+function getNavigationPriority(route: ShellRoute): "primary" | "secondary" {
+  return isPrimaryMobileRoute(route) ? "primary" : "secondary";
+}
+
+function getNavigationElementId(route: ShellRoute): string {
+  return `nav-${getNavigationPriority(route)}-${route.id}`;
+}
+
+function renderNavigationIcon(route: ShellRoute): string {
+  const routeIcon = routeIconMap[route.id];
+
+  if (!routeIcon) {
+    throw new Error(`Missing navigation icon for visible route "${route.id}".`);
+  }
+
+  return icon(routeIcon, 15);
+}
+
 function renderNavigation(activePathname: string, includeMasterRoutes: boolean): string {
   const routes = listNavigablePrivateShellRoutes({ includeMaster: includeMasterRoutes });
   const activeIsSecondary = isActivePathnameSecondary(activePathname, includeMasterRoutes);
   const secondaryIds = routes
-    .filter((route) => !isPrimaryMobileRoute(route))
-    .map((route) => `nav-secondary-${route.id}`);
+    .filter((route) => getNavigationPriority(route) === "secondary")
+    .map(getNavigationElementId);
 
-  // Group routes by navigationGroup to render section labels
   const groups: Record<string, typeof routes> = {};
   for (const route of routes) {
-    const g = route.navigationGroup;
-    if (!groups[g]) groups[g] = [];
-    groups[g].push(route);
+    const group = route.navigationGroup;
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(route);
   }
 
   const groupOrder = ["main", "manage", "review", "settings", "admin"];
@@ -151,17 +173,15 @@ function renderNavigation(activePathname: string, includeMasterRoutes: boolean):
 
     const label = groupLabelMap[groupKey];
     if (label) {
-      html += `<span class="nav-section-label">${escapeHtml(label)}</span>`;
+      html += `<span class="nav-section-label" data-nav-group="${groupKey}">${escapeHtml(label)}</span>`;
     }
 
     for (const route of groupRoutes) {
       const isActive = route.path === activePathname;
-      const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
-      const id = priority === "secondary" ? ` id="nav-secondary-${route.id}"` : "";
-      const routeIcon = routeIconMap[route.id];
-      const iconHtml = routeIcon ? icon(routeIcon, 15) : "";
+      const priority = getNavigationPriority(route);
+      const routeIcon = renderNavigationIcon(route);
 
-      html += `<a href="${route.path}"${id} data-nav-priority="${priority}" title="${escapeHtml(route.description)}" ${isActive ? `aria-current="page"` : ""}>${iconHtml}${escapeHtml(route.label)}</a>`;
+      html += `<a href="${route.path}" id="${getNavigationElementId(route)}" data-nav-priority="${priority}" title="${escapeHtml(route.description)}" ${isActive ? `aria-current="page"` : ""}>${routeIcon}${escapeHtml(route.label)}</a>`;
     }
   }
 
@@ -186,25 +206,38 @@ function logoutScript(): string {
 function navigationScript(): string {
   return `
     <script>
-      document.querySelectorAll("[data-nav-more]").forEach((button) => {
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        const button = target && target.closest ? target.closest("[data-nav-more]") : null;
+        if (!button) return;
+
         const nav = button.closest("nav");
         if (!nav) return;
-        button.addEventListener("click", () => {
-          const isOpen = nav.classList.toggle("nav-open");
-          button.setAttribute("aria-expanded", String(isOpen));
-          button.textContent = isOpen ? "Menos" : "Mais";
-        });
+
+        const isOpen = nav.classList.toggle("nav-open");
+        button.setAttribute("aria-expanded", String(isOpen));
+        button.textContent = isOpen ? "Menos" : "Mais";
       });
     </script>
   `;
 }
 
-function currentUserScript(): string {
+function currentUserScript(activePathname: string): string {
+  const masterRoutes = listNavigablePrivateShellRoutes({ includeMaster: true }).filter(
+    (route) => route.requiresMaster === true,
+  );
+  const masterNavigationHtml = renderNavigation(activePathname, true);
+  const masterRouteIds = masterRoutes.map(getNavigationElementId);
+  const masterNavigationStartsOpen = isActivePathnameSecondary(activePathname, true);
+
   return `
     <script>
       (async () => {
         const userName = document.querySelector("[data-current-user-name]");
         const nav = document.querySelector('nav[aria-label="Menu principal"]');
+        const masterNavigationHtml = ${serializeForInlineScript(masterNavigationHtml)};
+        const masterRouteIds = ${serializeForInlineScript(masterRouteIds)};
+        const masterNavigationStartsOpen = ${masterNavigationStartsOpen};
 
         try {
           const response = await fetch("/api/me");
@@ -217,24 +250,23 @@ function currentUserScript(): string {
           const email = typeof body.user.email === "string" ? body.user.email.trim() : "";
           if (userName) userName.textContent = displayName || email || "Usuário";
 
-          if (!nav || body.user.isMaster !== true || nav.querySelector('a[href="/admin/instituicoes"]')) return;
+          if (!nav || body.user.isMaster !== true) return;
 
-          const link = document.createElement("a");
-          link.href = "/admin/instituicoes";
-          link.id = "nav-secondary-adminInstitutions";
-          link.dataset.navPriority = "secondary";
-          link.title = "Gerenciar instituições financeiras";
-          link.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg> Admin - Instituições';
+          const hasAllMasterRoutes = masterRouteIds.every((id) =>
+            nav.querySelector('[id="' + id + '"]'),
+          );
+          if (hasAllMasterRoutes) return;
+
+          const navigationWasOpen = nav.classList.contains("nav-open");
+          nav.innerHTML = masterNavigationHtml;
+
+          const shouldRemainOpen = navigationWasOpen || masterNavigationStartsOpen;
+          nav.classList.toggle("nav-open", shouldRemainOpen);
 
           const toggle = nav.querySelector("[data-nav-more]");
-          nav.insertBefore(link, toggle);
-
           if (toggle) {
-            const controls = new Set(
-              (toggle.getAttribute("aria-controls") || "").trim().split(" ").filter(Boolean),
-            );
-            controls.add(link.id);
-            toggle.setAttribute("aria-controls", Array.from(controls).join(" "));
+            toggle.setAttribute("aria-expanded", String(shouldRemainOpen));
+            toggle.textContent = shouldRemainOpen ? "Menos" : "Mais";
           }
         } catch {
           // Keep the authenticated shell usable if the profile endpoint is unavailable.
@@ -281,6 +313,15 @@ function cardPurchaseEditRouteScript(): string {
       })();
     </script>
   `;
+}
+
+function serializeForInlineScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 }
 
 function escapeHtml(value: string): string {
