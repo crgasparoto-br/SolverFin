@@ -329,8 +329,7 @@ function renderCompactAccountRemuneration(
     ? '<span class="account-remuneration-adjustment adjusted">Ajustado manualmente</span>'
     : "";
 
-  return `<span class="account-remuneration-summary">Competência ${escapeHtml(formatDateOnly(remuneration.competenceOn))} · ${escapeHtml(formatPercentage(remuneration.remunerationPercent, 4))} do CDI</span>
-        <details class="account-remuneration-audit">
+  return `<details class="account-remuneration-audit">
 <summary>Ver memória do cálculo</summary>
 <div class="account-remuneration-audit-content">
   ${adjustment}
@@ -342,7 +341,8 @@ function renderCompactAccountRemuneration(
     <div><dt>Valor original</dt><dd>${escapeHtml(formatMinorCurrency(remuneration.originalAmountMinor))}</dd></div>
   </dl>
 </div>
-        </details>`;
+        </details>
+        <span class="account-remuneration-summary">Competência ${escapeHtml(formatDateOnly(remuneration.competenceOn))} · ${escapeHtml(formatPercentage(remuneration.remunerationPercent, 4))} do CDI</span>`;
 }
 
 function formatPercentage(value: number, maximumFractionDigits: number): string {
@@ -378,8 +378,12 @@ function injectAccountRemunerationStatementAssets(html: string): string {
         .account-remuneration-audit dd{font-size:.6875rem;font-weight:700;margin:0;overflow-wrap:anywhere}
         [data-remuneration-protected="true"]{background:var(--surface-soft);cursor:not-allowed}
         .remuneration-edit-notice{background:var(--primary-soft);border:1px solid #c8dde5;border-radius:var(--radius);color:var(--text);font-size:.8125rem;grid-column:1 / -1;line-height:1.45;padding:10px}
+        .statement-row.account-remuneration-row .col-description{min-width:15rem}
+        .statement-row.account-remuneration-row .description{display:block}
+        .statement-row.account-remuneration-row .description>strong{display:inline}
         .account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;line-height:1.35}
-        .account-remuneration-audit{background:transparent;border:0;display:block;gap:0;margin-top:2px;padding:0}
+        .account-remuneration-audit{background:transparent;border:0;display:inline-block;gap:0;margin:0 0 0 6px;padding:0;vertical-align:baseline}
+        .account-remuneration-audit[open]{display:block;margin-left:0}
         .account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;gap:5px;list-style:none;padding:2px 0}
         .account-remuneration-audit summary::-webkit-details-marker{display:none}
         .account-remuneration-audit summary::after{content:"›";font-size:1rem;line-height:1;transform:rotate(90deg);transition:transform 120ms ease-out}
