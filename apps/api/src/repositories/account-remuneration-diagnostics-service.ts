@@ -220,7 +220,8 @@ export async function processAccountRemunerations(
         activeConfigurations: snapshot.activeConfigurations,
         notEligibleConfigurations: snapshot.notEligibleConfigurations,
         configurationsWithoutRates: snapshot.configurationsWithoutRates,
-        eligibleCompetences: alreadyRegisteredCompetences + result.processedCount,
+        eligibleCompetences:
+          alreadyRegisteredCompetences + result.processedCount,
         alreadyRegisteredCompetences,
         processedCompetences: result.processedCount,
         plannedTransactionsCreated: result.createdCount,
