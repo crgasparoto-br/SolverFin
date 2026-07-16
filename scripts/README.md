@@ -13,6 +13,8 @@ Regras:
 
 - `validate-env-example.mjs`: valida se `.env.example` contem as variaveis obrigatorias com placeholders seguros e sem padroes aparentes de secrets reais. Rode via `npm run env:check`.
 - `validate-startup-contract.mjs`: garante que o start do SSR aplique migrations pendentes antes de abrir o servidor. Rode via `npm run startup:check`; o comando tambem faz parte das suites `test` e `validate`.
+- `assert-integration-database.mjs`: bloqueia a suite de integracao antes de qualquer acesso quando o ambiente nao usa `NODE_ENV=test` ou quando o nome do banco nao indica um banco isolado de CI/teste. E executado automaticamente por `test:integration`.
+- `validate-integration-database-guard.mjs`: cobre os cenarios permitidos e bloqueados do guard de banco. Rode via `npm run integration-db-guard:check`; o comando tambem faz parte das suites `test` e `validate`.
 - `run-compiled-tests.mjs`: descobre e executa arquivos de teste JavaScript ja compilados por workspace, em ordem deterministica. Rode indiretamente pelos scripts `test` e `test:integration` dos workspaces.
 - `seed-demo.mjs`: aplica dados ficticios e seguros para demonstracao local, incluindo perfis pessoal, MEI e negocio, categorias, contas, orcamentos e transacoes coerentes para dashboards. Rode via `npm run db:seed` depois de aplicar as migrations.
 - `seed-default-categories.mjs`: repara a arvore inicial editavel de categorias padrao para perfis ativos, usando a fonte canonica de `packages/domain`. O script adiciona apenas categorias padrao ausentes, reaproveita equivalentes por tipo, pai e nome normalizado, preserva categorias editadas/arquivadas pelo usuario e pode ser executado repetidamente sem duplicar registros. Rode via `npm run db:repair:default-categories`.
@@ -32,6 +34,23 @@ npm run start:web
 O build remove todo o `dist` anterior antes de compilar, evitando arquivos orfaos ou JavaScript desatualizado. Antes de executar `apps/web/dist/dev-server.js`, `npm run start:web` roda `npm run db:deploy`, que aplica de forma idempotente todas as migrations Prisma pendentes no banco apontado por `DATABASE_URL`.
 
 Esse contrato evita iniciar uma versao nova do servidor sobre um banco antigo, situacao que produziria erros como `column "diagnostics" does not exist`. O start exige acesso ao banco e permissao para executar migrations. Em desenvolvimento sem banco, continue usando o modo watch documentado em `docs/LOCAL_DEVELOPMENT.md`.
+
+## Banco isolado para testes de integracao
+
+Os testes de integracao da API criam, alteram e removem massa de dados. Nunca execute `npm run test:integration` apontando para o banco utilizado pela aplicacao.
+
+O comando exige simultaneamente:
+
+- `NODE_ENV=test`;
+- `DATABASE_URL` PostgreSQL cujo nome contenha `ci`, `test`, `tests` ou `integration`, como `solverfin_ci` ou `solverfin_test`.
+
+Exemplo local seguro:
+
+```bash
+NODE_ENV=test DATABASE_URL=postgresql://solverfin:senha@localhost:5432/solverfin_test npm run test:integration
+```
+
+A excecao `SOLVERFIN_ALLOW_DESTRUCTIVE_INTEGRATION_TESTS=true` existe apenas para bancos descartaveis com nome fora do padrao. Ela nao deve ser configurada em ambientes de desenvolvimento compartilhado, homologacao ou producao.
 
 ## Descoberta de testes compilados
 
