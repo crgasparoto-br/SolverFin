@@ -2,6 +2,7 @@ import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
 import { listNavigablePrivateShellRoutes, type ShellRouteId } from "../app-shell/routes.js";
 import { icon } from "./icons.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
+import { sidebarLayoutStyles } from "./sidebar-layout.js";
 import {
   statementPresentationScript,
   statementPresentationStyles,
@@ -43,7 +44,7 @@ export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocume
 
   return renderShellDocument({
     body: renderAuthenticatedShell(input),
-    styles: `${input.styles}${statementStyles}`,
+    styles: `${input.styles}\n${sidebarLayoutStyles()}${statementStyles}`,
     title: `${input.currentLabel} - SolverFin`,
   });
 }
@@ -57,7 +58,7 @@ export function renderAuthenticatedShell(
         <a class="brand" href="/dashboard" aria-label="Ir para o resumo do SolverFin">
           <img src="/icons/solverfin-192.png" width="24" height="24" alt="" />SolverFin
         </a>
-        <nav aria-label="Menu principal" class="${isActivePathnameSecondary(input.activePathname, input.showAdminNavigation === true) ? "nav-open" : ""}">${renderNavigation(input.activePathname, input.showAdminNavigation === true)}</nav>
+        <nav aria-label="Menu principal" class="sidebar-navigation${isActivePathnameSecondary(input.activePathname, input.showAdminNavigation === true) ? " nav-open" : ""}">${renderNavigation(input.activePathname, input.showAdminNavigation === true)}</nav>
         <button class="logout" type="button" data-logout title="Encerrar sessão">
           ${icon("log-out", 14)} Sair
         </button>
