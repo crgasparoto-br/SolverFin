@@ -70,10 +70,7 @@ async function main(): Promise<void> {
     body: { user: { isMaster: true } },
   });
   assert.equal(serverRenderedMasterHarness.nav.writeCount, 0);
-  assert.equal(
-    count(serverRenderedMasterHarness.nav.innerHTML, 'href="/admin/instituicoes"'),
-    1,
-  );
+  assert.equal(count(serverRenderedMasterHarness.nav.innerHTML, 'href="/admin/instituicoes"'), 1);
   assert.equal(
     count(serverRenderedMasterHarness.nav.innerHTML, 'href="/admin/indices-financeiros"'),
     1,
@@ -171,9 +168,7 @@ function renderShell(showAdminNavigation: boolean): string {
 }
 
 function createHarness(html: string): FakeHarness {
-  const navMatch = /<nav aria-label="Menu principal" class="([^"]*)">([\s\S]*?)<\/nav>/.exec(
-    html,
-  );
+  const navMatch = /<nav aria-label="Menu principal" class="([^"]*)">([\s\S]*?)<\/nav>/.exec(html);
   assert.ok(navMatch, "Expected rendered main navigation");
 
   return {
