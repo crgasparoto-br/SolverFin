@@ -98,7 +98,10 @@ export function faviconLinks(): string {
 }
 
 /** Map each navigable private route id to a Lucide icon name. */
-const routeIconMap: Record<Exclude<ShellRouteId, "accountRemuneration" | "signIn">, Parameters<typeof icon>[0]> = {
+const routeIconMap: Record<
+  Exclude<ShellRouteId, "accountRemuneration" | "signIn">,
+  Parameters<typeof icon>[0]
+> = {
   dashboard: "layout-dashboard",
   transactions: "receipt",
   cards: "credit-card",
@@ -125,7 +128,10 @@ function hasStatementPresentation(content: string): boolean {
   return content.includes('class="statement-layout"');
 }
 
-function isActivePathnameSecondary(activePathname: string, includeMasterRoutes: boolean): boolean {
+function isActivePathnameSecondary(
+  activePathname: string,
+  includeMasterRoutes: boolean,
+): boolean {
   const activeRoute = listNavigablePrivateShellRoutes({
     includeMaster: includeMasterRoutes,
   }).find((route) => route.path === activePathname);
