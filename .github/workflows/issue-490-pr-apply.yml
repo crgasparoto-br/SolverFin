@@ -35,10 +35,23 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Reuse issue patch script
+        id: patch
         run: |
+          set -o pipefail
           sed -n "/node <<'NODE'/,/^          NODE$/p" .github/workflows/issue-490-apply.yml \
             | sed '1d;$d;s/^          //' > /tmp/issue-490-apply.cjs
-          node /tmp/issue-490-apply.cjs
+          node --check /tmp/issue-490-apply.cjs 2>&1 | tee /tmp/issue-490-patch.log
+          node /tmp/issue-490-apply.cjs 2>&1 | tee -a /tmp/issue-490-patch.log
+
+      - name: Upload patch diagnostic
+        if: failure() && steps.patch.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-490-patch-diagnostic
+          path: |
+            /tmp/issue-490-apply.cjs
+            /tmp/issue-490-patch.log
+          if-no-files-found: error
 
       - name: Format changed files
         run: npx prettier --write apps/web/src/dev-server/list-sorting-enhancement.ts apps/web/src/dev-server/list-sorting-enhancement.test.ts
