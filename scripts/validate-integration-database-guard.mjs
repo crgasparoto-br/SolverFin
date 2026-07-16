@@ -4,8 +4,7 @@ import { assertIntegrationDatabaseEnvironment } from "./assert-integration-datab
 
 const safe = assertIntegrationDatabaseEnvironment({
   NODE_ENV: "test",
-  DATABASE_URL:
-    "postgresql://solverfin:secret@localhost:5432/solverfin_ci?schema=public",
+  DATABASE_URL: "postgresql://solverfin:secret@localhost:5432/solverfin_ci?schema=public",
 });
 assert.equal(safe.databaseName, "solverfin_ci");
 assert.equal(safe.explicitlyAllowed, false);
@@ -45,6 +44,4 @@ assert.throws(
   /valid PostgreSQL URL/,
 );
 
-console.log(
-  "[integration-db-guard-check] destructive integration database guard validated",
-);
+console.log("[integration-db-guard-check] destructive integration database guard validated");
