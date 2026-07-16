@@ -64,6 +64,38 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /event\.stopImmediatePropagation\(\)/);
   });
 
+  it("keeps the brand and logout outside the scrollable navigation region", () => {
+    const html = renderAuthenticatedShellDocument({
+      activePathname: "/dashboard",
+      content: "<section>Conteúdo da página</section>",
+      currentLabel: "Dashboard",
+      styles: ".test-marker { color: #0f3d4c; }",
+      showAdminNavigation: true,
+    });
+    const sidebar = findSidebarContent(html);
+    const brandIndex = sidebar.indexOf('class="brand"');
+    const navigationIndex = sidebar.indexOf(
+      '<nav aria-label="Menu principal" class="sidebar-navigation',
+    );
+    const navigationEndIndex = sidebar.indexOf("</nav>", navigationIndex);
+    const logoutIndex = sidebar.indexOf('class="logout"');
+
+    assert.ok(brandIndex >= 0);
+    assert.ok(navigationIndex > brandIndex);
+    assert.ok(navigationEndIndex > navigationIndex);
+    assert.ok(logoutIndex > navigationEndIndex);
+    assert.doesNotMatch(sidebar.slice(navigationIndex, navigationEndIndex), /class="logout"/);
+    assert.match(
+      html,
+      /@media \(min-width: 761px\)[\s\S]*\.sidebar\s*\{[\s\S]*overflow:\s*hidden;[\s\S]*\.sidebar > \.sidebar-navigation\s*\{[\s\S]*flex:\s*1 1 auto;[\s\S]*min-height:\s*0;[\s\S]*min-width:\s*0;[\s\S]*overflow-x:\s*hidden;[\s\S]*overflow-y:\s*auto;/,
+    );
+
+    for (const route of listNavigablePrivateShellRoutes({ includeMaster: true })) {
+      const link = findNavigationLink(sidebar, route.path);
+      assert.match(link.content, new RegExp(escapeRegExp(route.label)));
+    }
+  });
+
   it("keeps statement presentation assets out of unrelated authenticated pages", () => {
     const html = renderAuthenticatedShellDocument({
       activePathname: "/dashboard",
@@ -145,7 +177,10 @@ describe("authenticated SSR shell", () => {
       styles: ".test-marker { color: #0f3d4c; }",
     });
 
-    assert.doesNotMatch(html, /<nav aria-label="Menu principal" class="nav-open">/);
+    assert.match(
+      html,
+      /<nav aria-label="Menu principal" class="sidebar-navigation">/,
+    );
     assert.match(html, /aria-expanded="false"[^>]*>Mais<\/button>/);
   });
 
@@ -157,7 +192,10 @@ describe("authenticated SSR shell", () => {
       styles: ".test-marker { color: #0f3d4c; }",
     });
 
-    assert.match(html, /<nav aria-label="Menu principal" class="nav-open">/);
+    assert.match(
+      html,
+      /<nav aria-label="Menu principal" class="sidebar-navigation nav-open">/,
+    );
     assert.match(html, /aria-expanded="true"[^>]*>Menos<\/button>/);
   });
 
@@ -175,6 +213,13 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /link\.innerHTML = .*Admin - Instituições/);
   });
 });
+
+function findSidebarContent(html: string): string {
+  const match = /<aside class="sidebar">([\s\S]*?)<\/aside>/.exec(html);
+
+  assert.ok(match, "Expected authenticated sidebar");
+  return match[1] ?? "";
+}
 
 function findNavigationLink(html: string, path: string): { attributes: string; content: string } {
   const match = new RegExp(`<a href="${escapeRegExp(path)}"([^>]*)>([\\s\\S]*?)<\\/a>`).exec(html);
