@@ -76,9 +76,9 @@ export async function importCdiRates(
         effectivePeriod = readProviderPeriod(resource);
         const response = await fetcher(resource, init);
 
-        if (response.ok && effectivePeriod) {
+        if (response.ok) {
           const payload = await response.clone().json();
-          assertProviderRatesWithinPeriod(payload, effectivePeriod);
+          assertProviderRatesWithinPeriod(payload, requestedPeriod);
         }
 
         return response;
@@ -279,7 +279,7 @@ function assertProviderRatesWithinPeriod(
 
   throw Object.assign(
     new Error(
-      `O provedor retornou a taxa CDI de ${outOfPeriod.referenceOn} fora do período consultado ` +
+      `O provedor retornou a taxa CDI de ${outOfPeriod.referenceOn} fora do período solicitado ` +
         `${period.startsOn} a ${period.endsOn}. Nenhuma taxa foi gravada.`,
     ),
     {
