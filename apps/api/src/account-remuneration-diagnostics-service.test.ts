@@ -5,6 +5,7 @@ import {
   classifyImportOutcome,
   formatImportOutcomeMessage,
   formatProcessingOutcomeMessage,
+  importCdiRates,
   type ImportOperationDiagnostics,
   type ProcessingOperationDiagnostics,
 } from "./repositories/account-remuneration-diagnostics-service.js";
@@ -114,3 +115,12 @@ const noProcessing: ProcessingOperationDiagnostics = {
 };
 assert.match(formatProcessingOutcomeMessage(noProcessing), /^Nenhuma alteração necessária/i);
 assert.match(formatProcessingOutcomeMessage(noProcessing), /nenhuma receita prevista/i);
+
+await assert.rejects(
+  () => importCdiRates({ startsOn: "2026-07-17", endsOn: "2026-07-16" }),
+  (error: unknown) =>
+    error instanceof Error &&
+    "code" in error &&
+    error.code === "FINANCIAL_INDEX_PERIOD_INVALID" &&
+    /data inicial/i.test(error.message),
+);
