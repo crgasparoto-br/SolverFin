@@ -257,16 +257,16 @@ function navigationScript(): string {
 
 function currentUserScript(activePathname: string): string {
   const masterRoutes = listNavigablePrivateShellRoutes({ includeMaster: true })
-    .filter((route) => route.requiresMaster === true)
-    .map((route) => ({
-      id: route.id,
-      path: route.path,
-      label: route.label,
-      description: route.description,
-      navigationGroup: route.navigationGroup,
-      priority: isPrimaryMobileRoute(route) ? "primary" : "secondary",
-      iconHtml: icon(getRouteIcon(route.id), 15),
-    }));
+  .filter((route) => route.requiresMaster === true)
+  .map((route) => ({
+    id: route.id,
+    path: route.path,
+    label: route.label,
+    description: route.description,
+    navigationGroup: route.navigationGroup,
+    priority: isPrimaryMobileRoute(route) ? "primary" : "secondary",
+    iconHtml: icon(getRouteIcon(route.id), 15),
+  }));
 
   return `
     <script>
