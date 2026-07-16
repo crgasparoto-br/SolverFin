@@ -17,6 +17,7 @@ export function sidebarLayoutStyles(): string {
         flex: 0 0 auto;
       }
       .sidebar > .sidebar-navigation {
+        -webkit-overflow-scrolling: touch;
         align-content: start;
         flex: 1 1 auto;
         min-height: 0;
@@ -24,6 +25,7 @@ export function sidebarLayoutStyles(): string {
         overflow-x: hidden;
         overflow-y: auto;
         overscroll-behavior-y: contain;
+        touch-action: pan-y;
       }
     }
   `;
