@@ -40,7 +40,9 @@ export function renderShellDocument(input: ShellDocumentInput): string {
 </html>`;
 }
 
-export function renderAuthenticatedShellDocument(input: AuthenticatedShellDocumentInput): string {
+export function renderAuthenticatedShellDocument(
+  input: AuthenticatedShellDocumentInput,
+): string {
   const statementStyles = hasStatementPresentation(input.content)
     ? `\n${statementPresentationStyles()}`
     : "";
@@ -138,9 +140,17 @@ function isActivePathnameSecondary(
   return activeRoute !== undefined && !isPrimaryMobileRoute(activeRoute);
 }
 
-function renderNavigation(activePathname: string, includeMasterRoutes: boolean): string {
-  const routes = listNavigablePrivateShellRoutes({ includeMaster: includeMasterRoutes });
-  const activeIsSecondary = isActivePathnameSecondary(activePathname, includeMasterRoutes);
+function renderNavigation(
+  activePathname: string,
+  includeMasterRoutes: boolean,
+): string {
+  const routes = listNavigablePrivateShellRoutes({
+    includeMaster: includeMasterRoutes,
+  });
+  const activeIsSecondary = isActivePathnameSecondary(
+    activePathname,
+    includeMasterRoutes,
+  );
   const secondaryIds = routes
     .filter((route) => !isPrimaryMobileRoute(route))
     .map((route) => `nav-secondary-${route.id}`);
@@ -174,7 +184,10 @@ function renderNavigation(activePathname: string, includeMasterRoutes: boolean):
   return html;
 }
 
-function renderNavigationLink(route: ShellRoute, activePathname: string): string {
+function renderNavigationLink(
+  route: ShellRoute,
+  activePathname: string,
+): string {
   const isActive = route.path === activePathname;
   const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
   const id = priority === "secondary" ? ` id="nav-secondary-${route.id}"` : "";
@@ -185,7 +198,9 @@ function renderNavigationLink(route: ShellRoute, activePathname: string): string
 
 function getRouteIcon(routeId: ShellRouteId): Parameters<typeof icon>[0] {
   if (routeId === "accountRemuneration" || routeId === "signIn") {
-    throw new Error(`Route ${routeId} is not expected in the private navigation`);
+    throw new Error(
+      `Route ${routeId} is not expected in the private navigation`,
+    );
   }
 
   return routeIconMap[routeId];
