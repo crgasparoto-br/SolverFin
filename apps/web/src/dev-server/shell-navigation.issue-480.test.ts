@@ -51,10 +51,7 @@ describe("issue #480 authenticated navigation", () => {
   it("rebuilds aria-controls from all secondary links after adding master routes", () => {
     const html = renderDashboardShell();
 
-    assert.match(
-      html,
-      /querySelectorAll\('a\[data-nav-priority="secondary"\]\[id\]'\)/,
-    );
+    assert.match(html, /querySelectorAll\('a\[data-nav-priority="secondary"\]\[id\]'\)/);
     assert.match(html, /toggle\.setAttribute\("aria-controls", secondaryIds\.join\(" "\)\)/);
     assert.match(html, /data-nav-route-id=/);
     assert.match(html, /data-nav-group-label=/);
@@ -71,7 +68,9 @@ function renderDashboardShell(): string {
 }
 
 function findNavigationLink(html: string, path: string): { content: string } {
-  const match = new RegExp(`<a href="${escapeRegExp(path)}"[^>]*>([\\s\\S]*?)<\\/a>`).exec(html);
+  const match = new RegExp(
+    `<a href="${escapeRegExp(path)}"[^>]*>([\\s\\S]*?)<\\/a>`,
+  ).exec(html);
   assert.ok(match, `Expected navigation link for ${path}`);
   return { content: match[1] ?? "" };
 }
