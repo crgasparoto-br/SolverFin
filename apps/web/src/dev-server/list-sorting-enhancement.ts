@@ -1,3 +1,5 @@
+import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
+
 export type ListSort =
   | "date_asc"
   | "date_desc"
@@ -28,7 +30,7 @@ export function enhanceStatementListSorting(html: string, url: URL): string {
   let nextHtml = injectSortControl(html, "/lancamentos", sort);
   nextHtml = sortStatementRows(nextHtml, sort);
   nextHtml = injectSortAssets(nextHtml);
-  return injectAccountRemunerationStatementAssets(nextHtml);
+  return injectAccountRemunerationStatementAssets(compactAccountRemunerationRows(nextHtml));
 }
 
 export function enhanceCardListSorting(html: string, url: URL): string {
@@ -262,6 +264,101 @@ function injectSortAssets(html: string): string {
   return nextHtml;
 }
 
+interface AccountRemunerationStatementRecord {
+  competenceOn: string;
+  balanceBaseMinor: number;
+  dailyRatePercent: number;
+  remunerationPercent: number;
+  originalAmountMinor: number;
+  manuallyAdjusted: boolean;
+}
+
+function compactAccountRemunerationRows(html: string): string {
+  const rows = collectElements(html, '<article class="statement-row statement-body', "article");
+  let nextHtml = html;
+
+  for (const row of [...rows].reverse()) {
+    const record = parseEmbeddedRecord(row.content);
+    const remuneration = accountRemunerationRecord(record?.accountRemuneration);
+    if (!remuneration) continue;
+
+    const compactTitle =
+      '<strong>Remuneração CDI<span class="account-remuneration-badge">CDI</span></strong>';
+    let compactRow = row.content.replace(
+      /(<div class="description col-description">\s*)<strong>[\s\S]*?<\/strong>/,
+      `$1${compactTitle}`,
+    );
+    compactRow = compactRow.replace(
+      /<section class="account-remuneration-audit"[^>]*>[\s\S]*?<\/section>/,
+      renderCompactAccountRemuneration(remuneration),
+    );
+
+    nextHtml = nextHtml.slice(0, row.start) + compactRow + nextHtml.slice(row.end);
+  }
+
+  return nextHtml;
+}
+
+function accountRemunerationRecord(value: unknown): AccountRemunerationStatementRecord | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const record = value as Record<string, unknown>;
+  if (
+    typeof record.competenceOn !== "string" ||
+    typeof record.balanceBaseMinor !== "number" ||
+    typeof record.dailyRatePercent !== "number" ||
+    typeof record.remunerationPercent !== "number" ||
+    typeof record.originalAmountMinor !== "number" ||
+    typeof record.manuallyAdjusted !== "boolean"
+  ) {
+    return undefined;
+  }
+
+  return {
+    competenceOn: record.competenceOn,
+    balanceBaseMinor: record.balanceBaseMinor,
+    dailyRatePercent: record.dailyRatePercent,
+    remunerationPercent: record.remunerationPercent,
+    originalAmountMinor: record.originalAmountMinor,
+    manuallyAdjusted: record.manuallyAdjusted,
+  };
+}
+
+function renderCompactAccountRemuneration(
+  remuneration: AccountRemunerationStatementRecord,
+): string {
+  const adjustment = remuneration.manuallyAdjusted
+    ? '<span class="account-remuneration-adjustment adjusted">Ajustado manualmente</span>'
+    : "";
+
+  return `<span class="account-remuneration-summary">Competência ${escapeHtml(formatDateOnly(remuneration.competenceOn))} · ${escapeHtml(formatPercentage(remuneration.remunerationPercent, 4))} do CDI</span>
+        <details class="account-remuneration-audit">
+<summary>Ver memória do cálculo</summary>
+<div class="account-remuneration-audit-content">
+  ${adjustment}
+  <dl>
+    <div><dt>Competência</dt><dd>${escapeHtml(formatDateOnly(remuneration.competenceOn))}</dd></div>
+    <div><dt>Saldo-base</dt><dd>${escapeHtml(formatMinorCurrency(remuneration.balanceBaseMinor))}</dd></div>
+    <div><dt>CDI diário</dt><dd>${escapeHtml(formatPercentage(remuneration.dailyRatePercent, 8))}</dd></div>
+    <div><dt>Percentual aplicado</dt><dd>${escapeHtml(formatPercentage(remuneration.remunerationPercent, 4))}</dd></div>
+    <div><dt>Valor original</dt><dd>${escapeHtml(formatMinorCurrency(remuneration.originalAmountMinor))}</dd></div>
+  </dl>
+</div>
+        </details>`;
+}
+
+function formatPercentage(value: number, maximumFractionDigits: number): string {
+  return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits }).format(value)}%`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function injectAccountRemunerationStatementAssets(html: string): string {
   let nextHtml = html;
 
@@ -282,7 +379,17 @@ function injectAccountRemunerationStatementAssets(html: string): string {
         .account-remuneration-audit dd{font-size:.6875rem;font-weight:700;margin:0;overflow-wrap:anywhere}
         [data-remuneration-protected="true"]{background:var(--surface-soft);cursor:not-allowed}
         .remuneration-edit-notice{background:var(--primary-soft);border:1px solid #c8dde5;border-radius:var(--radius);color:var(--text);font-size:.8125rem;grid-column:1 / -1;line-height:1.45;padding:10px}
-        @media(max-width:760px){.account-remuneration-audit dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        .account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;line-height:1.35}
+        .account-remuneration-audit{background:transparent;border:0;display:block;gap:0;margin-top:2px;padding:0}
+        .account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;gap:5px;list-style:none;padding:2px 0}
+        .account-remuneration-audit summary::-webkit-details-marker{display:none}
+        .account-remuneration-audit summary::after{content:"›";font-size:1rem;line-height:1;transform:rotate(90deg);transition:transform 120ms ease-out}
+        .account-remuneration-audit[open] summary::after{transform:rotate(-90deg)}
+        .account-remuneration-audit-content{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:4px;padding:8px}
+        .account-remuneration-audit-content .account-remuneration-adjustment{background:var(--warning-bg);color:var(--warning);justify-self:start}
+        .account-remuneration-audit-content dl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));margin:0}
+        .account-remuneration-audit-content dd{font-size:.75rem}
+        @media(max-width:760px){.account-remuneration-audit-content dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
       </style>`;
     nextHtml = nextHtml.replace("</head>", `${styles}</head>`);
   }
