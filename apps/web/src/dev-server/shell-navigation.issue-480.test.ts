@@ -13,14 +13,8 @@ describe("issue #480 authenticated navigation", () => {
 
     for (const route of masterRoutes) {
       assert.match(html, new RegExp(`\\"id\\":\\"${route.id}\\"`));
-      assert.match(
-        html,
-        new RegExp(`\\"path\\":\\"${escapeRegExp(route.path)}\\"`),
-      );
-      assert.match(
-        html,
-        new RegExp(`\\"label\\":\\"${escapeRegExp(route.label)}\\"`),
-      );
+      assert.match(html, new RegExp(`\\"path\\":\\"${escapeRegExp(route.path)}\\"`));
+      assert.match(html, new RegExp(`\\"label\\":\\"${escapeRegExp(route.label)}\\"`));
     }
 
     assert.match(html, /for \(const route of masterRoutes\)/);
@@ -49,28 +43,16 @@ describe("issue #480 authenticated navigation", () => {
 
     assert.match(html, /@media \(min-width: 761px\)/);
     assert.match(html, /\.sidebar \{ overflow: hidden; \}/);
-    assert.match(
-      html,
-      /\.sidebar > \.brand, \.sidebar > \.logout \{ flex: 0 0 auto; \}/,
-    );
-    assert.match(
-      html,
-      /\.sidebar > nav \{[\s\S]*min-height: 0;[\s\S]*overflow-y: auto;/,
-    );
+    assert.match(html, /\.sidebar > \.brand, \.sidebar > \.logout \{ flex: 0 0 auto; \}/);
+    assert.match(html, /\.sidebar > nav \{[\s\S]*min-height: 0;[\s\S]*overflow-y: auto;/);
     assert.match(html, /@media \(max-width: 760px\)[\s\S]*overflow-y: visible/);
   });
 
   it("rebuilds aria-controls from all secondary links after adding master routes", () => {
     const html = renderDashboardShell();
 
-    assert.match(
-      html,
-      /querySelectorAll\('a\[data-nav-priority="secondary"\]\[id\]'\)/,
-    );
-    assert.match(
-      html,
-      /toggle\.setAttribute\("aria-controls", secondaryIds\.join\(" "\)\)/,
-    );
+    assert.match(html, /querySelectorAll\('a\[data-nav-priority="secondary"\]\[id\]'\)/);
+    assert.match(html, /toggle\.setAttribute\("aria-controls", secondaryIds\.join\(" "\)\)/);
     assert.match(html, /data-nav-route-id=/);
     assert.match(html, /data-nav-group-label=/);
   });
@@ -86,9 +68,7 @@ function renderDashboardShell(): string {
 }
 
 function findNavigationLink(html: string, path: string): { content: string } {
-  const match = new RegExp(
-    `<a href="${escapeRegExp(path)}"[^>]*>([\\s\\S]*?)<\\/a>`,
-  ).exec(html);
+  const match = new RegExp(`<a href="${escapeRegExp(path)}"[^>]*>([\\s\\S]*?)<\\/a>`).exec(html);
   assert.ok(match, `Expected navigation link for ${path}`);
   return { content: match[1] ?? "" };
 }
