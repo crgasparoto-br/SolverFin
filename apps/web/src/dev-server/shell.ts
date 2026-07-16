@@ -258,6 +258,11 @@ function currentUserScript(activePathname: string): string {
           if (hasAllMasterRoutes) return;
 
           const navigationWasOpen = nav.classList.contains("nav-open");
+          const focusedNavigationId =
+            document.activeElement && nav.contains(document.activeElement)
+              ? document.activeElement.id
+              : "";
+
           nav.innerHTML = masterNavigationHtml;
 
           const shouldRemainOpen = navigationWasOpen || masterNavigationStartsOpen;
@@ -267,6 +272,16 @@ function currentUserScript(activePathname: string): string {
           if (toggle) {
             toggle.setAttribute("aria-expanded", String(shouldRemainOpen));
             toggle.textContent = shouldRemainOpen ? "Menos" : "Mais";
+          }
+
+          const focusedNavigationTarget = focusedNavigationId
+            ? nav.querySelector('[id="' + focusedNavigationId + '"]')
+            : null;
+          if (
+            focusedNavigationTarget &&
+            typeof focusedNavigationTarget.focus === "function"
+          ) {
+            focusedNavigationTarget.focus();
           }
         } catch {
           // Keep the authenticated shell usable if the profile endpoint is unavailable.
