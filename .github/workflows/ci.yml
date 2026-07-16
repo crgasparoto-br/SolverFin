@@ -66,41 +66,8 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
-      - name: Generate exact issue 488 formatting
-        run: |
-          npx prettier --write \
-            apps/api/src/account-remuneration-future-contamination.integration.test.ts \
-            apps/api/src/repositories/account-remuneration-diagnostics-persistence.ts \
-            apps/api/src/repositories/account-remuneration-diagnostics-service.ts \
-            scripts/assert-integration-database.mjs \
-            scripts/validate-integration-database-guard.mjs
-          tar -czf issue-488-formatted.tgz \
-            apps/api/src/account-remuneration-future-contamination.integration.test.ts \
-            apps/api/src/repositories/account-remuneration-diagnostics-persistence.ts \
-            apps/api/src/repositories/account-remuneration-diagnostics-service.ts \
-            scripts/assert-integration-database.mjs \
-            scripts/validate-integration-database-guard.mjs
-
-      - name: Upload exact issue 488 formatting
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-488-formatted
-          path: issue-488-formatted.tgz
-          if-no-files-found: error
-
       - name: Check formatting
-        id: format-check
-        run: |
-          set -o pipefail
-          npm run format:check 2>&1 | tee format-check.log
-
-      - name: Upload formatting diagnostic
-        if: failure() && steps.format-check.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: formatting-diagnostic
-          path: format-check.log
-          if-no-files-found: error
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
@@ -178,15 +145,4 @@ jobs:
         run: npm run db:seed
 
       - name: Run API integration tests
-        id: integration-tests
-        run: |
-          set -o pipefail
-          npm run test:integration --workspace @solverfin/api 2>&1 | tee integration-tests.log
-
-      - name: Upload integration diagnostic
-        if: failure() && steps.integration-tests.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: integration-diagnostic
-          path: integration-tests.log
-          if-no-files-found: error
+        run: npm run test:integration --workspace @solverfin/api
