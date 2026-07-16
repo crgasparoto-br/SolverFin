@@ -4,10 +4,7 @@ import vm from "node:vm";
 
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
-const MASTER_ROUTE_IDS = [
-  "adminInstitutions",
-  "adminFinancialIndexes",
-] as const;
+const MASTER_ROUTE_IDS = ["adminInstitutions", "adminFinancialIndexes"] as const;
 
 describe("issue #480 navigation runtime", () => {
   it("executes the profile script and adds every master route without duplicates", async () => {
@@ -28,11 +25,7 @@ describe("issue #480 navigation runtime", () => {
     assert.deepEqual(
       harness.nav
         .links()
-        .filter((link) =>
-          MASTER_ROUTE_IDS.some(
-            (routeId) => routeId === link.dataset.navRouteId,
-          ),
-        )
+        .filter((link) => MASTER_ROUTE_IDS.some((routeId) => routeId === link.dataset.navRouteId))
         .map((link) => link.dataset.navRouteId),
       MASTER_ROUTE_IDS,
     );
@@ -78,9 +71,7 @@ describe("issue #480 navigation runtime", () => {
       { throws: true },
     ] satisfies ProfileResult[]) {
       const harness = createHarness(renderShell("/dashboard", false));
-      const initialRouteIds = harness.nav
-        .links()
-        .map((link) => link.dataset.navRouteId);
+      const initialRouteIds = harness.nav.links().map((link) => link.dataset.navRouteId);
 
       await executeProfileScript(harness, result);
 
@@ -110,9 +101,7 @@ describe("issue #480 navigation runtime", () => {
   });
 
   it("preserves active state for a dynamically included master route", async () => {
-    const harness = createHarness(
-      renderShell("/admin/indices-financeiros", false),
-    );
+    const harness = createHarness(renderShell("/admin/indices-financeiros", false));
 
     await executeProfileScript(harness, {
       ok: true,
@@ -120,9 +109,7 @@ describe("issue #480 navigation runtime", () => {
     });
 
     assert.equal(
-      requiredLink(harness.nav, "adminFinancialIndexes").getAttribute(
-        "aria-current",
-      ),
+      requiredLink(harness.nav, "adminFinancialIndexes").getAttribute("aria-current"),
       "page",
     );
   });
@@ -193,9 +180,7 @@ class FakeNavigation extends FakeElement {
     if (groupMatch) return this.groupLabels(groupMatch[1] ?? "")[0] ?? null;
 
     if (selector === "[data-nav-more]") {
-      return (
-        this.children.find((element) => "navMore" in element.dataset) ?? null
-      );
+      return this.children.find((element) => "navMore" in element.dataset) ?? null;
     }
 
     return null;
@@ -204,8 +189,7 @@ class FakeNavigation extends FakeElement {
   querySelectorAll(selector: string): FakeElement[] {
     if (selector === 'a[data-nav-priority="secondary"][id]') {
       return this.links().filter(
-        (link) =>
-          link.dataset.navPriority === "secondary" && link.id.length > 0,
+        (link) => link.dataset.navPriority === "secondary" && link.id.length > 0,
       );
     }
     return [];
@@ -220,9 +204,7 @@ class FakeNavigation extends FakeElement {
   }
 
   groupLabels(group: string): FakeElement[] {
-    return this.children.filter(
-      (element) => element.dataset.navGroupLabel === group,
-    );
+    return this.children.filter((element) => element.dataset.navGroupLabel === group);
   }
 }
 
@@ -243,10 +225,7 @@ class FakeDocument {
   }
 }
 
-function renderShell(
-  activePathname: string,
-  showAdminNavigation: boolean,
-): string {
+function renderShell(activePathname: string, showAdminNavigation: boolean): string {
   return renderAuthenticatedShellDocument({
     activePathname,
     content: "<section>Content</section>",
@@ -257,8 +236,7 @@ function renderShell(
 }
 
 function createHarness(html: string): Harness {
-  const navMatch =
-    /<nav aria-label="Menu principal"[^>]*>([\s\S]*?)<\/nav>/.exec(html);
+  const navMatch = /<nav aria-label="Menu principal"[^>]*>([\s\S]*?)<\/nav>/.exec(html);
   assert.ok(navMatch, "Expected rendered main navigation");
 
   const nav = new FakeNavigation(parseNavigationChildren(navMatch[1] ?? ""));
@@ -273,10 +251,7 @@ function createHarness(html: string): Harness {
   };
 }
 
-async function executeProfileScript(
-  harness: Harness,
-  result: ProfileResult,
-): Promise<void> {
+async function executeProfileScript(harness: Harness, result: ProfileResult): Promise<void> {
   const context = {
     document: harness.document,
     fetch: async (): Promise<{ ok: boolean; json(): Promise<unknown> }> => {
@@ -292,9 +267,7 @@ async function executeProfileScript(
 }
 
 function parseNavigationChildren(html: string): FakeElement[] {
-  return Array.from(
-    html.matchAll(/<(span|a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g),
-  ).map((match) => {
+  return Array.from(html.matchAll(/<(span|a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g)).map((match) => {
     const element = new FakeElement(match[1] ?? "unknown");
     applyAttributes(element, match[2] ?? "");
     element.innerHTML = match[3] ?? "";
@@ -312,12 +285,10 @@ function applyAttributes(element: FakeElement, attributes: string): void {
 }
 
 function extractProfileScript(html: string): string {
-  const scripts = Array.from(
-    html.matchAll(/<script>([\s\S]*?)<\/script>/g),
-  ).map((match) => match[1] ?? "");
-  const profileScript = scripts.find((script) =>
-    script.includes("const masterRoutes"),
+  const scripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g)).map(
+    (match) => match[1] ?? "",
   );
+  const profileScript = scripts.find((script) => script.includes("const masterRoutes"));
   assert.ok(profileScript, "Expected current-user navigation script");
   return profileScript;
 }
@@ -337,7 +308,5 @@ function requiredToggle(nav: FakeNavigation): FakeElement {
 function toDatasetKey(attributeName: string): string {
   return attributeName
     .slice("data-".length)
-    .replace(/-([a-z])/g, (_match, character: string) =>
-      character.toUpperCase(),
-    );
+    .replace(/-([a-z])/g, (_match, character: string) => character.toUpperCase());
 }
