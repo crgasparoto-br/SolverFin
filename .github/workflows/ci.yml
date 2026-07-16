@@ -66,6 +66,28 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
+      - name: Generate exact issue 488 formatting
+        run: |
+          npx prettier --write \
+            apps/api/src/account-remuneration-future-contamination.integration.test.ts \
+            apps/api/src/repositories/account-remuneration-diagnostics-persistence.ts \
+            apps/api/src/repositories/account-remuneration-diagnostics-service.ts \
+            scripts/assert-integration-database.mjs \
+            scripts/validate-integration-database-guard.mjs
+          tar -czf issue-488-formatted.tgz \
+            apps/api/src/account-remuneration-future-contamination.integration.test.ts \
+            apps/api/src/repositories/account-remuneration-diagnostics-persistence.ts \
+            apps/api/src/repositories/account-remuneration-diagnostics-service.ts \
+            scripts/assert-integration-database.mjs \
+            scripts/validate-integration-database-guard.mjs
+
+      - name: Upload exact issue 488 formatting
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-488-formatted
+          path: issue-488-formatted.tgz
+          if-no-files-found: error
+
       - name: Check formatting
         id: format-check
         run: |
