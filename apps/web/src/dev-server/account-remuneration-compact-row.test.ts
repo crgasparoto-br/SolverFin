@@ -50,6 +50,7 @@ assert.match(
 );
 assert.match(html, /Competência 15\/07\/2026 · 100% do CDI/);
 assert.match(html, /<summary>Ver memória do cálculo<\/summary>/);
+assert.match(html, /account-remuneration-audit-content/);
 assert.match(html, /Ajustado manualmente/);
 assert.match(html, /Valor original<\/dt><dd>R\$\s*5,22/);
 assert.doesNotMatch(html, /<details class="account-remuneration-audit"[^>]* open/);
