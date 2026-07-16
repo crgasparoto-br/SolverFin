@@ -379,12 +379,12 @@ function injectAccountRemunerationStatementAssets(html: string): string {
         [data-remuneration-protected="true"]{background:var(--surface-soft);cursor:not-allowed}
         .remuneration-edit-notice{background:var(--primary-soft);border:1px solid #c8dde5;border-radius:var(--radius);color:var(--text);font-size:.8125rem;grid-column:1 / -1;line-height:1.45;padding:10px}
         .statement-row.account-remuneration-row .col-description{min-width:15rem}
-        .statement-row.account-remuneration-row .description{display:block}
-        .statement-row.account-remuneration-row .description>strong{display:inline}
-        .account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;line-height:1.35}
-        .account-remuneration-audit{background:transparent;border:0;display:inline-block;gap:0;margin:0 0 0 6px;padding:0;vertical-align:baseline}
-        .account-remuneration-audit[open]{display:block;margin-left:0}
-        .account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.6875rem;font-weight:700;gap:2px;line-height:1.2;list-style:none;padding:0;white-space:nowrap}
+        .statement-row.account-remuneration-row .description{align-items:baseline;column-gap:4px;display:grid;grid-template-columns:max-content minmax(0,1fr)}
+        .statement-row.account-remuneration-row .description>strong{grid-column:1;grid-row:1}
+        .account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;grid-column:1 / -1;grid-row:2;line-height:1.35}
+        .account-remuneration-audit{background:transparent;border:0;display:block;grid-column:2;grid-row:1;justify-self:start;margin:0;padding:0}
+        .account-remuneration-audit[open]{grid-column:1 / -1;grid-row:3;margin:4px 0 0}
+        .account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.625rem;font-weight:700;line-height:1.2;list-style:none;padding:0;white-space:nowrap}
         .account-remuneration-audit summary::-webkit-details-marker{display:none}
         .account-remuneration-audit summary::after{display:none}
         .account-remuneration-audit-content{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:4px;padding:8px}
