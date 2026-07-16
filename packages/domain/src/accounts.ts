@@ -202,14 +202,16 @@ function getNextOpeningBalance(
     return account.openingBalanceMinor;
   }
 
-  if (hasTransactions) {
+  const nextOpeningBalance = validateOpeningBalance(payload.openingBalanceMinor);
+
+  if (hasTransactions && nextOpeningBalance !== account.openingBalanceMinor) {
     throw new AccountError(
       "ACCOUNT_OPENING_BALANCE_LOCKED",
-      "Opening balance cannot be changed after account transactions exist.",
+      "O saldo inicial só pode ser alterado antes de a conta possuir movimentações.",
     );
   }
 
-  return validateOpeningBalance(payload.openingBalanceMinor);
+  return nextOpeningBalance;
 }
 
 function normalizeAccountName(name: string): string {

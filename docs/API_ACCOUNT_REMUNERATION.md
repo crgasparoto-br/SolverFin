@@ -20,7 +20,9 @@ Quando já existe taxa CDI confirmada, qualquer importação normal começa obri
 
 ## Configuração por conta
 
-A configuração está disponível tanto na página dedicada de remuneração quanto nos formulários de criação e edição de contas.
+A configuração de remuneração fica integrada à área **Contas e Cartões** (`/contas-cartoes`). Cada conta elegível possui uma ação secundária que abre um modal separado do formulário cadastral da conta. A antiga rota autenticada `/remuneracao-contas` redireciona para `/contas-cartoes` e não aparece mais na navegação.
+
+A interface carrega configurações e categorias de receita independentemente da listagem de contas e cartões. Se esse carregamento falhar, somente as ações de CDI ficam indisponíveis e a página oferece nova tentativa; o restante da tela continua utilizável.
 
 ### `GET /api/account-remuneration/configurations`
 
@@ -47,7 +49,7 @@ Resposta resumida:
 
 ### `PUT /api/account-remuneration/configurations/:accountId`
 
-Cria ou atualiza a configuração da conta no perfil corrente.
+Cria ou atualiza a configuração da conta no perfil corrente. O modal envia apenas o contrato abaixo; campos cadastrais da conta não fazem parte desta requisição.
 
 ```json
 {
@@ -61,17 +63,26 @@ Cria ou atualiza a configuração da conta no perfil corrente.
 Regras:
 
 - somente contas ativas e em `BRL` podem ser habilitadas;
+- contas arquivadas não exibem ação que permita ativar ou editar CDI;
+- contas fora de `BRL` informam que o recurso está disponível somente em reais;
 - o indexador disponível nesta versão é o CDI;
 - o percentual deve ser maior que zero e menor ou igual a `1000`;
 - a data inicial e o percentual são obrigatórios quando `enabled=true`;
 - a categoria, quando informada, deve ser uma categoria ativa de receita do mesmo tenant;
 - alteração de percentual ou data inicial afeta apenas competências ainda não processadas;
-- os campos enviados são persistidos mesmo com `enabled=false`; as interfaces reenviam os valores carregados ao desativar, então percentual, data inicial e categoria ficam preservados para reativação;
-- contas existentes permanecem desativadas até configuração explícita.
+- ao desativar com `enabled=false`, percentual, data inicial e categoria omitidos são preservados pelo banco; o modal também reenvia os valores carregados, permitindo futura reativação sem perda de configuração;
+- contas existentes permanecem desativadas até configuração explícita;
+- uma conta com CDI ativo não pode mudar de `BRL` para outra moeda nem ser arquivada antes da desativação da remuneração;
+- ativação do CDI e mudança de moeda/status são serializadas por bloqueio da conta no banco, impedindo estado concorrente com CDI ativo em conta inelegível;
+- erros de gravação mantêm o modal aberto, preservam os valores digitados e apresentam a mensagem localizada da API.
+
+Quando não existe configuração persistida, o modal inicia desativado, com `100%`, data atual e categoria vazia. O texto de apoio informa que o cálculo usa o saldo final do dia anterior.
 
 ## Administração global
 
 Os endpoints abaixo exigem usuário master configurado em `SOLVERFIN_MASTER_EMAILS`.
+
+A área administrativa de índices financeiros permanece separada da configuração por conta.
 
 ### `GET /api/admin/financial-indexes/status`
 
@@ -191,6 +202,7 @@ O schema utiliza o formato multifile. Os modelos de índices e remuneração fic
 - `ACCOUNT_REMUNERATION_CONFIGURATION_INCOMPLETE`: percentual ou data inicial ausentes;
 - `ACCOUNT_REMUNERATION_CURRENCY_UNSUPPORTED`: conta fora de BRL;
 - `ACCOUNT_REMUNERATION_CATEGORY_INVALID`: categoria fora do tenant ou não classificada como receita;
+- `ACCOUNT_REMUNERATION_MUST_BE_DISABLED`: tentativa de alterar moeda ou arquivar uma conta com CDI ativo;
 - `FINANCIAL_INDEX_PROVIDER_UNAVAILABLE`: indisponibilidade ou resposta inválida da fonte oficial;
 - `FINANCIAL_INDEX_PERIOD_INVALID`: período de importação inválido;
 - proteção de banco rejeita alteração da identidade de um lançamento de remuneração.

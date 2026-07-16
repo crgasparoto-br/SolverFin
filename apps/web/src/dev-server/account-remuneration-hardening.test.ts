@@ -15,20 +15,21 @@ const statementEnhancement = readFileSync(
   "utf8",
 );
 
-assert.match(accountsEnhancement, /Remuneração da conta/);
+assert.match(accountsEnhancement, /Remuneração pelo CDI/);
 assert.match(accountsEnhancement, /Percentual de remuneração sobre o CDI/);
-assert.match(accountsEnhancement, /remunerationIndexKind/);
-assert.match(accountsEnhancement, /\/api\/account-remuneration\/configurations\//);
-assert.match(accountsEnhancement, /form\.addEventListener\("submit"[\s\S]*true\)/);
-assert.match(accountsEnhancement, /Contas fora de BRL permanecem não elegíveis/);
+assert.match(accountsEnhancement, /data-account-remuneration-dialog/);
+assert.match(accountsEnhancement, /\/api\/account-remuneration\/configurations/);
+assert.match(accountsEnhancement, /method: "PUT"/);
+assert.match(accountsEnhancement, /Disponível somente para contas em BRL/);
+assert.match(accountsEnhancement, /Contas arquivadas não podem configurar remuneração pelo CDI/);
+assert.doesNotMatch(accountsEnhancement, /wireCombinedAccountSubmit/);
+assert.doesNotMatch(accountsEnhancement, /Salvando conta e remuneração/);
 
-// Desativar a remuneração pelo formulário de contas deve reenviar os valores
-// carregados, preservando percentual, data inicial e categoria salvos.
-assert.match(
-  accountsEnhancement,
-  /if \(Number\.isFinite\(percentage\) && percentage > 0\) payload\.remunerationPercent = percentage;/,
-);
-assert.match(accountsEnhancement, /if \(startsOn\) payload\.startsOn = startsOn;/);
+// Desativar a remuneração pelo modal deve reenviar os valores carregados,
+// preservando percentual, data inicial e categoria salvos.
+assert.match(accountsEnhancement, /remunerationPercent: percentage/);
+assert.match(accountsEnhancement, /startsOn/);
+assert.match(accountsEnhancement, /if \(categoryId\) payload\.categoryId = categoryId/);
 assert.doesNotMatch(accountsEnhancement, /if \(enabled\) \{\s*payload\.remunerationPercent/);
 
 assert.match(statementEnhancement, /transaction\.source !== "account_remuneration"/);

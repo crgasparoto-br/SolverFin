@@ -30,7 +30,7 @@ function injectActiveFilter(html: string): string {
   return htmlWithoutStatusFilter.replace(
     `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>`,
     `          <button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button>
- ${activeFilterToggleHtml}`,
+  ${activeFilterToggleHtml}`,
   );
 }
 
@@ -63,16 +63,30 @@ function injectNeutralStyles(html: string): string {
 }
 
 function injectAccountRemunerationStyles(html: string): string {
-  if (html.includes("data-account-remuneration-account-form-styles")) return html;
+  if (html.includes("data-account-remuneration-modal-styles")) return html;
 
   const styles = `
-      <style data-account-remuneration-account-form-styles>
-        .account-remuneration-fieldset { border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 10px; grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 4px 0; padding: 12px; }
-        .account-remuneration-fieldset legend { font-size: .8125rem; font-weight: 800; padding: 0 6px; }
-        .account-remuneration-fieldset .remuneration-help { color: var(--muted); font-size: .75rem; grid-column: 1 / -1; line-height: 1.45; margin: 0; }
-        .account-remuneration-fieldset select:disabled, .account-remuneration-fieldset input:disabled { cursor: not-allowed; opacity: .65; }
-        .account-remuneration-load-error { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: var(--radius); color: var(--warning); font-size: .8125rem; grid-column: 1 / -1; line-height: 1.45; margin: 0; padding: 10px; }
-        @media (max-width: 680px) { .account-remuneration-fieldset { grid-template-columns: 1fr; } .account-remuneration-fieldset .remuneration-help, .account-remuneration-load-error { grid-column: auto; } }
+      <style data-account-remuneration-modal-styles>
+        .account-remuneration-summary { align-items: center; color: var(--muted); display: flex; flex-wrap: wrap; font-size: .75rem; gap: 6px; margin-top: 6px; }
+        .account-remuneration-badge { background: #dcfce7; border: 1px solid #86efac; border-radius: 999px; color: #166534; display: inline-flex; font-size: .6875rem; font-weight: 800; line-height: 1; padding: 4px 7px; text-transform: uppercase; }
+        .account-remuneration-eligibility { color: var(--muted); font-size: .75rem; line-height: 1.4; margin: 6px 0 0; }
+        .cdi-action-button { background: #fff; border: 1px solid #cbd5e1; color: #334155; font-size: .75rem; min-height: 32px; padding: 6px 9px; white-space: nowrap; }
+        .cdi-action-button:hover:not(:disabled), .cdi-action-button:focus-visible { background: #f1f5f9; border-color: #94a3b8; color: #0f172a; }
+        .cdi-action-button:disabled { cursor: not-allowed; opacity: .58; }
+        .account-remuneration-load-error { align-items: center; background: var(--warning-bg); border: 1px solid #fde68a; border-radius: var(--radius); color: var(--warning); display: flex; flex-wrap: wrap; font-size: .8125rem; gap: 10px; justify-content: space-between; line-height: 1.45; margin: 0 0 14px; padding: 10px 12px; }
+        .account-remuneration-load-error button { flex: 0 0 auto; }
+        .account-remuneration-dialog .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .account-remuneration-dialog .remuneration-help { color: var(--muted); font-size: .8125rem; grid-column: 1 / -1; line-height: 1.5; margin: 0; }
+        .account-remuneration-dialog .dialog-actions { display: flex; gap: 8px; grid-column: 1 / -1; justify-content: flex-end; }
+        .account-remuneration-dialog .dialog-actions button { width: auto; }
+        .account-remuneration-dialog .form-status { grid-column: 1 / -1; margin: 0; }
+        @media (max-width: 760px) {
+          .cdi-action-button { width: 100%; }
+          .account-remuneration-dialog .edit-grid { grid-template-columns: 1fr; }
+          .account-remuneration-dialog .remuneration-help, .account-remuneration-dialog .dialog-actions, .account-remuneration-dialog .form-status { grid-column: auto; }
+          .account-remuneration-dialog .dialog-actions { flex-direction: column-reverse; }
+          .account-remuneration-dialog .dialog-actions button { width: 100%; }
+        }
       </style>`;
 
   return html.replace("</head>", `${styles}</head>`);
@@ -86,6 +100,10 @@ function accountsCardsDirectEnhancementScript(): string {
           window.__solverFinAccountsCardsDirect = true;
 
           const activeFilterStorageKey = "solverfin.accountsCards.activeOnly";
+          const remunerationEndpoint = "/api/account-remuneration/configurations";
+          let accountModels = [];
+          let categories = [];
+          let configurationsByAccount = new Map();
 
           function wireActiveFilter() {
             const button = document.querySelector("[data-active-filter]");
@@ -111,229 +129,307 @@ function accountsCardsDirectEnhancementScript(): string {
               .replace(/'/g, "&#39;");
           }
 
+          function formatPercentage(value) {
+            return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(Number(value));
+          }
+
+          function formatDate(value) {
+            const parts = String(value || "").split("-");
+            return parts.length === 3 ? parts[2] + "/" + parts[1] + "/" + parts[0] : String(value || "");
+          }
+
+          function today() {
+            const now = new Date();
+            const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+            return local.toISOString().slice(0, 10);
+          }
+
           function accountIdFromForm(form) {
-            const match = /^\\/api\\/accounts\\/([^/]+)$/.exec(String(form.dataset.apiPath || ""));
+            const match = /^\\/api\\/accounts\\/([^/]+)$/.exec(String(form && form.dataset.apiPath || ""));
             return match ? decodeURIComponent(match[1]) : undefined;
           }
 
-          function renderCategoryOptions(categories, selected) {
+          function collectAccountModels() {
+            const panel = document.querySelector('[data-tab-panel="accounts"]');
+            if (!panel) return [];
+            return Array.from(panel.querySelectorAll("[data-master-item]")).flatMap((article) => {
+              const form = article.querySelector('form.edit-grid[data-api-path^="/api/accounts/"]');
+              const accountId = accountIdFromForm(form);
+              const actions = article.querySelector(".item-actions");
+              const main = article.querySelector(".item-main");
+              if (!form || !accountId || !actions || !main) return [];
+
+              let action = article.querySelector("[data-account-remuneration-action]");
+              if (!action) {
+                action = document.createElement("button");
+                action.type = "button";
+                action.className = "cdi-action-button";
+                action.setAttribute("data-account-remuneration-action", "");
+                action.disabled = true;
+                action.textContent = "Carregando CDI...";
+                const editAction = actions.querySelector('[data-open-dialog^="edit-account-dialog-"]');
+                if (editAction && editAction.nextSibling) actions.insertBefore(action, editAction.nextSibling);
+                else actions.appendChild(action);
+              }
+
+              const title = article.querySelector(".item-title-row strong");
+              const currencyField = form.elements && form.elements.currency;
+              return [{
+                accountId,
+                article,
+                form,
+                main,
+                action,
+                name: title ? String(title.textContent || "Conta") : "Conta",
+                currency: currencyField ? String(currencyField.value || "BRL").toUpperCase() : "BRL",
+                status: String(article.dataset.status || "active")
+              }];
+            });
+          }
+
+          function clearPresentation(model) {
+            model.article.querySelectorAll("[data-account-remuneration-summary], [data-account-remuneration-eligibility], [data-account-remuneration-dialog]").forEach((node) => node.remove());
+            model.action.onclick = null;
+            model.action.removeAttribute("title");
+          }
+
+          function appendEligibility(model, message) {
+            const note = document.createElement("p");
+            note.className = "account-remuneration-eligibility";
+            note.setAttribute("data-account-remuneration-eligibility", "");
+            note.textContent = message;
+            model.main.appendChild(note);
+          }
+
+          function appendSummary(model, configuration) {
+            const summary = document.createElement("div");
+            summary.className = "account-remuneration-summary";
+            summary.setAttribute("data-account-remuneration-summary", "");
+            summary.innerHTML =
+              '<span class="account-remuneration-badge">CDI ativo</span>' +
+              '<span>' + escapeHtml(formatPercentage(configuration.remunerationPercent)) + '% do CDI</span>' +
+              '<span aria-hidden="true">·</span>' +
+              '<span>desde ' + escapeHtml(formatDate(configuration.startsOn)) + '</span>';
+            model.main.appendChild(summary);
+          }
+
+          function renderCategoryOptions(selected) {
             return categories.map((category) =>
               '<option value="' + escapeHtml(category.id) + '"' + (category.id === selected ? ' selected' : '') + '>' + escapeHtml(category.name) + '</option>'
             ).join("");
           }
 
-          function appendRemunerationFields(form, configuration, categories) {
-            if (form.querySelector("[data-account-remuneration-fields]")) return;
+          function createDialog(model, configuration) {
             const enabled = configuration && configuration.enabled === true;
             const percentage = configuration && configuration.remunerationPercent !== undefined ? configuration.remunerationPercent : 100;
-            const startsOn = configuration && configuration.startsOn ? configuration.startsOn : new Date().toISOString().slice(0, 10);
+            const startsOn = configuration && configuration.startsOn ? configuration.startsOn : today();
             const categoryId = configuration && configuration.categoryId ? configuration.categoryId : "";
-            const fieldset = document.createElement("fieldset");
-            fieldset.className = "account-remuneration-fieldset";
-            fieldset.setAttribute("data-account-remuneration-fields", "");
-            fieldset.innerHTML =
-              '<legend>Remuneração da conta</legend>' +
-              '<label>Situação<select name="remunerationEnabled"><option value="false"' + (enabled ? '' : ' selected') + '>Desativada</option><option value="true"' + (enabled ? ' selected' : '') + '>Ativa</option></select></label>' +
-              '<label>Indexador<select name="remunerationIndexKind"><option value="cdi">CDI</option></select></label>' +
-              '<label>Percentual de remuneração sobre o CDI<input name="remunerationPercent" type="number" min="0.0001" max="1000" step="0.0001" value="' + escapeHtml(percentage) + '" /></label>' +
-              '<label>Data inicial<input name="remunerationStartsOn" type="date" value="' + escapeHtml(startsOn) + '" /></label>' +
-              '<label>Categoria de receita<select name="remunerationCategoryId"><option value="">Sem categoria padrão</option>' + renderCategoryOptions(categories, categoryId) + '</select></label>' +
-              '<p class="remuneration-help">O cálculo usa o saldo final da competência e a taxa diária oficial do CDI. Contas fora de BRL permanecem não elegíveis.</p>';
-            const submit = form.querySelector('button[type="submit"]');
-            if (submit) form.insertBefore(fieldset, submit);
-            else form.appendChild(fieldset);
-            form.dataset.remunerationConfigurationLoaded = "true";
-            wireRemunerationAvailability(form);
+            const dialogId = "account-remuneration-dialog-" + model.accountId;
+            const titleId = dialogId + "-title";
+            const dialog = document.createElement("dialog");
+            dialog.id = dialogId;
+            dialog.className = "master-dialog account-remuneration-dialog";
+            dialog.setAttribute("aria-labelledby", titleId);
+            dialog.setAttribute("data-account-remuneration-dialog", "");
+            dialog.innerHTML =
+              '<div class="dialog-heading"><p class="eyebrow" aria-hidden="true">Remuneração pelo CDI</p><h2 id="' + escapeHtml(titleId) + '">Remuneração pelo CDI — ' + escapeHtml(model.name) + '</h2></div>' +
+              '<form class="edit-grid" data-account-remuneration-form>' +
+                '<label>Situação<select name="enabled"><option value="false"' + (enabled ? '' : ' selected') + '>Desativada</option><option value="true"' + (enabled ? ' selected' : '') + '>Ativa</option></select></label>' +
+                '<label>Percentual de remuneração sobre o CDI<input name="remunerationPercent" type="number" min="0.0001" max="1000" step="0.0001" value="' + escapeHtml(percentage) + '" required /></label>' +
+                '<label>Data inicial do cálculo<input name="startsOn" type="date" value="' + escapeHtml(startsOn) + '" required /></label>' +
+                '<label>Categoria padrão de receita<select name="categoryId"><option value="">Sem categoria padrão</option>' + renderCategoryOptions(categoryId) + '</select></label>' +
+                '<p class="remuneration-help">O cálculo usa o saldo final do dia anterior.</p>' +
+                '<p class="form-status muted" data-account-remuneration-status aria-live="polite"></p>' +
+                '<div class="dialog-actions"><button type="button" class="secondary-button" data-account-remuneration-cancel>Cancelar</button><button type="submit">Salvar CDI</button></div>' +
+              '</form>';
+
+            const form = dialog.querySelector("[data-account-remuneration-form]");
+            const cancel = dialog.querySelector("[data-account-remuneration-cancel]");
+            if (cancel) cancel.addEventListener("click", () => dialog.close());
+            dialog.addEventListener("close", () => model.action.focus());
+            form.addEventListener("submit", (event) => { void saveConfiguration(event, model, dialog, form); });
+            model.article.appendChild(dialog);
+            return dialog;
           }
 
-          function appendRemunerationLoadError(form, message) {
-            if (form.querySelector("[data-account-remuneration-load-error]")) return;
-            const warning = document.createElement("p");
+          function openDialog(model, dialog) {
+            if (typeof dialog.showModal === "function") {
+              if (!dialog.open) dialog.showModal();
+            } else {
+              dialog.setAttribute("open", "");
+            }
+            const firstField = dialog.querySelector("select, input, button");
+            if (firstField && typeof firstField.focus === "function") firstField.focus();
+          }
+
+          function renderAccount(model) {
+            clearPresentation(model);
+            if (model.status !== "active") {
+              model.action.textContent = "CDI indisponível";
+              model.action.disabled = true;
+              model.action.title = "Contas arquivadas não podem configurar remuneração pelo CDI.";
+              return;
+            }
+            if (model.currency !== "BRL") {
+              model.action.textContent = "CDI indisponível";
+              model.action.disabled = true;
+              model.action.title = "Disponível somente para contas em BRL";
+              appendEligibility(model, "Disponível somente para contas em BRL");
+              return;
+            }
+
+            const configuration = configurationsByAccount.get(model.accountId);
+            if (configuration && configuration.enabled === true) appendSummary(model, configuration);
+            model.action.textContent = configuration && configuration.enabled === true ? "Configurar CDI" : "Ativar CDI";
+            model.action.disabled = false;
+            const dialog = createDialog(model, configuration);
+            model.action.onclick = () => openDialog(model, dialog);
+          }
+
+          function setLoadingState() {
+            accountModels.forEach((model) => {
+              clearPresentation(model);
+              if (model.status !== "active") {
+                model.action.textContent = "CDI indisponível";
+                model.action.title = "Contas arquivadas não podem configurar remuneração pelo CDI.";
+              } else if (model.currency !== "BRL") {
+                model.action.textContent = "CDI indisponível";
+                model.action.title = "Disponível somente para contas em BRL";
+                appendEligibility(model, "Disponível somente para contas em BRL");
+              } else {
+                model.action.textContent = "Carregando CDI...";
+              }
+              model.action.disabled = true;
+            });
+          }
+
+          function removeLoadError() {
+            const panel = document.querySelector('[data-tab-panel="accounts"]');
+            const warning = panel && panel.querySelector("[data-account-remuneration-load-error]");
+            if (warning) warning.remove();
+          }
+
+          function showLoadError(message) {
+            const panel = document.querySelector('[data-tab-panel="accounts"]');
+            if (!panel) return;
+            removeLoadError();
+            const warning = document.createElement("div");
             warning.className = "account-remuneration-load-error";
             warning.setAttribute("data-account-remuneration-load-error", "");
             warning.setAttribute("role", "alert");
-            warning.textContent = message;
-            const submit = form.querySelector('button[type="submit"]');
-            if (submit) form.insertBefore(warning, submit);
-            else form.appendChild(warning);
-          }
-
-          function wireRemunerationAvailability(form) {
-            const enabled = form.elements.remunerationEnabled;
-            const percentage = form.elements.remunerationPercent;
-            const startsOn = form.elements.remunerationStartsOn;
-            const category = form.elements.remunerationCategoryId;
-            const currency = form.elements.currency;
-            if (!enabled || !percentage || !startsOn) return;
-
-            const sync = () => {
-              const supportsCdi = !currency || currency.value === "BRL";
-              if (!supportsCdi) enabled.value = "false";
-              enabled.disabled = !supportsCdi;
-              const active = supportsCdi && enabled.value === "true";
-              percentage.disabled = !active;
-              startsOn.disabled = !active;
-              if (category) category.disabled = !active;
-              percentage.required = active;
-              startsOn.required = active;
-            };
-            enabled.addEventListener("change", sync);
-            if (currency) currency.addEventListener("change", sync);
-            sync();
-          }
-
-          function readAccountPayload(form) {
-            const payload = {};
-            new FormData(form).forEach((value, key) => {
-              if (key.startsWith("remuneration") || value === "") return;
-              const field = form.querySelector('[name="' + key + '"]');
-              if (field && field.dataset.money !== undefined) {
-                payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);
-              } else if (field && field.type === "number") {
-                payload[key] = Number(value);
-              } else {
-                payload[key] = value;
+            warning.innerHTML = '<span>' + escapeHtml(message) + '</span><button type="button" class="secondary-button" data-account-remuneration-retry>Tentar novamente</button>';
+            const list = panel.querySelector("[data-master-list]");
+            if (list) panel.insertBefore(warning, list);
+            else panel.appendChild(warning);
+            const retry = warning.querySelector("[data-account-remuneration-retry]");
+            if (retry) retry.addEventListener("click", () => { void loadAccountRemuneration(); });
+            accountModels.forEach((model) => {
+              if (model.status === "active" && model.currency === "BRL") {
+                model.action.textContent = "CDI indisponível";
+                model.action.title = "Não foi possível carregar a configuração do CDI.";
+                model.action.disabled = true;
               }
             });
-            return payload;
+          }
+
+          async function readResponse(response) {
+            const body = await response.json().catch(() => ({}));
+            const message = body && body.error && body.error.message ? body.error.message : "Não foi possível concluir a operação.";
+            return { body, message };
           }
 
           function readRemunerationPayload(form) {
-            const enabled = form.elements.remunerationEnabled && form.elements.remunerationEnabled.value === "true";
-            const payload = { enabled };
-            const percentage = Number(form.elements.remunerationPercent && form.elements.remunerationPercent.value);
-            if (Number.isFinite(percentage) && percentage > 0) payload.remunerationPercent = percentage;
-            const startsOn = String(form.elements.remunerationStartsOn && form.elements.remunerationStartsOn.value || "");
-            if (startsOn) payload.startsOn = startsOn;
-            const categoryId = String(form.elements.remunerationCategoryId && form.elements.remunerationCategoryId.value || "");
+            const percentage = Number(form.elements.remunerationPercent.value);
+            const startsOn = String(form.elements.startsOn.value || "");
+            const categoryId = String(form.elements.categoryId.value || "");
+            const payload = {
+              enabled: form.elements.enabled.value === "true",
+              remunerationPercent: percentage,
+              startsOn
+            };
             if (categoryId) payload.categoryId = categoryId;
             return payload;
           }
 
-          function statusFor(form) {
-            let status = form.querySelector(":scope > [data-form-status]");
-            if (!status) {
-              status = document.createElement("p");
-              status.className = "form-status muted";
-              status.setAttribute("data-form-status", "");
-              status.setAttribute("aria-live", "polite");
-              form.appendChild(status);
-            }
-            return status;
-          }
+          async function saveConfiguration(event, model, dialog, form) {
+            event.preventDefault();
+            if (!form.reportValidity()) return;
+            const submit = form.querySelector('button[type="submit"]');
+            const status = form.querySelector("[data-account-remuneration-status]");
+            if (submit) submit.disabled = true;
+            status.className = "form-status muted";
+            status.textContent = "Salvando configuração do CDI...";
 
-          async function readError(response) {
-            const body = await response.json().catch(() => ({}));
-            return { body, message: body && body.error && body.error.message ? body.error.message : "Não foi possível concluir a operação." };
-          }
-
-          function wireCombinedAccountSubmit(form) {
-            if (form.dataset.accountRemunerationSubmit === "true") return;
-            form.dataset.accountRemunerationSubmit = "true";
-            form.addEventListener("submit", async (event) => {
-              if (form.dataset.remunerationConfigurationLoaded !== "true") return;
-              event.preventDefault();
-              event.stopImmediatePropagation();
-              if (!form.reportValidity()) return;
-
-              const status = statusFor(form);
-              const submit = form.querySelector('button[type="submit"]');
-              if (submit) submit.disabled = true;
-              status.className = "form-status muted";
-              status.textContent = "Salvando conta e remuneração...";
-
-              const method = form.dataset.apiMethod || "POST";
-              const accountResponse = await fetch(form.dataset.apiPath, {
-                method,
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(readAccountPayload(form))
-              });
-              const accountResult = await readError(accountResponse);
-              if (!accountResponse.ok) {
-                status.className = "form-status error";
-                status.textContent = accountResult.message;
-                if (submit) submit.disabled = false;
-                return;
-              }
-
-              const accountId = accountIdFromForm(form) || (accountResult.body.account && accountResult.body.account.id);
-              if (!accountId) {
-                status.className = "form-status error";
-                status.textContent = "A conta foi salva, mas não foi possível identificar o cadastro para configurar a remuneração.";
-                if (submit) submit.disabled = false;
-                return;
-              }
-
-              const configurationResponse = await fetch("/api/account-remuneration/configurations/" + encodeURIComponent(accountId), {
+            let response;
+            try {
+              response = await fetch(remunerationEndpoint + "/" + encodeURIComponent(model.accountId), {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(readRemunerationPayload(form))
               });
-              const configurationResult = await readError(configurationResponse);
-              if (!configurationResponse.ok) {
-                status.className = "form-status error";
-                status.textContent = "A conta foi salva, mas a remuneração não: " + configurationResult.message;
-                if (submit) submit.disabled = false;
-                return;
-              }
+            } catch (_error) {
+              status.className = "form-status error";
+              status.textContent = "Não foi possível salvar a configuração do CDI.";
+              if (submit) submit.disabled = false;
+              return;
+            }
 
-              status.className = "form-status success";
-              status.textContent = "Conta e remuneração salvas. Atualizando a tela...";
-              window.setTimeout(() => window.location.reload(), 450);
-            }, true);
+            const result = await readResponse(response);
+            if (!response.ok) {
+              status.className = "form-status error";
+              status.textContent = result.message;
+              if (submit) submit.disabled = false;
+              return;
+            }
+
+            if (result.body && result.body.configuration) {
+              configurationsByAccount.set(model.accountId, result.body.configuration);
+            }
+            status.className = "form-status success";
+            status.textContent = "Configuração do CDI salva.";
+            dialog.close();
+            renderAccount(model);
           }
 
-          async function wireAccountRemunerationForms() {
-            const forms = Array.from(document.querySelectorAll('form.edit-grid[data-api-path="/api/accounts"], form.edit-grid[data-api-path^="/api/accounts/"]'))
-              .filter((form) => /^\\/api\\/accounts(?:\\/[^/]+)?$/.test(String(form.dataset.apiPath || "")));
-            if (forms.length === 0) return;
-
+          async function loadAccountRemuneration() {
+            setLoadingState();
+            removeLoadError();
             let configurationResponse;
             let categoryResponse;
             try {
               [configurationResponse, categoryResponse] = await Promise.all([
-                fetch("/api/account-remuneration/configurations"),
+                fetch(remunerationEndpoint),
                 fetch("/api/categories?status=all")
               ]);
             } catch (_error) {
-              forms.forEach((form) => appendRemunerationLoadError(
-                form,
-                "Não foi possível carregar a remuneração pelo CDI. A conta pode ser salva sem alterar a configuração de remuneração existente."
-              ));
+              showLoadError("Não foi possível carregar a remuneração pelo CDI. Contas e cartões continuam disponíveis.");
               return;
             }
 
             if (!configurationResponse.ok || !categoryResponse.ok) {
-              forms.forEach((form) => appendRemunerationLoadError(
-                form,
-                "Não foi possível carregar a remuneração pelo CDI. A conta pode ser salva sem alterar a configuração de remuneração existente."
-              ));
+              showLoadError("Não foi possível carregar a remuneração pelo CDI. Contas e cartões continuam disponíveis.");
               return;
             }
 
-            const configurationBody = await configurationResponse.json().catch(() => undefined);
-            const categoryBody = await categoryResponse.json().catch(() => undefined);
-            if (!configurationBody || !Array.isArray(configurationBody.configurations) || !categoryBody || !Array.isArray(categoryBody.categories)) {
-              forms.forEach((form) => appendRemunerationLoadError(
-                form,
-                "A configuração de remuneração retornou dados inválidos. A conta pode ser salva sem alterar o CDI."
-              ));
+            const configurationResult = await readResponse(configurationResponse);
+            const categoryResult = await readResponse(categoryResponse);
+            const loadedConfigurations = configurationResult.body && configurationResult.body.configurations;
+            const loadedCategories = categoryResult.body && categoryResult.body.categories;
+            if (!Array.isArray(loadedConfigurations) || !Array.isArray(loadedCategories)) {
+              showLoadError("A configuração do CDI retornou dados inválidos. Contas e cartões continuam disponíveis.");
               return;
             }
 
-            const configurations = configurationBody.configurations;
-            const categories = categoryBody.categories.filter((category) => category.status === "active" && category.kind === "income");
-            const byAccount = new Map(configurations.map((configuration) => [configuration.accountId, configuration]));
-            forms.forEach((form) => {
-              const accountId = accountIdFromForm(form);
-              appendRemunerationFields(form, accountId ? byAccount.get(accountId) : undefined, categories);
-              wireCombinedAccountSubmit(form);
-            });
+            configurationsByAccount = new Map(loadedConfigurations.map((configuration) => [configuration.accountId, configuration]));
+            categories = loadedCategories.filter((category) => category.status === "active" && category.kind === "income");
+            accountModels.forEach(renderAccount);
           }
 
           async function boot() {
             wireActiveFilter();
-            await wireAccountRemunerationForms();
+            accountModels = collectAccountModels();
+            if (accountModels.length === 0) return;
+            await loadAccountRemuneration();
           }
 
           if (document.readyState === "loading") {

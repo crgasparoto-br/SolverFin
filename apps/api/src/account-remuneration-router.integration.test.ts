@@ -38,11 +38,23 @@ async function main(): Promise<void> {
   assert.equal(accountResponse.statusCode, 201);
   const account = readBody<{ account: { id: string } }>(accountResponse).account;
 
+  const categoryResponse = await apiRequest(token, "POST", "/api/categories", {
+    name: `Receita remuneração ${suffix}`,
+    kind: "income",
+  });
+  assert.equal(categoryResponse.statusCode, 201);
+  const category = readBody<{ category: { id: string } }>(categoryResponse).category;
+
   const configurationResponse = await apiRequest(
     token,
     "PUT",
     `/api/account-remuneration/configurations/${account.id}`,
-    { enabled: true, remunerationPercent: 100, startsOn: COMPETENCE_ON },
+    {
+      enabled: true,
+      remunerationPercent: 100,
+      startsOn: COMPETENCE_ON,
+      categoryId: category.id,
+    },
   );
   assert.equal(configurationResponse.statusCode, 200);
 
@@ -53,9 +65,9 @@ async function main(): Promise<void> {
   );
   assert.equal(listConfigurationResponse.statusCode, 200);
   assert.ok(
-    readBody<{ configurations: Array<{ accountId: string; enabled: boolean }> }>(
-      listConfigurationResponse,
-    ).configurations.some(
+    readBody<{
+      configurations: Array<{ accountId: string; enabled: boolean }>;
+    }>(listConfigurationResponse).configurations.some(
       (configuration) => configuration.accountId === account.id && configuration.enabled,
     ),
   );
@@ -113,7 +125,10 @@ async function main(): Promise<void> {
   const adjusted = readBody<{
     transaction: {
       amountMinor: number;
-      accountRemuneration?: { originalAmountMinor: number; manuallyAdjusted: boolean };
+      accountRemuneration?: {
+        originalAmountMinor: number;
+        manuallyAdjusted: boolean;
+      };
     };
   }>(adjustedResponse).transaction;
   assert.equal(adjusted.amountMinor, remuneration.amountMinor + 1);
@@ -122,6 +137,31 @@ async function main(): Promise<void> {
     remuneration.accountRemuneration?.originalAmountMinor,
   );
   assert.equal(adjusted.accountRemuneration?.manuallyAdjusted, true);
+
+  const idempotentAccountUpdate = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    name: `Conta remuneração atualizada ${suffix}`,
+    openingBalanceMinor: 1_000_000,
+  });
+  assert.equal(idempotentAccountUpdate.statusCode, 200);
+
+  const changedOpeningBalance = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    openingBalanceMinor: 1_000_001,
+  });
+  assert.equal(changedOpeningBalance.statusCode, 400);
+  assert.equal(readError(changedOpeningBalance).code, "ACCOUNT_OPENING_BALANCE_LOCKED");
+  assert.match(readError(changedOpeningBalance).message ?? "", /movimentações/);
+
+  const blockedCurrencyChange = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    currency: "USD",
+  });
+  assert.equal(blockedCurrencyChange.statusCode, 409);
+  assert.equal(readError(blockedCurrencyChange).code, "ACCOUNT_REMUNERATION_MUST_BE_DISABLED");
+  assert.match(readError(blockedCurrencyChange).message ?? "", /Desative.*CDI/);
+
+  const blockedArchive = await apiRequest(token, "POST", `/api/accounts/${account.id}/archive`);
+  assert.equal(blockedArchive.statusCode, 409);
+  assert.equal(readError(blockedArchive).code, "ACCOUNT_REMUNERATION_MUST_BE_DISABLED");
+  assert.match(readError(blockedArchive).message ?? "", /Desative.*CDI/);
 
   const statusResponse = await apiRequest(token, "GET", "/api/admin/financial-indexes/status");
   assert.equal(statusResponse.statusCode, 200);
@@ -138,10 +178,101 @@ async function main(): Promise<void> {
     { enabled: false },
   );
   assert.equal(disableConfigurationResponse.statusCode, 200);
+  const disabledConfiguration = readBody<{
+    configuration: {
+      enabled: boolean;
+      remunerationPercent?: number;
+      startsOn?: string;
+      categoryId?: string;
+    };
+  }>(disableConfigurationResponse).configuration;
+  assert.equal(disabledConfiguration.enabled, false);
+  assert.equal(disabledConfiguration.remunerationPercent, 100);
+  assert.equal(disabledConfiguration.startsOn, COMPETENCE_ON);
+  assert.equal(disabledConfiguration.categoryId, category.id);
+
+  const reenableConfigurationResponse = await apiRequest(
+    token,
+    "PUT",
+    `/api/account-remuneration/configurations/${account.id}`,
+    {
+      enabled: true,
+      remunerationPercent: disabledConfiguration.remunerationPercent,
+      startsOn: disabledConfiguration.startsOn,
+      categoryId: disabledConfiguration.categoryId,
+    },
+  );
+  assert.equal(reenableConfigurationResponse.statusCode, 200);
+
+  const disableAgainResponse = await apiRequest(
+    token,
+    "PUT",
+    `/api/account-remuneration/configurations/${account.id}`,
+    { enabled: false },
+  );
+  assert.equal(disableAgainResponse.statusCode, 200);
+
+  const allowedCurrencyChange = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+    currency: "USD",
+  });
+  assert.equal(allowedCurrencyChange.statusCode, 200);
+
+  await assertConcurrentAccountEligibility(token, suffix);
 
   process.env.SOLVERFIN_MASTER_EMAILS = "";
   const forbiddenResponse = await apiRequest(token, "GET", "/api/admin/financial-indexes/status");
   assert.equal(forbiddenResponse.statusCode, 403);
+}
+
+async function assertConcurrentAccountEligibility(token: string, suffix: string): Promise<void> {
+  const accountResponse = await apiRequest(token, "POST", "/api/accounts", {
+    name: `Conta concorrente ${suffix}`,
+    kind: "checking",
+    openingBalanceMinor: 500_000,
+  });
+  assert.equal(accountResponse.statusCode, 201);
+  const account = readBody<{ account: { id: string } }>(accountResponse).account;
+
+  const [enableResponse, currencyResponse] = await Promise.all([
+    apiRequest(token, "PUT", `/api/account-remuneration/configurations/${account.id}`, {
+      enabled: true,
+      remunerationPercent: 100,
+      startsOn: COMPETENCE_ON,
+    }),
+    apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+      currency: "USD",
+    }),
+  ]);
+
+  const responses = [enableResponse, currencyResponse];
+  assert.equal(
+    responses.filter((response) => response.statusCode === 200).length,
+    1,
+    "somente uma operação concorrente pode tornar a conta inelegível ou ativar o CDI",
+  );
+  const rejected = responses.find((response) => response.statusCode !== 200);
+  assert.ok(rejected);
+  assert.ok([400, 409].includes(rejected.statusCode));
+
+  const configurationsResponse = await apiRequest(
+    token,
+    "GET",
+    "/api/account-remuneration/configurations",
+  );
+  assert.equal(configurationsResponse.statusCode, 200);
+  const configuration = readBody<{
+    configurations: Array<{
+      accountId: string;
+      accountCurrency: string;
+      enabled: boolean;
+    }>;
+  }>(configurationsResponse).configurations.find((item) => item.accountId === account.id);
+  assert.ok(configuration);
+  assert.equal(
+    configuration.enabled && configuration.accountCurrency !== "BRL",
+    false,
+    "a concorrência não pode persistir CDI ativo em conta fora de BRL",
+  );
 }
 
 async function loginAndReadToken(): Promise<string> {
@@ -184,4 +315,11 @@ function readBody<TBody>(response: Pick<ApiResponse, "body">): TBody {
   assert.equal(typeof response.body, "object");
   assert.notEqual(response.body, null);
   return response.body as TBody;
+}
+
+function readError(response: Pick<ApiResponse, "body">): {
+  code?: string;
+  message?: string;
+} {
+  return readBody<{ error?: { code?: string; message?: string } }>(response).error ?? {};
 }
