@@ -52,10 +52,7 @@ const alreadyUpdated: ImportOperationDiagnostics = {
   receivedCount: 0,
   importedCount: 0,
 };
-assert.match(
-  formatImportOutcomeMessage(alreadyUpdated, "2026-07-15"),
-  /não foi consultado/i,
-);
+assert.match(formatImportOutcomeMessage(alreadyUpdated, "2026-07-15"), /não foi consultado/i);
 assert.match(
   formatImportOutcomeMessage(alreadyUpdated, "2026-07-15"),
   /^Nenhuma alteração necessária/i,
@@ -67,14 +64,8 @@ const noRates: ImportOperationDiagnostics = {
   effectivePeriod: { startsOn: "2026-07-16", endsOn: "2026-07-16" },
   providerConsulted: true,
 };
-assert.match(
-  formatImportOutcomeMessage(noRates, "2026-07-15"),
-  /não retornou taxas/i,
-);
-assert.match(
-  formatImportOutcomeMessage(noRates, "2026-07-15"),
-  /fins de semana ou feriados/i,
-);
+assert.match(formatImportOutcomeMessage(noRates, "2026-07-15"), /não retornou taxas/i);
+assert.match(formatImportOutcomeMessage(noRates, "2026-07-15"), /fins de semana ou feriados/i);
 
 const processing: ProcessingOperationDiagnostics = {
   kind: "ACCOUNT_REMUNERATION",
@@ -92,15 +83,9 @@ const processing: ProcessingOperationDiagnostics = {
 };
 assert.doesNotThrow(() => assertProcessingDiagnosticRelations(processing));
 assert.match(formatProcessingOutcomeMessage(processing), /3 competência\(s\)/i);
-assert.match(
-  formatProcessingOutcomeMessage(processing),
-  /1 receita\(s\) prevista\(s\)/i,
-);
+assert.match(formatProcessingOutcomeMessage(processing), /1 receita\(s\) prevista\(s\)/i);
 assert.match(formatProcessingOutcomeMessage(processing), /saldo não positivo/i);
-assert.match(
-  formatProcessingOutcomeMessage(processing),
-  /arredondamento para zero/i,
-);
+assert.match(formatProcessingOutcomeMessage(processing), /arredondamento para zero/i);
 
 assert.throws(
   () =>
@@ -128,14 +113,8 @@ const noProcessing: ProcessingOperationDiagnostics = {
   nonPositiveBalanceCompetences: 0,
   zeroAmountCompetences: 0,
 };
-assert.match(
-  formatProcessingOutcomeMessage(noProcessing),
-  /^Nenhuma alteração necessária/i,
-);
-assert.match(
-  formatProcessingOutcomeMessage(noProcessing),
-  /nenhuma receita prevista/i,
-);
+assert.match(formatProcessingOutcomeMessage(noProcessing), /^Nenhuma alteração necessária/i);
+assert.match(formatProcessingOutcomeMessage(noProcessing), /nenhuma receita prevista/i);
 
 await assert.rejects(
   () => importCdiRates({ startsOn: "2026-07-17", endsOn: "2026-07-16" }),
