@@ -35,7 +35,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   await resetAccountRemunerationTestData();
   await removeTestRates();
 
@@ -60,7 +63,10 @@ async function main(): Promise<void> {
     await insertRate(CONTAMINATED_ON, 0.055131);
 
     const statusAfterRepair = await getFinancialIndexStatus();
-    assert.notEqual(statusAfterRepair.latestCdiRate?.referenceOn, CONTAMINATED_ON);
+    assert.notEqual(
+      statusAfterRepair.latestCdiRate?.referenceOn,
+      CONTAMINATED_ON,
+    );
     assert.equal(await readRateStatus(CONTAMINATED_ON), "REJECTED");
     assert.equal(await readConfigurationEnabled(syntheticAccount.id), false);
 
@@ -91,8 +97,14 @@ async function main(): Promise<void> {
       (transaction) => transaction.source === "ACCOUNT_REMUNERATION",
     );
     assert.equal(remunerations.length, 2);
-    assert.ok(remunerations.every((transaction) => transaction.status === "PLANNED"));
-    assert.ok(remunerations.every((transaction) => transaction.occurredOn === PROCESSING_ON));
+    assert.ok(
+      remunerations.every((transaction) => transaction.status === "PLANNED"),
+    );
+    assert.ok(
+      remunerations.every(
+        (transaction) => transaction.occurredOn === PROCESSING_ON,
+      ),
+    );
 
     await assert.rejects(
       () =>
@@ -120,7 +132,10 @@ function buildCdiFetcher(entries: unknown[]): typeof fetch {
     });
 }
 
-async function insertRate(referenceOn: string, dailyRatePercent: number): Promise<void> {
+async function insertRate(
+  referenceOn: string,
+  dailyRatePercent: number,
+): Promise<void> {
   await query(
     `insert into "FinancialIndexRate"
       ("id", "kind", "referenceOn", "dailyRatePercent", "dailyFactor", "source", "status",
@@ -146,7 +161,9 @@ async function readRateStatus(referenceOn: string): Promise<string | null> {
   return rows[0]?.status ?? null;
 }
 
-async function readConfigurationEnabled(accountId: string): Promise<boolean | null> {
+async function readConfigurationEnabled(
+  accountId: string,
+): Promise<boolean | null> {
   const rows = await query<{ enabled: boolean }>(
     `select "enabled" from "AccountRemunerationConfiguration" where "accountId" = $1`,
     [accountId],
@@ -165,12 +182,17 @@ async function removeAccountData(accountIds: string[]): Promise<void> {
     .map((row) => row.transactionId)
     .filter((transactionId): transactionId is string => transactionId !== null);
   if (transactionIds.length > 0) {
-    await query(`delete from "Transaction" where "id" = any($1::uuid[])`, [transactionIds]);
+    await query(`delete from "Transaction" where "id" = any($1::uuid[])`, [
+      transactionIds,
+    ]);
   }
-  await query(`delete from "AccountRemunerationConfiguration" where "accountId" = any($1::uuid[])`, [
+  await query(
+    `delete from "AccountRemunerationConfiguration" where "accountId" = any($1::uuid[])`,
+    [accountIds],
+  );
+  await query(`delete from "Account" where "id" = any($1::uuid[])`, [
     accountIds,
   ]);
-  await query(`delete from "Account" where "id" = any($1::uuid[])`, [accountIds]);
 }
 
 async function removeTestRates(): Promise<void> {
