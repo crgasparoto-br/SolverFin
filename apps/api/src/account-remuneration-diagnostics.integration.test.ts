@@ -130,7 +130,7 @@ async function main(): Promise<void> {
   assert.equal(secondProcessing.diagnostics.alreadyRegisteredCompetences, 3);
   assert.equal(secondProcessing.diagnostics.processedCompetences, 0);
   assert.equal(secondProcessing.diagnostics.plannedTransactionsCreated, 0);
-  assert.match(secondProcessing.operation.message ?? "", /nenhuma competência nova/i);
+  assert.match(secondProcessing.operation.message ?? "", /^Nenhuma alteração necessária/i);
 
   const status = await getFinancialIndexStatus();
   assert.equal(status.latestImport?.diagnostics?.kind, "CDI_IMPORT");
