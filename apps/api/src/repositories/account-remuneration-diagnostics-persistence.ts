@@ -108,7 +108,9 @@ export async function repairFutureCdiTestContamination(
             "updatedAt" = now()
       where "kind" = 'CDI'
         and "status" = 'CONFIRMED'
-        and "referenceOn" > current_date
+        and "referenceOn" = date '2038-04-14'
+        and "dailyRatePercent" = 0.055131
+        and "source" = 'BCB_SGS_12'
       returning "id"`,
   );
 
@@ -154,7 +156,9 @@ export async function findLatestCdiReferenceDate(
   return rows[0] ? toDateOnly(rows[0].referenceOn) : null;
 }
 
-export async function persistOperationDiagnostics<TDiagnostics extends OperationDiagnostics>(
+export async function persistOperationDiagnostics<
+  TDiagnostics extends OperationDiagnostics,
+>(
   operation: OperationRecord,
   diagnostics: TDiagnostics,
   message: string,
@@ -194,11 +198,15 @@ export async function persistCurrentFailedDiagnostics(
   );
 
   if (!rows[0]) {
-    throw new Error("Não foi possível correlacionar o diagnóstico à operação CDI com falha.");
+    throw new Error(
+      "Não foi possível correlacionar o diagnóstico à operação CDI com falha.",
+    );
   }
 }
 
-export async function recordRolledBackOperation(operation: RolledBackOperation): Promise<void> {
+export async function recordRolledBackOperation(
+  operation: RolledBackOperation,
+): Promise<void> {
   try {
     await query(
       `insert into "FinancialIndexOperation"
@@ -241,7 +249,9 @@ export async function attachDiagnostics(
   };
 }
 
-export function readProviderPeriod(resource: Parameters<typeof fetch>[0]): DatePeriod | null {
+export function readProviderPeriod(
+  resource: Parameters<typeof fetch>[0],
+): DatePeriod | null {
   const rawUrl =
     typeof resource === "string"
       ? resource
