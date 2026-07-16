@@ -126,27 +126,30 @@ export async function persistOperationDiagnostics<TDiagnostics extends Operation
   return { ...operation, message, diagnostics };
 }
 
-export async function persistLatestFailedDiagnostics(
+export async function persistCurrentFailedDiagnostics(
   kind: OperationDiagnostics["kind"],
-  startedAt: Date,
   diagnostics: OperationDiagnostics,
   executeQuery: QueryExecutor = query,
 ): Promise<void> {
-  await executeQuery(
+  const rows = await executeQuery<{ id: string }>(
     `update "FinancialIndexOperation"
-        set "diagnostics" = $3::jsonb,
+        set "diagnostics" = $2::jsonb,
             "updatedAt" = now()
       where "id" = (
         select "id"
           from "FinancialIndexOperation"
          where "kind" = $1
            and "status" = 'FAILED'
-           and "startedAt" >= $2::timestamptz - interval '5 minutes'
-         order by "startedAt" desc
+           and xmin = txid_current()::text::xid
          limit 1
-      )`,
-    [kind, startedAt, JSON.stringify(diagnostics)],
+      )
+      returning "id"`,
+    [kind, JSON.stringify(diagnostics)],
   );
+
+  if (!rows[0]) {
+    throw new Error("Não foi possível correlacionar o diagnóstico à operação CDI com falha.");
+  }
 }
 
 export async function recordRolledBackOperation(operation: RolledBackOperation): Promise<void> {
