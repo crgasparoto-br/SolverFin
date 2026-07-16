@@ -261,8 +261,7 @@ async function persistRemunerationMetadata(client, transactionId, options) {
     [transactionId],
   );
   const transaction = transactionResult.rows[0];
-  if (!transaction?.accountId)
-    throw new Error(`Transaction ${transactionId} has no account scope.`);
+  if (!transaction?.accountId) throw new Error(`Transaction ${transactionId} has no account scope.`);
 
   const rateId = randomUUID();
   const rateResult = await client.query(
@@ -279,8 +278,7 @@ async function persistRemunerationMetadata(client, transactionId, options) {
     [rateId, options.competenceOn],
   );
   const persistedRateId = rateResult.rows[0]?.id;
-  if (!persistedRateId)
-    throw new Error(`Financial rate was not persisted for ${options.competenceOn}.`);
+  if (!persistedRateId) throw new Error(`Financial rate was not persisted for ${options.competenceOn}.`);
 
   const technicalDescription =
     `Rendimento previsto — 100% do CDI · competência ${options.competenceOn} · ` +
@@ -378,9 +376,11 @@ async function focusSummary(cdp, transactionId) {
 
 async function pressEnter(cdp) {
   await cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+    type: "keyDown",
     key: "Enter",
     code: "Enter",
+    text: "\r",
+    unmodifiedText: "\r",
     windowsVirtualKeyCode: 13,
     nativeVirtualKeyCode: 13,
   });
