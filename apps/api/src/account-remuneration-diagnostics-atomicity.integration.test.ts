@@ -49,7 +49,13 @@ async function main(): Promise<void> {
     "ACCOUNT_REMUNERATION_ALREADY_RUNNING",
   );
 
+  await assertConcurrentFailedDiagnosticsCorrelation();
+
   await installDiagnosticsFailureTrigger();
+  await assert.rejects(
+    () => processAccountRemunerations(PROCESSING_DATE),
+    /diagnóstico bloqueado para teste/i,
+  );
   await assert.rejects(
     () =>
       importCdiRates(
@@ -68,7 +74,7 @@ async function main(): Promise<void> {
   );
   assert.equal(rateRows[0]?.count, 0, "the CDI rate must roll back with diagnostics");
 
-  const operationRows = await query<{
+  const importOperationRows = await query<{
     status: string;
     message: string | null;
     diagnostics: { kind?: string } | null;
@@ -79,9 +85,24 @@ async function main(): Promise<void> {
       order by "startedAt" desc
       limit 1`,
   );
-  assert.equal(operationRows[0]?.status, "FAILED");
-  assert.match(operationRows[0]?.message ?? "", /persistir o diagnóstico operacional/i);
-  assert.equal(operationRows[0]?.diagnostics?.kind, "CDI_IMPORT");
+  assert.equal(importOperationRows[0]?.status, "FAILED");
+  assert.match(importOperationRows[0]?.message ?? "", /persistir o diagnóstico operacional/i);
+  assert.equal(importOperationRows[0]?.diagnostics?.kind, "CDI_IMPORT");
+
+  const processingOperationRows = await query<{
+    status: string;
+    message: string | null;
+    diagnostics: { kind?: string } | null;
+  }>(
+    `select "status", "message", "diagnostics"
+       from "FinancialIndexOperation"
+      where "kind" = 'ACCOUNT_REMUNERATION'
+      order by "startedAt" desc
+      limit 1`,
+  );
+  assert.equal(processingOperationRows[0]?.status, "FAILED");
+  assert.match(processingOperationRows[0]?.message ?? "", /persistir o diagnóstico operacional/i);
+  assert.equal(processingOperationRows[0]?.diagnostics?.kind, "ACCOUNT_REMUNERATION");
 }
 
 async function assertOperationLockRejects(
@@ -101,6 +122,53 @@ async function assertOperationLockRejects(
     await client.query("ROLLBACK");
     client.release();
   }
+}
+
+async function assertConcurrentFailedDiagnosticsCorrelation(): Promise<void> {
+  const firstDate = "2045-02-01";
+  const secondDate = "2045-03-01";
+  const client = await getPool().connect();
+
+  try {
+    await client.query("BEGIN");
+    await client.query(`select pg_advisory_xact_lock(hashtext($1))`, ["solverfin:cdi-import"]);
+
+    const results = await Promise.allSettled([
+      importCdiRates({ startsOn: firstDate, endsOn: firstDate }, buildCdiFetcher([])),
+      importCdiRates({ startsOn: secondDate, endsOn: secondDate }, buildCdiFetcher([])),
+    ]);
+
+    assert.equal(results.every((result) => result.status === "rejected"), true);
+    for (const result of results) {
+      if (result.status === "rejected") {
+        assert.equal(
+          result.reason instanceof Error &&
+            "code" in result.reason &&
+            result.reason.code === "FINANCIAL_INDEX_IMPORT_ALREADY_RUNNING",
+          true,
+        );
+      }
+    }
+  } finally {
+    await client.query("ROLLBACK");
+    client.release();
+  }
+
+  const rows = await query<{ requestedStartsOn: string | null }>(
+    `select "diagnostics"->'requestedPeriod'->>'startsOn' as "requestedStartsOn"
+       from "FinancialIndexOperation"
+      where "kind" = 'CDI_IMPORT'
+        and "status" = 'FAILED'
+        and "diagnostics"->'requestedPeriod'->>'startsOn' = any($1::text[])
+      order by "startedAt" asc`,
+    [[firstDate, secondDate]],
+  );
+
+  assert.deepEqual(
+    rows.map((row) => row.requestedStartsOn).sort(),
+    [firstDate, secondDate],
+    "each concurrent failed operation must retain its own requested period",
+  );
 }
 
 async function installDiagnosticsFailureTrigger(): Promise<void> {
