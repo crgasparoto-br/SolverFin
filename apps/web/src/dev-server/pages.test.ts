@@ -21,8 +21,11 @@ describe("dev-server private placeholder pages", () => {
     assert.match(reportsLink, /aria-current="page"/);
 
     for (const route of listNavigablePrivateShellRoutes()) {
-      assert.ok(html.includes(`<a href="${route.path}"`));
-      assert.ok(html.includes(`>${route.label}</a>`));
+      const link = html.match(
+        new RegExp(`<a href="${route.path}"[^>]*>[\\s\\S]*?${route.label}<\\/a>`),
+      )?.[0];
+      assert.ok(link, `expected the ${route.id} navigation link to be rendered`);
+      assert.match(link, /<svg\b/, `expected the ${route.id} navigation link to include an icon`);
     }
 
     assert.doesNotMatch(html, /href="\/remuneracao-contas"/);
