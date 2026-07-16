@@ -12,6 +12,7 @@ Regras:
 ## Scripts atuais
 
 - `validate-env-example.mjs`: valida se `.env.example` contem as variaveis obrigatorias com placeholders seguros e sem padroes aparentes de secrets reais. Rode via `npm run env:check`.
+- `validate-startup-contract.mjs`: garante que o start do SSR aplique migrations pendentes antes de abrir o servidor. Rode via `npm run startup:check`; o comando tambem faz parte das suites `test` e `validate`.
 - `run-compiled-tests.mjs`: descobre e executa arquivos de teste JavaScript ja compilados por workspace, em ordem deterministica. Rode indiretamente pelos scripts `test` e `test:integration` dos workspaces.
 - `seed-demo.mjs`: aplica dados ficticios e seguros para demonstracao local, incluindo perfis pessoal, MEI e negocio, categorias, contas, orcamentos e transacoes coerentes para dashboards. Rode via `npm run db:seed` depois de aplicar as migrations.
 - `seed-default-categories.mjs`: repara a arvore inicial editavel de categorias padrao para perfis ativos, usando a fonte canonica de `packages/domain`. O script adiciona apenas categorias padrao ausentes, reaproveita equivalentes por tipo, pai e nome normalizado, preserva categorias editadas/arquivadas pelo usuario e pode ser executado repetidamente sem duplicar registros. Rode via `npm run db:repair:default-categories`.
@@ -28,7 +29,9 @@ npm run build --workspace @solverfin/web
 npm run start:web
 ```
 
-O build remove todo o `dist` anterior antes de compilar, evitando arquivos orfaos ou JavaScript desatualizado. O comando `npm run start:web` nao compila a aplicacao: ele executa diretamente `apps/web/dist/dev-server.js` e deve ser usado apenas depois de um build concluido com sucesso.
+O build remove todo o `dist` anterior antes de compilar, evitando arquivos orfaos ou JavaScript desatualizado. Antes de executar `apps/web/dist/dev-server.js`, `npm run start:web` roda `npm run db:deploy`, que aplica de forma idempotente todas as migrations Prisma pendentes no banco apontado por `DATABASE_URL`.
+
+Esse contrato evita iniciar uma versao nova do servidor sobre um banco antigo, situacao que produziria erros como `column "diagnostics" does not exist`. O start exige acesso ao banco e permissao para executar migrations. Em desenvolvimento sem banco, continue usando o modo watch documentado em `docs/LOCAL_DEVELOPMENT.md`.
 
 ## Descoberta de testes compilados
 
@@ -51,7 +54,7 @@ Se nenhum arquivo corresponder ao padrao informado, o runner falha com mensagem 
 
 O seed usa identificadores fixos e `ON CONFLICT` para poder ser executado mais de uma vez sem duplicar os dados demo.
 
-Os dados foram criados apenas para demonstracao e usam nomes, descricoes, valores e email ficticios. Nao inclua dados reais de pessoas, empresas, bancos, cartoes ou mensagens financeiras neste script.
+Os dados foram criados apenas para demonstracao e usam nomes, descricoes, valores e email ficticios. Nao inclua dados reais de pessoas, empresas, bancos, cartoes, contas ou mensagens financeiras neste script.
 
 Por seguranca, o seed exige `DATABASE_URL` e bloqueia execucao com `NODE_ENV=production`, exceto quando `SOLVERFIN_ALLOW_DEMO_SEED=true` for informado de forma explicita.
 

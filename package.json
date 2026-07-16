@@ -17,6 +17,7 @@
     "dev:all": "node scripts/prepare-local-env.mjs && node scripts/dev-all.mjs",
     "build:packages": "npm run build --workspace @solverfin/shared --workspace @solverfin/config --workspace @solverfin/domain --workspace @solverfin/ai",
     "env:check": "node scripts/validate-env-example.mjs",
+    "startup:check": "node scripts/validate-startup-contract.mjs",
     "prisma:validate": "prisma validate --schema ./prisma",
     "prisma:generate": "prisma generate --schema ./prisma",
     "db:migrate": "node scripts/prepare-local-env.mjs && prisma migrate dev --schema ./prisma",
@@ -33,11 +34,11 @@
     "lint": "npm run build:packages && npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
-    "test": "npm run build:packages && npm run test --workspaces --if-present",
+    "test": "npm run startup:check && npm run build:packages && npm run test --workspaces --if-present",
     "test:integration": "npm run build:packages && npm run db:deploy && npm run db:seed && npm run test:integration --workspace @solverfin/api",
     "qa:statement-visual": "node scripts/run-statement-visual-validation.mjs",
     "build": "npm run build:packages && npm run build --workspace @solverfin/api --workspace @solverfin/web",
-    "validate": "npm run env:check && npm run prisma:validate && npm run db:seed:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
+    "validate": "npm run env:check && npm run startup:check && npm run prisma:validate && npm run db:seed:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
