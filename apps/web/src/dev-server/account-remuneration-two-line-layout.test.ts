@@ -3,9 +3,21 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+);
 const source = readFileSync(
-  path.join(repoRoot, "apps", "web", "src", "dev-server", "list-sorting-enhancement.ts"),
+  path.join(
+    repoRoot,
+    "apps",
+    "web",
+    "src",
+    "dev-server",
+    "list-sorting-enhancement.ts",
+  ),
   "utf8",
 );
 
@@ -37,4 +49,7 @@ assert.match(
   source,
   /\.account-remuneration-audit summary\{[^}]*font-size:\.625rem[^}]*white-space:nowrap/,
 );
-assert.match(source, /\.account-remuneration-audit summary::after\{display:none\}/);
+assert.match(
+  source,
+  /\.account-remuneration-audit summary::after\{display:none\}/,
+);
