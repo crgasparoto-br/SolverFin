@@ -157,11 +157,7 @@ function validate(value) {
   );
   check(value.admin.groupLabels === 1, "Admin group label is missing or duplicated", value);
   check(value.duplicateRouteIds.length === 0, "Navigation route ids are duplicated", value);
-  check(
-    value.ariaControlsComplete,
-    "aria-controls does not cover every secondary route",
-    value,
-  );
+  check(value.ariaControlsComplete, "aria-controls does not cover every secondary route", value);
   check(value.activeRoute === "dashboard", "Dashboard active state was not preserved", value);
 }
 
