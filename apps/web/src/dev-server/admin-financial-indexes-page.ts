@@ -229,31 +229,43 @@ function renderPage(content: string): string {
 }
 
 function script(): string {
-  return `
-    <script>
-      const describeOperation = (operation) => {
-        if (!operation) return "Operação concluída.";
-        const message = operation.message || "Operação concluída.";
-        const diagnostics = operation.diagnostics;
-        if (!diagnostics) return message;
+  return `<script>${operationFormsScript()}</script>`;
+}
 
-        if (diagnostics.kind === "CDI_IMPORT") {
-          const provider = diagnostics.providerConsulted ? "Banco Central consultado" : "Banco Central não consultado";
-          return message + " " + provider + "; " + diagnostics.receivedCount + " taxa(s) retornada(s) e " + diagnostics.importedCount + " nova(s) taxa(s) importada(s).";
+export function operationFormsScript(): string {
+  return `
+    const describeOperation = (operation) => {
+      if (!operation) return "Operação concluída.";
+      const message = operation.message || "Operação concluída.";
+      const diagnostics = operation.diagnostics;
+      if (!diagnostics) return message;
+
+      if (diagnostics.kind === "CDI_IMPORT") {
+        const provider = diagnostics.providerConsulted ? "Banco Central consultado" : "Banco Central não consultado";
+        return message + " " + provider + "; " + diagnostics.receivedCount + " taxa(s) retornada(s) e " + diagnostics.importedCount + " nova(s) taxa(s) importada(s).";
+      }
+
+      return message + " " + diagnostics.processedCompetences + " competência(s) processada(s), " + diagnostics.plannedTransactionsCreated + " receita(s) prevista(s) criada(s) e " + diagnostics.pendingCompetences + " pendente(s).";
+    };
+
+    document.querySelectorAll("[data-operation-form]").forEach((form) => {
+      const status = form.querySelector("[data-form-status]");
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const submit = form.querySelector('button[type="submit"]');
+        const payload = Object.fromEntries(new FormData(form).entries());
+
+        if (payload.startsOn && payload.endsOn && payload.startsOn > payload.endsOn) {
+          status.className = "form-status error";
+          status.textContent = "A data inicial não pode ser posterior à data final.";
+          return;
         }
 
-        return message + " " + diagnostics.processedCompetences + " competência(s) processada(s), " + diagnostics.plannedTransactionsCreated + " receita(s) prevista(s) criada(s) e " + diagnostics.pendingCompetences + " pendente(s).";
-      };
+        submit.disabled = true;
+        status.className = "form-status muted";
+        status.textContent = "Executando...";
 
-      document.querySelectorAll("[data-operation-form]").forEach((form) => {
-        const status = form.querySelector("[data-form-status]");
-        form.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const submit = form.querySelector('button[type="submit"]');
-          const payload = Object.fromEntries(new FormData(form).entries());
-          submit.disabled = true;
-          status.className = "form-status muted";
-          status.textContent = "Executando...";
+        try {
           const response = await fetch(form.dataset.path, {
             method: "POST",
             headers: { "content-type": "application/json" },
@@ -265,11 +277,15 @@ function script(): string {
           status.textContent = response.ok
             ? describeOperation(operation)
             : ((body.error && body.error.message) || "Não foi possível concluir a operação.");
-          submit.disabled = false;
           if (response.ok) window.setTimeout(() => window.location.reload(), 1200);
-        });
+        } catch {
+          status.className = "form-status error";
+          status.textContent = "Não foi possível conectar ao serviço. Tente novamente.";
+        } finally {
+          submit.disabled = false;
+        }
       });
-    </script>
+    });
   `;
 }
 
