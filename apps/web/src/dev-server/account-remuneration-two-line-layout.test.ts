@@ -9,18 +9,12 @@ const source = readFileSync(
   "utf8",
 );
 
-assert.match(
-  source,
-  /\.statement-row\.account-remuneration-row \.description\{display:block\}/,
-);
+assert.match(source, /\.statement-row\.account-remuneration-row \.description\{display:block\}/);
 assert.match(
   source,
   /\.account-remuneration-audit\{[^}]*display:inline-block[^}]*margin:0 0 0 6px/,
 );
-assert.match(
-  source,
-  /\.account-remuneration-audit\[open\]\{display:block;margin-left:0\}/,
-);
+assert.match(source, /\.account-remuneration-audit\[open\]\{display:block;margin-left:0\}/);
 assert.match(
   source,
   /<details class="account-remuneration-audit">[\s\S]*<span class="account-remuneration-summary">Competência/,
