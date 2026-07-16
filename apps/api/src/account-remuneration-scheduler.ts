@@ -1,7 +1,7 @@
 import {
   importCdiRates,
   processAccountRemunerations,
-} from "./repositories/account-remuneration-service.js";
+} from "./repositories/account-remuneration-diagnostics-service.js";
 
 const CHECK_INTERVAL_MS = 15 * 60 * 1_000;
 let lastCompletedDate: string | undefined;

@@ -6,8 +6,10 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   getFinancialIndexStatus,
   importCdiRates,
-  listAccountRemunerationConfigurations,
   processAccountRemunerations,
+} from "./repositories/account-remuneration-diagnostics-service.js";
+import {
+  listAccountRemunerationConfigurations,
   saveAccountRemunerationConfiguration,
   type ImportCdiRatesInput,
   type SaveAccountRemunerationConfigurationInput,
@@ -176,7 +178,9 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
   return body as Record<string, unknown>;
 }
 
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
+function buildAuthHeaders(authorization: string | undefined): {
+  authorization?: string;
+} {
   return authorization === undefined ? {} : { authorization };
 }
 
@@ -195,7 +199,11 @@ function mapDomainError(error: unknown): unknown {
   }
 
   if (error instanceof TenantAuthorizationError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
 
   return error;
