@@ -23,7 +23,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   await resetAccountRemunerationTestData();
   await removeDiagnosticsFailureTrigger();
 
@@ -31,7 +34,10 @@ async function main(): Promise<void> {
   assert.equal(emptyProcessing.diagnostics.activeConfigurations, 0);
   assert.equal(emptyProcessing.diagnostics.eligibleCompetences, 0);
   assert.equal(emptyProcessing.diagnostics.processedCompetences, 0);
-  assert.match(emptyProcessing.operation.message ?? "", /^Nenhuma alteração necessária/i);
+  assert.match(
+    emptyProcessing.operation.message ?? "",
+    /^Nenhuma alteração necessária/i,
+  );
 
   await assertOperationLockRejects(
     "solverfin:cdi-import",
@@ -72,7 +78,11 @@ async function main(): Promise<void> {
       where "kind" = 'CDI' and "referenceOn" = $1::date`,
     [TEST_DATE],
   );
-  assert.equal(rateRows[0]?.count, 0, "the CDI rate must roll back with diagnostics");
+  assert.equal(
+    rateRows[0]?.count,
+    0,
+    "the CDI rate must roll back with diagnostics",
+  );
 
   const importOperationRows = await query<{
     status: string;
@@ -86,7 +96,10 @@ async function main(): Promise<void> {
       limit 1`,
   );
   assert.equal(importOperationRows[0]?.status, "FAILED");
-  assert.match(importOperationRows[0]?.message ?? "", /persistir o diagnóstico operacional/i);
+  assert.match(
+    importOperationRows[0]?.message ?? "",
+    /persistir o diagnóstico operacional/i,
+  );
   assert.equal(importOperationRows[0]?.diagnostics?.kind, "CDI_IMPORT");
 
   const processingOperationRows = await query<{
@@ -101,8 +114,14 @@ async function main(): Promise<void> {
       limit 1`,
   );
   assert.equal(processingOperationRows[0]?.status, "FAILED");
-  assert.match(processingOperationRows[0]?.message ?? "", /persistir o diagnóstico operacional/i);
-  assert.equal(processingOperationRows[0]?.diagnostics?.kind, "ACCOUNT_REMUNERATION");
+  assert.match(
+    processingOperationRows[0]?.message ?? "",
+    /persistir o diagnóstico operacional/i,
+  );
+  assert.equal(
+    processingOperationRows[0]?.diagnostics?.kind,
+    "ACCOUNT_REMUNERATION",
+  );
 }
 
 async function assertOperationLockRejects(
@@ -113,10 +132,15 @@ async function assertOperationLockRejects(
   const client = await getPool().connect();
   try {
     await client.query("BEGIN");
-    await client.query(`select pg_advisory_xact_lock(hashtext($1))`, [lockName]);
+    await client.query(`select pg_advisory_xact_lock(hashtext($1))`, [
+      lockName,
+    ]);
     await assert.rejects(
       operation,
-      (error: unknown) => error instanceof Error && "code" in error && error.code === expectedCode,
+      (error: unknown) =>
+        error instanceof Error &&
+        "code" in error &&
+        error.code === expectedCode,
     );
   } finally {
     await client.query("ROLLBACK");
@@ -131,14 +155,25 @@ async function assertConcurrentFailedDiagnosticsCorrelation(): Promise<void> {
 
   try {
     await client.query("BEGIN");
-    await client.query(`select pg_advisory_xact_lock(hashtext($1))`, ["solverfin:cdi-import"]);
-
-    const results = await Promise.allSettled([
-      importCdiRates({ startsOn: firstDate, endsOn: firstDate }, buildCdiFetcher([])),
-      importCdiRates({ startsOn: secondDate, endsOn: secondDate }, buildCdiFetcher([])),
+    await client.query(`select pg_advisory_xact_lock(hashtext($1))`, [
+      "solverfin:cdi-import",
     ]);
 
-    assert.equal(results.every((result) => result.status === "rejected"), true);
+    const results = await Promise.allSettled([
+      importCdiRates(
+        { startsOn: firstDate, endsOn: firstDate },
+        buildCdiFetcher([]),
+      ),
+      importCdiRates(
+        { startsOn: secondDate, endsOn: secondDate },
+        buildCdiFetcher([]),
+      ),
+    ]);
+
+    assert.equal(
+      results.every((result) => result.status === "rejected"),
+      true,
+    );
     for (const result of results) {
       if (result.status === "rejected") {
         assert.equal(
@@ -188,7 +223,9 @@ async function installDiagnosticsFailureTrigger(): Promise<void> {
 
 async function removeDiagnosticsFailureTrigger(): Promise<void> {
   if (!process.env.DATABASE_URL) return;
-  await query(`drop trigger if exists ${TRIGGER_NAME} on "FinancialIndexOperation"`);
+  await query(
+    `drop trigger if exists ${TRIGGER_NAME} on "FinancialIndexOperation"`,
+  );
   await query(`drop function if exists ${FUNCTION_NAME}()`);
 }
 
