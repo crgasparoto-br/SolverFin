@@ -1,3 +1,5 @@
+import { parseBcbSgsCdiResponse } from "@solverfin/domain";
+
 import { withSharedTransaction } from "../db.js";
 import {
   getFinancialIndexStatus as getBaseFinancialIndexStatus,
@@ -19,10 +21,12 @@ import {
   readProcessingSnapshot,
   readProviderPeriod,
   recordRolledBackOperation,
+  repairFutureCdiTestContamination,
 } from "./account-remuneration-diagnostics-persistence.js";
 import {
   assertProcessingDiagnosticRelations,
   classifyImportOutcome,
+  type DatePeriod,
   type FinancialIndexStatusRecord,
   type ImportCdiRatesResult,
   type ImportOperationDiagnostics,
@@ -63,12 +67,21 @@ export async function importCdiRates(
   let transactionResult: TransactionResult<ImportCdiRatesResult>;
   try {
     transactionResult = await withSharedTransaction(async (executeQuery) => {
+      await repairFutureCdiTestContamination(executeQuery);
+
       let providerConsulted = false;
       let effectivePeriod: ImportOperationDiagnostics["effectivePeriod"] = null;
       const observedFetcher: typeof fetch = async (resource, init) => {
         providerConsulted = true;
         effectivePeriod = readProviderPeriod(resource);
-        return fetcher(resource, init);
+        const response = await fetcher(resource, init);
+
+        if (response.ok && effectivePeriod) {
+          const payload = await response.clone().json();
+          assertProviderRatesWithinPeriod(payload, effectivePeriod);
+        }
+
+        return response;
       };
 
       let result: BaseImportCdiRatesResult;
@@ -102,7 +115,7 @@ export async function importCdiRates(
         receivedCount: result.receivedCount,
         importedCount: result.importedCount,
       };
-      const latestReferenceOn = await findLatestCdiReferenceDate(executeQuery);
+      const latestReferenceOn = await findLatestCdiReferenceDate(executeQuery, endsOn);
       const message = formatImportOutcomeMessage(diagnostics, latestReferenceOn);
       rolledBackOperation = {
         id: result.operation.id,
@@ -144,6 +157,8 @@ export async function processAccountRemunerations(
   let transactionResult: TransactionResult<ProcessAccountRemunerationsResult>;
   try {
     transactionResult = await withSharedTransaction(async (executeQuery) => {
+      await repairFutureCdiTestContamination(executeQuery);
+
       let result: BaseProcessAccountRemunerationsResult;
       try {
         result = await processBaseAccountRemunerations(normalizedProcessedOn);
@@ -221,6 +236,7 @@ export async function processAccountRemunerations(
 }
 
 export async function getFinancialIndexStatus(): Promise<FinancialIndexStatusRecord> {
+  await repairFutureCdiTestContamination();
   const status = await getBaseFinancialIndexStatus();
   const [latestImport, latestProcessing] = await Promise.all([
     attachDiagnostics(status.latestImport),
@@ -228,6 +244,25 @@ export async function getFinancialIndexStatus(): Promise<FinancialIndexStatusRec
   ]);
 
   return { ...status, latestImport, latestProcessing };
+}
+
+function assertProviderRatesWithinPeriod(payload: unknown, period: DatePeriod): void {
+  const rates = parseBcbSgsCdiResponse(payload);
+  const outOfPeriod = rates.find(
+    (rate) => rate.referenceOn < period.startsOn || rate.referenceOn > period.endsOn,
+  );
+  if (!outOfPeriod) return;
+
+  throw Object.assign(
+    new Error(
+      `O provedor retornou a taxa CDI de ${outOfPeriod.referenceOn} fora do período consultado ` +
+        `${period.startsOn} a ${period.endsOn}. Nenhuma taxa foi gravada.`,
+    ),
+    {
+      code: "FINANCIAL_INDEX_PROVIDER_RESPONSE_OUT_OF_PERIOD",
+      statusCode: 502,
+    },
+  );
 }
 
 function assertImportPeriodOrder(startsOn: string, endsOn: string): void {
