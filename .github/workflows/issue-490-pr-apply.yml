@@ -40,6 +40,27 @@ jobs:
           set -o pipefail
           sed -n "/node <<'NODE'/,/^          NODE$/p" .github/workflows/issue-490-apply.yml \
             | sed '1d;$d;s/^          //' > /tmp/issue-490-apply.cjs
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = '/tmp/issue-490-apply.cjs';
+          let script = fs.readFileSync(path, 'utf8');
+          const exactReplacement = `if (!source.includes(oldEnhancement)) throw new Error('Expected remuneration enhancement block was not found');
+source = source.replace(oldEnhancement, newEnhancement);`;
+          const resilientReplacement = `const enhancementStart = '            const description = row.querySelector(".description strong");';
+const enhancementEnd = '              description.parentElement && description.parentElement.appendChild(details);\\n            }';
+const enhancementStartIndex = source.indexOf(enhancementStart);
+const enhancementEndIndex = source.indexOf(enhancementEnd, enhancementStartIndex);
+if (enhancementStartIndex < 0 || enhancementEndIndex < 0) {
+  throw new Error('Expected remuneration enhancement block was not found');
+}
+source =
+  source.slice(0, enhancementStartIndex) +
+  newEnhancement +
+  source.slice(enhancementEndIndex + enhancementEnd.length);`;
+          if (!script.includes(exactReplacement)) throw new Error('Patch applicator marker not found');
+          script = script.replace(exactReplacement, resilientReplacement);
+          fs.writeFileSync(path, script);
+          NODE
           node --check /tmp/issue-490-apply.cjs 2>&1 | tee /tmp/issue-490-patch.log
           node /tmp/issue-490-apply.cjs 2>&1 | tee -a /tmp/issue-490-patch.log
 
