@@ -2,24 +2,15 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 
-if (!chromePath)
-  throw new Error("CHROME_BIN is required for sidebar visual validation.");
+if (!chromePath) throw new Error("CHROME_BIN is required for sidebar visual validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 
@@ -28,11 +19,7 @@ try {
   await setViewport(browser.cdp, 1280, 480);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
-  assert.equal(
-    login.ok,
-    true,
-    `Demo login failed: ${login.status} ${login.body}`,
-  );
+  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
   await navigate(browser.cdp, `${baseUrl}/dashboard`);
   await waitForMasterNavigation(browser.cdp);
@@ -52,21 +39,10 @@ try {
   await sleep(120);
 
   measurements = await evaluate(browser.cdp, sidebarMeasurementExpression());
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-480-sidebar-1280x480.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-480-sidebar-1280x480.png"));
 
-  check(
-    measurements.viewport.width === 1280,
-    "Viewport width is not 1280px",
-    measurements,
-  );
-  check(
-    measurements.viewport.height === 480,
-    "Viewport height is not 480px",
-    measurements,
-  );
+  check(measurements.viewport.width === 1280, "Viewport width is not 1280px", measurements);
+  check(measurements.viewport.height === 480, "Viewport height is not 480px", measurements);
   check(
     measurements.sidebar.fillsViewport,
     "Sidebar does not fill the viewport height",
@@ -143,10 +119,7 @@ const report = {
   screenshot: "issue-480-sidebar-1280x480.png",
 };
 
-await writeFile(
-  join(outputDir, "issue-480-sidebar.json"),
-  `${JSON.stringify(report, null, 2)}\n`,
-);
+await writeFile(join(outputDir, "issue-480-sidebar.json"), `${JSON.stringify(report, null, 2)}\n`);
 await writeFile(join(outputDir, "ISSUE-480.md"), renderReport(report));
 
 if (failures.length > 0) {
