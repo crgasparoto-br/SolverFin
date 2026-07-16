@@ -42,7 +42,8 @@ interface ProcessingOperationDiagnostics {
 }
 
 type OperationDiagnostics =
-  ImportOperationDiagnostics | ProcessingOperationDiagnostics;
+  | ImportOperationDiagnostics
+  | ProcessingOperationDiagnostics;
 
 interface OperationRecord {
   id: string;
