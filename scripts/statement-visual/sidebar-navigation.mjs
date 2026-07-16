@@ -2,15 +2,24 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 
-if (!chromePath) throw new Error("CHROME_BIN is required for sidebar visual validation.");
+if (!chromePath)
+  throw new Error("CHROME_BIN is required for sidebar visual validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let desktop;
@@ -30,9 +39,15 @@ const report = {
   failures,
   desktop,
   mobile,
-  screenshots: ["issue-480-sidebar-1280x480.png", "issue-480-sidebar-mobile-open.png"],
+  screenshots: [
+    "issue-480-sidebar-1280x480.png",
+    "issue-480-sidebar-mobile-open.png",
+  ],
 };
-await writeFile(join(outputDir, "issue-480-sidebar.json"), `${JSON.stringify(report, null, 2)}\n`);
+await writeFile(
+  join(outputDir, "issue-480-sidebar.json"),
+  `${JSON.stringify(report, null, 2)}\n`,
+);
 await writeFile(join(outputDir, "ISSUE-480.md"), renderReport(report));
 
 if (failures.length > 0) {
@@ -52,32 +67,91 @@ async function validateDesktopSidebar(cdp) {
   );
   assert.ok(lastRouteId, "Expected a last authorized navigation route");
 
-  const traversal = await tabUntil(cdp, (state) => state.routeId === lastRouteId, 40);
-  const measurements = await evaluate(cdp, desktopMeasurementExpression(lastRouteId));
+  const traversal = await tabUntil(
+    cdp,
+    (state) => state.routeId === lastRouteId,
+    40,
+  );
+  const measurements = await evaluate(
+    cdp,
+    desktopMeasurementExpression(lastRouteId),
+  );
   await screenshot(cdp, join(outputDir, "issue-480-sidebar-1280x480.png"));
 
   const afterNavigation = await pressTabAndDescribe(cdp);
 
-  check(measurements.viewport.width === 1280, "Viewport width is not 1280px", measurements);
-  check(measurements.viewport.height === 480, "Viewport height is not 480px", measurements);
-  check(measurements.sidebar.fillsViewport, "Sidebar does not fill the viewport height", measurements);
+  check(
+    measurements.viewport.width === 1280,
+    "Viewport width is not 1280px",
+    measurements,
+  );
+  check(
+    measurements.viewport.height === 480,
+    "Viewport height is not 480px",
+    measurements,
+  );
+  check(
+    measurements.sidebar.fillsViewport,
+    "Sidebar does not fill the viewport height",
+    measurements,
+  );
   check(measurements.brand.visible, "Brand is not visible", measurements);
   check(measurements.logout.visible, "Logout is not visible", measurements);
-  check(measurements.navigation.isScrollable, "Navigation does not have vertical overflow", measurements);
-  check(measurements.navigation.scrollTop > 0, "Tab traversal did not scroll navigation", measurements);
-  check(measurements.navigation.lastLinkInside, "Last authorized link is outside navigation", measurements);
-  check(measurements.navigation.focusedTarget, "Tab traversal did not reach the last link", measurements);
-  check(measurements.pageScrollY === 0, "Main page scrolled instead of the navigation region", measurements);
-  check(measurements.admin.institutions === 1, "Admin institutions link is missing or duplicated", measurements);
+  check(
+    measurements.navigation.isScrollable,
+    "Navigation does not have vertical overflow",
+    measurements,
+  );
+  check(
+    measurements.navigation.scrollTop > 0,
+    "Tab traversal did not scroll navigation",
+    measurements,
+  );
+  check(
+    measurements.navigation.lastLinkInside,
+    "Last authorized link is outside navigation",
+    measurements,
+  );
+  check(
+    measurements.navigation.focusedTarget,
+    "Tab traversal did not reach the last link",
+    measurements,
+  );
+  check(
+    measurements.pageScrollY === 0,
+    "Main page scrolled instead of the navigation region",
+    measurements,
+  );
+  check(
+    measurements.admin.institutions === 1,
+    "Admin institutions link is missing or duplicated",
+    measurements,
+  );
   check(
     measurements.admin.financialIndexes === 1,
     "Financial indexes link is missing or duplicated",
     measurements,
   );
-  check(measurements.admin.groupLabels === 1, "Admin group label is missing or duplicated", measurements);
-  check(measurements.duplicateRouteIds.length === 0, "Navigation route ids are duplicated", measurements);
-  check(measurements.ariaControlsComplete, "aria-controls does not cover every secondary route", measurements);
-  check(measurements.activeRoute === "dashboard", "Dashboard active state was not preserved", measurements);
+  check(
+    measurements.admin.groupLabels === 1,
+    "Admin group label is missing or duplicated",
+    measurements,
+  );
+  check(
+    measurements.duplicateRouteIds.length === 0,
+    "Navigation route ids are duplicated",
+    measurements,
+  );
+  check(
+    measurements.ariaControlsComplete,
+    "aria-controls does not cover every secondary route",
+    measurements,
+  );
+  check(
+    measurements.activeRoute === "dashboard",
+    "Dashboard active state was not preserved",
+    measurements,
+  );
   check(
     afterNavigation.matchesLogout,
     "Keyboard focus did not leave navigation normally for the logout action",
@@ -102,34 +176,90 @@ async function validateMobileNavigation(cdp) {
 
   const traversal = await tabUntil(cdp, (state) => state.isMoreToggle, 20);
   const before = await readMobileState(cdp);
-  check(before.toggleFocused, "Tab traversal did not reach the More/Less button", { before, traversal });
-  check(before.ariaExpanded === "false", "More/Less did not start collapsed", before);
-  check(before.toggleText === "Mais", "Collapsed toggle label is not Mais", before);
+  check(
+    before.toggleFocused,
+    "Tab traversal did not reach the More/Less button",
+    { before, traversal },
+  );
+  check(
+    before.ariaExpanded === "false",
+    "More/Less did not start collapsed",
+    before,
+  );
+  check(
+    before.toggleText === "Mais",
+    "Collapsed toggle label is not Mais",
+    before,
+  );
 
   await pressKey(cdp, "Enter", "Enter", 13);
   const opened = await readMobileState(cdp);
   await screenshot(cdp, join(outputDir, "issue-480-sidebar-mobile-open.png"));
 
-  check(opened.ariaExpanded === "true", "Enter did not expand secondary routes", opened);
-  check(opened.toggleText === "Menos", "Expanded toggle label is not Menos", opened);
-  check(opened.adminInstitutionsVisible, "Admin institutions is not visible after expansion", opened);
-  check(opened.adminFinancialIndexesVisible, "Financial indexes is not visible after expansion", opened);
-  check(opened.duplicateRouteIds.length === 0, "Opening More/Less duplicated navigation routes", opened);
-  check(opened.ariaControlsComplete, "Mobile aria-controls is incomplete after expansion", opened);
-  check(opened.internalVerticalScroll === false, "Mobile navigation gained internal vertical scroll", opened);
+  check(
+    opened.ariaExpanded === "true",
+    "Enter did not expand secondary routes",
+    opened,
+  );
+  check(
+    opened.toggleText === "Menos",
+    "Expanded toggle label is not Menos",
+    opened,
+  );
+  check(
+    opened.adminInstitutionsVisible,
+    "Admin institutions is not visible after expansion",
+    opened,
+  );
+  check(
+    opened.adminFinancialIndexesVisible,
+    "Financial indexes is not visible after expansion",
+    opened,
+  );
+  check(
+    opened.duplicateRouteIds.length === 0,
+    "Opening More/Less duplicated navigation routes",
+    opened,
+  );
+  check(
+    opened.ariaControlsComplete,
+    "Mobile aria-controls is incomplete after expansion",
+    opened,
+  );
+  check(
+    opened.internalVerticalScroll === false,
+    "Mobile navigation gained internal vertical scroll",
+    opened,
+  );
 
   await pressKey(cdp, "Enter", "Enter", 13);
   const closed = await readMobileState(cdp);
 
-  check(closed.ariaExpanded === "false", "Second Enter did not collapse secondary routes", closed);
-  check(closed.toggleText === "Mais", "Collapsed toggle label was not restored", closed);
-  check(closed.adminInstitutionsVisible === false, "Admin institutions remained visible after collapse", closed);
+  check(
+    closed.ariaExpanded === "false",
+    "Second Enter did not collapse secondary routes",
+    closed,
+  );
+  check(
+    closed.toggleText === "Mais",
+    "Collapsed toggle label was not restored",
+    closed,
+  );
+  check(
+    closed.adminInstitutionsVisible === false,
+    "Admin institutions remained visible after collapse",
+    closed,
+  );
   check(
     closed.adminFinancialIndexesVisible === false,
     "Financial indexes remained visible after collapse",
     closed,
   );
-  check(closed.duplicateRouteIds.length === 0, "Closing More/Less duplicated navigation routes", closed);
+  check(
+    closed.duplicateRouteIds.length === 0,
+    "Closing More/Less duplicated navigation routes",
+    closed,
+  );
 
   return {
     viewport: "390x844",
@@ -144,7 +274,11 @@ async function validateMobileNavigation(cdp) {
 async function loginAndOpenDashboard(cdp) {
   await navigate(cdp, `${baseUrl}/login`);
   const login = await evaluate(cdp, loginExpression());
-  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
+  assert.equal(
+    login.ok,
+    true,
+    `Demo login failed: ${login.status} ${login.body}`,
+  );
   await navigate(cdp, `${baseUrl}/dashboard`);
   await waitForMasterNavigation(cdp);
   await resetPageFocus(cdp);
@@ -166,7 +300,10 @@ async function waitForMasterNavigation(cdp) {
 }
 
 async function resetPageFocus(cdp) {
-  await evaluate(cdp, `(() => { document.activeElement?.blur(); return document.activeElement?.tagName; })()`);
+  await evaluate(
+    cdp,
+    `(() => { document.activeElement?.blur(); return document.activeElement?.tagName; })()`,
+  );
   await sleep(50);
 }
 
@@ -177,7 +314,9 @@ async function tabUntil(cdp, predicate, maxSteps) {
     visited.push(state);
     if (predicate(state)) return { steps: step, visited };
   }
-  throw new Error(`Keyboard traversal did not reach the target after ${maxSteps} Tab presses.`);
+  throw new Error(
+    `Keyboard traversal did not reach the target after ${maxSteps} Tab presses.`,
+  );
 }
 
 async function pressTabAndDescribe(cdp) {
@@ -192,7 +331,11 @@ async function pressKey(cdp, key, code, keyCode) {
     windowsVirtualKeyCode: keyCode,
     nativeVirtualKeyCode: keyCode,
   };
-  await cdp.send("Input.dispatchKeyEvent", { type: "rawKeyDown", ...params });
+  const keyDown =
+    key === "Enter"
+      ? { type: "keyDown", text: "\r", unmodifiedText: "\r", ...params }
+      : { type: "rawKeyDown", ...params };
+  await cdp.send("Input.dispatchKeyEvent", keyDown);
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...params });
   await sleep(80);
 }
