@@ -9,18 +9,32 @@ const source = readFileSync(
   "utf8",
 );
 
-assert.match(source, /\.statement-row\.account-remuneration-row \.description\{display:block\}/);
 assert.match(
   source,
-  /\.account-remuneration-audit\{[^}]*display:inline-block[^}]*margin:0 0 0 6px/,
+  /\.statement-row\.account-remuneration-row \.description\{[^}]*display:grid[^}]*grid-template-columns:max-content minmax\(0,1fr\)/,
 );
-assert.match(source, /\.account-remuneration-audit\[open\]\{display:block;margin-left:0\}/);
+assert.match(
+  source,
+  /\.statement-row\.account-remuneration-row \.description>strong\{grid-column:1;grid-row:1\}/,
+);
+assert.match(
+  source,
+  /\.account-remuneration-summary\{[^}]*grid-column:1 \/ -1[^}]*grid-row:2/,
+);
+assert.match(
+  source,
+  /\.account-remuneration-audit\{[^}]*grid-column:2[^}]*grid-row:1/,
+);
+assert.match(
+  source,
+  /\.account-remuneration-audit\[open\]\{grid-column:1 \/ -1;grid-row:3/,
+);
 assert.match(
   source,
   /<details class="account-remuneration-audit">[\s\S]*<span class="account-remuneration-summary">Competência/,
 );
 assert.match(
   source,
-  /\.account-remuneration-audit summary\{[^}]*font-size:\.6875rem[^}]*white-space:nowrap/,
+  /\.account-remuneration-audit summary\{[^}]*font-size:\.625rem[^}]*white-space:nowrap/,
 );
 assert.match(source, /\.account-remuneration-audit summary::after\{display:none\}/);
