@@ -208,10 +208,7 @@ describe("authenticated SSR shell", () => {
       styles: ".test-marker { color: #0f3d4c; }",
     });
 
-    assert.match(
-      html,
-      /<nav aria-label="Menu principal" class="sidebar-navigation nav-open">/,
-    );
+    assert.match(html, /<nav aria-label="Menu principal" class="sidebar-navigation nav-open">/);
     assert.match(html, /aria-expanded="true"[^>]*>Menos<\/button>/);
   });
 
@@ -242,10 +239,12 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /const masterRouteIds =/);
     assert.match(html, /masterRouteIds\.every/);
     assert.match(html, /nav\.innerHTML = masterNavigationHtml/);
+    assert.match(html, /nav\.contains\(document\.activeElement\)/);
+    assert.match(html, /focusedNavigationTarget\.focus\(\)/);
     assert.doesNotMatch(html, /document\.createElement\("a"\)/);
     assert.doesNotMatch(html, /link\.href = "\/admin\/instituicoes"/);
-    assert.match(html, /href=\"\/admin\/instituicoes\"/);
-    assert.match(html, /href=\"\/admin\/indices-financeiros\"/);
+    assert.match(html, /adminInstitutions/);
+    assert.match(html, /adminFinancialIndexes/);
   });
 });
 
