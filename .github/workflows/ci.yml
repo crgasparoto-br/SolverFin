@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -41,8 +41,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -58,17 +56,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
-      - name: Apply repository formatting
-        run: |
-          npx prettier apps/web/src/dev-server/shell.ts apps/web/src/dev-server/shell-navigation.issue-480.test.ts --write
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/src/dev-server/shell.ts apps/web/src/dev-server/shell-navigation.issue-480.test.ts
-          if ! git diff --cached --quiet; then
-            git commit -m "style(web): apply repository prettier configuration"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
 
       - name: Check environment example
         run: npm run env:check
