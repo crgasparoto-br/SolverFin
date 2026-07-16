@@ -4,9 +4,13 @@ Este documento define os campos adicionais retornados e persistidos pelas opera�
 
 Os contratos funcionais e as regras de cálculo permanecem em [`API_ACCOUNT_REMUNERATION.md`](./API_ACCOUNT_REMUNERATION.md) e [`ACCOUNT_REMUNERATION_CDI.md`](./ACCOUNT_REMUNERATION_CDI.md). Os diagnósticos descritos aqui não alteram fórmula, arredondamento, idempotência, seleção de competências nem criação de receitas previstas.
 
-## Persistência e compatibilidade
+## Persistência, atomicidade e compatibilidade
 
 `FinancialIndexOperation.diagnostics` armazena um objeto JSONB com contagens e períodos agregados. O conteúdo não inclui organização, perfil financeiro, conta, lançamento ou resposta bruta do Banco Central.
+
+Em execuções concluídas com sucesso, o efeito financeiro e o diagnóstico são confirmados na mesma transação. Se o diagnóstico não puder ser persistido, a importação ou o processamento é revertido e a operação é registrada separadamente como `FAILED`, sem manter taxa, remuneração ou receita prevista parcialmente confirmada.
+
+Os locks transacionais existentes continuam impedindo duas importações do CDI ou dois processamentos de remuneração simultâneos. A classificação do resultado usa a consulta realmente executada após a aquisição do lock, evitando diagnósticos incorretos em concorrência.
 
 Operações criadas antes desta mudança possuem `diagnostics = null`. A API e a interface continuam exibindo `message` e as contagens legadas nesses registros.
 
@@ -67,7 +71,7 @@ A resposta mantém todas as contagens anteriores e acrescenta `diagnostics`:
 {
   "operation": {
     "status": "SUCCESS",
-    "message": "Foram processadas 3 competência(s): 1 receita(s) prevista(s) criada(s), 1 concluída(s) sem lançamento por saldo não positivo e 1 por arredondamento para zero.",
+    "message": "Foram processadas 3 competência(s): 1 receita(s) prevista(s) criada(s) nos Extratos dos respectivos perfis, 1 concluída(s) sem lançamento por saldo não positivo e 1 por arredondamento para zero.",
     "diagnostics": {
       "kind": "ACCOUNT_REMUNERATION",
       "processedOn": "2026-07-16",
@@ -102,7 +106,7 @@ processedCompetences = plannedTransactionsCreated
                      + zeroAmountCompetences
 ```
 
-Quando `processedCompetences = 0`, a mensagem diferencia configurações ainda não iniciadas, configurações sem taxa e competências que já possuíam resultado. A ausência de novas receitas previstas não é apresentada como falha.
+Quando `processedCompetences = 0`, a mensagem diferencia configurações ainda não iniciadas, configurações sem taxa e competências que já possuíam resultado. A ausência de novas receitas previstas não é apresentada como falha e usa a expressão “Nenhuma alteração necessária”.
 
 ## Consulta de status e interface
 
