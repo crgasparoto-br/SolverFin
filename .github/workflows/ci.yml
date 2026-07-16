@@ -145,4 +145,15 @@ jobs:
         run: npm run db:seed
 
       - name: Run API integration tests
-        run: npm run test:integration --workspace @solverfin/api
+        id: integration-tests
+        run: |
+          set -o pipefail
+          npm run test:integration --workspace @solverfin/api 2>&1 | tee integration-tests.log
+
+      - name: Upload integration diagnostic
+        if: failure() && steps.integration-tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-488-integration-diagnostic
+          path: integration-tests.log
+          if-no-files-found: error
