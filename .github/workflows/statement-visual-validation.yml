@@ -30,6 +30,7 @@ jobs:
       DATABASE_URL: postgresql://solverfin:solverfin_visual_password@localhost:5432/solverfin_visual?schema=public
       API_BASE_URL: http://127.0.0.1:4000
       HOST: 127.0.0.1
+      SOLVERFIN_MASTER_EMAILS: demo@solverfin.example.invalid
 
     services:
       postgres:
@@ -92,7 +93,7 @@ jobs:
           echo "path=$chrome_bin" >> "$GITHUB_OUTPUT"
           "$chrome_bin" --version
 
-      - name: Validate statement UI in Chrome
+      - name: Validate statement and sidebar UI in Chrome
         env:
           CHROME_BIN: ${{ steps.chrome.outputs.path }}
           SOLVERFIN_WEB_URL: http://127.0.0.1:5173
@@ -100,6 +101,7 @@ jobs:
         run: |
           npm run qa:statement-visual
           node scripts/statement-visual/account-edit.mjs
+          node scripts/statement-visual/sidebar-navigation.mjs
 
       - name: Preserve server log
         if: always()
