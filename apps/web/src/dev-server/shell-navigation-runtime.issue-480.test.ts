@@ -3,10 +3,7 @@ import { describe, it } from "node:test";
 import vm from "node:vm";
 
 import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
-import {
-  listNavigablePrivateShellRoutes,
-  type ShellRoute,
-} from "../app-shell/routes.js";
+import { listNavigablePrivateShellRoutes, type ShellRoute } from "../app-shell/routes.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
 describe("issue #480 navigation runtime", () => {
@@ -29,23 +26,16 @@ describe("issue #480 navigation runtime", () => {
     assert.deepEqual(
       harness.nav
         .links()
-        .filter((link) =>
-          expectedRoutes.some((route) => route.id === link.dataset.navRouteId),
-        )
+        .filter((link) => expectedRoutes.some((route) => route.id === link.dataset.navRouteId))
         .map((link) => link.dataset.navRouteId),
       expectedRoutes.map((route) => route.id),
     );
 
     for (const route of expectedRoutes) {
-      assertNavigationLinkMatchesRoute(
-        requiredLink(harness.nav, route.id),
-        route,
-      );
+      assertNavigationLinkMatchesRoute(requiredLink(harness.nav, route.id), route);
     }
 
-    for (const group of new Set(
-      expectedRoutes.map((route) => route.navigationGroup),
-    )) {
+    for (const group of new Set(expectedRoutes.map((route) => route.navigationGroup))) {
       assert.equal(harness.nav.groupLabels(group).length, 1);
     }
 
@@ -53,10 +43,7 @@ describe("issue #480 navigation runtime", () => {
       .querySelectorAll('a[data-nav-priority="secondary"][id]')
       .map((link) => link.id);
     const toggle = requiredToggle(harness.nav);
-    assert.deepEqual(
-      toggle.getAttribute("aria-controls").split(/\s+/),
-      secondaryIds,
-    );
+    assert.deepEqual(toggle.getAttribute("aria-controls").split(/\s+/), secondaryIds);
     assert.equal(toggle.getAttribute("aria-expanded"), "false");
 
     await executeProfileScript(harness, {
@@ -67,9 +54,7 @@ describe("issue #480 navigation runtime", () => {
     for (const route of expectedRoutes) {
       assert.equal(harness.nav.linksByRouteId(route.id).length, 1);
     }
-    for (const group of new Set(
-      expectedRoutes.map((route) => route.navigationGroup),
-    )) {
+    for (const group of new Set(expectedRoutes.map((route) => route.navigationGroup))) {
       assert.equal(harness.nav.groupLabels(group).length, 1);
     }
   });
@@ -86,9 +71,7 @@ describe("issue #480 navigation runtime", () => {
       { throws: true },
     ] satisfies ProfileResult[]) {
       const harness = createHarness(renderShell("/dashboard", false));
-      const initialRouteIds = harness.nav
-        .links()
-        .map((link) => link.dataset.navRouteId);
+      const initialRouteIds = harness.nav.links().map((link) => link.dataset.navRouteId);
 
       await executeProfileScript(harness, result);
 
@@ -107,9 +90,7 @@ describe("issue #480 navigation runtime", () => {
 
   it("does not duplicate routes already rendered by the server", async () => {
     const expectedRoutes = listNavigableMasterRoutes();
-    const harness = createHarness(
-      renderShell(expectedRoutes[0]?.path ?? "/dashboard", true),
-    );
+    const harness = createHarness(renderShell(expectedRoutes[0]?.path ?? "/dashboard", true));
 
     await executeProfileScript(harness, {
       ok: true,
@@ -118,14 +99,9 @@ describe("issue #480 navigation runtime", () => {
 
     for (const route of expectedRoutes) {
       assert.equal(harness.nav.linksByRouteId(route.id).length, 1);
-      assertNavigationLinkMatchesRoute(
-        requiredLink(harness.nav, route.id),
-        route,
-      );
+      assertNavigationLinkMatchesRoute(requiredLink(harness.nav, route.id), route);
     }
-    for (const group of new Set(
-      expectedRoutes.map((route) => route.navigationGroup),
-    )) {
+    for (const group of new Set(expectedRoutes.map((route) => route.navigationGroup))) {
       assert.equal(harness.nav.groupLabels(group).length, 1);
     }
   });
@@ -139,10 +115,7 @@ describe("issue #480 navigation runtime", () => {
         body: { user: { isMaster: true } },
       });
 
-      assert.equal(
-        requiredLink(harness.nav, route.id).getAttribute("aria-current"),
-        "page",
-      );
+      assert.equal(requiredLink(harness.nav, route.id).getAttribute("aria-current"), "page");
     }
   });
 
@@ -150,10 +123,7 @@ describe("issue #480 navigation runtime", () => {
     const financialIndexes = listNavigableMasterRoutes().find(
       (route) => route.id === "adminFinancialIndexes",
     );
-    assert.ok(
-      financialIndexes,
-      "Expected adminFinancialIndexes in the central route catalog",
-    );
+    assert.ok(financialIndexes, "Expected adminFinancialIndexes in the central route catalog");
 
     const harness = createHarness(renderShell("/dashboard", false));
     await executeProfileScript(harness, {
@@ -233,9 +203,7 @@ class FakeNavigation extends FakeElement {
     if (groupMatch) return this.groupLabels(groupMatch[1] ?? "")[0] ?? null;
 
     if (selector === "[data-nav-more]") {
-      return (
-        this.children.find((element) => "navMore" in element.dataset) ?? null
-      );
+      return this.children.find((element) => "navMore" in element.dataset) ?? null;
     }
 
     return null;
@@ -244,8 +212,7 @@ class FakeNavigation extends FakeElement {
   querySelectorAll(selector: string): FakeElement[] {
     if (selector === 'a[data-nav-priority="secondary"][id]') {
       return this.links().filter(
-        (link) =>
-          link.dataset.navPriority === "secondary" && link.id.length > 0,
+        (link) => link.dataset.navPriority === "secondary" && link.id.length > 0,
       );
     }
     return [];
@@ -260,9 +227,7 @@ class FakeNavigation extends FakeElement {
   }
 
   groupLabels(group: string): FakeElement[] {
-    return this.children.filter(
-      (element) => element.dataset.navGroupLabel === group,
-    );
+    return this.children.filter((element) => element.dataset.navGroupLabel === group);
   }
 }
 
@@ -289,10 +254,7 @@ function listNavigableMasterRoutes(): ShellRoute[] {
   );
 }
 
-function assertNavigationLinkMatchesRoute(
-  link: FakeElement,
-  route: ShellRoute,
-): void {
+function assertNavigationLinkMatchesRoute(link: FakeElement, route: ShellRoute): void {
   const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
 
   assert.equal(link.href, route.path);
@@ -300,18 +262,12 @@ function assertNavigationLinkMatchesRoute(
   assert.equal(link.dataset.navGroup, route.navigationGroup);
   assert.equal(link.dataset.navPriority, priority);
   assert.equal(link.title, route.description);
-  assert.equal(
-    link.id,
-    priority === "secondary" ? `nav-secondary-${route.id}` : "",
-  );
+  assert.equal(link.id, priority === "secondary" ? `nav-secondary-${route.id}` : "");
   assert.match(link.innerHTML, /<svg[^>]*aria-hidden="true"/);
   assert.ok(link.innerHTML.includes(route.label));
 }
 
-function renderShell(
-  activePathname: string,
-  showAdminNavigation: boolean,
-): string {
+function renderShell(activePathname: string, showAdminNavigation: boolean): string {
   return renderAuthenticatedShellDocument({
     activePathname,
     content: "<section>Content</section>",
@@ -322,8 +278,7 @@ function renderShell(
 }
 
 function createHarness(html: string): Harness {
-  const navMatch =
-    /<nav aria-label="Menu principal"[^>]*>([\s\S]*?)<\/nav>/.exec(html);
+  const navMatch = /<nav aria-label="Menu principal"[^>]*>([\s\S]*?)<\/nav>/.exec(html);
   assert.ok(navMatch, "Expected rendered main navigation");
 
   const nav = new FakeNavigation(parseNavigationChildren(navMatch[1] ?? ""));
@@ -338,10 +293,7 @@ function createHarness(html: string): Harness {
   };
 }
 
-async function executeProfileScript(
-  harness: Harness,
-  result: ProfileResult,
-): Promise<void> {
+async function executeProfileScript(harness: Harness, result: ProfileResult): Promise<void> {
   const context = {
     document: harness.document,
     fetch: async (): Promise<{ ok: boolean; json(): Promise<unknown> }> => {
@@ -357,9 +309,7 @@ async function executeProfileScript(
 }
 
 function parseNavigationChildren(html: string): FakeElement[] {
-  return Array.from(
-    html.matchAll(/<(span|a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g),
-  ).map((match) => {
+  return Array.from(html.matchAll(/<(span|a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g)).map((match) => {
     const element = new FakeElement(match[1] ?? "unknown");
     applyAttributes(element, match[2] ?? "");
     element.innerHTML = match[3] ?? "";
@@ -377,12 +327,10 @@ function applyAttributes(element: FakeElement, attributes: string): void {
 }
 
 function extractProfileScript(html: string): string {
-  const scripts = Array.from(
-    html.matchAll(/<script>([\s\S]*?)<\/script>/g),
-  ).map((match) => match[1] ?? "");
-  const profileScript = scripts.find((script) =>
-    script.includes("const masterRoutes"),
+  const scripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g)).map(
+    (match) => match[1] ?? "",
   );
+  const profileScript = scripts.find((script) => script.includes("const masterRoutes"));
   assert.ok(profileScript, "Expected current-user navigation script");
   return profileScript;
 }
@@ -402,7 +350,5 @@ function requiredToggle(nav: FakeNavigation): FakeElement {
 function toDatasetKey(attributeName: string): string {
   return attributeName
     .slice("data-".length)
-    .replace(/-([a-z])/g, (_match, character: string) =>
-      character.toUpperCase(),
-    );
+    .replace(/-([a-z])/g, (_match, character: string) => character.toUpperCase());
 }
