@@ -36,6 +36,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`CARDS.md`](./CARDS.md): cartoes agrupadores/faturas e instrumentos internos.
 - [`ACCOUNT_REMUNERATION_CDI.md`](./ACCOUNT_REMUNERATION_CDI.md): remuneracao prevista de contas com CDI e base compartilhada de indices financeiros.
 - [`API_ACCOUNT_REMUNERATION.md`](./API_ACCOUNT_REMUNERATION.md): endpoints, operacao diaria, idempotencia e configuracao do scheduler CDI.
+- [`ACCOUNT_REMUNERATION_OPERATION_DIAGNOSTICS.md`](./ACCOUNT_REMUNERATION_OPERATION_DIAGNOSTICS.md): resultados tipados, periodos consultados e contagens persistentes das operacoes CDI.
 - [`RECURRENCES_INSTALLMENTS_WEB.md`](./RECURRENCES_INSTALLMENTS_WEB.md): recorrencias e parcelas na web.
 - [`PAYABLES_RECEIVABLES.md`](./PAYABLES_RECEIVABLES.md): contrato legado consolidado de contas a pagar/receber.
 - [`PAYABLES_RECEIVABLES_TRANSITION.md`](./PAYABLES_RECEIVABLES_TRANSITION.md): plano de transicao segura do legado.

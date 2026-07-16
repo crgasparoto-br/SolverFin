@@ -6,8 +6,10 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   getFinancialIndexStatus,
   importCdiRates,
-  listAccountRemunerationConfigurations,
   processAccountRemunerations,
+} from "./repositories/account-remuneration-diagnostics-service.js";
+import {
+  listAccountRemunerationConfigurations,
   saveAccountRemunerationConfiguration,
   type ImportCdiRatesInput,
   type SaveAccountRemunerationConfigurationInput,
@@ -49,21 +51,28 @@ export async function handleAccountRemunerationApiRequest(
   }
 }
 
-async function handleTenantRequest(request: ApiRequest): Promise<ApiResponse | undefined> {
-  const user = auth.requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+async function handleTenantRequest(
+  request: ApiRequest,
+): Promise<ApiResponse | undefined> {
+  const user = auth.requireAuthenticatedRequest(
+    buildAuthHeaders(request.headers.authorization),
+  );
   const context = await resolveRequestTenantContext(
     user,
     request.query.get("profileId") ?? undefined,
   );
 
-  if (request.method === "GET" && request.pathname === CONFIGURATION_BASE_PATH) {
+  if (
+    request.method === "GET" &&
+    request.pathname === CONFIGURATION_BASE_PATH
+  ) {
     const configurations = await listAccountRemunerationConfigurations(context);
     return json(200, { configurations });
   }
 
-  const configurationMatch = new RegExp(`^${CONFIGURATION_BASE_PATH}/([^/]+)$`).exec(
-    request.pathname,
-  );
+  const configurationMatch = new RegExp(
+    `^${CONFIGURATION_BASE_PATH}/([^/]+)$`,
+  ).exec(request.pathname);
 
   if (request.method === "PUT" && configurationMatch?.[1]) {
     const body = requireObjectBody(request.body);
@@ -87,7 +96,9 @@ async function handleTenantRequest(request: ApiRequest): Promise<ApiResponse | u
   return undefined;
 }
 
-async function handleAdminRequest(request: ApiRequest): Promise<ApiResponse | undefined> {
+async function handleAdminRequest(
+  request: ApiRequest,
+): Promise<ApiResponse | undefined> {
   const user = await requireAuthenticatedRequest(request.headers);
   requireMasterUser(user);
 
@@ -145,8 +156,10 @@ function parseImportPeriod(body: Record<string, unknown>): ImportCdiRatesInput {
 }
 
 function parseBoolean(value: unknown): boolean {
-  if (value === true || value === "true" || value === 1 || value === "1") return true;
-  if (value === false || value === "false" || value === 0 || value === "0") return false;
+  if (value === true || value === "true" || value === 1 || value === "1")
+    return true;
+  if (value === false || value === "false" || value === 0 || value === "0")
+    return false;
 
   throw requestError("BOOLEAN_INVALID", "Informe se a remuneração está ativa.");
 }
@@ -156,7 +169,10 @@ function readOptionalNumber(value: unknown): number | undefined {
   const parsed = Number(value);
 
   if (!Number.isFinite(parsed)) {
-    throw requestError("NUMBER_INVALID", "Informe um percentual numérico válido.");
+    throw requestError(
+      "NUMBER_INVALID",
+      "Informe um percentual numérico válido.",
+    );
   }
 
   return parsed;
@@ -176,7 +192,9 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
   return body as Record<string, unknown>;
 }
 
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
+function buildAuthHeaders(authorization: string | undefined): {
+  authorization?: string;
+} {
   return authorization === undefined ? {} : { authorization };
 }
 
@@ -195,7 +213,11 @@ function mapDomainError(error: unknown): unknown {
   }
 
   if (error instanceof TenantAuthorizationError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
 
   return error;

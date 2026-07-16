@@ -26,6 +26,7 @@ model FinancialIndexOperation {
   pendingCount   Int       @default(0)
   failureCount   Int       @default(0)
   message        String?   @db.VarChar(500)
+  diagnostics    Json?     @db.JsonB
   createdAt      DateTime  @default(now()) @db.Timestamp(3)
   updatedAt      DateTime  @default(now()) @db.Timestamp(3)
 
