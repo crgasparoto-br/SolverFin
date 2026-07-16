@@ -32,10 +32,7 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   await resetAccountRemunerationTestData();
 
   const imported = await importCdiRates(
@@ -51,18 +48,13 @@ async function main(): Promise<void> {
   let alreadyUpdatedFetcherCalled = false;
   const alreadyUpdated = await importCdiRates({ endsOn: RATE_ON }, async () => {
     alreadyUpdatedFetcherCalled = true;
-    throw new Error(
-      "provider must not be called when the series is already current",
-    );
+    throw new Error("provider must not be called when the series is already current");
   });
   assert.equal(alreadyUpdatedFetcherCalled, false);
   assert.equal(alreadyUpdated.outcome, "ALREADY_UP_TO_DATE");
   assert.equal(alreadyUpdated.diagnostics.effectivePeriod, null);
 
-  const providerWithoutRates = await importCdiRates(
-    { endsOn: "2039-01-02" },
-    buildCdiFetcher([]),
-  );
+  const providerWithoutRates = await importCdiRates({ endsOn: "2039-01-02" }, buildCdiFetcher([]));
   assert.equal(providerWithoutRates.outcome, "PROVIDER_NO_RATES");
   assert.equal(providerWithoutRates.diagnostics.providerConsulted, true);
   assert.equal(providerWithoutRates.diagnostics.receivedCount, 0);
@@ -123,8 +115,7 @@ async function main(): Promise<void> {
   assert.equal(firstDiagnostics.zeroAmountCompetences, 1);
   assert.equal(
     firstDiagnostics.eligibleCompetences,
-    firstDiagnostics.alreadyRegisteredCompetences +
-      firstDiagnostics.processedCompetences,
+    firstDiagnostics.alreadyRegisteredCompetences + firstDiagnostics.processedCompetences,
   );
   assert.equal(
     firstDiagnostics.processedCompetences,
@@ -132,32 +123,20 @@ async function main(): Promise<void> {
       firstDiagnostics.nonPositiveBalanceCompetences +
       firstDiagnostics.zeroAmountCompetences,
   );
-  assert.match(
-    firstProcessing.operation.message ?? "",
-    /receita\(s\) prevista\(s\)/i,
-  );
+  assert.match(firstProcessing.operation.message ?? "", /receita\(s\) prevista\(s\)/i);
 
   const secondProcessing = await processAccountRemunerations(PROCESSING_ON);
   assert.equal(secondProcessing.diagnostics.eligibleCompetences, 3);
   assert.equal(secondProcessing.diagnostics.alreadyRegisteredCompetences, 3);
   assert.equal(secondProcessing.diagnostics.processedCompetences, 0);
   assert.equal(secondProcessing.diagnostics.plannedTransactionsCreated, 0);
-  assert.match(
-    secondProcessing.operation.message ?? "",
-    /nenhuma competência nova/i,
-  );
+  assert.match(secondProcessing.operation.message ?? "", /nenhuma competência nova/i);
 
   const status = await getFinancialIndexStatus();
   assert.equal(status.latestImport?.diagnostics?.kind, "CDI_IMPORT");
-  assert.equal(
-    status.latestProcessing?.diagnostics?.kind,
-    "ACCOUNT_REMUNERATION",
-  );
+  assert.equal(status.latestProcessing?.diagnostics?.kind, "ACCOUNT_REMUNERATION");
   if (status.latestProcessing?.diagnostics?.kind === "ACCOUNT_REMUNERATION") {
-    assert.equal(
-      status.latestProcessing.diagnostics.alreadyRegisteredCompetences,
-      3,
-    );
+    assert.equal(status.latestProcessing.diagnostics.alreadyRegisteredCompetences, 3);
   }
 }
 

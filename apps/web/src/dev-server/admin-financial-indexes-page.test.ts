@@ -1,9 +1,6 @@
 import assert from "node:assert/strict";
 
-import {
-  renderFinancialIndexSummary,
-  renderOperation,
-} from "./admin-financial-indexes-page.js";
+import { renderFinancialIndexSummary, renderOperation } from "./admin-financial-indexes-page.js";
 
 const summary = renderFinancialIndexSummary({
   latestCdiRate: null,

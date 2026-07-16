@@ -24,12 +24,8 @@ export function startAccountRemunerationScheduler(): void {
   timer.unref();
 }
 
-export async function runDailyAccountRemunerationCycle(
-  now = new Date(),
-): Promise<boolean> {
-  const executionHourUtc = parseExecutionHour(
-    process.env.ACCOUNT_REMUNERATION_DAILY_HOUR_UTC,
-  );
+export async function runDailyAccountRemunerationCycle(now = new Date()): Promise<boolean> {
+  const executionHourUtc = parseExecutionHour(process.env.ACCOUNT_REMUNERATION_DAILY_HOUR_UTC);
   const today = now.toISOString().slice(0, 10);
 
   if (!shouldRunDailyTask(now, executionHourUtc, lastCompletedDate)) {

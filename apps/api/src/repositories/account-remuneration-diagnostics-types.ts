@@ -42,9 +42,7 @@ export interface ProcessingOperationDiagnostics {
   pendingCompetences: number;
 }
 
-export type OperationDiagnostics =
-  | ImportOperationDiagnostics
-  | ProcessingOperationDiagnostics;
+export type OperationDiagnostics = ImportOperationDiagnostics | ProcessingOperationDiagnostics;
 
 export type DiagnosedOperationRecord = OperationRecord & {
   diagnostics: OperationDiagnostics | null;
@@ -56,8 +54,7 @@ export interface ImportCdiRatesResult extends BaseImportCdiRatesResult {
   diagnostics: ImportOperationDiagnostics;
 }
 
-export interface ProcessAccountRemunerationsResult
-  extends BaseProcessAccountRemunerationsResult {
+export interface ProcessAccountRemunerationsResult extends BaseProcessAccountRemunerationsResult {
   operation: DiagnosedOperationRecord;
   diagnostics: ProcessingOperationDiagnostics;
 }
@@ -95,8 +92,7 @@ export function classifyImportOutcome(input: {
 export function assertProcessingDiagnosticRelations(
   diagnostics: ProcessingOperationDiagnostics,
 ): void {
-  const selected =
-    diagnostics.alreadyRegisteredCompetences + diagnostics.processedCompetences;
+  const selected = diagnostics.alreadyRegisteredCompetences + diagnostics.processedCompetences;
   if (diagnostics.eligibleCompetences !== selected) {
     throw new Error(
       "Diagnóstico inconsistente: competências elegíveis devem ser a soma das já registradas e processadas.",

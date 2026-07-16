@@ -20,10 +20,7 @@ assert.match(
   formatImportOutcomeMessage(noChangeImport, "2026-07-16"),
   /^Nenhuma alteração necessária/i,
 );
-assert.match(
-  formatImportOutcomeMessage(noChangeImport, "2026-07-16"),
-  /não foi consultado/i,
-);
+assert.match(formatImportOutcomeMessage(noChangeImport, "2026-07-16"), /não foi consultado/i);
 
 const processed: ProcessingOperationDiagnostics = {
   kind: "ACCOUNT_REMUNERATION",
@@ -39,10 +36,7 @@ const processed: ProcessingOperationDiagnostics = {
   zeroAmountCompetences: 0,
   pendingCompetences: 0,
 };
-assert.match(
-  formatProcessingOutcomeMessage(processed),
-  /Extratos dos respectivos perfis/i,
-);
+assert.match(formatProcessingOutcomeMessage(processed), /Extratos dos respectivos perfis/i);
 
 const noChangeProcessing: ProcessingOperationDiagnostics = {
   ...processed,
@@ -51,7 +45,4 @@ const noChangeProcessing: ProcessingOperationDiagnostics = {
   plannedTransactionsCreated: 0,
   nonPositiveBalanceCompetences: 0,
 };
-assert.match(
-  formatProcessingOutcomeMessage(noChangeProcessing),
-  /^Nenhuma alteração necessária/i,
-);
+assert.match(formatProcessingOutcomeMessage(noChangeProcessing), /^Nenhuma alteração necessária/i);

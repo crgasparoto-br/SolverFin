@@ -46,9 +46,7 @@ export async function withTransaction<TResult>(
   }
 
   const client = await getPool().connect();
-  const scopedQuery: QueryExecutor = async <
-    TRow extends QueryResultRow = QueryResultRow,
-  >(
+  const scopedQuery: QueryExecutor = async <TRow extends QueryResultRow = QueryResultRow>(
     text: string,
     params: readonly unknown[] = [],
   ): Promise<TRow[]> => {
@@ -63,9 +61,7 @@ export async function withTransaction<TResult>(
   try {
     await client.query("BEGIN");
 
-    const result = await transactionStorage.run(context, () =>
-      run(scopedQuery),
-    );
+    const result = await transactionStorage.run(context, () => run(scopedQuery));
 
     await client.query("COMMIT");
     return result;
