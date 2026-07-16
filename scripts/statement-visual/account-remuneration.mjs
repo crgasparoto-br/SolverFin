@@ -171,12 +171,8 @@ try {
   );
   assert.equal(firstCollapsed.first.detailsOpen, false);
   assert.equal(firstCollapsed.adjusted.detailsOpen, false);
-  assert.equal(firstCollapsed.first.actionsOpen, true);
+  assert.equal(firstCollapsed.first.actionsOpen, false);
 
-  await evaluate(
-    browser.cdp,
-    `document.querySelector('script[data-transaction="${fixture.firstId}"]')?.closest(".statement-row.statement-body")?.querySelector("details.actions > summary")?.click()`,
-  );
   await focusSummary(browser.cdp, fixture.adjustedId);
   await pressEnter(browser.cdp);
   await sleep(120);
