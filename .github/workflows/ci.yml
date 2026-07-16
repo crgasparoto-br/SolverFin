@@ -67,7 +67,18 @@ jobs:
         run: npm run db:seed:check
 
       - name: Check formatting
-        run: npm run format:check
+        id: format-check
+        run: |
+          set -o pipefail
+          npm run format:check 2>&1 | tee format-check.log
+
+      - name: Upload formatting diagnostic
+        if: failure() && steps.format-check.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatting-diagnostic
+          path: format-check.log
+          if-no-files-found: error
 
       - name: Lint
         run: npm run lint
@@ -145,4 +156,15 @@ jobs:
         run: npm run db:seed
 
       - name: Run API integration tests
-        run: npm run test:integration --workspace @solverfin/api
+        id: integration-tests
+        run: |
+          set -o pipefail
+          npm run test:integration --workspace @solverfin/api 2>&1 | tee integration-tests.log
+
+      - name: Upload integration diagnostic
+        if: failure() && steps.integration-tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-diagnostic
+          path: integration-tests.log
+          if-no-files-found: error
