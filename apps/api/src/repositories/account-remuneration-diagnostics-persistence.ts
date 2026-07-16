@@ -94,7 +94,9 @@ export async function readProcessingSnapshot(
 
   const row = rows[0];
   if (!row) {
-    throw new Error("Não foi possível calcular o diagnóstico do processamento CDI.");
+    throw new Error(
+      "Não foi possível calcular o diagnóstico do processamento CDI.",
+    );
   }
   return row;
 }
