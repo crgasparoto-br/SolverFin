@@ -161,18 +161,28 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /aria-expanded="true"[^>]*>Menos<\/button>/);
   });
 
-  it("loads the current user and can add the admin institutions route when the user is master", () => {
+  it("loads the current user and derives every master route from the central catalog", () => {
     const html = renderAuthenticatedShellDocument({
       activePathname: "/dashboard",
       content: "<section>Conteúdo da página</section>",
       currentLabel: "Dashboard",
       styles: ".test-marker { color: #0f3d4c; }",
     });
+    const masterRoutes = listNavigablePrivateShellRoutes({ includeMaster: true }).filter(
+      (route) => route.requiresMaster === true,
+    );
 
     assert.match(html, /fetch\("\/api\/me"\)/);
     assert.match(html, /body\.user\.isMaster !== true/);
-    assert.match(html, /link\.href = "\/admin\/instituicoes"/);
-    assert.match(html, /link\.innerHTML = .*Admin - Instituições/);
+    assert.match(html, /for \(const route of masterRoutes\)/);
+    assert.match(html, /link\.href = route\.path/);
+    assert.match(html, /link\.innerHTML = route\.iconHtml \+ route\.label/);
+
+    for (const route of masterRoutes) {
+      assert.match(html, new RegExp(`"id":"${escapeRegExp(route.id)}"`));
+      assert.match(html, new RegExp(`"path":"${escapeRegExp(route.path)}"`));
+      assert.match(html, new RegExp(`"label":"${escapeRegExp(route.label)}"`));
+    }
   });
 });
 
