@@ -10,10 +10,15 @@ describe("dev-server private placeholder pages", () => {
 
     assert.match(html, /<title>Relatórios - SolverFin<\/title>/);
     assert.match(html, /<h1>Relatórios<\/h1>/);
-    assert.match(
-      html,
-      /<a href="\/relatorios"[^>]*id="nav-secondary-reports"[^>]*data-nav-route-id="reports"[^>]*data-nav-priority="secondary"[^>]*aria-current="page"[^>]*>[\s\S]*?Relatórios<\/a>/,
-    );
+
+    const reportsLink = html.match(/<a href="\/relatorios"[^>]*>[\s\S]*?Relatórios<\/a>/)?.[0];
+    assert.ok(reportsLink, "expected the reports navigation link to be rendered");
+    assert.match(reportsLink, /id="nav-secondary-reports"/);
+    assert.match(reportsLink, /data-nav-route-id="reports"/);
+    assert.match(reportsLink, /data-nav-group="review"/);
+    assert.match(reportsLink, /data-nav-priority="secondary"/);
+    assert.match(reportsLink, /title="[^"]+"/);
+    assert.match(reportsLink, /aria-current="page"/);
 
     for (const route of listNavigablePrivateShellRoutes()) {
       assert.ok(html.includes(`<a href="${route.path}"`));
