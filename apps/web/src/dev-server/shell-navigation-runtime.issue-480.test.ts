@@ -2,12 +2,16 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import vm from "node:vm";
 
+import { isPrimaryMobileRoute } from "../app-shell/navigation.js";
+import {
+  listNavigablePrivateShellRoutes,
+  type ShellRoute,
+} from "../app-shell/routes.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
-const MASTER_ROUTE_IDS = ["adminInstitutions", "adminFinancialIndexes"] as const;
-
 describe("issue #480 navigation runtime", () => {
-  it("executes the profile script and adds every master route without duplicates", async () => {
+  it("executes the profile script and adds every catalog master route without duplicates", async () => {
+    const expectedRoutes = listNavigableMasterRoutes();
     const harness = createHarness(renderShell("/dashboard", false));
 
     await executeProfileScript(harness, {
@@ -25,43 +29,42 @@ describe("issue #480 navigation runtime", () => {
     assert.deepEqual(
       harness.nav
         .links()
-        .filter((link) => MASTER_ROUTE_IDS.some((routeId) => routeId === link.dataset.navRouteId))
+        .filter((link) => expectedRoutes.some((route) => route.id === link.dataset.navRouteId))
         .map((link) => link.dataset.navRouteId),
-      MASTER_ROUTE_IDS,
+      expectedRoutes.map((route) => route.id),
     );
-    assert.equal(harness.nav.groupLabels("admin").length, 1);
 
-    const institutions = requiredLink(harness.nav, "adminInstitutions");
-    const indexes = requiredLink(harness.nav, "adminFinancialIndexes");
-    assert.equal(institutions.href, "/admin/instituicoes");
-    assert.equal(indexes.href, "/admin/indices-financeiros");
-    assert.equal(institutions.dataset.navGroup, "admin");
-    assert.equal(indexes.dataset.navGroup, "admin");
-    assert.equal(institutions.dataset.navPriority, "secondary");
-    assert.equal(indexes.dataset.navPriority, "secondary");
-    assert.match(indexes.innerHTML, /<svg[^>]*aria-hidden="true"/);
-    assert.match(indexes.innerHTML, /Admin - \u00cdndices financeiros/);
+    for (const route of expectedRoutes) {
+      assertNavigationLinkMatchesRoute(requiredLink(harness.nav, route.id), route);
+    }
+
+    for (const group of new Set(expectedRoutes.map((route) => route.navigationGroup))) {
+      assert.equal(harness.nav.groupLabels(group).length, 1);
+    }
 
     const secondaryIds = harness.nav
       .querySelectorAll('a[data-nav-priority="secondary"][id]')
       .map((link) => link.id);
-    assert.deepEqual(
-      requiredToggle(harness.nav).getAttribute("aria-controls").split(/\s+/),
-      secondaryIds,
-    );
+    const toggle = requiredToggle(harness.nav);
+    assert.deepEqual(toggle.getAttribute("aria-controls").split(/\s+/), secondaryIds);
+    assert.equal(toggle.getAttribute("aria-expanded"), "false");
 
     await executeProfileScript(harness, {
       ok: true,
       body: { user: { isMaster: true } },
     });
 
-    for (const routeId of MASTER_ROUTE_IDS) {
-      assert.equal(harness.nav.linksByRouteId(routeId).length, 1);
+    for (const route of expectedRoutes) {
+      assert.equal(harness.nav.linksByRouteId(route.id).length, 1);
     }
-    assert.equal(harness.nav.groupLabels("admin").length, 1);
+    for (const group of new Set(expectedRoutes.map((route) => route.navigationGroup))) {
+      assert.equal(harness.nav.groupLabels(group).length, 1);
+    }
   });
 
   it("keeps the common navigation for regular users and profile failures", async () => {
+    const expectedRoutes = listNavigableMasterRoutes();
+
     for (const result of [
       {
         ok: true,
@@ -79,39 +82,62 @@ describe("issue #480 navigation runtime", () => {
         harness.nav.links().map((link) => link.dataset.navRouteId),
         initialRouteIds,
       );
-      for (const routeId of MASTER_ROUTE_IDS) {
-        assert.equal(harness.nav.linksByRouteId(routeId).length, 0);
+      for (const route of expectedRoutes) {
+        assert.equal(harness.nav.linksByRouteId(route.id).length, 0);
       }
-      assert.equal(harness.nav.groupLabels("admin").length, 0);
+      if (expectedRoutes.some((route) => route.navigationGroup === "admin")) {
+        assert.equal(harness.nav.groupLabels("admin").length, 0);
+      }
     }
   });
 
   it("does not duplicate routes already rendered by the server", async () => {
-    const harness = createHarness(renderShell("/admin/instituicoes", true));
+    const expectedRoutes = listNavigableMasterRoutes();
+    const harness = createHarness(renderShell(expectedRoutes[0]?.path ?? "/dashboard", true));
 
     await executeProfileScript(harness, {
       ok: true,
       body: { user: { isMaster: true } },
     });
 
-    for (const routeId of MASTER_ROUTE_IDS) {
-      assert.equal(harness.nav.linksByRouteId(routeId).length, 1);
+    for (const route of expectedRoutes) {
+      assert.equal(harness.nav.linksByRouteId(route.id).length, 1);
+      assertNavigationLinkMatchesRoute(requiredLink(harness.nav, route.id), route);
     }
-    assert.equal(harness.nav.groupLabels("admin").length, 1);
+    for (const group of new Set(expectedRoutes.map((route) => route.navigationGroup))) {
+      assert.equal(harness.nav.groupLabels(group).length, 1);
+    }
   });
 
-  it("preserves active state for a dynamically included master route", async () => {
-    const harness = createHarness(renderShell("/admin/indices-financeiros", false));
+  it("preserves active state for every dynamically included master route", async () => {
+    for (const route of listNavigableMasterRoutes()) {
+      const harness = createHarness(renderShell(route.path, false));
 
+      await executeProfileScript(harness, {
+        ok: true,
+        body: { user: { isMaster: true } },
+      });
+
+      assert.equal(requiredLink(harness.nav, route.id).getAttribute("aria-current"), "page");
+    }
+  });
+
+  it("keeps the explicit financial-index icon and accessible label contract", async () => {
+    const financialIndexes = listNavigableMasterRoutes().find(
+      (route) => route.id === "adminFinancialIndexes",
+    );
+    assert.ok(financialIndexes, "Expected adminFinancialIndexes in the central route catalog");
+
+    const harness = createHarness(renderShell("/dashboard", false));
     await executeProfileScript(harness, {
       ok: true,
       body: { user: { isMaster: true } },
     });
 
-    assert.equal(
-      requiredLink(harness.nav, "adminFinancialIndexes").getAttribute("aria-current"),
-      "page",
-    );
+    const link = requiredLink(harness.nav, financialIndexes.id);
+    assert.match(link.innerHTML, /<svg[^>]*aria-hidden="true"/);
+    assert.match(link.innerHTML, /Admin - \u00cdndices financeiros/);
+    assert.equal(link.title, financialIndexes.description);
   });
 });
 
@@ -223,6 +249,25 @@ class FakeDocument {
     if (selector === 'nav[aria-label="Menu principal"]') return this.nav;
     return null;
   }
+}
+
+function listNavigableMasterRoutes(): ShellRoute[] {
+  return listNavigablePrivateShellRoutes({ includeMaster: true }).filter(
+    (route) => route.requiresMaster === true,
+  );
+}
+
+function assertNavigationLinkMatchesRoute(link: FakeElement, route: ShellRoute): void {
+  const priority = isPrimaryMobileRoute(route) ? "primary" : "secondary";
+
+  assert.equal(link.href, route.path);
+  assert.equal(link.dataset.navRouteId, route.id);
+  assert.equal(link.dataset.navGroup, route.navigationGroup);
+  assert.equal(link.dataset.navPriority, priority);
+  assert.equal(link.title, route.description);
+  assert.equal(link.id, priority === "secondary" ? `nav-secondary-${route.id}` : "");
+  assert.match(link.innerHTML, /<svg[^>]*aria-hidden="true"/);
+  assert.ok(link.innerHTML.includes(route.label));
 }
 
 function renderShell(activePathname: string, showAdminNavigation: boolean): string {
