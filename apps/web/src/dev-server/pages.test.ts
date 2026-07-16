@@ -12,7 +12,7 @@ describe("dev-server private placeholder pages", () => {
     assert.match(html, /<h1>Relatórios<\/h1>/);
     assert.match(
       html,
-      /<a href="\/relatorios" id="nav-secondary-reports" data-nav-priority="secondary" title="[^"]+" aria-current="page">[\s\S]*?Relatórios<\/a>/,
+      /<a href="\/relatorios"[^>]*id="nav-secondary-reports"[^>]*data-nav-route-id="reports"[^>]*data-nav-priority="secondary"[^>]*aria-current="page"[^>]*>[\s\S]*?Relatórios<\/a>/,
     );
 
     for (const route of listNavigablePrivateShellRoutes()) {
