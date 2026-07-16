@@ -4,20 +4,34 @@ import { describe, it } from "node:test";
 import { listNavigablePrivateShellRoutes } from "../app-shell/routes.js";
 import { renderPrivatePage } from "./pages.js";
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 describe("dev-server private placeholder pages", () => {
   it("renders placeholder pages with canonical private navigation", async () => {
     const html = await renderPrivatePage("/relatorios", "demo-token");
 
     assert.match(html, /<title>Relatórios - SolverFin<\/title>/);
     assert.match(html, /<h1>Relatórios<\/h1>/);
-    assert.match(
-      html,
-      /<a href="\/relatorios" id="nav-secondary-reports" data-nav-priority="secondary" title="[^"]+" aria-current="page">[\s\S]*?Relatórios<\/a>/,
-    );
+
+    const reportsLink = html.match(/<a href="\/relatorios"[^>]*>[\s\S]*?Relatórios<\/a>/)?.[0];
+    assert.ok(reportsLink, "expected the reports navigation link to be rendered");
+    assert.match(reportsLink, /id="nav-secondary-reports"/);
+    assert.match(reportsLink, /data-nav-route-id="reports"/);
+    assert.match(reportsLink, /data-nav-group="review"/);
+    assert.match(reportsLink, /data-nav-priority="secondary"/);
+    assert.match(reportsLink, /title="[^"]+"/);
+    assert.match(reportsLink, /aria-current="page"/);
 
     for (const route of listNavigablePrivateShellRoutes()) {
-      assert.ok(html.includes(`<a href="${route.path}"`));
-      assert.ok(html.includes(`>${route.label}</a>`));
+      const link = html.match(
+        new RegExp(`<a[^>]*data-nav-route-id="${escapeRegExp(route.id)}"[^>]*>[\\s\\S]*?<\\/a>`),
+      )?.[0];
+      assert.ok(link, `expected the ${route.id} navigation link to be rendered`);
+      assert.match(link, new RegExp(`href="${escapeRegExp(route.path)}"`));
+      assert.match(link, new RegExp(escapeRegExp(route.label)));
+      assert.match(link, /<svg\b/, `expected the ${route.id} navigation link to include an icon`);
     }
 
     assert.doesNotMatch(html, /href="\/remuneracao-contas"/);
