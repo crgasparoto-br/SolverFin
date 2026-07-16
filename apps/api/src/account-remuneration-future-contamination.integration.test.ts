@@ -94,11 +94,11 @@ async function main(): Promise<void> {
       status: "all",
     });
     const remunerations = transactions.filter(
-      (transaction) => transaction.source === "ACCOUNT_REMUNERATION",
+      (transaction) => transaction.source === "account_remuneration",
     );
     assert.equal(remunerations.length, 2);
     assert.ok(
-      remunerations.every((transaction) => transaction.status === "PLANNED"),
+      remunerations.every((transaction) => transaction.status === "planned"),
     );
     assert.ok(
       remunerations.every(
