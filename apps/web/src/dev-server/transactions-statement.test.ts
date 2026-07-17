@@ -185,11 +185,7 @@ function dayFilterKeepsOpeningBalanceAndDailyRows(): void {
   );
   assert.deepEqual(
     rows.map((row) => row.transaction.id),
-    [
-      "selected-day-income",
-      "effective-selected-day-planned-later",
-      "selected-day-pending-expense",
-    ],
+    ["selected-day-income", "effective-selected-day-planned-later", "selected-day-pending-expense"],
   );
   assert.deepEqual(
     rows.map((row) => row.balanceAfterMinor),
