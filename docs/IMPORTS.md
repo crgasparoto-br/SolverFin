@@ -124,6 +124,8 @@ O lançamento aprovado recebe:
 
 A chave única por sugestão torna repetições e concorrência idempotentes. Rejeições repetidas também retornam o estado já resolvido sem novo efeito.
 
+Em reenvios da mesma decisão, a API devolve o recurso já resolvido; não cria segundo lançamento, não altera contadores novamente e não duplica eventos de auditoria.
+
 A aprovação em conjunto retorna `results` e `failures` por item. Uma linha inválida não oculta o resultado das demais linhas selecionadas.
 
 ## Estados do lote
