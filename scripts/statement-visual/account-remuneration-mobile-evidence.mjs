@@ -39,10 +39,7 @@ try {
     await navigate(browser.cdp, `${baseUrl}${route}`);
     await sleep(250);
 
-    const collapsed = await evaluate(
-      browser.cdp,
-      desktopColumnIsolationExpression(transactionId),
-    );
+    const collapsed = await evaluate(browser.cdp, desktopColumnIsolationExpression(transactionId));
     assert.equal(
       collapsed.overlapsCategory,
       false,
@@ -70,10 +67,7 @@ try {
     );
     await sleep(80);
 
-    const expanded = await evaluate(
-      browser.cdp,
-      desktopColumnIsolationExpression(transactionId),
-    );
+    const expanded = await evaluate(browser.cdp, desktopColumnIsolationExpression(transactionId));
     assert.equal(
       expanded.overlapsCategory,
       false,
