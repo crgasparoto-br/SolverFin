@@ -27,9 +27,7 @@ try {
   installFetch();
   const html = await renderCardsPageWithMonthNavigation(
     "token",
-    new URL(
-      "http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10&sort=amount_desc",
-    ),
+    new URL("http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10&sort=amount_desc"),
   );
 
   const dayInput = /<input[^>]*name="day"[^>]*>/i.exec(html)?.[0] ?? "";
