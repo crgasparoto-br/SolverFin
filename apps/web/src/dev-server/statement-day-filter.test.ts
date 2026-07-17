@@ -119,15 +119,9 @@ class FakeElement {
   }
 
   closest(selector: string): FakeElement | null {
-    if (selector === "form") {
-      let current: FakeElement | undefined = this;
-      while (current) {
-        if (current.tagName === "form") return current;
-        current = current.parent;
-      }
-    }
-
-    return null;
+    if (selector !== "form") return null;
+    if (this.tagName === "form") return this;
+    return this.parent?.closest(selector) ?? null;
   }
 
   querySelector(selector: string): FakeElement | null {
