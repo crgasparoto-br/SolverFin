@@ -127,7 +127,7 @@ O lançamento aprovado recebe:
 
 A chave única por sugestão torna repetições e concorrência idempotentes. Rejeições repetidas também retornam o estado já resolvido sem novo efeito.
 
-Em reenvios da mesma decisão, a API devolve o recurso já resolvido; não cria segundo lançamento, não altera contadores novamente e não duplica eventos de auditoria.
+Em reenvios da mesma decisão, inclusive chamadas concorrentes que chegam depois da primeira confirmação, a API devolve o recurso já resolvido; não cria segundo lançamento, não altera contadores novamente e não duplica eventos de auditoria.
 
 A aprovação em conjunto rejeita IDs repetidos e processa cada linha em transação independente. A resposta contém `summary` (`requested`, `approved`, `failed`, `idempotent`), `results` para todos os itens e `failures` para compatibilidade. Uma linha inválida, bloqueada por candidato ou já resolvida não desfaz nem oculta o resultado das demais linhas selecionadas.
 
