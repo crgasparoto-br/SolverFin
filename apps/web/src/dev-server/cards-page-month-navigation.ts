@@ -23,10 +23,7 @@ interface HtmlElementRange {
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 const DATE_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
-export async function renderCardsPageWithMonthNavigation(
-  token: string,
-  url: URL,
-): Promise<string> {
+export async function renderCardsPageWithMonthNavigation(token: string, url: URL): Promise<string> {
   const requestedMonth = normalizeInvoiceMonth(url.searchParams.get("month"));
   const requestedCardId = url.searchParams.get("cardId") ?? undefined;
   const requestedDay = normalizeDateOnly(url.searchParams.get("day"));
@@ -38,27 +35,18 @@ export async function renderCardsPageWithMonthNavigation(
   const renderUrl = new URL(url);
 
   if (requestedMonth && requestedCardId) {
-    const invoice = findInvoiceForMonth(
-      invoices,
-      requestedCardId,
-      requestedMonth,
-    );
+    const invoice = findInvoiceForMonth(invoices, requestedCardId, requestedMonth);
     if (invoice) renderUrl.searchParams.set("invoiceId", invoice.id);
     else renderUrl.searchParams.delete("invoiceId");
   }
 
   let html = await renderCardsPage(token, renderUrl);
-  const selectedCardId =
-    requestedCardId ?? readInputValue(html, "data-card-input");
+  const selectedCardId = requestedCardId ?? readInputValue(html, "data-card-input");
   let selectedInvoiceId = readInputValue(html, "data-invoice-input");
   let invoiceExistsForMonth = false;
 
   if (requestedMonth && selectedCardId) {
-    const invoice = findInvoiceForMonth(
-      invoices,
-      selectedCardId,
-      requestedMonth,
-    );
+    const invoice = findInvoiceForMonth(invoices, selectedCardId, requestedMonth);
     invoiceExistsForMonth = invoice !== undefined;
     if (invoice && invoice.id !== selectedInvoiceId) {
       const retryUrl = new URL(url);
@@ -69,24 +57,13 @@ export async function renderCardsPageWithMonthNavigation(
     }
   }
 
-  const selectedInvoice = invoices.find(
-    (invoice) => invoice.id === selectedInvoiceId,
-  );
+  const selectedInvoice = invoices.find((invoice) => invoice.id === selectedInvoiceId);
   const selectedMonth =
-    requestedMonth ??
-    monthFromInvoiceOptions(html, selectedInvoiceId) ??
-    currentMonth();
+    requestedMonth ?? monthFromInvoiceOptions(html, selectedInvoiceId) ?? currentMonth();
   const selectedDay = resolveInvoiceDay(requestedDay, selectedInvoice);
 
   html = replaceMonthNavigation(html, url, selectedCardId, selectedMonth);
-  html = upsertDayFilter(
-    html,
-    url,
-    selectedCardId,
-    selectedInvoice,
-    selectedMonth,
-    selectedDay,
-  );
+  html = upsertDayFilter(html, url, selectedCardId, selectedInvoice, selectedMonth, selectedDay);
   html = upsertCurrentMonthLink(html, url, selectedCardId);
 
   if (requestedMonth && selectedCardId && !invoiceExistsForMonth) {
@@ -112,14 +89,11 @@ export function shiftInvoiceMonth(month: string, delta: number): string {
 export function formatInvoiceMonth(month: string): string {
   const normalized = normalizeInvoiceMonth(month) ?? currentMonth();
   const [year, number] = normalized.split("-").map(Number) as [number, number];
-  const label = new Date(Date.UTC(year, number - 1, 1)).toLocaleDateString(
-    "pt-BR",
-    {
-      month: "long",
-      year: "numeric",
-      timeZone: "UTC",
-    },
-  );
+  const label = new Date(Date.UTC(year, number - 1, 1)).toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
@@ -129,26 +103,18 @@ export function resolveInvoiceDay(
 ): string | undefined {
   const day = normalizeDateOnly(value);
   if (!day || !invoice) return undefined;
-  return day >= invoice.periodStartOn && day <= invoice.periodEndOn
-    ? day
-    : undefined;
+  return day >= invoice.periodStartOn && day <= invoice.periodEndOn ? day : undefined;
 }
 
-function normalizeInvoiceMonth(
-  value: string | null | undefined,
-): string | undefined {
+function normalizeInvoiceMonth(value: string | null | undefined): string | undefined {
   return MONTH_PATTERN.test(value ?? "") ? (value ?? undefined) : undefined;
 }
 
-function normalizeDateOnly(
-  value: string | null | undefined,
-): string | undefined {
+function normalizeDateOnly(value: string | null | undefined): string | undefined {
   if (!DATE_PATTERN.test(value ?? "")) return undefined;
   const day = value ?? "";
   const date = new Date(`${day}T00:00:00Z`);
-  return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== day
-    ? undefined
-    : day;
+  return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== day ? undefined : day;
 }
 
 function findInvoiceForMonth(
@@ -157,8 +123,7 @@ function findInvoiceForMonth(
   month: string,
 ): InvoiceRecord | undefined {
   return invoices.find(
-    (invoice) =>
-      invoice.cardId === cardId && invoice.periodEndOn.slice(0, 7) === month,
+    (invoice) => invoice.cardId === cardId && invoice.periodEndOn.slice(0, 7) === month,
   );
 }
 
@@ -181,10 +146,9 @@ function monthFromInvoiceOptions(
   selectedInvoiceId: string | undefined,
 ): string | undefined {
   if (!selectedInvoiceId) return undefined;
-  const match =
-    /<script type="application\/json" data-invoice-options>([\s\S]*?)<\/script>/.exec(
-      html,
-    );
+  const match = /<script type="application\/json" data-invoice-options>([\s\S]*?)<\/script>/.exec(
+    html,
+  );
   if (!match?.[1]) return undefined;
   try {
     const options = JSON.parse(match[1]) as Array<{
@@ -199,9 +163,7 @@ function monthFromInvoiceOptions(
   }
 }
 
-function monthFromPortugueseLabel(
-  label: string | undefined,
-): string | undefined {
+function monthFromPortugueseLabel(label: string | undefined): string | undefined {
   if (!label) return undefined;
   const match = /^([A-Za-zÀ-ÿ]+) de (\d{4})$/.exec(label.trim());
   if (!match?.[1] || !match[2]) return undefined;
@@ -220,9 +182,7 @@ function monthFromPortugueseLabel(
     "dezembro",
   ];
   const index = months.indexOf(match[1].toLocaleLowerCase("pt-BR"));
-  return index < 0
-    ? undefined
-    : `${match[2]}-${String(index + 1).padStart(2, "0")}`;
+  return index < 0 ? undefined : `${match[2]}-${String(index + 1).padStart(2, "0")}`;
 }
 
 function replaceMonthNavigation(
@@ -271,21 +231,13 @@ function upsertDayFilter(
     ? `          <a class="ghost-btn card-day-clear" href="${escapeHtml(clearHref)}" data-clear-card-day role="button">Fatura completa</a>\n`
     : "";
 
-  nextHtml =
-    nextHtml.slice(0, index) + field + clearLink + nextHtml.slice(index);
+  nextHtml = nextHtml.slice(0, index) + field + clearLink + nextHtml.slice(index);
   return nextHtml;
 }
 
-function upsertCurrentMonthLink(
-  html: string,
-  url: URL,
-  cardId: string | undefined,
-): string {
+function upsertCurrentMonthLink(html: string, url: URL, cardId: string | undefined): string {
   let nextHtml = html
-    .replace(
-      /\s*<button\b[^>]*data-invoice-current[^>]*>[\s\S]*?<\/button>/g,
-      "",
-    )
+    .replace(/\s*<button\b[^>]*data-invoice-current[^>]*>[\s\S]*?<\/button>/g, "")
     .replace(/\s*<a\b[^>]*data-invoice-current[^>]*>[\s\S]*?<\/a>/g, "");
   const marker = '<input type="hidden" name="invoiceId"';
   const index = nextHtml.indexOf(marker);
@@ -296,11 +248,7 @@ function upsertCurrentMonthLink(
   return nextHtml;
 }
 
-function buildMonthHref(
-  url: URL,
-  cardId: string | undefined,
-  month: string,
-): string {
+function buildMonthHref(url: URL, cardId: string | undefined, month: string): string {
   const params = new URLSearchParams(url.searchParams);
   params.delete("invoiceId");
   params.delete("day");
@@ -339,38 +287,23 @@ function filterInvoicePurchasesByDay(html: string, day: string): string {
   let nextHtml = html.slice(0, start) + filtered + html.slice(end);
   nextHtml = insertDaySummary(nextHtml, day, purchases);
   nextHtml = insertDayToolbarCopy(nextHtml, day);
-  return nextHtml.replace(
-    "<h2>Detalhamento</h2>",
-    "<h2>Detalhamento da fatura</h2>",
-  );
+  return nextHtml.replace("<h2>Detalhamento</h2>", "<h2>Detalhamento da fatura</h2>");
 }
 
 function filterPurchaseSection(section: string, day: string): string {
-  const groups = collectElements(
-    section,
-    '<details class="purchase-group"',
-    "details",
-  );
+  const groups = collectElements(section, '<details class="purchase-group"', "details");
   let nextSection = section;
 
   if (groups.length > 0) {
     for (const group of [...groups].reverse()) {
       const filteredGroup = filterPurchaseGroup(group.content, day);
       nextSection =
-        nextSection.slice(0, group.start) +
-        filteredGroup +
-        nextSection.slice(group.end);
+        nextSection.slice(0, group.start) + filteredGroup + nextSection.slice(group.end);
     }
   } else {
-    const rows = collectElements(
-      section,
-      '<article class="purchase-row"',
-      "article",
-    );
+    const rows = collectElements(section, '<article class="purchase-row"', "article");
     if (rows.length > 0) {
-      const keptRows = rows.filter(
-        (row) => purchaseRecord(row.content)?.occurredOn === day,
-      );
+      const keptRows = rows.filter((row) => purchaseRecord(row.content)?.occurredOn === day);
       const first = rows[0];
       const last = rows.at(-1);
       if (first && last) {
@@ -388,14 +321,8 @@ function filterPurchaseSection(section: string, day: string): string {
 }
 
 function filterPurchaseGroup(group: string, day: string): string {
-  const rows = collectElements(
-    group,
-    '<article class="purchase-row"',
-    "article",
-  );
-  const keptRows = rows.filter(
-    (row) => purchaseRecord(row.content)?.occurredOn === day,
-  );
+  const rows = collectElements(group, '<article class="purchase-row"', "article");
+  const keptRows = rows.filter((row) => purchaseRecord(row.content)?.occurredOn === day);
   if (keptRows.length === 0) return "";
 
   const first = rows[0];
@@ -403,15 +330,9 @@ function filterPurchaseGroup(group: string, day: string): string {
   if (!first || !last) return group;
   const purchases = keptRows
     .map((row) => purchaseRecord(row.content))
-    .filter(
-      (purchase): purchase is CardPurchaseRecord => purchase !== undefined,
-    );
-  const totalMinor = purchases.reduce(
-    (sum, purchase) => sum + purchase.amountMinor,
-    0,
-  );
-  const countLabel =
-    purchases.length === 1 ? "1 compra" : `${purchases.length} compras`;
+    .filter((purchase): purchase is CardPurchaseRecord => purchase !== undefined);
+  const totalMinor = purchases.reduce((sum, purchase) => sum + purchase.amountMinor, 0);
+  const countLabel = purchases.length === 1 ? "1 compra" : `${purchases.length} compras`;
   let nextGroup =
     group.slice(0, first.start) +
     keptRows.map((row) => row.content).join("\n") +
@@ -429,16 +350,13 @@ function filterPurchaseGroup(group: string, day: string): string {
 function collectPurchaseRecords(html: string): CardPurchaseRecord[] {
   return collectElements(html, '<article class="purchase-row"', "article")
     .map((row) => purchaseRecord(row.content))
-    .filter(
-      (purchase): purchase is CardPurchaseRecord => purchase !== undefined,
-    );
+    .filter((purchase): purchase is CardPurchaseRecord => purchase !== undefined);
 }
 
 function purchaseRecord(row: string): CardPurchaseRecord | undefined {
-  const match =
-    /<script type="application\/json" data-purchase="[^"]*">([\s\S]*?)<\/script>/.exec(
-      row,
-    );
+  const match = /<script type="application\/json" data-purchase="[^"]*">([\s\S]*?)<\/script>/.exec(
+    row,
+  );
   if (!match?.[1]) return undefined;
   try {
     const value = JSON.parse(match[1]) as Partial<CardPurchaseRecord>;
@@ -464,22 +382,15 @@ function insertDaySummary(
   day: string,
   purchases: readonly CardPurchaseRecord[],
 ): string {
-  const asideMarker =
-    '<aside class="panel invoice-summary" aria-label="Resumo da fatura">';
+  const asideMarker = '<aside class="panel invoice-summary" aria-label="Resumo da fatura">';
   const asideStart = html.indexOf(asideMarker);
   if (asideStart < 0) return html;
-  const firstBlockStart = html.indexOf(
-    '<section class="summary-block">',
-    asideStart,
-  );
+  const firstBlockStart = html.indexOf('<section class="summary-block">', asideStart);
   if (firstBlockStart < 0) return html;
   const firstBlockEnd = findElementEnd(html, firstBlockStart, "section");
   if (firstBlockEnd < 0) return html;
 
-  const totalMinor = purchases.reduce(
-    (sum, purchase) => sum + purchase.amountMinor,
-    0,
-  );
+  const totalMinor = purchases.reduce((sum, purchase) => sum + purchase.amountMinor, 0);
   const reconciledMinor = purchases
     .filter((purchase) => purchase.status === "reconciled")
     .reduce((sum, purchase) => sum + purchase.amountMinor, 0);
@@ -513,9 +424,7 @@ function summaryRow(label: string, value: string, tone?: string): string {
 }
 
 function formatDay(day: string): string {
-  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(
-    new Date(`${day}T00:00:00Z`),
-  );
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(`${day}T00:00:00Z`));
 }
 
 function formatExpense(amountMinor: number): string {
@@ -601,11 +510,7 @@ function injectController(html: string): string {
   return html.replace("</body>", `${script}</body>`);
 }
 
-function replaceInputValue(
-  html: string,
-  marker: string,
-  value: string,
-): string {
+function replaceInputValue(html: string, marker: string, value: string): string {
   const markerIndex = html.indexOf(marker);
   const start = markerIndex >= 0 ? html.lastIndexOf("<input", markerIndex) : -1;
   const end = markerIndex >= 0 ? html.indexOf(">", markerIndex) : -1;
@@ -632,12 +537,7 @@ function renderMissingInvoiceMonth(html: string, month: string): string {
     "div",
     `<div class="purchase-list" aria-label="Compras da fatura"><div class="empty-state"><strong>Nenhuma compra nesta fatura.</strong><p class="muted">O mês selecionado ainda não possui uma fatura materializada.</p></div></div>`,
   );
-  return replaceElement(
-    nextHtml,
-    '<dialog data-modal="payment">',
-    "dialog",
-    "",
-  );
+  return replaceElement(nextHtml, '<dialog data-modal="payment">', "dialog", "");
 }
 
 function replaceElement(
@@ -652,11 +552,7 @@ function replaceElement(
   return end < 0 ? html : html.slice(0, start) + replacement + html.slice(end);
 }
 
-function collectElements(
-  html: string,
-  marker: string,
-  tagName: string,
-): HtmlElementRange[] {
+function collectElements(html: string, marker: string, tagName: string): HtmlElementRange[] {
   const elements: HtmlElementRange[] = [];
   let cursor = 0;
   while (cursor < html.length) {
