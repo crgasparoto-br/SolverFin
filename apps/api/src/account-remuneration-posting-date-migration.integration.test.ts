@@ -2,12 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import {
-  closePool,
-  type QueryExecutor,
-  withSharedTransaction,
-  withTransaction,
-} from "./db.js";
+import { closePool, type QueryExecutor, withSharedTransaction, withTransaction } from "./db.js";
 
 const MIGRATION_PATH =
   "prisma/migrations/20260717143000_align_cdi_posting_date_with_competence/migration.sql";
@@ -95,9 +90,7 @@ async function main(): Promise<void> {
 
 async function createLegacySchema(executeQuery: QueryExecutor): Promise<void> {
   await executeQuery(`create schema "AccountRemunerationMigrationTest"`);
-  await executeQuery(
-    `set local search_path to "AccountRemunerationMigrationTest", public`,
-  );
+  await executeQuery(`set local search_path to "AccountRemunerationMigrationTest", public`);
 
   await executeQuery(
     `create table "Transaction" (
@@ -207,12 +200,7 @@ async function insertLegacyData(executeQuery: QueryExecutor): Promise<void> {
        $1, $2::date, $3::date, $4, 'CDI', 'CREATED', 1000000, 0.05, 100,
        0.05, 500, false, null, null
      )`,
-    [
-      LEGACY_TRANSACTION_ID,
-      COMPETENCE_ON,
-      PROCESSING_ON,
-      "66666666-6666-4666-8666-666666666666",
-    ],
+    [LEGACY_TRANSACTION_ID, COMPETENCE_ON, PROCESSING_ON, "66666666-6666-4666-8666-666666666666"],
   );
 }
 
