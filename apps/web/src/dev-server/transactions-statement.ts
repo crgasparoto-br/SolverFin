@@ -40,6 +40,7 @@ export interface TransactionRecord {
 export interface StatementFilters {
   accountId?: string;
   month: string;
+  day?: string;
   startsOn: string;
   endsOn: string;
 }
@@ -70,12 +71,14 @@ export function resolveFilters(
   currentMonth = getCurrentMonth(),
 ): StatementFilters {
   const month = resolveSelectedMonth(url, currentMonth);
-  const period = monthToPeriod(month);
+  const day = resolveSelectedDay(url, month);
+  const period = day ? dayToPeriod(day) : monthToPeriod(month);
   const accountId = url?.searchParams.get("accountId") ?? accounts[0]?.id;
 
   return {
     ...(accountId ? { accountId } : {}),
     month,
+    ...(day ? { day } : {}),
     startsOn: period.startsOn,
     endsOn: period.endsOn,
   };
@@ -91,6 +94,10 @@ export function monthToPeriod(month: string): Pick<StatementFilters, "startsOn" 
     startsOn: startsOn.toISOString().slice(0, 10),
     endsOn: endsOn.toISOString().slice(0, 10),
   };
+}
+
+export function dayToPeriod(day: string): Pick<StatementFilters, "startsOn" | "endsOn"> {
+  return { startsOn: day, endsOn: day };
 }
 
 export function buildTransactionQuery(filters: StatementFilters): string {
@@ -232,6 +239,14 @@ function resolveSelectedMonth(url: URL | undefined, currentMonth: string): strin
   return currentMonth;
 }
 
+function resolveSelectedDay(url: URL | undefined, month: string): string | undefined {
+  const queryDay = url?.searchParams.get("day");
+  if (!isValidDateOnly(queryDay)) return undefined;
+  if (!queryDay.startsWith(`${month}-`)) return undefined;
+
+  return queryDay;
+}
+
 function getCurrentMonth(): string {
   return new Date().toISOString().slice(0, 7);
 }
@@ -241,4 +256,18 @@ function isValidMonth(value: string | null | undefined): value is string {
 
   const month = Number(value?.slice(5, 7));
   return month >= 1 && month <= 12;
+}
+
+function isValidDateOnly(value: string | null | undefined): value is string {
+  const normalized = value ?? "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return false;
+
+  const [year, month, day] = normalized.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
 }
