@@ -12,7 +12,7 @@ Regras:
 ## Scripts atuais
 
 - `validate-env-example.mjs`: valida se `.env.example` contem as variaveis obrigatorias com placeholders seguros e sem padroes aparentes de secrets reais. Rode via `npm run env:check`.
-- `validate-startup-contract.mjs`: garante que o start do SSR aplique migrations pendentes antes de abrir o servidor. Rode via `npm run startup:check`; o comando tambem faz parte das suites `test` e `validate`.
+- `validate-startup-contract.mjs`: garante que o start da API e do SSR aplique migrations pendentes antes de abrir os servidores. Rode via `npm run startup:check`; o comando tambem faz parte das suites `test` e `validate`.
 - `assert-integration-database.mjs`: bloqueia a suite de integracao antes de qualquer acesso quando o ambiente nao usa `NODE_ENV=test` ou quando o nome do banco nao indica um banco isolado de CI/teste. E executado automaticamente por `test:integration`.
 - `validate-integration-database-guard.mjs`: cobre os cenarios permitidos e bloqueados do guard de banco. Rode via `npm run integration-db-guard:check`; o comando tambem faz parte das suites `test` e `validate`.
 - `run-compiled-tests.mjs`: descobre e executa arquivos de teste JavaScript ja compilados por workspace, em ordem deterministica. Rode indiretamente pelos scripts `test` e `test:integration` dos workspaces.
@@ -22,18 +22,21 @@ Regras:
 - `build-web.mjs`: remove `apps/web/dist` e recompila a aplicacao web a partir de `apps/web/src`. Rode via `npm run build --workspace @solverfin/web`.
 - `dev-web.mjs`: executa o build limpo da aplicacao web, mantem o TypeScript em modo watch e reinicia o servidor local com o watch nativo do Node quando `apps/web/dist` muda. Rode via `npm run dev:web`.
 
-## Build e start do web SSR
+## Build e start dos servidores
 
-O artefato executado pelo servidor web fica em `apps/web/dist` e nao e versionado. Para iniciar o SSR fora do modo watch, primeiro gere um artefato novo e somente depois execute o start:
+Os artefatos executados pela API e pelo servidor web ficam em `apps/api/dist` e `apps/web/dist` e nao sao versionados. Para iniciar fora do modo watch, gere os artefatos e use os ciclos de start dos workspaces:
 
 ```bash
+npm run build --workspace @solverfin/api
+npm run start:api
+
 npm run build --workspace @solverfin/web
 npm run start:web
 ```
 
-O build remove todo o `dist` anterior antes de compilar, evitando arquivos orfaos ou JavaScript desatualizado. Antes de executar `apps/web/dist/dev-server.js`, `npm run start:web` roda `npm run db:deploy`, que aplica de forma idempotente todas as migrations Prisma pendentes no banco apontado por `DATABASE_URL`.
+Antes de executar `apps/api/dist/server.js` ou `apps/web/dist/dev-server.js`, os comandos `npm run start:api` e `npm run start:web` rodam `npm run db:deploy`, que aplica de forma idempotente todas as migrations Prisma pendentes no banco apontado por `DATABASE_URL`.
 
-Esse contrato evita iniciar uma versao nova do servidor sobre um banco antigo, situacao que produziria erros como `column "diagnostics" does not exist`. O start exige acesso ao banco e permissao para executar migrations. Em desenvolvimento sem banco, continue usando o modo watch documentado em `docs/LOCAL_DEVELOPMENT.md`.
+Esse contrato evita iniciar uma versao nova dos servidores sobre um banco antigo, situacao que produziria erros de schema e deixaria correcoes de dados pendentes. O start exige acesso ao banco e permissao para executar migrations. Em desenvolvimento sem banco, continue usando o modo watch documentado em `docs/LOCAL_DEVELOPMENT.md`.
 
 ## Banco isolado para testes de integracao
 
