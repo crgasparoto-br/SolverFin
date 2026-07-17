@@ -74,9 +74,7 @@ class FakeForm extends FakeElement {
     options?: boolean | AddEventListenerOptions,
   ): void {
     if (type === "change") {
-      const capture =
-        options === true ||
-        (typeof options === "object" && options.capture === true);
+      const capture = options === true || (typeof options === "object" && options.capture === true);
       if (capture) this.captureChangeListeners.push(listener);
       else this.bubbleChangeListeners.push(listener);
       return;
@@ -93,8 +91,7 @@ class FakeForm extends FakeElement {
     if (selector === "[data-invoice-input]") return this.invoiceInput;
     if (selector === "[data-card-day-input]") return this.dayInput;
     if (selector === "[data-clear-card-day]") return this.clearDayLink;
-    if (selector === "[data-purchase-search-state]")
-      return this.searchStateInput;
+    if (selector === "[data-purchase-search-state]") return this.searchStateInput;
     if (selector === "[data-purchase-reconciliation-state]") {
       return this.reconciliationStateInput;
     }
@@ -152,10 +149,7 @@ class FakeDocument {
 
   querySelectorAll(selector: string): FakeElement[] {
     if (selector === "[data-reconciliation-toggle]") return this.toggles;
-    if (
-      selector ===
-      ".month-nav-link,[data-invoice-current],[data-clear-card-day]"
-    ) {
+    if (selector === ".month-nav-link,[data-invoice-current],[data-clear-card-day]") {
       return this.links;
     }
     return [];
@@ -186,10 +180,7 @@ dayInput.min = "2028-01-01";
 dayInput.max = "2028-01-31";
 const searchStateInput = new FakeInput("search", "");
 searchStateInput.disabled = true;
-const reconciliationStateInput = new FakeInput(
-  "reconciliation",
-  "unreconciled,reconciled",
-);
+const reconciliationStateInput = new FakeInput("reconciliation", "unreconciled,reconciled");
 reconciliationStateInput.disabled = true;
 const searchInput = new FakeInput("", "");
 const unreconciledToggle = new FakeElement("button");
@@ -198,15 +189,9 @@ unreconciledToggle.setAttribute("aria-pressed", "true");
 const reconciledToggle = new FakeElement("button");
 reconciledToggle.setAttribute("data-reconciliation-toggle", "reconciled");
 reconciledToggle.setAttribute("aria-pressed", "true");
-const clearDayLink = link(
-  "/cartoes?cardId=card-1&month=2028-01&day=2028-01-10&sort=amount_desc",
-);
-const previousLink = link(
-  "/cartoes?cardId=card-1&month=2027-12&sort=amount_desc",
-);
-const currentLink = link(
-  "/cartoes?cardId=card-1&month=2028-01&sort=amount_desc",
-);
+const clearDayLink = link("/cartoes?cardId=card-1&month=2028-01&day=2028-01-10&sort=amount_desc");
+const previousLink = link("/cartoes?cardId=card-1&month=2027-12&sort=amount_desc");
+const currentLink = link("/cartoes?cardId=card-1&month=2028-01&sort=amount_desc");
 const form = new FakeForm(
   monthInput,
   invoiceInput,
@@ -261,10 +246,7 @@ assert.match(previousLink.getAttribute("href") ?? "", /search=mercado/);
 reconciledToggle.dispatch("click");
 assert.equal(reconciliationStateInput.value, "unreconciled");
 assert.equal(reconciliationStateInput.disabled, false);
-assert.match(
-  previousLink.getAttribute("href") ?? "",
-  /reconciliation=unreconciled/,
-);
+assert.match(previousLink.getAttribute("href") ?? "", /reconciliation=unreconciled/);
 
 dayInput.value = "2028-01-10";
 dayInput.disabled = false;
