@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
+import { enhanceAccountRemunerationDisclosure } from "./dev-server/account-remuneration-disclosure-enhancement.js";
 import { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
 import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
@@ -160,7 +161,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   if (url.pathname === "/lancamentos" && token) {
     await materializeAccountStatementRecurrences(token, url);
     const html = await renderTransactionsPage(token, url);
-    sendHtml(response, 200, enhanceStatementListSorting(html, url));
+    const sortedHtml = enhanceStatementListSorting(html, url);
+    sendHtml(response, 200, enhanceAccountRemunerationDisclosure(sortedHtml));
     return;
   }
 

@@ -100,6 +100,8 @@ jobs:
           STATEMENT_VISUAL_OUTPUT: artifacts/statement-visual
         run: |
           npm run qa:statement-visual
+          node scripts/statement-visual/account-remuneration.mjs
+          node scripts/statement-visual/account-remuneration-mobile-evidence.mjs
           node scripts/statement-visual/account-edit.mjs
           node scripts/statement-visual/sidebar-navigation.mjs
 

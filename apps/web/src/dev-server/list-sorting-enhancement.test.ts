@@ -93,6 +93,37 @@ assert.ok(
     statementRemunerationDescSorted.indexOf('data-transaction="older"'),
 );
 
+const statementCompactRemuneration = enhanceStatementListSorting(
+  documentHtml(`
+    <form class="filter-form" method="get" action="/lancamentos"><input name="month" value="2026-07" /></form>
+    <div class="statement-table" role="table" aria-label="Extrato bancário">
+      <div class="statement-row statement-head"></div>
+      ${remunerationStatementRow()}
+    </div>
+  `),
+  new URL("http://solverfin.test/lancamentos"),
+);
+assert.match(statementCompactRemuneration, /<strong>Remuneração CDI<\/strong>/);
+assert.match(statementCompactRemuneration, /Competência 15\/07\/2026 · 100% do CDI/);
+assert.match(
+  statementCompactRemuneration,
+  /<details class="account-remuneration-audit">\s*<summary>Ver memória do cálculo<\/summary>/,
+);
+assert.doesNotMatch(
+  statementCompactRemuneration,
+  /<details class="account-remuneration-audit"[^>]* open/,
+);
+assert.match(statementCompactRemuneration, /Saldo-base/);
+assert.match(statementCompactRemuneration, /R\$\s*9\.933,48/);
+assert.match(statementCompactRemuneration, /CDI diário/);
+assert.match(statementCompactRemuneration, /0,052531%/);
+assert.doesNotMatch(statementCompactRemuneration, /<strong>Rendimento previsto/);
+assert.doesNotMatch(statementCompactRemuneration, /<section class="account-remuneration-audit"/);
+assert.match(
+  statementCompactRemuneration,
+  /grid-template-columns:repeat\(auto-fit,minmax\(7\.5rem,1fr\)\)/,
+);
+
 const cardHtml = documentHtml(`
   <form class="filter-form" method="get" action="/cartoes"><input name="month" value="2026-07" /></form>
   <button type="button" class="toggle-chip" aria-pressed="true">Conciliados</button>
@@ -131,6 +162,41 @@ function statementRow(
   extraClasses = "",
 ): string {
   return `<article class="statement-row statement-body${extraClasses}" role="row"><script type="application/json" data-transaction="${id}">${escapedJson({ id, effectiveOn: date, plannedOn: date, occurredOn: date, description, amountMinor })}</script></article>`;
+}
+
+function remunerationStatementRow(): string {
+  const accountRemuneration = {
+    competenceOn: "2026-07-15",
+    processedOn: "2026-07-16",
+    balanceBaseMinor: 993348,
+    dailyRatePercent: 0.052531,
+    remunerationPercent: 100,
+    appliedDailyRatePercent: 0.052531,
+    originalAmountMinor: 522,
+    manuallyAdjusted: false,
+  };
+  const transaction = {
+    id: "remuneracao-compacta",
+    effectiveOn: "2026-07-16",
+    plannedOn: "2026-07-16",
+    occurredOn: "2026-07-16",
+    description:
+      "Rendimento previsto — 100% do CDI · competência 2026-07-15 · saldo-base R$ 9.933,48 · CDI 0,052531% · valor original R$ 5,22",
+    amountMinor: 522,
+    source: "account_remuneration",
+    accountRemuneration,
+  };
+
+  return `<article class="statement-row statement-body account-remuneration-row" role="row">
+    <div class="description col-description">
+      <strong>${transaction.description}<span class="account-remuneration-badge">Remuneração CDI</span></strong>
+      <section class="account-remuneration-audit" aria-label="Memória do cálculo da remuneração">
+        <div class="account-remuneration-audit-heading"><strong>Memória do cálculo</strong><span class="account-remuneration-adjustment original">Valor original</span></div>
+        <dl><div><dt>Competência</dt><dd>15/07/2026</dd></div></dl>
+      </section>
+    </div>
+    <script type="application/json" data-transaction="remuneracao-compacta">${escapedJson(transaction)}</script>
+  </article>`;
 }
 
 function purchaseRow(id: string, date: string, description: string, amountMinor: number): string {
