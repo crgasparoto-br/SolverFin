@@ -29,7 +29,7 @@ async function main(): Promise<void> {
     "DATABASE_URL is required for account remuneration posting date migration tests.",
   );
 
-  const migrationSql = await readFile(resolve(process.cwd(), MIGRATION_PATH), "utf8");
+  const migrationSql = await readMigrationSql();
 
   try {
     await withSharedTransaction(async (executeQuery) => {
@@ -86,6 +86,26 @@ async function main(): Promise<void> {
       throw error;
     }
   }
+}
+
+async function readMigrationSql(): Promise<string> {
+  const candidates = [
+    resolve(process.cwd(), MIGRATION_PATH),
+    resolve(process.cwd(), "..", "..", MIGRATION_PATH),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      return await readFile(candidate, "utf8");
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error(`Migration file not found: ${MIGRATION_PATH}`);
 }
 
 async function createLegacySchema(executeQuery: QueryExecutor): Promise<void> {
