@@ -14,13 +14,20 @@ assert.match(enhanced, /data-account-remuneration-disclosure-affordance/);
 assert.match(enhanced, /\.col-description\{min-width:0\}/);
 assert.match(
   enhanced,
-  /\.description\{grid-template-columns:minmax\(0,max-content\) minmax\(0,1fr\);min-width:0\}/,
+  /\.description\{column-gap:2px;grid-template-columns:max-content minmax\(0,1fr\);min-width:0\}/,
 );
 assert.match(
   enhanced,
-  /\.account-remuneration-summary\{[^}]*max-width:100%[^}]*overflow-wrap:anywhere/,
+  /\.description>strong\{[^}]*font-size:\.75rem[^}]*white-space:nowrap/,
 );
-assert.match(enhanced, /summary\{[^}]*font-size:\.75rem[^}]*max-width:100%[^}]*white-space:normal/);
+assert.match(
+  enhanced,
+  /\.account-remuneration-summary\{[^}]*max-width:100%[^}]*overflow-wrap:normal[^}]*word-break:normal/,
+);
+assert.match(
+  enhanced,
+  /summary\{[^}]*font-size:\.75rem[^}]*letter-spacing:-\.01em[^}]*white-space:nowrap/,
+);
 assert.match(enhanced, /summary::before\{content:"▸"/);
 assert.match(enhanced, /\[open\] summary::before\{transform:rotate\(90deg\)\}/);
 assert.match(enhanced, /summary:focus-visible\{[^}]*outline:2px solid var\(--primary\)/);
