@@ -21,11 +21,25 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
-      - name: Rebuild and verify patch
+      - name: Rebuild patch package
         shell: bash
         run: |
           set -euo pipefail
           cat .github/issue-494-audit-fixes/part-* > /tmp/issue-494-audit-fixes.patch.xz
+          sha256sum /tmp/issue-494-audit-fixes.patch.xz
+
+      - name: Upload rebuilt patch for verification
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-494-audit-fixes-rebuilt
+          path: /tmp/issue-494-audit-fixes.patch.xz
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Verify and apply patch
+        shell: bash
+        run: |
+          set -euo pipefail
           printf '%s  %s\n' '2c92fc1f366f0b1aeca72899b6ddc017c529f3153b68f7fb752f1f0508bb8652' '/tmp/issue-494-audit-fixes.patch.xz' \
             | sha256sum --check
           xz --test /tmp/issue-494-audit-fixes.patch.xz
