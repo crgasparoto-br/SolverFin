@@ -401,7 +401,7 @@ async function assertDiscardAndTenantIsolation(token: string, accountId: string)
     `/api/import-batches/${created.importBatch.id}?profileId=${MEI_PROFILE_ID}`,
   );
   assert.equal(otherProfile.statusCode, 404);
-  assert.equal(readErrorCode(otherProfile), "IMPORT_BATCH_NOT_FOUND");
+  assert.equal(readErrorCode(otherProfile), "TENANT_RESOURCE_NOT_FOUND");
 }
 
 async function listCsvBatches(token: string): Promise<ImportBatch[]> {

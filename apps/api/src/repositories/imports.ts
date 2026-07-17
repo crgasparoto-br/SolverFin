@@ -400,8 +400,8 @@ export async function getImportBatchDetailForContext(
   const batch = await findImportBatch(context, importBatchId, query);
   if (batch === undefined) {
     throw new ImportReviewError(
-      "IMPORT_BATCH_NOT_FOUND",
-      "Lote de importacao nao encontrado no perfil financeiro ativo.",
+      "TENANT_RESOURCE_NOT_FOUND",
+      "Recurso nao encontrado no perfil financeiro ativo.",
       404,
     );
   }
@@ -674,8 +674,8 @@ export async function discardImportBatchForContext(
     const batch = await findImportBatch(context, importBatchId, executeQuery, true);
     if (batch === undefined) {
       throw new ImportReviewError(
-        "IMPORT_BATCH_NOT_FOUND",
-        "Lote de importacao nao encontrado no perfil financeiro ativo.",
+        "TENANT_RESOURCE_NOT_FOUND",
+        "Recurso nao encontrado no perfil financeiro ativo.",
         404,
       );
     }
@@ -740,7 +740,7 @@ export async function resolveImportSuggestionFromDeterministicDecision(
   const sourceSuggestion = sourceRows[0] ? mapAiSuggestionRow(sourceRows[0]) : undefined;
   if (sourceSuggestion === undefined || sourceSuggestion.sourceEntityId === undefined) {
     throw new ImportReviewError(
-      "IMPORT_SOURCE_SUGGESTION_NOT_FOUND",
+      "TENANT_RESOURCE_NOT_FOUND",
       "Linha de importacao vinculada a sugestao deterministica nao foi encontrada.",
       404,
     );
@@ -787,7 +787,7 @@ export async function resolveImportSuggestionFromDeterministicDecision(
     const current = rows[0] ? mapTransactionRow(rows[0]) : undefined;
     if (current === undefined) {
       throw new ImportReviewError(
-        "IMPORT_RECONCILIATION_TARGET_NOT_FOUND",
+        "TENANT_RESOURCE_NOT_FOUND",
         "Lancamento alvo da conciliacao nao foi encontrado.",
         404,
       );
@@ -929,8 +929,8 @@ async function requireMutableBatch(
   const batch = await findImportBatch(context, importBatchId, executeQuery, true);
   if (batch === undefined) {
     throw new ImportReviewError(
-      "IMPORT_BATCH_NOT_FOUND",
-      "Lote de importacao nao encontrado no perfil financeiro ativo.",
+      "TENANT_RESOURCE_NOT_FOUND",
+      "Recurso nao encontrado no perfil financeiro ativo.",
       404,
     );
   }
@@ -960,7 +960,7 @@ async function requireImportSuggestion(
   const suggestion = rows[0] ? mapAiSuggestionRow(rows[0]) : undefined;
   if (suggestion === undefined) {
     throw new ImportReviewError(
-      "IMPORT_SUGGESTION_NOT_FOUND",
+      "TENANT_RESOURCE_NOT_FOUND",
       "Linha de importacao nao encontrada neste lote.",
       404,
     );
