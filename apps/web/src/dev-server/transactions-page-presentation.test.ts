@@ -31,7 +31,8 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
 
   if (url.pathname === "/api/transactions") {
     assert.equal(url.searchParams.get("accountId"), "account-1");
-    assert.equal(url.searchParams.get("plannedTo"), "2026-07-31");
+    assert.equal(url.searchParams.get("occurredTo"), "2026-07-31");
+    assert.equal(url.searchParams.get("plannedTo"), null);
 
     return jsonResponse({
       transactions: [
