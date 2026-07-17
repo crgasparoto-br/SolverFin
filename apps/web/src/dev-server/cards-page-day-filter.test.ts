@@ -23,18 +23,25 @@ assert.equal(resolveInvoiceDay("not-a-date", invoice), undefined);
 assert.equal(resolveInvoiceDay(undefined, invoice), undefined);
 assert.equal(resolveInvoiceDay("2028-01-10", undefined), undefined);
 
-assert.deepEqual(resolvePurchaseFilterState(new URL("http://localhost/cartoes")), {
-  search: "",
-  reconciliations: ["unreconciled", "reconciled"],
-});
+assert.deepEqual(
+  resolvePurchaseFilterState(new URL("http://localhost/cartoes")),
+  {
+    search: "",
+    reconciliations: ["unreconciled", "reconciled"],
+  },
+);
 assert.deepEqual(
   resolvePurchaseFilterState(
-    new URL("http://localhost/cartoes?search=mercado&reconciliation=reconciled"),
+    new URL(
+      "http://localhost/cartoes?search=mercado&reconciliation=reconciled",
+    ),
   ),
   { search: "mercado", reconciliations: ["reconciled"] },
 );
 assert.deepEqual(
-  resolvePurchaseFilterState(new URL("http://localhost/cartoes?reconciliation=")),
+  resolvePurchaseFilterState(
+    new URL("http://localhost/cartoes?reconciliation="),
+  ),
   { search: "", reconciliations: [] },
 );
 
@@ -68,15 +75,23 @@ async function assertDailyFilterAndFullInvoiceRestore(): Promise<void> {
   assert.match(html, /10\/01\/2028/);
   assert.match(html, /Fatura completa/);
 
-  const searchInput = /<input[^>]*data-purchase-search[^>]*>/i.exec(html)?.[0] ?? "";
+  const searchInput =
+    /<input[^>]*data-purchase-search[^>]*>/i.exec(html)?.[0] ?? "";
   assert.match(searchInput, /value="selecionado"/);
   const unreconciledToggle =
-    /<button[^>]*data-reconciliation-toggle="unreconciled"[^>]*>/i.exec(html)?.[0] ?? "";
+    /<button[^>]*data-reconciliation-toggle="unreconciled"[^>]*>/i.exec(
+      html,
+    )?.[0] ?? "";
   const reconciledToggle =
-    /<button[^>]*data-reconciliation-toggle="reconciled"[^>]*>/i.exec(html)?.[0] ?? "";
+    /<button[^>]*data-reconciliation-toggle="reconciled"[^>]*>/i.exec(
+      html,
+    )?.[0] ?? "";
   assert.match(unreconciledToggle, /aria-pressed="false"/);
   assert.match(reconciledToggle, /aria-pressed="true"/);
-  assert.match(html, /name="search" value="selecionado" data-purchase-search-state/);
+  assert.match(
+    html,
+    /name="search" value="selecionado" data-purchase-search-state/,
+  );
   assert.match(
     html,
     /name="reconciliation" value="reconciled" data-purchase-reconciliation-state/,
@@ -95,7 +110,9 @@ async function assertDailyFilterAndFullInvoiceRestore(): Promise<void> {
   assert.match(html, /100,00/);
   assert.match(html, /\.card-filter \.sort-field\{grid-column:6;min-width:0\}/);
 
-  const clearHref = /href="([^"]*)"/.exec(clearLink)?.[1]?.replace(/&amp;/g, "&");
+  const clearHref = /href="([^"]*)"/
+    .exec(clearLink)?.[1]
+    ?.replace(/&amp;/g, "&");
   assert.ok(clearHref);
   const fullInvoiceHtml = await renderCardsPageWithMonthNavigation(
     "token",
@@ -115,7 +132,9 @@ async function assertPurchaseFailureRemainsVisible(): Promise<void> {
   installFetch({ purchasesFail: true });
   const html = await renderCardsPageWithMonthNavigation(
     "token",
-    new URL("http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10"),
+    new URL(
+      "http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10",
+    ),
   );
 
   assert.match(html, /Serviço de compras indisponível/);
@@ -125,7 +144,9 @@ async function assertPurchaseFailureRemainsVisible(): Promise<void> {
 }
 
 function installFetch(options: { purchasesFail?: boolean } = {}): void {
-  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+  globalThis.fetch = async (
+    input: string | URL | Request,
+  ): Promise<Response> => {
     const url = new URL(String(input));
 
     if (url.pathname === "/api/cards") {
@@ -153,12 +174,14 @@ function installFetch(options: { purchasesFail?: boolean } = {}): void {
         ],
       });
     }
-    if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+    if (url.pathname === "/api/categories")
+      return jsonResponse({ categories: [] });
     if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
     if (url.pathname === "/api/credit-card-accounts/card-1/instruments") {
       return jsonResponse({ instruments: [] });
     }
-    if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
+    if (url.pathname === "/api/recurrences")
+      return jsonResponse({ recurrences: [] });
     if (url.pathname === "/api/invoices/invoice-1/summary") {
       return jsonResponse({
         summary: {
@@ -197,7 +220,13 @@ function installFetch(options: { purchasesFail?: boolean } = {}): void {
             10000,
             "reconciled",
           ),
-          purchase("purchase-other", "2028-01-11", "Compra de outro dia", 2500, "posted"),
+          purchase(
+            "purchase-other",
+            "2028-01-11",
+            "Compra de outro dia",
+            2500,
+            "posted",
+          ),
         ],
       });
     }
