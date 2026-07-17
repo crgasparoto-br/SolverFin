@@ -71,19 +71,27 @@ jobs:
         continue-on-error: true
         run: npm run format:check
 
-      - name: Capture formatting differences
+      - name: Capture canonical formatting
         if: steps.formatting.outcome == 'failure'
         run: |
+          npx prettier \
+            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.test.ts \
+            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts \
+            scripts/statement-visual/account-remuneration-mobile-evidence.mjs \
+            --write
           mkdir -p artifacts/formatting
-          npx prettier . --list-different > artifacts/formatting/files.txt || true
-          cat artifacts/formatting/files.txt
+          cp --parents \
+            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.test.ts \
+            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts \
+            scripts/statement-visual/account-remuneration-mobile-evidence.mjs \
+            artifacts/formatting
 
-      - name: Upload formatting diagnostic
+      - name: Upload canonical formatting
         if: steps.formatting.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: formatting-diagnostic-${{ github.sha }}
-          path: artifacts/formatting/files.txt
+          name: formatting-canonical-${{ github.sha }}
+          path: artifacts/formatting
           if-no-files-found: error
           retention-days: 1
 
