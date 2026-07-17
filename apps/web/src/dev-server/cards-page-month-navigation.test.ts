@@ -88,7 +88,7 @@ function assertMonthNavigation(
       `href="/cartoes\\?cardId=card-1&amp;month=${nextMonth}${sortSuffix}" aria-label="Próxima fatura"`,
     ),
   );
-  assert.equal((html.match(/data-invoice-current/g) ?? []).length, 1);
+  assert.equal((html.match(/<a\b[^>]*data-invoice-current\b/g) ?? []).length, 1);
   assert.match(
     html,
     new RegExp(
