@@ -14,9 +14,14 @@ assert.match(enhanced, /data-account-remuneration-disclosure-affordance/);
 assert.match(enhanced, /summary\{gap:4px;font-size:\.75rem;min-height:24px/);
 assert.match(enhanced, /summary::before\{content:"▸"/);
 assert.match(enhanced, /\[open\] summary::before\{transform:rotate\(90deg\)\}/);
-assert.match(enhanced, /summary:focus-visible\{[^}]*outline:2px solid var\(--primary\)/);
+assert.match(
+  enhanced,
+  /summary:focus-visible\{[^}]*outline:2px solid var\(--primary\)/,
+);
 assert.equal(enhanceAccountRemunerationDisclosure(enhanced), enhanced);
 assert.equal(
-  enhanceAccountRemunerationDisclosure("<!doctype html><html><head></head><body></body></html>"),
+  enhanceAccountRemunerationDisclosure(
+    "<!doctype html><html><head></head><body></body></html>",
+  ),
   "<!doctype html><html><head></head><body></body></html>",
 );
