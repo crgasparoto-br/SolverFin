@@ -20,8 +20,14 @@ interface HtmlElementRange {
   content: string;
 }
 
+interface PurchaseFilterState {
+  search: string;
+  reconciliations: Array<"unreconciled" | "reconciled">;
+}
+
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 const DATE_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+const DEFAULT_RECONCILIATIONS = ["unreconciled", "reconciled"] as const;
 
 export async function renderCardsPageWithMonthNavigation(token: string, url: URL): Promise<string> {
   const requestedMonth = normalizeInvoiceMonth(url.searchParams.get("month"));
@@ -61,10 +67,12 @@ export async function renderCardsPageWithMonthNavigation(token: string, url: URL
   const selectedMonth =
     requestedMonth ?? monthFromInvoiceOptions(html, selectedInvoiceId) ?? currentMonth();
   const selectedDay = resolveInvoiceDay(requestedDay, selectedInvoice);
+  const purchaseFilterState = resolvePurchaseFilterState(url);
 
   html = replaceMonthNavigation(html, url, selectedCardId, selectedMonth);
   html = upsertDayFilter(html, url, selectedCardId, selectedInvoice, selectedMonth, selectedDay);
   html = upsertCurrentMonthLink(html, url, selectedCardId);
+  html = upsertPurchaseFilterState(html, purchaseFilterState);
 
   if (requestedMonth && selectedCardId && !invoiceExistsForMonth) {
     html = renderMissingInvoiceMonth(html, requestedMonth);
@@ -104,6 +112,23 @@ export function resolveInvoiceDay(
   const day = normalizeDateOnly(value);
   if (!day || !invoice) return undefined;
   return day >= invoice.periodStartOn && day <= invoice.periodEndOn ? day : undefined;
+}
+
+export function resolvePurchaseFilterState(url: URL): PurchaseFilterState {
+  const search = (url.searchParams.get("search") ?? "").slice(0, 200);
+  const reconciliation = url.searchParams.get("reconciliation");
+  const reconciliations =
+    reconciliation === null
+      ? [...DEFAULT_RECONCILIATIONS]
+      : reconciliation
+          .split(",")
+          .filter(
+            (value): value is "unreconciled" | "reconciled" =>
+              value === "unreconciled" || value === "reconciled",
+          )
+          .filter((value, index, values) => values.indexOf(value) === index);
+
+  return { search, reconciliations };
 }
 
 function normalizeInvoiceMonth(value: string | null | undefined): string | undefined {
@@ -248,6 +273,56 @@ function upsertCurrentMonthLink(html: string, url: URL, cardId: string | undefin
   return nextHtml;
 }
 
+function upsertPurchaseFilterState(html: string, state: PurchaseFilterState): string {
+  let nextHtml = html
+    .replace(/\s*<input\b[^>]*data-purchase-search-state[^>]*\/?>(?:<\/input>)?/g, "")
+    .replace(/\s*<input\b[^>]*data-purchase-reconciliation-state[^>]*\/?>(?:<\/input>)?/g, "");
+  nextHtml = replaceMarkedElementAttribute(nextHtml, "data-purchase-search", "value", state.search);
+  nextHtml = replaceMarkedElementAttribute(
+    nextHtml,
+    'data-reconciliation-toggle="unreconciled"',
+    "aria-pressed",
+    String(state.reconciliations.includes("unreconciled")),
+  );
+  nextHtml = replaceMarkedElementAttribute(
+    nextHtml,
+    'data-reconciliation-toggle="reconciled"',
+    "aria-pressed",
+    String(state.reconciliations.includes("reconciled")),
+  );
+
+  const marker = '<input type="hidden" name="invoiceId"';
+  const index = nextHtml.indexOf(marker);
+  if (index < 0) return nextHtml;
+  const reconciliation = state.reconciliations.join(",");
+  const searchDisabled = state.search ? "" : " disabled";
+  const reconciliationDisabled =
+    reconciliation === DEFAULT_RECONCILIATIONS.join(",") ? " disabled" : "";
+  const controls = `          <input type="hidden" name="search" value="${escapeHtml(state.search)}" data-purchase-search-state${searchDisabled} />
+          <input type="hidden" name="reconciliation" value="${escapeHtml(reconciliation)}" data-purchase-reconciliation-state${reconciliationDisabled} />\n`;
+  return nextHtml.slice(0, index) + controls + nextHtml.slice(index);
+}
+
+function replaceMarkedElementAttribute(
+  html: string,
+  marker: string,
+  attribute: string,
+  value: string,
+): string {
+  const markerIndex = html.indexOf(marker);
+  if (markerIndex < 0) return html;
+  const start = html.lastIndexOf("<", markerIndex);
+  const end = html.indexOf(">", markerIndex);
+  if (start < 0 || end < 0) return html;
+  const tag = html.slice(start, end + 1);
+  const pattern = new RegExp(`\\b${attribute}="[^"]*"`);
+  const replacement = `${attribute}="${escapeHtml(value)}"`;
+  const nextTag = pattern.test(tag)
+    ? tag.replace(pattern, replacement)
+    : tag.replace(/\s*\/?>(?:\s*)$/, (ending) => ` ${replacement}${ending}`);
+  return html.slice(0, start) + nextTag + html.slice(end + 1);
+}
+
 function buildMonthHref(url: URL, cardId: string | undefined, month: string): string {
   const params = new URLSearchParams(url.searchParams);
   params.delete("invoiceId");
@@ -282,12 +357,17 @@ function filterInvoicePurchasesByDay(html: string, day: string): string {
   if (end < 0) return html;
 
   const section = html.slice(start, end);
+  if (purchaseSectionHasError(section)) return html;
   const filtered = filterPurchaseSection(section, day);
   const purchases = collectPurchaseRecords(filtered);
   let nextHtml = html.slice(0, start) + filtered + html.slice(end);
   nextHtml = insertDaySummary(nextHtml, day, purchases);
   nextHtml = insertDayToolbarCopy(nextHtml, day);
   return nextHtml.replace("<h2>Detalhamento</h2>", "<h2>Detalhamento da fatura</h2>");
+}
+
+function purchaseSectionHasError(section: string): boolean {
+  return /\brole="alert"/.test(section) || /class="[^"]*\berror\b[^"]*"/.test(section);
 }
 
 function filterPurchaseSection(section: string, day: string): string {
@@ -424,7 +504,9 @@ function summaryRow(label: string, value: string, tone?: string): string {
 }
 
 function formatDay(day: string): string {
-  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(`${day}T00:00:00Z`));
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(
+    new Date(`${day}T00:00:00Z`),
+  );
 }
 
 function formatExpense(amountMinor: number): string {
@@ -463,38 +545,91 @@ function injectStyles(html: string): string {
   return html.replace("</head>", `${styles}</head>`);
 }
 
-function injectController(html: string): string {
-  if (html.includes("data-invoice-month-navigation-controller")) return html;
-  const script = `
+export function invoiceMonthNavigationControllerScript(): string {
+  return `
     <script data-invoice-month-navigation-controller>
       (() => {
         const form = document.querySelector('form.filter-form[action="/cartoes"]');
         const monthInput = form?.querySelector('[data-invoice-month-input]');
         const invoiceInput = form?.querySelector('[data-invoice-input]');
         const dayInput = form?.querySelector('[data-card-day-input]');
+        const clearDayLink = form?.querySelector('[data-clear-card-day]');
+        const searchInput = document.querySelector('[data-purchase-search]');
+        const searchStateInput = form?.querySelector('[data-purchase-search-state]');
+        const reconciliationStateInput = form?.querySelector('[data-purchase-reconciliation-state]');
+        const reconciliationToggles = Array.from(
+          document.querySelectorAll('[data-reconciliation-toggle]'),
+        );
         if (!form || !(monthInput instanceof HTMLInputElement)) return;
 
-        function clearDay() {
+        function clearDayForSubmission() {
           if (!(dayInput instanceof HTMLInputElement)) return;
-          dayInput.disabled = false;
           dayInput.value = '';
+          dayInput.disabled = true;
         }
+
+        function activeReconciliations() {
+          return reconciliationToggles
+            .filter((toggle) => toggle.getAttribute('aria-pressed') === 'true')
+            .map((toggle) => toggle.getAttribute('data-reconciliation-toggle'))
+            .filter((value) => value === 'unreconciled' || value === 'reconciled');
+        }
+
+        function updateLink(link) {
+          const href = link?.getAttribute?.('href');
+          if (!href) return;
+          const target = new URL(href, window.location.origin);
+          const search = searchInput instanceof HTMLInputElement ? searchInput.value : '';
+          const reconciliation = activeReconciliations().join(',');
+          if (search) target.searchParams.set('search', search);
+          else target.searchParams.delete('search');
+          if (reconciliation === 'unreconciled,reconciled') {
+            target.searchParams.delete('reconciliation');
+          } else {
+            target.searchParams.set('reconciliation', reconciliation);
+          }
+          link.setAttribute('href', target.pathname + target.search + target.hash);
+        }
+
+        function syncNavigationLinks() {
+          document
+            .querySelectorAll('.month-nav-link,[data-invoice-current],[data-clear-card-day]')
+            .forEach(updateLink);
+        }
+
+        function syncSecondaryFilterState() {
+          if (searchStateInput instanceof HTMLInputElement) {
+            searchStateInput.value = searchInput instanceof HTMLInputElement ? searchInput.value : '';
+            searchStateInput.disabled = !searchStateInput.value;
+          }
+          if (reconciliationStateInput instanceof HTMLInputElement) {
+            reconciliationStateInput.value = activeReconciliations().join(',');
+            reconciliationStateInput.disabled =
+              reconciliationStateInput.value === 'unreconciled,reconciled';
+          }
+          syncNavigationLinks();
+        }
+
+        form.addEventListener(
+          'change',
+          (event) => {
+            const target = event.target;
+            if (target instanceof HTMLInputElement && target.name === 'cardId') {
+              clearDayForSubmission();
+            }
+          },
+          true,
+        );
 
         monthInput.addEventListener('change', () => {
           if (!/^\\d{4}-(0[1-9]|1[0-2])$/.test(monthInput.value)) return;
           if (invoiceInput instanceof HTMLInputElement) invoiceInput.disabled = true;
-          clearDay();
-          if (dayInput instanceof HTMLInputElement) dayInput.disabled = true;
+          clearDayForSubmission();
           form.requestSubmit();
         });
 
         form.addEventListener('change', (event) => {
           const target = event.target;
-          if (target instanceof HTMLInputElement && target.name === 'cardId') {
-            clearDay();
-            if (dayInput instanceof HTMLInputElement) dayInput.disabled = true;
-            return;
-          }
           if (target !== dayInput || !(dayInput instanceof HTMLInputElement)) return;
           if (dayInput.value && (dayInput.value < dayInput.min || dayInput.value > dayInput.max)) {
             dayInput.value = '';
@@ -502,12 +637,33 @@ function injectController(html: string): string {
           form.requestSubmit();
         });
 
+        clearDayLink?.addEventListener('click', (event) => {
+          event.preventDefault();
+          clearDayForSubmission();
+          syncSecondaryFilterState();
+          form.requestSubmit();
+        });
+
+        if (searchInput instanceof HTMLInputElement) {
+          searchInput.addEventListener('input', syncSecondaryFilterState);
+        }
+        reconciliationToggles.forEach((toggle) =>
+          toggle.addEventListener('click', syncSecondaryFilterState),
+        );
+
         form.addEventListener('submit', () => {
+          syncSecondaryFilterState();
           if (dayInput instanceof HTMLInputElement && !dayInput.value) dayInput.disabled = true;
         });
+
+        syncSecondaryFilterState();
       })();
     </script>`;
-  return html.replace("</body>", `${script}</body>`);
+}
+
+function injectController(html: string): string {
+  if (html.includes("data-invoice-month-navigation-controller")) return html;
+  return html.replace("</body>", `${invoiceMonthNavigationControllerScript()}</body>`);
 }
 
 function replaceInputValue(html: string, marker: string, value: string): string {
