@@ -34,6 +34,12 @@ export function statementPresentationStyles(): string {
       justify-self: end;
     }
 
+    .account-filter .filter-form {
+      grid-template-columns: minmax(12rem, 1.2fr) minmax(13rem, 1fr) minmax(11rem, .85fr) auto auto;
+    }
+    .account-filter .statement-day-field { display: grid; gap: 6px; }
+    .account-filter .statement-day-field input { min-width: 10rem; }
+
     .statement-table .statement-row {
       grid-template-columns: 6rem minmax(10rem, 1.3fr) minmax(8rem, .9fr) 7rem 4.5rem 10rem 11rem 3rem;
       min-width: 70rem;
@@ -41,13 +47,19 @@ export function statementPresentationStyles(): string {
     .statement-table .col-amount,
     .statement-table .col-balance { min-width: max-content; }
 
-    @media (min-width: 761px) and (max-width: 900px) {
-      .account-filter .filter-form { grid-template-columns: 1fr; }
+    @media (min-width: 761px) and (max-width: 1100px) {
+      .account-filter .filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .account-filter .month-nav input[type="month"] { min-width: 10rem; }
       .account-filter .ghost-btn { justify-self: start; }
     }
 
+    @media (min-width: 761px) and (max-width: 900px) {
+      .account-filter .filter-form { grid-template-columns: 1fr; }
+    }
+
     @media (max-width: 760px) {
+      .account-filter .filter-form { grid-template-columns: 1fr; }
+      .account-filter .statement-day-field input { min-width: 0; width: 100%; }
       .statement-table .statement-row.statement-body { min-width: 0; }
       .statement-table .statement-row.statement-body .col-amount,
       .statement-table .statement-row.statement-body .col-balance {
@@ -65,6 +77,152 @@ export function statementPresentationScript(): string {
         function moneyToMinor(value) {
           const normalized = String(value).replace(/\\./g, "").replace(",", ".");
           return Math.round(parseFloat(normalized || "0") * 100);
+        }
+
+        function formatStatementDay(dayValue) {
+          return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(
+            new Date(dayValue + "T00:00:00Z"),
+          );
+        }
+
+        function isDayInsideMonth(dayValue, monthValue) {
+          return /^\\d{4}-\\d{2}-\\d{2}$/.test(dayValue) && dayValue.slice(0, 7) === monthValue;
+        }
+
+        function monthEnd(monthValue) {
+          const parts = monthValue.split("-").map(Number);
+          if (parts.length !== 2 || !parts[0] || !parts[1]) return "";
+          return new Date(Date.UTC(parts[0], parts[1], 0)).toISOString().slice(0, 10);
+        }
+
+        function rewriteActiveDayCopy(form, dayValue) {
+          const formattedDay = formatStatementDay(dayValue);
+          const headingCopy = document.querySelector(".statement-heading > div > .muted");
+          if (headingCopy) {
+            headingCopy.textContent = "Acompanhe lançamentos, saldo e pendências por conta, mês ou dia.";
+          }
+
+          const accountPeriod = form.closest(".account-filter")?.querySelector("p.muted");
+          const accountName = accountPeriod?.querySelector("strong:last-of-type")?.textContent?.trim();
+          if (accountPeriod && accountName) {
+            const dateStrong = document.createElement("strong");
+            dateStrong.textContent = formattedDay;
+            const accountStrong = document.createElement("strong");
+            accountStrong.textContent = accountName;
+            accountPeriod.replaceChildren(
+              document.createTextNode("Consulta do dia "),
+              dateStrong,
+              document.createTextNode(" em "),
+              accountStrong,
+              document.createTextNode("."),
+            );
+          }
+
+          const toolbarPeriod = document.querySelector(".statement-toolbar .muted");
+          if (toolbarPeriod) toolbarPeriod.textContent = formattedDay;
+
+          const emptyState = document.querySelector(".statement-table .empty");
+          const emptyTitle = emptyState?.querySelector("strong");
+          const emptyDescription = emptyState?.querySelector("p");
+          if (emptyTitle) emptyTitle.textContent = "Nenhum lançamento neste dia.";
+          if (emptyDescription) {
+            emptyDescription.textContent =
+              "Escolha outro dia, remova o filtro diário ou crie um lançamento para acompanhar o saldo.";
+          }
+        }
+
+        function setupStatementDayFilter() {
+          const monthInput = document.querySelector("#filter-month");
+          const form = monthInput?.closest("form");
+          if (!monthInput || !form || form.querySelector("[data-statement-day-field]")) return;
+
+          const dayField = document.createElement("div");
+          dayField.className = "statement-day-field";
+          dayField.dataset.statementDayField = "";
+
+          const dayLabel = document.createElement("label");
+          dayLabel.htmlFor = "filter-day";
+          dayLabel.textContent = "Dia";
+
+          const dayInput = document.createElement("input");
+          dayInput.id = "filter-day";
+          dayInput.name = "day";
+          dayInput.type = "date";
+          dayInput.setAttribute("aria-label", "Filtrar extrato por dia");
+
+          dayField.append(dayLabel, dayInput);
+
+          const clearButton = document.createElement("button");
+          clearButton.type = "button";
+          clearButton.className = "ghost-btn";
+          clearButton.dataset.clearStatementDay = "";
+          clearButton.textContent = "Mês completo";
+          clearButton.setAttribute("aria-label", "Remover filtro por dia e exibir o mês completo");
+
+          const currentMonthButton = form.querySelector("[data-month-current]");
+          form.insertBefore(dayField, currentMonthButton);
+          form.insertBefore(clearButton, currentMonthButton);
+
+          function syncDayBounds(clearInvalid) {
+            const monthValue = monthInput.value;
+            dayInput.min = monthValue ? monthValue + "-01" : "";
+            dayInput.max = monthValue ? monthEnd(monthValue) : "";
+            if (clearInvalid && dayInput.value && !isDayInsideMonth(dayInput.value, monthValue)) {
+              dayInput.value = "";
+            }
+            clearButton.hidden = !dayInput.value;
+          }
+
+          const queryDay = new URLSearchParams(window.location.search).get("day") || "";
+          if (isDayInsideMonth(queryDay, monthInput.value)) dayInput.value = queryDay;
+          syncDayBounds(true);
+
+          const headingCopy = document.querySelector(".statement-heading > div > .muted");
+          if (headingCopy) {
+            headingCopy.textContent = "Acompanhe lançamentos, saldo e pendências por conta, mês ou dia.";
+          }
+          if (dayInput.value) rewriteActiveDayCopy(form, dayInput.value);
+
+          monthInput.addEventListener("change", () => {
+            dayInput.disabled = false;
+            dayInput.value = "";
+            syncDayBounds(true);
+          });
+
+          dayInput.addEventListener("change", () => {
+            dayInput.disabled = false;
+            syncDayBounds(true);
+            form.requestSubmit();
+          });
+
+          clearButton.addEventListener("click", () => {
+            dayInput.disabled = false;
+            dayInput.value = "";
+            clearButton.hidden = true;
+            form.requestSubmit();
+          });
+
+          document.addEventListener(
+            "click",
+            (event) => {
+              const target = event.target;
+              const button =
+                target && typeof target.closest === "function"
+                  ? target.closest("[data-month-step], [data-month-current]")
+                  : null;
+              if (!button || !form.contains(button)) return;
+
+              dayInput.disabled = false;
+              dayInput.value = "";
+              clearButton.hidden = true;
+            },
+            true,
+          );
+
+          form.addEventListener("submit", () => {
+            syncDayBounds(true);
+            if (!dayInput.value) dayInput.disabled = true;
+          });
         }
 
         function cleanupLegacyTransactionEditControls() {
@@ -176,6 +334,7 @@ export function statementPresentationScript(): string {
           }, true);
         }
 
+        setupStatementDayFilter();
         cleanupLegacyTransactionEditControls();
         setupNonRecurringTransactionSave();
 
