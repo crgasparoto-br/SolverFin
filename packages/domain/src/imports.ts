@@ -61,13 +61,22 @@ export interface CsvImportMapping {
   externalId?: string;
 }
 
+export interface CsvImportPreviewSample {
+  sourceRowNumber: number;
+  occurredOn: ISODate;
+  description: string;
+  kind: "income" | "expense";
+  amountMinor: number;
+  currency: string;
+}
+
 export interface CsvImportPreviewMetadata {
   delimiter?: CsvDelimiter;
   delimiterCandidates: readonly CsvDelimiter[];
   headers: readonly string[];
   mapping: CsvImportMapping;
   missingRequiredFields: readonly CsvRequiredField[];
-  sampleRows: readonly Readonly<Record<string, string>>[];
+  sampleRows: readonly CsvImportPreviewSample[];
 }
 
 export interface ImportBatchDraft extends TenantScoped {
@@ -214,13 +223,28 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
     parsed.metadata,
   );
 
+  const csv =
+    parsed.metadata === undefined
+      ? undefined
+      : {
+          ...parsed.metadata,
+          sampleRows: suggestions.slice(0, 10).map((suggestion) => ({
+            sourceRowNumber: suggestion.sourceRowNumber,
+            occurredOn: suggestion.occurredOn,
+            description: suggestion.description,
+            kind: suggestion.kind as "income" | "expense",
+            amountMinor: suggestion.amountMinor,
+            currency: suggestion.currency,
+          })),
+        };
+
   return {
     state: suggestions.length > 0 ? "ready" : "blocked",
     persisted: false,
     batch,
     suggestions,
     problems,
-    ...(parsed.metadata === undefined ? {} : { csv: parsed.metadata }),
+    ...(csv === undefined ? {} : { csv }),
   };
 }
 
@@ -392,16 +416,13 @@ function parseCsvRows(input: ImportFileInput): CsvParseResult {
   const mapping = resolveCsvMapping(headers, input.csvMapping);
   const missingRequiredFields = requiredFields.filter((field) => mapping[field] === undefined);
   const dataRecords = nonEmptyRecords.slice(1);
-  const sampleRows = dataRecords
-    .slice(0, 5)
-    .map((record) => buildSampleRow(headers, record.values));
   const metadata: CsvImportPreviewMetadata = {
     delimiter: table.delimiter,
     delimiterCandidates: [table.delimiter],
     headers,
     mapping,
     missingRequiredFields,
-    sampleRows,
+    sampleRows: [],
   };
 
   if (missingRequiredFields.length > 0) {
@@ -760,13 +781,6 @@ function findCsvColumn(
   if (columnName === undefined) return undefined;
   const index = header.indexOf(normalizeHeaderName(columnName));
   return index >= 0 ? index : undefined;
-}
-
-function buildSampleRow(
-  headers: readonly string[],
-  values: readonly string[],
-): Readonly<Record<string, string>> {
-  return Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""]));
 }
 
 function readCsvValue(values: readonly string[], index: number): string | undefined {

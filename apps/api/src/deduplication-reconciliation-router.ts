@@ -12,6 +12,7 @@ import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { query, withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { refreshImportBatchStatusForContext } from "./repositories/imports.js";
 import {
   DeterministicReviewSuggestionError,
   approveDeterministicReviewSuggestionForContext,
@@ -148,15 +149,17 @@ async function detectImportBatchDuplicatesHandler(
   const importBatchId = requireParam(match, "importBatchId");
   await assertImportBatchReviewable(context, importBatchId);
   const importSuggestions = await listImportTransactionSuggestionsForBatch(context, importBatchId);
-  const result = await withSharedTransaction((executeQuery) =>
-    createDeterministicImportReviewSuggestionsForContext(
+  const result = await withSharedTransaction(async (executeQuery) => {
+    const created = await createDeterministicImportReviewSuggestionsForContext(
       context,
       importBatchId,
       importSuggestions,
       new Date().toISOString(),
       executeQuery,
-    ),
-  );
+    );
+    await refreshImportBatchStatusForContext(context, importBatchId, executeQuery);
+    return created;
+  });
   return json(200, { ...result, duplicateScan: true });
 }
 
@@ -207,10 +210,10 @@ async function assertImportBatchReviewable(
       404,
     );
   }
-  if (rows[0].status === "DISCARDED") {
+  if (rows[0].status !== "REVIEWING") {
     throw new DeterministicReviewSuggestionError(
-      "IMPORT_BATCH_DISCARDED",
-      "Lote descartado nao pode ser analisado novamente.",
+      "IMPORT_BATCH_READ_ONLY",
+      "Somente lotes em revisao podem executar uma nova analise deterministica.",
       409,
     );
   }

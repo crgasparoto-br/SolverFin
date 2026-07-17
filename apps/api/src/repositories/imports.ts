@@ -36,7 +36,8 @@ export interface CreateCsvImportBatchPayload {
 export interface PreviewCsvImportPayload {
   originalFileName: string;
   content: string;
-  accountId?: EntityId;
+  accountId: EntityId;
+  consentAccepted: true;
   csvMapping?: CsvImportMapping;
   csvDelimiter?: CsvDelimiter;
 }
@@ -78,11 +79,9 @@ export interface ImportSuggestionUpdatePayload {
   occurredOn?: string;
   kind?: "income" | "expense";
   amountMinor?: number;
-  currency?: string;
   description?: string;
   accountId?: EntityId;
   categoryId?: EntityId | null;
-  externalId?: string | null;
 }
 
 export interface ImportReviewDecisionResult {
@@ -92,9 +91,22 @@ export interface ImportReviewDecisionResult {
   idempotent: boolean;
 }
 
+export interface BulkImportReviewItemResult {
+  suggestionId: EntityId;
+  status: "approved" | "failed";
+  decision?: ImportReviewDecisionResult;
+  error?: { code: string; message: string };
+}
+
 export interface BulkImportReviewResult {
   importBatch: ImportBatch;
-  results: readonly ImportReviewDecisionResult[];
+  summary: {
+    requested: number;
+    approved: number;
+    failed: number;
+    idempotent: number;
+  };
+  results: readonly BulkImportReviewItemResult[];
   failures: readonly { suggestionId: EntityId; code: string; message: string }[];
 }
 
@@ -187,6 +199,7 @@ interface CategoryRow {
 interface CountRow {
   total: number;
   pending: number;
+  candidatePending: number;
   duplicate: number;
 }
 
@@ -205,12 +218,19 @@ const TRANSACTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId"
 export class ImportReviewError extends Error {
   readonly code: string;
   readonly statusCode: number;
+  readonly details?: Readonly<Record<string, unknown>>;
 
-  constructor(code: string, message: string, statusCode = 400) {
+  constructor(
+    code: string,
+    message: string,
+    statusCode = 400,
+    details?: Readonly<Record<string, unknown>>,
+  ) {
     super(message);
     this.name = "ImportReviewError";
     this.code = code;
     this.statusCode = statusCode;
+    if (details !== undefined) this.details = details;
   }
 }
 
@@ -218,14 +238,20 @@ export async function previewCsvImportForContext(
   context: TenantContext,
   payload: PreviewCsvImportPayload,
 ): Promise<ImportPreview> {
-  if (payload.accountId !== undefined) await assertActiveAccount(context, payload.accountId, query);
+  if (payload.consentAccepted !== true) {
+    throw new ImportReviewError(
+      "IMPORT_CONSENT_REQUIRED",
+      "Confirme que o arquivo pode ser processado neste perfil financeiro.",
+    );
+  }
+  await assertActiveAccount(context, payload.accountId, query);
 
   return previewImportedStatement({
     context,
     now: new Date().toISOString(),
     originalFileName: payload.originalFileName,
     content: payload.content,
-    ...(payload.accountId === undefined ? {} : { defaultAccountId: payload.accountId }),
+    defaultAccountId: payload.accountId,
     ...(payload.csvMapping === undefined ? {} : { csvMapping: payload.csvMapping }),
     ...(payload.csvDelimiter === undefined ? {} : { csvDelimiter: payload.csvDelimiter }),
   });
@@ -487,9 +513,28 @@ export async function approveImportSuggestionForContext(
   importBatchId: EntityId,
   suggestionId: EntityId,
 ): Promise<ImportReviewDecisionResult> {
-  return withSharedTransaction((executeQuery) =>
-    approveImportSuggestionInTransaction(context, importBatchId, suggestionId, executeQuery),
-  );
+  const outcome = await withSharedTransaction(async (executeQuery) => {
+    const pendingCandidates = await ensureCurrentDeterministicCandidates(
+      context,
+      importBatchId,
+      suggestionId,
+      executeQuery,
+    );
+    if (pendingCandidates.length > 0) {
+      return { blockedCandidates: pendingCandidates } as const;
+    }
+    return approveImportSuggestionInTransaction(context, importBatchId, suggestionId, executeQuery);
+  });
+
+  if ("blockedCandidates" in outcome) {
+    throw new ImportReviewError(
+      "IMPORT_REVIEW_CANDIDATE_PENDING",
+      "Resolva as possíveis duplicidades ou conciliações antes de confirmar esta linha.",
+      409,
+      { candidates: outcome.blockedCandidates },
+    );
+  }
+  return outcome;
 }
 
 export async function rejectImportSuggestionForContext(
@@ -561,44 +606,63 @@ export async function approveSelectedImportSuggestionsForContext(
   importBatchId: EntityId,
   suggestionIds: readonly EntityId[],
 ): Promise<BulkImportReviewResult> {
-  const uniqueIds = [...new Set(suggestionIds)];
-  if (uniqueIds.length === 0) {
+  if (suggestionIds.length === 0) {
     throw new ImportReviewError(
       "IMPORT_REVIEW_SELECTION_REQUIRED",
       "Selecione ao menos uma linha valida para confirmar.",
     );
   }
+  if (new Set(suggestionIds).size !== suggestionIds.length) {
+    throw new ImportReviewError(
+      "IMPORT_REVIEW_DUPLICATE_SELECTION",
+      "A selecao nao pode repetir a mesma linha.",
+    );
+  }
 
-  return withSharedTransaction(async (executeQuery) => {
-    await requireMutableBatch(context, importBatchId, executeQuery);
-    const results: ImportReviewDecisionResult[] = [];
-    const failures: { suggestionId: EntityId; code: string; message: string }[] = [];
+  const results: BulkImportReviewItemResult[] = [];
+  const failures: { suggestionId: EntityId; code: string; message: string }[] = [];
+  let approved = 0;
+  let idempotent = 0;
 
-    for (const suggestionId of uniqueIds) {
-      try {
-        results.push(
-          await approveImportSuggestionInTransaction(
-            context,
-            importBatchId,
-            suggestionId,
-            executeQuery,
-          ),
-        );
-      } catch (error) {
-        if (error instanceof ImportReviewError && error.statusCode < 500) {
-          failures.push({ suggestionId, code: error.code, message: error.message });
-          continue;
-        }
-        throw error;
+  for (const suggestionId of suggestionIds) {
+    try {
+      const decision = await approveImportSuggestionForContext(
+        context,
+        importBatchId,
+        suggestionId,
+      );
+      approved += 1;
+      if (decision.idempotent) idempotent += 1;
+      results.push({ suggestionId, status: "approved", decision });
+    } catch (error) {
+      if (error instanceof ImportReviewError && error.statusCode < 500) {
+        const failure = { suggestionId, code: error.code, message: error.message };
+        failures.push(failure);
+        results.push({
+          suggestionId,
+          status: "failed",
+          error: { code: error.code, message: error.message },
+        });
+        continue;
       }
+      throw error;
     }
+  }
 
-    return {
-      importBatch: await recalculateImportBatch(context, importBatchId, executeQuery),
-      results,
-      failures,
-    };
-  });
+  const importBatch = await withSharedTransaction((executeQuery) =>
+    recalculateImportBatch(context, importBatchId, executeQuery),
+  );
+  return {
+    importBatch,
+    summary: {
+      requested: suggestionIds.length,
+      approved,
+      failed: failures.length,
+      idempotent,
+    },
+    results,
+    failures,
+  };
 }
 
 export async function discardImportBatchForContext(
@@ -999,6 +1063,92 @@ async function findTransactionBySuggestion(
   return rows[0] ? mapTransactionRow(rows[0]) : undefined;
 }
 
+async function ensureCurrentDeterministicCandidates(
+  context: TenantContext,
+  importBatchId: EntityId,
+  suggestionId: EntityId,
+  executeQuery: QueryExecutor,
+): Promise<readonly Readonly<Record<string, unknown>>[]> {
+  await requireMutableBatch(context, importBatchId, executeQuery);
+  const suggestion = await requireImportSuggestion(
+    context,
+    importBatchId,
+    suggestionId,
+    executeQuery,
+    true,
+  );
+  if (suggestion.status !== "pending_review") return [];
+
+  const payload = requireExtractionPayload(suggestion);
+  await validateExtractionReferences(context, payload, executeQuery);
+  const { createDeterministicImportReviewSuggestionsForContext } =
+    await import("./review-suggestions.js");
+  await createDeterministicImportReviewSuggestionsForContext(
+    context,
+    importBatchId,
+    [
+      {
+        id: suggestion.id,
+        organizationId: context.organizationId,
+        financialProfileId: context.financialProfileId,
+        status: "pending_review",
+        sourceKind: "csv",
+        sourceHash: payload.sourceHash,
+        sourceRowNumber: payload.sourceRowNumber,
+        occurredOn: payload.occurredOn,
+        description: payload.description,
+        kind: payload.kind,
+        amountMinor: payload.amountMinor,
+        currency: payload.currency,
+        ...(payload.accountId === undefined ? {} : { accountId: payload.accountId }),
+        ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
+        ...(payload.externalId === undefined ? {} : { externalId: payload.externalId }),
+      },
+    ],
+    new Date().toISOString(),
+    executeQuery,
+  );
+
+  const fingerprint = buildImportPayloadFingerprint(payload);
+  const candidateRows = await executeQuery<AiSuggestionRow>(
+    `select ${AI_SUGGESTION_SELECT_COLUMNS} from "AiSuggestion"
+     where "organizationId" = $1 and "financialProfileId" = $2
+       and "sourceSuggestionId" = $3 and "payloadFingerprint" = $4
+       and "kind" in ('DEDUPLICATION', 'RECONCILIATION')
+       and "status" = 'PENDING_REVIEW'
+     order by "createdAt" asc, "id" asc`,
+    [context.organizationId, context.financialProfileId, suggestion.id, fingerprint],
+  );
+  const candidates = candidateRows.map(mapAiSuggestionRow).flatMap((candidate) => {
+    const deterministic = parseDeterministicReviewPayload(candidate.payload);
+    if (deterministic === undefined) return [];
+    return [
+      {
+        id: candidate.id,
+        kind: candidate.kind,
+        status: candidate.status,
+        targetTransactionId: deterministic.targetTransactionId,
+        confidence: candidate.confidence,
+        explanation: candidate.explanation,
+        reasons: deterministic.reasons,
+        conflicts: deterministic.conflicts,
+      },
+    ];
+  });
+  if (candidates.length > 0) {
+    await recalculateImportBatch(context, importBatchId, executeQuery);
+  }
+  return candidates;
+}
+
+export async function refreshImportBatchStatusForContext(
+  context: TenantContext,
+  importBatchId: EntityId,
+  executeQuery: QueryExecutor = query,
+): Promise<ImportBatch> {
+  return recalculateImportBatch(context, importBatchId, executeQuery);
+}
+
 async function expireDeterministicCandidates(
   context: TenantContext,
   sourceSuggestionId: EntityId,
@@ -1040,6 +1190,17 @@ async function recalculateImportBatch(
     `select
        count(*)::int as "total",
        count(*) filter (where "status" = 'PENDING_REVIEW')::int as "pending",
+       (select count(*)::int from "AiSuggestion" candidate
+        where candidate."organizationId" = $1
+          and candidate."financialProfileId" = $2
+          and candidate."sourceSuggestionId" in (
+            select source_pending."id" from "AiSuggestion" source_pending
+            where source_pending."organizationId" = $1
+              and source_pending."financialProfileId" = $2
+              and source_pending."sourceEntityId" = $3
+              and source_pending."kind" = 'TRANSACTION_EXTRACTION'
+          )
+          and candidate."status" = 'PENDING_REVIEW') as "candidatePending",
        count(*) filter (where exists (
          select 1 from "AiSuggestion" candidate
          where candidate."organizationId" = source."organizationId"
@@ -1053,9 +1214,10 @@ async function recalculateImportBatch(
        and source."sourceEntityId" = $3 and source."kind" = 'TRANSACTION_EXTRACTION'`,
     [context.organizationId, context.financialProfileId, importBatchId],
   );
-  const counts = countRows[0] ?? { total: 0, pending: 0, duplicate: 0 };
+  const counts = countRows[0] ?? { total: 0, pending: 0, candidatePending: 0, duplicate: 0 };
   const now = new Date().toISOString();
-  const status: ImportStatus = counts.pending === 0 ? "completed" : "reviewing";
+  const status: ImportStatus =
+    counts.pending === 0 && counts.candidatePending === 0 ? "completed" : "reviewing";
   await executeQuery(
     `update "ImportBatch" set "status" = $4, "validRows" = $5, "duplicateRows" = $6,
        "completedAt" = $7, "updatedAt" = $8
@@ -1116,14 +1278,11 @@ function mergeExtractionPayload(
     ...(changes.occurredOn === undefined ? {} : { occurredOn: changes.occurredOn }),
     ...(changes.kind === undefined ? {} : { kind: changes.kind }),
     ...(changes.amountMinor === undefined ? {} : { amountMinor: changes.amountMinor }),
-    ...(changes.currency === undefined ? {} : { currency: changes.currency.toUpperCase() }),
     ...(changes.description === undefined ? {} : { description: changes.description.trim() }),
     ...(changes.accountId === undefined ? {} : { accountId: changes.accountId }),
   };
   if (changes.categoryId === null) delete merged.categoryId;
   else if (changes.categoryId !== undefined) merged.categoryId = changes.categoryId;
-  if (changes.externalId === null) delete merged.externalId;
-  else if (changes.externalId !== undefined) merged.externalId = changes.externalId.trim();
 
   const parsed = parseTransactionExtractionPayload(merged);
   if (parsed === undefined) {

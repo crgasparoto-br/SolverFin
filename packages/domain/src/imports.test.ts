@@ -104,7 +104,7 @@ function testMappingRequired(): void {
 
   assertEqual(preview.state, "mapping_required", "custom headers require mapping");
   assertEqual(preview.csv?.headers.length, 3, "headers returned");
-  assertEqual(preview.csv?.sampleRows.length, 1, "sample returned");
+  assertEqual(preview.csv?.sampleRows.length, 0, "raw rows are not returned before mapping");
   assertEqual(preview.suggestions.length, 0, "mapping preview has no suggestions");
 }
 
@@ -118,6 +118,8 @@ function testExplicitMapping(): void {
   });
 
   assertEqual(preview.state, "ready", "explicit mapping ready");
+  assertEqual(preview.csv?.sampleRows[0]?.description, "Demo", "normalized sample returned");
+  assertEqual(preview.csv?.sampleRows[0]?.amountMinor, 1000, "normalized sample amount");
   assertEqual(preview.suggestions[0]?.kind, "expense", "kind inferred by sign");
 }
 

@@ -52,28 +52,60 @@ async function createFixtures(token: string): Promise<Fixtures> {
 
 async function assertPreviewDoesNotPersist(token: string, accountId: string): Promise<void> {
   const before = await listCsvBatches(token);
-  const content = "quando;o-que;quanto\n17/07/2026;Mercado preview;-12,34";
+  const rawSecret = "nao-deve-voltar-no-preview";
+  const content = [
+    "date,description,amount,kind,internal_note",
+    `2026-07-17,Mercado preview,-12.34,expense,${rawSecret}`,
+  ].join("\n");
   const previewResponse = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
     originalFileName: "preview.csv",
     content,
     accountId,
-    csvDelimiter: ";",
+    consentAccepted: true,
   });
   assert.equal(previewResponse.statusCode, 200);
   const preview = readBody<{
     state: string;
     persisted: boolean;
-    csv: { headers: string[]; sampleRows: Record<string, string>[] };
+    csv: {
+      headers: string[];
+      sampleRows: Array<{
+        sourceRowNumber: number;
+        occurredOn: string;
+        description: string;
+        kind: string;
+        amountMinor: number;
+        currency: string;
+      }>;
+    };
   }>(previewResponse);
-  assert.equal(preview.state, "mapping_required");
+  assert.equal(preview.state, "ready");
   assert.equal(preview.persisted, false);
-  assert.deepEqual(preview.csv.headers, ["quando", "o-que", "quanto"]);
-  assert.equal(preview.csv.sampleRows.length, 1);
+  assert.deepEqual(preview.csv.headers, ["date", "description", "amount", "kind", "internal_note"]);
+  assert.deepEqual(preview.csv.sampleRows, [
+    {
+      sourceRowNumber: 2,
+      occurredOn: "2026-07-17",
+      description: "Mercado preview",
+      kind: "expense",
+      amountMinor: 1234,
+      currency: "BRL",
+    },
+  ]);
+  assert.equal(JSON.stringify(preview).includes(rawSecret), false);
   const after = await listCsvBatches(token);
   assert.equal(after.length, before.length, "Preview must not create ImportBatch rows");
 }
 
 async function assertConsentAndMappingAreRequired(token: string, accountId: string): Promise<void> {
+  const previewWithoutConsent = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
+    originalFileName: "preview-sem-consentimento.csv",
+    content: "date,description,amount\n2026-07-17,Teste,-10",
+    accountId,
+  });
+  assert.equal(previewWithoutConsent.statusCode, 400);
+  assert.equal(readErrorCode(previewWithoutConsent), "IMPORT_CONSENT_REQUIRED");
+
   const noConsent = await apiRequest(token, "POST", "/api/import-batches/csv", {
     originalFileName: "sem-consentimento.csv",
     content: "date,description,amount\n2026-07-17,Teste,-10",
@@ -134,6 +166,8 @@ async function assertFullReviewLifecycle(token: string, fixtures: Fixtures): Pro
       description: `Descrição corrigida ${fixtures.suffix}`,
       categoryId: fixtures.category.id,
       amountMinor: 1099,
+      currency: "USD",
+      externalId: "must-remain-immutable",
     },
   );
   assert.equal(updateResponse.statusCode, 200);
@@ -141,6 +175,8 @@ async function assertFullReviewLifecycle(token: string, fixtures: Fixtures): Pro
   assert.equal(updated.status, "pending_review");
   assert.equal(updated.payload.description, `Descrição corrigida ${fixtures.suffix}`);
   assert.equal(updated.payload.amountMinor, 1099);
+  assert.equal(updated.payload.currency, "BRL");
+  assert.equal(updated.payload.externalId, undefined);
 
   const concurrent = await Promise.all([
     apiRequest(
@@ -203,14 +239,26 @@ async function assertFullReviewLifecycle(token: string, fixtures: Fixtures): Pro
   );
   assert.equal(bulk.statusCode, 200);
   const bulkBody = readBody<{
-    results: unknown[];
+    summary: { requested: number; approved: number; failed: number; idempotent: number };
+    results: Array<{ suggestionId: string; status: string; code?: string }>;
     failures: { code: string }[];
     importBatch: ImportBatch;
   }>(bulk);
-  assert.equal(bulkBody.results.length, 1);
+  assert.deepEqual(bulkBody.summary, { requested: 2, approved: 1, failed: 1, idempotent: 0 });
+  assert.equal(bulkBody.results.length, 2);
+  assert.equal(bulkBody.results.find((item) => item.suggestionId === third.id)?.status, "approved");
   assert.equal(bulkBody.failures.length, 1);
   assert.equal(bulkBody.failures[0]?.code, "IMPORT_SUGGESTION_NOT_FOUND");
   assert.equal(bulkBody.importBatch.status, "completed");
+
+  const repeatedIds = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${created.importBatch.id}/approve-selected`,
+    { suggestionIds: [third.id, third.id] },
+  );
+  assert.equal(repeatedIds.statusCode, 400);
+  assert.equal(readErrorCode(repeatedIds), "IMPORT_REVIEW_DUPLICATE_SELECTION");
 
   const duplicateCreate = await apiRequest(token, "POST", "/api/import-batches/csv", {
     originalFileName: `renamed-${fixtures.suffix}.csv`,
@@ -249,6 +297,26 @@ async function assertDeterministicReviewIsLinkedAndIdempotent(
   assert.equal(importResponse.statusCode, 201);
   const imported = readBody<ImportDetail>(importResponse);
   const source = requireSuggestion(imported, 0);
+
+  const blockedApproval = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${imported.importBatch.id}/suggestions/${source.id}/approve`,
+  );
+  assert.equal(blockedApproval.statusCode, 409);
+  assert.equal(readErrorCode(blockedApproval), "IMPORT_REVIEW_CANDIDATE_PENDING");
+  const blockedBody = readBody<{ details: { candidates: Array<{ kind: string }> } }>(
+    blockedApproval,
+  );
+  assert.ok(blockedBody.details.candidates.some((candidate) => candidate.kind === "deduplication"));
+
+  const persistedDetail = await apiRequest(
+    token,
+    "GET",
+    `/api/import-batches/${imported.importBatch.id}`,
+  );
+  assert.equal(persistedDetail.statusCode, 200);
+  assert.equal(readBody<ImportDetail>(persistedDetail).importBatch.status, "reviewing");
 
   const firstScan = await apiRequest(
     token,
@@ -410,6 +478,8 @@ interface ExtractionPayload {
   sourceRowNumber: number;
   description: string;
   amountMinor: number;
+  currency: string;
+  externalId?: string;
   accountId?: string;
   targetTransactionId?: string;
   sourceSuggestionId?: string;

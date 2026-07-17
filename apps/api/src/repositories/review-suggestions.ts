@@ -23,7 +23,10 @@ import {
 
 import { query, withSharedTransaction, type QueryExecutor } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
-import { resolveImportSuggestionFromDeterministicDecision } from "./imports.js";
+import {
+  refreshImportBatchStatusForContext,
+  resolveImportSuggestionFromDeterministicDecision,
+} from "./imports.js";
 
 export interface DeterministicReviewSuggestions {
   deduplicationSuggestions: AiSuggestion[];
@@ -360,6 +363,9 @@ export async function rejectDeterministicReviewSuggestionForContext(
         reason?.trim() || "Sugestao deterministica rejeitada pelo usuario.",
       ),
     );
+    if (rejected.sourceEntityId !== undefined) {
+      await refreshImportBatchStatusForContext(context, rejected.sourceEntityId, executeQuery);
+    }
     return { suggestion: rejected, idempotent: false };
   });
 }

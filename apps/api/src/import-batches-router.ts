@@ -87,7 +87,10 @@ export async function handleImportBatchesApiRequest(
     return {
       statusCode: response.statusCode,
       headers: { "content-type": "application/json; charset=utf-8" },
-      body: response.body,
+      body:
+        error instanceof ImportReviewError && error.details !== undefined
+          ? { ...response.body, details: error.details }
+          : response.body,
     };
   }
 }
@@ -144,12 +147,19 @@ async function previewCsvImportBatchHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
+  if (body.consentAccepted !== true) {
+    throw new ImportReviewError(
+      "IMPORT_CONSENT_REQUIRED",
+      "Confirme que o arquivo pode ser processado neste perfil financeiro.",
+    );
+  }
   return json(
     200,
     await previewCsvImportForContext(context, {
       originalFileName: requireString(body, "originalFileName"),
       content: requireString(body, "content"),
-      ...(body.accountId === undefined ? {} : { accountId: requireString(body, "accountId") }),
+      accountId: requireString(body, "accountId"),
+      consentAccepted: true,
       ...(readCsvMapping(body.csvMapping) === undefined
         ? {}
         : { csvMapping: readCsvMapping(body.csvMapping) as CsvImportMapping }),
@@ -304,13 +314,10 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
     }
     payload.amountMinor = value;
   }
-  if (body.currency !== undefined) payload.currency = requireString(body, "currency");
   if (body.description !== undefined) payload.description = requireString(body, "description");
   if (body.accountId !== undefined) payload.accountId = requireString(body, "accountId");
   if (body.categoryId === null) payload.categoryId = null;
   else if (body.categoryId !== undefined) payload.categoryId = requireString(body, "categoryId");
-  if (body.externalId === null) payload.externalId = null;
-  else if (body.externalId !== undefined) payload.externalId = requireString(body, "externalId");
   if (Object.keys(payload).length === 0) {
     throw new ImportReviewError(
       "IMPORT_UPDATE_REQUIRED",
