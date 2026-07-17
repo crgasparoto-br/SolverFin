@@ -67,7 +67,29 @@ jobs:
         run: npm run db:seed:check
 
       - name: Check formatting
+        id: formatting
+        continue-on-error: true
         run: npm run format:check
+
+      - name: Capture formatting differences
+        if: steps.formatting.outcome == 'failure'
+        run: |
+          mkdir -p artifacts/formatting
+          npx prettier . --list-different > artifacts/formatting/files.txt
+          cat artifacts/formatting/files.txt
+
+      - name: Upload formatting diagnostic
+        if: steps.formatting.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatting-diagnostic-${{ github.sha }}
+          path: artifacts/formatting/files.txt
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail on formatting differences
+        if: steps.formatting.outcome == 'failure'
+        run: exit 1
 
       - name: Lint
         run: npm run lint
