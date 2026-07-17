@@ -262,7 +262,9 @@ function isValidDateOnly(value: string | null | undefined): value is string {
   const normalized = value ?? "";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return false;
 
-  const [year, month, day] = normalized.split("-").map(Number);
+  const year = Number(normalized.slice(0, 4));
+  const month = Number(normalized.slice(5, 7));
+  const day = Number(normalized.slice(8, 10));
   const date = new Date(Date.UTC(year, month - 1, day));
 
   return (
