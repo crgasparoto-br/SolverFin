@@ -21,7 +21,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
-      - name: Rebuild and verify patch package
+      - name: Rebuild patch package
         shell: bash
         run: |
           set -euo pipefail
@@ -30,6 +30,20 @@ jobs:
           cat .github/issue-494-patch/part-03a .github/issue-494-patch/part-03b .github/issue-494-patch/part-03c \
             .github/issue-494-patch/part-04 .github/issue-494-patch/part-05 \
             >> /tmp/issue-494.patch.xz
+          sha256sum /tmp/issue-494.patch.xz
+
+      - name: Upload rebuilt package
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-494-patch-rebuilt-v2
+          path: /tmp/issue-494.patch.xz
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Verify and apply patch
+        shell: bash
+        run: |
+          set -euo pipefail
           printf '%s  %s\n' '40c2f9f16bb7c306c057e00bdafba9ec7e0d0003da39d051eee0b05d6092fa1b' '/tmp/issue-494.patch.xz' \
             | sha256sum --check
           xz --test /tmp/issue-494.patch.xz
