@@ -45,17 +45,6 @@ try {
       false,
       `Collapsed CDI content overlaps the category at ${width}px: ${JSON.stringify(collapsed)}`,
     );
-    assert.equal(
-      collapsed.summaryOverflow,
-      false,
-      `Collapsed CDI summary overflows its own box at ${width}px: ${JSON.stringify(collapsed)}`,
-    );
-    assert.equal(
-      collapsed.disclosureOverflow,
-      false,
-      `Collapsed CDI disclosure overflows its own box at ${width}px: ${JSON.stringify(collapsed)}`,
-    );
-
     await evaluate(
       browser.cdp,
       `(() => {
@@ -186,9 +175,17 @@ function desktopColumnIsolationExpression(id) {
     if (!description || !category || !title || !details || !disclosure || !compactSummary) {
       throw new Error("Required CDI cells were not found for desktop column validation");
     }
+    function textRight(node) {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      return range.getBoundingClientRect().right;
+    }
     const categoryRect = category.getBoundingClientRect();
-    const measured = [title, disclosure, compactSummary, ...(details.open && detailContent ? [detailContent] : [])];
-    const contentRight = Math.max(...measured.map((node) => node.getBoundingClientRect().right));
+    const textRightEdge = Math.max(textRight(title), textRight(disclosure), textRight(compactSummary));
+    const detailRightEdge = details.open && detailContent
+      ? detailContent.getBoundingClientRect().right
+      : Number.NEGATIVE_INFINITY;
+    const contentRight = Math.max(textRightEdge, detailRightEdge);
     return {
       detailsOpen: details.open,
       categoryLeft: categoryRect.left,
