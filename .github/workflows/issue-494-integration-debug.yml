@@ -1,0 +1,75 @@
+name: Issue 494 integration diagnostics
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  integration-diagnostics:
+    name: Capture integration failure
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Prepare database and packages
+        run: |
+          npm ci --no-audit --no-fund
+          npm run prisma:generate
+          npm run build:packages
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Capture API integration output
+        id: integration
+        shell: bash
+        run: |
+          set +e
+          npm run test:integration --workspace @solverfin/api > /tmp/issue-494-integration.log 2>&1
+          status=$?
+          cat /tmp/issue-494-integration.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload integration log
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-494-integration-log
+          path: /tmp/issue-494-integration.log
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Preserve failure status
+        if: steps.integration.outputs.status != '0'
+        run: exit 1
