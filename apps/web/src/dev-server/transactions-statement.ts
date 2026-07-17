@@ -84,7 +84,9 @@ export function resolveFilters(
   };
 }
 
-export function monthToPeriod(month: string): Pick<StatementFilters, "startsOn" | "endsOn"> {
+export function monthToPeriod(
+  month: string,
+): Pick<StatementFilters, "startsOn" | "endsOn"> {
   const year = Number(month.slice(0, 4));
   const monthIndex = Number(month.slice(5, 7)) - 1;
   const startsOn = new Date(Date.UTC(year, monthIndex, 1));
@@ -96,7 +98,9 @@ export function monthToPeriod(month: string): Pick<StatementFilters, "startsOn" 
   };
 }
 
-export function dayToPeriod(day: string): Pick<StatementFilters, "startsOn" | "endsOn"> {
+export function dayToPeriod(
+  day: string,
+): Pick<StatementFilters, "startsOn" | "endsOn"> {
   return { startsOn: day, endsOn: day };
 }
 
@@ -108,7 +112,9 @@ export function buildTransactionQuery(filters: StatementFilters): string {
   }).toString();
 }
 
-export function isAccountStatementTransaction(transaction: TransactionRecord): boolean {
+export function isAccountStatementTransaction(
+  transaction: TransactionRecord,
+): boolean {
   return (
     transaction.accountId !== undefined ||
     (transaction.cardId === undefined && transaction.invoiceId === undefined)
@@ -135,7 +141,9 @@ export function calculateOpeningBalance(
 
   for (const transaction of transactions
     .filter((candidate) => candidate.status !== "voided")
-    .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))) {
+    .sort((left, right) =>
+      statementDate(left).localeCompare(statementDate(right)),
+    )) {
     if (statementDate(transaction) >= startsOn) continue;
     if (transaction.effectiveOn === undefined) continue;
 
@@ -154,7 +162,9 @@ export function buildRows(
 
   return transactions
     .filter((transaction) => transaction.status !== "voided")
-    .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))
+    .sort((left, right) =>
+      statementDate(left).localeCompare(statementDate(right)),
+    )
     .map((transaction) => {
       const amountMinor = signedAmount(transaction, selectedAccount?.id);
       balance += amountMinor;
@@ -167,7 +177,10 @@ export function buildRows(
     });
 }
 
-export function summarize(rows: StatementRow[], openingMinor: number): StatementSummary {
+export function summarize(
+  rows: StatementRow[],
+  openingMinor: number,
+): StatementSummary {
   return rows.reduce<StatementSummary>(
     (summary, row) => {
       const absolute = Math.abs(row.amountMinor);
@@ -215,20 +228,31 @@ export function signedAmount(
 ): number {
   if (transaction.kind === "income") return transaction.amountMinor;
   if (transaction.kind === "expense") return -transaction.amountMinor;
-  if (transaction.kind === "transfer" && transaction.destinationAccountId === selectedAccountId) {
+  if (
+    transaction.kind === "transfer" &&
+    transaction.destinationAccountId === selectedAccountId
+  ) {
     return transaction.amountMinor;
   }
-  if (transaction.kind === "transfer" && transaction.accountId === selectedAccountId) {
+  if (
+    transaction.kind === "transfer" &&
+    transaction.accountId === selectedAccountId
+  ) {
     return -transaction.amountMinor;
   }
   return 0;
 }
 
 export function statementDate(transaction: TransactionRecord): string {
-  return transaction.effectiveOn ?? transaction.plannedOn ?? transaction.occurredOn;
+  return (
+    transaction.effectiveOn ?? transaction.plannedOn ?? transaction.occurredOn
+  );
 }
 
-function resolveSelectedMonth(url: URL | undefined, currentMonth: string): string {
+function resolveSelectedMonth(
+  url: URL | undefined,
+  currentMonth: string,
+): string {
   const queryMonth = url?.searchParams.get("month");
   if (isValidMonth(queryMonth)) return queryMonth;
 
@@ -239,7 +263,10 @@ function resolveSelectedMonth(url: URL | undefined, currentMonth: string): strin
   return currentMonth;
 }
 
-function resolveSelectedDay(url: URL | undefined, month: string): string | undefined {
+function resolveSelectedDay(
+  url: URL | undefined,
+  month: string,
+): string | undefined {
   const queryDay = url?.searchParams.get("day");
   if (!isValidDateOnly(queryDay)) return undefined;
   if (!queryDay.startsWith(`${month}-`)) return undefined;
