@@ -4,6 +4,7 @@ import {
   buildRows,
   buildTransactionQuery,
   calculateOpeningBalance,
+  dayToPeriod,
   filterStatementPeriodTransactions,
   isAccountStatementTransaction,
   monthToPeriod,
@@ -32,7 +33,10 @@ const destinationAccount: AccountRecord = {
 
 periodHelpersResolveMonthBoundaries();
 filtersKeepCurrentAndLegacyFallbacks();
+dayFilterUsesSelectedDateWithinMonth();
+invalidOrDifferentMonthDayFallsBackToFullMonth();
 transactionQueryKeepsPreviousBalanceWindow();
+dayFilterKeepsOpeningBalanceAndDailyRows();
 statementTransactionFilterKeepsAccountOrAccountOnlyRecords();
 statementCalculationsIgnoreVoidedAndPendingOpeningEntries();
 projectedBalancesIncludePlannedEntriesAndTransfers();
@@ -46,6 +50,10 @@ function periodHelpersResolveMonthBoundaries(): void {
   assert.deepEqual(monthToPeriod("2024-02"), {
     startsOn: "2024-02-01",
     endsOn: "2024-02-29",
+  });
+  assert.deepEqual(dayToPeriod("2026-02-14"), {
+    startsOn: "2026-02-14",
+    endsOn: "2026-02-14",
   });
 }
 
@@ -79,17 +87,95 @@ function filtersKeepCurrentAndLegacyFallbacks(): void {
   );
 }
 
+function dayFilterUsesSelectedDateWithinMonth(): void {
+  assert.deepEqual(
+    resolveFilters(
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-1&month=2026-06&day=2026-06-15",
+      ),
+      [account],
+    ),
+    {
+      accountId: "account-1",
+      month: "2026-06",
+      day: "2026-06-15",
+      startsOn: "2026-06-15",
+      endsOn: "2026-06-15",
+    },
+  );
+}
+
+function invalidOrDifferentMonthDayFallsBackToFullMonth(): void {
+  for (const day of ["2026-06-31", "2026-07-01", "invalid"]) {
+    assert.deepEqual(
+      resolveFilters(
+        new URL(`http://solverfin.test/lancamentos?month=2026-06&day=${day}`),
+        [account],
+      ),
+      {
+        accountId: "account-1",
+        month: "2026-06",
+        startsOn: "2026-06-01",
+        endsOn: "2026-06-30",
+      },
+    );
+  }
+}
+
 function transactionQueryKeepsPreviousBalanceWindow(): void {
-  const filters = resolveFilters(
+  const monthlyFilters = resolveFilters(
     new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-06"),
     [account],
   );
-  const query = new URLSearchParams(buildTransactionQuery(filters));
+  const monthlyQuery = new URLSearchParams(buildTransactionQuery(monthlyFilters));
 
-  assert.equal(query.get("status"), "all");
-  assert.equal(query.get("accountId"), "account-1");
-  assert.equal(query.get("plannedFrom"), null);
-  assert.equal(query.get("plannedTo"), "2026-06-30");
+  assert.equal(monthlyQuery.get("status"), "all");
+  assert.equal(monthlyQuery.get("accountId"), "account-1");
+  assert.equal(monthlyQuery.get("plannedFrom"), null);
+  assert.equal(monthlyQuery.get("plannedTo"), "2026-06-30");
+
+  const dailyFilters = resolveFilters(
+    new URL(
+      "http://solverfin.test/lancamentos?accountId=account-1&month=2026-06&day=2026-06-15",
+    ),
+    [account],
+  );
+  const dailyQuery = new URLSearchParams(buildTransactionQuery(dailyFilters));
+
+  assert.equal(dailyQuery.get("plannedFrom"), null);
+  assert.equal(dailyQuery.get("plannedTo"), "2026-06-15");
+}
+
+function dayFilterKeepsOpeningBalanceAndDailyRows(): void {
+  const transactions: TransactionRecord[] = [
+    transaction("previous-month-income", "income", "posted", 10000, "2026-05-31"),
+    transaction("same-month-before-day-expense", "expense", "posted", 5000, "2026-06-14"),
+    transaction("selected-day-income", "income", "posted", 2000, "2026-06-15"),
+    pendingTransaction("selected-day-pending-expense", "expense", 500, "2026-06-15"),
+  ];
+  const filters = resolveFilters(
+    new URL(
+      "http://solverfin.test/lancamentos?accountId=account-1&month=2026-06&day=2026-06-15",
+    ),
+    [account],
+  );
+
+  const openingMinor = calculateOpeningBalance(transactions, account, filters.startsOn);
+  assert.equal(openingMinor, 55000);
+
+  const rows = buildRows(
+    filterStatementPeriodTransactions(transactions, filters),
+    account,
+    openingMinor,
+  );
+  assert.deepEqual(
+    rows.map((row) => row.transaction.id),
+    ["selected-day-income", "selected-day-pending-expense"],
+  );
+  assert.deepEqual(
+    rows.map((row) => row.balanceAfterMinor),
+    [57000, 56500],
+  );
 }
 
 function statementTransactionFilterKeepsAccountOrAccountOnlyRecords(): void {
