@@ -26,15 +26,10 @@ async function assertFullInvoice(): Promise<void> {
   installFetch();
   const html = await renderCardsPageWithMonthNavigation(
     "token",
-    new URL(
-      "http://localhost/cartoes?cardId=card-1&month=2028-01&sort=amount_desc",
-    ),
+    new URL("http://localhost/cartoes?cardId=card-1&month=2028-01&sort=amount_desc"),
   );
 
-  assert.match(
-    html,
-    /name="day" value="" min="2028-01-01" max="2028-01-31" data-card-day-input/,
-  );
+  assert.match(html, /name="day" value="" min="2028-01-01" max="2028-01-31" data-card-day-input/);
   assert.match(html, /Compra do dia selecionado/);
   assert.match(html, /Compra de outro dia/);
   assert.doesNotMatch(html, /data-card-day-summary/);
@@ -47,9 +42,7 @@ async function assertFilteredDay(): Promise<void> {
   installFetch();
   const html = await renderCardsPageWithMonthNavigation(
     "token",
-    new URL(
-      "http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10&sort=amount_desc",
-    ),
+    new URL("http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10&sort=amount_desc"),
   );
 
   assert.match(
@@ -62,23 +55,14 @@ async function assertFilteredDay(): Promise<void> {
   assert.match(html, /Resumo do dia/);
   assert.match(html, /10\/01\/2028/);
   assert.match(html, />Compras<\/dt><dd>1<\/dd>/);
-  assert.match(
-    html,
-    />Total conciliado<\/dt><dd class="debit">-R\$[^<]*100,00<\/dd>/,
-  );
-  assert.match(
-    html,
-    />Total não conciliado<\/dt><dd class="debit">-R\$[^<]*0,00<\/dd>/,
-  );
+  assert.match(html, />Total conciliado<\/dt><dd class="debit">-R\$[^<]*100,00<\/dd>/);
+  assert.match(html, />Total não conciliado<\/dt><dd class="debit">-R\$[^<]*0,00<\/dd>/);
   assert.match(html, /data-card-day-period>Compras de 10\/01\/2028/);
   assert.match(
     html,
     /href="\/cartoes\?cardId=card-1&amp;month=2028-01&amp;sort=amount_desc&amp;invoiceId=invoice-1" data-clear-card-day role="button">Fatura completa<\/a>/,
   );
-  assert.doesNotMatch(
-    html,
-    /href="[^"]*day=2028-01-10[^"]*" aria-label="Fatura anterior"/,
-  );
+  assert.doesNotMatch(html, /href="[^"]*day=2028-01-10[^"]*" aria-label="Fatura anterior"/);
   assert.match(html, /clearDay\(\)/);
   assert.match(html, /dayInput\.disabled = true/);
 }
@@ -87,9 +71,7 @@ async function assertDayWithoutPurchases(): Promise<void> {
   installFetch();
   const html = await renderCardsPageWithMonthNavigation(
     "token",
-    new URL(
-      "http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-15",
-    ),
+    new URL("http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-15"),
   );
 
   assert.match(html, /Nenhuma compra neste dia\./);
@@ -102,9 +84,7 @@ async function assertOutsidePeriodIsIgnored(): Promise<void> {
   installFetch();
   const html = await renderCardsPageWithMonthNavigation(
     "token",
-    new URL(
-      "http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-02-01",
-    ),
+    new URL("http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-02-01"),
   );
 
   assert.match(html, /name="day" value="" min="2028-01-01" max="2028-01-31"/);
@@ -115,9 +95,7 @@ async function assertOutsidePeriodIsIgnored(): Promise<void> {
 }
 
 function installFetch(): void {
-  globalThis.fetch = async (
-    input: string | URL | Request,
-  ): Promise<Response> => {
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input));
 
     if (url.pathname === "/api/cards") {
@@ -161,13 +139,7 @@ function installFetch(): void {
             10000,
             "reconciled",
           ),
-          purchase(
-            "purchase-other",
-            "2028-01-11",
-            "Compra de outro dia",
-            2500,
-            "posted",
-          ),
+          purchase("purchase-other", "2028-01-11", "Compra de outro dia", 2500, "posted"),
         ],
       });
     }
