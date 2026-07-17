@@ -19,7 +19,10 @@ export function enhanceAccountRemunerationDisclosure(html: string): string {
         .account-remuneration-audit summary:focus-visible{border-radius:4px;outline:2px solid var(--primary);outline-offset:2px}
         @media(max-width:1300px){.account-remuneration-disclosure-full{display:none}.account-remuneration-disclosure-compact{display:inline}}
       </style>`;
-  const enhancedHtml = html.replaceAll("<summary>Ver memória do cálculo</summary>", DISCLOSURE_SUMMARY);
+  const enhancedHtml = html.replaceAll(
+    "<summary>Ver memória do cálculo</summary>",
+    DISCLOSURE_SUMMARY,
+  );
 
   return enhancedHtml.replace("</head>", `${styles}</head>`);
 }
