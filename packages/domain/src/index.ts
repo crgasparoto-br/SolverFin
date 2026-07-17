@@ -267,7 +267,47 @@ export interface ImportBatch extends Traceable, TenantScoped {
   sourceHash: string;
   receivedAt: ISODateTime;
   completedAt?: ISODateTime;
+  defaultAccountId?: EntityId;
+  totalRows?: number;
+  validRows?: number;
+  duplicateRows?: number;
+  problemRows?: number;
+  problems?: readonly ImportProblemSnapshot[];
+  csvDelimiter?: "," | ";";
+  csvMapping?: Partial<Record<"date" | "description" | "amount" | "kind" | "externalId", string>>;
 }
+
+export interface ImportProblemSnapshot {
+  rowNumber: number;
+  severity: "error" | "warning";
+  code: string;
+  message: string;
+}
+
+export interface TransactionExtractionPayloadV1 {
+  payloadVersion: 1;
+  sourceRowNumber: number;
+  sourceHash: string;
+  occurredOn: ISODate;
+  kind: Extract<TransactionKind, "income" | "expense">;
+  amountMinor: number;
+  currency: string;
+  description: string;
+  accountId?: EntityId;
+  categoryId?: EntityId;
+  externalId?: string;
+}
+
+export interface DeterministicReviewPayloadV1 {
+  payloadVersion: 1;
+  sourceSuggestionId: EntityId;
+  sourcePayloadFingerprint: string;
+  targetTransactionId: EntityId;
+  reasons: readonly string[];
+  conflicts: readonly string[];
+}
+
+export type AiSuggestionPayload = TransactionExtractionPayloadV1 | DeterministicReviewPayloadV1;
 
 export interface AiSuggestion extends Traceable, TenantScoped {
   kind: AiSuggestionKind;
@@ -276,6 +316,7 @@ export interface AiSuggestion extends Traceable, TenantScoped {
   targetEntityId?: EntityId;
   confidence: number;
   explanation: string;
+  payload?: AiSuggestionPayload;
   provider?: string;
   model?: string;
   reviewedByUserId?: EntityId;

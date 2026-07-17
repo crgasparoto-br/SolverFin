@@ -1,4 +1,5 @@
 import {
+  parseTransactionExtractionPayload,
   type AiSuggestion,
   type AuditLogEntryDraft,
   type EntityId,
@@ -9,6 +10,11 @@ import {
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import {
+  approveImportSuggestionForContext,
+  rejectImportSuggestionForContext,
+  updateImportSuggestionForContext,
+} from "./imports.js";
 import { createTransactionForContext } from "./transactions.js";
 
 export interface AiReviewQueueListFilters {
@@ -62,6 +68,7 @@ interface AiSuggestionRow {
   targetEntityId: string | null;
   confidence: string | number;
   explanation: string;
+  payload: unknown;
   provider: string | null;
   model: string | null;
   reviewedByUserId: string | null;
@@ -84,7 +91,7 @@ export class AiReviewQueueError extends Error {
 
 const LOW_CONFIDENCE_THRESHOLD = 0.7;
 const AI_SUGGESTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
-  "sourceEntityId", "targetEntityId", "confidence", "explanation", "provider", "model", "reviewedByUserId",
+  "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload", "provider", "model", "reviewedByUserId",
   "reviewedAt", "createdAt", "updatedAt"`;
 
 export async function listAiReviewQueueForContext(
@@ -115,6 +122,18 @@ export async function approveAiReviewSuggestionForContext(
 ): Promise<ReviewMutationResult> {
   const now = new Date().toISOString();
   const suggestion = await findSuggestionForContext(context, suggestionId);
+
+  if (isImportExtractionSuggestion(suggestion)) {
+    const result = await approveImportSuggestionForContext(
+      context,
+      suggestion.sourceEntityId as string,
+      suggestion.id,
+    );
+    return result.transaction === undefined
+      ? { suggestion: result.suggestion }
+      : { suggestion: result.suggestion, transaction: result.transaction };
+  }
+
   assertPending(suggestion);
 
   let transaction: Transaction | undefined;
@@ -182,6 +201,25 @@ export async function editAiReviewSuggestionForContext(
 ): Promise<ReviewMutationResult> {
   const now = new Date().toISOString();
   const suggestion = await findSuggestionForContext(context, suggestionId);
+
+  if (isImportExtractionSuggestion(suggestion)) {
+    const result = await updateImportSuggestionForContext(
+      context,
+      suggestion.sourceEntityId as string,
+      suggestion.id,
+      {
+        ...(payload.occurredOn === undefined ? {} : { occurredOn: payload.occurredOn }),
+        ...(payload.kind === "income" || payload.kind === "expense" ? { kind: payload.kind } : {}),
+        ...(payload.amountMinor === undefined ? {} : { amountMinor: payload.amountMinor }),
+        ...(payload.currency === undefined ? {} : { currency: payload.currency }),
+        ...(payload.description === undefined ? {} : { description: payload.description }),
+        ...(payload.accountId === undefined ? {} : { accountId: payload.accountId }),
+        ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
+      },
+    );
+    return { suggestion: result.suggestion };
+  }
+
   assertPending(suggestion);
 
   if (suggestion.kind === "transaction_extraction") {
@@ -216,6 +254,17 @@ export async function rejectAiReviewSuggestionForContext(
 ): Promise<ReviewMutationResult> {
   const now = new Date().toISOString();
   const suggestion = await findSuggestionForContext(context, suggestionId);
+
+  if (isImportExtractionSuggestion(suggestion)) {
+    const result = await rejectImportSuggestionForContext(
+      context,
+      suggestion.sourceEntityId as string,
+      suggestion.id,
+      reason,
+    );
+    return { suggestion: result.suggestion };
+  }
+
   assertPending(suggestion);
   const rejectedSuggestion = markSuggestionReviewed(context, suggestion, "rejected", now);
 
@@ -344,6 +393,19 @@ function parseProposedTransaction(suggestion: AiSuggestion): AiSuggestedTransact
 function tryParseProposedTransaction(
   suggestion: AiSuggestion,
 ): AiSuggestedTransactionDraft | undefined {
+  const structured = parseTransactionExtractionPayload(suggestion.payload);
+  if (structured !== undefined && structured.accountId !== undefined) {
+    return {
+      kind: structured.kind,
+      amountMinor: structured.amountMinor,
+      occurredOn: structured.occurredOn,
+      accountId: structured.accountId,
+      description: structured.description,
+      currency: structured.currency,
+      ...(structured.categoryId === undefined ? {} : { categoryId: structured.categoryId }),
+    };
+  }
+
   const match =
     /^CSV linha (\d+): ([0-9-]+); ([a-z_]+); (\d+) centavos; (.*)\. Revise antes de criar o lancamento final\.$/.exec(
       suggestion.explanation,
@@ -532,6 +594,8 @@ function mapAiSuggestionRow(row: AiSuggestionRow): AiSuggestion {
   };
 
   if (row.sourceEntityId !== null) suggestion.sourceEntityId = row.sourceEntityId;
+  const payload = parseTransactionExtractionPayload(row.payload);
+  if (payload !== undefined) suggestion.payload = payload;
   if (row.targetEntityId !== null) suggestion.targetEntityId = row.targetEntityId;
   if (row.provider !== null) suggestion.provider = row.provider;
   if (row.model !== null) suggestion.model = row.model;
@@ -539,4 +603,13 @@ function mapAiSuggestionRow(row: AiSuggestionRow): AiSuggestion {
   if (row.reviewedAt !== null) suggestion.reviewedAt = row.reviewedAt.toISOString();
 
   return suggestion;
+}
+
+function isImportExtractionSuggestion(suggestion: AiSuggestion): boolean {
+  return (
+    suggestion.kind === "transaction_extraction" &&
+    suggestion.sourceEntityId !== undefined &&
+    suggestion.provider?.startsWith("solverfin-import") === true &&
+    parseTransactionExtractionPayload(suggestion.payload) !== undefined
+  );
 }

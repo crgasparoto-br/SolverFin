@@ -206,14 +206,16 @@ async function createPersonalCsvImportFlow(
 ): Promise<ImportFixtures> {
   const suffix = Date.now().toString(36);
   const csvContent = [
-    "date,description,amount,kind,accountId,categoryId",
-    `2026-06-18,Compra mercado integracao ${suffix},-123.45,expense,${fixtures.account.id},${fixtures.category.id}`,
-    `19/06/2026,Receita integracao ${suffix},2500.00,income,${fixtures.account.id},`,
+    "date,description,amount,kind",
+    `2026-06-18,Compra mercado integracao ${suffix},-123.45,expense`,
+    `19/06/2026,Receita integracao ${suffix},2500.00,income`,
   ].join("\n");
 
   const importResponse = await apiRequest(token, "POST", "/api/import-batches/csv", {
     originalFileName: `extrato-${suffix}.csv`,
     content: csvContent,
+    accountId: fixtures.account.id,
+    consentAccepted: true,
   });
   assert.equal(importResponse.statusCode, 201);
   const imported = readBody<{
@@ -251,9 +253,11 @@ async function createPersonalCsvImportFlow(
   const invalidResponse = await apiRequest(token, "POST", "/api/import-batches/csv", {
     originalFileName: `extrato-invalido-${suffix}.csv`,
     content: "data,valor\n2026-06-18,10.00",
+    accountId: fixtures.account.id,
+    consentAccepted: true,
   });
-  assert.equal(invalidResponse.statusCode, 400);
-  assert.equal(readErrorCode(invalidResponse), "IMPORT_CSV_HEADER_INVALID");
+  assert.equal(invalidResponse.statusCode, 422);
+  assert.equal(readErrorCode(invalidResponse), "IMPORT_CSV_MAPPING_REQUIRED");
 
   return { batch: imported.importBatch };
 }

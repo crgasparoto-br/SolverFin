@@ -27,7 +27,7 @@ async function main(): Promise<void> {
 
   await assertListsPendingSuggestions(token, suggestions);
   await assertApproveCreatesTransaction(token, suggestions[0]?.id ?? "");
-  await assertEditClosesSuggestion(token, suggestions[1]?.id ?? "");
+  await assertEditKeepsSuggestionPending(token, suggestions[1]?.id ?? "");
   await assertRejectBlocksSecondReview(token, suggestions[2]?.id ?? "");
   await assertMeiProfileDoesNotExposePersonalSuggestions(token, suggestions);
 }
@@ -58,15 +58,17 @@ async function createImportSuggestions(
 ): Promise<ApiAiSuggestion[]> {
   const suffix = Date.now().toString(36);
   const csvContent = [
-    "date,description,amount,kind,accountId,categoryId",
-    `2026-06-18,Compra revisao aprovar ${suffix},-10.00,expense,${fixtures.account.id},${fixtures.category.id}`,
-    `2026-06-19,Compra revisao editar ${suffix},-20.00,expense,${fixtures.account.id},${fixtures.category.id}`,
-    `2026-06-20,Compra revisao rejeitar ${suffix},-30.00,expense,${fixtures.account.id},${fixtures.category.id}`,
+    "date,description,amount,kind",
+    `2026-06-18,Compra revisao aprovar ${suffix},-10.00,expense`,
+    `2026-06-19,Compra revisao editar ${suffix},-20.00,expense`,
+    `2026-06-20,Compra revisao rejeitar ${suffix},-30.00,expense`,
   ].join("\n");
 
   const importResponse = await apiRequest(token, "POST", "/api/import-batches/csv", {
     originalFileName: `revisao-${suffix}.csv`,
     content: csvContent,
+    accountId: fixtures.account.id,
+    consentAccepted: true,
   });
   assert.equal(importResponse.statusCode, 201);
 
@@ -110,7 +112,10 @@ async function assertApproveCreatesTransaction(token: string, suggestionId: stri
   assert.equal(result.transaction.aiSuggestionId, suggestionId);
 }
 
-async function assertEditClosesSuggestion(token: string, suggestionId: string): Promise<void> {
+async function assertEditKeepsSuggestionPending(
+  token: string,
+  suggestionId: string,
+): Promise<void> {
   const response = await apiRequest(token, "POST", `/api/ai-review-queue/${suggestionId}/edit`, {
     payload: {
       amountMinor: 2199,
@@ -121,8 +126,15 @@ async function assertEditClosesSuggestion(token: string, suggestionId: string): 
   assert.equal(response.statusCode, 200);
   const result = readBody<{ suggestion: ApiAiSuggestion }>(response);
 
-  assert.equal(result.suggestion.status, "edited");
-  assert.ok(result.suggestion.reviewedAt);
+  assert.equal(result.suggestion.status, "pending_review");
+
+  const queueResponse = await apiRequest(token, "GET", "/api/ai-review-queue");
+  const queue = readBody<{ suggestions: ApiReviewQueueItem[] }>(queueResponse).suggestions;
+  const edited = queue.find((item) => item.id === suggestionId);
+  assert.equal(
+    (edited?.proposedTransaction as { amountMinor?: number } | undefined)?.amountMinor,
+    2199,
+  );
 }
 
 async function assertRejectBlocksSecondReview(token: string, suggestionId: string): Promise<void> {
@@ -140,8 +152,8 @@ async function assertRejectBlocksSecondReview(token: string, suggestionId: strin
     "POST",
     `/api/ai-review-queue/${suggestionId}/approve`,
   );
-  assert.equal(secondReview.statusCode, 400);
-  assert.equal(readErrorCode(secondReview), "AI_REVIEW_INVALID_TRANSITION");
+  assert.equal(secondReview.statusCode, 409);
+  assert.equal(readErrorCode(secondReview), "IMPORT_REVIEW_INVALID_TRANSITION");
 }
 
 async function assertMeiProfileDoesNotExposePersonalSuggestions(
