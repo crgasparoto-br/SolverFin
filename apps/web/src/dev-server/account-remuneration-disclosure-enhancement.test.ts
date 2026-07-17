@@ -16,10 +16,7 @@ assert.match(
   enhanced,
   /\.description\{column-gap:2px;grid-template-columns:max-content minmax\(0,1fr\);min-width:0\}/,
 );
-assert.match(
-  enhanced,
-  /\.description>strong\{[^}]*font-size:\.75rem[^}]*white-space:nowrap/,
-);
+assert.match(enhanced, /\.description>strong\{[^}]*font-size:\.75rem[^}]*white-space:nowrap/);
 assert.match(
   enhanced,
   /\.account-remuneration-summary\{[^}]*max-width:100%[^}]*overflow-wrap:normal[^}]*word-break:normal/,
