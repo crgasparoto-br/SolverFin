@@ -104,7 +104,7 @@ export function buildTransactionQuery(filters: StatementFilters): string {
   return new URLSearchParams({
     status: "all",
     accountId: filters.accountId ?? "",
-    plannedTo: filters.endsOn,
+    occurredTo: filters.endsOn,
   }).toString();
 }
 
