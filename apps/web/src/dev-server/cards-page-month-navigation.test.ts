@@ -88,7 +88,7 @@ function assertMonthNavigation(
       `href="/cartoes\\?cardId=card-1&amp;month=${nextMonth}${sortSuffix}" aria-label="Próxima fatura"`,
     ),
   );
-  assert.equal((html.match(/data-invoice-current/g) ?? []).length, 1);
+  assert.equal((html.match(/<a\b[^>]*data-invoice-current\b/g) ?? []).length, 1);
   assert.match(
     html,
     new RegExp(
@@ -115,7 +115,7 @@ function assertMonthNavigation(
   );
   assert.match(
     html,
-    /\.card-filter \.month-current-link\{[^}]*background:var\(--surface\);[^}]*border:1px solid var\(--line\);[^}]*color:var\(--primary\);/,
+    /\.card-filter \.month-current-link(?:,\.card-filter \.card-day-clear)?\{[^}]*background:var\(--surface\);[^}]*border:1px solid var\(--line\);[^}]*color:var\(--primary\);/,
   );
   assert.doesNotMatch(html, /-webkit-appearance:none|calendar-picker-indicator\{display:none\}/);
   assert.doesNotMatch(html, /invoiceId=[^"&]+/);

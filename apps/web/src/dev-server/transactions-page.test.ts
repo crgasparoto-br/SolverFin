@@ -140,7 +140,8 @@ async function transactionsPageShowsPlannedIncomeAndExpenseCommitments(): Promis
     if (url.pathname === "/api/transactions") {
       assert.equal(url.searchParams.get("accountId"), "account-1");
       assert.equal(url.searchParams.get("status"), "all");
-      assert.equal(url.searchParams.get("plannedTo"), "2026-08-31");
+      assert.equal(url.searchParams.get("occurredTo"), "2026-08-31");
+      assert.equal(url.searchParams.get("plannedTo"), null);
 
       return jsonResponse({
         transactions: [
@@ -338,8 +339,9 @@ async function transactionsPageUsesPreviousMonthEndingBalance(): Promise<void> {
 
     if (url.pathname === "/api/transactions") {
       assert.equal(url.searchParams.get("accountId"), "account-1");
-      assert.equal(url.searchParams.get("plannedFrom"), null);
-      assert.equal(url.searchParams.get("plannedTo"), "2026-06-30");
+      assert.equal(url.searchParams.get("occurredFrom"), null);
+      assert.equal(url.searchParams.get("occurredTo"), "2026-06-30");
+      assert.equal(url.searchParams.get("plannedTo"), null);
 
       return jsonResponse({
         transactions: [

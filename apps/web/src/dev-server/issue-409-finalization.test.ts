@@ -40,7 +40,8 @@ async function issue409KeepsStatementStatusChipsAsIndicators(): Promise<void> {
 
     if (url.pathname === "/api/transactions") {
       assert.equal(url.searchParams.get("accountId"), "account-409");
-      assert.equal(url.searchParams.get("plannedTo"), "2026-07-31");
+      assert.equal(url.searchParams.get("occurredTo"), "2026-07-31");
+      assert.equal(url.searchParams.get("plannedTo"), null);
       return jsonResponse({
         transactions: [
           {

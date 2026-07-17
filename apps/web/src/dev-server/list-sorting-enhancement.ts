@@ -232,7 +232,12 @@ function injectSortAssets(html: string): string {
   if (!nextHtml.includes("data-list-sorting-styles")) {
     const styles = `
       <style data-list-sorting-styles>
-        form.filter-form[action="/lancamentos"],form.filter-form[action="/cartoes"]{grid-template-columns:minmax(14rem,1.2fr) minmax(13rem,1fr) auto minmax(12rem,.8fr)}
+        form.filter-form[action="/lancamentos"]{align-items:end;grid-template-columns:minmax(12rem,1.2fr) minmax(13rem,1fr) minmax(10rem,.8fr) max-content max-content minmax(12rem,.8fr)}
+        form.filter-form[action="/lancamentos"]>*{min-width:0}
+        form.filter-form[action="/lancamentos"] [data-clear-statement-day]{grid-column:4}
+        form.filter-form[action="/lancamentos"] [data-month-current]{grid-column:5}
+        form.filter-form[action="/lancamentos"] .sort-field{grid-column:6;min-width:0}
+        form.filter-form[action="/cartoes"]{grid-template-columns:minmax(14rem,1.2fr) minmax(13rem,1fr) auto minmax(12rem,.8fr)}
         .sort-field{min-width:12rem}
         form.filter-form[action="/cartoes"] .month-nav input[type="month"]{background:transparent;border:0;font-weight:800;min-height:34px;padding:0 4px;text-align:center}
         button.account-select-trigger:hover:not(:disabled),button.account-select-trigger:focus-visible,button.account-select-trigger[aria-expanded="true"]{background:var(--primary-soft);border-color:#c8dde5;color:var(--text)}
@@ -243,7 +248,7 @@ function injectSortAssets(html: string): string {
         .ghost-button:hover:not(:disabled),.ghost-button:focus-visible,.recurrence-scope-actions .secondary-button:hover:not(:disabled),.recurrence-scope-actions .secondary-button:focus-visible{background:var(--primary-soft);border-color:#c8dde5;color:var(--primary)}
         .actions-item:hover:not(:disabled),.actions-item:focus-visible{background:var(--primary-soft);color:var(--text)}
         .actions-item.danger:hover:not(:disabled),.actions-item.danger:focus-visible{background:var(--danger-bg);color:var(--danger)}
-        @media(max-width:900px){form.filter-form[action="/lancamentos"]{grid-template-columns:1fr}form.filter-form[action="/lancamentos"] .month-nav input[type="month"]{min-width:10rem}form.filter-form[action="/cartoes"]{grid-template-columns:1fr 1fr}.sort-field{min-width:0}}
+        @media(max-width:900px){form.filter-form[action="/lancamentos"]{grid-template-columns:1fr}form.filter-form[action="/lancamentos"] .month-nav input[type="month"]{min-width:10rem}form.filter-form[action="/lancamentos"] [data-clear-statement-day],form.filter-form[action="/lancamentos"] [data-month-current],form.filter-form[action="/lancamentos"] .sort-field{grid-column:auto}form.filter-form[action="/cartoes"]{grid-template-columns:1fr 1fr}.sort-field{min-width:0}}
         @media(max-width:760px){form.filter-form[action="/lancamentos"],form.filter-form[action="/cartoes"]{grid-template-columns:1fr}}
       </style>`;
     nextHtml = nextHtml.replace("</head>", `${styles}</head>`);
