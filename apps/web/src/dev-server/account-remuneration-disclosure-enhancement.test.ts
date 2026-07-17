@@ -15,11 +15,11 @@ assert.match(
   enhanced,
   /<summary aria-label="Ver memória do cálculo" title="Ver memória do cálculo">/,
 );
+assert.match(enhanced, /account-remuneration-disclosure-full">Ver memória do cálculo<\/span>/);
 assert.match(
   enhanced,
-  /account-remuneration-disclosure-full">Ver memória do cálculo<\/span>/,
+  /account-remuneration-disclosure-compact" aria-hidden="true">Memória<\/span>/,
 );
-assert.match(enhanced, /account-remuneration-disclosure-compact" aria-hidden="true">Memória<\/span>/);
 assert.match(enhanced, /\.col-description\{min-width:0\}/);
 assert.match(
   enhanced,
