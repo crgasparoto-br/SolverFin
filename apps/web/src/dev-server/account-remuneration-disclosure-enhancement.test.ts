@@ -11,7 +11,13 @@ const source = `<!doctype html><html><head></head><body>
 const enhanced = enhanceAccountRemunerationDisclosure(source);
 
 assert.match(enhanced, /data-account-remuneration-disclosure-affordance/);
-assert.match(enhanced, /summary\{gap:4px;font-size:\.75rem;min-height:24px/);
+assert.match(enhanced, /\.col-description\{min-width:0\}/);
+assert.match(
+  enhanced,
+  /\.description\{grid-template-columns:minmax\(0,max-content\) minmax\(0,1fr\);min-width:0\}/,
+);
+assert.match(enhanced, /\.account-remuneration-summary\{[^}]*max-width:100%[^}]*overflow-wrap:anywhere/);
+assert.match(enhanced, /summary\{[^}]*font-size:\.75rem[^}]*max-width:100%[^}]*white-space:normal/);
 assert.match(enhanced, /summary::before\{content:"▸"/);
 assert.match(enhanced, /\[open\] summary::before\{transform:rotate\(90deg\)\}/);
 assert.match(enhanced, /summary:focus-visible\{[^}]*outline:2px solid var\(--primary\)/);
