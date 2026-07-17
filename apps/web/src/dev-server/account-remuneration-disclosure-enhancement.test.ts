@@ -11,6 +11,15 @@ const source = `<!doctype html><html><head></head><body>
 const enhanced = enhanceAccountRemunerationDisclosure(source);
 
 assert.match(enhanced, /data-account-remuneration-disclosure-affordance/);
+assert.match(
+  enhanced,
+  /<summary aria-label="Ver memória do cálculo" title="Ver memória do cálculo">/,
+);
+assert.match(
+  enhanced,
+  /account-remuneration-disclosure-full">Ver memória do cálculo<\/span>/,
+);
+assert.match(enhanced, /account-remuneration-disclosure-compact" aria-hidden="true">Memória<\/span>/);
 assert.match(enhanced, /\.col-description\{min-width:0\}/);
 assert.match(
   enhanced,
@@ -24,6 +33,11 @@ assert.match(
 assert.match(
   enhanced,
   /summary\{[^}]*font-size:\.75rem[^}]*letter-spacing:-\.01em[^}]*white-space:nowrap/,
+);
+assert.match(enhanced, /\.account-remuneration-disclosure-compact\{display:none\}/);
+assert.match(
+  enhanced,
+  /@media\(max-width:1300px\)\{\.account-remuneration-disclosure-full\{display:none\}\.account-remuneration-disclosure-compact\{display:inline\}\}/,
 );
 assert.match(enhanced, /summary::before\{content:"▸"/);
 assert.match(enhanced, /\[open\] summary::before\{transform:rotate\(90deg\)\}/);
