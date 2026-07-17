@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   renderCardsPageWithMonthNavigation,
   resolveInvoiceDay,
+  resolvePurchaseFilterState,
 } from "./cards-page-month-navigation.js";
 
 const invoice = {
@@ -22,12 +23,36 @@ assert.equal(resolveInvoiceDay("not-a-date", invoice), undefined);
 assert.equal(resolveInvoiceDay(undefined, invoice), undefined);
 assert.equal(resolveInvoiceDay("2028-01-10", undefined), undefined);
 
+assert.deepEqual(resolvePurchaseFilterState(new URL("http://localhost/cartoes")), {
+  search: "",
+  reconciliations: ["unreconciled", "reconciled"],
+});
+assert.deepEqual(
+  resolvePurchaseFilterState(
+    new URL("http://localhost/cartoes?search=mercado&reconciliation=reconciled"),
+  ),
+  { search: "mercado", reconciliations: ["reconciled"] },
+);
+assert.deepEqual(
+  resolvePurchaseFilterState(new URL("http://localhost/cartoes?reconciliation=")),
+  { search: "", reconciliations: [] },
+);
+
 const originalFetch = globalThis.fetch;
 try {
+  await assertDailyFilterAndFullInvoiceRestore();
+  await assertPurchaseFailureRemainsVisible();
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
+async function assertDailyFilterAndFullInvoiceRestore(): Promise<void> {
   installFetch();
   const html = await renderCardsPageWithMonthNavigation(
     "token",
-    new URL("http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10&sort=amount_desc"),
+    new URL(
+      "http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10&sort=amount_desc&search=selecionado&reconciliation=reconciled",
+    ),
   );
 
   const dayInput = /<input[^>]*name="day"[^>]*>/i.exec(html)?.[0] ?? "";
@@ -43,21 +68,63 @@ try {
   assert.match(html, /10\/01\/2028/);
   assert.match(html, /Fatura completa/);
 
+  const searchInput = /<input[^>]*data-purchase-search[^>]*>/i.exec(html)?.[0] ?? "";
+  assert.match(searchInput, /value="selecionado"/);
+  const unreconciledToggle =
+    /<button[^>]*data-reconciliation-toggle="unreconciled"[^>]*>/i.exec(html)?.[0] ?? "";
+  const reconciledToggle =
+    /<button[^>]*data-reconciliation-toggle="reconciled"[^>]*>/i.exec(html)?.[0] ?? "";
+  assert.match(unreconciledToggle, /aria-pressed="false"/);
+  assert.match(reconciledToggle, /aria-pressed="true"/);
+  assert.match(html, /name="search" value="selecionado" data-purchase-search-state/);
+  assert.match(
+    html,
+    /name="reconciliation" value="reconciled" data-purchase-reconciliation-state/,
+  );
+
   const clearLink = /<a[^>]*data-clear-card-day[^>]*>/i.exec(html)?.[0] ?? "";
   assert.match(clearLink, /cardId=card-1/);
   assert.match(clearLink, /month=2028-01/);
   assert.match(clearLink, /sort=amount_desc/);
+  assert.match(clearLink, /search=selecionado/);
+  assert.match(clearLink, /reconciliation=reconciled/);
   assert.doesNotMatch(clearLink, /(?:\?|&amp;)day=/);
 
   assert.match(html, /Total conciliado/);
   assert.match(html, /Total não conciliado/);
   assert.match(html, /100,00/);
   assert.match(html, /\.card-filter \.sort-field\{grid-column:6;min-width:0\}/);
-} finally {
-  globalThis.fetch = originalFetch;
+
+  const clearHref = /href="([^"]*)"/.exec(clearLink)?.[1]?.replace(/&amp;/g, "&");
+  assert.ok(clearHref);
+  const fullInvoiceHtml = await renderCardsPageWithMonthNavigation(
+    "token",
+    new URL(clearHref, "http://localhost"),
+  );
+  assert.match(fullInvoiceHtml, /Compra do dia selecionado/);
+  assert.match(fullInvoiceHtml, /Compra de outro dia/);
+  assert.doesNotMatch(fullInvoiceHtml, /data-card-day-summary/);
+  assert.match(fullInvoiceHtml, /value="selecionado"/);
+  assert.match(
+    fullInvoiceHtml,
+    /data-reconciliation-toggle="reconciled" aria-pressed="true"/,
+  );
 }
 
-function installFetch(): void {
+async function assertPurchaseFailureRemainsVisible(): Promise<void> {
+  installFetch({ purchasesFail: true });
+  const html = await renderCardsPageWithMonthNavigation(
+    "token",
+    new URL("http://localhost/cartoes?cardId=card-1&month=2028-01&day=2028-01-10"),
+  );
+
+  assert.match(html, /Serviço de compras indisponível/);
+  assert.match(html, /role="alert"/);
+  assert.doesNotMatch(html, /Nenhuma compra neste dia/);
+  assert.doesNotMatch(html, /data-card-day-summary/);
+}
+
+function installFetch(options: { purchasesFail?: boolean } = {}): void {
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input));
 
@@ -115,6 +182,12 @@ function installFetch(): void {
       });
     }
     if (url.pathname === "/api/invoices/invoice-1/purchases") {
+      if (options.purchasesFail) {
+        return jsonResponse(
+          { error: { message: "Serviço de compras indisponível" } },
+          { status: 503 },
+        );
+      }
       return jsonResponse({
         purchases: [
           purchase(
@@ -153,9 +226,9 @@ function purchase(
   };
 }
 
-function jsonResponse(body: unknown): Response {
+function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(body), {
-    status: 200,
+    status: init.status ?? 200,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 }
