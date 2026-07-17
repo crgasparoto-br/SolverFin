@@ -7,9 +7,7 @@ import {
 } from "./statement-presentation.js";
 
 function statementDayFilterRunsBehaviorally(): void {
-  const harness = createHarness(
-    "?accountId=account-1&month=2026-06&day=2026-06-15&sort=date_desc",
-  );
+  const harness = createHarness("?accountId=account-1&month=2026-06&day=2026-06-15&sort=date_desc");
 
   assert.equal(harness.dayInput.value, "2026-06-15");
   assert.equal(harness.dayInput.min, "2026-06-01");
