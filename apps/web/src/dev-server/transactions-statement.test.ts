@@ -59,10 +59,12 @@ function periodHelpersResolveMonthBoundaries(): void {
 
 function filtersKeepCurrentAndLegacyFallbacks(): void {
   assert.deepEqual(
-    resolveFilters(new URL("http://solverfin.test/lancamentos?accountId=account-2&month=2026-06"), [
-      account,
-      destinationAccount,
-    ]),
+    resolveFilters(
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-2&month=2026-06",
+      ),
+      [account, destinationAccount],
+    ),
     {
       accountId: "account-2",
       month: "2026-06",
@@ -81,8 +83,11 @@ function filtersKeepCurrentAndLegacyFallbacks(): void {
   );
 
   assert.equal(
-    resolveFilters(new URL("http://solverfin.test/lancamentos?month=2026-13"), [account], "2026-07")
-      .month,
+    resolveFilters(
+      new URL("http://solverfin.test/lancamentos?month=2026-13"),
+      [account],
+      "2026-07",
+    ).month,
     "2026-07",
   );
 }
@@ -124,10 +129,14 @@ function invalidOrDifferentMonthDayFallsBackToFullMonth(): void {
 
 function transactionQueryKeepsPreviousBalanceWindow(): void {
   const monthlyFilters = resolveFilters(
-    new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-06"),
+    new URL(
+      "http://solverfin.test/lancamentos?accountId=account-1&month=2026-06",
+    ),
     [account],
   );
-  const monthlyQuery = new URLSearchParams(buildTransactionQuery(monthlyFilters));
+  const monthlyQuery = new URLSearchParams(
+    buildTransactionQuery(monthlyFilters),
+  );
 
   assert.equal(monthlyQuery.get("status"), "all");
   assert.equal(monthlyQuery.get("accountId"), "account-1");
@@ -148,10 +157,27 @@ function transactionQueryKeepsPreviousBalanceWindow(): void {
 
 function dayFilterKeepsOpeningBalanceAndDailyRows(): void {
   const transactions: TransactionRecord[] = [
-    transaction("previous-month-income", "income", "posted", 10000, "2026-05-31"),
-    transaction("same-month-before-day-expense", "expense", "posted", 5000, "2026-06-14"),
+    transaction(
+      "previous-month-income",
+      "income",
+      "posted",
+      10000,
+      "2026-05-31",
+    ),
+    transaction(
+      "same-month-before-day-expense",
+      "expense",
+      "posted",
+      5000,
+      "2026-06-14",
+    ),
     transaction("selected-day-income", "income", "posted", 2000, "2026-06-15"),
-    pendingTransaction("selected-day-pending-expense", "expense", 500, "2026-06-15"),
+    pendingTransaction(
+      "selected-day-pending-expense",
+      "expense",
+      500,
+      "2026-06-15",
+    ),
   ];
   const filters = resolveFilters(
     new URL(
@@ -160,7 +186,11 @@ function dayFilterKeepsOpeningBalanceAndDailyRows(): void {
     [account],
   );
 
-  const openingMinor = calculateOpeningBalance(transactions, account, filters.startsOn);
+  const openingMinor = calculateOpeningBalance(
+    transactions,
+    account,
+    filters.startsOn,
+  );
   assert.equal(openingMinor, 55000);
 
   const rows = buildRows(
@@ -204,23 +234,65 @@ function statementTransactionFilterKeepsAccountOrAccountOnlyRecords(): void {
 
 function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
   const transactions: TransactionRecord[] = [
-    transaction("previous-effective-income", "income", "posted", 100000, "2026-05-20"),
-    pendingTransaction("previous-planned-expense", "expense", 999999, "2026-05-25"),
-    transaction("previous-voided-income", "income", "voided", 777777, "2026-05-26"),
-    transaction("current-effective-expense", "expense", "posted", 25000, "2026-06-02"),
+    transaction(
+      "previous-effective-income",
+      "income",
+      "posted",
+      100000,
+      "2026-05-20",
+    ),
+    pendingTransaction(
+      "previous-planned-expense",
+      "expense",
+      999999,
+      "2026-05-25",
+    ),
+    transaction(
+      "previous-voided-income",
+      "income",
+      "voided",
+      777777,
+      "2026-05-26",
+    ),
+    transaction(
+      "current-effective-expense",
+      "expense",
+      "posted",
+      25000,
+      "2026-06-02",
+    ),
     pendingTransaction("current-pending-income", "income", 10000, "2026-06-10"),
-    transaction("current-transfer-in", "transfer", "reconciled", 40000, "2026-06-11", {
-      accountId: "account-2",
-      destinationAccountId: "account-1",
-    }),
-    transaction("current-voided-income", "income", "voided", 12345, "2026-06-12"),
+    transaction(
+      "current-transfer-in",
+      "transfer",
+      "reconciled",
+      40000,
+      "2026-06-11",
+      {
+        accountId: "account-2",
+        destinationAccountId: "account-1",
+      },
+    ),
+    transaction(
+      "current-voided-income",
+      "income",
+      "voided",
+      12345,
+      "2026-06-12",
+    ),
   ];
   const filters = resolveFilters(
-    new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-06"),
+    new URL(
+      "http://solverfin.test/lancamentos?accountId=account-1&month=2026-06",
+    ),
     [account],
   );
 
-  const openingMinor = calculateOpeningBalance(transactions, account, filters.startsOn);
+  const openingMinor = calculateOpeningBalance(
+    transactions,
+    account,
+    filters.startsOn,
+  );
   assert.equal(openingMinor, 150000);
 
   const rows = buildRows(
@@ -230,7 +302,11 @@ function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
   );
   assert.deepEqual(
     rows.map((row) => row.transaction.id),
-    ["current-effective-expense", "current-pending-income", "current-transfer-in"],
+    [
+      "current-effective-expense",
+      "current-pending-income",
+      "current-transfer-in",
+    ],
   );
   assert.deepEqual(
     rows.map((row) => row.amountMinor),
@@ -257,8 +333,18 @@ function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
 }
 
 function projectedBalancesIncludePlannedEntriesAndTransfers(): void {
-  const plannedExpense = pendingTransaction("planned-expense", "expense", 15000, "2026-06-01");
-  const plannedIncome = pendingTransaction("planned-income", "income", 5000, "2026-06-02");
+  const plannedExpense = pendingTransaction(
+    "planned-expense",
+    "expense",
+    15000,
+    "2026-06-01",
+  );
+  const plannedIncome = pendingTransaction(
+    "planned-income",
+    "income",
+    5000,
+    "2026-06-02",
+  );
   const outboundTransfer = pendingTransaction(
     "planned-transfer-out",
     "transfer",
@@ -293,10 +379,17 @@ function projectedBalancesIncludePlannedEntriesAndTransfers(): void {
 }
 
 function transferSignedAmountDependsOnSelectedAccount(): void {
-  const transfer = transaction("transfer", "transfer", "posted", 25000, "2026-06-02", {
-    accountId: "account-1",
-    destinationAccountId: "account-2",
-  });
+  const transfer = transaction(
+    "transfer",
+    "transfer",
+    "posted",
+    25000,
+    "2026-06-02",
+    {
+      accountId: "account-1",
+      destinationAccountId: "account-2",
+    },
+  );
 
   assert.equal(signedAmount(transfer, "account-1"), -25000);
   assert.equal(signedAmount(transfer, "account-2"), 25000);
