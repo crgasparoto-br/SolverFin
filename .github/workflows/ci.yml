@@ -75,7 +75,7 @@ jobs:
         if: steps.formatting.outcome == 'failure'
         run: |
           mkdir -p artifacts/formatting
-          npx prettier . --list-different > artifacts/formatting/files.txt
+          npx prettier . --list-different > artifacts/formatting/files.txt || true
           cat artifacts/formatting/files.txt
 
       - name: Upload formatting diagnostic
