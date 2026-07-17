@@ -17,7 +17,7 @@ export function enhanceAccountRemunerationDisclosure(html: string): string {
         .account-remuneration-audit summary::before{content:"▸";display:inline-block;font-size:.8125rem;line-height:1;transform:rotate(0deg);transform-origin:center;transition:transform 120ms ease-out}
         .account-remuneration-audit[open] summary::before{transform:rotate(90deg)}
         .account-remuneration-audit summary:focus-visible{border-radius:4px;outline:2px solid var(--primary);outline-offset:2px}
-        @media(max-width:1300px){.account-remuneration-disclosure-full{display:none}.account-remuneration-disclosure-compact{display:inline}}
+        @media(max-width:1600px){.account-remuneration-disclosure-full{display:none}.account-remuneration-disclosure-compact{display:inline}}
       </style>`;
   const enhancedHtml = html.replaceAll(
     "<summary>Ver memória do cálculo</summary>",
