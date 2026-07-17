@@ -24,6 +24,13 @@ if (!transactionId || !route) {
 }
 
 const browser = await launchChrome({ baseUrl, chromePath });
+const desktopColumnIsolation = [];
+
+async function persistColumnDiagnostics(failure) {
+  evidence.desktopColumnIsolation = desktopColumnIsolation;
+  if (failure) evidence.columnIsolationFailure = failure;
+  await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+}
 
 try {
   await setViewport(browser.cdp, 1366, 1000);
@@ -32,14 +39,14 @@ try {
   const login = await evaluate(browser.cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
-  const desktopColumnIsolation = [];
-
   for (const width of desktopWidths) {
     await setViewport(browser.cdp, width, 1000);
     await navigate(browser.cdp, `${baseUrl}${route}`);
     await sleep(250);
 
     const collapsed = await evaluate(browser.cdp, desktopColumnIsolationExpression(transactionId));
+    desktopColumnIsolation.push({ width, collapsed });
+    await persistColumnDiagnostics();
     assert.equal(
       collapsed.overlapsCategory,
       false,
@@ -57,6 +64,8 @@ try {
     await sleep(80);
 
     const expanded = await evaluate(browser.cdp, desktopColumnIsolationExpression(transactionId));
+    desktopColumnIsolation[desktopColumnIsolation.length - 1].expanded = expanded;
+    await persistColumnDiagnostics();
     assert.equal(
       expanded.overlapsCategory,
       false,
@@ -67,8 +76,6 @@ try {
       false,
       `Expanded CDI details overflow their box at ${width}px: ${JSON.stringify(expanded)}`,
     );
-
-    desktopColumnIsolation.push({ width, collapsed, expanded });
 
     if (width === 1366) {
       await evaluate(
@@ -157,6 +164,12 @@ try {
     ]),
   );
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+} catch (error) {
+  await persistColumnDiagnostics({
+    name: error instanceof Error ? error.name : "UnknownError",
+    message: error instanceof Error ? error.message : String(error),
+  });
+  throw error;
 } finally {
   await browser.close(outputDir);
 }
