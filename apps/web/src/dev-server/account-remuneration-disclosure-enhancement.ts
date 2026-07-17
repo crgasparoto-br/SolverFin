@@ -1,4 +1,5 @@
-const DISCLOSURE_STYLE_MARKER = "data-account-remuneration-disclosure-affordance";
+const DISCLOSURE_STYLE_MARKER =
+  "data-account-remuneration-disclosure-affordance";
 
 export function enhanceAccountRemunerationDisclosure(html: string): string {
   if (!html.includes('details class="account-remuneration-audit"')) return html;
