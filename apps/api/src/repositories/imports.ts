@@ -1070,6 +1070,12 @@ async function ensureCurrentDeterministicCandidates(
   executeQuery: QueryExecutor,
 ): Promise<readonly Readonly<Record<string, unknown>>[]> {
   await requireMutableBatch(context, importBatchId, executeQuery);
+  const existingTransaction = await findTransactionBySuggestion(
+    context,
+    suggestionId,
+    executeQuery,
+  );
+  if (existingTransaction !== undefined) return [];
   const suggestion = await requireImportSuggestion(
     context,
     importBatchId,
