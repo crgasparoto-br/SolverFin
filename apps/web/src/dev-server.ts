@@ -1,9 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
-import {
-  enhanceAccountRemunerationDisclosure,
-} from "./dev-server/account-remuneration-disclosure-enhancement.js";
+import { enhanceAccountRemunerationDisclosure } from "./dev-server/account-remuneration-disclosure-enhancement.js";
 import { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
 import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
