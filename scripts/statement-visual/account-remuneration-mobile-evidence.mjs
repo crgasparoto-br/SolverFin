@@ -2,23 +2,34 @@ import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const evidencePath = join(outputDir, "issue-490-account-remuneration.json");
 const screenshotPath = join(outputDir, "issue-490-cdi-collapsed-mobile.png");
 
-if (!chromePath) throw new Error("CHROME_BIN is required for visual validation.");
+if (!chromePath)
+  throw new Error("CHROME_BIN is required for visual validation.");
 
 const evidence = JSON.parse(await readFile(evidencePath, "utf8"));
 const transactionId = evidence.fixture?.firstId;
 const route = evidence.route;
 
 if (!transactionId || !route) {
-  throw new Error("Issue 490 evidence does not contain the transaction and route to review.");
+  throw new Error(
+    "Issue 490 evidence does not contain the transaction and route to review.",
+  );
 }
 
 const browser = await launchChrome({ baseUrl, chromePath });
@@ -28,7 +39,11 @@ try {
   await navigate(browser.cdp, `${baseUrl}/login`);
 
   const login = await evaluate(browser.cdp, loginExpression());
-  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
+  assert.equal(
+    login.ok,
+    true,
+    `Demo login failed: ${login.status} ${login.body}`,
+  );
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await sleep(350);
@@ -76,7 +91,10 @@ try {
   assert.equal(focusedMobile.summaryVisible, true);
   assert.equal(focusedMobile.globalOverflow, false);
   assert.equal(focusedMobile.rowOverflow, false);
-  assert.ok(focusedMobile.summaryFontPx >= 12, `Disclosure text is too small: ${focusedMobile.summaryFontPx}px`);
+  assert.ok(
+    focusedMobile.summaryFontPx >= 12,
+    `Disclosure text is too small: ${focusedMobile.summaryFontPx}px`,
+  );
   assert.notEqual(focusedMobile.markerContent, "none");
   assert.notEqual(focusedMobile.markerContent, "normal");
   assert.notEqual(focusedMobile.markerContent, '""');
@@ -90,7 +108,10 @@ try {
     disclosureFontMinimumPx: 12,
   };
   evidence.screenshots = Array.from(
-    new Set([...(Array.isArray(evidence.screenshots) ? evidence.screenshots : []), "issue-490-cdi-collapsed-mobile.png"]),
+    new Set([
+      ...(Array.isArray(evidence.screenshots) ? evidence.screenshots : []),
+      "issue-490-cdi-collapsed-mobile.png",
+    ]),
   );
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
 } finally {
