@@ -6,6 +6,8 @@
   "description": "API backend modular do SolverFin.",
   "scripts": {
     "dev": "node ../../scripts/dev-api.mjs",
+    "prestart": "npm --prefix ../.. run db:deploy",
+    "start": "node dist/server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
