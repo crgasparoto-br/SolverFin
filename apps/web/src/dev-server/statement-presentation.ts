@@ -57,6 +57,18 @@ export function statementPresentationStyles(): string {
       .account-filter .filter-form { grid-template-columns: 1fr; }
     }
 
+    @media (min-width: 761px) {
+      .account-filter .filter-form {
+        align-items: end;
+        grid-template-columns: minmax(10rem, 1.2fr) minmax(10rem, 1fr) minmax(9rem, .85fr) max-content max-content;
+      }
+      .account-filter .filter-form > * { min-width: 0; }
+      .account-filter .filter-form > .ghost-btn {
+        justify-self: stretch;
+        white-space: nowrap;
+      }
+    }
+
     @media (max-width: 760px) {
       .account-filter .filter-form { grid-template-columns: 1fr; }
       .account-filter .statement-day-field input { min-width: 0; width: 100%; }
