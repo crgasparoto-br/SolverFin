@@ -92,7 +92,10 @@ async function main(): Promise<void> {
     );
     assert.equal(remunerations.length, 2);
     assert.ok(remunerations.every((transaction) => transaction.status === "planned"));
-    assert.ok(remunerations.every((transaction) => transaction.occurredOn === PROCESSING_ON));
+    assert.deepEqual(remunerations.map((transaction) => transaction.occurredOn).sort(), [
+      "2026-07-02",
+      "2026-07-03",
+    ]);
 
     await assert.rejects(
       () =>

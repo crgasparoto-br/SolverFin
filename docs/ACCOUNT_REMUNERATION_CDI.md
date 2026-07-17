@@ -12,8 +12,8 @@ A primeira versao deve permitir:
 - selecionar o CDI como indexador;
 - definir o percentual da conta sobre o CDI, por exemplo `100,00%`;
 - importar taxas diarias do CDI a partir de fonte oficial e confiavel;
-- calcular o rendimento previsto com base no saldo final do dia anterior;
-- criar uma receita prevista no dia atual, mantendo o dia anterior como data de competencia;
+- calcular o rendimento previsto com base no saldo final da competencia;
+- criar uma receita prevista no dia seguinte a competencia, mesmo quando o processamento ocorrer depois;
 - permitir que o usuario substitua o valor previsto pelo valor efetivamente creditado;
 - impedir duplicidade de remuneracao para a mesma conta, competencia e indexador.
 
@@ -79,9 +79,10 @@ rendimento previsto = saldo final da data de referencia × taxa aplicada
 
 Regras adicionais:
 
-- usar o saldo final do dia anterior;
-- gerar o lancamento no dia atual;
-- usar o dia anterior como data de competencia;
+- usar o saldo final da data de competencia;
+- gerar o lancamento no dia seguinte a competencia;
+- preservar a data de competencia como a data de referencia do CDI;
+- registrar separadamente a data real em que o processamento foi executado;
 - calcular somente quando o saldo final for maior que zero;
 - nao gerar lancamento de valor zero;
 - nao gerar remuneracao em datas sem CDI;
@@ -91,8 +92,9 @@ Regras adicionais:
 
 O lancamento deve ser criado como receita prevista, com:
 
-- data do lancamento: dia do processamento;
-- data de competencia: dia anterior;
+- data do lancamento: dia seguinte a data de competencia;
+- data de competencia: data de referencia do CDI;
+- data de processamento: dia em que a rotina efetivamente executou;
 - descricao sugerida: `Rendimento previsto — 100% do CDI`;
 - origem: remuneracao automatica de conta;
 - saldo-base utilizado;
@@ -136,8 +138,8 @@ Fluxo recomendado:
 3. localizar competencias ainda nao processadas;
 4. obter o saldo final da competencia;
 5. calcular o rendimento previsto;
-6. criar o lancamento de receita;
-7. registrar o vinculo entre calculo e lancamento.
+6. criar o lancamento de receita em D+1 da competencia;
+7. registrar o vinculo entre calculo e lancamento, incluindo a data real do processamento.
 
 Na administracao, devem existir acoes separadas para:
 
@@ -150,9 +152,11 @@ Na administracao, devem existir acoes separadas para:
 ## Finais de semana, feriados e atrasos
 
 - o sistema processa somente datas para as quais exista CDI;
-- sabados, domingos e feriados sem CDI nao geram lancamento proprio;
+- sabados, domingos e feriados sem CDI nao geram competencia propria;
+- o lancamento usa sempre o dia corrido seguinte a competencia, inclusive quando esse dia cair em fim de semana ou feriado;
 - se o processamento ficar atrasado, cada competencia pendente deve ser processada individualmente;
-- a data real de criacao deve ser preservada, sem alterar a competencia.
+- competencias processadas em lote mantem datas de lancamento distintas em D+1;
+- a data real de processamento deve ser preservada separadamente, sem alterar competencia nem data do lancamento.
 
 ## Fora do escopo inicial
 
