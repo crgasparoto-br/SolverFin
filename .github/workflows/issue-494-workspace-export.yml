@@ -29,7 +29,7 @@ jobs:
             | base64 --decode > /tmp/issue-494.patch.xz
           cat .github/issue-494-patch/part-03 .github/issue-494-patch/part-04 .github/issue-494-patch/part-05 \
             >> /tmp/issue-494.patch.xz
-          printf '%s  %s\n' '1b5a8515f5fba2a8a1b44f24db24e9a112c30b39552e2486261e6c54cf7f8f85' '/tmp/issue-494.patch.xz' \
+          printf '%s  %s\n' '40c2f9f16bb7c306c057e00bdafba9ec7e0d0003da39d051eee0b05d6092fa1b' '/tmp/issue-494.patch.xz' \
             | sha256sum --check
           xz --decompress --stdout /tmp/issue-494.patch.xz > /tmp/issue-494.patch
           git apply --check /tmp/issue-494.patch
