@@ -1,3 +1,47 @@
+-- Mantém a identidade dos lançamentos CDI protegida e permite somente o realinhamento
+-- de occurredOn/plannedOn para o dia seguinte à competência vinculada.
+CREATE OR REPLACE FUNCTION "protectAccountRemunerationTransactionIdentity"()
+RETURNS TRIGGER AS $$
+DECLARE
+  expected_posting_on DATE;
+  has_remuneration BOOLEAN;
+BEGIN
+  SELECT ar."competenceOn" + 1
+    INTO expected_posting_on
+    FROM "AccountRemuneration" ar
+   WHERE ar."transactionId" = OLD."id";
+
+  has_remuneration := FOUND;
+
+  IF has_remuneration AND (
+    NEW."organizationId" IS DISTINCT FROM OLD."organizationId"
+    OR NEW."financialProfileId" IS DISTINCT FROM OLD."financialProfileId"
+    OR NEW."accountId" IS DISTINCT FROM OLD."accountId"
+    OR NEW."destinationAccountId" IS DISTINCT FROM OLD."destinationAccountId"
+    OR NEW."kind" IS DISTINCT FROM OLD."kind"
+    OR NEW."source" IS DISTINCT FROM OLD."source"
+    OR NEW."currency" IS DISTINCT FROM OLD."currency"
+    OR NEW."description" IS DISTINCT FROM OLD."description"
+    OR (
+      (
+        NEW."occurredOn" IS DISTINCT FROM OLD."occurredOn"
+        OR NEW."plannedOn" IS DISTINCT FROM OLD."plannedOn"
+      )
+      AND (
+        NEW."occurredOn" IS DISTINCT FROM expected_posting_on
+        OR NEW."plannedOn" IS DISTINCT FROM expected_posting_on
+      )
+    )
+  ) THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '23514',
+      MESSAGE = 'Lançamentos de remuneração permitem alterar somente valor, categoria, conciliação e o realinhamento automático para D+1 da competência.';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Corrige lançamentos CDI existentes para o dia seguinte à competência.
 -- A data real da execução permanece registrada em AccountRemuneration.processedOn.
 UPDATE "Transaction" t
