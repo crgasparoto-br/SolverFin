@@ -15,7 +15,10 @@ function statementDayFilterIsScopedToTheBankStatementMonthControl(): void {
   assert.match(script, /dayInput\.name = "day"/);
   assert.match(script, /clearButton\.textContent = "Mês completo"/);
   assert.match(script, /form\.requestSubmit\(\)/);
-  assert.match(script, /queryDay = new URLSearchParams\(window\.location\.search\)/);
+  assert.match(
+    script,
+    /queryDay = new URLSearchParams\(window\.location\.search\)/,
+  );
   assert.match(script, /Nenhum lançamento neste dia\./);
 }
 
