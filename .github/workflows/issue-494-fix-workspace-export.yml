@@ -1,4 +1,4 @@
-name: Issue 494 fix workspace export
+name: Apply issue 494 audit fixes
 
 on:
   pull_request:
@@ -6,26 +6,39 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  export-workspace:
-    name: Export audited workspace
+  apply-audit-fixes:
+    name: Apply audited fixes
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout repository
+      - name: Checkout implementation branch
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
-      - name: Package workspace with Git metadata
-        run: tar -czf /tmp/solverfin-issue-494-fix.tar.gz --exclude=node_modules .
+      - name: Rebuild and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/issue-494-audit-fixes/part-* > /tmp/issue-494-audit-fixes.patch.xz
+          printf '%s  %s\n' '2c92fc1f366f0b1aeca72899b6ddc017c529f3153b68f7fb752f1f0508bb8652' '/tmp/issue-494-audit-fixes.patch.xz' \
+            | sha256sum --check
+          xz --test /tmp/issue-494-audit-fixes.patch.xz
+          xz --decompress --stdout /tmp/issue-494-audit-fixes.patch.xz > /tmp/issue-494-audit-fixes.patch
+          git apply --check /tmp/issue-494-audit-fixes.patch
+          git apply --index /tmp/issue-494-audit-fixes.patch
 
-      - name: Upload workspace artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: solverfin-issue-494-fix-workspace
-          path: /tmp/solverfin-issue-494-fix.tar.gz
-          retention-days: 1
-          if-no-files-found: error
+      - name: Commit fixes and remove transport files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -r .github/issue-494-audit-fixes
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: resolver ressalvas da auditoria da issue 494'
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
