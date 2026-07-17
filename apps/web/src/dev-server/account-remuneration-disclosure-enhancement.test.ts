@@ -37,7 +37,7 @@ assert.match(
 assert.match(enhanced, /\.account-remuneration-disclosure-compact\{display:none\}/);
 assert.match(
   enhanced,
-  /@media\(max-width:1300px\)\{\.account-remuneration-disclosure-full\{display:none\}\.account-remuneration-disclosure-compact\{display:inline\}\}/,
+  /@media\(max-width:1600px\)\{\.account-remuneration-disclosure-full\{display:none\}\.account-remuneration-disclosure-compact\{display:inline\}\}/,
 );
 assert.match(enhanced, /summary::before\{content:"▸"/);
 assert.match(enhanced, /\[open\] summary::before\{transform:rotate\(90deg\)\}/);
