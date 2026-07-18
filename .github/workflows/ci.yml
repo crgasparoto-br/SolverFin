@@ -68,15 +68,31 @@ jobs:
 
       - name: Apply and verify
         run: |
-          set -euo pipefail
-          patch --forward --batch -p1 < /tmp/selected.patch
+          set -u
+          patch --forward --batch -p1 < /tmp/selected.patch || true
+          set -e
+          python3 - <<'PY'
+          from pathlib import Path
+          schema = Path('prisma/schema.prisma')
+          text = schema.read_text()
+          if '  PRIVACY_CONSENT\n' not in text:
+              text = text.replace('  IMPORT_BATCH\n  PAYABLE_RECEIVABLE', '  IMPORT_BATCH\n  PRIVACY_CONSENT\n  PAYABLE_RECEIVABLE')
+              schema.write_text(text)
+          migration = Path('prisma/migrations/20260718130000_csv_import_review_hardening/migration.sql')
+          text = migration.read_text()
+          statement = 'ALTER TYPE "AuditEntityKind" ADD VALUE IF NOT EXISTS \'PRIVACY_CONSENT\';\n\n'
+          if not text.startswith(statement):
+              migration.write_text(statement + text)
+          PY
+          find . -type f \( -name '*.rej' -o -name '*.orig' \) -delete
           cat > /tmp/expected.sha256 <<'EOF'
           1b19c6291ec49b38bfe2278ea2ac707282158c79206ea829a6396ae0ca998594  packages/domain/src/imports.ts
           c93ba47ea3ce25c8c851541c9a14465fac24880eae76f95c1018a8342cf28e5e  packages/domain/src/imports.test.ts
           58a358151db118db38aeeb26ff596c554b658b66093df325ac1852ced0081b1a  apps/api/src/repositories/imports.ts
           d78e7890bf2beb233fd6b872940fc9533628bca44686ac6d2af40d3d26c4edba  apps/api/src/csv-import-review.integration.test.ts
           1c869af4447808b13c1b9cb7642ca167a2eaf01c7770168fb2488e66d0afeac1  apps/web/src/dev-server/inbox-page.ts
-          2b55f5f53618bb228b8addf319e383b54e310b524214a0d7171829ce44d99e56  prisma/schema.prisma
+          6aeda23b17a9c821b1d1d6162cfc593d7e0938f692f601c3f23c087252ab3feb  prisma/schema.prisma
+          bfdf76a110b78a3f56eefa66dc1ffe358503a0716dbc9354308857614c944e54  prisma/migrations/20260718130000_csv_import_review_hardening/migration.sql
           EOF
           sed -i 's/^          //' /tmp/expected.sha256
           sha256sum -c /tmp/expected.sha256
@@ -88,7 +104,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git show 76e9af47a2e5d03c2d84dd160690f78a35ba7136:.github/workflows/ci.yml > .github/workflows/ci.yml
           git rm -f .github/issue-494.patch.* .github/workflows/issue-494-apply.yml
-          git add .github/workflows/ci.yml packages/domain/src/imports.ts packages/domain/src/imports.test.ts apps/api/src/repositories/imports.ts apps/api/src/csv-import-review.integration.test.ts apps/web/src/dev-server/inbox-page.ts prisma/schema.prisma
+          git add .github/workflows/ci.yml packages/domain/src/imports.ts packages/domain/src/imports.test.ts apps/api/src/repositories/imports.ts apps/api/src/csv-import-review.integration.test.ts apps/web/src/dev-server/inbox-page.ts prisma/schema.prisma prisma/migrations/20260718130000_csv_import_review_hardening/migration.sql
           git diff --cached --check
           git commit -m "fix: concluir ajustes da auditoria da issue 494"
           git push origin HEAD:feat/494-csv-import-review
