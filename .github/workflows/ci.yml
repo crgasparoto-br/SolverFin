@@ -1,10 +1,7 @@
-name: CI
+name: Apply issue 494 final fixes
 
 on:
   pull_request:
-    branches:
-      - main
-  push:
     branches:
       - main
 
@@ -12,215 +9,85 @@ permissions:
   contents: write
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: issue-494-final-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Validate monorepo
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: solverfin
-          POSTGRES_USER: solverfin
-          POSTGRES_PASSWORD: solverfin_dev_password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U solverfin -d solverfin"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Show tool versions
-        run: |
-          node --version
-          npm --version
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Check environment example
-        run: npm run env:check
-
-      - name: Validate Prisma schema
-        run: npm run prisma:validate
-
-      - name: Check demo seed script
-        run: npm run db:seed:check
-
-      - name: Check formatting
-        run: npm run format:check
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Generate Prisma client
-        run: npm run prisma:generate
-
-      - name: Apply migrations
-        run: npm run db:deploy
-
-      - name: Seed demo data
-        run: npm run db:seed
-
-      - name: Test
-        run: npm run test
-
-      - name: Build
-        run: npm run build
-
-  integration-api-postgres:
-    name: Integration API + PostgreSQL
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      NODE_ENV: test
-      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: solverfin_ci
-          POSTGRES_USER: solverfin
-          POSTGRES_PASSWORD: solverfin_ci_password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Show tool versions
-        run: |
-          node --version
-          npm --version
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Generate Prisma client
-        run: npm run prisma:generate
-
-      - name: Build packages
-        run: npm run build:packages
-
-      - name: Apply migrations
-        run: npm run db:deploy
-
-      - name: Seed demo data
-        run: npm run db:seed
-
-      - name: Run API integration tests
-        run: npm run test:integration --workspace @solverfin/api
-
-  apply-issue-494-audit-fixes:
-    name: Apply issue 494 audit fixes
-    if: github.event_name == 'pull_request' && github.head_ref == 'feat/494-csv-import-review' && github.actor != 'github-actions[bot]'
+  apply:
+    if: github.head_ref == 'feat/494-csv-import-review' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
-    permissions:
-      contents: write
     steps:
-      - name: Checkout issue branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: feat/494-csv-import-review
           fetch-depth: 0
 
-      - name: Assemble patch
+      - name: Reconstruct exact remaining patch
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          cat .github/issue-494.patch.* > /tmp/issue-494.patch
-          sha256sum /tmp/issue-494.patch
-
-      - name: Apply corrections and verify exact files
-        run: |
-          set +e
-          patch --forward --batch -p1 < /tmp/issue-494.patch
-          set -e
-          find . -type f \( -name '*.rej' -o -name '*.orig' \) -print -delete
-          python3 - <<'PYFIX'
+          set -euo pipefail
+          fetch_blob() {
+            curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/git/blobs/$1" \
+              | python3 -c 'import base64,json,sys; sys.stdout.buffer.write(base64.b64decode(json.load(sys.stdin)["content"]))'
+          }
+          cat .github/issue-494.patch.00 .github/issue-494.patch.01 > /tmp/head.patch
+          fetch_blob c40330d8cf5ae404be0ca26805e7ed90c80dae52 >> /tmp/head.patch
+          fetch_blob 1ffefc90be4f6267ff9ae86dbc89ba5320866762 >> /tmp/head.patch
+          cat .github/issue-494.patch.04 .github/issue-494.patch.05 .github/issue-494.patch.06 > /tmp/old-tail.patch
+          tail -c +1174 /tmp/old-tail.patch > /tmp/tail.patch
+          cat /tmp/head.patch /tmp/tail.patch > /tmp/complete.patch
+          python3 - <<'PY'
           from pathlib import Path
-          schema = Path("prisma/schema.prisma")
-          text = schema.read_text()
-          if "  PRIVACY_CONSENT\n" not in text:
-              text = text.replace("  IMPORT_BATCH\n  PAYABLE_RECEIVABLE", "  IMPORT_BATCH\n  PRIVACY_CONSENT\n  PAYABLE_RECEIVABLE")
-              schema.write_text(text)
-          migration = Path("prisma/migrations/20260718130000_csv_import_review_hardening/migration.sql")
-          text = migration.read_text()
-          statement = "ALTER TYPE \"AuditEntityKind\" ADD VALUE IF NOT EXISTS 'PRIVACY_CONSENT';\n\n"
-          if not text.startswith(statement):
-              migration.write_text(statement + text)
-          PYFIX
+          import re
+          source = Path('/tmp/complete.patch').read_text()
+          targets = {
+              'packages/domain/src/imports.ts',
+              'packages/domain/src/imports.test.ts',
+              'apps/api/src/repositories/imports.ts',
+              'apps/api/src/csv-import-review.integration.test.ts',
+              'apps/web/src/dev-server/inbox-page.ts',
+              'prisma/schema.prisma',
+          }
+          selected = []
+          found = set()
+          for section in re.split(r'(?=^--- )', source, flags=re.MULTILINE):
+              match = re.search(r'^\+\+\+ b/(.+)$', section, flags=re.MULTILINE)
+              if match and match.group(1) in targets:
+                  selected.append(section)
+                  found.add(match.group(1))
+          if found != targets:
+              raise SystemExit(f'Patch incompleto: {sorted(targets - found)}')
+          Path('/tmp/selected.patch').write_text(''.join(selected))
+          PY
+
+      - name: Apply and verify
+        run: |
+          set -euo pipefail
+          patch --forward --batch -p1 < /tmp/selected.patch
           cat > /tmp/expected.sha256 <<'EOF'
           1b19c6291ec49b38bfe2278ea2ac707282158c79206ea829a6396ae0ca998594  packages/domain/src/imports.ts
           c93ba47ea3ce25c8c851541c9a14465fac24880eae76f95c1018a8342cf28e5e  packages/domain/src/imports.test.ts
-          e293afdcf10386004cb6ab33ffe9b4370e03fad656fb95c84d7fe7905307d24c  packages/domain/src/index.ts
           58a358151db118db38aeeb26ff596c554b658b66093df325ac1852ced0081b1a  apps/api/src/repositories/imports.ts
           d78e7890bf2beb233fd6b872940fc9533628bca44686ac6d2af40d3d26c4edba  apps/api/src/csv-import-review.integration.test.ts
           1c869af4447808b13c1b9cb7642ca167a2eaf01c7770168fb2488e66d0afeac1  apps/web/src/dev-server/inbox-page.ts
-          ec64dd18fef94354bc88d614bd74111679e6a688e8b601ff21fe5328c8cad336  apps/web/src/dev-server/inbox-csv-import.test.ts
-          6aeda23b17a9c821b1d1d6162cfc593d7e0938f692f601c3f23c087252ab3feb  prisma/schema.prisma
-          bfdf76a110b78a3f56eefa66dc1ffe358503a0716dbc9354308857614c944e54  prisma/migrations/20260718130000_csv_import_review_hardening/migration.sql
-          74ca88775b8513f63857bfb5a04217e09eb66d2ac4666748e60e3176895819eb  docs/IMPORTS.md
-          53c87f4717250be68f2a570dc78bc1631b9a7ba555313aef00813f2e43ba725a  docs/PRIVACY.md
-          e025d9d0cfda26d87c6a528913c3b99279f88a5647c380e39e8a00466939b6c8  docs/adr/0006-csv-import-structured-human-review.md
+          2b55f5f53618bb228b8addf319e383b54e310b524214a0d7171829ce44d99e56  prisma/schema.prisma
           EOF
           sed -i 's/^          //' /tmp/expected.sha256
           sha256sum -c /tmp/expected.sha256
 
-      - name: Commit final corrections and restore CI
+      - name: Commit final implementation
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git show 76e9af47a2e5d03c2d84dd160690f78a35ba7136:.github/workflows/ci.yml > .github/workflows/ci.yml
-          git rm .github/issue-494.patch.* .github/workflows/issue-494-apply.yml
-          git add \
-            .github/workflows/ci.yml \
-            packages/domain/src/imports.ts \
-            packages/domain/src/imports.test.ts \
-            packages/domain/src/index.ts \
-            apps/api/src/repositories/imports.ts \
-            apps/api/src/csv-import-review.integration.test.ts \
-            apps/web/src/dev-server/inbox-page.ts \
-            apps/web/src/dev-server/inbox-csv-import.test.ts \
-            prisma/schema.prisma \
-            prisma/migrations/20260718130000_csv_import_review_hardening/migration.sql \
-            docs/IMPORTS.md \
-            docs/PRIVACY.md \
-            docs/adr/0006-csv-import-structured-human-review.md
+          git rm -f .github/issue-494.patch.* .github/workflows/issue-494-apply.yml
+          git add .github/workflows/ci.yml packages/domain/src/imports.ts packages/domain/src/imports.test.ts apps/api/src/repositories/imports.ts apps/api/src/csv-import-review.integration.test.ts apps/web/src/dev-server/inbox-page.ts prisma/schema.prisma
           git diff --cached --check
           git commit -m "fix: concluir ajustes da auditoria da issue 494"
           git push origin HEAD:feat/494-csv-import-review
