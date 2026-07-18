@@ -1,4 +1,4 @@
-# Valida em Chrome o fluxo de revisão CSV da issue #494 e preserva evidências.
+# Confirma em Chrome o fluxo de revisão CSV da issue #494 e preserva evidências.
 name: Statement visual validation
 
 on:
