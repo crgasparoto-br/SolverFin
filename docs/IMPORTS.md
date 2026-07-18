@@ -48,7 +48,7 @@ A resposta sempre informa `persisted: false` e um estado:
 - `mapping_required`: o usuário deve escolher separador ou mapear colunas;
 - `blocked`: nenhuma linha válida pode seguir.
 
-O preview exige conta ativa e consentimento explícito. Ele retorna cabeçalhos, uma amostra limitada já normalizada (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
+O preview exige conta ativa e consentimento explícito. Ele retorna os cabeçalhos originais para exibição, no máximo 10 propostas normalizadas (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
 
 ## Criação do lote
 
@@ -65,12 +65,12 @@ Campos obrigatórios:
 
 `csvDelimiter` e `csvMapping` devem repetir a configuração validada no preview quando forem necessários.
 
-A identidade do lote considera conteúdo, conta, separador e mapeamento canônico. Uma repetição no mesmo contexto retorna o lote existente com `duplicateBatch: true`, sem duplicar sugestões.
+A identidade do lote usa SHA-256 e considera conteúdo, conta, separador e mapeamento canônico. Uma repetição no mesmo contexto retorna o lote existente com `duplicateBatch: true`, sem duplicar sugestões. O hash SHA-256 separado do conteúdo permite avisar quando o mesmo arquivo é enviado com uma configuração diferente; lotes legados continuam reconhecidos pela identidade anterior.
 
 O banco persiste:
 
 - nome do arquivo;
-- hash contextual;
+- hash contextual SHA-256 e hash SHA-256 do conteúdo;
 - conta padrão;
 - separador e mapeamento;
 - contadores e diagnósticos por linha;
@@ -80,7 +80,7 @@ O conteúdo bruto do CSV não possui coluna de persistência.
 
 ## Formatos aceitos
 
-O CSV aceita UTF-8 com ou sem BOM, quebras `LF` ou `CRLF`, delimitadores `,` e `;`, campos entre aspas, delimitadores dentro de aspas e aspas escapadas com `""`.
+O CSV aceita até 5 MB, UTF-8 com ou sem BOM, quebras `LF` ou `CRLF`, delimitadores `,` e `;`, campos entre aspas, delimitadores dentro de aspas e aspas escapadas com `""`. A detecção testa os dois separadores pelo resultado estrutural e pelo cabeçalho reconhecível; ela não decide pela contagem bruta de caracteres.
 
 Colunas obrigatórias:
 
@@ -93,7 +93,7 @@ Colunas opcionais:
 - tipo;
 - ID externo.
 
-A conta é escolhida no fluxo e não precisa existir como coluna. A categoria é definida durante a revisão.
+A conta é escolhida no fluxo e não precisa existir como coluna. A categoria é definida durante a revisão. Cabeçalhos ambíguos exigem escolha explícita, o mesmo cabeçalho não pode atender dois campos e linhas com quantidade diferente de colunas recebem diagnóstico seguro sem exposição do conteúdo bruto.
 
 Datas aceitas:
 
@@ -140,13 +140,13 @@ Na Inbox, a seleção é preservada ao trocar filtros e inclui apenas linhas ele
 - `discarded`: encerrado logicamente pelo usuário;
 - `failed`: preview sem linha válida, usado apenas no contrato de domínio.
 
-Lotes descartados não aceitam novas edições, aprovações nem novas varreduras determinísticas.
+Lotes descartados não aceitam novas edições, aprovações nem novas varreduras determinísticas. O descarte só é permitido enquanto não houver lançamento financeiro: extrações pendentes passam a `rejected`, candidatos determinísticos pendentes passam a `expired` e qualquer lote com efeito financeiro retorna `IMPORT_BATCH_HAS_FINANCIAL_EFFECTS`.
 
 ## Privacidade, isolamento e auditoria
 
 Todas as operações filtram por `organizationId` e `financialProfileId`. Recursos inexistentes ou pertencentes a outro perfil retornam `TENANT_RESOURCE_NOT_FOUND`, sem revelar o tipo nem a existência do recurso protegido.
 
-A auditoria registra criação do lote, criação/correção/decisão de sugestões, criação do lançamento, descarte e expiração de candidaturas, sempre com mudanças redigidas. O CSV bruto, seus campos completos e segredos não são registrados em auditoria ou logs.
+A auditoria registra explicitamente o consentimento redigido, criação do lote, criação/correção/decisão de sugestões, criação do lançamento, descarte e expiração de candidaturas, sempre com mudanças redigidas. O CSV bruto, seus campos completos e segredos não são registrados em auditoria ou logs.
 
 ## Erros controlados principais
 
@@ -158,12 +158,16 @@ A auditoria registra criação do lote, criação/correção/decisão de sugest�
 - `IMPORT_CSV_HEADER_INVALID`;
 - `IMPORT_CSV_NO_DATA_ROWS`;
 - `IMPORT_CSV_MAPPING_REQUIRED`;
+- `IMPORT_CSV_MAPPING_INVALID`;
+- `IMPORT_CSV_COLUMN_COUNT_MISMATCH`;
 - `IMPORT_CSV_NO_VALID_ROWS`;
 - `IMPORT_ACCOUNT_INVALID`;
+- `IMPORT_ACCOUNT_CURRENCY_MISMATCH`;
 - `IMPORT_CATEGORY_INVALID`;
 - `IMPORT_REVIEW_INVALID_TRANSITION`;
 - `IMPORT_REVIEW_CANDIDATE_PENDING`;
 - `IMPORT_REVIEW_DUPLICATE_SELECTION`;
 - `IMPORT_BATCH_DISCARDED`;
+- `IMPORT_BATCH_HAS_FINANCIAL_EFFECTS`;
 - `IMPORT_BATCH_READ_ONLY`;
 - `TENANT_RESOURCE_NOT_FOUND`.
