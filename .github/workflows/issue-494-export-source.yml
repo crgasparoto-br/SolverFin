@@ -33,16 +33,20 @@ jobs:
             [053]=31cdd81d8fa0ebe2d6d52b684e8ff1222719689fe1ceb8de4a32e483a7465b3d
             [060]=c1f06afb78f9f30061f0c56505de33b3f61c1c06fac2ac77c86c92169d458f5d
             [061]=1a4d37c21c676c29da674928b51fe4f203ab032a66af75546ff317b56d27428e
-            [062]=1ef74abe6372edb948aedd186af716a5c3f7e8e59fce5ad26b638b40317b0a7f
-            [063]=b8857d96bb362884c11d4f1d9bd96ced0b2400b967267e74aa15ed282027ed8b
-            [070]=c53888983660e63a2fc1e36a4a3bd9bbb74d06191046481cf339ef08bb7d95dd
-            [071]=e19b64528a7eaede4e0368dfb5a367c8d83c3230e5a6ac87445a500f77bd00f7
+            [0620]=f3c5ced2dc2c2501e26123c5ab56a933ae2d526402697f5eff2b089c18c66d5c
+            [0621]=e57437b18bb8173bb84d65650d299828c58fbe8d7363500cb1696f47b58381e8
+            [0630]=7979b64cd17172ddfcae5ee57ba406e04c671e80e55fe95f95ce7bc77708ad0f
+            [0631]=3950982e934e1ee77521a031fae518c661b7e45d6db65eac1732f64d4e7f67a1
+            [0700]=ae15bd72af1f144d252371916ee63011dba268767686794d364ba2e74ad6ba3e
+            [0701]=33c498d02fe60806178b5cccc69653c3026ddb5c20442183ded69c8853e62b48
+            [0710]=744b62a65a7c78de273d81f20366c852bb07c9aae4293a49ecf43a3829e56e50
+            [0711]=8502415a94696e60fce344eb22d902292ad37fb915f639b6b845b83a9c9fc85b
           )
           for chunk in "${chunks[@]}"; do
             suffix="${chunk##*.}"
             echo "${expected[$suffix]}  $chunk" | sha256sum -c -
           done
-          if [ "${#chunks[@]}" -ne 15 ]; then
+          if [ "${#chunks[@]}" -ne 19 ]; then
             echo "Waiting for all implementation patch chunks."
             exit 0
           fi
