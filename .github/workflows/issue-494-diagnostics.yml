@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   diagnose:
@@ -15,31 +15,56 @@ jobs:
     timeout-minutes: 25
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://solverfin:solverfin_diag_password@localhost:5432/solverfin_diag?schema=public
+      DATABASE_URL: postgresql://solverfin:solverfin_diag_password@localhost:5432/solverfin_diag_test?schema=public
 
     services:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: solverfin_diag
+          POSTGRES_DB: solverfin_diag_test
           POSTGRES_USER: solverfin
           POSTGRES_PASSWORD: solverfin_diag_password
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U solverfin -d solverfin_diag"
+          --health-cmd "pg_isready -U solverfin -d solverfin_diag_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feat/494-csv-import-review
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
+
+      - name: Apply exact optional payload correction
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('apps/api/src/repositories/imports.ts')
+          text = path.read_text()
+          old = '''  const payload = parseTransactionExtractionPayload(suggestion.payload);
+            return {
+              ...suggestion,
+              ...(payload === undefined ? {} : { payload }),'''
+          new = '''  const payload = parseTransactionExtractionPayload(suggestion.payload);
+            const { payload: _discardedPayload, ...suggestionWithoutPayload } = suggestion;
+            return {
+              ...suggestionWithoutPayload,
+              ...(payload === undefined ? {} : { payload }),'''
+          if old not in text:
+              raise SystemExit('Expected toImportReviewSuggestion block was not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          npx prettier --write apps/api/src/repositories/imports.ts
+          git diff --check
 
       - name: Prepare project
         run: |
@@ -83,6 +108,16 @@ jobs:
           path: artifacts/issue-494-diagnostics
           if-no-files-found: error
           retention-days: 2
+
+      - name: Publish verified correction
+        if: steps.typecheck.outcome == 'success' && steps.integration.outcome == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/api/src/repositories/imports.ts
+          git diff --cached --check
+          git commit -m "fix: restringir payload das linhas revisáveis de importação"
+          git push origin HEAD:feat/494-csv-import-review
 
       - name: Fail when a diagnostic command failed
         if: always()
