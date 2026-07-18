@@ -1,0 +1,63 @@
+name: Fix issue 494 CDP Enter dispatch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.head_ref == 'feat/494-csv-import-review' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/494-csv-import-review
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Dispatch processed Enter key
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/statement-visual/inbox-csv-review.mjs')
+          lines = path.read_text().splitlines()
+          start = next(i for i, line in enumerate(lines) if line.startswith('async function pressKey('))
+          end = next(i for i in range(start + 1, len(lines)) if lines[i] == '}')
+          raw_matches = 0
+          first_native = None
+          for index in range(start, end + 1):
+              if 'type: "rawKeyDown"' in lines[index]:
+                  lines[index] = lines[index].replace('type: "rawKeyDown"', 'type: "keyDown"')
+                  raw_matches += 1
+              if first_native is None and 'nativeVirtualKeyCode: keyCode,' in lines[index]:
+                  first_native = index
+          if raw_matches != 1 or first_native is None:
+              raise SystemExit(f'Unexpected pressKey structure: raw={raw_matches}, native={first_native}')
+          indent = lines[first_native][: len(lines[first_native]) - len(lines[first_native].lstrip())]
+          lines.insert(first_native + 1, f'{indent}text: key === "Enter" ? "\\r" : key.length === 1 ? key : "",')
+          lines.insert(first_native + 2, f'{indent}unmodifiedText: key === "Enter" ? "\\r" : key.length === 1 ? key : "",')
+          path.write_text('\n'.join(lines) + '\n')
+          PY
+          npx prettier --write scripts/statement-visual/inbox-csv-review.mjs
+          npx prettier --check scripts/statement-visual/inbox-csv-review.mjs
+          git diff --check
+
+      - name: Publish CDP keyboard correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/statement-visual/inbox-csv-review.mjs
+          git diff --cached --check
+          git commit -m "test: enviar Enter processado no teste visual CSV"
+          git push origin HEAD:feat/494-csv-import-review
