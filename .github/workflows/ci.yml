@@ -38,7 +38,8 @@ jobs:
           cat .github/issue-494.patch.00 .github/issue-494.patch.01 > /tmp/head.patch
           fetch_blob c40330d8cf5ae404be0ca26805e7ed90c80dae52 >> /tmp/head.patch
           fetch_blob 1ffefc90be4f6267ff9ae86dbc89ba5320866762 >> /tmp/head.patch
-          cat .github/issue-494.patch.04 .github/issue-494.patch.05 .github/issue-494.patch.06 > /tmp/old-tail.patch
+          fetch_blob d1642063e5fdb558ab5baeaf8ac66ed5c4e88e08 > /tmp/old-tail.patch
+          cat .github/issue-494.patch.04 .github/issue-494.patch.05 .github/issue-494.patch.06 >> /tmp/old-tail.patch
           tail -c +1174 /tmp/old-tail.patch > /tmp/tail.patch
           cat /tmp/head.patch /tmp/tail.patch > /tmp/complete.patch
           python3 - <<'PY'
