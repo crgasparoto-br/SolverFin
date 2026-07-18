@@ -1070,20 +1070,19 @@ async function ensureCurrentDeterministicCandidates(
   executeQuery: QueryExecutor,
 ): Promise<readonly Readonly<Record<string, unknown>>[]> {
   await requireMutableBatch(context, importBatchId, executeQuery);
-  const existingTransaction = await findTransactionBySuggestion(
-    context,
-    suggestionId,
-    executeQuery,
-  );
-  if (existingTransaction !== undefined) return [];
   const suggestion = await requireImportSuggestion(
     context,
     importBatchId,
     suggestionId,
     executeQuery,
-    true,
+    false,
   );
-  if (suggestion.status !== "pending_review") return [];
+  const existingTransaction = await findTransactionBySuggestion(
+    context,
+    suggestion.id,
+    executeQuery,
+  );
+  if (existingTransaction !== undefined || suggestion.status !== "pending_review") return [];
 
   const payload = requireExtractionPayload(suggestion);
   await validateExtractionReferences(context, payload, executeQuery);

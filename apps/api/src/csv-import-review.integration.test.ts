@@ -190,14 +190,10 @@ async function assertFullReviewLifecycle(token: string, fixtures: Fixtures): Pro
       `/api/import-batches/${created.importBatch.id}/suggestions/${first.id}/approve`,
     ),
   ]);
-  const concurrentStatusCodes = concurrent.map((response) => response.statusCode);
-  if (concurrentStatusCodes.some((statusCode) => statusCode !== 200)) {
-    console.error(
-      "Concurrent approval diagnostic:",
-      concurrent.map((response) => ({ statusCode: response.statusCode, body: response.body })),
-    );
-  }
-  assert.deepEqual(concurrentStatusCodes, [200, 200]);
+  assert.deepEqual(
+    concurrent.map((response) => response.statusCode),
+    [200, 200],
+  );
   const transactionIds = concurrent.map(
     (response) => readBody<{ transaction: { id: string } }>(response).transaction.id,
   );
@@ -252,7 +248,7 @@ async function assertFullReviewLifecycle(token: string, fixtures: Fixtures): Pro
   assert.equal(bulkBody.results.length, 2);
   assert.equal(bulkBody.results.find((item) => item.suggestionId === third.id)?.status, "approved");
   assert.equal(bulkBody.failures.length, 1);
-  assert.equal(bulkBody.failures[0]?.code, "IMPORT_SUGGESTION_NOT_FOUND");
+  assert.equal(bulkBody.failures[0]?.code, "TENANT_RESOURCE_NOT_FOUND");
   assert.equal(bulkBody.importBatch.status, "completed");
 
   const repeatedIds = await apiRequest(
