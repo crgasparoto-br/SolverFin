@@ -19,12 +19,15 @@ jobs:
       - name: Apply audited implementation patch
         shell: bash
         run: |
-          if [ ! -f .github/issue-494.patch ]; then
-            echo "No implementation patch to apply."
+          shopt -s nullglob
+          chunks=(.github/issue-494.patch.b64.*)
+          if [ "${#chunks[@]}" -ne 8 ]; then
+            echo "Waiting for all implementation patch chunks."
             exit 0
           fi
-          git apply --index .github/issue-494.patch
-          git rm .github/issue-494.patch
+          cat "${chunks[@]}" | base64 -d > /tmp/issue-494.patch
+          git apply --index /tmp/issue-494.patch
+          git rm "${chunks[@]}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "fix: concluir ajustes da auditoria da issue 494"
