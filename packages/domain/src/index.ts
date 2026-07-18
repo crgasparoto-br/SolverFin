@@ -265,6 +265,7 @@ export interface ImportBatch extends Traceable, TenantScoped {
   status: ImportStatus;
   originalFileName?: string;
   sourceHash: string;
+  contentHash?: string;
   receivedAt: ISODateTime;
   completedAt?: ISODateTime;
   defaultAccountId?: EntityId;
