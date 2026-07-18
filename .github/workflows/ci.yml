@@ -192,7 +192,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout HEAD^ -- .github/workflows/ci.yml
+          git show 76e9af47a2e5d03c2d84dd160690f78a35ba7136:.github/workflows/ci.yml > .github/workflows/ci.yml
           git rm .github/issue-494.patch.* .github/workflows/issue-494-apply.yml
           git add \
             .github/workflows/ci.yml \
