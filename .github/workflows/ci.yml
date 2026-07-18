@@ -145,7 +145,10 @@ jobs:
         run: npm run db:seed
 
       - name: Run API integration tests
-        run: npm run test:integration --workspace @solverfin/api
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:integration --workspace @solverfin/api 2>&1 | tee /tmp/solverfin-integration.log
 
       - name: Archive current workspace for CI diagnosis
         if: always()
@@ -156,6 +159,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: solverfin-issue-494-current-workspace
-          path: /tmp/solverfin-issue-494-current.tar.gz
+          path: |
+            /tmp/solverfin-issue-494-current.tar.gz
+            /tmp/solverfin-integration.log
           retention-days: 1
           if-no-files-found: error
