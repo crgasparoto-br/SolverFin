@@ -161,8 +161,18 @@ jobs:
           fetch-depth: 0
 
       - name: Assemble and verify patch
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          cat .github/issue-494.patch.* > /tmp/issue-494.patch
+          cat .github/issue-494.patch.00 .github/issue-494.patch.01 > /tmp/issue-494.patch
+          for blob in c40330d8cf5ae404be0ca26805e7ed90c80dae52 1ffefc90be4f6267ff9ae86dbc89ba5320866762; do
+            curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/crgasparoto-br/SolverFin/git/blobs/${blob}" \
+              | jq -r '.content' | tr -d '\n' | base64 -d >> /tmp/issue-494.patch
+          done
+          cat .github/issue-494.patch.03 .github/issue-494.patch.04 .github/issue-494.patch.06 >> /tmp/issue-494.patch
           echo "cabc458688c1f85cfaba4b10c17e22dd5851093ce634c501c4903f14b954d4d5  /tmp/issue-494.patch" | sha256sum -c -
 
       - name: Apply corrections and verify exact files
