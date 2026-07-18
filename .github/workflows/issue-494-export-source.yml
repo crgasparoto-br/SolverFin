@@ -1,4 +1,4 @@
-name: Issue 494 apply audited fixes
+name: Issue 494 CI fix workspace export
 
 on:
   push:
@@ -6,47 +6,23 @@ on:
       - feat/494-csv-import-review
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply:
+  export:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: feat/494-csv-import-review
-      - name: Apply audited implementation patch
-        shell: bash
-        run: |
-          shopt -s nullglob
-          chunks=(.github/issue-494.patch.gz.b64.*)
-          declare -A expected=(
-            [00]=43989539972e0e745d7861486e1a1e6049e259d20ac19c9d8b986549a44806a9
-            [01]=02fdb87caa626f522b472fbe9eac8e6ecedde0f8a5019dc837dd4d9f645ee491
-            [02]=da24c098c3a4c55f1b8a3eba88dbbcc1f614be71b0564293852fb15917835210
-            [03]=ce6d0ed4063460b68dca72c004f6860cc85401513aec147a3f88984550781d34
-            [04]=e9443c5646bb3586f7507f2019b00493538d291cdc15378873ba7d23288a41eb
-            [05]=5c8554480162dc9d6c5fdd3f270fb1c5406664019f779228514fe3610ded2bac
-            [06]=5d299f18dadca7cdd405cb00f70f0289a06857717347a58155824a02e2ae53c9
-            [07]=a931f5c1bd1e238f509713f093c4583e326b348a656214caff37ef2a7531cebd
-            [08]=ca6a7be39db98b3df269f3d5d9856e2d85a8fb6c63319699ee07ba4ceee688fd
-          )
-          for chunk in "${chunks[@]}"; do
-            suffix="${chunk##*.}"
-            echo "${expected[$suffix]}  $chunk" | sha256sum -c -
-          done
-          if [ "${#chunks[@]}" -ne 9 ]; then
-            echo "Waiting for all compressed implementation patch chunks."
-            exit 0
-          fi
-          cat "${chunks[@]}" > /tmp/issue-494.patch.gz.b64
-          echo "bf6453ae51307faec7ffdbbf7bb8d0aceb7ecd0b125062f572dcd663f84977ab  /tmp/issue-494.patch.gz.b64" | sha256sum -c -
-          base64 -d /tmp/issue-494.patch.gz.b64 | gzip -d > /tmp/issue-494.patch
-          echo "e1616df21850f3c79b6881ff62e0a1a9c40c66c093e4f48ea22195879d48efb9  /tmp/issue-494.patch" | sha256sum -c -
-          git apply --index /tmp/issue-494.patch
-          git rm .github/issue-494.patch.b64.* .github/issue-494.patch.gz.b64.*
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "fix: concluir ajustes da auditoria da issue 494"
-          git push origin HEAD:feat/494-csv-import-review
+          fetch-depth: 0
+      - name: Archive current workspace
+        run: tar --exclude=.git -czf /tmp/solverfin-issue-494-ci-fix.tar.gz .
+      - name: Upload workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: solverfin-issue-494-ci-fix-workspace
+          path: /tmp/solverfin-issue-494-ci-fix.tar.gz
+          retention-days: 1
+          if-no-files-found: error
