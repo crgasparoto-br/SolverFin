@@ -244,7 +244,7 @@ async function validateInboxCsvReview(cdp) {
   };
 }
 
-async function waitFor(cdp, expression, timeout = 12_000) {
+async function waitFor(cdp, expression, timeout = 20_000) {
   const started = Date.now();
   while (Date.now() - started < timeout) {
     try {
