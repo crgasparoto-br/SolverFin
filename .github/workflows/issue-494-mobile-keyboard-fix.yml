@@ -1,0 +1,93 @@
+name: Fix issue 494 mobile and keyboard validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.head_ref == 'feat/494-csv-import-review' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/494-csv-import-review
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Fix mobile layout and native key dispatch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          page = Path('apps/web/src/dev-server/inbox-page.ts')
+          text = page.read_text()
+          old = '''    @media (max-width: 520px) { .row-fields, .row-summary { grid-template-columns: 1fr; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }'''
+          new = '''    @media (max-width: 520px) { .import-summary, .row-fields, .row-summary { grid-template-columns: 1fr; } .line-filter-bar { justify-content: stretch; } .line-filter-bar label { min-width: 0; width: 100%; } .line-filter-bar select { min-width: 0; width: 100%; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }'''
+          if old not in text:
+              raise SystemExit('Expected mobile media query was not found')
+          page.write_text(text.replace(old, new, 1))
+
+          test = Path('scripts/statement-visual/inbox-csv-review.mjs')
+          text = test.read_text()
+          old = '''        summaryText: document.querySelector('.import-summary')?.textContent || ''
+                };'''
+          new = '''        summaryText: document.querySelector('.import-summary')?.textContent || '',
+                  viewportWidth: document.documentElement.clientWidth,
+                  documentScrollWidth: document.documentElement.scrollWidth,
+                  overflowElements: [...document.querySelectorAll('body *')]
+                    .map((element) => {
+                      const rect = element.getBoundingClientRect();
+                      return {
+                        tag: element.tagName,
+                        id: element.id,
+                        className: typeof element.className === 'string' ? element.className : '',
+                        left: Math.round(rect.left),
+                        right: Math.round(rect.right),
+                        width: Math.round(rect.width),
+                        scrollWidth: element.scrollWidth,
+                        clientWidth: element.clientWidth
+                      };
+                    })
+                    .filter((entry) => entry.left < -1 || entry.right > document.documentElement.clientWidth + 1)
+                    .slice(0, 20)
+                };'''
+          if old not in text:
+              raise SystemExit('Expected initial visual snapshot block was not found')
+          text = text.replace(old, new, 1)
+          text = text.replace('type: "keyDown",\n    key,', 'type: "rawKeyDown",\n    key,', 1)
+          text = text.replace('windowsVirtualKeyCode: keyCode,\n  });', 'windowsVirtualKeyCode: keyCode,\n    nativeVirtualKeyCode: keyCode,\n  });', 1)
+          key_up = '''    windowsVirtualKeyCode: keyCode,
+              });
+              await sleep(100);'''
+          key_up_new = '''    windowsVirtualKeyCode: keyCode,
+                nativeVirtualKeyCode: keyCode,
+              });
+              await sleep(100);'''
+          if key_up not in text:
+              raise SystemExit('Expected key-up block was not found')
+          test.write_text(text.replace(key_up, key_up_new, 1))
+          PY
+          npx prettier --write apps/web/src/dev-server/inbox-page.ts scripts/statement-visual/inbox-csv-review.mjs
+          npx prettier --check apps/web/src/dev-server/inbox-page.ts scripts/statement-visual/inbox-csv-review.mjs
+          git diff --check
+
+      - name: Publish mobile and keyboard corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/inbox-page.ts scripts/statement-visual/inbox-csv-review.mjs
+          git diff --cached --check
+          git commit -m "fix: ajustar revisão CSV no mobile e teclado"
+          git push origin HEAD:feat/494-csv-import-review
