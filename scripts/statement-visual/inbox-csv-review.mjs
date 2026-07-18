@@ -115,7 +115,11 @@ async function validateInboxCsvReview(cdp) {
     "Lançamentos vinculados",
     "Problemas",
   ]) {
-    check(initial.summaryText.includes(label), `CSV summary is missing the label: ${label}`, initial);
+    check(
+      initial.summaryText.includes(label),
+      `CSV summary is missing the label: ${label}`,
+      initial,
+    );
   }
 
   await evaluate(
