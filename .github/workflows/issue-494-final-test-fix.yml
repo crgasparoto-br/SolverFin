@@ -1,0 +1,37 @@
+name: Apply issue 494 final test fix
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.head_ref == 'feat/494-csv-import-review' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/494-csv-import-review
+          fetch-depth: 0
+
+      - name: Apply final test correction
+        run: |
+          set -euo pipefail
+          patch --forward --batch -p1 < .github/issue-494-final-test-fix.patch
+          git diff --check
+
+      - name: Commit and restore official CI
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git show 76e9af47a2e5d03c2d84dd160690f78a35ba7136:.github/workflows/ci.yml > .github/workflows/ci.yml
+          git rm .github/issue-494-final-test-fix.patch .github/workflows/issue-494-final-test-fix.yml
+          git add .github/workflows/ci.yml apps/api/src/csv-import-review.integration.test.ts
+          git diff --cached --check
+          git commit -m "test: corrigir descarte após resolução de duplicidade"
+          git push origin HEAD:feat/494-csv-import-review
