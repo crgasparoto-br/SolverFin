@@ -15,8 +15,10 @@ O fluxo inicial de CSV persistia lote e explicação textual, mas não tinha pre
 4. Aprovação cria `Transaction` e finaliza `AiSuggestion` na mesma transação, com unicidade por sugestão.
 5. Candidaturas de duplicidade/conciliação referenciam a sugestão de origem, seu fingerprint e o lançamento alvo.
 6. Correção mantém a linha pendente e expira candidaturas obsoletas.
-7. Descarte é lógico e preserva auditoria.
-8. A Inbox é a interface operacional do fluxo.
+7. Descarte é lógico, rejeita extrações pendentes, expira candidatos determinísticos e é bloqueado depois de qualquer efeito financeiro.
+8. Identidade de conteúdo e de lote usa SHA-256; a leitura da identidade legada permanece apenas para compatibilidade.
+9. Delimitador e cabeçalhos são resolvidos por estrutura, com ambiguidades explícitas, cabeçalhos originais e validação de colunas.
+10. A Inbox é a interface operacional do fluxo, com edição em modal acessível e devolução de foco.
 
 ## Consequências
 
