@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -146,58 +146,3 @@ jobs:
 
       - name: Run API integration tests
         run: npm run test:integration --workspace @solverfin/api
-
-  finalize-issue-494-test:
-    name: Finalize issue 494 test expectation
-    if: github.event_name == 'pull_request' && github.head_ref == 'feat/494-csv-import-review' && github.actor != 'github-actions[bot]'
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout issue branch
-        uses: actions/checkout@v4
-        with:
-          ref: feat/494-csv-import-review
-          fetch-depth: 0
-
-      - name: Apply final test correction
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path("apps/api/src/csv-import-review.integration.test.ts")
-          text = path.read_text()
-          old = '''  const discardAfterDeterministicEffect = await apiRequest(
-            token,
-            "POST",
-            `/api/import-batches/${imported.importBatch.id}/discard`,
-          );
-          assert.equal(discardAfterDeterministicEffect.statusCode, 409);
-          assert.equal(
-            readErrorCode(discardAfterDeterministicEffect),
-            "IMPORT_BATCH_HAS_FINANCIAL_EFFECTS",
-          );'''
-          new = '''  const discardAfterDuplicateResolution = await apiRequest(
-            token,
-            "POST",
-            `/api/import-batches/${imported.importBatch.id}/discard`,
-          );
-          assert.equal(discardAfterDuplicateResolution.statusCode, 200);
-          assert.equal(
-            readBody<ImportDetail>(discardAfterDuplicateResolution).importBatch.status,
-            "discarded",
-          );'''
-          if old not in text:
-              raise SystemExit("Expected integration-test block was not found")
-          path.write_text(text.replace(old, new, 1))
-          PY
-
-      - name: Commit final correction and restore CI
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git show ea84a066fe85e437a2461cb850f6120242f508ec:.github/workflows/ci.yml > .github/workflows/ci.yml
-          git rm .github/issue-494-final-test-fix.patch
-          git add apps/api/src/csv-import-review.integration.test.ts .github/workflows/ci.yml
-          git diff --cached --check
-          git commit -m "test: alinhar descarte após resolução de duplicidade"
-          git push origin HEAD:feat/494-csv-import-review

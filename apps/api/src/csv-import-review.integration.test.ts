@@ -519,15 +519,15 @@ async function assertDeterministicReviewIsLinkedAndIdempotent(
   assert.equal(repeatedDecision.statusCode, 200);
   assert.equal(readBody<{ idempotent: boolean }>(repeatedDecision).idempotent, true);
 
-  const discardAfterDeterministicEffect = await apiRequest(
+  const discardAfterDuplicateResolution = await apiRequest(
     token,
     "POST",
     `/api/import-batches/${imported.importBatch.id}/discard`,
   );
-  assert.equal(discardAfterDeterministicEffect.statusCode, 409);
+  assert.equal(discardAfterDuplicateResolution.statusCode, 200);
   assert.equal(
-    readErrorCode(discardAfterDeterministicEffect),
-    "IMPORT_BATCH_HAS_FINANCIAL_EFFECTS",
+    readBody<ImportDetail>(discardAfterDuplicateResolution).importBatch.status,
+    "discarded",
   );
 }
 
