@@ -1,0 +1,191 @@
+ = requireSuggestion(candidateBatch, 0);
++  const candidateBlocked = await apiRequest(
++    token,
++    "POST",
++    `/api/import-batches/${candidateBatch.importBatch.id}/suggestions/${candidateSource.id}/approve`,
++  );
++  assert.equal(candidateBlocked.statusCode, 409);
++  const candidateDiscard = await apiRequest(
++    token,
++    "POST",
++    `/api/import-batches/${candidateBatch.importBatch.id}/discard`,
++  );
++  assert.equal(candidateDiscard.statusCode, 200);
++  const candidateDiscardBody = readBody<ImportDetail>(candidateDiscard);
++  assert.equal(candidateDiscardBody.suggestions[0]?.status, "rejected");
++  assert.ok(
++    candidateDiscardBody.suggestions[0]?.candidates?.every(
++      (candidate) => candidate.status === "expired",
++    ),
++  );
++
++  const financialEffect = await apiRequest(token, "POST", "/api/import-batches/csv", {
++    originalFileName: `${suffix}-efeito.csv`,
++    content: [
++      "date,description,amount",
++      `2026-07-17,Com efeito ${suffix},-2`,
++      `2026-07-18,Pendente ${suffix},-3`,
++    ].join("\n"),
++    accountId,
++    consentAccepted: true,
++  });
++  assert.equal(financialEffect.statusCode, 201);
++  const financialBatch = readBody<ImportDetail>(financialEffect);
++  const approved = await apiRequest(
++    token,
++    "POST",
++    `/api/import-batches/${financialBatch.importBatch.id}/suggestions/${requireSuggestion(financialBatch, 0).id}/approve`,
++  );
++  assert.equal(approved.statusCode, 200);
++  const blockedDiscard = await apiRequest(
++    token,
++    "POST",
++    `/api/import-batches/${financialBatch.importBatch.id}/discard`,
++  );
++  assert.equal(blockedDiscard.statusCode, 409);
++  assert.equal(readErrorCode(blockedDiscard), "IMPORT_BATCH_HAS_FINANCIAL_EFFECTS");
+ }
+ 
+ async function listCsvBatches(token: string): Promise<ImportBatch[]> {
+@@ -489,6 +720,7 @@
+   id: string;
+   status: string;
+   payload: ExtractionPayload;
++  candidates?: Array<{ id: string; status: string }>;
+ }
+ 
+ interface ImportDetail {
+--- a/apps/web/src/dev-server/inbox-page.ts
++++ b/apps/web/src/dev-server/inbox-page.ts
+@@ -10,6 +10,7 @@
+   name: string;
+   kind: string;
+   status: string;
++  currency: string;
+ }
+ 
+ interface CategoryRecord {
+@@ -136,6 +137,7 @@
+ 
+     ${reviewQueue.ok ? "" : `<p class="error" role="alert">Não foi possível carregar as outras sugestões: ${escapeHtml(reviewQueue.error)}</p>`}
+     ${renderCsvImportDialog(accountOptions, activeProfileLabel)}
++    ${renderCsvLineEditDialog()}
+     ${renderNewMessageDialog(accountOptions, categoryOptions)}
+     ${csvImportScript(accountOptions, categoryOptions, activeProfileLabel)}
+     ${apiFormScript()}
+@@ -271,6 +273,30 @@
+   `;
+ }
+ 
++function renderCsvLineEditDialog(): string {
++  return `
++    <dialog id="csv-line-edit-dialog" class="master-dialog line-edit-dialog" aria-labelledby="csv-line-edit-title">
++      <div class="dialog-heading">
++        <p class="eyebrow">Revisão da importação</p>
++        <h2 id="csv-line-edit-title">Corrigir linha</h2>
++      </div>
++      <form id="csv-line-edit-form" class="edit-grid">
++        <label>Data<input name="occurredOn" type="date" required /></label>
++        <label>Tipo<select name="kind"><option value="expense">Despesa</option><option value="income">Receita</option></select></label>
++        <label>Valor<input name="amount" inputmode="decimal" required /></label>
++        <label class="description-field">Descrição<input name="description" required /></label>
++        <label>Conta<select name="accountId" required></select></label>
++        <label>Categoria<select name="categoryId"></select></label>
++        <p id="csv-line-edit-status" class="form-status muted full-span" role="status" aria-live="polite"></p>
++        <div class="dialog-actions full-span">
++          <button type="button" class="secondary-button" id="cancel-csv-line-edit">Cancelar</button>
++          <button type="submit" id="save-csv-line-edit">Salvar correção</button>
++        </div>
++      </form>
++    </dialog>
++  `;
++}
++
+ function renderReviewSuggestionRow(item: ReviewQueueItem): string {
+   const confidence = `${Math.round(item.confidence * 100)}%`;
+   const reviewApiBase =
+@@ -336,6 +362,9 @@
+         const previewResult = document.getElementById("csv-preview-result");
+         const mappingFields = document.getElementById("csv-mapping-fields");
+         const createButton = document.getElementById("create-csv-import");
++        const lineEditDialog = document.getElementById("csv-line-edit-dialog");
++        const lineEditForm = document.getElementById("csv-line-edit-form");
++        const lineEditStatus = document.getElementById("csv-line-edit-status");
+         const MAX_CSV_BYTES = 5 * 1024 * 1024;
+         const state = {
+           batches: [],
+@@ -343,7 +372,9 @@
+           preview: null,
+           fileName: "",
+           selected: new Set(),
+-          requestInFlight: false
++          requestInFlight: false,
++          editingSuggestionId: null,
++          lineEditTrigger: null
+         };
+ 
+         function escapeHtml(value) {
+@@ -439,7 +470,7 @@
+           const payload = item.payload || {};
+           const account = accountById.get(payload.accountId);
+           const category = payload.categoryId ? categoryById.get(payload.categoryId) : undefined;
+-          const referencesValid = account && account.status === "active" && (!category || (category.status === "active" && category.kind === payload.kind));
++          const referencesValid = account && account.status === "active" && (!payload.currency || account.currency === payload.currency) && (!category || (category.status === "active" && category.kind === payload.kind));
+           if (batch.status === "reviewing" && item.status === "pending_review" && referencesValid && Number.isInteger(payload.amountMinor) && payload.amountMinor > 0 && payload.description && payload.occurredOn) return "eligible";
+           return "pending_invalid";
+         }
+@@ -464,7 +495,7 @@
+           ).join("");
+         }
+         function accountOptions(payload) {
+-          return accounts.filter((account) => account.status === "active").map((account) =>
++          return accounts.filter((account) => account.status === "active" && (!payload.currency || account.currency === payload.currency)).map((account) =>
+             '<option value="' + escapeHtml(account.id) + '" ' + (payload.accountId === account.id ? "selected" : "") + '>' + escapeHtml(account.name) + '</option>'
+           ).join("");
+         }
+@@ -478,19 +509,13 @@
+           const readOnly = batch.status !== "reviewing" || item.status !== "pending_review";
+           const selectable = currentState === "eligible";
+           const checked = state.selected.has(item.id) ? " checked" : "";
+-          const editorDisabled = readOnly ? " disabled" : "";
+-          const lineActions = readOnly ? "" : '<div class="inline-actions"><button type="submit" class="secondary-button">Salvar correção</button><button type="button" data-line-action="approve" ' + (selectable ? "" : "disabled") + '>Confirmar linha</button><button type="button" class="secondary-button danger-action" data-line-action="reject">Rejeitar</button></div>';
++          const lineActions = readOnly ? "" : '<div class="inline-actions"><button type="button" class="secondary-button" data-line-action="edit">Corrigir linha</button><button type="button" data-line-action="approve" ' + (selectable ? "" : "disabled") + '>Confirmar linha</button><button type="button" class="secondary-button danger-action" data-line-action="reject">Rejeitar</button></div>';
+           const transactionLink = item.transaction ? '<a class="button-link secondary-button" href="/lancamentos?accountId=' + encodeURIComponent(item.transaction.accountId || payload.accountId || "") + '&month=' + encodeURIComponent(String(item.transaction.occurredOn || payload.occurredOn).slice(0, 7)) + '">Ver no Extrato</a>' : "";
+           return '<article class="import-row" data-suggestion-id="' + escapeHtml(item.id) + '" data-row-state="' + escapeHtml(currentState) + '">' +
+             '<input type="checkbox" data-select-suggestion value="' + escapeHtml(item.id) + '" aria-label="Selecionar linha ' + escapeHtml(payload.sourceRowNumber) + '" ' + (selectable ? "" : "disabled") + checked + ' />' +
+-            '<form class="row-editor"><div class="row-heading"><strong>Linha ' + escapeHtml(payload.sourceRowNumber) + '</strong><span class="status-pill">' + escapeHtml(stateLabel(currentState)) + '</span></div>' +
+-            '<div class="row-fields"><label>Data<input name="occurredOn" type="date" value="' + escapeHtml(payload.occurredOn) + '"' + editorDisabled + ' required /></label>' +
+-            '<label>Tipo<select name="kind"' + editorDisabled + '><option value="expense" ' + (payload.kind === "expense" ? "selected" : "") + '>Despesa</option><option value="income" ' + (payload.kind === "income" ? "selected" : "") + '>Receita</option></select></label>' +
+-            '<label>Valor<input name="amount" inputmode="decimal" value="' + escapeHtml((Number(payload.amountMinor || 0) / 100).toFixed(2).replace(".", ",")) + '"' + editorDisabled + ' required /></label>' +
+-            '<label class="description-field">Descrição<input name="description" value="' + escapeHtml(payload.description) + '"' + editorDisabled + ' required /></label>' +
+-            '<label>Conta<select name="accountId"' + editorDisabled + ' required>' + accountOptions(payload) + '</select></label>' +
+-            '<label>Categoria<select name="categoryId"' + editorDisabled + '>' + categoryOptions(payload) + '</select></label></div>' +
+-            lineActions + transactionLink + '</form>' +
++            '<div class="row-editor"><div class="row-heading"><strong>Linha ' + escapeHtml(payload.sourceRowNumber) + '</strong><span class="status-pill">' + escapeHtml(stateLabel(currentState)) + '</span></div>' +
++            '<dl class="row-summary"><div><dt>Data</dt><dd>' + formatDate(payload.occurredOn) + '</dd></div><div><dt>Tipo</dt><dd>' + escapeHtml(payload.kind === "income" ? "Receita" : "Despesa") + '</dd></div><div><dt>Valor</dt><dd>' + escapeHtml(formatMoney(payload.amountMinor, payload.currency)) + '</dd></div><div><dt>Descrição</dt><dd>' + escapeHtml(payload.description) + '</dd></div><div><dt>Conta</dt><dd>' + escapeHtml(accountName(payload.accountId)) + '</dd></div></dl>' +
++            lineActions + transactionLink + '</div>' +
+             ((item.candidates || []).length ? '<div class="candidate-list">' + item.candidates.map((candidate) => renderCandidate(candidate, batch.status !== "reviewing")).join("") + '</div>' : "") + '</article>';
+         }
+         function statementUrl(value) {
+@@ -560,6 +585,58 @@
+             categoryId: values.get("categoryId") ? String(values.get("categoryId")) : null
+           };
+         }
++        function openLineEditDialog(item, trigger) {
++          const payload = item.payload || {};
++          state.editingSuggestionId = item.id;
++          state.lineEditTrigger = trigger;
++          lineEditForm.elements.occurredOn.value = payload.occurredOn || "";
++          lineEditForm.elements.kind.value = payload.kind || "expense";
++          lineEditForm.elements.amount.value = (Number(payload.amountMinor || 0) / 100).toFixed(2).replace(".", ",");
++          lineEditForm.elements.description.value = payload.description || "";
++          lineEditForm.elements.accountId.innerHTML = accountOptions(payload);
++          lineEditForm.elements.accountId.value = payload.accountId || "";
++          lineEditForm.elements.categoryId.innerHTML = categoryOptions(payload);
++          lineEditForm.elements.categoryId.value = payload.categoryId || "";
++          setStatus(lineEditStatus, "Revise os campos e salve para executar uma nova análise de duplicidade.", "muted");
++          lineEditDialog.showModal();
++          lineEditForm.elements.occurredOn.focus();
++        }
++        function closeLineEditDialog() {
++          if (lineEditDialog.open) lineEditDialog.cl

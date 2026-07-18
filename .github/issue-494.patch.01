@@ -1,0 +1,350 @@
+   for (const field of Object.keys(csvAliases) as (keyof CsvImportMapping)[]) {
+     const requestedHeader = supplied?.[field];
+-    const resolved = requestedHeader
+-      ? headers.find((header) => header === normalizeHeaderName(requestedHeader))
+-      : csvAliases[field].find((alias) => headers.includes(normalizeHeaderName(alias)));
+-    if (resolved !== undefined) mapping[field] = resolved;
++    const candidates = requestedHeader
++      ? headers.filter(
++          (header) => normalizeHeaderName(header) === normalizeHeaderName(requestedHeader),
++        )
++      : headers.filter((header) =>
++          csvAliases[field].some(
++            (alias) => normalizeAliasHeader(header) === normalizeAliasHeader(alias),
++          ),
++        );
++    if (candidates.length === 1) mapping[field] = candidates[0] as string;
++    else if (candidates.length > 1) ambiguousFields.push(field);
++  }
++  return { mapping, ambiguousFields };
++}
++
++function assertNoDuplicateCsvMapping(mapping: CsvImportMapping): void {
++  const mappedColumns = Object.values(mapping)
++    .filter((value): value is string => typeof value === "string")
++    .map(normalizeHeaderName);
++  if (new Set(mappedColumns).size !== mappedColumns.length) {
++    throw new ImportFileError(
++      "IMPORT_CSV_MAPPING_INVALID",
++      "A mesma coluna nao pode ser usada para mais de um campo. Revise o mapeamento.",
++    );
+   }
+-  return mapping;
+ }
+ 
+ interface CsvColumnIndexes {
+@@ -779,7 +930,9 @@
+   columnName: string | undefined,
+ ): number | undefined {
+   if (columnName === undefined) return undefined;
+-  const index = header.indexOf(normalizeHeaderName(columnName));
++  const index = header.findIndex(
++    (value) => normalizeHeaderName(value) === normalizeHeaderName(columnName),
++  );
+   return index >= 0 ? index : undefined;
+ }
+ 
+@@ -801,6 +954,12 @@
+     .replace(/^\uFEFF/, "");
+ }
+ 
++function normalizeAliasHeader(value: string): string {
++  return normalizeHeaderName(value)
++    .normalize("NFD")
++    .replace(/[\u0300-\u036f]/g, "");
++}
++
+ function normalizeDescription(value: string | undefined): string | undefined {
+   const normalizedValue = value?.trim();
+   return normalizedValue === undefined || normalizedValue.length === 0
+--- a/packages/domain/src/imports.test.ts
++++ b/packages/domain/src/imports.test.ts
+@@ -1,6 +1,8 @@
+ import type { TenantContext } from "./tenant.js";
+ import {
+   buildImportPayloadFingerprint,
++  buildLegacyImportBatchHash,
++  buildSecureImportHash,
+   buildStableImportHash,
+   buildTransactionExtractionPayload,
+   ImportFileError,
+@@ -24,6 +26,10 @@
+ testMappingRequired();
+ testExplicitMapping();
+ testAmbiguousDelimiter();
++testAmbiguousHeadersRequireChoice();
++testDuplicateMappingIsRejected();
++testColumnCountMismatchIsSafe();
++testOriginalHeadersAndPreviewLimit();
+ testInvalidCsvPreview();
+ testBasicOfxPreview();
+ testDuplicateDetection();
+@@ -135,6 +141,76 @@
+   assertEqual(preview.csv?.delimiterCandidates.length, 2, "both delimiters suggested");
+ }
+ 
++function testAmbiguousHeadersRequireChoice(): void {
++  const preview = previewImportedStatement({
++    context: tenantA,
++    now,
++    originalFileName: "ambiguous-headers.csv",
++    content: "Data,DATE,Descrição,Valor\n16/06/2026,2026-06-16,Demo,-10",
++  });
++
++  assertEqual(preview.state, "mapping_required", "ambiguous aliases require explicit mapping");
++  assertEqual(preview.csv?.ambiguousFields.includes("date"), true, "date ambiguity exposed");
++  assertEqual(preview.csv?.headers[0], "Data", "original header preserved");
++  assertEqual(preview.csv?.headers[2], "Descrição", "accented original header preserved");
++}
++
++function testDuplicateMappingIsRejected(): void {
++  assertImportFileError(
++    () =>
++      previewImportedStatement({
++        context: tenantA,
++        now,
++        originalFileName: "duplicate-mapping.csv",
++        csvMapping: { date: "Data", description: "Data", amount: "Valor" },
++        content: "Data,Valor,Descrição\n16/06/2026,-10,Demo",
++      }),
++    "IMPORT_CSV_MAPPING_INVALID",
++  );
++}
++
++function testColumnCountMismatchIsSafe(): void {
++  const preview = previewImportedStatement({
++    context: tenantA,
++    now,
++    originalFileName: "columns.csv",
++    content: [
++      "date,description,amount",
++      "2026-06-10,Valida,-10",
++      "2026-06-11,Coluna ausente",
++      "2026-06-12,Coluna extra,-20,nao-deve-vazar",
++    ].join("\n"),
++  });
++
++  assertEqual(preview.state, "ready", "valid rows remain reviewable");
++  assertEqual(preview.suggestions.length, 1, "invalid structural rows do not create suggestions");
++  assertEqual(preview.batch.problemRows, 2, "column mismatches counted");
++  assertProblemCode(preview.problems, "IMPORT_CSV_COLUMN_COUNT_MISMATCH", "column count mismatch");
++  assertEqual(
++    JSON.stringify(preview).includes("nao-deve-vazar"),
++    false,
++    "raw extra cell is not exposed",
++  );
++}
++
++function testOriginalHeadersAndPreviewLimit(): void {
++  const rows = Array.from(
++    { length: 12 },
++    (_, index) => `2026-06-${String(index + 1).padStart(2, "0")},Linha ${index + 1},-1`,
++  );
++  const preview = previewImportedStatement({
++    context: tenantA,
++    now,
++    originalFileName: "sample-limit.csv",
++    content: ["Data,Descrição,Valor", ...rows].join("\n"),
++  });
++
++  assertEqual(preview.csv?.headers[0], "Data", "display header remains original");
++  assertEqual(preview.csv?.headers[1], "Descrição", "display accent remains original");
++  assertEqual(preview.csv?.sampleRows.length, 10, "preview sample is limited");
++  assertEqual(preview.suggestions.length, 12, "internal preview retains all valid suggestions");
++}
++
+ function testInvalidCsvPreview(): void {
+   const preview = previewImportedStatement({
+     context: tenantA,
+@@ -223,6 +299,26 @@
+     mapped.batch.sourceHash,
+     "canonical mapping keeps identity",
+   );
++  assertEqual(accountA.batch.sourceHash.startsWith("sha256-"), true, "batch uses SHA-256");
++  assertEqual(
++    accountA.batch.contentHash,
++    accountB.batch.contentHash,
++    "content hash ignores account",
++  );
++  assertNotEqual(
++    accountA.batch.sourceHash,
++    buildLegacyImportBatchHash({
++      kind: "csv",
++      content: common.content,
++      defaultAccountId: "account-a",
++      ...(accountA.batch.csvDelimiter === undefined
++        ? {}
++        : { csvDelimiter: accountA.batch.csvDelimiter }),
++      ...(accountA.batch.csvMapping === undefined ? {} : { csvMapping: accountA.batch.csvMapping }),
++    }),
++    "secure batch identity differs from legacy hash",
++  );
++  assertEqual(buildSecureImportHash("demo").length, 71, "SHA-256 identifier length");
+ }
+ 
+ function testStructuredPayloads(): void {
+--- a/packages/domain/src/index.ts
++++ b/packages/domain/src/index.ts
+@@ -265,6 +265,7 @@
+   status: ImportStatus;
+   originalFileName?: string;
+   sourceHash: string;
++  contentHash?: string;
+   receivedAt: ISODateTime;
+   completedAt?: ISODateTime;
+   defaultAccountId?: EntityId;
+--- a/apps/api/src/repositories/imports.ts
++++ b/apps/api/src/repositories/imports.ts
+@@ -1,6 +1,7 @@
+ import { randomUUID } from "node:crypto";
+ 
+ import {
++  buildLegacyImportBatchHash,
+   buildImportPayloadFingerprint,
+   buildTransactionExtractionPayload,
+   parseDeterministicReviewPayload,
+@@ -119,6 +120,7 @@
+   status: string;
+   originalFileName: string | null;
+   sourceHash: string;
++  contentHash: string | null;
+   totalRows: number;
+   validRows: number;
+   duplicateRows: number;
+@@ -188,6 +190,7 @@
+ interface AccountRow {
+   id: string;
+   status: string;
++  currency: string;
+ }
+ 
+ interface CategoryRow {
+@@ -203,8 +206,13 @@
+   duplicate: number;
+ }
+ 
++interface CurrentDeterministicCandidate {
++  suggestion: AiSuggestion;
++  detail: Readonly<Record<string, unknown>>;
++}
++
+ const IMPORT_BATCH_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "defaultAccountId",
+-  "sourceKind", "status", "originalFileName", "sourceHash", "totalRows", "validRows", "duplicateRows",
++  "sourceKind", "status", "originalFileName", "sourceHash", "contentHash", "totalRows", "validRows", "duplicateRows",
+   "problemRows", "problems", "csvDelimiter", "csvMapping", "receivedAt", "completedAt", "createdAt", "updatedAt"`;
+ const AI_SUGGESTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
+   "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload", "sourceSuggestionId",
+@@ -238,15 +246,26 @@
+   context: TenantContext,
+   payload: PreviewCsvImportPayload,
+ ): Promise<ImportPreview> {
++  const preview = await buildCsvImportPreviewForContext(context, payload);
++  return {
++    ...preview,
++    suggestions: preview.suggestions.slice(0, 10),
++  };
++}
++
++async function buildCsvImportPreviewForContext(
++  context: TenantContext,
++  payload: PreviewCsvImportPayload,
++): Promise<ImportPreview> {
+   if (payload.consentAccepted !== true) {
+     throw new ImportReviewError(
+       "IMPORT_CONSENT_REQUIRED",
+       "Confirme que o arquivo pode ser processado neste perfil financeiro.",
+     );
+   }
+-  await assertActiveAccount(context, payload.accountId, query);
++  const account = await assertActiveAccount(context, payload.accountId, query);
+ 
+-  return previewImportedStatement({
++  const preview = previewImportedStatement({
+     context,
+     now: new Date().toISOString(),
+     originalFileName: payload.originalFileName,
+@@ -255,6 +274,24 @@
+     ...(payload.csvMapping === undefined ? {} : { csvMapping: payload.csvMapping }),
+     ...(payload.csvDelimiter === undefined ? {} : { csvDelimiter: payload.csvDelimiter }),
+   });
++  return {
++    ...preview,
++    suggestions: preview.suggestions.map((suggestion) => ({
++      ...suggestion,
++      currency: account.currency,
++    })),
++    ...(preview.csv === undefined
++      ? {}
++      : {
++          csv: {
++            ...preview.csv,
++            sampleRows: preview.csv.sampleRows.map((row) => ({
++              ...row,
++              currency: account.currency,
++            })),
++          },
++        }),
++  };
+ }
+ 
+ export async function createCsvImportBatchForContext(
+@@ -269,7 +306,7 @@
+   }
+ 
+   await assertActiveAccount(context, payload.accountId, query);
+-  const preview = await previewCsvImportForContext(context, payload);
++  const preview = await buildCsvImportPreviewForContext(context, payload);
+ 
+   if (preview.state === "mapping_required") {
+     throw new ImportReviewError(
+@@ -287,7 +324,20 @@
+     );
+   }
+ 
+-  const duplicate = await findImportBatchBySourceHash(context, preview.batch.sourceHash, query);
++  const legacySourceHash = buildLegacyImportBatchHash({
++    kind: "csv",
++    content: payload.content,
++    defaultAccountId: payload.accountId,
++    ...(preview.batch.csvDelimiter === undefined
++      ? {}
++      : { csvDelimiter: preview.batch.csvDelimiter }),
++    ...(preview.batch.csvMapping === undefined ? {} : { csvMapping: preview.batch.csvMapping }),
++  });
++  const duplicate = await findImportBatchBySourceHashes(
++    context,
++    [preview.batch.sourceHash, legacySourceHash],
++    query,
++  );
+   if (duplicate !== undefined) {
+     const detail = await getImportBatchDetailForContext(context, duplicate.id);
+     return {
+@@ -305,6 +355,24 @@
+     };
+   }
+ 
++  const sameContentDifferentConfiguration = await findImportBatchByContentHash(
++    context,
++    preview.batch.contentHash,
++    query,
++  );
++  const configurationWarnings: ImportProblem[] =
++    sameContentDifferentConfiguration === undefined
++      ? []
++      : [
++          {
++            rowNumber: 0,
++            severity: "warning",
++            code: "IMPORT_BATCH_CONFIGURATION_CHANGED",
++            message:
++              "O mesmo conteudo ja foi usado em outra importacao com conta, delimitador ou mapeamento diferente.",
++          },
++        ];
++
+   const batch: ImportBatch = {
+     id: randomUUID(),
+     organizationId: context.organizationId,
+@@ -313,6 +381,7 @@
+     status: "reviewing",
+     originalFileName: payload.originalFileName,
+     sourceHash: preview.batch.sou

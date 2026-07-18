@@ -1,0 +1,160 @@
+ose();
++        }
++        function restoreLineEditFocus() {
++          const trigger = state.lineEditTrigger;
++          state.editingSuggestionId = null;
++          state.lineEditTrigger = null;
++          if (trigger?.isConnected) trigger.focus();
++        }
++        async function saveLineEditDialog(event) {
++          event.preventDefault();
++          if (state.requestInFlight || !state.detail || !state.editingSuggestionId) return;
++          if (!lineEditForm.reportValidity()) return;
++          const batchId = state.detail.importBatch.id;
++          const suggestionId = state.editingSuggestionId;
++          state.requestInFlight = true;
++          lineEditForm.querySelector('button[type="submit"]').disabled = true;
++          setStatus(lineEditStatus, "Salvando correção e analisando novamente...", "muted");
++          try {
++            await api("/api/import-batches/" + batchId + "/suggestions/" + suggestionId, {
++              method: "PATCH",
++              headers: { "content-type": "application/json" },
++              body: JSON.stringify(readRowPayload(lineEditForm))
++            });
++            state.selected.delete(suggestionId);
++            closeLineEditDialog();
++            await loadDetail(batchId, false);
++            setStatus(document.getElementById("import-detail-status"), "Correção salva e análise determinística atualizada.", "success");
++          } catch (error) {
++            setStatus(lineEditStatus, error.message, "error");
++          } finally {
++            state.requestInFlight = false;
++            lineEditForm.querySelector('button[type="submit"]').disabled = false;
++            refreshSelection();
++          }
++        }
+         function selectedTotals() {
+           if (!state.detail) return { count: 0, income: 0, expense: 0 };
+           return state.detail.suggestions.reduce((totals, item) => {
+@@ -600,25 +677,16 @@
+             state.detail.suggestions.filter((item) => rowState(item, state.detail.importBatch) === "eligible").forEach((item) => selectAll.checked ? state.selected.add(item.id) : state.selected.delete(item.id));
+             refreshSelection();
+           });
+-          detail.querySelectorAll(".row-editor").forEach((rowForm) => {
+-            const article = rowForm.closest("[data-suggestion-id]");
++          detail.querySelectorAll("[data-suggestion-id]").forEach((article) => {
+             const suggestionId = article.dataset.suggestionId;
+-            rowForm.addEventListener("submit", async (event) => {
+-              event.preventDefault();
+-              if (state.requestInFlight) return;
+-              state.requestInFlight = true;
+-              setStatus(detailStatus, "Salvando correção...", "muted");
+-              try {
+-                await api("/api/import-batches/" + batchId + "/suggestions/" + suggestionId, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(readRowPayload(rowForm)) });
+-                state.selected.delete(suggestionId);
+-                await loadDetail(batchId, false);
+-                setStatus(document.getElementById("import-detail-status"), "Correção salva. A linha será analisada novamente antes da confirmação.", "success");
+-              } catch (error) { await recoverAfterFailure(batchId, error.message); }
+-              finally { state.requestInFlight = false; refreshSelection(); }
+-            });
+-            rowForm.querySelectorAll("[data-line-action]").forEach((button) => button.addEventListener("click", async () => {
+-              if (state.requestInFlight) return;
++            const item = state.detail?.suggestions.find((candidate) => candidate.id === suggestionId);
++            article.querySelectorAll("[data-line-action]").forEach((button) => button.addEventListener("click", async () => {
++              if (state.requestInFlight || !item) return;
+               const action = button.dataset.lineAction;
++              if (action === "edit") {
++                openLineEditDialog(item, button);
++                return;
++              }
+               if (action === "reject" && !window.confirm("Rejeitar esta linha? Nenhum lançamento será criado.")) return;
+               state.requestInFlight = true; button.disabled = true;
+               setStatus(detailStatus, action === "approve" ? "Analisando e confirmando linha..." : "Rejeitando linha...", "muted");
+@@ -754,6 +822,15 @@
+           } catch (error) { setStatus(previewStatus, error.message, "error"); createButton.disabled = false; }
+           finally { if (fileData) fileData.content = ""; state.requestInFlight = false; }
+         });
++        lineEditForm.addEventListener("submit", saveLineEditDialog);
++        document.getElementById("cancel-csv-line-edit").addEventListener("click", closeLineEditDialog);
++        lineEditForm.elements.kind.addEventListener("change", () => {
++          const current = state.detail?.suggestions.find((item) => item.id === state.editingSuggestionId);
++          const payload = { ...(current?.payload || {}), kind: lineEditForm.elements.kind.value, categoryId: lineEditForm.elements.categoryId.value || undefined };
++          lineEditForm.elements.categoryId.innerHTML = categoryOptions(payload);
++          if (payload.categoryId) lineEditForm.elements.categoryId.value = payload.categoryId;
++        });
++        lineEditDialog.addEventListener("close", restoreLineEditFocus);
+         batchFilter.addEventListener("change", renderBatchList);
+         lineFilter.addEventListener("change", () => { if (state.detail) renderDetail(state.detail); });
+         document.getElementById("refresh-imports").addEventListener("click", () => loadBatches(state.detail?.importBatch.id));
+@@ -925,6 +1002,11 @@
+     .bulk-actions { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); justify-content: space-between; margin-bottom: 10px; padding: 8px 10px; }
+     .import-row { align-items: start; border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 9px; grid-template-columns: auto minmax(0, 1fr); padding: 10px; }
+     .row-editor { display: grid; gap: 9px; min-width: 0; } .row-heading { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
++    .row-summary { display: grid; gap: 8px; grid-template-columns: repeat(5, minmax(100px, 1fr)); margin: 0; }
++    .row-summary div { background: var(--surface-soft); border-radius: var(--radius); min-width: 0; padding: 7px 8px; }
++    .row-summary dt { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
++    .row-summary dd { color: var(--text); font-size: 0.8125rem; margin: 2px 0 0; overflow-wrap: anywhere; }
++    .line-edit-dialog { width: min(720px, calc(100vw - 24px)); }
+     .row-fields { display: grid; gap: 8px; grid-template-columns: repeat(6, minmax(105px, 1fr)); }
+     .row-fields label { font-size: 0.75rem; } .row-fields .description-field { grid-column: span 2; }
+     .candidate-list { grid-column: 2; }
+@@ -937,8 +1019,8 @@
+     .preview-summary { align-items: center; background: var(--surface-soft); border-radius: var(--radius); display: flex; gap: 10px; justify-content: space-between; padding: 8px 10px; }
+     .preview-table-wrap { max-height: 230px; overflow: auto; } .preview-table-wrap table { border-collapse: collapse; font-size: 0.75rem; width: 100%; } .preview-table-wrap th, .preview-table-wrap td { border: 1px solid var(--line); padding: 6px; text-align: left; }
+     .warning { color: #8a5a00; }
+-    @media (max-width: 1100px) { .row-fields { grid-template-columns: repeat(3, minmax(120px, 1fr)); } }
+-    @media (max-width: 800px) { .page-heading, .section-heading, .detail-heading { align-items: stretch; display: grid; } .import-summary { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .import-layout { grid-template-columns: 1fr; } .import-batch-list { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); max-height: none; } .row-fields { grid-template-columns: 1fr 1fr; } .row-fields .description-field { grid-column: 1 / -1; } .candidate-card { align-items: stretch; display: grid; } }
+-    @media (max-width: 520px) { .row-fields { grid-template-columns: 1fr; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }
++    @media (max-width: 1100px) { .row-fields { grid-template-columns: repeat(3, minmax(120px, 1fr)); } .row-summary { grid-template-columns: repeat(3, minmax(120px, 1fr)); } }
++    @media (max-width: 800px) { .page-heading, .section-heading, .detail-heading { align-items: stretch; display: grid; } .import-summary { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .import-layout { grid-template-columns: 1fr; } .import-batch-list { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); max-height: none; } .row-fields { grid-template-columns: 1fr 1fr; } .row-summary { grid-template-columns: 1fr 1fr; } .row-fields .description-field { grid-column: 1 / -1; } .candidate-card { align-items: stretch; display: grid; } }
++    @media (max-width: 520px) { .row-fields, .row-summary { grid-template-columns: 1fr; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }
+   `;
+ }
+--- a/apps/web/src/dev-server/inbox-csv-import.test.ts
++++ b/apps/web/src/dev-server/inbox-csv-import.test.ts
+@@ -76,6 +76,11 @@
+ 
+   it("exposes accessible modal, status and row actions", () => {
+     assert.match(source, /aria-labelledby="csv-import-title"/);
++    assert.match(source, /aria-labelledby="csv-line-edit-title"/);
++    assert.match(source, /data-line-action="edit"/);
++    assert.match(source, /lineEditDialog\.showModal\(\)/);
++    assert.match(source, /lineEditDialog\.addEventListener\("close", restoreLineEditFocus\)/);
++    assert.doesNotMatch(source, /rowForm\.addEventListener\("submit"/);
+     assert.match(source, /role="alert"/);
+     assert.match(source, /aria-live="polite"/);
+     assert.match(source, /aria-label="Selecionar linha/);
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -614,6 +614,7 @@
+   status             ImportStatus     @default(RECEIVED)
+   originalFileName   String?          @db.VarChar(240)
+   sourceHash         String           @db.VarChar(128)
++  contentHash        String?          @db.VarChar(80)
+   totalRows          Int              @default(0)
+   validRows          Int              @default(0)
+   duplicateRows      Int              @default(0)
+@@ -634,6 +635,7 @@
+   @@unique([organizationId, financialProfileId, sourceHash])
+   @@index([organizationId, financialProfileId, sourceKind, status])
+   @@index([organizationId, financialProfileId, defaultAccountId])
++  @@index([organizationId, financialProfileId, contentHash])
+   @@index([organizationId, financialProfileId, receivedAt])
+ }
+ 
+--- a/docs/IMPORTS.md
++++ b/docs/IMPORTS.md
+@@ -48,7 +48,7 @@
+ - `mapping_required`: o usuário deve escolher separador ou mapear colunas;
+ - `blocked`: nenhuma linha válida pode seguir.
+ 
+-O preview exige conta ativa e consentimento explícito. Ele retorna cabeçalhos, uma amostra limitada já normalizada (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
++O preview exige conta ativa e consentimento explícito. Ele retorna os cabeçalhos originais para exibição, no máximo 10 propostas normalizadas (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
+ 
+ ## Criação do lote
+ 
+@@ -65,12 +65,12 @@
+ 
+ `csvDelimiter` e `csvMapping` devem repetir a configuração validada no preview quando forem necessários.
+ 
+-A identidade do lote considera conteúdo, conta, se
