@@ -32,44 +32,49 @@ jobs:
           from pathlib import Path
 
           page = Path('apps/web/src/dev-server/inbox-page.ts')
-          text = page.read_text()
-          old = '    @media (max-width: 520px) { .row-fields, .row-summary { grid-template-columns: 1fr; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }'
-          new = '    @media (max-width: 520px) { .import-summary, .row-fields, .row-summary { grid-template-columns: 1fr; } .line-filter-bar { justify-content: stretch; } .line-filter-bar label { min-width: 0; width: 100%; } .line-filter-bar select { min-width: 0; width: 100%; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }'
-          if old not in text:
-              raise SystemExit('Expected mobile media query was not found')
-          page.write_text(text.replace(old, new, 1))
+          lines = page.read_text().splitlines()
+          mobile_matches = 0
+          for index, line in enumerate(lines):
+              if '@media (max-width: 520px)' in line:
+                  lines[index] = '    @media (max-width: 520px) { .import-summary, .row-fields, .row-summary { grid-template-columns: 1fr; } .line-filter-bar { justify-content: stretch; } .line-filter-bar label { min-width: 0; width: 100%; } .line-filter-bar select { min-width: 0; width: 100%; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }'
+                  mobile_matches += 1
+          if mobile_matches != 1:
+              raise SystemExit(f'Unexpected mobile media query matches: {mobile_matches}')
+          page.write_text('\n'.join(lines) + '\n')
 
           test = Path('scripts/statement-visual/inbox-csv-review.mjs')
-          text = test.read_text()
-          old = '''  await cdp.send("Input.dispatchKeyEvent", {
-            type: "keyDown",
-            key,
-            code,
-            windowsVirtualKeyCode: keyCode,
-          });
-          await cdp.send("Input.dispatchKeyEvent", {
-            type: "keyUp",
-            key,
-            code,
-            windowsVirtualKeyCode: keyCode,
-          });'''
-          new = '''  await cdp.send("Input.dispatchKeyEvent", {
-            type: "rawKeyDown",
-            key,
-            code,
-            windowsVirtualKeyCode: keyCode,
-            nativeVirtualKeyCode: keyCode,
-          });
-          await cdp.send("Input.dispatchKeyEvent", {
-            type: "keyUp",
-            key,
-            code,
-            windowsVirtualKeyCode: keyCode,
-            nativeVirtualKeyCode: keyCode,
-          });'''
-          if old not in text:
-              raise SystemExit('Expected key dispatch block was not found')
-          test.write_text(text.replace(old, new, 1))
+          lines = test.read_text().splitlines()
+          function_start = next(
+              (index for index, line in enumerate(lines) if line.startswith('async function pressKey(')),
+              None,
+          )
+          if function_start is None:
+              raise SystemExit('pressKey function was not found')
+          function_end = next(
+              (index for index in range(function_start + 1, len(lines)) if lines[index] == '}'),
+              None,
+          )
+          if function_end is None:
+              raise SystemExit('pressKey function end was not found')
+          keydown_matches = 0
+          windows_matches = 0
+          index = function_start
+          while index <= function_end:
+              if 'type: "keyDown"' in lines[index]:
+                  lines[index] = lines[index].replace('type: "keyDown"', 'type: "rawKeyDown"')
+                  keydown_matches += 1
+              if 'windowsVirtualKeyCode: keyCode,' in lines[index]:
+                  indent = lines[index][: len(lines[index]) - len(lines[index].lstrip())]
+                  lines.insert(index + 1, f'{indent}nativeVirtualKeyCode: keyCode,')
+                  windows_matches += 1
+                  function_end += 1
+                  index += 1
+              index += 1
+          if keydown_matches != 1 or windows_matches != 2:
+              raise SystemExit(
+                  f'Unexpected key dispatch matches: keydown={keydown_matches}, windows={windows_matches}'
+              )
+          test.write_text('\n'.join(lines) + '\n')
           PY
           npx prettier --write apps/web/src/dev-server/inbox-page.ts scripts/statement-visual/inbox-csv-review.mjs
           npx prettier --check apps/web/src/dev-server/inbox-page.ts scripts/statement-visual/inbox-csv-review.mjs
