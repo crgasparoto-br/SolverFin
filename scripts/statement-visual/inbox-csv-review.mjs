@@ -86,7 +86,37 @@ async function validateInboxCsvReview(cdp) {
   const batchId = fixture.body.importBatch.id;
 
   await navigate(cdp, `${baseUrl}/inbox?importBatchId=${encodeURIComponent(batchId)}`);
-  await waitFor(cdp, `Boolean(document.querySelector('[data-line-action="edit"]'))`);
+  try {
+    await waitFor(cdp, `Boolean(document.querySelector('[data-line-action="edit"]'))`);
+  } catch (error) {
+    const pageDiagnostic = await evaluate(
+      cdp,
+      `(async () => {
+        const readJson = async (path) => {
+          const response = await fetch(path);
+          return { status: response.status, body: await response.json().catch(() => ({})) };
+        };
+        const list = await readJson('/api/import-batches?sourceKind=csv&status=all');
+        const detailResponse = await readJson('/api/import-batches/${batchId}');
+        return {
+          href: window.location.href,
+          workspaceStatus: document.getElementById('import-workspace-status')?.textContent || '',
+          workspaceClass: document.getElementById('import-workspace-status')?.className || '',
+          batchListText: document.getElementById('import-batch-list')?.textContent || '',
+          detailText: document.getElementById('import-batch-detail')?.textContent || '',
+          detailHtml: (document.getElementById('import-batch-detail')?.innerHTML || '').slice(0, 4000),
+          bodyText: (document.body?.innerText || '').slice(0, 4000),
+          editActions: document.querySelectorAll('[data-line-action="edit"]').length,
+          list,
+          detailResponse
+        };
+      })()`,
+    );
+    await screenshot(cdp, join(outputDir, "issue-494-inbox-csv-timeout.png"));
+    throw new Error(
+      `${error instanceof Error ? error.message : String(error)}; page=${JSON.stringify(pageDiagnostic)}`,
+    );
+  }
 
   const initial = await evaluate(
     cdp,
