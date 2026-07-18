@@ -1,6 +1,8 @@
 import type { TenantContext } from "./tenant.js";
 import {
   buildImportPayloadFingerprint,
+  buildLegacyImportBatchHash,
+  buildSecureImportHash,
   buildStableImportHash,
   buildTransactionExtractionPayload,
   ImportFileError,
@@ -24,6 +26,10 @@ testQuotedCsvAndBom();
 testMappingRequired();
 testExplicitMapping();
 testAmbiguousDelimiter();
+testAmbiguousHeadersRequireChoice();
+testDuplicateMappingIsRejected();
+testColumnCountMismatchIsSafe();
+testOriginalHeadersAndPreviewLimit();
 testInvalidCsvPreview();
 testBasicOfxPreview();
 testDuplicateDetection();
@@ -135,6 +141,76 @@ function testAmbiguousDelimiter(): void {
   assertEqual(preview.csv?.delimiterCandidates.length, 2, "both delimiters suggested");
 }
 
+function testAmbiguousHeadersRequireChoice(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "ambiguous-headers.csv",
+    content: "Data,DATE,Descrição,Valor\n16/06/2026,2026-06-16,Demo,-10",
+  });
+
+  assertEqual(preview.state, "mapping_required", "ambiguous aliases require explicit mapping");
+  assertEqual(preview.csv?.ambiguousFields.includes("date"), true, "date ambiguity exposed");
+  assertEqual(preview.csv?.headers[0], "Data", "original header preserved");
+  assertEqual(preview.csv?.headers[2], "Descrição", "accented original header preserved");
+}
+
+function testDuplicateMappingIsRejected(): void {
+  assertImportFileError(
+    () =>
+      previewImportedStatement({
+        context: tenantA,
+        now,
+        originalFileName: "duplicate-mapping.csv",
+        csvMapping: { date: "Data", description: "Data", amount: "Valor" },
+        content: "Data,Valor,Descrição\n16/06/2026,-10,Demo",
+      }),
+    "IMPORT_CSV_MAPPING_INVALID",
+  );
+}
+
+function testColumnCountMismatchIsSafe(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "columns.csv",
+    content: [
+      "date,description,amount",
+      "2026-06-10,Valida,-10",
+      "2026-06-11,Coluna ausente",
+      "2026-06-12,Coluna extra,-20,nao-deve-vazar",
+    ].join("\n"),
+  });
+
+  assertEqual(preview.state, "ready", "valid rows remain reviewable");
+  assertEqual(preview.suggestions.length, 1, "invalid structural rows do not create suggestions");
+  assertEqual(preview.batch.problemRows, 2, "column mismatches counted");
+  assertProblemCode(preview.problems, "IMPORT_CSV_COLUMN_COUNT_MISMATCH", "column count mismatch");
+  assertEqual(
+    JSON.stringify(preview).includes("nao-deve-vazar"),
+    false,
+    "raw extra cell is not exposed",
+  );
+}
+
+function testOriginalHeadersAndPreviewLimit(): void {
+  const rows = Array.from(
+    { length: 12 },
+    (_, index) => `2026-06-${String(index + 1).padStart(2, "0")},Linha ${index + 1},-1`,
+  );
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "sample-limit.csv",
+    content: ["Data,Descrição,Valor", ...rows].join("\n"),
+  });
+
+  assertEqual(preview.csv?.headers[0], "Data", "display header remains original");
+  assertEqual(preview.csv?.headers[1], "Descrição", "display accent remains original");
+  assertEqual(preview.csv?.sampleRows.length, 10, "preview sample is limited");
+  assertEqual(preview.suggestions.length, 12, "internal preview retains all valid suggestions");
+}
+
 function testInvalidCsvPreview(): void {
   const preview = previewImportedStatement({
     context: tenantA,
@@ -223,6 +299,26 @@ function testContextualBatchIdentity(): void {
     mapped.batch.sourceHash,
     "canonical mapping keeps identity",
   );
+  assertEqual(accountA.batch.sourceHash.startsWith("sha256-"), true, "batch uses SHA-256");
+  assertEqual(
+    accountA.batch.contentHash,
+    accountB.batch.contentHash,
+    "content hash ignores account",
+  );
+  assertNotEqual(
+    accountA.batch.sourceHash,
+    buildLegacyImportBatchHash({
+      kind: "csv",
+      content: common.content,
+      defaultAccountId: "account-a",
+      ...(accountA.batch.csvDelimiter === undefined
+        ? {}
+        : { csvDelimiter: accountA.batch.csvDelimiter }),
+      ...(accountA.batch.csvMapping === undefined ? {} : { csvMapping: accountA.batch.csvMapping }),
+    }),
+    "secure batch identity differs from legacy hash",
+  );
+  assertEqual(buildSecureImportHash("demo").length, 71, "SHA-256 identifier length");
 }
 
 function testStructuredPayloads(): void {
