@@ -76,6 +76,11 @@ describe("Inbox CSV import review contract", () => {
 
   it("exposes accessible modal, status and row actions", () => {
     assert.match(source, /aria-labelledby="csv-import-title"/);
+    assert.match(source, /aria-labelledby="csv-line-edit-title"/);
+    assert.match(source, /data-line-action="edit"/);
+    assert.match(source, /lineEditDialog\.showModal\(\)/);
+    assert.match(source, /lineEditDialog\.addEventListener\("close", restoreLineEditFocus\)/);
+    assert.doesNotMatch(source, /rowForm\.addEventListener\("submit"/);
     assert.match(source, /role="alert"/);
     assert.match(source, /aria-live="polite"/);
     assert.match(source, /aria-label="Selecionar linha/);
