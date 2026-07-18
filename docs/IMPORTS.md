@@ -140,7 +140,7 @@ Na Inbox, a seleção é preservada ao trocar filtros e inclui apenas linhas ele
 - `discarded`: encerrado logicamente pelo usuário;
 - `failed`: preview sem linha válida, usado apenas no contrato de domínio.
 
-Lotes descartados não aceitam novas edições, aprovações nem novas varreduras determinísticas. O descarte só é permitido enquanto não houver lançamento financeiro: extrações pendentes passam a `rejected`, candidatos determinísticos pendentes passam a `expired` e qualquer lote com efeito financeiro retorna `IMPORT_BATCH_HAS_FINANCIAL_EFFECTS`.
+Lotes descartados não aceitam novas edições, aprovações nem novas varreduras determinísticas. O descarte só é permitido enquanto não houver lançamento financeiro: extrações pendentes passam a `rejected`, candidatos determinísticos pendentes passam a `expired` e qualquer lote com efeito financeiro retorna `IMPORT_BATCH_HAS_FINANCIAL_EFFECTS`. Confirmar uma duplicidade apenas encerra a linha sem criar ou alterar lançamento, portanto o lote continua elegível para descarte; uma conciliação efetiva bloqueia o descarte porque altera o lançamento existente.
 
 ## Privacidade, isolamento e auditoria
 
