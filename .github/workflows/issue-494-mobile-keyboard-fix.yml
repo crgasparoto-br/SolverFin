@@ -41,55 +41,6 @@ jobs:
 
           test = Path('scripts/statement-visual/inbox-csv-review.mjs')
           text = test.read_text()
-          old = '''        summaryText: document.querySelector('.import-summary')?.textContent || ''
-                };'''
-          new = '''        summaryText: document.querySelector('.import-summary')?.textContent || '',
-                  viewportWidth: document.documentElement.clientWidth,
-                  documentScrollWidth: document.documentElement.scrollWidth,
-                  overflowElements: [...document.querySelectorAll('body *')]
-                    .map((element) => {
-                      const rect = element.getBoundingClientRect();
-                      return {
-                        tag: element.tagName,
-                        id: element.id,
-                        className: typeof element.className === 'string' ? element.className : '',
-                        left: Math.round(rect.left),
-                        right: Math.round(rect.right),
-                        width: Math.round(rect.width),
-                        scrollWidth: element.scrollWidth,
-                        clientWidth: element.clientWidth
-                      };
-                    })
-                    .filter((entry) => entry.left < -1 || entry.right > document.documentElement.clientWidth + 1)
-                    .slice(0, 20)
-                };'''
-          if old not in text:
-              old = '''        summaryText: document.querySelector('.import-summary')?.textContent || ''
-              };'''
-              new = '''        summaryText: document.querySelector('.import-summary')?.textContent || '',
-                viewportWidth: document.documentElement.clientWidth,
-                documentScrollWidth: document.documentElement.scrollWidth,
-                overflowElements: [...document.querySelectorAll('body *')]
-                  .map((element) => {
-                    const rect = element.getBoundingClientRect();
-                    return {
-                      tag: element.tagName,
-                      id: element.id,
-                      className: typeof element.className === 'string' ? element.className : '',
-                      left: Math.round(rect.left),
-                      right: Math.round(rect.right),
-                      width: Math.round(rect.width),
-                      scrollWidth: element.scrollWidth,
-                      clientWidth: element.clientWidth
-                    };
-                  })
-                  .filter((entry) => entry.left < -1 || entry.right > document.documentElement.clientWidth + 1)
-                  .slice(0, 20)
-              };'''
-          if old not in text:
-              raise SystemExit('Expected initial visual snapshot block was not found')
-          text = text.replace(old, new, 1)
-
           old = '''  await cdp.send("Input.dispatchKeyEvent", {
             type: "keyDown",
             key,
