@@ -1031,6 +1031,6 @@ function baseCss(): string {
     .warning { color: #8a5a00; }
     @media (max-width: 1100px) { .row-fields { grid-template-columns: repeat(3, minmax(120px, 1fr)); } .row-summary { grid-template-columns: repeat(3, minmax(120px, 1fr)); } }
     @media (max-width: 800px) { .page-heading, .section-heading, .detail-heading { align-items: stretch; display: grid; } .import-summary { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .import-layout { grid-template-columns: 1fr; } .import-batch-list { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); max-height: none; } .row-fields { grid-template-columns: 1fr 1fr; } .row-summary { grid-template-columns: 1fr 1fr; } .row-fields .description-field { grid-column: 1 / -1; } .candidate-card { align-items: stretch; display: grid; } }
-    @media (max-width: 520px) { .row-fields, .row-summary { grid-template-columns: 1fr; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }
+    @media (max-width: 520px) { .import-summary, .row-fields, .row-summary { grid-template-columns: 1fr; } .line-filter-bar { justify-content: stretch; } .line-filter-bar label { min-width: 0; width: 100%; } .line-filter-bar select { min-width: 0; width: 100%; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }
   `;
 }
