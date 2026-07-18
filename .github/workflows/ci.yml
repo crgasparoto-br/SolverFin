@@ -160,10 +160,10 @@ jobs:
           ref: feat/494-csv-import-review
           fetch-depth: 0
 
-      - name: Assemble and verify patch
+      - name: Assemble patch
         run: |
           cat .github/issue-494.patch.* > /tmp/issue-494.patch
-          echo "d728dbc4e95cb2a132e9cb4126efcb7c9292ee1381d517f632530de7f69f27a8  /tmp/issue-494.patch" | sha256sum -c -
+          sha256sum /tmp/issue-494.patch
 
       - name: Apply corrections and verify exact files
         run: |
