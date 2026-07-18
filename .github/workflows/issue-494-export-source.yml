@@ -1,6 +1,9 @@
 name: Issue 494 export source
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - feat/494-csv-import-review
