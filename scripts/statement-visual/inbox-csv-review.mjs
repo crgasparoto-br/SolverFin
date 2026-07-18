@@ -14,9 +14,17 @@ if (!chromePath) throw new Error("CHROME_BIN is required for Inbox CSV review va
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let report;
+let fatalError;
 
 try {
   report = await validateInboxCsvReview(browser.cdp);
+} catch (error) {
+  fatalError = {
+    name: error instanceof Error ? error.name : "UnknownError",
+    message: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : undefined,
+  };
+  failures.push({ message: fatalError.message, details: fatalError });
 } finally {
   await browser.close(outputDir);
 }
@@ -26,6 +34,7 @@ const evidence = {
   commit: process.env.GITHUB_SHA ?? "local",
   browser: browser.version,
   failures,
+  fatalError,
   ...report,
 };
 await writeFile(
@@ -35,6 +44,7 @@ await writeFile(
 
 if (failures.length > 0) {
   for (const failure of failures) console.error(`- ${failure.message}`);
+  if (fatalError?.stack) console.error(fatalError.stack);
   process.exitCode = 1;
 } else {
   console.log("Issue #494 Inbox CSV review keyboard and mobile validation passed.");
@@ -94,6 +104,19 @@ async function validateInboxCsvReview(cdp) {
   check(initial.bodyFitsViewport, "Inbox CSV detail overflows the mobile viewport", initial);
   check(initial.editVisible, "CSV edit action is not visible on mobile", initial);
   check(initial.headingFocused, "Deep-linked CSV detail did not receive initial focus", initial);
+  for (const label of [
+    "Válidas",
+    "Pendentes",
+    "Bloqueadas",
+    "Aprovadas",
+    "Conciliadas",
+    "Ignoradas como duplicadas",
+    "Rejeitadas",
+    "Lançamentos vinculados",
+    "Problemas",
+  ]) {
+    check(initial.summaryText.includes(label), `CSV summary is missing the label: ${label}`, initial);
+  }
 
   await evaluate(
     cdp,
