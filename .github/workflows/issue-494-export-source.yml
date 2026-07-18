@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Archive source
-        run: tar --exclude=.git -czf solverfin-source.tar.gz .
+        run: tar --exclude=.git --exclude=solverfin-source.tar.gz -czf solverfin-source.tar.gz .
       - name: Upload source
         uses: actions/upload-artifact@v4
         with:
