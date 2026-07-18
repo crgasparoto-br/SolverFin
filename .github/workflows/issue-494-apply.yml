@@ -1,0 +1,73 @@
+name: Apply issue 494 audit fixes
+
+on:
+  push:
+    branches:
+      - feat/494-csv-import-review
+    paths:
+      - .github/issue-494.patch.*
+      - .github/workflows/issue-494-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout issue branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/494-csv-import-review
+          fetch-depth: 0
+
+      - name: Assemble and verify patch
+        run: |
+          cat .github/issue-494.patch.* > /tmp/issue-494.patch
+          echo "cabc458688c1f85cfaba4b10c17e22dd5851093ce634c501c4903f14b954d4d5  /tmp/issue-494.patch" | sha256sum -c -
+
+      - name: Apply corrections and verify exact files
+        run: |
+          set +e
+          patch --forward --batch -p1 < /tmp/issue-494.patch
+          set -e
+          find . -type f \( -name '*.rej' -o -name '*.orig' \) -print -delete
+          cat > /tmp/expected.sha256 <<'EOF'
+          1b19c6291ec49b38bfe2278ea2ac707282158c79206ea829a6396ae0ca998594  packages/domain/src/imports.ts
+          c93ba47ea3ce25c8c851541c9a14465fac24880eae76f95c1018a8342cf28e5e  packages/domain/src/imports.test.ts
+          e293afdcf10386004cb6ab33ffe9b4370e03fad656fb95c84d7fe7905307d24c  packages/domain/src/index.ts
+          58a358151db118db38aeeb26ff596c554b658b66093df325ac1852ced0081b1a  apps/api/src/repositories/imports.ts
+          d78e7890bf2beb233fd6b872940fc9533628bca44686ac6d2af40d3d26c4edba  apps/api/src/csv-import-review.integration.test.ts
+          1c869af4447808b13c1b9cb7642ca167a2eaf01c7770168fb2488e66d0afeac1  apps/web/src/dev-server/inbox-page.ts
+          ec64dd18fef94354bc88d614bd74111679e6a688e8b601ff21fe5328c8cad336  apps/web/src/dev-server/inbox-csv-import.test.ts
+          2b55f5f53618bb228b8addf319e383b54e310b524214a0d7171829ce44d99e56  prisma/schema.prisma
+          4a2a362b7b46345500ba35e6f8ceb1c85eb143ad887bf966f98fd9a236844e40  prisma/migrations/20260718130000_csv_import_review_hardening/migration.sql
+          74ca88775b8513f63857bfb5a04217e09eb66d2ac4666748e60e3176895819eb  docs/IMPORTS.md
+          53c87f4717250be68f2a570dc78bc1631b9a7ba555313aef00813f2e43ba725a  docs/PRIVACY.md
+          e025d9d0cfda26d87c6a528913c3b99279f88a5647c380e39e8a00466939b6c8  docs/adr/0006-csv-import-structured-human-review.md
+          EOF
+          sed -i 's/^          //' /tmp/expected.sha256
+          sha256sum -c /tmp/expected.sha256
+
+      - name: Commit final corrections and remove transport
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/issue-494.patch.* .github/workflows/issue-494-apply.yml
+          git add \
+            packages/domain/src/imports.ts \
+            packages/domain/src/imports.test.ts \
+            packages/domain/src/index.ts \
+            apps/api/src/repositories/imports.ts \
+            apps/api/src/csv-import-review.integration.test.ts \
+            apps/web/src/dev-server/inbox-page.ts \
+            apps/web/src/dev-server/inbox-csv-import.test.ts \
+            prisma/schema.prisma \
+            prisma/migrations/20260718130000_csv_import_review_hardening/migration.sql \
+            docs/IMPORTS.md \
+            docs/PRIVACY.md \
+            docs/adr/0006-csv-import-structured-human-review.md
+          git diff --cached --check
+          git commit -m "fix: concluir ajustes da auditoria da issue 494"
+          git push origin HEAD:feat/494-csv-import-review
