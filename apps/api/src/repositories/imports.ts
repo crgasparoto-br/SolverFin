@@ -1771,8 +1771,9 @@ function toImportReviewSuggestion(
   transaction: Transaction | undefined,
 ): ImportReviewSuggestion {
   const payload = parseTransactionExtractionPayload(suggestion.payload);
+  const { payload: _discardedPayload, ...suggestionWithoutPayload } = suggestion;
   return {
-    ...suggestion,
+    ...suggestionWithoutPayload,
     ...(payload === undefined ? {} : { payload }),
     candidates: candidates.flatMap((candidate) => {
       const deterministic = parseDeterministicReviewPayload(candidate.payload);
