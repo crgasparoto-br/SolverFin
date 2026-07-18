@@ -31,6 +31,9 @@ async function main(): Promise<void> {
   await assertCurrencyAndConfigurationSafety(token, fixtures);
   await assertFullReviewLifecycle(token, fixtures);
   await assertDeterministicReviewIsLinkedAndIdempotent(token, fixtures);
+  await assertReconciliationDetailKeepsLinkedTransaction(token, fixtures);
+  await assertRejectedCandidatesReleaseNormalApproval(token, fixtures);
+  await assertLegacySuggestionWithoutPayloadIsListable(token, fixtures);
   await assertDiscardLifecycleAndTenantIsolation(token, fixtures.account.id);
 }
 
@@ -531,6 +534,174 @@ async function assertDeterministicReviewIsLinkedAndIdempotent(
   );
 }
 
+async function assertReconciliationDetailKeepsLinkedTransaction(
+  token: string,
+  fixtures: Fixtures,
+): Promise<void> {
+  const description = `Conciliação exata ${fixtures.suffix}`;
+  const existingResponse = await apiRequest(token, "POST", "/api/transactions", {
+    kind: "expense",
+    amountMinor: 7654,
+    occurredOn: "2026-07-20",
+    accountId: fixtures.account.id,
+    categoryId: fixtures.category.id,
+    description,
+  });
+  assert.equal(existingResponse.statusCode, 201);
+  const existing = readBody<{ transaction: { id: string } }>(existingResponse).transaction;
+
+  const importResponse = await apiRequest(token, "POST", "/api/import-batches/csv", {
+    originalFileName: `reconciliation-${fixtures.suffix}.csv`,
+    content: `date,description,amount,kind\n2026-07-20,${description},-76.54,expense`,
+    accountId: fixtures.account.id,
+    consentAccepted: true,
+  });
+  assert.equal(importResponse.statusCode, 201);
+  const imported = readBody<ImportDetail>(importResponse);
+  const source = requireSuggestion(imported, 0);
+
+  const scanResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${imported.importBatch.id}/detect-duplicates`,
+  );
+  assert.equal(scanResponse.statusCode, 200);
+  const candidate = readBody<{ reconciliationSuggestions: ImportSuggestion[] }>(
+    scanResponse,
+  ).reconciliationSuggestions.find((item) => item.payload.targetTransactionId === existing.id);
+  assert.ok(candidate, "Expected reconciliation candidate linked to the existing transaction");
+
+  const decision = await apiRequest(
+    token,
+    "POST",
+    `/api/review-suggestions/${candidate.id}/approve`,
+  );
+  assert.equal(decision.statusCode, 200);
+
+  const detailResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/import-batches/${imported.importBatch.id}`,
+  );
+  assert.equal(detailResponse.statusCode, 200);
+  const detail = readBody<ImportDetail>(detailResponse);
+  const reconciled = requireSuggestion(detail, 0);
+  assert.equal(reconciled.status, "approved");
+  assert.equal(reconciled.transaction?.id, existing.id);
+  assert.equal(reconciled.transaction?.status, "reconciled");
+  assert.equal(reconciled.candidates?.find((item) => item.id === candidate.id)?.status, "approved");
+
+  const createdRows = await query<{ id: string }>(
+    `select "id" from "Transaction"
+     where "organizationId" = $1 and "financialProfileId" = $2 and "aiSuggestionId" = $3`,
+    [imported.importBatch.organizationId, PERSONAL_PROFILE_ID, source.id],
+  );
+  assert.equal(createdRows.length, 0, "Reconciliation must not create a second transaction");
+
+  const discard = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${imported.importBatch.id}/discard`,
+  );
+  assert.equal(discard.statusCode, 409);
+  assert.equal(readErrorCode(discard), "IMPORT_BATCH_HAS_FINANCIAL_EFFECTS");
+}
+
+async function assertRejectedCandidatesReleaseNormalApproval(
+  token: string,
+  fixtures: Fixtures,
+): Promise<void> {
+  const description = `Rejeitar candidatos ${fixtures.suffix}`;
+  const existingResponse = await apiRequest(token, "POST", "/api/transactions", {
+    kind: "expense",
+    amountMinor: 8765,
+    occurredOn: "2026-07-21",
+    accountId: fixtures.account.id,
+    categoryId: fixtures.category.id,
+    description,
+  });
+  assert.equal(existingResponse.statusCode, 201);
+  const existing = readBody<{ transaction: { id: string } }>(existingResponse).transaction;
+
+  const importResponse = await apiRequest(token, "POST", "/api/import-batches/csv", {
+    originalFileName: `reject-candidates-${fixtures.suffix}.csv`,
+    content: `date,description,amount,kind\n2026-07-21,${description},-87.65,expense`,
+    accountId: fixtures.account.id,
+    consentAccepted: true,
+  });
+  assert.equal(importResponse.statusCode, 201);
+  const imported = readBody<ImportDetail>(importResponse);
+  const source = requireSuggestion(imported, 0);
+  const scanResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${imported.importBatch.id}/detect-duplicates`,
+  );
+  assert.equal(scanResponse.statusCode, 200);
+  const scan = readBody<{
+    deduplicationSuggestions: ImportSuggestion[];
+    reconciliationSuggestions: ImportSuggestion[];
+  }>(scanResponse);
+  const candidates = [...scan.deduplicationSuggestions, ...scan.reconciliationSuggestions].filter(
+    (item) => item.payload.targetTransactionId === existing.id,
+  );
+  assert.ok(candidates.length >= 2, "Expected duplicate and reconciliation candidates");
+  for (const candidate of candidates) {
+    const rejected = await apiRequest(
+      token,
+      "POST",
+      `/api/review-suggestions/${candidate.id}/reject`,
+      { reason: "Candidato rejeitado no teste." },
+    );
+    assert.equal(rejected.statusCode, 200);
+  }
+
+  const approved = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${imported.importBatch.id}/suggestions/${source.id}/approve`,
+  );
+  assert.equal(approved.statusCode, 200);
+  const transaction = readBody<{ transaction: { id: string } }>(approved).transaction;
+  assert.notEqual(transaction.id, existing.id);
+}
+
+async function assertLegacySuggestionWithoutPayloadIsListable(
+  token: string,
+  fixtures: Fixtures,
+): Promise<void> {
+  const response = await apiRequest(token, "POST", "/api/import-batches/csv", {
+    originalFileName: `legacy-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-22,Legado ${fixtures.suffix},-9`,
+    accountId: fixtures.account.id,
+    consentAccepted: true,
+  });
+  assert.equal(response.statusCode, 201);
+  const created = readBody<ImportDetail>(response);
+  const source = requireSuggestion(created, 0);
+  await query(`update "AiSuggestion" set "payload" = null where "id" = $1`, [source.id]);
+
+  const detailResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/import-batches/${created.importBatch.id}`,
+  );
+  assert.equal(detailResponse.statusCode, 200);
+  const detail = readBody<{
+    suggestions: Array<{ id: string; status: string; payload?: unknown }>;
+  }>(detailResponse);
+  assert.equal(detail.suggestions[0]?.id, source.id);
+  assert.equal(detail.suggestions[0]?.payload, undefined);
+
+  const approval = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${created.importBatch.id}/suggestions/${source.id}/approve`,
+  );
+  assert.equal(approval.statusCode, 400);
+  assert.equal(readErrorCode(approval), "IMPORT_SUGGESTION_PAYLOAD_INVALID");
+}
+
 async function assertDiscardLifecycleAndTenantIsolation(
   token: string,
   accountId: string,
@@ -720,7 +891,18 @@ interface ImportSuggestion {
   id: string;
   status: string;
   payload: ExtractionPayload;
-  candidates?: Array<{ id: string; status: string }>;
+  candidates?: Array<{
+    id: string;
+    status: string;
+    kind?: string;
+    targetTransactionId?: string;
+  }>;
+  transaction?: {
+    id: string;
+    status: string;
+    accountId?: string;
+    occurredOn: string;
+  };
 }
 
 interface ImportDetail {

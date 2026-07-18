@@ -61,7 +61,7 @@ export interface ImportSuggestionCandidate {
 }
 
 export interface ImportReviewSuggestion extends AiSuggestion {
-  payload: TransactionExtractionPayloadV1;
+  payload?: TransactionExtractionPayloadV1;
   candidates: readonly ImportSuggestionCandidate[];
   transaction?: Transaction;
 }
@@ -527,28 +527,53 @@ export async function getImportBatchDetailForContext(
     ],
   );
   const deterministicSuggestions = deterministicRows.map(mapAiSuggestionRow);
+  const reconciliationTargetIds = [
+    ...new Set(
+      deterministicSuggestions.flatMap((candidate) => {
+        if (candidate.kind !== "reconciliation" || candidate.status !== "approved") return [];
+        const payload = parseDeterministicReviewPayload(candidate.payload);
+        return payload === undefined ? [] : [payload.targetTransactionId];
+      }),
+    ),
+  ];
   const transactionRows = await query<TransactionRow>(
     `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction"
-     where "organizationId" = $1 and "financialProfileId" = $2 and "importBatchId" = $3`,
-    [context.organizationId, context.financialProfileId, importBatchId],
+     where "organizationId" = $1 and "financialProfileId" = $2
+       and ("importBatchId" = $3 or "id" = any($4::uuid[]))`,
+    [context.organizationId, context.financialProfileId, importBatchId, reconciliationTargetIds],
   );
+  const mappedTransactions = transactionRows.map(mapTransactionRow);
   const transactionsBySuggestion = new Map(
-    transactionRows
-      .filter((row) => row.aiSuggestionId !== null)
-      .map((row) => [row.aiSuggestionId as string, mapTransactionRow(row)]),
+    mappedTransactions.flatMap((transaction) =>
+      transaction.aiSuggestionId === undefined
+        ? []
+        : [[transaction.aiSuggestionId, transaction] as const],
+    ),
+  );
+  const transactionsById = new Map(
+    mappedTransactions.map((transaction) => [transaction.id, transaction] as const),
   );
 
   return {
     importBatch: batch,
-    suggestions: extractionSuggestions.map((suggestion) =>
-      toImportReviewSuggestion(
+    suggestions: extractionSuggestions.map((suggestion) => {
+      const candidates = deterministicSuggestions.filter(
+        (candidate) => getSourceSuggestionId(candidate) === suggestion.id,
+      );
+      const reconciliationTargetId = candidates.flatMap((candidate) => {
+        if (candidate.kind !== "reconciliation" || candidate.status !== "approved") return [];
+        const payload = parseDeterministicReviewPayload(candidate.payload);
+        return payload === undefined ? [] : [payload.targetTransactionId];
+      })[0];
+      return toImportReviewSuggestion(
         suggestion,
-        deterministicSuggestions.filter(
-          (candidate) => getSourceSuggestionId(candidate) === suggestion.id,
-        ),
-        transactionsBySuggestion.get(suggestion.id),
-      ),
-    ),
+        candidates,
+        transactionsBySuggestion.get(suggestion.id) ??
+          (reconciliationTargetId === undefined
+            ? undefined
+            : transactionsById.get(reconciliationTargetId)),
+      );
+    }),
     problems: batch.problems as ImportProblem[],
   };
 }
@@ -1745,10 +1770,10 @@ function toImportReviewSuggestion(
   candidates: readonly AiSuggestion[],
   transaction: Transaction | undefined,
 ): ImportReviewSuggestion {
-  const payload = requireExtractionPayload(suggestion);
+  const payload = parseTransactionExtractionPayload(suggestion.payload);
   return {
     ...suggestion,
-    payload,
+    ...(payload === undefined ? {} : { payload }),
     candidates: candidates.flatMap((candidate) => {
       const deterministic = parseDeterministicReviewPayload(candidate.payload);
       if (

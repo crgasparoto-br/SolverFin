@@ -63,6 +63,11 @@ describe("Inbox CSV import review contract", () => {
     assert.match(source, /Conta:/);
     assert.match(source, /somente para consulta/);
     assert.match(source, /Ver no Extrato/);
+    assert.match(source, /Bloqueadas/);
+    assert.match(source, /Conciliadas/);
+    assert.match(source, /Ignoradas como duplicadas/);
+    assert.match(source, /Lançamentos vinculados/);
+    assert.match(source, /linha legada não possui dados estruturados/i);
     assert.match(source, /statementUrl/);
     assert.match(source, /params\.set\("accountId"/);
     assert.match(source, /params\.set\("month"/);

@@ -66,9 +66,13 @@ async function validateInboxCsvReview(cdp) {
           })
         });
         return { ok: createResponse.ok, status: createResponse.status, body: await createResponse.json(), accountId: account.id };
-      }))()`
+      }))()`,
   );
-  assert.equal(fixture.ok, true, `CSV fixture creation failed: ${fixture.status} ${JSON.stringify(fixture.body)}`);
+  assert.equal(
+    fixture.ok,
+    true,
+    `CSV fixture creation failed: ${fixture.status} ${JSON.stringify(fixture.body)}`,
+  );
   const batchId = fixture.body.importBatch.id;
 
   await navigate(cdp, `${baseUrl}/inbox?importBatchId=${encodeURIComponent(batchId)}`);
@@ -85,7 +89,7 @@ async function validateInboxCsvReview(cdp) {
         headingFocused: document.activeElement === heading,
         summaryText: document.querySelector('.import-summary')?.textContent || ''
       };
-    })()`
+    })()`,
   );
   check(initial.bodyFitsViewport, "Inbox CSV detail overflows the mobile viewport", initial);
   check(initial.editVisible, "CSV edit action is not visible on mobile", initial);
@@ -97,7 +101,7 @@ async function validateInboxCsvReview(cdp) {
       const edit = document.querySelector('[data-line-action="edit"]');
       edit.focus();
       return document.activeElement === edit;
-    })()`
+    })()`,
   );
   await pressKey(cdp, "Enter", "Enter", 13);
   await waitFor(cdp, `document.getElementById('csv-line-edit-dialog')?.open === true`);
@@ -114,10 +118,14 @@ async function validateInboxCsvReview(cdp) {
         originalDescription: form.elements.description.value,
         originalAmount: form.elements.amount.value
       };
-    })()`
+    })()`,
   );
   check(opened.open, "CSV line edit dialog did not open", opened);
-  check(opened.labelledBy === "csv-line-edit-title", "CSV line edit dialog is not labelled", opened);
+  check(
+    opened.labelledBy === "csv-line-edit-title",
+    "CSV line edit dialog is not labelled",
+    opened,
+  );
   check(opened.activeName === "occurredOn", "CSV edit focus did not move into the dialog", opened);
 
   await evaluate(
@@ -128,7 +136,7 @@ async function validateInboxCsvReview(cdp) {
       form.elements.amount.value = '0';
       form.requestSubmit();
       return true;
-    })()`
+    })()`,
   );
   await waitFor(
     cdp,
@@ -146,7 +154,7 @@ async function validateInboxCsvReview(cdp) {
         amount: form.elements.amount.value,
         status: status.textContent || ''
       };
-    })()`
+    })()`,
   );
   check(failedSave.open, "Validation failure closed the CSV edit dialog", failedSave);
   check(
@@ -163,7 +171,7 @@ async function validateInboxCsvReview(cdp) {
     `(() => ({
       returnedToEdit: document.activeElement?.matches('[data-line-action="edit"]') === true,
       bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth
-    }))()`
+    }))()`,
   );
   check(closed.returnedToEdit, "Closing the CSV edit dialog did not restore focus", closed);
   check(closed.bodyFitsViewport, "Inbox overflowed after closing the CSV dialog", closed);
@@ -193,8 +201,18 @@ async function waitFor(cdp, expression, timeout = 12_000) {
 }
 
 async function pressKey(cdp, key, code, keyCode) {
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key, code, windowsVirtualKeyCode: keyCode });
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key, code, windowsVirtualKeyCode: keyCode });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key,
+    code,
+    windowsVirtualKeyCode: keyCode,
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key,
+    code,
+    windowsVirtualKeyCode: keyCode,
+  });
   await sleep(100);
 }
 

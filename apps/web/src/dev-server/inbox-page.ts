@@ -506,16 +506,21 @@ function csvImportScript(
         function renderRow(item, batch) {
           const payload = item.payload || {};
           const currentState = rowState(item, batch);
-          const readOnly = batch.status !== "reviewing" || item.status !== "pending_review";
+          const hasStructuredPayload = Boolean(item.payload);
+          const readOnly =
+            batch.status !== "reviewing" ||
+            item.status !== "pending_review" ||
+            !hasStructuredPayload;
           const selectable = currentState === "eligible";
           const checked = state.selected.has(item.id) ? " checked" : "";
           const lineActions = readOnly ? "" : '<div class="inline-actions"><button type="button" class="secondary-button" data-line-action="edit">Corrigir linha</button><button type="button" data-line-action="approve" ' + (selectable ? "" : "disabled") + '>Confirmar linha</button><button type="button" class="secondary-button danger-action" data-line-action="reject">Rejeitar</button></div>';
+          const legacyNotice = hasStructuredPayload ? "" : '<p class="warning" role="status">Esta linha legada não possui dados estruturados para revisão. Corrija o arquivo e faça uma nova importação.</p>';
           const transactionLink = item.transaction ? '<a class="button-link secondary-button" href="/lancamentos?accountId=' + encodeURIComponent(item.transaction.accountId || payload.accountId || "") + '&month=' + encodeURIComponent(String(item.transaction.occurredOn || payload.occurredOn).slice(0, 7)) + '">Ver no Extrato</a>' : "";
           return '<article class="import-row" data-suggestion-id="' + escapeHtml(item.id) + '" data-row-state="' + escapeHtml(currentState) + '">' +
-            '<input type="checkbox" data-select-suggestion value="' + escapeHtml(item.id) + '" aria-label="Selecionar linha ' + escapeHtml(payload.sourceRowNumber) + '" ' + (selectable ? "" : "disabled") + checked + ' />' +
-            '<div class="row-editor"><div class="row-heading"><strong>Linha ' + escapeHtml(payload.sourceRowNumber) + '</strong><span class="status-pill">' + escapeHtml(stateLabel(currentState)) + '</span></div>' +
-            '<dl class="row-summary"><div><dt>Data</dt><dd>' + formatDate(payload.occurredOn) + '</dd></div><div><dt>Tipo</dt><dd>' + escapeHtml(payload.kind === "income" ? "Receita" : "Despesa") + '</dd></div><div><dt>Valor</dt><dd>' + escapeHtml(formatMoney(payload.amountMinor, payload.currency)) + '</dd></div><div><dt>Descrição</dt><dd>' + escapeHtml(payload.description) + '</dd></div><div><dt>Conta</dt><dd>' + escapeHtml(accountName(payload.accountId)) + '</dd></div></dl>' +
-            lineActions + transactionLink + '</div>' +
+            '<input type="checkbox" data-select-suggestion value="' + escapeHtml(item.id) + '" aria-label="Selecionar linha ' + escapeHtml(payload.sourceRowNumber || "sem dados estruturados") + '" ' + (selectable ? "" : "disabled") + checked + ' />' +
+            '<div class="row-editor"><div class="row-heading"><strong>Linha ' + escapeHtml(payload.sourceRowNumber || "—") + '</strong><span class="status-pill">' + escapeHtml(stateLabel(currentState)) + '</span></div>' +
+            '<dl class="row-summary"><div><dt>Data</dt><dd>' + formatDate(payload.occurredOn) + '</dd></div><div><dt>Tipo</dt><dd>' + escapeHtml(payload.kind === "income" ? "Receita" : "Despesa") + '</dd></div><div><dt>Valor</dt><dd>' + escapeHtml(formatMoney(payload.amountMinor, payload.currency)) + '</dd></div><div><dt>Descrição</dt><dd>' + escapeHtml(payload.description || "Dados legados indisponíveis") + '</dd></div><div><dt>Conta</dt><dd>' + escapeHtml(accountName(payload.accountId)) + '</dd></div></dl>' +
+            legacyNotice + lineActions + transactionLink + '</div>' +
             ((item.candidates || []).length ? '<div class="candidate-list">' + item.candidates.map((candidate) => renderCandidate(candidate, batch.status !== "reviewing")).join("") + '</div>' : "") + '</article>';
         }
         function statementUrl(value) {
@@ -530,10 +535,15 @@ function csvImportScript(
         }
         function detailSummary(value) {
           const suggestions = value.suggestions || [];
+          const states = suggestions.map((item) => rowState(item, value.importBatch));
           return {
+            valid: suggestions.filter((item) => Boolean(item.payload)).length,
             pending: suggestions.filter((item) => item.status === "pending_review").length,
-            approved: suggestions.filter((item) => item.status === "approved").length,
-            rejected: suggestions.filter((item) => item.status === "rejected").length,
+            blocked: states.filter((stateValue) => stateValue === "candidate_pending").length,
+            approved: states.filter((stateValue) => stateValue === "approved_created").length,
+            reconciled: states.filter((stateValue) => stateValue === "reconciled").length,
+            duplicates: states.filter((stateValue) => stateValue === "duplicate_ignored").length,
+            rejected: states.filter((stateValue) => stateValue === "rejected").length,
             transactions: suggestions.filter((item) => item.transaction).length,
             problems: (value.problems || []).length
           };
@@ -547,7 +557,7 @@ function csvImportScript(
           const selectedEligible = value.suggestions.filter((item) => state.selected.has(item.id) && rowState(item, batch) === "eligible");
           const headerActions = readOnly ? (batch.status === "completed" ? '<a class="button-link" href="' + escapeHtml(statementUrl(value)) + '">Ver no Extrato</a>' : "") : '<button type="button" class="secondary-button" id="detect-import-duplicates">Verificar duplicidades</button><button type="button" class="secondary-button danger-action" id="discard-import">Descartar lote</button>';
           detail.innerHTML = '<div class="detail-heading" id="import-detail-heading" tabindex="-1"><div><p class="eyebrow">' + escapeHtml(activeProfileLabel) + '</p><h3>' + escapeHtml(batch.originalFileName || "Importação CSV") + '</h3><p class="muted">Conta: ' + escapeHtml(accountName(batch.defaultAccountId)) + ' · Recebido em ' + formatDate(batch.receivedAt) + '</p></div><div class="inline-actions"><span class="status-pill">' + escapeHtml(formatStatus(batch.status)) + '</span>' + headerActions + '</div></div>' +
-            '<div class="import-summary" aria-label="Resumo do lote"><span>Pendentes <strong>' + summary.pending + '</strong></span><span>Aprovadas <strong>' + summary.approved + '</strong></span><span>Rejeitadas <strong>' + summary.rejected + '</strong></span><span>Lançamentos <strong>' + summary.transactions + '</strong></span><span>Problemas <strong>' + summary.problems + '</strong></span></div>' +
+            '<div class="import-summary" aria-label="Resumo do lote"><span>Válidas <strong>' + summary.valid + '</strong></span><span>Pendentes <strong>' + summary.pending + '</strong></span><span>Bloqueadas <strong>' + summary.blocked + '</strong></span><span>Aprovadas <strong>' + summary.approved + '</strong></span><span>Conciliadas <strong>' + summary.reconciled + '</strong></span><span>Ignoradas como duplicadas <strong>' + summary.duplicates + '</strong></span><span>Rejeitadas <strong>' + summary.rejected + '</strong></span><span>Lançamentos vinculados <strong>' + summary.transactions + '</strong></span><span>Problemas <strong>' + summary.problems + '</strong></span></div>' +
             renderProblems(value.problems || [], lineFilter.value === "problems") +
             (readOnly ? '<p class="readonly-notice">Este lote está finalizado e disponível somente para consulta.</p>' : '<div class="bulk-actions"><label><input type="checkbox" id="select-all-import-lines" /> Selecionar elegíveis</label><div><span id="selection-summary">' + selectedEligible.length + ' selecionada(s)</span> <button type="button" id="approve-selected-import-lines" ' + (selectedEligible.length ? "" : "disabled") + '>Confirmar selecionadas</button></div></div>') +
             '<p id="import-detail-status" class="form-status muted" role="status" aria-live="polite"></p>' +
