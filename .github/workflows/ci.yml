@@ -146,3 +146,16 @@ jobs:
 
       - name: Run API integration tests
         run: npm run test:integration --workspace @solverfin/api
+
+      - name: Archive current workspace for CI diagnosis
+        if: always()
+        run: tar --exclude=.git --exclude=node_modules -czf /tmp/solverfin-issue-494-current.tar.gz .
+
+      - name: Upload current workspace for CI diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solverfin-issue-494-current-workspace
+          path: /tmp/solverfin-issue-494-current.tar.gz
+          retention-days: 1
+          if-no-files-found: error
