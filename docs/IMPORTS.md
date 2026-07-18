@@ -131,7 +131,11 @@ Em reenvios da mesma decisão, inclusive chamadas concorrentes que chegam depois
 
 A aprovação em conjunto rejeita IDs repetidos e processa cada linha em transação independente. A resposta contém `summary` (`requested`, `approved`, `failed`, `idempotent`), `results` para todos os itens e `failures` para compatibilidade. Uma linha inválida, bloqueada por candidato ou já resolvida não desfaz nem oculta o resultado das demais linhas selecionadas.
 
-Na Inbox, a seleção é preservada ao trocar filtros e inclui apenas linhas elegíveis. Os filtros cobrem linhas elegíveis, candidatas pendentes, lançamentos criados, conciliações, duplicidades ignoradas, rejeições e problemas. Antes da confirmação, a interface mostra quantidade, total de receitas e total de despesas. Em falha ou timeout, o detalhe é recarregado antes de uma nova tentativa. O lote aberto fica em `?importBatchId=...`, permitindo restaurar a revisão após recarregar a página. Lotes finalizados ficam somente para consulta e oferecem acesso ao Extrato.
+Na Inbox, a seleção é preservada ao trocar filtros e inclui apenas linhas elegíveis. Os filtros cobrem linhas elegíveis, candidatas pendentes, lançamentos criados, conciliações, duplicidades ignoradas, rejeições e problemas. O resumo do lote separa linhas válidas, pendentes, bloqueadas, aprovadas, conciliadas, ignoradas como duplicadas, rejeitadas, lançamentos vinculados e problemas. Antes da confirmação, a interface mostra quantidade, total de receitas e total de despesas. Em falha ou timeout, o detalhe é recarregado antes de uma nova tentativa. O lote aberto fica em `?importBatchId=...`, permitindo restaurar a revisão após recarregar a página. Lotes finalizados ficam somente para consulta e oferecem acesso ao Extrato.
+
+Quando uma conciliação é confirmada, o detalhe recarregado recupera o lançamento existente vinculado, sem criar uma segunda transação, e mantém a ação **Ver no Extrato** disponível com conta e competência corretas. Após rejeitar todos os candidatos de duplicidade e conciliação, a linha volta a poder seguir pela aprovação normal.
+
+Linhas legadas sem payload estruturado continuam listáveis para preservar o histórico. Elas são exibidas como somente leitura, recebem orientação para nova importação e qualquer tentativa de operação é recusada com erro controlado `IMPORT_SUGGESTION_PAYLOAD_INVALID`.
 
 ## Estados do lote
 
@@ -167,6 +171,7 @@ A auditoria registra explicitamente o consentimento redigido, criação do lote,
 - `IMPORT_REVIEW_INVALID_TRANSITION`;
 - `IMPORT_REVIEW_CANDIDATE_PENDING`;
 - `IMPORT_REVIEW_DUPLICATE_SELECTION`;
+- `IMPORT_SUGGESTION_PAYLOAD_INVALID`;
 - `IMPORT_BATCH_DISCARDED`;
 - `IMPORT_BATCH_HAS_FINANCIAL_EFFECTS`;
 - `IMPORT_BATCH_READ_ONLY`;
