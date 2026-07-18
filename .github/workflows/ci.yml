@@ -36,8 +36,8 @@ jobs:
               | python3 -c 'import base64,json,sys; sys.stdout.buffer.write(base64.b64decode(json.load(sys.stdin)["content"]))'
           }
           cat .github/issue-494.patch.00 .github/issue-494.patch.01 > /tmp/head.patch
-          fetch_blob c40330d8cf5ae404be0ca26805e7ed90c80dae52 >> /tmp/head.patch
-          fetch_blob 1ffefc90be4f6267ff9ae86dbc89ba5320866762 >> /tmp/head.patch
+          fetch_blob be546720398e33e8bb5bd7a0fcd1ac574ab7e65e >> /tmp/head.patch
+          fetch_blob 06a92c61498fc650be7e200127179520a2f2900a >> /tmp/head.patch
           fetch_blob d1642063e5fdb558ab5baeaf8ac66ed5c4e88e08 > /tmp/old-tail.patch
           cat .github/issue-494.patch.04 .github/issue-494.patch.05 .github/issue-494.patch.06 >> /tmp/old-tail.patch
           tail -c +1174 /tmp/old-tail.patch > /tmp/tail.patch
