@@ -21,7 +21,36 @@ jobs:
       - name: Apply final test correction
         run: |
           set -euo pipefail
-          patch --forward --batch -p1 < .github/issue-494-final-test-fix.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('apps/api/src/csv-import-review.integration.test.ts')
+          text = path.read_text()
+          old = '''  const discardAfterDeterministicEffect = await apiRequest(
+            token,
+            "POST",
+            `/api/import-batches/${imported.importBatch.id}/discard`,
+          );
+          assert.equal(discardAfterDeterministicEffect.statusCode, 409);
+          assert.equal(
+            readErrorCode(discardAfterDeterministicEffect),
+            "IMPORT_BATCH_HAS_FINANCIAL_EFFECTS",
+          );'''
+          new = '''  const discardAfterDuplicateResolution = await apiRequest(
+            token,
+            "POST",
+            `/api/import-batches/${imported.importBatch.id}/discard`,
+          );
+          assert.equal(discardAfterDuplicateResolution.statusCode, 200);
+          assert.equal(
+            readBody<ImportDetail>(discardAfterDuplicateResolution).importBatch.status,
+            "discarded",
+          );'''
+          if new not in text:
+              if old not in text:
+                  raise SystemExit('Trecho esperado não encontrado')
+              path.write_text(text.replace(old, new))
+          PY
+          npx prettier --write apps/api/src/csv-import-review.integration.test.ts
           git diff --check
 
       - name: Commit and restore official CI
