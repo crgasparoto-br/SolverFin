@@ -259,11 +259,13 @@ async function waitFor(cdp, expression, timeout = 20_000) {
 
 async function pressKey(cdp, key, code, keyCode) {
   await cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+    type: "keyDown",
     key,
     code,
     windowsVirtualKeyCode: keyCode,
     nativeVirtualKeyCode: keyCode,
+    text: key === "Enter" ? "\r" : key.length === 1 ? key : "",
+    unmodifiedText: key === "Enter" ? "\r" : key.length === 1 ? key : "",
   });
   await cdp.send("Input.dispatchKeyEvent", {
     type: "keyUp",
