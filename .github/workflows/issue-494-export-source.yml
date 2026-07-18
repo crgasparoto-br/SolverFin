@@ -18,11 +18,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Archive source
-        run: tar --exclude=.git --exclude=solverfin-source.tar.gz -czf solverfin-source.tar.gz .
+        run: tar --exclude=.git -czf /tmp/solverfin-source.tar.gz .
       - name: Upload source
         uses: actions/upload-artifact@v4
         with:
           name: solverfin-issue-494-source
-          path: solverfin-source.tar.gz
+          path: /tmp/solverfin-source.tar.gz
           if-no-files-found: error
           retention-days: 1
