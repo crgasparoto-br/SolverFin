@@ -1,0 +1,91 @@
+name: Issue 494 diagnostics
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.head_ref == 'feat/494-csv-import-review' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_diag_password@localhost:5432/solverfin_diag?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_diag
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_diag_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_diag"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Prepare project
+        run: |
+          npm ci --no-audit --no-fund
+          npm run prisma:generate
+          npm run build:packages
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Capture typecheck
+        id: typecheck
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run typecheck 2>&1 | tee /tmp/issue-494-typecheck.log
+
+      - name: Capture integration tests
+        id: integration
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run test:integration --workspace @solverfin/api 2>&1 | tee /tmp/issue-494-integration.log
+
+      - name: Write diagnostic summary
+        if: always()
+        run: |
+          mkdir -p artifacts/issue-494-diagnostics
+          cp /tmp/issue-494-typecheck.log artifacts/issue-494-diagnostics/typecheck.log || true
+          cp /tmp/issue-494-integration.log artifacts/issue-494-diagnostics/integration.log || true
+          cat > artifacts/issue-494-diagnostics/summary.txt <<EOF
+          typecheck=${{ steps.typecheck.outcome }}
+          integration=${{ steps.integration.outcome }}
+          commit=${{ github.sha }}
+          EOF
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-494-diagnostics-${{ github.sha }}
+          path: artifacts/issue-494-diagnostics
+          if-no-files-found: error
+          retention-days: 2
+
+      - name: Fail when a diagnostic command failed
+        if: always()
+        run: |
+          test "${{ steps.typecheck.outcome }}" = "success"
+          test "${{ steps.integration.outcome }}" = "success"
