@@ -25,7 +25,10 @@ jobs:
             echo "Waiting for all implementation patch chunks."
             exit 0
           fi
-          cat "${chunks[@]}" | base64 -d > /tmp/issue-494.patch
+          cat "${chunks[@]}" > /tmp/issue-494.patch.b64
+          echo "2e76921d15481dc24d7f9f20099a3a82637bd439162931953e2dc7706ac101e3  /tmp/issue-494.patch.b64" | sha256sum -c -
+          base64 -d /tmp/issue-494.patch.b64 > /tmp/issue-494.patch
+          echo "e1616df21850f3c79b6881ff62e0a1a9c40c66c093e4f48ea22195879d48efb9  /tmp/issue-494.patch" | sha256sum -c -
           git apply --index /tmp/issue-494.patch
           git rm "${chunks[@]}"
           git config user.name "github-actions[bot]"
