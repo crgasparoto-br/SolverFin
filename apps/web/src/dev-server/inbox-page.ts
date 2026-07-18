@@ -10,6 +10,7 @@ interface AccountRecord {
   name: string;
   kind: string;
   status: string;
+  currency: string;
 }
 
 interface CategoryRecord {
@@ -136,6 +137,7 @@ export async function renderInboxPage(token: string): Promise<string> {
 
     ${reviewQueue.ok ? "" : `<p class="error" role="alert">Não foi possível carregar as outras sugestões: ${escapeHtml(reviewQueue.error)}</p>`}
     ${renderCsvImportDialog(accountOptions, activeProfileLabel)}
+    ${renderCsvLineEditDialog()}
     ${renderNewMessageDialog(accountOptions, categoryOptions)}
     ${csvImportScript(accountOptions, categoryOptions, activeProfileLabel)}
     ${apiFormScript()}
@@ -271,6 +273,30 @@ function renderNewMessageDialog(accounts: AccountRecord[], categories: CategoryR
   `;
 }
 
+function renderCsvLineEditDialog(): string {
+  return `
+    <dialog id="csv-line-edit-dialog" class="master-dialog line-edit-dialog" aria-labelledby="csv-line-edit-title">
+      <div class="dialog-heading">
+        <p class="eyebrow">Revisão da importação</p>
+        <h2 id="csv-line-edit-title">Corrigir linha</h2>
+      </div>
+      <form id="csv-line-edit-form" class="edit-grid">
+        <label>Data<input name="occurredOn" type="date" required /></label>
+        <label>Tipo<select name="kind"><option value="expense">Despesa</option><option value="income">Receita</option></select></label>
+        <label>Valor<input name="amount" inputmode="decimal" required /></label>
+        <label class="description-field">Descrição<input name="description" required /></label>
+        <label>Conta<select name="accountId" required></select></label>
+        <label>Categoria<select name="categoryId"></select></label>
+        <p id="csv-line-edit-status" class="form-status muted full-span" role="status" aria-live="polite"></p>
+        <div class="dialog-actions full-span">
+          <button type="button" class="secondary-button" id="cancel-csv-line-edit">Cancelar</button>
+          <button type="submit" id="save-csv-line-edit">Salvar correção</button>
+        </div>
+      </form>
+    </dialog>
+  `;
+}
+
 function renderReviewSuggestionRow(item: ReviewQueueItem): string {
   const confidence = `${Math.round(item.confidence * 100)}%`;
   const reviewApiBase =
@@ -336,6 +362,9 @@ function csvImportScript(
         const previewResult = document.getElementById("csv-preview-result");
         const mappingFields = document.getElementById("csv-mapping-fields");
         const createButton = document.getElementById("create-csv-import");
+        const lineEditDialog = document.getElementById("csv-line-edit-dialog");
+        const lineEditForm = document.getElementById("csv-line-edit-form");
+        const lineEditStatus = document.getElementById("csv-line-edit-status");
         const MAX_CSV_BYTES = 5 * 1024 * 1024;
         const state = {
           batches: [],
@@ -343,7 +372,9 @@ function csvImportScript(
           preview: null,
           fileName: "",
           selected: new Set(),
-          requestInFlight: false
+          requestInFlight: false,
+          editingSuggestionId: null,
+          lineEditTrigger: null
         };
 
         function escapeHtml(value) {
@@ -439,7 +470,7 @@ function csvImportScript(
           const payload = item.payload || {};
           const account = accountById.get(payload.accountId);
           const category = payload.categoryId ? categoryById.get(payload.categoryId) : undefined;
-          const referencesValid = account && account.status === "active" && (!category || (category.status === "active" && category.kind === payload.kind));
+          const referencesValid = account && account.status === "active" && (!payload.currency || account.currency === payload.currency) && (!category || (category.status === "active" && category.kind === payload.kind));
           if (batch.status === "reviewing" && item.status === "pending_review" && referencesValid && Number.isInteger(payload.amountMinor) && payload.amountMinor > 0 && payload.description && payload.occurredOn) return "eligible";
           return "pending_invalid";
         }
@@ -464,7 +495,7 @@ function csvImportScript(
           ).join("");
         }
         function accountOptions(payload) {
-          return accounts.filter((account) => account.status === "active").map((account) =>
+          return accounts.filter((account) => account.status === "active" && (!payload.currency || account.currency === payload.currency)).map((account) =>
             '<option value="' + escapeHtml(account.id) + '" ' + (payload.accountId === account.id ? "selected" : "") + '>' + escapeHtml(account.name) + '</option>'
           ).join("");
         }
@@ -478,19 +509,13 @@ function csvImportScript(
           const readOnly = batch.status !== "reviewing" || item.status !== "pending_review";
           const selectable = currentState === "eligible";
           const checked = state.selected.has(item.id) ? " checked" : "";
-          const editorDisabled = readOnly ? " disabled" : "";
-          const lineActions = readOnly ? "" : '<div class="inline-actions"><button type="submit" class="secondary-button">Salvar correção</button><button type="button" data-line-action="approve" ' + (selectable ? "" : "disabled") + '>Confirmar linha</button><button type="button" class="secondary-button danger-action" data-line-action="reject">Rejeitar</button></div>';
+          const lineActions = readOnly ? "" : '<div class="inline-actions"><button type="button" class="secondary-button" data-line-action="edit">Corrigir linha</button><button type="button" data-line-action="approve" ' + (selectable ? "" : "disabled") + '>Confirmar linha</button><button type="button" class="secondary-button danger-action" data-line-action="reject">Rejeitar</button></div>';
           const transactionLink = item.transaction ? '<a class="button-link secondary-button" href="/lancamentos?accountId=' + encodeURIComponent(item.transaction.accountId || payload.accountId || "") + '&month=' + encodeURIComponent(String(item.transaction.occurredOn || payload.occurredOn).slice(0, 7)) + '">Ver no Extrato</a>' : "";
           return '<article class="import-row" data-suggestion-id="' + escapeHtml(item.id) + '" data-row-state="' + escapeHtml(currentState) + '">' +
             '<input type="checkbox" data-select-suggestion value="' + escapeHtml(item.id) + '" aria-label="Selecionar linha ' + escapeHtml(payload.sourceRowNumber) + '" ' + (selectable ? "" : "disabled") + checked + ' />' +
-            '<form class="row-editor"><div class="row-heading"><strong>Linha ' + escapeHtml(payload.sourceRowNumber) + '</strong><span class="status-pill">' + escapeHtml(stateLabel(currentState)) + '</span></div>' +
-            '<div class="row-fields"><label>Data<input name="occurredOn" type="date" value="' + escapeHtml(payload.occurredOn) + '"' + editorDisabled + ' required /></label>' +
-            '<label>Tipo<select name="kind"' + editorDisabled + '><option value="expense" ' + (payload.kind === "expense" ? "selected" : "") + '>Despesa</option><option value="income" ' + (payload.kind === "income" ? "selected" : "") + '>Receita</option></select></label>' +
-            '<label>Valor<input name="amount" inputmode="decimal" value="' + escapeHtml((Number(payload.amountMinor || 0) / 100).toFixed(2).replace(".", ",")) + '"' + editorDisabled + ' required /></label>' +
-            '<label class="description-field">Descrição<input name="description" value="' + escapeHtml(payload.description) + '"' + editorDisabled + ' required /></label>' +
-            '<label>Conta<select name="accountId"' + editorDisabled + ' required>' + accountOptions(payload) + '</select></label>' +
-            '<label>Categoria<select name="categoryId"' + editorDisabled + '>' + categoryOptions(payload) + '</select></label></div>' +
-            lineActions + transactionLink + '</form>' +
+            '<div class="row-editor"><div class="row-heading"><strong>Linha ' + escapeHtml(payload.sourceRowNumber) + '</strong><span class="status-pill">' + escapeHtml(stateLabel(currentState)) + '</span></div>' +
+            '<dl class="row-summary"><div><dt>Data</dt><dd>' + formatDate(payload.occurredOn) + '</dd></div><div><dt>Tipo</dt><dd>' + escapeHtml(payload.kind === "income" ? "Receita" : "Despesa") + '</dd></div><div><dt>Valor</dt><dd>' + escapeHtml(formatMoney(payload.amountMinor, payload.currency)) + '</dd></div><div><dt>Descrição</dt><dd>' + escapeHtml(payload.description) + '</dd></div><div><dt>Conta</dt><dd>' + escapeHtml(accountName(payload.accountId)) + '</dd></div></dl>' +
+            lineActions + transactionLink + '</div>' +
             ((item.candidates || []).length ? '<div class="candidate-list">' + item.candidates.map((candidate) => renderCandidate(candidate, batch.status !== "reviewing")).join("") + '</div>' : "") + '</article>';
         }
         function statementUrl(value) {
@@ -560,6 +585,58 @@ function csvImportScript(
             categoryId: values.get("categoryId") ? String(values.get("categoryId")) : null
           };
         }
+        function openLineEditDialog(item, trigger) {
+          const payload = item.payload || {};
+          state.editingSuggestionId = item.id;
+          state.lineEditTrigger = trigger;
+          lineEditForm.elements.occurredOn.value = payload.occurredOn || "";
+          lineEditForm.elements.kind.value = payload.kind || "expense";
+          lineEditForm.elements.amount.value = (Number(payload.amountMinor || 0) / 100).toFixed(2).replace(".", ",");
+          lineEditForm.elements.description.value = payload.description || "";
+          lineEditForm.elements.accountId.innerHTML = accountOptions(payload);
+          lineEditForm.elements.accountId.value = payload.accountId || "";
+          lineEditForm.elements.categoryId.innerHTML = categoryOptions(payload);
+          lineEditForm.elements.categoryId.value = payload.categoryId || "";
+          setStatus(lineEditStatus, "Revise os campos e salve para executar uma nova análise de duplicidade.", "muted");
+          lineEditDialog.showModal();
+          lineEditForm.elements.occurredOn.focus();
+        }
+        function closeLineEditDialog() {
+          if (lineEditDialog.open) lineEditDialog.close();
+        }
+        function restoreLineEditFocus() {
+          const trigger = state.lineEditTrigger;
+          state.editingSuggestionId = null;
+          state.lineEditTrigger = null;
+          if (trigger?.isConnected) trigger.focus();
+        }
+        async function saveLineEditDialog(event) {
+          event.preventDefault();
+          if (state.requestInFlight || !state.detail || !state.editingSuggestionId) return;
+          if (!lineEditForm.reportValidity()) return;
+          const batchId = state.detail.importBatch.id;
+          const suggestionId = state.editingSuggestionId;
+          state.requestInFlight = true;
+          lineEditForm.querySelector('button[type="submit"]').disabled = true;
+          setStatus(lineEditStatus, "Salvando correção e analisando novamente...", "muted");
+          try {
+            await api("/api/import-batches/" + batchId + "/suggestions/" + suggestionId, {
+              method: "PATCH",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(readRowPayload(lineEditForm))
+            });
+            state.selected.delete(suggestionId);
+            closeLineEditDialog();
+            await loadDetail(batchId, false);
+            setStatus(document.getElementById("import-detail-status"), "Correção salva e análise determinística atualizada.", "success");
+          } catch (error) {
+            setStatus(lineEditStatus, error.message, "error");
+          } finally {
+            state.requestInFlight = false;
+            lineEditForm.querySelector('button[type="submit"]').disabled = false;
+            refreshSelection();
+          }
+        }
         function selectedTotals() {
           if (!state.detail) return { count: 0, income: 0, expense: 0 };
           return state.detail.suggestions.reduce((totals, item) => {
@@ -600,25 +677,16 @@ function csvImportScript(
             state.detail.suggestions.filter((item) => rowState(item, state.detail.importBatch) === "eligible").forEach((item) => selectAll.checked ? state.selected.add(item.id) : state.selected.delete(item.id));
             refreshSelection();
           });
-          detail.querySelectorAll(".row-editor").forEach((rowForm) => {
-            const article = rowForm.closest("[data-suggestion-id]");
+          detail.querySelectorAll("[data-suggestion-id]").forEach((article) => {
             const suggestionId = article.dataset.suggestionId;
-            rowForm.addEventListener("submit", async (event) => {
-              event.preventDefault();
-              if (state.requestInFlight) return;
-              state.requestInFlight = true;
-              setStatus(detailStatus, "Salvando correção...", "muted");
-              try {
-                await api("/api/import-batches/" + batchId + "/suggestions/" + suggestionId, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(readRowPayload(rowForm)) });
-                state.selected.delete(suggestionId);
-                await loadDetail(batchId, false);
-                setStatus(document.getElementById("import-detail-status"), "Correção salva. A linha será analisada novamente antes da confirmação.", "success");
-              } catch (error) { await recoverAfterFailure(batchId, error.message); }
-              finally { state.requestInFlight = false; refreshSelection(); }
-            });
-            rowForm.querySelectorAll("[data-line-action]").forEach((button) => button.addEventListener("click", async () => {
-              if (state.requestInFlight) return;
+            const item = state.detail?.suggestions.find((candidate) => candidate.id === suggestionId);
+            article.querySelectorAll("[data-line-action]").forEach((button) => button.addEventListener("click", async () => {
+              if (state.requestInFlight || !item) return;
               const action = button.dataset.lineAction;
+              if (action === "edit") {
+                openLineEditDialog(item, button);
+                return;
+              }
               if (action === "reject" && !window.confirm("Rejeitar esta linha? Nenhum lançamento será criado.")) return;
               state.requestInFlight = true; button.disabled = true;
               setStatus(detailStatus, action === "approve" ? "Analisando e confirmando linha..." : "Rejeitando linha...", "muted");
@@ -754,6 +822,15 @@ function csvImportScript(
           } catch (error) { setStatus(previewStatus, error.message, "error"); createButton.disabled = false; }
           finally { if (fileData) fileData.content = ""; state.requestInFlight = false; }
         });
+        lineEditForm.addEventListener("submit", saveLineEditDialog);
+        document.getElementById("cancel-csv-line-edit").addEventListener("click", closeLineEditDialog);
+        lineEditForm.elements.kind.addEventListener("change", () => {
+          const current = state.detail?.suggestions.find((item) => item.id === state.editingSuggestionId);
+          const payload = { ...(current?.payload || {}), kind: lineEditForm.elements.kind.value, categoryId: lineEditForm.elements.categoryId.value || undefined };
+          lineEditForm.elements.categoryId.innerHTML = categoryOptions(payload);
+          if (payload.categoryId) lineEditForm.elements.categoryId.value = payload.categoryId;
+        });
+        lineEditDialog.addEventListener("close", restoreLineEditFocus);
         batchFilter.addEventListener("change", renderBatchList);
         lineFilter.addEventListener("change", () => { if (state.detail) renderDetail(state.detail); });
         document.getElementById("refresh-imports").addEventListener("click", () => loadBatches(state.detail?.importBatch.id));
@@ -925,6 +1002,11 @@ function baseCss(): string {
     .bulk-actions { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); justify-content: space-between; margin-bottom: 10px; padding: 8px 10px; }
     .import-row { align-items: start; border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 9px; grid-template-columns: auto minmax(0, 1fr); padding: 10px; }
     .row-editor { display: grid; gap: 9px; min-width: 0; } .row-heading { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
+    .row-summary { display: grid; gap: 8px; grid-template-columns: repeat(5, minmax(100px, 1fr)); margin: 0; }
+    .row-summary div { background: var(--surface-soft); border-radius: var(--radius); min-width: 0; padding: 7px 8px; }
+    .row-summary dt { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+    .row-summary dd { color: var(--text); font-size: 0.8125rem; margin: 2px 0 0; overflow-wrap: anywhere; }
+    .line-edit-dialog { width: min(720px, calc(100vw - 24px)); }
     .row-fields { display: grid; gap: 8px; grid-template-columns: repeat(6, minmax(105px, 1fr)); }
     .row-fields label { font-size: 0.75rem; } .row-fields .description-field { grid-column: span 2; }
     .candidate-list { grid-column: 2; }
@@ -937,8 +1019,8 @@ function baseCss(): string {
     .preview-summary { align-items: center; background: var(--surface-soft); border-radius: var(--radius); display: flex; gap: 10px; justify-content: space-between; padding: 8px 10px; }
     .preview-table-wrap { max-height: 230px; overflow: auto; } .preview-table-wrap table { border-collapse: collapse; font-size: 0.75rem; width: 100%; } .preview-table-wrap th, .preview-table-wrap td { border: 1px solid var(--line); padding: 6px; text-align: left; }
     .warning { color: #8a5a00; }
-    @media (max-width: 1100px) { .row-fields { grid-template-columns: repeat(3, minmax(120px, 1fr)); } }
-    @media (max-width: 800px) { .page-heading, .section-heading, .detail-heading { align-items: stretch; display: grid; } .import-summary { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .import-layout { grid-template-columns: 1fr; } .import-batch-list { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); max-height: none; } .row-fields { grid-template-columns: 1fr 1fr; } .row-fields .description-field { grid-column: 1 / -1; } .candidate-card { align-items: stretch; display: grid; } }
-    @media (max-width: 520px) { .row-fields { grid-template-columns: 1fr; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }
+    @media (max-width: 1100px) { .row-fields { grid-template-columns: repeat(3, minmax(120px, 1fr)); } .row-summary { grid-template-columns: repeat(3, minmax(120px, 1fr)); } }
+    @media (max-width: 800px) { .page-heading, .section-heading, .detail-heading { align-items: stretch; display: grid; } .import-summary { grid-template-columns: repeat(2, minmax(120px, 1fr)); } .import-layout { grid-template-columns: 1fr; } .import-batch-list { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); max-height: none; } .row-fields { grid-template-columns: 1fr 1fr; } .row-summary { grid-template-columns: 1fr 1fr; } .row-fields .description-field { grid-column: 1 / -1; } .candidate-card { align-items: stretch; display: grid; } }
+    @media (max-width: 520px) { .row-fields, .row-summary { grid-template-columns: 1fr; } .row-fields .description-field { grid-column: auto; } .import-row { grid-template-columns: 1fr; } .candidate-list { grid-column: 1; } }
   `;
 }

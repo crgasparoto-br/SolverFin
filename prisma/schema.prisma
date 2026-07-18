@@ -200,6 +200,7 @@ enum AuditEntityKind {
   INVOICE
   BUDGET
   IMPORT_BATCH
+  PRIVACY_CONSENT
   PAYABLE_RECEIVABLE
   AI_SUGGESTION
   ATTACHMENT
@@ -614,6 +615,7 @@ model ImportBatch {
   status             ImportStatus     @default(RECEIVED)
   originalFileName   String?          @db.VarChar(240)
   sourceHash         String           @db.VarChar(128)
+  contentHash        String?          @db.VarChar(80)
   totalRows          Int              @default(0)
   validRows          Int              @default(0)
   duplicateRows      Int              @default(0)
@@ -634,6 +636,7 @@ model ImportBatch {
   @@unique([organizationId, financialProfileId, sourceHash])
   @@index([organizationId, financialProfileId, sourceKind, status])
   @@index([organizationId, financialProfileId, defaultAccountId])
+  @@index([organizationId, financialProfileId, contentHash])
   @@index([organizationId, financialProfileId, receivedAt])
 }
 

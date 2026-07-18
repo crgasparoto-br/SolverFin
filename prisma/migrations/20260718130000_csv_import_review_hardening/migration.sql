@@ -1,3 +1,5 @@
+ALTER TYPE "AuditEntityKind" ADD VALUE IF NOT EXISTS 'PRIVACY_CONSENT';
+
 ALTER TABLE "ImportBatch"
   ADD COLUMN "contentHash" VARCHAR(80);
 
