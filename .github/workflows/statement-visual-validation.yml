@@ -1,3 +1,4 @@
+# Inclui evidência em Chrome para o fluxo de revisão CSV da issue #494.
 name: Statement visual validation
 
 on:
