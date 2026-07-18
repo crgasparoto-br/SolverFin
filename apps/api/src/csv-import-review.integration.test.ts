@@ -190,10 +190,14 @@ async function assertFullReviewLifecycle(token: string, fixtures: Fixtures): Pro
       `/api/import-batches/${created.importBatch.id}/suggestions/${first.id}/approve`,
     ),
   ]);
-  assert.deepEqual(
-    concurrent.map((response) => response.statusCode),
-    [200, 200],
-  );
+  const concurrentStatusCodes = concurrent.map((response) => response.statusCode);
+  if (concurrentStatusCodes.some((statusCode) => statusCode !== 200)) {
+    console.error(
+      "Concurrent approval diagnostic:",
+      concurrent.map((response) => ({ statusCode: response.statusCode, body: response.body })),
+    );
+  }
+  assert.deepEqual(concurrentStatusCodes, [200, 200]);
   const transactionIds = concurrent.map(
     (response) => readBody<{ transaction: { id: string } }>(response).transaction.id,
   );
