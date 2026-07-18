@@ -20,42 +20,32 @@ jobs:
         shell: bash
         run: |
           shopt -s nullglob
-          chunks=(.github/issue-494.patch.b64.*)
+          chunks=(.github/issue-494.patch.gz.b64.*)
           declare -A expected=(
-            [00]=b93907f904fed9864a426473c7921ade70881f93fa071c29f47c2f002f4ae04e
-            [01]=a24901557088308e3d3760bf847f56db21857e521b3e589cf7588b189e7f4415
-            [02]=a69285e8c92ea45213e49362f6b96a6da912cce059f127ff7eb58da46c1f896c
-            [03]=2d4ebb2d3013bbbf3d6a13fe72777128519b4bb1c1ee4e31313a4a28326282bf
-            [04]=12bd263fa5291876f19281c5d891fc0fac86c79cf053fb26a741677985f5568e
-            [050]=894feeade5862e2bc9458eb74b608b365ed1fcff80389c606b4bba9792a6f4aa
-            [051]=8013a7a2d26daa7e2b0c81f04d0fe77ec384952a19b304a90a2ed401e951ac52
-            [052]=01786ad5d84d81ec34415c00b3967ad8c851f2e836fc87138ddbb337f043a9f7
-            [053]=31cdd81d8fa0ebe2d6d52b684e8ff1222719689fe1ceb8de4a32e483a7465b3d
-            [060]=c1f06afb78f9f30061f0c56505de33b3f61c1c06fac2ac77c86c92169d458f5d
-            [061]=1a4d37c21c676c29da674928b51fe4f203ab032a66af75546ff317b56d27428e
-            [0620]=f3c5ced2dc2c2501e26123c5ab56a933ae2d526402697f5eff2b089c18c66d5c
-            [0621]=e57437b18bb8173bb84d65650d299828c58fbe8d7363500cb1696f47b58381e8
-            [0630]=7979b64cd17172ddfcae5ee57ba406e04c671e80e55fe95f95ce7bc77708ad0f
-            [0631]=3950982e934e1ee77521a031fae518c661b7e45d6db65eac1732f64d4e7f67a1
-            [0700]=ae15bd72af1f144d252371916ee63011dba268767686794d364ba2e74ad6ba3e
-            [0701]=33c498d02fe60806178b5cccc69653c3026ddb5c20442183ded69c8853e62b48
-            [0710]=744b62a65a7c78de273d81f20366c852bb07c9aae4293a49ecf43a3829e56e50
-            [0711]=8502415a94696e60fce344eb22d902292ad37fb915f639b6b845b83a9c9fc85b
+            [00]=43989539972e0e745d7861486e1a1e6049e259d20ac19c9d8b986549a44806a9
+            [01]=02fdb87caa626f522b472fbe9eac8e6ecedde0f8a5019dc837dd4d9f645ee491
+            [02]=da24c098c3a4c55f1b8a3eba88dbbcc1f614be71b0564293852fb15917835210
+            [03]=ce6d0ed4063460b68dca72c004f6860cc85401513aec147a3f88984550781d34
+            [04]=e9443c5646bb3586f7507f2019b00493538d291cdc15378873ba7d23288a41eb
+            [05]=5c8554480162dc9d6c5fdd3f270fb1c5406664019f779228514fe3610ded2bac
+            [06]=5d299f18dadca7cdd405cb00f70f0289a06857717347a58155824a02e2ae53c9
+            [07]=a931f5c1bd1e238f509713f093c4583e326b348a656214caff37ef2a7531cebd
+            [08]=ca6a7be39db98b3df269f3d5d9856e2d85a8fb6c63319699ee07ba4ceee688fd
           )
           for chunk in "${chunks[@]}"; do
             suffix="${chunk##*.}"
             echo "${expected[$suffix]}  $chunk" | sha256sum -c -
           done
-          if [ "${#chunks[@]}" -ne 19 ]; then
-            echo "Waiting for all implementation patch chunks."
+          if [ "${#chunks[@]}" -ne 9 ]; then
+            echo "Waiting for all compressed implementation patch chunks."
             exit 0
           fi
-          cat "${chunks[@]}" > /tmp/issue-494.patch.b64
-          echo "2e76921d15481dc24d7f9f20099a3a82637bd439162931953e2dc7706ac101e3  /tmp/issue-494.patch.b64" | sha256sum -c -
-          base64 -d /tmp/issue-494.patch.b64 > /tmp/issue-494.patch
+          cat "${chunks[@]}" > /tmp/issue-494.patch.gz.b64
+          echo "bf6453ae51307faec7ffdbbf7bb8d0aceb7ecd0b125062f572dcd663f84977ab  /tmp/issue-494.patch.gz.b64" | sha256sum -c -
+          base64 -d /tmp/issue-494.patch.gz.b64 | gzip -d > /tmp/issue-494.patch
           echo "e1616df21850f3c79b6881ff62e0a1a9c40c66c093e4f48ea22195879d48efb9  /tmp/issue-494.patch" | sha256sum -c -
           git apply --index /tmp/issue-494.patch
-          git rm "${chunks[@]}"
+          git rm .github/issue-494.patch.b64.* .github/issue-494.patch.gz.b64.*
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "fix: concluir ajustes da auditoria da issue 494"
