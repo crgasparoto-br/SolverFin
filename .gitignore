@@ -10,6 +10,10 @@ build/
 coverage/
 .tmp-tests/
 
+# Temporary implementation transport artifacts
+.github/issue-*.patch.b64.*
+.github/issue-*.patch.gz.b64.*
+
 # Local environment
 .env
 .env.*

@@ -200,6 +200,7 @@ enum AuditEntityKind {
   INVOICE
   BUDGET
   IMPORT_BATCH
+  PRIVACY_CONSENT
   PAYABLE_RECEIVABLE
   AI_SUGGESTION
   ATTACHMENT
@@ -297,6 +298,7 @@ model Account {
   paymentCards        Card[]               @relation("CardPaymentAccount")
   recurrences         Recurrence[]
   payablesReceivables PayableReceivable[]
+  importBatches       ImportBatch[]         @relation("ImportBatchDefaultAccount")
 
   @@unique([id, organizationId, financialProfileId])
   @@index([organizationId, financialProfileId, status])
@@ -436,6 +438,7 @@ model Transaction {
   settledPayableReceivable PayableReceivable? @relation("PayableReceivableSettlementTransaction")
 
   @@unique([id, organizationId, financialProfileId])
+  @@unique([organizationId, financialProfileId, aiSuggestionId])
   @@index([organizationId, financialProfileId, occurredOn])
   @@index([organizationId, financialProfileId, status, occurredOn])
   @@index([organizationId, financialProfileId, accountId, occurredOn])
@@ -607,21 +610,33 @@ model ImportBatch {
   id                 String           @id @default(uuid()) @db.Uuid
   organizationId     String           @db.Uuid
   financialProfileId String           @db.Uuid
+  defaultAccountId   String?          @db.Uuid
   sourceKind         ImportSourceKind
   status             ImportStatus     @default(RECEIVED)
   originalFileName   String?          @db.VarChar(240)
   sourceHash         String           @db.VarChar(128)
+  contentHash        String?          @db.VarChar(80)
+  totalRows          Int              @default(0)
+  validRows          Int              @default(0)
+  duplicateRows      Int              @default(0)
+  problemRows        Int              @default(0)
+  problems           Json             @default("[]")
+  csvDelimiter       String?          @db.VarChar(1)
+  csvMapping         Json?
   receivedAt         DateTime         @default(now())
   completedAt        DateTime?
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  defaultAccount   Account?         @relation("ImportBatchDefaultAccount", fields: [defaultAccountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   transactions     Transaction[]
 
   @@unique([id, organizationId, financialProfileId])
   @@unique([organizationId, financialProfileId, sourceHash])
   @@index([organizationId, financialProfileId, sourceKind, status])
+  @@index([organizationId, financialProfileId, defaultAccountId])
+  @@index([organizationId, financialProfileId, contentHash])
   @@index([organizationId, financialProfileId, receivedAt])
 }
 
@@ -635,6 +650,9 @@ model AiSuggestion {
   targetEntityId     String?            @db.Uuid
   confidence         Decimal            @db.Decimal(5, 4)
   explanation        String             @db.VarChar(500)
+  payload            Json?
+  sourceSuggestionId String?            @db.Uuid
+  payloadFingerprint String?            @db.VarChar(128)
   provider           String?            @db.VarChar(80)
   model              String?            @db.VarChar(120)
   reviewedByUserId   String?            @db.Uuid
@@ -646,7 +664,9 @@ model AiSuggestion {
   transactions     Transaction[]
 
   @@unique([id, organizationId, financialProfileId])
+  @@unique([organizationId, financialProfileId, kind, sourceSuggestionId, payloadFingerprint, targetEntityId])
   @@index([organizationId, financialProfileId, status, kind])
+  @@index([organizationId, financialProfileId, sourceSuggestionId])
   @@index([organizationId, financialProfileId, sourceEntityId])
   @@index([organizationId, financialProfileId, targetEntityId])
 }

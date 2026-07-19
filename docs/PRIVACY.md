@@ -129,6 +129,21 @@ Dado bruto deve ser descartado assim que a normalizacao segura for concluida, sa
 
 Qualquer excecao a esses prazos deve ser documentada em issue, ADR ou politica complementar antes da implementacao.
 
+## Contrato aplicado ao fluxo CSV revisavel
+
+O fluxo implementado de CSV aplica esta politica da seguinte forma:
+
+- o navegador le o arquivo apenas para enviar a requisicao de preview ou criacao; o conteudo nao e salvo em armazenamento local;
+- `POST /api/import-batches/csv/preview` valida e devolve somente cabecalhos, contadores, problemas e uma amostra normalizada, sem gravar lote, sugestao ou arquivo;
+- `POST /api/import-batches/csv` exige conta ativa do perfil e consentimento explicito antes de persistir e grava um evento redigido `privacy_consent`, sem conteúdo do arquivo;
+- o banco mantem somente metadados minimizados do lote, problemas seguros e payloads financeiros estruturados por linha;
+- nome do arquivo, hashes SHA-256 contextual e do conteúdo, delimitador, mapeamento, conta padrao e contadores podem permanecer para historico e auditoria;
+- conteudo bruto, linha original e amostra do preview nao sao persistidos em lote, sugestao, auditoria ou log;
+- descartar um lote e uma transicao logica para `discarded`, preservando a trilha normalizada sem manter o arquivo original;
+- lotes finalizados e suas decisoes normalizadas seguem a retencao do historico financeiro e da auditoria redigida.
+
+O consentimento deve abranger autorizacao para processar o arquivo no perfil ativo, direito de uso dos dados e ciencia de que as linhas validas serao revisadas antes do efeito financeiro.
+
 ## Descarte apos normalizacao
 
 Apos normalizar um dado bruto, o sistema deve descartar:

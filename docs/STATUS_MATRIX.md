@@ -109,11 +109,11 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 - Dominio: Feito.
 - Schema/migration: Parcial.
-- Repository/API: Parcial/Feito para CSV persistido.
+- Repository/API: Feito para CSV persistido e revisável.
 - UI: Pendente para preview e aceite/rejeicao amigavel.
 - Testes: Parcial.
 - Documentacao: Parcial/Atualizada em `docs/IMPORTS.md`.
-- Nota: CSV ja possui primeiro fluxo persistido por lote, endpoints `/api/import-batches`, `/api/import-batches/csv` e consulta de lote. OFX segue no dominio/parser inicial, ainda sem persistencia/API operacional. Ainda falta tela de preview, aceite/rejeicao estruturado, politica final de retencao de arquivos brutos e criacao final de lancamentos a partir das sugestoes.
+- Nota: CSV possui preview sem persistência, mapeamento, histórico, correção por linha, aprovação individual/em conjunto, rejeição, descarte lógico e criação atômica de lançamentos na Inbox. O arquivo bruto não é persistido. OFX segue somente no domínio/parser.
 
 ### Inbox de mensagens bancarias
 
@@ -126,11 +126,11 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Deduplicacao
 
 - Dominio: Feito.
-- Schema/repository/API: Parcial/Feito para fluxo deterministico inicial em lotes CSV.
+- Schema/repository/API: Feito para fluxo determinístico em lotes CSV.
 - UI: Parcial/Feito para revisao operacional via Inbox.
 - Testes: Parcial.
 - Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
-- Nota: `POST /api/import-batches/:importBatchId/detect-duplicates` cria sugestoes revisaveis `deduplication`/`reconciliation` em `AiSuggestion`. A Inbox lista as sugestoes e permite aprovar/rejeitar; aprovacao de duplicidade registra revisao, sem alterar lancamentos automaticamente.
+- Nota: a varredura cria candidaturas idempotentes com vínculo estruturado. A Inbox permite aprovar/rejeitar; duplicidade rejeita a linha de origem e conciliação atualiza o lançamento alvo e resolve a origem atomicamente.
 
 ### Conciliacao
 

@@ -8,7 +8,7 @@ O produto combina organizacao financeira, importacao de dados, regras determinis
 
 O MVP core esta navegavel de ponta a ponta com persistencia real: `apps/api` roda um servidor HTTP em Node `http`, aplica regras de `packages/domain` e persiste em PostgreSQL via `pg`; `apps/web` roda um servidor SSR que consome a API real.
 
-Fluxos ja ligados ao banco real incluem autenticacao demo local, dashboard, contas, categorias, lancamentos, cartoes/faturas, orcamentos, recorrencias/parcelas, importacao CSV inicial, Inbox de mensagens bancarias, fila de sugestoes revisaveis e regras automaticas.
+Fluxos ja ligados ao banco real incluem autenticacao demo local, dashboard, contas, categorias, lancamentos, cartoes/faturas, orcamentos, recorrencias/parcelas, importacao CSV com preview e revisao humana, Inbox de mensagens bancarias, fila de sugestoes revisaveis e regras automaticas.
 
 A rotina operacional atual esta consolidada assim:
 

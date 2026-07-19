@@ -1,24 +1,35 @@
+import { createHash } from "node:crypto";
+
 import type {
+  DeterministicReviewPayloadV1,
   EntityId,
   ImportSourceKind,
   ImportStatus,
   ISODate,
   ISODateTime,
   TenantScoped,
+  TransactionExtractionPayloadV1,
   TransactionKind,
 } from "./index.js";
 import type { TenantContext } from "./tenant.js";
 
 export type ImportFileKind = Extract<ImportSourceKind, "csv" | "ofx">;
-export type ImportPreviewState = "ready" | "blocked";
+export type ImportPreviewState = "ready" | "mapping_required" | "blocked";
 export type ImportProblemSeverity = "error" | "warning";
 export type ImportSuggestionStatus = "pending_review" | "duplicate";
+export type CsvDelimiter = "," | ";";
+export type CsvRequiredField = "date" | "description" | "amount";
 
 export type ImportFileErrorCode =
   | "IMPORT_FILE_EMPTY"
   | "IMPORT_FILE_TOO_LARGE"
   | "IMPORT_FILE_KIND_UNSUPPORTED"
+  | "IMPORT_FILE_ENCODING_INVALID"
+  | "IMPORT_CSV_DELIMITER_INVALID"
+  | "IMPORT_CSV_STRUCTURE_INVALID"
   | "IMPORT_CSV_HEADER_INVALID"
+  | "IMPORT_CSV_MAPPING_INVALID"
+  | "IMPORT_CSV_NO_DATA_ROWS"
   | "IMPORT_OFX_INVALID";
 
 export class ImportFileError extends Error {
@@ -41,6 +52,8 @@ export interface ImportFileInput {
   maxSizeInBytes?: number;
   existingSourceHashes?: readonly string[];
   csvMapping?: CsvImportMapping;
+  csvDelimiter?: CsvDelimiter;
+  defaultAccountId?: EntityId;
 }
 
 export interface CsvImportMapping {
@@ -48,8 +61,26 @@ export interface CsvImportMapping {
   description?: string;
   amount?: string;
   kind?: string;
-  accountId?: string;
-  categoryId?: string;
+  externalId?: string;
+}
+
+export interface CsvImportPreviewSample {
+  sourceRowNumber: number;
+  occurredOn: ISODate;
+  description: string;
+  kind: "income" | "expense";
+  amountMinor: number;
+  currency: string;
+}
+
+export interface CsvImportPreviewMetadata {
+  delimiter?: CsvDelimiter;
+  delimiterCandidates: readonly CsvDelimiter[];
+  headers: readonly string[];
+  mapping: CsvImportMapping;
+  missingRequiredFields: readonly CsvRequiredField[];
+  ambiguousFields: readonly (keyof CsvImportMapping)[];
+  sampleRows: readonly CsvImportPreviewSample[];
 }
 
 export interface ImportBatchDraft extends TenantScoped {
@@ -57,11 +88,15 @@ export interface ImportBatchDraft extends TenantScoped {
   status: ImportStatus;
   originalFileName: string;
   sourceHash: string;
+  contentHash: string;
   receivedAt: ISODateTime;
   totalRows: number;
   validRows: number;
   duplicateRows: number;
   problemRows: number;
+  defaultAccountId?: EntityId;
+  csvDelimiter?: CsvDelimiter;
+  csvMapping?: CsvImportMapping;
 }
 
 export interface ImportProblem {
@@ -89,9 +124,11 @@ export interface ImportTransactionSuggestion extends TenantScoped {
 
 export interface ImportPreview {
   state: ImportPreviewState;
+  persisted: false;
   batch: ImportBatchDraft;
   suggestions: readonly ImportTransactionSuggestion[];
   problems: readonly ImportProblem[];
+  csv?: CsvImportPreviewMetadata;
 }
 
 interface ParsedImportRow {
@@ -104,21 +141,60 @@ interface ParsedImportRow {
   categoryId: EntityId | undefined;
   externalId: string | undefined;
   rawFingerprintSeed: string;
+  structuralProblem?: ImportProblem;
 }
 
-const defaultMaxSizeInBytes = 1024 * 1024;
+interface CsvCellTable {
+  records: readonly CsvRecord[];
+  delimiter: CsvDelimiter;
+}
+
+interface CsvRecord {
+  rowNumber: number;
+  values: readonly string[];
+}
+
+interface CsvParseResult {
+  rows: ParsedImportRow[];
+  metadata: CsvImportPreviewMetadata;
+  mappingRequired: boolean;
+}
+
+const defaultMaxSizeInBytes = 5 * 1024 * 1024;
 const defaultCurrency = "BRL";
+const requiredFields: readonly CsvRequiredField[] = ["date", "description", "amount"];
+const csvAliases: Readonly<Record<keyof CsvImportMapping, readonly string[]>> = {
+  date: ["date", "data", "data do movimento", "data movimento", "dtposted"],
+  description: ["description", "descricao", "descrição", "historico", "histórico", "memo", "name"],
+  amount: ["amount", "valor", "value", "trnamt"],
+  kind: ["kind", "tipo", "natureza", "trntype"],
+  externalId: ["externalid", "external id", "id externo", "id", "fitid", "identificador"],
+};
 
 export function previewImportedStatement(input: ImportFileInput): ImportPreview {
   assertContentSize(input.content, input.maxSizeInBytes ?? defaultMaxSizeInBytes);
+  assertSupportedTextEncoding(input.content);
 
   const kind = input.kind ?? inferImportFileKind(input.originalFileName);
-  const parsedRows = parseImportRows(kind, input.content, input.csvMapping);
+  const parsed = parseImportRows(kind, input);
   const existingSourceHashes = new Set(input.existingSourceHashes ?? []);
   const problems: ImportProblem[] = [];
   const suggestions: ImportTransactionSuggestion[] = [];
 
-  for (const row of parsedRows) {
+  if (parsed.mappingRequired) {
+    const batch = buildBatchDraft(input, kind, 0, suggestions, problems, parsed.metadata);
+
+    return {
+      state: "mapping_required",
+      persisted: false,
+      batch,
+      suggestions,
+      problems,
+      ...(parsed.metadata === undefined ? {} : { csv: parsed.metadata }),
+    };
+  }
+
+  for (const row of parsed.rows) {
     const rowProblems = validateParsedRow(row);
     problems.push(...rowProblems);
 
@@ -138,18 +214,43 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
         rowNumber: row.rowNumber,
         severity: "warning",
         code: "IMPORT_ROW_DUPLICATE",
-        message: "Esta linha parece ja ter sido importada e deve ser revisada antes de confirmar.",
+        message:
+          "Esta linha parece ja ter sido importada e precisa ser revisada antes da confirmacao.",
       });
     }
   }
 
-  const batch = buildBatchDraft(input, kind, parsedRows.length, suggestions, problems);
+  const batch = buildBatchDraft(
+    input,
+    kind,
+    parsed.rows.length,
+    suggestions,
+    problems,
+    parsed.metadata,
+  );
+
+  const csv =
+    parsed.metadata === undefined
+      ? undefined
+      : {
+          ...parsed.metadata,
+          sampleRows: suggestions.slice(0, 10).map((suggestion) => ({
+            sourceRowNumber: suggestion.sourceRowNumber,
+            occurredOn: suggestion.occurredOn,
+            description: suggestion.description,
+            kind: suggestion.kind as "income" | "expense",
+            amountMinor: suggestion.amountMinor,
+            currency: suggestion.currency,
+          })),
+        };
 
   return {
     state: suggestions.length > 0 ? "ready" : "blocked",
+    persisted: false,
     batch,
     suggestions,
     problems,
+    ...(csv === undefined ? {} : { csv }),
   };
 }
 
@@ -164,53 +265,275 @@ export function buildStableImportHash(value: string): string {
   return `fnv1a-${(hash >>> 0).toString(16).padStart(8, "0")}`;
 }
 
-function parseImportRows(
-  kind: ImportFileKind,
-  content: string,
-  csvMapping: CsvImportMapping | undefined,
-): ParsedImportRow[] {
-  if (kind === "csv") {
-    return parseCsvRows(content, csvMapping);
-  }
-
-  return parseOfxRows(content);
+export function buildSecureImportHash(value: string): string {
+  return `sha256-${createHash("sha256").update(value, "utf8").digest("hex")}`;
 }
 
-function parseCsvRows(content: string, mapping: CsvImportMapping | undefined): ParsedImportRow[] {
-  const lines = content
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+export function buildImportContentHash(content: string): string {
+  return buildSecureImportHash(content);
+}
 
-  if (lines.length < 2) {
+export function buildLegacyImportBatchHash(input: {
+  kind: ImportFileKind;
+  content: string;
+  defaultAccountId?: EntityId;
+  csvDelimiter?: CsvDelimiter;
+  csvMapping?: CsvImportMapping;
+}): string {
+  return buildStableImportHash(
+    [
+      input.kind,
+      input.content,
+      input.defaultAccountId ?? "",
+      input.csvDelimiter ?? "",
+      canonicalMapping(input.csvMapping),
+    ].join(":"),
+  );
+}
+
+export function buildTransactionExtractionPayload(
+  suggestion: ImportTransactionSuggestion,
+): TransactionExtractionPayloadV1 {
+  if (suggestion.kind !== "income" && suggestion.kind !== "expense") {
     throw new ImportFileError(
-      "IMPORT_CSV_HEADER_INVALID",
+      "IMPORT_CSV_STRUCTURE_INVALID",
+      "A importacao CSV aceita apenas receitas e despesas.",
+    );
+  }
+
+  return {
+    payloadVersion: 1,
+    sourceRowNumber: suggestion.sourceRowNumber,
+    sourceHash: suggestion.sourceHash,
+    occurredOn: suggestion.occurredOn,
+    kind: suggestion.kind,
+    amountMinor: suggestion.amountMinor,
+    currency: suggestion.currency,
+    description: suggestion.description,
+    ...(suggestion.accountId === undefined ? {} : { accountId: suggestion.accountId }),
+    ...(suggestion.categoryId === undefined ? {} : { categoryId: suggestion.categoryId }),
+    ...(suggestion.externalId === undefined ? {} : { externalId: suggestion.externalId }),
+  };
+}
+
+export function parseTransactionExtractionPayload(
+  value: unknown,
+): TransactionExtractionPayloadV1 | undefined {
+  if (!isRecord(value) || value.payloadVersion !== 1) return undefined;
+  if (!Number.isSafeInteger(value.sourceRowNumber) || Number(value.sourceRowNumber) < 1)
+    return undefined;
+  if (typeof value.sourceHash !== "string" || value.sourceHash.length === 0) return undefined;
+  if (typeof value.occurredOn !== "string" || normalizeDate(value.occurredOn) === undefined)
+    return undefined;
+  if (value.kind !== "income" && value.kind !== "expense") return undefined;
+  if (!Number.isSafeInteger(value.amountMinor) || Number(value.amountMinor) <= 0) return undefined;
+  if (typeof value.currency !== "string" || value.currency.length !== 3) return undefined;
+  if (typeof value.description !== "string" || value.description.trim().length === 0)
+    return undefined;
+
+  return {
+    payloadVersion: 1,
+    sourceRowNumber: Number(value.sourceRowNumber),
+    sourceHash: value.sourceHash,
+    occurredOn: value.occurredOn,
+    kind: value.kind,
+    amountMinor: Number(value.amountMinor),
+    currency: value.currency.toUpperCase(),
+    description: value.description.trim(),
+    ...(typeof value.accountId === "string" && value.accountId.length > 0
+      ? { accountId: value.accountId }
+      : {}),
+    ...(typeof value.categoryId === "string" && value.categoryId.length > 0
+      ? { categoryId: value.categoryId }
+      : {}),
+    ...(typeof value.externalId === "string" && value.externalId.length > 0
+      ? { externalId: value.externalId }
+      : {}),
+  };
+}
+
+export function buildImportPayloadFingerprint(payload: TransactionExtractionPayloadV1): string {
+  return buildStableImportHash(
+    [
+      payload.payloadVersion,
+      payload.sourceRowNumber,
+      payload.sourceHash,
+      payload.occurredOn,
+      payload.kind,
+      payload.amountMinor,
+      payload.currency,
+      payload.description,
+      payload.accountId ?? "",
+      payload.categoryId ?? "",
+      payload.externalId ?? "",
+    ].join(":"),
+  );
+}
+
+export function parseDeterministicReviewPayload(
+  value: unknown,
+): DeterministicReviewPayloadV1 | undefined {
+  if (!isRecord(value) || value.payloadVersion !== 1) return undefined;
+  if (typeof value.sourceSuggestionId !== "string" || value.sourceSuggestionId.length === 0)
+    return undefined;
+  if (
+    typeof value.sourcePayloadFingerprint !== "string" ||
+    value.sourcePayloadFingerprint.length === 0
+  )
+    return undefined;
+  if (typeof value.targetTransactionId !== "string" || value.targetTransactionId.length === 0)
+    return undefined;
+  if (!isStringArray(value.reasons) || !isStringArray(value.conflicts)) return undefined;
+
+  return {
+    payloadVersion: 1,
+    sourceSuggestionId: value.sourceSuggestionId,
+    sourcePayloadFingerprint: value.sourcePayloadFingerprint,
+    targetTransactionId: value.targetTransactionId,
+    reasons: value.reasons,
+    conflicts: value.conflicts,
+  };
+}
+
+function parseImportRows(
+  kind: ImportFileKind,
+  input: ImportFileInput,
+): { rows: ParsedImportRow[]; metadata?: CsvImportPreviewMetadata; mappingRequired: boolean } {
+  if (kind === "csv") {
+    const result = parseCsvRows(input);
+    return {
+      rows: result.rows,
+      metadata: result.metadata,
+      mappingRequired: result.mappingRequired,
+    };
+  }
+
+  return { rows: parseOfxRows(input.content), mappingRequired: false };
+}
+
+function parseCsvRows(input: ImportFileInput): CsvParseResult {
+  const normalizedContent = stripUtf8Bom(input.content);
+  const recordProbe = parseCsvTable(normalizedContent, ",").records.filter((record) =>
+    record.values.some((value) => value.trim().length > 0),
+  );
+  if (recordProbe.length === 0) {
+    throw new ImportFileError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
+  }
+  if (recordProbe.length === 1) {
+    throw new ImportFileError(
+      "IMPORT_CSV_NO_DATA_ROWS",
+      "CSV precisa ter cabecalho e ao menos uma linha de movimento.",
+    );
+  }
+  const delimiterResolution = resolveCsvDelimiter(
+    normalizedContent,
+    input.csvDelimiter,
+    input.csvMapping,
+  );
+
+  if (delimiterResolution.delimiter === undefined) {
+    const metadata: CsvImportPreviewMetadata = {
+      delimiterCandidates: delimiterResolution.candidates,
+      headers: delimiterResolution.headers,
+      mapping: input.csvMapping ?? {},
+      missingRequiredFields: requiredFields,
+      ambiguousFields: [],
+      sampleRows: [],
+    };
+    return { rows: [], metadata, mappingRequired: true };
+  }
+
+  const table = parseCsvTable(normalizedContent, delimiterResolution.delimiter);
+  const nonEmptyRecords = table.records.filter((record) =>
+    record.values.some((value) => value.trim().length > 0),
+  );
+
+  if (nonEmptyRecords.length === 0) {
+    throw new ImportFileError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
+  }
+
+  if (nonEmptyRecords.length === 1) {
+    throw new ImportFileError(
+      "IMPORT_CSV_NO_DATA_ROWS",
       "CSV precisa ter cabecalho e ao menos uma linha de movimento.",
     );
   }
 
-  const header = splitCsvLine(lines[0] as string).map(normalizeHeaderName);
-  const columns = resolveCsvColumns(header, mapping);
+  const headerRecord = nonEmptyRecords[0] as CsvRecord;
+  const headers = headerRecord.values.map((header, index) =>
+    index === 0 ? stripUtf8Bom(header).trim() : header.trim(),
+  );
+  assertCsvHeaders(headers);
+  const mappingResolution = resolveCsvMapping(headers, input.csvMapping);
+  assertNoDuplicateCsvMapping(mappingResolution.mapping);
+  const missingRequiredFields = requiredFields.filter(
+    (field) => mappingResolution.mapping[field] === undefined,
+  );
+  const dataRecords = nonEmptyRecords.slice(1);
+  const metadata: CsvImportPreviewMetadata = {
+    delimiter: table.delimiter,
+    delimiterCandidates: [table.delimiter],
+    headers,
+    mapping: mappingResolution.mapping,
+    missingRequiredFields,
+    ambiguousFields: mappingResolution.ambiguousFields,
+    sampleRows: [],
+  };
 
-  return lines.slice(1).map((line, index) => {
-    const values = splitCsvLine(line);
+  if (missingRequiredFields.length > 0 || mappingResolution.ambiguousFields.length > 0) {
+    return { rows: [], metadata, mappingRequired: true };
+  }
+
+  const columns = resolveCsvColumns(headers, mappingResolution.mapping);
+  const rows = dataRecords.map((record) => {
+    if (record.values.length !== headers.length) {
+      return {
+        rowNumber: record.rowNumber,
+        occurredOn: undefined,
+        description: undefined,
+        amountMinor: undefined,
+        kind: undefined,
+        accountId: input.defaultAccountId,
+        categoryId: undefined,
+        externalId: undefined,
+        rawFingerprintSeed: "",
+        structuralProblem: buildRowError(
+          record.rowNumber,
+          "IMPORT_CSV_COLUMN_COUNT_MISMATCH",
+          `A linha possui ${record.values.length} coluna(s), mas o cabecalho possui ${headers.length}. Corrija o arquivo e reimporte.`,
+        ),
+      } satisfies ParsedImportRow;
+    }
+
+    const values = record.values;
     const amountText = readCsvValue(values, columns.amountIndex);
     const parsedAmount = parseAmountMinor(amountText);
     const kindText = readOptionalCsvValue(values, columns.kindIndex);
     const kind = parseTransactionKind(kindText, parsedAmount.signedAmountMinor);
+    const occurredOnText = readCsvValue(values, columns.dateIndex);
+    const description = normalizeDescription(readCsvValue(values, columns.descriptionIndex));
+    const externalId = readOptionalCsvValue(values, columns.externalIdIndex);
 
     return {
-      rowNumber: index + 2,
-      occurredOn: normalizeDate(readCsvValue(values, columns.dateIndex)),
-      description: normalizeDescription(readCsvValue(values, columns.descriptionIndex)),
+      rowNumber: record.rowNumber,
+      occurredOn: normalizeDate(occurredOnText),
+      description,
       amountMinor: parsedAmount.amountMinor,
       kind,
-      accountId: readOptionalCsvValue(values, columns.accountIndex),
-      categoryId: readOptionalCsvValue(values, columns.categoryIndex),
-      externalId: undefined,
-      rawFingerprintSeed: line,
-    };
+      accountId: input.defaultAccountId,
+      categoryId: undefined,
+      externalId,
+      rawFingerprintSeed: [
+        normalizeDate(occurredOnText) ?? occurredOnText ?? "",
+        description ?? "",
+        parsedAmount.signedAmountMinor ?? amountText ?? "",
+        kind ?? "",
+        externalId ?? "",
+      ].join("|"),
+    } satisfies ParsedImportRow;
   });
+
+  return { rows, metadata, mappingRequired: false };
 }
 
 function parseOfxRows(content: string): ParsedImportRow[] {
@@ -268,17 +591,9 @@ function buildSuggestion(
     currency: defaultCurrency,
   };
 
-  if (row.accountId !== undefined) {
-    suggestion.accountId = row.accountId;
-  }
-
-  if (row.categoryId !== undefined) {
-    suggestion.categoryId = row.categoryId;
-  }
-
-  if (row.externalId !== undefined) {
-    suggestion.externalId = row.externalId;
-  }
+  if (row.accountId !== undefined) suggestion.accountId = row.accountId;
+  if (row.categoryId !== undefined) suggestion.categoryId = row.categoryId;
+  if (row.externalId !== undefined) suggestion.externalId = row.externalId;
 
   return suggestion;
 }
@@ -289,6 +604,7 @@ function buildBatchDraft(
   totalRows: number,
   suggestions: readonly ImportTransactionSuggestion[],
   problems: readonly ImportProblem[],
+  csvMetadata?: CsvImportPreviewMetadata,
 ): ImportBatchDraft {
   const duplicateRows = suggestions.filter(
     (suggestion) => suggestion.status === "duplicate",
@@ -296,6 +612,15 @@ function buildBatchDraft(
   const errorRows = new Set(
     problems.filter((problem) => problem.severity === "error").map((problem) => problem.rowNumber),
   );
+  const csvDelimiter = csvMetadata?.delimiter;
+  const csvMapping = csvMetadata?.mapping;
+  const sourceHashSeed = [
+    kind,
+    input.content,
+    input.defaultAccountId ?? "",
+    csvDelimiter ?? "",
+    canonicalMapping(csvMapping),
+  ].join(":");
 
   return {
     organizationId: input.context.organizationId,
@@ -303,52 +628,43 @@ function buildBatchDraft(
     sourceKind: kind,
     status: suggestions.length > 0 ? "reviewing" : "failed",
     originalFileName: input.originalFileName,
-    sourceHash: buildStableImportHash(`${kind}:${input.content}`),
+    sourceHash: buildSecureImportHash(sourceHashSeed),
+    contentHash: buildImportContentHash(input.content),
     receivedAt: input.now,
     totalRows,
     validRows: suggestions.length,
     duplicateRows,
     problemRows: errorRows.size,
+    ...(input.defaultAccountId === undefined ? {} : { defaultAccountId: input.defaultAccountId }),
+    ...(csvDelimiter === undefined ? {} : { csvDelimiter }),
+    ...(csvMapping === undefined ? {} : { csvMapping }),
   };
 }
 
 function validateParsedRow(row: ParsedImportRow): ImportProblem[] {
+  if (row.structuralProblem !== undefined) return [row.structuralProblem];
   const problems: ImportProblem[] = [];
-
-  if (row.occurredOn === undefined) {
+  if (row.occurredOn === undefined)
     problems.push(
       buildRowError(row.rowNumber, "IMPORT_ROW_DATE_INVALID", "Informe uma data valida."),
     );
-  }
-
-  if (row.description === undefined) {
+  if (row.description === undefined)
     problems.push(
       buildRowError(row.rowNumber, "IMPORT_ROW_DESCRIPTION_REQUIRED", "Informe uma descricao."),
     );
-  }
-
-  if (row.amountMinor === undefined) {
+  if (row.amountMinor === undefined)
     problems.push(
       buildRowError(row.rowNumber, "IMPORT_ROW_AMOUNT_INVALID", "Informe um valor valido."),
     );
-  }
-
-  if (row.kind === undefined) {
+  if (row.kind === undefined)
     problems.push(
       buildRowError(row.rowNumber, "IMPORT_ROW_KIND_INVALID", "Informe receita ou despesa."),
     );
-  }
-
   return problems;
 }
 
 function buildRowError(rowNumber: number, code: string, message: string): ImportProblem {
-  return {
-    rowNumber,
-    severity: "error",
-    code,
-    message,
-  };
+  return { rowNumber, severity: "error", code, message };
 }
 
 function assertContentSize(content: string, maxSizeInBytes: number): void {
@@ -356,26 +672,228 @@ function assertContentSize(content: string, maxSizeInBytes: number): void {
     throw new ImportFileError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
   }
 
-  if (content.length > maxSizeInBytes) {
+  if (Buffer.byteLength(content, "utf8") > maxSizeInBytes) {
     throw new ImportFileError("IMPORT_FILE_TOO_LARGE", "Arquivo excede o tamanho permitido.");
+  }
+}
+
+function assertSupportedTextEncoding(content: string): void {
+  if (content.includes("\u0000") || content.includes("\uFFFD")) {
+    throw new ImportFileError(
+      "IMPORT_FILE_ENCODING_INVALID",
+      "Nao foi possivel ler o CSV como texto UTF-8. Salve o arquivo em UTF-8 e tente novamente.",
+    );
   }
 }
 
 function inferImportFileKind(fileName: string): ImportFileKind {
   const normalizedFileName = fileName.trim().toLowerCase();
-
-  if (normalizedFileName.endsWith(".csv")) {
-    return "csv";
-  }
-
-  if (normalizedFileName.endsWith(".ofx")) {
-    return "ofx";
-  }
-
+  if (normalizedFileName.endsWith(".csv")) return "csv";
+  if (normalizedFileName.endsWith(".ofx")) return "ofx";
   throw new ImportFileError(
     "IMPORT_FILE_KIND_UNSUPPORTED",
     "Formato de arquivo nao suportado para importacao.",
   );
+}
+
+interface CsvDelimiterResolution {
+  delimiter?: CsvDelimiter;
+  candidates: CsvDelimiter[];
+  headers: string[];
+}
+
+interface CsvDelimiterAnalysis {
+  delimiter: CsvDelimiter;
+  headers: string[];
+  structurallyConsistent: boolean;
+  mappable: boolean;
+}
+
+function resolveCsvDelimiter(
+  content: string,
+  requested: CsvDelimiter | undefined,
+  suppliedMapping: CsvImportMapping | undefined,
+): CsvDelimiterResolution {
+  if (requested !== undefined) {
+    return { delimiter: requested, candidates: [requested], headers: [] };
+  }
+
+  const analyses = ([",", ";"] as const).map((delimiter) =>
+    analyzeCsvDelimiter(content, delimiter, suppliedMapping),
+  );
+  const plausible = analyses.filter(
+    (analysis) => analysis.structurallyConsistent && analysis.mappable,
+  );
+  if (plausible.length === 1) {
+    const selected = plausible[0] as CsvDelimiterAnalysis;
+    return {
+      delimiter: selected.delimiter,
+      candidates: [selected.delimiter],
+      headers: selected.headers,
+    };
+  }
+
+  const candidates = analyses
+    .filter((analysis) => analysis.headers.length > 1)
+    .map((analysis) => analysis.delimiter);
+  const bestHeaders =
+    analyses.slice().sort((left, right) => right.headers.length - left.headers.length)[0]
+      ?.headers ?? [];
+  return {
+    candidates: candidates.length > 0 ? candidates : [",", ";"],
+    headers: bestHeaders,
+  };
+}
+
+function analyzeCsvDelimiter(
+  content: string,
+  delimiter: CsvDelimiter,
+  suppliedMapping: CsvImportMapping | undefined,
+): CsvDelimiterAnalysis {
+  const table = parseCsvTable(content, delimiter);
+  const records = table.records.filter((record) =>
+    record.values.some((value) => value.trim().length > 0),
+  );
+  const headerRecord = records[0];
+  if (headerRecord === undefined) {
+    return { delimiter, headers: [], structurallyConsistent: false, mappable: false };
+  }
+  const headers = headerRecord.values.map((header, index) =>
+    index === 0 ? stripUtf8Bom(header).trim() : header.trim(),
+  );
+  const expectedColumns = headers.length;
+  const structurallyConsistent =
+    expectedColumns > 1 &&
+    records.slice(1).length > 0 &&
+    records.slice(1).some((record) => record.values.length === expectedColumns);
+  let mappable = false;
+  try {
+    const resolution = resolveCsvMapping(headers, suppliedMapping);
+    const recognizedRequired = requiredFields.filter(
+      (field) => resolution.mapping[field] !== undefined,
+    ).length;
+    mappable =
+      recognizedRequired > 0 ||
+      suppliedMapping !== undefined ||
+      headers.length >= requiredFields.length;
+  } catch {
+    mappable = false;
+  }
+  return { delimiter, headers, structurallyConsistent, mappable };
+}
+
+function parseCsvTable(content: string, delimiter: CsvDelimiter): CsvCellTable {
+  const records: CsvRecord[] = [];
+  let values: string[] = [];
+  let current = "";
+  let quoted = false;
+  let physicalRow = 1;
+  let recordStartRow = 1;
+
+  for (let index = 0; index < content.length; index += 1) {
+    const character = content[index] as string;
+    const nextCharacter = content[index + 1];
+
+    if (character === '"') {
+      if (quoted && nextCharacter === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+
+    if (!quoted && character === delimiter) {
+      values.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    if (!quoted && (character === "\n" || character === "\r")) {
+      if (character === "\r" && nextCharacter === "\n") index += 1;
+      values.push(current.trim());
+      records.push({ rowNumber: recordStartRow, values });
+      values = [];
+      current = "";
+      physicalRow += 1;
+      recordStartRow = physicalRow;
+      continue;
+    }
+
+    if (character === "\n") physicalRow += 1;
+    current += character;
+  }
+
+  if (quoted) {
+    throw new ImportFileError(
+      "IMPORT_CSV_STRUCTURE_INVALID",
+      "CSV possui aspas nao fechadas. Corrija o arquivo e tente novamente.",
+    );
+  }
+
+  if (current.length > 0 || values.length > 0) {
+    values.push(current.trim());
+    records.push({ rowNumber: recordStartRow, values });
+  }
+
+  return { records, delimiter };
+}
+
+function stripUtf8Bom(value: string): string {
+  return value.charCodeAt(0) === 0xfeff ? value.slice(1) : value;
+}
+
+function assertCsvHeaders(headers: readonly string[]): void {
+  if (headers.length === 0 || headers.every((header) => header.length === 0)) {
+    throw new ImportFileError(
+      "IMPORT_CSV_HEADER_INVALID",
+      "CSV precisa conter um cabecalho valido.",
+    );
+  }
+
+  const normalizedHeaders = headers.filter((header) => header.length > 0).map(normalizeHeaderName);
+  if (new Set(normalizedHeaders).size !== normalizedHeaders.length) {
+    throw new ImportFileError(
+      "IMPORT_CSV_HEADER_INVALID",
+      "CSV possui colunas com o mesmo nome. Renomeie os cabecalhos e tente novamente.",
+    );
+  }
+}
+
+function resolveCsvMapping(
+  headers: readonly string[],
+  supplied: CsvImportMapping | undefined,
+): { mapping: CsvImportMapping; ambiguousFields: (keyof CsvImportMapping)[] } {
+  const mapping: CsvImportMapping = {};
+  const ambiguousFields: (keyof CsvImportMapping)[] = [];
+  for (const field of Object.keys(csvAliases) as (keyof CsvImportMapping)[]) {
+    const requestedHeader = supplied?.[field];
+    const candidates = requestedHeader
+      ? headers.filter(
+          (header) => normalizeHeaderName(header) === normalizeHeaderName(requestedHeader),
+        )
+      : headers.filter((header) =>
+          csvAliases[field].some(
+            (alias) => normalizeAliasHeader(header) === normalizeAliasHeader(alias),
+          ),
+        );
+    if (candidates.length === 1) mapping[field] = candidates[0] as string;
+    else if (candidates.length > 1) ambiguousFields.push(field);
+  }
+  return { mapping, ambiguousFields };
+}
+
+function assertNoDuplicateCsvMapping(mapping: CsvImportMapping): void {
+  const mappedColumns = Object.values(mapping)
+    .filter((value): value is string => typeof value === "string")
+    .map(normalizeHeaderName);
+  if (new Set(mappedColumns).size !== mappedColumns.length) {
+    throw new ImportFileError(
+      "IMPORT_CSV_MAPPING_INVALID",
+      "A mesma coluna nao pode ser usada para mais de um campo. Revise o mapeamento.",
+    );
+  }
 }
 
 interface CsvColumnIndexes {
@@ -383,79 +901,39 @@ interface CsvColumnIndexes {
   descriptionIndex: number;
   amountIndex: number;
   kindIndex: number | undefined;
-  accountIndex: number | undefined;
-  categoryIndex: number | undefined;
+  externalIdIndex: number | undefined;
 }
 
-function resolveCsvColumns(
-  header: readonly string[],
-  mapping: CsvImportMapping | undefined,
-): CsvColumnIndexes {
-  const dateIndex = requireCsvColumn(header, mapping?.date ?? "date");
-  const descriptionIndex = requireCsvColumn(header, mapping?.description ?? "description");
-  const amountIndex = requireCsvColumn(header, mapping?.amount ?? "amount");
-
+function resolveCsvColumns(header: readonly string[], mapping: CsvImportMapping): CsvColumnIndexes {
   return {
-    dateIndex,
-    descriptionIndex,
-    amountIndex,
-    kindIndex: findCsvColumn(header, mapping?.kind ?? "kind"),
-    accountIndex: findCsvColumn(header, mapping?.accountId ?? "accountId"),
-    categoryIndex: findCsvColumn(header, mapping?.categoryId ?? "categoryId"),
+    dateIndex: requireCsvColumn(header, mapping.date),
+    descriptionIndex: requireCsvColumn(header, mapping.description),
+    amountIndex: requireCsvColumn(header, mapping.amount),
+    kindIndex: findCsvColumn(header, mapping.kind),
+    externalIdIndex: findCsvColumn(header, mapping.externalId),
   };
 }
 
-function requireCsvColumn(header: readonly string[], columnName: string): number {
+function requireCsvColumn(header: readonly string[], columnName: string | undefined): number {
   const index = findCsvColumn(header, columnName);
-
   if (index === undefined) {
     throw new ImportFileError(
       "IMPORT_CSV_HEADER_INVALID",
-      `CSV precisa conter a coluna obrigatoria ${columnName}.`,
+      "Mapeie as colunas de data, descricao e valor antes de continuar.",
     );
   }
-
   return index;
 }
 
-function findCsvColumn(header: readonly string[], columnName: string): number | undefined {
-  const normalizedColumnName = normalizeHeaderName(columnName);
-  const index = header.indexOf(normalizedColumnName);
-
+function findCsvColumn(
+  header: readonly string[],
+  columnName: string | undefined,
+): number | undefined {
+  if (columnName === undefined) return undefined;
+  const index = header.findIndex(
+    (value) => normalizeHeaderName(value) === normalizeHeaderName(columnName),
+  );
   return index >= 0 ? index : undefined;
-}
-
-function splitCsvLine(line: string): string[] {
-  const values: string[] = [];
-  let currentValue = "";
-  let insideQuotes = false;
-
-  for (let index = 0; index < line.length; index += 1) {
-    const character = line[index];
-    const nextCharacter = line[index + 1];
-
-    if (character === '"' && nextCharacter === '"') {
-      currentValue += '"';
-      index += 1;
-      continue;
-    }
-
-    if (character === '"') {
-      insideQuotes = !insideQuotes;
-      continue;
-    }
-
-    if (character === "," && !insideQuotes) {
-      values.push(currentValue.trim());
-      currentValue = "";
-      continue;
-    }
-
-    currentValue += character;
-  }
-
-  values.push(currentValue.trim());
-  return values;
 }
 
 function readCsvValue(values: readonly string[], index: number): string | undefined {
@@ -466,20 +944,24 @@ function readOptionalCsvValue(
   values: readonly string[],
   index: number | undefined,
 ): string | undefined {
-  if (index === undefined) {
-    return undefined;
-  }
-
-  return normalizeDescription(values[index]);
+  return index === undefined ? undefined : normalizeDescription(values[index]);
 }
 
 function normalizeHeaderName(value: string): string {
-  return value.trim().toLowerCase();
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/^\uFEFF/, "");
+}
+
+function normalizeAliasHeader(value: string): string {
+  return normalizeHeaderName(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function normalizeDescription(value: string | undefined): string | undefined {
   const normalizedValue = value?.trim();
-
   return normalizedValue === undefined || normalizedValue.length === 0
     ? undefined
     : normalizedValue;
@@ -487,59 +969,66 @@ function normalizeDescription(value: string | undefined): string | undefined {
 
 function normalizeDate(value: string | undefined): ISODate | undefined {
   const normalizedValue = normalizeDescription(value);
-
-  if (normalizedValue === undefined) {
-    return undefined;
-  }
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
-    return normalizedValue;
-  }
-
-  const brDate = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(normalizedValue);
-
-  if (brDate !== null) {
-    return `${brDate[3]}-${brDate[2]}-${brDate[1]}`;
-  }
-
+  if (normalizedValue === undefined) return undefined;
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(normalizedValue);
+  if (iso !== null) return isValidDateParts(iso[1], iso[2], iso[3]) ? normalizedValue : undefined;
+  const br = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(normalizedValue);
+  if (br !== null && isValidDateParts(br[3], br[2], br[1])) return `${br[3]}-${br[2]}-${br[1]}`;
   return undefined;
+}
+
+function isValidDateParts(
+  year: string | undefined,
+  month: string | undefined,
+  day: string | undefined,
+): boolean {
+  if (!year || !month || !day) return false;
+  const date = new Date(`${year}-${month}-${day}T00:00:00.000Z`);
+  return (
+    Number.isFinite(date.getTime()) &&
+    date.getUTCFullYear() === Number(year) &&
+    date.getUTCMonth() + 1 === Number(month) &&
+    date.getUTCDate() === Number(day)
+  );
 }
 
 function normalizeOfxDate(value: string | undefined): ISODate | undefined {
   const normalizedValue = normalizeDescription(value);
-
-  if (normalizedValue === undefined || !/^\d{8}/.test(normalizedValue)) {
-    return undefined;
-  }
-
-  return `${normalizedValue.slice(0, 4)}-${normalizedValue.slice(4, 6)}-${normalizedValue.slice(6, 8)}`;
+  if (normalizedValue === undefined || !/^\d{8}/.test(normalizedValue)) return undefined;
+  return normalizeDate(
+    `${normalizedValue.slice(0, 4)}-${normalizedValue.slice(4, 6)}-${normalizedValue.slice(6, 8)}`,
+  );
 }
 
 function parseAmountMinor(value: string | undefined): {
   amountMinor: number | undefined;
   signedAmountMinor: number | undefined;
 } {
-  const normalizedValue = normalizeDescription(value);
-
-  if (normalizedValue === undefined) {
+  const normalizedValue = normalizeDescription(value)?.replace(/\s/g, "").replace(/^R\$/i, "");
+  if (normalizedValue === undefined)
     return { amountMinor: undefined, signedAmountMinor: undefined };
+
+  const comma = normalizedValue.lastIndexOf(",");
+  const dot = normalizedValue.lastIndexOf(".");
+  let decimalValue = normalizedValue;
+  if (comma >= 0 && dot >= 0) {
+    decimalValue =
+      comma > dot
+        ? normalizedValue.replace(/\./g, "").replace(",", ".")
+        : normalizedValue.replace(/,/g, "");
+  } else if (comma >= 0) {
+    decimalValue = normalizedValue.replace(/\./g, "").replace(",", ".");
   }
 
-  const decimalValue = normalizedValue.includes(",")
-    ? normalizedValue.replace(/\./g, "").replace(",", ".")
-    : normalizedValue;
-  const parsedValue = Number.parseFloat(decimalValue);
-
-  if (!Number.isFinite(parsedValue) || parsedValue === 0) {
+  if (!/^[+-]?\d+(?:\.\d+)?$/.test(decimalValue))
     return { amountMinor: undefined, signedAmountMinor: undefined };
-  }
-
+  const parsedValue = Number(decimalValue);
+  if (!Number.isFinite(parsedValue) || parsedValue === 0)
+    return { amountMinor: undefined, signedAmountMinor: undefined };
   const signedAmountMinor = Math.round(parsedValue * 100);
-
-  return {
-    amountMinor: Math.abs(signedAmountMinor),
-    signedAmountMinor,
-  };
+  if (!Number.isSafeInteger(signedAmountMinor) || signedAmountMinor === 0)
+    return { amountMinor: undefined, signedAmountMinor: undefined };
+  return { amountMinor: Math.abs(signedAmountMinor), signedAmountMinor };
 }
 
 function parseTransactionKind(
@@ -547,27 +1036,11 @@ function parseTransactionKind(
   signedAmountMinor: number | undefined,
 ): TransactionKind | undefined {
   const normalizedValue = normalizeDescription(value)?.toLowerCase();
-
-  if (
-    normalizedValue === "income" ||
-    normalizedValue === "receita" ||
-    normalizedValue === "credit"
-  ) {
+  if (["income", "receita", "credit", "credito", "crédito"].includes(normalizedValue ?? ""))
     return "income";
-  }
-
-  if (
-    normalizedValue === "expense" ||
-    normalizedValue === "despesa" ||
-    normalizedValue === "debit"
-  ) {
+  if (["expense", "despesa", "debit", "debito", "débito"].includes(normalizedValue ?? ""))
     return "expense";
-  }
-
-  if (signedAmountMinor === undefined) {
-    return undefined;
-  }
-
+  if (signedAmountMinor === undefined) return undefined;
   return signedAmountMinor < 0 ? "expense" : "income";
 }
 
@@ -576,21 +1049,29 @@ function parseOfxTransactionKind(
   signedAmountMinor: number | undefined,
 ): TransactionKind | undefined {
   const normalizedType = normalizeDescription(trnType)?.toUpperCase();
-
-  if (normalizedType === "CREDIT" || normalizedType === "DEP") {
-    return "income";
-  }
-
-  if (normalizedType === "DEBIT" || normalizedType === "PAYMENT" || normalizedType === "ATM") {
+  if (normalizedType === "CREDIT" || normalizedType === "DEP") return "income";
+  if (normalizedType === "DEBIT" || normalizedType === "PAYMENT" || normalizedType === "ATM")
     return "expense";
-  }
-
   return parseTransactionKind(undefined, signedAmountMinor);
 }
 
 function readOfxTag(block: string, tagName: string): string | undefined {
-  const expression = new RegExp(`<${tagName}>([^<\r\n]+)`, "i");
+  const expression = new RegExp(`<${tagName}>([^<\\r\\n]+)`, "i");
   const match = expression.exec(block);
-
   return normalizeDescription(match?.[1]);
+}
+
+function canonicalMapping(mapping: CsvImportMapping | undefined): string {
+  if (mapping === undefined) return "";
+  return [mapping.date, mapping.description, mapping.amount, mapping.kind, mapping.externalId]
+    .map((value) => value ?? "")
+    .join("|");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
 }

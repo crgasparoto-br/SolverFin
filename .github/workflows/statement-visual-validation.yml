@@ -1,3 +1,4 @@
+# Reexecuta a evidência final em Chrome para o fluxo CSV da issue #494.
 name: Statement visual validation
 
 on:
@@ -93,7 +94,7 @@ jobs:
           echo "path=$chrome_bin" >> "$GITHUB_OUTPUT"
           "$chrome_bin" --version
 
-      - name: Validate statement and sidebar UI in Chrome
+      - name: Validate statement, sidebar and Inbox UI in Chrome
         env:
           CHROME_BIN: ${{ steps.chrome.outputs.path }}
           SOLVERFIN_WEB_URL: http://127.0.0.1:5173
@@ -104,6 +105,7 @@ jobs:
           node scripts/statement-visual/account-remuneration-mobile-evidence.mjs
           node scripts/statement-visual/account-edit.mjs
           node scripts/statement-visual/sidebar-navigation.mjs
+          node scripts/statement-visual/inbox-csv-review.mjs
 
       - name: Preserve server log
         if: always()
