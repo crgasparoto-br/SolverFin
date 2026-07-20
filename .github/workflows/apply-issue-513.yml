@@ -107,13 +107,20 @@ jobs:
       - name: Run typecheck
         run: npm run typecheck
 
-      - name: Build database and application
-        run: |
-          npm run prisma:generate
-          npm run db:deploy
-          npm run db:seed
-          npm run test
-          npm run build
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Deploy database schema
+        run: npm run db:deploy
+
+      - name: Seed database
+        run: npm run db:seed
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build application
+        run: npm run build
 
       - name: Run API integration suite
         run: |
