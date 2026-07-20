@@ -254,8 +254,8 @@ model FinancialProfile {
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
-  organization        Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  owner               User                  @relation("FinancialProfileOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  owner               User                @relation("FinancialProfileOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
   accounts            Account[]
   cards               Card[]
   cardInstruments     CardInstrument[]
@@ -270,6 +270,7 @@ model FinancialProfile {
   aiSuggestions       AiSuggestion[]
   attachments         Attachment[]
   auditLogs           AuditLogEntry[]
+  transactionGroups   TransactionGroup[]
 
   @@unique([id, organizationId])
   @@index([organizationId, ownerUserId])
@@ -292,13 +293,14 @@ model Account {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
-  financialProfile    FinancialProfile     @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
-  transactions        Transaction[]        @relation("TransactionAccount")
-  incomingTransfers   Transaction[]        @relation("TransactionDestinationAccount")
-  paymentCards        Card[]               @relation("CardPaymentAccount")
+  financialProfile    FinancialProfile    @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  transactions        Transaction[]       @relation("TransactionAccount")
+  incomingTransfers   Transaction[]       @relation("TransactionDestinationAccount")
+  paymentCards        Card[]              @relation("CardPaymentAccount")
   recurrences         Recurrence[]
   payablesReceivables PayableReceivable[]
-  importBatches       ImportBatch[]         @relation("ImportBatchDefaultAccount")
+  importBatches       ImportBatch[]       @relation("ImportBatchDefaultAccount")
+  transactionGroups   TransactionGroup[]
 
   @@unique([id, organizationId, financialProfileId])
   @@index([organizationId, financialProfileId, status])
@@ -379,9 +381,9 @@ model Category {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  financialProfile    FinancialProfile     @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
-  parentCategory      Category?            @relation("CategoryTree", fields: [parentCategoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
-  childCategories     Category[]           @relation("CategoryTree")
+  financialProfile    FinancialProfile    @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  parentCategory      Category?           @relation("CategoryTree", fields: [parentCategoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  childCategories     Category[]          @relation("CategoryTree")
   transactions        Transaction[]
   recurrences         Recurrence[]
   budgets             Budget[]
@@ -407,6 +409,7 @@ model Transaction {
   importBatchId        String?           @db.Uuid
   aiSuggestionId       String?           @db.Uuid
   transferGroupId      String?           @db.Uuid
+  transactionGroupId   String?           @db.Uuid
   kind                 TransactionKind
   status               TransactionStatus @default(PLANNED)
   source               TransactionSource @default(MANUAL)
@@ -436,6 +439,7 @@ model Transaction {
   aiSuggestion             AiSuggestion?      @relation(fields: [aiSuggestionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   paidInvoice              Invoice?           @relation("InvoicePaymentTransaction")
   settledPayableReceivable PayableReceivable? @relation("PayableReceivableSettlementTransaction")
+  transactionGroup         TransactionGroup?  @relation(fields: [transactionGroupId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
 
   @@unique([id, organizationId, financialProfileId])
   @@unique([organizationId, financialProfileId, aiSuggestionId])
@@ -451,6 +455,26 @@ model Transaction {
   @@index([organizationId, financialProfileId, categoryId, occurredOn])
   @@index([organizationId, financialProfileId, importBatchId])
   @@index([organizationId, financialProfileId, transferGroupId])
+  @@index([organizationId, financialProfileId, transactionGroupId])
+}
+
+model TransactionGroup {
+  id                 String   @id @default(uuid()) @db.Uuid
+  organizationId     String   @db.Uuid
+  financialProfileId String   @db.Uuid
+  accountId          String   @db.Uuid
+  description        String   @db.VarChar(240)
+  displayOn          DateTime @db.Date
+  createdByUserId    String?  @db.Uuid
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  account          Account          @relation(fields: [accountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  members          Transaction[]
+
+  @@unique([id, organizationId, financialProfileId])
+  @@index([organizationId, financialProfileId, accountId, displayOn])
 }
 
 model Recurrence {

@@ -19,6 +19,7 @@ import {
   type TransactionStatus,
   type TenantContext,
   type UpdateTransactionPayload,
+  TransactionGroupError,
 } from "@solverfin/domain";
 
 import { query, withTransaction } from "../db.js";
@@ -41,6 +42,7 @@ interface TransactionRow {
   importBatchId: string | null;
   aiSuggestionId: string | null;
   transferGroupId: string | null;
+  transactionGroupId: string | null;
   kind: string;
   status: string;
   source: string;
@@ -140,7 +142,7 @@ type TransactionMetadata = {
 
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
   "categoryId", "cardId", "cardInstrumentId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
-  "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
+  "transferGroupId", "transactionGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
   "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 export async function listTransactionsForContext(
@@ -209,6 +211,21 @@ export async function updateTransactionForContext(
   payload: UpdateTransactionPayloadWithMetadata,
 ): Promise<TransactionWithAccountRemuneration> {
   const currentTransaction = await findTransactionRow(context, transactionId);
+
+  if (
+    currentTransaction?.transactionGroupId &&
+    (payload.kind !== undefined ||
+      payload.status !== undefined ||
+      payload.accountId !== undefined ||
+      payload.currency !== undefined ||
+      payload.destinationAccountId !== undefined)
+  ) {
+    throw new TransactionGroupError(
+      "TRANSACTION_GROUP_MEMBER_UPDATE_BLOCKED",
+      "Desagrupe os lançamentos antes de alterar conta, tipo, moeda ou situação.",
+      409,
+    );
+  }
 
   if (isCardInvoicePurchase(currentTransaction)) {
     await updateCardPurchaseForContext(context, currentTransaction.cardId, transactionId, {
@@ -319,6 +336,13 @@ export async function voidTransactionForContext(
   transactionId: EntityId,
 ): Promise<Transaction> {
   const currentTransaction = await findTransactionRow(context, transactionId);
+  if (currentTransaction?.transactionGroupId) {
+    throw new TransactionGroupError(
+      "TRANSACTION_GROUP_MEMBER_UPDATE_BLOCKED",
+      "Desagrupe os lançamentos antes de excluí-los.",
+      409,
+    );
+  }
   const result = voidTransactionDomain(context, currentTransaction, new Date().toISOString());
   const transaction = attachNote(result.transaction, getTransactionNote(currentTransaction));
 
@@ -490,6 +514,7 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   if (row.importBatchId !== null) transaction.importBatchId = row.importBatchId;
   if (row.aiSuggestionId !== null) transaction.aiSuggestionId = row.aiSuggestionId;
   if (row.transferGroupId !== null) transaction.transferGroupId = row.transferGroupId;
+  if (row.transactionGroupId !== null) transaction.transactionGroupId = row.transactionGroupId;
   if (row.reconciledAt !== null) transaction.reconciledAt = row.reconciledAt.toISOString();
   if (row.voidedAt !== null) transaction.voidedAt = row.voidedAt.toISOString();
   if (row.createdByUserId !== null) transaction.createdByUserId = row.createdByUserId;

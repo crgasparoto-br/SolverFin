@@ -1,5 +1,13 @@
 # Modelo de dominio financeiro
 
+## TransactionGroup
+
+Entidade sem efeito financeiro usada exclusivamente pelo Extrato. Pertence a
+`organizationId` + `financialProfileId` + `accountId`, possui descricao e `displayOn`, e se
+relaciona aos lancamentos por `Transaction.transactionGroupId`. A chave estrangeira composta
+preserva o isolamento de tenant/perfil; a associacao singular impede grupos aninhados e dupla
+participacao.
+
 ## Objetivo
 
 Este documento define o modelo conceitual e tecnico inicial do core financeiro do

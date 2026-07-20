@@ -14,6 +14,7 @@ export interface TransactionRecord {
   status: string;
   source?: string;
   amountMinor: number;
+  currency?: string;
   occurredOn: string;
   plannedOn: string;
   effectiveOn?: string;
@@ -23,6 +24,8 @@ export interface TransactionRecord {
   cardId?: string;
   invoiceId?: string;
   recurrenceId?: string;
+  transactionGroupId?: string;
+  group?: TransactionGroupRecord;
   accountRemuneration?: {
     indexKind: "cdi";
     competenceOn: string;
@@ -35,6 +38,46 @@ export interface TransactionRecord {
     manuallyAdjusted: boolean;
     adjustedAt?: string;
   };
+}
+
+export interface TransactionGroupRecord {
+  id: string;
+  accountId: string;
+  description: string;
+  displayOn: string;
+  kind: "income" | "expense";
+  status: string;
+  currency: string;
+  totalAmountMinor: number;
+  members: TransactionRecord[];
+}
+
+export function projectTransactionGroups(
+  transactions: TransactionRecord[],
+  groups: TransactionGroupRecord[],
+): TransactionRecord[] {
+  const visibleGroups = groups.filter((group) => group.members.length >= 2);
+  const groupedMemberIds = new Set(
+    visibleGroups.flatMap((group) => group.members.map((member) => member.id)),
+  );
+  return [
+    ...transactions.filter((transaction) => !groupedMemberIds.has(transaction.id)),
+    ...visibleGroups.map(
+      (group): TransactionRecord => ({
+        id: `group:${group.id}`,
+        accountId: group.accountId,
+        description: group.description,
+        kind: group.kind,
+        status: group.status,
+        source: "group_projection",
+        amountMinor: group.totalAmountMinor,
+        occurredOn: group.displayOn,
+        plannedOn: group.displayOn,
+        ...(group.status === "planned" ? {} : { effectiveOn: group.displayOn }),
+        group,
+      }),
+    ),
+  ];
 }
 
 export interface StatementFilters {

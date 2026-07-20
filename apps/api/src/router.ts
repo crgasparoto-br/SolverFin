@@ -71,6 +71,12 @@ import {
   updateTransactionForContext,
   voidTransactionForContext,
 } from "./repositories/transactions.js";
+import {
+  createTransactionGroupForContext,
+  getTransactionGroupForContext,
+  listTransactionGroupsForContext,
+  ungroupTransactionsForContext,
+} from "./repositories/transaction-groups.js";
 import { loadFinancialProfilesForUser, resolveRequestTenantContext } from "./tenant-context.js";
 
 export interface ApiRequest {
@@ -119,6 +125,10 @@ route("POST", "/api/transactions", createTransactionHandler);
 route("GET", "/api/transactions/:transactionId", getTransactionHandler);
 route("PATCH", "/api/transactions/:transactionId", updateTransactionHandler);
 route("POST", "/api/transactions/:transactionId/void", voidTransactionHandler);
+route("GET", "/api/transaction-groups", listTransactionGroupsHandler);
+route("POST", "/api/transaction-groups", createTransactionGroupHandler);
+route("GET", "/api/transaction-groups/:groupId", getTransactionGroupHandler);
+route("DELETE", "/api/transaction-groups/:groupId", ungroupTransactionsHandler);
 
 route("GET", "/api/recurrences", listRecurrencesHandler);
 route("POST", "/api/recurrences", createRecurrenceHandler);
@@ -407,6 +417,55 @@ async function createTransactionHandler(
   });
 
   return json(201, { transaction });
+}
+
+async function listTransactionGroupsHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const accountId = request.query.get("accountId");
+  const startsOn = request.query.get("startsOn");
+  const endsOn = request.query.get("endsOn");
+  if (!accountId || !startsOn || !endsOn)
+    throw {
+      code: "TRANSACTION_GROUP_FILTERS_REQUIRED",
+      statusCode: 400,
+      message: "Informe conta e período para consultar os grupos.",
+    };
+  const groups = await listTransactionGroupsForContext(context, { accountId, startsOn, endsOn });
+  return json(200, { groups });
+}
+
+async function createTransactionGroupHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const memberIds = Array.isArray(body.memberIds) ? body.memberIds.map(String) : [];
+  const group = await createTransactionGroupForContext(context, {
+    memberIds,
+    description: String(body.description ?? ""),
+    displayOn: String(body.displayOn ?? ""),
+  });
+  return json(201, { group });
+}
+
+async function getTransactionGroupHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const group = await getTransactionGroupForContext(context, requireParam(match, "groupId"));
+  return json(200, { group });
+}
+
+async function ungroupTransactionsHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const result = await ungroupTransactionsForContext(context, requireParam(match, "groupId"));
+  return json(200, result);
 }
 
 async function getTransactionHandler(

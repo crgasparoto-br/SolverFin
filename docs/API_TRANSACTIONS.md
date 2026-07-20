@@ -1,5 +1,19 @@
 # API de lancamentos financeiros
 
+## Agrupamentos de apresentacao
+
+`TransactionGroup` consolida visualmente lancamentos no Extrato sem criar movimento financeiro.
+Os membros continuam sendo a fonte de saldo, Dashboard, relatorios e orcamento.
+
+- `POST /api/transaction-groups`: recebe `memberIds` (minimo 2), `description` (1-240) e `displayOn` (`YYYY-MM-DD`).
+- `GET /api/transaction-groups?accountId=...&startsOn=...&endsOn=...`: lista projecoes pela data de exibicao.
+- `GET /api/transaction-groups/:groupId`: retorna grupo e todos os membros originais.
+- `DELETE /api/transaction-groups/:groupId`: remove somente o agrupamento.
+
+Os contratos sao autenticados e isolados por organizacao e perfil financeiro. Recursos de outro
+contexto retornam `404 TENANT_RESOURCE_NOT_FOUND`. Erros especificos distinguem selecao
+insuficiente, incompatibilidade, inelegibilidade, associacao existente e conflito concorrente.
+
 ## Objetivo
 
 Este contrato descreve a API inicial de lancamentos financeiros do SolverFin.
