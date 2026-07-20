@@ -1,1 +1,33 @@
-error: corrupt patch at .issue513-audit-fixes.patch:181
+Checking patch packages/domain/src/imports.ts...
+Hunk #1 succeeded at 116 (offset -1 lines).
+Hunk #2 succeeded at 209 (offset -2 lines).
+Hunk #3 succeeded at 574 (offset -4 lines).
+Hunk #4 succeeded at 647 (offset -4 lines).
+Hunk #5 succeeded at 977 (offset -2 lines).
+Hunk #6 succeeded at 989 (offset -3 lines).
+Hunk #7 succeeded at 1025 (offset -1 lines).
+Checking patch apps/api/src/import-batches-router.ts...
+Hunk #1 succeeded at 360 (offset -2 lines).
+Hunk #2 succeeded at 406 (offset -13 lines).
+Checking patch apps/web/src/dev-server/inbox-page.ts...
+Hunk #1 succeeded at 766 (offset 27 lines).
+Hunk #2 succeeded at 796 (offset 26 lines).
+Hunk #3 succeeded at 814 (offset 24 lines).
+Checking patch packages/domain/src/imports.test.ts...
+Hunk #1 succeeded at 483 (offset -29 lines).
+Hunk #2 succeeded at 491 (offset -30 lines).
+Hunk #3 succeeded at 508 (offset -36 lines).
+Hunk #4 succeeded at 546 (offset -36 lines).
+Checking patch apps/api/src/csv-import-review.integration.test.ts...
+Hunk #1 succeeded at 27 (offset -1 lines).
+Hunk #2 succeeded at 164 (offset -2 lines).
+error: while searching for:
+  const content = [
+    "Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)",
+    "20/07/2026;20/07/2026;PIX;Receita C6 " + suffix + ";100,00;;100,00",
+    "20/07/2026;20/07/2026;Compra;Despesa C6 " + suffix + ";;-25,50;74,50",
+
+error: patch failed: apps/api/src/csv-import-review.integration.test.ts:172
+error: apps/api/src/csv-import-review.integration.test.ts: patch does not apply
+Checking patch apps/web/src/dev-server/inbox-page-ui.test.ts...
+Hunk #1 succeeded at 10 (offset -1 lines).

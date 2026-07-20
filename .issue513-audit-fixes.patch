@@ -166,7 +166,7 @@ index 226dd08..0000000 100644
 +  assertEqual(preview.suggestions[3]?.kind, "expense", "zero income column is treated as absent");
 +  assertEqual(preview.suggestions[3]?.amountMinor, 2000, "expense with opposite zero is accepted");
  }
-@@ -573,3 +582,13 @@ function testAmbiguousValueStrategy(): void {
+@@ -573,3 +582,11 @@ function testAmbiguousValueStrategy(): void {
    );
    assertEqual(preview.csv?.valueStrategy, undefined, "ambiguous strategy is not preselected");
 +  assertEqual(preview.csv?.valueCandidates?.amount, "Valor", "signed candidate is preserved");
