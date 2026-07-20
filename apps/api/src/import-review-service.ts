@@ -50,7 +50,10 @@ export async function approveConsistentImportSuggestionForContext(
       error instanceof ImportReviewError &&
       error.code === "IMPORT_REVIEW_INVALID_TRANSITION"
     ) {
-      const detail = await getImportBatchDetailForContext(context, importBatchId);
+      const detail = await getImportBatchDetailForContext(
+        context,
+        importBatchId,
+      );
       assertImportBatchConsistency(detail, suggestionId);
     }
     throw error;
@@ -72,7 +75,11 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
   );
   for (const item of result.results) {
     if (item.status === "approved" && item.decision !== undefined) {
-      assertDecisionConsistency(item.decision, importBatchId, item.suggestionId);
+      assertDecisionConsistency(
+        item.decision,
+        importBatchId,
+        item.suggestionId,
+      );
     }
   }
 
@@ -86,7 +93,8 @@ function assertImportBatchConsistency(
   onlySuggestionId?: string,
 ): void {
   for (const suggestion of detail.suggestions) {
-    if (onlySuggestionId !== undefined && suggestion.id !== onlySuggestionId) continue;
+    if (onlySuggestionId !== undefined && suggestion.id !== onlySuggestionId)
+      continue;
     if (suggestion.status !== "approved") continue;
     assertApprovedSuggestionConsistency(
       detail.importBatch.id,
