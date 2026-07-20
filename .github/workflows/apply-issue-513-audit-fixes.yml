@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: issue-513-audit-fixes
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   apply-and-validate:
