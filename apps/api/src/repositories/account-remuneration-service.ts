@@ -8,6 +8,7 @@ import {
 } from "@solverfin/domain";
 
 import { query, withTransaction } from "../db.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 export interface AccountRemunerationConfigurationRecord {
   id: string;
@@ -925,10 +926,6 @@ function formatDecimal(value: number, maximumFractionDigits: number): string {
 
 function truncate(value: string, maxLength: number): string {
   return value.length <= maxLength ? value : `${value.slice(0, maxLength - 1)}…`;
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }
 
 function readableError(error: unknown): string {

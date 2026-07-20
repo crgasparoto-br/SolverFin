@@ -26,6 +26,7 @@ import {
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 interface PayableReceivableRow {
   id: string;
@@ -547,8 +548,4 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   }
 
   return transaction;
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }
