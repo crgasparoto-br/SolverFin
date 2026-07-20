@@ -3,7 +3,9 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { closePool, query } from "./db.js";
+import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import {
@@ -61,6 +63,13 @@ async function main(): Promise<void> {
     unrelatedTransactionId,
     baseline,
   );
+  await assertReconciliationTargetConflictIsDetected(
+    token,
+    accountId,
+    canonicalTransactionId,
+    baseline,
+    suffix,
+  );
 
   assert.equal(
     runDiagnostic(),
@@ -107,6 +116,73 @@ async function assertConflictingTargetIsDetected(
     );
   } finally {
     await restoreTarget(suggestionId, canonicalTransactionId);
+  }
+}
+
+async function assertReconciliationTargetConflictIsDetected(
+  token: string,
+  accountId: string,
+  conflictingTransactionId: string,
+  baseline: number,
+  suffix: string,
+): Promise<void> {
+  const description = `Conciliacao diagnostico ${suffix}`;
+  const targetTransactionId = await createTransaction(token, accountId, {
+    amountMinor: 3_145,
+    occurredOn: "2026-12-16",
+    description,
+  });
+  const response = await apiRequest(token, "POST", "/api/import-batches/csv", {
+    originalFileName: `reconciliation-diagnostic-${suffix}.csv`,
+    content: `date,description,amount,kind\n2026-12-16,${description},-31.45,expense`,
+    accountId,
+    consentAccepted: true,
+  });
+  assert.equal(response.statusCode, 201);
+  const batch = readBody<ImportDetail>(response);
+  const source = batch.suggestions[0];
+  assert.ok(source);
+
+  const scan = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${batch.importBatch.id}/detect-duplicates`,
+  );
+  assert.equal(scan.statusCode, 200);
+  const candidate = readBody<{
+    reconciliationSuggestions: Array<{
+      id: string;
+      payload: { targetTransactionId: string };
+    }>;
+  }>(scan).reconciliationSuggestions.find(
+    (item) => item.payload.targetTransactionId === targetTransactionId,
+  );
+  assert.ok(candidate, "Expected an approved reconciliation target fixture");
+
+  const decision = await apiRequest(
+    token,
+    "POST",
+    `/api/review-suggestions/${candidate.id}/approve`,
+  );
+  assert.equal(decision.statusCode, 200);
+  assert.equal(
+    runDiagnostic(),
+    baseline,
+    "A valid reconciliation must not be reported",
+  );
+
+  try {
+    await query(
+      `update "AiSuggestion" set "targetEntityId" = $2, "updatedAt" = now() where "id" = $1`,
+      [source.id, conflictingTransactionId],
+    );
+    assert.equal(
+      runDiagnostic(),
+      baseline + 1,
+      "A reconciliation target that conflicts with the approved candidate must be inconsistent",
+    );
+  } finally {
+    await restoreTarget(source.id, targetTransactionId);
   }
 }
 
@@ -196,12 +272,24 @@ async function createManualTransaction(
   accountId: string,
   suffix: string,
 ): Promise<string> {
-  const response = await apiRequest(token, "POST", "/api/transactions", {
-    kind: "expense",
+  return createTransaction(token, accountId, {
     amountMinor: 975,
     occurredOn: "2026-12-15",
-    accountId,
     description: `Transacao alheia ${suffix}`,
+  });
+}
+
+async function createTransaction(
+  token: string,
+  accountId: string,
+  input: { amountMinor: number; occurredOn: string; description: string },
+): Promise<string> {
+  const response = await apiRequest(token, "POST", "/api/transactions", {
+    kind: "expense",
+    amountMinor: input.amountMinor,
+    occurredOn: input.occurredOn,
+    accountId,
+    description: input.description,
   });
   assert.equal(response.statusCode, 201);
   return readBody<{ transaction: { id: string } }>(response).transaction.id;
@@ -236,6 +324,8 @@ async function apiRequest(
   };
   const response =
     (await handleImportBatchesApiRequest(request)) ??
+    (await handleDeduplicationReconciliationApiRequest(request)) ??
+    (await handleAiReviewQueueApiRequest(request)) ??
     (await handleApiRequest(request));
   assert.ok(response, `${method} ${path} should be handled`);
   return response;
