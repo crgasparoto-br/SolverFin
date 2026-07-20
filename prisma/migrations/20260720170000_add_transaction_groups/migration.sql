@@ -13,12 +13,13 @@ CREATE TABLE "TransactionGroup" (
   CONSTRAINT "TransactionGroup_account_fkey" FOREIGN KEY ("accountId", "organizationId", "financialProfileId") REFERENCES "Account"("id", "organizationId", "financialProfileId") ON DELETE RESTRICT
 );
 
+CREATE UNIQUE INDEX "TransactionGroup_id_organizationId_financialProfileId_key" ON "TransactionGroup"("id", "organizationId", "financialProfileId");
+
 ALTER TABLE "Transaction" ADD COLUMN "transactionGroupId" UUID;
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_transactionGroupId_fkey"
   FOREIGN KEY ("transactionGroupId", "organizationId", "financialProfileId")
   REFERENCES "TransactionGroup"("id", "organizationId", "financialProfileId") ON DELETE RESTRICT;
 
-CREATE UNIQUE INDEX "TransactionGroup_id_organizationId_financialProfileId_key" ON "TransactionGroup"("id", "organizationId", "financialProfileId");
 CREATE INDEX "TransactionGroup_organizationId_financialProfileId_accountId_displayOn_idx" ON "TransactionGroup"("organizationId", "financialProfileId", "accountId", "displayOn");
 CREATE INDEX "Transaction_organizationId_financialProfileId_transactionGroupId_idx" ON "Transaction"("organizationId", "financialProfileId", "transactionGroupId");
 
