@@ -171,7 +171,7 @@ inbox = replaceOnce(
           fillSelect("mappingAmount", headers, mapping && mapping.amount, false);
           fillSelect("mappingIncomeAmount", headers, mapping && mapping.incomeAmount, false);
           fillSelect("mappingExpenseAmount", headers, mapping && mapping.expenseAmount, false);
-          form.elements.mappingStrategy.value = (mapping && mapping.valueStrategy) || detectedStrategy || "";
+          form.elements.mappingStrategy.value = detectedStrategy || "";
           updateMappingStrategy();
         }
         function renderInterpretation(csv) {
@@ -234,4 +234,4 @@ let domainTests = read("packages/domain/src/imports.test.ts");
 domainTests = replaceOnce(
   domainTests,
   /testInvalidFileErrors\(\);/,
-  Strin
+  String.raw`testInvalid
