@@ -81,3 +81,23 @@ order by s."reviewedAt" asc;
 A base de integração cria uma inconsistência controlada, confirma que a consulta a detecta e remove a fixture ao final. Não houve acesso à base de produção durante esta implementação; portanto, a quantidade histórica de produção deve ser obtida executando a consulta acima no ambiente autorizado.
 
 Caso existam registros, não executar inserção ou backfill manual. A recuperação deve ser tratada separadamente, após conferir logs de auditoria, payload final, idempotência por `aiSuggestionId` e possível transação já existente.
+
+## Regressão discriminante de schema pendente
+
+A suíte de integração contém um cenário destrutivo restrito ao banco protegido de testes. O cenário aprova uma linha CSV, remove de forma controlada a migration de agrupamento, comprova que `/api/transactions` falha ao selecionar `transactionGroupId`, executa `npm run db:prepare` e confirma que a mesma transação volta a aparecer exatamente uma vez no Extrato. Esse teste falha na versão anterior, que não possuía o contrato `db:prepare` no startup.
+
+## Navegação e timeout após commit
+
+A Inbox usa uma única função para montar os links individuais e do lote. Conta e datas da `Transaction` persistida têm precedência sobre o payload revisado. O mês segue exatamente `effectiveOn ?? plannedOn ?? occurredOn`, igual ao `statementDate` do Extrato.
+
+A recuperação após timeout é testada descartando deliberadamente uma resposta de aprovação já confirmada pelo servidor. A releitura do lote recupera a transação persistida; o retry retorna a mesma transação como idempotente e a consulta do Extrato mantém uma única ocorrência.
+
+## Diagnóstico operacional somente leitura
+
+Execute no ambiente autorizado:
+
+```bash
+npm run diagnose:import-statement-consistency -- --json
+```
+
+O comando retorna somente a quantidade de sugestões de importação aprovadas sem transação correspondente. Ele não lista dados financeiros e não executa correção ou backfill. No CI, `--expect-zero` bloqueia a entrega quando a base efêmera termina com inconsistências.
