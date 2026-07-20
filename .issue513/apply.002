@@ -1,4 +1,22 @@
-IT_AMOUNT_CONFLICT`;\n- `IMPORT_ROW_SPLIT_AMOUNT_REQUIRED`;",
+Transaction` é criado.",
+  "preview contract description",
+);
+docs = replaceOnce(
+  docs,
+  /Colunas obrigatórias:[\s\S]*?A conta é escolhida no fluxo e não precisa existir como coluna\./,
+  "Colunas obrigatórias:\n\n- data;\n- descrição;\n- uma estratégia de valor.\n\nAs estratégias aceitas são discriminadas e mutuamente exclusivas:\n\n- `version: 2`, `valueStrategy: signed` e `amount`: valor positivo gera receita e valor negativo gera despesa;\n- `version: 2`, `valueStrategy: split`, `incomeAmount` e `expenseAmount`: uma coluna representa entradas e a outra saídas, usando o módulo do número.\n\n`Data Lançamento`, data do movimento ou data da transação têm prioridade sobre `Data Contábil`. `Descrição`, histórico ou memo têm prioridade sobre título/name. Cabeçalhos de saldo são reconhecidos como não transacionais e não podem ser usados como valor.\n\nTipo e ID externo não aparecem no novo mapeamento genérico. O tipo vem somente do sinal ou da coluna de entrada/saída; `externalId` permanece apenas para leitura de lotes legados. A conta é escolhida no fluxo e não precisa existir como coluna.",
+  "CSV accepted mapping contract",
+);
+docs = replaceOnce(
+  docs,
+  /Datas aceitas:[\s\S]*?Quando o tipo não é informado, o sinal positivo indica receita e o negativo indica despesa\./,
+  "Datas aceitas:\n\n- `AAAA-MM-DD`;\n- `DD/MM/AAAA`.\n\nValores aceitam sinais e padrões `1234.56`, `1,234.56`, `1234,56` e `1.234,56`. Na estratégia assinada, o sinal positivo indica receita e o negativo indica despesa, mesmo que exista uma coluna de tipo no arquivo. Na estratégia separada, somente uma entre entrada e saída pode estar preenchida e diferente de zero; o valor persistido é sempre inteiro positivo em centavos.",
+  "CSV value behavior",
+);
+docs = replaceOnce(
+  docs,
+  /- `IMPORT_CSV_MAPPING_INVALID`;/,
+  "- `IMPORT_CSV_MAPPING_INVALID`;\n- `IMPORT_ROW_AMOUNT_REQUIRED`;\n- `IMPORT_ROW_AMOUNT_ZERO`;\n- `IMPORT_ROW_NUMBER_INVALID`;\n- `IMPORT_ROW_SPLIT_AMOUNT_CONFLICT`;\n- `IMPORT_ROW_SPLIT_AMOUNT_REQUIRED`;",
   "new controlled errors",
 );
 write("docs/IMPORTS.md", docs);
