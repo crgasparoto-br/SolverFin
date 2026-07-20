@@ -20,6 +20,26 @@ assert.equal(
   "db:deploy must keep using Prisma migrate deploy against the multifile schema",
 );
 assert.equal(
+  rootScripts["db:prepare"],
+  "node scripts/prepare-local-env.mjs && npm run db:deploy",
+  "db:prepare must load the local environment before applying pending migrations",
+);
+assert.equal(
+  rootScripts["dev:web"],
+  "npm run db:prepare && npm run build:packages && npm run dev --workspace @solverfin/web",
+  "dev:web must apply pending migrations before starting the SSR development server",
+);
+assert.equal(
+  rootScripts["dev:api"],
+  "npm run db:prepare && npm run build:packages && npm run dev --workspace @solverfin/api",
+  "dev:api must apply pending migrations before starting the backend development server",
+);
+assert.equal(
+  rootScripts["dev:all"],
+  "npm run db:prepare && node scripts/dev-all.mjs",
+  "dev:all must apply pending migrations once before starting both development servers",
+);
+assert.equal(
   rootScripts["start:api"],
   "npm run start --workspace @solverfin/api",
   "start:api must delegate to the API workspace start lifecycle",
@@ -50,4 +70,6 @@ assert.equal(
   "the web start lifecycle must execute the built SSR artifact after prestart",
 );
 
-console.log("[startup-check] pending Prisma migrations run before API and web servers start");
+console.log(
+  "[startup-check] pending Prisma migrations run before development and production servers start",
+);
