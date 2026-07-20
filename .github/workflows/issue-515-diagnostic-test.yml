@@ -1,0 +1,72 @@
+name: Diagnose issue 515 consistency test
+
+on:
+  push:
+    branches:
+      - fix/515-import-transactions-statement
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare database and packages
+        run: |
+          npm run prisma:generate
+          npm run build:packages
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Compile integration tests
+        run: >-
+          npx tsc -p apps/api/tsconfig.test.json
+          --outDir .tmp-tests/issue-515-diagnostic
+
+      - name: Run focused diagnostic test
+        shell: bash
+        run: |
+          set -o pipefail
+          node .tmp-tests/issue-515-diagnostic/csv-import-consistency-diagnostic.integration.test.js 2>&1 | tee issue-515-diagnostic.log
+
+      - name: Upload diagnostic log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-515-diagnostic-${{ github.sha }}
+          path: issue-515-diagnostic.log
+          if-no-files-found: error
