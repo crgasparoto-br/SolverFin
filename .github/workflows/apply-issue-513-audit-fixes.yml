@@ -25,7 +25,7 @@ jobs:
         with:
           ref: feat/513-csv-value-inference
           fetch-depth: 0
-      - name: Repair patch hunk metadata
+      - name: Repair and diagnose patch
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -47,14 +47,18 @@ jobs:
               '@@ -11,7 +11,15 @@': '@@ -11,4 +11,10 @@',
           }
           for old, new in replacements.items():
-              if old not in content:
-                  raise SystemExit(f'missing patch header: {old}')
-              content = content.replace(old, new, 1)
+              if old in content:
+                  content = content.replace(old, new, 1)
           path.write_text(content, encoding='utf-8')
           PY
-          git apply --check --verbose .issue513-audit-fixes.patch
+          set +e
+          git apply --check --verbose .issue513-audit-fixes.patch > .issue513-patch-diagnostic.txt 2>&1
+          status=$?
+          set -e
+          cat .issue513-patch-diagnostic.txt
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add .issue513-audit-fixes.patch
-          git commit -m "chore: repair issue 513 audit patch"
+          git add .issue513-audit-fixes.patch .issue513-patch-diagnostic.txt
+          git commit -m "chore: persist repaired issue 513 patch diagnostic"
           git push origin HEAD:feat/513-csv-value-inference
+          exit $status
