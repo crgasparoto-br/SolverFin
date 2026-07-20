@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { closePool, query } from "./db.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import type { ApiRequest, ApiResponse } from "./router.js";
+import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 void main()
   .catch((error: unknown) => {
@@ -213,7 +213,8 @@ async function apiRequest(
     headers: { authorization: `Bearer ${token}` },
     body,
   };
-  const response = await handleImportBatchesApiRequest(request);
+  const response =
+    (await handleImportBatchesApiRequest(request)) ?? (await handleApiRequest(request));
   assert.ok(response, `${method} ${path} should be handled`);
   return response;
 }
