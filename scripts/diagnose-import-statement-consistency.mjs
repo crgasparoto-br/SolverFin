@@ -27,12 +27,25 @@ try {
         on linked."organizationId" = s."organizationId"
        and linked."financialProfileId" = s."financialProfileId"
        and linked."aiSuggestionId" = s."id"
+      left join "AiSuggestion" reconciliation
+        on reconciliation."organizationId" = s."organizationId"
+       and reconciliation."financialProfileId" = s."financialProfileId"
+       and reconciliation."sourceSuggestionId" = s."id"
+       and reconciliation."kind" = 'RECONCILIATION'
+       and reconciliation."status" = 'APPROVED'
      where s."kind" = 'TRANSACTION_EXTRACTION'
        and s."status" = 'APPROVED'
        and (
          s."targetEntityId" is null
          or target."id" is null
          or (linked."id" is not null and linked."id" <> target."id")
+         or (
+           reconciliation."id" is not null
+           and (
+             reconciliation."payload"->>'targetTransactionId' is null
+             or reconciliation."payload"->>'targetTransactionId' <> target."id"::text
+           )
+         )
        )
   `);
   const count = result.rows[0]?.count ?? 0;
