@@ -9,9 +9,7 @@ const expectZero = process.argv.includes("--expect-zero");
 const json = process.argv.includes("--json");
 
 if (!connectionString) {
-  console.error(
-    "DATABASE_URL is required for the read-only import consistency diagnostic.",
-  );
+  console.error("DATABASE_URL is required for the read-only import consistency diagnostic.");
   process.exit(1);
 }
 
@@ -54,10 +52,7 @@ try {
   const output = { approvedImportSuggestionsWithoutTransaction: count };
 
   if (json) console.log(JSON.stringify(output));
-  else
-    console.log(
-      `[import-statement-diagnostic] inconsistent approved suggestions: ${count}`,
-    );
+  else console.log(`[import-statement-diagnostic] inconsistent approved suggestions: ${count}`);
 
   if (expectZero && count !== 0) process.exitCode = 1;
 } finally {
