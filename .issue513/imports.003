@@ -1,0 +1,81 @@
+zero" };
+  const signedAmountMinor = Math.round(parsedValue * 100);
+  if (!Number.isSafeInteger(signedAmountMinor)) return { state: "invalid" };
+  if (signedAmountMinor === 0) return { state: "zero" };
+  return { state: "valid", amountMinor: Math.abs(signedAmountMinor), signedAmountMinor };
+}
+
+function parseTransactionKind(
+  value: string | undefined,
+  signedAmountMinor: number | undefined,
+): TransactionKind | undefined {
+  const normalizedValue = normalizeDescription(value)?.toLowerCase();
+  if (["income", "receita", "credit", "credito", "crédito"].includes(normalizedValue ?? ""))
+    return "income";
+  if (["expense", "despesa", "debit", "debito", "débito"].includes(normalizedValue ?? ""))
+    return "expense";
+  if (signedAmountMinor === undefined) return undefined;
+  return signedAmountMinor < 0 ? "expense" : "income";
+}
+
+function parseOfxTransactionKind(
+  trnType: string | undefined,
+  signedAmountMinor: number | undefined,
+): TransactionKind | undefined {
+  const normalizedType = normalizeDescription(trnType)?.toUpperCase();
+  if (normalizedType === "CREDIT" || normalizedType === "DEP") return "income";
+  if (normalizedType === "DEBIT" || normalizedType === "PAYMENT" || normalizedType === "ATM")
+    return "expense";
+  return parseTransactionKind(undefined, signedAmountMinor);
+}
+
+function readOfxTag(block: string, tagName: string): string | undefined {
+  const expression = new RegExp(`<${tagName}>([^<\\r\\n]+)`, "i");
+  const match = expression.exec(block);
+  return normalizeDescription(match?.[1]);
+}
+
+function canonicalMapping(mapping: CsvImportMapping | undefined): string {
+  if (mapping === undefined) return "";
+  if (isV2Mapping(mapping)) {
+    return mapping.valueStrategy === "signed"
+      ? [2, "signed", mapping.date, mapping.description, mapping.amount]
+          .map((value) => value ?? "")
+          .join("|")
+      : [2, "split", mapping.date, mapping.description, mapping.incomeAmount, mapping.expenseAmount]
+          .map((value) => value ?? "")
+          .join("|");
+  }
+  return [1, mapping.date, mapping.description, mapping.amount, mapping.kind, mapping.externalId]
+    .map((value) => value ?? "")
+    .join("|");
+}
+
+function canonicalLegacyMapping(mapping: CsvImportMapping | undefined): string {
+  if (mapping === undefined) return "";
+  if (isV2Mapping(mapping)) return canonicalMapping(mapping);
+  return [mapping.date, mapping.description, mapping.amount, mapping.kind, mapping.externalId]
+    .map((value) => value ?? "")
+    .join("|");
+}
+
+function removeItem<T>(items: T[], item: T): void {
+  const index = items.indexOf(item);
+  if (index >= 0) items.splice(index, 1);
+}
+
+function unique<T>(items: readonly T[]): T[] {
+  return [...new Set(items)];
+}
+
+function isString(value: string | undefined): value is string {
+  return typeof value === "string";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
