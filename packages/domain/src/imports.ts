@@ -18,7 +18,15 @@ export type ImportPreviewState = "ready" | "mapping_required" | "blocked";
 export type ImportProblemSeverity = "error" | "warning";
 export type ImportSuggestionStatus = "pending_review" | "duplicate";
 export type CsvDelimiter = "," | ";";
-export type CsvRequiredField = "date" | "description" | "amount";
+export type CsvValueStrategy = "signed" | "split";
+export type CsvRequiredField =
+  | "date"
+  | "description"
+  | "valueStrategy"
+  | "amount"
+  | "incomeAmount"
+  | "expenseAmount";
+export type CsvAmbiguousField = CsvRequiredField;
 
 export type ImportFileErrorCode =
   | "IMPORT_FILE_EMPTY"
@@ -56,12 +64,41 @@ export interface ImportFileInput {
   defaultAccountId?: EntityId;
 }
 
-export interface CsvImportMapping {
-  date?: string;
-  description?: string;
-  amount?: string;
-  kind?: string;
-  externalId?: string;
+export interface CsvLegacyImportMapping {
+  version?: 1;
+  date?: string | undefined;
+  description?: string | undefined;
+  amount?: string | undefined;
+  kind?: string | undefined;
+  externalId?: string | undefined;
+}
+
+export interface CsvSignedAmountMappingV2 {
+  version: 2;
+  date?: string | undefined;
+  description?: string | undefined;
+  valueStrategy: "signed";
+  amount?: string | undefined;
+}
+
+export interface CsvSplitAmountMappingV2 {
+  version: 2;
+  date?: string | undefined;
+  description?: string | undefined;
+  valueStrategy: "split";
+  incomeAmount?: string | undefined;
+  expenseAmount?: string | undefined;
+}
+
+export type CsvImportMapping =
+  | CsvLegacyImportMapping
+  | CsvSignedAmountMappingV2
+  | CsvSplitAmountMappingV2;
+
+export interface CsvImportInterpretation {
+  source: string;
+  target: "date" | "description" | "income" | "expense" | "amount" | "ignored";
+  label: string;
 }
 
 export interface CsvImportPreviewSample {
@@ -78,8 +115,11 @@ export interface CsvImportPreviewMetadata {
   delimiterCandidates: readonly CsvDelimiter[];
   headers: readonly string[];
   mapping: CsvImportMapping;
+  valueStrategy?: CsvValueStrategy | undefined;
   missingRequiredFields: readonly CsvRequiredField[];
-  ambiguousFields: readonly (keyof CsvImportMapping)[];
+  ambiguousFields: readonly CsvAmbiguousField[];
+  interpretation: readonly CsvImportInterpretation[];
+  ignoredHeaders: readonly string[];
   sampleRows: readonly CsvImportPreviewSample[];
 }
 
@@ -119,7 +159,7 @@ export interface ImportTransactionSuggestion extends TenantScoped {
   currency: string;
   accountId?: EntityId;
   categoryId?: EntityId;
-  externalId?: string;
+  externalId?: string | undefined;
 }
 
 export interface ImportPreview {
@@ -160,17 +200,73 @@ interface CsvParseResult {
   mappingRequired: boolean;
 }
 
+interface CsvMappingResolution {
+  mapping: CsvImportMapping;
+  ambiguousFields: CsvAmbiguousField[];
+  missingRequiredFields: CsvRequiredField[];
+}
+
+interface CsvColumnIndexes {
+  dateIndex: number;
+  descriptionIndex: number;
+  strategy: CsvValueStrategy;
+  amountIndex?: number | undefined;
+  incomeAmountIndex?: number | undefined;
+  expenseAmountIndex?: number | undefined;
+  kindIndex?: number | undefined;
+  externalIdIndex?: number | undefined;
+  legacy: boolean;
+}
+
+interface ParsedAmount {
+  amountMinor?: number;
+  signedAmountMinor?: number;
+  state: "valid" | "empty" | "zero" | "invalid";
+}
+
 const defaultMaxSizeInBytes = 5 * 1024 * 1024;
 const defaultCurrency = "BRL";
-const requiredFields: readonly CsvRequiredField[] = ["date", "description", "amount"];
-const csvAliases: Readonly<Record<keyof CsvImportMapping, readonly string[]>> = {
-  date: ["date", "data", "data do movimento", "data movimento", "dtposted"],
-  description: ["description", "descricao", "descrição", "historico", "histórico", "memo", "name"],
-  amount: ["amount", "valor", "value", "trnamt"],
-  kind: ["kind", "tipo", "natureza", "trntype"],
-  externalId: ["externalid", "external id", "id externo", "id", "fitid", "identificador"],
-};
 
+const primaryDateAliases = [
+  "data lancamento",
+  "data do lancamento",
+  "data movimento",
+  "data do movimento",
+  "data transacao",
+  "data da transacao",
+  "transaction date",
+  "movement date",
+];
+const genericDateAliases = ["date", "data", "dtposted"];
+const fallbackDateAliases = [
+  "data contabil",
+  "data de contabilizacao",
+  "data contabilizacao",
+  "posting date",
+  "accounting date",
+];
+const primaryDescriptionAliases = ["description", "descricao", "historico", "memo"];
+const fallbackDescriptionAliases = ["titulo", "title", "name", "nome"];
+const signedAmountAliases = ["amount", "valor", "value", "trnamt", "valor lancamento"];
+const incomeAmountAliases = [
+  "entrada",
+  "credito",
+  "credit",
+  "receita",
+  "income",
+  "valor entrada",
+  "valor credito",
+];
+const expenseAmountAliases = [
+  "saida",
+  "debito",
+  "debit",
+  "despesa",
+  "expense",
+  "valor saida",
+  "valor debito",
+];
+const balanceAliases = ["saldo", "saldo do dia", "balance", "saldo atual", "saldo final"];
 export function previewImportedStatement(input: ImportFileInput): ImportPreview {
   assertContentSize(input.content, input.maxSizeInBytes ?? defaultMaxSizeInBytes);
   assertSupportedTextEncoding(input.content);
@@ -182,25 +278,22 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
   const suggestions: ImportTransactionSuggestion[] = [];
 
   if (parsed.mappingRequired) {
-    const batch = buildBatchDraft(input, kind, 0, suggestions, problems, parsed.metadata);
-
+    const metadata = parsed.metadata as CsvImportPreviewMetadata;
+    const batch = buildBatchDraft(input, kind, 0, suggestions, problems, metadata);
     return {
       state: "mapping_required",
       persisted: false,
       batch,
       suggestions,
       problems,
-      ...(parsed.metadata === undefined ? {} : { csv: parsed.metadata }),
+      csv: metadata,
     };
   }
 
   for (const row of parsed.rows) {
     const rowProblems = validateParsedRow(row);
     problems.push(...rowProblems);
-
-    if (rowProblems.some((problem) => problem.severity === "error")) {
-      continue;
-    }
+    if (rowProblems.some((problem) => problem.severity === "error")) continue;
 
     const sourceHash = buildStableImportHash(
       `${kind}:${input.context.organizationId}:${input.context.financialProfileId}:${row.rawFingerprintSeed}`,
@@ -228,7 +321,6 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
     problems,
     parsed.metadata,
   );
-
   const csv =
     parsed.metadata === undefined
       ? undefined
@@ -256,12 +348,10 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
 
 export function buildStableImportHash(value: string): string {
   let hash = 0x811c9dc5;
-
   for (let index = 0; index < value.length; index += 1) {
     hash ^= value.charCodeAt(index);
     hash = Math.imul(hash, 0x01000193);
   }
-
   return `fnv1a-${(hash >>> 0).toString(16).padStart(8, "0")}`;
 }
 
@@ -286,7 +376,7 @@ export function buildLegacyImportBatchHash(input: {
       input.content,
       input.defaultAccountId ?? "",
       input.csvDelimiter ?? "",
-      canonicalMapping(input.csvMapping),
+      canonicalLegacyMapping(input.csvMapping),
     ].join(":"),
   );
 }
@@ -300,7 +390,6 @@ export function buildTransactionExtractionPayload(
       "A importacao CSV aceita apenas receitas e despesas.",
     );
   }
-
   return {
     payloadVersion: 1,
     sourceRowNumber: suggestion.sourceRowNumber,
@@ -330,7 +419,6 @@ export function parseTransactionExtractionPayload(
   if (typeof value.currency !== "string" || value.currency.length !== 3) return undefined;
   if (typeof value.description !== "string" || value.description.trim().length === 0)
     return undefined;
-
   return {
     payloadVersion: 1,
     sourceRowNumber: Number(value.sourceRowNumber),
@@ -384,7 +472,6 @@ export function parseDeterministicReviewPayload(
   if (typeof value.targetTransactionId !== "string" || value.targetTransactionId.length === 0)
     return undefined;
   if (!isStringArray(value.reasons) || !isStringArray(value.conflicts)) return undefined;
-
   return {
     payloadVersion: 1,
     sourceSuggestionId: value.sourceSuggestionId,
@@ -398,16 +485,12 @@ export function parseDeterministicReviewPayload(
 function parseImportRows(
   kind: ImportFileKind,
   input: ImportFileInput,
-): { rows: ParsedImportRow[]; metadata?: CsvImportPreviewMetadata; mappingRequired: boolean } {
-  if (kind === "csv") {
-    const result = parseCsvRows(input);
-    return {
-      rows: result.rows,
-      metadata: result.metadata,
-      mappingRequired: result.mappingRequired,
-    };
-  }
-
+): {
+  rows: ParsedImportRow[];
+  metadata?: CsvImportPreviewMetadata;
+  mappingRequired: boolean;
+} {
+  if (kind === "csv") return parseCsvRows(input);
   return { rows: parseOfxRows(input.content), mappingRequired: false };
 }
 
@@ -416,42 +499,47 @@ function parseCsvRows(input: ImportFileInput): CsvParseResult {
   const recordProbe = parseCsvTable(normalizedContent, ",").records.filter((record) =>
     record.values.some((value) => value.trim().length > 0),
   );
-  if (recordProbe.length === 0) {
+  if (recordProbe.length === 0)
     throw new ImportFileError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
-  }
   if (recordProbe.length === 1) {
     throw new ImportFileError(
       "IMPORT_CSV_NO_DATA_ROWS",
       "CSV precisa ter cabecalho e ao menos uma linha de movimento.",
     );
   }
+
   const delimiterResolution = resolveCsvDelimiter(
     normalizedContent,
     input.csvDelimiter,
     input.csvMapping,
   );
-
   if (delimiterResolution.delimiter === undefined) {
-    const metadata: CsvImportPreviewMetadata = {
-      delimiterCandidates: delimiterResolution.candidates,
-      headers: delimiterResolution.headers,
-      mapping: input.csvMapping ?? {},
-      missingRequiredFields: requiredFields,
-      ambiguousFields: [],
-      sampleRows: [],
+    const mapping = normalizeSuppliedMapping(input.csvMapping);
+    return {
+      rows: [],
+      metadata: {
+        delimiterCandidates: delimiterResolution.candidates,
+        headers: delimiterResolution.headers,
+        mapping,
+        ...(input.csvMapping === undefined || getValueStrategy(mapping) === undefined
+          ? {}
+          : { valueStrategy: getValueStrategy(mapping) }),
+        missingRequiredFields: ["date", "description", "valueStrategy"],
+        ambiguousFields: [],
+        interpretation: [],
+        ignoredHeaders: findBalanceHeaders(delimiterResolution.headers),
+        sampleRows: [],
+      },
+      mappingRequired: true,
     };
-    return { rows: [], metadata, mappingRequired: true };
   }
 
   const table = parseCsvTable(normalizedContent, delimiterResolution.delimiter);
   const nonEmptyRecords = table.records.filter((record) =>
     record.values.some((value) => value.trim().length > 0),
   );
-
-  if (nonEmptyRecords.length === 0) {
+  if (nonEmptyRecords.length === 0)
     throw new ImportFileError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
-  }
-
   if (nonEmptyRecords.length === 1) {
     throw new ImportFileError(
       "IMPORT_CSV_NO_DATA_ROWS",
@@ -464,88 +552,186 @@ function parseCsvRows(input: ImportFileInput): CsvParseResult {
     index === 0 ? stripUtf8Bom(header).trim() : header.trim(),
   );
   assertCsvHeaders(headers);
-  const mappingResolution = resolveCsvMapping(headers, input.csvMapping);
-  assertNoDuplicateCsvMapping(mappingResolution.mapping);
-  const missingRequiredFields = requiredFields.filter(
-    (field) => mappingResolution.mapping[field] === undefined,
-  );
-  const dataRecords = nonEmptyRecords.slice(1);
+  const resolution = resolveCsvMapping(headers, input.csvMapping);
+  assertNoDuplicateCsvMapping(resolution.mapping);
+  assertNoBalanceValueMapping(resolution.mapping);
+  const ignoredHeaders = findBalanceHeaders(headers);
   const metadata: CsvImportPreviewMetadata = {
     delimiter: table.delimiter,
     delimiterCandidates: [table.delimiter],
     headers,
-    mapping: mappingResolution.mapping,
-    missingRequiredFields,
-    ambiguousFields: mappingResolution.ambiguousFields,
+    mapping: resolution.mapping,
+    ...(resolveDetectedValueStrategy(resolution) === undefined
+      ? {}
+      : { valueStrategy: resolveDetectedValueStrategy(resolution) }),
+    missingRequiredFields: resolution.missingRequiredFields,
+    ambiguousFields: resolution.ambiguousFields,
+    interpretation: buildInterpretation(resolution.mapping, ignoredHeaders),
+    ignoredHeaders,
     sampleRows: [],
   };
 
-  if (missingRequiredFields.length > 0 || mappingResolution.ambiguousFields.length > 0) {
+  if (resolution.missingRequiredFields.length > 0 || resolution.ambiguousFields.length > 0) {
     return { rows: [], metadata, mappingRequired: true };
   }
 
-  const columns = resolveCsvColumns(headers, mappingResolution.mapping);
-  const rows = dataRecords.map((record) => {
-    if (record.values.length !== headers.length) {
-      return {
-        rowNumber: record.rowNumber,
-        occurredOn: undefined,
-        description: undefined,
-        amountMinor: undefined,
-        kind: undefined,
-        accountId: input.defaultAccountId,
-        categoryId: undefined,
-        externalId: undefined,
-        rawFingerprintSeed: "",
-        structuralProblem: buildRowError(
-          record.rowNumber,
-          "IMPORT_CSV_COLUMN_COUNT_MISMATCH",
-          `A linha possui ${record.values.length} coluna(s), mas o cabecalho possui ${headers.length}. Corrija o arquivo e reimporte.`,
-        ),
-      } satisfies ParsedImportRow;
-    }
-
-    const values = record.values;
-    const amountText = readCsvValue(values, columns.amountIndex);
-    const parsedAmount = parseAmountMinor(amountText);
-    const kindText = readOptionalCsvValue(values, columns.kindIndex);
-    const kind = parseTransactionKind(kindText, parsedAmount.signedAmountMinor);
-    const occurredOnText = readCsvValue(values, columns.dateIndex);
-    const description = normalizeDescription(readCsvValue(values, columns.descriptionIndex));
-    const externalId = readOptionalCsvValue(values, columns.externalIdIndex);
-
-    return {
-      rowNumber: record.rowNumber,
-      occurredOn: normalizeDate(occurredOnText),
-      description,
-      amountMinor: parsedAmount.amountMinor,
-      kind,
-      accountId: input.defaultAccountId,
-      categoryId: undefined,
-      externalId,
-      rawFingerprintSeed: [
-        normalizeDate(occurredOnText) ?? occurredOnText ?? "",
-        description ?? "",
-        parsedAmount.signedAmountMinor ?? amountText ?? "",
-        kind ?? "",
-        externalId ?? "",
-      ].join("|"),
-    } satisfies ParsedImportRow;
-  });
-
+  const columns = resolveCsvColumns(headers, resolution.mapping);
+  const rows = nonEmptyRecords
+    .slice(1)
+    .map((record) => parseCsvRecord(record, headers, columns, input));
   return { rows, metadata, mappingRequired: false };
+}
+
+function parseCsvRecord(
+  record: CsvRecord,
+  headers: readonly string[],
+  columns: CsvColumnIndexes,
+  input: ImportFileInput,
+): ParsedImportRow {
+  if (record.values.length !== headers.length) {
+    return invalidStructuralRow(
+      record.rowNumber,
+      input.defaultAccountId,
+      "IMPORT_CSV_COLUMN_COUNT_MISMATCH",
+      `A linha possui ${record.values.length} coluna(s), mas o cabecalho possui ${headers.length}. Corrija o arquivo e reimporte.`,
+    );
+  }
+
+  const values = record.values;
+  const occurredOnText = readCsvValue(values, columns.dateIndex);
+  const description = normalizeDescription(readCsvValue(values, columns.descriptionIndex));
+  let amountMinor: number | undefined;
+  let kind: TransactionKind | undefined;
+  let amountSeed = "";
+  let structuralProblem: ImportProblem | undefined;
+
+  if (columns.strategy === "signed") {
+    const amountText = readCsvValue(values, requireIndex(columns.amountIndex));
+    const parsed = parseAmountMinor(amountText);
+    amountSeed = parsed.signedAmountMinor?.toString() ?? amountText ?? "";
+    if (parsed.state !== "valid") {
+      structuralProblem = amountProblem(record.rowNumber, parsed.state, "valor");
+    } else {
+      amountMinor = parsed.amountMinor;
+      kind = columns.legacy
+        ? parseTransactionKind(
+            readOptionalCsvValue(values, columns.kindIndex),
+            parsed.signedAmountMinor,
+          )
+        : parsed.signedAmountMinor! < 0
+          ? "expense"
+          : "income";
+    }
+  } else {
+    const incomeText = readOptionalCsvValue(values, columns.incomeAmountIndex);
+    const expenseText = readOptionalCsvValue(values, columns.expenseAmountIndex);
+    const income = parseAmountMinor(incomeText);
+    const expense = parseAmountMinor(expenseText);
+    amountSeed = `${income.signedAmountMinor ?? incomeText ?? ""}|${expense.signedAmountMinor ?? expenseText ?? ""}`;
+    const incomePresent = income.state === "valid";
+    const expensePresent = expense.state === "valid";
+    if (income.state === "invalid")
+      structuralProblem = amountProblem(record.rowNumber, "invalid", "entrada");
+    else if (expense.state === "invalid")
+      structuralProblem = amountProblem(record.rowNumber, "invalid", "saida");
+    else if (income.state === "zero")
+      structuralProblem = amountProblem(record.rowNumber, "zero", "entrada");
+    else if (expense.state === "zero")
+      structuralProblem = amountProblem(record.rowNumber, "zero", "saida");
+    else if (incomePresent && expensePresent) {
+      structuralProblem = buildRowError(
+        record.rowNumber,
+        "IMPORT_ROW_SPLIT_AMOUNT_CONFLICT",
+        "Informe somente entrada ou somente saida nesta linha.",
+      );
+    } else if (!incomePresent && !expensePresent) {
+      structuralProblem = buildRowError(
+        record.rowNumber,
+        "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED",
+        "Informe uma entrada ou uma saida diferente de zero.",
+      );
+    } else if (incomePresent) {
+      amountMinor = income.amountMinor;
+      kind = "income";
+    } else {
+      amountMinor = expense.amountMinor;
+      kind = "expense";
+    }
+  }
+
+  const externalId = columns.legacy
+    ? readOptionalCsvValue(values, columns.externalIdIndex)
+    : undefined;
+  return {
+    rowNumber: record.rowNumber,
+    occurredOn: normalizeDate(occurredOnText),
+    description,
+    amountMinor,
+    kind,
+    accountId: input.defaultAccountId,
+    categoryId: undefined,
+    externalId,
+    rawFingerprintSeed: [
+      normalizeDate(occurredOnText) ?? occurredOnText ?? "",
+      description ?? "",
+      amountSeed,
+      kind ?? "",
+      externalId ?? "",
+    ].join("|"),
+    ...(structuralProblem === undefined ? {} : { structuralProblem }),
+  };
+}
+
+function invalidStructuralRow(
+  rowNumber: number,
+  accountId: EntityId | undefined,
+  code: string,
+  message: string,
+): ParsedImportRow {
+  return {
+    rowNumber,
+    occurredOn: undefined,
+    description: undefined,
+    amountMinor: undefined,
+    kind: undefined,
+    accountId,
+    categoryId: undefined,
+    externalId: undefined,
+    rawFingerprintSeed: "",
+    structuralProblem: buildRowError(rowNumber, code, message),
+  };
+}
+
+function amountProblem(
+  rowNumber: number,
+  state: Exclude<ParsedAmount["state"], "valid">,
+  field: string,
+): ImportProblem {
+  if (state === "empty") {
+    return buildRowError(rowNumber, "IMPORT_ROW_AMOUNT_REQUIRED", `Informe ${field} nesta linha.`);
+  }
+  if (state === "zero") {
+    return buildRowError(
+      rowNumber,
+      "IMPORT_ROW_AMOUNT_ZERO",
+      `${field[0]?.toUpperCase()}${field.slice(1)} precisa ser diferente de zero.`,
+    );
+  }
+  return buildRowError(
+    rowNumber,
+    "IMPORT_ROW_NUMBER_INVALID",
+    `${field[0]?.toUpperCase()}${field.slice(1)} possui formato numerico invalido.`,
+  );
 }
 
 function parseOfxRows(content: string): ParsedImportRow[] {
   const blocks = [...content.matchAll(/<STMTTRN>([\s\S]*?)(?=<STMTTRN>|<\/BANKTRANLIST>|$)/gi)];
-
   if (blocks.length === 0) {
     throw new ImportFileError(
       "IMPORT_OFX_INVALID",
       "OFX precisa conter ao menos uma transacao STMTTRN.",
     );
   }
-
   return blocks.map((block, index) => {
     const rawBlock = block[1] ?? "";
     const amountText = readOfxTag(rawBlock, "TRNAMT");
@@ -554,7 +740,6 @@ function parseOfxRows(content: string): ParsedImportRow[] {
     const name = readOfxTag(rawBlock, "NAME");
     const memo = readOfxTag(rawBlock, "MEMO");
     const fitId = readOfxTag(rawBlock, "FITID");
-
     return {
       rowNumber: index + 1,
       occurredOn: normalizeOfxDate(readOfxTag(rawBlock, "DTPOSTED")),
@@ -590,11 +775,9 @@ function buildSuggestion(
     amountMinor: row.amountMinor as number,
     currency: defaultCurrency,
   };
-
   if (row.accountId !== undefined) suggestion.accountId = row.accountId;
   if (row.categoryId !== undefined) suggestion.categoryId = row.categoryId;
   if (row.externalId !== undefined) suggestion.externalId = row.externalId;
-
   return suggestion;
 }
 
@@ -621,7 +804,6 @@ function buildBatchDraft(
     csvDelimiter ?? "",
     canonicalMapping(csvMapping),
   ].join(":");
-
   return {
     organizationId: input.context.organizationId,
     financialProfileId: input.context.financialProfileId,
@@ -642,8 +824,10 @@ function buildBatchDraft(
 }
 
 function validateParsedRow(row: ParsedImportRow): ImportProblem[] {
-  if (row.structuralProblem !== undefined) return [row.structuralProblem];
-  const problems: ImportProblem[] = [];
+  if (row.structuralProblem?.code === "IMPORT_CSV_COLUMN_COUNT_MISMATCH") {
+    return [row.structuralProblem];
+  }
+  const problems: ImportProblem[] = row.structuralProblem ? [row.structuralProblem] : [];
   if (row.occurredOn === undefined)
     problems.push(
       buildRowError(row.rowNumber, "IMPORT_ROW_DATE_INVALID", "Informe uma data valida."),
@@ -652,13 +836,17 @@ function validateParsedRow(row: ParsedImportRow): ImportProblem[] {
     problems.push(
       buildRowError(row.rowNumber, "IMPORT_ROW_DESCRIPTION_REQUIRED", "Informe uma descricao."),
     );
-  if (row.amountMinor === undefined)
+  if (row.amountMinor === undefined && row.structuralProblem === undefined)
     problems.push(
       buildRowError(row.rowNumber, "IMPORT_ROW_AMOUNT_INVALID", "Informe um valor valido."),
     );
-  if (row.kind === undefined)
+  if (row.kind === undefined && row.structuralProblem === undefined)
     problems.push(
-      buildRowError(row.rowNumber, "IMPORT_ROW_KIND_INVALID", "Informe receita ou despesa."),
+      buildRowError(
+        row.rowNumber,
+        "IMPORT_ROW_KIND_INVALID",
+        "Nao foi possivel inferir receita ou despesa.",
+      ),
     );
   return problems;
 }
@@ -668,10 +856,8 @@ function buildRowError(rowNumber: number, code: string, message: string): Import
 }
 
 function assertContentSize(content: string, maxSizeInBytes: number): void {
-  if (content.trim().length === 0) {
+  if (content.trim().length === 0)
     throw new ImportFileError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
-  }
-
   if (Buffer.byteLength(content, "utf8") > maxSizeInBytes) {
     throw new ImportFileError("IMPORT_FILE_TOO_LARGE", "Arquivo excede o tamanho permitido.");
   }
@@ -702,84 +888,430 @@ interface CsvDelimiterResolution {
   headers: string[];
 }
 
-interface CsvDelimiterAnalysis {
-  delimiter: CsvDelimiter;
-  headers: string[];
-  structurallyConsistent: boolean;
-  mappable: boolean;
-}
-
 function resolveCsvDelimiter(
   content: string,
   requested: CsvDelimiter | undefined,
   suppliedMapping: CsvImportMapping | undefined,
 ): CsvDelimiterResolution {
-  if (requested !== undefined) {
+  if (requested !== undefined)
     return { delimiter: requested, candidates: [requested], headers: [] };
-  }
-
-  const analyses = ([",", ";"] as const).map((delimiter) =>
-    analyzeCsvDelimiter(content, delimiter, suppliedMapping),
-  );
-  const plausible = analyses.filter(
-    (analysis) => analysis.structurallyConsistent && analysis.mappable,
-  );
+  const analyses = ([",", ";"] as const).map((delimiter) => {
+    const table = parseCsvTable(content, delimiter);
+    const records = table.records.filter((record) =>
+      record.values.some((value) => value.trim().length > 0),
+    );
+    const headerRecord = records[0];
+    const headers =
+      headerRecord?.values.map((header, index) =>
+        index === 0 ? stripUtf8Bom(header).trim() : header.trim(),
+      ) ?? [];
+    const expectedColumns = headers.length;
+    const structurallyConsistent =
+      expectedColumns > 1 &&
+      records.slice(1).length > 0 &&
+      records.slice(1).some((record) => record.values.length === expectedColumns);
+    let mappable = false;
+    try {
+      const resolution = resolveCsvMapping(headers, suppliedMapping);
+      mappable =
+        suppliedMapping !== undefined ||
+        resolution.missingRequiredFields.length < 3 ||
+        resolution.ambiguousFields.length > 0;
+    } catch {
+      mappable = false;
+    }
+    return { delimiter, headers, structurallyConsistent, mappable };
+  });
+  const plausible = analyses.filter((item) => item.structurallyConsistent && item.mappable);
   if (plausible.length === 1) {
-    const selected = plausible[0] as CsvDelimiterAnalysis;
+    const selected = plausible[0]!;
     return {
       delimiter: selected.delimiter,
       candidates: [selected.delimiter],
       headers: selected.headers,
     };
   }
-
   const candidates = analyses
     .filter((analysis) => analysis.headers.length > 1)
     .map((analysis) => analysis.delimiter);
   const bestHeaders =
-    analyses.slice().sort((left, right) => right.headers.length - left.headers.length)[0]
-      ?.headers ?? [];
+    analyses.slice().sort((a, b) => b.headers.length - a.headers.length)[0]?.headers ?? [];
   return {
     candidates: candidates.length > 0 ? candidates : [",", ";"],
     headers: bestHeaders,
   };
 }
 
-function analyzeCsvDelimiter(
-  content: string,
-  delimiter: CsvDelimiter,
-  suppliedMapping: CsvImportMapping | undefined,
-): CsvDelimiterAnalysis {
-  const table = parseCsvTable(content, delimiter);
-  const records = table.records.filter((record) =>
-    record.values.some((value) => value.trim().length > 0),
+function resolveCsvMapping(
+  headers: readonly string[],
+  supplied: CsvImportMapping | undefined,
+): CsvMappingResolution {
+  if (supplied !== undefined) return resolveSuppliedCsvMapping(headers, supplied);
+
+  const date = resolvePrioritizedHeader(
+    headers,
+    primaryDateAliases,
+    genericDateAliases,
+    fallbackDateAliases,
   );
-  const headerRecord = records[0];
-  if (headerRecord === undefined) {
-    return { delimiter, headers: [], structurallyConsistent: false, mappable: false };
-  }
-  const headers = headerRecord.values.map((header, index) =>
-    index === 0 ? stripUtf8Bom(header).trim() : header.trim(),
+  const description = resolvePrioritizedHeader(
+    headers,
+    primaryDescriptionAliases,
+    fallbackDescriptionAliases,
   );
-  const expectedColumns = headers.length;
-  const structurallyConsistent =
-    expectedColumns > 1 &&
-    records.slice(1).length > 0 &&
-    records.slice(1).some((record) => record.values.length === expectedColumns);
-  let mappable = false;
-  try {
-    const resolution = resolveCsvMapping(headers, suppliedMapping);
-    const recognizedRequired = requiredFields.filter(
-      (field) => resolution.mapping[field] !== undefined,
-    ).length;
-    mappable =
-      recognizedRequired > 0 ||
-      suppliedMapping !== undefined ||
-      headers.length >= requiredFields.length;
-  } catch {
-    mappable = false;
+  const signed = resolveAliasGroup(headers, signedAmountAliases);
+  const income = resolveAliasGroup(headers, incomeAmountAliases);
+  const expense = resolveAliasGroup(headers, expenseAmountAliases);
+  const ambiguousFields: CsvAmbiguousField[] = [];
+  if (date.ambiguous) ambiguousFields.push("date");
+  if (description.ambiguous) ambiguousFields.push("description");
+
+  const signedAvailable = signed.candidates.length > 0;
+  const splitAvailable = income.candidates.length > 0 || expense.candidates.length > 0;
+  let mapping: CsvImportMapping;
+  if (signedAvailable && splitAvailable) {
+    mapping = {
+      version: 2,
+      valueStrategy: "signed",
+      ...(date.header ? { date: date.header } : {}),
+      ...(description.header ? { description: description.header } : {}),
+    };
+    ambiguousFields.push("valueStrategy");
+  } else if (signedAvailable) {
+    mapping = {
+      version: 2,
+      valueStrategy: "signed",
+      ...(date.header ? { date: date.header } : {}),
+      ...(description.header ? { description: description.header } : {}),
+      ...(signed.candidates.length === 1 ? { amount: signed.candidates[0] } : {}),
+    };
+    if (signed.candidates.length > 1) ambiguousFields.push("amount");
+  } else {
+    mapping = {
+      version: 2,
+      valueStrategy: "split",
+      ...(date.header ? { date: date.header } : {}),
+      ...(description.header ? { description: description.header } : {}),
+      ...(income.candidates.length === 1 ? { incomeAmount: income.candidates[0] } : {}),
+      ...(expense.candidates.length === 1 ? { expenseAmount: expense.candidates[0] } : {}),
+    };
+    if (income.candidates.length > 1) ambiguousFields.push("incomeAmount");
+    if (expense.candidates.length > 1) ambiguousFields.push("expenseAmount");
   }
-  return { delimiter, headers, structurallyConsistent, mappable };
+
+  const missingRequiredFields = collectMissingRequiredFields(mapping);
+  if (!signedAvailable && !splitAvailable) {
+    removeItem(missingRequiredFields, "incomeAmount");
+    removeItem(missingRequiredFields, "expenseAmount");
+    if (!missingRequiredFields.includes("valueStrategy"))
+      missingRequiredFields.push("valueStrategy");
+  }
+  return {
+    mapping,
+    ambiguousFields: unique(ambiguousFields),
+    missingRequiredFields,
+  };
+}
+
+function resolveSuppliedCsvMapping(
+  headers: readonly string[],
+  supplied: CsvImportMapping,
+): CsvMappingResolution {
+  const normalized = normalizeSuppliedMapping(supplied);
+  const ambiguousFields: CsvAmbiguousField[] = [];
+  const mapHeader = (value: string | undefined): string | undefined => {
+    if (value === undefined) return undefined;
+    const candidates = headers.filter(
+      (header) => normalizeHeaderName(header) === normalizeHeaderName(value),
+    );
+    return candidates.length === 1 ? candidates[0] : undefined;
+  };
+
+  if (isV2Mapping(normalized)) {
+    if (normalized.valueStrategy === "signed") {
+      const mappedDate = mapHeader(normalized.date);
+      const mappedDescription = mapHeader(normalized.description);
+      const mappedAmount = mapHeader(normalized.amount);
+      const mapping: CsvSignedAmountMappingV2 = {
+        version: 2,
+        valueStrategy: "signed",
+        ...(mappedDate === undefined ? {} : { date: mappedDate }),
+        ...(mappedDescription === undefined ? {} : { description: mappedDescription }),
+        ...(mappedAmount === undefined ? {} : { amount: mappedAmount }),
+      };
+      return {
+        mapping,
+        ambiguousFields,
+        missingRequiredFields: collectMissingRequiredFields(mapping),
+      };
+    }
+    const mappedDate = mapHeader(normalized.date);
+    const mappedDescription = mapHeader(normalized.description);
+    const mappedIncomeAmount = mapHeader(normalized.incomeAmount);
+    const mappedExpenseAmount = mapHeader(normalized.expenseAmount);
+    const mapping: CsvSplitAmountMappingV2 = {
+      version: 2,
+      valueStrategy: "split",
+      ...(mappedDate === undefined ? {} : { date: mappedDate }),
+      ...(mappedDescription === undefined ? {} : { description: mappedDescription }),
+      ...(mappedIncomeAmount === undefined ? {} : { incomeAmount: mappedIncomeAmount }),
+      ...(mappedExpenseAmount === undefined ? {} : { expenseAmount: mappedExpenseAmount }),
+    };
+    return {
+      mapping,
+      ambiguousFields,
+      missingRequiredFields: collectMissingRequiredFields(mapping),
+    };
+  }
+
+  const mappedDate = mapHeader(normalized.date);
+  const mappedDescription = mapHeader(normalized.description);
+  const mappedAmount = mapHeader(normalized.amount);
+  const mappedKind = mapHeader(normalized.kind);
+  const mappedExternalId = mapHeader(normalized.externalId);
+  const mapping: CsvLegacyImportMapping = {
+    ...(mappedDate === undefined ? {} : { date: mappedDate }),
+    ...(mappedDescription === undefined ? {} : { description: mappedDescription }),
+    ...(mappedAmount === undefined ? {} : { amount: mappedAmount }),
+    ...(mappedKind === undefined ? {} : { kind: mappedKind }),
+    ...(mappedExternalId === undefined ? {} : { externalId: mappedExternalId }),
+  };
+  return {
+    mapping,
+    ambiguousFields,
+    missingRequiredFields: collectMissingRequiredFields(mapping),
+  };
+}
+
+function normalizeSuppliedMapping(mapping: CsvImportMapping | undefined): CsvImportMapping {
+  if (mapping === undefined) return { version: 2, valueStrategy: "signed" };
+  if (isV2Mapping(mapping)) return mapping;
+  if (mapping.kind !== undefined || mapping.externalId !== undefined || mapping.version === 1)
+    return mapping;
+  return {
+    version: 2,
+    valueStrategy: "signed",
+    ...(mapping.date === undefined ? {} : { date: mapping.date }),
+    ...(mapping.description === undefined ? {} : { description: mapping.description }),
+    ...(mapping.amount === undefined ? {} : { amount: mapping.amount }),
+  };
+}
+
+function isV2Mapping(
+  mapping: CsvImportMapping,
+): mapping is CsvSignedAmountMappingV2 | CsvSplitAmountMappingV2 {
+  return mapping.version === 2;
+}
+
+function getValueStrategy(mapping: CsvImportMapping): CsvValueStrategy | undefined {
+  return isV2Mapping(mapping) ? mapping.valueStrategy : mapping.amount ? "signed" : undefined;
+}
+
+function resolveDetectedValueStrategy(
+  resolution: CsvMappingResolution,
+): CsvValueStrategy | undefined {
+  if (
+    resolution.missingRequiredFields.includes("valueStrategy") ||
+    resolution.ambiguousFields.includes("valueStrategy")
+  )
+    return undefined;
+  return getValueStrategy(resolution.mapping);
+}
+
+function collectMissingRequiredFields(mapping: CsvImportMapping): CsvRequiredField[] {
+  const missing: CsvRequiredField[] = [];
+  if (!mapping.date) missing.push("date");
+  if (!mapping.description) missing.push("description");
+  if (isV2Mapping(mapping)) {
+    if (mapping.valueStrategy === "signed") {
+      if (!mapping.amount) missing.push("amount");
+    } else {
+      if (!mapping.incomeAmount) missing.push("incomeAmount");
+      if (!mapping.expenseAmount) missing.push("expenseAmount");
+    }
+  } else if (!mapping.amount) missing.push("amount");
+  return missing;
+}
+
+function resolvePrioritizedHeader(
+  headers: readonly string[],
+  ...aliasGroups: readonly (readonly string[])[]
+): { header?: string; ambiguous: boolean } {
+  for (const aliases of aliasGroups) {
+    const candidates = resolveAliasGroup(headers, aliases).candidates;
+    if (candidates.length === 1) return { header: candidates[0] as string, ambiguous: false };
+    if (candidates.length > 1) return { ambiguous: true };
+  }
+  return { ambiguous: false };
+}
+
+function resolveAliasGroup(
+  headers: readonly string[],
+  aliases: readonly string[],
+): { candidates: string[] } {
+  const normalizedAliases = new Set(aliases.map(normalizeAliasHeader));
+  return {
+    candidates: headers.filter((header) => normalizedAliases.has(normalizeAliasHeader(header))),
+  };
+}
+
+function assertNoDuplicateCsvMapping(mapping: CsvImportMapping): void {
+  const values = mappingValues(mapping).map(normalizeHeaderName);
+  if (new Set(values).size !== values.length) {
+    throw new ImportFileError(
+      "IMPORT_CSV_MAPPING_INVALID",
+      "A mesma coluna nao pode ser usada para mais de um campo. Revise o mapeamento.",
+    );
+  }
+}
+
+function assertNoBalanceValueMapping(mapping: CsvImportMapping): void {
+  const valueHeaders = isV2Mapping(mapping)
+    ? mapping.valueStrategy === "signed"
+      ? [mapping.amount]
+      : [mapping.incomeAmount, mapping.expenseAmount]
+    : [mapping.amount];
+  if (valueHeaders.some((header) => header !== undefined && isBalanceHeader(header))) {
+    throw new ImportFileError(
+      "IMPORT_CSV_MAPPING_INVALID",
+      "Saldo nao pode ser usado como valor de lancamento. Selecione valor, entrada ou saida.",
+    );
+  }
+}
+
+function mappingValues(mapping: CsvImportMapping): string[] {
+  if (isV2Mapping(mapping)) {
+    return mapping.valueStrategy === "signed"
+      ? [mapping.date, mapping.description, mapping.amount].filter(isString)
+      : [mapping.date, mapping.description, mapping.incomeAmount, mapping.expenseAmount].filter(
+          isString,
+        );
+  }
+  return [
+    mapping.date,
+    mapping.description,
+    mapping.amount,
+    mapping.kind,
+    mapping.externalId,
+  ].filter(isString);
+}
+
+function buildInterpretation(
+  mapping: CsvImportMapping,
+  ignoredHeaders: readonly string[],
+): CsvImportInterpretation[] {
+  const items: CsvImportInterpretation[] = [];
+  if (mapping.date) items.push({ source: mapping.date, target: "date", label: "Data" });
+  if (mapping.description)
+    items.push({
+      source: mapping.description,
+      target: "description",
+      label: "Descricao",
+    });
+  if (isV2Mapping(mapping)) {
+    if (mapping.valueStrategy === "signed" && mapping.amount)
+      items.push({
+        source: mapping.amount,
+        target: "amount",
+        label: "Valor com sinal",
+      });
+    if (mapping.valueStrategy === "split") {
+      if (mapping.incomeAmount)
+        items.push({
+          source: mapping.incomeAmount,
+          target: "income",
+          label: "Receita",
+        });
+      if (mapping.expenseAmount)
+        items.push({
+          source: mapping.expenseAmount,
+          target: "expense",
+          label: "Despesa",
+        });
+    }
+  } else if (mapping.amount) {
+    items.push({ source: mapping.amount, target: "amount", label: "Valor" });
+  }
+  for (const source of ignoredHeaders) items.push({ source, target: "ignored", label: "Ignorado" });
+  return items;
+}
+
+function findBalanceHeaders(headers: readonly string[]): string[] {
+  return headers.filter(isBalanceHeader);
+}
+
+function isBalanceHeader(header: string): boolean {
+  const normalized = normalizeAliasHeader(header);
+  return (
+    balanceAliases.some((alias) => normalized === normalizeAliasHeader(alias)) ||
+    normalized.startsWith("saldo ") ||
+    normalized.startsWith("balance ") ||
+    normalized.endsWith(" balance")
+  );
+}
+
+function resolveCsvColumns(
+  headers: readonly string[],
+  mapping: CsvImportMapping,
+): CsvColumnIndexes {
+  if (isV2Mapping(mapping)) {
+    if (mapping.valueStrategy === "signed") {
+      return {
+        dateIndex: requireCsvColumn(headers, mapping.date),
+        descriptionIndex: requireCsvColumn(headers, mapping.description),
+        strategy: "signed",
+        amountIndex: requireCsvColumn(headers, mapping.amount),
+        legacy: false,
+      };
+    }
+    return {
+      dateIndex: requireCsvColumn(headers, mapping.date),
+      descriptionIndex: requireCsvColumn(headers, mapping.description),
+      strategy: "split",
+      incomeAmountIndex: requireCsvColumn(headers, mapping.incomeAmount),
+      expenseAmountIndex: requireCsvColumn(headers, mapping.expenseAmount),
+      legacy: false,
+    };
+  }
+  return {
+    dateIndex: requireCsvColumn(headers, mapping.date),
+    descriptionIndex: requireCsvColumn(headers, mapping.description),
+    strategy: "signed",
+    amountIndex: requireCsvColumn(headers, mapping.amount),
+    ...(findCsvColumn(headers, mapping.kind) === undefined
+      ? {}
+      : { kindIndex: findCsvColumn(headers, mapping.kind) }),
+    ...(findCsvColumn(headers, mapping.externalId) === undefined
+      ? {}
+      : { externalIdIndex: findCsvColumn(headers, mapping.externalId) }),
+    legacy: mapping.kind !== undefined || mapping.externalId !== undefined || mapping.version === 1,
+  };
+}
+
+function requireCsvColumn(headers: readonly string[], name: string | undefined): number {
+  const index = findCsvColumn(headers, name);
+  if (index === undefined) {
+    throw new ImportFileError(
+      "IMPORT_CSV_HEADER_INVALID",
+      "Mapeie data, descricao e a estrategia de valor antes de continuar.",
+    );
+  }
+  return index;
+}
+
+function requireIndex(index: number | undefined): number {
+  if (index === undefined) {
+    throw new ImportFileError("IMPORT_CSV_HEADER_INVALID", "Mapeamento de valor incompleto.");
+  }
+  return index;
+}
+
+function findCsvColumn(headers: readonly string[], name: string | undefined): number | undefined {
+  if (name === undefined) return undefined;
+  const index = headers.findIndex(
+    (header) => normalizeHeaderName(header) === normalizeHeaderName(name),
+  );
+  return index >= 0 ? index : undefined;
 }
 
 function parseCsvTable(content: string, delimiter: CsvDelimiter): CsvCellTable {
@@ -789,27 +1321,21 @@ function parseCsvTable(content: string, delimiter: CsvDelimiter): CsvCellTable {
   let quoted = false;
   let physicalRow = 1;
   let recordStartRow = 1;
-
   for (let index = 0; index < content.length; index += 1) {
     const character = content[index] as string;
     const nextCharacter = content[index + 1];
-
     if (character === '"') {
       if (quoted && nextCharacter === '"') {
         current += '"';
         index += 1;
-      } else {
-        quoted = !quoted;
-      }
+      } else quoted = !quoted;
       continue;
     }
-
     if (!quoted && character === delimiter) {
       values.push(current.trim());
       current = "";
       continue;
     }
-
     if (!quoted && (character === "\n" || character === "\r")) {
       if (character === "\r" && nextCharacter === "\n") index += 1;
       values.push(current.trim());
@@ -820,23 +1346,19 @@ function parseCsvTable(content: string, delimiter: CsvDelimiter): CsvCellTable {
       recordStartRow = physicalRow;
       continue;
     }
-
     if (character === "\n") physicalRow += 1;
     current += character;
   }
-
   if (quoted) {
     throw new ImportFileError(
       "IMPORT_CSV_STRUCTURE_INVALID",
       "CSV possui aspas nao fechadas. Corrija o arquivo e tente novamente.",
     );
   }
-
   if (current.length > 0 || values.length > 0) {
     values.push(current.trim());
     records.push({ rowNumber: recordStartRow, values });
   }
-
   return { records, delimiter };
 }
 
@@ -851,7 +1373,6 @@ function assertCsvHeaders(headers: readonly string[]): void {
       "CSV precisa conter um cabecalho valido.",
     );
   }
-
   const normalizedHeaders = headers.filter((header) => header.length > 0).map(normalizeHeaderName);
   if (new Set(normalizedHeaders).size !== normalizedHeaders.length) {
     throw new ImportFileError(
@@ -859,81 +1380,6 @@ function assertCsvHeaders(headers: readonly string[]): void {
       "CSV possui colunas com o mesmo nome. Renomeie os cabecalhos e tente novamente.",
     );
   }
-}
-
-function resolveCsvMapping(
-  headers: readonly string[],
-  supplied: CsvImportMapping | undefined,
-): { mapping: CsvImportMapping; ambiguousFields: (keyof CsvImportMapping)[] } {
-  const mapping: CsvImportMapping = {};
-  const ambiguousFields: (keyof CsvImportMapping)[] = [];
-  for (const field of Object.keys(csvAliases) as (keyof CsvImportMapping)[]) {
-    const requestedHeader = supplied?.[field];
-    const candidates = requestedHeader
-      ? headers.filter(
-          (header) => normalizeHeaderName(header) === normalizeHeaderName(requestedHeader),
-        )
-      : headers.filter((header) =>
-          csvAliases[field].some(
-            (alias) => normalizeAliasHeader(header) === normalizeAliasHeader(alias),
-          ),
-        );
-    if (candidates.length === 1) mapping[field] = candidates[0] as string;
-    else if (candidates.length > 1) ambiguousFields.push(field);
-  }
-  return { mapping, ambiguousFields };
-}
-
-function assertNoDuplicateCsvMapping(mapping: CsvImportMapping): void {
-  const mappedColumns = Object.values(mapping)
-    .filter((value): value is string => typeof value === "string")
-    .map(normalizeHeaderName);
-  if (new Set(mappedColumns).size !== mappedColumns.length) {
-    throw new ImportFileError(
-      "IMPORT_CSV_MAPPING_INVALID",
-      "A mesma coluna nao pode ser usada para mais de um campo. Revise o mapeamento.",
-    );
-  }
-}
-
-interface CsvColumnIndexes {
-  dateIndex: number;
-  descriptionIndex: number;
-  amountIndex: number;
-  kindIndex: number | undefined;
-  externalIdIndex: number | undefined;
-}
-
-function resolveCsvColumns(header: readonly string[], mapping: CsvImportMapping): CsvColumnIndexes {
-  return {
-    dateIndex: requireCsvColumn(header, mapping.date),
-    descriptionIndex: requireCsvColumn(header, mapping.description),
-    amountIndex: requireCsvColumn(header, mapping.amount),
-    kindIndex: findCsvColumn(header, mapping.kind),
-    externalIdIndex: findCsvColumn(header, mapping.externalId),
-  };
-}
-
-function requireCsvColumn(header: readonly string[], columnName: string | undefined): number {
-  const index = findCsvColumn(header, columnName);
-  if (index === undefined) {
-    throw new ImportFileError(
-      "IMPORT_CSV_HEADER_INVALID",
-      "Mapeie as colunas de data, descricao e valor antes de continuar.",
-    );
-  }
-  return index;
-}
-
-function findCsvColumn(
-  header: readonly string[],
-  columnName: string | undefined,
-): number | undefined {
-  if (columnName === undefined) return undefined;
-  const index = header.findIndex(
-    (value) => normalizeHeaderName(value) === normalizeHeaderName(columnName),
-  );
-  return index >= 0 ? index : undefined;
 }
 
 function readCsvValue(values: readonly string[], index: number): string | undefined {
@@ -957,7 +1403,11 @@ function normalizeHeaderName(value: string): string {
 function normalizeAliasHeader(value: string): string {
   return normalizeHeaderName(value)
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s*\((?:r\$|brl|usd|eur)\)\s*$/i, "")
+    .replace(/\s+(?:r\$|brl|usd|eur)\s*$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function normalizeDescription(value: string | undefined): string | undefined {
@@ -1000,14 +1450,10 @@ function normalizeOfxDate(value: string | undefined): ISODate | undefined {
   );
 }
 
-function parseAmountMinor(value: string | undefined): {
-  amountMinor: number | undefined;
-  signedAmountMinor: number | undefined;
-} {
-  const normalizedValue = normalizeDescription(value)?.replace(/\s/g, "").replace(/^R\$/i, "");
-  if (normalizedValue === undefined)
-    return { amountMinor: undefined, signedAmountMinor: undefined };
-
+function parseAmountMinor(value: string | undefined): ParsedAmount {
+  const raw = normalizeDescription(value);
+  if (raw === undefined) return { state: "empty" };
+  const normalizedValue = raw.replace(/\s/g, "").replace(/^R\$/i, "");
   const comma = normalizedValue.lastIndexOf(",");
   const dot = normalizedValue.lastIndexOf(".");
   let decimalValue = normalizedValue;
@@ -1016,19 +1462,19 @@ function parseAmountMinor(value: string | undefined): {
       comma > dot
         ? normalizedValue.replace(/\./g, "").replace(",", ".")
         : normalizedValue.replace(/,/g, "");
-  } else if (comma >= 0) {
-    decimalValue = normalizedValue.replace(/\./g, "").replace(",", ".");
-  }
-
-  if (!/^[+-]?\d+(?:\.\d+)?$/.test(decimalValue))
-    return { amountMinor: undefined, signedAmountMinor: undefined };
+  } else if (comma >= 0) decimalValue = normalizedValue.replace(/\./g, "").replace(",", ".");
+  if (!/^[+-]?\d+(?:\.\d+)?$/.test(decimalValue)) return { state: "invalid" };
   const parsedValue = Number(decimalValue);
-  if (!Number.isFinite(parsedValue) || parsedValue === 0)
-    return { amountMinor: undefined, signedAmountMinor: undefined };
+  if (!Number.isFinite(parsedValue)) return { state: "invalid" };
+  if (parsedValue === 0) return { state: "zero" };
   const signedAmountMinor = Math.round(parsedValue * 100);
-  if (!Number.isSafeInteger(signedAmountMinor) || signedAmountMinor === 0)
-    return { amountMinor: undefined, signedAmountMinor: undefined };
-  return { amountMinor: Math.abs(signedAmountMinor), signedAmountMinor };
+  if (!Number.isSafeInteger(signedAmountMinor)) return { state: "invalid" };
+  if (signedAmountMinor === 0) return { state: "zero" };
+  return {
+    state: "valid",
+    amountMinor: Math.abs(signedAmountMinor),
+    signedAmountMinor,
+  };
 }
 
 function parseTransactionKind(
@@ -1063,9 +1509,46 @@ function readOfxTag(block: string, tagName: string): string | undefined {
 
 function canonicalMapping(mapping: CsvImportMapping | undefined): string {
   if (mapping === undefined) return "";
+  if (isV2Mapping(mapping)) {
+    return mapping.valueStrategy === "signed"
+      ? [2, "signed", mapping.date, mapping.description, mapping.amount]
+          .map((value) => value ?? "")
+          .join("|")
+      : [2, "split", mapping.date, mapping.description, mapping.incomeAmount, mapping.expenseAmount]
+          .map((value) => value ?? "")
+          .join("|");
+  }
+  return [1, mapping.date, mapping.description, mapping.amount, mapping.kind, mapping.externalId]
+    .map((value) => value ?? "")
+    .join("|");
+}
+
+function canonicalLegacyMapping(mapping: CsvImportMapping | undefined): string {
+  if (mapping === undefined) return "";
+  if (isV2Mapping(mapping)) {
+    if (mapping.valueStrategy === "signed") {
+      return [mapping.date, mapping.description, mapping.amount, "", ""]
+        .map((value) => value ?? "")
+        .join("|");
+    }
+    return canonicalMapping(mapping);
+  }
   return [mapping.date, mapping.description, mapping.amount, mapping.kind, mapping.externalId]
     .map((value) => value ?? "")
     .join("|");
+}
+
+function removeItem<T>(items: T[], item: T): void {
+  const index = items.indexOf(item);
+  if (index >= 0) items.splice(index, 1);
+}
+
+function unique<T>(items: readonly T[]): T[] {
+  return [...new Set(items)];
+}
+
+function isString(value: string | undefined): value is string {
+  return typeof value === "string";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

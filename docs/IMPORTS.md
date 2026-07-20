@@ -14,7 +14,7 @@ Em `/inbox`, a ação **Importar extrato** permite:
 2. confirmar o consentimento de processamento;
 3. detectar ou escolher o separador `,` ou `;`;
 4. visualizar cabeçalhos, amostra, contadores e problemas sem persistência;
-5. mapear data, descrição, valor, tipo e ID externo quando necessário;
+5. mapear data, descrição e a estratégia de valor quando necessário;
 6. criar o lote para revisão;
 7. corrigir, aprovar ou rejeitar cada linha;
 8. aprovar somente linhas selecionadas;
@@ -35,9 +35,11 @@ POST /api/import-batches/csv/preview
   "consentAccepted": true,
   "csvDelimiter": ";",
   "csvMapping": {
-    "date": "data",
-    "description": "descrição",
-    "amount": "valor"
+    "version": 2,
+    "valueStrategy": "signed",
+    "date": "Data",
+    "description": "Descrição",
+    "amount": "Valor"
   }
 }
 ```
@@ -48,7 +50,7 @@ A resposta sempre informa `persisted: false` e um estado:
 - `mapping_required`: o usuário deve escolher separador ou mapear colunas;
 - `blocked`: nenhuma linha válida pode seguir.
 
-O preview exige conta ativa e consentimento explícito. Ele retorna os cabeçalhos originais para exibição, no máximo 10 propostas normalizadas (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
+O preview exige conta ativa e consentimento explícito. Ele retorna os cabeçalhos originais, a estratégia detectada, a interpretação aplicada (incluindo colunas ignoradas), no máximo 10 propostas normalizadas (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
 
 ## Criação do lote
 
@@ -86,21 +88,23 @@ Colunas obrigatórias:
 
 - data;
 - descrição;
-- valor.
+- uma estratégia de valor.
 
-Colunas opcionais:
+As estratégias aceitas são discriminadas e mutuamente exclusivas:
 
-- tipo;
-- ID externo.
+- `version: 2`, `valueStrategy: signed` e `amount`: valor positivo gera receita e valor negativo gera despesa;
+- `version: 2`, `valueStrategy: split`, `incomeAmount` e `expenseAmount`: uma coluna representa entradas e a outra saídas, usando o módulo do número.
 
-A conta é escolhida no fluxo e não precisa existir como coluna. A categoria é definida durante a revisão. Cabeçalhos ambíguos exigem escolha explícita, o mesmo cabeçalho não pode atender dois campos e linhas com quantidade diferente de colunas recebem diagnóstico seguro sem exposição do conteúdo bruto.
+`Data Lançamento`, data do movimento ou data da transação têm prioridade sobre `Data Contábil`. `Descrição`, histórico ou memo têm prioridade sobre título/name. Cabeçalhos de saldo são reconhecidos como não transacionais e não podem ser usados como valor.
+
+Tipo e ID externo não aparecem no novo mapeamento genérico. O tipo vem somente do sinal ou da coluna de entrada/saída; `externalId` permanece apenas para leitura de lotes legados. A conta é escolhida no fluxo e não precisa existir como coluna. A categoria é definida durante a revisão. Cabeçalhos ambíguos exigem escolha explícita, o mesmo cabeçalho não pode atender dois campos e linhas com quantidade diferente de colunas recebem diagnóstico seguro sem exposição do conteúdo bruto.
 
 Datas aceitas:
 
 - `AAAA-MM-DD`;
 - `DD/MM/AAAA`.
 
-Valores aceitam sinais e padrões `1234.56`, `1,234.56`, `1234,56` e `1.234,56`. Quando o tipo não é informado, o sinal positivo indica receita e o negativo indica despesa.
+Valores aceitam sinais e padrões `1234.56`, `1,234.56`, `1234,56` e `1.234,56`. Na estratégia assinada, o sinal positivo indica receita e o negativo indica despesa, mesmo que exista uma coluna de tipo no arquivo. Na estratégia separada, somente uma entre entrada e saída pode estar preenchida e diferente de zero; o valor persistido é sempre inteiro positivo em centavos.
 
 ## Revisão das linhas
 
@@ -163,6 +167,11 @@ A auditoria registra explicitamente o consentimento redigido, criação do lote,
 - `IMPORT_CSV_NO_DATA_ROWS`;
 - `IMPORT_CSV_MAPPING_REQUIRED`;
 - `IMPORT_CSV_MAPPING_INVALID`;
+- `IMPORT_ROW_AMOUNT_REQUIRED`;
+- `IMPORT_ROW_AMOUNT_ZERO`;
+- `IMPORT_ROW_NUMBER_INVALID`;
+- `IMPORT_ROW_SPLIT_AMOUNT_CONFLICT`;
+- `IMPORT_ROW_SPLIT_AMOUNT_REQUIRED`;
 - `IMPORT_CSV_COLUMN_COUNT_MISMATCH`;
 - `IMPORT_CSV_NO_VALID_ROWS`;
 - `IMPORT_ACCOUNT_INVALID`;

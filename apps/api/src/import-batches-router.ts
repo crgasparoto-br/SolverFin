@@ -348,11 +348,72 @@ function readCsvMapping(value: unknown): CsvImportMapping | undefined {
     );
   }
   const input = value as Record<string, unknown>;
-  const mapping: CsvImportMapping = {};
-  for (const key of ["date", "description", "amount", "kind", "externalId"] as const) {
-    if (input[key] !== undefined) mapping[key] = String(input[key]);
+  const readOptionalString = (key: string): string | undefined => {
+    const candidate = input[key];
+    if (candidate === undefined || candidate === null || String(candidate).trim().length === 0) {
+      return undefined;
+    }
+    return String(candidate);
+  };
+  const date = readOptionalString("date");
+  const description = readOptionalString("description");
+  const amount = readOptionalString("amount");
+  const incomeAmount = readOptionalString("incomeAmount");
+  const expenseAmount = readOptionalString("expenseAmount");
+  const kind = readOptionalString("kind");
+  const externalId = readOptionalString("externalId");
+  const requestsV2 =
+    input.version === 2 ||
+    input.valueStrategy !== undefined ||
+    incomeAmount !== undefined ||
+    expenseAmount !== undefined;
+
+  if (requestsV2) {
+    const valueStrategy = String(input.valueStrategy ?? "");
+    if (valueStrategy !== "signed" && valueStrategy !== "split") {
+      throw new ImportReviewError(
+        "IMPORT_CSV_MAPPING_INVALID",
+        "Escolha se o arquivo usa um valor com sinal ou colunas separadas de entrada e saída.",
+      );
+    }
+    if (valueStrategy === "signed") {
+      if (incomeAmount !== undefined || expenseAmount !== undefined) {
+        throw new ImportReviewError(
+          "IMPORT_CSV_MAPPING_INVALID",
+          "Valor único não pode ser combinado com colunas de entrada e saída.",
+        );
+      }
+      return {
+        version: 2,
+        valueStrategy: "signed",
+        ...(date === undefined ? {} : { date }),
+        ...(description === undefined ? {} : { description }),
+        ...(amount === undefined ? {} : { amount }),
+      };
+    }
+    if (amount !== undefined) {
+      throw new ImportReviewError(
+        "IMPORT_CSV_MAPPING_INVALID",
+        "Colunas separadas de entrada e saída não podem ser combinadas com valor único.",
+      );
+    }
+    return {
+      version: 2,
+      valueStrategy: "split",
+      ...(date === undefined ? {} : { date }),
+      ...(description === undefined ? {} : { description }),
+      ...(incomeAmount === undefined ? {} : { incomeAmount }),
+      ...(expenseAmount === undefined ? {} : { expenseAmount }),
+    };
   }
-  return mapping;
+
+  return {
+    ...(date === undefined ? {} : { date }),
+    ...(description === undefined ? {} : { description }),
+    ...(amount === undefined ? {} : { amount }),
+    ...(kind === undefined ? {} : { kind }),
+    ...(externalId === undefined ? {} : { externalId }),
+  };
 }
 
 function readCsvDelimiter(value: unknown): CsvDelimiter | undefined {

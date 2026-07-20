@@ -36,6 +36,14 @@ testDuplicateDetection();
 testContextualBatchIdentity();
 testStructuredPayloads();
 testInvalidFileErrors();
+testC6SplitAmountInference();
+testSignedAmountIgnoresKindColumn();
+testSplitAmountDiagnostics();
+testSignedAmountDiagnostics();
+testAmbiguousValueStrategy();
+testMappingPrioritiesAndBalanceSafety();
+testStrategyChangesBatchIdentity();
+testLegacyMappingCompatibility();
 
 function testValidCsvPreview(): void {
   const preview = previewImportedStatement({
@@ -226,7 +234,7 @@ function testInvalidCsvPreview(): void {
   assertEqual(preview.batch.problemRows, 2, "invalid csv problem rows");
   assertEqual(preview.suggestions.length, 0, "invalid csv suggestions");
   assertProblemCode(preview.problems, "IMPORT_ROW_DATE_INVALID", "invalid csv date");
-  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_INVALID", "invalid csv amount");
+  assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid csv amount");
   assertProblemCode(preview.problems, "IMPORT_ROW_DESCRIPTION_REQUIRED", "invalid csv description");
 }
 
@@ -409,6 +417,222 @@ function testInvalidFileErrors(): void {
         content: "date,description,amount\n2026-06-10,Demo\u0000,-10",
       }),
     "IMPORT_FILE_ENCODING_INVALID",
+  );
+}
+
+function testC6SplitAmountInference(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "c6.csv",
+    content: [
+      "Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)",
+      "20/07/2026;20/07/2026;PIX;Receita cliente;100,00;;100,00",
+      "20/07/2026;20/07/2026;Compra;Mercado;;-25,50;74,50",
+    ].join("\n"),
+  });
+
+  assertEqual(preview.state, "ready", "C6 preview state");
+  assertEqual(preview.csv?.mapping.version, 2, "C6 mapping version");
+  assertEqual(preview.csv?.valueStrategy, "split", "C6 split strategy");
+  assertEqual(preview.csv?.mapping.date, "Data Lançamento", "posting date has priority");
+  assertEqual(preview.csv?.mapping.description, "Descrição", "description has priority over title");
+  assertEqual(preview.suggestions[0]?.kind, "income", "C6 income inferred");
+  assertEqual(preview.suggestions[0]?.amountMinor, 10000, "C6 income amount");
+  assertEqual(preview.suggestions[1]?.kind, "expense", "C6 expense inferred");
+  assertEqual(preview.suggestions[1]?.amountMinor, 2550, "C6 expense amount uses modulus");
+  assertEqual(
+    preview.csv?.interpretation.some(
+      (item) => item.source === "Saldo do Dia(R$)" && item.target === "ignored",
+    ),
+    true,
+    "balance is explicitly ignored",
+  );
+}
+
+function testSignedAmountIgnoresKindColumn(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "signed.csv",
+    content: [
+      "date,description,amount,kind",
+      "2026-07-20,Saída,-10,income",
+      "2026-07-20,Entrada,10,expense",
+    ].join("\n"),
+  });
+  assertEqual(preview.suggestions[0]?.kind, "expense", "negative amount wins over type column");
+  assertEqual(preview.suggestions[1]?.kind, "income", "positive amount wins over type column");
+  assertEqual(
+    preview.suggestions[0]?.externalId,
+    undefined,
+    "generic flow does not fill external ID",
+  );
+}
+
+function testSplitAmountDiagnostics(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "split-invalid.csv",
+    content: [
+      "date,description,Entrada,Saída",
+      "2026-07-20,Ambas,10,20",
+      "2026-07-20,Zero,0,0",
+      "2026-07-20,Vazia,,",
+      "2026-07-20,Inválida,abc,",
+      "2026-07-20,Entrada negativa,-10,",
+      "2026-07-20,Saída positiva,,20",
+    ].join("\n"),
+  });
+  assertEqual(preview.state, "ready", "valid split rows remain reviewable");
+  assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_CONFLICT", "both values filled");
+  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_ZERO", "zero values");
+  assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED", "empty split values");
+  assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid number");
+  assertEqual(
+    preview.suggestions[0]?.kind,
+    "income",
+    "negative income column still creates income",
+  );
+  assertEqual(preview.suggestions[0]?.amountMinor, 1000, "negative income uses modulus");
+  assertEqual(
+    preview.suggestions[1]?.kind,
+    "expense",
+    "positive expense column still creates expense",
+  );
+  assertEqual(preview.suggestions[1]?.amountMinor, 2000, "positive expense uses modulus");
+}
+
+function testSignedAmountDiagnostics(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "signed-invalid.csv",
+    content: [
+      "date,description,amount",
+      "2026-07-20,Vazio,",
+      "2026-07-20,Zero,0",
+      "2026-07-20,Inválido,abc",
+    ].join("\n"),
+  });
+  assertEqual(preview.state, "blocked", "invalid signed rows are blocked");
+  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_REQUIRED", "empty signed value");
+  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_ZERO", "zero signed value");
+  assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid signed number");
+}
+
+function testAmbiguousValueStrategy(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "ambiguous-strategy.csv",
+    content: "Data,Descrição,Valor,Entrada,Saída\n20/07/2026,Demo,10,10,",
+  });
+  assertEqual(preview.state, "mapping_required", "ambiguous value strategy requires a decision");
+  assertEqual(
+    preview.csv?.ambiguousFields.includes("valueStrategy"),
+    true,
+    "strategy ambiguity exposed",
+  );
+  assertEqual(preview.csv?.valueStrategy, undefined, "ambiguous strategy is not preselected");
+}
+
+function testMappingPrioritiesAndBalanceSafety(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "priorities.csv",
+    content:
+      " Data Contábil , DATA LANÇAMENTO ,Título,Descrição,Saldo do Dia(R$),Valor \n20/07/2026,19/07/2026,Título fallback,Descrição principal,10,-5",
+  });
+  assertEqual(preview.csv?.mapping.date, "DATA LANÇAMENTO", "date priority ignores casing");
+  assertEqual(
+    preview.csv?.mapping.description,
+    "Descrição",
+    "description priority ignores accents",
+  );
+  assertEqual(
+    (preview.csv?.mapping as { amount?: string } | undefined)?.amount,
+    "Valor",
+    "balance is never auto-detected as amount",
+  );
+
+  assertImportFileError(
+    () =>
+      previewImportedStatement({
+        context: tenantA,
+        now,
+        originalFileName: "balance.csv",
+        csvMapping: {
+          version: 2,
+          valueStrategy: "signed",
+          date: "Data",
+          description: "Descrição",
+          amount: "Saldo do Dia(R$)",
+        },
+        content: "Data,Descrição,Saldo do Dia(R$)\n20/07/2026,Demo,10",
+      }),
+    "IMPORT_CSV_MAPPING_INVALID",
+  );
+}
+
+function testStrategyChangesBatchIdentity(): void {
+  const content = "Data,Descrição,Valor,Entrada,Saída\n20/07/2026,Demo,10,10,";
+  const signed = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "identity.csv",
+    csvMapping: {
+      version: 2,
+      valueStrategy: "signed",
+      date: "Data",
+      description: "Descrição",
+      amount: "Valor",
+    },
+    content,
+  });
+  const split = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "identity.csv",
+    csvMapping: {
+      version: 2,
+      valueStrategy: "split",
+      date: "Data",
+      description: "Descrição",
+      incomeAmount: "Entrada",
+      expenseAmount: "Saída",
+    },
+    content,
+  });
+  assertNotEqual(
+    signed.batch.sourceHash,
+    split.batch.sourceHash,
+    "strategies have distinct hashes",
+  );
+}
+
+function testLegacyMappingCompatibility(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "legacy.csv",
+    csvMapping: {
+      version: 1,
+      date: "date",
+      description: "description",
+      amount: "amount",
+      kind: "kind",
+      externalId: "externalId",
+    },
+    content: "date,description,amount,kind,externalId\n2026-07-20,Legado,10,expense,legacy-1",
+  });
+  assertEqual(preview.suggestions[0]?.kind, "expense", "legacy type remains readable");
+  assertEqual(
+    preview.suggestions[0]?.externalId,
+    "legacy-1",
+    "legacy external ID remains readable",
   );
 }
 
