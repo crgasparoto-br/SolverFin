@@ -490,7 +490,8 @@ function testSplitAmountDiagnostics(): void {
   assertEqual(preview.state, "ready", "valid split rows remain reviewable");
   assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_CONFLICT", "both values filled");
   assertEqual(
-    preview.problems.filter((problem) => problem.code === "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED").length,
+    preview.problems.filter((problem) => problem.code === "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED")
+      .length,
     2,
     "empty and all-zero split rows share the controlled missing-value diagnostic",
   );
@@ -546,8 +547,16 @@ function testAmbiguousValueStrategy(): void {
   );
   assertEqual(preview.csv?.valueStrategy, undefined, "ambiguous strategy is not preselected");
   assertEqual(preview.csv?.valueCandidates?.amount, "Valor", "signed candidate is preserved");
-  assertEqual(preview.csv?.valueCandidates?.incomeAmount, "Entrada", "income candidate is preserved");
-  assertEqual(preview.csv?.valueCandidates?.expenseAmount, "Saída", "expense candidate is preserved");
+  assertEqual(
+    preview.csv?.valueCandidates?.incomeAmount,
+    "Entrada",
+    "income candidate is preserved",
+  );
+  assertEqual(
+    preview.csv?.valueCandidates?.expenseAmount,
+    "Saída",
+    "expense candidate is preserved",
+  );
   assertEqual(
     preview.csv?.missingRequiredFields.includes("amount"),
     false,

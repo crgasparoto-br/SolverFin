@@ -10,7 +10,11 @@ assert.match(source, /name="mappingIncomeAmount"/, "income selector is rendered"
 assert.match(source, /name="mappingExpenseAmount"/, "expense selector is rendered");
 assert.match(source, /Interpretação aplicada/, "preview explains the applied interpretation");
 assert.match(source, /candidate\.endsWith\(" balance"\)/, "suffix balance aliases are filtered");
-assert.match(source, /csv\.valueCandidates \|\| \{\}/, "detected value candidates reach the mapping UI");
+assert.match(
+  source,
+  /csv\.valueCandidates \|\| \{\}/,
+  "detected value candidates reach the mapping UI",
+);
 assert.match(
   source,
   /\(mapping && mapping\.incomeAmount\) \|\| candidates\.incomeAmount/,

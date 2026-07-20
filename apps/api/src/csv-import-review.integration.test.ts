@@ -183,7 +183,12 @@ async function assertLegacyMappingCannotControlNewImport(
       externalId: "externalId",
     },
   };
-  const previewResponse = await apiRequest(token, "POST", "/api/import-batches/csv/preview", request);
+  const previewResponse = await apiRequest(
+    token,
+    "POST",
+    "/api/import-batches/csv/preview",
+    request,
+  );
   assert.equal(previewResponse.statusCode, 200);
   const preview = readBody<{
     batch: { csvMapping: Record<string, unknown> };
