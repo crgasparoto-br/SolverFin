@@ -1,0 +1,1067 @@
+
+> solverfin@0.1.0 test
+> npm run startup:check && npm run integration-db-guard:check && npm run build:packages && npm run test --workspaces --if-present
+
+
+> solverfin@0.1.0 startup:check
+> node scripts/validate-startup-contract.mjs
+
+[startup-check] pending Prisma migrations run before development and production servers start
+
+> solverfin@0.1.0 integration-db-guard:check
+> node scripts/validate-integration-database-guard.mjs
+
+[integration-db-guard-check] destructive integration database guard validated
+
+> solverfin@0.1.0 build:packages
+> npm run build --workspace @solverfin/shared --workspace @solverfin/config --workspace @solverfin/domain --workspace @solverfin/ai
+
+
+> @solverfin/shared@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/config@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/domain@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/ai@0.1.0 build
+> tsc --noEmit
+
+
+> @solverfin/api@0.1.0 test
+> rm -rf ../../.tmp-tests/api && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/api --include .test.js --exclude .integration.test.js
+
+
+[test] account-remuneration-contract.test.js
+
+[test] account-remuneration-diagnostics-messages-regression.test.js
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+
+[test] account-remuneration-diagnostics-service.test.js
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+
+[test] account-remuneration-scheduler.test.js
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+TAP version 13
+# Subtest: runs once per UTC date after the configured hour
+ok 1 - runs once per UTC date after the configured hour
+  ---
+  duration_ms: 1.004782
+  type: 'test'
+  ...
+# Subtest: does not run before the configured UTC hour
+ok 2 - does not run before the configured UTC hour
+  ---
+  duration_ms: 0.158574
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8.665554
+
+[test] accounts-router.test.js
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+
+[test] admin-auth.test.js
+
+[test] admin-institutions-logo-router.test.js
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+
+[test] admin-institutions-router.test.js
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+[test] auth.test.js
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+
+[test] errors.test.js
+
+[test] financial-institutions-repository.test.js
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+
+[test] institution-admin-contract.test.js
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+
+[test] institution-logo-upload.test.js
+
+[test] mvp.test.js
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+[test] oidc.test.js
+
+15 compiled test file(s) passed.
+
+> @solverfin/web@0.1.0 test
+> rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/web --include .test.js
+
+
+[test] accessibility.test.js
+
+[test] build-artifact-smoke.test.js
+
+[test] dashboard/availability.test.js
+
+[test] dev-server-accounts-cards-actions.test.js
+
+[test] dev-server-routing.test.js
+
+[test] dev-server.test.js
+
+[test] dev-server/account-remuneration-compact-row.test.js
+
+[test] dev-server/account-remuneration-details-actions.test.js
+
+[test] dev-server/account-remuneration-dialog-runtime.test.js
+
+[test] dev-server/account-remuneration-disclosure-enhancement.test.js
+
+[test] dev-server/account-remuneration-form-loading.test.js
+TAP version 13
+# Subtest: account remuneration modal integration
+    # Subtest: keeps CDI configuration separate from the account form
+    ok 1 - keeps CDI configuration separate from the account form
+      ---
+      duration_ms: 0.86744
+      type: 'test'
+      ...
+    # Subtest: submits only the remuneration contract and keeps persisted values on disable
+    ok 2 - submits only the remuneration contract and keeps persisted values on disable
+      ---
+      duration_ms: 0.316197
+      type: 'test'
+      ...
+    # Subtest: degrades only CDI actions when configuration loading fails
+    ok 3 - degrades only CDI actions when configuration loading fails
+      ---
+      duration_ms: 0.168078
+      type: 'test'
+      ...
+    # Subtest: keeps the modal open and preserves entered values after API errors
+    ok 4 - keeps the modal open and preserves entered values after API errors
+      ---
+      duration_ms: 0.165735
+      type: 'test'
+      ...
+    1..4
+ok 1 - account remuneration modal integration
+  ---
+  duration_ms: 2.552707
+  type: 'suite'
+  ...
+1..1
+# tests 4
+# suites 1
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11.29612
+
+[test] dev-server/account-remuneration-hardening.test.js
+
+[test] dev-server/account-remuneration-page.test.js
+
+[test] dev-server/account-remuneration-two-line-layout.test.js
+
+[test] dev-server/accounts-cards-edit-contrast.test.js
+TAP version 13
+# Subtest: accounts and cards contrast enhancement
+    # Subtest: injects neutral styles in the document head
+    ok 1 - injects neutral styles in the document head
+      ---
+      duration_ms: 1.783612
+      type: 'test'
+      ...
+    # Subtest: keeps the enhancement idempotent
+    ok 2 - keeps the enhancement idempotent
+      ---
+      duration_ms: 0.524374
+      type: 'test'
+      ...
+    1..2
+ok 1 - accounts and cards contrast enhancement
+  ---
+  duration_ms: 3.324276
+  type: 'suite'
+  ...
+1..1
+# tests 2
+# suites 1
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11.069045
+
+[test] dev-server/accounts-cards-hover-contrast.test.js
+
+[test] dev-server/admin-financial-indexes-failure.test.js
+
+[test] dev-server/admin-financial-indexes-form.test.js
+
+[test] dev-server/admin-financial-indexes-page.test.js
+
+[test] dev-server/admin-institutions-page.test.js
+
+[test] dev-server/card-instrument-subtotals-enhancement.test.js
+TAP version 13
+# Subtest: card instrument subtotals
+    # Subtest: groups purchases and renders instrument subtotals
+    ok 1 - groups purchases and renders instrument subtotals
+      ---
+      duration_ms: 17.05561
+      type: 'test'
+      ...
+    # Subtest: lists instruments before the consolidated card total
+    ok 2 - lists instruments before the consolidated card total
+      ---
+      duration_ms: 0.763556
+      type: 'test'
+      ...
+    # Subtest: preserves the purchase order received from the sorting enhancement
+    ok 3 - preserves the purchase order received from the sorting enhancement
+      ---
+      duration_ms: 0.598834
+      type: 'test'
+      ...
+    # Subtest: is idempotent and supports filters and archived instruments
+    ok 4 - is idempotent and supports filters and archived instruments
+      ---
+      duration_ms: 0.599845
+      type: 'test'
+      ...
+    1..4
+ok 1 - card instrument subtotals
+  ---
+  duration_ms: 20.035627
+  type: 'suite'
+  ...
+1..1
+# tests 4
+# suites 1
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 29.128847
+
+[test] dev-server/cards-page-day-filter-controller.test.js
+
+[test] dev-server/cards-page-day-filter.test.js
+
+[test] dev-server/cards-page-filters-contract.test.js
+
+[test] dev-server/cards-page-month-navigation.test.js
+
+[test] dev-server/cards-page-purchase-edit-route.test.js
+
+[test] dev-server/cards-page-recurring-render.test.js
+
+[test] dev-server/cards-page.test.js
+
+[test] dev-server/categories-icons-enhancement.test.js
+TAP version 13
+# Subtest: categories icons and tooltips enhancement
+    # Subtest: adds icons and accessible tooltips without changing the category structure
+    ok 1 - adds icons and accessible tooltips without changing the category structure
+      ---
+      duration_ms: 2.267236
+      type: 'test'
+      ...
+    # Subtest: preserves the original hierarchy and modal scripts
+    ok 2 - preserves the original hierarchy and modal scripts
+      ---
+      duration_ms: 0.300022
+      type: 'test'
+      ...
+    # Subtest: keeps category rows and action buttons readable
+    ok 3 - keeps category rows and action buttons readable
+      ---
+      duration_ms: 0.258131
+      type: 'test'
+      ...
+    # Subtest: is idempotent and ignores unrelated pages
+    ok 4 - is idempotent and ignores unrelated pages
+      ---
+      duration_ms: 0.300733
+      type: 'test'
+      ...
+    1..4
+ok 1 - categories icons and tooltips enhancement
+  ---
+  duration_ms: 4.200619
+  type: 'suite'
+  ...
+1..1
+# tests 4
+# suites 1
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13.269372
+
+[test] dev-server/dashboard-page.test.js
+TAP version 13
+# Subtest: dev-server dashboard page
+    # Subtest: highlights planned statement items, inbox review items and open invoices with quick links
+    ok 1 - highlights planned statement items, inbox review items and open invoices with quick links
+      ---
+      duration_ms: 43.620633
+      type: 'test'
+      ...
+    # Subtest: shows a compact positive state when there are no pending actions
+    ok 2 - shows a compact positive state when there are no pending actions
+      ---
+      duration_ms: 1.830101
+      type: 'test'
+      ...
+    1..2
+ok 1 - dev-server dashboard page
+  ---
+  duration_ms: 46.547803
+  type: 'suite'
+  ...
+1..1
+# tests 2
+# suites 1
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 55.568275
+
+[test] dev-server/import-statement-navigation.test.js
+
+[test] dev-server/inbox-csv-import.test.js
+TAP version 13
+# Subtest: Inbox CSV import review contract
+    # Subtest: keeps preview separate from persisted batch creation and requires consent
+    ok 1 - keeps preview separate from persisted batch creation and requires consent
+      ---
+      duration_ms: 1.95827
+      type: 'test'
+      ...
+    # Subtest: renders only the normalized preview sample
+    ok 2 - renders only the normalized preview sample
+      ---
+      duration_ms: 0.276899
+      type: 'test'
+      ...
+    # Subtest: preserves the opened batch in the URL and restores it after reload
+    ok 3 - preserves the opened batch in the URL and restores it after reload
+      ---
+      duration_ms: 0.222518
+      type: 'test'
+      ...
+    # Subtest: supports complete filtering, eligibility and stable selection
+    ok 4 - supports complete filtering, eligibility and stable selection
+      ---
+      duration_ms: 0.233405
+      type: 'test'
+      ...
+    # Subtest: confirms bulk totals and recovers state after request failures
+    ok 5 - confirms bulk totals and recovers state after request failures
+      ---
+      duration_ms: 0.207456
+      type: 'test'
+      ...
+    # Subtest: shows profile, account and read-only final states with statement navigation
+    ok 6 - shows profile, account and read-only final states with statement navigation
+      ---
+      duration_ms: 0.376275
+      type: 'test'
+      ...
+    # Subtest: does not retain raw CSV in browser storage
+    ok 7 - does not retain raw CSV in browser storage
+      ---
+      duration_ms: 0.241367
+      type: 'test'
+      ...
+    # Subtest: exposes accessible modal, status and row actions
+    ok 8 - exposes accessible modal, status and row actions
+      ---
+      duration_ms: 0.321925
+      type: 'test'
+      ...
+    1..8
+ok 1 - Inbox CSV import review contract
+  ---
+  duration_ms: 5.099156
+  type: 'suite'
+  ...
+1..1
+# tests 8
+# suites 1
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 15.654412
+
+[test] dev-server/inbox-page-ui.test.js
+
+[test] dev-server/issue-409-finalization.test.js
+
+[test] dev-server/issue-414-ui-adjustments.test.js
+
+[test] dev-server/list-sorting-enhancement.test.js
+
+[test] dev-server/maintenance-actions.test.js
+
+[test] dev-server/pages.test.js
+TAP version 13
+# Subtest: dev-server private placeholder pages
+    # Subtest: renders placeholder pages with canonical private navigation
+    ok 1 - renders placeholder pages with canonical private navigation
+      ---
+      duration_ms: 2.85973
+      type: 'test'
+      ...
+    1..1
+ok 1 - dev-server private placeholder pages
+  ---
+  duration_ms: 3.654152
+  type: 'suite'
+  ...
+1..1
+# tests 1
+# suites 1
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10.839827
+
+[test] dev-server/password-reset.test.js
+
+[test] dev-server/popup-action-icons.test.js
+
+[test] dev-server/recurrence-card-instrument-script.test.js
+
+[test] dev-server/recurrences-section.test.js
+
+[test] dev-server/recurring-card-scope-controller.test.js
+
+[test] dev-server/reports-page.test.js
+TAP version 13
+# Subtest: dev-server reports page
+    # Subtest: renders consolidated installment metrics, groupings and read-only rows
+    ok 1 - renders consolidated installment metrics, groupings and read-only rows
+      ---
+      duration_ms: 43.380649
+      type: 'test'
+      ...
+    # Subtest: shows an empty state for periods without installments
+    ok 2 - shows an empty state for periods without installments
+      ---
+      duration_ms: 1.681962
+      type: 'test'
+      ...
+    1..2
+ok 1 - dev-server reports page
+  ---
+  duration_ms: 46.726616
+  type: 'suite'
+  ...
+1..1
+# tests 2
+# suites 1
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 55.692988
+
+[test] dev-server/routes.test.js
+TAP version 13
+# Subtest: dev-server route contract
+    # Subtest: derives private navigation from the app shell route contract
+    ok 1 - derives private navigation from the app shell route contract
+      ---
+      duration_ms: 2.427662
+      type: 'test'
+      ...
+    # Subtest: derives implemented routes from available private shell routes
+    ok 2 - derives implemented routes from available private shell routes
+      ---
+      duration_ms: 0.201757
+      type: 'test'
+      ...
+    # Subtest: redirects active legacy /app routes to canonical private paths
+    ok 3 - redirects active legacy /app routes to canonical private paths
+      ---
+      duration_ms: 0.391949
+      type: 'test'
+      ...
+    # Subtest: redirects retired payables routes to transactions
+    ok 4 - redirects retired payables routes to transactions
+      ---
+      duration_ms: 0.196701
+      type: 'test'
+      ...
+    # Subtest: redirects the short accounts route to the implemented accounts and cards page
+    ok 5 - redirects the short accounts route to the implemented accounts and cards page
+      ---
+      duration_ms: 0.133677
+      type: 'test'
+      ...
+    # Subtest: redirects the retired remuneration page to accounts and cards
+    ok 6 - redirects the retired remuneration page to accounts and cards
+      ---
+      duration_ms: 0.266223
+      type: 'test'
+      ...
+    # Subtest: resolves public and private entry points by session state
+    ok 7 - resolves public and private entry points by session state
+      ---
+      duration_ms: 0.191993
+      type: 'test'
+      ...
+    # Subtest: keeps unknown paths out of the private shell
+    ok 8 - keeps unknown paths out of the private shell
+      ---
+      duration_ms: 0.232584
+      type: 'test'
+      ...
+    1..8
+ok 1 - dev-server route contract
+  ---
+  duration_ms: 5.226323
+  type: 'suite'
+  ...
+1..1
+# tests 8
+# suites 1
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 15.847606
+
+[test] dev-server/settings-page.test.js
+
+[test] dev-server/shared-styles.test.js
+TAP version 13
+# Subtest: shared shell styles
+    # Subtest: defines the design tokens and shell chrome used across SSR pages
+    ok 1 - defines the design tokens and shell chrome used across SSR pages
+      ---
+      duration_ms: 1.831492
+      type: 'test'
+      ...
+    # Subtest: applies the authenticated content width globally
+    ok 2 - applies the authenticated content width globally
+      ---
+      duration_ms: 0.255157
+      type: 'test'
+      ...
+    # Subtest: accounts-cards-page.js composes its styles from sharedShellStyles()
+    ok 3 - accounts-cards-page.js composes its styles from sharedShellStyles()
+      ---
+      duration_ms: 0.346551
+      type: 'test'
+      ...
+    # Subtest: categories-page.js composes its styles from sharedShellStyles()
+    ok 4 - categories-page.js composes its styles from sharedShellStyles()
+      ---
+      duration_ms: 0.242137
+      type: 'test'
+      ...
+    # Subtest: inbox-page.js composes its styles from sharedShellStyles()
+    ok 5 - inbox-page.js composes its styles from sharedShellStyles()
+      ---
+      duration_ms: 0.421142
+      type: 'test'
+      ...
+    # Subtest: pages.js composes its styles from sharedShellStyles()
+    ok 6 - pages.js composes its styles from sharedShellStyles()
+      ---
+      duration_ms: 0.403716
+      type: 'test'
+      ...
+    # Subtest: settings-page.js composes its styles from sharedShellStyles()
+    ok 7 - settings-page.js composes its styles from sharedShellStyles()
+      ---
+      duration_ms: 0.294875
+      type: 'test'
+      ...
+    1..7
+ok 1 - shared shell styles
+  ---
+  duration_ms: 5.002532
+  type: 'suite'
+  ...
+1..1
+# tests 7
+# suites 1
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14.774874
+
+[test] dev-server/shell-navigation-runtime.issue-480.test.js
+TAP version 13
+# Subtest: issue \#480 navigation runtime
+    # Subtest: executes the profile script and adds every catalog master route without duplicates
+    ok 1 - executes the profile script and adds every catalog master route without duplicates
+      ---
+      duration_ms: 6.450128
+      type: 'test'
+      ...
+    # Subtest: keeps the common navigation for regular users and profile failures
+    ok 2 - keeps the common navigation for regular users and profile failures
+      ---
+      duration_ms: 2.719323
+      type: 'test'
+      ...
+    # Subtest: does not duplicate routes already rendered by the server
+    ok 3 - does not duplicate routes already rendered by the server
+      ---
+      duration_ms: 1.310153
+      type: 'test'
+      ...
+    # Subtest: preserves active state for every dynamically included master route
+    ok 4 - preserves active state for every dynamically included master route
+      ---
+      duration_ms: 2.54802
+      type: 'test'
+      ...
+    # Subtest: keeps the explicit financial-index icon and accessible label contract
+    ok 5 - keeps the explicit financial-index icon and accessible label contract
+      ---
+      duration_ms: 1.031322
+      type: 'test'
+      ...
+    1..5
+ok 1 - issue \#480 navigation runtime
+  ---
+  duration_ms: 15.208885
+  type: 'suite'
+  ...
+1..1
+# tests 5
+# suites 1
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23.979768
+
+[test] dev-server/shell-navigation.issue-480.test.js
+TAP version 13
+# Subtest: issue \#480 authenticated navigation
+    # Subtest: serializes every navigable master route from the central route catalog
+    ok 1 - serializes every navigable master route from the central route catalog
+      ---
+      duration_ms: 1.935456
+      type: 'test'
+      ...
+    # Subtest: renders an icon for every private navigation route included in the initial HTML
+    ok 2 - renders an icon for every private navigation route included in the initial HTML
+      ---
+      duration_ms: 1.866264
+      type: 'test'
+      ...
+    # Subtest: keeps brand and logout fixed while only desktop navigation scrolls
+    ok 3 - keeps brand and logout fixed while only desktop navigation scrolls
+      ---
+      duration_ms: 0.564203
+      type: 'test'
+      ...
+    # Subtest: rebuilds aria-controls from all secondary links after adding master routes
+    ok 4 - rebuilds aria-controls from all secondary links after adding master routes
+      ---
+      duration_ms: 0.30443
+      type: 'test'
+      ...
+    1..4
+ok 1 - issue \#480 authenticated navigation
+  ---
+  duration_ms: 5.656067
+  type: 'suite'
+  ...
+1..1
+# tests 4
+# suites 1
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13.99938
+
+[test] dev-server/shell-pages.test.js
+TAP version 13
+# Subtest: migrated SSR shell pages
+    # Subtest: accounts-cards-page.js keeps using the shared authenticated shell
+    ok 1 - accounts-cards-page.js keeps using the shared authenticated shell
+      ---
+      duration_ms: 1.937039
+      type: 'test'
+      ...
+    # Subtest: cards-page.js keeps using the shared authenticated shell
+    ok 2 - cards-page.js keeps using the shared authenticated shell
+      ---
+      duration_ms: 0.367442
+      type: 'test'
+      ...
+    # Subtest: categories-page.js keeps using the shared authenticated shell
+    ok 3 - categories-page.js keeps using the shared authenticated shell
+      ---
+      duration_ms: 0.25714
+      type: 'test'
+      ...
+    # Subtest: inbox-page.js keeps using the shared authenticated shell
+    ok 4 - inbox-page.js keeps using the shared authenticated shell
+      ---
+      duration_ms: 0.497254
+      type: 'test'
+      ...
+    # Subtest: settings-page.js keeps using the shared authenticated shell
+    ok 5 - settings-page.js keeps using the shared authenticated shell
+      ---
+      duration_ms: 0.20338
+      type: 'test'
+      ...
+    # Subtest: transactions-page.js keeps using the shared authenticated shell
+    ok 6 - transactions-page.js keeps using the shared authenticated shell
+      ---
+      duration_ms: 1.041998
+      type: 'test'
+      ...
+    1..6
+ok 1 - migrated SSR shell pages
+  ---
+  duration_ms: 5.579254
+  type: 'suite'
+  ...
+1..1
+# tests 6
+# suites 1
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14.133047
+
+[test] dev-server/shell.test.js
+TAP version 13
+# Subtest: SSR shell document
+    # Subtest: renders a shared HTML document with escaped title and provided body
+    ok 1 - renders a shared HTML document with escaped title and provided body
+      ---
+      duration_ms: 0.731109
+      type: 'test'
+      ...
+    1..1
+ok 1 - SSR shell document
+  ---
+  duration_ms: 1.542447
+  type: 'suite'
+  ...
+# Subtest: authenticated SSR shell
+    # Subtest: renders the shared shell with active navigation and logout handling
+    ok 1 - renders the shared shell with active navigation and logout handling
+      ---
+      duration_ms: 2.072288
+      type: 'test'
+      ...
+    # Subtest: keeps statement presentation assets out of unrelated authenticated pages
+    ok 2 - keeps statement presentation assets out of unrelated authenticated pages
+      ---
+      duration_ms: 1.094305
+      type: 'test'
+      ...
+    # Subtest: renders every navigable private route in the shared navigation
+    ok 3 - renders every navigable private route in the shared navigation
+      ---
+      duration_ms: 0.510844
+      type: 'test'
+      ...
+    # Subtest: marks only the active navigable private route in the shared navigation
+    ok 4 - marks only the active navigable private route in the shared navigation
+      ---
+      duration_ms: 1.886193
+      type: 'test'
+      ...
+    # Subtest: classifies navigable private routes into primary and secondary mobile groups
+    ok 5 - classifies navigable private routes into primary and secondary mobile groups
+      ---
+      duration_ms: 0.317419
+      type: 'test'
+      ...
+    # Subtest: keeps the secondary navigation collapsed by default when a primary route is active
+    ok 6 - keeps the secondary navigation collapsed by default when a primary route is active
+      ---
+      duration_ms: 0.35276
+      type: 'test'
+      ...
+    # Subtest: opens the secondary navigation by default when a secondary route is active
+    ok 7 - opens the secondary navigation by default when a secondary route is active
+      ---
+      duration_ms: 0.380181
+      type: 'test'
+      ...
+    # Subtest: loads the current user and derives every master route from the central catalog
+    ok 8 - loads the current user and derives every master route from the central catalog
+      ---
+      duration_ms: 0.444135
+      type: 'test'
+      ...
+    1..8
+ok 2 - authenticated SSR shell
+  ---
+  duration_ms: 7.760612
+  type: 'suite'
+  ...
+1..2
+# tests 9
+# suites 2
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20.295842
+
+[test] dev-server/statement-action-icons.test.js
+
+[test] dev-server/statement-day-filter.test.js
+
+[test] dev-server/statement-presentation.test.js
+
+[test] dev-server/statement-recurrence-materialization.test.js
+
+[test] dev-server/transaction-recurrence-scope-dialog.test.js
+
+[test] dev-server/transaction-repeat-visibility.test.js
+
+[test] dev-server/transactions-grouping-ui-contract.test.js
+TAP version 13
+# Subtest: selection exposes accessible controls and complete member data
+ok 1 - selection exposes accessible controls and complete member data
+  ---
+  duration_ms: 0.869983
+  type: 'test'
+  ...
+# Subtest: group modal preserves selection on cancel and clears it only after success
+ok 2 - group modal preserves selection on cancel and clears it only after success
+  ---
+  duration_ms: 0.329416
+  type: 'test'
+  ...
+# Subtest: member markup escapes untrusted descriptions and shows category and status
+ok 3 - member markup escapes untrusted descriptions and shows category and status
+  ---
+  duration_ms: 0.212985
+  type: 'test'
+  ...
+# Subtest: currency, details and ungrouping follow the selected group
+ok 4 - currency, details and ungrouping follow the selected group
+  ---
+  duration_ms: 0.288877
+  type: 'test'
+  ...
+# Subtest: account or period navigation naturally discards in-memory selection
+ok 5 - account or period navigation naturally discards in-memory selection
+  ---
+  duration_ms: 0.260985
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12.385618
+
+[test] dev-server/transactions-groups.test.js
+TAP version 13
+# Subtest: projects a group once and preserves the final statement balance
+ok 1 - projects a group once and preserves the final statement balance
+  ---
+  duration_ms: 1.049219
+  type: 'test'
+  ...
+# Subtest: ignores invalid legacy groups and restores individual members
+ok 2 - ignores invalid legacy groups and restores individual members
+  ---
+  duration_ms: 0.686963
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9.901782
+
+[test] dev-server/transactions-import-visibility.test.js
+
+[test] dev-server/transactions-page-account-edit-source.test.js
+
+[test] dev-server/transactions-page-long-values.test.js
+
+[test] dev-server/transactions-page-presentation.test.js
+
+[test] dev-server/transactions-page.test.js
+
+[test] dev-server/transactions-statement-invoice-payment.test.js
+
+[test] dev-server/transactions-statement.test.js
+
+[test] inbox/share-target.test.js
+
+[test] pwa/manifest.test.js
+
+68 compiled test file(s) passed.
+
+> @solverfin/ai@0.1.0 test
+> rm -rf ../../.tmp-tests/ai && tsc -p tsconfig.test.json && node ../../.tmp-tests/ai/index.test.js && node ../../.tmp-tests/ai/extraction.test.js && node ../../.tmp-tests/ai/bank-message-parser.test.js && node ../../.tmp-tests/ai/assistant.test.js && node ../../.tmp-tests/ai/insights.test.js
+
+
+> @solverfin/config@0.1.0 test
+> echo "@solverfin/config: testes ainda serao configurados em issue propria"
+
+@solverfin/config: testes ainda serao configurados em issue propria
+
+> @solverfin/domain@0.1.0 test
+> rm -rf ../../.tmp-tests/domain && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/domain --include .test.js
+
+
+[test] accountant-export.test.js
+
+[test] accounts.test.js
+
+[test] ai-review-queue.test.js
+
+[test] audit.test.js
+
+[test] automation-rules.test.js
+
+[test] bank-message-inbox.test.js
+
+[test] budgets.test.js
+
+[test] card-instruments.test.js
+
+[test] card-purchases-instruments.test.js
+
+[test] cards-instruments-purchase.test.js
+
+[test] cards.test.js
+
+[test] categories.test.js
+
+[test] category-learning.test.js
+
+[test] daily-availability.test.js
+
+[test] deduplication.test.js
+
+[test] financial-assumptions.test.js
+
+[test] financial-indexes.test.js
+TAP version 13
+# Subtest: parses BCB SGS CDI entries and normalizes dates and factors
+ok 1 - parses BCB SGS CDI entries and normalizes dates and factors
+  ---
+  duration_ms: 9.147631
+  type: 'test'
+  ...
+# Subtest: rejects duplicate or malformed CDI entries
+ok 2 - rejects duplicate or malformed CDI entries
+  ---
+  duration_ms: 0.521539
+  type: 'test'
+  ...
+# Subtest: calculates account remuneration using CDI rate and configured percentage
+ok 3 - calculates account remuneration using CDI rate and configured percentage
+  ---
+  duration_ms: 0.296297
+  type: 'test'
+  ...
+# Subtest: does not generate remuneration for zero or negative balances
+ok 4 - does not generate remuneration for zero or negative balances
+  ---
+  duration_ms: 0.939736
+  type: 'test'
+  ...
+# Subtest: validates account remuneration percentage
+ok 5 - validates account remuneration percentage
+  ---
+  duration_ms: 0.18997
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 19.790497
+
+[test] imports.test.js
+file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/domain/imports.js:239
+        throw new ImportFileError("IMPORT_CSV_NO_DATA_ROWS", "CSV precisa ter cabecalho e ao menos uma linha de movimento.");
+              ^
+
+ImportFileError: CSV precisa ter cabecalho e ao menos uma linha de movimento.
+    at parseCsvRows (file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/domain/imports.js:239:15)
+    at parseImportRows (file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/domain/imports.js:230:16)
+    at previewImportedStatement (file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/domain/imports.js:57:20)
+    at testC6SplitAmountInference (file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/domain/imports.test.js:326:21)
+    at file:///home/runner/work/SolverFin/SolverFin/.tmp-tests/domain/imports.test.js:25:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  code: 'IMPORT_CSV_NO_DATA_ROWS',
+  statusCode: 400
+}
+
+Node.js v22.23.1
+imports.test.js failed with exit code 1.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /home/runner/work/SolverFin/SolverFin/packages/domain
+npm error workspace @solverfin/domain@0.1.0
+npm error location /home/runner/work/SolverFin/SolverFin/packages/domain
+npm error command failed
+npm error command sh -c rm -rf ../../.tmp-tests/domain && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/domain --include .test.js
+
+
+> @solverfin/shared@0.1.0 test
+> rm -rf ../../.tmp-tests/shared && tsc -p tsconfig.test.json && node ../../.tmp-tests/shared/masking.test.js && node ../../.tmp-tests/shared/formatting.test.js
+
