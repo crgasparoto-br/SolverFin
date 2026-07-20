@@ -85,18 +85,7 @@ jobs:
         run: npm run db:seed
 
       - name: Test
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run test 2>&1 | tee issue-515-unit.log
-
-      - name: Upload temporary unit log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-515-unit-log-${{ github.sha }}
-          path: issue-515-unit.log
-          if-no-files-found: error
+        run: npm run test
 
       - name: Build
         run: npm run build
@@ -156,18 +145,7 @@ jobs:
         run: npm run db:seed
 
       - name: Run API integration tests
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run test:integration --workspace @solverfin/api 2>&1 | tee issue-515-integration.log
-
-      - name: Upload temporary integration log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-515-integration-log-${{ github.sha }}
-          path: issue-515-integration.log
-          if-no-files-found: error
+        run: npm run test:integration --workspace @solverfin/api
 
       - name: Verify import statement consistency
         run: npm run diagnose:import-statement-consistency -- --expect-zero
