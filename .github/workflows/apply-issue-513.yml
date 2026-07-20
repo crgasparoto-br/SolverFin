@@ -1,0 +1,125 @@
+name: Apply issue 513
+
+on:
+  push:
+    branches:
+      - feat/513-csv-value-inference
+    paths:
+      - .github/workflows/apply-issue-513.yml
+      - .issue513/**
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-issue-513
+  cancel-in-progress: false
+
+jobs:
+  implement-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_issue_513@localhost:5432/solverfin_issue_513?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_issue_513
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_issue_513
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_issue_513"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/513-csv-value-inference
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Assemble and verify implementation payload
+        shell: bash
+        run: |
+          cat .issue513/imports.* > /tmp/issue-513-imports.ts
+          cat .issue513/apply.* > /tmp/issue-513-apply.mjs
+          echo "7ac58a504ec34840b310307f059d9f3e0e33f4ab633be2cec3199806301c23d3  /tmp/issue-513-imports.ts" | sha256sum --check
+          echo "c64371009ef431d148e4607f6f5485e087a7c837bf3e5841d5ab27f785a1d697  /tmp/issue-513-apply.mjs" | sha256sum --check
+          node --check /tmp/issue-513-apply.mjs
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply issue 513 changes
+        env:
+          ISSUE_513_DOMAIN_SOURCE: /tmp/issue-513-imports.ts
+        run: node /tmp/issue-513-apply.mjs
+
+      - name: Format changed files
+        run: >-
+          npx prettier --write
+          packages/domain/src/imports.ts
+          packages/domain/src/imports.test.ts
+          apps/api/src/import-batches-router.ts
+          apps/api/src/repositories/imports.ts
+          apps/api/src/csv-import-review.integration.test.ts
+          apps/web/src/dev-server/inbox-page.ts
+          docs/IMPORTS.md
+          docs/adr/0006-csv-import-structured-human-review.md
+
+      - name: Validate environment and schema
+        run: |
+          npm run env:check
+          npm run prisma:validate
+          npm run db:seed:check
+
+      - name: Validate code quality
+        run: |
+          npm run format:check
+          npm run lint
+          npm run typecheck
+
+      - name: Build database and application
+        run: |
+          npm run prisma:generate
+          npm run db:deploy
+          npm run db:seed
+          npm run test
+          npm run build
+
+      - name: Run API integration suite
+        run: |
+          npm run test:integration --workspace @solverfin/api
+          npm run diagnose:import-statement-consistency -- --expect-zero
+
+      - name: Commit validated implementation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            packages/domain/src/imports.ts \
+            packages/domain/src/imports.test.ts \
+            apps/api/src/import-batches-router.ts \
+            apps/api/src/repositories/imports.ts \
+            apps/api/src/csv-import-review.integration.test.ts \
+            apps/web/src/dev-server/inbox-page.ts \
+            docs/IMPORTS.md \
+            docs/adr/0006-csv-import-structured-human-review.md
+          git diff --cached --check
+          git commit -m "feat: simplify CSV value mapping (#513)"
+          git push origin HEAD:feat/513-csv-value-inference
