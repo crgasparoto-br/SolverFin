@@ -224,6 +224,22 @@ async function assertBulkKeepsSuccessAndMapsInconsistency(
   );
   assert.equal(repeated.statusCode, 409);
   assert.equal(readErrorCode(repeated), "IMPORT_APPROVED_TRANSACTION_MISSING");
+
+  // The invalid state is created directly only for this test. Remove it so the shared
+  // integration database can be audited for residual inconsistencies after the suite.
+  await query(
+    `update "AiSuggestion"
+        set "status" = 'REJECTED', "targetEntityId" = null, "updatedAt" = now()
+      where "id" = $1 and "sourceEntityId" = $2`,
+    [inconsistentSuggestionId, importBatchId],
+  );
+  const residual = await query<{ count: number }>(
+    `select count(*)::int as "count"
+       from "AiSuggestion"
+      where "id" = $1 and "status" = 'APPROVED' and "targetEntityId" is null`,
+    [inconsistentSuggestionId],
+  );
+  assert.equal(residual[0]?.count, 0);
 }
 
 async function createAccount(token: string, name: string): Promise<string> {
