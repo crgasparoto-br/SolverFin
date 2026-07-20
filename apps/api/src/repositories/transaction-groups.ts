@@ -149,7 +149,21 @@ export async function listTransactionGroupsForContext(
     ],
   );
   const groups = await Promise.all(rows.map((row) => hydrateGroup(query, context, row)));
-  return groups.filter((group) => group.members.length >= 2);
+  return groups.filter((group) => {
+    if (group.members.length >= 2) return true;
+    reportInvalidLegacyGroup(group.id, group.members.length);
+    return false;
+  });
+}
+
+function reportInvalidLegacyGroup(groupId: string, memberCount: number): void {
+  console.warn(
+    JSON.stringify({
+      code: "TRANSACTION_GROUP_INVALID_LEGACY_MEMBERSHIP",
+      groupId,
+      memberCount,
+    }),
+  );
 }
 
 export async function getTransactionGroupForContext(context: TenantContext, groupId: string) {

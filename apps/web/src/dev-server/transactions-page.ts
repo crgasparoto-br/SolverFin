@@ -217,7 +217,7 @@ function renderRow(
 
   return `
     <article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row">
-      <label class="col-select"><input type="checkbox" data-select-transaction value="${escapeHtml(transaction.id)}" data-kind="${escapeHtml(transaction.kind)}" data-status="${escapeHtml(transaction.status)}" data-currency="${escapeHtml(transaction.currency ?? "BRL")}" data-amount="${row.amountMinor}" data-date="${escapeHtml(date)}" data-description="${escapeHtml(transaction.description)}" aria-label="Selecionar lançamento ${escapeHtml(transaction.description || "sem descrição")}"${eligible ? "" : " disabled"}></label>
+      <label class="col-select"><input type="checkbox" data-select-transaction value="${escapeHtml(transaction.id)}" data-kind="${escapeHtml(transaction.kind)}" data-status="${escapeHtml(transaction.status)}" data-currency="${escapeHtml(transaction.currency ?? "BRL")}" data-amount="${row.amountMinor}" data-date="${escapeHtml(date)}" data-description="${escapeHtml(transaction.description)}" data-category="${escapeHtml(categoryName)}" aria-label="Selecionar lançamento ${escapeHtml(transaction.description || "sem descrição")}"${eligible ? "" : " disabled"}></label>
       <time class="col-date" datetime="${escapeHtml(date)}">${formatDate(date)}</time>
       <div class="description col-description">
         <strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}${transaction.accountRemuneration ? '<span class="account-remuneration-badge">Remuneração CDI</span>' : ""}</strong>
@@ -714,13 +714,22 @@ function clientScript(): string {
       const compatible = (items) => items.length >= 2 && items.every((item) =>
         item.dataset.kind === items[0].dataset.kind && item.dataset.status === items[0].dataset.status && item.dataset.currency === items[0].dataset.currency
       );
-      const money = (minor) => (minor / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      const money = (minor, currency = "BRL") => (minor / 100).toLocaleString("pt-BR", { style: "currency", currency });
+      const safeText = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+      const memberMarkup = (item, currency, includeOriginalData) => {
+        const date = includeOriginalData ? (item.effectiveOn || item.plannedOn || item.occurredOn) : item.dataset.date;
+        const description = includeOriginalData ? item.description : item.dataset.description;
+        const category = includeOriginalData ? (item.categoryName || "Sem categoria") : item.dataset.category;
+        const status = includeOriginalData ? item.status : item.dataset.status;
+        const amountMinor = includeOriginalData ? (item.kind === "expense" ? -1 : 1) * item.amountMinor : Number(item.dataset.amount);
+        return "<div><span>" + [date, description, category, status].map(safeText).join(" · ") + "</span><strong>" + safeText(money(amountMinor, currency)) + "</strong></div>";
+      };
 
       function syncSelection() {
         const items = selected();
         selectionBar.hidden = items.length === 0;
         selectionBar.querySelector("[data-selection-count]").textContent = String(items.length);
-        selectionBar.querySelector("[data-selection-total]").textContent = money(items.reduce((sum, item) => sum + Number(item.dataset.amount), 0));
+        selectionBar.querySelector("[data-selection-total]").textContent = money(items.reduce((sum, item) => sum + Number(item.dataset.amount), 0), items[0]?.dataset.currency || "BRL");
         groupOpen.disabled = !compatible(items);
         groupOpen.title = items.length > 1 && !compatible(items) ? "Selecione lançamentos do mesmo tipo, moeda e situação." : "";
       }
@@ -737,8 +746,8 @@ function clientScript(): string {
         groupForm.description.value = "";
         groupForm.description.readOnly = false; groupForm.displayOn.readOnly = false;
         groupForm.displayOn.value = items.map((item) => item.dataset.date).sort().at(-1);
-        groupForm.querySelector("[data-group-summary]").textContent = items[0].dataset.kind + " · " + items[0].dataset.status + " · " + items[0].dataset.currency + " · " + money(items.reduce((sum, item) => sum + Math.abs(Number(item.dataset.amount)), 0));
-        groupForm.querySelector("[data-group-members]").innerHTML = items.map((item) => "<div><span>" + item.dataset.date + " · " + item.dataset.description + "</span><strong>" + money(Number(item.dataset.amount)) + "</strong></div>").join("");
+        groupForm.querySelector("[data-group-summary]").textContent = items[0].dataset.kind + " · " + items[0].dataset.status + " · " + items[0].dataset.currency + " · " + money(items.reduce((sum, item) => sum + Math.abs(Number(item.dataset.amount)), 0), items[0].dataset.currency);
+        groupForm.querySelector("[data-group-members]").innerHTML = items.map((item) => memberMarkup(item, items[0].dataset.currency, false)).join("");
         groupForm.querySelector('[type="submit"]').hidden = false;
         groupForm.querySelector("[data-group-ungroup]").hidden = true;
         document.querySelector("[data-group-title]").textContent = "Unificar lançamentos";
@@ -751,8 +760,8 @@ function clientScript(): string {
           groupForm.reset(); groupForm.dataset.mode = "details"; groupForm.dataset.groupId = group.id;
           groupForm.description.value = group.description; groupForm.description.readOnly = true;
           groupForm.displayOn.value = group.displayOn; groupForm.displayOn.readOnly = true;
-          groupForm.querySelector("[data-group-summary]").textContent = group.kind + " · " + group.status + " · " + group.currency + " · " + money(group.totalAmountMinor);
-          groupForm.querySelector("[data-group-members]").innerHTML = group.members.map((item) => "<div><span>" + (item.effectiveOn || item.plannedOn || item.occurredOn) + " · " + item.description + " · " + (item.categoryName || "Sem categoria") + " · " + item.status + "</span><strong>" + money((item.kind === "expense" ? -1 : 1) * item.amountMinor) + "</strong></div>").join("");
+          groupForm.querySelector("[data-group-summary]").textContent = group.kind + " · " + group.status + " · " + group.currency + " · " + money(group.totalAmountMinor, group.currency);
+          groupForm.querySelector("[data-group-members]").innerHTML = group.members.map((item) => memberMarkup(item, group.currency, true)).join("");
           groupForm.querySelector('[type="submit"]').hidden = true; groupForm.querySelector("[data-group-ungroup]").hidden = false;
           document.querySelector("[data-group-title]").textContent = "Detalhes do grupo"; groupModal.showModal();
         });

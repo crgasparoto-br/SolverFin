@@ -10,7 +10,11 @@ import {
   listTransactionGroupsForContext,
   ungroupTransactionsForContext,
 } from "./repositories/transaction-groups.js";
-import { createTransactionForContext } from "./repositories/transactions.js";
+import {
+  createTransactionForContext,
+  getTransactionForContext,
+  updateTransactionForContext,
+} from "./repositories/transactions.js";
 
 const context: TenantContext = {
   organizationId: "22222222-2222-4222-8222-222222222222",
@@ -58,6 +62,21 @@ async function main(): Promise<void> {
     ).length,
     1,
   );
+  await assert.rejects(
+    () => updateTransactionForContext(context, members[0]!.id, { status: "reconciled" }),
+    (error: unknown) =>
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "TRANSACTION_GROUP_MEMBER_UPDATE_BLOCKED",
+  );
+  const unchangedMember = await getTransactionForContext(context, members[0]!.id);
+  assert.equal(unchangedMember.status, "posted");
+  assert.equal(unchangedMember.amountMinor, members[0]!.amountMinor);
+  assert.equal(unchangedMember.recurrenceId, members[0]!.recurrenceId);
+  assert.equal(unchangedMember.installmentId, members[0]!.installmentId);
+  assert.equal(unchangedMember.importBatchId, members[0]!.importBatchId);
+  assert.equal(unchangedMember.transferGroupId, members[0]!.transferGroupId);
 
   const attempts = await Promise.allSettled([
     createTransactionGroupForContext(context, {
@@ -72,6 +91,20 @@ async function main(): Promise<void> {
     }),
   ]);
   assert.equal(attempts.filter((attempt) => attempt.status === "fulfilled").length, 1);
+  const concurrentGroups = await query<{ count: number }>(
+    `select count(*)::int as count from "TransactionGroup" where "organizationId"=$1 and "financialProfileId"=$2 and "description" like 'Concorrente %'`,
+    [context.organizationId, context.financialProfileId],
+  );
+  assert.equal(
+    concurrentGroups[0]?.count,
+    1,
+    "a tentativa concorrente deve sofrer rollback completo",
+  );
+  const concurrentMembers = await query<{ count: number }>(
+    `select count(*)::int as count from "Transaction" where "id"=any($1::uuid[]) and "transactionGroupId" is not null`,
+    [members.slice(2).map((member) => member.id)],
+  );
+  assert.equal(concurrentMembers[0]?.count, 2, "nenhum membro pode ficar parcialmente associado");
 
   const auditRows = await query<{ redactedChanges: Record<string, unknown> }>(
     `select "redactedChanges" from "AuditLogEntry" where "entityId"=$1`,
