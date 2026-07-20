@@ -14,7 +14,7 @@ index 352b266..0000000 100644
    missingRequiredFields: readonly CsvRequiredField[];
    ambiguousFields: readonly CsvAmbiguousField[];
    interpretation: readonly CsvImportInterpretation[];
-@@ -206,6 +211,11 @@ interface CsvMappingResolution {
+@@ -206,4 +211,9 @@ interface CsvMappingResolution {
    mapping: CsvImportMapping;
    ambiguousFields: CsvAmbiguousField[];
    missingRequiredFields: CsvRequiredField[];
@@ -65,7 +65,7 @@ index 352b266..0000000 100644
      };
      ambiguousFields.push("valueStrategy");
    } else if (signedAvailable) {
-@@ -1011,6 +1026,7 @@ function resolveCsvMapping(
+@@ -1011,5 +1026,6 @@ function resolveCsvMapping(
      mapping,
      ambiguousFields: unique(ambiguousFields),
      missingRequiredFields,
@@ -85,7 +85,7 @@ index b274df5..0000000 100644
    const requestsV2 =
      input.version === 2 ||
      input.valueStrategy !== undefined ||
-@@ -421,11 +419,11 @@ function readCsvMapping(value: unknown): CsvImportMapping | undefined {
+@@ -421,10 +419,10 @@ function readCsvMapping(value: unknown): CsvImportMapping | undefined {
    }
  
    return {
@@ -102,7 +102,7 @@ diff --git a/apps/web/src/dev-server/inbox-page.ts b/apps/web/src/dev-server/inb
 index ff30905..0000000 100644
 --- a/apps/web/src/dev-server/inbox-page.ts
 +++ b/apps/web/src/dev-server/inbox-page.ts
-@@ -739,7 +739,8 @@ function csvImportScript(
+@@ -739,5 +739,6 @@ function csvImportScript(
          }
          function isBalanceHeader(header) {
            const normalized = String(header || "").trim().toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -110,7 +110,7 @@ index ff30905..0000000 100644
 +          const candidate = normalized.replace(/ (?:r|brl|usd|eur)$/, "");
 +          return candidate === "saldo" || candidate.startsWith("saldo ") || candidate === "balance" || candidate.startsWith("balance ") || candidate.endsWith(" balance");
          }
-@@ -769,13 +770,14 @@ function csvImportScript(
+@@ -769,12 +770,13 @@ function csvImportScript(
            if (selected) select.value = selected;
          }
 -        function fillMapping(headers, mapping, detectedStrategy) {
@@ -128,7 +128,7 @@ index ff30905..0000000 100644
            form.elements.mappingStrategy.value = detectedStrategy || "";
            updateMappingStrategy();
          }
-@@ -788,7 +790,7 @@ function csvImportScript(
+@@ -788,5 +790,5 @@ function csvImportScript(
          function renderPreview(preview) {
            const csv = preview.csv || {};
 -          if (csv.headers && csv.headers.length) fillMapping(csv.headers, csv.mapping || {}, csv.valueStrategy);
@@ -148,7 +148,7 @@ index 226dd08..0000000 100644
      ].join("\n"),
    });
    assertEqual(preview.state, "ready", "valid split rows remain reviewable");
-@@ -519,8 +521,11 @@ function testSplitAmountDiagnostics(): void {
+@@ -519,4 +521,7 @@ function testSplitAmountDiagnostics(): void {
    assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_CONFLICT", "both values filled");
 -  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_ZERO", "zero values");
 -  assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED", "empty split values");
@@ -158,7 +158,7 @@ index 226dd08..0000000 100644
 +    "empty and all-zero split rows share the controlled missing-value diagnostic",
 +  );
    assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid number");
-@@ -539,6 +544,10 @@ function testSplitAmountDiagnostics(): void {
+@@ -539,3 +544,7 @@ function testSplitAmountDiagnostics(): void {
    );
    assertEqual(preview.suggestions[1]?.amountMinor, 2000, "positive expense uses modulus");
 +  assertEqual(preview.suggestions[2]?.kind, "income", "zero expense column is treated as absent");
@@ -166,7 +166,7 @@ index 226dd08..0000000 100644
 +  assertEqual(preview.suggestions[3]?.kind, "expense", "zero income column is treated as absent");
 +  assertEqual(preview.suggestions[3]?.amountMinor, 2000, "expense with opposite zero is accepted");
  }
-@@ -573,6 +582,16 @@ function testAmbiguousValueStrategy(): void {
+@@ -573,3 +582,13 @@ function testAmbiguousValueStrategy(): void {
    );
    assertEqual(preview.csv?.valueStrategy, undefined, "ambiguous strategy is not preselected");
 +  assertEqual(preview.csv?.valueCandidates?.amount, "Valor", "signed candidate is preserved");
@@ -182,12 +182,12 @@ diff --git a/apps/api/src/csv-import-review.integration.test.ts b/apps/api/src/c
 index cac20f5..0000000 100644
 --- a/apps/api/src/csv-import-review.integration.test.ts
 +++ b/apps/api/src/csv-import-review.integration.test.ts
-@@ -28,6 +28,7 @@ async function main(): Promise<void> {
+@@ -28,3 +28,4 @@ async function main(): Promise<void> {
    await assertPreviewDoesNotPersist(token, fixtures.account.id);
    await assertPreviewContractValidation(token, fixtures.account.id);
 +  await assertLegacyMappingCannotControlNewImport(token, fixtures.account.id, fixtures.suffix);
    await assertC6PreviewAndCreation(token, fixtures.account.id, fixtures.suffix);
-@@ -165,6 +166,49 @@ async function assertPreviewContractValidation(token: string, accountId: string
+@@ -165,4 +166,42 @@ async function assertPreviewContractValidation(token: string, accountId: string
    );
  }
 +
@@ -230,7 +230,7 @@ index cac20f5..0000000 100644
 +}
  
  async function assertC6PreviewAndCreation(
-@@ -172,8 +216,8 @@ async function assertC6PreviewAndCreation(
+@@ -172,4 +216,4 @@ async function assertC6PreviewAndCreation(
    const content = [
      "Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)",
 -    "20/07/2026;20/07/2026;PIX;Receita C6 " + suffix + ";100,00;;100,00",
@@ -242,7 +242,7 @@ diff --git a/apps/web/src/dev-server/inbox-page-ui.test.ts b/apps/web/src/dev-se
 index 6161c36..0000000 100644
 --- a/apps/web/src/dev-server/inbox-page-ui.test.ts
 +++ b/apps/web/src/dev-server/inbox-page-ui.test.ts
-@@ -11,7 +11,15 @@ assert.match(source, /name="mappingIncomeAmount"/, "income selector is rendere
+@@ -11,4 +11,10 @@ assert.match(source, /name="mappingIncomeAmount"/, "income selector is rendere
  assert.match(source, /name="mappingExpenseAmount"/, "expense selector is rendered");
  assert.match(source, /Interpretação aplicada/, "preview explains the applied interpretation");
 -assert.match(source, /isBalanceHeader/, "balance columns are filtered from value selectors");
