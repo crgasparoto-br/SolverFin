@@ -33,6 +33,8 @@ Além da correção ambiental, um serviço de aplicação valida criação ou re
 
 O erro controlado é `IMPORT_APPROVED_TRANSACTION_MISSING` com HTTP 409. A API não cria automaticamente outra movimentação nesse cenário, preservando idempotência e permitindo investigação segura.
 
+Na aprovação em lote, uma inconsistência é reportada no item afetado sem ocultar nem reverter aprovações válidas concluídas anteriormente no mesmo pedido.
+
 A aprovação continua atômica. Se falhar a inserção da transação, o registro de auditoria ou a atualização da sugestão, a transação inteira é revertida: não permanecem movimentação, aprovação nem auditoria parcial.
 
 ## Cobertura de regressão
@@ -41,6 +43,7 @@ Os testes automatizados cobrem:
 
 - aprovação individual e em lote;
 - `source=import`, `status=posted` e vínculos por lote e sugestão;
+- correção manual de conta, data, categoria, tipo, valor e descrição antes da aprovação;
 - consulta de `/api/transactions` pela conta e fim do mês;
 - presença exata de uma linha por aprovação;
 - coerência entre as três datas e a data visual do Extrato;
@@ -49,6 +52,7 @@ Os testes automatizados cobrem:
 - repetição sequencial, chamadas concorrentes já cobertas pelo ciclo de importação e releitura após possível timeout;
 - isolamento por perfil financeiro;
 - estado aprovado sem transação como erro controlado;
+- sucesso parcial no lote quando outro item está inconsistente;
 - rollback forçado nos pontos de inserção da transação, auditoria e atualização da sugestão.
 
 ## Diagnóstico histórico seguro
