@@ -1,0 +1,13 @@
+;
+write("docs/IMPORTS.md", docs);
+
+let adr = read("docs/adr/0006-csv-import-structured-human-review.md");
+adr = replaceOnce(
+  adr,
+  /10\. A Inbox é a interface operacional do fluxo, com edição em modal acessível e devolução de foco\./,
+  "10. A Inbox é a interface operacional do fluxo, com edição em modal acessível e devolução de foco.\n11. Novas importações persistem mapeamento CSV versão 2, discriminando valor assinado de entrada/saída; tipo e ID externo permanecem somente para leitura legada.",
+  "ADR mapping version decision",
+);
+write("docs/adr/0006-csv-import-structured-human-review.md", adr);
+
+console.log("Issue #513 transformations applied.");
