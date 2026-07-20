@@ -8,6 +8,7 @@ import {
 
 import { withTransaction, type query } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 export interface RecurringAccountTransactionEditPayload {
   kind?: string;
@@ -570,8 +571,4 @@ function normalizeFrequency(value: string): RecurrenceFrequency {
     return normalized;
   }
   return "monthly";
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }

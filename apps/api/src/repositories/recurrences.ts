@@ -32,6 +32,7 @@ import {
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { registerCardPurchaseForContext } from "./cards.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 type CreateRecurrenceForContextPayload = CreateRecurrencePayload & {
   cardInstrumentId?: EntityId;
@@ -436,7 +437,7 @@ function todayIso(): ISODate {
   return new Date().toISOString().slice(0, 10);
 }
 
-export async function listInstallmentsByRecurrence(
+async function listInstallmentsByRecurrence(
   context: TenantContext,
   recurrenceId: EntityId,
 ): Promise<Installment[]> {
@@ -1005,8 +1006,4 @@ function mapInstallmentRow(row: InstallmentRow): Installment {
   if (row.cardInstrumentId !== null) installment.cardInstrumentId = row.cardInstrumentId;
 
   return installment;
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }

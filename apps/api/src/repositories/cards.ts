@@ -36,6 +36,7 @@ import {
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { listCardInstrumentsForContext } from "./card-instruments.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 interface CardRow {
   id: string;
@@ -689,10 +690,6 @@ function mapInvoiceRow(row: InvoiceRow): Invoice {
   if (row.paidAt !== null) invoice.paidAt = row.paidAt.toISOString();
 
   return invoice;
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }
 
 export type { InvoicePeriod, InstallmentStatus, CardInstrument };

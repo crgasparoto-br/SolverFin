@@ -9,6 +9,7 @@ import {
 import { withTransaction, type query } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { InvoiceContractError, type UpdateCardPurchasePayload } from "./card-invoice-contracts.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 export type RecurringCardPurchaseSkipReason =
   | "installment_locked"
@@ -637,8 +638,4 @@ function normalizeFrequency(value: string): RecurrenceFrequency {
   }
 
   return "monthly";
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }

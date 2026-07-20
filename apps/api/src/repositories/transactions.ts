@@ -24,6 +24,7 @@ import {
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { updateCardPurchaseForContext } from "./card-invoice-contracts.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 interface TransactionRow {
   id: string;
@@ -762,8 +763,4 @@ function normalizeRecurrenceFrequency(frequency: string | undefined): Recurrence
   }
 
   return "monthly";
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }

@@ -1,5 +1,6 @@
 import { query, type QueryExecutor } from "../db.js";
 import type { OperationRecord } from "./account-remuneration-service.js";
+import { toDateOnly } from "./repository-date-utils.js";
 import type {
   DatePeriod,
   DiagnosedOperationRecord,
@@ -270,8 +271,4 @@ function parseBrazilianDate(value: string | null): string | null {
   if (!match) return null;
   const [, day, month, year] = match;
   return `${year}-${month}-${day}`;
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }

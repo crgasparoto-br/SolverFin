@@ -15,6 +15,7 @@ import {
   type CardPurchaseContract,
   type InvoiceSummaryContract,
 } from "./card-invoice-contracts.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 export interface MoveCardPurchaseInvoicePeriodPayload {
   invoicePeriod: string;
@@ -486,10 +487,6 @@ function mapPurchaseForMove(row: PurchaseForMoveRow): CardPurchaseContract {
 
 function lastDayOfMonth(year: number, month: number): number {
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }
 
 function notFoundError(): InvoiceContractError {

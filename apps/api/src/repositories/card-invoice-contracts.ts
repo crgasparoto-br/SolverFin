@@ -2,6 +2,7 @@ import { TenantAuthorizationError, type EntityId, type TenantContext } from "@so
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 export type PurchaseReconciliationFilter = "all" | "reconciled" | "unreconciled";
 
@@ -688,10 +689,6 @@ function mapTransactionStatusToInstallmentStatus(status: string): string {
 
 function isIsoDate(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
-function toDateOnly(value: Date): string {
-  return value.toISOString().slice(0, 10);
 }
 
 function toNumber(value: number | string | null | undefined): number {
