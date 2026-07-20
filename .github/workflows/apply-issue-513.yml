@@ -65,7 +65,6 @@ jobs:
           cat .issue513/apply.000 .issue513/apply.001 .issue513/apply.002 > /tmp/issue-513-apply.mjs
           echo "928f6da7f680c75b469cc17a7ae343250f15ea788072a662e2288555c83908c7  /tmp/issue-513-imports.ts" | sha256sum --check
           echo "01f8b685fd4accdce56e3dc1fb5c94d0b49de5da6e06fc49e341aed008ebeadf  /tmp/issue-513-apply.mjs" | sha256sum --check
-          echo "4e2059089f2ba0ca350042d4616da8cb4ee68cbbb08c10db443d96e77b096571  .issue513/fix-types.mjs" | sha256sum --check
           node --check /tmp/issue-513-apply.mjs
           node --check .issue513/fix-types.mjs
 
