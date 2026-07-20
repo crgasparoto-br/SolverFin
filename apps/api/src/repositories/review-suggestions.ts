@@ -22,6 +22,7 @@ import {
 } from "@solverfin/domain";
 
 import { query, withSharedTransaction, type QueryExecutor } from "../db.js";
+import { buildInsertAiSuggestionSql, buildUpdateAiSuggestionSql } from "./ai-suggestion-sql.js";
 import { insertAuditLogEntry } from "./audit.js";
 import {
   refreshImportBatchStatusForContext,
@@ -512,23 +513,6 @@ function assertPendingSuggestion(suggestion: AiSuggestion): void {
       409,
     );
   }
-}
-
-function buildInsertAiSuggestionSql(): string {
-  return `insert into "AiSuggestion"
-    ("id", "organizationId", "financialProfileId", "kind", "status", "sourceEntityId", "targetEntityId",
-     "confidence", "explanation", "payload", "sourceSuggestionId", "payloadFingerprint", "provider", "model",
-     "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt")
-    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13, $14, $15, $16, $17, $18)`;
-}
-
-function buildUpdateAiSuggestionSql(): string {
-  return `update "AiSuggestion" set
-    "kind" = $4, "status" = $5, "sourceEntityId" = $6, "targetEntityId" = $7, "confidence" = $8,
-    "explanation" = $9, "payload" = $10::jsonb, "sourceSuggestionId" = $11, "payloadFingerprint" = $12,
-    "provider" = $13, "model" = $14, "reviewedByUserId" = $15, "reviewedAt" = $16,
-    "createdAt" = $17, "updatedAt" = $18
-   where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
 function buildAiSuggestionParams(suggestion: AiSuggestion): unknown[] {
