@@ -53,12 +53,13 @@ Os testes automatizados cobrem:
 - isolamento por perfil financeiro;
 - estado aprovado sem transação como erro controlado;
 - `targetEntityId` nulo, inexistente ou conflitante com a transação ligada por `aiSuggestionId`;
+- conciliação cujo `targetEntityId` diverge do alvo do candidato aprovado;
 - sucesso parcial no lote quando outro item está inconsistente;
 - rollback forçado nos pontos de inserção da transação, auditoria e atualização da sugestão.
 
 ## Diagnóstico histórico seguro
 
-A consulta abaixo é somente leitura e identifica sugestões de importação aprovadas cujo vínculo canônico está incompleto ou conflitante. Uma conciliação válida continua aceita quando `targetEntityId` aponta para a transação existente, mesmo que essa transação não tenha `aiSuggestionId` da sugestão de origem.
+A consulta abaixo é somente leitura e identifica sugestões de importação aprovadas cujo vínculo canônico está incompleto ou conflitante. Uma conciliação válida continua aceita quando `targetEntityId` aponta para o mesmo alvo registrado no candidato de conciliação aprovado, mesmo que essa transação não tenha `aiSuggestionId` da sugestão de origem.
 
 ```sql
 select
@@ -69,6 +70,7 @@ select
   s."targetEntityId",
   target."id" as "targetTransactionId",
   linked."id" as "suggestionLinkedTransactionId",
+  reconciliation."payload"->>'targetTransactionId' as "reconciliationTargetTransactionId",
   s."reviewedAt"
 from "AiSuggestion" s
 left join "Transaction" target
@@ -79,17 +81,30 @@ left join "Transaction" linked
   on linked."organizationId" = s."organizationId"
  and linked."financialProfileId" = s."financialProfileId"
  and linked."aiSuggestionId" = s."id"
+left join "AiSuggestion" reconciliation
+  on reconciliation."organizationId" = s."organizationId"
+ and reconciliation."financialProfileId" = s."financialProfileId"
+ and reconciliation."sourceSuggestionId" = s."id"
+ and reconciliation."kind" = 'RECONCILIATION'
+ and reconciliation."status" = 'APPROVED'
 where s."kind" = 'TRANSACTION_EXTRACTION'
   and s."status" = 'APPROVED'
   and (
     s."targetEntityId" is null
     or target."id" is null
     or (linked."id" is not null and linked."id" <> target."id")
+    or (
+      reconciliation."id" is not null
+      and (
+        reconciliation."payload"->>'targetTransactionId' is null
+        or reconciliation."payload"->>'targetTransactionId' <> target."id"::text
+      )
+    )
   )
 order by s."reviewedAt" asc;
 ```
 
-A base de integração cria vínculos nulo e conflitante, confirma que o diagnóstico detecta ambos e restaura integralmente as fixtures. Não houve acesso à base de produção durante esta implementação; portanto, a quantidade histórica de produção deve ser obtida executando o comando abaixo no ambiente autorizado.
+A base de integração cria vínculos nulo, conflitante com `aiSuggestionId` e conflitante com o candidato de conciliação aprovado; o teste confirma a detecção e restaura integralmente as fixtures. Não houve acesso à base de produção durante esta implementação; portanto, a quantidade histórica de produção deve ser obtida executando o comando abaixo no ambiente autorizado.
 
 Caso existam registros, não executar inserção ou backfill manual. A recuperação deve ser tratada separadamente, após conferir logs de auditoria, payload final, idempotência por `aiSuggestionId` e possível transação já existente.
 
