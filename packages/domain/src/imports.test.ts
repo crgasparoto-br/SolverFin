@@ -483,12 +483,17 @@ function testSplitAmountDiagnostics(): void {
       "2026-07-20,Inválida,abc,",
       "2026-07-20,Entrada negativa,-10,",
       "2026-07-20,Saída positiva,,20",
+      "2026-07-20,Entrada com zero oposto,10,0",
+      "2026-07-20,Saída com zero oposto,0,20",
     ].join("\n"),
   });
   assertEqual(preview.state, "ready", "valid split rows remain reviewable");
   assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_CONFLICT", "both values filled");
-  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_ZERO", "zero values");
-  assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED", "empty split values");
+  assertEqual(
+    preview.problems.filter((problem) => problem.code === "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED").length,
+    2,
+    "empty and all-zero split rows share the controlled missing-value diagnostic",
+  );
   assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid number");
   assertEqual(
     preview.suggestions[0]?.kind,
@@ -502,6 +507,10 @@ function testSplitAmountDiagnostics(): void {
     "positive expense column still creates expense",
   );
   assertEqual(preview.suggestions[1]?.amountMinor, 2000, "positive expense uses modulus");
+  assertEqual(preview.suggestions[2]?.kind, "income", "zero expense column is treated as absent");
+  assertEqual(preview.suggestions[2]?.amountMinor, 1000, "income with opposite zero is accepted");
+  assertEqual(preview.suggestions[3]?.kind, "expense", "zero income column is treated as absent");
+  assertEqual(preview.suggestions[3]?.amountMinor, 2000, "expense with opposite zero is accepted");
 }
 
 function testSignedAmountDiagnostics(): void {
@@ -536,6 +545,14 @@ function testAmbiguousValueStrategy(): void {
     "strategy ambiguity exposed",
   );
   assertEqual(preview.csv?.valueStrategy, undefined, "ambiguous strategy is not preselected");
+  assertEqual(preview.csv?.valueCandidates?.amount, "Valor", "signed candidate is preserved");
+  assertEqual(preview.csv?.valueCandidates?.incomeAmount, "Entrada", "income candidate is preserved");
+  assertEqual(preview.csv?.valueCandidates?.expenseAmount, "Saída", "expense candidate is preserved");
+  assertEqual(
+    preview.csv?.missingRequiredFields.includes("amount"),
+    false,
+    "only the strategy decision is required when value candidates are unique",
+  );
 }
 
 function testMappingPrioritiesAndBalanceSafety(): void {

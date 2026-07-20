@@ -26,6 +26,7 @@ async function main(): Promise<void> {
 
   await assertPreviewDoesNotPersist(token, fixtures.account.id);
   await assertPreviewContractValidation(token, fixtures.account.id);
+  await assertLegacyMappingCannotControlNewImport(token, fixtures.account.id, fixtures.suffix);
   await assertC6PreviewAndCreation(token, fixtures.account.id, fixtures.suffix);
   await assertConsentAndMappingAreRequired(token, fixtures.account.id);
   await assertConcurrentBatchCreationConverges(token, fixtures.account.id, fixtures.suffix);
@@ -163,6 +164,44 @@ async function assertPreviewContractValidation(token: string, accountId: string)
   );
 }
 
+async function assertLegacyMappingCannotControlNewImport(
+  token: string,
+  accountId: string,
+  suffix: string,
+): Promise<void> {
+  const request = {
+    originalFileName: `legacy-new-${suffix}.csv`,
+    content: `date,description,amount,kind,externalId\n2026-07-20,Legado novo ${suffix},-10,income,legacy-new-${suffix}`,
+    accountId,
+    consentAccepted: true,
+    csvMapping: {
+      version: 1,
+      date: "date",
+      description: "description",
+      amount: "amount",
+      kind: "kind",
+      externalId: "externalId",
+    },
+  };
+  const previewResponse = await apiRequest(token, "POST", "/api/import-batches/csv/preview", request);
+  assert.equal(previewResponse.statusCode, 200);
+  const preview = readBody<{
+    batch: { csvMapping: Record<string, unknown> };
+    suggestions: Array<{ kind: string; externalId?: string }>;
+  }>(previewResponse);
+  assert.equal(preview.batch.csvMapping.version, 2);
+  assert.equal(preview.batch.csvMapping.valueStrategy, "signed");
+  assert.equal(preview.suggestions[0]?.kind, "expense");
+  assert.equal(preview.suggestions[0]?.externalId, undefined);
+
+  const createResponse = await apiRequest(token, "POST", "/api/import-batches/csv", request);
+  assert.equal(createResponse.statusCode, 201);
+  const created = readBody<ImportDetail>(createResponse);
+  assert.equal((created.importBatch.csvMapping as Record<string, unknown>).version, 2);
+  assert.equal(requireSuggestion(created, 0).payload.kind, "expense");
+  assert.equal(requireSuggestion(created, 0).payload.externalId, undefined);
+}
+
 async function assertC6PreviewAndCreation(
   token: string,
   accountId: string,
@@ -170,8 +209,8 @@ async function assertC6PreviewAndCreation(
 ): Promise<void> {
   const content = [
     "Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)",
-    "20/07/2026;20/07/2026;PIX;Receita C6 " + suffix + ";100,00;;100,00",
-    "20/07/2026;20/07/2026;Compra;Despesa C6 " + suffix + ";;-25,50;74,50",
+    "20/07/2026;20/07/2026;PIX;Receita C6 " + suffix + ";100,00;0;100,00",
+    "20/07/2026;20/07/2026;Compra;Despesa C6 " + suffix + ";0;-25,50;74,50",
   ].join("\n");
   const request = {
     originalFileName: "c6-" + suffix + ".csv",

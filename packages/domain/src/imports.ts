@@ -116,6 +116,11 @@ export interface CsvImportPreviewMetadata {
   headers: readonly string[];
   mapping: CsvImportMapping;
   valueStrategy?: CsvValueStrategy | undefined;
+  valueCandidates?: {
+    amount?: string | undefined;
+    incomeAmount?: string | undefined;
+    expenseAmount?: string | undefined;
+  };
   missingRequiredFields: readonly CsvRequiredField[];
   ambiguousFields: readonly CsvAmbiguousField[];
   interpretation: readonly CsvImportInterpretation[];
@@ -204,6 +209,11 @@ interface CsvMappingResolution {
   mapping: CsvImportMapping;
   ambiguousFields: CsvAmbiguousField[];
   missingRequiredFields: CsvRequiredField[];
+  valueCandidates?: {
+    amount?: string | undefined;
+    incomeAmount?: string | undefined;
+    expenseAmount?: string | undefined;
+  };
 }
 
 interface CsvColumnIndexes {
@@ -564,6 +574,9 @@ function parseCsvRows(input: ImportFileInput): CsvParseResult {
     ...(resolveDetectedValueStrategy(resolution) === undefined
       ? {}
       : { valueStrategy: resolveDetectedValueStrategy(resolution) }),
+    ...(resolution.valueCandidates === undefined
+      ? {}
+      : { valueCandidates: resolution.valueCandidates }),
     missingRequiredFields: resolution.missingRequiredFields,
     ambiguousFields: resolution.ambiguousFields,
     interpretation: buildInterpretation(resolution.mapping, ignoredHeaders),
@@ -634,10 +647,6 @@ function parseCsvRecord(
       structuralProblem = amountProblem(record.rowNumber, "invalid", "entrada");
     else if (expense.state === "invalid")
       structuralProblem = amountProblem(record.rowNumber, "invalid", "saida");
-    else if (income.state === "zero")
-      structuralProblem = amountProblem(record.rowNumber, "zero", "entrada");
-    else if (expense.state === "zero")
-      structuralProblem = amountProblem(record.rowNumber, "zero", "saida");
     else if (incomePresent && expensePresent) {
       structuralProblem = buildRowError(
         record.rowNumber,
@@ -968,6 +977,11 @@ function resolveCsvMapping(
 
   const signedAvailable = signed.candidates.length > 0;
   const splitAvailable = income.candidates.length > 0 || expense.candidates.length > 0;
+  const valueCandidates = {
+    ...(signed.candidates.length === 1 ? { amount: signed.candidates[0] } : {}),
+    ...(income.candidates.length === 1 ? { incomeAmount: income.candidates[0] } : {}),
+    ...(expense.candidates.length === 1 ? { expenseAmount: expense.candidates[0] } : {}),
+  };
   let mapping: CsvImportMapping;
   if (signedAvailable && splitAvailable) {
     mapping = {
@@ -975,6 +989,7 @@ function resolveCsvMapping(
       valueStrategy: "signed",
       ...(date.header ? { date: date.header } : {}),
       ...(description.header ? { description: description.header } : {}),
+      ...(valueCandidates.amount === undefined ? {} : { amount: valueCandidates.amount }),
     };
     ambiguousFields.push("valueStrategy");
   } else if (signedAvailable) {
@@ -1010,6 +1025,7 @@ function resolveCsvMapping(
     mapping,
     ambiguousFields: unique(ambiguousFields),
     missingRequiredFields,
+    ...(Object.keys(valueCandidates).length === 0 ? {} : { valueCandidates }),
   };
 }
 

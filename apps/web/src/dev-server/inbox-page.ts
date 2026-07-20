@@ -766,7 +766,8 @@ function csvImportScript(
         }
         function isBalanceHeader(header) {
           const normalized = String(header || "").trim().toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
-          return normalized === "saldo" || normalized.startsWith("saldo ") || normalized === "balance" || normalized.startsWith("balance ");
+          const candidate = normalized.replace(/ (?:r|brl|usd|eur)$/, "");
+          return candidate === "saldo" || candidate.startsWith("saldo ") || candidate === "balance" || candidate.startsWith("balance ") || candidate.endsWith(" balance");
         }
         function currentMapping() {
           const date = form.elements.mappingDate && form.elements.mappingDate.value;
@@ -794,13 +795,14 @@ function csvImportScript(
           select.innerHTML = '<option value="">Selecione</option>' + options.map((header) => '<option value="' + escapeHtml(header) + '">' + escapeHtml(header) + '</option>').join("");
           if (selected) select.value = selected;
         }
-        function fillMapping(headers, mapping, detectedStrategy) {
+        function fillMapping(headers, mapping, detectedStrategy, valueCandidates) {
           mappingFields.hidden = false;
+          const candidates = valueCandidates || {};
           fillSelect("mappingDate", headers, mapping && mapping.date, true);
           fillSelect("mappingDescription", headers, mapping && mapping.description, true);
-          fillSelect("mappingAmount", headers, mapping && mapping.amount, false);
-          fillSelect("mappingIncomeAmount", headers, mapping && mapping.incomeAmount, false);
-          fillSelect("mappingExpenseAmount", headers, mapping && mapping.expenseAmount, false);
+          fillSelect("mappingAmount", headers, (mapping && mapping.amount) || candidates.amount, false);
+          fillSelect("mappingIncomeAmount", headers, (mapping && mapping.incomeAmount) || candidates.incomeAmount, false);
+          fillSelect("mappingExpenseAmount", headers, (mapping && mapping.expenseAmount) || candidates.expenseAmount, false);
           form.elements.mappingStrategy.value = detectedStrategy || "";
           updateMappingStrategy();
         }
@@ -811,7 +813,7 @@ function csvImportScript(
         }
         function renderPreview(preview) {
           const csv = preview.csv || {};
-          if (csv.headers && csv.headers.length) fillMapping(csv.headers, csv.mapping || {}, csv.valueStrategy);
+          if (csv.headers && csv.headers.length) fillMapping(csv.headers, csv.mapping || {}, csv.valueStrategy, csv.valueCandidates || {});
           const problems = preview.problems || [];
           const sampleRows = csv.sampleRows || [];
           const sampleHeader = '<thead><tr><th>Linha</th><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead>';

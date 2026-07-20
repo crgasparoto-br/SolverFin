@@ -360,8 +360,6 @@ function readCsvMapping(value: unknown): CsvImportMapping | undefined {
   const amount = readOptionalString("amount");
   const incomeAmount = readOptionalString("incomeAmount");
   const expenseAmount = readOptionalString("expenseAmount");
-  const kind = readOptionalString("kind");
-  const externalId = readOptionalString("externalId");
   const requestsV2 =
     input.version === 2 ||
     input.valueStrategy !== undefined ||
@@ -408,11 +406,11 @@ function readCsvMapping(value: unknown): CsvImportMapping | undefined {
   }
 
   return {
+    version: 2,
+    valueStrategy: "signed",
     ...(date === undefined ? {} : { date }),
     ...(description === undefined ? {} : { description }),
     ...(amount === undefined ? {} : { amount }),
-    ...(kind === undefined ? {} : { kind }),
-    ...(externalId === undefined ? {} : { externalId }),
   };
 }
 
