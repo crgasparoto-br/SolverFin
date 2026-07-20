@@ -50,6 +50,11 @@ index = replaceOnce(
 );
 writeFileSync(indexPath, index, "utf8");
 
+const domainTestPath = "packages/domain/src/imports.test.ts";
+let domainTests = readFileSync(domainTestPath, "utf8");
+domainTests = domainTests.replaceAll("\\\\n", "\\n");
+writeFileSync(domainTestPath, domainTests, "utf8");
+
 const integrationPath = "apps/api/src/csv-import-review.integration.test.ts";
 let integration = readFileSync(integrationPath, "utf8");
 integration = replaceOnce(
@@ -92,4 +97,5 @@ integration = replaceOnce(
   kind?: string;`,
   "integration extraction kind",
 );
+integration = integration.replaceAll("\\\\n", "\\n");
 writeFileSync(integrationPath, integration, "utf8");
