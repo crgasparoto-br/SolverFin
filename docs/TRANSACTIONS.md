@@ -1,5 +1,23 @@
 # Lancamentos e filtros
 
+## Unificacao no Extrato
+
+A unificacao e uma projecao persistente de apresentacao. `TransactionGroup` guarda conta,
+descricao e data de exibicao; `Transaction.transactionGroupId` liga cada membro a no maximo um
+grupo. Valores, datas, categorias, recorrencia, parcela, importacao, transferencia e conciliacao
+dos membros nao sao copiados nem alterados. O total e recalculado pela soma inteira de
+`amountMinor`.
+
+O primeiro corte aceita somente dois ou mais lancamentos da mesma organizacao, perfil, conta,
+moeda, tipo (`income` ou `expense`) e status; exclui cartoes, transferencias, `suggested`,
+`voided` e itens ja agrupados. Alteracoes posteriores de conta, tipo, moeda, status ou exclusao
+sao bloqueadas ate o usuario desagrupar. Alteracoes de descricao, data, categoria ou valor
+permanecem refletidas automaticamente no grupo.
+
+Grupos legados com menos de dois membros nao geram linha consolidada: os membros voltam a ser
+apresentados individualmente. Criacao e desagrupamento sao transacionais e geram auditoria
+redigida contendo apenas a natureza da operacao e a quantidade de membros.
+
 Este documento registra o contrato inicial da tela de lancamentos do SolverFin Web.
 
 A implementacao atual fica em `apps/web/src/transactions/` e segue a estrategia das issues anteriores de frontend: contratos TypeScript, validacoes puras, filtros deterministas, CSS base e mocks isolados, sem escolher framework web nem consumir APIs inexistentes.

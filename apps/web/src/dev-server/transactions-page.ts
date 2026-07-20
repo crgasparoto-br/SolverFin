@@ -22,10 +22,12 @@ import {
   resolveFilters,
   statementDate,
   summarize,
+  projectTransactionGroups,
   type AccountRecord,
   type StatementRow,
   type StatementSummary,
   type TransactionRecord,
+  type TransactionGroupRecord,
 } from "./transactions-statement.js";
 
 interface CategoryRecord {
@@ -62,16 +64,30 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
     ? recurrencesResult.data.recurrences
     : [];
 
-  const transactionResult = filters.accountId
-    ? await apiGet<{ transactions: TransactionRecord[] }>(
-        token,
-        `/api/transactions?${buildTransactionQuery(filters)}`,
-      )
-    : ({ ok: true, data: { transactions: [] } } as const);
+  const [transactionResult, groupsResult] = filters.accountId
+    ? await Promise.all([
+        apiGet<{ transactions: TransactionRecord[] }>(
+          token,
+          `/api/transactions?${buildTransactionQuery(filters)}`,
+        ),
+        apiGet<{ groups: TransactionGroupRecord[] }>(
+          token,
+          `/api/transaction-groups?accountId=${encodeURIComponent(filters.accountId)}&startsOn=1900-01-01&endsOn=${filters.endsOn}`,
+        ),
+      ])
+    : ([
+        { ok: true, data: { transactions: [] as TransactionRecord[] } },
+        { ok: true, data: { groups: [] as TransactionGroupRecord[] } },
+      ] as const);
 
   if (!transactionResult.ok) return renderErrorPage(transactionResult.error);
 
-  const transactions = transactionResult.data.transactions.filter(isAccountStatementTransaction);
+  const groups =
+    groupsResult.ok && Array.isArray(groupsResult.data?.groups) ? groupsResult.data.groups : [];
+  const transactions = projectTransactionGroups(
+    transactionResult.data.transactions.filter(isAccountStatementTransaction),
+    groups,
+  );
   const openingMinor = calculateOpeningBalance(transactions, selectedAccount, filters.startsOn);
   const rows = buildRows(
     filterStatementPeriodTransactions(transactions, filters),
@@ -147,9 +163,16 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
                   )
             }
           </div>
+          <aside class="selection-bar" data-selection-bar hidden aria-live="polite">
+            <strong><span data-selection-count>0</span> selecionados</strong>
+            <span data-selection-total>R$ 0,00</span>
+            <button type="button" class="ghost-btn" data-selection-clear>Limpar</button>
+            <button type="button" data-group-open disabled>Unificar lançamentos</button>
+          </aside>
         </section>
       </section>
       ${renderModal(selectedAccount, accounts, categories)}
+      ${renderGroupModal(selectedAccount)}
       ${renderRecurrenceEditModal(categories, "account")}
       ${clientScript()}
       ${recurrencesSectionScript()}
@@ -160,7 +183,7 @@ export async function renderTransactionsPage(token: string, url?: URL): Promise<
 function renderTableHeader(): string {
   return `
     <div class="statement-row statement-head" role="row">
-      <span class="col-date">Data</span><span class="col-description">Histórico</span><span class="col-category">Categoria</span><span class="col-kind">Tipo</span>
+      <span class="col-select" aria-hidden="true"></span><span class="col-date">Data</span><span class="col-description">Histórico</span><span class="col-category">Categoria</span><span class="col-kind">Tipo</span>
       <span class="col-status">Situação</span><span class="col-amount">Valor</span><span class="col-balance">Saldo</span><span class="col-actions">Ações</span>
     </div>
   `;
@@ -183,9 +206,18 @@ function renderRow(
   const recurrence = transaction.recurrenceId
     ? recurrences.find((candidate) => candidate.id === transaction.recurrenceId)
     : undefined;
+  if (transaction.group) return renderGroupRow(row, transaction.group);
+  const eligible =
+    (transaction.kind === "income" || transaction.kind === "expense") &&
+    transaction.status !== "suggested" &&
+    transaction.status !== "voided" &&
+    !transaction.cardId &&
+    !transaction.invoiceId &&
+    !transaction.transactionGroupId;
 
   return `
     <article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row">
+      <label class="col-select"><input type="checkbox" data-select-transaction value="${escapeHtml(transaction.id)}" data-kind="${escapeHtml(transaction.kind)}" data-status="${escapeHtml(transaction.status)}" data-currency="${escapeHtml(transaction.currency ?? "BRL")}" data-amount="${row.amountMinor}" data-date="${escapeHtml(date)}" data-description="${escapeHtml(transaction.description)}" aria-label="Selecionar lançamento ${escapeHtml(transaction.description || "sem descrição")}"${eligible ? "" : " disabled"}></label>
       <time class="col-date" datetime="${escapeHtml(date)}">${formatDate(date)}</time>
       <div class="description col-description">
         <strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}${transaction.accountRemuneration ? '<span class="account-remuneration-badge">Remuneração CDI</span>' : ""}</strong>
@@ -211,6 +243,33 @@ function renderRow(
       <script type="application/json" data-transaction="${escapeHtml(transaction.id)}">${serializeScriptJson(transaction)}</script>
     </article>
   `;
+}
+
+function renderGroupRow(row: StatementRow, group: TransactionGroupRecord): string {
+  return `<article class="statement-row statement-body grouped-row" role="row" data-group-row="${escapeHtml(group.id)}">
+    <span class="col-select group-indicator" aria-label="Grupo de lançamentos">&#128279;</span>
+    <time class="col-date" datetime="${escapeHtml(group.displayOn)}">${formatDate(group.displayOn)}</time>
+    <div class="description col-description"><strong>${escapeHtml(group.description)}</strong><span>${group.members.length} lançamentos agrupados</span></div>
+    <span class="col-category">Várias categorias</span><span class="col-kind">${escapeHtml(formatKind(group.kind))}</span>
+    ${renderStatementStatus(row.transaction)}
+    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${formatMoney(row.amountMinor)}</strong>
+    <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}">${formatMoney(row.balanceAfterMinor)}</strong>
+    <button type="button" class="icon-btn col-actions" data-group-details="${escapeHtml(group.id)}" aria-label="Ver lançamentos do grupo">${renderDotsIcon()}</button>
+    <script type="application/json" data-group="${escapeHtml(group.id)}">${serializeScriptJson(group)}</script>
+  </article>`;
+}
+
+function renderGroupModal(selectedAccount: AccountRecord | undefined): string {
+  return `<dialog class="modal" data-group-modal>
+    <section class="modal-panel group-modal-panel"><header><div><p class="eyebrow">Agrupamento</p><h2 data-group-title>Unificar lançamentos</h2></div><button type="button" class="icon-btn" data-group-close aria-label="Fechar">&times;</button></header>
+    <form data-group-form>
+      <label>Descrição do grupo<input name="description" maxlength="240" required></label>
+      <label>Data de exibição<input name="displayOn" type="date" required></label>
+      <label>Conta<input value="${escapeHtml(selectedAccount?.name ?? "")}" readonly></label>
+      <div class="group-readonly" data-group-summary></div><div class="group-members" data-group-members></div>
+      <p class="form-error" data-group-error hidden></p>
+      <div class="save-row"><button type="button" class="ghost-btn" data-group-close>Cancelar</button><button type="submit">Unificar</button><button type="button" class="danger" data-group-ungroup hidden>Desagrupar lançamentos</button></div>
+    </form></section></dialog>`;
 }
 
 export function renderAccountRemunerationAudit(transaction: TransactionRecord): string {
@@ -645,6 +704,72 @@ function clientScript(): string {
         const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {});
         if (response.ok) window.setTimeout(() => window.location.reload(), 450);
       }));
+
+      const groupModal = document.querySelector("[data-group-modal]");
+      const groupForm = document.querySelector("[data-group-form]");
+      const selectionBar = document.querySelector("[data-selection-bar]");
+      const selectable = Array.from(document.querySelectorAll("[data-select-transaction]"));
+      const groupOpen = document.querySelector("[data-group-open]");
+      const selected = () => selectable.filter((input) => input.checked);
+      const compatible = (items) => items.length >= 2 && items.every((item) =>
+        item.dataset.kind === items[0].dataset.kind && item.dataset.status === items[0].dataset.status && item.dataset.currency === items[0].dataset.currency
+      );
+      const money = (minor) => (minor / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+      function syncSelection() {
+        const items = selected();
+        selectionBar.hidden = items.length === 0;
+        selectionBar.querySelector("[data-selection-count]").textContent = String(items.length);
+        selectionBar.querySelector("[data-selection-total]").textContent = money(items.reduce((sum, item) => sum + Number(item.dataset.amount), 0));
+        groupOpen.disabled = !compatible(items);
+        groupOpen.title = items.length > 1 && !compatible(items) ? "Selecione lançamentos do mesmo tipo, moeda e situação." : "";
+      }
+      selectable.forEach((input) => input.addEventListener("change", syncSelection));
+      document.querySelector("[data-selection-clear]")?.addEventListener("click", () => { selectable.forEach((input) => input.checked = false); syncSelection(); });
+      document.querySelectorAll("[data-group-close]").forEach((button) => button.addEventListener("click", () => groupModal.close()));
+
+      groupOpen?.addEventListener("click", () => {
+        const items = selected();
+        if (!compatible(items)) return;
+        groupForm.reset();
+        groupForm.dataset.mode = "create";
+        groupForm.dataset.groupId = "";
+        groupForm.description.value = "";
+        groupForm.description.readOnly = false; groupForm.displayOn.readOnly = false;
+        groupForm.displayOn.value = items.map((item) => item.dataset.date).sort().at(-1);
+        groupForm.querySelector("[data-group-summary]").textContent = items[0].dataset.kind + " · " + items[0].dataset.status + " · " + items[0].dataset.currency + " · " + money(items.reduce((sum, item) => sum + Math.abs(Number(item.dataset.amount)), 0));
+        groupForm.querySelector("[data-group-members]").innerHTML = items.map((item) => "<div><span>" + item.dataset.date + " · " + item.dataset.description + "</span><strong>" + money(Number(item.dataset.amount)) + "</strong></div>").join("");
+        groupForm.querySelector('[type="submit"]').hidden = false;
+        groupForm.querySelector("[data-group-ungroup]").hidden = true;
+        document.querySelector("[data-group-title]").textContent = "Unificar lançamentos";
+        groupModal.showModal();
+      });
+
+      document.querySelectorAll("[data-group]").forEach((node) => {
+        const group = JSON.parse(node.textContent);
+        document.querySelector('[data-group-details="' + group.id + '"]')?.addEventListener("click", () => {
+          groupForm.reset(); groupForm.dataset.mode = "details"; groupForm.dataset.groupId = group.id;
+          groupForm.description.value = group.description; groupForm.description.readOnly = true;
+          groupForm.displayOn.value = group.displayOn; groupForm.displayOn.readOnly = true;
+          groupForm.querySelector("[data-group-summary]").textContent = group.kind + " · " + group.status + " · " + group.currency + " · " + money(group.totalAmountMinor);
+          groupForm.querySelector("[data-group-members]").innerHTML = group.members.map((item) => "<div><span>" + (item.effectiveOn || item.plannedOn || item.occurredOn) + " · " + item.description + " · " + (item.categoryName || "Sem categoria") + " · " + item.status + "</span><strong>" + money((item.kind === "expense" ? -1 : 1) * item.amountMinor) + "</strong></div>").join("");
+          groupForm.querySelector('[type="submit"]').hidden = true; groupForm.querySelector("[data-group-ungroup]").hidden = false;
+          document.querySelector("[data-group-title]").textContent = "Detalhes do grupo"; groupModal.showModal();
+        });
+      });
+
+      groupForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const error = groupForm.querySelector("[data-group-error]"); error.hidden = true;
+        const response = await send("/api/transaction-groups", "POST", { memberIds: selected().map((item) => item.value), description: groupForm.description.value, displayOn: groupForm.displayOn.value });
+        if (response.ok) { selectable.forEach((input) => input.checked = false); window.location.reload(); return; }
+        error.textContent = await message(response); error.hidden = false;
+      });
+      groupForm?.querySelector("[data-group-ungroup]")?.addEventListener("click", async () => {
+        if (!window.confirm("Desagrupar estes lançamentos?")) return;
+        const response = await send("/api/transaction-groups/" + groupForm.dataset.groupId, "DELETE", {});
+        if (response.ok) window.location.reload();
+      });
     </script>
   `;
 }
@@ -905,7 +1030,18 @@ function css(): string {
     .chip-ok { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); }
     .chip-posted { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
     .statement-table { display: grid; max-width: 100%; overflow-x: auto; }
-    .statement-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 8px; grid-template-columns: 6rem minmax(8rem,1.3fr) minmax(7rem,0.9fr) 7rem 4.5rem 8rem 8rem 3rem; padding: 8px 12px; }
+    .statement-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 8px; grid-template-columns: 2rem 6rem minmax(8rem,1.3fr) minmax(7rem,0.9fr) 7rem 4.5rem 8rem 8rem 3rem; padding: 8px 12px; }
+    .col-select { display: grid; place-items: center; }
+    .col-select input { height: 1.1rem; width: 1.1rem; }
+    .grouped-row { background: color-mix(in srgb, var(--primary) 5%, transparent); }
+    .group-indicator { color: var(--primary); }
+    .selection-bar { align-items: center; background: var(--surface); border: 1px solid var(--primary); border-radius: var(--radius); bottom: 16px; box-shadow: var(--shadow); display: flex; gap: 12px; justify-content: flex-end; padding: 10px 14px; position: sticky; z-index: 8; }
+    .selection-bar[hidden] { display: none; }
+    .group-modal-panel { max-width: 760px; }
+    .group-modal-panel form { display: grid; gap: 12px; grid-template-columns: repeat(3,minmax(0,1fr)); }
+    .group-readonly, .group-members, .group-modal-panel .save-row, .group-modal-panel .form-error { grid-column: 1 / -1; }
+    .group-members { border: 1px solid var(--line); border-radius: var(--radius); max-height: 280px; overflow: auto; }
+    .group-members > div { align-items: center; border-bottom: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; padding: 9px; }
     .statement-head { background: #f1f7fa; color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
     .statement-head .col-amount, .statement-head .col-balance, .col-amount, .col-balance { text-align: right; }
     .description { display: grid; gap: 2px; }
@@ -950,7 +1086,7 @@ function css(): string {
     .error-page { min-height: 100vh; place-content: center; }
     @media (max-width: 1279px) { .statement-layout { grid-template-columns: 1fr; } .account-summary { position: static; } }
     @media (max-width: 1024px) { .filter-form { grid-template-columns: repeat(2, minmax(0,1fr)); } .modal-panel form[data-form] { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-    @media (max-width: 760px) { main { padding: 14px 14px 24px; } .filter-form, .modal-panel form[data-form], .summary-totals { grid-template-columns: 1fr; } .statement-heading, .statement-toolbar { align-items: stretch; display: grid; } .statement-heading-actions { justify-content: stretch; } .statement-heading-actions button { flex: 1 1 auto; } .save-row { align-items: stretch; flex-direction: column; } .statement-table { overflow-x: visible; } .statement-head { display: none; } .statement-row.statement-body { align-items: center; display: flex; flex-wrap: wrap; gap: 5px 8px; padding: 10px; } .statement-row.statement-body .col-date { color: var(--muted); flex: 0 0 auto; font-size: 0.75rem; order: 1; } .statement-row.statement-body .col-actions { margin-left: auto; order: 2; } .statement-row.statement-body .col-description { flex: 1 1 100%; order: 3; } .statement-row.statement-body .col-category, .statement-row.statement-body .col-kind { color: var(--muted); font-size: 0.75rem; order: 4; } .statement-row.statement-body .col-status { order: 5; } .statement-row.statement-body .col-amount { font-size: 0.9375rem; margin-left: auto; order: 6; } .statement-row.statement-body .col-balance { color: var(--muted); font-size: 0.75rem; order: 7; } }
+    @media (max-width: 760px) { main { padding: 14px 14px 24px; } .filter-form, .modal-panel form[data-form], .group-modal-panel form, .summary-totals { grid-template-columns: 1fr; } .statement-heading, .statement-toolbar { align-items: stretch; display: grid; } .statement-heading-actions { justify-content: stretch; } .statement-heading-actions button { flex: 1 1 auto; } .save-row { align-items: stretch; flex-direction: column; } .selection-bar { align-items: stretch; flex-wrap: wrap; } .statement-table { overflow-x: visible; } .statement-head { display: none; } .statement-row.statement-body { align-items: center; display: flex; flex-wrap: wrap; gap: 5px 8px; padding: 10px; } .statement-row.statement-body .col-select { order: 1; } .statement-row.statement-body .col-date { color: var(--muted); flex: 0 0 auto; font-size: 0.75rem; order: 1; } .statement-row.statement-body .col-actions { margin-left: auto; order: 2; } .statement-row.statement-body .col-description { flex: 1 1 100%; order: 3; } .statement-row.statement-body .col-category, .statement-row.statement-body .col-kind { color: var(--muted); font-size: 0.75rem; order: 4; } .statement-row.statement-body .col-status { order: 5; } .statement-row.statement-body .col-amount { font-size: 0.9375rem; margin-left: auto; order: 6; } .statement-row.statement-body .col-balance { color: var(--muted); font-size: 0.75rem; order: 7; } }
     ${recurrencesSectionStyles()}
   `;
 }

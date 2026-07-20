@@ -5,6 +5,7 @@ export * from "./categories.js";
 export * from "./category-learning.js";
 export * from "./ai-review-queue.js";
 export * from "./transactions.js";
+export * from "./transaction-groups.js";
 export * from "./recurrences.js";
 export * from "./recurrence-calendar.js";
 export * from "./cards.js";
@@ -205,6 +206,7 @@ export interface Transaction extends Traceable, TenantScoped {
   importBatchId?: EntityId;
   aiSuggestionId?: EntityId;
   transferGroupId?: EntityId;
+  transactionGroupId?: EntityId;
   reconciledAt?: ISODateTime;
   voidedAt?: ISODateTime;
 }

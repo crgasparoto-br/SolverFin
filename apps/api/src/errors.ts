@@ -138,6 +138,11 @@ function normalizeKnownDatabaseError(
       statusCode: 404,
       fallbackMessage: "Conta não encontrada para este perfil.",
     },
+    Transaction_group_member_update_blocked: {
+      code: "TRANSACTION_GROUP_MEMBER_UPDATE_BLOCKED",
+      statusCode: 409,
+      fallbackMessage: "Desagrupe os lançamentos antes de alterar conta, tipo, moeda ou situação.",
+    },
   };
   const mapping = candidate.constraint ? mappings[candidate.constraint] : undefined;
 
