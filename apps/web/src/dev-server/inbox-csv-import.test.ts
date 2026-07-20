@@ -69,8 +69,12 @@ describe("Inbox CSV import review contract", () => {
     assert.match(source, /Lançamentos vinculados/);
     assert.match(source, /linha legada não possui dados estruturados/i);
     assert.match(source, /statementUrl/);
-    assert.match(source, /params\.set\("accountId"/);
-    assert.match(source, /params\.set\("month"/);
+    assert.match(source, /buildImportStatementUrl/);
+    assert.match(source, /buildImportStatementUrl\(item\)/);
+    assert.match(
+      source,
+      /buildImportStatementUrl\(suggestion,\s*value\.importBatch\.defaultAccountId/,
+    );
   });
 
   it("does not retain raw CSV in browser storage", () => {
