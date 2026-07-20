@@ -13,7 +13,6 @@ const consumingModules = [
   "categories-page.js",
   "inbox-page.js",
   "pages.js",
-  "payables-receivables-page.js",
   "settings-page.js",
 ] as const;
 
