@@ -11,7 +11,6 @@ const migratedShellModules = [
   "cards-page.js",
   "categories-page.js",
   "inbox-page.js",
-  "payables-receivables-page.js",
   "settings-page.js",
   "transactions-page.js",
 ] as const;
