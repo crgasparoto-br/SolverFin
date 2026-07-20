@@ -52,12 +52,13 @@ Os testes automatizados cobrem:
 - repetição sequencial, chamadas concorrentes já cobertas pelo ciclo de importação e releitura após possível timeout;
 - isolamento por perfil financeiro;
 - estado aprovado sem transação como erro controlado;
+- `targetEntityId` nulo, inexistente ou conflitante com a transação ligada por `aiSuggestionId`;
 - sucesso parcial no lote quando outro item está inconsistente;
 - rollback forçado nos pontos de inserção da transação, auditoria e atualização da sugestão.
 
 ## Diagnóstico histórico seguro
 
-A consulta abaixo é somente leitura e identifica sugestões de importação aprovadas sem transação correspondente no mesmo tenant e perfil:
+A consulta abaixo é somente leitura e identifica sugestões de importação aprovadas cujo vínculo canônico está incompleto ou conflitante. Uma conciliação válida continua aceita quando `targetEntityId` aponta para a transação existente, mesmo que essa transação não tenha `aiSuggestionId` da sugestão de origem.
 
 ```sql
 select
@@ -66,19 +67,29 @@ select
   s."sourceEntityId" as "importBatchId",
   s."id" as "suggestionId",
   s."targetEntityId",
+  target."id" as "targetTransactionId",
+  linked."id" as "suggestionLinkedTransactionId",
   s."reviewedAt"
 from "AiSuggestion" s
-left join "Transaction" t
-  on t."organizationId" = s."organizationId"
- and t."financialProfileId" = s."financialProfileId"
- and (t."id" = s."targetEntityId" or t."aiSuggestionId" = s."id")
+left join "Transaction" target
+  on target."organizationId" = s."organizationId"
+ and target."financialProfileId" = s."financialProfileId"
+ and target."id" = s."targetEntityId"
+left join "Transaction" linked
+  on linked."organizationId" = s."organizationId"
+ and linked."financialProfileId" = s."financialProfileId"
+ and linked."aiSuggestionId" = s."id"
 where s."kind" = 'TRANSACTION_EXTRACTION'
   and s."status" = 'APPROVED'
-  and t."id" is null
+  and (
+    s."targetEntityId" is null
+    or target."id" is null
+    or (linked."id" is not null and linked."id" <> target."id")
+  )
 order by s."reviewedAt" asc;
 ```
 
-A base de integração cria uma inconsistência controlada, confirma que a consulta a detecta e remove a fixture ao final. Não houve acesso à base de produção durante esta implementação; portanto, a quantidade histórica de produção deve ser obtida executando a consulta acima no ambiente autorizado.
+A base de integração cria vínculos nulo e conflitante, confirma que o diagnóstico detecta ambos e restaura integralmente as fixtures. Não houve acesso à base de produção durante esta implementação; portanto, a quantidade histórica de produção deve ser obtida executando o comando abaixo no ambiente autorizado.
 
 Caso existam registros, não executar inserção ou backfill manual. A recuperação deve ser tratada separadamente, após conferir logs de auditoria, payload final, idempotência por `aiSuggestionId` e possível transação já existente.
 
@@ -100,4 +111,4 @@ Execute no ambiente autorizado:
 npm run diagnose:import-statement-consistency -- --json
 ```
 
-O comando retorna somente a quantidade de sugestões de importação aprovadas sem transação correspondente. Ele não lista dados financeiros e não executa correção ou backfill. No CI, `--expect-zero` bloqueia a entrega quando a base efêmera termina com inconsistências.
+O comando retorna somente a quantidade de sugestões de importação aprovadas com vínculo canônico inconsistente. Ele não lista dados financeiros e não executa correção ou backfill. No CI, `--expect-zero` bloqueia a entrega quando a base efêmera termina com inconsistências.
