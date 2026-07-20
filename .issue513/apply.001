@@ -1,7 +1,13 @@
-FileErrors();
+orts.test.ts");
+domainTests = replaceOnce(
+  domainTests,
+  /testInvalidFileErrors\(\);/,
+  String.raw`testInvalidFileErrors();
 testC6SplitAmountInference();
 testSignedAmountIgnoresKindColumn();
 testSplitAmountDiagnostics();
+testSignedAmountDiagnostics();
+testAmbiguousValueStrategy();
 testMappingPrioritiesAndBalanceSafety();
 testStrategyChangesBatchIdentity();
 testLegacyMappingCompatibility();`,
@@ -65,14 +71,52 @@ function testSplitAmountDiagnostics(): void {
     content: [
       "date,description,Entrada,Saída",
       "2026-07-20,Ambas,10,20",
-      "2026-07-20,Nenhuma,0,0",
+      "2026-07-20,Zero,0,0",
+      "2026-07-20,Vazia,,",
       "2026-07-20,Inválida,abc,",
+      "2026-07-20,Entrada negativa,-10,",
+      "2026-07-20,Saída positiva,,20",
     ].join("\\n"),
   });
-  assertEqual(preview.state, "blocked", "invalid split rows are blocked");
+  assertEqual(preview.state, "ready", "valid split rows remain reviewable");
   assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_CONFLICT", "both values filled");
   assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_ZERO", "zero values");
+  assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED", "empty split values");
   assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid number");
+  assertEqual(preview.suggestions[0]?.kind, "income", "negative income column still creates income");
+  assertEqual(preview.suggestions[0]?.amountMinor, 1000, "negative income uses modulus");
+  assertEqual(preview.suggestions[1]?.kind, "expense", "positive expense column still creates expense");
+  assertEqual(preview.suggestions[1]?.amountMinor, 2000, "positive expense uses modulus");
+}
+
+function testSignedAmountDiagnostics(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "signed-invalid.csv",
+    content: [
+      "date,description,amount",
+      "2026-07-20,Vazio,",
+      "2026-07-20,Zero,0",
+      "2026-07-20,Inválido,abc",
+    ].join("\\n"),
+  });
+  assertEqual(preview.state, "blocked", "invalid signed rows are blocked");
+  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_REQUIRED", "empty signed value");
+  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_ZERO", "zero signed value");
+  assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid signed number");
+}
+
+function testAmbiguousValueStrategy(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "ambiguous-strategy.csv",
+    content: "Data,Descrição,Valor,Entrada,Saída\\n20/07/2026,Demo,10,10,",
+  });
+  assertEqual(preview.state, "mapping_required", "ambiguous value strategy requires a decision");
+  assertEqual(preview.csv?.ambiguousFields.includes("valueStrategy"), true, "strategy ambiguity exposed");
+  assertEqual(preview.csv?.valueStrategy, undefined, "ambiguous strategy is not preselected");
 }
 
 function testMappingPrioritiesAndBalanceSafety(): void {
@@ -264,24 +308,4 @@ docs = replaceOnce(
 docs = replaceOnce(
   docs,
   /O preview exige conta ativa e consentimento explícito\.[\s\S]*?Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado\./,
-  "O preview exige conta ativa e consentimento explícito. Ele retorna os cabeçalhos originais, a estratégia detectada, a interpretação aplicada (incluindo colunas ignoradas), no máximo 10 propostas normalizadas (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.",
-  "preview contract description",
-);
-docs = replaceOnce(
-  docs,
-  /Colunas obrigatórias:[\s\S]*?A conta é escolhida no fluxo e não precisa existir como coluna\./,
-  "Colunas obrigatórias:\n\n- data;\n- descrição;\n- uma estratégia de valor.\n\nAs estratégias aceitas são discriminadas e mutuamente exclusivas:\n\n- `version: 2`, `valueStrategy: signed` e `amount`: valor positivo gera receita e valor negativo gera despesa;\n- `version: 2`, `valueStrategy: split`, `incomeAmount` e `expenseAmount`: uma coluna representa entradas e a outra saídas, usando o módulo do número.\n\n`Data Lançamento`, data do movimento ou data da transação têm prioridade sobre `Data Contábil`. `Descrição`, histórico ou memo têm prioridade sobre título/name. Cabeçalhos de saldo são reconhecidos como não transacionais e não podem ser usados como valor.\n\nTipo e ID externo não aparecem no novo mapeamento genérico. O tipo vem somente do sinal ou da coluna de entrada/saída; `externalId` permanece apenas para leitura de lotes legados. A conta é escolhida no fluxo e não precisa existir como coluna.",
-  "CSV accepted mapping contract",
-);
-docs = replaceOnce(
-  docs,
-  /Datas aceitas:[\s\S]*?Quando o tipo não é informado, o sinal positivo indica receita e o negativo indica despesa\./,
-  "Datas aceitas:\n\n- `AAAA-MM-DD`;\n- `DD/MM/AAAA`.\n\nValores aceitam sinais e padrões `1234.56`, `1,234.56`, `1234,56` e `1.234,56`. Na estratégia assinada, o sinal positivo indica receita e o negativo indica despesa, mesmo que exista uma coluna de tipo no arquivo. Na estratégia separada, somente uma entre entrada e saída pode estar preenchida e diferente de zero; o valor persistido é sempre inteiro positivo em centavos.",
-  "CSV value behavior",
-);
-docs = replaceOnce(
-  docs,
-  /- `IMPORT_CSV_MAPPING_INVALID`;/,
-  "- `IMPORT_CSV_MAPPING_INVALID`;\n- `IMPORT_ROW_AMOUNT_REQUIRED`;\n- `IMPORT_ROW_AMOUNT_ZERO`;\n- `IMPORT_ROW_NUMBER_INVALID`;\n- `IMPORT_ROW_SPLIT_AMOUNT_CONFLICT`;\n- `IMPORT_ROW_SPLIT_AMOUNT_REQUIRED`;",
-  "new controlled errors",
-)
+  "O preview exige conta ativa e consentimento explícito. Ele retorna os cabeçalhos originais, a estratégia detectada, a interpretação aplicada (incluindo colunas ignoradas), no máximo 10 propostas normalizadas (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `
