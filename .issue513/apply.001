@@ -1,4 +1,4 @@
-g.raw`testInvalidFileErrors();
+FileErrors();
 testC6SplitAmountInference();
 testSignedAmountIgnoresKindColumn();
 testSplitAmountDiagnostics();
