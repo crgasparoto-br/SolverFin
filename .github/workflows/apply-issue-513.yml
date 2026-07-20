@@ -101,7 +101,20 @@ jobs:
         run: npm run lint
 
       - name: Run typecheck
-        run: npm run typecheck
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > .issue513/typecheck.log 2>&1
+          status=$?
+          cat .issue513/typecheck.log
+          if [ "$status" -ne 0 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .issue513/typecheck.log
+            git commit -m "chore: capture issue 513 typecheck diagnostics" || true
+            git push origin HEAD:feat/513-csv-value-inference
+            exit "$status"
+          fi
 
       - name: Build database and application
         run: |
