@@ -226,12 +226,9 @@ assert.match(source, /name="mappingIncomeAmount"/, "income selector is rendered"
 assert.match(source, /name="mappingExpenseAmount"/, "expense selector is rendered");
 assert.match(source, /Interpretação aplicada/, "preview explains the applied interpretation");
 assert.match(source, /isBalanceHeader/, "balance columns are filtered from value selectors");
+assert.match(source, /mappingStrategy\.value = detectedStrategy \|\| ""/, "ambiguous strategy stays unselected");
 assert.doesNotMatch(source, /mappingKind|mappingExternalId/, "legacy controls are absent");
 `,
 );
 
-let domainTests = read("packages/domain/src/imports.test.ts");
-domainTests = replaceOnce(
-  domainTests,
-  /testInvalidFileErrors\(\);/,
-  String.raw`testInvalid
+let domainTests = read("packages/domain/src/imp
