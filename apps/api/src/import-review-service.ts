@@ -54,9 +54,6 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
   importBatchId: string,
   suggestionIds: readonly string[],
 ): Promise<BulkImportReviewResult> {
-  const before = await getImportBatchDetailForContext(context, importBatchId);
-  assertImportBatchConsistency(before);
-
   const result = await approveSelectedImportSuggestionsForContext(
     context,
     importBatchId,
@@ -67,7 +64,48 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
       assertDecisionConsistency(item.decision, importBatchId, item.suggestionId);
     }
   }
-  return result;
+
+  const invalidTransitionIds = new Set(
+    result.results
+      .filter(
+        (item) =>
+          item.status === "failed" && item.error?.code === "IMPORT_REVIEW_INVALID_TRANSITION",
+      )
+      .map((item) => item.suggestionId),
+  );
+  if (invalidTransitionIds.size === 0) return result;
+
+  const detail = await getImportBatchDetailForContext(context, importBatchId);
+  const missingBySuggestion = new Map<string, ImportReviewError>();
+  for (const suggestion of detail.suggestions) {
+    if (!invalidTransitionIds.has(suggestion.id) || suggestion.status !== "approved") continue;
+    if (
+      suggestion.transaction === undefined ||
+      suggestion.targetEntityId !== suggestion.transaction.id
+    ) {
+      missingBySuggestion.set(
+        suggestion.id,
+        approvedTransactionMissing(importBatchId, suggestion.id),
+      );
+    }
+  }
+  if (missingBySuggestion.size === 0) return result;
+
+  return {
+    ...result,
+    results: result.results.map((item) => {
+      const missing = missingBySuggestion.get(item.suggestionId);
+      return missing === undefined
+        ? item
+        : { ...item, error: { code: missing.code, message: missing.message } };
+    }),
+    failures: result.failures.map((failure) => {
+      const missing = missingBySuggestion.get(failure.suggestionId);
+      return missing === undefined
+        ? failure
+        : { ...failure, code: missing.code, message: missing.message };
+    }),
+  };
 }
 
 function assertImportBatchConsistency(detail: ImportBatchDetail, onlySuggestionId?: string): void {
@@ -104,11 +142,18 @@ function assertApprovedSuggestionConsistency(
   transaction: ImportReviewDecisionResult["transaction"],
 ): void {
   if (transaction === undefined || targetEntityId !== transaction.id) {
-    throw new ImportReviewError(
-      "IMPORT_APPROVED_TRANSACTION_MISSING",
-      "O lançamento confirmado não foi encontrado. Atualize a importação antes de tentar novamente.",
-      409,
-      { importBatchId, suggestionId },
-    );
+    throw approvedTransactionMissing(importBatchId, suggestionId);
   }
+}
+
+function approvedTransactionMissing(
+  importBatchId: string,
+  suggestionId: string,
+): ImportReviewError {
+  return new ImportReviewError(
+    "IMPORT_APPROVED_TRANSACTION_MISSING",
+    "O lançamento confirmado não foi encontrado. Atualize a importação antes de tentar novamente.",
+    409,
+    { importBatchId, suggestionId },
+  );
 }
