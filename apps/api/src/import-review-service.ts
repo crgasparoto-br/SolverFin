@@ -66,9 +66,7 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
   }
 
   const failedIds = new Set(
-    result.results
-      .filter((item) => item.status === "failed")
-      .map((item) => item.suggestionId),
+    result.results.filter((item) => item.status === "failed").map((item) => item.suggestionId),
   );
   if (failedIds.size === 0) return result;
 

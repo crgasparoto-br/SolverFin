@@ -195,7 +195,10 @@ async function assertBulkKeepsSuccessAndMapsInconsistency(
       order by "aiSuggestionId" asc`,
     [importBatchId, [successfulSuggestionId, inconsistentSuggestionId]],
   );
-  assert.deepEqual(persisted.map((row) => row.aiSuggestionId), [successfulSuggestionId]);
+  assert.deepEqual(
+    persisted.map((row) => row.aiSuggestionId),
+    [successfulSuggestionId],
+  );
 
   const statement = await apiRequest(
     token,
