@@ -3,11 +3,7 @@ import assert from "node:assert/strict";
 import { closePool, query } from "./db.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import {
-  handleApiRequest,
-  type ApiRequest,
-  type ApiResponse,
-} from "./router.js";
+import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 const MEI_PROFILE_ID = "33333333-3333-4333-8333-333333333332";
 
@@ -30,22 +26,11 @@ async function main(): Promise<void> {
   const suffix = `${Date.now().toString(36)}-statement`;
   const account = await createAccount(token, suffix);
 
-  await assertImportedTransactionsReachStatementQuery(
-    token,
-    account.id,
-    suffix,
-  );
-  await assertApprovedSuggestionWithoutTransactionIsControlled(
-    token,
-    account.id,
-    suffix,
-  );
+  await assertImportedTransactionsReachStatementQuery(token, account.id, suffix);
+  await assertApprovedSuggestionWithoutTransactionIsControlled(token, account.id, suffix);
 }
 
-async function createAccount(
-  token: string,
-  suffix: string,
-): Promise<{ id: string }> {
+async function createAccount(token: string, suffix: string): Promise<{ id: string }> {
   const response = await apiRequest(token, "POST", "/api/accounts", {
     name: `Conta Extrato Importado ${suffix}`,
     kind: "checking",
@@ -65,17 +50,12 @@ async function assertImportedTransactionsReachStatementQuery(
     `2026-06-10,Receita visivel ${suffix},123.45,income`,
     `2026-06-11,Despesa visivel ${suffix},-23.45,expense`,
   ].join("\n");
-  const createdResponse = await apiRequest(
-    token,
-    "POST",
-    "/api/import-batches/csv",
-    {
-      originalFileName: `statement-${suffix}.csv`,
-      content,
-      accountId,
-      consentAccepted: true,
-    },
-  );
+  const createdResponse = await apiRequest(token, "POST", "/api/import-batches/csv", {
+    originalFileName: `statement-${suffix}.csv`,
+    content,
+    accountId,
+    consentAccepted: true,
+  });
   assert.equal(createdResponse.statusCode, 201);
   const created = readBody<ImportDetail>(createdResponse);
   assert.equal(created.suggestions.length, 2);
@@ -92,10 +72,7 @@ async function assertImportedTransactionsReachStatementQuery(
   assert.equal(individualBody.transaction.source, "import");
   assert.equal(individualBody.transaction.status, "posted");
   assert.equal(individualBody.transaction.aiSuggestionId, incomeSuggestion.id);
-  assert.equal(
-    individualBody.transaction.importBatchId,
-    created.importBatch.id,
-  );
+  assert.equal(individualBody.transaction.importBatchId, created.importBatch.id);
 
   const selected = await apiRequest(
     token,
@@ -120,9 +97,7 @@ async function assertImportedTransactionsReachStatementQuery(
   const detail = readBody<ImportDetail>(detailResponse);
   assert.equal(detail.importBatch.status, "completed");
   assert.equal(
-    detail.suggestions.every(
-      (suggestion) => suggestion.transaction !== undefined,
-    ),
+    detail.suggestions.every((suggestion) => suggestion.transaction !== undefined),
     true,
   );
   for (const suggestion of detail.suggestions) {
@@ -138,24 +113,15 @@ async function assertImportedTransactionsReachStatementQuery(
   assert.equal(statementResponse.statusCode, 200);
   const statementTransactions = readBody<{ transactions: TransactionRecord[] }>(
     statementResponse,
-  ).transactions.filter(
-    (transaction) => transaction.importBatchId === created.importBatch.id,
-  );
-  assert.equal(
-    statementTransactions.length,
-    2,
-    "Each approved CSV row must appear exactly once",
-  );
+  ).transactions.filter((transaction) => transaction.importBatchId === created.importBatch.id);
+  assert.equal(statementTransactions.length, 2, "Each approved CSV row must appear exactly once");
   assert.deepEqual(
     statementTransactions.map((transaction) => transaction.description).sort(),
     [`Despesa visivel ${suffix}`, `Receita visivel ${suffix}`].sort(),
   );
 
   const bySuggestion = new Map(
-    statementTransactions.map((transaction) => [
-      transaction.aiSuggestionId,
-      transaction,
-    ]),
+    statementTransactions.map((transaction) => [transaction.aiSuggestionId, transaction]),
   );
   assert.deepEqual(
     {
@@ -228,16 +194,9 @@ async function assertImportedTransactionsReachStatementQuery(
   );
   assert.equal(repeated.statusCode, 200);
   assert.equal(readBody<ImportDecision>(repeated).idempotent, true);
-  assert.equal(
-    readBody<ImportDecision>(repeated).transaction.id,
-    individualBody.transaction.id,
-  );
+  assert.equal(readBody<ImportDecision>(repeated).transaction.id, individualBody.transaction.id);
 
-  const reread = await apiRequest(
-    token,
-    "GET",
-    `/api/import-batches/${created.importBatch.id}`,
-  );
+  const reread = await apiRequest(token, "GET", `/api/import-batches/${created.importBatch.id}`);
   assert.equal(reread.statusCode, 200);
   assert.equal(
     readBody<ImportDetail>(reread).suggestions.find(
@@ -276,26 +235,16 @@ async function assertApprovedSuggestionWithoutTransactionIsControlled(
   const detail = readBody<ImportDetail>(response);
   const suggestion = requireSuggestion(detail, 0);
 
-  assert.equal(
-    await countMissingApprovedTransactions(detail.importBatch.id),
-    0,
-  );
+  assert.equal(await countMissingApprovedTransactions(detail.importBatch.id), 0);
   await query(
     `update "AiSuggestion"
         set "status" = 'APPROVED', "targetEntityId" = null, "reviewedAt" = now(), "updatedAt" = now()
       where "id" = $1 and "sourceEntityId" = $2`,
     [suggestion.id, detail.importBatch.id],
   );
-  assert.equal(
-    await countMissingApprovedTransactions(detail.importBatch.id),
-    1,
-  );
+  assert.equal(await countMissingApprovedTransactions(detail.importBatch.id), 1);
 
-  const reread = await apiRequest(
-    token,
-    "GET",
-    `/api/import-batches/${detail.importBatch.id}`,
-  );
+  const reread = await apiRequest(token, "GET", `/api/import-batches/${detail.importBatch.id}`);
   assert.equal(reread.statusCode, 409);
   assert.equal(readErrorCode(reread), "IMPORT_APPROVED_TRANSACTION_MISSING");
 
@@ -305,10 +254,7 @@ async function assertApprovedSuggestionWithoutTransactionIsControlled(
     `/api/import-batches/${detail.importBatch.id}/suggestions/${suggestion.id}/approve`,
   );
   assert.equal(repeatedApproval.statusCode, 409);
-  assert.equal(
-    readErrorCode(repeatedApproval),
-    "IMPORT_APPROVED_TRANSACTION_MISSING",
-  );
+  assert.equal(readErrorCode(repeatedApproval), "IMPORT_APPROVED_TRANSACTION_MISSING");
 
   await query(
     `update "AiSuggestion"
@@ -324,9 +270,7 @@ async function assertApprovedSuggestionWithoutTransactionIsControlled(
   assert.equal(discarded.statusCode, 200);
 }
 
-async function countMissingApprovedTransactions(
-  importBatchId: string,
-): Promise<number> {
+async function countMissingApprovedTransactions(importBatchId: string): Promise<number> {
   const rows = await query<{ count: number }>(
     `select count(*)::int as "count"
        from "AiSuggestion" s
@@ -371,8 +315,7 @@ async function apiRequest(
     body,
   };
   const apiResponse =
-    (await handleImportBatchesApiRequest(request)) ??
-    (await handleApiRequest(request));
+    (await handleImportBatchesApiRequest(request)) ?? (await handleApiRequest(request));
   assert.ok(apiResponse, `${method} ${path} should be handled`);
   return apiResponse;
 }
@@ -387,10 +330,7 @@ function readErrorCode(response: ApiResponse): string | undefined {
   return readBody<{ error?: { code?: string } }>(response).error?.code;
 }
 
-function requireSuggestion(
-  detail: ImportDetail,
-  index: number,
-): ImportSuggestion {
+function requireSuggestion(detail: ImportDetail, index: number): ImportSuggestion {
   const suggestion = detail.suggestions[index];
   assert.ok(suggestion, `Expected suggestion at index ${index}`);
   return suggestion;

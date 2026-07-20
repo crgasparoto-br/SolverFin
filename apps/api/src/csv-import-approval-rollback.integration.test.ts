@@ -74,11 +74,7 @@ async function assertApprovalRollback(
       where "aiSuggestionId" = $1`,
     [suggestion.id],
   );
-  assert.equal(
-    transactions[0]?.count,
-    0,
-    `${failurePoint} must not leave a transaction committed`,
-  );
+  assert.equal(transactions[0]?.count, 0, `${failurePoint} must not leave a transaction committed`);
 
   const suggestions = await query<{
     status: string;
@@ -110,16 +106,9 @@ async function assertApprovalRollback(
     `${failurePoint} must not leave an approval audit committed`,
   );
 
-  const reread = await apiRequest(
-    token,
-    "GET",
-    `/api/import-batches/${detail.importBatch.id}`,
-  );
+  const reread = await apiRequest(token, "GET", `/api/import-batches/${detail.importBatch.id}`);
   assert.equal(reread.statusCode, 200);
-  assert.equal(
-    readBody<ImportDetail>(reread).suggestions[0]?.status,
-    "pending_review",
-  );
+  assert.equal(readBody<ImportDetail>(reread).suggestions[0]?.status, "pending_review");
 }
 
 async function installFailureTrigger(
@@ -235,10 +224,7 @@ function readBody<T>(response: Pick<ApiResponse, "body">): T {
   return response.body as T;
 }
 
-type FailurePoint =
-  | "transaction_insert"
-  | "transaction_audit"
-  | "suggestion_update";
+type FailurePoint = "transaction_insert" | "transaction_audit" | "suggestion_update";
 
 interface InstalledTrigger {
   table: "Transaction" | "AuditLogEntry" | "AiSuggestion";

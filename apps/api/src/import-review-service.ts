@@ -37,22 +37,12 @@ export async function approveConsistentImportSuggestionForContext(
   suggestionId: string,
 ): Promise<ImportReviewDecisionResult> {
   try {
-    const result = await approveImportSuggestionForContext(
-      context,
-      importBatchId,
-      suggestionId,
-    );
+    const result = await approveImportSuggestionForContext(context, importBatchId, suggestionId);
     assertDecisionConsistency(result, importBatchId, suggestionId);
     return result;
   } catch (error) {
-    if (
-      error instanceof ImportReviewError &&
-      error.code === "IMPORT_REVIEW_INVALID_TRANSITION"
-    ) {
-      const detail = await getImportBatchDetailForContext(
-        context,
-        importBatchId,
-      );
+    if (error instanceof ImportReviewError && error.code === "IMPORT_REVIEW_INVALID_TRANSITION") {
+      const detail = await getImportBatchDetailForContext(context, importBatchId);
       assertImportBatchConsistency(detail, suggestionId);
     }
     throw error;
@@ -74,11 +64,7 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
   );
   for (const item of result.results) {
     if (item.status === "approved" && item.decision !== undefined) {
-      assertDecisionConsistency(
-        item.decision,
-        importBatchId,
-        item.suggestionId,
-      );
+      assertDecisionConsistency(item.decision, importBatchId, item.suggestionId);
     }
   }
 
@@ -87,13 +73,9 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
   return result;
 }
 
-function assertImportBatchConsistency(
-  detail: ImportBatchDetail,
-  onlySuggestionId?: string,
-): void {
+function assertImportBatchConsistency(detail: ImportBatchDetail, onlySuggestionId?: string): void {
   for (const suggestion of detail.suggestions) {
-    if (onlySuggestionId !== undefined && suggestion.id !== onlySuggestionId)
-      continue;
+    if (onlySuggestionId !== undefined && suggestion.id !== onlySuggestionId) continue;
     if (suggestion.status !== "approved") continue;
     assertApprovedSuggestionConsistency(
       detail.importBatch.id,

@@ -65,11 +65,7 @@ route(
   `${BASE_PATH}/:importBatchId/suggestions/:suggestionId/reject`,
   rejectImportSuggestionHandler,
 );
-route(
-  "POST",
-  `${BASE_PATH}/:importBatchId/approve-selected`,
-  approveSelectedHandler,
-);
+route("POST", `${BASE_PATH}/:importBatchId/approve-selected`, approveSelectedHandler);
 route("POST", `${BASE_PATH}/:importBatchId/discard`, discardImportBatchHandler);
 
 export async function handleImportBatchesApiRequest(
@@ -82,9 +78,7 @@ export async function handleImportBatchesApiRequest(
   if (!match) return undefined;
 
   try {
-    const user = await requireAuthenticatedRequest(
-      buildAuthHeaders(request.headers.authorization),
-    );
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -106,11 +100,7 @@ export async function handleImportBatchesApiRequest(
   }
 }
 
-function route(
-  method: string,
-  path: string,
-  handler: ImportBatchHandler,
-): void {
+function route(method: string, path: string, handler: ImportBatchHandler): void {
   const paramNames: string[] = [];
   const patternSource = path
     .split("/")
@@ -225,10 +215,7 @@ async function getImportBatchHandler(
 ): Promise<ApiResponse> {
   return json(
     200,
-    await getConsistentImportBatchDetailForContext(
-      context,
-      requireParam(match, "importBatchId"),
-    ),
+    await getConsistentImportBatchDetailForContext(context, requireParam(match, "importBatchId")),
   );
 }
 
@@ -319,19 +306,13 @@ async function discardImportBatchHandler(
   );
 }
 
-function readSuggestionUpdate(
-  body: Record<string, unknown>,
-): ImportSuggestionUpdatePayload {
+function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUpdatePayload {
   const payload: ImportSuggestionUpdatePayload = {};
-  if (body.occurredOn !== undefined)
-    payload.occurredOn = requireString(body, "occurredOn");
+  if (body.occurredOn !== undefined) payload.occurredOn = requireString(body, "occurredOn");
   if (body.kind !== undefined) {
     const kind = String(body.kind);
     if (kind !== "income" && kind !== "expense") {
-      throw new ImportReviewError(
-        "IMPORT_KIND_INVALID",
-        "Tipo deve ser receita ou despesa.",
-      );
+      throw new ImportReviewError("IMPORT_KIND_INVALID", "Tipo deve ser receita ou despesa.");
     }
     payload.kind = kind;
   }
@@ -345,13 +326,10 @@ function readSuggestionUpdate(
     }
     payload.amountMinor = value;
   }
-  if (body.description !== undefined)
-    payload.description = requireString(body, "description");
-  if (body.accountId !== undefined)
-    payload.accountId = requireString(body, "accountId");
+  if (body.description !== undefined) payload.description = requireString(body, "description");
+  if (body.accountId !== undefined) payload.accountId = requireString(body, "accountId");
   if (body.categoryId === null) payload.categoryId = null;
-  else if (body.categoryId !== undefined)
-    payload.categoryId = requireString(body, "categoryId");
+  else if (body.categoryId !== undefined) payload.categoryId = requireString(body, "categoryId");
   if (Object.keys(payload).length === 0) {
     throw new ImportReviewError(
       "IMPORT_UPDATE_REQUIRED",
@@ -371,13 +349,7 @@ function readCsvMapping(value: unknown): CsvImportMapping | undefined {
   }
   const input = value as Record<string, unknown>;
   const mapping: CsvImportMapping = {};
-  for (const key of [
-    "date",
-    "description",
-    "amount",
-    "kind",
-    "externalId",
-  ] as const) {
+  for (const key of ["date", "description", "amount", "kind", "externalId"] as const) {
     if (input[key] !== undefined) mapping[key] = String(input[key]);
   }
   return mapping;
@@ -400,11 +372,7 @@ function optionalObjectBody(body: unknown): Record<string, unknown> {
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
-    throw new AuthError(
-      "AUTH_INVALID_CREDENTIALS",
-      "Request body must be a JSON object.",
-      400,
-    );
+    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
   }
   return body as Record<string, unknown>;
 }
@@ -420,17 +388,9 @@ function requireString(body: Record<string, unknown>, key: string): string {
   return value.trim();
 }
 
-function requireParam(
-  match: Readonly<Record<string, string>>,
-  name: string,
-): string {
+function requireParam(match: Readonly<Record<string, string>>, name: string): string {
   const value = match[name];
-  if (!value)
-    throw new AuthError(
-      "AUTH_SESSION_REQUIRED",
-      "Missing required path parameter.",
-      400,
-    );
+  if (!value) throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
   return value;
 }
 
