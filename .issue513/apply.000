@@ -212,35 +212,26 @@ if (/mappingKind|mappingExternalId/.test(inbox)) {
   throw new Error("Legacy Tipo or ID externo mapping controls remain in the Inbox UI");
 }
 write("apps/web/src/dev-server/inbox-page.ts", inbox);
+write(
+  "apps/web/src/dev-server/inbox-page-ui.test.ts",
+  String.raw`import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const source = readFileSync(resolve(process.cwd(), "src/dev-server/inbox-page.ts"), "utf8");
+
+assert.match(source, /name="mappingStrategy"/, "strategy selector is rendered");
+assert.match(source, /name="mappingAmount"/, "signed amount selector is rendered");
+assert.match(source, /name="mappingIncomeAmount"/, "income selector is rendered");
+assert.match(source, /name="mappingExpenseAmount"/, "expense selector is rendered");
+assert.match(source, /Interpretação aplicada/, "preview explains the applied interpretation");
+assert.match(source, /isBalanceHeader/, "balance columns are filtered from value selectors");
+assert.doesNotMatch(source, /mappingKind|mappingExternalId/, "legacy controls are absent");
+`,
+);
 
 let domainTests = read("packages/domain/src/imports.test.ts");
 domainTests = replaceOnce(
   domainTests,
   /testInvalidFileErrors\(\);/,
-  String.raw`testInvalidFileErrors();
-testC6SplitAmountInference();
-testSignedAmountIgnoresKindColumn();
-testSplitAmountDiagnostics();
-testMappingPrioritiesAndBalanceSafety();
-testStrategyChangesBatchIdentity();
-testLegacyMappingCompatibility();`,
-  "domain test invocations",
-);
-domainTests = replaceOnce(
-  domainTests,
-  /\nfunction assertImportFileError\(/,
-  String.raw`
-function testC6SplitAmountInference(): void {
-  const preview = previewImportedStatement({
-    context: tenantA,
-    now,
-    originalFileName: "c6.csv",
-    content: [
-      "Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)",
-      "20/07/2026;20/07/2026;PIX;Receita cliente;100,00;;100,00",
-      "20/07/2026;20/07/2026;Compra;Mercado;;-25,50;74,50",
-    ].join("\\n"),
-  });
-
-  assertEqual(preview.state, "ready", "C6 preview state");
-  assertEqual(preview.csv?.mapping.version, 2, "C6 mapping v
+  Strin
