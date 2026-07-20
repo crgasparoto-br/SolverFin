@@ -23,6 +23,8 @@ import {
   previewCsvImportForContext,
   rejectImportSuggestionForContext,
   updateImportSuggestionForContext,
+  type ImportBatchDetail,
+  type ImportReviewDecisionResult,
   type ImportSuggestionUpdatePayload,
 } from "./repositories/imports.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
@@ -201,10 +203,12 @@ async function getImportBatchHandler(
   context: TenantContext,
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
-  return json(
-    200,
-    await getImportBatchDetailForContext(context, requireParam(match, "importBatchId")),
+  const detail = await getImportBatchDetailForContext(
+    context,
+    requireParam(match, "importBatchId"),
   );
+  assertImportBatchDetailConsistency(detail);
+  return json(200, detail);
 }
 
 async function updateImportSuggestionHandler(
@@ -229,14 +233,23 @@ async function approveImportSuggestionHandler(
   context: TenantContext,
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
-  return json(
-    200,
-    await approveImportSuggestionForContext(
-      context,
-      requireParam(match, "importBatchId"),
-      requireParam(match, "suggestionId"),
-    ),
-  );
+  const importBatchId = requireParam(match, "importBatchId");
+  const suggestionId = requireParam(match, "suggestionId");
+
+  try {
+    const result = await approveImportSuggestionForContext(context, importBatchId, suggestionId);
+    assertApprovedDecisionConsistency(result, importBatchId, suggestionId);
+    return json(200, result);
+  } catch (error) {
+    if (error instanceof ImportReviewError && error.code === "IMPORT_REVIEW_INVALID_TRANSITION") {
+      const detail = await getImportBatchDetailForContext(context, importBatchId);
+      const suggestion = detail.suggestions.find((candidate) => candidate.id === suggestionId);
+      if (suggestion?.status === "approved" && suggestion.transaction === undefined) {
+        throw approvedTransactionMissing(importBatchId, suggestionId);
+      }
+    }
+    throw error;
+  }
 }
 
 async function rejectImportSuggestionHandler(
@@ -268,14 +281,18 @@ async function approveSelectedHandler(
       "Informe as linhas selecionadas para confirmar.",
     );
   }
-  return json(
-    200,
-    await approveSelectedImportSuggestionsForContext(
-      context,
-      requireParam(match, "importBatchId"),
-      body.suggestionIds.map((value) => String(value)),
-    ),
+  const importBatchId = requireParam(match, "importBatchId");
+  const result = await approveSelectedImportSuggestionsForContext(
+    context,
+    importBatchId,
+    body.suggestionIds.map((value) => String(value)),
   );
+  for (const item of result.results) {
+    if (item.status === "approved" && item.decision !== undefined) {
+      assertApprovedDecisionConsistency(item.decision, importBatchId, item.suggestionId);
+    }
+  }
+  return json(200, result);
 }
 
 async function discardImportBatchHandler(
@@ -291,6 +308,44 @@ async function discardImportBatchHandler(
       requireParam(match, "importBatchId"),
       body.reason === undefined ? undefined : String(body.reason),
     ),
+  );
+}
+
+function assertImportBatchDetailConsistency(detail: ImportBatchDetail): void {
+  for (const suggestion of detail.suggestions) {
+    if (suggestion.status !== "approved") continue;
+    if (
+      suggestion.transaction === undefined ||
+      suggestion.targetEntityId !== suggestion.transaction.id
+    ) {
+      throw approvedTransactionMissing(detail.importBatch.id, suggestion.id);
+    }
+  }
+}
+
+function assertApprovedDecisionConsistency(
+  result: ImportReviewDecisionResult,
+  importBatchId: string,
+  suggestionId: string,
+): void {
+  if (
+    result.suggestion.status === "approved" &&
+    (result.transaction === undefined ||
+      result.suggestion.targetEntityId !== result.transaction.id)
+  ) {
+    throw approvedTransactionMissing(importBatchId, suggestionId);
+  }
+}
+
+function approvedTransactionMissing(
+  importBatchId: string,
+  suggestionId: string,
+): ImportReviewError {
+  return new ImportReviewError(
+    "IMPORT_APPROVED_TRANSACTION_MISSING",
+    "O lançamento confirmado não foi encontrado. Atualize a importação antes de tentar novamente.",
+    409,
+    { importBatchId, suggestionId },
   );
 }
 
