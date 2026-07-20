@@ -23,19 +23,33 @@ const account: AccountRecord = {
 };
 
 const previous = transaction("previous-income", "income", 2_000, "2026-05-31");
-const importedIncome = transaction("import-income", "income", 12_345, "2026-06-10", {
-  source: "import",
-});
-const importedExpense = transaction("import-expense", "expense", 2_345, "2026-06-11", {
-  source: "import",
-});
+const importedIncome = transaction(
+  "import-income",
+  "income",
+  12_345,
+  "2026-06-10",
+  {
+    source: "import",
+  },
+);
+const importedExpense = transaction(
+  "import-expense",
+  "expense",
+  2_345,
+  "2026-06-11",
+  {
+    source: "import",
+  },
+);
 
 importedTransactionsRemainVisibleAndAffectBalances();
 importedTransactionsAreNotRemovedByUnrelatedGroups();
 
 function importedTransactionsRemainVisibleAndAffectBalances(): void {
   const filters = resolveFilters(
-    new URL("http://solverfin.test/lancamentos?accountId=account-import&month=2026-06"),
+    new URL(
+      "http://solverfin.test/lancamentos?accountId=account-import&month=2026-06",
+    ),
     [account],
   );
   const query = new URLSearchParams(buildTransactionQuery(filters));
@@ -46,11 +60,24 @@ function importedTransactionsRemainVisibleAndAffectBalances(): void {
   assert.equal(statementDate(importedIncome), "2026-06-10");
   assert.equal(statementDate(importedExpense), "2026-06-11");
 
-  const projected = projectTransactionGroups([previous, importedIncome, importedExpense], []);
-  assert.equal(projected.filter((item) => item.id === importedIncome.id).length, 1);
-  assert.equal(projected.filter((item) => item.id === importedExpense.id).length, 1);
+  const projected = projectTransactionGroups(
+    [previous, importedIncome, importedExpense],
+    [],
+  );
+  assert.equal(
+    projected.filter((item) => item.id === importedIncome.id).length,
+    1,
+  );
+  assert.equal(
+    projected.filter((item) => item.id === importedExpense.id).length,
+    1,
+  );
 
-  const openingMinor = calculateOpeningBalance(projected, account, filters.startsOn);
+  const openingMinor = calculateOpeningBalance(
+    projected,
+    account,
+    filters.startsOn,
+  );
   assert.equal(openingMinor, 12_000);
 
   const rows = buildRows(
@@ -116,9 +143,18 @@ function importedTransactionsAreNotRemovedByUnrelatedGroups(): void {
       .sort(),
     [importedExpense.id, importedIncome.id].sort(),
   );
-  assert.equal(projected.filter((item) => item.id === `group:${group.id}`).length, 1);
-  assert.equal(projected.some((item) => item.id === groupedA.id), false);
-  assert.equal(projected.some((item) => item.id === groupedB.id), false);
+  assert.equal(
+    projected.filter((item) => item.id === `group:${group.id}`).length,
+    1,
+  );
+  assert.equal(
+    projected.some((item) => item.id === groupedA.id),
+    false,
+  );
+  assert.equal(
+    projected.some((item) => item.id === groupedB.id),
+    false,
+  );
 }
 
 function transaction(
