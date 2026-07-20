@@ -6,7 +6,11 @@ import { resolve } from "node:path";
 import { closePool, query } from "./db.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
+import {
+  handleApiRequest,
+  type ApiRequest,
+  type ApiResponse,
+} from "./router.js";
 
 void main()
   .catch((error: unknown) => {
@@ -18,7 +22,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for consistency diagnostic tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for consistency diagnostic tests.",
+  );
 
   const token = await loginAndReadToken();
   const suffix = `${Date.now().toString(36)}-diagnostic`;
@@ -33,11 +40,21 @@ async function main(): Promise<void> {
     `/api/import-batches/${batch.importBatch.id}/suggestions/${suggestion.id}/approve`,
   );
   assert.equal(approval.statusCode, 200);
-  const canonicalTransactionId = readBody<{ transaction: { id: string } }>(approval).transaction.id;
-  const unrelatedTransactionId = await createManualTransaction(token, accountId, suffix);
+  const canonicalTransactionId = readBody<{ transaction: { id: string } }>(
+    approval,
+  ).transaction.id;
+  const unrelatedTransactionId = await createManualTransaction(
+    token,
+    accountId,
+    suffix,
+  );
   const baseline = runDiagnostic();
 
-  await assertNullTargetIsDetected(suggestion.id, canonicalTransactionId, baseline);
+  await assertNullTargetIsDetected(
+    suggestion.id,
+    canonicalTransactionId,
+    baseline,
+  );
   await assertConflictingTargetIsDetected(
     suggestion.id,
     canonicalTransactionId,
@@ -45,7 +62,11 @@ async function main(): Promise<void> {
     baseline,
   );
 
-  assert.equal(runDiagnostic(), baseline, "Diagnostic fixtures must be fully restored");
+  assert.equal(
+    runDiagnostic(),
+    baseline,
+    "Diagnostic fixtures must be fully restored",
+  );
 }
 
 async function assertNullTargetIsDetected(
@@ -89,7 +110,10 @@ async function assertConflictingTargetIsDetected(
   }
 }
 
-async function restoreTarget(suggestionId: string, transactionId: string): Promise<void> {
+async function restoreTarget(
+  suggestionId: string,
+  transactionId: string,
+): Promise<void> {
   await query(
     `update "AiSuggestion" set "targetEntityId" = $2, "updatedAt" = now() where "id" = $1`,
     [suggestionId, transactionId],
@@ -116,16 +140,29 @@ function runDiagnostic(): number {
   const body = JSON.parse(jsonLine) as {
     approvedImportSuggestionsWithoutTransaction?: number;
   };
-  assert.equal(typeof body.approvedImportSuggestionsWithoutTransaction, "number");
+  assert.equal(
+    typeof body.approvedImportSuggestionsWithoutTransaction,
+    "number",
+  );
   return body.approvedImportSuggestionsWithoutTransaction;
 }
 
 function diagnosticScriptPath(): string {
-  const fromWorkspace = resolve(process.cwd(), "../../scripts/diagnose-import-statement-consistency.mjs");
+  const fromWorkspace = resolve(
+    process.cwd(),
+    "../../scripts/diagnose-import-statement-consistency.mjs",
+  );
   if (existsSync(fromWorkspace)) return fromWorkspace;
 
-  const fromRoot = resolve(process.cwd(), "scripts/diagnose-import-statement-consistency.mjs");
-  assert.equal(existsSync(fromRoot), true, "Import consistency diagnostic script must exist");
+  const fromRoot = resolve(
+    process.cwd(),
+    "scripts/diagnose-import-statement-consistency.mjs",
+  );
+  assert.equal(
+    existsSync(fromRoot),
+    true,
+    "Import consistency diagnostic script must exist",
+  );
   return fromRoot;
 }
 
@@ -139,7 +176,11 @@ async function createAccount(token: string, suffix: string): Promise<string> {
   return readBody<{ account: { id: string } }>(response).account.id;
 }
 
-async function createBatch(token: string, accountId: string, suffix: string): Promise<ImportDetail> {
+async function createBatch(
+  token: string,
+  accountId: string,
+  suffix: string,
+): Promise<ImportDetail> {
   const response = await apiRequest(token, "POST", "/api/import-batches/csv", {
     originalFileName: `diagnostic-${suffix}.csv`,
     content: `date,description,amount,kind\n2026-12-14,Diagnostico ${suffix},-22.75,expense`,
@@ -194,7 +235,8 @@ async function apiRequest(
     body,
   };
   const response =
-    (await handleImportBatchesApiRequest(request)) ?? (await handleApiRequest(request));
+    (await handleImportBatchesApiRequest(request)) ??
+    (await handleApiRequest(request));
   assert.ok(response, `${method} ${path} should be handled`);
   return response;
 }
