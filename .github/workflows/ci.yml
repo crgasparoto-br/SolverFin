@@ -145,7 +145,18 @@ jobs:
         run: npm run db:seed
 
       - name: Run API integration tests
-        run: npm run test:integration --workspace @solverfin/api
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:integration --workspace @solverfin/api 2>&1 | tee issue-515-integration.log
+
+      - name: Upload temporary integration log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-515-integration-log-${{ github.sha }}
+          path: issue-515-integration.log
+          if-no-files-found: error
 
       - name: Verify import statement consistency
         run: npm run diagnose:import-statement-consistency -- --expect-zero
