@@ -1,4 +1,30 @@
-ersion");
+g.raw`testInvalidFileErrors();
+testC6SplitAmountInference();
+testSignedAmountIgnoresKindColumn();
+testSplitAmountDiagnostics();
+testMappingPrioritiesAndBalanceSafety();
+testStrategyChangesBatchIdentity();
+testLegacyMappingCompatibility();`,
+  "domain test invocations",
+);
+domainTests = replaceOnce(
+  domainTests,
+  /\nfunction assertImportFileError\(/,
+  String.raw`
+function testC6SplitAmountInference(): void {
+  const preview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "c6.csv",
+    content: [
+      "Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)",
+      "20/07/2026;20/07/2026;PIX;Receita cliente;100,00;;100,00",
+      "20/07/2026;20/07/2026;Compra;Mercado;;-25,50;74,50",
+    ].join("\\n"),
+  });
+
+  assertEqual(preview.state, "ready", "C6 preview state");
+  assertEqual(preview.csv?.mapping.version, 2, "C6 mapping version");
   assertEqual(preview.csv?.valueStrategy, "split", "C6 split strategy");
   assertEqual(preview.csv?.mapping.date, "Data Lançamento", "posting date has priority");
   assertEqual(preview.csv?.mapping.description, "Descrição", "description has priority over title");
@@ -45,7 +71,7 @@ function testSplitAmountDiagnostics(): void {
   });
   assertEqual(preview.state, "blocked", "invalid split rows are blocked");
   assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_CONFLICT", "both values filled");
-  assertProblemCode(preview.problems, "IMPORT_ROW_SPLIT_AMOUNT_REQUIRED", "both values empty");
+  assertProblemCode(preview.problems, "IMPORT_ROW_AMOUNT_ZERO", "zero values");
   assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid number");
 }
 
@@ -137,6 +163,12 @@ function testLegacyMappingCompatibility(): void {
 
 function assertImportFileError(`,
   "new domain tests",
+);
+domainTests = replaceOnce(
+  domainTests,
+  /assertProblemCode\(preview\.problems, "IMPORT_ROW_AMOUNT_INVALID", "invalid csv amount"\);/,
+  'assertProblemCode(preview.problems, "IMPORT_ROW_NUMBER_INVALID", "invalid csv amount");',
+  "invalid amount diagnostic",
 );
 write("packages/domain/src/imports.test.ts", domainTests);
 
@@ -252,16 +284,4 @@ docs = replaceOnce(
   /- `IMPORT_CSV_MAPPING_INVALID`;/,
   "- `IMPORT_CSV_MAPPING_INVALID`;\n- `IMPORT_ROW_AMOUNT_REQUIRED`;\n- `IMPORT_ROW_AMOUNT_ZERO`;\n- `IMPORT_ROW_NUMBER_INVALID`;\n- `IMPORT_ROW_SPLIT_AMOUNT_CONFLICT`;\n- `IMPORT_ROW_SPLIT_AMOUNT_REQUIRED`;",
   "new controlled errors",
-);
-write("docs/IMPORTS.md", docs);
-
-let adr = read("docs/adr/0006-csv-import-structured-human-review.md");
-adr = replaceOnce(
-  adr,
-  /10\. A Inbox é a interface operacional do fluxo, com edição em modal acessível e devolução de foco\./,
-  "10. A Inbox é a interface operacional do fluxo, com edição em modal acessível e devolução de foco.\n11. Novas importações persistem mapeamento CSV versão 2, discriminando valor assinado de entrada/saída; tipo e ID externo permanecem somente para leitura legada.",
-  "ADR mapping version decision",
-);
-write("docs/adr/0006-csv-import-structured-human-review.md", adr);
-
-console.log("Issue #513 transformations applied.");
+)
