@@ -26,12 +26,14 @@ A correção de inicialização, incorporada nesta branch a partir da PR #512, e
 
 ## Proteção de consistência
 
-Além da correção ambiental, a API agora rejeita como inconsistente uma sugestão `APPROVED` quando:
+Além da correção ambiental, um serviço de aplicação valida criação ou reabertura do lote, aprovação individual, aprovação em lote e releitura. A API rejeita como inconsistente uma sugestão `APPROVED` quando:
 
 - nenhuma transação do mesmo tenant e perfil está vinculada; ou
 - `targetEntityId` não corresponde à transação retornada.
 
 O erro controlado é `IMPORT_APPROVED_TRANSACTION_MISSING` com HTTP 409. A API não cria automaticamente outra movimentação nesse cenário, preservando idempotência e permitindo investigação segura.
+
+A aprovação continua atômica. Se falhar a inserção da transação, o registro de auditoria ou a atualização da sugestão, a transação inteira é revertida: não permanecem movimentação, aprovação nem auditoria parcial.
 
 ## Cobertura de regressão
 
@@ -46,7 +48,8 @@ Os testes automatizados cobrem:
 - projeção de grupos sem ocultar importações não agrupadas;
 - repetição sequencial, chamadas concorrentes já cobertas pelo ciclo de importação e releitura após possível timeout;
 - isolamento por perfil financeiro;
-- estado aprovado sem transação como erro controlado.
+- estado aprovado sem transação como erro controlado;
+- rollback forçado nos pontos de inserção da transação, auditoria e atualização da sugestão.
 
 ## Diagnóstico histórico seguro
 
