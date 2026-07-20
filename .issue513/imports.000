@@ -1,0 +1,532 @@
+import { createHash } from "node:crypto";
+
+import type {
+  DeterministicReviewPayloadV1,
+  EntityId,
+  ImportSourceKind,
+  ImportStatus,
+  ISODate,
+  ISODateTime,
+  TenantScoped,
+  TransactionExtractionPayloadV1,
+  TransactionKind,
+} from "./index.js";
+import type { TenantContext } from "./tenant.js";
+
+export type ImportFileKind = Extract<ImportSourceKind, "csv" | "ofx">;
+export type ImportPreviewState = "ready" | "mapping_required" | "blocked";
+export type ImportProblemSeverity = "error" | "warning";
+export type ImportSuggestionStatus = "pending_review" | "duplicate";
+export type CsvDelimiter = "," | ";";
+export type CsvValueStrategy = "signed" | "split";
+export type CsvRequiredField =
+  | "date"
+  | "description"
+  | "valueStrategy"
+  | "amount"
+  | "incomeAmount"
+  | "expenseAmount";
+export type CsvAmbiguousField = CsvRequiredField;
+
+export type ImportFileErrorCode =
+  | "IMPORT_FILE_EMPTY"
+  | "IMPORT_FILE_TOO_LARGE"
+  | "IMPORT_FILE_KIND_UNSUPPORTED"
+  | "IMPORT_FILE_ENCODING_INVALID"
+  | "IMPORT_CSV_DELIMITER_INVALID"
+  | "IMPORT_CSV_STRUCTURE_INVALID"
+  | "IMPORT_CSV_HEADER_INVALID"
+  | "IMPORT_CSV_MAPPING_INVALID"
+  | "IMPORT_CSV_NO_DATA_ROWS"
+  | "IMPORT_OFX_INVALID";
+
+export class ImportFileError extends Error {
+  readonly code: ImportFileErrorCode;
+  readonly statusCode = 400;
+
+  constructor(code: ImportFileErrorCode, message: string) {
+    super(message);
+    this.name = "ImportFileError";
+    this.code = code;
+  }
+}
+
+export interface ImportFileInput {
+  context: TenantContext;
+  now: ISODateTime;
+  originalFileName: string;
+  content: string;
+  kind?: ImportFileKind;
+  maxSizeInBytes?: number;
+  existingSourceHashes?: readonly string[];
+  csvMapping?: CsvImportMapping;
+  csvDelimiter?: CsvDelimiter;
+  defaultAccountId?: EntityId;
+}
+
+export interface CsvLegacyImportMapping {
+  version?: 1;
+  date?: string | undefined;
+  description?: string | undefined;
+  amount?: string | undefined;
+  kind?: string | undefined;
+  externalId?: string | undefined;
+}
+
+export interface CsvSignedAmountMappingV2 {
+  version: 2;
+  date?: string | undefined;
+  description?: string | undefined;
+  valueStrategy: "signed";
+  amount?: string | undefined;
+}
+
+export interface CsvSplitAmountMappingV2 {
+  version: 2;
+  date?: string | undefined;
+  description?: string | undefined;
+  valueStrategy: "split";
+  incomeAmount?: string | undefined;
+  expenseAmount?: string | undefined;
+}
+
+export type CsvImportMapping =
+  | CsvLegacyImportMapping
+  | CsvSignedAmountMappingV2
+  | CsvSplitAmountMappingV2;
+
+export interface CsvImportInterpretation {
+  source: string;
+  target: "date" | "description" | "income" | "expense" | "amount" | "ignored";
+  label: string;
+}
+
+export interface CsvImportPreviewSample {
+  sourceRowNumber: number;
+  occurredOn: ISODate;
+  description: string;
+  kind: "income" | "expense";
+  amountMinor: number;
+  currency: string;
+}
+
+export interface CsvImportPreviewMetadata {
+  delimiter?: CsvDelimiter;
+  delimiterCandidates: readonly CsvDelimiter[];
+  headers: readonly string[];
+  mapping: CsvImportMapping;
+  valueStrategy?: CsvValueStrategy | undefined;
+  missingRequiredFields: readonly CsvRequiredField[];
+  ambiguousFields: readonly CsvAmbiguousField[];
+  interpretation: readonly CsvImportInterpretation[];
+  ignoredHeaders: readonly string[];
+  sampleRows: readonly CsvImportPreviewSample[];
+}
+
+export interface ImportBatchDraft extends TenantScoped {
+  sourceKind: ImportFileKind;
+  status: ImportStatus;
+  originalFileName: string;
+  sourceHash: string;
+  contentHash: string;
+  receivedAt: ISODateTime;
+  totalRows: number;
+  validRows: number;
+  duplicateRows: number;
+  problemRows: number;
+  defaultAccountId?: EntityId;
+  csvDelimiter?: CsvDelimiter;
+  csvMapping?: CsvImportMapping;
+}
+
+export interface ImportProblem {
+  rowNumber: number;
+  severity: ImportProblemSeverity;
+  code: string;
+  message: string;
+}
+
+export interface ImportTransactionSuggestion extends TenantScoped {
+  id: EntityId;
+  status: ImportSuggestionStatus;
+  sourceKind: ImportFileKind;
+  sourceHash: string;
+  sourceRowNumber: number;
+  occurredOn: ISODate;
+  description: string;
+  kind: TransactionKind;
+  amountMinor: number;
+  currency: string;
+  accountId?: EntityId;
+  categoryId?: EntityId;
+  externalId?: string | undefined;
+}
+
+export interface ImportPreview {
+  state: ImportPreviewState;
+  persisted: false;
+  batch: ImportBatchDraft;
+  suggestions: readonly ImportTransactionSuggestion[];
+  problems: readonly ImportProblem[];
+  csv?: CsvImportPreviewMetadata;
+}
+
+interface ParsedImportRow {
+  rowNumber: number;
+  occurredOn: ISODate | undefined;
+  description: string | undefined;
+  amountMinor: number | undefined;
+  kind: TransactionKind | undefined;
+  accountId: EntityId | undefined;
+  categoryId: EntityId | undefined;
+  externalId: string | undefined;
+  rawFingerprintSeed: string;
+  structuralProblem?: ImportProblem;
+}
+
+interface CsvCellTable {
+  records: readonly CsvRecord[];
+  delimiter: CsvDelimiter;
+}
+
+interface CsvRecord {
+  rowNumber: number;
+  values: readonly string[];
+}
+
+interface CsvParseResult {
+  rows: ParsedImportRow[];
+  metadata: CsvImportPreviewMetadata;
+  mappingRequired: boolean;
+}
+
+interface CsvMappingResolution {
+  mapping: CsvImportMapping;
+  ambiguousFields: CsvAmbiguousField[];
+  missingRequiredFields: CsvRequiredField[];
+}
+
+interface CsvColumnIndexes {
+  dateIndex: number;
+  descriptionIndex: number;
+  strategy: CsvValueStrategy;
+  amountIndex?: number | undefined;
+  incomeAmountIndex?: number | undefined;
+  expenseAmountIndex?: number | undefined;
+  kindIndex?: number | undefined;
+  externalIdIndex?: number | undefined;
+  legacy: boolean;
+}
+
+interface ParsedAmount {
+  amountMinor?: number;
+  signedAmountMinor?: number;
+  state: "valid" | "empty" | "zero" | "invalid";
+}
+
+const defaultMaxSizeInBytes = 5 * 1024 * 1024;
+const defaultCurrency = "BRL";
+
+const primaryDateAliases = [
+  "data lancamento",
+  "data do lancamento",
+  "data movimento",
+  "data do movimento",
+  "data transacao",
+  "data da transacao",
+  "transaction date",
+  "movement date",
+  "date",
+  "dtposted",
+];
+const fallbackDateAliases = [
+  "data contabil",
+  "data de contabilizacao",
+  "data contabilizacao",
+  "posting date",
+  "accounting date",
+];
+const primaryDescriptionAliases = ["description", "descricao", "historico", "memo"];
+const fallbackDescriptionAliases = ["titulo", "title", "name", "nome"];
+const signedAmountAliases = ["amount", "valor", "value", "trnamt", "valor lancamento"];
+const incomeAmountAliases = [
+  "entrada",
+  "credito",
+  "credit",
+  "receita",
+  "income",
+  "valor entrada",
+  "valor credito",
+];
+const expenseAmountAliases = [
+  "saida",
+  "debito",
+  "debit",
+  "despesa",
+  "expense",
+  "valor saida",
+  "valor debito",
+];
+const balanceAliases = ["saldo", "saldo do dia", "balance", "saldo atual", "saldo final"];
+export function previewImportedStatement(input: ImportFileInput): ImportPreview {
+  assertContentSize(input.content, input.maxSizeInBytes ?? defaultMaxSizeInBytes);
+  assertSupportedTextEncoding(input.content);
+
+  const kind = input.kind ?? inferImportFileKind(input.originalFileName);
+  const parsed = parseImportRows(kind, input);
+  const existingSourceHashes = new Set(input.existingSourceHashes ?? []);
+  const problems: ImportProblem[] = [];
+  const suggestions: ImportTransactionSuggestion[] = [];
+
+  if (parsed.mappingRequired) {
+    const metadata = parsed.metadata as CsvImportPreviewMetadata;
+    const batch = buildBatchDraft(input, kind, 0, suggestions, problems, metadata);
+    return {
+      state: "mapping_required",
+      persisted: false,
+      batch,
+      suggestions,
+      problems,
+      csv: metadata,
+    };
+  }
+
+  for (const row of parsed.rows) {
+    const rowProblems = validateParsedRow(row);
+    problems.push(...rowProblems);
+    if (rowProblems.some((problem) => problem.severity === "error")) continue;
+
+    const sourceHash = buildStableImportHash(
+      `${kind}:${input.context.organizationId}:${input.context.financialProfileId}:${row.rawFingerprintSeed}`,
+    );
+    const duplicate = existingSourceHashes.has(sourceHash);
+    const suggestion = buildSuggestion(input.context, kind, row, sourceHash, duplicate);
+    suggestions.push(suggestion);
+
+    if (duplicate) {
+      problems.push({
+        rowNumber: row.rowNumber,
+        severity: "warning",
+        code: "IMPORT_ROW_DUPLICATE",
+        message: "Esta linha parece ja ter sido importada e precisa ser revisada antes da confirmacao.",
+      });
+    }
+  }
+
+  const batch = buildBatchDraft(
+    input,
+    kind,
+    parsed.rows.length,
+    suggestions,
+    problems,
+    parsed.metadata,
+  );
+  const csv =
+    parsed.metadata === undefined
+      ? undefined
+      : {
+          ...parsed.metadata,
+          sampleRows: suggestions.slice(0, 10).map((suggestion) => ({
+            sourceRowNumber: suggestion.sourceRowNumber,
+            occurredOn: suggestion.occurredOn,
+            description: suggestion.description,
+            kind: suggestion.kind as "income" | "expense",
+            amountMinor: suggestion.amountMinor,
+            currency: suggestion.currency,
+          })),
+        };
+
+  return {
+    state: suggestions.length > 0 ? "ready" : "blocked",
+    persisted: false,
+    batch,
+    suggestions,
+    problems,
+    ...(csv === undefined ? {} : { csv }),
+  };
+}
+
+export function buildStableImportHash(value: string): string {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+}
+
+export function buildSecureImportHash(value: string): string {
+  return `sha256-${createHash("sha256").update(value, "utf8").digest("hex")}`;
+}
+
+export function buildImportContentHash(content: string): string {
+  return buildSecureImportHash(content);
+}
+
+export function buildLegacyImportBatchHash(input: {
+  kind: ImportFileKind;
+  content: string;
+  defaultAccountId?: EntityId;
+  csvDelimiter?: CsvDelimiter;
+  csvMapping?: CsvImportMapping;
+}): string {
+  return buildStableImportHash(
+    [
+      input.kind,
+      input.content,
+      input.defaultAccountId ?? "",
+      input.csvDelimiter ?? "",
+      canonicalLegacyMapping(input.csvMapping),
+    ].join(":"),
+  );
+}
+
+export function buildTransactionExtractionPayload(
+  suggestion: ImportTransactionSuggestion,
+): TransactionExtractionPayloadV1 {
+  if (suggestion.kind !== "income" && suggestion.kind !== "expense") {
+    throw new ImportFileError(
+      "IMPORT_CSV_STRUCTURE_INVALID",
+      "A importacao CSV aceita apenas receitas e despesas.",
+    );
+  }
+  return {
+    payloadVersion: 1,
+    sourceRowNumber: suggestion.sourceRowNumber,
+    sourceHash: suggestion.sourceHash,
+    occurredOn: suggestion.occurredOn,
+    kind: suggestion.kind,
+    amountMinor: suggestion.amountMinor,
+    currency: suggestion.currency,
+    description: suggestion.description,
+    ...(suggestion.accountId === undefined ? {} : { accountId: suggestion.accountId }),
+    ...(suggestion.categoryId === undefined ? {} : { categoryId: suggestion.categoryId }),
+    ...(suggestion.externalId === undefined ? {} : { externalId: suggestion.externalId }),
+  };
+}
+
+export function parseTransactionExtractionPayload(
+  value: unknown,
+): TransactionExtractionPayloadV1 | undefined {
+  if (!isRecord(value) || value.payloadVersion !== 1) return undefined;
+  if (!Number.isSafeInteger(value.sourceRowNumber) || Number(value.sourceRowNumber) < 1)
+    return undefined;
+  if (typeof value.sourceHash !== "string" || value.sourceHash.length === 0) return undefined;
+  if (typeof value.occurredOn !== "string" || normalizeDate(value.occurredOn) === undefined)
+    return undefined;
+  if (value.kind !== "income" && value.kind !== "expense") return undefined;
+  if (!Number.isSafeInteger(value.amountMinor) || Number(value.amountMinor) <= 0) return undefined;
+  if (typeof value.currency !== "string" || value.currency.length !== 3) return undefined;
+  if (typeof value.description !== "string" || value.description.trim().length === 0)
+    return undefined;
+  return {
+    payloadVersion: 1,
+    sourceRowNumber: Number(value.sourceRowNumber),
+    sourceHash: value.sourceHash,
+    occurredOn: value.occurredOn,
+    kind: value.kind,
+    amountMinor: Number(value.amountMinor),
+    currency: value.currency.toUpperCase(),
+    description: value.description.trim(),
+    ...(typeof value.accountId === "string" && value.accountId.length > 0
+      ? { accountId: value.accountId }
+      : {}),
+    ...(typeof value.categoryId === "string" && value.categoryId.length > 0
+      ? { categoryId: value.categoryId }
+      : {}),
+    ...(typeof value.externalId === "string" && value.externalId.length > 0
+      ? { externalId: value.externalId }
+      : {}),
+  };
+}
+
+export function buildImportPayloadFingerprint(payload: TransactionExtractionPayloadV1): string {
+  return buildStableImportHash(
+    [
+      payload.payloadVersion,
+      payload.sourceRowNumber,
+      payload.sourceHash,
+      payload.occurredOn,
+      payload.kind,
+      payload.amountMinor,
+      payload.currency,
+      payload.description,
+      payload.accountId ?? "",
+      payload.categoryId ?? "",
+      payload.externalId ?? "",
+    ].join(":"),
+  );
+}
+
+export function parseDeterministicReviewPayload(
+  value: unknown,
+): DeterministicReviewPayloadV1 | undefined {
+  if (!isRecord(value) || value.payloadVersion !== 1) return undefined;
+  if (typeof value.sourceSuggestionId !== "string" || value.sourceSuggestionId.length === 0)
+    return undefined;
+  if (
+    typeof value.sourcePayloadFingerprint !== "string" ||
+    value.sourcePayloadFingerprint.length === 0
+  )
+    return undefined;
+  if (typeof value.targetTransactionId !== "string" || value.targetTransactionId.length === 0)
+    return undefined;
+  if (!isStringArray(value.reasons) || !isStringArray(value.conflicts)) return undefined;
+  return {
+    payloadVersion: 1,
+    sourceSuggestionId: value.sourceSuggestionId,
+    sourcePayloadFingerprint: value.sourcePayloadFingerprint,
+    targetTransactionId: value.targetTransactionId,
+    reasons: value.reasons,
+    conflicts: value.conflicts,
+  };
+}
+
+function parseImportRows(
+  kind: ImportFileKind,
+  input: ImportFileInput,
+): { rows: ParsedImportRow[]; metadata?: CsvImportPreviewMetadata; mappingRequired: boolean } {
+  if (kind === "csv") return parseCsvRows(input);
+  return { rows: parseOfxRows(input.content), mappingRequired: false };
+}
+
+function parseCsvRows(input: ImportFileInput): CsvParseResult {
+  const normalizedContent = stripUtf8Bom(input.content);
+  const recordProbe = parseCsvTable(normalizedContent, ",").records.filter((record) =>
+    record.values.some((value) => value.trim().length > 0),
+  );
+  if (recordProbe.length === 0) throw new ImportFileError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
+  if (recordProbe.length === 1) {
+    throw new ImportFileError(
+      "IMPORT_CSV_NO_DATA_ROWS",
+      "CSV precisa ter cabecalho e ao menos uma linha de movimento.",
+    );
+  }
+
+  const delimiterResolution = resolveCsvDelimiter(
+    normalizedContent,
+    input.csvDelimiter,
+    input.csvMapping,
+  );
+  if (delimiterResolution.delimiter === undefined) {
+    const mapping = normalizeSuppliedMapping(input.csvMapping);
+    return {
+      rows: [],
+      metadata: {
+        delimiterCandidates: delimiterResolution.candidates,
+        headers: delimiterResolution.headers,
+        mapping,
+        ...(getValueStrategy(mapping) === undefined ? {} : { valueStrategy: getValueStrategy(mapping) }),
+        missingRequiredFields: ["date", "description", "valueStrategy"],
+        ambiguousFields: [],
+        interpretation: [],
+        ignoredHeaders: findBalanceHeaders(delimiterResolution.headers),
+        sampleRows: [],
+      },
+      mappingRequired: true,
+    };
+  }
+
+  const table = parseCsvTable(normalizedContent, delimiterResolution.delimiter);
+  const nonEmptyRecords = table.records.filter((record) =>
+    record.values.some((value) => value.trim
