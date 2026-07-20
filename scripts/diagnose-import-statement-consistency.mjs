@@ -17,15 +17,23 @@ const pool = new Pool({ connectionString });
 
 try {
   const result = await pool.query(`
-    select count(*)::int as "count"
+    select count(distinct s."id")::int as "count"
       from "AiSuggestion" s
-      left join "Transaction" t
-        on t."organizationId" = s."organizationId"
-       and t."financialProfileId" = s."financialProfileId"
-       and (t."id" = s."targetEntityId" or t."aiSuggestionId" = s."id")
+      left join "Transaction" target
+        on target."organizationId" = s."organizationId"
+       and target."financialProfileId" = s."financialProfileId"
+       and target."id" = s."targetEntityId"
+      left join "Transaction" linked
+        on linked."organizationId" = s."organizationId"
+       and linked."financialProfileId" = s."financialProfileId"
+       and linked."aiSuggestionId" = s."id"
      where s."kind" = 'TRANSACTION_EXTRACTION'
        and s."status" = 'APPROVED'
-       and t."id" is null
+       and (
+         s."targetEntityId" is null
+         or target."id" is null
+         or (linked."id" is not null and linked."id" <> target."id")
+       )
   `);
   const count = result.rows[0]?.count ?? 0;
   const output = { approvedImportSuggestionsWithoutTransaction: count };
