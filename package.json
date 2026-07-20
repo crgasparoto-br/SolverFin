@@ -20,6 +20,7 @@
     "env:check": "node scripts/validate-env-example.mjs",
     "startup:check": "node scripts/validate-startup-contract.mjs",
     "integration-db-guard:check": "node scripts/validate-integration-database-guard.mjs",
+    "diagnose:import-statement-consistency": "node scripts/diagnose-import-statement-consistency.mjs",
     "prisma:validate": "prisma validate --schema ./prisma",
     "prisma:generate": "prisma generate --schema ./prisma",
     "db:prepare": "node scripts/prepare-local-env.mjs && npm run db:deploy",

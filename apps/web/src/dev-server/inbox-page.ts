@@ -2,6 +2,7 @@ import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
+import { buildImportStatementUrl } from "./import-statement-navigation.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
@@ -344,12 +345,14 @@ function csvImportScript(
   const accountJson = JSON.stringify(accounts).replace(/</g, "\\u003c");
   const categoryJson = JSON.stringify(categories).replace(/</g, "\\u003c");
   const profileJson = JSON.stringify(activeProfileLabel).replace(/</g, "\\u003c");
+  const statementUrlBuilder = buildImportStatementUrl.toString();
   return `
     <script>
       (() => {
         const accounts = ${accountJson};
         const categories = ${categoryJson};
         const activeProfileLabel = ${profileJson};
+        const buildImportStatementUrl = ${statementUrlBuilder};
         const accountById = new Map(accounts.map((account) => [account.id, account]));
         const categoryById = new Map(categories.map((category) => [category.id, category]));
         const batchList = document.getElementById("import-batch-list");
@@ -515,7 +518,7 @@ function csvImportScript(
           const checked = state.selected.has(item.id) ? " checked" : "";
           const lineActions = readOnly ? "" : '<div class="inline-actions"><button type="button" class="secondary-button" data-line-action="edit">Corrigir linha</button><button type="button" data-line-action="approve" ' + (selectable ? "" : "disabled") + '>Confirmar linha</button><button type="button" class="secondary-button danger-action" data-line-action="reject">Rejeitar</button></div>';
           const legacyNotice = hasStructuredPayload ? "" : '<p class="warning" role="status">Esta linha legada não possui dados estruturados para revisão. Corrija o arquivo e faça uma nova importação.</p>';
-          const transactionLink = item.transaction ? '<a class="button-link secondary-button" href="/lancamentos?accountId=' + encodeURIComponent(item.transaction.accountId || payload.accountId || "") + '&month=' + encodeURIComponent(String(item.transaction.occurredOn || payload.occurredOn).slice(0, 7)) + '">Ver no Extrato</a>' : "";
+          const transactionLink = item.transaction ? '<a class="button-link secondary-button" href="' + escapeHtml(buildImportStatementUrl(item)) + '">Ver no Extrato</a>' : "";
           return '<article class="import-row" data-suggestion-id="' + escapeHtml(item.id) + '" data-row-state="' + escapeHtml(currentState) + '">' +
             '<input type="checkbox" data-select-suggestion value="' + escapeHtml(item.id) + '" aria-label="Selecionar linha ' + escapeHtml(payload.sourceRowNumber || "sem dados estruturados") + '" ' + (selectable ? "" : "disabled") + checked + ' />' +
             '<div class="row-editor"><div class="row-heading"><strong>Linha ' + escapeHtml(payload.sourceRowNumber || "—") + '</strong><span class="status-pill">' + escapeHtml(stateLabel(currentState)) + '</span></div>' +
@@ -524,14 +527,8 @@ function csvImportScript(
             ((item.candidates || []).length ? '<div class="candidate-list">' + item.candidates.map((candidate) => renderCandidate(candidate, batch.status !== "reviewing")).join("") + '</div>' : "") + '</article>';
         }
         function statementUrl(value) {
-          const batch = value.importBatch;
           const suggestion = value.suggestions.find((item) => item.transaction || item.payload?.occurredOn);
-          const accountId = suggestion?.transaction?.accountId || suggestion?.payload?.accountId || batch.defaultAccountId || "";
-          const occurredOn = suggestion?.transaction?.occurredOn || suggestion?.payload?.occurredOn || "";
-          const params = new URLSearchParams();
-          if (accountId) params.set("accountId", accountId);
-          if (occurredOn) params.set("month", String(occurredOn).slice(0, 7));
-          return "/lancamentos" + (params.toString() ? "?" + params.toString() : "");
+          return buildImportStatementUrl(suggestion, value.importBatch.defaultAccountId || "");
         }
         function detailSummary(value) {
           const suggestions = value.suggestions || [];

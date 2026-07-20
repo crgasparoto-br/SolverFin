@@ -13,12 +13,14 @@ import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
+  approveConsistentImportSuggestionForContext,
+  approveConsistentSelectedImportSuggestionsForContext,
+  createConsistentCsvImportBatchForContext,
+  getConsistentImportBatchDetailForContext,
+} from "./import-review-service.js";
+import {
   ImportReviewError,
-  approveImportSuggestionForContext,
-  approveSelectedImportSuggestionsForContext,
-  createCsvImportBatchForContext,
   discardImportBatchForContext,
-  getImportBatchDetailForContext,
   listImportBatchesForContext,
   previewCsvImportForContext,
   rejectImportSuggestionForContext,
@@ -83,7 +85,10 @@ export async function handleImportBatchesApiRequest(
     );
     return await match.route.handler(request, context, match.params);
   } catch (error) {
-    const response = buildApiErrorResponse({ error: mapDomainError(error), correlationId });
+    const response = buildApiErrorResponse({
+      error: mapDomainError(error),
+      correlationId,
+    });
     return {
       statusCode: response.statusCode,
       headers: { "content-type": "application/json; charset=utf-8" },
@@ -107,7 +112,12 @@ function route(method: string, path: string, handler: ImportBatchHandler): void 
       return segment;
     })
     .join("/");
-  routes.push({ method, pattern: new RegExp(`^${patternSource}$`), paramNames, handler });
+  routes.push({
+    method,
+    pattern: new RegExp(`^${patternSource}$`),
+    paramNames,
+    handler,
+  });
 }
 
 function findRoute(
@@ -165,7 +175,9 @@ async function previewCsvImportBatchHandler(
         : { csvMapping: readCsvMapping(body.csvMapping) as CsvImportMapping }),
       ...(readCsvDelimiter(body.csvDelimiter) === undefined
         ? {}
-        : { csvDelimiter: readCsvDelimiter(body.csvDelimiter) as CsvDelimiter }),
+        : {
+            csvDelimiter: readCsvDelimiter(body.csvDelimiter) as CsvDelimiter,
+          }),
     }),
   );
 }
@@ -181,7 +193,7 @@ async function createCsvImportBatchHandler(
       "Confirme que o arquivo pode ser processado neste perfil financeiro.",
     );
   }
-  const result = await createCsvImportBatchForContext(context, {
+  const result = await createConsistentCsvImportBatchForContext(context, {
     originalFileName: requireString(body, "originalFileName"),
     content: requireString(body, "content"),
     accountId: requireString(body, "accountId"),
@@ -203,7 +215,7 @@ async function getImportBatchHandler(
 ): Promise<ApiResponse> {
   return json(
     200,
-    await getImportBatchDetailForContext(context, requireParam(match, "importBatchId")),
+    await getConsistentImportBatchDetailForContext(context, requireParam(match, "importBatchId")),
   );
 }
 
@@ -231,7 +243,7 @@ async function approveImportSuggestionHandler(
 ): Promise<ApiResponse> {
   return json(
     200,
-    await approveImportSuggestionForContext(
+    await approveConsistentImportSuggestionForContext(
       context,
       requireParam(match, "importBatchId"),
       requireParam(match, "suggestionId"),
@@ -270,7 +282,7 @@ async function approveSelectedHandler(
   }
   return json(
     200,
-    await approveSelectedImportSuggestionsForContext(
+    await approveConsistentSelectedImportSuggestionsForContext(
       context,
       requireParam(match, "importBatchId"),
       body.suggestionIds.map((value) => String(value)),
@@ -382,7 +394,9 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   return value;
 }
 
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
+function buildAuthHeaders(authorization: string | undefined): {
+  authorization?: string;
+} {
   return authorization === undefined ? {} : { authorization };
 }
 
@@ -396,7 +410,11 @@ function json(statusCode: number, body: unknown): ApiResponse {
 
 function mapDomainError(error: unknown): unknown {
   if (error instanceof ImportFileError || error instanceof ImportReviewError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
   if (error instanceof TenantError) {
     return {
@@ -406,7 +424,11 @@ function mapDomainError(error: unknown): unknown {
     };
   }
   if (error instanceof TenantAuthorizationError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
   return error;
 }

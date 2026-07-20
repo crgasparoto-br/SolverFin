@@ -146,3 +146,6 @@ jobs:
 
       - name: Run API integration tests
         run: npm run test:integration --workspace @solverfin/api
+
+      - name: Verify import statement consistency
+        run: npm run diagnose:import-statement-consistency -- --expect-zero
