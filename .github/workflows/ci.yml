@@ -16,6 +16,85 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  apply-issue-515-fixes:
+    name: Apply issue 515 fixes
+    if: github.event_name == 'pull_request' && github.head_ref == 'fix/515-import-transactions-statement'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Skip when corrections are already applied
+        id: state
+        shell: bash
+        run: |
+          if test -f apps/web/src/dev-server/import-statement-navigation.ts; then
+            echo "applied=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "applied=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply corrections
+        if: steps.state.outputs.applied == 'false'
+        run: python3 scripts/apply-issue-515-audit-fixes.py
+
+      - name: Install dependencies
+        if: steps.state.outputs.applied == 'false'
+        run: npm ci --no-audit --no-fund
+
+      - name: Format corrections
+        if: steps.state.outputs.applied == 'false'
+        run: >-
+          npx prettier --write
+          apps/web/src/dev-server/inbox-page.ts
+          apps/web/src/dev-server/import-statement-navigation.ts
+          apps/web/src/dev-server/import-statement-navigation.test.ts
+          apps/api/src/csv-import-timeout-recovery.integration.test.ts
+          apps/api/src/zz-csv-import-pending-migration-recovery.integration.test.ts
+          scripts/diagnose-import-statement-consistency.mjs
+          package.json
+          .github/workflows/ci.yml
+          docs/IMPORT_STATEMENT_VISIBILITY.md
+
+      - name: Remove temporary applicators
+        if: steps.state.outputs.applied == 'false'
+        run: |
+          rm -f scripts/apply-issue-515-audit-fixes.py
+          rm -f .github/workflows/issue-515-apply-audit-fixes-v2.yml
+          python3 <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/ci.yml')
+          text = path.read_text()
+          start = text.index('  apply-issue-515-fixes:\n')
+          end = text.index('  validate:\n', start)
+          path.write_text(text[:start] + text[end:])
+          PY
+          npx prettier --write .github/workflows/ci.yml
+
+      - name: Commit corrections
+        if: steps.state.outputs.applied == 'false'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "[issue-515-applied] fix: corrigir lacunas finais da issue 515"
+          git push origin HEAD:fix/515-import-transactions-statement
+
   validate:
     name: Validate monorepo
     runs-on: ubuntu-latest
