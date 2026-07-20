@@ -26,4 +26,15 @@ jobs:
           ref: feat/513-csv-value-inference
           fetch-depth: 0
       - name: Diagnose declarative patch
-        run: git apply --check --verbose .issue513-audit-fixes.patch
+        run: |
+          set +e
+          git apply --check --verbose .issue513-audit-fixes.patch > .issue513-patch-diagnostic.txt 2>&1
+          status=$?
+          set -e
+          cat .issue513-patch-diagnostic.txt
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .issue513-patch-diagnostic.txt
+          git commit -m "chore: capture issue 513 patch diagnostic"
+          git push origin HEAD:feat/513-csv-value-inference
+          exit $status
