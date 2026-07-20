@@ -4,16 +4,9 @@ on:
   push:
     branches:
       - feat/513-csv-value-inference
-  pull_request:
-    branches:
-      - main
 
 permissions:
   contents: write
-
-concurrency:
-  group: issue-513-audit-fixes
-  cancel-in-progress: true
 
 jobs:
   apply-and-validate:
