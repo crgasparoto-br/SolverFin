@@ -183,13 +183,15 @@ function runDiagnostic(): number {
   const jsonLine = result.stdout
     .split(/\r?\n/u)
     .map((line) => line.trim())
-    .findLast((line) => line.startsWith("{"));
+    .reverse()
+    .find((line) => line.startsWith("{"));
   assert.ok(jsonLine, `Diagnostic command must return JSON\n${result.stdout}`);
   const body = JSON.parse(jsonLine) as {
     approvedImportSuggestionsWithoutTransaction?: number;
   };
-  assert.equal(typeof body.approvedImportSuggestionsWithoutTransaction, "number");
-  return body.approvedImportSuggestionsWithoutTransaction;
+  const count = body.approvedImportSuggestionsWithoutTransaction;
+  assert.ok(typeof count === "number");
+  return count;
 }
 
 function diagnosticScriptPath(): string {
