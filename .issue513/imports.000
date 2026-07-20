@@ -236,9 +236,8 @@ const primaryDateAliases = [
   "data da transacao",
   "transaction date",
   "movement date",
-  "date",
-  "dtposted",
 ];
+const genericDateAliases = ["date", "data", "dtposted"];
 const fallbackDateAliases = [
   "data contabil",
   "data de contabilizacao",
@@ -246,9 +245,20 @@ const fallbackDateAliases = [
   "posting date",
   "accounting date",
 ];
-const primaryDescriptionAliases = ["description", "descricao", "historico", "memo"];
+const primaryDescriptionAliases = [
+  "description",
+  "descricao",
+  "historico",
+  "memo",
+];
 const fallbackDescriptionAliases = ["titulo", "title", "name", "nome"];
-const signedAmountAliases = ["amount", "valor", "value", "trnamt", "valor lancamento"];
+const signedAmountAliases = [
+  "amount",
+  "valor",
+  "value",
+  "trnamt",
+  "valor lancamento",
+];
 const incomeAmountAliases = [
   "entrada",
   "credito",
@@ -267,9 +277,20 @@ const expenseAmountAliases = [
   "valor saida",
   "valor debito",
 ];
-const balanceAliases = ["saldo", "saldo do dia", "balance", "saldo atual", "saldo final"];
-export function previewImportedStatement(input: ImportFileInput): ImportPreview {
-  assertContentSize(input.content, input.maxSizeInBytes ?? defaultMaxSizeInBytes);
+const balanceAliases = [
+  "saldo",
+  "saldo do dia",
+  "balance",
+  "saldo atual",
+  "saldo final",
+];
+export function previewImportedStatement(
+  input: ImportFileInput,
+): ImportPreview {
+  assertContentSize(
+    input.content,
+    input.maxSizeInBytes ?? defaultMaxSizeInBytes,
+  );
   assertSupportedTextEncoding(input.content);
 
   const kind = input.kind ?? inferImportFileKind(input.originalFileName);
@@ -280,7 +301,14 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
 
   if (parsed.mappingRequired) {
     const metadata = parsed.metadata as CsvImportPreviewMetadata;
-    const batch = buildBatchDraft(input, kind, 0, suggestions, problems, metadata);
+    const batch = buildBatchDraft(
+      input,
+      kind,
+      0,
+      suggestions,
+      problems,
+      metadata,
+    );
     return {
       state: "mapping_required",
       persisted: false,
@@ -300,7 +328,13 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
       `${kind}:${input.context.organizationId}:${input.context.financialProfileId}:${row.rawFingerprintSeed}`,
     );
     const duplicate = existingSourceHashes.has(sourceHash);
-    const suggestion = buildSuggestion(input.context, kind, row, sourceHash, duplicate);
+    const suggestion = buildSuggestion(
+      input.context,
+      kind,
+      row,
+      sourceHash,
+      duplicate,
+    );
     suggestions.push(suggestion);
 
     if (duplicate) {
@@ -308,7 +342,8 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
         rowNumber: row.rowNumber,
         severity: "warning",
         code: "IMPORT_ROW_DUPLICATE",
-        message: "Esta linha parece ja ter sido importada e precisa ser revisada antes da confirmacao.",
+        message:
+          "Esta linha parece ja ter sido importada e precisa ser revisada antes da confirmacao.",
       });
     }
   }
@@ -399,9 +434,15 @@ export function buildTransactionExtractionPayload(
     amountMinor: suggestion.amountMinor,
     currency: suggestion.currency,
     description: suggestion.description,
-    ...(suggestion.accountId === undefined ? {} : { accountId: suggestion.accountId }),
-    ...(suggestion.categoryId === undefined ? {} : { categoryId: suggestion.categoryId }),
-    ...(suggestion.externalId === undefined ? {} : { externalId: suggestion.externalId }),
+    ...(suggestion.accountId === undefined
+      ? {}
+      : { accountId: suggestion.accountId }),
+    ...(suggestion.categoryId === undefined
+      ? {}
+      : { categoryId: suggestion.categoryId }),
+    ...(suggestion.externalId === undefined
+      ? {}
+      : { externalId: suggestion.externalId }),
   };
 }
 
@@ -409,15 +450,30 @@ export function parseTransactionExtractionPayload(
   value: unknown,
 ): TransactionExtractionPayloadV1 | undefined {
   if (!isRecord(value) || value.payloadVersion !== 1) return undefined;
-  if (!Number.isSafeInteger(value.sourceRowNumber) || Number(value.sourceRowNumber) < 1)
+  if (
+    !Number.isSafeInteger(value.sourceRowNumber) ||
+    Number(value.sourceRowNumber) < 1
+  )
     return undefined;
-  if (typeof value.sourceHash !== "string" || value.sourceHash.length === 0) return undefined;
-  if (typeof value.occurredOn !== "string" || normalizeDate(value.occurredOn) === undefined)
+  if (typeof value.sourceHash !== "string" || value.sourceHash.length === 0)
+    return undefined;
+  if (
+    typeof value.occurredOn !== "string" ||
+    normalizeDate(value.occurredOn) === undefined
+  )
     return undefined;
   if (value.kind !== "income" && value.kind !== "expense") return undefined;
-  if (!Number.isSafeInteger(value.amountMinor) || Number(value.amountMinor) <= 0) return undefined;
-  if (typeof value.currency !== "string" || value.currency.length !== 3) return undefined;
-  if (typeof value.description !== "string" || value.description.trim().length === 0)
+  if (
+    !Number.isSafeInteger(value.amountMinor) ||
+    Number(value.amountMinor) <= 0
+  )
+    return undefined;
+  if (typeof value.currency !== "string" || value.currency.length !== 3)
+    return undefined;
+  if (
+    typeof value.description !== "string" ||
+    value.description.trim().length === 0
+  )
     return undefined;
   return {
     payloadVersion: 1,
@@ -440,7 +496,9 @@ export function parseTransactionExtractionPayload(
   };
 }
 
-export function buildImportPayloadFingerprint(payload: TransactionExtractionPayloadV1): string {
+export function buildImportPayloadFingerprint(
+  payload: TransactionExtractionPayloadV1,
+): string {
   return buildStableImportHash(
     [
       payload.payloadVersion,
@@ -462,16 +520,23 @@ export function parseDeterministicReviewPayload(
   value: unknown,
 ): DeterministicReviewPayloadV1 | undefined {
   if (!isRecord(value) || value.payloadVersion !== 1) return undefined;
-  if (typeof value.sourceSuggestionId !== "string" || value.sourceSuggestionId.length === 0)
+  if (
+    typeof value.sourceSuggestionId !== "string" ||
+    value.sourceSuggestionId.length === 0
+  )
     return undefined;
   if (
     typeof value.sourcePayloadFingerprint !== "string" ||
     value.sourcePayloadFingerprint.length === 0
   )
     return undefined;
-  if (typeof value.targetTransactionId !== "string" || value.targetTransactionId.length === 0)
+  if (
+    typeof value.targetTransactionId !== "string" ||
+    value.targetTransactionId.length === 0
+  )
     return undefined;
-  if (!isStringArray(value.reasons) || !isStringArray(value.conflicts)) return undefined;
+  if (!isStringArray(value.reasons) || !isStringArray(value.conflicts))
+    return undefined;
   return {
     payloadVersion: 1,
     sourceSuggestionId: value.sourceSuggestionId,
@@ -485,17 +550,25 @@ export function parseDeterministicReviewPayload(
 function parseImportRows(
   kind: ImportFileKind,
   input: ImportFileInput,
-): { rows: ParsedImportRow[]; metadata?: CsvImportPreviewMetadata; mappingRequired: boolean } {
+): {
+  rows: ParsedImportRow[];
+  metadata?: CsvImportPreviewMetadata;
+  mappingRequired: boolean;
+} {
   if (kind === "csv") return parseCsvRows(input);
   return { rows: parseOfxRows(input.content), mappingRequired: false };
 }
 
 function parseCsvRows(input: ImportFileInput): CsvParseResult {
   const normalizedContent = stripUtf8Bom(input.content);
-  const recordProbe = parseCsvTable(normalizedContent, ",").records.filter((record) =>
-    record.values.some((value) => value.trim().length > 0),
+  const recordProbe = parseCsvTable(normalizedContent, ",").records.filter(
+    (record) => record.values.some((value) => value.trim().length > 0),
   );
-  if (recordProbe.length === 0) throw new ImportFileError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
+  if (recordProbe.length === 0)
+    throw new ImportFileError(
+      "IMPORT_FILE_EMPTY",
+      "Arquivo de importacao vazio.",
+    );
   if (recordProbe.length === 1) {
     throw new ImportFileError(
       "IMPORT_CSV_NO_DATA_ROWS",
@@ -516,17 +589,8 @@ function parseCsvRows(input: ImportFileInput): CsvParseResult {
         delimiterCandidates: delimiterResolution.candidates,
         headers: delimiterResolution.headers,
         mapping,
-        ...(getValueStrategy(mapping) === undefined ? {} : { valueStrategy: getValueStrategy(mapping) }),
-        missingRequiredFields: ["date", "description", "valueStrategy"],
-        ambiguousFields: [],
-        interpretation: [],
-        ignoredHeaders: findBalanceHeaders(delimiterResolution.headers),
-        sampleRows: [],
-      },
-      mappingRequired: true,
-    };
-  }
-
-  const table = parseCsvTable(normalizedContent, delimiterResolution.delimiter);
-  const nonEmptyRecords = table.records.filter((record) =>
-    record.values.some((value) => value.trim
+        ...(input.csvMapping === undefined ||
+        getValueStrategy(mapping) === undefined
+          ? {}
+          : { valueStrategy: getValueStrategy(mapping) }),
+        missingRequiredFields: ["date", "description", "value
