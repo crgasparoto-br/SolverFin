@@ -44,7 +44,7 @@ async function main(): Promise<void> {
   );
   assert.equal(missingColumn.statusCode, 500);
 
-  const recovery = spawnSync(npmCommand(), ["run", "db:prepare"], {
+  const recovery = spawnSync(npmCommand(), ["--prefix", "../..", "run", "db:prepare"], {
     cwd: process.cwd(),
     env: process.env,
     encoding: "utf8",
