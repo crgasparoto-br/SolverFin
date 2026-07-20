@@ -23,7 +23,9 @@ Dependencias que precisam continuar funcionando durante a compatibilidade:
 - migration relacionada: `prisma/migrations/20260620013345_20260619/migration.sql`;
 - documentacao: `docs/PAYABLES_RECEIVABLES.md`, `docs/API_PAYABLES_RECEIVABLES.md`, `docs/STATUS_MATRIX.md`;
 - testes: `packages/domain/src/payables-receivables.test.ts`, `packages/domain/src/payables-receivables-transition.test.ts`, `apps/api/src/api-persistence.integration.test.ts`, `packages/domain/src/daily-availability.test.ts`;
-- web/dev server residual: `apps/web/src/dev-server/payables-receivables-page.ts` e `apps/web/src/dev-server/pages.ts`.
+- web/dev server residual: `apps/web/src/dev-server/pages.ts` ainda consulta a API legada para
+  compatibilidade de resumo; a antiga tela operacional dedicada foi removida e
+  `/pagar-receber` redireciona para `/lancamentos`.
 
 ## Mapeamento de dados
 
