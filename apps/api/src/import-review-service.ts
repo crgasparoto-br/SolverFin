@@ -41,7 +41,7 @@ export async function approveConsistentImportSuggestionForContext(
     assertDecisionConsistency(result, importBatchId, suggestionId);
     return result;
   } catch (error) {
-    if (error instanceof ImportReviewError && error.code === "IMPORT_REVIEW_INVALID_TRANSITION") {
+    if (error instanceof ImportReviewError && error.statusCode < 500) {
       const detail = await getImportBatchDetailForContext(context, importBatchId);
       assertImportBatchConsistency(detail, suggestionId);
     }
@@ -65,20 +65,17 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
     }
   }
 
-  const invalidTransitionIds = new Set(
+  const failedIds = new Set(
     result.results
-      .filter(
-        (item) =>
-          item.status === "failed" && item.error?.code === "IMPORT_REVIEW_INVALID_TRANSITION",
-      )
+      .filter((item) => item.status === "failed")
       .map((item) => item.suggestionId),
   );
-  if (invalidTransitionIds.size === 0) return result;
+  if (failedIds.size === 0) return result;
 
   const detail = await getImportBatchDetailForContext(context, importBatchId);
   const missingBySuggestion = new Map<string, ImportReviewError>();
   for (const suggestion of detail.suggestions) {
-    if (!invalidTransitionIds.has(suggestion.id) || suggestion.status !== "approved") continue;
+    if (!failedIds.has(suggestion.id) || suggestion.status !== "approved") continue;
     if (
       suggestion.transaction === undefined ||
       suggestion.targetEntityId !== suggestion.transaction.id
