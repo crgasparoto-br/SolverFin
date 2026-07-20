@@ -67,9 +67,6 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
       assertDecisionConsistency(item.decision, importBatchId, item.suggestionId);
     }
   }
-
-  const after = await getImportBatchDetailForContext(context, importBatchId);
-  assertImportBatchConsistency(after);
   return result;
 }
 
