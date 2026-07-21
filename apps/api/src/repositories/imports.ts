@@ -1143,7 +1143,12 @@ async function approveImportSuggestionInTransaction(
 
   if (payload.kind === "transfer") {
     await lockCanonicalTransfer(context, payload, executeQuery);
-    const existingTransfer = await findCanonicalTransfer(context, payload, executeQuery);
+    const existingTransfer = await findCanonicalTransfer(
+      context,
+      payload,
+      suggestion.id,
+      executeQuery,
+    );
     if (existingTransfer !== undefined) {
       return reconcileImportTransferInTransaction(
         context,
@@ -1233,17 +1238,27 @@ async function lockCanonicalTransfer(
 async function findCanonicalTransfer(
   context: TenantContext,
   payload: TransactionExtractionPayload,
+  suggestionId: EntityId,
   executeQuery: QueryExecutor,
 ): Promise<Transaction | undefined> {
   const accounts = resolveCanonicalTransferAccounts(payload);
   const rows = await executeQuery<TransactionRow>(
-    `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction"
-     where "organizationId" = $1 and "financialProfileId" = $2
-       and "kind" = 'TRANSFER' and "status" <> 'VOIDED'
-       and "accountId" = $3 and "destinationAccountId" = $4
-       and "amountMinor" = $5 and upper("currency") = upper($6)
-       and "occurredOn" between ($7::date - interval '2 days') and ($7::date + interval '2 days')
-     order by abs("occurredOn" - $7::date), "createdAt" asc
+    `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction" candidate
+     where candidate."organizationId" = $1 and candidate."financialProfileId" = $2
+       and candidate."kind" = 'TRANSFER' and candidate."status" <> 'VOIDED'
+       and candidate."accountId" = $3 and candidate."destinationAccountId" = $4
+       and candidate."amountMinor" = $5 and upper(candidate."currency") = upper($6)
+       and candidate."occurredOn" between ($7::date - interval '2 days') and ($7::date + interval '2 days')
+       and not exists (
+         select 1 from "AiSuggestion" rejected
+         where rejected."organizationId" = $1 and rejected."financialProfileId" = $2
+           and rejected."sourceSuggestionId" = $8
+           and rejected."payloadFingerprint" = $9
+           and rejected."targetEntityId" = candidate."id"
+           and rejected."kind" in ('DEDUPLICATION', 'RECONCILIATION')
+           and rejected."status" = 'REJECTED'
+       )
+     order by abs(candidate."occurredOn" - $7::date), candidate."createdAt" asc
      limit 1
      for update`,
     [
@@ -1254,6 +1269,8 @@ async function findCanonicalTransfer(
       payload.amountMinor,
       payload.currency,
       payload.occurredOn,
+      suggestionId,
+      buildImportPayloadFingerprint(payload),
     ],
   );
   return rows[0] ? mapTransactionRow(rows[0]) : undefined;

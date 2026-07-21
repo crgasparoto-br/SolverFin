@@ -1,11 +1,9 @@
 import type { TenantContext } from "@solverfin/domain";
 
 import {
-  approveImportSuggestionRespectingRejectedCandidatesForContext,
-  approveSelectedImportSuggestionsRespectingRejectedCandidatesForContext,
-} from "./import-transfer-approval.js";
-import {
   ImportReviewError,
+  approveImportSuggestionForContext,
+  approveSelectedImportSuggestionsForContext,
   createCsvImportBatchForContext,
   getImportBatchDetailForContext,
   type BulkImportReviewResult,
@@ -39,11 +37,7 @@ export async function approveConsistentImportSuggestionForContext(
   suggestionId: string,
 ): Promise<ImportReviewDecisionResult> {
   try {
-    const result = await approveImportSuggestionRespectingRejectedCandidatesForContext(
-      context,
-      importBatchId,
-      suggestionId,
-    );
+    const result = await approveImportSuggestionForContext(context, importBatchId, suggestionId);
     assertDecisionConsistency(result, importBatchId, suggestionId);
     return result;
   } catch (error) {
@@ -60,7 +54,7 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
   importBatchId: string,
   suggestionIds: readonly string[],
 ): Promise<BulkImportReviewResult> {
-  const result = await approveSelectedImportSuggestionsRespectingRejectedCandidatesForContext(
+  const result = await approveSelectedImportSuggestionsForContext(
     context,
     importBatchId,
     suggestionIds,

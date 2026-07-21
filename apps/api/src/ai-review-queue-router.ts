@@ -9,7 +9,6 @@ import {
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { approveImportSuggestionFromQueueRespectingRejectedCandidatesForContext } from "./import-transfer-approval.js";
 import {
   AiReviewQueueError,
   approveAiReviewSuggestionForContext,
@@ -157,17 +156,14 @@ async function approveAiReviewSuggestionHandler(
 ): Promise<ApiResponse> {
   const body = optionalObjectBody(request.body);
   const payloadOverride = readPayload(body.payloadOverride);
-  const suggestionId = requireParam(match, "suggestionId");
-  const importDecision =
-    await approveImportSuggestionFromQueueRespectingRejectedCandidatesForContext(
-      context,
-      suggestionId,
-    );
 
   return json(
     200,
-    importDecision ??
-      (await approveAiReviewSuggestionForContext(context, suggestionId, payloadOverride)),
+    await approveAiReviewSuggestionForContext(
+      context,
+      requireParam(match, "suggestionId"),
+      payloadOverride,
+    ),
   );
 }
 
@@ -294,9 +290,7 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   return value;
 }
 
-function buildAuthHeaders(authorization: string | undefined): {
-  authorization?: string;
-} {
+function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
   return authorization === undefined ? {} : { authorization };
 }
 
@@ -310,19 +304,11 @@ function json(statusCode: number, body: unknown): ApiResponse {
 
 function mapDomainError(error: unknown): unknown {
   if (error instanceof AiReviewQueueError) {
-    return {
-      code: error.code,
-      statusCode: error.statusCode,
-      message: error.message,
-    };
+    return { code: error.code, statusCode: error.statusCode, message: error.message };
   }
 
   if (error instanceof TransactionError) {
-    return {
-      code: error.code,
-      statusCode: error.statusCode,
-      message: error.message,
-    };
+    return { code: error.code, statusCode: error.statusCode, message: error.message };
   }
 
   if (error instanceof TenantError) {
@@ -332,11 +318,7 @@ function mapDomainError(error: unknown): unknown {
   }
 
   if (error instanceof TenantAuthorizationError) {
-    return {
-      code: error.code,
-      statusCode: error.statusCode,
-      message: error.message,
-    };
+    return { code: error.code, statusCode: error.statusCode, message: error.message };
   }
 
   return error;
