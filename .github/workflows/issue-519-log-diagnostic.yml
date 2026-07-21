@@ -1,0 +1,29 @@
+name: Issue 519 correction failure diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract previous correction error
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -H "Accept: application/vnd.github+json" \
+            "repos/${GITHUB_REPOSITORY}/actions/jobs/88745012820/logs" \
+            > /tmp/job.log
+          file /tmp/job.log
+          if unzip -t /tmp/job.log >/dev/null 2>&1; then
+            unzip -p /tmp/job.log | tail -n 160
+          else
+            tail -n 160 /tmp/job.log
+          fi
