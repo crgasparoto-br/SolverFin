@@ -13,7 +13,7 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Extract previous correction error
+      - name: Isolate previous correction error
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -21,9 +21,5 @@ jobs:
           gh api -H "Accept: application/vnd.github+json" \
             "repos/${GITHUB_REPOSITORY}/actions/jobs/88745012820/logs" \
             > /tmp/job.log
-          file /tmp/job.log
-          if unzip -t /tmp/job.log >/dev/null 2>&1; then
-            unzip -p /tmp/job.log | tail -n 160
-          else
-            tail -n 160 /tmp/job.log
-          fi
+          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
+          grep -n -E -C 8 'Traceback|SystemExit|not found|Error:|error:|##\[error\]|Process completed' /tmp/clean.log | tail -n 100 || true
