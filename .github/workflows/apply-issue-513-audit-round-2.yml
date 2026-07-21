@@ -1,0 +1,417 @@
+name: Apply issue 513 audit round 2
+
+on:
+  push:
+    branches:
+      - feat/513-csv-value-inference
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fixes:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/513-csv-value-inference
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Apply audited corrections
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text()
+              if old not in text:
+                  raise SystemExit(f"Expected block not found in {path}")
+              file.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "packages/domain/src/imports.ts",
+              '''  const missingRequiredFields = collectMissingRequiredFields(mapping);
+          if (!signedAvailable && !splitAvailable) {
+            removeItem(missingRequiredFields, "incomeAmount");
+            removeItem(missingRequiredFields, "expenseAmount");
+            if (!missingRequiredFields.includes("valueStrategy"))
+              missingRequiredFields.push("valueStrategy");
+          }
+          ''',
+              '''  const missingRequiredFields = collectMissingRequiredFields(mapping);
+          if (ambiguousFields.includes("valueStrategy")) {
+            removeItem(missingRequiredFields, "amount");
+            removeItem(missingRequiredFields, "incomeAmount");
+            removeItem(missingRequiredFields, "expenseAmount");
+            if (!missingRequiredFields.includes("valueStrategy"))
+              missingRequiredFields.push("valueStrategy");
+          } else if (!signedAvailable && !splitAvailable) {
+            removeItem(missingRequiredFields, "incomeAmount");
+            removeItem(missingRequiredFields, "expenseAmount");
+            if (!missingRequiredFields.includes("valueStrategy"))
+              missingRequiredFields.push("valueStrategy");
+          }
+          ''',
+          )
+
+          replace_once(
+              "packages/domain/src/imports.test.ts",
+              '''testAmbiguousValueStrategy();
+          testMappingPrioritiesAndBalanceSafety();''',
+              '''testAmbiguousValueStrategy();
+          testConditionalValueStrategyRequirements();
+          testMappingPrioritiesAndBalanceSafety();''',
+          )
+
+          conditional_tests = r'''
+          function testConditionalValueStrategyRequirements(): void {
+            const signedWithIncome = previewImportedStatement({
+              context: tenantA,
+              now,
+              originalFileName: "signed-with-income.csv",
+              content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,10,10",
+            });
+            assertEqual(signedWithIncome.state, "mapping_required", "signed and income require strategy");
+            assertEqual(
+              signedWithIncome.csv?.missingRequiredFields.includes("valueStrategy"),
+              true,
+              "strategy is the only unconditional value decision",
+            );
+            assertEqual(
+              signedWithIncome.csv?.missingRequiredFields.includes("amount"),
+              false,
+              "signed amount is not requested before strategy selection",
+            );
+            assertEqual(
+              signedWithIncome.csv?.missingRequiredFields.includes("expenseAmount"),
+              false,
+              "missing split side is conditional until split is selected",
+            );
+
+            const signedChoice = previewImportedStatement({
+              context: tenantA,
+              now,
+              originalFileName: "signed-with-income.csv",
+              csvMapping: {
+                version: 2,
+                valueStrategy: "signed",
+                date: "Data",
+                description: "Descrição",
+                amount: "Valor",
+              },
+              content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,10,10",
+            });
+            assertEqual(signedChoice.state, "ready", "signed choice is immediately usable");
+
+            const splitChoiceMissingExpense = previewImportedStatement({
+              context: tenantA,
+              now,
+              originalFileName: "signed-with-income.csv",
+              csvMapping: {
+                version: 2,
+                valueStrategy: "split",
+                date: "Data",
+                description: "Descrição",
+                incomeAmount: "Entrada",
+              },
+              content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,10,10",
+            });
+            assertEqual(
+              splitChoiceMissingExpense.csv?.missingRequiredFields.includes("expenseAmount"),
+              true,
+              "split requests the missing expense column only after split is selected",
+            );
+
+            const signedWithExpense = previewImportedStatement({
+              context: tenantA,
+              now,
+              originalFileName: "signed-with-expense.csv",
+              content: "Data,Descrição,Valor,Saída\n20/07/2026,Demo,-10,10",
+            });
+            assertEqual(
+              signedWithExpense.csv?.missingRequiredFields.includes("incomeAmount"),
+              false,
+              "missing income column is conditional until split is selected",
+            );
+
+            const ambiguousSignedCompleteSplit = previewImportedStatement({
+              context: tenantA,
+              now,
+              originalFileName: "ambiguous-signed-complete-split.csv",
+              content:
+                "Data,Descrição,Valor,Amount,Entrada,Saída\n20/07/2026,Demo,10,11,10,0",
+            });
+            assertEqual(
+              ambiguousSignedCompleteSplit.csv?.missingRequiredFields.includes("valueStrategy"),
+              true,
+              "strategy remains the first decision with ambiguous signed candidates",
+            );
+            assertEqual(
+              ambiguousSignedCompleteSplit.csv?.missingRequiredFields.includes("amount"),
+              false,
+              "ambiguous signed field is not required when complete split remains available",
+            );
+            const completeSplitChoice = previewImportedStatement({
+              context: tenantA,
+              now,
+              originalFileName: "ambiguous-signed-complete-split.csv",
+              csvMapping: {
+                version: 2,
+                valueStrategy: "split",
+                date: "Data",
+                description: "Descrição",
+                incomeAmount: "Entrada",
+                expenseAmount: "Saída",
+              },
+              content:
+                "Data,Descrição,Valor,Amount,Entrada,Saída\n20/07/2026,Demo,10,11,10,0",
+            });
+            assertEqual(completeSplitChoice.state, "ready", "complete split choice bypasses signed ambiguity");
+
+            const ambiguousSplitWithSigned = previewImportedStatement({
+              context: tenantA,
+              now,
+              originalFileName: "ambiguous-split-with-signed.csv",
+              content:
+                "Data,Descrição,Valor,Entrada,Receita,Saída\n20/07/2026,Demo,-10,10,11,0",
+            });
+            assertEqual(
+              ambiguousSplitWithSigned.csv?.missingRequiredFields.includes("valueStrategy"),
+              true,
+              "strategy is requested before resolving split-only ambiguity",
+            );
+            assertEqual(
+              ambiguousSplitWithSigned.csv?.missingRequiredFields.includes("incomeAmount"),
+              false,
+              "split ambiguity is conditional when signed is complete",
+            );
+            const unambiguousSignedChoice = previewImportedStatement({
+              context: tenantA,
+              now,
+              originalFileName: "ambiguous-split-with-signed.csv",
+              csvMapping: {
+                version: 2,
+                valueStrategy: "signed",
+                date: "Data",
+                description: "Descrição",
+                amount: "Valor",
+              },
+              content:
+                "Data,Descrição,Valor,Entrada,Receita,Saída\n20/07/2026,Demo,-10,10,11,0",
+            });
+            assertEqual(unambiguousSignedChoice.state, "ready", "signed choice bypasses split ambiguity");
+          }
+          '''
+          replace_once(
+              "packages/domain/src/imports.test.ts",
+              "\nfunction testMappingPrioritiesAndBalanceSafety(): void {",
+              conditional_tests + "\nfunction testMappingPrioritiesAndBalanceSafety(): void {",
+          )
+
+          replace_once(
+              "scripts/statement-visual/inbox-csv-review.mjs",
+              '''  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
+
+            const fixture = await evaluate(''',
+              '''  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
+
+            const mappingDialog = await validateCsvMappingDialog(cdp);
+
+            const fixture = await evaluate(''',
+          )
+
+          replace_once(
+              "scripts/statement-visual/inbox-csv-review.mjs",
+              '''    viewport: "390x844",
+              batchId,
+              initial,''',
+              '''    viewport: "390x844",
+              batchId,
+              mappingDialog,
+              initial,''',
+          )
+
+          mapping_test = r'''
+          async function validateCsvMappingDialog(cdp) {
+            await navigate(cdp, `${baseUrl}/inbox`);
+            await waitFor(cdp, `Boolean(document.querySelector('[data-open-dialog="csv-import-dialog"]'))`);
+
+            const setup = await evaluate(
+              cdp,
+              `(() => {
+                document.querySelector('[data-open-dialog="csv-import-dialog"]').click();
+                const dialog = document.getElementById('csv-import-dialog');
+                const form = document.getElementById('csv-import-form');
+                const activeAccount = [...form.elements.accountId.options].find((option) => option.value);
+                if (!activeAccount) return { ok: false, error: 'No active account option' };
+                form.elements.accountId.value = activeAccount.value;
+                form.elements.consentAccepted.checked = true;
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([
+                  'Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)\\n' +
+                  '20/07/2026;19/07/2026;PIX;Receita visual;100,00;0;100,00\\n' +
+                  '21/07/2026;20/07/2026;Compra;Despesa visual;0;-25,50;74,50'
+                ], 'c6-issue-513.csv', { type: 'text/csv' }));
+                form.elements.file.files = transfer.files;
+                document.getElementById('preview-csv-import').click();
+                return {
+                  ok: true,
+                  dialogOpen: dialog.open,
+                  hasKindControl: Boolean(form.elements.mappingKind),
+                  hasExternalIdControl: Boolean(form.elements.mappingExternalId)
+                };
+              })()`,
+            );
+            check(setup.ok, "CSV mapping dialog could not be prepared", setup);
+            check(setup.dialogOpen, "CSV mapping dialog did not open", setup);
+            check(!setup.hasKindControl, "CSV mapping still exposes kind", setup);
+            check(!setup.hasExternalIdControl, "CSV mapping still exposes external ID", setup);
+
+            await waitFor(
+              cdp,
+              `document.getElementById('create-csv-import')?.disabled === false && document.getElementById('csv-import-form')?.elements.mappingStrategy?.value === 'split'`,
+            );
+            const c6 = await evaluate(
+              cdp,
+              `(() => {
+                const form = document.getElementById('csv-import-form');
+                const options = (name) => [...form.elements[name].options].map((option) => option.textContent || '');
+                return {
+                  strategy: form.elements.mappingStrategy.value,
+                  date: form.elements.mappingDate.value,
+                  description: form.elements.mappingDescription.value,
+                  income: form.elements.mappingIncomeAmount.value,
+                  expense: form.elements.mappingExpenseAmount.value,
+                  amountOptions: options('mappingAmount'),
+                  incomeOptions: options('mappingIncomeAmount'),
+                  expenseOptions: options('mappingExpenseAmount'),
+                  interpretation: document.getElementById('csv-preview-result').textContent || '',
+                  createDisabled: document.getElementById('create-csv-import').disabled
+                };
+              })()`,
+            );
+            check(c6.strategy === "split", "C6 strategy was not detected as split", c6);
+            check(c6.date === "Data Lançamento", "C6 posting date was not prioritized", c6);
+            check(c6.description === "Descrição", "C6 description was not prioritized", c6);
+            check(c6.income === "Entrada(R$)", "C6 income column was not selected", c6);
+            check(c6.expense === "Saída(R$)", "C6 expense column was not selected", c6);
+            check(
+              ![...c6.amountOptions, ...c6.incomeOptions, ...c6.expenseOptions].some((item) =>
+                item.includes("Saldo do Dia"),
+              ),
+              "Balance column remains selectable as a transaction value",
+              c6,
+            );
+            for (const label of ["Interpretação aplicada", "Receita", "Despesa", "Ignorado"]) {
+              check(c6.interpretation.includes(label), `CSV interpretation is missing ${label}`, c6);
+            }
+            check(!c6.createDisabled, "Create review button is disabled for valid C6 rows", c6);
+            await screenshot(cdp, join(outputDir, "issue-513-csv-mapping-c6.png"));
+
+            await evaluate(
+              cdp,
+              `(() => {
+                const form = document.getElementById('csv-import-form');
+                for (const name of ['mappingDate', 'mappingDescription', 'mappingStrategy', 'mappingAmount', 'mappingIncomeAmount', 'mappingExpenseAmount']) {
+                  form.elements[name].value = '';
+                }
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([
+                  'Data,Descrição,Valor,Entrada,Saída\\n20/07/2026,Ambígua,10,10,0'
+                ], 'ambiguous-issue-513.csv', { type: 'text/csv' }));
+                form.elements.file.files = transfer.files;
+                document.getElementById('preview-csv-import').click();
+                return true;
+              })()`,
+            );
+            await waitFor(
+              cdp,
+              `document.getElementById('csv-import-form')?.elements.mappingStrategy?.value === '' && document.getElementById('csv-mapping-fields')?.hidden === false`,
+            );
+            const ambiguous = await evaluate(
+              cdp,
+              `(() => {
+                const form = document.getElementById('csv-import-form');
+                return {
+                  strategy: form.elements.mappingStrategy.value,
+                  amount: form.elements.mappingAmount.value,
+                  income: form.elements.mappingIncomeAmount.value,
+                  expense: form.elements.mappingExpenseAmount.value,
+                  createDisabled: document.getElementById('create-csv-import').disabled,
+                  status: document.getElementById('csv-import-status').textContent || ''
+                };
+              })()`,
+            );
+            check(ambiguous.strategy === "", "Ambiguous strategy was preselected", ambiguous);
+            check(ambiguous.amount === "Valor", "Signed candidate was not preserved", ambiguous);
+            check(ambiguous.income === "Entrada", "Income candidate was not preserved", ambiguous);
+            check(ambiguous.expense === "Saída", "Expense candidate was not preserved", ambiguous);
+            check(ambiguous.createDisabled, "Create review button enabled before resolving ambiguity", ambiguous);
+
+            await evaluate(
+              cdp,
+              `(() => {
+                const form = document.getElementById('csv-import-form');
+                form.elements.mappingStrategy.value = 'split';
+                form.elements.mappingStrategy.dispatchEvent(new Event('change', { bubbles: true }));
+                document.getElementById('preview-csv-import').click();
+                return true;
+              })()`,
+            );
+            await waitFor(cdp, `document.getElementById('create-csv-import')?.disabled === false`);
+            const resolved = await evaluate(
+              cdp,
+              `(() => {
+                const form = document.getElementById('csv-import-form');
+                const result = {
+                  strategy: form.elements.mappingStrategy.value,
+                  createDisabled: document.getElementById('create-csv-import').disabled,
+                  preview: document.getElementById('csv-preview-result').textContent || ''
+                };
+                document.getElementById('csv-import-dialog').close();
+                return result;
+              })()`,
+            );
+            check(resolved.strategy === "split", "Selected split strategy was not retained", resolved);
+            check(!resolved.createDisabled, "Resolved mapping did not enable review creation", resolved);
+            check(resolved.preview.includes("2 válidas") || resolved.preview.includes("1 válidas"), "Resolved mapping has no valid rows", resolved);
+
+            return { setup, c6, ambiguous, resolved, screenshot: "issue-513-csv-mapping-c6.png" };
+          }
+          '''
+          replace_once(
+              "scripts/statement-visual/inbox-csv-review.mjs",
+              "\nasync function waitFor(cdp, expression, timeout = 20_000) {",
+              mapping_test + "\nasync function waitFor(cdp, expression, timeout = 20_000) {",
+          )
+          PY
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format changed files
+        run: npx prettier --write packages/domain/src/imports.ts packages/domain/src/imports.test.ts scripts/statement-visual/inbox-csv-review.mjs
+
+      - name: Run focused validation
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Commit corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/domain/src/imports.ts packages/domain/src/imports.test.ts scripts/statement-visual/inbox-csv-review.mjs
+          git commit -m "fix: resolve conditional csv mapping requirements"
+          git push origin HEAD:feat/513-csv-value-inference
