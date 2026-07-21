@@ -1015,7 +1015,13 @@ function resolveCsvMapping(
   }
 
   const missingRequiredFields = collectMissingRequiredFields(mapping);
-  if (!signedAvailable && !splitAvailable) {
+  if (ambiguousFields.includes("valueStrategy")) {
+    removeItem(missingRequiredFields, "amount");
+    removeItem(missingRequiredFields, "incomeAmount");
+    removeItem(missingRequiredFields, "expenseAmount");
+    if (!missingRequiredFields.includes("valueStrategy"))
+      missingRequiredFields.push("valueStrategy");
+  } else if (!signedAvailable && !splitAvailable) {
     removeItem(missingRequiredFields, "incomeAmount");
     removeItem(missingRequiredFields, "expenseAmount");
     if (!missingRequiredFields.includes("valueStrategy"))

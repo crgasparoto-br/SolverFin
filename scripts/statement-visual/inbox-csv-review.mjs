@@ -56,6 +56,8 @@ async function validateInboxCsvReview(cdp) {
   const login = await evaluate(cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
+  const mappingDialog = await validateCsvMappingDialog(cdp);
+
   const fixture = await evaluate(
     cdp,
     `(() => fetch('/api/accounts')
@@ -236,12 +238,163 @@ async function validateInboxCsvReview(cdp) {
   return {
     viewport: "390x844",
     batchId,
+    mappingDialog,
     initial,
     opened,
     failedSave,
     closed,
     screenshot: "issue-494-inbox-csv-mobile-edit-error.png",
   };
+}
+
+async function validateCsvMappingDialog(cdp) {
+  await navigate(cdp, `${baseUrl}/inbox`);
+  await waitFor(cdp, `Boolean(document.querySelector('[data-open-dialog="csv-import-dialog"]'))`);
+
+  const setup = await evaluate(
+    cdp,
+    `(() => {
+      document.querySelector('[data-open-dialog="csv-import-dialog"]').click();
+      const dialog = document.getElementById('csv-import-dialog');
+      const form = document.getElementById('csv-import-form');
+      const activeAccount = [...form.elements.accountId.options].find((option) => option.value);
+      if (!activeAccount) return { ok: false, error: 'No active account option' };
+      form.elements.accountId.value = activeAccount.value;
+      form.elements.consentAccepted.checked = true;
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([
+        'Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)\\n' +
+        '20/07/2026;19/07/2026;PIX;Receita visual;100,00;0;100,00\\n' +
+        '21/07/2026;20/07/2026;Compra;Despesa visual;0;-25,50;74,50'
+      ], 'c6-issue-513.csv', { type: 'text/csv' }));
+      form.elements.file.files = transfer.files;
+      document.getElementById('preview-csv-import').click();
+      return {
+        ok: true,
+        dialogOpen: dialog.open,
+        hasKindControl: Boolean(form.elements.mappingKind),
+        hasExternalIdControl: Boolean(form.elements.mappingExternalId)
+      };
+    })()`,
+  );
+  check(setup.ok, "CSV mapping dialog could not be prepared", setup);
+  check(setup.dialogOpen, "CSV mapping dialog did not open", setup);
+  check(!setup.hasKindControl, "CSV mapping still exposes kind", setup);
+  check(!setup.hasExternalIdControl, "CSV mapping still exposes external ID", setup);
+
+  await waitFor(
+    cdp,
+    `document.getElementById('create-csv-import')?.disabled === false && document.getElementById('csv-import-form')?.elements.mappingStrategy?.value === 'split'`,
+  );
+  const c6 = await evaluate(
+    cdp,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      const options = (name) => [...form.elements[name].options].map((option) => option.textContent || '');
+      return {
+        strategy: form.elements.mappingStrategy.value,
+        date: form.elements.mappingDate.value,
+        description: form.elements.mappingDescription.value,
+        income: form.elements.mappingIncomeAmount.value,
+        expense: form.elements.mappingExpenseAmount.value,
+        amountOptions: options('mappingAmount'),
+        incomeOptions: options('mappingIncomeAmount'),
+        expenseOptions: options('mappingExpenseAmount'),
+        interpretation: document.getElementById('csv-preview-result').textContent || '',
+        createDisabled: document.getElementById('create-csv-import').disabled
+      };
+    })()`,
+  );
+  check(c6.strategy === "split", "C6 strategy was not detected as split", c6);
+  check(c6.date === "Data Lançamento", "C6 posting date was not prioritized", c6);
+  check(c6.description === "Descrição", "C6 description was not prioritized", c6);
+  check(c6.income === "Entrada(R$)", "C6 income column was not selected", c6);
+  check(c6.expense === "Saída(R$)", "C6 expense column was not selected", c6);
+  check(
+    ![...c6.amountOptions, ...c6.incomeOptions, ...c6.expenseOptions].some((item) =>
+      item.includes("Saldo do Dia"),
+    ),
+    "Balance column remains selectable as a transaction value",
+    c6,
+  );
+  for (const label of ["Interpretação aplicada", "Receita", "Despesa", "Ignorado"]) {
+    check(c6.interpretation.includes(label), `CSV interpretation is missing ${label}`, c6);
+  }
+  check(!c6.createDisabled, "Create review button is disabled for valid C6 rows", c6);
+  await screenshot(cdp, join(outputDir, "issue-513-csv-mapping-c6.png"));
+
+  await evaluate(
+    cdp,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      for (const name of ['mappingDate', 'mappingDescription', 'mappingStrategy', 'mappingAmount', 'mappingIncomeAmount', 'mappingExpenseAmount']) {
+        form.elements[name].value = '';
+      }
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([
+        'Data,Descrição,Valor,Entrada,Saída\\n20/07/2026,Ambígua,10,10,0'
+      ], 'ambiguous-issue-513.csv', { type: 'text/csv' }));
+      form.elements.file.files = transfer.files;
+      document.getElementById('preview-csv-import').click();
+      return true;
+    })()`,
+  );
+  await waitFor(
+    cdp,
+    `document.getElementById('csv-import-form')?.elements.mappingStrategy?.value === '' && document.getElementById('csv-mapping-fields')?.hidden === false`,
+  );
+  const ambiguous = await evaluate(
+    cdp,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      return {
+        strategy: form.elements.mappingStrategy.value,
+        amount: form.elements.mappingAmount.value,
+        income: form.elements.mappingIncomeAmount.value,
+        expense: form.elements.mappingExpenseAmount.value,
+        createDisabled: document.getElementById('create-csv-import').disabled
+      };
+    })()`,
+  );
+  check(ambiguous.strategy === "", "Ambiguous strategy was preselected", ambiguous);
+  check(ambiguous.amount === "Valor", "Signed candidate was not preserved", ambiguous);
+  check(ambiguous.income === "Entrada", "Income candidate was not preserved", ambiguous);
+  check(ambiguous.expense === "Saída", "Expense candidate was not preserved", ambiguous);
+  check(
+    ambiguous.createDisabled,
+    "Create review button enabled before resolving ambiguity",
+    ambiguous,
+  );
+
+  await evaluate(
+    cdp,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      form.elements.mappingStrategy.value = 'split';
+      form.elements.mappingStrategy.dispatchEvent(new Event('change', { bubbles: true }));
+      document.getElementById('preview-csv-import').click();
+      return true;
+    })()`,
+  );
+  await waitFor(cdp, `document.getElementById('create-csv-import')?.disabled === false`);
+  const resolved = await evaluate(
+    cdp,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      const result = {
+        strategy: form.elements.mappingStrategy.value,
+        createDisabled: document.getElementById('create-csv-import').disabled,
+        preview: document.getElementById('csv-preview-result').textContent || ''
+      };
+      document.getElementById('csv-import-dialog').close();
+      return result;
+    })()`,
+  );
+  check(resolved.strategy === "split", "Selected split strategy was not retained", resolved);
+  check(!resolved.createDisabled, "Resolved mapping did not enable review creation", resolved);
+  check(resolved.preview.includes("válidas"), "Resolved mapping has no valid rows", resolved);
+
+  return { setup, c6, ambiguous, resolved, screenshot: "issue-513-csv-mapping-c6.png" };
 }
 
 async function waitFor(cdp, expression, timeout = 20_000) {
