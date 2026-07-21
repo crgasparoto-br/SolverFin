@@ -47,7 +47,7 @@ if (failures.length > 0) {
   if (fatalError?.stack) console.error(fatalError.stack);
   process.exitCode = 1;
 } else {
-  console.log("Issue #494 Inbox CSV review keyboard and mobile validation passed.");
+  console.log("Inbox CSV review and mapping validation passed.");
 }
 
 async function validateInboxCsvReview(cdp) {
@@ -341,7 +341,15 @@ async function validateCsvMappingDialog(cdp) {
   );
   await waitFor(
     cdp,
-    `document.getElementById('csv-import-form')?.elements.mappingStrategy?.value === '' && document.getElementById('csv-mapping-fields')?.hidden === false`,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      return form?.elements.mappingStrategy?.value === '' &&
+        form?.elements.mappingAmount?.value === 'Valor' &&
+        form?.elements.mappingIncomeAmount?.value === 'Entrada' &&
+        form?.elements.mappingExpenseAmount?.value === 'Saída' &&
+        document.getElementById('create-csv-import')?.disabled === true &&
+        document.getElementById('csv-import-status')?.textContent.includes('Ajuste');
+    })()`,
   );
   const ambiguous = await evaluate(
     cdp,
