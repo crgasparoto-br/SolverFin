@@ -122,7 +122,8 @@ export function enhanceInboxCategoryHierarchy(
   const choices = buildInboxCategoryChoices(categories);
   const choicesJson = JSON.stringify(choices).replace(/</g, "\\u003c");
   const selectionResolverSource = resolveInboxCategorySelection.toString();
-  const categoryOptionsPattern = /        function categoryOptions\(payload\) \{[\s\S]*?\n        \}\n        function accountOptions\(payload\) \{/;
+  const categoryOptionsPattern =
+    /        function categoryOptions\(payload\) \{[\s\S]*?\n        \}\n        function accountOptions\(payload\) \{/;
   const categoryOptionsReplacement = `        const inboxCategoryChoices = ${choicesJson};
         const inboxCategoryById = new Map(inboxCategoryChoices.map((category) => [category.id, category]));
         const resolveInboxCategorySelection = ${selectionResolverSource};
@@ -153,7 +154,8 @@ export function enhanceInboxCategoryHierarchy(
             selectedCategoryAvailable ? "muted" : "warning"
           );`;
 
-  const kindListenerPattern = /        lineEditForm\.elements\.kind\.addEventListener\("change", \(\) => \{[\s\S]*?\n        \}\);/;
+  const kindListenerPattern =
+    /        lineEditForm\.elements\.kind\.addEventListener\("change", \(\) => \{[\s\S]*?\n        \}\);/;
   const kindListenerReplacement = `        lineEditForm.elements.kind.addEventListener("change", () => {
           const categorySelect = lineEditForm.elements.categoryId;
           const previousCategoryId = categorySelect.value || undefined;
@@ -187,7 +189,7 @@ export function enhanceInboxCategoryHierarchy(
   if (withKindListener === enhanced) return html;
   enhanced = withKindListener;
 
-  enhanced = enhanced.replace("<main>", '<main data-inbox-category-hierarchy-enhanced>');
+  enhanced = enhanced.replace("<main>", "<main data-inbox-category-hierarchy-enhanced>");
   enhanced = enhanced.replace(
     "</style>",
     `

@@ -18,9 +18,21 @@ const hierarchyPageSource = readFileSync(
 const categories: CategoryRecord[] = [
   { id: "food", name: "Alimentação", kind: "expense", status: "active" },
   { id: "market", name: "Mercado", kind: "expense", status: "active", parentCategoryId: "food" },
-  { id: "organic", name: "Orgânicos", kind: "expense", status: "active", parentCategoryId: "market" },
+  {
+    id: "organic",
+    name: "Orgânicos",
+    kind: "expense",
+    status: "active",
+    parentCategoryId: "market",
+  },
   { id: "housing", name: "Moradia", kind: "expense", status: "active" },
-  { id: "utilities", name: "Utilidades", kind: "expense", status: "archived", parentCategoryId: "housing" },
+  {
+    id: "utilities",
+    name: "Utilidades",
+    kind: "expense",
+    status: "archived",
+    parentCategoryId: "housing",
+  },
   { id: "water", name: "Água", kind: "expense", status: "active", parentCategoryId: "utilities" },
   { id: "income-root", name: "Trabalho", kind: "income", status: "active" },
   {
@@ -104,14 +116,23 @@ describe("Inbox category hierarchy", () => {
 
   it("uses controlled paths for missing parents and cycles", () => {
     const malformed: CategoryRecord[] = [
-      { id: "orphan", name: "Órfã", kind: "expense", status: "active", parentCategoryId: "missing" },
+      {
+        id: "orphan",
+        name: "Órfã",
+        kind: "expense",
+        status: "active",
+        parentCategoryId: "missing",
+      },
       { id: "a", name: "A", kind: "expense", status: "active", parentCategoryId: "b" },
       { id: "b", name: "B", kind: "expense", status: "active", parentCategoryId: "a" },
     ];
     const choices = buildInboxCategoryChoices(malformed);
 
     assert.equal(choices.find((choice) => choice.id === "orphan")?.path, "Sem grupo › Órfã");
-    assert.equal(choices.find((choice) => choice.id === "orphan")?.hierarchyState, "missing_parent");
+    assert.equal(
+      choices.find((choice) => choice.id === "orphan")?.hierarchyState,
+      "missing_parent",
+    );
     assert.match(choices.find((choice) => choice.id === "a")?.path ?? "", /^Hierarquia inválida ›/);
     assert.match(choices.find((choice) => choice.id === "b")?.path ?? "", /^Hierarquia inválida ›/);
     assert.equal(new Set(choices.map((choice) => choice.id)).size, 3);
@@ -152,7 +173,10 @@ describe("Inbox category hierarchy", () => {
     assert.match(html, /\(indisponível\)/);
     assert.match(html, /setCustomValidity/);
     assert.match(html, /A categoria foi removida porque não é compatível ou não está disponível/);
-    assert.match(html, /const resolveInboxCategorySelection = function resolveInboxCategorySelection/);
+    assert.match(
+      html,
+      /const resolveInboxCategorySelection = function resolveInboxCategorySelection/,
+    );
     assert.match(html, /select\[name="categoryId"\]/);
   });
 
