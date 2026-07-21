@@ -172,7 +172,11 @@ async function assertPreviewContractValidation(token: string, accountId: string)
   assert.equal(ambiguousDelimiter.statusCode, 200);
   const ambiguousDelimiterBody = readBody<{
     state: string;
-    csv: { delimiterCandidates: string[]; missingRequiredFields: string[]; valueStrategy?: string };
+    csv: {
+      delimiterCandidates: string[];
+      missingRequiredFields: string[];
+      valueStrategy?: string;
+    };
   }>(ambiguousDelimiter);
   assert.equal(ambiguousDelimiterBody.state, "mapping_required");
   assert.equal(ambiguousDelimiterBody.csv.delimiterCandidates.length, 2);
