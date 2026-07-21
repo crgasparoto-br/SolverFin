@@ -53,8 +53,8 @@ jobs:
           gh api -H "Accept: application/vnd.github.raw+json" \
             "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" \
             > /tmp/issue519-audit-fixes.patch
-          git apply --check /tmp/issue519-audit-fixes.patch
-          git apply --index --whitespace=nowarn /tmp/issue519-audit-fixes.patch
+          git apply --check --exclude=.github/workflows/issue-519-audit-fix.yml /tmp/issue519-audit-fixes.patch
+          git apply --index --whitespace=nowarn --exclude=.github/workflows/issue-519-audit-fix.yml /tmp/issue519-audit-fixes.patch
           git diff --cached --check
 
       - name: Enforce remaining audit invariants
