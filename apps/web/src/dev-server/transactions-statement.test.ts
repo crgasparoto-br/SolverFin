@@ -41,6 +41,7 @@ dayFilterKeepsOpeningBalanceAndDailyRows();
 statementTransactionFilterKeepsAccountOrAccountOnlyRecords();
 statementCalculationsIgnoreVoidedAndPendingOpeningEntries();
 projectedBalancesIncludePlannedEntriesAndTransfers();
+transferSummariesExcludeTransfersFromIncomeAndExpense();
 transferSignedAmountDependsOnSelectedAccount();
 
 function periodHelpersResolveMonthBoundaries(): void {
@@ -271,7 +272,7 @@ function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
 
   assert.deepEqual(summarize(rows, openingMinor), {
     openingMinor: 150000,
-    incomeMinor: 50000,
+    incomeMinor: 10000,
     expenseMinor: 25000,
     plannedBalanceMinor: 175000,
     effectiveBalanceMinor: 165000,
@@ -318,6 +319,44 @@ function projectedBalancesIncludePlannedEntriesAndTransfers(): void {
     destinationRows.map((row) => row.balanceAfterMinor),
     [25000],
   );
+}
+
+function transferSummariesExcludeTransfersFromIncomeAndExpense(): void {
+  const outboundTransfer = transaction(
+    "transfer-out",
+    "transfer",
+    "posted",
+    25000,
+    "2026-06-03",
+    { destinationAccountId: "account-2" },
+  );
+  const inboundTransfer = transaction(
+    "transfer-in",
+    "transfer",
+    "posted",
+    30000,
+    "2026-06-04",
+    { accountId: "account-2", destinationAccountId: "account-1" },
+  );
+  const rows = buildRows([outboundTransfer, inboundTransfer], account, 10000);
+
+  assert.deepEqual(
+    rows.map((row) => row.balanceAfterMinor),
+    [-15000, 15000],
+  );
+  assert.deepEqual(summarize(rows, 10000), {
+    openingMinor: 10000,
+    incomeMinor: 0,
+    expenseMinor: 0,
+    plannedBalanceMinor: 15000,
+    effectiveBalanceMinor: 15000,
+    reconciledMinor: 0,
+    unreconciledMinor: 55000,
+    pendingMinor: 0,
+    pendingCount: 0,
+    reconciledCount: 0,
+    unreconciledCount: 2,
+  });
 }
 
 function transferSignedAmountDependsOnSelectedAccount(): void {
