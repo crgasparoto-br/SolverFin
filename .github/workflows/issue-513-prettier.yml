@@ -24,15 +24,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Enable pnpm
-        run: corepack enable
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Format changed files
-        run: pnpm exec prettier --write packages/domain/src/imports.ts packages/domain/src/imports.test.ts apps/api/src/csv-import-review.integration.test.ts scripts/statement-visual/inbox-csv-review.mjs
+        run: npx prettier --write packages/domain/src/imports.ts packages/domain/src/imports.test.ts apps/api/src/csv-import-review.integration.test.ts scripts/statement-visual/inbox-csv-review.mjs
 
       - name: Commit formatting
         run: |
