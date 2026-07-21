@@ -261,11 +261,11 @@ function buildDeduplicationReasons(
   }
 
   if (
-  candidate.kind === "transfer" &&
-  dateDistanceInDays(candidate.occurredOn, possibleDuplicate.occurredOn) > 2
-) {
-  return [];
-}
+    candidate.kind === "transfer" &&
+    dateDistanceInDays(candidate.occurredOn, possibleDuplicate.occurredOn) > 2
+  ) {
+    return [];
+  }
 
   const reasons: DeduplicationReason[] = [];
 

@@ -484,23 +484,18 @@ export function deriveImportLineDirection(
 }
 
 export function buildImportPayloadFingerprint(payload: TransactionExtractionPayload): string {
-  return buildStableImportHash(
-    [
-      payload.payloadVersion,
-      payload.sourceRowNumber,
-      payload.sourceHash,
-      payload.occurredOn,
-      payload.kind,
-      deriveImportLineDirection(payload) ?? "",
-      payload.amountMinor,
-      payload.currency,
-      payload.description,
-      payload.accountId ?? "",
-      payload.payloadVersion === 2 ? (payload.otherAccountId ?? "") : "",
-      payload.categoryId ?? "",
-      payload.externalId ?? "",
-    ].join(":"),
-  );
+  const parts: Array<string | number> = [
+    payload.payloadVersion,
+    payload.sourceRowNumber,
+    payload.sourceHash,
+    payload.occurredOn,
+    payload.kind,
+  ];
+  if (payload.payloadVersion === 2) parts.push(payload.direction);
+  parts.push(payload.amountMinor, payload.currency, payload.description, payload.accountId ?? "");
+  if (payload.payloadVersion === 2) parts.push(payload.otherAccountId ?? "");
+  parts.push(payload.categoryId ?? "", payload.externalId ?? "");
+  return buildStableImportHash(parts.join(":"));
 }
 
 function parseTransactionExtractionPayloadCommon(

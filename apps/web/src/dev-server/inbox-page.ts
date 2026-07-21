@@ -786,7 +786,7 @@ function csvImportScript(
             if (state.requestInFlight) return;
             const totals = selectedTotals();
             if (!totals.count) return;
-            const confirmation = "Confirmar " + totals.count + " linha(s)?\\nReceitas: " + formatMoney(totals.income, "BRL") + "\\nDespesas: " + formatMoney(totals.expense, "BRL") + "\\nTransferências: " + totals.transferCount + " (" + formatMoney(totals.transfer, "BRL") + ")\\nCada linha será validada e processada separadamente.";
+            const confirmation = "Confirmar " + totals.count + " linha(s)?\\nReceitas: " + formatMoney(totals.income, totals.currency) + "\\nDespesas: " + formatMoney(totals.expense, totals.currency) + "\\nTransferências: " + totals.transferCount + " (" + formatMoney(totals.transfer, totals.currency) + ")\\nCada linha será validada e processada separadamente.";
             if (!window.confirm(confirmation)) return;
             state.requestInFlight = true; selectedButton.disabled = true;
             setStatus(detailStatus, "Confirmando linhas selecionadas...", "muted");

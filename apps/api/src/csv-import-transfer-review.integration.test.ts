@@ -225,11 +225,35 @@ async function assertTransferReferenceValidation(
   },
 ): Promise<void> {
   const cases: Array<{ label: string; body: Record<string, unknown>; code: string }> = [
-    { label: "same", body: { kind: "transfer", otherAccountId: fixtures.reference }, code: "IMPORT_TRANSFER_SAME_ACCOUNT" },
-    { label: "archived", body: { kind: "transfer", otherAccountId: fixtures.archived }, code: "IMPORT_TRANSFER_OTHER_ACCOUNT_INVALID" },
-    { label: "currency", body: { kind: "transfer", otherAccountId: fixtures.usd }, code: "IMPORT_TRANSFER_CURRENCY_MISMATCH" },
-    { label: "profile", body: { kind: "transfer", otherAccountId: fixtures.otherProfile }, code: "TENANT_RESOURCE_NOT_FOUND" },
-    { label: "category", body: { kind: "transfer", otherAccountId: fixtures.other, categoryId: fixtures.expenseCategory }, code: "IMPORT_CATEGORY_KIND_MISMATCH" },
+    {
+      label: "same",
+      body: { kind: "transfer", otherAccountId: fixtures.reference },
+      code: "IMPORT_TRANSFER_SAME_ACCOUNT",
+    },
+    {
+      label: "archived",
+      body: { kind: "transfer", otherAccountId: fixtures.archived },
+      code: "IMPORT_TRANSFER_OTHER_ACCOUNT_INVALID",
+    },
+    {
+      label: "currency",
+      body: { kind: "transfer", otherAccountId: fixtures.usd },
+      code: "IMPORT_TRANSFER_CURRENCY_MISMATCH",
+    },
+    {
+      label: "profile",
+      body: { kind: "transfer", otherAccountId: fixtures.otherProfile },
+      code: "TENANT_RESOURCE_NOT_FOUND",
+    },
+    {
+      label: "category",
+      body: {
+        kind: "transfer",
+        otherAccountId: fixtures.other,
+        categoryId: fixtures.expenseCategory,
+      },
+      code: "IMPORT_CATEGORY_KIND_MISMATCH",
+    },
   ];
   for (const testCase of cases) {
     const detail = await createBatch(token, {
@@ -238,13 +262,21 @@ async function assertTransferReferenceValidation(
       accountId: fixtures.reference,
     });
     const suggestion = requireSuggestion(detail);
-    const response = await patchSuggestion(token, detail.importBatch.id, suggestion.id, testCase.body);
+    const response = await patchSuggestion(
+      token,
+      detail.importBatch.id,
+      suggestion.id,
+      testCase.body,
+    );
     assert.equal(response.statusCode, testCase.code === "TENANT_RESOURCE_NOT_FOUND" ? 404 : 400);
     assert.equal(readErrorCode(response), testCase.code);
   }
 }
 
-async function assertSecondEndpointReconciliation(token: string, fixtures: { suffix: string; reference: string; other: string }): Promise<void> {
+async function assertSecondEndpointReconciliation(
+  token: string,
+  fixtures: { suffix: string; reference: string; other: string },
+): Promise<void> {
   const outgoing = await createBatch(token, {
     fileName: `transfer-pair-out-${fixtures.suffix}.csv`,
     content: `date,description,amount\n2026-07-21,Pair out ${fixtures.suffix},-88.00`,
@@ -266,9 +298,9 @@ async function assertSecondEndpointReconciliation(token: string, fixtures: { suf
     accountId: fixtures.other,
   });
   const inSuggestion = requireSuggestion(incoming);
- const updatedIn = await patchSuggestion(token, incoming.importBatch.id, inSuggestion.id, {
+  const updatedIn = await patchSuggestion(token, incoming.importBatch.id, inSuggestion.id, {
     kind: "transfer",
-   otherAccountId: fixtures.reference,
+    otherAccountId: fixtures.reference,
   });
   assert.equal(updatedIn.statusCode, 200);
 
@@ -279,23 +311,349 @@ async function assertSecondEndpointReconciliation(token: string, fixtures: { suf
   const detected = await apiRequest(token, "GET", `/api/import-batches/${incoming.importBatch.id}`);
   assert.equal(detected.statusCode, 200);
   const detectedSuggestion = requireSuggestion(readBody<ImportDetail>(detected));
-  const reconciliation = detectedSuggestion.candidates.find((candidate) => candidate.kind === "reconciliation");
+  const reconciliation = detectedSuggestion.candidates.find(
+    (candidate) => candidate.kind === "reconciliation",
+  );
   assert.ok(reconciliation);
 
   const reconciled = await apiRequest(
     token,
     "POST",
-    `/api/review-suggestions/${reconciliation.id}/decision`,
-    { decision: "approve"},
+    `/api/review-suggestions/${reconciliation.id}/approve`,
   );
   assert.equal(reconciled.statusCode, 200);
   const reconciledBody = readBody<{ transaction: ApprovalResult["transaction"] }>(reconciled);
   assert.equal(reconciledBody.transaction.id, createdResult.transaction.id);
   assert.equal(reconciledBody.transaction.status, "reconciled");
 
-  const reconciledDetail = await apiRequest(token, "GET", `/api/import-batches/${incoming.importBatch.id}`);
+  const reconciledDetail = await apiRequest(
+    token,
+    "GET",
+    `/api/import-batches/${incoming.importBatch.id}`,
+  );
   const reloadedSuggestion = requireSuggestion(readBody<ImportDetail>(reconciledDetail));
   assert.equal(reloadedSuggestion.targetEntityId, createdResult.transaction.id);
   assert.equal(reloadedSuggestion.transaction?.id, createdResult.transaction.id);
 }
 
+async function assertConcurrentEndpointsConverge(
+  token: string,
+  fixtures: { suffix: string; reference: string; third: string },
+): Promise<void> {
+  const outgoing = await createBatch(token, {
+    fileName: `transfer-concurrent-out-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-25,Concurrent out ${fixtures.suffix},-71.23`,
+    accountId: fixtures.reference,
+  });
+  const incoming = await createBatch(token, {
+    fileName: `transfer-concurrent-in-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-26,Concurrent in ${fixtures.suffix},71.23`,
+    accountId: fixtures.third,
+  });
+  const outgoingSuggestion = requireSuggestion(outgoing);
+  const incomingSuggestion = requireSuggestion(incoming);
+  assert.equal(
+    (
+      await patchSuggestion(token, outgoing.importBatch.id, outgoingSuggestion.id, {
+        kind: "transfer",
+        otherAccountId: fixtures.third,
+      })
+    ).statusCode,
+    200,
+  );
+  assert.equal(
+    (
+      await patchSuggestion(token, incoming.importBatch.id, incomingSuggestion.id, {
+        kind: "transfer",
+        otherAccountId: fixtures.reference,
+      })
+    ).statusCode,
+    200,
+  );
+
+  const responses = await Promise.all([
+    approveSuggestion(token, outgoing.importBatch.id, outgoingSuggestion.id),
+    approveSuggestion(token, incoming.importBatch.id, incomingSuggestion.id),
+  ]);
+  assert.deepEqual(
+    responses.map((response) => response.statusCode),
+    [200, 200],
+  );
+  const results = responses.map((response) => readBody<ApprovalResult>(response));
+  assert.equal(new Set(results.map((result) => result.transaction.id)).size, 1);
+  assert.equal(results.filter((result) => result.outcome === "created").length, 1);
+  assert.equal(
+    results.filter((result) => result.outcome === "reconciled" || result.outcome === "idempotent")
+      .length,
+    1,
+  );
+
+  const rows = await query<{ count: number }>(
+    `select count(*)::int as "count" from "Transaction"
+     where "kind" = 'TRANSFER' and "accountId" = $1 and "destinationAccountId" = $2
+       and "amountMinor" = 7123 and "occurredOn" between '2026-07-25' and '2026-07-26'`,
+    [fixtures.reference, fixtures.third],
+  );
+  assert.equal(rows[0]?.count, 1, "Concurrent endpoints must persist one transfer");
+}
+
+async function assertMixedBulkSummary(
+  token: string,
+  fixtures: { suffix: string; reference: string; other: string },
+): Promise<void> {
+  const detail = await createBatch(token, {
+    fileName: `transfer-mixed-bulk-${fixtures.suffix}.csv`,
+    content: [
+      "date,description,amount",
+      `2026-07-27,Mixed income ${fixtures.suffix},101.00`,
+      `2026-07-28,Mixed expense ${fixtures.suffix},-51.00`,
+      `2026-07-29,Mixed transfer ${fixtures.suffix},-26.00`,
+    ].join("\n"),
+    accountId: fixtures.reference,
+  });
+  assert.equal(detail.suggestions.length, 3);
+  const transferSuggestion = requireSuggestion(detail, 2);
+  const patched = await patchSuggestion(token, detail.importBatch.id, transferSuggestion.id, {
+    kind: "transfer",
+    otherAccountId: fixtures.other,
+  });
+  assert.equal(patched.statusCode, 200);
+
+  const response = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${detail.importBatch.id}/approve-selected`,
+    { suggestionIds: detail.suggestions.map((suggestion) => suggestion.id) },
+  );
+  assert.equal(response.statusCode, 200);
+  const result = readBody<BulkApprovalResult>(response);
+  assert.deepEqual(result.summary, {
+    requested: 3,
+    approved: 3,
+    failed: 0,
+    created: 3,
+    reconciled: 0,
+    idempotent: 0,
+    blocked: 0,
+    transferCount: 1,
+    transferTotalMinor: 2600,
+  });
+  assert.equal(
+    result.results.every((item) => item.status === "approved"),
+    true,
+  );
+  assert.equal(
+    result.results.every((item) => item.outcome === "created"),
+    true,
+  );
+
+  const rows = await query<{ kind: string; count: number }>(
+    `select "kind"::text as "kind", count(*)::int as "count"
+       from "Transaction" where "importBatchId" = $1 group by "kind" order by "kind"`,
+    [detail.importBatch.id],
+  );
+  assert.deepEqual(rows.map((row) => [row.kind.toLowerCase(), row.count]).sort(), [
+    ["expense", 1],
+    ["income", 1],
+    ["transfer", 1],
+  ]);
+}
+
+async function createAccount(
+  token: string,
+  name: string,
+  currency: string,
+  profileId?: string,
+): Promise<string> {
+  const path = profileId ? `/api/accounts?profileId=${profileId}` : "/api/accounts";
+  const response = await apiRequest(token, "POST", path, {
+    name,
+    kind: "checking",
+    openingBalanceMinor: 0,
+    currency,
+  });
+  assert.equal(response.statusCode, 201);
+  return readBody<{ account: { id: string } }>(response).account.id;
+}
+
+async function archiveAccount(token: string, accountId: string): Promise<void> {
+  const response = await apiRequest(token, "POST", `/api/accounts/${accountId}/archive`);
+  assert.equal(response.statusCode, 200);
+}
+
+async function createCategory(token: string, name: string, kind: string): Promise<string> {
+  const response = await apiRequest(token, "POST", "/api/categories", { name, kind });
+  assert.equal(response.statusCode, 201);
+  return readBody<{ category: { id: string } }>(response).category.id;
+}
+
+async function createBatch(
+  token: string,
+  input: { fileName: string; content: string; accountId: string },
+): Promise<ImportDetail> {
+  const response = await apiRequest(token, "POST", "/api/import-batches/csv", {
+    originalFileName: input.fileName,
+    content: input.content,
+    accountId: input.accountId,
+    consentAccepted: true,
+  });
+  assert.equal(response.statusCode, 201);
+  return readBody<ImportDetail>(response);
+}
+
+function patchSuggestion(
+  token: string,
+  importBatchId: string,
+  suggestionId: string,
+  body: Record<string, unknown>,
+): Promise<ApiResponse> {
+  return apiRequest(
+    token,
+    "PATCH",
+    `/api/import-batches/${importBatchId}/suggestions/${suggestionId}`,
+    body,
+  );
+}
+
+function approveSuggestion(
+  token: string,
+  importBatchId: string,
+  suggestionId: string,
+): Promise<ApiResponse> {
+  return apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${importBatchId}/suggestions/${suggestionId}/approve`,
+  );
+}
+
+async function loginAndReadToken(): Promise<string> {
+  const response = await handleMvpApiRequest({
+    method: "POST",
+    path: "/api/session",
+    body: { email: "demo@solverfin.example.invalid", password: "SolverFinDemo!2026" },
+  });
+  assert.equal(response.statusCode, 201);
+  return readBody<{ session: { token: string } }>(response).session.token;
+}
+
+async function apiRequest(
+  token: string,
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<ApiResponse> {
+  const url = new URL(path, "http://solverfin.integration.test");
+  const request: ApiRequest = {
+    method,
+    pathname: url.pathname,
+    query: url.searchParams,
+    headers: { authorization: `Bearer ${token}` },
+    body,
+  };
+  const response =
+    (await handleImportBatchesApiRequest(request)) ??
+    (await handleDeduplicationReconciliationApiRequest(request)) ??
+    (await handleApiRequest(request));
+  assert.ok(response, `${method} ${path} should be handled`);
+  return response;
+}
+
+function readBody<T>(response: Pick<ApiResponse, "body">): T {
+  assert.equal(typeof response.body, "object");
+  assert.notEqual(response.body, null);
+  return response.body as T;
+}
+
+function readErrorCode(response: ApiResponse): string | undefined {
+  return readBody<{ error?: { code?: string } }>(response).error?.code;
+}
+
+function requireSuggestion(detail: ImportDetail, index = 0): ImportSuggestion {
+  const suggestion = detail.suggestions[index];
+  assert.ok(suggestion, `Expected suggestion at index ${index}`);
+  return suggestion;
+}
+
+interface ExtractionPayload {
+  payloadVersion: 1 | 2;
+  sourceRowNumber: number;
+  sourceHash?: string;
+  occurredOn?: string;
+  description: string;
+  kind: string;
+  direction?: "inflow" | "outflow";
+  amountMinor: number;
+  currency: string;
+  accountId?: string;
+  otherAccountId?: string;
+  categoryId?: string;
+  externalId?: string;
+}
+
+interface ImportSuggestion {
+  id: string;
+  status: string;
+  targetEntityId?: string;
+  payload: ExtractionPayload;
+  candidates: Array<{
+    id: string;
+    status: string;
+    kind: string;
+    targetTransactionId?: string;
+  }>;
+  transaction?: TransactionRecord;
+}
+
+interface ImportDetail {
+  importBatch: {
+    id: string;
+    organizationId: string;
+    financialProfileId: string;
+    status: string;
+  };
+  suggestions: ImportSuggestion[];
+  problems: unknown[];
+}
+
+interface TransactionRecord {
+  id: string;
+  organizationId: string;
+  financialProfileId: string;
+  kind: string;
+  status: string;
+  source: string;
+  amountMinor: number;
+  currency: string;
+  occurredOn: string;
+  plannedOn: string;
+  effectiveOn?: string;
+  description: string;
+  accountId?: string;
+  destinationAccountId?: string;
+  transferGroupId?: string;
+  importBatchId?: string;
+  aiSuggestionId?: string;
+  categoryId?: string;
+}
+
+interface ApprovalResult {
+  outcome: string;
+  idempotent: boolean;
+  transaction: TransactionRecord;
+}
+
+interface BulkApprovalResult {
+  summary: {
+    requested: number;
+    approved: number;
+    failed: number;
+    created: number;
+    reconciled: number;
+    idempotent: number;
+    blocked: number;
+    transferCount: number;
+    transferTotalMinor: number;
+  };
+  results: Array<{ suggestionId: string; status: string; outcome: string }>;
+}

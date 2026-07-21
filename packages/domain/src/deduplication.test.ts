@@ -31,6 +31,7 @@ testFalsePositiveBelowThreshold();
 testTenantIsolation();
 testImportSuggestionDuplicate();
 testTransferDuplicateUsesAccountPair();
+testTransferDuplicateRejectsDistantDate();
 testImportTransferDirectionCanonicalization();
 testBankMessageCandidate();
 testAuditEntry();
@@ -239,6 +240,38 @@ function testTransferDuplicateUsesAccountPair(): void {
     false,
     "unrelated transfer account pair is ignored",
   );
+}
+
+function testTransferDuplicateRejectsDistantDate(): void {
+  const candidate = buildTransactionDeduplicationCandidate(
+    buildTransaction("tx-transfer-date-candidate", tenantA, {
+      kind: "transfer",
+      source: "import",
+      amountMinor: 25000,
+      occurredOn: "2026-06-12",
+      description: "Transferência recorrente",
+      accountId: "account-a",
+      destinationAccountId: "account-b",
+    }),
+  );
+  const distant = buildTransactionDeduplicationCandidate(
+    buildTransaction("tx-transfer-date-distant", tenantA, {
+      kind: "transfer",
+      source: "manual",
+      amountMinor: 25000,
+      occurredOn: "2026-07-12",
+      description: "Transferência recorrente",
+      accountId: "account-a",
+      destinationAccountId: "account-b",
+    }),
+  );
+  const reviews = detectDuplicateTransactions({
+    context: tenantA,
+    now,
+    candidate,
+    existingCandidates: [distant],
+  });
+  assertEqual(reviews.length, 0, "transfer candidates outside the date window are ignored");
 }
 
 function testImportTransferDirectionCanonicalization(): void {

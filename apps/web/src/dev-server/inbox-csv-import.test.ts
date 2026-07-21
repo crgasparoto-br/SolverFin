@@ -90,6 +90,18 @@ describe("Inbox CSV import review contract", () => {
     assert.match(source, /transferTotalMinor/);
   });
 
+  it("uses the selected currency in bulk confirmation and revalidates transfer fields", () => {
+    assert.match(source, /formatMoney\(totals\.income, totals\.currency\)/);
+    assert.match(source, /formatMoney\(totals\.expense, totals\.currency\)/);
+    assert.match(source, /formatMoney\(totals\.transfer, totals\.currency\)/);
+    assert.match(source, /otherField\.hidden = !isTransfer/);
+    assert.match(
+      source,
+      /otherAccountId\.required = isTransfer|elements\.otherAccountId\.required = isTransfer/,
+    );
+    assert.match(source, /accountId\.addEventListener\("change"/);
+  });
+
   it("does not retain raw CSV in browser storage", () => {
     assert.doesNotMatch(source, /localStorage/);
     assert.doesNotMatch(source, /sessionStorage/);
