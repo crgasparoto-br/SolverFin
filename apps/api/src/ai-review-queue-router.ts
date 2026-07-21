@@ -9,6 +9,7 @@ import {
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { approveImportSuggestionFromQueueRespectingRejectedCandidatesForContext } from "./import-transfer-approval.js";
 import {
   AiReviewQueueError,
   approveAiReviewSuggestionForContext,
@@ -156,14 +157,17 @@ async function approveAiReviewSuggestionHandler(
 ): Promise<ApiResponse> {
   const body = optionalObjectBody(request.body);
   const payloadOverride = readPayload(body.payloadOverride);
+  const suggestionId = requireParam(match, "suggestionId");
+  const importDecision =
+    await approveImportSuggestionFromQueueRespectingRejectedCandidatesForContext(
+      context,
+      suggestionId,
+    );
 
   return json(
     200,
-    await approveAiReviewSuggestionForContext(
-      context,
-      requireParam(match, "suggestionId"),
-      payloadOverride,
-    ),
+    importDecision ??
+      (await approveAiReviewSuggestionForContext(context, suggestionId, payloadOverride)),
   );
 }
 
