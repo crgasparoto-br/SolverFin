@@ -84,7 +84,8 @@ export function buildInboxCategoryChoices(
       ...category,
       path: hierarchy.path,
       hierarchyState: hierarchy.hierarchyState,
-      selectable: category.status === "active",
+      selectable:
+        category.status === "active" && (category.kind === "income" || category.kind === "expense"),
     };
   });
 }
