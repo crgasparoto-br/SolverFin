@@ -19,11 +19,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create source archive
-        run: tar --exclude=.git -czf solverfin-source.tar.gz .
+        run: tar --exclude=.git -czf /tmp/solverfin-source.tar.gz .
 
       - name: Upload source archive
         uses: actions/upload-artifact@v4
         with:
           name: issue-519-workspace
-          path: solverfin-source.tar.gz
+          path: /tmp/solverfin-source.tar.gz
           retention-days: 1
