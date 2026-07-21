@@ -334,6 +334,22 @@ async function assertSecondEndpointReconciliation(
   const reloadedSuggestion = requireSuggestion(readBody<ImportDetail>(reconciledDetail));
   assert.equal(reloadedSuggestion.targetEntityId, createdResult.transaction.id);
   assert.equal(reloadedSuggestion.transaction?.id, createdResult.transaction.id);
+  const provenance = await query<{
+    aiSuggestionId: string;
+    importBatchId: string;
+    accountId: string;
+    destinationAccountId: string;
+    amountMinor: number;
+  }>(
+    `select "aiSuggestionId", "importBatchId", "accountId", "destinationAccountId", "amountMinor"
+     from "Transaction" where "id" = $1`,
+    [createdResult.transaction.id],
+  );
+  assert.equal(provenance[0]?.aiSuggestionId, outSuggestion.id);
+  assert.equal(provenance[0]?.importBatchId, outgoing.importBatch.id);
+  assert.equal(provenance[0]?.accountId, fixtures.reference);
+  assert.equal(provenance[0]?.destinationAccountId, fixtures.other);
+  assert.equal(provenance[0]?.amountMinor, 8800);
 }
 
 async function assertConcurrentEndpointsConverge(

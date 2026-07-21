@@ -31,6 +31,7 @@ testFalsePositiveBelowThreshold();
 testTenantIsolation();
 testImportSuggestionDuplicate();
 testTransferDuplicateUsesAccountPair();
+testTransferDuplicateRejectsAmountOrCurrencyMismatch();
 testTransferDuplicateRejectsDistantDate();
 testImportTransferDirectionCanonicalization();
 testBankMessageCandidate();
@@ -242,6 +243,64 @@ function testTransferDuplicateUsesAccountPair(): void {
   );
 }
 
+function testTransferDuplicateRejectsAmountOrCurrencyMismatch(): void {
+  const candidate = buildTransactionDeduplicationCandidate(
+    buildTransaction("tx-transfer-required-signals", tenantA, {
+      kind: "transfer",
+      source: "import",
+      amountMinor: 25000,
+      occurredOn: "2026-06-12",
+      description: "Transferência recorrente",
+      accountId: "account-a",
+      destinationAccountId: "account-b",
+    }),
+  );
+  const amountMismatch = buildTransactionDeduplicationCandidate(
+    buildTransaction("tx-transfer-amount-mismatch", tenantA, {
+      kind: "transfer",
+      source: "manual",
+      amountMinor: 26000,
+      occurredOn: "2026-06-12",
+      description: "Transferência recorrente",
+      accountId: "account-a",
+      destinationAccountId: "account-b",
+    }),
+  );
+  const currencyMismatch = buildTransactionDeduplicationCandidate(
+    buildTransaction("tx-transfer-currency-mismatch", tenantA, {
+      kind: "transfer",
+      source: "manual",
+      amountMinor: 25000,
+      currency: "USD",
+      occurredOn: "2026-06-12",
+      description: "Transferência recorrente",
+      accountId: "account-a",
+      destinationAccountId: "account-b",
+    }),
+  );
+
+  assertEqual(
+    detectDuplicateTransactions({
+      context: tenantA,
+      now,
+      candidate,
+      existingCandidates: [amountMismatch],
+    }).length,
+    0,
+    "transfer candidates with a different amount are ignored",
+  );
+  assertEqual(
+    detectDuplicateTransactions({
+      context: tenantA,
+      now,
+      candidate,
+      existingCandidates: [currencyMismatch],
+    }).length,
+    0,
+    "transfer candidates with a different currency are ignored",
+  );
+}
+
 function testTransferDuplicateRejectsDistantDate(): void {
   const candidate = buildTransactionDeduplicationCandidate(
     buildTransaction("tx-transfer-date-candidate", tenantA, {
@@ -387,6 +446,7 @@ function buildTransaction(
     accountId: string;
     kind?: Transaction["kind"];
     destinationAccountId?: string;
+    currency?: string;
   },
 ): Transaction {
   return {
@@ -397,7 +457,7 @@ function buildTransaction(
     status: "posted",
     source: overrides.source,
     amountMinor: overrides.amountMinor,
-    currency: "BRL",
+    currency: overrides.currency ?? "BRL",
     occurredOn: overrides.occurredOn,
     plannedOn: overrides.occurredOn,
     description: overrides.description,

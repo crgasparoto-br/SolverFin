@@ -267,6 +267,14 @@ function buildDeduplicationReasons(
     return [];
   }
 
+  if (
+    candidate.kind === "transfer" &&
+    (candidate.amountMinor !== possibleDuplicate.amountMinor ||
+      candidate.currency.toUpperCase() !== possibleDuplicate.currency.toUpperCase())
+  ) {
+    return [];
+  }
+
   const reasons: DeduplicationReason[] = [];
 
   if (candidate.sourceHash !== undefined && candidate.sourceHash === possibleDuplicate.sourceHash) {
