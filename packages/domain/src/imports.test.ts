@@ -402,10 +402,10 @@ function testStructuredPayloads(): void {
   });
   assertEqual(rebuiltLegacy.payloadVersion, 1, "V1 candidate keeps its persisted version");
   assertEqual(
-    buildImportPayloadFingerprint(rebuiltLegacy),
-    buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),
-    "V1 candidate keeps the persisted payload fingerprint",
-  );
+  buildImportPayloadFingerprint(rebuiltLegacy),
+  buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),
+  "V1 candidate keeps the persisted payload fingerprint",
+);
   const fingerprint = buildImportPayloadFingerprint(payload);
   assertEqual(fingerprint.startsWith("fnv1a-"), true, "payload fingerprint");
   const deterministic = parseDeterministicReviewPayload({
