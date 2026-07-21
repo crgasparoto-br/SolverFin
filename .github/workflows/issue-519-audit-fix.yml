@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feat/519-csv-transfer-review
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -14,12 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
       - name: Apply audit fixes
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          target_branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
           gh api "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" --jq .content \
             | tr -d '\n' | base64 -d > /tmp/issue519-audit-fixes.patch
           if git apply --check /tmp/issue519-audit-fixes.patch; then
@@ -28,7 +33,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "test: harden CSV transfer compatibility and concurrency"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git push origin "HEAD:${target_branch}"
           else
             echo "Audit fixes already applied."
           fi
