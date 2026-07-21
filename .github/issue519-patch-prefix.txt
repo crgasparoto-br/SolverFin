@@ -1,0 +1,301 @@
+import assert from "node:assert/strict";
+
+import { closePool, query } from "./db.js";
+import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
+import { handleImportBatchesApiRequest } from "./import-batches-router.js";
+import { handleMvpApiRequest } from "./mvp.js";
+import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
+
+const MEI_PROFILE_ID = "33333333-3333-4333-8333-333333333332";
+
+void main()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await closePool();
+  });
+
+async function main(): Promise<void> {
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for transfer import tests.");
+  const token = await loginAndReadToken();
+  const suffix = Date.now().toString(36);
+  const reference = await createAccount(token, `Referência ${suffix}`, "BRL");
+  const other = await createAccount(token, `Outra ${suffix}`, "BRL");
+  const third = await createAccount(token, `Terceira ${suffix}`, "BRL");
+  const usd = await createAccount(token, `Dólar ${suffix}`, "USD");
+  const archived = await createAccount(token, `Arquivada ${suffix}`, "BRL");
+  await archiveAccount(token, archived);
+  const otherProfile = await createAccount(token, `Outro perfil ${suffix}`, "BRL", MEI_PROFILE_ID);
+  const transferCategory = await createCategory(token, `Transferência ${suffix}`, "transfer");
+  const expenseCategory = await createCategory(token, `Despesa ${suffix}`, "expense");
+
+  await assertOutgoingTransferCreation(token, {
+    suffix,
+    reference,
+    other,
+    transferCategory,
+  });
+  await assertIncomingTransferCreation(token, { suffix, reference, other });
+  await assertLegacyPayloadCompatibility(token, { suffix, reference, other });
+  await assertTransferReferenceValidation(token, {
+    suffix,
+    reference,
+    other,
+    usd,
+    archived,
+    otherProfile,
+    expenseCategory,
+  });
+  await assertSecondEndpointReconciliation(token, { suffix, reference, other });
+  await assertConcurrentEndpointsConverge(token, { suffix, reference, third });
+  await assertMixedBulkSummary(token, { suffix, reference, other });
+}
+
+async function assertOutgoingTransferCreation(
+  token: string,
+  fixtures: { suffix: string; reference: string; other: string; transferCategory: string },
+): Promise<void> {
+  const detail = await createBatch(token, {
+    fileName: `transfer-out-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-21,Transferência saída ${fixtures.suffix},-125.50`,
+    accountId: fixtures.reference,
+  });
+  const suggestion = requireSuggestion(detail);
+  assert.equal(suggestion.payload.payloadVersion, 2);
+  assert.equal(suggestion.payload.direction, "outflow");
+  assert.equal(suggestion.payload.kind, "expense");
+
+  const missingOther = await patchSuggestion(token, detail.importBatch.id, suggestion.id, {
+    kind: "transfer",
+  });
+  assert.equal(missingOther.statusCode, 400);
+  assert.equal(readErrorCode(missingOther), "IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED");
+
+  const updated = await patchSuggestion(token, detail.importBatch.id, suggestion.id, {
+    kind: "transfer",
+    otherAccountId: fixtures.other,
+    categoryId: fixtures.transferCategory,
+  });
+  assert.equal(updated.statusCode, 200);
+  const updatedSuggestion = readBody<{ suggestion: ImportSuggestion }>(updated).suggestion;
+  assert.equal(updatedSuggestion.payload.kind, "transfer");
+  assert.equal(updatedSuggestion.payload.direction, "outflow");
+  assert.equal(updatedSuggestion.payload.otherAccountId, fixtures.other);
+
+  const approval = await approveSuggestion(token, detail.importBatch.id, suggestion.id);
+  assert.equal(approval.statusCode, 200);
+  const result = readBody<ApprovalResult>(approval);
+  assert.equal(result.outcome, "created");
+  assert.equal(result.idempotent, false);
+  assert.equal(result.transaction.kind, "transfer");
+  assert.equal(result.transaction.accountId, fixtures.reference);
+  assert.equal(result.transaction.destinationAccountId, fixtures.other);
+  assert.equal(result.transaction.transferGroupId, result.transaction.id);
+  assert.equal(result.transaction.amountMinor, 12550);
+  assert.equal(result.transaction.source, "import");
+  assert.equal(result.transaction.importBatchId, detail.importBatch.id);
+  assert.equal(result.transaction.aiSuggestionId, suggestion.id);
+  assert.equal(result.transaction.categoryId, fixtures.transferCategory);
+
+  const transactionRows = await query<{
+    count: number;
+    aiSuggestionId: string;
+    importBatchId: string;
+  }>(
+    `select count(*)::int as "count", min("aiSuggestionId"::text) as "aiSuggestionId",
+       min("importBatchId"::text) as "importBatchId"
+     from "Transaction"
+     where "organizationId" = $1 and "financialProfileId" = $2
+       and "transferGroupId" = $3`,
+    [
+      result.transaction.organizationId,
+      result.transaction.financialProfileId,
+      result.transaction.id,
+    ],
+  );
+  assert.equal(transactionRows[0]?.count, 1, "A transfer must be persisted as one transaction");
+  assert.equal(transactionRows[0]?.aiSuggestionId, suggestion.id);
+  assert.equal(transactionRows[0]?.importBatchId, detail.importBatch.id);
+}
+
+async function assertIncomingTransferCreation(
+  token: string,
+  fixtures: { suffix: string; reference: string; other: string },
+): Promise<void> {
+  const detail = await createBatch(token, {
+    fileName: `transfer-incoming-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-22,Transferência recebida ${fixtures.suffix},33.00`,
+    accountId: fixtures.reference,
+  });
+  const suggestion = requireSuggestion(detail);
+  assert.equal(suggestion.payload.direction, "inflow");
+
+  const patched = await patchSuggestion(token, detail.importBatch.id, suggestion.id, {
+    kind: "transfer",
+    otherAccountId: fixtures.other,
+  });
+  assert.equal(patched.statusCode, 200);
+
+  const approved = await approveSuggestion(token, detail.importBatch.id, suggestion.id);
+  assert.equal(approved.statusCode, 200);
+  const result = readBody<ApprovalResult>(approved);
+  assert.equal(result.outcome, "created");
+  assert.equal(result.transaction.accountId, fixtures.other);
+  assert.equal(result.transaction.destinationAccountId, fixtures.reference);
+  assert.equal(result.transaction.transferGroupId, result.transaction.id);
+}
+
+async function assertLegacyPayloadCompatibility(
+  token: string,
+  fixtures: { suffix: string; reference: string; other: string },
+): Promise<void> {
+  const pending = await createBatch(token, {
+    fileName: `transfer-legacy-pending-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-23,Transferência legada ${fixtures.suffix},-12.34`,
+    accountId: fixtures.reference,
+  });
+  const pendingSuggestion = requireSuggestion(pending);
+  await downgradeSuggestionPayloadToV1(pendingSuggestion.id);
+
+  const converted = await patchSuggestion(token, pending.importBatch.id, pendingSuggestion.id, {
+    kind: "transfer",
+    otherAccountId: fixtures.other,
+  });
+  assert.equal(converted.statusCode, 200);
+  const convertedSuggestion = readBody<{ suggestion: ImportSuggestion }>(converted).suggestion;
+  assert.equal(convertedSuggestion.payload.payloadVersion, 2);
+  assert.equal(convertedSuggestion.payload.direction, "outflow");
+
+  const resolved = await createBatch(token, {
+    fileName: `transfer-legacy-resolved-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-24,Despesa legada ${fixtures.suffix},-17.00`,
+    accountId: fixtures.reference,
+  });
+  const resolvedSuggestion = requireSuggestion(resolved);
+  await downgradeSuggestionPayloadToV1(resolvedSuggestion.id);
+  const approved = await approveSuggestion(token, resolved.importBatch.id, resolvedSuggestion.id);
+  assert.equal(approved.statusCode, 200);
+  assert.equal(readBody<ApprovalResult>(approved).transaction.kind, "expense");
+
+  const reloaded = await apiRequest(token, "GET", `/api/import-batches/${resolved.importBatch.id}`);
+  assert.equal(reloaded.statusCode, 200);
+  const historical = requireSuggestion(readBody<ImportDetail>(reloaded));
+  assert.equal(historical.payload.payloadVersion, 1);
+  assert.equal(historical.payload.kind, "expense");
+}
+
+async function downgradeSuggestionPayloadToV1(suggestionId: string): Promise<void> {
+  const rows = await query<{ payload: Record<string, unknown> }>(
+    `select "payload" from "AiSuggestion" where "id" = $1`,
+    [suggestionId],
+  );
+  const payload = rows[0]?.payload;
+  assert.ok(payload);
+  const legacyPayload = {
+    payloadVersion: 1,
+    sourceRowNumber: payload.sourceRowNumber,
+    sourceHash: payload.sourceHash,
+    occurredOn: payload.occurredOn,
+    kind: payload.kind,
+    amountMinor: payload.amountMinor,
+    currency: payload.currency,
+    description: payload.description,
+    accountId: payload.accountId,
+    ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
+    ...(payload.externalId === undefined ? {} : { externalId: payload.externalId }),
+  };
+  await query(`update "AiSuggestion" set "payload" = $2::jsonb where "id" = $1`, [
+    suggestionId,
+    JSON.stringify(legacyPayload),
+  ]);
+}
+
+async function assertTransferReferenceValidation(
+  token: string,
+  fixtures: {
+    suffix: string;
+    reference: string;
+    other: string;
+    usd: string;
+    archived: string;
+    otherProfile: string;
+    expenseCategory: string;
+  },
+): Promise<void> {
+  const cases: Array<{ label: string; body: Record<string, unknown>; code: string }> = [
+    { label: "same", body: { kind: "transfer", otherAccountId: fixtures.reference }, code: "IMPORT_TRANSFER_SAME_ACCOUNT" },
+    { label: "archived", body: { kind: "transfer", otherAccountId: fixtures.archived }, code: "IMPORT_TRANSFER_OTHER_ACCOUNT_INVALID" },
+    { label: "currency", body: { kind: "transfer", otherAccountId: fixtures.usd }, code: "IMPORT_TRANSFER_CURRENCY_MISMATCH" },
+    { label: "profile", body: { kind: "transfer", otherAccountId: fixtures.otherProfile }, code: "TENANT_RESOURCE_NOT_FOUND" },
+    { label: "category", body: { kind: "transfer", otherAccountId: fixtures.other, categoryId: fixtures.expenseCategory }, code: "IMPORT_CATEGORY_KIND_MISMATCH" },
+  ];
+  for (const testCase of cases) {
+    const detail = await createBatch(token, {
+      fileName: `transfer-validation-${testCase.label}-${fixtures.suffix}.csv`,
+      content: `date,description,amount\n2026-07-21,Validation ${testCase.label} ${fixtures.suffix},-42.00`,
+      accountId: fixtures.reference,
+    });
+    const suggestion = requireSuggestion(detail);
+    const response = await patchSuggestion(token, detail.importBatch.id, suggestion.id, testCase.body);
+    assert.equal(response.statusCode, testCase.code === "TENANT_RESOURCE_NOT_FOUND" ? 404 : 400);
+    assert.equal(readErrorCode(response), testCase.code);
+  }
+}
+
+async function assertSecondEndpointReconciliation(token: string, fixtures: { suffix: string; reference: string; other: string }): Promise<void> {
+  const outgoing = await createBatch(token, {
+    fileName: `transfer-pair-out-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-21,Pair out ${fixtures.suffix},-88.00`,
+    accountId: fixtures.reference,
+  });
+  const outSuggestion = requireSuggestion(outgoing);
+  const updatedOut = await patchSuggestion(token, outgoing.importBatch.id, outSuggestion.id, {
+    kind: "transfer",
+    otherAccountId: fixtures.other,
+  });
+  assert.equal(updatedOut.statusCode, 200);
+  const created = await approveSuggestion(token, outgoing.importBatch.id, outSuggestion.id);
+  assert.equal(created.statusCode, 200);
+  const createdResult = readBody<ApprovalResult>(created);
+
+  const incoming = await createBatch(token, {
+    fileName: `transfer-pair-in-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-07-22,Pair in ${fixtures.suffix},88.00`,
+    accountId: fixtures.other,
+  });
+  const inSuggestion = requireSuggestion(incoming);
+ const updatedIn = await patchSuggestion(token, incoming.importBatch.id, inSuggestion.id, {
+    kind: "transfer",
+   otherAccountId: fixtures.reference,
+  });
+  assert.equal(updatedIn.statusCode, 200);
+
+  const blocked = await approveSuggestion(token, incoming.importBatch.id, inSuggestion.id);
+  assert.equal(blocked.statusCode, 409);
+  assert.equal(readErrorCode(blocked), "IMPORT_REVIEW_CANDIDATE_PENDING");
+
+  const detected = await apiRequest(token, "GET", `/api/import-batches/${incoming.importBatch.id}`);
+  assert.equal(detected.statusCode, 200);
+  const detectedSuggestion = requireSuggestion(readBody<ImportDetail>(detected));
+  const reconciliation = detectedSuggestion.candidates.find((candidate) => candidate.kind === "reconciliation");
+  assert.ok(reconciliation);
+
+  const reconciled = await apiRequest(
+    token,
+    "POST",
+    `/api/review-suggestions/${reconciliation.id}/decision`,
+    { decision: "approve"},
+  );
+  assert.equal(reconciled.statusCode, 200);
+  const reconciledBody = readBody<{ transaction: ApprovalResult["transaction"] }>(reconciled);
+  assert.equal(reconciledBody.transaction.id, createdResult.transaction.id);
+  assert.equal(reconciledBody.transaction.status, "reconciled");
+
+  const reconciledDetail = await apiRequest(token, "GET", `/api/import-batches/${incoming.importBatch.id}`);
+  const reloadedSuggestion = requireSuggestion(readBody<ImportDetail>(reconciledDetail));
+  assert.equal(reloadedSuggestion.targetEntityId, createdResult.transaction.id);
+  assert.equal(reloadedSuggestion.transaction?.id, createdResult.transaction.id);
+}
+
