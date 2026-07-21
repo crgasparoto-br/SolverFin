@@ -13,7 +13,7 @@ export interface InboxCategoryChoice extends CategoryRecord {
 }
 
 export interface InboxCategorySelection {
-  categoryId?: string;
+  categoryId: string | undefined;
   removedBecauseIncompatible: boolean;
   unavailable: boolean;
 }
