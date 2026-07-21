@@ -26,6 +26,9 @@ async function main(): Promise<void> {
 
   await assertPreviewDoesNotPersist(token, fixtures.account.id);
   await assertPreviewContractValidation(token, fixtures.account.id);
+  await assertStrategyDetectionOnlyWhenNeeded(token, fixtures.account.id);
+  await assertLegacyMappingCannotControlNewImport(token, fixtures.account.id, fixtures.suffix);
+  await assertC6PreviewAndCreation(token, fixtures.account.id, fixtures.suffix);
   await assertConsentAndMappingAreRequired(token, fixtures.account.id);
   await assertConcurrentBatchCreationConverges(token, fixtures.account.id, fixtures.suffix);
   await assertCurrencyAndConfigurationSafety(token, fixtures);
@@ -148,6 +151,33 @@ async function assertPreviewContractValidation(token: string, accountId: string)
   assert.equal(duplicateMapping.statusCode, 400);
   assert.equal(readErrorCode(duplicateMapping), "IMPORT_CSV_MAPPING_INVALID");
 
+  const ambiguousDelimiter = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
+    originalFileName: "separador-ambiguo.csv",
+    content: "date;description,amount\n2026-07-18;Teste,-1",
+    accountId,
+    consentAccepted: true,
+    csvMapping: {
+      version: 2,
+      valueStrategy: "signed",
+      date: "date",
+      description: "description",
+      amount: "amount",
+    },
+  });
+  assert.equal(ambiguousDelimiter.statusCode, 200);
+  const ambiguousDelimiterBody = readBody<{
+    state: string;
+    csv: {
+      delimiterCandidates: string[];
+      missingRequiredFields: string[];
+      valueStrategy?: string;
+    };
+  }>(ambiguousDelimiter);
+  assert.equal(ambiguousDelimiterBody.state, "mapping_required");
+  assert.equal(ambiguousDelimiterBody.csv.delimiterCandidates.length, 2);
+  assert.deepEqual(ambiguousDelimiterBody.csv.missingRequiredFields, []);
+  assert.equal(ambiguousDelimiterBody.csv.valueStrategy, "signed");
+
   const mismatched = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
     originalFileName: "colunas-divergentes.csv",
     content: ["date,description,amount", "2026-07-18,Valida,-1", "2026-07-18,Invalida"].join("\n"),
@@ -159,6 +189,182 @@ async function assertPreviewContractValidation(token: string, accountId: string)
     readBody<{ problems: Array<{ code: string }> }>(mismatched).problems.some(
       (problem) => problem.code === "IMPORT_CSV_COLUMN_COUNT_MISMATCH",
     ),
+  );
+}
+
+async function assertStrategyDetectionOnlyWhenNeeded(
+  token: string,
+  accountId: string,
+): Promise<void> {
+  const cases = [
+    {
+      name: "signed-with-income",
+      content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,-10,10",
+      expectedStrategy: "signed",
+      expectedKind: "expense",
+    },
+    {
+      name: "signed-with-expense",
+      content: "Data,Descrição,Valor,Saída\n20/07/2026,Demo,10,20",
+      expectedStrategy: "signed",
+      expectedKind: "income",
+    },
+    {
+      name: "ambiguous-signed-complete-split",
+      content: "Data,Descrição,Valor,Amount,Entrada,Saída\n20/07/2026,Demo,10,11,10,0",
+      expectedStrategy: "split",
+      expectedKind: "income",
+    },
+    {
+      name: "ambiguous-split-complete-signed",
+      content: "Data,Descrição,Valor,Entrada,Receita,Saída\n20/07/2026,Demo,-10,10,11,0",
+      expectedStrategy: "signed",
+      expectedKind: "expense",
+    },
+  ] as const;
+
+  for (const item of cases) {
+    const response = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
+      originalFileName: item.name + ".csv",
+      content: item.content,
+      accountId,
+      consentAccepted: true,
+    });
+    assert.equal(response.statusCode, 200);
+    const preview = readBody<{
+      state: string;
+      csv: { valueStrategy?: string; missingRequiredFields: string[]; ambiguousFields: string[] };
+      suggestions: Array<{ kind: string }>;
+    }>(response);
+    assert.equal(preview.state, "ready", item.name + " should be ready");
+    assert.equal(preview.csv.valueStrategy, item.expectedStrategy);
+    assert.equal(preview.csv.missingRequiredFields.includes("valueStrategy"), false);
+    assert.equal(preview.csv.ambiguousFields.includes("valueStrategy"), false);
+    assert.equal(preview.suggestions[0]?.kind, item.expectedKind);
+  }
+
+  const genuinelyAmbiguous = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
+    originalFileName: "both-complete.csv",
+    content: "Data,Descrição,Valor,Entrada,Saída\n20/07/2026,Demo,10,10,0",
+    accountId,
+    consentAccepted: true,
+  });
+  assert.equal(genuinelyAmbiguous.statusCode, 200);
+  const ambiguousPreview = readBody<{
+    state: string;
+    csv: { valueStrategy?: string; missingRequiredFields: string[]; ambiguousFields: string[] };
+  }>(genuinelyAmbiguous);
+  assert.equal(ambiguousPreview.state, "mapping_required");
+  assert.equal(ambiguousPreview.csv.valueStrategy, undefined);
+  assert.equal(ambiguousPreview.csv.missingRequiredFields.includes("valueStrategy"), true);
+  assert.equal(ambiguousPreview.csv.ambiguousFields.includes("valueStrategy"), true);
+}
+
+async function assertLegacyMappingCannotControlNewImport(
+  token: string,
+  accountId: string,
+  suffix: string,
+): Promise<void> {
+  const request = {
+    originalFileName: `legacy-new-${suffix}.csv`,
+    content: `date,description,amount,kind,externalId\n2026-07-20,Legado novo ${suffix},-10,income,legacy-new-${suffix}`,
+    accountId,
+    consentAccepted: true,
+    csvMapping: {
+      version: 1,
+      date: "date",
+      description: "description",
+      amount: "amount",
+      kind: "kind",
+      externalId: "externalId",
+    },
+  };
+  const previewResponse = await apiRequest(
+    token,
+    "POST",
+    "/api/import-batches/csv/preview",
+    request,
+  );
+  assert.equal(previewResponse.statusCode, 200);
+  const preview = readBody<{
+    batch: { csvMapping: Record<string, unknown> };
+    suggestions: Array<{ kind: string; externalId?: string }>;
+  }>(previewResponse);
+  assert.equal(preview.batch.csvMapping.version, 2);
+  assert.equal(preview.batch.csvMapping.valueStrategy, "signed");
+  assert.equal(preview.suggestions[0]?.kind, "expense");
+  assert.equal(preview.suggestions[0]?.externalId, undefined);
+
+  const createResponse = await apiRequest(token, "POST", "/api/import-batches/csv", request);
+  assert.equal(createResponse.statusCode, 201);
+  const created = readBody<ImportDetail>(createResponse);
+  assert.equal((created.importBatch.csvMapping as Record<string, unknown>).version, 2);
+  assert.equal(requireSuggestion(created, 0).payload.kind, "expense");
+  assert.equal(requireSuggestion(created, 0).payload.externalId, undefined);
+}
+
+async function assertC6PreviewAndCreation(
+  token: string,
+  accountId: string,
+  suffix: string,
+): Promise<void> {
+  const content = [
+    "Data Lançamento;Data Contábil;Título;Descrição;Entrada(R$);Saída(R$);Saldo do Dia(R$)",
+    "20/07/2026;20/07/2026;PIX;Receita C6 " + suffix + ";100,00;0;100,00",
+    "20/07/2026;20/07/2026;Compra;Despesa C6 " + suffix + ";0;-25,50;74,50",
+  ].join("\n");
+  const request = {
+    originalFileName: "c6-" + suffix + ".csv",
+    content,
+    accountId,
+    consentAccepted: true,
+  };
+  const previewResponse = await apiRequest(
+    token,
+    "POST",
+    "/api/import-batches/csv/preview",
+    request,
+  );
+  assert.equal(previewResponse.statusCode, 200);
+  const preview = readBody<{
+    state: string;
+    batch: { validRows: number; csvMapping: Record<string, unknown> };
+    csv: {
+      valueStrategy: string;
+      mapping: Record<string, unknown>;
+      interpretation: Array<{ source: string; target: string }>;
+      sampleRows: Array<{ kind: string; amountMinor: number }>;
+    };
+  }>(previewResponse);
+  assert.equal(preview.state, "ready");
+  assert.equal(preview.batch.validRows, 2);
+  assert.equal(preview.csv.valueStrategy, "split");
+  assert.equal(preview.csv.mapping.version, 2);
+  assert.equal(preview.csv.mapping.date, "Data Lançamento");
+  assert.equal(preview.csv.mapping.description, "Descrição");
+  assert.ok(
+    preview.csv.interpretation.some(
+      (item) => item.source === "Saldo do Dia(R$)" && item.target === "ignored",
+    ),
+  );
+  assert.deepEqual(
+    preview.csv.sampleRows.map((row) => [row.kind, row.amountMinor]),
+    [
+      ["income", 10000],
+      ["expense", 2550],
+    ],
+  );
+
+  const createResponse = await apiRequest(token, "POST", "/api/import-batches/csv", request);
+  assert.equal(createResponse.statusCode, 201);
+  const created = readBody<ImportDetail>(createResponse);
+  assert.equal((created.importBatch.csvMapping as Record<string, unknown>).version, 2);
+  assert.deepEqual(
+    created.suggestions.map((item) => [item.payload?.kind, item.payload?.amountMinor]),
+    [
+      ["income", 10000],
+      ["expense", 2550],
+    ],
   );
 }
 
@@ -873,12 +1079,22 @@ interface ImportBatch {
   financialProfileId: string;
   status: string;
   totalRows?: number;
+  csvMapping?: {
+    version?: number;
+    valueStrategy?: string;
+    date?: string;
+    description?: string;
+    amount?: string;
+    incomeAmount?: string;
+    expenseAmount?: string;
+  };
 }
 
 interface ExtractionPayload {
   payloadVersion: 1;
   sourceRowNumber: number;
   description: string;
+  kind?: string;
   amountMinor: number;
   currency: string;
   externalId?: string;

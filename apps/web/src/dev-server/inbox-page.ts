@@ -223,9 +223,16 @@ function renderCsvImportDialog(accounts: AccountRecord[], activeProfileLabel: st
           <div class="edit-grid">
             <label>Data<select name="mappingDate"></select></label>
             <label>Descrição<select name="mappingDescription"></select></label>
-            <label>Valor<select name="mappingAmount"></select></label>
-            <label>Tipo<select name="mappingKind"></select></label>
-            <label>ID externo<select name="mappingExternalId"></select></label>
+            <label>Estratégia de valor
+              <select name="mappingStrategy">
+                <option value="">Selecione</option>
+                <option value="signed">Valor único com sinal</option>
+                <option value="split">Entrada e saída separadas</option>
+              </select>
+            </label>
+            <label id="csv-signed-amount-field">Valor<select name="mappingAmount"></select></label>
+            <label id="csv-income-amount-field" hidden>Entrada<select name="mappingIncomeAmount"></select></label>
+            <label id="csv-expense-amount-field" hidden>Saída<select name="mappingExpenseAmount"></select></label>
           </div>
         </fieldset>
         <label class="consent-check full-span">
@@ -757,33 +764,64 @@ function csvImportScript(
           });
           refreshSelection();
         }
-        function currentMapping() {
-          const mapping = {};
-          [["date", "mappingDate"], ["description", "mappingDescription"], ["amount", "mappingAmount"], ["kind", "mappingKind"], ["externalId", "mappingExternalId"]].forEach(([key, name]) => {
-            const value = form.elements[name] && form.elements[name].value;
-            if (value) mapping[key] = value;
-          });
-          return mapping;
+        function isBalanceHeader(header) {
+          const normalized = String(header || "").trim().toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+          const candidate = normalized.replace(/ (?:r|brl|usd|eur)$/, "");
+          return candidate === "saldo" || candidate.startsWith("saldo ") || candidate === "balance" || candidate.startsWith("balance ") || candidate.endsWith(" balance");
         }
-        function fillMapping(headers, mapping) {
+        function currentMapping() {
+          const date = form.elements.mappingDate && form.elements.mappingDate.value;
+          const description = form.elements.mappingDescription && form.elements.mappingDescription.value;
+          const valueStrategy = form.elements.mappingStrategy && form.elements.mappingStrategy.value;
+          if (!date && !description && !valueStrategy) return undefined;
+          if (!valueStrategy) return undefined;
+          if (valueStrategy === "signed") {
+            const amount = form.elements.mappingAmount && form.elements.mappingAmount.value;
+            return { version: 2, valueStrategy: "signed", ...(date ? { date } : {}), ...(description ? { description } : {}), ...(amount ? { amount } : {}) };
+          }
+          const incomeAmount = form.elements.mappingIncomeAmount && form.elements.mappingIncomeAmount.value;
+          const expenseAmount = form.elements.mappingExpenseAmount && form.elements.mappingExpenseAmount.value;
+          return { version: 2, valueStrategy: "split", ...(date ? { date } : {}), ...(description ? { description } : {}), ...(incomeAmount ? { incomeAmount } : {}), ...(expenseAmount ? { expenseAmount } : {}) };
+        }
+        function updateMappingStrategy() {
+          const strategy = form.elements.mappingStrategy && form.elements.mappingStrategy.value;
+          document.getElementById("csv-signed-amount-field").hidden = strategy !== "signed";
+          document.getElementById("csv-income-amount-field").hidden = strategy !== "split";
+          document.getElementById("csv-expense-amount-field").hidden = strategy !== "split";
+        }
+        function fillSelect(name, headers, selected, allowBalance) {
+          const select = form.elements[name];
+          const options = allowBalance ? headers : headers.filter((header) => !isBalanceHeader(header));
+          select.innerHTML = '<option value="">Selecione</option>' + options.map((header) => '<option value="' + escapeHtml(header) + '">' + escapeHtml(header) + '</option>').join("");
+          if (selected) select.value = selected;
+        }
+        function fillMapping(headers, mapping, detectedStrategy, valueCandidates) {
           mappingFields.hidden = false;
-          ["mappingDate", "mappingDescription", "mappingAmount", "mappingKind", "mappingExternalId"].forEach((name) => {
-            const select = form.elements[name];
-            select.innerHTML = '<option value="">Não mapear</option>' + headers.map((header) => '<option value="' + escapeHtml(header) + '">' + escapeHtml(header) + '</option>').join("");
-          });
-          const byField = { date: "mappingDate", description: "mappingDescription", amount: "mappingAmount", kind: "mappingKind", externalId: "mappingExternalId" };
-          Object.keys(byField).forEach((field) => { if (mapping && mapping[field]) form.elements[byField[field]].value = mapping[field]; });
+          const candidates = valueCandidates || {};
+          fillSelect("mappingDate", headers, mapping && mapping.date, true);
+          fillSelect("mappingDescription", headers, mapping && mapping.description, true);
+          fillSelect("mappingAmount", headers, (mapping && mapping.amount) || candidates.amount, false);
+          fillSelect("mappingIncomeAmount", headers, (mapping && mapping.incomeAmount) || candidates.incomeAmount, false);
+          fillSelect("mappingExpenseAmount", headers, (mapping && mapping.expenseAmount) || candidates.expenseAmount, false);
+          form.elements.mappingStrategy.value = detectedStrategy || "";
+          updateMappingStrategy();
+        }
+        function renderInterpretation(csv) {
+          const items = csv.interpretation || [];
+          if (!items.length) return "";
+          return '<div class="mapping-interpretation"><strong>Interpretação aplicada</strong><ul>' + items.map((item) => '<li>' + escapeHtml(item.source) + ' → ' + escapeHtml(item.label) + '</li>').join("") + '</ul></div>';
         }
         function renderPreview(preview) {
           const csv = preview.csv || {};
-          if (csv.headers && csv.headers.length) fillMapping(csv.headers, csv.mapping || {});
+          if (csv.headers && csv.headers.length) fillMapping(csv.headers, csv.mapping || {}, csv.valueStrategy, csv.valueCandidates || {});
           const problems = preview.problems || [];
           const sampleRows = csv.sampleRows || [];
           const sampleHeader = '<thead><tr><th>Linha</th><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead>';
           const sampleBody = sampleRows.map((row) => '<tr><td>' + escapeHtml(row.sourceRowNumber) + '</td><td>' + formatDate(row.occurredOn) + '</td><td>' + escapeHtml(row.description) + '</td><td>' + escapeHtml(row.kind === "income" ? "Receita" : "Despesa") + '</td><td>' + escapeHtml(formatMoney(row.amountMinor, row.currency)) + '</td></tr>').join("");
           previewResult.innerHTML = '<div class="preview-summary"><strong>' + escapeHtml(formatStatus(preview.state)) + '</strong><span>' + escapeHtml(String(preview.batch.validRows || 0)) + ' válidas · ' + escapeHtml(String(preview.batch.problemRows || 0)) + ' com problema</span></div>' +
+            renderInterpretation(csv) +
             (sampleRows.length ? '<div class="preview-table-wrap"><table>' + sampleHeader + '<tbody>' + sampleBody + '</tbody></table></div>' : "") + renderProblems(problems, true);
-          createButton.disabled = preview.state !== "ready" || !form.elements.accountId.value || !form.elements.consentAccepted.checked;
+          createButton.disabled = preview.state !== "ready" || Number(preview.batch.validRows || 0) < 1 || !form.elements.accountId.value || !form.elements.consentAccepted.checked;
         }
         async function readSelectedFile() {
           const file = document.getElementById("csv-import-file").files[0];
@@ -810,7 +848,7 @@ function csvImportScript(
           finally { if (fileData) fileData.content = ""; state.requestInFlight = false; }
         }
         document.getElementById("preview-csv-import").addEventListener("click", previewCsv);
-        form.addEventListener("change", () => { state.preview = null; createButton.disabled = true; });
+        form.addEventListener("change", (event) => { if (event.target && event.target.name === "mappingStrategy") updateMappingStrategy(); state.preview = null; createButton.disabled = true; });
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
           if (state.requestInFlight) return;

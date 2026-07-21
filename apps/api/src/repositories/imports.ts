@@ -409,7 +409,7 @@ export async function createCsvImportBatchForContext(
       explanation: buildImportExplanation(suggestion.sourceRowNumber, suggestion.status),
       payload: buildTransactionExtractionPayload(suggestion),
       provider: "solverfin-import-csv",
-      model: "csv-parser-v2",
+      model: "csv-parser-v3",
       createdAt: batch.createdAt,
       updatedAt: batch.updatedAt,
     };

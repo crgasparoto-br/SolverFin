@@ -262,6 +262,31 @@ export interface Budget extends Traceable, TenantScoped {
   alertThresholdPercent?: number;
 }
 
+export type CsvImportMappingSnapshot =
+  | {
+      version?: 1 | undefined;
+      date?: string | undefined;
+      description?: string | undefined;
+      amount?: string | undefined;
+      kind?: string | undefined;
+      externalId?: string | undefined;
+    }
+  | {
+      version: 2;
+      valueStrategy: "signed";
+      date?: string | undefined;
+      description?: string | undefined;
+      amount?: string | undefined;
+    }
+  | {
+      version: 2;
+      valueStrategy: "split";
+      date?: string | undefined;
+      description?: string | undefined;
+      incomeAmount?: string | undefined;
+      expenseAmount?: string | undefined;
+    };
+
 export interface ImportBatch extends Traceable, TenantScoped {
   sourceKind: ImportSourceKind;
   status: ImportStatus;
@@ -277,7 +302,7 @@ export interface ImportBatch extends Traceable, TenantScoped {
   problemRows?: number;
   problems?: readonly ImportProblemSnapshot[];
   csvDelimiter?: "," | ";";
-  csvMapping?: Partial<Record<"date" | "description" | "amount" | "kind" | "externalId", string>>;
+  csvMapping?: CsvImportMappingSnapshot;
 }
 
 export interface ImportProblemSnapshot {

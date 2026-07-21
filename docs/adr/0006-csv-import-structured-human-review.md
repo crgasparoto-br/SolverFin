@@ -19,6 +19,7 @@ O fluxo inicial de CSV persistia lote e explicação textual, mas não tinha pre
 8. Identidade de conteúdo e de lote usa SHA-256; a leitura da identidade legada permanece apenas para compatibilidade.
 9. Delimitador e cabeçalhos são resolvidos por estrutura, com ambiguidades explícitas, cabeçalhos originais e validação de colunas.
 10. A Inbox é a interface operacional do fluxo, com edição em modal acessível e devolução de foco.
+11. Novas importações persistem mapeamento CSV versão 2, discriminando valor assinado de entrada/saída; tipo e ID externo permanecem somente para leitura legada.
 
 ## Consequências
 
