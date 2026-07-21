@@ -28,7 +28,7 @@ POST /api/ai-review-queue/:suggestionId/reject
 
 Filtros de listagem: `kind`, `status`, `includeLowConfidence` e `profileId`.
 
-Para sugestões de importação, `proposedTransaction` expõe `direction` e `otherAccountId` quando o payload V2 contiver esses campos. Na edição, `otherAccountId` é o nome canônico da contraparte da transferência; `destinationAccountId` permanece aceito como alias de compatibilidade da API geral. Campos que não pertencem ao contrato editável da importação não são aplicados silenciosamente: uma requisição sem qualquer alteração suportada retorna erro controlado.
+Para sugestões de importação, `proposedTransaction` expõe `direction` e `otherAccountId` quando o payload V2 contiver esses campos. Na edição, `otherAccountId` é o nome canônico da contraparte da transferência; `destinationAccountId` permanece aceito como alias de compatibilidade da API geral. Os dois nomes não representam necessariamente a conta de destino contábil: a origem e o destino efetivos são calculados com `direction` e a conta de referência. Campos que não pertencem ao contrato editável da importação não são aplicados silenciosamente: uma requisição sem qualquer alteração suportada retorna erro controlado.
 
 Sugestões de importação continuam compatíveis com a fila geral, mas suas mutações são delegadas ao ciclo transacional do lote:
 
