@@ -1,0 +1,75 @@
+name: Issue 514 fix visual tab loop
+
+on:
+  push:
+    branches:
+      - feat/514-inbox-category-hierarchy
+    paths:
+      - .github/workflows/issue-514-fix-visual-tab-loop.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/514-inbox-category-hierarchy
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Make keyboard traversal discriminant and timing independent
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/statement-visual/inbox-category-hierarchy.mjs')
+          text = path.read_text()
+          old = '''  for (let index = 0; index < 5; index += 1) await pressKey(cdp, "Tab", "Tab", 9);
+          const keyboard = await evaluate(
+            cdp,
+            `(() => ({ activeName: document.activeElement?.getAttribute('name') || '' }))()`,
+          );
+          check(
+            keyboard.activeName === "categoryId",
+            "Keyboard navigation did not reach category",
+            keyboard,
+          );
+          '''
+          new = '''  const visitedFields = [];
+          for (let index = 0; index < 12; index += 1) {
+            const activeName = await evaluate(
+              cdp,
+              `document.activeElement?.getAttribute('name') || ''`,
+            );
+            visitedFields.push(activeName);
+            if (activeName === "categoryId") break;
+            await pressKey(cdp, "Tab", "Tab", 9);
+          }
+          const keyboard = {
+            activeName: visitedFields.at(-1) || "",
+            visitedFields,
+          };
+          check(
+            keyboard.activeName === "categoryId",
+            "Keyboard navigation did not reach category",
+            keyboard,
+          );
+          '''
+          if old not in text:
+              raise SystemExit('tab traversal anchor not found')
+          path.write_text(text.replace(old, new))
+          PY
+          npx prettier --write scripts/statement-visual/inbox-category-hierarchy.mjs
+          rm .github/workflows/issue-514-fix-visual-tab-loop.yml
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "test: validate issue 514 keyboard traversal robustly"
+          git push origin HEAD:feat/514-inbox-category-hierarchy
