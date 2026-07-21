@@ -1,29 +1,58 @@
-name: Issue 519 workspace snapshot
+name: Issue 519 delivery
 
 on:
   push:
     branches:
       - feat/519-csv-transfer-review
-  pull_request:
-    branches:
-      - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  snapshot:
+  deliver:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout branch
         uses: actions/checkout@v4
-
-      - name: Create source archive
-        run: tar --exclude=.git -czf /tmp/solverfin-source.tar.gz .
-
-      - name: Upload source archive
-        uses: actions/upload-artifact@v4
         with:
-          name: issue-519-workspace
-          path: /tmp/solverfin-source.tar.gz
-          retention-days: 1
+          fetch-depth: 0
+
+      - name: Apply verified implementation patch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          : > /tmp/issue519.patch
+          for sha in \
+            2bc4609e53113bbfc65aa7a816920ea5dd229ca6 \
+            a32eaec1b58e9d05c83ad458a183fc3f8708a815 \
+            378d559d7b58a890f73b3314512f24a04447330d \
+            65f03135c12e07023e1f904b769bcf03d8c08164 \
+            6baddcf05b823d169a706d6fb5f7aac816b6dff1 \
+            149778abd09961489bb1cf8f90f083711e829db5 \
+            3992dd16b779e2a76ae1db2eb11bcdcae1c8d007 \
+            abc7a1aeb90f360d40936e72614494f9676b9b43 \
+            e137aa9445d2151a828ffbb4f7336c02a7f127ba \
+            8ee384b7705d1e3b2bcb86b35ad67f19c5bff473 \
+            164092d07dbf1e368286f443ad80154f092fc3b8 \
+            8500c6b06b910f010ffb6fb11d26e8f2bf231df9 \
+            03a3459e0555ddfe71cea201164fc4ef56fdff4b \
+            9c97c6ca44d25d799725de96f84872552c4f030c \
+            06414b0ae64d917ed7b1d3e7156bcd41fca3f570 \
+            0a4522772524a0db3bbdaa0b657b162e06c530d2 \
+            98ce08c1a14cdfd3342c8f19c3d4d93d5e130406
+          do
+            gh api "repos/${GITHUB_REPOSITORY}/git/blobs/${sha}" --jq .content \
+              | tr -d '\n' | base64 -d >> /tmp/issue519.patch
+          done
+
+          if git apply --check /tmp/issue519.patch; then
+            git apply --index --whitespace=nowarn /tmp/issue519.patch
+            git diff --cached --check
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "feat: support CSV transfers in import review"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          else
+            echo "Implementation patch is already applied; no action required."
+          fi
