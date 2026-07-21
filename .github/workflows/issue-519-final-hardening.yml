@@ -49,239 +49,255 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import re
+          import textwrap
           from pathlib import Path
 
-          dedup = Path('packages/domain/src/deduplication.ts')
+          dedup = Path("packages/domain/src/deduplication.ts")
           text = dedup.read_text()
-          guard = '''  if (
-            candidate.kind === "transfer" &&
-            (candidate.amountMinor !== possibleDuplicate.amountMinor ||
-              candidate.currency.toUpperCase() !== possibleDuplicate.currency.toUpperCase())
-          ) {
-            return [];
-          }
+          guard = textwrap.dedent('''\
+            if (
+              candidate.kind === "transfer" &&
+              (candidate.amountMinor !== possibleDuplicate.amountMinor ||
+                candidate.currency.toUpperCase() !== possibleDuplicate.currency.toUpperCase())
+            ) {
+              return [];
+            }
 
-          '''
-          marker = '''  if (
-            candidate.kind === "transfer" &&
-            dateDistanceInDays(candidate.occurredOn, possibleDuplicate.occurredOn) > 2
-          ) {
-            return [];
-          }
+          ''')
+          guard = textwrap.indent(guard, "  ")
+          if "candidate.amountMinor !== possibleDuplicate.amountMinor" not in text:
+              marker = "  const reasons: DeduplicationReason[] = [];"
+              if marker not in text:
+                  raise SystemExit("deduplication reasons marker not found")
+              text = text.replace(marker, guard + marker, 1)
+              dedup.write_text(text)
 
-          '''
-          if guard not in text:
-            if marker not in text:
-              raise SystemExit('transfer date guard not found')
-            text = text.replace(marker, guard + marker, 1)
-            dedup.write_text(text)
-
-          dedup_test = Path('packages/domain/src/deduplication.test.ts')
+          dedup_test = Path("packages/domain/src/deduplication.test.ts")
           text = dedup_test.read_text()
-          if 'testTransferDuplicateRejectsAmountOrCurrencyMismatch();' not in text:
-            text = text.replace(
-              'testTransferDuplicateUsesAccountPair();\ntestTransferDuplicateRejectsDistantDate();',
-              'testTransferDuplicateUsesAccountPair();\ntestTransferDuplicateRejectsAmountOrCurrencyMismatch();\ntestTransferDuplicateRejectsDistantDate();',
-              1,
-            )
-            marker = 'function testTransferDuplicateRejectsDistantDate(): void {'
-            test_function = '''function testTransferDuplicateRejectsAmountOrCurrencyMismatch(): void {
-            const candidate = buildTransactionDeduplicationCandidate(
-              buildTransaction("tx-transfer-required-signals", tenantA, {
-                kind: "transfer",
-                source: "import",
-                amountMinor: 25000,
-                occurredOn: "2026-06-12",
-                description: "Transferência recorrente",
-                accountId: "account-a",
-                destinationAccountId: "account-b",
-              }),
-            );
-            const amountMismatch = buildTransactionDeduplicationCandidate(
-              buildTransaction("tx-transfer-amount-mismatch", tenantA, {
-                kind: "transfer",
-                source: "manual",
-                amountMinor: 26000,
-                occurredOn: "2026-06-12",
-                description: "Transferência recorrente",
-                accountId: "account-a",
-                destinationAccountId: "account-b",
-              }),
-            );
-            const currencyMismatch = buildTransactionDeduplicationCandidate(
-              buildTransaction("tx-transfer-currency-mismatch", tenantA, {
-                kind: "transfer",
-                source: "manual",
-                amountMinor: 25000,
-                currency: "USD",
-                occurredOn: "2026-06-12",
-                description: "Transferência recorrente",
-                accountId: "account-a",
-                destinationAccountId: "account-b",
-              }),
-            );
+          if "testTransferDuplicateRejectsAmountOrCurrencyMismatch();" not in text:
+              call_marker = "testTransferDuplicateUsesAccountPair();"
+              if call_marker not in text:
+                  raise SystemExit("transfer test call marker not found")
+              text = text.replace(
+                  call_marker,
+                  call_marker + "\ntestTransferDuplicateRejectsAmountOrCurrencyMismatch();",
+                  1,
+              )
+              function_marker = "function testTransferDuplicateRejectsDistantDate(): void {"
+              if function_marker not in text:
+                  raise SystemExit("distant date test marker not found")
+              test_function = textwrap.dedent('''\
+                function testTransferDuplicateRejectsAmountOrCurrencyMismatch(): void {
+                  const candidate = buildTransactionDeduplicationCandidate(
+                    buildTransaction("tx-transfer-required-signals", tenantA, {
+                      kind: "transfer",
+                      source: "import",
+                      amountMinor: 25000,
+                      occurredOn: "2026-06-12",
+                      description: "Transferência recorrente",
+                      accountId: "account-a",
+                      destinationAccountId: "account-b",
+                    }),
+                  );
+                  const amountMismatch = buildTransactionDeduplicationCandidate(
+                    buildTransaction("tx-transfer-amount-mismatch", tenantA, {
+                      kind: "transfer",
+                      source: "manual",
+                      amountMinor: 26000,
+                      occurredOn: "2026-06-12",
+                      description: "Transferência recorrente",
+                      accountId: "account-a",
+                      destinationAccountId: "account-b",
+                    }),
+                  );
+                  const currencyMismatch = buildTransactionDeduplicationCandidate(
+                    buildTransaction("tx-transfer-currency-mismatch", tenantA, {
+                      kind: "transfer",
+                      source: "manual",
+                      amountMinor: 25000,
+                      currency: "USD",
+                      occurredOn: "2026-06-12",
+                      description: "Transferência recorrente",
+                      accountId: "account-a",
+                      destinationAccountId: "account-b",
+                    }),
+                  );
 
-            assertEqual(
-              detectDuplicateTransactions({
-                context: tenantA,
-                now,
-                candidate,
-                existingCandidates: [amountMismatch],
-              }).length,
-              0,
-              "transfer candidates with a different amount are ignored",
-            );
-            assertEqual(
-              detectDuplicateTransactions({
-                context: tenantA,
-                now,
-                candidate,
-                existingCandidates: [currencyMismatch],
-              }).length,
-              0,
-              "transfer candidates with a different currency are ignored",
-            );
-          }
+                  assertEqual(
+                    detectDuplicateTransactions({
+                      context: tenantA,
+                      now,
+                      candidate,
+                      existingCandidates: [amountMismatch],
+                    }).length,
+                    0,
+                    "transfer candidates with a different amount are ignored",
+                  );
+                  assertEqual(
+                    detectDuplicateTransactions({
+                      context: tenantA,
+                      now,
+                      candidate,
+                      existingCandidates: [currencyMismatch],
+                    }).length,
+                    0,
+                    "transfer candidates with a different currency are ignored",
+                  );
+                }
 
-          '''
-            if marker not in text:
-              raise SystemExit('transfer distant-date test marker not found')
-            text = text.replace(marker, test_function + marker, 1)
-            text = text.replace(
-              '    destinationAccountId?: string;\n  },',
-              '    destinationAccountId?: string;\n    currency?: string;\n  },',
-              1,
-            )
-            text = text.replace(
-              '    currency: "BRL",\n    occurredOn: overrides.occurredOn,',
-              '    currency: overrides.currency ?? "BRL",\n    occurredOn: overrides.occurredOn,',
-              1,
-            )
-            dedup_test.write_text(text)
+              ''')
+              text = text.replace(function_marker, test_function + function_marker, 1)
+              text, count = re.subn(
+                  r'(destinationAccountId\?: string;\n)(\s*\},)',
+                  r'\1    currency?: string;\n\2',
+                  text,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit("transaction test helper type marker not found")
+              text, count = re.subn(
+                  r'currency: "BRL",\n(\s*)occurredOn: overrides\.occurredOn,',
+                  r'currency: overrides.currency ?? "BRL",\n\1occurredOn: overrides.occurredOn,',
+                  text,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit("transaction test helper currency marker not found")
+              dedup_test.write_text(text)
 
-          integration = Path('apps/api/src/csv-import-transfer-review.integration.test.ts')
+          integration = Path("apps/api/src/csv-import-transfer-review.integration.test.ts")
           text = integration.read_text()
-          provenance_marker = '''  assert.equal(reloadedSuggestion.targetEntityId, createdResult.transaction.id);
-          assert.equal(reloadedSuggestion.transaction?.id, createdResult.transaction.id);
-          }'''
-          provenance_replacement = '''  assert.equal(reloadedSuggestion.targetEntityId, createdResult.transaction.id);
-          assert.equal(reloadedSuggestion.transaction?.id, createdResult.transaction.id);
+          if "const provenance = await query<" not in text:
+              assertion = "  assert.equal(reloadedSuggestion.transaction?.id, createdResult.transaction.id);"
+              index = text.find(assertion)
+              if index < 0:
+                  raise SystemExit("second endpoint assertion marker not found")
+              index += len(assertion)
+              provenance = textwrap.dedent('''\
 
-          const provenance = await query<{
-            aiSuggestionId: string;
-            importBatchId: string;
-            accountId: string;
-            destinationAccountId: string;
-            amountMinor: number;
-          }>(
-            `select "aiSuggestionId", "importBatchId", "accountId", "destinationAccountId", "amountMinor"
-               from "Transaction" where "id" = $1`,
-            [createdResult.transaction.id],
-          );
-          assert.equal(provenance[0]?.aiSuggestionId, outSuggestion.id);
-          assert.equal(provenance[0]?.importBatchId, outgoing.importBatch.id);
-          assert.equal(provenance[0]?.accountId, fixtures.reference);
-          assert.equal(provenance[0]?.destinationAccountId, fixtures.other);
-          assert.equal(provenance[0]?.amountMinor, 8800);
-          }'''
-          if 'const provenance = await query<' not in text:
-            if provenance_marker not in text:
-              raise SystemExit('second endpoint provenance marker not found')
-            integration.write_text(text.replace(provenance_marker, provenance_replacement, 1))
+                const provenance = await query<{
+                  aiSuggestionId: string;
+                  importBatchId: string;
+                  accountId: string;
+                  destinationAccountId: string;
+                  amountMinor: number;
+                }>(
+                  `select "aiSuggestionId", "importBatchId", "accountId", "destinationAccountId", "amountMinor"
+                     from "Transaction" where "id" = $1`,
+                  [createdResult.transaction.id],
+                );
+                assert.equal(provenance[0]?.aiSuggestionId, outSuggestion.id);
+                assert.equal(provenance[0]?.importBatchId, outgoing.importBatch.id);
+                assert.equal(provenance[0]?.accountId, fixtures.reference);
+                assert.equal(provenance[0]?.destinationAccountId, fixtures.other);
+                assert.equal(provenance[0]?.amountMinor, 8800);
+              ''')
+              integration.write_text(text[:index] + provenance + text[index:])
 
-          visual = Path('scripts/statement-visual/inbox-csv-review.mjs')
+          visual = Path("scripts/statement-visual/inbox-csv-review.mjs")
           text = visual.read_text()
-          if 'transferInteraction' not in text:
-            text = text.replace(
-              '''        const suffix = Date.now().toString(36);
-                  const createResponse = await fetch('/api/import-batches/csv', {''',
-              '''        const suffix = Date.now().toString(36);
-                  const otherResponse = await fetch('/api/accounts', {
-                    method: 'POST',
-                    headers: { 'content-type': 'application/json' },
-                    body: JSON.stringify({
-                      name: 'Conta transferência visual ' + suffix,
-                      kind: 'checking',
-                      openingBalanceMinor: 0,
-                      currency: account.currency
-                    })
-                  });
-                  const otherBody = await otherResponse.json();
-                  if (!otherResponse.ok) return { ok: false, status: otherResponse.status, body: otherBody };
-                  const createResponse = await fetch('/api/import-batches/csv', {''',
-              1,
-            )
-            text = text.replace(
-              '''        return { ok: createResponse.ok, status: createResponse.status, body: await createResponse.json(), accountId: account.id };''',
-              '''        return { ok: createResponse.ok, status: createResponse.status, body: await createResponse.json(), accountId: account.id, otherAccountId: otherBody.account.id };''',
-              1,
-            )
-            insertion_marker = '''  check(opened.activeName === "occurredOn", "CSV edit focus did not move into the dialog", opened);
+          if "const transferInteraction = await evaluate(" not in text:
+              suffix_marker = "        const suffix = Date.now().toString(36);"
+              if suffix_marker not in text:
+                  raise SystemExit("visual fixture suffix marker not found")
+              account_creation = "\n".join([
+                  suffix_marker,
+                  "        const otherResponse = await fetch('/api/accounts', {",
+                  "          method: 'POST',",
+                  "          headers: { 'content-type': 'application/json' },",
+                  "          body: JSON.stringify({",
+                  "            name: 'Conta transferência visual ' + suffix,",
+                  "            kind: 'checking',",
+                  "            openingBalanceMinor: 0,",
+                  "            currency: account.currency",
+                  "          })",
+                  "        });",
+                  "        const otherBody = await otherResponse.json();",
+                  "        if (!otherResponse.ok) return { ok: false, status: otherResponse.status, body: otherBody };",
+              ])
+              text = text.replace(suffix_marker, account_creation, 1)
+              return_marker = "        return { ok: createResponse.ok, status: createResponse.status, body: await createResponse.json(), accountId: account.id };"
+              if return_marker not in text:
+                  raise SystemExit("visual fixture return marker not found")
+              text = text.replace(
+                  return_marker,
+                  "        return { ok: createResponse.ok, status: createResponse.status, body: await createResponse.json(), accountId: account.id, otherAccountId: otherBody.account.id };",
+                  1,
+              )
+              opened_marker = '  check(opened.activeName === "occurredOn", "CSV edit focus did not move into the dialog", opened);'
+              index = text.find(opened_marker)
+              if index < 0:
+                  raise SystemExit("visual opened marker not found")
+              index += len(opened_marker)
+              interaction = textwrap.dedent('''\
 
-          await evaluate('''
-            transfer_block = '''  check(opened.activeName === "occurredOn", "CSV edit focus did not move into the dialog", opened);
-
-          const transferInteraction = await evaluate(
-            cdp,
-            `(() => {
-              const form = document.getElementById('csv-line-edit-form');
-              const otherField = document.getElementById('csv-line-other-account-field');
-              const direction = document.getElementById('csv-line-transfer-direction');
-              form.elements.kind.value = 'transfer';
-              form.elements.kind.dispatchEvent(new Event('change', { bubbles: true }));
-              const optionExists = [...form.elements.otherAccountId.options].some((option) => option.value === '${fixture.otherAccountId}');
-              form.elements.otherAccountId.value = '${fixture.otherAccountId}';
-              form.elements.otherAccountId.dispatchEvent(new Event('change', { bubbles: true }));
-              const explicitDirection = direction.textContent || '';
-              const visibleAndRequired = !otherField.hidden && form.elements.otherAccountId.required;
-              form.elements.accountId.value = '${fixture.otherAccountId}';
-              form.elements.accountId.dispatchEvent(new Event('change', { bubbles: true }));
-              const invalidated = form.elements.otherAccountId.value === '';
-              const warning = document.getElementById('csv-line-edit-status').textContent || '';
-              form.elements.accountId.value = '${fixture.accountId}';
-              form.elements.accountId.dispatchEvent(new Event('change', { bubbles: true }));
-              form.elements.kind.value = 'expense';
-              form.elements.kind.dispatchEvent(new Event('change', { bubbles: true }));
-              return {
-                optionExists,
-                visibleAndRequired,
-                explicitDirection,
-                invalidated,
-                warning,
-                hiddenAfterLeavingTransfer: otherField.hidden,
-                clearedAfterLeavingTransfer: form.elements.otherAccountId.value === '',
-                descriptionPreserved: form.elements.description.value === '${opened.originalDescription}',
-                amountPreserved: form.elements.amount.value === '${opened.originalAmount}'
-              };
-            })()`,
-          );
-          check(transferInteraction.optionExists, "Eligible transfer account was not offered", transferInteraction);
-          check(transferInteraction.visibleAndRequired, "Transfer account field was not visible and required", transferInteraction);
-          check(
-            transferInteraction.explicitDirection.includes("Origem:") && transferInteraction.explicitDirection.includes("Destino:"),
-            "Transfer origin and destination were not explicit",
-            transferInteraction,
-          );
-          check(transferInteraction.invalidated, "Changing the reference account did not invalidate the other account", transferInteraction);
-          check(transferInteraction.warning.includes("outra conta foi removida"), "Reference account change did not show a warning", transferInteraction);
-          check(
-            transferInteraction.hiddenAfterLeavingTransfer && transferInteraction.clearedAfterLeavingTransfer,
-            "Leaving transfer did not hide and clear the other account",
-            transferInteraction,
-          );
-          check(
-            transferInteraction.descriptionPreserved && transferInteraction.amountPreserved,
-            "Transfer edits did not preserve the remaining fields",
-            transferInteraction,
-          );
-
-          await evaluate('''
-            if insertion_marker not in text:
-              raise SystemExit('visual transfer insertion marker not found')
-            text = text.replace(insertion_marker, transfer_block, 1)
-            text = text.replace('    "Lançamentos vinculados",\n    "Problemas",', '    "Lançamentos vinculados",\n    "Transferências",\n    "Problemas",', 1)
-            text = text.replace('    opened,\n    failedSave,', '    opened,\n    transferInteraction,\n    failedSave,', 1)
-            visual.write_text(text)
+                const transferInteraction = await evaluate(
+                  cdp,
+                  `(() => {
+                    const form = document.getElementById('csv-line-edit-form');
+                    const otherField = document.getElementById('csv-line-other-account-field');
+                    const direction = document.getElementById('csv-line-transfer-direction');
+                    form.elements.kind.value = 'transfer';
+                    form.elements.kind.dispatchEvent(new Event('change', { bubbles: true }));
+                    const optionExists = [...form.elements.otherAccountId.options].some((option) => option.value === '${fixture.otherAccountId}');
+                    form.elements.otherAccountId.value = '${fixture.otherAccountId}';
+                    form.elements.otherAccountId.dispatchEvent(new Event('change', { bubbles: true }));
+                    const explicitDirection = direction.textContent || '';
+                    const visibleAndRequired = !otherField.hidden && form.elements.otherAccountId.required;
+                    form.elements.accountId.value = '${fixture.otherAccountId}';
+                    form.elements.accountId.dispatchEvent(new Event('change', { bubbles: true }));
+                    const invalidated = form.elements.otherAccountId.value === '';
+                    const warning = document.getElementById('csv-line-edit-status').textContent || '';
+                    form.elements.accountId.value = '${fixture.accountId}';
+                    form.elements.accountId.dispatchEvent(new Event('change', { bubbles: true }));
+                    form.elements.kind.value = 'expense';
+                    form.elements.kind.dispatchEvent(new Event('change', { bubbles: true }));
+                    return {
+                      optionExists,
+                      visibleAndRequired,
+                      explicitDirection,
+                      invalidated,
+                      warning,
+                      hiddenAfterLeavingTransfer: otherField.hidden,
+                      clearedAfterLeavingTransfer: form.elements.otherAccountId.value === '',
+                      descriptionPreserved: form.elements.description.value === '${opened.originalDescription}',
+                      amountPreserved: form.elements.amount.value === '${opened.originalAmount}'
+                    };
+                  })()`,
+                );
+                check(transferInteraction.optionExists, "Eligible transfer account was not offered", transferInteraction);
+                check(transferInteraction.visibleAndRequired, "Transfer account field was not visible and required", transferInteraction);
+                check(
+                  transferInteraction.explicitDirection.includes("Origem:") && transferInteraction.explicitDirection.includes("Destino:"),
+                  "Transfer origin and destination were not explicit",
+                  transferInteraction,
+                );
+                check(transferInteraction.invalidated, "Changing the reference account did not invalidate the other account", transferInteraction);
+                check(transferInteraction.warning.includes("outra conta foi removida"), "Reference account change did not show a warning", transferInteraction);
+                check(
+                  transferInteraction.hiddenAfterLeavingTransfer && transferInteraction.clearedAfterLeavingTransfer,
+                  "Leaving transfer did not hide and clear the other account",
+                  transferInteraction,
+                );
+                check(
+                  transferInteraction.descriptionPreserved && transferInteraction.amountPreserved,
+                  "Transfer edits did not preserve the remaining fields",
+                  transferInteraction,
+                );
+              ''')
+              text = text[:index] + interaction + text[index:]
+              text = text.replace(
+                  '    "Lançamentos vinculados",\n    "Problemas",',
+                  '    "Lançamentos vinculados",\n    "Transferências",\n    "Problemas",',
+                  1,
+              )
+              text = text.replace(
+                  "    opened,\n    failedSave,",
+                  "    opened,\n    transferInteraction,\n    failedSave,",
+                  1,
+              )
+              visual.write_text(text)
           PY
           git diff --check
 
