@@ -36,8 +36,8 @@ await replaceOnce(
 
 await replaceOnce(
   "packages/domain/src/imports.ts",
-  `  if (isV2Mapping(mapping)) {`,
-  `  if (includeValueMapping && isV2Mapping(mapping)) {`,
+  `  if (isV2Mapping(mapping)) {\n    if (mapping.valueStrategy === "signed" && mapping.amount)`,
+  `  if (includeValueMapping && isV2Mapping(mapping)) {\n    if (mapping.valueStrategy === "signed" && mapping.amount)`,
 );
 
 await replaceOnce(
