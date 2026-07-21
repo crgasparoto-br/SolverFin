@@ -20,25 +20,8 @@ jobs:
           ref: feat/513-csv-value-inference
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Apply audit fixes
         run: node .github/scripts/issue-513-audit-fixes.mjs
-
-      - name: Format changed files
-        run: pnpm exec prettier --write packages/domain/src/imports.ts packages/domain/src/imports.test.ts apps/api/src/csv-import-review.integration.test.ts scripts/statement-visual/inbox-csv-review.mjs
-
-      - name: Validate domain tests
-        run: pnpm --filter @solverfin/domain test
 
       - name: Commit functional changes
         run: |
