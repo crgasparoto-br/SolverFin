@@ -1,4 +1,4 @@
-name: Issue 519 validation failure diagnostic
+name: Issue 519 CSV V2 contract bootstrap
 
 on:
   pull_request:
@@ -6,23 +6,59 @@ on:
       - main
 
 permissions:
-  actions: read
-  contents: read
+  contents: write
+
+concurrency:
+  group: issue-519-csv-v2-contract-bootstrap
+  cancel-in-progress: false
 
 jobs:
-  diagnose:
+  bootstrap:
     runs-on: ubuntu-latest
     steps:
-      - name: Locate validate failure
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/519-csv-transfer-review
+          fetch-depth: 0
+      - name: Expand legacy integration payload type
         run: |
           set -euo pipefail
-          gh api -H "Accept: application/vnd.github+json" \
-            "repos/${GITHUB_REPOSITORY}/actions/jobs/88748076197/logs" \
-            > /tmp/job.log
-          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
-          line=$(grep -n '##\[error\]' /tmp/clean.log | tail -n 1 | cut -d: -f1)
-          start=$((line > 80 ? line - 80 : 1))
-          end=$((line + 3))
-          sed -n "${start},${end}p" /tmp/clean.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          path = Path('apps/api/src/csv-import-review.integration.test.ts')
+          text = path.read_text()
+          replacement = "\n".join([
+              "interface ExtractionPayload {",
+              "  payloadVersion: 1 | 2;",
+              "  sourceRowNumber: number;",
+              "  description: string;",
+              "  kind?: string;",
+              '  direction?: "inflow" | "outflow";',
+              "  amountMinor: number;",
+              "  currency: string;",
+              "  externalId?: string;",
+              "  accountId?: string;",
+              "  otherAccountId?: string;",
+              "  categoryId?: string;",
+              "  targetTransactionId?: string;",
+              "  sourceSuggestionId?: string;",
+              "}",
+          ])
+          pattern = re.compile(r'interface ExtractionPayload \{.*?\n\}', re.DOTALL)
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit('ExtractionPayload interface not found')
+          path.write_text(text)
+          PY
+          if git diff --quiet; then
+            echo "CSV V2 integration contract already expanded."
+            exit 0
+          fi
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/api/src/csv-import-review.integration.test.ts
+          git commit -m "test: support V2 CSV payload in integration fixtures"
+          git push origin HEAD:feat/519-csv-transfer-review
