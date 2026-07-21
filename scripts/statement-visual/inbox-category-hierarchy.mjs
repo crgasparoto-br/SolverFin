@@ -225,9 +225,7 @@ async function validateCategoryHierarchy(cdp) {
 
   await evaluate(cdp, `document.getElementById('csv-line-edit-form').requestSubmit()`);
   await waitFor(cdp, `document.getElementById('csv-line-edit-dialog')?.open === false`);
-  await waitFor(cdp, `Boolean(document.querySelector('[data-line-action="edit"]'))`);
-  await evaluate(cdp, `document.querySelector('[data-line-action="edit"]').click()`);
-  await waitFor(cdp, `document.getElementById('csv-line-edit-dialog')?.open === true`);
+  await openLineEditDialogByClick(cdp);
 
   const reopened = await evaluate(
     cdp,
@@ -265,6 +263,23 @@ async function validateCategoryHierarchy(cdp) {
     reopened,
     screenshot: "issue-514-inbox-category-hierarchy.png",
   };
+}
+
+async function openLineEditDialogByClick(cdp, timeoutMs = 20_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const opened = await evaluate(
+      cdp,
+      `(() => {
+        const dialog = document.getElementById('csv-line-edit-dialog');
+        if (!dialog?.open) document.querySelector('[data-line-action="edit"]')?.click();
+        return dialog?.open === true;
+      })()`,
+    ).catch(() => false);
+    if (opened) return;
+    await sleep(250);
+  }
+  throw new Error("Timed out reopening the CSV line edit dialog");
 }
 
 async function waitFor(cdp, expression, timeoutMs = 20_000) {
