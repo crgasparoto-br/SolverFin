@@ -12,36 +12,23 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Normalize patch and discard trailing fragment
+      - name: Inspect patch segments
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          git clone --quiet --depth 1 --branch feat/519-csv-transfer-review \
-            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
-          cd repo
           gh api -H "Accept: application/vnd.github.raw+json" \
             "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" \
             > /tmp/issue519.patch
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('/tmp/issue519.patch')
-          chunks = path.read_bytes().split(b'\n')
-          trailing = chunks.pop() if chunks else b''
-          normalized = []
-          in_hunk = False
-          fixed = []
-          for number, line in enumerate(chunks, 1):
-              if line.startswith(b'diff --git '):
-                  in_hunk = False
-              elif line.startswith(b'@@ '):
-                  in_hunk = True
-              if in_hunk and line and not line.startswith((b'+', b'-', b' ', b'\\', b'@@')):
-                  line = b'+' + line
-                  fixed.append(number)
-              normalized.append(line)
-          path.write_bytes(b'\n'.join(normalized) + b'\n')
-          print('normalized_lines=' + ','.join(map(str, fixed)))
-          print('discarded_trailing_bytes=' + str(len(trailing)))
+          data = Path('/tmp/issue519.patch').read_bytes()
+          prefix, sep, trailing = data.rpartition(b'\n')
+          print('total_bytes=', len(data))
+          print('prefix_bytes=', len(prefix) + len(sep))
+          print('trailing_bytes=', len(trailing))
+          print('trailing_head_hex=', trailing[:48].hex())
+          print('trailing_tail_hex=', trailing[-48:].hex())
+          print('prefix_tail=', repr(prefix[-500:]))
           PY
-          git apply --check --verbose --exclude=.github/workflows/issue-519-audit-fix.yml /tmp/issue519.patch
+          file /tmp/issue519.patch
