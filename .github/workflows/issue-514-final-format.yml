@@ -1,0 +1,45 @@
+name: Issue 514 final format
+
+on:
+  push:
+    branches:
+      - feat/514-inbox-category-hierarchy
+    paths:
+      - .github/issue-514-final-format.trigger
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/514-inbox-category-hierarchy
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Format issue files
+        run: >-
+          npm exec prettier -- --write
+          apps/api/src/csv-import-category-hierarchy.integration.test.ts
+          apps/web/src/dev-server/inbox-category-hierarchy-enhancement.test.ts
+          apps/web/src/dev-server/inbox-category-hierarchy-enhancement.ts
+      - name: Commit formatted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/api/src/csv-import-category-hierarchy.integration.test.ts \
+            apps/web/src/dev-server/inbox-category-hierarchy-enhancement.test.ts \
+            apps/web/src/dev-server/inbox-category-hierarchy-enhancement.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "style: format final issue 514 changes"
+          git push origin HEAD:feat/514-inbox-category-hierarchy
