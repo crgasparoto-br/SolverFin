@@ -1,0 +1,50 @@
+name: Issue 513 audit fixes
+
+on:
+  push:
+    branches:
+      - feat/513-csv-value-inference
+    paths:
+      - .github/issue-513-audit-fixes.trigger
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/513-csv-value-inference
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply audit fixes
+        run: node .github/scripts/issue-513-audit-fixes.mjs
+
+      - name: Format changed files
+        run: pnpm exec prettier --write packages/domain/src/imports.ts packages/domain/src/imports.test.ts apps/api/src/csv-import-review.integration.test.ts scripts/statement-visual/inbox-csv-review.mjs
+
+      - name: Validate domain tests
+        run: pnpm --filter @solverfin/domain test
+
+      - name: Commit functional changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/domain/src/imports.ts packages/domain/src/imports.test.ts apps/api/src/csv-import-review.integration.test.ts scripts/statement-visual/inbox-csv-review.mjs
+          git diff --cached --quiet && { echo "No functional changes to commit"; exit 1; }
+          git commit -m "fix: concluir requisitos da issue 513"
+          git push origin HEAD:feat/513-csv-value-inference
