@@ -1871,7 +1871,7 @@ function mergeExtractionPayload(
   };
 
   let merged: TransactionExtractionPayload;
-  if (current.payloadVersion === 2 || kind === "transfer") {
+  if (current.payloadVersion === 2 || changes.kind !== undefined || kind === "transfer") {
     if (direction === undefined) {
       throw new ImportReviewError(
         "IMPORT_TRANSFER_DIRECTION_INVALID",

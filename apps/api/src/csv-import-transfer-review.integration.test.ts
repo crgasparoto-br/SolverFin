@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 
+import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { closePool, query } from "./db.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
@@ -39,6 +40,12 @@ async function main(): Promise<void> {
   });
   await assertIncomingTransferCreation(token, { suffix, reference, other });
   await assertLegacyPayloadCompatibility(token, { suffix, reference, other });
+  await assertLegacyDirectionPreservedAcrossMultipleKindEdits(token, {
+    suffix,
+    reference,
+    other,
+  });
+  await assertGeneralQueueTransferEditing(token, { suffix, reference, other });
   await assertTransferReferenceValidation(token, {
     suffix,
     reference,
@@ -184,6 +191,132 @@ async function assertLegacyPayloadCompatibility(
   const historical = requireSuggestion(readBody<ImportDetail>(reloaded));
   assert.equal(historical.payload.payloadVersion, 1);
   assert.equal(historical.payload.kind, "expense");
+}
+
+async function assertLegacyDirectionPreservedAcrossMultipleKindEdits(
+  token: string,
+  fixtures: { suffix: string; reference: string; other: string },
+): Promise<void> {
+  const scenarios = [
+    {
+      label: "inflow",
+      date: "2026-08-01",
+      amount: "47.00",
+      intermediateKind: "expense",
+      direction: "inflow",
+      sourceAccountId: fixtures.other,
+      destinationAccountId: fixtures.reference,
+    },
+    {
+      label: "outflow",
+      date: "2026-08-02",
+      amount: "-53.00",
+      intermediateKind: "income",
+      direction: "outflow",
+      sourceAccountId: fixtures.reference,
+      destinationAccountId: fixtures.other,
+    },
+  ] as const;
+
+  for (const scenario of scenarios) {
+    const detail = await createBatch(token, {
+      fileName: `legacy-direction-${scenario.label}-${fixtures.suffix}.csv`,
+      content: `date,description,amount\n${scenario.date},Legacy ${scenario.label} ${fixtures.suffix},${scenario.amount}`,
+      accountId: fixtures.reference,
+    });
+    const suggestion = requireSuggestion(detail);
+    await downgradeSuggestionPayloadToV1(suggestion.id);
+
+    const intermediate = await patchSuggestion(token, detail.importBatch.id, suggestion.id, {
+      kind: scenario.intermediateKind,
+    });
+    assert.equal(intermediate.statusCode, 200);
+    const intermediateSuggestion = readBody<{ suggestion: ImportSuggestion }>(
+      intermediate,
+    ).suggestion;
+    assert.equal(intermediateSuggestion.payload.payloadVersion, 2);
+    assert.equal(intermediateSuggestion.payload.direction, scenario.direction);
+
+    const transfer = await patchSuggestion(token, detail.importBatch.id, suggestion.id, {
+      kind: "transfer",
+      otherAccountId: fixtures.other,
+    });
+    assert.equal(transfer.statusCode, 200);
+    assert.equal(
+      readBody<{ suggestion: ImportSuggestion }>(transfer).suggestion.payload.direction,
+      scenario.direction,
+    );
+
+    const approved = await approveSuggestion(token, detail.importBatch.id, suggestion.id);
+    assert.equal(approved.statusCode, 200);
+    const transaction = readBody<ApprovalResult>(approved).transaction;
+    assert.equal(transaction.accountId, scenario.sourceAccountId);
+    assert.equal(transaction.destinationAccountId, scenario.destinationAccountId);
+  }
+}
+
+async function assertGeneralQueueTransferEditing(
+  token: string,
+  fixtures: { suffix: string; reference: string; other: string },
+): Promise<void> {
+  const detail = await createBatch(token, {
+    fileName: `queue-transfer-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-08-03,Queue transfer ${fixtures.suffix},-39.77`,
+    accountId: fixtures.reference,
+  });
+  const suggestion = requireSuggestion(detail);
+
+  const edited = await apiRequest(token, "POST", `/api/ai-review-queue/${suggestion.id}/edit`, {
+    payload: { kind: "transfer", otherAccountId: fixtures.other },
+  });
+  assert.equal(edited.statusCode, 200);
+  const editedSuggestion = readBody<{ suggestion: ImportSuggestion }>(edited).suggestion;
+  assert.equal(editedSuggestion.payload.kind, "transfer");
+  assert.equal(editedSuggestion.payload.direction, "outflow");
+  assert.equal(editedSuggestion.payload.otherAccountId, fixtures.other);
+
+  const queue = await apiRequest(
+    token,
+    "GET",
+    "/api/ai-review-queue?status=pending_review&includeLowConfidence=true",
+  );
+  assert.equal(queue.statusCode, 200);
+  const queueItem = readBody<{
+    suggestions: Array<{
+      id: string;
+      proposedTransaction?: {
+        kind: string;
+        direction?: string;
+        otherAccountId?: string;
+      };
+    }>;
+  }>(queue).suggestions.find((item) => item.id === suggestion.id);
+  assert.ok(queueItem);
+  assert.equal(queueItem.proposedTransaction?.kind, "transfer");
+  assert.equal(queueItem.proposedTransaction?.direction, "outflow");
+  assert.equal(queueItem.proposedTransaction?.otherAccountId, fixtures.other);
+
+  const approved = await apiRequest(token, "POST", `/api/ai-review-queue/${suggestion.id}/approve`);
+  assert.equal(approved.statusCode, 200);
+  const transaction = readBody<{ transaction: TransactionRecord }>(approved).transaction;
+  assert.equal(transaction.kind, "transfer");
+  assert.equal(transaction.accountId, fixtures.reference);
+  assert.equal(transaction.destinationAccountId, fixtures.other);
+
+  const unsupported = await createBatch(token, {
+    fileName: `queue-unsupported-${fixtures.suffix}.csv`,
+    content: `date,description,amount\n2026-08-04,Queue unsupported ${fixtures.suffix},-19.13`,
+    accountId: fixtures.reference,
+  });
+  const unsupportedSuggestion = requireSuggestion(unsupported);
+  const rejectedEdit = await apiRequest(
+    token,
+    "POST",
+    `/api/ai-review-queue/${unsupportedSuggestion.id}/edit`,
+    { payload: { currency: "USD" } },
+  );
+  assert.equal(rejectedEdit.statusCode, 400);
+  assert.equal(readErrorCode(rejectedEdit), "AI_REVIEW_IMPORT_EDIT_PAYLOAD_REQUIRED");
 }
 
 async function downgradeSuggestionPayloadToV1(suggestionId: string): Promise<void> {
@@ -570,6 +703,7 @@ async function apiRequest(
   const response =
     (await handleImportBatchesApiRequest(request)) ??
     (await handleDeduplicationReconciliationApiRequest(request)) ??
+    (await handleAiReviewQueueApiRequest(request)) ??
     (await handleApiRequest(request));
   assert.ok(response, `${method} ${path} should be handled`);
   return response;

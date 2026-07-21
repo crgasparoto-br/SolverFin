@@ -248,6 +248,7 @@ function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | und
   if (input.description !== undefined) payload.description = String(input.description);
   if (input.currency !== undefined) payload.currency = String(input.currency);
   if (input.categoryId !== undefined) payload.categoryId = String(input.categoryId);
+  if (input.otherAccountId !== undefined) payload.otherAccountId = String(input.otherAccountId);
   if (input.destinationAccountId !== undefined)
     payload.destinationAccountId = String(input.destinationAccountId);
 
