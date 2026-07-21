@@ -25,6 +25,8 @@ describe("Inbox category hierarchy first render", () => {
       const html = await renderInboxPage("first-render-token");
       const categoryRequests = requests.filter((path) => path.startsWith("/api/categories"));
 
+      assert.equal(requests.length, 5);
+      assert.equal(new Set(requests).size, 5);
       assert.deepEqual(categoryRequests, ["/api/categories?status=all"]);
       assert.match(html, /data-inbox-category-hierarchy-enhanced/);
       assert.match(html, /Alimentação › Mercado/);
