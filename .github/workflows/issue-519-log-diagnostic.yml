@@ -13,7 +13,7 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Show final previous correction lines
+      - name: Locate exact previous correction error
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -21,4 +21,8 @@ jobs:
           gh api -H "Accept: application/vnd.github+json" \
             "repos/${GITHUB_REPOSITORY}/actions/jobs/88745012820/logs" \
             > /tmp/job.log
-          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log | tail -n 30
+          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
+          line=$(grep -n '##\[error\]' /tmp/clean.log | tail -n 1 | cut -d: -f1)
+          start=$((line > 24 ? line - 24 : 1))
+          end=$((line + 3))
+          sed -n "${start},${end}p" /tmp/clean.log
