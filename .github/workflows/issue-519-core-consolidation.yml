@@ -1,0 +1,178 @@
+name: Issue 519 core consolidation
+
+on:
+  push:
+    branches:
+      - feat/519-csv-transfer-review
+
+permissions:
+  contents: write
+
+concurrency:
+  group: issue-519-core-consolidation
+  cancel-in-progress: false
+
+jobs:
+  consolidate-validate-publish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/519-csv-transfer-review
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Consolidate rejected-candidate rule in canonical lookup
+        run: |
+          set -euo pipefail
+          git checkout 3d79641b26735efd91809774778181658d077110 -- \
+            apps/api/src/import-review-service.ts \
+            apps/api/src/ai-review-queue-router.ts
+          rm -f \
+            apps/api/src/import-transfer-approval.ts \
+            apps/api/src/import-transfer-approval-persistence.ts \
+            apps/api/src/import-transfer-rejected-candidate-approval.ts
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("apps/api/src/repositories/imports.ts")
+          text = path.read_text()
+
+          old_call = "    const existingTransfer = await findCanonicalTransfer(context, payload, executeQuery);"
+          new_call = '''    const existingTransfer = await findCanonicalTransfer(
+              context,
+              payload,
+              suggestion.id,
+              executeQuery,
+            );'''
+          if old_call not in text:
+              raise SystemExit("canonical transfer call marker not found")
+          text = text.replace(old_call, new_call, 1)
+
+          old_function = '''async function findCanonicalTransfer(
+            context: TenantContext,
+            payload: TransactionExtractionPayload,
+            executeQuery: QueryExecutor,
+          ): Promise<Transaction | undefined> {
+            const accounts = resolveCanonicalTransferAccounts(payload);
+            const rows = await executeQuery<TransactionRow>(
+              `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction"
+               where "organizationId" = $1 and "financialProfileId" = $2
+                 and "kind" = 'TRANSFER' and "status" <> 'VOIDED'
+                 and "accountId" = $3 and "destinationAccountId" = $4
+                 and "amountMinor" = $5 and upper("currency") = upper($6)
+                 and "occurredOn" between ($7::date - interval '2 days') and ($7::date + interval '2 days')
+               order by abs("occurredOn" - $7::date), "createdAt" asc
+               limit 1
+               for update`,
+              [
+                context.organizationId,
+                context.financialProfileId,
+                accounts.sourceAccountId,
+                accounts.destinationAccountId,
+                payload.amountMinor,
+                payload.currency,
+                payload.occurredOn,
+              ],
+            );
+            return rows[0] ? mapTransactionRow(rows[0]) : undefined;
+          }'''
+          new_function = '''async function findCanonicalTransfer(
+            context: TenantContext,
+            payload: TransactionExtractionPayload,
+            suggestionId: EntityId,
+            executeQuery: QueryExecutor,
+          ): Promise<Transaction | undefined> {
+            const accounts = resolveCanonicalTransferAccounts(payload);
+            const rows = await executeQuery<TransactionRow>(
+              `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction" candidate
+               where candidate."organizationId" = $1 and candidate."financialProfileId" = $2
+                 and candidate."kind" = 'TRANSFER' and candidate."status" <> 'VOIDED'
+                 and candidate."accountId" = $3 and candidate."destinationAccountId" = $4
+                 and candidate."amountMinor" = $5 and upper(candidate."currency") = upper($6)
+                 and candidate."occurredOn" between ($7::date - interval '2 days') and ($7::date + interval '2 days')
+                 and not exists (
+                   select 1 from "AiSuggestion" rejected
+                   where rejected."organizationId" = $1 and rejected."financialProfileId" = $2
+                     and rejected."sourceSuggestionId" = $8
+                     and rejected."payloadFingerprint" = $9
+                     and rejected."targetEntityId" = candidate."id"
+                     and rejected."kind" in ('DEDUPLICATION', 'RECONCILIATION')
+                     and rejected."status" = 'REJECTED'
+                 )
+               order by abs(candidate."occurredOn" - $7::date), candidate."createdAt" asc
+               limit 1
+               for update`,
+              [
+                context.organizationId,
+                context.financialProfileId,
+                accounts.sourceAccountId,
+                accounts.destinationAccountId,
+                payload.amountMinor,
+                payload.currency,
+                payload.occurredOn,
+                suggestionId,
+                buildImportPayloadFingerprint(payload),
+              ],
+            );
+            return rows[0] ? mapTransactionRow(rows[0]) : undefined;
+          }'''
+          if old_function not in text:
+              raise SystemExit("canonical transfer function marker not found")
+          path.write_text(text.replace(old_function, new_function, 1))
+          PY
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format
+        run: npm run format
+
+      - name: Prepare database
+        run: |
+          npm run prisma:generate
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Validate monorepo
+        run: npm run validate
+
+      - name: Run PostgreSQL integration suite
+        run: npm run test:integration --workspace @solverfin/api
+
+      - name: Verify statement consistency
+        run: npm run diagnose:import-statement-consistency -- --expect-zero
+
+      - name: Publish consolidated correction
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: honor rejected transfer candidates in canonical lookup"
+          git push origin HEAD:feat/519-csv-transfer-review
