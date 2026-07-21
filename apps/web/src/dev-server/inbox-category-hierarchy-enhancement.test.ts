@@ -49,11 +49,17 @@ const categories: CategoryRecord[] = [
     status: "active",
     parentCategoryId: "income-root",
   },
+  { id: "transfer", name: "Transferências", kind: "transfer", status: "active" },
 ];
 
 function inboxFixture(): string {
   return `<html><head><style>.base { display: block; }</style></head><body><main>
-    <dialog id="csv-line-edit-dialog"></dialog>
+    <dialog id="csv-line-edit-dialog">
+      <form id="csv-line-edit-form">
+        <label for="csv-line-category">Categoria</label>
+        <select id="csv-line-category" name="categoryId"></select>
+      </form>
+    </dialog>
     <script>
         function escapeHtml(value) { return String(value); }
         function categoryOptions(payload) {
@@ -99,6 +105,22 @@ describe("Inbox category hierarchy", () => {
     assert.equal(crossKindChild?.path, "Trabalho › Ajuste");
     assert.equal(crossKindChild?.kind, "expense");
     assert.equal(crossKindChild?.selectable, true);
+    assert.equal(choices.find((choice) => choice.id === "transfer")?.selectable, false);
+  });
+
+  it("sorts roots and siblings alphabetically in pt-BR", () => {
+    const unordered: CategoryRecord[] = [
+      { id: "z-root", name: "Zeladoria", kind: "expense", status: "active" },
+      { id: "a-root", name: "Alimentação", kind: "expense", status: "active" },
+      { id: "z-child", name: "Restaurante", kind: "expense", status: "active", parentCategoryId: "a-root" },
+      { id: "a-child", name: "Açougue", kind: "expense", status: "active", parentCategoryId: "a-root" },
+      { id: "m-child", name: "Mercado", kind: "expense", status: "active", parentCategoryId: "a-root" },
+    ];
+
+    assert.deepEqual(
+      buildInboxCategoryChoices(unordered).map((choice) => choice.id),
+      ["a-root", "a-child", "m-child", "z-child", "z-root"],
+    );
   });
 
   it("distinguishes homonyms by full path and keeps kinds separate", () => {
@@ -138,7 +160,7 @@ describe("Inbox category hierarchy", () => {
     assert.equal(new Set(choices.map((choice) => choice.id)).size, 3);
   });
 
-  it("preserves compatible IDs and clears only incompatible kinds", () => {
+  it("preserves compatible IDs and clears incompatible or unavailable selections", () => {
     const choices = buildInboxCategoryChoices(categories);
 
     assert.deepEqual(resolveInboxCategorySelection(choices, "market", "expense"), {
@@ -161,12 +183,22 @@ describe("Inbox category hierarchy", () => {
       removedBecauseIncompatible: false,
       unavailable: true,
     });
+    assert.deepEqual(resolveInboxCategorySelection(choices, "transfer", "transfer"), {
+      categoryId: "transfer",
+      removedBecauseIncompatible: false,
+      unavailable: true,
+    });
   });
 
-  it("enhances the native selector with accessible paths and incompatibility notices", () => {
+  it("keeps the native labeled selector and recalculates without replacing the focused control", () => {
     const html = enhanceInboxCategoryHierarchy(inboxFixture(), categories);
 
     assert.match(html, /data-inbox-category-hierarchy-enhanced/);
+    assert.match(html, /<label for="csv-line-category">Categoria<\/label>/);
+    assert.match(html, /<select id="csv-line-category" name="categoryId"><\/select>/);
+    assert.match(html, /const categorySelect = lineEditForm\.elements\.categoryId/);
+    assert.match(html, /categorySelect\.innerHTML = categoryOptions/);
+    assert.doesNotMatch(html, /categorySelect\.replaceWith|lineEditForm\.replaceChildren/);
     assert.match(html, /Alimentação › Mercado › Orgânicos/);
     assert.match(html, /Moradia › Utilidades › Água/);
     assert.match(html, /<option value="">Sem categoria<\/option>/);
