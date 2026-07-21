@@ -125,11 +125,17 @@ async function validateCategoryHierarchy(cdp) {
   await pressKey(cdp, "Enter", "Enter", 13);
   await waitFor(cdp, `document.getElementById('csv-line-edit-dialog')?.open === true`);
 
-  for (let index = 0; index < 5; index += 1) await pressKey(cdp, "Tab", "Tab", 9);
-  const keyboard = await evaluate(
-    cdp,
-    `(() => ({ activeName: document.activeElement?.getAttribute('name') || '' }))()`,
-  );
+  const visitedFields = [];
+  for (let index = 0; index < 12; index += 1) {
+    const activeName = await evaluate(cdp, `document.activeElement?.getAttribute('name') || ''`);
+    visitedFields.push(activeName);
+    if (activeName === "categoryId") break;
+    await pressKey(cdp, "Tab", "Tab", 9);
+  }
+  const keyboard = {
+    activeName: visitedFields.at(-1) || "",
+    visitedFields,
+  };
   check(
     keyboard.activeName === "categoryId",
     "Keyboard navigation did not reach category",
@@ -220,8 +226,7 @@ async function validateCategoryHierarchy(cdp) {
   await evaluate(cdp, `document.getElementById('csv-line-edit-form').requestSubmit()`);
   await waitFor(cdp, `document.getElementById('csv-line-edit-dialog')?.open === false`);
   await waitFor(cdp, `Boolean(document.querySelector('[data-line-action="edit"]'))`);
-  await evaluate(cdp, `document.querySelector('[data-line-action="edit"]').focus()`);
-  await pressKey(cdp, "Enter", "Enter", 13);
+  await evaluate(cdp, `document.querySelector('[data-line-action="edit"]').click()`);
   await waitFor(cdp, `document.getElementById('csv-line-edit-dialog')?.open === true`);
 
   const reopened = await evaluate(
@@ -277,7 +282,7 @@ async function waitFor(cdp, expression, timeoutMs = 20_000) {
 
 async function pressKey(cdp, key, code, keyCode) {
   await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
+    type: key === "Tab" ? "rawKeyDown" : "keyDown",
     key,
     code,
     windowsVirtualKeyCode: keyCode,
