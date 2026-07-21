@@ -12,7 +12,7 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Normalize and validate correction patch
+      - name: Normalize binary patch and validate
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -26,20 +26,20 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           path = Path('/tmp/issue519.patch')
-          lines = path.read_text().splitlines(keepends=True)
+          lines = path.read_bytes().splitlines(keepends=True)
           normalized = []
           in_hunk = False
           fixed = []
           for number, line in enumerate(lines, 1):
-              if line.startswith('diff --git '):
+              if line.startswith(b'diff --git '):
                   in_hunk = False
-              elif line.startswith('@@ '):
+              elif line.startswith(b'@@ '):
                   in_hunk = True
-              if in_hunk and not line.startswith(('+', '-', ' ', '\\', '@@')):
-                  line = '+' + line
+              if in_hunk and not line.startswith((b'+', b'-', b' ', b'\\', b'@@')):
+                  line = b'+' + line
                   fixed.append(number)
               normalized.append(line)
-          path.write_text(''.join(normalized))
+          path.write_bytes(b''.join(normalized))
           print('normalized_lines=' + ','.join(map(str, fixed)))
           PY
           git apply --check --verbose --exclude=.github/workflows/issue-519-audit-fix.yml /tmp/issue519.patch
