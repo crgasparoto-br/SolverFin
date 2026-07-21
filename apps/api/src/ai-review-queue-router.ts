@@ -39,9 +39,17 @@ const ALLOWED_TRANSACTION_KINDS = new Set(["income", "expense", "transfer"]);
 const routes: AiReviewQueueRoute[] = [];
 
 route("GET", BASE_PATH, listAiReviewQueueHandler);
-route("POST", `${BASE_PATH}/:suggestionId/approve`, approveAiReviewSuggestionHandler);
+route(
+  "POST",
+  `${BASE_PATH}/:suggestionId/approve`,
+  approveAiReviewSuggestionHandler,
+);
 route("POST", `${BASE_PATH}/:suggestionId/edit`, editAiReviewSuggestionHandler);
-route("POST", `${BASE_PATH}/:suggestionId/reject`, rejectAiReviewSuggestionHandler);
+route(
+  "POST",
+  `${BASE_PATH}/:suggestionId/reject`,
+  rejectAiReviewSuggestionHandler,
+);
 
 export async function handleAiReviewQueueApiRequest(
   request: ApiRequest,
@@ -58,7 +66,9 @@ export async function handleAiReviewQueueApiRequest(
   }
 
   try {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(
+      buildAuthHeaders(request.headers.authorization),
+    );
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -79,7 +89,11 @@ export async function handleAiReviewQueueApiRequest(
   }
 }
 
-function route(method: string, path: string, handler: AiReviewQueueHandler): void {
+function route(
+  method: string,
+  path: string,
+  handler: AiReviewQueueHandler,
+): void {
   const paramNames: string[] = [];
   const patternSource = path
     .split("/")
@@ -138,8 +152,12 @@ async function listAiReviewQueueHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const kind = request.query.get("kind") as AiSuggestion["kind"] | null;
-  const status = request.query.get("status") as AiSuggestion["status"] | "all" | null;
-  const includeLowConfidence = request.query.get("includeLowConfidence") === "true";
+  const status = request.query.get("status") as
+    | AiSuggestion["status"]
+    | "all"
+    | null;
+  const includeLowConfidence =
+    request.query.get("includeLowConfidence") === "true";
 
   return json(200, {
     suggestions: await listAiReviewQueueForContext(context, {
@@ -167,7 +185,11 @@ async function approveAiReviewSuggestionHandler(
   return json(
     200,
     importDecision ??
-      (await approveAiReviewSuggestionForContext(context, suggestionId, payloadOverride)),
+      (await approveAiReviewSuggestionForContext(
+        context,
+        suggestionId,
+        payloadOverride,
+      )),
   );
 }
 
@@ -224,13 +246,19 @@ function optionalObjectBody(body: unknown): Record<string, unknown> {
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null) {
-    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
+    throw new AuthError(
+      "AUTH_INVALID_CREDENTIALS",
+      "Request body must be a JSON object.",
+      400,
+    );
   }
 
   return body as Record<string, unknown>;
 }
 
-function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | undefined {
+function readPayload(
+  value: unknown,
+): Partial<AiSuggestedTransactionDraft> | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -246,19 +274,26 @@ function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | und
   const payload: Partial<AiSuggestedTransactionDraft> = {};
 
   if (input.kind !== undefined) payload.kind = readTransactionKind(input.kind);
-  if (input.amountMinor !== undefined) payload.amountMinor = readAmountMinor(input.amountMinor);
-  if (input.occurredOn !== undefined) payload.occurredOn = String(input.occurredOn);
-  if (input.accountId !== undefined) payload.accountId = String(input.accountId);
-  if (input.description !== undefined) payload.description = String(input.description);
+  if (input.amountMinor !== undefined)
+    payload.amountMinor = readAmountMinor(input.amountMinor);
+  if (input.occurredOn !== undefined)
+    payload.occurredOn = String(input.occurredOn);
+  if (input.accountId !== undefined)
+    payload.accountId = String(input.accountId);
+  if (input.description !== undefined)
+    payload.description = String(input.description);
   if (input.currency !== undefined) payload.currency = String(input.currency);
-  if (input.categoryId !== undefined) payload.categoryId = String(input.categoryId);
+  if (input.categoryId !== undefined)
+    payload.categoryId = String(input.categoryId);
   if (input.destinationAccountId !== undefined)
     payload.destinationAccountId = String(input.destinationAccountId);
 
   return payload;
 }
 
-function readTransactionKind(value: unknown): AiSuggestedTransactionDraft["kind"] {
+function readTransactionKind(
+  value: unknown,
+): AiSuggestedTransactionDraft["kind"] {
   const kind = String(value);
 
   if (!ALLOWED_TRANSACTION_KINDS.has(kind)) {
@@ -284,17 +319,26 @@ function readAmountMinor(value: unknown): number {
   return amountMinor;
 }
 
-function requireParam(match: Readonly<Record<string, string>>, name: string): string {
+function requireParam(
+  match: Readonly<Record<string, string>>,
+  name: string,
+): string {
   const value = match[name];
 
   if (!value) {
-    throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
+    throw new AuthError(
+      "AUTH_SESSION_REQUIRED",
+      "Missing required path parameter.",
+      400,
+    );
   }
 
   return value;
 }
 
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
+function buildAuthHeaders(authorization: string | undefined): {
+  authorization?: string;
+} {
   return authorization === undefined ? {} : { authorization };
 }
 
@@ -308,11 +352,19 @@ function json(statusCode: number, body: unknown): ApiResponse {
 
 function mapDomainError(error: unknown): unknown {
   if (error instanceof AiReviewQueueError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
 
   if (error instanceof TransactionError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
 
   if (error instanceof TenantError) {
@@ -322,7 +374,11 @@ function mapDomainError(error: unknown): unknown {
   }
 
   if (error instanceof TenantAuthorizationError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
 
   return error;
