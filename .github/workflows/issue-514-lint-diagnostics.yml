@@ -1,0 +1,38 @@
+name: Issue 514 lint diagnostics
+
+on:
+  push:
+    branches:
+      - feat/514-inbox-category-hierarchy
+    paths:
+      - .github/issue-514-lint.trigger
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/514-inbox-category-hierarchy
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Capture lint output
+        run: npm run lint > .github/issue-514-lint.log 2>&1 || true
+      - name: Commit diagnostics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/issue-514-lint.log
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: capture issue 514 lint diagnostics"
+          git push origin HEAD:feat/514-inbox-category-hierarchy
