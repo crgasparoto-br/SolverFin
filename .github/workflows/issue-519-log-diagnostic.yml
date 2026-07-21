@@ -1,4 +1,4 @@
-name: Issue 519 PostgreSQL failure diagnostic
+name: Issue 519 legacy bulk summary bootstrap
 
 on:
   pull_request:
@@ -6,23 +6,66 @@ on:
       - main
 
 permissions:
-  actions: read
-  contents: read
+  contents: write
+
+concurrency:
+  group: issue-519-legacy-bulk-summaries
+  cancel-in-progress: false
 
 jobs:
-  diagnose:
+  bootstrap:
     runs-on: ubuntu-latest
     steps:
-      - name: Locate next PostgreSQL integration failure
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/519-csv-transfer-review
+          fetch-depth: 0
+      - name: Expand remaining legacy bulk summary assertions
         run: |
           set -euo pipefail
-          gh api -H "Accept: application/vnd.github+json" \
-            "repos/${GITHUB_REPOSITORY}/actions/jobs/88750266866/logs" \
-            > /tmp/job.log
-          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
-          line=$(grep -n '##\[error\]' /tmp/clean.log | tail -n 1 | cut -d: -f1)
-          start=$((line > 55 ? line - 55 : 1))
-          end=$((line + 3))
-          sed -n "${start},${end}p" /tmp/clean.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          pattern = re.compile(
+              r'(?P<indent>\s*)requested: (?P<requested>\d+),\s*'
+              r'approved: (?P<approved>\d+),\s*'
+              r'failed: (?P<failed>\d+),\s*'
+              r'idempotent: (?P<idempotent>\d+),'
+          )
+          changed = []
+          for path in sorted(Path('apps/api/src').glob('csv-import-*.integration.test.ts')):
+              text = path.read_text()
+              def expand(match: re.Match[str]) -> str:
+                  indent = match.group('indent')
+                  approved = int(match.group('approved'))
+                  idempotent = int(match.group('idempotent'))
+                  created = max(0, approved - idempotent)
+                  return (
+                      f"{indent}requested: {match.group('requested')},\n"
+                      f"{indent}approved: {approved},\n"
+                      f"{indent}failed: {match.group('failed')},\n"
+                      f"{indent}created: {created},\n"
+                      f"{indent}reconciled: 0,\n"
+                      f"{indent}idempotent: {idempotent},\n"
+                      f"{indent}blocked: 0,\n"
+                      f"{indent}transferCount: 0,\n"
+                      f"{indent}transferTotalMinor: 0,"
+                  )
+              updated, count = pattern.subn(expand, text)
+              if count:
+                  path.write_text(updated)
+                  changed.append(f"{path}:{count}")
+          print('updated=' + ','.join(changed))
+          PY
+          if git diff --quiet; then
+            echo "No legacy bulk summary assertions remain."
+            exit 0
+          fi
+          npm run format --workspace @solverfin/api
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/api/src/csv-import-*.integration.test.ts
+          git commit -m "test: expand legacy CSV bulk summaries"
+          git push origin HEAD:feat/519-csv-transfer-review
