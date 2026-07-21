@@ -12,12 +12,34 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect second corrupted hunk
+      - name: Normalize and validate correction patch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          git clone --quiet --depth 1 --branch feat/519-csv-transfer-review \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+          cd repo
           gh api -H "Accept: application/vnd.github.raw+json" \
             "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" \
             > /tmp/issue519.patch
-          nl -ba /tmp/issue519.patch | sed -n '240,275p'
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('/tmp/issue519.patch')
+          lines = path.read_text().splitlines(keepends=True)
+          normalized = []
+          in_hunk = False
+          fixed = []
+          for number, line in enumerate(lines, 1):
+              if line.startswith('diff --git '):
+                  in_hunk = False
+              elif line.startswith('@@ '):
+                  in_hunk = True
+              if in_hunk and not line.startswith(('+', '-', ' ', '\\', '@@')):
+                  line = '+' + line
+                  fixed.append(number)
+              normalized.append(line)
+          path.write_text(''.join(normalized))
+          print('normalized_lines=' + ','.join(map(str, fixed)))
+          PY
+          git apply --check --verbose --exclude=.github/workflows/issue-519-audit-fix.yml /tmp/issue519.patch
