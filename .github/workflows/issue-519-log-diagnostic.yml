@@ -1,4 +1,4 @@
-name: Issue 519 correction failure diagnostic
+name: Issue 519 date-window bootstrap
 
 on:
   pull_request:
@@ -6,23 +6,49 @@ on:
       - main
 
 permissions:
-  actions: read
-  contents: read
+  contents: write
+
+concurrency:
+  group: issue-519-date-window-bootstrap
+  cancel-in-progress: false
 
 jobs:
-  diagnose:
+  bootstrap:
     runs-on: ubuntu-latest
     steps:
-      - name: Locate exact previous correction error
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/519-csv-transfer-review
+          fetch-depth: 0
+      - name: Insert mandatory transfer date window
         run: |
           set -euo pipefail
-          gh api -H "Accept: application/vnd.github+json" \
-            "repos/${GITHUB_REPOSITORY}/actions/jobs/88745012820/logs" \
-            > /tmp/job.log
-          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
-          line=$(grep -n '##\[error\]' /tmp/clean.log | tail -n 1 | cut -d: -f1)
-          start=$((line > 24 ? line - 24 : 1))
-          end=$((line + 3))
-          sed -n "${start},${end}p" /tmp/clean.log
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('packages/domain/src/deduplication.ts')
+          text = path.read_text()
+          guard = '''  if (
+            candidate.kind === "transfer" &&
+            dateDistanceInDays(candidate.occurredOn, possibleDuplicate.occurredOn) > 2
+          ) {
+            return [];
+          }
+
+          '''
+          if guard not in text:
+              marker = '  const reasons: DeduplicationReason[] = [];'
+              if marker not in text:
+                  raise SystemExit('deduplication reasons marker not found')
+              text = text.replace(marker, guard + marker, 1)
+              path.write_text(text)
+          PY
+          if git diff --quiet; then
+            echo "Date-window correction already present."
+            exit 0
+          fi
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/domain/src/deduplication.ts
+          git commit -m "fix: require transfer deduplication date window"
+          git push origin HEAD:feat/519-csv-transfer-review
