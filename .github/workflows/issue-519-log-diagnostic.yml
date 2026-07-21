@@ -32,21 +32,23 @@ jobs:
           end_marker = "\n\n          dedup_test = Path('packages/domain/src/deduplication.test.ts')"
           start = text.index(start_marker)
           end = text.index(end_marker, start)
-          replacement = '''          imports_test = Path('packages/domain/src/imports.test.ts')
+          replacement = """          imports_test = Path('packages/domain/src/imports.test.ts')
           text = imports_test.read_text()
-          historical_message = '"V1 candidate keeps the historical payload fingerprint"'
+          historical_message = '\"V1 candidate keeps the historical payload fingerprint\"'
           if historical_message not in text:
             block_start = text.index(
               '  assertEqual(\\n    buildImportPayloadFingerprint(rebuiltLegacy),'
             )
             block_end = text.index('\\n  const fingerprint =', block_start)
-            new_block = '''  assertEqual(
-            buildImportPayloadFingerprint(legacyIncome),
-            "fnv1a-57f1c333",
-            "V1 candidate keeps the historical payload fingerprint",
-          );'''
+            new_block = (
+              '  assertEqual(\\n'
+              '    buildImportPayloadFingerprint(legacyIncome),\\n'
+              '    \"fnv1a-57f1c333\",\\n'
+              '    \"V1 candidate keeps the historical payload fingerprint\",\\n'
+              '  );'
+            )
             text = text[:block_start] + new_block + text[block_end:]
-          imports_test.write_text(text)'''
+          imports_test.write_text(text)"""
           path.write_text(text[:start] + replacement + text[end:])
           PY
           git diff --check
