@@ -26,14 +26,13 @@ jobs:
           set -euo pipefail
           target_branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
           gh api "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" --jq .content \
-            | tr -d '\n' | base64 -d > /tmp/issue519-audit-fixes.patch
-          if git apply --check /tmp/issue519-audit-fixes.patch; then
-            git apply --index /tmp/issue519-audit-fixes.patch
-            git diff --cached --check
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "test: harden CSV transfer compatibility and concurrency"
-            git push origin "HEAD:${target_branch}"
-          else
-            echo "Audit fixes already applied."
-          fi
+            | tr -d '\n' | base64 -d > /tmp/issue519-audit-fixes.patch.gz
+          gzip -t /tmp/issue519-audit-fixes.patch.gz
+          gzip -dc /tmp/issue519-audit-fixes.patch.gz > /tmp/issue519-audit-fixes.patch
+          git apply --check /tmp/issue519-audit-fixes.patch
+          git apply --index --whitespace=nowarn /tmp/issue519-audit-fixes.patch
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test: harden CSV transfer compatibility and concurrency"
+          git push origin "HEAD:${target_branch}"
