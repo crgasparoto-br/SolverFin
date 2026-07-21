@@ -112,7 +112,11 @@ async function validateCategoryHierarchy(cdp) {
       };
     })()`,
   );
-  assert.equal(fixture.ok, true, `Fixture failed: ${fixture.status} ${JSON.stringify(fixture.body)}`);
+  assert.equal(
+    fixture.ok,
+    true,
+    `Fixture failed: ${fixture.status} ${JSON.stringify(fixture.body)}`,
+  );
   const batchId = fixture.body.importBatch.id;
 
   await navigate(cdp, `${baseUrl}/inbox?importBatchId=${encodeURIComponent(batchId)}`);
@@ -126,7 +130,11 @@ async function validateCategoryHierarchy(cdp) {
     cdp,
     `(() => ({ activeName: document.activeElement?.getAttribute('name') || '' }))()`,
   );
-  check(keyboard.activeName === "categoryId", "Keyboard navigation did not reach category", keyboard);
+  check(
+    keyboard.activeName === "categoryId",
+    "Keyboard navigation did not reach category",
+    keyboard,
+  );
 
   const hierarchy = await evaluate(
     cdp,
@@ -190,11 +198,19 @@ async function validateCategoryHierarchy(cdp) {
     hierarchy,
   );
   check(!hierarchy.transferVisible, "Transfer category appears in CSV correction", hierarchy);
-  check(hierarchy.afterKindChange.selectionCleared, "Incompatible selection was not cleared", hierarchy);
+  check(
+    hierarchy.afterKindChange.selectionCleared,
+    "Incompatible selection was not cleared",
+    hierarchy,
+  );
   check(hierarchy.afterKindChange.selectPreserved, "Category select was replaced", hierarchy);
   check(hierarchy.afterKindChange.focusPreserved, "Category focus was not preserved", hierarchy);
   check(hierarchy.afterKindChange.warning, "Incompatibility warning was not announced", hierarchy);
-  check(hierarchy.afterKindChange.otherFieldsPreserved, "Changing kind modified other fields", hierarchy);
+  check(
+    hierarchy.afterKindChange.otherFieldsPreserved,
+    "Changing kind modified other fields",
+    hierarchy,
+  );
   check(
     hierarchy.selectedIncomeId === fixture.incomeChildId,
     "Compatible income category could not be selected",
@@ -221,8 +237,16 @@ async function validateCategoryHierarchy(cdp) {
     })()`,
   );
   check(reopened.kind === "income", "Saved kind was not preserved", reopened);
-  check(reopened.categoryId === fixture.incomeChildId, "Saved category ID was not preserved", reopened);
-  check(reopened.selectedText === fixture.incomePath, "Reopened option lost the complete path", reopened);
+  check(
+    reopened.categoryId === fixture.incomeChildId,
+    "Saved category ID was not preserved",
+    reopened,
+  );
+  check(
+    reopened.selectedText === fixture.incomePath,
+    "Reopened option lost the complete path",
+    reopened,
+  );
   check(reopened.bodyFitsViewport, "Category selector overflowed the mobile viewport", reopened);
 
   await screenshot(cdp, join(outputDir, "issue-514-inbox-category-hierarchy.png"));

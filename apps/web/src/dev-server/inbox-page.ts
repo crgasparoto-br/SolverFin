@@ -18,7 +18,6 @@ interface AccountRecord {
   currency: string;
 }
 
-
 interface FinancialProfileRecord {
   id: string;
   name: string;
@@ -143,9 +142,7 @@ export async function renderInboxPage(token: string): Promise<string> {
     ${dialogScript()}
   `);
 
-  return categories.ok
-    ? enhanceInboxCategoryHierarchy(html, categories.data.categories)
-    : html;
+  return categories.ok ? enhanceInboxCategoryHierarchy(html, categories.data.categories) : html;
 }
 
 function renderCsvImportWorkspace(): string {
