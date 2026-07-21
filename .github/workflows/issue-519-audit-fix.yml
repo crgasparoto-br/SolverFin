@@ -12,15 +12,14 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: feat/519-csv-transfer-review
-          fetch-depth: 0
       - name: Inspect correction patch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -u
+          git clone --quiet --depth 1 --branch feat/519-csv-transfer-review \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+          cd repo
           gh api -H "Accept: application/vnd.github.raw+json" \
             "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" \
             > /tmp/issue519.patch.gz
