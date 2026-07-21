@@ -1,4 +1,4 @@
-name: Issue 519 V1 fingerprint bootstrap
+name: Issue 519 validation failure diagnostic
 
 on:
   pull_request:
@@ -6,55 +6,23 @@ on:
       - main
 
 permissions:
-  contents: write
-
-concurrency:
-  group: issue-519-v1-fingerprint-bootstrap
-  cancel-in-progress: false
+  actions: read
+  contents: read
 
 jobs:
-  bootstrap:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: feat/519-csv-transfer-review
-          fetch-depth: 0
-      - name: Confirm legacy fingerprint matcher
+      - name: Locate validate failure
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-
-          path = Path('packages/domain/src/imports.test.ts')
-          text = path.read_text()
-          expected = "\n".join([
-              "  assertEqual(",
-              "  buildImportPayloadFingerprint(rebuiltLegacy),",
-              "  buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),",
-              '  "V1 candidate keeps the persisted payload fingerprint",',
-              ");",
-          ])
-          if expected not in text:
-              pattern = re.compile(
-                  r'  assertEqual\(\s*'
-                  r'buildImportPayloadFingerprint\(rebuiltLegacy\),\s*'
-                  r'buildImportPayloadFingerprint\(parseTransactionExtractionPayload\(rebuiltLegacy\)!\),\s*'
-                  r'"V1 candidate keeps the persisted payload fingerprint",\s*'
-                  r'\);'
-              )
-              text, count = pattern.subn(expected, text, count=1)
-              if count != 1:
-                  raise SystemExit('legacy fingerprint test block not found')
-              path.write_text(text)
-          PY
-          if git diff --quiet; then
-            echo "Legacy fingerprint matcher already normalized."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/domain/src/imports.test.ts
-          git commit -m "chore: prepare V1 fingerprint compatibility correction"
-          git push origin HEAD:feat/519-csv-transfer-review
+          gh api -H "Accept: application/vnd.github+json" \
+            "repos/${GITHUB_REPOSITORY}/actions/jobs/88748076197/logs" \
+            > /tmp/job.log
+          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
+          line=$(grep -n '##\[error\]' /tmp/clean.log | tail -n 1 | cut -d: -f1)
+          start=$((line > 80 ? line - 80 : 1))
+          end=$((line + 3))
+          sed -n "${start},${end}p" /tmp/clean.log
