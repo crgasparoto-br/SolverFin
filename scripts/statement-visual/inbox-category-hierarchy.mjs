@@ -262,10 +262,14 @@ async function validateCategoryHierarchy(cdp) {
   };
 }
 
-async function waitFor(cdp, expression, timeoutMs = 10000) {
+async function waitFor(cdp, expression, timeoutMs = 20_000) {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
-    if (await evaluate(cdp, expression)) return;
+    try {
+      if (await evaluate(cdp, expression)) return;
+    } catch {
+      // The execution context can be replaced while navigation settles.
+    }
     await sleep(100);
   }
   throw new Error(`Timed out waiting for: ${expression}`);
@@ -273,11 +277,13 @@ async function waitFor(cdp, expression, timeoutMs = 10000) {
 
 async function pressKey(cdp, key, code, keyCode) {
   await cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+    type: "keyDown",
     key,
     code,
     windowsVirtualKeyCode: keyCode,
     nativeVirtualKeyCode: keyCode,
+    text: key === "Enter" ? "\r" : key.length === 1 ? key : "",
+    unmodifiedText: key === "Enter" ? "\r" : key.length === 1 ? key : "",
   });
   await cdp.send("Input.dispatchKeyEvent", {
     type: "keyUp",
@@ -286,6 +292,7 @@ async function pressKey(cdp, key, code, keyCode) {
     windowsVirtualKeyCode: keyCode,
     nativeVirtualKeyCode: keyCode,
   });
+  await sleep(100);
 }
 
 function check(condition, message, context) {
