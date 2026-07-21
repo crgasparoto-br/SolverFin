@@ -1,4 +1,4 @@
-name: Issue 519 final-review summary bootstrap
+name: Issue 519 final-review summary verification
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ jobs:
         with:
           ref: feat/519-csv-transfer-review
           fetch-depth: 0
-      - name: Update final-review bulk summary assertion
+      - name: Verify final-review bulk summary assertion
         run: |
           set -euo pipefail
           python3 - <<'PY'
