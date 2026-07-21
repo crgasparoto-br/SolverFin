@@ -1,4 +1,4 @@
-name: Issue 519 patch diagnostic
+name: Issue 519 patch recovery
 
 on:
   pull_request:
@@ -6,29 +6,49 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose:
+  recover:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect patch segments
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/519-csv-transfer-review
+          fetch-depth: 0
+      - name: Extract recoverable test prefix
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          if [ -f .github/issue519-patch-prefix.txt ]; then
+            echo "Prefix already extracted."
+            exit 0
+          fi
           gh api -H "Accept: application/vnd.github.raw+json" \
             "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" \
             > /tmp/issue519.patch
           python3 - <<'PY'
           from pathlib import Path
           data = Path('/tmp/issue519.patch').read_bytes()
-          prefix, sep, trailing = data.rpartition(b'\n')
-          print('total_bytes=', len(data))
-          print('prefix_bytes=', len(prefix) + len(sep))
-          print('trailing_bytes=', len(trailing))
-          print('trailing_head_hex=', trailing[:48].hex())
-          print('trailing_tail_hex=', trailing[-48:].hex())
-          print('prefix_tail=', repr(prefix[-500:]))
+          prefix, _, _ = data.rpartition(b'\n')
+          chunks = prefix.split(b'\n')
+          output = []
+          in_hunk = False
+          for number, line in enumerate(chunks, 1):
+              if line.startswith(b'@@ '):
+                  in_hunk = True
+                  continue
+              if not in_hunk:
+                  continue
+              if number in (221, 253):
+                  line = b'+' + line
+              if line.startswith(b'+'):
+                  output.append(line[1:])
+          Path('.github/issue519-patch-prefix.txt').write_bytes(b'\n'.join(output) + b'\n')
           PY
-          file /tmp/issue519.patch
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/issue519-patch-prefix.txt
+          git commit -m "chore: recover issue 519 integration test prefix"
+          git push origin HEAD:feat/519-csv-transfer-review
