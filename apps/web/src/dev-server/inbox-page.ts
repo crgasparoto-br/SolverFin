@@ -1,6 +1,10 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import {
+  enhanceInboxCategoryHierarchy,
+  type CategoryRecord,
+} from "./inbox-category-hierarchy-enhancement.js";
 import { icon } from "./icons.js";
 import { buildImportStatementUrl } from "./import-statement-navigation.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
@@ -12,13 +16,6 @@ interface AccountRecord {
   kind: string;
   status: string;
   currency: string;
-}
-
-interface CategoryRecord {
-  id: string;
-  name: string;
-  kind: string;
-  status: string;
 }
 
 interface FinancialProfileRecord {
@@ -69,7 +66,7 @@ export async function renderInboxPage(token: string): Promise<string> {
       "/api/ai-review-queue?status=pending_review&includeLowConfidence=true",
     ),
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
-    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories"),
+    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?status=all"),
     apiGet<FinancialProfilesResponse>(token, "/api/financial-profiles"),
   ]);
 
@@ -89,7 +86,7 @@ export async function renderInboxPage(token: string): Promise<string> {
     : undefined;
   const activeProfileLabel = activeProfile?.name ?? "Perfil financeiro ativo";
 
-  return renderShell(`
+  const html = renderShell(`
     <section class="page-heading">
       <div>
         <p class="eyebrow">Entradas e revisão</p>
@@ -144,6 +141,8 @@ export async function renderInboxPage(token: string): Promise<string> {
     ${apiFormScript()}
     ${dialogScript()}
   `);
+
+  return categories.ok ? enhanceInboxCategoryHierarchy(html, categories.data.categories) : html;
 }
 
 function renderCsvImportWorkspace(): string {
