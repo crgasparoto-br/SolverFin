@@ -36,14 +36,8 @@ await replaceOnce(
 
 await replaceOnce(
   "packages/domain/src/imports.ts",
-  `  if (isV2Mapping(mapping)) {\n    if (mapping.valueStrategy === "signed" && mapping.amount)`,
-  `  if (includeValueMapping && isV2Mapping(mapping)) {\n    if (mapping.valueStrategy === "signed" && mapping.amount)`,
-);
-
-await replaceOnce(
-  "packages/domain/src/imports.ts",
-  `  } else if (mapping.amount) {\n    items.push({ source: mapping.amount, target: "amount", label: "Valor" });`,
-  `  } else if (includeValueMapping && mapping.amount) {\n    items.push({ source: mapping.amount, target: "amount", label: "Valor" });`,
+  `  if (isV2Mapping(mapping)) {\n    if (mapping.valueStrategy === "signed" && mapping.amount)\n      items.push({\n        source: mapping.amount,\n        target: "amount",\n        label: "Valor com sinal",\n      });\n    if (mapping.valueStrategy === "split") {\n      if (mapping.incomeAmount)\n        items.push({\n          source: mapping.incomeAmount,\n          target: "income",\n          label: "Receita",\n        });\n      if (mapping.expenseAmount)\n        items.push({\n          source: mapping.expenseAmount,\n          target: "expense",\n          label: "Despesa",\n        });\n    }\n  } else if (mapping.amount) {\n    items.push({ source: mapping.amount, target: "amount", label: "Valor" });\n  }`,
+  `  if (includeValueMapping) {\n    if (isV2Mapping(mapping)) {\n      if (mapping.valueStrategy === "signed" && mapping.amount)\n        items.push({\n          source: mapping.amount,\n          target: "amount",\n          label: "Valor com sinal",\n        });\n      if (mapping.valueStrategy === "split") {\n        if (mapping.incomeAmount)\n          items.push({\n            source: mapping.incomeAmount,\n            target: "income",\n            label: "Receita",\n          });\n        if (mapping.expenseAmount)\n          items.push({\n            source: mapping.expenseAmount,\n            target: "expense",\n            label: "Despesa",\n          });\n      }\n    } else if (mapping.amount) {\n      items.push({ source: mapping.amount, target: "amount", label: "Valor" });\n    }\n  }`,
 );
 
 await replaceOnce(
