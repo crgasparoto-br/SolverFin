@@ -1,4 +1,4 @@
-name: Issue 519 hardening failure diagnostic
+name: Issue 519 V1 fingerprint bootstrap
 
 on:
   pull_request:
@@ -6,23 +6,48 @@ on:
       - main
 
 permissions:
-  actions: read
-  contents: read
+  contents: write
+
+concurrency:
+  group: issue-519-v1-fingerprint-bootstrap
+  cancel-in-progress: false
 
 jobs:
-  diagnose:
+  bootstrap:
     runs-on: ubuntu-latest
     steps:
-      - name: Locate hardening error
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/519-csv-transfer-review
+          fetch-depth: 0
+      - name: Normalize legacy fingerprint test block
         run: |
           set -euo pipefail
-          gh api -H "Accept: application/vnd.github+json" \
-            "repos/${GITHUB_REPOSITORY}/actions/jobs/88747409636/logs" \
-            > /tmp/job.log
-          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
-          line=$(grep -n '##\[error\]' /tmp/clean.log | tail -n 1 | cut -d: -f1)
-          start=$((line > 24 ? line - 24 : 1))
-          end=$((line + 3))
-          sed -n "${start},${end}p" /tmp/clean.log
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('packages/domain/src/imports.test.ts')
+          text = path.read_text()
+          current = '''  assertEqual(
+            buildImportPayloadFingerprint(rebuiltLegacy),
+            buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),
+            "V1 candidate keeps the persisted payload fingerprint",
+          );'''
+          expected = '''  assertEqual(
+          buildImportPayloadFingerprint(rebuiltLegacy),
+          buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),
+          "V1 candidate keeps the persisted payload fingerprint",
+          );'''
+          if expected not in text:
+              if current not in text:
+                  raise SystemExit('legacy fingerprint test block not found')
+              path.write_text(text.replace(current, expected, 1))
+          PY
+          if git diff --quiet; then
+            echo "Legacy fingerprint matcher already normalized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/domain/src/imports.test.ts
+          git commit -m "chore: prepare V1 fingerprint compatibility correction"
+          git push origin HEAD:feat/519-csv-transfer-review
