@@ -12,20 +12,12 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Identify remaining patch corruption
+      - name: Inspect second corrupted hunk
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set +e
-          git clone --quiet --depth 1 --branch feat/519-csv-transfer-review \
-            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
-          cd repo
+          set -euo pipefail
           gh api -H "Accept: application/vnd.github.raw+json" \
             "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" \
             > /tmp/issue519.patch
-          sed -i '221s/^/+/' /tmp/issue519.patch
-          git apply --check --verbose --exclude=.github/workflows/issue-519-audit-fix.yml /tmp/issue519.patch > /tmp/check.log 2>&1
-          status=$?
-          echo "status=${status}"
-          cat /tmp/check.log
-          exit ${status}
+          nl -ba /tmp/issue519.patch | sed -n '240,275p'
