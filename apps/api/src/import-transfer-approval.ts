@@ -82,12 +82,11 @@ export async function approveSelectedImportSuggestionsRespectingRejectedCandidat
 
   for (const suggestionId of suggestionIds) {
     try {
-      const decision =
-        await approveImportSuggestionRespectingRejectedCandidatesForContext(
-          context,
-          importBatchId,
-          suggestionId,
-        );
+      const decision = await approveImportSuggestionRespectingRejectedCandidatesForContext(
+        context,
+        importBatchId,
+        suggestionId,
+      );
       summary.approved += 1;
       if (decision.outcome === "created") summary.created += 1;
       if (decision.outcome === "reconciled") summary.reconciled += 1;
@@ -105,8 +104,7 @@ export async function approveSelectedImportSuggestionsRespectingRejectedCandidat
     } catch (error) {
       if (error instanceof ImportReviewError && error.statusCode < 500) {
         const failure = { suggestionId, code: error.code, message: error.message };
-        const outcome =
-          error.code === "IMPORT_REVIEW_CANDIDATE_PENDING" ? "blocked" : "failed";
+        const outcome = error.code === "IMPORT_REVIEW_CANDIDATE_PENDING" ? "blocked" : "failed";
         if (outcome === "blocked") summary.blocked += 1;
         failures.push(failure);
         results.push({

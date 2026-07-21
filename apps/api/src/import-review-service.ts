@@ -60,12 +60,11 @@ export async function approveConsistentSelectedImportSuggestionsForContext(
   importBatchId: string,
   suggestionIds: readonly string[],
 ): Promise<BulkImportReviewResult> {
-  const result =
-    await approveSelectedImportSuggestionsRespectingRejectedCandidatesForContext(
-      context,
-      importBatchId,
-      suggestionIds,
-    );
+  const result = await approveSelectedImportSuggestionsRespectingRejectedCandidatesForContext(
+    context,
+    importBatchId,
+    suggestionIds,
+  );
   for (const item of result.results) {
     if (item.status === "approved" && item.decision !== undefined) {
       assertDecisionConsistency(item.decision, importBatchId, item.suggestionId);

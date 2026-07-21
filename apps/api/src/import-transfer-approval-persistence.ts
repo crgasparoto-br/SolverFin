@@ -35,10 +35,7 @@ export async function createImportedTransferAfterRejectedCandidate(
     now,
   );
   await executeQuery(buildInsertTransactionSql(), buildTransactionParams(transaction));
-  await insertAuditLogEntry(
-    executeQuery,
-    buildImportedTransactionAuditEntry(context, transaction),
-  );
+  await insertAuditLogEntry(executeQuery, buildImportedTransactionAuditEntry(context, transaction));
   return transaction;
 }
 
@@ -55,13 +52,7 @@ export async function reconcileConcurrentTransferAfterRejectedCandidate(
     `update "Transaction" set "status" = 'RECONCILED', "reconciledAt" = $4,
        "updatedAt" = $4, "updatedByUserId" = $5
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [
-      transactionId,
-      context.organizationId,
-      context.financialProfileId,
-      now,
-      context.userId,
-    ],
+    [transactionId, context.organizationId, context.financialProfileId, now, context.userId],
   );
   await insertAuditLogEntry(
     executeQuery,
@@ -149,10 +140,7 @@ async function expirePendingCandidates(
     [context.organizationId, context.financialProfileId, sourceSuggestionId, now, context.userId],
   );
   for (const row of rows) {
-    await insertAuditLogEntry(
-      executeQuery,
-      buildExpiredCandidateAuditEntry(context, row.id, now),
-    );
+    await insertAuditLogEntry(executeQuery, buildExpiredCandidateAuditEntry(context, row.id, now));
   }
 }
 

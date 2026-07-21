@@ -322,22 +322,13 @@ function projectedBalancesIncludePlannedEntriesAndTransfers(): void {
 }
 
 function transferSummariesExcludeTransfersFromIncomeAndExpense(): void {
-  const outboundTransfer = transaction(
-    "transfer-out",
-    "transfer",
-    "posted",
-    25000,
-    "2026-06-03",
-    { destinationAccountId: "account-2" },
-  );
-  const inboundTransfer = transaction(
-    "transfer-in",
-    "transfer",
-    "posted",
-    30000,
-    "2026-06-04",
-    { accountId: "account-2", destinationAccountId: "account-1" },
-  );
+  const outboundTransfer = transaction("transfer-out", "transfer", "posted", 25000, "2026-06-03", {
+    destinationAccountId: "account-2",
+  });
+  const inboundTransfer = transaction("transfer-in", "transfer", "posted", 30000, "2026-06-04", {
+    accountId: "account-2",
+    destinationAccountId: "account-1",
+  });
   const rows = buildRows([outboundTransfer, inboundTransfer], account, 10000);
 
   assert.deepEqual(

@@ -145,12 +145,7 @@ async function assertQueueApprovalRespectsRejection(
   assert.notEqual(body.transaction.id, existing.id);
   assert.equal(body.transaction.status, "posted");
 
-  await assertIndependentTransferPersisted(
-    existing.id,
-    body.transaction.id,
-    imported,
-    6_543,
-  );
+  await assertIndependentTransferPersisted(existing.id, body.transaction.id, imported, 6_543);
 }
 
 async function createExistingTransfer(
@@ -215,10 +210,7 @@ async function rejectAllCurrentCandidates(
     deduplicationSuggestions: Candidate[];
     reconciliationSuggestions: Candidate[];
   }>(detect);
-  const candidates = [
-    ...detected.deduplicationSuggestions,
-    ...detected.reconciliationSuggestions,
-  ];
+  const candidates = [...detected.deduplicationSuggestions, ...detected.reconciliationSuggestions];
   assert.ok(candidates.length >= 2, "Expected duplicate and reconciliation candidates");
 
   for (const candidate of candidates) {
@@ -231,11 +223,7 @@ async function rejectAllCurrentCandidates(
     assert.equal(rejection.statusCode, 200);
   }
 
-  const detail = await apiRequest(
-    token,
-    "GET",
-    `/api/import-batches/${imported.importBatchId}`,
-  );
+  const detail = await apiRequest(token, "GET", `/api/import-batches/${imported.importBatchId}`);
   assert.equal(detail.statusCode, 200);
   const suggestion = readBody<ImportDetail>(detail).suggestions[0];
   assert.ok(suggestion);

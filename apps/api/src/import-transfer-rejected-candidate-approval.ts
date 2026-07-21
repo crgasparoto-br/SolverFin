@@ -14,10 +14,7 @@ import {
   reconcileConcurrentTransferAfterRejectedCandidate,
   type CanonicalTransferAccounts,
 } from "./import-transfer-approval-persistence.js";
-import {
-  ImportReviewError,
-  refreshImportBatchStatusForContext,
-} from "./repositories/imports.js";
+import { ImportReviewError, refreshImportBatchStatusForContext } from "./repositories/imports.js";
 
 interface LockedSuggestionRow {
   status: string;
@@ -290,12 +287,7 @@ async function validateTransferReferences(
     );
   }
 
-  const other = await requireActiveAccount(
-    context,
-    payload.otherAccountId,
-    "other",
-    executeQuery,
-  );
+  const other = await requireActiveAccount(context, payload.otherAccountId, "other", executeQuery);
   if (
     other.currency.toUpperCase() !== payload.currency.toUpperCase() ||
     other.currency.toUpperCase() !== reference.currency.toUpperCase()
