@@ -39,6 +39,7 @@ describe("Inbox category hierarchy first render", () => {
       );
       assert.deepEqual(categoryRequests, ["/api/categories?status=all"]);
       assert.match(html, /data-inbox-category-hierarchy-enhanced/);
+      assert.match(html, /<option value="">Sem categoria<\/option>/);
       assert.match(html, /Alimentação › Mercado/);
     } finally {
       globalThis.fetch = originalFetch;
