@@ -24,23 +24,30 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import re
           from pathlib import Path
+
           path = Path('packages/domain/src/imports.test.ts')
           text = path.read_text()
-          current = '''  assertEqual(
-            buildImportPayloadFingerprint(rebuiltLegacy),
-            buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),
-            "V1 candidate keeps the persisted payload fingerprint",
-          );'''
-          expected = '''  assertEqual(
-          buildImportPayloadFingerprint(rebuiltLegacy),
-          buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),
-          "V1 candidate keeps the persisted payload fingerprint",
-          );'''
+          expected = "\n".join([
+              "  assertEqual(",
+              "  buildImportPayloadFingerprint(rebuiltLegacy),",
+              "  buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),",
+              '  "V1 candidate keeps the persisted payload fingerprint",',
+              ");",
+          ])
           if expected not in text:
-              if current not in text:
+              pattern = re.compile(
+                  r'  assertEqual\(\s*'
+                  r'buildImportPayloadFingerprint\(rebuiltLegacy\),\s*'
+                  r'buildImportPayloadFingerprint\(parseTransactionExtractionPayload\(rebuiltLegacy\)!\),\s*'
+                  r'"V1 candidate keeps the persisted payload fingerprint",\s*'
+                  r'\);'
+              )
+              text, count = pattern.subn(expected, text, count=1)
+              if count != 1:
                   raise SystemExit('legacy fingerprint test block not found')
-              path.write_text(text.replace(current, expected, 1))
+              path.write_text(text)
           PY
           if git diff --quiet; then
             echo "Legacy fingerprint matcher already normalized."
