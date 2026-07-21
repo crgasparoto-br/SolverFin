@@ -1,4 +1,4 @@
-name: Issue 514 lint diagnostics
+name: Issue 514 lint fixer
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  diagnose:
+  fix:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -26,13 +26,18 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Capture lint output
-        run: npm run lint > .github/issue-514-lint.log 2>&1 || true
-      - name: Commit diagnostics
+      - name: Apply focused lint fixes
+        run: |
+          sed -i '/import { renderInboxPage } from "\.\/dev-server\/inbox-page\.js";/d' apps/web/src/dev-server.ts
+          npm exec eslint -- --fix apps/web/src/dev-server/inbox-category-hierarchy-enhancement.ts
+          npm exec prettier -- --write apps/web/src/dev-server.ts apps/web/src/dev-server/inbox-category-hierarchy-enhancement.ts
+      - name: Verify web lint
+        run: npm run lint --workspace @solverfin/web
+      - name: Commit fixes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f .github/issue-514-lint.log
+          git add apps/web/src/dev-server.ts apps/web/src/dev-server/inbox-category-hierarchy-enhancement.ts
           git diff --cached --quiet && exit 0
-          git commit -m "chore: capture issue 514 lint diagnostics"
+          git commit -m "fix(web): satisfy lint for issue 514"
           git push origin HEAD:feat/514-inbox-category-hierarchy
