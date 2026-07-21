@@ -25,6 +25,7 @@ export type ReconciliationConflictCode =
   | "RECONCILIATION_AMOUNT_CONFLICT"
   | "RECONCILIATION_DATE_CONFLICT"
   | "RECONCILIATION_ACCOUNT_CONFLICT"
+  | "RECONCILIATION_DESTINATION_ACCOUNT_CONFLICT"
   | "RECONCILIATION_CATEGORY_CONFLICT"
   | "RECONCILIATION_KIND_CONFLICT";
 
@@ -36,6 +37,7 @@ export interface ReconciliationSource extends TenantScoped {
   occurredOn: ISODate;
   kind: TransactionKind;
   accountId?: EntityId;
+  destinationAccountId?: EntityId;
   categoryId?: EntityId;
 }
 
@@ -256,6 +258,16 @@ function buildConflicts(
     conflicts.push({
       code: "RECONCILIATION_ACCOUNT_CONFLICT",
       message: "A conta financeira diverge.",
+    });
+  }
+
+  if (
+    source.destinationAccountId !== undefined &&
+    source.destinationAccountId !== transaction.destinationAccountId
+  ) {
+    conflicts.push({
+      code: "RECONCILIATION_DESTINATION_ACCOUNT_CONFLICT",
+      message: "A conta de destino diverge.",
     });
   }
 

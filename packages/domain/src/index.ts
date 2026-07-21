@@ -312,6 +312,8 @@ export interface ImportProblemSnapshot {
   message: string;
 }
 
+export type ImportLineDirection = "inflow" | "outflow";
+
 export interface TransactionExtractionPayloadV1 {
   payloadVersion: 1;
   sourceRowNumber: number;
@@ -326,6 +328,26 @@ export interface TransactionExtractionPayloadV1 {
   externalId?: string;
 }
 
+export interface TransactionExtractionPayloadV2 {
+  payloadVersion: 2;
+  sourceRowNumber: number;
+  sourceHash: string;
+  occurredOn: ISODate;
+  kind: TransactionKind;
+  direction: ImportLineDirection;
+  amountMinor: number;
+  currency: string;
+  description: string;
+  accountId?: EntityId;
+  otherAccountId?: EntityId;
+  categoryId?: EntityId;
+  externalId?: string;
+}
+
+export type TransactionExtractionPayload =
+  | TransactionExtractionPayloadV1
+  | TransactionExtractionPayloadV2;
+
 export interface DeterministicReviewPayloadV1 {
   payloadVersion: 1;
   sourceSuggestionId: EntityId;
@@ -335,7 +357,7 @@ export interface DeterministicReviewPayloadV1 {
   conflicts: readonly string[];
 }
 
-export type AiSuggestionPayload = TransactionExtractionPayloadV1 | DeterministicReviewPayloadV1;
+export type AiSuggestionPayload = TransactionExtractionPayload | DeterministicReviewPayloadV1;
 
 export interface AiSuggestion extends Traceable, TenantScoped {
   kind: AiSuggestionKind;

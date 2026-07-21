@@ -41,6 +41,7 @@ export interface DeduplicationCandidate extends TenantScoped {
   occurredOn: ISODate;
   description: string;
   accountId?: EntityId;
+  destinationAccountId?: EntityId;
   cardId?: EntityId;
   sourceHash?: string;
   externalId?: string;
@@ -149,6 +150,10 @@ export function buildTransactionDeduplicationCandidate(
     candidate.accountId = transaction.accountId;
   }
 
+  if (transaction.destinationAccountId !== undefined) {
+    candidate.destinationAccountId = transaction.destinationAccountId;
+  }
+
   if (transaction.cardId !== undefined) {
     candidate.cardId = transaction.cardId;
   }
@@ -173,7 +178,16 @@ export function buildImportSuggestionDeduplicationCandidate(
     sourceHash: suggestion.sourceHash,
   };
 
-  if (suggestion.accountId !== undefined) {
+  if (
+    suggestion.kind === "transfer" &&
+    suggestion.accountId !== undefined &&
+    suggestion.otherAccountId !== undefined
+  ) {
+    candidate.accountId =
+      suggestion.direction === "outflow" ? suggestion.accountId : suggestion.otherAccountId;
+    candidate.destinationAccountId =
+      suggestion.direction === "outflow" ? suggestion.otherAccountId : suggestion.accountId;
+  } else if (suggestion.accountId !== undefined) {
     candidate.accountId = suggestion.accountId;
   }
 
@@ -241,6 +255,11 @@ function buildDeduplicationReasons(
   candidate: DeduplicationCandidate,
   possibleDuplicate: DeduplicationCandidate,
 ): DeduplicationReason[] {
+  if (candidate.kind !== possibleDuplicate.kind) return [];
+  if (candidate.kind === "transfer" && !hasSameTransferAccounts(candidate, possibleDuplicate)) {
+    return [];
+  }
+
   const reasons: DeduplicationReason[] = [];
 
   if (candidate.sourceHash !== undefined && candidate.sourceHash === possibleDuplicate.sourceHash) {
@@ -256,6 +275,14 @@ function buildDeduplicationReasons(
       code: "DEDUP_SAME_EXTERNAL_ID",
       score: 95,
       message: "O identificador externo da origem e igual.",
+    });
+  }
+
+  if (candidate.kind === "transfer") {
+    reasons.push({
+      code: "DEDUP_SAME_ACCOUNT",
+      score: 40,
+      message: "O par de contas da transferencia e o mesmo.",
     });
   }
 
@@ -275,7 +302,11 @@ function buildDeduplicationReasons(
     });
   }
 
-  if (candidate.accountId !== undefined && candidate.accountId === possibleDuplicate.accountId) {
+  if (
+    candidate.kind !== "transfer" &&
+    candidate.accountId !== undefined &&
+    candidate.accountId === possibleDuplicate.accountId
+  ) {
     reasons.push({
       code: "DEDUP_SAME_ACCOUNT",
       score: 15,
@@ -305,6 +336,27 @@ function buildDeduplicationReasons(
   }
 
   return reasons;
+}
+
+function hasSameTransferAccounts(
+  candidate: DeduplicationCandidate,
+  possibleDuplicate: DeduplicationCandidate,
+): boolean {
+  if (
+    candidate.accountId === undefined ||
+    candidate.destinationAccountId === undefined ||
+    possibleDuplicate.accountId === undefined ||
+    possibleDuplicate.destinationAccountId === undefined
+  ) {
+    return false;
+  }
+
+  return (
+    (candidate.accountId === possibleDuplicate.accountId &&
+      candidate.destinationAccountId === possibleDuplicate.destinationAccountId) ||
+    (candidate.accountId === possibleDuplicate.destinationAccountId &&
+      candidate.destinationAccountId === possibleDuplicate.accountId)
+  );
 }
 
 function calculateDescriptionSimilarity(left: string, right: string): number {

@@ -4,6 +4,8 @@ import {
   buildLegacyImportBatchHash,
   buildImportPayloadFingerprint,
   buildTransactionExtractionPayload,
+  buildTransactionMovements,
+  deriveImportLineDirection,
   parseDeterministicReviewPayload,
   parseTransactionExtractionPayload,
   previewImportedStatement,
@@ -17,9 +19,12 @@ import {
   type ImportProblem,
   type ImportSourceKind,
   type ImportStatus,
+  type ImportLineDirection,
   type TenantContext,
   type Transaction,
+  type TransactionExtractionPayload,
   type TransactionExtractionPayloadV1,
+  type TransactionExtractionPayloadV2,
 } from "@solverfin/domain";
 
 import { query, withSharedTransaction, type QueryExecutor } from "../db.js";
@@ -62,7 +67,7 @@ export interface ImportSuggestionCandidate {
 }
 
 export interface ImportReviewSuggestion extends AiSuggestion {
-  payload?: TransactionExtractionPayloadV1;
+  payload?: TransactionExtractionPayload;
   candidates: readonly ImportSuggestionCandidate[];
   transaction?: Transaction;
 }
@@ -79,23 +84,28 @@ export interface CreateImportBatchResult extends ImportBatchDetail {
 
 export interface ImportSuggestionUpdatePayload {
   occurredOn?: string;
-  kind?: "income" | "expense";
+  kind?: "income" | "expense" | "transfer";
   amountMinor?: number;
   description?: string;
   accountId?: EntityId;
+  otherAccountId?: EntityId | null;
   categoryId?: EntityId | null;
 }
+
+export type ImportReviewOutcome = "updated" | "created" | "reconciled" | "rejected" | "idempotent";
 
 export interface ImportReviewDecisionResult {
   suggestion: ImportReviewSuggestion;
   transaction?: Transaction;
   importBatch: ImportBatch;
   idempotent: boolean;
+  outcome: ImportReviewOutcome;
 }
 
 export interface BulkImportReviewItemResult {
   suggestionId: EntityId;
   status: "approved" | "failed";
+  outcome: ImportReviewOutcome | "blocked" | "failed";
   decision?: ImportReviewDecisionResult;
   error?: { code: string; message: string };
 }
@@ -106,7 +116,12 @@ export interface BulkImportReviewResult {
     requested: number;
     approved: number;
     failed: number;
+    created: number;
+    reconciled: number;
     idempotent: number;
+    blocked: number;
+    transferCount: number;
+    transferTotalMinor: number;
   };
   results: readonly BulkImportReviewItemResult[];
   failures: readonly { suggestionId: EntityId; code: string; message: string }[];
@@ -529,13 +544,18 @@ export async function getImportBatchDetailForContext(
   );
   const deterministicSuggestions = deterministicRows.map(mapAiSuggestionRow);
   const reconciliationTargetIds = [
-    ...new Set(
-      deterministicSuggestions.flatMap((candidate) => {
+    ...new Set([
+      ...deterministicSuggestions.flatMap((candidate) => {
         if (candidate.kind !== "reconciliation" || candidate.status !== "approved") return [];
         const payload = parseDeterministicReviewPayload(candidate.payload);
         return payload === undefined ? [] : [payload.targetTransactionId];
       }),
-    ),
+      ...extractionSuggestions.flatMap((suggestion) =>
+        suggestion.status === "approved" && suggestion.targetEntityId !== undefined
+          ? [suggestion.targetEntityId]
+          : [],
+      ),
+    ]),
   ];
   const transactionRows = await query<TransactionRow>(
     `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction"
@@ -561,11 +581,13 @@ export async function getImportBatchDetailForContext(
       const candidates = deterministicSuggestions.filter(
         (candidate) => getSourceSuggestionId(candidate) === suggestion.id,
       );
-      const reconciliationTargetId = candidates.flatMap((candidate) => {
-        if (candidate.kind !== "reconciliation" || candidate.status !== "approved") return [];
-        const payload = parseDeterministicReviewPayload(candidate.payload);
-        return payload === undefined ? [] : [payload.targetTransactionId];
-      })[0];
+      const reconciliationTargetId =
+        suggestion.targetEntityId ??
+        candidates.flatMap((candidate) => {
+          if (candidate.kind !== "reconciliation" || candidate.status !== "approved") return [];
+          const payload = parseDeterministicReviewPayload(candidate.payload);
+          return payload === undefined ? [] : [payload.targetTransactionId];
+        })[0];
       return toImportReviewSuggestion(
         suggestion,
         candidates,
@@ -640,6 +662,7 @@ export async function updateImportSuggestionForContext(
       ),
       importBatch: recalculatedBatch,
       idempotent: false,
+      outcome: "updated",
     };
   });
 }
@@ -694,6 +717,7 @@ export async function rejectImportSuggestionForContext(
         suggestion: toImportReviewSuggestion(suggestion, [], undefined),
         importBatch: batch,
         idempotent: true,
+        outcome: "idempotent",
       };
     }
 
@@ -733,6 +757,7 @@ export async function rejectImportSuggestionForContext(
       suggestion: toImportReviewSuggestion(rejected, [], undefined),
       importBatch: recalculatedBatch,
       idempotent: false,
+      outcome: "rejected",
     };
   });
 }
@@ -758,7 +783,12 @@ export async function approveSelectedImportSuggestionsForContext(
   const results: BulkImportReviewItemResult[] = [];
   const failures: { suggestionId: EntityId; code: string; message: string }[] = [];
   let approved = 0;
+  let created = 0;
+  let reconciled = 0;
   let idempotent = 0;
+  let blocked = 0;
+  let transferCount = 0;
+  let transferTotalMinor = 0;
 
   for (const suggestionId of suggestionIds) {
     try {
@@ -768,15 +798,29 @@ export async function approveSelectedImportSuggestionsForContext(
         suggestionId,
       );
       approved += 1;
-      if (decision.idempotent) idempotent += 1;
-      results.push({ suggestionId, status: "approved", decision });
+      if (decision.outcome === "created") created += 1;
+      if (decision.outcome === "reconciled") reconciled += 1;
+      if (decision.outcome === "idempotent") idempotent += 1;
+      if (decision.suggestion.payload?.kind === "transfer") {
+        transferCount += 1;
+        transferTotalMinor += decision.suggestion.payload.amountMinor;
+      }
+      results.push({
+        suggestionId,
+        status: "approved",
+        outcome: decision.outcome,
+        decision,
+      });
     } catch (error) {
       if (error instanceof ImportReviewError && error.statusCode < 500) {
         const failure = { suggestionId, code: error.code, message: error.message };
+        const outcome = error.code === "IMPORT_REVIEW_CANDIDATE_PENDING" ? "blocked" : "failed";
+        if (outcome === "blocked") blocked += 1;
         failures.push(failure);
         results.push({
           suggestionId,
           status: "failed",
+          outcome,
           error: { code: error.code, message: error.message },
         });
         continue;
@@ -794,7 +838,12 @@ export async function approveSelectedImportSuggestionsForContext(
       requested: suggestionIds.length,
       approved,
       failed: failures.length,
+      created,
+      reconciled,
       idempotent,
+      blocked,
+      transferCount,
+      transferTotalMinor,
     },
     results,
     failures,
@@ -992,6 +1041,12 @@ export async function resolveImportSuggestionFromDeterministicDecision(
         updatedAt: now,
         updatedByUserId: context.userId,
       };
+      if (transaction.kind === "transfer") {
+        await insertAuditLogEntry(
+          executeQuery,
+          buildImportedTransferReconciliationAuditEntry(context, transaction),
+        );
+      }
     } else {
       transaction = current;
     }
@@ -1060,12 +1115,46 @@ async function approveImportSuggestionInTransaction(
       transaction: existingTransaction,
       importBatch: batch,
       idempotent: true,
+      outcome: "idempotent",
+    };
+  }
+
+  if (suggestion.status === "approved" && suggestion.targetEntityId !== undefined) {
+    const target = await findTransactionById(context, suggestion.targetEntityId, executeQuery);
+    if (target === undefined) {
+      throw new ImportReviewError(
+        "IMPORT_APPROVED_TRANSACTION_MISSING",
+        "O lancamento vinculado a esta linha nao foi encontrado.",
+        409,
+      );
+    }
+    return {
+      suggestion: toImportReviewSuggestion(suggestion, [], target),
+      transaction: target,
+      importBatch: batch,
+      idempotent: true,
+      outcome: "idempotent",
     };
   }
 
   if (suggestion.status !== "pending_review") throw invalidTransition(suggestion.status);
   const payload = requireExtractionPayload(suggestion);
   await validateExtractionReferences(context, payload, executeQuery);
+
+  if (payload.kind === "transfer") {
+    await lockCanonicalTransfer(context, payload, executeQuery);
+    const existingTransfer = await findCanonicalTransfer(context, payload, executeQuery);
+    if (existingTransfer !== undefined) {
+      return reconcileImportTransferInTransaction(
+        context,
+        batch,
+        suggestion,
+        existingTransfer,
+        executeQuery,
+      );
+    }
+  }
+
   const now = new Date().toISOString();
   const transaction = buildImportedTransaction(context, batch.id, suggestion.id, payload, now);
   await executeQuery(buildInsertTransactionSql(), buildTransactionParams(transaction));
@@ -1094,7 +1183,9 @@ async function approveImportSuggestionInTransaction(
       context,
       approved,
       "approve",
-      "Linha de importacao confirmada e convertida em lancamento.",
+      transaction.kind === "transfer"
+        ? "Linha de importacao confirmada como transferencia entre contas."
+        : "Linha de importacao confirmada e convertida em lancamento.",
     ),
   );
   const recalculatedBatch = await recalculateImportBatch(context, batch.id, executeQuery);
@@ -1104,6 +1195,141 @@ async function approveImportSuggestionInTransaction(
     transaction,
     importBatch: recalculatedBatch,
     idempotent: false,
+    outcome: "created",
+  };
+}
+
+async function findTransactionById(
+  context: TenantContext,
+  transactionId: EntityId,
+  executeQuery: QueryExecutor,
+): Promise<Transaction | undefined> {
+  const rows = await executeQuery<TransactionRow>(
+    `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [transactionId, context.organizationId, context.financialProfileId],
+  );
+  return rows[0] ? mapTransactionRow(rows[0]) : undefined;
+}
+
+async function lockCanonicalTransfer(
+  context: TenantContext,
+  payload: TransactionExtractionPayload,
+  executeQuery: QueryExecutor,
+): Promise<void> {
+  const accounts = resolveCanonicalTransferAccounts(payload);
+  const key = [
+    accounts.sourceAccountId,
+    accounts.destinationAccountId,
+    payload.amountMinor,
+    payload.currency.toUpperCase(),
+  ].join(":");
+  await executeQuery(`select pg_advisory_xact_lock(hashtext($1), hashtext($2))`, [
+    `${context.organizationId}:${context.financialProfileId}`,
+    key,
+  ]);
+}
+
+async function findCanonicalTransfer(
+  context: TenantContext,
+  payload: TransactionExtractionPayload,
+  executeQuery: QueryExecutor,
+): Promise<Transaction | undefined> {
+  const accounts = resolveCanonicalTransferAccounts(payload);
+  const rows = await executeQuery<TransactionRow>(
+    `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction"
+     where "organizationId" = $1 and "financialProfileId" = $2
+       and "kind" = 'TRANSFER' and "status" <> 'VOIDED'
+       and "accountId" = $3 and "destinationAccountId" = $4
+       and "amountMinor" = $5 and upper("currency") = upper($6)
+       and "occurredOn" between ($7::date - interval '2 days') and ($7::date + interval '2 days')
+     order by abs("occurredOn" - $7::date), "createdAt" asc
+     limit 1
+     for update`,
+    [
+      context.organizationId,
+      context.financialProfileId,
+      accounts.sourceAccountId,
+      accounts.destinationAccountId,
+      payload.amountMinor,
+      payload.currency,
+      payload.occurredOn,
+    ],
+  );
+  return rows[0] ? mapTransactionRow(rows[0]) : undefined;
+}
+
+async function reconcileImportTransferInTransaction(
+  context: TenantContext,
+  batch: ImportBatch,
+  suggestion: AiSuggestion,
+  existingTransfer: Transaction,
+  executeQuery: QueryExecutor,
+): Promise<ImportReviewDecisionResult> {
+  const now = new Date().toISOString();
+  const transaction =
+    existingTransfer.status === "reconciled"
+      ? existingTransfer
+      : {
+          ...existingTransfer,
+          status: "reconciled" as const,
+          reconciledAt: now,
+          updatedAt: now,
+          updatedByUserId: context.userId,
+        };
+
+  if (existingTransfer.status !== "reconciled") {
+    await executeQuery(
+      `update "Transaction" set "status" = 'RECONCILED', "reconciledAt" = $4,
+         "updatedAt" = $4, "updatedByUserId" = $5
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [
+        existingTransfer.id,
+        context.organizationId,
+        context.financialProfileId,
+        now,
+        context.userId,
+      ],
+    );
+    await insertAuditLogEntry(
+      executeQuery,
+      buildImportedTransferReconciliationAuditEntry(context, transaction),
+    );
+  }
+
+  const approved: AiSuggestion = {
+    ...suggestion,
+    status: "approved",
+    targetEntityId: existingTransfer.id,
+    reviewedByUserId: context.userId,
+    reviewedAt: now,
+    updatedAt: now,
+    updatedByUserId: context.userId,
+  };
+  await executeQuery(buildUpdateAiSuggestionSql(), buildAiSuggestionParams(approved));
+  await expireDeterministicCandidates(
+    context,
+    approved.id,
+    now,
+    executeQuery,
+    "Candidatura expirada porque a linha convergiu para uma transferencia existente.",
+  );
+  await insertAuditLogEntry(
+    executeQuery,
+    buildSuggestionAuditEntry(
+      context,
+      approved,
+      "approve",
+      "Linha de importacao conciliada com transferencia existente sem criar novo lancamento.",
+    ),
+  );
+  const recalculatedBatch = await recalculateImportBatch(context, batch.id, executeQuery);
+  return {
+    suggestion: toImportReviewSuggestion(approved, [], transaction),
+    transaction,
+    importBatch: recalculatedBatch,
+    idempotent: false,
+    outcome: "reconciled",
   };
 }
 
@@ -1158,7 +1384,7 @@ async function requireImportSuggestion(
 
 async function validateExtractionReferences(
   context: TenantContext,
-  payload: TransactionExtractionPayloadV1,
+  payload: TransactionExtractionPayload,
   executeQuery: QueryExecutor,
 ): Promise<void> {
   if (payload.accountId === undefined) {
@@ -1167,12 +1393,54 @@ async function validateExtractionReferences(
       "Selecione uma conta valida antes de confirmar a linha.",
     );
   }
-  const account = await assertActiveAccount(context, payload.accountId, executeQuery);
-  if (account.currency.toUpperCase() !== payload.currency.toUpperCase()) {
+  const referenceAccount = await assertActiveAccount(
+    context,
+    payload.accountId,
+    executeQuery,
+    "reference",
+  );
+  if (referenceAccount.currency.toUpperCase() !== payload.currency.toUpperCase()) {
     throw new ImportReviewError(
       "IMPORT_ACCOUNT_CURRENCY_MISMATCH",
       "A moeda da linha importada precisa ser a mesma moeda da conta selecionada.",
     );
+  }
+
+  if (payload.kind === "transfer") {
+    const direction = deriveImportLineDirection(payload);
+    if (direction === undefined) {
+      throw new ImportReviewError(
+        "IMPORT_TRANSFER_DIRECTION_INVALID",
+        "Nao foi possivel determinar se a transferencia entra ou sai da conta de referencia.",
+      );
+    }
+    if (payload.payloadVersion !== 2 || payload.otherAccountId === undefined) {
+      throw new ImportReviewError(
+        "IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED",
+        "Selecione a outra conta da transferencia antes de confirmar.",
+      );
+    }
+    if (payload.otherAccountId === payload.accountId) {
+      throw new ImportReviewError(
+        "IMPORT_TRANSFER_SAME_ACCOUNT",
+        "A outra conta precisa ser diferente da conta de referencia.",
+      );
+    }
+    const otherAccount = await assertActiveAccount(
+      context,
+      payload.otherAccountId,
+      executeQuery,
+      "other",
+    );
+    if (
+      otherAccount.currency.toUpperCase() !== payload.currency.toUpperCase() ||
+      otherAccount.currency.toUpperCase() !== referenceAccount.currency.toUpperCase()
+    ) {
+      throw new ImportReviewError(
+        "IMPORT_TRANSFER_CURRENCY_MISMATCH",
+        "As duas contas da transferencia precisam usar a mesma moeda da linha importada.",
+      );
+    }
   }
 
   if (payload.categoryId !== undefined) {
@@ -1201,19 +1469,70 @@ async function assertActiveAccount(
   context: TenantContext,
   accountId: EntityId,
   executeQuery: QueryExecutor,
+  role: "reference" | "other" = "reference",
 ): Promise<AccountRow> {
   const rows = await executeQuery<AccountRow>(
     `select "id", "status", "currency" from "Account"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
     [accountId, context.organizationId, context.financialProfileId],
   );
-  if (rows[0] === undefined || rows[0].status !== "ACTIVE") {
+  if (rows[0] === undefined) {
     throw new ImportReviewError(
-      "IMPORT_ACCOUNT_INVALID",
-      "Conta selecionada nao esta disponivel neste perfil financeiro.",
+      "TENANT_RESOURCE_NOT_FOUND",
+      "Recurso nao encontrado no perfil financeiro ativo.",
+      404,
+    );
+  }
+  if (rows[0].status !== "ACTIVE") {
+    throw new ImportReviewError(
+      role === "other" ? "IMPORT_TRANSFER_OTHER_ACCOUNT_INVALID" : "IMPORT_ACCOUNT_INVALID",
+      role === "other"
+        ? "A outra conta da transferencia precisa estar ativa neste perfil financeiro."
+        : "Conta selecionada nao esta disponivel neste perfil financeiro.",
     );
   }
   return rows[0];
+}
+
+interface CanonicalTransferAccounts {
+  direction: ImportLineDirection;
+  sourceAccountId: EntityId;
+  destinationAccountId: EntityId;
+}
+
+function resolveCanonicalTransferAccounts(
+  payload: TransactionExtractionPayload,
+): CanonicalTransferAccounts {
+  const direction = deriveImportLineDirection(payload);
+  if (direction === undefined) {
+    throw new ImportReviewError(
+      "IMPORT_TRANSFER_DIRECTION_INVALID",
+      "Nao foi possivel determinar se a transferencia entra ou sai da conta de referencia.",
+    );
+  }
+  if (
+    payload.kind !== "transfer" ||
+    payload.payloadVersion !== 2 ||
+    payload.accountId === undefined ||
+    payload.otherAccountId === undefined
+  ) {
+    throw new ImportReviewError(
+      "IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED",
+      "Selecione as duas contas da transferencia antes de confirmar.",
+    );
+  }
+
+  return direction === "outflow"
+    ? {
+        direction,
+        sourceAccountId: payload.accountId,
+        destinationAccountId: payload.otherAccountId,
+      }
+    : {
+        direction,
+        sourceAccountId: payload.otherAccountId,
+        destinationAccountId: payload.accountId,
+      };
 }
 
 async function findImportBatchBySourceHashes(
@@ -1296,12 +1615,20 @@ async function ensureCurrentDeterministicCandidates(
   await validateExtractionReferences(context, payload, executeQuery);
   const { createDeterministicImportReviewSuggestionsForContext } =
     await import("./review-suggestions.js");
+  const direction = deriveImportLineDirection(payload);
+  if (direction === undefined) {
+    throw new ImportReviewError(
+      "IMPORT_TRANSFER_DIRECTION_INVALID",
+      "Nao foi possivel determinar a direcao original da linha importada.",
+    );
+  }
   await createDeterministicImportReviewSuggestionsForContext(
     context,
     importBatchId,
     [
       {
         id: suggestion.id,
+        payloadVersion: payload.payloadVersion,
         organizationId: context.organizationId,
         financialProfileId: context.financialProfileId,
         status: "pending_review",
@@ -1311,9 +1638,15 @@ async function ensureCurrentDeterministicCandidates(
         occurredOn: payload.occurredOn,
         description: payload.description,
         kind: payload.kind,
+        direction,
         amountMinor: payload.amountMinor,
         currency: payload.currency,
         ...(payload.accountId === undefined ? {} : { accountId: payload.accountId }),
+        ...(payload.kind === "transfer" &&
+        payload.payloadVersion === 2 &&
+        payload.otherAccountId !== undefined
+          ? { otherAccountId: payload.otherAccountId }
+          : {}),
         ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
         ...(payload.externalId === undefined ? {} : { externalId: payload.externalId }),
       },
@@ -1458,11 +1791,12 @@ function buildImportedTransaction(
   context: TenantContext,
   importBatchId: EntityId,
   aiSuggestionId: EntityId,
-  payload: TransactionExtractionPayloadV1,
+  payload: TransactionExtractionPayload,
   now: string,
 ): Transaction {
-  return {
-    id: randomUUID(),
+  const id = randomUUID();
+  const transaction: Transaction = {
+    id,
     organizationId: context.organizationId,
     financialProfileId: context.financialProfileId,
     kind: payload.kind,
@@ -1474,7 +1808,6 @@ function buildImportedTransaction(
     plannedOn: payload.occurredOn,
     effectiveOn: payload.occurredOn,
     description: payload.description,
-    ...(payload.accountId === undefined ? {} : { accountId: payload.accountId }),
     ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
     importBatchId,
     aiSuggestionId,
@@ -1483,22 +1816,77 @@ function buildImportedTransaction(
     createdAt: now,
     updatedAt: now,
   };
+
+  if (payload.kind === "transfer") {
+    const accounts = resolveCanonicalTransferAccounts(payload);
+    transaction.accountId = accounts.sourceAccountId;
+    transaction.destinationAccountId = accounts.destinationAccountId;
+    transaction.transferGroupId = id;
+  } else if (payload.accountId !== undefined) {
+    transaction.accountId = payload.accountId;
+  }
+
+  buildTransactionMovements(transaction);
+  return transaction;
 }
 
 function mergeExtractionPayload(
-  current: TransactionExtractionPayloadV1,
+  current: TransactionExtractionPayload,
   changes: ImportSuggestionUpdatePayload,
-): TransactionExtractionPayloadV1 {
-  const merged: TransactionExtractionPayloadV1 = {
-    ...current,
-    ...(changes.occurredOn === undefined ? {} : { occurredOn: changes.occurredOn }),
-    ...(changes.kind === undefined ? {} : { kind: changes.kind }),
-    ...(changes.amountMinor === undefined ? {} : { amountMinor: changes.amountMinor }),
-    ...(changes.description === undefined ? {} : { description: changes.description.trim() }),
-    ...(changes.accountId === undefined ? {} : { accountId: changes.accountId }),
+): TransactionExtractionPayload {
+  const kind = changes.kind ?? current.kind;
+  const direction = deriveImportLineDirection(current);
+  const common = {
+    sourceRowNumber: current.sourceRowNumber,
+    sourceHash: current.sourceHash,
+    occurredOn: changes.occurredOn ?? current.occurredOn,
+    kind,
+    amountMinor: changes.amountMinor ?? current.amountMinor,
+    currency: current.currency,
+    description:
+      changes.description === undefined ? current.description : changes.description.trim(),
+    ...(changes.accountId === undefined
+      ? current.accountId === undefined
+        ? {}
+        : { accountId: current.accountId }
+      : { accountId: changes.accountId }),
+    ...(current.externalId === undefined ? {} : { externalId: current.externalId }),
   };
+
+  let merged: TransactionExtractionPayload;
+  if (current.payloadVersion === 2 || kind === "transfer") {
+    if (direction === undefined) {
+      throw new ImportReviewError(
+        "IMPORT_TRANSFER_DIRECTION_INVALID",
+        "A linha legada nao possui direcao segura para ser convertida em transferencia.",
+      );
+    }
+    const currentOtherAccountId = current.payloadVersion === 2 ? current.otherAccountId : undefined;
+    const otherAccountId =
+      kind === "transfer"
+        ? changes.otherAccountId === null
+          ? undefined
+          : (changes.otherAccountId ?? currentOtherAccountId)
+        : undefined;
+    const candidate: TransactionExtractionPayloadV2 = {
+      payloadVersion: 2,
+      ...common,
+      direction,
+      ...(otherAccountId === undefined ? {} : { otherAccountId }),
+    };
+    merged = candidate;
+  } else {
+    const candidate: TransactionExtractionPayloadV1 = {
+      payloadVersion: 1,
+      ...common,
+      kind: kind as "income" | "expense",
+    };
+    merged = candidate;
+  }
+
   if (changes.categoryId === null) delete merged.categoryId;
   else if (changes.categoryId !== undefined) merged.categoryId = changes.categoryId;
+  else if (current.categoryId !== undefined) merged.categoryId = current.categoryId;
 
   const parsed = parseTransactionExtractionPayload(merged);
   if (parsed === undefined) {
@@ -1510,7 +1898,7 @@ function mergeExtractionPayload(
   return parsed;
 }
 
-function requireExtractionPayload(suggestion: AiSuggestion): TransactionExtractionPayloadV1 {
+function requireExtractionPayload(suggestion: AiSuggestion): TransactionExtractionPayload {
   const payload = parseTransactionExtractionPayload(suggestion.payload);
   if (payload === undefined) {
     throw new ImportReviewError(
@@ -1737,6 +2125,27 @@ function buildImportedTransactionAuditEntry(
       accountId: "added",
       importBatchId: "added",
       aiSuggestionId: "added",
+    },
+  };
+}
+
+function buildImportedTransferReconciliationAuditEntry(
+  context: TenantContext,
+  transaction: Transaction,
+): AuditLogEntryDraft {
+  return {
+    organizationId: transaction.organizationId,
+    financialProfileId: transaction.financialProfileId,
+    occurredAt: transaction.updatedAt,
+    actorKind: "user",
+    actorId: context.userId,
+    action: "reconcile",
+    entityKind: "transaction",
+    entityId: transaction.id,
+    reason: "Segunda ponta importada conciliada com transferencia existente.",
+    redactedChanges: {
+      status: "changed",
+      reconciledAt: "added",
     },
   };
 }

@@ -47,3 +47,9 @@ Rejeitar candidatura mantém a linha importada pendente para correção, aprova�
 - repetição segura da mesma varredura ou decisão;
 - lote descartado não pode ser analisado novamente;
 - nenhum CSV bruto é necessário ou persistido.
+
+## Transferências importadas
+
+Candidatos de transferência exigem o mesmo par de contas, aceitando ambas as orientações para localizar a outra ponta, além de tipo, valor, moeda e tolerância temporal. Descrição isolada não é suficiente. O preview de conciliação também compara `destinationAccountId`.
+
+Na aprovação, a identidade canônica usa origem, destino, valor, moeda e data. Um lock transacional impede que duas pontas aprovadas simultaneamente criem duas transferências. A segunda decisão vincula a sugestão à transação existente e registra auditoria sem substituir a proveniência da criação original.

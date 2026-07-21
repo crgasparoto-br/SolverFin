@@ -5,6 +5,7 @@ import {
   buildSecureImportHash,
   buildStableImportHash,
   buildTransactionExtractionPayload,
+  deriveImportLineDirection,
   ImportFileError,
   parseDeterministicReviewPayload,
   parseTransactionExtractionPayload,
@@ -68,8 +69,10 @@ function testValidCsvPreview(): void {
   assertEqual(preview.batch.defaultAccountId, "account-demo", "csv default account");
   assertEqual(preview.suggestions.length, 2, "csv suggestion count");
   assertEqual(preview.suggestions[0]?.kind, "income", "csv income kind");
+  assertEqual(preview.suggestions[0]?.direction, "inflow", "csv income direction");
   assertEqual(preview.suggestions[0]?.amountMinor, 150025, "csv income amount");
   assertEqual(preview.suggestions[1]?.kind, "expense", "csv expense kind");
+  assertEqual(preview.suggestions[1]?.direction, "outflow", "csv expense direction");
   assertEqual(preview.suggestions[1]?.occurredOn, "2026-06-11", "csv br date");
   assertEqual(preview.suggestions[1]?.accountId, "account-demo", "csv account propagated");
 }
@@ -363,8 +366,46 @@ function testStructuredPayloads(): void {
   if (suggestion === undefined) throw new Error("Expected suggestion.");
   const payload = buildTransactionExtractionPayload(suggestion);
   const parsed = parseTransactionExtractionPayload(payload);
+  assertEqual(parsed?.payloadVersion, 2, "new extraction payload version");
   assertEqual(parsed?.accountId, "account-a", "structured payload account");
   assertEqual(parsed?.amountMinor, 1000, "structured payload amount");
+  if (parsed === undefined) throw new Error("Expected parsed V2 payload.");
+  assertEqual(deriveImportLineDirection(parsed), "outflow", "structured payload direction");
+  const transfer = parseTransactionExtractionPayload({
+    ...payload,
+    kind: "transfer",
+    otherAccountId: "account-b",
+  });
+  assertEqual(transfer?.kind, "transfer", "structured transfer kind");
+  assertEqual(
+    transfer?.payloadVersion === 2 ? transfer.otherAccountId : undefined,
+    "account-b",
+    "structured transfer other account",
+  );
+  const legacyIncome = parseTransactionExtractionPayload({
+    payloadVersion: 1,
+    sourceRowNumber: 1,
+    sourceHash: "legacy-hash",
+    occurredOn: "2026-06-10",
+    kind: "income",
+    amountMinor: 1000,
+    currency: "BRL",
+    description: "Legacy income",
+    accountId: "account-a",
+  });
+  if (legacyIncome === undefined) throw new Error("Expected parsed V1 payload.");
+  assertEqual(deriveImportLineDirection(legacyIncome), "inflow", "V1 income direction fallback");
+  const rebuiltLegacy = buildTransactionExtractionPayload({
+    ...suggestion,
+    payloadVersion: 1,
+    kind: "expense",
+  });
+  assertEqual(rebuiltLegacy.payloadVersion, 1, "V1 candidate keeps its persisted version");
+  assertEqual(
+    buildImportPayloadFingerprint(rebuiltLegacy),
+    buildImportPayloadFingerprint(parseTransactionExtractionPayload(rebuiltLegacy)!),
+    "V1 candidate keeps the persisted payload fingerprint",
+  );
   const fingerprint = buildImportPayloadFingerprint(payload);
   assertEqual(fingerprint.startsWith("fnv1a-"), true, "payload fingerprint");
   const deterministic = parseDeterministicReviewPayload({
@@ -460,8 +501,10 @@ function testC6SplitAmountInference(): void {
   assertEqual(preview.csv?.mapping.date, "Data Lançamento", "posting date has priority");
   assertEqual(preview.csv?.mapping.description, "Descrição", "description has priority over title");
   assertEqual(preview.suggestions[0]?.kind, "income", "C6 income inferred");
+  assertEqual(preview.suggestions[0]?.direction, "inflow", "C6 input direction");
   assertEqual(preview.suggestions[0]?.amountMinor, 10000, "C6 income amount");
   assertEqual(preview.suggestions[1]?.kind, "expense", "C6 expense inferred");
+  assertEqual(preview.suggestions[1]?.direction, "outflow", "C6 output direction");
   assertEqual(preview.suggestions[1]?.amountMinor, 2550, "C6 expense amount uses modulus");
   assertEqual(
     preview.csv?.interpretation.some(

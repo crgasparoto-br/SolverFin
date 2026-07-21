@@ -311,8 +311,11 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
   if (body.occurredOn !== undefined) payload.occurredOn = requireString(body, "occurredOn");
   if (body.kind !== undefined) {
     const kind = String(body.kind);
-    if (kind !== "income" && kind !== "expense") {
-      throw new ImportReviewError("IMPORT_KIND_INVALID", "Tipo deve ser receita ou despesa.");
+    if (kind !== "income" && kind !== "expense" && kind !== "transfer") {
+      throw new ImportReviewError(
+        "IMPORT_KIND_INVALID",
+        "Tipo deve ser receita, despesa ou transferencia.",
+      );
     }
     payload.kind = kind;
   }
@@ -328,6 +331,9 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
   }
   if (body.description !== undefined) payload.description = requireString(body, "description");
   if (body.accountId !== undefined) payload.accountId = requireString(body, "accountId");
+  if (body.otherAccountId === null) payload.otherAccountId = null;
+  else if (body.otherAccountId !== undefined)
+    payload.otherAccountId = requireString(body, "otherAccountId");
   if (body.categoryId === null) payload.categoryId = null;
   else if (body.categoryId !== undefined) payload.categoryId = requireString(body, "categoryId");
   if (Object.keys(payload).length === 0) {

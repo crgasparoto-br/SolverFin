@@ -29,6 +29,7 @@ const later = "2026-06-16T14:00:00.000Z";
 
 testReadyPreviewAndReconciliation();
 testRejectsConflictsWithoutReviewApproval();
+testTransferDestinationConflict();
 testUndoReconciliation();
 testRejectsAlreadyReconciledTransaction();
 testTenantIsolation();
@@ -102,6 +103,23 @@ function testRejectsConflictsWithoutReviewApproval(): void {
     "RECONCILIATION_CONFLICT_REQUIRES_REVIEW",
     "conflict reconciliation rejection",
   );
+}
+
+function testTransferDestinationConflict(): void {
+  const transaction = buildTransaction("tx-transfer-conflict", tenantA, {
+    kind: "transfer",
+    accountId: "account-a",
+    destinationAccountId: "account-b",
+  });
+  const source = buildSource(tenantA, {
+    kind: "transfer",
+    accountId: "account-a",
+    destinationAccountId: "account-c",
+  });
+
+  const preview = previewReconciliation({ context: tenantA, source, transaction });
+  assertEqual(preview.status, "conflict", "transfer destination conflict status");
+  assertConflict(preview.conflicts, "RECONCILIATION_DESTINATION_ACCOUNT_CONFLICT");
 }
 
 function testUndoReconciliation(): void {

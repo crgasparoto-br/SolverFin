@@ -52,6 +52,7 @@ describe("Inbox CSV import review contract", () => {
   it("confirms bulk totals and recovers state after request failures", () => {
     assert.match(source, /Receitas:/);
     assert.match(source, /Despesas:/);
+    assert.match(source, /Transferências:/);
     assert.match(source, /Cada linha será validada e processada separadamente/);
     assert.match(source, /recoverAfterFailure/);
     assert.match(source, /O lote foi atualizado para evitar repetição indevida/);
@@ -75,6 +76,18 @@ describe("Inbox CSV import review contract", () => {
       source,
       /buildImportStatementUrl\(suggestion,\s*value\.importBatch\.defaultAccountId/,
     );
+  });
+
+  it("supports transfer correction with another account and explicit direction", () => {
+    assert.match(source, /<option value="transfer">Transferência<\/option>/);
+    assert.match(source, /name="otherAccountId"/);
+    assert.match(source, /Conta de referência/);
+    assert.match(source, /Origem:/);
+    assert.match(source, /Destino:/);
+    assert.match(source, /payload\.direction === "inflow"/);
+    assert.match(source, /IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED|outra conta/i);
+    assert.match(source, /transferCount/);
+    assert.match(source, /transferTotalMinor/);
   });
 
   it("does not retain raw CSV in browser storage", () => {

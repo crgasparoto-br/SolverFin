@@ -2,6 +2,7 @@ import {
   ImportFileError,
   TenantAuthorizationError,
   TenantError,
+  deriveImportLineDirection,
   parseTransactionExtractionPayload,
   type AiSuggestion,
   type ImportTransactionSuggestion,
@@ -238,8 +239,29 @@ async function listImportTransactionSuggestionsForBatch(
         "Linha de importacao nao contem payload estruturado para deduplicacao.",
       );
     }
+    const direction = deriveImportLineDirection(payload);
+    if (direction === undefined) {
+      throw new ImportFileError(
+        "IMPORT_CSV_STRUCTURE_INVALID",
+        "Linha de importacao nao possui direcao estruturada para deduplicacao.",
+      );
+    }
+    const transferAccounts =
+      payload.kind === "transfer" &&
+      payload.payloadVersion === 2 &&
+      payload.accountId !== undefined &&
+      payload.otherAccountId !== undefined
+        ? { accountId: payload.accountId, otherAccountId: payload.otherAccountId }
+        : undefined;
+    if (payload.kind === "transfer" && transferAccounts === undefined) {
+      throw new ImportFileError(
+        "IMPORT_CSV_STRUCTURE_INVALID",
+        "Transferencia importada nao possui as duas contas estruturadas.",
+      );
+    }
     return {
       id: row.id,
+      payloadVersion: payload.payloadVersion,
       organizationId: row.organizationId,
       financialProfileId: row.financialProfileId,
       status: "pending_review",
@@ -249,9 +271,11 @@ async function listImportTransactionSuggestionsForBatch(
       occurredOn: payload.occurredOn,
       description: payload.description,
       kind: payload.kind,
+      direction,
       amountMinor: payload.amountMinor,
       currency: payload.currency,
-      ...(payload.accountId === undefined ? {} : { accountId: payload.accountId }),
+      ...(transferAccounts ??
+        (payload.accountId === undefined ? {} : { accountId: payload.accountId })),
       ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
       ...(payload.externalId === undefined ? {} : { externalId: payload.externalId }),
     };

@@ -50,7 +50,7 @@ A resposta sempre informa `persisted: false` e um estado:
 - `mapping_required`: o usuário deve escolher separador ou mapear colunas;
 - `blocked`: nenhuma linha válida pode seguir.
 
-O preview exige conta ativa e consentimento explícito. Ele retorna os cabeçalhos originais, a estratégia detectada, a interpretação aplicada (incluindo colunas ignoradas), no máximo 10 propostas normalizadas (`sourceRowNumber`, data, descrição, tipo, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
+O preview exige conta ativa e consentimento explícito. Ele retorna os cabeçalhos originais, a estratégia detectada, a interpretação aplicada (incluindo colunas ignoradas), no máximo 10 propostas normalizadas (`sourceRowNumber`, data, descrição, tipo, direção, valor e moeda) e diagnósticos por linha. Colunas extras e valores brutos não são devolvidos na amostra. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
 
 ## Criação do lote
 
@@ -118,7 +118,7 @@ POST /api/import-batches/:importBatchId/approve-selected
 POST /api/import-batches/:importBatchId/discard
 ```
 
-A edição mantém a linha em `pending_review` e invalida candidaturas determinísticas antigas. Somente data, descrição, valor, tipo, conta e categoria são editáveis; moeda, ID externo, hash, origem e versão permanecem imutáveis.
+A edição mantém a linha em `pending_review` e invalida candidaturas determinísticas antigas. Data, descrição, valor, tipo, conta de referência, outra conta e categoria podem ser revisados; moeda, ID externo, hash e origem permanecem imutáveis. Novas linhas usam `TransactionExtractionPayloadV2`, que preserva `direction: inflow|outflow`. Sugestões V1 pendentes derivam a direção por `income → inflow` e `expense → outflow` e só migram para V2 quando a edição exige transferência; linhas históricas resolvidas não são reinterpretadas.
 
 Antes de criar um lançamento, a própria aprovação executa novamente a detecção determinística com o payload atual. Se houver possível duplicidade ou conciliação, a API persiste os candidatos, mantém o lote em `reviewing` e responde `409 IMPORT_REVIEW_CANDIDATE_PENDING`. A aprovação valida conta, categoria, tipo, data, moeda, valor e descrição dentro da mesma transação que cria o lançamento e finaliza a sugestão.
 
@@ -129,15 +129,28 @@ O lançamento aprovado recebe:
 - `aiSuggestionId`;
 - `status: posted`.
 
+### Transferências na revisão
+
+O campo **Tipo** oferece Receita, Despesa e Transferência. A inferência inicial continua limitada ao sinal ou às colunas Entrada/Saída; textos como PIX ou TED não classificam uma linha automaticamente.
+
+Ao selecionar transferência, o usuário informa uma **Outra conta** ativa, distinta, do mesmo perfil e moeda. A conta da linha permanece como conta de referência do extrato:
+
+- `outflow`: referência é origem e a outra conta é destino;
+- `inflow`: outra conta é origem e a referência é destino.
+
+A aprovação cria uma única `Transaction kind=transfer`, com `transferGroupId` igual ao próprio identificador e dois movimentos derivados pelo domínio: débito na origem e crédito no destino. Categoria é opcional e, quando informada, deve ser ativa e do tipo `transfer`.
+
+A outra ponta importada é detectada pelo par de contas, valor, moeda, data e tipo. A conciliação vincula a nova sugestão à transferência existente sem sobrescrever `aiSuggestionId` ou `importBatchId` originais. Um lock transacional por identidade canônica faz aprovações concorrentes convergirem para uma criação e uma conciliação/idempotência.
+
 A chave única por sugestão torna repetições e concorrência idempotentes. Rejeições repetidas também retornam o estado já resolvido sem novo efeito.
 
 Em reenvios da mesma decisão, inclusive chamadas concorrentes que chegam depois da primeira confirmação, a API devolve o recurso já resolvido; não cria segundo lançamento, não altera contadores novamente e não duplica eventos de auditoria.
 
-A aprovação em conjunto rejeita IDs repetidos e processa cada linha em transação independente. A resposta contém `summary` (`requested`, `approved`, `failed`, `idempotent`), `results` para todos os itens e `failures` para compatibilidade. Uma linha inválida, bloqueada por candidato ou já resolvida não desfaz nem oculta o resultado das demais linhas selecionadas.
+A aprovação em conjunto rejeita IDs repetidos e processa cada linha em transação independente. A resposta contém `summary` (`requested`, `approved`, `failed`, `created`, `reconciled`, `idempotent`, `blocked`, `transferCount`, `transferTotalMinor`), `results` com o desfecho de cada item e `failures` para compatibilidade. Uma linha inválida, bloqueada por candidato ou já resolvida não desfaz nem oculta o resultado das demais linhas selecionadas.
 
-Na Inbox, a seleção é preservada ao trocar filtros e inclui apenas linhas elegíveis. Os filtros cobrem linhas elegíveis, candidatas pendentes, lançamentos criados, conciliações, duplicidades ignoradas, rejeições e problemas. O resumo do lote separa linhas válidas, pendentes, bloqueadas, aprovadas, conciliadas, ignoradas como duplicadas, rejeitadas, lançamentos vinculados e problemas. Antes da confirmação, a interface mostra quantidade, total de receitas e total de despesas. Em falha ou timeout, o detalhe é recarregado antes de uma nova tentativa. O lote aberto fica em `?importBatchId=...`, permitindo restaurar a revisão após recarregar a página. Lotes finalizados ficam somente para consulta e oferecem acesso ao Extrato.
+Na Inbox, a seleção é preservada ao trocar filtros e inclui apenas linhas elegíveis. Os filtros cobrem linhas elegíveis, candidatas pendentes, lançamentos criados, conciliações, duplicidades ignoradas, rejeições e problemas. O resumo do lote separa linhas válidas, pendentes, bloqueadas, aprovadas, conciliadas, ignoradas como duplicadas, rejeitadas, lançamentos vinculados e problemas. Antes da confirmação, a interface mostra quantidade, total de receitas, total de despesas e quantidade/total absoluto de transferências. Transferências não entram em receitas, despesas nem resultado. Em falha ou timeout, o detalhe é recarregado antes de uma nova tentativa. O lote aberto fica em `?importBatchId=...`, permitindo restaurar a revisão após recarregar a página. Lotes finalizados ficam somente para consulta e oferecem acesso ao Extrato.
 
-No modal **Corrigir linha**, a Inbox carrega a taxonomia canônica com `status=all` em uma única requisição para a página. O seletor nativo mostra caminhos completos, preserva o `categoryId` selecionado e oferece somente categorias ativas compatíveis com o tipo da linha. Categorias arquivadas podem aparecer apenas como ancestrais do caminho; pais ausentes e ciclos legados usam rótulos de fallback sem bloquear a revisão. Ao mudar entre receita e despesa, uma categoria incompatível ou indisponível é removida com aviso, mantendo os demais campos e o foco no modal.
+No modal **Corrigir linha**, a Inbox carrega a taxonomia canônica com `status=all` em uma única requisição para a página. O seletor nativo mostra caminhos completos, preserva o `categoryId` selecionado e oferece somente categorias ativas compatíveis com o tipo da linha. Categorias arquivadas podem aparecer apenas como ancestrais do caminho; pais ausentes e ciclos legados usam rótulos de fallback sem bloquear a revisão. Ao mudar entre receita, despesa e transferência, uma categoria incompatível ou indisponível é removida com aviso, mantendo os demais campos e o foco no modal.
 
 Quando uma conciliação é confirmada, o detalhe recarregado recupera o lançamento existente vinculado, sem criar uma segunda transação, e mantém a ação **Ver no Extrato** disponível com conta e competência corretas. Após rejeitar todos os candidatos de duplicidade e conciliação, a linha volta a poder seguir pela aprovação normal.
 
@@ -178,7 +191,13 @@ A auditoria registra explicitamente o consentimento redigido, criação do lote,
 - `IMPORT_CSV_NO_VALID_ROWS`;
 - `IMPORT_ACCOUNT_INVALID`;
 - `IMPORT_ACCOUNT_CURRENCY_MISMATCH`;
+- `IMPORT_TRANSFER_DIRECTION_INVALID`;
+- `IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED`;
+- `IMPORT_TRANSFER_OTHER_ACCOUNT_INVALID`;
+- `IMPORT_TRANSFER_SAME_ACCOUNT`;
+- `IMPORT_TRANSFER_CURRENCY_MISMATCH`;
 - `IMPORT_CATEGORY_INVALID`;
+- `IMPORT_CATEGORY_KIND_MISMATCH`;
 - `IMPORT_REVIEW_INVALID_TRANSITION`;
 - `IMPORT_REVIEW_CANDIDATE_PENDING`;
 - `IMPORT_REVIEW_DUPLICATE_SELECTION`;

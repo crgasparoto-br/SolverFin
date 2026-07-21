@@ -8,8 +8,11 @@ import type {
   ISODate,
   ISODateTime,
   TenantScoped,
+  TransactionExtractionPayload,
   TransactionExtractionPayloadV1,
+  TransactionExtractionPayloadV2,
   TransactionKind,
+  ImportLineDirection,
 } from "./index.js";
 import type { TenantContext } from "./tenant.js";
 
@@ -106,6 +109,7 @@ export interface CsvImportPreviewSample {
   occurredOn: ISODate;
   description: string;
   kind: "income" | "expense";
+  direction: ImportLineDirection;
   amountMinor: number;
   currency: string;
 }
@@ -153,6 +157,7 @@ export interface ImportProblem {
 
 export interface ImportTransactionSuggestion extends TenantScoped {
   id: EntityId;
+  payloadVersion?: 1 | 2;
   status: ImportSuggestionStatus;
   sourceKind: ImportFileKind;
   sourceHash: string;
@@ -160,9 +165,11 @@ export interface ImportTransactionSuggestion extends TenantScoped {
   occurredOn: ISODate;
   description: string;
   kind: TransactionKind;
+  direction: ImportLineDirection;
   amountMinor: number;
   currency: string;
   accountId?: EntityId;
+  otherAccountId?: EntityId;
   categoryId?: EntityId;
   externalId?: string | undefined;
 }
@@ -182,6 +189,7 @@ interface ParsedImportRow {
   description: string | undefined;
   amountMinor: number | undefined;
   kind: TransactionKind | undefined;
+  direction: ImportLineDirection | undefined;
   accountId: EntityId | undefined;
   categoryId: EntityId | undefined;
   externalId: string | undefined;
@@ -341,6 +349,7 @@ export function previewImportedStatement(input: ImportFileInput): ImportPreview 
             occurredOn: suggestion.occurredOn,
             description: suggestion.description,
             kind: suggestion.kind as "income" | "expense",
+            direction: suggestion.direction,
             amountMinor: suggestion.amountMinor,
             currency: suggestion.currency,
           })),
@@ -393,23 +402,43 @@ export function buildLegacyImportBatchHash(input: {
 
 export function buildTransactionExtractionPayload(
   suggestion: ImportTransactionSuggestion,
-): TransactionExtractionPayloadV1 {
-  if (suggestion.kind !== "income" && suggestion.kind !== "expense") {
-    throw new ImportFileError(
-      "IMPORT_CSV_STRUCTURE_INVALID",
-      "A importacao CSV aceita apenas receitas e despesas.",
-    );
+): TransactionExtractionPayload {
+  if (suggestion.payloadVersion === 1) {
+    if (suggestion.kind !== "income" && suggestion.kind !== "expense") {
+      throw new ImportFileError(
+        "IMPORT_CSV_STRUCTURE_INVALID",
+        "Payload V1 nao pode representar transferencia.",
+      );
+    }
+    return {
+      payloadVersion: 1,
+      sourceRowNumber: suggestion.sourceRowNumber,
+      sourceHash: suggestion.sourceHash,
+      occurredOn: suggestion.occurredOn,
+      kind: suggestion.kind,
+      amountMinor: suggestion.amountMinor,
+      currency: suggestion.currency,
+      description: suggestion.description,
+      ...(suggestion.accountId === undefined ? {} : { accountId: suggestion.accountId }),
+      ...(suggestion.categoryId === undefined ? {} : { categoryId: suggestion.categoryId }),
+      ...(suggestion.externalId === undefined ? {} : { externalId: suggestion.externalId }),
+    };
   }
+
   return {
-    payloadVersion: 1,
+    payloadVersion: 2,
     sourceRowNumber: suggestion.sourceRowNumber,
     sourceHash: suggestion.sourceHash,
     occurredOn: suggestion.occurredOn,
     kind: suggestion.kind,
+    direction: suggestion.direction,
     amountMinor: suggestion.amountMinor,
     currency: suggestion.currency,
     description: suggestion.description,
     ...(suggestion.accountId === undefined ? {} : { accountId: suggestion.accountId }),
+    ...(suggestion.otherAccountId === undefined
+      ? {}
+      : { otherAccountId: suggestion.otherAccountId }),
     ...(suggestion.categoryId === undefined ? {} : { categoryId: suggestion.categoryId }),
     ...(suggestion.externalId === undefined ? {} : { externalId: suggestion.externalId }),
   };
@@ -417,24 +446,80 @@ export function buildTransactionExtractionPayload(
 
 export function parseTransactionExtractionPayload(
   value: unknown,
-): TransactionExtractionPayloadV1 | undefined {
-  if (!isRecord(value) || value.payloadVersion !== 1) return undefined;
+): TransactionExtractionPayload | undefined {
+  if (!isRecord(value)) return undefined;
+  const common = parseTransactionExtractionPayloadCommon(value);
+  if (common === undefined) return undefined;
+
+  if (value.payloadVersion === 1) {
+    if (value.kind !== "income" && value.kind !== "expense") return undefined;
+    return {
+      payloadVersion: 1,
+      ...common,
+      kind: value.kind,
+    };
+  }
+
+  if (value.payloadVersion !== 2) return undefined;
+  if (value.kind !== "income" && value.kind !== "expense" && value.kind !== "transfer")
+    return undefined;
+  if (value.direction !== "inflow" && value.direction !== "outflow") return undefined;
+  return {
+    payloadVersion: 2,
+    ...common,
+    kind: value.kind,
+    direction: value.direction,
+    ...(typeof value.otherAccountId === "string" && value.otherAccountId.length > 0
+      ? { otherAccountId: value.otherAccountId }
+      : {}),
+  };
+}
+
+export function deriveImportLineDirection(
+  payload: TransactionExtractionPayload,
+): ImportLineDirection | undefined {
+  if (payload.payloadVersion === 2) return payload.direction;
+  if (payload.kind === "income") return "inflow";
+  if (payload.kind === "expense") return "outflow";
+  return undefined;
+}
+
+export function buildImportPayloadFingerprint(payload: TransactionExtractionPayload): string {
+  return buildStableImportHash(
+    [
+      payload.payloadVersion,
+      payload.sourceRowNumber,
+      payload.sourceHash,
+      payload.occurredOn,
+      payload.kind,
+      deriveImportLineDirection(payload) ?? "",
+      payload.amountMinor,
+      payload.currency,
+      payload.description,
+      payload.accountId ?? "",
+      payload.payloadVersion === 2 ? (payload.otherAccountId ?? "") : "",
+      payload.categoryId ?? "",
+      payload.externalId ?? "",
+    ].join(":"),
+  );
+}
+
+function parseTransactionExtractionPayloadCommon(
+  value: Record<string, unknown>,
+): Omit<TransactionExtractionPayloadV1, "payloadVersion" | "kind"> | undefined {
   if (!Number.isSafeInteger(value.sourceRowNumber) || Number(value.sourceRowNumber) < 1)
     return undefined;
   if (typeof value.sourceHash !== "string" || value.sourceHash.length === 0) return undefined;
   if (typeof value.occurredOn !== "string" || normalizeDate(value.occurredOn) === undefined)
     return undefined;
-  if (value.kind !== "income" && value.kind !== "expense") return undefined;
   if (!Number.isSafeInteger(value.amountMinor) || Number(value.amountMinor) <= 0) return undefined;
   if (typeof value.currency !== "string" || value.currency.length !== 3) return undefined;
   if (typeof value.description !== "string" || value.description.trim().length === 0)
     return undefined;
   return {
-    payloadVersion: 1,
     sourceRowNumber: Number(value.sourceRowNumber),
     sourceHash: value.sourceHash,
     occurredOn: value.occurredOn,
-    kind: value.kind,
     amountMinor: Number(value.amountMinor),
     currency: value.currency.toUpperCase(),
     description: value.description.trim(),
@@ -448,24 +533,6 @@ export function parseTransactionExtractionPayload(
       ? { externalId: value.externalId }
       : {}),
   };
-}
-
-export function buildImportPayloadFingerprint(payload: TransactionExtractionPayloadV1): string {
-  return buildStableImportHash(
-    [
-      payload.payloadVersion,
-      payload.sourceRowNumber,
-      payload.sourceHash,
-      payload.occurredOn,
-      payload.kind,
-      payload.amountMinor,
-      payload.currency,
-      payload.description,
-      payload.accountId ?? "",
-      payload.categoryId ?? "",
-      payload.externalId ?? "",
-    ].join(":"),
-  );
 }
 
 export function parseDeterministicReviewPayload(
@@ -623,6 +690,7 @@ function parseCsvRecord(
   const description = normalizeDescription(readCsvValue(values, columns.descriptionIndex));
   let amountMinor: number | undefined;
   let kind: TransactionKind | undefined;
+  let direction: ImportLineDirection | undefined;
   let amountSeed = "";
   let structuralProblem: ImportProblem | undefined;
 
@@ -634,12 +702,13 @@ function parseCsvRecord(
       structuralProblem = amountProblem(record.rowNumber, parsed.state, "valor");
     } else {
       amountMinor = parsed.amountMinor;
+      direction = parsed.signedAmountMinor! < 0 ? "outflow" : "inflow";
       kind = columns.legacy
         ? parseTransactionKind(
             readOptionalCsvValue(values, columns.kindIndex),
             parsed.signedAmountMinor,
           )
-        : parsed.signedAmountMinor! < 0
+        : direction === "outflow"
           ? "expense"
           : "income";
     }
@@ -670,9 +739,11 @@ function parseCsvRecord(
     } else if (incomePresent) {
       amountMinor = income.amountMinor;
       kind = "income";
+      direction = "inflow";
     } else {
       amountMinor = expense.amountMinor;
       kind = "expense";
+      direction = "outflow";
     }
   }
 
@@ -685,6 +756,7 @@ function parseCsvRecord(
     description,
     amountMinor,
     kind,
+    direction,
     accountId: input.defaultAccountId,
     categoryId: undefined,
     externalId,
@@ -711,6 +783,7 @@ function invalidStructuralRow(
     description: undefined,
     amountMinor: undefined,
     kind: undefined,
+    direction: undefined,
     accountId,
     categoryId: undefined,
     externalId: undefined,
@@ -763,6 +836,12 @@ function parseOfxRows(content: string): ParsedImportRow[] {
       description: normalizeDescription(name ?? memo ?? fitId),
       amountMinor: parsedAmount.amountMinor,
       kind: parseOfxTransactionKind(trnType, parsedAmount.signedAmountMinor),
+      direction:
+        parsedAmount.signedAmountMinor === undefined
+          ? undefined
+          : parsedAmount.signedAmountMinor < 0
+            ? "outflow"
+            : "inflow",
       accountId: undefined,
       categoryId: undefined,
       externalId: normalizeDescription(fitId),
@@ -789,6 +868,7 @@ function buildSuggestion(
     occurredOn: row.occurredOn as ISODate,
     description: row.description as string,
     kind: row.kind as TransactionKind,
+    direction: row.direction as ImportLineDirection,
     amountMinor: row.amountMinor as number,
     currency: defaultCurrency,
   };
@@ -863,6 +943,14 @@ function validateParsedRow(row: ParsedImportRow): ImportProblem[] {
         row.rowNumber,
         "IMPORT_ROW_KIND_INVALID",
         "Nao foi possivel inferir receita ou despesa.",
+      ),
+    );
+  if (row.direction === undefined && row.structuralProblem === undefined)
+    problems.push(
+      buildRowError(
+        row.rowNumber,
+        "IMPORT_ROW_DIRECTION_INVALID",
+        "Nao foi possivel determinar se a linha e uma entrada ou uma saida.",
       ),
     );
   return problems;
