@@ -62,7 +62,6 @@ jobs:
             echo "No legacy bulk summary assertions remain."
             exit 0
           fi
-          npm run format --workspace @solverfin/api
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
