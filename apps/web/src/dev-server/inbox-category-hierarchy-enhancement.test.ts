@@ -10,8 +10,8 @@ import {
   type CategoryRecord,
 } from "./inbox-category-hierarchy-enhancement.js";
 
-const hierarchyPageSource = readFileSync(
-  resolve(process.cwd(), "src/dev-server/inbox-category-hierarchy-page.ts"),
+const inboxPageSource = readFileSync(
+  resolve(process.cwd(), "src/dev-server/inbox-page.ts"),
   "utf8",
 );
 
@@ -230,10 +230,11 @@ describe("Inbox category hierarchy", () => {
     assert.match(html, /select\[name="categoryId"\]/);
   });
 
-  it("loads the complete tenant-scoped category hierarchy for the Inbox", () => {
-    assert.match(hierarchyPageSource, /\/api\/categories\?status=all/);
-    assert.match(hierarchyPageSource, /CategoryRecord\[\]/);
-    assert.match(hierarchyPageSource, /enhanceInboxCategoryHierarchy/);
+  it("loads the complete hierarchy exactly once in the canonical Inbox renderer", () => {
+    assert.match(inboxPageSource, /\/api\/categories\?status=all/);
+    assert.equal((inboxPageSource.match(/\/api\/categories(?:\?status=all)?/g) ?? []).length, 1);
+    assert.match(inboxPageSource, /CategoryRecord\[\]/);
+    assert.match(inboxPageSource, /enhanceInboxCategoryHierarchy/);
   });
 
   it("is idempotent and ignores unrelated pages", () => {
