@@ -27,6 +27,16 @@ describe("Inbox category hierarchy first render", () => {
 
       assert.equal(requests.length, 5);
       assert.equal(new Set(requests).size, 5);
+      assert.deepEqual(
+        new Set(requests),
+        new Set([
+          "/api/bank-message-inbox?status=all",
+          "/api/ai-review-queue?status=pending_review&includeLowConfidence=true",
+          "/api/accounts",
+          "/api/categories?status=all",
+          "/api/financial-profiles",
+        ]),
+      );
       assert.deepEqual(categoryRequests, ["/api/categories?status=all"]);
       assert.match(html, /data-inbox-category-hierarchy-enhanced/);
       assert.match(html, /Alimentação › Mercado/);
