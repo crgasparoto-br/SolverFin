@@ -570,70 +570,21 @@ function testConditionalValueStrategyRequirements(): void {
     context: tenantA,
     now,
     originalFileName: "signed-with-income.csv",
-    content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,10,10",
+    content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,-10,10",
   });
-  assertEqual(signedWithIncome.state, "mapping_required", "signed and income require strategy");
-  assertEqual(
-    signedWithIncome.csv?.missingRequiredFields.includes("valueStrategy"),
-    true,
-    "strategy is the only unconditional value decision",
-  );
-  assertEqual(
-    signedWithIncome.csv?.missingRequiredFields.includes("amount"),
-    false,
-    "signed amount is not requested before strategy selection",
-  );
-  assertEqual(
-    signedWithIncome.csv?.missingRequiredFields.includes("expenseAmount"),
-    false,
-    "missing split side is conditional until split is selected",
-  );
-
-  const signedChoice = previewImportedStatement({
-    context: tenantA,
-    now,
-    originalFileName: "signed-with-income.csv",
-    csvMapping: {
-      version: 2,
-      valueStrategy: "signed",
-      date: "Data",
-      description: "Descrição",
-      amount: "Valor",
-    },
-    content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,10,10",
-  });
-  assertEqual(signedChoice.state, "ready", "signed choice is immediately usable");
-
-  const splitChoiceMissingExpense = previewImportedStatement({
-    context: tenantA,
-    now,
-    originalFileName: "signed-with-income.csv",
-    csvMapping: {
-      version: 2,
-      valueStrategy: "split",
-      date: "Data",
-      description: "Descrição",
-      incomeAmount: "Entrada",
-    },
-    content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,10,10",
-  });
-  assertEqual(
-    splitChoiceMissingExpense.csv?.missingRequiredFields.includes("expenseAmount"),
-    true,
-    "split requests the missing expense column only after split is selected",
-  );
+  assertEqual(signedWithIncome.state, "ready", "complete signed strategy ignores partial split");
+  assertEqual(signedWithIncome.csv?.valueStrategy, "signed", "signed strategy is detected");
+  assertEqual(signedWithIncome.suggestions[0]?.kind, "expense", "signed value remains canonical");
 
   const signedWithExpense = previewImportedStatement({
     context: tenantA,
     now,
     originalFileName: "signed-with-expense.csv",
-    content: "Data,Descrição,Valor,Saída\n20/07/2026,Demo,-10,10",
+    content: "Data,Descrição,Valor,Saída\n20/07/2026,Demo,10,20",
   });
-  assertEqual(
-    signedWithExpense.csv?.missingRequiredFields.includes("incomeAmount"),
-    false,
-    "missing income column is conditional until split is selected",
-  );
+  assertEqual(signedWithExpense.state, "ready", "complete signed ignores lone expense column");
+  assertEqual(signedWithExpense.csv?.valueStrategy, "signed", "signed wins over partial split");
+  assertEqual(signedWithExpense.suggestions[0]?.kind, "income", "positive signed value is income");
 
   const ambiguousSignedCompleteSplit = previewImportedStatement({
     context: tenantA,
@@ -642,33 +593,19 @@ function testConditionalValueStrategyRequirements(): void {
     content: "Data,Descrição,Valor,Amount,Entrada,Saída\n20/07/2026,Demo,10,11,10,0",
   });
   assertEqual(
-    ambiguousSignedCompleteSplit.csv?.missingRequiredFields.includes("valueStrategy"),
-    true,
-    "strategy remains the first decision with ambiguous signed candidates",
-  );
-  assertEqual(
-    ambiguousSignedCompleteSplit.csv?.missingRequiredFields.includes("amount"),
-    false,
-    "ambiguous signed field is not required when complete split remains available",
-  );
-  const completeSplitChoice = previewImportedStatement({
-    context: tenantA,
-    now,
-    originalFileName: "ambiguous-signed-complete-split.csv",
-    csvMapping: {
-      version: 2,
-      valueStrategy: "split",
-      date: "Data",
-      description: "Descrição",
-      incomeAmount: "Entrada",
-      expenseAmount: "Saída",
-    },
-    content: "Data,Descrição,Valor,Amount,Entrada,Saída\n20/07/2026,Demo,10,11,10,0",
-  });
-  assertEqual(
-    completeSplitChoice.state,
+    ambiguousSignedCompleteSplit.state,
     "ready",
-    "complete split choice bypasses signed ambiguity",
+    "complete split bypasses ambiguous signed candidates",
+  );
+  assertEqual(
+    ambiguousSignedCompleteSplit.csv?.valueStrategy,
+    "split",
+    "split is the only complete strategy",
+  );
+  assertEqual(
+    ambiguousSignedCompleteSplit.suggestions[0]?.kind,
+    "income",
+    "complete split produces the suggestion",
   );
 
   const ambiguousSplitWithSigned = previewImportedStatement({
@@ -678,29 +615,66 @@ function testConditionalValueStrategyRequirements(): void {
     content: "Data,Descrição,Valor,Entrada,Receita,Saída\n20/07/2026,Demo,-10,10,11,0",
   });
   assertEqual(
-    ambiguousSplitWithSigned.csv?.missingRequiredFields.includes("valueStrategy"),
-    true,
-    "strategy is requested before resolving split-only ambiguity",
+    ambiguousSplitWithSigned.state,
+    "ready",
+    "complete signed bypasses ambiguous split candidates",
   );
   assertEqual(
-    ambiguousSplitWithSigned.csv?.missingRequiredFields.includes("incomeAmount"),
-    false,
-    "split ambiguity is conditional when signed is complete",
+    ambiguousSplitWithSigned.csv?.valueStrategy,
+    "signed",
+    "signed is the only complete strategy",
   );
-  const unambiguousSignedChoice = previewImportedStatement({
+  assertEqual(
+    ambiguousSplitWithSigned.suggestions[0]?.kind,
+    "expense",
+    "signed suggestion remains authoritative",
+  );
+
+  const neitherComplete = previewImportedStatement({
     context: tenantA,
     now,
-    originalFileName: "ambiguous-split-with-signed.csv",
+    originalFileName: "incomplete-strategies.csv",
+    content: "Data,Descrição,Valor,Amount,Entrada\n20/07/2026,Demo,-10,-11,10",
+  });
+  assertEqual(
+    neitherComplete.state,
+    "mapping_required",
+    "incomplete strategies require a decision",
+  );
+  assertEqual(
+    neitherComplete.csv?.missingRequiredFields.includes("valueStrategy"),
+    true,
+    "strategy is requested when no detected strategy is complete",
+  );
+  assertEqual(
+    neitherComplete.csv?.missingRequiredFields.includes("amount"),
+    false,
+    "signed field remains conditional before strategy selection",
+  );
+  assertEqual(
+    neitherComplete.csv?.missingRequiredFields.includes("expenseAmount"),
+    false,
+    "missing split side remains conditional before strategy selection",
+  );
+
+  const splitChoiceMissingExpense = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "incomplete-strategies.csv",
     csvMapping: {
       version: 2,
-      valueStrategy: "signed",
+      valueStrategy: "split",
       date: "Data",
       description: "Descrição",
-      amount: "Valor",
+      incomeAmount: "Entrada",
     },
-    content: "Data,Descrição,Valor,Entrada,Receita,Saída\n20/07/2026,Demo,-10,10,11,0",
+    content: "Data,Descrição,Valor,Amount,Entrada\n20/07/2026,Demo,-10,-11,10",
   });
-  assertEqual(unambiguousSignedChoice.state, "ready", "signed choice bypasses split ambiguity");
+  assertEqual(
+    splitChoiceMissingExpense.csv?.missingRequiredFields.includes("expenseAmount"),
+    true,
+    "split requests the missing expense column after split is selected",
+  );
 }
 
 function testMappingPrioritiesAndBalanceSafety(): void {

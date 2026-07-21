@@ -332,6 +332,66 @@ async function validateCsvMappingDialog(cdp) {
       }
       const transfer = new DataTransfer();
       transfer.items.add(new File([
+        'Data,Descrição,Valor,Entrada\\n20/07/2026,Assinada,-10,10'
+      ], 'signed-partial-split-issue-513.csv', { type: 'text/csv' }));
+      form.elements.file.files = transfer.files;
+      document.getElementById('preview-csv-import').click();
+      return true;
+    })()`,
+  );
+  await waitFor(
+    cdp,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      return form?.elements.mappingStrategy?.value === 'signed' &&
+        form?.elements.mappingAmount?.value === 'Valor' &&
+        document.getElementById('create-csv-import')?.disabled === false &&
+        document.getElementById('csv-import-status')?.textContent.includes('Preview pronto');
+    })()`,
+  );
+  const partialSplit = await evaluate(
+    cdp,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      return {
+        strategy: form.elements.mappingStrategy.value,
+        amount: form.elements.mappingAmount.value,
+        income: form.elements.mappingIncomeAmount.value,
+        createDisabled: document.getElementById('create-csv-import').disabled,
+        preview: document.getElementById('csv-preview-result').textContent || ''
+      };
+    })()`,
+  );
+  check(
+    partialSplit.strategy === "signed",
+    "Partial split incorrectly forced a strategy choice",
+    partialSplit,
+  );
+  check(
+    partialSplit.amount === "Valor",
+    "Signed amount was not selected with partial split",
+    partialSplit,
+  );
+  check(
+    !partialSplit.createDisabled,
+    "Complete signed mapping stayed blocked by partial split",
+    partialSplit,
+  );
+  check(
+    partialSplit.preview.includes("Despesa"),
+    "Signed preview did not infer the negative amount",
+    partialSplit,
+  );
+
+  await evaluate(
+    cdp,
+    `(() => {
+      const form = document.getElementById('csv-import-form');
+      for (const name of ['mappingDate', 'mappingDescription', 'mappingStrategy', 'mappingAmount', 'mappingIncomeAmount', 'mappingExpenseAmount']) {
+        form.elements[name].value = '';
+      }
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([
         'Data,Descrição,Valor,Entrada,Saída\\n20/07/2026,Ambígua,10,10,0'
       ], 'ambiguous-issue-513.csv', { type: 'text/csv' }));
       form.elements.file.files = transfer.files;
@@ -402,7 +462,14 @@ async function validateCsvMappingDialog(cdp) {
   check(!resolved.createDisabled, "Resolved mapping did not enable review creation", resolved);
   check(resolved.preview.includes("válidas"), "Resolved mapping has no valid rows", resolved);
 
-  return { setup, c6, ambiguous, resolved, screenshot: "issue-513-csv-mapping-c6.png" };
+  return {
+    setup,
+    c6,
+    partialSplit,
+    ambiguous,
+    resolved,
+    screenshot: "issue-513-csv-mapping-c6.png",
+  };
 }
 
 async function waitFor(cdp, expression, timeout = 20_000) {

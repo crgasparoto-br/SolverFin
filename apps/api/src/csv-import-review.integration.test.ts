@@ -26,6 +26,7 @@ async function main(): Promise<void> {
 
   await assertPreviewDoesNotPersist(token, fixtures.account.id);
   await assertPreviewContractValidation(token, fixtures.account.id);
+  await assertStrategyDetectionOnlyWhenNeeded(token, fixtures.account.id);
   await assertLegacyMappingCannotControlNewImport(token, fixtures.account.id, fixtures.suffix);
   await assertC6PreviewAndCreation(token, fixtures.account.id, fixtures.suffix);
   await assertConsentAndMappingAreRequired(token, fixtures.account.id);
@@ -162,6 +163,74 @@ async function assertPreviewContractValidation(token: string, accountId: string)
       (problem) => problem.code === "IMPORT_CSV_COLUMN_COUNT_MISMATCH",
     ),
   );
+}
+
+async function assertStrategyDetectionOnlyWhenNeeded(
+  token: string,
+  accountId: string,
+): Promise<void> {
+  const cases = [
+    {
+      name: "signed-with-income",
+      content: "Data,Descrição,Valor,Entrada\n20/07/2026,Demo,-10,10",
+      expectedStrategy: "signed",
+      expectedKind: "expense",
+    },
+    {
+      name: "signed-with-expense",
+      content: "Data,Descrição,Valor,Saída\n20/07/2026,Demo,10,20",
+      expectedStrategy: "signed",
+      expectedKind: "income",
+    },
+    {
+      name: "ambiguous-signed-complete-split",
+      content: "Data,Descrição,Valor,Amount,Entrada,Saída\n20/07/2026,Demo,10,11,10,0",
+      expectedStrategy: "split",
+      expectedKind: "income",
+    },
+    {
+      name: "ambiguous-split-complete-signed",
+      content: "Data,Descrição,Valor,Entrada,Receita,Saída\n20/07/2026,Demo,-10,10,11,0",
+      expectedStrategy: "signed",
+      expectedKind: "expense",
+    },
+  ] as const;
+
+  for (const item of cases) {
+    const response = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
+      originalFileName: item.name + ".csv",
+      content: item.content,
+      accountId,
+      consentAccepted: true,
+    });
+    assert.equal(response.statusCode, 200);
+    const preview = readBody<{
+      state: string;
+      csv: { valueStrategy?: string; missingRequiredFields: string[]; ambiguousFields: string[] };
+      suggestions: Array<{ kind: string }>;
+    }>(response);
+    assert.equal(preview.state, "ready", item.name + " should be ready");
+    assert.equal(preview.csv.valueStrategy, item.expectedStrategy);
+    assert.equal(preview.csv.missingRequiredFields.includes("valueStrategy"), false);
+    assert.equal(preview.csv.ambiguousFields.includes("valueStrategy"), false);
+    assert.equal(preview.suggestions[0]?.kind, item.expectedKind);
+  }
+
+  const genuinelyAmbiguous = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
+    originalFileName: "both-complete.csv",
+    content: "Data,Descrição,Valor,Entrada,Saída\n20/07/2026,Demo,10,10,0",
+    accountId,
+    consentAccepted: true,
+  });
+  assert.equal(genuinelyAmbiguous.statusCode, 200);
+  const ambiguousPreview = readBody<{
+    state: string;
+    csv: { valueStrategy?: string; missingRequiredFields: string[]; ambiguousFields: string[] };
+  }>(genuinelyAmbiguous);
+  assert.equal(ambiguousPreview.state, "mapping_required");
+  assert.equal(ambiguousPreview.csv.valueStrategy, undefined);
+  assert.equal(ambiguousPreview.csv.missingRequiredFields.includes("valueStrategy"), true);
+  assert.equal(ambiguousPreview.csv.ambiguousFields.includes("valueStrategy"), true);
 }
 
 async function assertLegacyMappingCannotControlNewImport(

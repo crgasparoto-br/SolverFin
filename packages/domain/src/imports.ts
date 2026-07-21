@@ -975,15 +975,43 @@ function resolveCsvMapping(
   if (date.ambiguous) ambiguousFields.push("date");
   if (description.ambiguous) ambiguousFields.push("description");
 
-  const signedAvailable = signed.candidates.length > 0;
-  const splitAvailable = income.candidates.length > 0 || expense.candidates.length > 0;
+  const signedComplete = signed.candidates.length === 1;
+  const splitComplete = income.candidates.length === 1 && expense.candidates.length === 1;
+  const signedDetected = signed.candidates.length > 0;
+  const splitDetected = income.candidates.length > 0 || expense.candidates.length > 0;
   const valueCandidates = {
     ...(signed.candidates.length === 1 ? { amount: signed.candidates[0] } : {}),
     ...(income.candidates.length === 1 ? { incomeAmount: income.candidates[0] } : {}),
     ...(expense.candidates.length === 1 ? { expenseAmount: expense.candidates[0] } : {}),
   };
   let mapping: CsvImportMapping;
-  if (signedAvailable && splitAvailable) {
+  if (signedComplete && splitComplete) {
+    mapping = {
+      version: 2,
+      valueStrategy: "signed",
+      ...(date.header ? { date: date.header } : {}),
+      ...(description.header ? { description: description.header } : {}),
+      amount: signed.candidates[0],
+    };
+    ambiguousFields.push("valueStrategy");
+  } else if (signedComplete) {
+    mapping = {
+      version: 2,
+      valueStrategy: "signed",
+      ...(date.header ? { date: date.header } : {}),
+      ...(description.header ? { description: description.header } : {}),
+      amount: signed.candidates[0],
+    };
+  } else if (splitComplete) {
+    mapping = {
+      version: 2,
+      valueStrategy: "split",
+      ...(date.header ? { date: date.header } : {}),
+      ...(description.header ? { description: description.header } : {}),
+      incomeAmount: income.candidates[0],
+      expenseAmount: expense.candidates[0],
+    };
+  } else if (signedDetected && splitDetected) {
     mapping = {
       version: 2,
       valueStrategy: "signed",
@@ -992,7 +1020,7 @@ function resolveCsvMapping(
       ...(valueCandidates.amount === undefined ? {} : { amount: valueCandidates.amount }),
     };
     ambiguousFields.push("valueStrategy");
-  } else if (signedAvailable) {
+  } else if (signedDetected) {
     mapping = {
       version: 2,
       valueStrategy: "signed",
@@ -1021,7 +1049,7 @@ function resolveCsvMapping(
     removeItem(missingRequiredFields, "expenseAmount");
     if (!missingRequiredFields.includes("valueStrategy"))
       missingRequiredFields.push("valueStrategy");
-  } else if (!signedAvailable && !splitAvailable) {
+  } else if (!signedDetected && !splitDetected) {
     removeItem(missingRequiredFields, "incomeAmount");
     removeItem(missingRequiredFields, "expenseAmount");
     if (!missingRequiredFields.includes("valueStrategy"))
