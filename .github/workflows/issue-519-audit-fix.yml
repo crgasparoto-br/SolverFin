@@ -1,176 +1,33 @@
-name: Issue 519 final correction cycle
+name: Issue 519 patch diagnostic
 
 on:
-  push:
-    branches:
-      - feat/519-csv-transfer-review
   pull_request:
     branches:
       - main
 
 permissions:
-  contents: write
-
-concurrency:
-  group: issue-519-final-correction
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  correct-validate-publish:
+  diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
-    env:
-      NODE_ENV: test
-      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: solverfin_ci
-          POSTGRES_USER: solverfin
-          POSTGRES_PASSWORD: solverfin_ci_password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
           ref: feat/519-csv-transfer-review
           fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Apply audited correction patch
+      - name: Inspect correction patch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-          gh api \
-            -H "Accept: application/vnd.github.raw+json" \
+          set -u
+          gh api -H "Accept: application/vnd.github.raw+json" \
             "repos/${GITHUB_REPOSITORY}/git/blobs/6c196ba096de78bd1cddb716a6ef3ff7e2a78204" \
-            > /tmp/issue519-audit-fixes.patch.gz
-          gzip -t /tmp/issue519-audit-fixes.patch.gz
-          gzip -dc /tmp/issue519-audit-fixes.patch.gz > /tmp/issue519-audit-fixes.patch
-          git apply --check /tmp/issue519-audit-fixes.patch
-          git apply --index --whitespace=nowarn /tmp/issue519-audit-fixes.patch
-          git diff --cached --check
-
-      - name: Enforce remaining audit invariants
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          imports = Path("packages/domain/src/imports.ts")
-          text = imports.read_text()
-          old = '''export function buildImportPayloadFingerprint(payload: TransactionExtractionPayload): string {
-            return buildStableImportHash(
-              [
-                payload.payloadVersion,
-                payload.sourceRowNumber,
-                payload.sourceHash,
-                payload.occurredOn,
-                payload.kind,
-                deriveImportLineDirection(payload) ?? "",
-                payload.amountMinor,
-                payload.currency,
-                payload.description,
-                payload.accountId ?? "",
-                payload.payloadVersion === 2 ? (payload.otherAccountId ?? "") : "",
-                payload.categoryId ?? "",
-                payload.externalId ?? "",
-              ].join(":"),
-            );
-          }
-          '''
-          new = '''export function buildImportPayloadFingerprint(payload: TransactionExtractionPayload): string {
-            const parts: Array<string | number> = [
-              payload.payloadVersion,
-              payload.sourceRowNumber,
-              payload.sourceHash,
-              payload.occurredOn,
-              payload.kind,
-            ];
-            if (payload.payloadVersion === 2) parts.push(payload.direction);
-            parts.push(payload.amountMinor, payload.currency, payload.description, payload.accountId ?? "");
-            if (payload.payloadVersion === 2) parts.push(payload.otherAccountId ?? "");
-            parts.push(payload.categoryId ?? "", payload.externalId ?? "");
-            return buildStableImportHash(parts.join(":"));
-          }
-          '''
-          if old in text:
-            imports.write_text(text.replace(old, new, 1))
-
-          dedup = Path("packages/domain/src/deduplication.ts")
-          text = dedup.read_text()
-          anchor = '''  if (candidate.kind === "transfer" && !hasSameTransferAccounts(candidate, possibleDuplicate)) {
-            return [];
-          }
-          '''
-          guard = '''  if (
-            candidate.kind === "transfer" &&
-            dateDistanceInDays(candidate.occurredOn, possibleDuplicate.occurredOn) > 2
-          ) {
-            return [];
-          }
-          '''
-          if guard not in text:
-            if anchor not in text:
-              raise SystemExit("transfer account-pair guard not found")
-            dedup.write_text(text.replace(anchor, anchor + guard, 1))
-
-          inbox = Path("apps/web/src/dev-server/inbox-page.ts")
-          text = inbox.read_text()
-          text = text.replace('formatMoney(totals.income, "BRL")', 'formatMoney(totals.income, totals.currency)')
-          text = text.replace('formatMoney(totals.expense, "BRL")', 'formatMoney(totals.expense, totals.currency)')
-          text = text.replace('formatMoney(totals.transfer, "BRL")', 'formatMoney(totals.transfer, totals.currency)')
-          inbox.write_text(text)
-
-          required = Path("apps/api/src/csv-import-transfer-review.integration.test.ts")
-          if not required.exists():
-            raise SystemExit("transfer integration test file missing from correction patch")
-
-          workflow = Path(".github/workflows/issue-519-audit-fix.yml")
-          workflow.unlink()
-          PY
-          git diff --check
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Format
-        run: npm run format
-
-      - name: Prepare database
-        run: |
-          npm run prisma:generate
-          npm run db:deploy
-          npm run db:seed
-
-      - name: Validate monorepo
-        run: npm run validate
-
-      - name: Run PostgreSQL integration suite
-        run: npm run test:integration --workspace @solverfin/api
-
-      - name: Verify statement consistency
-        run: npm run diagnose:import-statement-consistency -- --expect-zero
-
-      - name: Publish corrections
-        run: |
-          set -euo pipefail
-          git diff --check
-          git status --short
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "fix: complete CSV transfer review safeguards"
-          git push origin HEAD:feat/519-csv-transfer-review
+            > /tmp/issue519.patch.gz
+          file /tmp/issue519.patch.gz
+          gzip -t /tmp/issue519.patch.gz
+          gzip -dc /tmp/issue519.patch.gz > /tmp/issue519.patch
+          echo "--- PATCH STAT ---"
+          git apply --stat /tmp/issue519.patch
+          echo "--- PATCH CHECK ---"
+          git apply --check --verbose /tmp/issue519.patch
