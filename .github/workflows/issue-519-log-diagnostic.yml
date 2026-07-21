@@ -1,4 +1,4 @@
-name: Issue 519 final-review summary verification
+name: Issue 519 PostgreSQL failure diagnostic
 
 on:
   pull_request:
@@ -6,62 +6,23 @@ on:
       - main
 
 permissions:
-  contents: write
-
-concurrency:
-  group: issue-519-final-review-summary
-  cancel-in-progress: false
+  actions: read
+  contents: read
 
 jobs:
-  bootstrap:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: feat/519-csv-transfer-review
-          fetch-depth: 0
-      - name: Verify final-review bulk summary assertion
+      - name: Locate next PostgreSQL integration failure
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-
-          path = Path('apps/api/src/csv-import-final-review.integration.test.ts')
-          text = path.read_text()
-          replacement = "\n".join([
-              "  assert.deepEqual(body.summary, {",
-              "    requested: 2,",
-              "    approved: 1,",
-              "    failed: 1,",
-              "    created: 1,",
-              "    reconciled: 0,",
-              "    idempotent: 0,",
-              "    blocked: 0,",
-              "    transferCount: 0,",
-              "    transferTotalMinor: 0,",
-              "  });",
-          ])
-          pattern = re.compile(
-              r'  assert\.deepEqual\(body\.summary, \{\s*'
-              r'requested: 2,\s*approved: 1,\s*failed: 1,\s*'
-              r'(?:created: 1,\s*reconciled: 0,\s*)?'
-              r'idempotent: 0,\s*'
-              r'(?:blocked: 0,\s*transferCount: 0,\s*transferTotalMinor: 0,\s*)?'
-              r'\}\);'
-          )
-          text, count = pattern.subn(replacement, text, count=1)
-          if count != 1:
-              raise SystemExit('final-review bulk summary assertion not found')
-          path.write_text(text)
-          PY
-          if git diff --quiet; then
-            echo "Final-review summary already current."
-            exit 0
-          fi
-          git diff --check
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/api/src/csv-import-final-review.integration.test.ts
-          git commit -m "test: update bulk review outcome summary"
-          git push origin HEAD:feat/519-csv-transfer-review
+          gh api -H "Accept: application/vnd.github+json" \
+            "repos/${GITHUB_REPOSITORY}/actions/jobs/88750266866/logs" \
+            > /tmp/job.log
+          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
+          line=$(grep -n '##\[error\]' /tmp/clean.log | tail -n 1 | cut -d: -f1)
+          start=$((line > 55 ? line - 55 : 1))
+          end=$((line + 3))
+          sed -n "${start},${end}p" /tmp/clean.log
