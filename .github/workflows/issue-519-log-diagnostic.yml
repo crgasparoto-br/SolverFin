@@ -23,6 +23,6 @@ jobs:
             > /tmp/job.log
           sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/job.log > /tmp/clean.log
           line=$(grep -n '##\[error\]' /tmp/clean.log | tail -n 1 | cut -d: -f1)
-          start=$((line > 120 ? line - 120 : 1))
+          start=$((line > 45 ? line - 45 : 1))
           end=$((line + 3))
           sed -n "${start},${end}p" /tmp/clean.log
