@@ -112,9 +112,27 @@ describe("Inbox category hierarchy", () => {
     const unordered: CategoryRecord[] = [
       { id: "z-root", name: "Zeladoria", kind: "expense", status: "active" },
       { id: "a-root", name: "Alimentação", kind: "expense", status: "active" },
-      { id: "z-child", name: "Restaurante", kind: "expense", status: "active", parentCategoryId: "a-root" },
-      { id: "a-child", name: "Açougue", kind: "expense", status: "active", parentCategoryId: "a-root" },
-      { id: "m-child", name: "Mercado", kind: "expense", status: "active", parentCategoryId: "a-root" },
+      {
+        id: "z-child",
+        name: "Restaurante",
+        kind: "expense",
+        status: "active",
+        parentCategoryId: "a-root",
+      },
+      {
+        id: "a-child",
+        name: "Açougue",
+        kind: "expense",
+        status: "active",
+        parentCategoryId: "a-root",
+      },
+      {
+        id: "m-child",
+        name: "Mercado",
+        kind: "expense",
+        status: "active",
+        parentCategoryId: "a-root",
+      },
     ];
 
     assert.deepEqual(
