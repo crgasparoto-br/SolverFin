@@ -1,0 +1,26 @@
+name: Issue 519 workspace snapshot
+
+on:
+  push:
+    branches:
+      - feat/519-csv-transfer-review
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create source archive
+        run: tar --exclude=.git -czf solverfin-source.tar.gz .
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-519-workspace
+          path: solverfin-source.tar.gz
+          retention-days: 1
