@@ -1091,14 +1091,17 @@ interface ImportBatch {
 }
 
 interface ExtractionPayload {
-  payloadVersion: 1;
+  payloadVersion: 1 | 2;
   sourceRowNumber: number;
   description: string;
   kind?: string;
+  direction?: "inflow" | "outflow";
   amountMinor: number;
   currency: string;
   externalId?: string;
   accountId?: string;
+  otherAccountId?: string;
+  categoryId?: string;
   targetTransactionId?: string;
   sourceSuggestionId?: string;
 }
