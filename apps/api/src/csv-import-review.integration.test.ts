@@ -151,6 +151,34 @@ async function assertPreviewContractValidation(token: string, accountId: string)
   assert.equal(duplicateMapping.statusCode, 400);
   assert.equal(readErrorCode(duplicateMapping), "IMPORT_CSV_MAPPING_INVALID");
 
+  const ambiguousDelimiter = await apiRequest(
+    token,
+    "POST",
+    "/api/import-batches/csv/preview",
+    {
+      originalFileName: "separador-ambiguo.csv",
+      content: "date;description,amount\n2026-07-18;Teste,-1",
+      accountId,
+      consentAccepted: true,
+      csvMapping: {
+        version: 2,
+        valueStrategy: "signed",
+        date: "date",
+        description: "description",
+        amount: "amount",
+      },
+    },
+  );
+  assert.equal(ambiguousDelimiter.statusCode, 200);
+  const ambiguousDelimiterBody = readBody<{
+    state: string;
+    csv: { delimiterCandidates: string[]; missingRequiredFields: string[]; valueStrategy?: string };
+  }>(ambiguousDelimiter);
+  assert.equal(ambiguousDelimiterBody.state, "mapping_required");
+  assert.equal(ambiguousDelimiterBody.csv.delimiterCandidates.length, 2);
+  assert.deepEqual(ambiguousDelimiterBody.csv.missingRequiredFields, []);
+  assert.equal(ambiguousDelimiterBody.csv.valueStrategy, "signed");
+
   const mismatched = await apiRequest(token, "POST", "/api/import-batches/csv/preview", {
     originalFileName: "colunas-divergentes.csv",
     content: ["date,description,amount", "2026-07-18,Valida,-1", "2026-07-18,Invalida"].join("\n"),

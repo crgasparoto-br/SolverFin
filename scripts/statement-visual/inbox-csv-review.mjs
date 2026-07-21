@@ -420,7 +420,8 @@ async function validateCsvMappingDialog(cdp) {
         amount: form.elements.mappingAmount.value,
         income: form.elements.mappingIncomeAmount.value,
         expense: form.elements.mappingExpenseAmount.value,
-        createDisabled: document.getElementById('create-csv-import').disabled
+        createDisabled: document.getElementById('create-csv-import').disabled,
+        interpretation: document.getElementById('csv-preview-result').textContent || ''
       };
     })()`,
   );
@@ -428,6 +429,11 @@ async function validateCsvMappingDialog(cdp) {
   check(ambiguous.amount === "Valor", "Signed candidate was not preserved", ambiguous);
   check(ambiguous.income === "Entrada", "Income candidate was not preserved", ambiguous);
   check(ambiguous.expense === "Saída", "Expense candidate was not preserved", ambiguous);
+  check(
+    !ambiguous.interpretation.includes("Valor com sinal"),
+    "Ambiguous strategy exposed a provisional signed interpretation as applied",
+    ambiguous,
+  );
   check(
     ambiguous.createDisabled,
     "Create review button enabled before resolving ambiguity",

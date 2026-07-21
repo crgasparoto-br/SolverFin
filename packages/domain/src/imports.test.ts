@@ -148,6 +148,27 @@ function testAmbiguousDelimiter(): void {
 
   assertEqual(preview.state, "mapping_required", "ambiguous delimiter asks user");
   assertEqual(preview.csv?.delimiterCandidates.length, 2, "both delimiters suggested");
+
+  const mappedPreview = previewImportedStatement({
+    context: tenantA,
+    now,
+    originalFileName: "ambiguous-mapped.csv",
+    csvMapping: {
+      version: 2,
+      valueStrategy: "signed",
+      date: "date",
+      description: "description",
+      amount: "amount",
+    },
+    content: "date;description,amount\n2026-06-10;Demo,-10",
+  });
+  assertEqual(mappedPreview.state, "mapping_required", "separator choice remains pending");
+  assertEqual(
+    mappedPreview.csv?.missingRequiredFields.length,
+    0,
+    "complete mapping is preserved while only the delimiter remains unresolved",
+  );
+  assertEqual(mappedPreview.csv?.valueStrategy, "signed", "supplied strategy is preserved");
 }
 
 function testAmbiguousHeadersRequireChoice(): void {
@@ -562,6 +583,13 @@ function testAmbiguousValueStrategy(): void {
     preview.csv?.missingRequiredFields.includes("amount"),
     false,
     "only the strategy decision is required when value candidates are unique",
+  );
+  assertEqual(
+    preview.csv?.interpretation.some((item) =>
+      ["amount", "income", "expense"].includes(item.target),
+    ),
+    false,
+    "ambiguous strategy does not expose a provisional value interpretation as applied",
   );
 }
 

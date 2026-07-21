@@ -525,6 +525,10 @@ function parseCsvRows(input: ImportFileInput): CsvParseResult {
   );
   if (delimiterResolution.delimiter === undefined) {
     const mapping = normalizeSuppliedMapping(input.csvMapping);
+    const missingRequiredFields: CsvRequiredField[] =
+      input.csvMapping === undefined
+        ? ["date", "description", "valueStrategy"]
+        : collectMissingRequiredFields(mapping);
     return {
       rows: [],
       metadata: {
@@ -534,7 +538,7 @@ function parseCsvRows(input: ImportFileInput): CsvParseResult {
         ...(input.csvMapping === undefined || getValueStrategy(mapping) === undefined
           ? {}
           : { valueStrategy: getValueStrategy(mapping) }),
-        missingRequiredFields: ["date", "description", "valueStrategy"],
+        missingRequiredFields,
         ambiguousFields: [],
         interpretation: [],
         ignoredHeaders: findBalanceHeaders(delimiterResolution.headers),
@@ -579,7 +583,11 @@ function parseCsvRows(input: ImportFileInput): CsvParseResult {
       : { valueCandidates: resolution.valueCandidates }),
     missingRequiredFields: resolution.missingRequiredFields,
     ambiguousFields: resolution.ambiguousFields,
-    interpretation: buildInterpretation(resolution.mapping, ignoredHeaders),
+    interpretation: buildInterpretation(
+      resolution.mapping,
+      ignoredHeaders,
+      resolveDetectedValueStrategy(resolution) !== undefined,
+    ),
     ignoredHeaders,
     sampleRows: [],
   };
@@ -1249,6 +1257,7 @@ function mappingValues(mapping: CsvImportMapping): string[] {
 function buildInterpretation(
   mapping: CsvImportMapping,
   ignoredHeaders: readonly string[],
+  includeValueMapping = true,
 ): CsvImportInterpretation[] {
   const items: CsvImportInterpretation[] = [];
   if (mapping.date) items.push({ source: mapping.date, target: "date", label: "Data" });
@@ -1258,29 +1267,31 @@ function buildInterpretation(
       target: "description",
       label: "Descricao",
     });
-  if (isV2Mapping(mapping)) {
-    if (mapping.valueStrategy === "signed" && mapping.amount)
-      items.push({
-        source: mapping.amount,
-        target: "amount",
-        label: "Valor com sinal",
-      });
-    if (mapping.valueStrategy === "split") {
-      if (mapping.incomeAmount)
+  if (includeValueMapping) {
+    if (isV2Mapping(mapping)) {
+      if (mapping.valueStrategy === "signed" && mapping.amount)
         items.push({
-          source: mapping.incomeAmount,
-          target: "income",
-          label: "Receita",
+          source: mapping.amount,
+          target: "amount",
+          label: "Valor com sinal",
         });
-      if (mapping.expenseAmount)
-        items.push({
-          source: mapping.expenseAmount,
-          target: "expense",
-          label: "Despesa",
-        });
+      if (mapping.valueStrategy === "split") {
+        if (mapping.incomeAmount)
+          items.push({
+            source: mapping.incomeAmount,
+            target: "income",
+            label: "Receita",
+          });
+        if (mapping.expenseAmount)
+          items.push({
+            source: mapping.expenseAmount,
+            target: "expense",
+            label: "Despesa",
+          });
+      }
+    } else if (mapping.amount) {
+      items.push({ source: mapping.amount, target: "amount", label: "Valor" });
     }
-  } else if (mapping.amount) {
-    items.push({ source: mapping.amount, target: "amount", label: "Valor" });
   }
   for (const source of ignoredHeaders) items.push({ source, target: "ignored", label: "Ignorado" });
   return items;
