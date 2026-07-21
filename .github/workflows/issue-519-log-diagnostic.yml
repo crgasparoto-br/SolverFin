@@ -20,7 +20,7 @@ jobs:
         with:
           ref: feat/519-csv-transfer-review
           fetch-depth: 0
-      - name: Insert mandatory transfer date window
+      - name: Confirm mandatory transfer date window
         run: |
           set -euo pipefail
           python3 - <<'PY'
