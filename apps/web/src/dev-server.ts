@@ -15,7 +15,6 @@ import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPageWithCategoryHierarchy } from "./dev-server/inbox-category-hierarchy-page.js";
-import { renderInboxPage } from "./dev-server/inbox-page.js";
 import {
   enhanceCardListSorting,
   enhanceStatementListSorting,

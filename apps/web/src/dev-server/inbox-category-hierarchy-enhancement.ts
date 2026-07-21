@@ -123,7 +123,7 @@ export function enhanceInboxCategoryHierarchy(
   const choicesJson = JSON.stringify(choices).replace(/</g, "\\u003c");
   const selectionResolverSource = resolveInboxCategorySelection.toString();
   const categoryOptionsPattern =
-    /        function categoryOptions\(payload\) \{[\s\S]*?\n        \}\n        function accountOptions\(payload\) \{/;
+    / {8}function categoryOptions\(payload\) \{[\s\S]*?\n {8}\}\n {8}function accountOptions\(payload\) \{/;
   const categoryOptionsReplacement = `        const inboxCategoryChoices = ${choicesJson};
         const inboxCategoryById = new Map(inboxCategoryChoices.map((category) => [category.id, category]));
         const resolveInboxCategorySelection = ${selectionResolverSource};
@@ -155,7 +155,7 @@ export function enhanceInboxCategoryHierarchy(
           );`;
 
   const kindListenerPattern =
-    /        lineEditForm\.elements\.kind\.addEventListener\("change", \(\) => \{[\s\S]*?\n        \}\);/;
+    / {8}lineEditForm\.elements\.kind\.addEventListener\("change", \(\) => \{[\s\S]*?\n {8}\}\);/;
   const kindListenerReplacement = `        lineEditForm.elements.kind.addEventListener("change", () => {
           const categorySelect = lineEditForm.elements.categoryId;
           const previousCategoryId = categorySelect.value || undefined;
