@@ -10,7 +10,6 @@ import type {
   TenantScoped,
   TransactionExtractionPayload,
   TransactionExtractionPayloadV1,
-  TransactionExtractionPayloadV2,
   TransactionKind,
   ImportLineDirection,
 } from "./index.js";
