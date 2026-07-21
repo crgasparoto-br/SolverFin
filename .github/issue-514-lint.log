@@ -1,0 +1,67 @@
+
+> solverfin@0.1.0 lint
+> npm run build:packages && npm run lint --workspaces --if-present
+
+
+> solverfin@0.1.0 build:packages
+> npm run build --workspace @solverfin/shared --workspace @solverfin/config --workspace @solverfin/domain --workspace @solverfin/ai
+
+
+> @solverfin/shared@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/config@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/domain@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @solverfin/ai@0.1.0 build
+> tsc --noEmit
+
+
+> @solverfin/api@0.1.0 lint
+> eslint .
+
+
+> @solverfin/web@0.1.0 lint
+> eslint .
+
+
+/home/runner/work/SolverFin/SolverFin/apps/web/src/dev-server.ts
+  18:10  error  'renderInboxPage' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/runner/work/SolverFin/SolverFin/apps/web/src/dev-server/inbox-category-hierarchy-enhancement.ts
+  126:5  error  Spaces are hard to count. Use {8}  no-regex-spaces
+  158:5  error  Spaces are hard to count. Use {8}  no-regex-spaces
+
+✖ 3 problems (3 errors, 0 warnings)
+  2 errors and 0 warnings potentially fixable with the `--fix` option.
+
+npm error Lifecycle script `lint` failed with error:
+npm error code 1
+npm error path /home/runner/work/SolverFin/SolverFin/apps/web
+npm error workspace @solverfin/web@0.1.0
+npm error location /home/runner/work/SolverFin/SolverFin/apps/web
+npm error command failed
+npm error command sh -c eslint .
+
+
+> @solverfin/ai@0.1.0 lint
+> eslint .
+
+
+> @solverfin/config@0.1.0 lint
+> eslint .
+
+
+> @solverfin/domain@0.1.0 lint
+> eslint .
+
+
+> @solverfin/shared@0.1.0 lint
+> eslint .
+
