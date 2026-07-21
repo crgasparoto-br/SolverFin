@@ -20,7 +20,7 @@ jobs:
         with:
           ref: feat/519-csv-transfer-review
           fetch-depth: 0
-      - name: Normalize legacy fingerprint test block
+      - name: Confirm legacy fingerprint matcher
         run: |
           set -euo pipefail
           python3 - <<'PY'
