@@ -1,0 +1,75 @@
+name: Issue 514 stabilize visual reopen
+
+on:
+  push:
+    branches:
+      - feat/514-inbox-category-hierarchy
+    paths:
+      - .github/workflows/issue-514-stabilize-reopen.yml
+
+permissions:
+  contents: write
+
+jobs:
+  stabilize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/514-inbox-category-hierarchy
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Stabilize second modal opening
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/statement-visual/inbox-category-hierarchy.mjs')
+          text = path.read_text()
+          old = '''  await waitFor(cdp, `Boolean(document.querySelector('[data-line-action="edit"]'))`);
+          await evaluate(cdp, `document.querySelector('[data-line-action="edit"]').click()`);
+          await waitFor(cdp, `document.getElementById('csv-line-edit-dialog')?.open === true`);
+
+          const reopened = await evaluate('''
+          new = '''  await openLineEditDialogByClick(cdp);
+
+          const reopened = await evaluate('''
+          if old not in text:
+              raise SystemExit('second-open anchor not found')
+          text = text.replace(old, new, 1)
+          helper_anchor = '''async function waitFor(cdp, expression, timeoutMs = 20_000) {'''
+          helper = '''async function openLineEditDialogByClick(cdp, timeoutMs = 20_000) {
+            const started = Date.now();
+            while (Date.now() - started < timeoutMs) {
+              const opened = await evaluate(
+                cdp,
+                `(() => {
+                  const dialog = document.getElementById('csv-line-edit-dialog');
+                  if (!dialog?.open) document.querySelector('[data-line-action="edit"]')?.click();
+                  return dialog?.open === true;
+                })()`,
+              ).catch(() => false);
+              if (opened) return;
+              await sleep(250);
+            }
+            throw new Error('Timed out reopening the CSV line edit dialog');
+          }
+
+          async function waitFor(cdp, expression, timeoutMs = 20_000) {'''
+          if helper_anchor not in text:
+              raise SystemExit('helper anchor not found')
+          text = text.replace(helper_anchor, helper, 1)
+          path.write_text(text)
+          PY
+          npx prettier --write scripts/statement-visual/inbox-category-hierarchy.mjs
+          rm .github/workflows/issue-514-stabilize-reopen.yml
+      - name: Commit stabilization
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "test: stabilize issue 514 modal reopen"
+          git push origin HEAD:feat/514-inbox-category-hierarchy
