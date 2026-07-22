@@ -20,11 +20,7 @@ export function normalizeInboxDate(value: string): string | undefined {
     : normalized;
 }
 
-export function isInboxDateInRange(
-  value: string,
-  startsOn?: string,
-  endsOn?: string,
-): boolean {
+export function isInboxDateInRange(value: string, startsOn?: string, endsOn?: string): boolean {
   const normalized = normalizeInboxDate(value);
   const normalizedStart = startsOn ? normalizeInboxDate(startsOn) : undefined;
   const normalizedEnd = endsOn ? normalizeInboxDate(endsOn) : undefined;
@@ -35,11 +31,7 @@ export function isInboxDateInRange(
   return true;
 }
 
-export function compareInboxDates(
-  left: string,
-  right: string,
-  sort: InboxDateSort,
-): number {
+export function compareInboxDates(left: string, right: string, sort: InboxDateSort): number {
   const normalizedLeft = normalizeInboxDate(left);
   const normalizedRight = normalizeInboxDate(right);
 

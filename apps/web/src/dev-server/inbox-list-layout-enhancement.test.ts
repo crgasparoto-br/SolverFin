@@ -64,6 +64,9 @@ describe("Inbox list layout enhancement", () => {
 
   it("leaves unrelated pages untouched", () => {
     const html = "<!doctype html><html><head></head><body><main>Dashboard</main></body></html>";
-    assert.equal(enhanceInboxListLayout(html, new URL("https://solverfin.example/dashboard")), html);
+    assert.equal(
+      enhanceInboxListLayout(html, new URL("https://solverfin.example/dashboard")),
+      html,
+    );
   });
 });
