@@ -1,18 +1,16 @@
 name: Temporary issue 522 corrections
 
 on:
-  push:
-    branches:
-      - feat/522-inbox-list-layout
-    paths:
-      - ".github/workflows/temporary-issue-522-corrections.yml"
+  pull_request:
+    types:
+      - edited
 
 permissions:
   contents: write
 
 jobs:
   correct:
-    if: github.actor != 'github-actions[bot]'
+    if: github.event.pull_request.head.ref == 'feat/522-inbox-list-layout' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
