@@ -75,6 +75,25 @@ test("mantém seleção compacta com alvos acessíveis e botões no padrão do d
   assert.match(enhanced, /\.inbox-page \.bulk-actions button \{[\s\S]*?width: auto;/);
 });
 
+test("mantém conteúdo financeiro integral acessível e contraste AA no estado desabilitado", () => {
+  const enhanced = enhancePage(page);
+  const accessibilityStyles = enhanced.slice(
+    enhanced.indexOf('<style data-inbox-interface-accessibility="enhanced">'),
+  );
+
+  assert.match(enhanced, /data-inbox-interface-accessibility-script="enhanced"/);
+  assert.match(enhanced, /new Set\(\["Descrição", "Conta de referência", "Outra conta"\]\)/);
+  assert.match(enhanced, /value\.dataset\.fullValueEnhanced = "true"/);
+  assert.match(enhanced, /value\.setAttribute\("aria-label", label \+ ": " \+ fullValue\)/);
+  assert.match(enhanced, /value\.tabIndex = 0/);
+  assert.match(enhanced, /row-summary-value-preview/);
+  assert.match(enhanced, /row-summary-full-value/);
+  assert.match(
+    accessibilityStyles,
+    /\.inbox-page button:disabled,[\s\S]*?background: #e2e8f0 !important;[\s\S]*?color: #334155 !important;[\s\S]*?opacity: 1 !important;/,
+  );
+});
+
 test("usa tipografia operacional legível sem perder a lista contínua", () => {
   const enhanced = enhancePage(page);
   const accessibilityStyles = enhanced.slice(
@@ -122,4 +141,5 @@ test("não duplica os aprimoramentos quando aplicados novamente", () => {
   assert.equal(repeated, enhanced);
   assert.equal(repeated.match(/data-inbox-interface="enhanced"/g)?.length, 1);
   assert.equal(repeated.match(/data-inbox-interface-accessibility="enhanced"/g)?.length, 1);
+  assert.equal(repeated.match(/data-inbox-interface-accessibility-script="enhanced"/g)?.length, 1);
 });
