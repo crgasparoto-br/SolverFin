@@ -186,10 +186,14 @@ function inboxAccessibilityScript(): string {
     };
 
     const enhanceValues = (root) => {
-      const selector = ".inbox-page .row-summary > div";
+      const selector = ".row-summary > div";
       const groups = [];
-      if (root instanceof Element && root.matches(selector)) groups.push(root);
-      if ("querySelectorAll" in root) groups.push(...root.querySelectorAll(selector));
+      if (root instanceof Element && root.matches(selector) && root.closest(".inbox-page")) {
+        groups.push(root);
+      }
+      if ("querySelectorAll" in root) {
+        groups.push(...[...root.querySelectorAll(selector)].filter((group) => group.closest(".inbox-page")));
+      }
       groups.forEach(enhanceGroup);
     };
 
