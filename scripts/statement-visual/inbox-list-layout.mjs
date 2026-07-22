@@ -70,9 +70,10 @@ async function validateInboxListLayout(cdp) {
         const suffix = Date.now().toString(36);
         const content = [
           'date,description,amount',
-          '2026-07-10,Linha rejeitada ' + suffix + ',-11.01',
-          '2026-07-15,Descrição longa preservada integralmente ' + suffix + ',-22.02',
-          '2026-07-20,Linha mais recente visível ' + suffix + ',-33.03'
+          '2025-12-31,Linha elegível fora do período ' + suffix + ',-11.01',
+          '2026-01-31,Linha rejeitada ' + suffix + ',-22.02',
+          '2026-02-01,Descrição longa preservada integralmente ' + suffix + ',-33.03',
+          '2027-01-01,Linha mais recente visível ' + suffix + ',-44.04'
         ].join('\\n');
         const createResponse = await fetch('/api/import-batches/csv', {
           method: 'POST',
@@ -89,7 +90,7 @@ async function validateInboxListLayout(cdp) {
         const detailResponse = await fetch('/api/import-batches/' + body.importBatch.id);
         const detail = await detailResponse.json();
         if (!detailResponse.ok) return { ok: false, status: detailResponse.status, body: detail };
-        const rejected = (detail.suggestions || []).find((item) => item.payload?.occurredOn === '2026-07-10');
+        const rejected = (detail.suggestions || []).find((item) => item.payload?.occurredOn === '2026-01-31');
         if (!rejected) return { ok: false, status: 0, body: { error: 'Fixture row not found' } };
         const rejectResponse = await fetch('/api/import-batches/' + body.importBatch.id + '/suggestions/' + rejected.id + '/reject', {
           method: 'POST',
@@ -113,7 +114,7 @@ async function validateInboxListLayout(cdp) {
   await navigate(cdp, `${baseUrl}/inbox?importBatchId=${encodeURIComponent(fixture.batchId)}`);
   await waitFor(
     cdp,
-    `document.querySelectorAll('#import-batch-detail .import-row').length === 3 && Boolean(document.getElementById('inbox-date-start'))`,
+    `document.querySelectorAll('#import-batch-detail .import-row').length === 4 && Boolean(document.getElementById('inbox-date-start'))`,
   );
 
   const initial = await evaluate(
@@ -137,8 +138,8 @@ async function validateInboxListLayout(cdp) {
     `(() => {
       const start = document.getElementById('inbox-date-start');
       const end = document.getElementById('inbox-date-end');
-      start.value = '2026-07-15';
-      end.value = '2026-07-20';
+      start.value = '2026-02-01';
+      end.value = '2027-01-01';
       start.dispatchEvent(new Event('change', { bubbles: true }));
       end.dispatchEvent(new Event('change', { bubbles: true }));
     })()`,
@@ -147,12 +148,12 @@ async function validateInboxListLayout(cdp) {
 
   const filtered = await readListState(cdp);
   check(
-    JSON.stringify(filtered.visibleDates) === JSON.stringify(["20/07/2026", "15/07/2026"]),
-    "Date filtering or descending ordering is incorrect",
+    JSON.stringify(filtered.visibleDates) === JSON.stringify(["01/01/2027", "01/02/2026"]),
+    "Date filtering or descending ordering is incorrect across months and years",
     filtered,
   );
-  check(filtered.hiddenCount === 1, "The period should hide exactly one row", filtered);
-  check(filtered.counter.includes("2 de 3"), "The visible row counter is incorrect", filtered);
+  check(filtered.hiddenCount === 2, "The period should hide exactly two rows", filtered);
+  check(filtered.counter.includes("2 de 4"), "The visible row counter is incorrect", filtered);
 
   const bulk = await evaluate(
     cdp,
@@ -164,22 +165,33 @@ async function validateInboxListLayout(cdp) {
         const box = row.querySelector('[data-select-suggestion]');
         return box && !box.disabled;
       };
+      const checked = (row) => Boolean(row.querySelector('[data-select-suggestion]')?.checked);
       return {
+        totalEligible: rows.filter(eligible).length,
         visibleEligible: rows.filter((row) => !row.hidden && eligible(row)).length,
-        visibleChecked: rows.filter((row) => !row.hidden && eligible(row) && row.querySelector('[data-select-suggestion]').checked).length,
-        hiddenChecked: rows.some((row) => row.hidden && row.querySelector('[data-select-suggestion]')?.checked),
+        visibleChecked: rows.filter((row) => !row.hidden && eligible(row) && checked(row)).length,
+        hiddenEligible: rows.filter((row) => row.hidden && eligible(row)).length,
+        hiddenEligibleChecked: rows.some((row) => row.hidden && eligible(row) && checked(row)),
+        totalChecked: rows.filter(checked).length,
         summary: document.getElementById('selection-summary')?.textContent || '',
         masterChecked: master.checked,
         masterIndeterminate: master.indeterminate
       };
     })()`,
   );
+  check(bulk.totalEligible === 3, "The fixture must contain three eligible rows", bulk);
   check(
     bulk.visibleEligible === 2 && bulk.visibleChecked === 2,
     "Bulk selection did not select all visible eligible rows",
     bulk,
   );
-  check(!bulk.hiddenChecked, "Bulk selection included a hidden row", bulk);
+  check(bulk.hiddenEligible === 1, "The fixture lacks an eligible row hidden by the period", bulk);
+  check(
+    !bulk.hiddenEligibleChecked,
+    "Bulk selection included an eligible row hidden by the period",
+    bulk,
+  );
+  check(bulk.totalChecked === 2, "Bulk selection included rows outside the visible set", bulk);
   check(bulk.summary.includes("2 selecionada(s)"), "Selection summary is incorrect", bulk);
   check(
     bulk.masterChecked && !bulk.masterIndeterminate,
@@ -198,8 +210,8 @@ async function validateInboxListLayout(cdp) {
   await sleep(100);
   const ascending = await readListState(cdp);
   check(
-    JSON.stringify(ascending.visibleDates) === JSON.stringify(["15/07/2026", "20/07/2026"]),
-    "Ascending ordering is incorrect",
+    JSON.stringify(ascending.visibleDates) === JSON.stringify(["01/02/2026", "01/01/2027"]),
+    "Ascending ordering is incorrect across months and years",
     ascending,
   );
 
@@ -240,7 +252,7 @@ async function validateInboxListLayout(cdp) {
       filter.dispatchEvent(new Event('change', { bubbles: true }));
     })()`,
   );
-  await waitFor(cdp, `document.querySelectorAll('#import-batch-detail .import-row').length === 3`);
+  await waitFor(cdp, `document.querySelectorAll('#import-batch-detail .import-row').length === 4`);
   await sleep(100);
 
   const longText = await evaluate(
@@ -318,7 +330,7 @@ async function validateInboxListLayout(cdp) {
     "The reference account breaks into too many lines",
     longText,
   );
-  check(longText.dateText === "15/07/2026", "The expected date is not available", longText);
+  check(longText.dateText === "01/02/2026", "The expected date is not available", longText);
   check(
     !longText.dateLineHeight || longText.dateValueHeight <= longText.dateLineHeight * 1.5,
     "The date breaks into more than one line",
