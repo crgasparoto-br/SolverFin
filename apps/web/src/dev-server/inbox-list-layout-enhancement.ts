@@ -78,7 +78,6 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
     edit: icon("pencil", 13),
     eye: icon("eye", 13),
     file: icon("file-text", 13),
-    filter: icon("filter", 13),
     receipt: icon("receipt", 13),
     refresh: icon("refresh-cw", 13),
     reject: icon("x-circle", 13),
