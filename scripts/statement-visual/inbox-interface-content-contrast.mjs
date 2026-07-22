@@ -60,10 +60,7 @@ async function validateInboxContentAndContrast(cdp) {
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
   const fixture = await createFixture(cdp);
-  await navigate(
-    cdp,
-    `${baseUrl}/inbox?importBatchId=${encodeURIComponent(fixture.batchId)}`,
-  );
+  await navigate(cdp, `${baseUrl}/inbox?importBatchId=${encodeURIComponent(fixture.batchId)}`);
   await waitFor(
     cdp,
     `document.querySelectorAll('.row-summary dd[data-full-value-enhanced="true"]').length >= 2`,
@@ -157,8 +154,16 @@ function validateMetrics(metrics, { requireFiveRows }) {
     `Account value is not exposed through the same accessible pattern at ${metrics.viewport}`,
     metrics,
   );
-  check(metrics.tooltipIsVisible, `Full-value popover is not visible at ${metrics.viewport}`, metrics);
-  check(metrics.tooltipFitsViewport, `Full-value popover overflows at ${metrics.viewport}`, metrics);
+  check(
+    metrics.tooltipIsVisible,
+    `Full-value popover is not visible at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.tooltipFitsViewport,
+    `Full-value popover overflows at ${metrics.viewport}`,
+    metrics,
+  );
   check(
     metrics.disabledButtonContrast >= 4.5,
     `Disabled action contrast is ${metrics.disabledButtonContrast} at ${metrics.viewport}`,
@@ -226,6 +231,7 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
       const account = findValue('Conta de referência');
       const preview = description?.querySelector('.row-summary-value-preview');
       const popover = description?.querySelector('.row-summary-full-value');
+      description?.scrollIntoView({ block: "center", inline: "nearest" });
       description?.focus();
       const popoverStyle = popover ? getComputedStyle(popover) : null;
       const popoverRect = popover?.getBoundingClientRect();
