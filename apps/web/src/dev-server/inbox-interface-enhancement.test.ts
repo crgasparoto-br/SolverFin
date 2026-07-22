@@ -7,7 +7,7 @@ const page = `<!doctype html>
 <html lang="pt-BR">
   <head><title>Inbox</title></head>
   <body>
-    <main>
+    <main data-inbox-category-hierarchy-enhanced>
       <section class="page-heading">
         <p>Importe extratos ou registre mensagens e confirme cada efeito financeiro antes de salvar.</p>
       </section>
@@ -25,7 +25,10 @@ const page = `<!doctype html>
 test("organiza a inbox como uma lista operacional com navegação por seção", () => {
   const enhanced = enhanceInboxInterface(page);
 
-  assert.match(enhanced, /<main class="inbox-page">/);
+  assert.match(
+    enhanced,
+    /<main class="inbox-page" data-inbox-category-hierarchy-enhanced>/,
+  );
   assert.match(enhanced, /id="inbox-imports"/);
   assert.match(enhanced, /id="inbox-suggestions"/);
   assert.match(enhanced, /id="inbox-messages"/);
@@ -76,6 +79,10 @@ test("renderiza lançamentos como lista corrida sem divisores internos excessivo
   assert.match(
     enhanced,
     /\.inbox-page \.import-row \{[\s\S]*?border: 0;[\s\S]*?border-bottom: 1px solid var\(--line\);[\s\S]*?border-radius: 0;/,
+  );
+  assert.match(
+    enhanced,
+    /\.inbox-page \.row-editor \{[\s\S]*?display: grid;[\s\S]*?grid-template-columns: minmax\(88px, 0\.65fr\) minmax\(0, 3fr\) auto;/,
   );
   assert.match(
     enhanced,
