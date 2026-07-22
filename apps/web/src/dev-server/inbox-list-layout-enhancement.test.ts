@@ -89,8 +89,9 @@ describe("Inbox list layout enhancement", () => {
     assert.match(enhanced, /row-summary > div \{ align-content: start; display: grid/);
     assert.match(
       enhanced,
-      /grid-template-columns: 100px 90px 118px minmax\(220px, 1\.6fr\) minmax\(180px, 1fr\)/,
+      /grid-template-columns: minmax\(82px, \.6fr\) minmax\(72px, \.55fr\) minmax\(100px, \.7fr\) minmax\(170px, 1\.6fr\) minmax\(140px, 1fr\)/,
     );
+    assert.match(enhanced, /import-layout \{ grid-template-columns: 1fr !important/);
     assert.doesNotMatch(enhanced, /text-overflow: ellipsis/);
     assert.match(enhanced, /data-line-action='edit'/);
     assert.match(enhanced, /Nenhum lançamento no período selecionado/);

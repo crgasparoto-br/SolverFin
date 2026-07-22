@@ -270,7 +270,7 @@ async function validateInboxListLayout(cdp) {
   check(longText.overflow !== "hidden", "The description remains truncated", longText);
   check(longText.overflowWrap === "anywhere", "The description does not wrap", longText);
   check(
-    longText.descriptionWidth >= 180,
+    longText.descriptionWidth >= 150,
     "The description has insufficient readable width",
     longText,
   );

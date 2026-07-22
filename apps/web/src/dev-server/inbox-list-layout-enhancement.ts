@@ -118,7 +118,7 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
       .row-heading { align-items: center; display: flex; gap: 7px; justify-content: space-between; }
       .row-heading strong { font-size: .78rem; }
       .status-pill { min-height: 24px !important; padding: 3px 7px !important; }
-      .row-summary { display: grid !important; gap: 4px 10px !important; grid-template-columns: 100px 90px 118px minmax(220px, 1.6fr) minmax(180px, 1fr); margin: 0 !important; }
+      .row-summary { display: grid !important; gap: 4px 10px !important; grid-template-columns: minmax(82px, .6fr) minmax(72px, .55fr) minmax(100px, .7fr) minmax(170px, 1.6fr) minmax(140px, 1fr); margin: 0 !important; }
       .row-summary > div { align-content: start; display: grid !important; gap: 2px; min-width: 0; }
       .row-summary dt { color: var(--muted); font-size: .62rem !important; font-weight: 700; letter-spacing: .02em; line-height: 1.15; text-transform: uppercase; }
       .row-summary dd { font-size: .75rem !important; line-height: 1.25; margin: 0 !important; min-width: 0; overflow-wrap: anywhere; word-break: normal; }
@@ -135,7 +135,8 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
       @media (max-width: 1120px) {
         .line-filter-bar.inbox-list-toolbar { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
         .inbox-visible-lines { text-align: left; }
-        .row-summary { grid-template-columns: repeat(3, minmax(120px, 1fr)); }
+        .import-layout { grid-template-columns: 1fr !important; }
+        .row-summary { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
       }
       @media (max-width: 760px) {
         .line-filter-bar.inbox-list-toolbar, .import-layout { grid-template-columns: 1fr !important; }
