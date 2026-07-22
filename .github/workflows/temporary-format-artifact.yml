@@ -1,0 +1,43 @@
+name: Temporary formatting artifact
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/temporary-format-artifact.yml"
+      - "apps/web/src/dev-server/inbox-list-layout-enhancement.ts"
+      - "apps/web/src/dev-server/inbox-list-layout-enhancement.test.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format Inbox files
+        run: >-
+          npx prettier
+          apps/web/src/dev-server/inbox-list-layout-enhancement.ts
+          apps/web/src/dev-server/inbox-list-layout-enhancement.test.ts
+          --write
+
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-inbox-files
+          path: |
+            apps/web/src/dev-server/inbox-list-layout-enhancement.ts
+            apps/web/src/dev-server/inbox-list-layout-enhancement.test.ts
+          if-no-files-found: error
