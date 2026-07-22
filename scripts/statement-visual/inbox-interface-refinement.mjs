@@ -10,7 +10,8 @@ const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-vi
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 
-if (!chromePath) throw new Error("CHROME_BIN is required for Inbox interface refinement validation.");
+if (!chromePath)
+  throw new Error("CHROME_BIN is required for Inbox interface refinement validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let report;
@@ -77,7 +78,11 @@ async function validateInboxInterfaceRefinement(cdp) {
   );
   check(desktop.batchIsContinuous, "Batch history still looks like repeated cards", desktop);
   check(desktop.selectedBatchHasIndicator, "Selected batch lacks a non-color indicator", desktop);
-  check(desktop.focusIsVisible, "Keyboard focus is not distinguishable on the selected batch", desktop);
+  check(
+    desktop.focusIsVisible,
+    "Keyboard focus is not distinguishable on the selected batch",
+    desktop,
+  );
   check(desktop.bulkControlsIntrinsic, "Bulk selection controls are stretched on desktop", desktop);
   check(desktop.rowsAreContinuous, "Imported rows still look like individual cards", desktop);
 
@@ -96,9 +101,17 @@ async function validateInboxInterfaceRefinement(cdp) {
     screenshotName: "issue-525-inbox-mobile-390x844.png",
   });
   check(mobile.bodyFitsViewport, "Inbox overflows horizontally at 390x844", mobile);
-  check(mobile.navScrollsHorizontally, "Inbox section navigation is not compact and horizontal", mobile);
+  check(
+    mobile.navScrollsHorizontally,
+    "Inbox section navigation is not compact and horizontal",
+    mobile,
+  );
   check(mobile.actionsFitViewport, "Inbox actions overflow the mobile viewport", mobile);
-  check(mobile.bulkControlsIntrinsic, "Bulk selection controls unnecessarily fill mobile width", mobile);
+  check(
+    mobile.bulkControlsIntrinsic,
+    "Bulk selection controls unnecessarily fill mobile width",
+    mobile,
+  );
 
   return { batchId, desktop, tablet, mobile };
 }

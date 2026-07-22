@@ -25,10 +25,7 @@ const page = `<!doctype html>
 test("organiza a inbox como uma lista operacional com navegação por seção", () => {
   const enhanced = enhanceInboxInterface(page);
 
-  assert.match(
-    enhanced,
-    /<main class="inbox-page" data-inbox-category-hierarchy-enhanced>/,
-  );
+  assert.match(enhanced, /<main class="inbox-page" data-inbox-category-hierarchy-enhanced>/);
   assert.match(enhanced, /id="inbox-imports"/);
   assert.match(enhanced, /id="inbox-suggestions"/);
   assert.match(enhanced, /id="inbox-messages"/);
@@ -40,10 +37,7 @@ test("organiza a inbox como uma lista operacional com navegação por seção", 
 test("isola estados claros e contínuos para os lotes da inbox", () => {
   const enhanced = enhanceInboxInterface(page);
 
-  assert.match(
-    enhanced,
-    /\.inbox-page \.import-batch-list \{[\s\S]*?gap: 0;[\s\S]*?padding: 0;/,
-  );
+  assert.match(enhanced, /\.inbox-page \.import-batch-list \{[\s\S]*?gap: 0;[\s\S]*?padding: 0;/);
   assert.match(
     enhanced,
     /\.inbox-page \.batch-item \{[\s\S]*?background: transparent;[\s\S]*?border-bottom: 1px solid var\(--line\);[\s\S]*?border-radius: 0;[\s\S]*?color: var\(--text\);/,
