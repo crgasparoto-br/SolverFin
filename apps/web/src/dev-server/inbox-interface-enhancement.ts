@@ -29,13 +29,11 @@ export function enhanceInboxInterface(html: string): string {
     enhanced,
     '<section class="panel list-panel">',
     '<section id="inbox-suggestions" class="panel list-panel inbox-secondary-panel">',
-    1,
   );
   enhanced = replaceOccurrence(
     enhanced,
     '<section class="panel list-panel">',
     '<section id="inbox-messages" class="panel list-panel inbox-secondary-panel">',
-    1,
   );
 
   return enhanced.replace("</head>", `<style>${inboxInterfaceStyles()}</style></head>`);
@@ -51,32 +49,27 @@ function addMainClass(html: string, className: string): string {
     return html;
   }
 
-  if (html.includes("<main class=\"")) {
+  if (html.includes('<main class="')) {
     return html.replace('<main class="', `<main class="${className} `);
   }
 
   return html.replace("<main>", `<main class="${className}">`);
 }
 
-function replaceOccurrence(
-  value: string,
-  search: string,
-  replacement: string,
-  occurrence: number,
-): string {
-  let cursor = -1;
-
-  for (let index = 0; index < occurrence; index += 1) {
-    cursor = value.indexOf(search, cursor + 1);
-    if (cursor === -1) return value;
-  }
+function replaceOccurrence(value: string, search: string, replacement: string): string {
+  const cursor = value.indexOf(search);
+  if (cursor === -1) return value;
 
   return `${value.slice(0, cursor)}${replacement}${value.slice(cursor + search.length)}`;
 }
 
-function renderSectionNavigation(suggestionCount: number, messageCount: number): string {
+function renderSectionNavigation(
+  suggestionCount: number,
+  messageCount: number,
+): string {
   const attentionCount = suggestionCount + messageCount;
-  const attentionLabel = attentionCount === 1 ? "1 item para revisar" : `${attentionCount} itens para revisar`;
+  const attentionLabel =
+    attentionCount === 1 ? "1 item para revisar" : `${attentionCount} itens para revisar`;
 
   return `
     <nav class="inbox-section-nav" aria-label="Áreas da inbox" data-inbox-interface="enhanced">
@@ -117,7 +110,8 @@ function inboxInterfaceStyles(): string {
     .inbox-page .page-heading h1 {
       letter-spacing: -0.025em;
     }
-    .inbox-page .heading-actions {
+    .inbox-page .heading-actions,
+    .inbox-page .compact-filters {
       justify-content: flex-end;
     }
     .inbox-section-nav {
@@ -126,7 +120,6 @@ function inboxInterfaceStyles(): string {
       border: 1px solid var(--line);
       border-radius: calc(var(--radius) + 2px);
       display: grid;
-      gap: 0;
       grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
       overflow: hidden;
     }
@@ -189,12 +182,8 @@ function inboxInterfaceStyles(): string {
       padding: 0;
     }
     .inbox-page .import-heading {
-      align-items: center;
       border-bottom: 1px solid var(--line);
       padding: 15px 18px 12px;
-    }
-    .inbox-page .compact-filters {
-      justify-content: flex-end;
     }
     .inbox-page .line-filter-bar {
       background: var(--surface-soft);
@@ -274,7 +263,8 @@ function inboxInterfaceStyles(): string {
       margin-bottom: 12px;
       padding: 9px 11px;
     }
-    .inbox-page .import-rows {
+    .inbox-page .import-rows,
+    .inbox-page .maintenance-rows {
       gap: 0;
     }
     .inbox-page .import-row {
@@ -308,11 +298,7 @@ function inboxInterfaceStyles(): string {
     }
     .inbox-page .inbox-secondary-panel .section-heading {
       border-bottom: 1px solid var(--line);
-      margin-bottom: 0;
       padding-bottom: 11px;
-    }
-    .inbox-page .maintenance-rows {
-      gap: 0;
     }
     .inbox-page .maintenance-item {
       align-items: start;
@@ -324,7 +310,6 @@ function inboxInterfaceStyles(): string {
     }
     .inbox-page .maintenance-item:first-child {
       border-top: 0;
-      padding-top: 12px;
     }
     .inbox-page .message-preview,
     .inbox-page .maintenance-actions {
@@ -333,15 +318,11 @@ function inboxInterfaceStyles(): string {
       border-radius: 0;
       padding: 0;
     }
-    .inbox-page .message-preview p + p {
-      margin-top: 4px;
-    }
     .inbox-page .maintenance-actions {
       align-items: flex-end;
       display: flex;
       flex-direction: column;
       gap: 7px;
-      justify-content: flex-start;
     }
     .inbox-page .empty-state {
       padding: 22px 14px;
@@ -359,9 +340,6 @@ function inboxInterfaceStyles(): string {
       .inbox-page .row-summary {
         grid-template-columns: repeat(3, minmax(120px, 1fr));
       }
-      .inbox-page .row-summary div {
-        border-bottom: 1px solid var(--line);
-      }
       .inbox-page .maintenance-item {
         grid-template-columns: minmax(170px, 0.7fr) minmax(260px, 1.8fr);
       }
@@ -375,11 +353,6 @@ function inboxInterfaceStyles(): string {
     @media (max-width: 800px) {
       .inbox-page {
         padding: 16px;
-      }
-      .inbox-page .page-heading,
-      .inbox-page .import-heading,
-      .inbox-page .detail-heading {
-        align-items: stretch;
       }
       .inbox-page .heading-actions,
       .inbox-page .compact-filters {
@@ -421,9 +394,6 @@ function inboxInterfaceStyles(): string {
       .inbox-page .compact-filters > *,
       .inbox-page .compact-filters label {
         width: 100%;
-      }
-      .inbox-page .compact-filters select {
-        flex: 1 1 auto;
       }
       .inbox-page .import-heading,
       .inbox-page .line-filter-bar,
