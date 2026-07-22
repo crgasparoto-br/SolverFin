@@ -106,6 +106,7 @@ jobs:
           node scripts/statement-visual/account-edit.mjs
           node scripts/statement-visual/sidebar-navigation.mjs
           node scripts/statement-visual/inbox-csv-review.mjs
+          node scripts/statement-visual/inbox-list-layout.mjs
 
       - name: Preserve server log
         if: always()
