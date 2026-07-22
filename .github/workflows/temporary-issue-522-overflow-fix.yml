@@ -51,17 +51,8 @@ jobs:
           )
           source = replace_once(
               source,
-              '''      @media (max-width: 1120px) {
-                .line-filter-bar.inbox-list-toolbar { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
-                .inbox-visible-lines { text-align: left; }
-                .row-summary { grid-template-columns: repeat(3, minmax(120px, 1fr)); }
-              }''',
-              '''      @media (max-width: 1120px) {
-                .line-filter-bar.inbox-list-toolbar { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
-                .inbox-visible-lines { text-align: left; }
-                .import-layout { grid-template-columns: 1fr !important; }
-                .row-summary { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
-              }''',
+              '        .inbox-visible-lines { text-align: left; }\n        .row-summary { grid-template-columns: repeat(3, minmax(120px, 1fr)); }',
+              '        .inbox-visible-lines { text-align: left; }\n        .import-layout { grid-template-columns: 1fr !important; }\n        .row-summary { grid-template-columns: repeat(3, minmax(140px, 1fr)); }',
               "tablet layout",
           )
           source_path.write_text(source)
@@ -74,10 +65,8 @@ jobs:
               '      /grid-template-columns: minmax\\(82px, \\.6fr\\) minmax\\(72px, \\.55fr\\) minmax\\(100px, \\.7fr\\) minmax\\(170px, 1\\.6fr\\) minmax\\(140px, 1fr\\)/,',
               "unit grid assertion",
           )
-          if "@media (max-width: 1120px)" in test and "import-layout { grid-template-columns: 1fr" not in test:
-              raise SystemExit("Unexpected pre-existing tablet test state")
           marker = '    assert.doesNotMatch(enhanced, /text-overflow: ellipsis/);\n'
-          if "import-layout \\{ grid-template-columns: 1fr" not in test:
+          if 'import-layout \\{ grid-template-columns: 1fr !important' not in test:
               if marker not in test:
                   raise SystemExit("Tablet assertion insertion marker not found")
               test = test.replace(
