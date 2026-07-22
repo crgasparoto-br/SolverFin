@@ -50,20 +50,20 @@ visual_path = Path("scripts/statement-visual/inbox-list-layout.mjs")
 visual = visual_path.read_text()
 visual = replace_once(
     visual,
-    "      const description = descriptionEntry?.querySelector('dd');\n      const account = accountEntry?.querySelector('dd');\n      if (!description || !account || !accountEntry) return { found: false, expectedDescription };",
-    "      const dateEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Data');\n      const amountEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Valor');\n      const description = descriptionEntry?.querySelector('dd');\n      const account = accountEntry?.querySelector('dd');\n      const date = dateEntry?.querySelector('dd');\n      const amount = amountEntry?.querySelector('dd');\n      if (!description || !account || !accountEntry || !date || !amount) return { found: false, expectedDescription };",
+    "    const description = descriptionEntry?.querySelector('dd');\n    const account = accountEntry?.querySelector('dd');\n    if (!description || !account || !accountEntry) return { found: false, expectedDescription };",
+    "    const dateEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Data');\n    const amountEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Valor');\n    const description = descriptionEntry?.querySelector('dd');\n    const account = accountEntry?.querySelector('dd');\n    const date = dateEntry?.querySelector('dd');\n    const amount = amountEntry?.querySelector('dd');\n    if (!description || !account || !accountEntry || !date || !amount) return { found: false, expectedDescription };",
     "visual compact fields",
 )
 visual = replace_once(
     visual,
-    "      const accountStyle = getComputedStyle(account);\n      const accountEntryStyle = getComputedStyle(accountEntry);",
-    "      const accountStyle = getComputedStyle(account);\n      const accountEntryStyle = getComputedStyle(accountEntry);\n      const dateStyle = getComputedStyle(date);\n      const amountStyle = getComputedStyle(amount);",
+    "    const accountStyle = getComputedStyle(account);\n    const accountEntryStyle = getComputedStyle(accountEntry);",
+    "    const accountStyle = getComputedStyle(account);\n    const accountEntryStyle = getComputedStyle(accountEntry);\n    const dateStyle = getComputedStyle(date);\n    const amountStyle = getComputedStyle(amount);",
     "visual compact styles",
 )
 visual = replace_once(
     visual,
-    "        accountLineHeight: Number.parseFloat(accountStyle.lineHeight) || 0",
-    "        accountLineHeight: Number.parseFloat(accountStyle.lineHeight) || 0,\n        dateText: date.textContent?.trim() || '',\n        dateValueHeight: date.getBoundingClientRect().height,\n        dateLineHeight: Number.parseFloat(dateStyle.lineHeight) || 0,\n        amountText: amount.textContent?.trim() || '',\n        amountValueHeight: amount.getBoundingClientRect().height,\n        amountLineHeight: Number.parseFloat(amountStyle.lineHeight) || 0",
+    "      accountLineHeight: Number.parseFloat(accountStyle.lineHeight) || 0",
+    "      accountLineHeight: Number.parseFloat(accountStyle.lineHeight) || 0,\n      dateText: date.textContent?.trim() || '',\n      dateValueHeight: date.getBoundingClientRect().height,\n      dateLineHeight: Number.parseFloat(dateStyle.lineHeight) || 0,\n      amountText: amount.textContent?.trim() || '',\n      amountValueHeight: amount.getBoundingClientRect().height,\n      amountLineHeight: Number.parseFloat(amountStyle.lineHeight) || 0",
     "visual compact measurements",
 )
 account_assertion = """  check(
