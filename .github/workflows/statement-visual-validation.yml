@@ -62,6 +62,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Prepare formatted issue 525 sources
+        run: |
+          npx prettier apps/web/src/dev-server/inbox-interface-accessibility-enhancement.ts apps/web/src/dev-server/inbox-interface-enhancement.test.ts scripts/statement-visual/inbox-interface-content-contrast.mjs .github/workflows/statement-visual-validation.yml --write
+          mkdir -p artifacts/statement-visual/prettier-output
+          cp --parents apps/web/src/dev-server/inbox-interface-accessibility-enhancement.ts apps/web/src/dev-server/inbox-interface-enhancement.test.ts scripts/statement-visual/inbox-interface-content-contrast.mjs .github/workflows/statement-visual-validation.yml artifacts/statement-visual/prettier-output
+
       - name: Prepare database
         run: |
           npm run prisma:generate
