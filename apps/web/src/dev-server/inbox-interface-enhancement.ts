@@ -48,10 +48,14 @@ function addMainClass(html: string, className: string): string {
       return `<main class="${className}"${attributes}>`;
     }
 
-    const classes = classAttribute[2].split(/\s+/).filter(Boolean);
+    const quote = classAttribute.at(1);
+    const currentClassName = classAttribute.at(2);
+    if (!quote || currentClassName === undefined) return tag;
+
+    const classes = currentClassName.split(/\s+/).filter(Boolean);
     if (classes.includes(className)) return tag;
 
-    const nextClassAttribute = `class=${classAttribute[1]}${className} ${classAttribute[2]}${classAttribute[1]}`;
+    const nextClassAttribute = `class=${quote}${className} ${currentClassName}${quote}`;
     return tag.replace(classAttribute[0], nextClassAttribute);
   });
 }
