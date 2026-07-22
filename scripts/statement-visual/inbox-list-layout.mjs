@@ -104,7 +104,11 @@ async function validateInboxListLayout(cdp) {
         };
       }))()`,
   );
-  assert.equal(fixture.ok, true, `Fixture failed: ${fixture.status} ${JSON.stringify(fixture.body)}`);
+  assert.equal(
+    fixture.ok,
+    true,
+    `Fixture failed: ${fixture.status} ${JSON.stringify(fixture.body)}`,
+  );
 
   await navigate(cdp, `${baseUrl}/inbox?importBatchId=${encodeURIComponent(fixture.batchId)}`);
   await waitFor(
@@ -122,7 +126,11 @@ async function validateInboxListLayout(cdp) {
   );
   check(initial.bodyFitsViewport, "Inbox overflows the desktop viewport", initial);
   check(initial.controlsPresent, "Date controls are missing", initial);
-  check(initial.closeButtonsHaveIcons, "Dialog close buttons are missing icons or tooltips", initial);
+  check(
+    initial.closeButtonsHaveIcons,
+    "Dialog close buttons are missing icons or tooltips",
+    initial,
+  );
 
   await evaluate(
     cdp,
@@ -173,7 +181,11 @@ async function validateInboxListLayout(cdp) {
   );
   check(!bulk.hiddenChecked, "Bulk selection included a hidden row", bulk);
   check(bulk.summary.includes("2 selecionada(s)"), "Selection summary is incorrect", bulk);
-  check(bulk.masterChecked && !bulk.masterIndeterminate, "Master checkbox state is incorrect", bulk);
+  check(
+    bulk.masterChecked && !bulk.masterIndeterminate,
+    "Master checkbox state is incorrect",
+    bulk,
+  );
 
   await evaluate(
     cdp,
@@ -230,7 +242,15 @@ async function validateInboxListLayout(cdp) {
   check(longText.overflowWrap === "anywhere", "The description does not wrap", longText);
 
   await screenshot(cdp, join(outputDir, "issue-522-inbox-list-layout.png"));
-  return { fixture: { batchId: fixture.batchId }, initial, filtered, bulk, ascending, combined, longText };
+  return {
+    fixture: { batchId: fixture.batchId },
+    initial,
+    filtered,
+    bulk,
+    ascending,
+    combined,
+    longText,
+  };
 }
 
 async function readListState(cdp) {
