@@ -105,7 +105,7 @@ describe("Inbox category hierarchy", () => {
     assert.equal(crossKindChild?.path, "Trabalho › Ajuste");
     assert.equal(crossKindChild?.kind, "expense");
     assert.equal(crossKindChild?.selectable, true);
-    assert.equal(choices.find((choice) => choice.id === "transfer")?.selectable, false);
+    assert.equal(choices.find((choice) => choice.id === "transfer")?.selectable, true);
   });
 
   it("sorts roots and siblings alphabetically in pt-BR", () => {
@@ -204,7 +204,7 @@ describe("Inbox category hierarchy", () => {
     assert.deepEqual(resolveInboxCategorySelection(choices, "transfer", "transfer"), {
       categoryId: "transfer",
       removedBecauseIncompatible: false,
-      unavailable: true,
+      unavailable: false,
     });
   });
 

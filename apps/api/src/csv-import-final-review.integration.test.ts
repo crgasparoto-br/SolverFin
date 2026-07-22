@@ -174,7 +174,12 @@ async function assertBulkKeepsSuccessAndMapsInconsistency(
     requested: 2,
     approved: 1,
     failed: 1,
+    created: 1,
+    reconciled: 0,
     idempotent: 0,
+    blocked: 0,
+    transferCount: 0,
+    transferTotalMinor: 0,
   });
   assert.equal(
     body.results.find((item) => item.suggestionId === successfulSuggestionId)?.status,

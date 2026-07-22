@@ -97,6 +97,7 @@ async function assertPreviewDoesNotPersist(token: string, accountId: string): Pr
       occurredOn: "2026-07-17",
       description: "Mercado preview",
       kind: "expense",
+      direction: "outflow",
       amountMinor: 1234,
       currency: "BRL",
     },
@@ -498,7 +499,7 @@ async function assertFullReviewLifecycle(token: string, fixtures: Fixtures): Pro
     "Raw CSV must not be returned or persisted",
   );
   assert.equal(
-    created.suggestions.every((item) => item.payload.payloadVersion === 1),
+    created.suggestions.every((item) => item.payload.payloadVersion === 2),
     true,
   );
   assert.equal(
@@ -588,12 +589,32 @@ async function assertFullReviewLifecycle(token: string, fixtures: Fixtures): Pro
   );
   assert.equal(bulk.statusCode, 200);
   const bulkBody = readBody<{
-    summary: { requested: number; approved: number; failed: number; idempotent: number };
+    summary: {
+      requested: number;
+      approved: number;
+      failed: number;
+      created: number;
+      reconciled: number;
+      idempotent: number;
+      blocked: number;
+      transferCount: number;
+      transferTotalMinor: number;
+    };
     results: Array<{ suggestionId: string; status: string; code?: string }>;
     failures: { code: string }[];
     importBatch: ImportBatch;
   }>(bulk);
-  assert.deepEqual(bulkBody.summary, { requested: 2, approved: 1, failed: 1, idempotent: 0 });
+  assert.deepEqual(bulkBody.summary, {
+    requested: 2,
+    approved: 1,
+    failed: 1,
+    created: 1,
+    reconciled: 0,
+    idempotent: 0,
+    blocked: 0,
+    transferCount: 0,
+    transferTotalMinor: 0,
+  });
   assert.equal(bulkBody.results.length, 2);
   assert.equal(bulkBody.results.find((item) => item.suggestionId === third.id)?.status, "approved");
   assert.equal(bulkBody.failures.length, 1);
@@ -1091,14 +1112,17 @@ interface ImportBatch {
 }
 
 interface ExtractionPayload {
-  payloadVersion: 1;
+  payloadVersion: 1 | 2;
   sourceRowNumber: number;
   description: string;
   kind?: string;
+  direction?: "inflow" | "outflow";
   amountMinor: number;
   currency: string;
   externalId?: string;
   accountId?: string;
+  otherAccountId?: string;
+  categoryId?: string;
   targetTransactionId?: string;
   sourceSuggestionId?: string;
 }

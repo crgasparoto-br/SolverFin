@@ -289,11 +289,13 @@ function renderCsvLineEditDialog(): string {
       </div>
       <form id="csv-line-edit-form" class="edit-grid">
         <label>Data<input name="occurredOn" type="date" required /></label>
-        <label>Tipo<select name="kind"><option value="expense">Despesa</option><option value="income">Receita</option></select></label>
+        <label>Tipo<select name="kind"><option value="expense">Despesa</option><option value="income">Receita</option><option value="transfer">Transferência</option></select></label>
         <label>Valor<input name="amount" inputmode="decimal" required /></label>
         <label class="description-field">Descrição<input name="description" required /></label>
-        <label>Conta<select name="accountId" required></select></label>
+        <label>Conta de referência<select name="accountId" required></select></label>
+        <label id="csv-line-other-account-field" hidden>Outra conta<select name="otherAccountId"></select></label>
         <label>Categoria<select name="categoryId"></select></label>
+        <p id="csv-line-transfer-direction" class="transfer-direction full-span" hidden></p>
         <p id="csv-line-edit-status" class="form-status muted full-span" role="status" aria-live="polite"></p>
         <div class="dialog-actions full-span">
           <button type="button" class="secondary-button" id="cancel-csv-line-edit">Cancelar</button>
@@ -478,8 +480,10 @@ function csvImportScript(
           if (item.status === "pending_review" && pendingCandidates(item).length) return "candidate_pending";
           const payload = item.payload || {};
           const account = accountById.get(payload.accountId);
+          const otherAccount = payload.otherAccountId ? accountById.get(payload.otherAccountId) : undefined;
           const category = payload.categoryId ? categoryById.get(payload.categoryId) : undefined;
-          const referencesValid = account && account.status === "active" && (!payload.currency || account.currency === payload.currency) && (!category || (category.status === "active" && category.kind === payload.kind));
+          const transferValid = payload.kind !== "transfer" || (payload.payloadVersion === 2 && (payload.direction === "inflow" || payload.direction === "outflow") && otherAccount && otherAccount.status === "active" && otherAccount.id !== account?.id && (!payload.currency || otherAccount.currency === payload.currency));
+          const referencesValid = account && account.status === "active" && (!payload.currency || account.currency === payload.currency) && transferValid && (!category || (category.status === "active" && category.kind === payload.kind));
           if (batch.status === "reviewing" && item.status === "pending_review" && referencesValid && Number.isInteger(payload.amountMinor) && payload.amountMinor > 0 && payload.description && payload.occurredOn) return "eligible";
           return "pending_invalid";
         }
@@ -508,6 +512,48 @@ function csvImportScript(
             '<option value="' + escapeHtml(account.id) + '" ' + (payload.accountId === account.id ? "selected" : "") + '>' + escapeHtml(account.name) + '</option>'
           ).join("");
         }
+        function otherAccountOptions(payload) {
+          return '<option value="">Selecione a outra conta</option>' + accounts.filter((account) => account.status === "active" && account.id !== payload.accountId && (!payload.currency || account.currency === payload.currency)).map((account) =>
+            '<option value="' + escapeHtml(account.id) + '" ' + (payload.otherAccountId === account.id ? "selected" : "") + '>' + escapeHtml(account.name) + '</option>'
+          ).join("");
+        }
+        function transactionKindLabel(kind) {
+          return kind === "income" ? "Receita" : kind === "transfer" ? "Transferência" : "Despesa";
+        }
+        function refreshLineEditTransferFields(payloadOverride) {
+          const current = state.detail?.suggestions.find((item) => item.id === state.editingSuggestionId);
+          const currentPayload = current?.payload || {};
+          const originalDirection = currentPayload.direction || (currentPayload.kind === "income" ? "inflow" : currentPayload.kind === "expense" ? "outflow" : undefined);
+          const payload = { ...currentPayload, ...(payloadOverride || {}), direction: currentPayload.direction || payloadOverride?.direction || originalDirection, kind: lineEditForm.elements.kind.value, accountId: lineEditForm.elements.accountId.value, otherAccountId: lineEditForm.elements.otherAccountId.value || undefined };
+          const isTransfer = payload.kind === "transfer";
+          const otherField = document.getElementById("csv-line-other-account-field");
+          const directionText = document.getElementById("csv-line-transfer-direction");
+          otherField.hidden = !isTransfer;
+          directionText.hidden = !isTransfer;
+          lineEditForm.elements.otherAccountId.required = isTransfer;
+          if (!isTransfer) {
+            lineEditForm.elements.otherAccountId.value = "";
+            lineEditForm.elements.otherAccountId.setCustomValidity("");
+            directionText.textContent = "";
+            return;
+          }
+          const previousOtherAccountId = lineEditForm.elements.otherAccountId.value;
+          lineEditForm.elements.otherAccountId.innerHTML = otherAccountOptions({ ...payload, otherAccountId: previousOtherAccountId });
+          const eligibleOther = accounts.find((account) => account.id === previousOtherAccountId && account.status === "active" && account.id !== payload.accountId && (!payload.currency || account.currency === payload.currency));
+          lineEditForm.elements.otherAccountId.value = eligibleOther ? previousOtherAccountId : "";
+          if (previousOtherAccountId && !eligibleOther) {
+            setStatus(lineEditStatus, "A outra conta foi removida porque ficou igual ou incompatível com a conta de referência.", "warning");
+          }
+          const referenceName = accountName(payload.accountId);
+          const otherName = accountName(lineEditForm.elements.otherAccountId.value);
+          const sourceName = payload.direction === "inflow" ? otherName : referenceName;
+          const destinationName = payload.direction === "inflow" ? referenceName : otherName;
+          directionText.textContent = lineEditForm.elements.otherAccountId.value
+            ? "Origem: " + sourceName + " · Destino: " + destinationName
+            : payload.direction === "inflow"
+              ? "Esta linha entra na conta de referência. Selecione a conta de origem."
+              : "Esta linha sai da conta de referência. Selecione a conta de destino.";
+        }
         function renderCandidate(candidate, readOnly) {
           const actions = candidate.status === "pending_review" && !readOnly ? '<div class="inline-actions"><button type="button" data-candidate-action="approve" data-candidate-id="' + escapeHtml(candidate.id) + '">Confirmar</button><button type="button" class="secondary-button" data-candidate-action="reject" data-candidate-id="' + escapeHtml(candidate.id) + '">Ignorar candidato</button></div>' : '<span class="status-pill">' + escapeHtml(formatStatus(candidate.status)) + '</span>';
           return '<div class="candidate-card"><div><strong>' + escapeHtml(candidate.kind === "deduplication" ? "Possível duplicidade" : "Possível conciliação") + '</strong><p>' + escapeHtml(candidate.explanation) + '</p></div>' + actions + '</div>';
@@ -528,7 +574,7 @@ function csvImportScript(
           return '<article class="import-row" data-suggestion-id="' + escapeHtml(item.id) + '" data-row-state="' + escapeHtml(currentState) + '">' +
             '<input type="checkbox" data-select-suggestion value="' + escapeHtml(item.id) + '" aria-label="Selecionar linha ' + escapeHtml(payload.sourceRowNumber || "sem dados estruturados") + '" ' + (selectable ? "" : "disabled") + checked + ' />' +
             '<div class="row-editor"><div class="row-heading"><strong>Linha ' + escapeHtml(payload.sourceRowNumber || "—") + '</strong><span class="status-pill">' + escapeHtml(stateLabel(currentState)) + '</span></div>' +
-            '<dl class="row-summary"><div><dt>Data</dt><dd>' + formatDate(payload.occurredOn) + '</dd></div><div><dt>Tipo</dt><dd>' + escapeHtml(payload.kind === "income" ? "Receita" : "Despesa") + '</dd></div><div><dt>Valor</dt><dd>' + escapeHtml(formatMoney(payload.amountMinor, payload.currency)) + '</dd></div><div><dt>Descrição</dt><dd>' + escapeHtml(payload.description || "Dados legados indisponíveis") + '</dd></div><div><dt>Conta</dt><dd>' + escapeHtml(accountName(payload.accountId)) + '</dd></div></dl>' +
+            '<dl class="row-summary"><div><dt>Data</dt><dd>' + formatDate(payload.occurredOn) + '</dd></div><div><dt>Tipo</dt><dd>' + escapeHtml(transactionKindLabel(payload.kind)) + '</dd></div><div><dt>Valor</dt><dd>' + escapeHtml(formatMoney(payload.amountMinor, payload.currency)) + '</dd></div><div><dt>Descrição</dt><dd>' + escapeHtml(payload.description || "Dados legados indisponíveis") + '</dd></div><div><dt>Conta de referência</dt><dd>' + escapeHtml(accountName(payload.accountId)) + '</dd></div>' + (payload.kind === "transfer" ? '<div><dt>Outra conta</dt><dd>' + escapeHtml(accountName(payload.otherAccountId)) + '</dd></div>' : '') + '</dl>' +
             legacyNotice + lineActions + transactionLink + '</div>' +
             ((item.candidates || []).length ? '<div class="candidate-list">' + item.candidates.map((candidate) => renderCandidate(candidate, batch.status !== "reviewing")).join("") + '</div>' : "") + '</article>';
         }
@@ -548,6 +594,9 @@ function csvImportScript(
             duplicates: states.filter((stateValue) => stateValue === "duplicate_ignored").length,
             rejected: states.filter((stateValue) => stateValue === "rejected").length,
             transactions: suggestions.filter((item) => item.transaction).length,
+            transfers: suggestions.filter((item) => item.payload?.kind === "transfer" && (item.status === "approved" || item.transaction)).length,
+            transferTotalMinor: suggestions.filter((item) => item.payload?.kind === "transfer" && (item.status === "approved" || item.transaction)).reduce((total, item) => total + Number(item.payload?.amountMinor || 0), 0),
+            currency: suggestions.find((item) => item.payload?.currency)?.payload?.currency || "BRL",
             problems: (value.problems || []).length
           };
         }
@@ -560,7 +609,7 @@ function csvImportScript(
           const selectedEligible = value.suggestions.filter((item) => state.selected.has(item.id) && rowState(item, batch) === "eligible");
           const headerActions = readOnly ? (batch.status === "completed" ? '<a class="button-link" href="' + escapeHtml(statementUrl(value)) + '">Ver no Extrato</a>' : "") : '<button type="button" class="secondary-button" id="detect-import-duplicates">Verificar duplicidades</button><button type="button" class="secondary-button danger-action" id="discard-import">Descartar lote</button>';
           detail.innerHTML = '<div class="detail-heading" id="import-detail-heading" tabindex="-1"><div><p class="eyebrow">' + escapeHtml(activeProfileLabel) + '</p><h3>' + escapeHtml(batch.originalFileName || "Importação CSV") + '</h3><p class="muted">Conta: ' + escapeHtml(accountName(batch.defaultAccountId)) + ' · Recebido em ' + formatDate(batch.receivedAt) + '</p></div><div class="inline-actions"><span class="status-pill">' + escapeHtml(formatStatus(batch.status)) + '</span>' + headerActions + '</div></div>' +
-            '<div class="import-summary" aria-label="Resumo do lote"><span>Válidas <strong>' + summary.valid + '</strong></span><span>Pendentes <strong>' + summary.pending + '</strong></span><span>Bloqueadas <strong>' + summary.blocked + '</strong></span><span>Aprovadas <strong>' + summary.approved + '</strong></span><span>Conciliadas <strong>' + summary.reconciled + '</strong></span><span>Ignoradas como duplicadas <strong>' + summary.duplicates + '</strong></span><span>Rejeitadas <strong>' + summary.rejected + '</strong></span><span>Lançamentos vinculados <strong>' + summary.transactions + '</strong></span><span>Problemas <strong>' + summary.problems + '</strong></span></div>' +
+            '<div class="import-summary" aria-label="Resumo do lote"><span>Válidas <strong>' + summary.valid + '</strong></span><span>Pendentes <strong>' + summary.pending + '</strong></span><span>Bloqueadas <strong>' + summary.blocked + '</strong></span><span>Aprovadas <strong>' + summary.approved + '</strong></span><span>Conciliadas <strong>' + summary.reconciled + '</strong></span><span>Ignoradas como duplicadas <strong>' + summary.duplicates + '</strong></span><span>Rejeitadas <strong>' + summary.rejected + '</strong></span><span>Lançamentos vinculados <strong>' + summary.transactions + '</strong></span><span>Transferências <strong>' + summary.transfers + '</strong> · ' + escapeHtml(formatMoney(summary.transferTotalMinor, summary.currency)) + '</span><span>Problemas <strong>' + summary.problems + '</strong></span></div>' +
             renderProblems(value.problems || [], lineFilter.value === "problems") +
             (readOnly ? '<p class="readonly-notice">Este lote está finalizado e disponível somente para consulta.</p>' : '<div class="bulk-actions"><label><input type="checkbox" id="select-all-import-lines" /> Selecionar elegíveis</label><div><span id="selection-summary">' + selectedEligible.length + ' selecionada(s)</span> <button type="button" id="approve-selected-import-lines" ' + (selectedEligible.length ? "" : "disabled") + '>Confirmar selecionadas</button></div></div>') +
             '<p id="import-detail-status" class="form-status muted" role="status" aria-live="polite"></p>' +
@@ -595,6 +644,7 @@ function csvImportScript(
             amountMinor: Math.round(amount * 100),
             description: String(values.get("description") || ""),
             accountId: String(values.get("accountId") || ""),
+            otherAccountId: values.get("kind") === "transfer" && values.get("otherAccountId") ? String(values.get("otherAccountId")) : null,
             categoryId: values.get("categoryId") ? String(values.get("categoryId")) : null
           };
         }
@@ -608,8 +658,11 @@ function csvImportScript(
           lineEditForm.elements.description.value = payload.description || "";
           lineEditForm.elements.accountId.innerHTML = accountOptions(payload);
           lineEditForm.elements.accountId.value = payload.accountId || "";
+          lineEditForm.elements.otherAccountId.innerHTML = otherAccountOptions(payload);
+          lineEditForm.elements.otherAccountId.value = payload.otherAccountId || "";
           lineEditForm.elements.categoryId.innerHTML = categoryOptions(payload);
           lineEditForm.elements.categoryId.value = payload.categoryId || "";
+          refreshLineEditTransferFields(payload);
           setStatus(lineEditStatus, "Revise os campos e salve para executar uma nova análise de duplicidade.", "muted");
           lineEditDialog.showModal();
           lineEditForm.elements.occurredOn.focus();
@@ -651,14 +704,16 @@ function csvImportScript(
           }
         }
         function selectedTotals() {
-          if (!state.detail) return { count: 0, income: 0, expense: 0 };
+          if (!state.detail) return { count: 0, income: 0, expense: 0, transfer: 0, transferCount: 0, currency: "BRL" };
           return state.detail.suggestions.reduce((totals, item) => {
             if (!state.selected.has(item.id) || rowState(item, state.detail.importBatch) !== "eligible") return totals;
             totals.count += 1;
+            totals.currency = item.payload.currency || totals.currency;
             if (item.payload.kind === "income") totals.income += item.payload.amountMinor;
-            else totals.expense += item.payload.amountMinor;
+            else if (item.payload.kind === "expense") totals.expense += item.payload.amountMinor;
+            else { totals.transfer += item.payload.amountMinor; totals.transferCount += 1; }
             return totals;
-          }, { count: 0, income: 0, expense: 0 });
+          }, { count: 0, income: 0, expense: 0, transfer: 0, transferCount: 0, currency: "BRL" });
         }
         function refreshSelection() {
           if (!state.detail) return;
@@ -668,7 +723,7 @@ function csvImportScript(
           const button = document.getElementById("approve-selected-import-lines");
           if (button) button.disabled = totals.count === 0 || state.requestInFlight;
           const summary = document.getElementById("selection-summary");
-          if (summary) summary.textContent = totals.count + " selecionada(s) · Receitas " + formatMoney(totals.income, "BRL") + " · Despesas " + formatMoney(totals.expense, "BRL");
+          if (summary) summary.textContent = totals.count + " selecionada(s) · Receitas " + formatMoney(totals.income, totals.currency) + " · Despesas " + formatMoney(totals.expense, totals.currency) + " · Transferências " + totals.transferCount + " (" + formatMoney(totals.transfer, totals.currency) + ")";
           const selectAll = document.getElementById("select-all-import-lines");
           if (selectAll) {
             selectAll.checked = eligible.length > 0 && eligible.every((item) => state.selected.has(item.id));
@@ -731,7 +786,7 @@ function csvImportScript(
             if (state.requestInFlight) return;
             const totals = selectedTotals();
             if (!totals.count) return;
-            const confirmation = "Confirmar " + totals.count + " linha(s)?\\nReceitas: " + formatMoney(totals.income, "BRL") + "\\nDespesas: " + formatMoney(totals.expense, "BRL") + "\\nCada linha será validada e processada separadamente.";
+            const confirmation = "Confirmar " + totals.count + " linha(s)?\\nReceitas: " + formatMoney(totals.income, totals.currency) + "\\nDespesas: " + formatMoney(totals.expense, totals.currency) + "\\nTransferências: " + totals.transferCount + " (" + formatMoney(totals.transfer, totals.currency) + ")\\nCada linha será validada e processada separadamente.";
             if (!window.confirm(confirmation)) return;
             state.requestInFlight = true; selectedButton.disabled = true;
             setStatus(detailStatus, "Confirmando linhas selecionadas...", "muted");
@@ -740,7 +795,7 @@ function csvImportScript(
               state.selected.clear();
               await loadDetail(batchId, false);
               const summary = result.summary || {};
-              setStatus(document.getElementById("import-detail-status"), (summary.approved || 0) + " linha(s) confirmada(s); " + (summary.failed || 0) + " precisam de revisão.", summary.failed ? "warning" : "success");
+              setStatus(document.getElementById("import-detail-status"), (summary.approved || 0) + " linha(s) confirmada(s): " + (summary.created || 0) + " criada(s), " + (summary.reconciled || 0) + " conciliada(s), " + (summary.idempotent || 0) + " já resolvida(s); " + (summary.failed || 0) + " precisam de revisão.", summary.failed ? "warning" : "success");
             } catch (error) { await recoverAfterFailure(batchId, error.message); }
             finally { state.requestInFlight = false; refreshSelection(); }
           });
@@ -873,7 +928,10 @@ function csvImportScript(
           const payload = { ...(current?.payload || {}), kind: lineEditForm.elements.kind.value, categoryId: lineEditForm.elements.categoryId.value || undefined };
           lineEditForm.elements.categoryId.innerHTML = categoryOptions(payload);
           if (payload.categoryId) lineEditForm.elements.categoryId.value = payload.categoryId;
+          refreshLineEditTransferFields(payload);
         });
+        lineEditForm.elements.accountId.addEventListener("change", () => refreshLineEditTransferFields());
+        lineEditForm.elements.otherAccountId.addEventListener("change", () => refreshLineEditTransferFields());
         lineEditDialog.addEventListener("close", restoreLineEditFocus);
         batchFilter.addEventListener("change", renderBatchList);
         lineFilter.addEventListener("change", () => { if (state.detail) renderDetail(state.detail); });
@@ -1051,6 +1109,7 @@ function baseCss(): string {
     .row-summary dt { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
     .row-summary dd { color: var(--text); font-size: 0.8125rem; margin: 2px 0 0; overflow-wrap: anywhere; }
     .line-edit-dialog { width: min(720px, calc(100vw - 24px)); }
+    .transfer-direction { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); font-weight: 600; margin: 0; padding: 10px 12px; }
     .row-fields { display: grid; gap: 8px; grid-template-columns: repeat(6, minmax(105px, 1fr)); }
     .row-fields label { font-size: 0.75rem; } .row-fields .description-field { grid-column: span 2; }
     .candidate-list { grid-column: 2; }

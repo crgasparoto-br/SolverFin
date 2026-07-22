@@ -83,9 +83,22 @@ async function assertImportedTransactionsReachStatementQuery(
   assert.equal(selected.statusCode, 200);
   assert.deepEqual(readBody<BulkDecision>(selected).summary, {
     requested: 1,
+
     approved: 1,
+
     failed: 0,
+
+    created: 1,
+
+    reconciled: 0,
+
     idempotent: 0,
+
+    blocked: 0,
+
+    transferCount: 0,
+
+    transferTotalMinor: 0,
   });
 
   const detailResponse = await apiRequest(

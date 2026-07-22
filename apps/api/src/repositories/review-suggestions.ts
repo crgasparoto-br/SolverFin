@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import {
   buildImportPayloadFingerprint,
   buildImportSuggestionDeduplicationCandidate,
+  buildTransactionExtractionPayload,
   buildTransactionDeduplicationCandidate,
   detectDuplicateTransactions,
   parseDeterministicReviewPayload,
@@ -133,25 +134,9 @@ export async function createDeterministicImportReviewSuggestionsForContext(
   const reconciliationSuggestions: AiSuggestion[] = [];
 
   for (const importSuggestion of importSuggestions) {
-    const sourceFingerprint = buildImportPayloadFingerprint({
-      payloadVersion: 1,
-      sourceRowNumber: importSuggestion.sourceRowNumber,
-      sourceHash: importSuggestion.sourceHash,
-      occurredOn: importSuggestion.occurredOn,
-      kind: importSuggestion.kind as "income" | "expense",
-      amountMinor: importSuggestion.amountMinor,
-      currency: importSuggestion.currency,
-      description: importSuggestion.description,
-      ...(importSuggestion.accountId === undefined
-        ? {}
-        : { accountId: importSuggestion.accountId }),
-      ...(importSuggestion.categoryId === undefined
-        ? {}
-        : { categoryId: importSuggestion.categoryId }),
-      ...(importSuggestion.externalId === undefined
-        ? {}
-        : { externalId: importSuggestion.externalId }),
-    });
+    const sourceFingerprint = buildImportPayloadFingerprint(
+      buildTransactionExtractionPayload(importSuggestion),
+    );
     const candidate = buildImportSuggestionDeduplicationCandidate(importSuggestion);
     const reviewCandidates = detectDuplicateTransactions({
       context,
@@ -177,9 +162,10 @@ export async function createDeterministicImportReviewSuggestionsForContext(
           currency: importSuggestion.currency,
           occurredOn: importSuggestion.occurredOn,
           kind: importSuggestion.kind,
-          ...(importSuggestion.accountId === undefined
+          ...(candidate.accountId === undefined ? {} : { accountId: candidate.accountId }),
+          ...(candidate.destinationAccountId === undefined
             ? {}
-            : { accountId: importSuggestion.accountId }),
+            : { destinationAccountId: candidate.destinationAccountId }),
           ...(importSuggestion.categoryId === undefined
             ? {}
             : { categoryId: importSuggestion.categoryId }),

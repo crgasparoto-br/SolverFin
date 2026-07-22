@@ -3,6 +3,7 @@ import {
   type AiSuggestion,
   type AuditLogEntryDraft,
   type EntityId,
+  type ImportLineDirection,
   type TenantContext,
   type Transaction,
   type TransactionKind,
@@ -14,6 +15,7 @@ import {
   approveImportSuggestionForContext,
   rejectImportSuggestionForContext,
   updateImportSuggestionForContext,
+  type ImportSuggestionUpdatePayload,
 } from "./imports.js";
 import { createTransactionForContext } from "./transactions.js";
 
@@ -31,6 +33,8 @@ export interface AiSuggestedTransactionDraft {
   description: string;
   currency?: string;
   categoryId?: string;
+  direction?: ImportLineDirection;
+  otherAccountId?: string;
   destinationAccountId?: string;
 }
 
@@ -207,15 +211,7 @@ export async function editAiReviewSuggestionForContext(
       context,
       suggestion.sourceEntityId as string,
       suggestion.id,
-      {
-        ...(payload.occurredOn === undefined ? {} : { occurredOn: payload.occurredOn }),
-        ...(payload.kind === "income" || payload.kind === "expense" ? { kind: payload.kind } : {}),
-        ...(payload.amountMinor === undefined ? {} : { amountMinor: payload.amountMinor }),
-        ...(payload.currency === undefined ? {} : { currency: payload.currency }),
-        ...(payload.description === undefined ? {} : { description: payload.description }),
-        ...(payload.accountId === undefined ? {} : { accountId: payload.accountId }),
-        ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
-      },
+      buildImportSuggestionChanges(payload),
     );
     return { suggestion: result.suggestion };
   }
@@ -403,6 +399,10 @@ function tryParseProposedTransaction(
       description: structured.description,
       currency: structured.currency,
       ...(structured.categoryId === undefined ? {} : { categoryId: structured.categoryId }),
+      ...(structured.payloadVersion === 2 ? { direction: structured.direction } : {}),
+      ...(structured.payloadVersion === 2 && structured.otherAccountId !== undefined
+        ? { otherAccountId: structured.otherAccountId }
+        : {}),
     };
   }
 
@@ -449,6 +449,30 @@ function parseDescriptionDetails(value: string): {
   };
 }
 
+function buildImportSuggestionChanges(
+  payload: Partial<AiSuggestedTransactionDraft>,
+): ImportSuggestionUpdatePayload {
+  const changes: ImportSuggestionUpdatePayload = {};
+  if (payload.occurredOn !== undefined) changes.occurredOn = payload.occurredOn;
+  if (payload.kind !== undefined) changes.kind = payload.kind;
+  if (payload.amountMinor !== undefined) changes.amountMinor = payload.amountMinor;
+  if (payload.description !== undefined) changes.description = payload.description;
+  if (payload.accountId !== undefined) changes.accountId = payload.accountId;
+  if (payload.categoryId !== undefined) changes.categoryId = payload.categoryId;
+
+  const otherAccountId = payload.otherAccountId ?? payload.destinationAccountId;
+  if (otherAccountId !== undefined) changes.otherAccountId = otherAccountId;
+
+  if (Object.keys(changes).length === 0) {
+    throw new AiReviewQueueError(
+      "AI_REVIEW_IMPORT_EDIT_PAYLOAD_REQUIRED",
+      "Informe ao menos um campo compativel com a linha importada.",
+    );
+  }
+
+  return changes;
+}
+
 function mergeTransactionDraft(
   draft: AiSuggestedTransactionDraft,
   override: Partial<AiSuggestedTransactionDraft> | undefined,
@@ -477,6 +501,8 @@ function mergeTransactionDraft(
     description: payload.description.trim(),
     ...(payload.currency !== undefined ? { currency: payload.currency } : {}),
     ...(payload.categoryId !== undefined ? { categoryId: payload.categoryId } : {}),
+    ...(payload.direction !== undefined ? { direction: payload.direction } : {}),
+    ...(payload.otherAccountId !== undefined ? { otherAccountId: payload.otherAccountId } : {}),
     ...(payload.destinationAccountId !== undefined
       ? { destinationAccountId: payload.destinationAccountId }
       : {}),

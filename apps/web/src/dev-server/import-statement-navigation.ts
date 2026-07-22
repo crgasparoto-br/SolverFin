@@ -1,5 +1,6 @@
 export interface ImportStatementNavigationTransaction {
   accountId?: string;
+  destinationAccountId?: string;
   occurredOn?: string;
   plannedOn?: string;
   effectiveOn?: string;
@@ -10,6 +11,8 @@ export interface ImportStatementNavigationSuggestion {
   payload?: {
     accountId?: string;
     occurredOn?: string;
+    kind?: string;
+    direction?: "inflow" | "outflow";
   };
 }
 
@@ -19,7 +22,10 @@ export function buildImportStatementUrl(
 ): string {
   const transaction = suggestion?.transaction;
   const payload = suggestion?.payload;
-  const accountId = transaction?.accountId ?? payload?.accountId ?? fallbackAccountId;
+  const accountId =
+    payload?.kind === "transfer" && payload.accountId
+      ? payload.accountId
+      : (transaction?.accountId ?? payload?.accountId ?? fallbackAccountId);
   const statementOn =
     transaction?.effectiveOn ??
     transaction?.plannedOn ??

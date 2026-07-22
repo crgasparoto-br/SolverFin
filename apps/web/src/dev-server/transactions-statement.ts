@@ -215,8 +215,8 @@ export function summarize(rows: StatementRow[], openingMinor: number): Statement
     (summary, row) => {
       const absolute = Math.abs(row.amountMinor);
 
-      if (row.amountMinor >= 0) summary.incomeMinor += row.amountMinor;
-      if (row.amountMinor < 0) summary.expenseMinor += absolute;
+      if (row.transaction.kind === "income") summary.incomeMinor += row.transaction.amountMinor;
+      if (row.transaction.kind === "expense") summary.expenseMinor += row.transaction.amountMinor;
       summary.plannedBalanceMinor += row.amountMinor;
 
       if (row.transaction.effectiveOn === undefined) {

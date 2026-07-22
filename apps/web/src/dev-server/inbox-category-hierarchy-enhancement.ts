@@ -85,7 +85,8 @@ export function buildInboxCategoryChoices(
       path: hierarchy.path,
       hierarchyState: hierarchy.hierarchyState,
       selectable:
-        category.status === "active" && (category.kind === "income" || category.kind === "expense"),
+        category.status === "active" &&
+        (category.kind === "income" || category.kind === "expense" || category.kind === "transfer"),
     };
   });
 }
@@ -166,6 +167,7 @@ export function enhanceInboxCategoryHierarchy(
           categorySelect.innerHTML = categoryOptions({ kind: nextKind, categoryId: categoryIdToPreserve });
           categorySelect.value = categoryIdToPreserve || "";
           categorySelect.setCustomValidity("");
+          refreshLineEditTransferFields({ kind: nextKind, categoryId: categoryIdToPreserve });
           setStatus(
             lineEditStatus,
             selection.removedBecauseIncompatible || selection.unavailable

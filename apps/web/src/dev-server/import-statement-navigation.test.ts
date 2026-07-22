@@ -5,6 +5,7 @@ import { buildImportStatementUrl } from "./import-statement-navigation.js";
 persistedTransactionWinsOverReviewedPayload();
 visualDateUsesStatementPrecedence();
 bulkResultsKeepIndependentNavigation();
+transferUsesReferenceAccount();
 fallbacksRemainDeterministic();
 
 function persistedTransactionWinsOverReviewedPayload(): void {
@@ -80,6 +81,28 @@ function bulkResultsKeepIndependentNavigation(): void {
       ["account-b", "2026-08"],
     ],
   );
+}
+
+function transferUsesReferenceAccount(): void {
+  const url = new URL(
+    buildImportStatementUrl({
+      transaction: {
+        accountId: "canonical-source",
+        destinationAccountId: "reference-account",
+        occurredOn: "2026-07-21",
+      },
+      payload: {
+        kind: "transfer",
+        direction: "inflow",
+        accountId: "reference-account",
+        occurredOn: "2026-07-21",
+      },
+    }),
+    "http://solverfin.test",
+  );
+
+  assert.equal(url.searchParams.get("accountId"), "reference-account");
+  assert.equal(url.searchParams.get("month"), "2026-07");
 }
 
 function fallbacksRemainDeterministic(): void {

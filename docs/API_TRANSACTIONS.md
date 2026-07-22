@@ -96,6 +96,12 @@ Payload tentando trocar `organizationId` ou `financialProfileId` deve retornar:
 403 TENANT_PAYLOAD_SCOPE_FORBIDDEN
 ```
 
+## Transferências originadas por importação
+
+Uma linha CSV revisada como transferência preserva a conta de referência e a direção original. A camada de importação deriva `accountId` e `destinationAccountId`, valida as duas contas no mesmo tenant, perfil e moeda e cria somente uma transação canônica. A segunda ponta pode vincular sua sugestão à transação existente; essa conciliação não altera a proveniência original (`aiSuggestionId` e `importBatchId`) nem cria movimentos adicionais.
+
+Filtros por conta devem considerar tanto `accountId` quanto `destinationAccountId`. Dashboard, relatórios e orçamento contabilizam apenas `income` e `expense`; uma transferência não aumenta receitas, despesas ou resultado e aparece com sinais opostos nos extratos das duas contas.
+
 ## Movimentos financeiros
 
 O contrato de dominio retorna movimentos derivados para que a camada de

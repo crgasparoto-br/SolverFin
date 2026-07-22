@@ -67,6 +67,18 @@ async function validateInboxCsvReview(cdp) {
         const account = (accountsResponse.body.accounts || []).find((item) => item.status === 'active');
         if (!account) return { ok: false, status: 0, body: { error: 'No active account available' } };
         const suffix = Date.now().toString(36);
+        const otherResponse = await fetch('/api/accounts', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Conta transferência visual ' + suffix,
+            kind: 'checking',
+            openingBalanceMinor: 0,
+            currency: account.currency
+          })
+        });
+        const otherBody = await otherResponse.json();
+        if (!otherResponse.ok) return { ok: false, status: otherResponse.status, body: otherBody };
         const createResponse = await fetch('/api/import-batches/csv', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -77,7 +89,7 @@ async function validateInboxCsvReview(cdp) {
             consentAccepted: true
           })
         });
-        return { ok: createResponse.ok, status: createResponse.status, body: await createResponse.json(), accountId: account.id };
+        return { ok: createResponse.ok, status: createResponse.status, body: await createResponse.json(), accountId: account.id, otherAccountId: otherBody.account.id };
       }))()`,
   );
   assert.equal(
@@ -145,6 +157,7 @@ async function validateInboxCsvReview(cdp) {
     "Ignoradas como duplicadas",
     "Rejeitadas",
     "Lançamentos vinculados",
+    "Transferências",
     "Problemas",
   ]) {
     check(
@@ -186,6 +199,77 @@ async function validateInboxCsvReview(cdp) {
     opened,
   );
   check(opened.activeName === "occurredOn", "CSV edit focus did not move into the dialog", opened);
+  const transferInteraction = await evaluate(
+    cdp,
+    `(() => {
+    const form = document.getElementById('csv-line-edit-form');
+    const otherField = document.getElementById('csv-line-other-account-field');
+    const direction = document.getElementById('csv-line-transfer-direction');
+    form.elements.kind.value = 'transfer';
+    form.elements.kind.dispatchEvent(new Event('change', { bubbles: true }));
+    const optionExists = [...form.elements.otherAccountId.options].some((option) => option.value === '${fixture.otherAccountId}');
+    form.elements.otherAccountId.value = '${fixture.otherAccountId}';
+    form.elements.otherAccountId.dispatchEvent(new Event('change', { bubbles: true }));
+    const explicitDirection = direction.textContent || '';
+    const visibleAndRequired = !otherField.hidden && form.elements.otherAccountId.required;
+    form.elements.accountId.value = '${fixture.otherAccountId}';
+    form.elements.accountId.dispatchEvent(new Event('change', { bubbles: true }));
+    const invalidated = form.elements.otherAccountId.value === '';
+    const warning = document.getElementById('csv-line-edit-status').textContent || '';
+    form.elements.accountId.value = '${fixture.accountId}';
+    form.elements.accountId.dispatchEvent(new Event('change', { bubbles: true }));
+    form.elements.kind.value = 'expense';
+    form.elements.kind.dispatchEvent(new Event('change', { bubbles: true }));
+    return {
+      optionExists,
+      visibleAndRequired,
+      explicitDirection,
+      invalidated,
+      warning,
+      hiddenAfterLeavingTransfer: otherField.hidden,
+      clearedAfterLeavingTransfer: form.elements.otherAccountId.value === '',
+      descriptionPreserved: form.elements.description.value === '${opened.originalDescription}',
+      amountPreserved: form.elements.amount.value === '${opened.originalAmount}'
+    };
+  })()`,
+  );
+  check(
+    transferInteraction.optionExists,
+    "Eligible transfer account was not offered",
+    transferInteraction,
+  );
+  check(
+    transferInteraction.visibleAndRequired,
+    "Transfer account field was not visible and required",
+    transferInteraction,
+  );
+  check(
+    transferInteraction.explicitDirection.includes("Origem:") &&
+      transferInteraction.explicitDirection.includes("Destino:"),
+    "Transfer origin and destination were not explicit",
+    transferInteraction,
+  );
+  check(
+    transferInteraction.invalidated,
+    "Changing the reference account did not invalidate the other account",
+    transferInteraction,
+  );
+  check(
+    transferInteraction.warning.includes("outra conta foi removida"),
+    "Reference account change did not show a warning",
+    transferInteraction,
+  );
+  check(
+    transferInteraction.hiddenAfterLeavingTransfer &&
+      transferInteraction.clearedAfterLeavingTransfer,
+    "Leaving transfer did not hide and clear the other account",
+    transferInteraction,
+  );
+  check(
+    transferInteraction.descriptionPreserved && transferInteraction.amountPreserved,
+    "Transfer edits did not preserve the remaining fields",
+    transferInteraction,
+  );
 
   await evaluate(
     cdp,
@@ -241,6 +325,7 @@ async function validateInboxCsvReview(cdp) {
     mappingDialog,
     initial,
     opened,
+    transferInteraction,
     failedSave,
     closed,
     screenshot: "issue-494-inbox-csv-mobile-edit-error.png",
