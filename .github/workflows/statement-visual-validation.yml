@@ -62,20 +62,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Prepare formatted Inbox sources
-        run: |
-          npx prettier --write \
-            apps/web/src/dev-server/http.ts \
-            apps/web/src/dev-server/inbox-interface-accessibility-enhancement.ts \
-            apps/web/src/dev-server/inbox-interface-enhancement.test.ts \
-            scripts/statement-visual/inbox-interface-accessibility.mjs
-          mkdir -p artifacts/statement-visual/formatted/apps/web/src/dev-server
-          mkdir -p artifacts/statement-visual/formatted/scripts/statement-visual
-          cp apps/web/src/dev-server/http.ts artifacts/statement-visual/formatted/apps/web/src/dev-server/
-          cp apps/web/src/dev-server/inbox-interface-accessibility-enhancement.ts artifacts/statement-visual/formatted/apps/web/src/dev-server/
-          cp apps/web/src/dev-server/inbox-interface-enhancement.test.ts artifacts/statement-visual/formatted/apps/web/src/dev-server/
-          cp scripts/statement-visual/inbox-interface-accessibility.mjs artifacts/statement-visual/formatted/scripts/statement-visual/
-
       - name: Prepare database
         run: |
           npm run prisma:generate
