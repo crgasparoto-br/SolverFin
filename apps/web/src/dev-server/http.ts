@@ -35,9 +35,7 @@ export function sendJson(
 export function sendHtml(response: ServerResponse, statusCode: number, html: string): void {
   response.writeHead(statusCode, { "content-type": "text/html; charset=utf-8" });
   const brandedHtml = enhanceSolverFinBranding(html);
-  response.end(
-    isInboxDocument(brandedHtml) ? enhanceInboxInterface(brandedHtml) : brandedHtml,
-  );
+  response.end(isInboxDocument(brandedHtml) ? enhanceInboxInterface(brandedHtml) : brandedHtml);
 }
 
 export function apiError(code: string, message: string, correlationId: string) {

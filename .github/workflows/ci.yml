@@ -66,20 +66,6 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
-      - name: Format Inbox sources
-        run: npx prettier --write apps/web/src/dev-server/http.ts apps/web/src/dev-server/inbox-interface-enhancement.ts apps/web/src/dev-server/inbox-interface-enhancement.test.ts
-
-      - name: Upload formatted Inbox sources
-        uses: actions/upload-artifact@v4
-        with:
-          name: formatted-inbox-${{ github.sha }}
-          path: |
-            apps/web/src/dev-server/http.ts
-            apps/web/src/dev-server/inbox-interface-enhancement.ts
-            apps/web/src/dev-server/inbox-interface-enhancement.test.ts
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Check formatting
         run: npm run format:check
 

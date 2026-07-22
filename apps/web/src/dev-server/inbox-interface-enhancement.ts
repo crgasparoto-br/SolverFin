@@ -14,10 +14,7 @@ export function enhanceInboxInterface(html: string): string {
     html,
     /<h2>Outras sugestões<\/h2>\s*<span>(\d+) pendentes<\/span>/,
   );
-  const messageCount = readCount(
-    html,
-    /<h2>Mensagens recebidas<\/h2>\s*<span>(\d+) itens<\/span>/,
-  );
+  const messageCount = readCount(html, /<h2>Mensagens recebidas<\/h2>\s*<span>(\d+) itens<\/span>/);
 
   let enhanced = addMainClass(html, "inbox-page");
   enhanced = enhanced.replace(ORIGINAL_PAGE_DESCRIPTION, ENHANCED_PAGE_DESCRIPTION);
@@ -63,10 +60,7 @@ function replaceOccurrence(value: string, search: string, replacement: string): 
   return `${value.slice(0, cursor)}${replacement}${value.slice(cursor + search.length)}`;
 }
 
-function renderSectionNavigation(
-  suggestionCount: number,
-  messageCount: number,
-): string {
+function renderSectionNavigation(suggestionCount: number, messageCount: number): string {
   const attentionCount = suggestionCount + messageCount;
   const attentionLabel =
     attentionCount === 1 ? "1 item para revisar" : `${attentionCount} itens para revisar`;
