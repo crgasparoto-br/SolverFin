@@ -1,12 +1,24 @@
 const ACCESSIBILITY_MARKER = 'data-inbox-interface-accessibility="enhanced"';
+const ACCESSIBILITY_SCRIPT_MARKER = 'data-inbox-interface-accessibility-script="enhanced"';
 
 export function enhanceInboxInterfaceAccessibility(html: string): string {
-  if (html.includes(ACCESSIBILITY_MARKER)) return html;
+  let enhanced = html;
 
-  return html.replace(
-    "</head>",
-    `<style ${ACCESSIBILITY_MARKER}>${inboxAccessibilityStyles()}</style></head>`,
-  );
+  if (!enhanced.includes(ACCESSIBILITY_MARKER)) {
+    enhanced = enhanced.replace(
+      "</head>",
+      `<style ${ACCESSIBILITY_MARKER}>${inboxAccessibilityStyles()}</style></head>`,
+    );
+  }
+
+  if (!enhanced.includes(ACCESSIBILITY_SCRIPT_MARKER)) {
+    enhanced = enhanced.replace(
+      "</body>",
+      `<script ${ACCESSIBILITY_SCRIPT_MARKER}>${inboxAccessibilityScript()}</script></body>`,
+    );
+  }
+
+  return enhanced;
 }
 
 function inboxAccessibilityStyles(): string {
@@ -22,6 +34,13 @@ function inboxAccessibilityStyles(): string {
     .inbox-page .maintenance-actions .button-link,
     .inbox-page .bulk-actions button {
       min-height: 34px !important;
+    }
+    .inbox-page button:disabled,
+    .inbox-page .button-link[aria-disabled="true"] {
+      background: #e2e8f0 !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+      opacity: 1 !important;
     }
     .inbox-page .import-layout {
       gap: 0 !important;
@@ -65,6 +84,52 @@ function inboxAccessibilityStyles(): string {
     .inbox-page .row-heading .status-pill {
       padding: 2px 6px !important;
     }
+    .inbox-page .row-summary dd[data-full-value-enhanced="true"] {
+      overflow: visible !important;
+      position: relative;
+      text-overflow: clip !important;
+      white-space: normal !important;
+    }
+    .inbox-page .row-summary-value-preview {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .inbox-page .row-summary-full-value {
+      background: var(--text);
+      border: 1px solid #334155;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+      color: var(--surface);
+      display: none;
+      font-size: 0.75rem;
+      font-weight: 500;
+      inset-inline-start: 0;
+      line-height: 1.35;
+      max-width: min(360px, calc(100vw - 32px));
+      min-width: min(220px, calc(100vw - 32px));
+      overflow-wrap: anywhere;
+      padding: 6px 8px;
+      position: absolute;
+      top: calc(100% + 4px);
+      white-space: normal;
+      z-index: 40;
+    }
+    .inbox-page .row-summary dd[data-full-value-enhanced="true"]:hover .row-summary-full-value,
+    .inbox-page .row-summary dd[data-full-value-enhanced="true"]:focus .row-summary-full-value,
+    .inbox-page .row-summary dd[data-full-value-enhanced="true"]:focus-visible .row-summary-full-value {
+      display: block;
+    }
+    .inbox-page .row-summary dd[data-full-value-enhanced="true"]:focus-visible {
+      border-radius: 2px;
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+    .inbox-page .row-summary > div:nth-child(n + 5) .row-summary-full-value {
+      inset-inline-end: 0;
+      inset-inline-start: auto;
+    }
     .inbox-page .detail-heading {
       margin-bottom: 3px;
       padding-bottom: 3px !important;
@@ -88,4 +153,62 @@ function inboxAccessibilityStyles(): string {
       }
     }
   `;
+}
+
+function inboxAccessibilityScript(): string {
+  return `(() => {
+    const revealableLabels = new Set(["Descrição", "Conta de referência", "Outra conta"]);
+
+    const enhanceGroup = (group) => {
+      const label = group.querySelector("dt")?.textContent?.trim();
+      const value = group.querySelector("dd");
+      if (!label || !value || !revealableLabels.has(label)) return;
+      if (value.dataset.fullValueEnhanced === "true") return;
+
+      const fullValue = (value.textContent || "").trim();
+      value.dataset.fullValueEnhanced = "true";
+      value.dataset.fullValue = fullValue;
+      value.tabIndex = 0;
+      value.setAttribute("aria-label", label + ": " + fullValue);
+      value.setAttribute("title", fullValue);
+
+      const preview = document.createElement("span");
+      preview.className = "row-summary-value-preview";
+      preview.setAttribute("aria-hidden", "true");
+      preview.textContent = fullValue;
+
+      const popover = document.createElement("span");
+      popover.className = "row-summary-full-value";
+      popover.setAttribute("aria-hidden", "true");
+      popover.textContent = fullValue;
+
+      value.replaceChildren(preview, popover);
+    };
+
+    const enhanceValues = (root) => {
+      const selector = ".inbox-page .row-summary > div";
+      const groups = [];
+      if (root instanceof Element && root.matches(selector)) groups.push(root);
+      if ("querySelectorAll" in root) groups.push(...root.querySelectorAll(selector));
+      groups.forEach(enhanceGroup);
+    };
+
+    const start = () => {
+      enhanceValues(document);
+      const observer = new MutationObserver((records) => {
+        for (const record of records) {
+          for (const node of record.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) enhanceValues(node);
+          }
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", start, { once: true });
+    } else {
+      start();
+    }
+  })();`;
 }
