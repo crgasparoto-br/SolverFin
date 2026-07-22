@@ -160,6 +160,7 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
         const isInboxDateInRange = ${isInboxDateInRange.toString()};
         const compareInboxDates = ${compareInboxDates.toString()};
         const setInboxCheckboxSelection = ${setInboxCheckboxSelection.toString()};
+        const setInboxCheckboxSelection = ${setInboxCheckboxSelection.toString()};
         let scheduled = false;
 
         function iconize(element, iconName, title) {
@@ -302,6 +303,7 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
             ["[data-candidate-action='approve']", "check", "Confirmar candidato"],
             ["[data-candidate-action='reject']", "close", "Ignorar candidato"],
             ["a.button-link[href*='/lancamentos']", "receipt", "Ver lançamento no Extrato"],
+            [".dialog-close-form button", "close", "Fechar diálogo"],
             [".dialog-close-form button", "close", "Fechar diálogo"],
           ];
           mappings.forEach(([selector, iconName, title]) =>

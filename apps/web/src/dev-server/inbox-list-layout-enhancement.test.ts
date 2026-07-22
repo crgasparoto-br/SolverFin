@@ -86,6 +86,11 @@ describe("Inbox list layout enhancement", () => {
     assert.match(enhanced, /\.dialog-close-form button/);
     assert.match(enhanced, /overflow-wrap: anywhere/);
     assert.doesNotMatch(enhanced, /text-overflow: ellipsis/);
+    assert.match(enhanced, /const shouldSelect = target.checked/);
+    assert.match(enhanced, /setInboxCheckboxSelection/);
+    assert.match(enhanced, /\.dialog-close-form button/);
+    assert.match(enhanced, /overflow-wrap: anywhere/);
+    assert.doesNotMatch(enhanced, /text-overflow: ellipsis/);
     assert.match(enhanced, /data-line-action='edit'/);
     assert.match(enhanced, /Nenhum lançamento no período selecionado/);
     assert.ok(enhanced.includes(html.split("<body>")[1]?.split("</body>")[0] ?? ""));
