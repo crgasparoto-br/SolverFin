@@ -136,7 +136,7 @@ async function createFixtures(cdp) {
       }));
       if (!simple.ok) return simple;
 
-      const candidateDescription = 'Candidato visual extenso para validar hierarquia, associação de ações e responsividade ' + suffix;
+      const candidateDescription = 'Candidato visual extenso para validar hierarquia associação de ações e responsividade ' + suffix;
       const transaction = await readJson(await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -194,9 +194,21 @@ async function createFixtures(cdp) {
 
 function validateOperationalMetrics(metrics, { requireFiveRows }) {
   check(metrics.bodyFitsViewport, `Inbox overflows horizontally at ${metrics.viewport}`, metrics);
-  check(metrics.checkboxesMeetMinimum, `Checkbox target is smaller than 24x24 at ${metrics.viewport}`, metrics);
-  check(metrics.buttonsMeetDesignSystem, `Visible action is shorter than 34px at ${metrics.viewport}`, metrics);
-  check(metrics.operationalTextIsLegible, `Operational label is smaller than 11px at ${metrics.viewport}`, metrics);
+  check(
+    metrics.checkboxesMeetMinimum,
+    `Checkbox target is smaller than 24x24 at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.buttonsMeetDesignSystem,
+    `Visible action is shorter than 34px at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.operationalTextIsLegible,
+    `Operational label is smaller than 11px at ${metrics.viewport}`,
+    metrics,
+  );
   check(metrics.actionsFitViewport, `Action overflows at ${metrics.viewport}`, metrics);
   if (requireFiveRows) {
     check(
@@ -308,13 +320,37 @@ async function validateCandidateState(cdp, batchId) {
 
 function validateCandidateMetrics(metrics) {
   check(metrics.bodyFitsViewport, `Candidate state overflows at ${metrics.viewport}`, metrics);
-  check(metrics.hasPendingState, `Candidate row lacks pending state at ${metrics.viewport}`, metrics);
-  check(metrics.actionsAssociated, `Candidate actions are not associated with one candidate at ${metrics.viewport}`, metrics);
-  check(metrics.actionsVisible, `Candidate actions are not visible at ${metrics.viewport}`, metrics);
-  check(metrics.actionsMeetDesignSystem, `Candidate action is shorter than 34px at ${metrics.viewport}`, metrics);
+  check(
+    metrics.hasPendingState,
+    `Candidate row lacks pending state at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.actionsAssociated,
+    `Candidate actions are not associated with one candidate at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.actionsVisible,
+    `Candidate actions are not visible at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.actionsMeetDesignSystem,
+    `Candidate action is shorter than 34px at ${metrics.viewport}`,
+    metrics,
+  );
   check(metrics.actionsFitViewport, `Candidate action overflows at ${metrics.viewport}`, metrics);
-  check(metrics.focusIsVisible, `Candidate action lacks visible keyboard focus at ${metrics.viewport}`, metrics);
-  check(metrics.visuallySubordinate, `Candidate card dominates its parent row at ${metrics.viewport}`, metrics);
+  check(
+    metrics.focusIsVisible,
+    `Candidate action lacks visible keyboard focus at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.visuallySubordinate,
+    `Candidate card dominates its parent row at ${metrics.viewport}`,
+    metrics,
+  );
 }
 
 async function inspectCandidateViewport(cdp, width, height, screenshotName) {
