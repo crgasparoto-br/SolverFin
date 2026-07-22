@@ -6,6 +6,7 @@ import {
   enhanceInboxListLayout,
   isInboxDateInRange,
   normalizeInboxDate,
+  setInboxCheckboxSelection,
 } from "./inbox-list-layout-enhancement.js";
 
 describe("Inbox list layout enhancement", () => {
@@ -36,6 +37,29 @@ describe("Inbox list layout enhancement", () => {
     );
   });
 
+  it("selects every eligible checkbox using one immutable bulk intent", () => {
+    const master = { checked: true };
+    const boxes = [
+      { checked: false },
+      { checked: false },
+      { checked: false },
+      { checked: false, disabled: true },
+    ];
+    const notified: number[] = [];
+
+    const changed = setInboxCheckboxSelection(boxes, master.checked, (box) => {
+      notified.push(boxes.indexOf(box));
+      master.checked = false;
+    });
+
+    assert.equal(changed, 3);
+    assert.deepEqual(
+      boxes.map((box) => box.checked),
+      [true, true, true, false],
+    );
+    assert.deepEqual(notified, [0, 1, 2]);
+  });
+
   it("injects compact list styles, date controls, icons and visible-only bulk selection", () => {
     const html = `<!doctype html><html><head></head><body>
       <div class="line-filter-bar"><label>Linhas<select id="import-line-filter"></select></label></div>
@@ -57,6 +81,11 @@ describe("Inbox list layout enhancement", () => {
     assert.match(enhanced, /date_asc/);
     assert.match(enhanced, /visibleEligibleCheckboxes/);
     assert.match(enhanced, /stopImmediatePropagation/);
+    assert.match(enhanced, /const shouldSelect = target.checked/);
+    assert.match(enhanced, /setInboxCheckboxSelection/);
+    assert.match(enhanced, /\.dialog-close-form button/);
+    assert.match(enhanced, /overflow-wrap: anywhere/);
+    assert.doesNotMatch(enhanced, /text-overflow: ellipsis/);
     assert.match(enhanced, /data-line-action='edit'/);
     assert.match(enhanced, /Nenhum lançamento no período selecionado/);
     assert.ok(enhanced.includes(html.split("<body>")[1]?.split("</body>")[0] ?? ""));

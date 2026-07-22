@@ -44,6 +44,26 @@ export function compareInboxDates(left: string, right: string, sort: InboxDateSo
     : normalizedRight.localeCompare(normalizedLeft);
 }
 
+export interface InboxSelectableCheckbox {
+  checked: boolean;
+  disabled?: boolean;
+}
+
+export function setInboxCheckboxSelection<T extends InboxSelectableCheckbox>(
+  checkboxes: readonly T[],
+  shouldSelect: boolean,
+  onChange?: (checkbox: T) => void,
+): number {
+  let changed = 0;
+  for (const checkbox of checkboxes) {
+    if (checkbox.disabled || checkbox.checked === shouldSelect) continue;
+    checkbox.checked = shouldSelect;
+    changed += 1;
+    onChange?.(checkbox);
+  }
+  return changed;
+}
+
 export function enhanceInboxListLayout(html: string, url: URL): string {
   if (!html.includes('id="import-line-filter"') || !html.includes("</body>")) return html;
 
@@ -102,7 +122,7 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
       .row-summary { display: grid !important; gap: 3px 10px !important; grid-template-columns: 92px 90px 118px minmax(190px, 1.7fr) minmax(150px, 1fr); margin: 0 !important; }
       .row-summary > div { align-items: baseline; display: flex !important; gap: 5px; min-width: 0; }
       .row-summary dt { color: var(--muted); flex: 0 0 auto; font-size: .62rem !important; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
-      .row-summary dd { font-size: .75rem !important; line-height: 1.2; margin: 0 !important; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .row-summary dd { font-size: .75rem !important; line-height: 1.25; margin: 0 !important; min-width: 0; overflow-wrap: anywhere; }
       .inline-actions, .maintenance-actions { gap: 4px !important; }
       .inline-actions button, .inline-actions .button-link, .maintenance-actions button, .maintenance-actions .button-link { font-size: .72rem !important; min-height: 30px !important; padding: 0 8px !important; }
       .candidate-list { display: grid; gap: 4px !important; grid-column: 2; }
@@ -139,6 +159,7 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
         const normalizeInboxDate = ${normalizeInboxDate.toString()};
         const isInboxDateInRange = ${isInboxDateInRange.toString()};
         const compareInboxDates = ${compareInboxDates.toString()};
+        const setInboxCheckboxSelection = ${setInboxCheckboxSelection.toString()};
         let scheduled = false;
 
         function iconize(element, iconName, title) {
@@ -281,6 +302,7 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
             ["[data-candidate-action='approve']", "check", "Confirmar candidato"],
             ["[data-candidate-action='reject']", "close", "Ignorar candidato"],
             ["a.button-link[href*='/lancamentos']", "receipt", "Ver lançamento no Extrato"],
+            [".dialog-close-form button", "close", "Fechar diálogo"],
           ];
           mappings.forEach(([selector, iconName, title]) =>
             document.querySelectorAll(selector).forEach((element) => iconize(element, iconName, title)),
@@ -303,9 +325,8 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
             const target = event.target;
             if (!(target instanceof HTMLInputElement) || target.id !== "select-all-import-lines") return;
             event.stopImmediatePropagation();
-            visibleEligibleCheckboxes().forEach((box) => {
-              if (box.checked === target.checked) return;
-              box.checked = target.checked;
+            const shouldSelect = target.checked;
+            setInboxCheckboxSelection(visibleEligibleCheckboxes(), shouldSelect, (box) => {
               box.dispatchEvent(new Event("change", { bubbles: true }));
             });
             syncSelectAll();
