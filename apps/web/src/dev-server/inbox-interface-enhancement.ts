@@ -42,15 +42,18 @@ function readCount(html: string, pattern: RegExp): number {
 }
 
 function addMainClass(html: string, className: string): string {
-  if (html.includes(`<main class="${className}`)) {
-    return html;
-  }
+  return html.replace(/<main\b([^>]*)>/, (tag, attributes: string) => {
+    const classAttribute = /\bclass=(['"])(.*?)\1/.exec(attributes);
+    if (!classAttribute) {
+      return `<main class="${className}"${attributes}>`;
+    }
 
-  if (html.includes('<main class="')) {
-    return html.replace('<main class="', `<main class="${className} `);
-  }
+    const classes = classAttribute[2].split(/\s+/).filter(Boolean);
+    if (classes.includes(className)) return tag;
 
-  return html.replace("<main>", `<main class="${className}">`);
+    const nextClassAttribute = `class=${classAttribute[1]}${className} ${classAttribute[2]}${classAttribute[1]}`;
+    return tag.replace(classAttribute[0], nextClassAttribute);
+  });
 }
 
 function replaceOccurrence(value: string, search: string, replacement: string): string {
@@ -93,16 +96,22 @@ function renderSectionNavigation(suggestionCount: number, messageCount: number):
 function inboxInterfaceStyles(): string {
   return `
     .inbox-page {
-      gap: 12px;
+      gap: 8px;
       max-width: 1480px;
-      padding: 14px 18px 24px;
+      padding: 8px 14px 18px;
     }
     .inbox-page .page-heading {
-      align-items: flex-start;
+      align-items: center;
       padding: 0;
+    }
+    .inbox-page .page-heading > div:first-child {
+      gap: 1px;
     }
     .inbox-page .page-heading h1 {
       letter-spacing: -0.025em;
+    }
+    .inbox-page .page-heading .muted {
+      font-size: 0.8125rem;
     }
     .inbox-page .heading-actions,
     .inbox-page .compact-filters {
@@ -119,7 +128,8 @@ function inboxInterfaceStyles(): string {
     .inbox-page .maintenance-actions .button-link,
     .inbox-page .bulk-actions button {
       flex: 0 0 auto;
-      min-height: 32px;
+      min-height: 30px;
+      padding-inline: 10px;
       width: auto;
     }
     .inbox-section-nav {
@@ -136,10 +146,10 @@ function inboxInterfaceStyles(): string {
       border-right: 1px solid var(--line);
       color: var(--text);
       display: grid;
-      gap: 8px;
+      gap: 7px;
       grid-template-columns: auto minmax(0, 1fr) auto;
-      min-height: 50px;
-      padding: 7px 10px;
+      min-height: 42px;
+      padding: 5px 9px;
       text-decoration: none;
     }
     .inbox-section-link:hover {
@@ -162,12 +172,12 @@ function inboxInterfaceStyles(): string {
       align-items: center;
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 7px;
       color: var(--primary);
       display: inline-flex;
-      height: 30px;
+      height: 28px;
       justify-content: center;
-      width: 30px;
+      width: 28px;
     }
     .inbox-section-link strong,
     .inbox-section-link small {
@@ -179,7 +189,8 @@ function inboxInterfaceStyles(): string {
     .inbox-section-link small {
       color: var(--muted);
       font-size: 0.6875rem;
-      margin-top: 1px;
+      line-height: 1.25;
+      margin-top: 0;
     }
     .inbox-attention-summary {
       align-items: center;
@@ -188,7 +199,7 @@ function inboxInterfaceStyles(): string {
       font-size: 0.75rem;
       font-weight: 700;
       gap: 6px;
-      padding: 0 12px;
+      padding: 0 10px;
       white-space: nowrap;
     }
     .inbox-page .import-workspace {
@@ -197,21 +208,29 @@ function inboxInterfaceStyles(): string {
     }
     .inbox-page .import-heading {
       border-bottom: 1px solid var(--line);
-      padding: 10px 14px 8px;
+      padding: 7px 12px 6px;
+    }
+    .inbox-page .import-heading .small-note {
+      font-size: 0.75rem;
+      line-height: 1.3;
     }
     .inbox-page .compact-filters label {
       min-width: 0;
       width: auto;
+    }
+    .inbox-page .compact-filters select,
+    .inbox-page .line-filter-bar select {
+      min-height: 30px;
     }
     .inbox-page .line-filter-bar {
       background: var(--surface-soft);
       border-bottom: 1px solid var(--line);
       justify-content: flex-start;
       margin: 0;
-      padding: 7px 14px;
+      padding: 4px 12px;
     }
     .inbox-page .line-filter-bar label {
-      min-width: min(390px, 100%);
+      min-width: min(370px, 100%);
     }
     .inbox-page .line-filter-bar select {
       flex: 1 1 auto;
@@ -219,19 +238,19 @@ function inboxInterfaceStyles(): string {
     }
     .inbox-page .import-workspace > .form-status {
       margin: 0;
-      min-height: 26px;
-      padding: 5px 14px 4px;
+      min-height: 23px;
+      padding: 3px 12px 2px;
     }
     .inbox-page .import-layout {
       border-top: 1px solid var(--line);
       gap: 0;
-      grid-template-columns: minmax(230px, 270px) minmax(0, 1fr);
+      grid-template-columns: minmax(220px, 255px) minmax(0, 1fr);
     }
     .inbox-page .import-batch-list {
       background: var(--surface);
       border-right: 1px solid var(--line);
       gap: 0;
-      max-height: min(760px, calc(100vh - 220px));
+      max-height: min(760px, calc(100vh - 188px));
       padding: 0;
       scrollbar-gutter: stable;
     }
@@ -242,17 +261,21 @@ function inboxInterfaceStyles(): string {
       border-left: 3px solid transparent;
       border-radius: 0;
       color: var(--text);
-      gap: 2px;
+      gap: 1px;
       min-height: 0;
-      padding: 8px 10px 8px 9px;
+      padding: 7px 9px 7px 8px;
       transition: background 120ms ease-out, border-color 120ms ease-out;
       width: 100%;
     }
     .inbox-page .batch-item strong {
       color: var(--text);
+      font-size: 0.8125rem;
+      line-height: 1.25;
     }
     .inbox-page .batch-item span {
       color: var(--muted);
+      font-size: 0.6875rem;
+      line-height: 1.25;
     }
     .inbox-page .batch-item:hover:not(:disabled) {
       background: var(--surface-soft);
@@ -277,14 +300,25 @@ function inboxInterfaceStyles(): string {
       box-shadow: inset 3px 0 0 var(--primary), inset 0 0 0 2px var(--cyan);
     }
     .inbox-page .import-detail {
-      padding: 10px 12px 14px;
+      padding: 7px 10px 10px;
     }
     .inbox-page .detail-heading {
-      gap: 10px;
-      margin-bottom: 8px;
-      padding-bottom: 8px;
+      gap: 8px;
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+    }
+    .inbox-page .detail-heading > div:first-child {
+      gap: 1px;
+    }
+    .inbox-page .detail-heading h3 {
+      font-size: 0.8125rem;
+    }
+    .inbox-page .detail-heading .muted {
+      font-size: 0.75rem;
+      line-height: 1.3;
     }
     .inbox-page .detail-heading .inline-actions {
+      gap: 6px;
       justify-content: flex-end;
     }
     .inbox-page .import-summary {
@@ -294,17 +328,23 @@ function inboxInterfaceStyles(): string {
       border-radius: 0;
       border-top: 1px solid var(--line);
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 0;
-      margin-bottom: 8px;
-      padding: 2px 0;
+      margin-bottom: 5px;
+      overflow-x: auto;
+      padding: 1px 0;
+      scrollbar-width: thin;
     }
     .inbox-page .import-summary span {
       background: transparent;
       border: 0;
       border-right: 1px solid var(--line);
       border-radius: 0;
-      padding: 4px 8px;
+      flex: 0 0 auto;
+      font-size: 0.6875rem;
+      line-height: 1.25;
+      padding: 4px 7px;
+      white-space: nowrap;
     }
     .inbox-page .import-summary span:last-child {
       border-right: 0;
@@ -313,12 +353,12 @@ function inboxInterfaceStyles(): string {
       align-items: center;
       border-radius: var(--radius);
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 6px 10px;
       justify-content: space-between;
-      margin-bottom: 8px;
-      min-height: 40px;
-      padding: 6px 8px;
+      margin-bottom: 4px;
+      min-height: 34px;
+      padding: 3px 7px;
     }
     .inbox-page .bulk-actions > label {
       align-items: center;
@@ -339,16 +379,23 @@ function inboxInterfaceStyles(): string {
     .inbox-page .bulk-actions > div {
       align-items: center;
       display: flex;
-      flex: 1 1 360px;
-      flex-wrap: wrap;
+      flex: 1 1 auto;
+      flex-wrap: nowrap;
       gap: 6px 8px;
       justify-content: flex-end;
       min-width: 0;
     }
     .inbox-page #selection-summary {
       color: var(--muted);
-      font-size: 0.75rem;
-      line-height: 1.35;
+      font-size: 0.6875rem;
+      line-height: 1.25;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .inbox-page #import-detail-status:empty {
+      display: none;
     }
     .inbox-page .import-rows,
     .inbox-page .maintenance-rows {
@@ -362,8 +409,8 @@ function inboxInterfaceStyles(): string {
       border: 0;
       border-bottom: 1px solid var(--line);
       border-radius: 0;
-      gap: 8px;
-      padding: 8px 6px;
+      gap: 7px;
+      padding: 5px 4px;
       transition: background 120ms ease-out;
     }
     .inbox-page .import-row:hover {
@@ -378,20 +425,42 @@ function inboxInterfaceStyles(): string {
     .inbox-page .import-row > input[type="checkbox"] {
       accent-color: var(--primary);
       height: 18px;
-      margin: 3px 0 0;
+      margin: 6px 0 0;
       min-height: 18px;
       padding: 0;
       width: 18px;
     }
     .inbox-page .row-editor {
-      gap: 6px;
+      align-items: center;
+      display: grid;
+      gap: 6px 9px;
+      grid-template-columns: minmax(88px, 0.65fr) minmax(0, 3fr) auto;
     }
     .inbox-page .row-heading {
-      min-height: 24px;
+      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      justify-content: center;
+      min-width: 0;
+    }
+    .inbox-page .row-heading strong {
+      font-size: 0.75rem;
+      line-height: 1.2;
+    }
+    .inbox-page .row-heading .status-pill {
+      font-size: 0.625rem;
+      line-height: 1.2;
+      max-width: 100%;
+      overflow: hidden;
+      padding: 1px 5px;
+      text-overflow: ellipsis;
     }
     .inbox-page .row-summary {
-      gap: 5px 14px;
-      grid-template-columns: minmax(72px, 0.65fr) minmax(78px, 0.65fr) minmax(105px, 0.8fr) minmax(210px, 2.2fr) minmax(145px, 1.25fr);
+      display: grid;
+      gap: 4px 7px;
+      grid-template-columns: minmax(0, 0.7fr) minmax(0, 0.65fr) minmax(0, 0.85fr) minmax(0, 1.7fr) minmax(0, 1.15fr);
+      min-width: 0;
     }
     .inbox-page .row-summary div,
     .inbox-page .row-summary div:first-child,
@@ -399,22 +468,39 @@ function inboxInterfaceStyles(): string {
       background: transparent;
       border: 0;
       border-radius: 0;
+      min-width: 0;
       padding: 0;
     }
     .inbox-page .row-summary dt {
-      font-size: 0.625rem;
+      font-size: 0.5625rem;
       letter-spacing: 0.02em;
+      line-height: 1.1;
     }
     .inbox-page .row-summary dd {
+      font-size: 0.75rem;
+      line-height: 1.2;
       margin-top: 1px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .inbox-page .row-editor > .inline-actions,
     .inbox-page .candidate-card .inline-actions {
-      gap: 6px;
+      flex-wrap: nowrap;
+      gap: 5px;
       justify-content: flex-end;
     }
+    .inbox-page .row-editor > .inline-actions button {
+      font-size: 0.75rem;
+      min-height: 30px;
+      padding-inline: 8px;
+    }
+    .inbox-page .row-editor > .button-link {
+      font-size: 0.75rem;
+      justify-self: end;
+    }
     .inbox-page .candidate-list {
-      gap: 6px;
+      gap: 5px;
       margin-top: 1px;
     }
     .inbox-page .candidate-card {
@@ -424,26 +510,26 @@ function inboxInterfaceStyles(): string {
       border-left: 3px solid var(--cyan);
       border-radius: var(--radius);
       gap: 8px;
-      padding: 7px 9px;
+      padding: 6px 8px;
     }
     .inbox-page .candidate-card p {
-      line-height: 1.35;
-      margin-top: 2px;
+      line-height: 1.3;
+      margin-top: 1px;
     }
     .inbox-page .inbox-secondary-panel {
-      padding: 12px 14px;
+      padding: 10px 12px;
     }
     .inbox-page .inbox-secondary-panel .section-heading {
       border-bottom: 1px solid var(--line);
-      padding-bottom: 8px;
+      padding-bottom: 6px;
     }
     .inbox-page .maintenance-item {
       align-items: start;
       border-top: 1px solid var(--line);
       display: grid;
-      gap: 10px;
+      gap: 9px;
       grid-template-columns: minmax(150px, 0.65fr) minmax(240px, 1.8fr) minmax(140px, auto);
-      padding: 9px 0;
+      padding: 7px 0;
     }
     .inbox-page .maintenance-item:first-child {
       border-top: 0;
@@ -460,11 +546,11 @@ function inboxInterfaceStyles(): string {
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       justify-content: flex-end;
     }
     .inbox-page .empty-state {
-      padding: 16px 12px;
+      padding: 14px 10px;
     }
     @media (max-width: 1120px) {
       .inbox-section-nav {
@@ -474,10 +560,14 @@ function inboxInterfaceStyles(): string {
         border-top: 1px solid var(--line);
         grid-column: 1 / -1;
         justify-content: center;
-        min-height: 32px;
+        min-height: 28px;
+      }
+      .inbox-page .row-editor {
+        grid-template-columns: minmax(90px, 1fr) auto;
       }
       .inbox-page .row-summary {
-        grid-template-columns: repeat(3, minmax(120px, 1fr));
+        grid-column: 1 / -1;
+        grid-row: 2;
       }
       .inbox-page .maintenance-item {
         grid-template-columns: minmax(150px, 0.65fr) minmax(240px, 1.8fr);
@@ -488,8 +578,12 @@ function inboxInterfaceStyles(): string {
     }
     @media (max-width: 800px) {
       .inbox-page {
-        gap: 10px;
-        padding: 12px;
+        gap: 8px;
+        padding: 10px 12px 16px;
+      }
+      .inbox-page .page-heading {
+        align-items: stretch;
+        display: grid;
       }
       .inbox-page .heading-actions,
       .inbox-page .compact-filters {
@@ -503,14 +597,18 @@ function inboxInterfaceStyles(): string {
       }
       .inbox-section-link {
         border-bottom: 0;
-        flex: 0 0 min(220px, 78vw);
+        flex: 0 0 min(210px, 76vw);
       }
       .inbox-attention-summary {
         border-left: 1px solid var(--line);
         border-top: 0;
         flex: 0 0 auto;
         grid-column: auto;
-        min-height: 50px;
+        min-height: 42px;
+      }
+      .inbox-page .import-heading {
+        align-items: stretch;
+        display: grid;
       }
       .inbox-page .import-layout {
         grid-template-columns: 1fr;
@@ -519,7 +617,7 @@ function inboxInterfaceStyles(): string {
         border-bottom: 1px solid var(--line);
         border-right: 0;
         grid-template-columns: 1fr;
-        max-height: 190px;
+        max-height: 175px;
       }
       .inbox-page .detail-heading {
         align-items: stretch;
@@ -528,12 +626,20 @@ function inboxInterfaceStyles(): string {
       .inbox-page .detail-heading .inline-actions {
         justify-content: flex-start;
       }
+      .inbox-page .bulk-actions {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
       .inbox-page .bulk-actions > div {
         flex-basis: 100%;
+        flex-wrap: wrap;
         justify-content: flex-start;
       }
+      .inbox-page .row-editor {
+        grid-template-columns: minmax(90px, 1fr) auto;
+      }
       .inbox-page .row-summary {
-        grid-template-columns: repeat(3, minmax(110px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
       .inbox-page .maintenance-item {
         grid-template-columns: 1fr;
@@ -545,7 +651,7 @@ function inboxInterfaceStyles(): string {
     }
     @media (max-width: 520px) {
       .inbox-page {
-        padding: 10px;
+        padding: 8px 10px 14px;
       }
       .inbox-page .heading-actions,
       .inbox-page .compact-filters {
@@ -563,8 +669,8 @@ function inboxInterfaceStyles(): string {
       .inbox-page .import-workspace > .form-status,
       .inbox-page .import-detail,
       .inbox-page .inbox-secondary-panel {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: 9px;
+        padding-right: 9px;
       }
       .inbox-page .line-filter-bar label,
       .inbox-page .line-filter-bar select {
@@ -574,19 +680,43 @@ function inboxInterfaceStyles(): string {
       .inbox-page .import-summary {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        overflow-x: visible;
       }
       .inbox-page .import-summary span {
         border-bottom: 1px solid var(--line);
         border-right: 0;
-      }
-      .inbox-page .bulk-actions {
-        align-items: flex-start;
+        white-space: normal;
       }
       .inbox-page .bulk-actions > label {
-        min-height: 32px;
+        min-height: 30px;
       }
       .inbox-page .bulk-actions > div {
         align-items: flex-start;
+      }
+      .inbox-page #selection-summary {
+        flex-basis: 100%;
+        white-space: normal;
+      }
+      .inbox-page .import-row {
+        grid-template-columns: 1fr;
+      }
+      .inbox-page .import-row > input[type="checkbox"] {
+        margin-top: 0;
+      }
+      .inbox-page .row-editor {
+        grid-template-columns: 1fr;
+      }
+      .inbox-page .row-heading,
+      .inbox-page .row-summary,
+      .inbox-page .row-editor > .inline-actions,
+      .inbox-page .row-editor > .button-link {
+        grid-column: 1;
+        grid-row: auto;
+      }
+      .inbox-page .row-heading {
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
       }
       .inbox-page .row-summary {
         grid-template-columns: 1fr 1fr;
@@ -595,9 +725,16 @@ function inboxInterfaceStyles(): string {
       .inbox-page .row-summary div:nth-child(n + 5) {
         grid-column: 1 / -1;
       }
+      .inbox-page .row-summary dd {
+        white-space: normal;
+      }
       .inbox-page .row-editor > .inline-actions,
       .inbox-page .candidate-card .inline-actions {
+        flex-wrap: wrap;
         justify-content: flex-start;
+      }
+      .inbox-page .row-editor > .button-link {
+        justify-self: start;
       }
       .inbox-page .candidate-card {
         align-items: stretch;
