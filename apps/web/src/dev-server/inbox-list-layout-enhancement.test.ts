@@ -24,16 +24,16 @@ describe("Inbox list layout enhancement", () => {
     assert.equal(isInboxDateInRange("21/07/2026", "2026-07-15", "2026-07-20"), false);
   });
 
-  it("sorts rows in both chronological directions and keeps missing dates last", () => {
-    const dates = ["20/07/2026", "18/07/2026", "", "19/07/2026"];
+  it("sorts rows across months and years and keeps missing dates last", () => {
+    const dates = ["01/01/2027", "01/02/2026", "", "31/12/2025", "31/01/2026"];
 
     assert.deepEqual(
       [...dates].sort((left, right) => compareInboxDates(left, right, "date_desc")),
-      ["20/07/2026", "19/07/2026", "18/07/2026", ""],
+      ["01/01/2027", "01/02/2026", "31/01/2026", "31/12/2025", ""],
     );
     assert.deepEqual(
       [...dates].sort((left, right) => compareInboxDates(left, right, "date_asc")),
-      ["18/07/2026", "19/07/2026", "20/07/2026", ""],
+      ["31/12/2025", "31/01/2026", "01/02/2026", "01/01/2027", ""],
     );
   });
 
