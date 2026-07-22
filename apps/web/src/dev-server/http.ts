@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
+import { enhanceInboxInterfaceAccessibility } from "./inbox-interface-accessibility-enhancement.js";
 import { enhanceInboxInterface } from "./inbox-interface-enhancement.js";
 
 const solverFinLogoPath = "/icons/solverfin-512.png";
@@ -35,7 +36,7 @@ export function sendJson(
 export function sendHtml(response: ServerResponse, statusCode: number, html: string): void {
   response.writeHead(statusCode, { "content-type": "text/html; charset=utf-8" });
   const brandedHtml = enhanceSolverFinBranding(html);
-  response.end(isInboxDocument(brandedHtml) ? enhanceInboxInterface(brandedHtml) : brandedHtml);
+  response.end(isInboxDocument(brandedHtml) ? enhanceInboxDocument(brandedHtml) : brandedHtml);
 }
 
 export function apiError(code: string, message: string, correlationId: string) {
@@ -54,6 +55,10 @@ export function resolveCorrelationId(request: IncomingMessage): string {
 
 function isInboxDocument(html: string): boolean {
   return html.includes("<title>Inbox - SolverFin</title>");
+}
+
+function enhanceInboxDocument(html: string): string {
+  return enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html));
 }
 
 function enhanceSolverFinBranding(html: string): string {
