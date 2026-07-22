@@ -86,10 +86,14 @@ describe("Inbox list layout enhancement", () => {
     assert.match(enhanced, /\.dialog-close-form button/);
     assert.match(enhanced, /overflow-wrap: anywhere/);
     assert.match(enhanced, /word-break: normal/);
+    assert.match(
+      enhanced,
+      /nth-child\(1\) dd, \.row-summary > div:nth-child\(3\) dd \{ white-space: nowrap/,
+    );
     assert.match(enhanced, /row-summary > div \{ align-content: start; display: grid/);
     assert.match(
       enhanced,
-      /grid-template-columns: minmax\(82px, \.6fr\) minmax\(72px, \.55fr\) minmax\(100px, \.7fr\) minmax\(170px, 1\.6fr\) minmax\(140px, 1fr\)/,
+      /grid-template-columns: minmax\(90px, \.65fr\) minmax\(72px, \.55fr\) minmax\(100px, \.7fr\) minmax\(170px, 1\.6fr\) minmax\(132px, 1fr\)/,
     );
     assert.match(enhanced, /import-layout \{ grid-template-columns: 1fr !important/);
     assert.doesNotMatch(enhanced, /text-overflow: ellipsis/);

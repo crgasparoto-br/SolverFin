@@ -237,12 +237,18 @@ async function validateInboxListLayout(cdp) {
     const fields = [...row.querySelectorAll('.row-summary > div')];
     const descriptionEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Descrição');
     const accountEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Conta de referência');
+    const dateEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Data');
+    const amountEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Valor');
     const description = descriptionEntry?.querySelector('dd');
     const account = accountEntry?.querySelector('dd');
-    if (!description || !account || !accountEntry) return { found: false, expectedDescription };
+    const date = dateEntry?.querySelector('dd');
+    const amount = amountEntry?.querySelector('dd');
+    if (!description || !account || !accountEntry || !date || !amount) return { found: false, expectedDescription };
     const descriptionStyle = getComputedStyle(description);
     const accountStyle = getComputedStyle(account);
     const accountEntryStyle = getComputedStyle(accountEntry);
+    const dateStyle = getComputedStyle(date);
+    const amountStyle = getComputedStyle(amount);
     const accountRect = account.getBoundingClientRect();
     const accountEntryRect = accountEntry.getBoundingClientRect();
     return {
@@ -257,7 +263,13 @@ async function validateInboxListLayout(cdp) {
       accountValueWidth: accountRect.width,
       accountFieldWidth: accountEntryRect.width,
       accountValueHeight: accountRect.height,
-      accountLineHeight: Number.parseFloat(accountStyle.lineHeight) || 0
+      accountLineHeight: Number.parseFloat(accountStyle.lineHeight) || 0,
+      dateText: date.textContent?.trim() || '',
+      dateValueHeight: date.getBoundingClientRect().height,
+      dateLineHeight: Number.parseFloat(dateStyle.lineHeight) || 0,
+      amountText: amount.textContent?.trim() || '',
+      amountValueHeight: amount.getBoundingClientRect().height,
+      amountLineHeight: Number.parseFloat(amountStyle.lineHeight) || 0
     };
   })()`,
   );
@@ -289,6 +301,18 @@ async function validateInboxListLayout(cdp) {
   check(
     !longText.accountLineHeight || longText.accountValueHeight <= longText.accountLineHeight * 3.5,
     "The reference account breaks into too many lines",
+    longText,
+  );
+  check(longText.dateText === "15/07/2026", "The expected date is not available", longText);
+  check(
+    !longText.dateLineHeight || longText.dateValueHeight <= longText.dateLineHeight * 1.5,
+    "The date breaks into more than one line",
+    longText,
+  );
+  check(longText.amountText.length > 0, "The amount is not available", longText);
+  check(
+    !longText.amountLineHeight || longText.amountValueHeight <= longText.amountLineHeight * 1.5,
+    "The amount breaks into more than one line",
     longText,
   );
 

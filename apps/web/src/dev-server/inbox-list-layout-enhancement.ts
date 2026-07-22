@@ -118,10 +118,11 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
       .row-heading { align-items: center; display: flex; gap: 7px; justify-content: space-between; }
       .row-heading strong { font-size: .78rem; }
       .status-pill { min-height: 24px !important; padding: 3px 7px !important; }
-      .row-summary { display: grid !important; gap: 4px 10px !important; grid-template-columns: minmax(82px, .6fr) minmax(72px, .55fr) minmax(100px, .7fr) minmax(170px, 1.6fr) minmax(140px, 1fr); margin: 0 !important; }
+      .row-summary { display: grid !important; gap: 4px 10px !important; grid-template-columns: minmax(90px, .65fr) minmax(72px, .55fr) minmax(100px, .7fr) minmax(170px, 1.6fr) minmax(132px, 1fr); margin: 0 !important; }
       .row-summary > div { align-content: start; display: grid !important; gap: 2px; min-width: 0; }
       .row-summary dt { color: var(--muted); font-size: .62rem !important; font-weight: 700; letter-spacing: .02em; line-height: 1.15; text-transform: uppercase; }
       .row-summary dd { font-size: .75rem !important; line-height: 1.25; margin: 0 !important; min-width: 0; overflow-wrap: anywhere; word-break: normal; }
+      .row-summary > div:nth-child(1) dd, .row-summary > div:nth-child(3) dd { white-space: nowrap; }
       .inline-actions, .maintenance-actions { gap: 4px !important; }
       .inline-actions button, .inline-actions .button-link, .maintenance-actions button, .maintenance-actions .button-link { font-size: .72rem !important; min-height: 30px !important; padding: 0 8px !important; }
       .candidate-list { display: grid; gap: 4px !important; grid-column: 2; }
