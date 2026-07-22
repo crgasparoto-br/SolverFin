@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: statement-visual-${{ github.workflow }}-${{ github.ref }}
@@ -51,8 +51,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -63,37 +61,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
-      - name: Format and preserve Inbox candidate
-        run: |
-          npx prettier --write \
-            apps/web/src/dev-server/inbox-interface-enhancement.ts \
-            apps/web/src/dev-server/inbox-interface-enhancement.test.ts \
-            scripts/statement-visual/inbox-interface-refinement.mjs
-          mkdir -p artifacts/statement-visual/formatted/apps/web/src/dev-server
-          mkdir -p artifacts/statement-visual/formatted/scripts/statement-visual
-          cp apps/web/src/dev-server/inbox-interface-enhancement.ts artifacts/statement-visual/formatted/apps/web/src/dev-server/
-          cp apps/web/src/dev-server/inbox-interface-enhancement.test.ts artifacts/statement-visual/formatted/apps/web/src/dev-server/
-          cp scripts/statement-visual/inbox-interface-refinement.mjs artifacts/statement-visual/formatted/scripts/statement-visual/
-
-      - name: Commit Inbox formatting
-        env:
-          BRANCH_NAME: ${{ github.head_ref }}
-        run: |
-          if git diff --quiet -- \
-            apps/web/src/dev-server/inbox-interface-enhancement.ts \
-            apps/web/src/dev-server/inbox-interface-enhancement.test.ts \
-            scripts/statement-visual/inbox-interface-refinement.mjs; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            apps/web/src/dev-server/inbox-interface-enhancement.ts \
-            apps/web/src/dev-server/inbox-interface-enhancement.test.ts \
-            scripts/statement-visual/inbox-interface-refinement.mjs
-          git commit -m "style(inbox): aplicar formatacao padrao"
-          git push origin "HEAD:${BRANCH_NAME}"
 
       - name: Prepare database
         run: |
