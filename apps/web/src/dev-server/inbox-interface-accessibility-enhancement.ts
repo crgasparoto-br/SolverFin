@@ -21,11 +21,22 @@ function inboxAccessibilityStyles(): string {
     .inbox-page .maintenance-actions button,
     .inbox-page .maintenance-actions .button-link,
     .inbox-page .bulk-actions button {
-      min-height: 34px;
+      min-height: 34px !important;
+    }
+    .inbox-page .import-layout {
+      gap: 0 !important;
+    }
+    .inbox-page .import-batch-list,
+    .inbox-page .import-rows {
+      gap: 0 !important;
+    }
+    .inbox-page .batch-item {
+      border-radius: 0 !important;
+      gap: 1px !important;
     }
     .inbox-page .bulk-actions {
       min-height: 36px;
-      padding-block: 1px;
+      padding-block: 1px !important;
     }
     .inbox-page .bulk-actions > label input[type="checkbox"],
     .inbox-page .import-row > input[type="checkbox"] {
@@ -35,25 +46,46 @@ function inboxAccessibilityStyles(): string {
       width: 24px;
     }
     .inbox-page .import-row {
-      gap: 5px;
-      padding-block: 3px;
+      border: 0 !important;
+      border-bottom: 1px solid var(--line) !important;
+      border-radius: 0 !important;
+      gap: 3px !important;
+      padding: 2px 4px !important;
     }
     .inbox-page .import-row > input[type="checkbox"] {
-      margin-top: 3px;
+      margin-top: 5px;
+    }
+    .inbox-page .row-editor {
+      gap: 3px !important;
     }
     .inbox-page .row-heading .status-pill,
     .inbox-page .row-summary dt {
-      font-size: 0.6875rem;
+      font-size: 0.6875rem !important;
     }
     .inbox-page .row-heading .status-pill {
-      padding: 2px 6px;
+      padding: 2px 6px !important;
     }
     .inbox-page .detail-heading {
       margin-bottom: 3px;
-      padding-bottom: 3px;
+      padding-bottom: 3px !important;
     }
     .inbox-page .import-summary {
       margin-bottom: 3px;
+    }
+    @media (max-width: 800px) {
+      .inbox-page .bulk-actions {
+        align-items: flex-start !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+      }
+      .inbox-page .bulk-actions > label {
+        flex: 0 0 auto !important;
+        width: auto !important;
+      }
+      .inbox-page .bulk-actions > div {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
     }
   `;
 }
