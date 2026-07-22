@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   apply-issue-522-corrections:
-    name: Apply issue 522 corrections
+    name: Format issue 522 visual validation
     if: github.event_name == 'pull_request' && github.head_ref == 'feat/522-inbox-list-layout' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -36,19 +36,16 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Apply audited corrections
-        run: python scripts/temporary-fix-522.py
+      - name: Format visual validation
+        run: npx prettier --write scripts/statement-visual/inbox-list-layout.mjs .github/workflows/statement-visual-validation.yml
 
-      - name: Format corrections
-        run: npx prettier --write apps/web/src/dev-server/inbox-list-layout-enhancement.ts apps/web/src/dev-server/inbox-list-layout-enhancement.test.ts
-
-      - name: Commit corrections
+      - name: Commit formatted validation
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/src/dev-server/inbox-list-layout-enhancement.ts apps/web/src/dev-server/inbox-list-layout-enhancement.test.ts
+          git add scripts/statement-visual/inbox-list-layout.mjs .github/workflows/statement-visual-validation.yml
           git diff --cached --quiet && exit 0
-          git commit -m "fix: corrigir pendências da auditoria da issue 522"
+          git commit -m "style: formatar validação visual da issue 522"
           git push origin HEAD:feat/522-inbox-list-layout
 
   validate:
