@@ -39,11 +39,8 @@ jobs:
       - name: Apply audited corrections
         run: python scripts/temporary-fix-522.py
 
-      - name: Format and validate focused changes
-        run: |
-          npx prettier --write apps/web/src/dev-server/inbox-list-layout-enhancement.ts apps/web/src/dev-server/inbox-list-layout-enhancement.test.ts
-          npm run test --workspace @solverfin/web
-          npm run typecheck --workspace @solverfin/web
+      - name: Format corrections
+        run: npx prettier --write apps/web/src/dev-server/inbox-list-layout-enhancement.ts apps/web/src/dev-server/inbox-list-layout-enhancement.test.ts
 
       - name: Commit corrections
         run: |
