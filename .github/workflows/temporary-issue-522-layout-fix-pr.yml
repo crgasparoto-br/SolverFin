@@ -35,68 +35,68 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected one {label} match, found {count}")
+              return text.replace(old, new, 1)
+
           source_path = Path("apps/web/src/dev-server/inbox-list-layout-enhancement.ts")
           source = source_path.read_text()
-          replacements = {
-              '      .row-summary { display: grid !important; gap: 3px 10px !important; grid-template-columns: 92px 90px 118px minmax(190px, 1.7fr) minmax(150px, 1fr); margin: 0 !important; }':
+          source = replace_once(
+              source,
+              '      .row-summary { display: grid !important; gap: 3px 10px !important; grid-template-columns: 92px 90px 118px minmax(190px, 1.7fr) minmax(150px, 1fr); margin: 0 !important; }',
               '      .row-summary { display: grid !important; gap: 4px 10px !important; grid-template-columns: 100px 90px 118px minmax(220px, 1.6fr) minmax(180px, 1fr); margin: 0 !important; }',
-              '      .row-summary > div { align-items: baseline; display: flex !important; gap: 5px; min-width: 0; }':
+              "row summary columns",
+          )
+          source = replace_once(
+              source,
+              '      .row-summary > div { align-items: baseline; display: flex !important; gap: 5px; min-width: 0; }',
               '      .row-summary > div { align-content: start; display: grid !important; gap: 2px; min-width: 0; }',
-              '      .row-summary dt { color: var(--muted); flex: 0 0 auto; font-size: .62rem !important; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }':
+              "row summary field layout",
+          )
+          source = replace_once(
+              source,
+              '      .row-summary dt { color: var(--muted); flex: 0 0 auto; font-size: .62rem !important; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }',
               '      .row-summary dt { color: var(--muted); font-size: .62rem !important; font-weight: 700; letter-spacing: .02em; line-height: 1.15; text-transform: uppercase; }',
-              '      .row-summary dd { font-size: .75rem !important; line-height: 1.25; margin: 0 !important; min-width: 0; overflow-wrap: anywhere; }':
+              "row summary label",
+          )
+          source = replace_once(
+              source,
+              '      .row-summary dd { font-size: .75rem !important; line-height: 1.25; margin: 0 !important; min-width: 0; overflow-wrap: anywhere; }',
               '      .row-summary dd { font-size: .75rem !important; line-height: 1.25; margin: 0 !important; min-width: 0; overflow-wrap: anywhere; word-break: normal; }',
-          }
-          for old, new in replacements.items():
-              if source.count(old) != 1:
-                  raise SystemExit(f"Expected one CSS match, found {source.count(old)}: {old}")
-              source = source.replace(old, new)
+              "row summary value",
+          )
           source_path.write_text(source)
 
           test_path = Path("apps/web/src/dev-server/inbox-list-layout-enhancement.test.ts")
           test = test_path.read_text()
-          marker = '    assert.match(enhanced, /overflow-wrap: anywhere/);\n'
-          additions = (
-              '    assert.match(enhanced, /overflow-wrap: anywhere/);\n'
-              '    assert.match(enhanced, /word-break: normal/);\n'
-              '    assert.match(enhanced, /row-summary > div \\{ align-content: start; display: grid/);\n'
-              '    assert.match(\n'
-              '      enhanced,\n'
-              '      /grid-template-columns: 100px 90px 118px minmax\\(220px, 1\\.6fr\\) minmax\\(180px, 1fr\\)/,\n'
-              '    );\n'
-          )
-          if marker not in test:
-              raise SystemExit("Unit test marker not found")
           if "word-break: normal" not in test:
+              marker = '    assert.match(enhanced, /overflow-wrap: anywhere/);\n'
+              if marker not in test:
+                  raise SystemExit("Unit test insertion marker not found")
+              additions = (
+                  marker
+                  + '    assert.match(enhanced, /word-break: normal/);\n'
+                  + '    assert.match(enhanced, /row-summary > div \\{ align-content: start; display: grid/);\n'
+                  + '    assert.match(\n'
+                  + '      enhanced,\n'
+                  + '      /grid-template-columns: 100px 90px 118px minmax\\(220px, 1\\.6fr\\) minmax\\(180px, 1fr\\)/,\n'
+                  + '    );\n'
+              )
               test = test.replace(marker, additions, 1)
           test_path.write_text(test)
 
           visual_path = Path("scripts/statement-visual/inbox-list-layout.mjs")
           visual = visual_path.read_text()
-          old_block = '''  const longText = await evaluate(
-            cdp,
-            `(() => {
-              const row = [...document.querySelectorAll('#import-batch-detail .import-row')].find((item) => item.textContent.includes('${fixture.suffix}'));
-              const description = [...row.querySelectorAll('.row-summary > div')].find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Descrição')?.querySelector('dd');
-              const style = getComputedStyle(description);
-              return { text: description?.textContent || '', overflow: style.overflow, overflowWrap: style.overflowWrap };
-            })()`,
-          );
-          check(longText.text.includes(fixture.suffix), "The full description is not available", longText);
-          check(longText.overflow !== "hidden", "The description remains truncated", longText);
-          check(longText.overflowWrap === "anywhere", "The description does not wrap", longText);
+          start_marker = "  const longText = await evaluate("
+          end_marker = "\n}\n\nasync function readListState"
+          start = visual.find(start_marker)
+          end = visual.find(end_marker, start)
+          if start < 0 or end < 0:
+              raise SystemExit(f"Visual validation markers not found: start={start}, end={end}")
 
-          await screenshot(cdp, join(outputDir, "issue-522-inbox-list-layout.png"));
-          return {
-            fixture: { batchId: fixture.batchId },
-            initial,
-            filtered,
-            bulk,
-            ascending,
-            combined,
-            longText,
-          };'''
-          new_block = '''  const longText = await evaluate(
+          new_tail = '''  const longText = await evaluate(
             cdp,
             `(() => {
               const expectedDescription = 'Descrição longa preservada integralmente ${fixture.suffix}';
@@ -190,9 +190,7 @@ jobs:
             longText,
             responsive,
           };'''
-          if old_block not in visual:
-              raise SystemExit("Visual validation block not found")
-          visual_path.write_text(visual.replace(old_block, new_block))
+          visual_path.write_text(visual[:start] + new_tail + visual[end:])
           PY
 
       - name: Format changed files
