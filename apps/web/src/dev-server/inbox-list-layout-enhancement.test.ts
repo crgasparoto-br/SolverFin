@@ -85,6 +85,12 @@ describe("Inbox list layout enhancement", () => {
     assert.match(enhanced, /setInboxCheckboxSelection/);
     assert.match(enhanced, /\.dialog-close-form button/);
     assert.match(enhanced, /overflow-wrap: anywhere/);
+    assert.match(enhanced, /word-break: normal/);
+    assert.match(enhanced, /row-summary > div \{ align-content: start; display: grid/);
+    assert.match(
+      enhanced,
+      /grid-template-columns: 100px 90px 118px minmax\(220px, 1\.6fr\) minmax\(180px, 1fr\)/,
+    );
     assert.doesNotMatch(enhanced, /text-overflow: ellipsis/);
     assert.match(enhanced, /data-line-action='edit'/);
     assert.match(enhanced, /Nenhum lançamento no período selecionado/);

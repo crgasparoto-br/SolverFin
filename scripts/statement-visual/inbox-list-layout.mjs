@@ -231,16 +231,109 @@ async function validateInboxListLayout(cdp) {
   const longText = await evaluate(
     cdp,
     `(() => {
-      const row = [...document.querySelectorAll('#import-batch-detail .import-row')].find((item) => item.textContent.includes('${fixture.suffix}'));
-      const description = [...row.querySelectorAll('.row-summary > div')].find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Descrição')?.querySelector('dd');
-      const style = getComputedStyle(description);
-      return { text: description?.textContent || '', overflow: style.overflow, overflowWrap: style.overflowWrap };
-    })()`,
+    const expectedDescription = 'Descrição longa preservada integralmente ${fixture.suffix}';
+    const row = [...document.querySelectorAll('#import-batch-detail .import-row')].find((item) => item.textContent.includes(expectedDescription));
+    if (!row) return { found: false, expectedDescription };
+    const fields = [...row.querySelectorAll('.row-summary > div')];
+    const descriptionEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Descrição');
+    const accountEntry = fields.find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Conta de referência');
+    const description = descriptionEntry?.querySelector('dd');
+    const account = accountEntry?.querySelector('dd');
+    if (!description || !account || !accountEntry) return { found: false, expectedDescription };
+    const descriptionStyle = getComputedStyle(description);
+    const accountStyle = getComputedStyle(account);
+    const accountEntryStyle = getComputedStyle(accountEntry);
+    const accountRect = account.getBoundingClientRect();
+    const accountEntryRect = accountEntry.getBoundingClientRect();
+    return {
+      found: true,
+      expectedDescription,
+      text: description.textContent || '',
+      overflow: descriptionStyle.overflow,
+      overflowWrap: descriptionStyle.overflowWrap,
+      descriptionWidth: description.getBoundingClientRect().width,
+      accountText: account.textContent || '',
+      accountFieldDisplay: accountEntryStyle.display,
+      accountValueWidth: accountRect.width,
+      accountFieldWidth: accountEntryRect.width,
+      accountValueHeight: accountRect.height,
+      accountLineHeight: Number.parseFloat(accountStyle.lineHeight) || 0
+    };
+  })()`,
   );
-  check(longText.text.includes(fixture.suffix), "The full description is not available", longText);
+  check(longText.found, "The exact long-description row was not found", longText);
+  check(
+    longText.text === longText.expectedDescription,
+    "The exact long description is not available",
+    longText,
+  );
   check(longText.overflow !== "hidden", "The description remains truncated", longText);
   check(longText.overflowWrap === "anywhere", "The description does not wrap", longText);
+  check(
+    longText.descriptionWidth >= 180,
+    "The description has insufficient readable width",
+    longText,
+  );
+  check(longText.accountText.length > 0, "The reference account is not available", longText);
+  check(
+    longText.accountFieldDisplay === "grid",
+    "The reference account field is not vertically organized",
+    longText,
+  );
+  check(longText.accountValueWidth >= 120, "The reference account value is too narrow", longText);
+  check(
+    longText.accountValueWidth >= longText.accountFieldWidth * 0.8,
+    "The reference account value does not use the field width",
+    longText,
+  );
+  check(
+    !longText.accountLineHeight || longText.accountValueHeight <= longText.accountLineHeight * 3.5,
+    "The reference account breaks into too many lines",
+    longText,
+  );
 
+  const responsive = {};
+  for (const [label, width] of [
+    ["tablet", 900],
+    ["mobile", 390],
+  ]) {
+    await setViewport(cdp, width, 900);
+    await sleep(100);
+    responsive[label] = await evaluate(
+      cdp,
+      `(() => {
+      const row = document.querySelector('#import-batch-detail .import-row:not([hidden])');
+      const accountEntry = [...row.querySelectorAll('.row-summary > div')].find((entry) => entry.querySelector('dt')?.textContent?.trim() === 'Conta de referência');
+      const account = accountEntry?.querySelector('dd');
+      const accountRect = account?.getBoundingClientRect();
+      const accountEntryRect = accountEntry?.getBoundingClientRect();
+      return {
+        bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        accountFieldDisplay: accountEntry ? getComputedStyle(accountEntry).display : '',
+        accountValueWidth: accountRect?.width || 0,
+        accountFieldWidth: accountEntryRect?.width || 0
+      };
+    })()`,
+    );
+    check(
+      responsive[label].bodyFitsViewport,
+      `Inbox overflows the ${label} viewport`,
+      responsive[label],
+    );
+    check(
+      responsive[label].accountFieldDisplay === "grid",
+      `Reference account layout is inconsistent on ${label}`,
+      responsive[label],
+    );
+    check(
+      responsive[label].accountValueWidth >= responsive[label].accountFieldWidth * 0.8,
+      `Reference account value is cramped on ${label}`,
+      responsive[label],
+    );
+  }
+
+  await setViewport(cdp, 1280, 900);
+  await sleep(100);
   await screenshot(cdp, join(outputDir, "issue-522-inbox-list-layout.png"));
   return {
     fixture: { batchId: fixture.batchId },
@@ -250,6 +343,7 @@ async function validateInboxListLayout(cdp) {
     ascending,
     combined,
     longText,
+    responsive,
   };
 }
 
