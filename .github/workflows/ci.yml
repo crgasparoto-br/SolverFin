@@ -37,13 +37,13 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Format visual validation
-        run: npx prettier --write scripts/statement-visual/inbox-list-layout.mjs .github/workflows/statement-visual-validation.yml
+        run: npx prettier --write scripts/statement-visual/inbox-list-layout.mjs
 
       - name: Commit formatted validation
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/statement-visual/inbox-list-layout.mjs .github/workflows/statement-visual-validation.yml
+          git add scripts/statement-visual/inbox-list-layout.mjs
           git diff --cached --quiet && exit 0
           git commit -m "style: formatar validação visual da issue 522"
           git push origin HEAD:feat/522-inbox-list-layout
