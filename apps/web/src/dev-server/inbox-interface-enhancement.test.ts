@@ -70,7 +70,7 @@ test("mantém seleção compacta com alvos acessíveis e botões no padrão do d
   );
   assert.match(
     accessibilityStyles,
-    /\.inbox-page \.heading-actions button,[\s\S]*?\.inbox-page \.bulk-actions button \{[\s\S]*?min-height: 34px;/,
+    /\.inbox-page \.heading-actions button,[\s\S]*?\.inbox-page \.bulk-actions button \{[\s\S]*?min-height: 34px !important;/,
   );
   assert.match(enhanced, /\.inbox-page \.bulk-actions button \{[\s\S]*?width: auto;/);
 });
@@ -95,7 +95,7 @@ test("usa tipografia operacional legível sem perder a lista contínua", () => {
   );
   assert.match(
     accessibilityStyles,
-    /\.inbox-page \.row-heading \.status-pill,[\s\S]*?\.inbox-page \.row-summary dt \{[\s\S]*?font-size: 0\.6875rem;/,
+    /\.inbox-page \.row-heading \.status-pill,[\s\S]*?\.inbox-page \.row-summary dt \{[\s\S]*?font-size: 0\.6875rem !important;/,
   );
   assert.match(enhanced, /data-row-state="pending_invalid"/);
   assert.match(enhanced, /data-row-state="candidate_pending"/);
