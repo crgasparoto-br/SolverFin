@@ -14,6 +14,7 @@ import { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
+import { enhanceInboxListLayout } from "./dev-server/inbox-list-layout-enhancement.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import {
   enhanceCardListSorting,
@@ -39,6 +40,7 @@ export { renderAccountsPage, renderBudgetsPage } from "./dev-server/pages.js";
 export { renderCardsPage } from "./dev-server/cards-page.js";
 export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderDashboardPage } from "./dev-server/dashboard-page.js";
+export { enhanceInboxListLayout } from "./dev-server/inbox-list-layout-enhancement.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
 export { renderReportsPage } from "./dev-server/reports-page.js";
@@ -167,7 +169,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/inbox" && token) {
-    sendHtml(response, 200, await renderInboxPage(token));
+    const html = await renderInboxPage(token);
+    sendHtml(response, 200, enhanceInboxListLayout(html, url));
     return;
   }
 

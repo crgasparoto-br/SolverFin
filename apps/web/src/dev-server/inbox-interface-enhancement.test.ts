@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { enhanceInboxInterfaceAccessibility } from "./inbox-interface-accessibility-enhancement.js";
 import { enhanceInboxInterface } from "./inbox-interface-enhancement.js";
 
 const page = `<!doctype html>
@@ -22,8 +23,12 @@ const page = `<!doctype html>
   </body>
 </html>`;
 
+function enhancePage(html: string): string {
+  return enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html));
+}
+
 test("organiza a inbox como uma lista operacional com navegação por seção", () => {
-  const enhanced = enhanceInboxInterface(page);
+  const enhanced = enhancePage(page);
 
   assert.match(enhanced, /<main class="inbox-page" data-inbox-category-hierarchy-enhanced>/);
   assert.match(enhanced, /id="inbox-imports"/);
@@ -35,7 +40,7 @@ test("organiza a inbox como uma lista operacional com navegação por seção", 
 });
 
 test("isola estados claros e contínuos para os lotes da inbox", () => {
-  const enhanced = enhanceInboxInterface(page);
+  const enhanced = enhancePage(page);
 
   assert.match(enhanced, /\.inbox-page \.import-batch-list \{[\s\S]*?gap: 0;[\s\S]*?padding: 0;/);
   assert.match(
@@ -49,26 +54,32 @@ test("isola estados claros e contínuos para os lotes da inbox", () => {
   assert.match(enhanced, /\.inbox-page \.batch-item:focus-visible \{/);
 });
 
-test("mantém seleção em lote compacta e com checkbox intrínseco", () => {
-  const enhanced = enhanceInboxInterface(page);
+test("mantém seleção compacta com alvos acessíveis e botões no padrão do design system", () => {
+  const enhanced = enhancePage(page);
+  const accessibilityStyles = enhanced.slice(
+    enhanced.indexOf('<style data-inbox-interface-accessibility="enhanced">'),
+  );
 
   assert.match(
     enhanced,
     /\.inbox-page \.bulk-actions > label \{[\s\S]*?display: inline-flex;[\s\S]*?width: auto;/,
   );
   assert.match(
-    enhanced,
-    /\.inbox-page \.bulk-actions > label input\[type="checkbox"\] \{[\s\S]*?height: 18px;[\s\S]*?min-height: 18px;[\s\S]*?width: 18px;/,
+    accessibilityStyles,
+    /\.inbox-page \.bulk-actions > label input\[type="checkbox"\],[\s\S]*?height: 24px;[\s\S]*?min-height: 24px;[\s\S]*?width: 24px;/,
   );
   assert.match(
-    enhanced,
-    /\.inbox-page \.bulk-actions > div \{[\s\S]*?display: flex;[\s\S]*?justify-content: flex-end;/,
+    accessibilityStyles,
+    /\.inbox-page \.heading-actions button,[\s\S]*?\.inbox-page \.bulk-actions button \{[\s\S]*?min-height: 34px !important;/,
   );
   assert.match(enhanced, /\.inbox-page \.bulk-actions button \{[\s\S]*?width: auto;/);
 });
 
-test("renderiza lançamentos como lista corrida sem divisores internos excessivos", () => {
-  const enhanced = enhanceInboxInterface(page);
+test("usa tipografia operacional legível sem perder a lista contínua", () => {
+  const enhanced = enhancePage(page);
+  const accessibilityStyles = enhanced.slice(
+    enhanced.indexOf('<style data-inbox-interface-accessibility="enhanced">'),
+  );
 
   assert.match(
     enhanced,
@@ -82,12 +93,16 @@ test("renderiza lançamentos como lista corrida sem divisores internos excessivo
     enhanced,
     /\.inbox-page \.row-summary div,[\s\S]*?background: transparent;[\s\S]*?border: 0;[\s\S]*?padding: 0;/,
   );
+  assert.match(
+    accessibilityStyles,
+    /\.inbox-page \.row-heading \.status-pill,[\s\S]*?\.inbox-page \.row-summary dt \{[\s\S]*?font-size: 0\.6875rem !important;/,
+  );
   assert.match(enhanced, /data-row-state="pending_invalid"/);
   assert.match(enhanced, /data-row-state="candidate_pending"/);
 });
 
 test("usa navegação horizontal compacta e ações intrínsecas no mobile", () => {
-  const enhanced = enhanceInboxInterface(page);
+  const enhanced = enhancePage(page);
 
   assert.match(
     enhanced,
@@ -100,10 +115,11 @@ test("usa navegação horizontal compacta e ações intrínsecas no mobile", () 
   assert.doesNotMatch(enhanced, /\.inbox-page \.maintenance-actions button \{\s*width: 100%;/);
 });
 
-test("não duplica o aprimoramento quando aplicado novamente", () => {
-  const enhanced = enhanceInboxInterface(page);
-  const repeated = enhanceInboxInterface(enhanced);
+test("não duplica os aprimoramentos quando aplicados novamente", () => {
+  const enhanced = enhancePage(page);
+  const repeated = enhancePage(enhanced);
 
   assert.equal(repeated, enhanced);
   assert.equal(repeated.match(/data-inbox-interface="enhanced"/g)?.length, 1);
+  assert.equal(repeated.match(/data-inbox-interface-accessibility="enhanced"/g)?.length, 1);
 });
