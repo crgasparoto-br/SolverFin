@@ -62,6 +62,18 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Format and preserve Inbox candidate
+        run: |
+          npx prettier --write \
+            apps/web/src/dev-server/inbox-interface-enhancement.ts \
+            apps/web/src/dev-server/inbox-interface-enhancement.test.ts \
+            scripts/statement-visual/inbox-interface-refinement.mjs
+          mkdir -p artifacts/statement-visual/formatted/apps/web/src/dev-server
+          mkdir -p artifacts/statement-visual/formatted/scripts/statement-visual
+          cp apps/web/src/dev-server/inbox-interface-enhancement.ts artifacts/statement-visual/formatted/apps/web/src/dev-server/
+          cp apps/web/src/dev-server/inbox-interface-enhancement.test.ts artifacts/statement-visual/formatted/apps/web/src/dev-server/
+          cp scripts/statement-visual/inbox-interface-refinement.mjs artifacts/statement-visual/formatted/scripts/statement-visual/
+
       - name: Prepare database
         run: |
           npm run prisma:generate
