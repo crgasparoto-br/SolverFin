@@ -80,6 +80,10 @@ describe("Inbox list layout enhancement", () => {
     assert.match(enhanced, /2026-07-22/);
     assert.match(enhanced, /date_asc/);
     assert.match(enhanced, /visibleEligibleCheckboxes/);
+    assert.match(
+      enhanced,
+      /import-line-filter[\s\S]*data-select-suggestion\]:checked[\s\S]*false[\s\S]*true/,
+    );
     assert.match(enhanced, /stopImmediatePropagation/);
     assert.match(enhanced, /const shouldSelect = target.checked/);
     assert.match(enhanced, /setInboxCheckboxSelection/);

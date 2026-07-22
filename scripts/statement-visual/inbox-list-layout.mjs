@@ -216,6 +216,21 @@ async function validateInboxListLayout(cdp) {
   const combined = await readListState(cdp);
   check(combined.visibleDates.length === 0, "Date and state filters did not combine", combined);
   check(combined.emptyVisible, "Combined filters did not display an empty state", combined);
+  check(
+    combined.selectionSummary.includes("0 selecionada(s)"),
+    "Changing state filter retained invisible selections",
+    combined,
+  );
+  check(
+    combined.approveDisabled,
+    "Bulk confirmation stayed enabled for invisible selections",
+    combined,
+  );
+  check(
+    !combined.masterChecked,
+    "Master checkbox stayed selected after changing state filter",
+    combined,
+  );
 
   await evaluate(
     cdp,
@@ -381,7 +396,10 @@ async function readListState(cdp) {
         visibleDates: rows.filter((row) => !row.hidden).map(dateOf),
         hiddenCount: rows.filter((row) => row.hidden).length,
         counter: document.getElementById('inbox-visible-lines')?.textContent || '',
-        emptyVisible: Boolean(document.getElementById('inbox-date-empty-state'))
+        emptyVisible: Boolean(document.getElementById('inbox-date-empty-state')),
+        selectionSummary: document.getElementById('selection-summary')?.textContent || '',
+        approveDisabled: document.getElementById('approve-selected-import-lines')?.disabled ?? true,
+        masterChecked: document.getElementById('select-all-import-lines')?.checked ?? false
       };
     })()`,
   );

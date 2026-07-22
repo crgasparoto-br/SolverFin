@@ -335,7 +335,18 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
           true,
         );
 
-        document.getElementById("import-line-filter")?.addEventListener("change", scheduleApply);
+        document.getElementById("import-line-filter")?.addEventListener(
+          "change",
+          () => {
+            setInboxCheckboxSelection(
+              [...document.querySelectorAll(".import-row [data-select-suggestion]:checked")],
+              false,
+              (box) => box.dispatchEvent(new Event("change", { bubbles: true })),
+            );
+            scheduleApply();
+          },
+          true,
+        );
         const detail = document.getElementById("import-batch-detail");
         if (detail) new MutationObserver(scheduleApply).observe(detail, { childList: true, subtree: true });
         ensureToolbar();
