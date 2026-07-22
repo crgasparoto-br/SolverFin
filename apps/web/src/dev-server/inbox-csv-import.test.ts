@@ -81,7 +81,8 @@ describe("Inbox CSV import review contract", () => {
   it("supports transfer correction with another account and explicit direction", () => {
     assert.match(source, /<option value="transfer">Transferência<\/option>/);
     assert.match(source, /name="otherAccountId"/);
-    assert.match(source, /Conta de referência/);
+    assert.match(source, /Conta Destino/);
+    assert.match(source, /Conta Origem/);
     assert.match(source, /Origem:/);
     assert.match(source, /Destino:/);
     assert.match(source, /payload\.direction === "inflow"/);

@@ -292,8 +292,8 @@ function renderCsvLineEditDialog(): string {
         <label>Tipo<select name="kind"><option value="expense">Despesa</option><option value="income">Receita</option><option value="transfer">Transferência</option></select></label>
         <label>Valor<input name="amount" inputmode="decimal" required /></label>
         <label class="description-field">Descrição<input name="description" required /></label>
-        <label>Conta de referência<select name="accountId" required></select></label>
-        <label id="csv-line-other-account-field" hidden>Outra conta<select name="otherAccountId"></select></label>
+        <label>Conta Destino<select name="accountId" required></select></label>
+        <label id="csv-line-other-account-field" hidden>Conta Origem<select name="otherAccountId"></select></label>
         <label>Categoria<select name="categoryId"></select></label>
         <p id="csv-line-transfer-direction" class="transfer-direction full-span" hidden></p>
         <p id="csv-line-edit-status" class="form-status muted full-span" role="status" aria-live="polite"></p>
