@@ -116,7 +116,7 @@ async function createFixture(cdp) {
         const rows = Array.from({ length: 10 }, (_, index) => {
           const day = String(index + 1).padStart(2, '0');
           const description = index === 3
-            ? 'Descrição longa para validar leitura, alinhamento e comportamento responsivo sem cortar ações essenciais ' + suffix
+            ? 'Descrição longa para validar leitura e alinhamento responsivo sem cortar ações essenciais ' + suffix
             : 'Lançamento visual ' + String(index + 1) + ' ' + suffix;
           const amount = index % 3 === 0 ? String(100 + index) + '.50' : '-' + String(20 + index) + '.75';
           return '2026-07-' + day + ',' + description + ',' + amount;
@@ -157,7 +157,7 @@ async function inspectViewport(cdp, { width, height, screenshotName }) {
       };
       const rows = [...document.querySelectorAll('.import-row')];
       const selectedBatch = document.querySelector('.batch-item.selected');
-      const firstBatch = document.querySelector('.batch-item');
+      const unselectedBatch = document.querySelector('.batch-item:not(.selected)') ?? document.querySelector('.batch-item');
       const batchList = document.querySelector('.import-batch-list');
       const bulk = document.querySelector('.bulk-actions');
       const bulkLabel = bulk?.querySelector(':scope > label');
@@ -165,7 +165,7 @@ async function inspectViewport(cdp, { width, height, screenshotName }) {
       const bulkButton = document.getElementById('approve-selected-import-lines');
       const nav = document.querySelector('.inbox-section-nav');
       const selectedStyle = selectedBatch ? getComputedStyle(selectedBatch) : null;
-      const firstStyle = firstBatch ? getComputedStyle(firstBatch) : null;
+      const unselectedStyle = unselectedBatch ? getComputedStyle(unselectedBatch) : null;
       const listStyle = batchList ? getComputedStyle(batchList) : null;
       const rowStyle = rows[0] ? getComputedStyle(rows[0]) : null;
       selectedBatch?.focus();
@@ -183,7 +183,7 @@ async function inspectViewport(cdp, { width, height, screenshotName }) {
           const rect = row.getBoundingClientRect();
           return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height) };
         }),
-        batchIsContinuous: Boolean(firstStyle && listStyle && firstStyle.borderRadius === '0px' && listStyle.gap === '0px' && firstStyle.backgroundColor === 'rgba(0, 0, 0, 0)'),
+        batchIsContinuous: Boolean(unselectedStyle && listStyle && unselectedStyle.borderRadius === '0px' && listStyle.gap === '0px' && unselectedStyle.backgroundColor === 'rgba(0, 0, 0, 0)'),
         selectedBatchHasIndicator: Boolean(selectedStyle && selectedStyle.borderLeftWidth !== '0px' && selectedStyle.borderLeftColor !== 'rgba(0, 0, 0, 0)'),
         focusIsVisible: document.activeElement === selectedBatch && Boolean(focusedStyle && focusedStyle.boxShadow !== 'none'),
         bulkControlsIntrinsic: Boolean(bulk && bulkLabel && bulkCheckbox && bulkButton && bulkLabel.getBoundingClientRect().width < bulk.getBoundingClientRect().width * 0.6 && bulkCheckbox.getBoundingClientRect().width <= 24 && bulkButton.getBoundingClientRect().width < bulk.getBoundingClientRect().width * 0.7),
