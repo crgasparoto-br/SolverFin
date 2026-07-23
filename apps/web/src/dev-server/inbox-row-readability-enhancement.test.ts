@@ -32,7 +32,7 @@ test("amplia status, data, valor e conta sem truncamento", () => {
 
   assert.match(
     enhanced,
-    /--inbox-table-columns: 28px 84px 38px 82px 60px minmax\(88px, 1fr\) 110px minmax\(116px, 0\.9fr\) minmax\(120px, 1\.25fr\) 122px;/,
+    /--inbox-table-columns: 28px 84px 38px 82px 60px minmax\(58px, 1fr\) 110px minmax\(116px, 0\.9fr\) minmax\(150px, 1\.25fr\) 122px;/,
   );
   assert.match(
     enhanced,
@@ -47,6 +47,10 @@ test("amplia status, data, valor e conta sem truncamento", () => {
     /\.import-table-cell-account,[\s\S]*?\.row-summary-value-preview,[\s\S]*?overflow-wrap: anywhere;[\s\S]*?text-overflow: clip !important;[\s\S]*?white-space: normal !important;/,
   );
   assert.match(enhanced, /@media \(min-width: 1024px\) \{[\s\S]*?min-width: 848px;/);
+  assert.match(
+    enhanced,
+    /\.candidate-card \.inline-actions \{[\s\S]*?display: grid !important;[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+  );
 });
 
 test("mantém conteúdo integral e seletor compacto no fluxo responsivo", () => {
