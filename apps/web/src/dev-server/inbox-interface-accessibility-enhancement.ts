@@ -152,6 +152,13 @@ function inboxAccessibilityStyles(): string {
         min-width: 0;
       }
     }
+    @media (max-width: 520px) {
+      .inbox-page .compact-filters button {
+        flex: 0 0 auto !important;
+        max-width: 100%;
+        width: max-content !important;
+      }
+    }
   `;
 }
 
