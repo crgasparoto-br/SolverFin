@@ -105,7 +105,9 @@ function inboxTableLayoutScript(): string {
           if (accountValue && otherAccountValue && otherAccountContainer) {
             const secondary = document.createElement("span");
             secondary.className = "import-table-account-secondary";
-            secondary.textContent = "Outra conta: " + (otherAccountValue.textContent?.trim() || "—");
+            secondary.textContent =
+              "Outra conta: " +
+              (otherAccountValue.dataset.fullValue || otherAccountValue.textContent?.trim() || "—");
             accountValue.append(secondary);
             otherAccountContainer.hidden = true;
           }
@@ -311,11 +313,11 @@ function inboxTableLayoutStyles(): string {
       }
       .inbox-page .import-table-select-cell input[type="checkbox"] {
         accent-color: var(--primary);
-        height: 18px;
+        height: 24px;
         margin: 0;
-        min-height: 18px;
+        min-height: 24px;
         padding: 0;
-        width: 18px;
+        width: 24px;
       }
       .inbox-page .import-table-row-content,
       .inbox-page .row-heading,
@@ -481,11 +483,11 @@ function inboxTableLayoutStyles(): string {
         padding-top: 2px;
       }
       .inbox-page .import-table-select-cell input[type="checkbox"] {
-        height: 18px;
+        height: 24px;
         margin: 0;
-        min-height: 18px;
+        min-height: 24px;
         padding: 0;
-        width: 18px;
+        width: 24px;
       }
       .inbox-page .import-table-row-content {
         display: grid !important;
@@ -519,6 +521,9 @@ function inboxTableLayoutStyles(): string {
         grid-column: 2;
         margin-top: 0;
         min-width: 0;
+      }
+      .inbox-page .import-table-account-secondary {
+        display: none;
       }
       .inbox-page .row-action-cluster {
         justify-content: flex-start;
