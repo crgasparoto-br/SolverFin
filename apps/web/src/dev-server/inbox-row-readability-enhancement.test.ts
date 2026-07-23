@@ -9,17 +9,17 @@ const page = `<!doctype html>
   <body><main class="inbox-page"></main></body>
 </html>`;
 
-test("reduz o seletor da linha e usa apresentação circular", () => {
+test("reduz visualmente o seletor circular sem diminuir o alvo acessível", () => {
   const enhanced = enhanceInboxRowReadability(page);
 
   assert.match(enhanced, /data-inbox-row-readability="enhanced"/);
   assert.match(
     enhanced,
-    /input\[type="checkbox"\] \{[\s\S]*?appearance: none !important;[\s\S]*?border-radius: 50%;[\s\S]*?flex: 0 0 16px !important;[\s\S]*?height: 16px !important;[\s\S]*?width: 16px !important;/,
+    /input\[type="checkbox"\] \{[\s\S]*?appearance: none !important;[\s\S]*?background-image: radial-gradient\([\s\S]*?#64748b 6px 8px,[\s\S]*?transparent 8px[\s\S]*?border-radius: 50%;[\s\S]*?flex: 0 0 24px !important;[\s\S]*?height: 24px !important;[\s\S]*?width: 24px !important;/,
   );
   assert.match(
     enhanced,
-    /input\[type="checkbox"\]:checked \{[\s\S]*?box-shadow: inset 0 0 0 3px var\(--surface\);/,
+    /input\[type="checkbox"\]:checked \{[\s\S]*?background-image: radial-gradient\([\s\S]*?var\(--primary\) 7px 8px,[\s\S]*?transparent 8px/,
   );
   assert.match(
     enhanced,
@@ -50,7 +50,7 @@ test("mantém o seletor compacto também no mobile", () => {
 
   assert.match(
     enhanced,
-    /@media \(max-width: 520px\) \{[\s\S]*?grid-template-columns: 20px minmax\(0, 1fr\) !important;[\s\S]*?min-width: 20px;/,
+    /@media \(max-width: 520px\) \{[\s\S]*?grid-template-columns: 24px minmax\(0, 1fr\) !important;[\s\S]*?min-width: 24px;/,
   );
 });
 
