@@ -144,8 +144,13 @@ async function createFixture(cdp) {
 function validateMetrics(metrics, { requireFiveRows }) {
   check(metrics.bodyFitsViewport, `Inbox overflows horizontally at ${metrics.viewport}`, metrics);
   check(
-    metrics.descriptionPreviewOverflows,
-    `Long description did not exercise the truncation boundary at ${metrics.viewport}`,
+    metrics.financialFieldsAreFullyVisible,
+    `One or more financial columns are clipped at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.descriptionPreviewIsFullyVisible,
+    `Long description is clipped at ${metrics.viewport}`,
     metrics,
   );
   check(
@@ -227,10 +232,14 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         const preview = value?.querySelector('.row-summary-value-preview');
         const popover = value?.querySelector('.row-summary-full-value');
         const fullValue = value?.dataset.fullValue || '';
+        const previewClipped = Boolean(
+          preview &&
+          (preview.scrollWidth > preview.clientWidth + 1 || preview.scrollHeight > preview.clientHeight + 1)
+        );
         return {
           label,
           fullValue,
-          previewOverflows: Boolean(preview && preview.scrollWidth > preview.clientWidth),
+          previewClipped,
           fullyAccessible: Boolean(
             value &&
             value.dataset.fullValueEnhanced === 'true' &&
@@ -268,9 +277,9 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         ? financialLabels.map((label) => readField(label, targetRow))
         : [];
       const account = targetRow ? findValue('Conta de referência', targetRow) : null;
-      const preview = description?.querySelector('.row-summary-value-preview');
+      const descriptionField = financialFields.find((field) => field.label === 'Descrição');
       const popover = description?.querySelector('.row-summary-full-value');
-      description?.scrollIntoView({ block: "center", inline: "nearest" });
+      description?.scrollIntoView({ block: 'center', inline: 'nearest' });
       description?.focus();
       const popoverStyle = popover ? getComputedStyle(popover) : null;
       const popoverRect = popover?.getBoundingClientRect();
@@ -282,9 +291,12 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         viewport: window.innerWidth + 'x' + window.innerHeight,
         bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         completeRows: rows.filter(withinViewport).length,
-        descriptionPreviewOverflows: Boolean(preview && preview.scrollWidth > preview.clientWidth),
+        financialFieldsAreFullyVisible:
+          financialFields.length === financialLabels.length &&
+          financialFields.every((field) => !field.previewClipped),
+        descriptionPreviewIsFullyVisible: Boolean(descriptionField && !descriptionField.previewClipped),
         dateAndAmountAreFullyVisible: fullyVisibleLabels.every(
-          (label) => !financialFields.find((field) => field.label === label)?.previewOverflows
+          (label) => !financialFields.find((field) => field.label === label)?.previewClipped
         ),
         financialFieldsAreFullyAccessible:
           financialFields.length === financialLabels.length &&
@@ -321,8 +333,8 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         descriptionDimensions: description
           ? {
               width: Math.round(description.getBoundingClientRect().width),
-              previewClientWidth: preview?.clientWidth || 0,
-              previewScrollWidth: preview?.scrollWidth || 0,
+              previewClientWidth: description.querySelector('.row-summary-value-preview')?.clientWidth || 0,
+              previewScrollWidth: description.querySelector('.row-summary-value-preview')?.scrollWidth || 0,
             }
           : null,
       };
