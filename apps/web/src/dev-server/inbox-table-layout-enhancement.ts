@@ -205,7 +205,7 @@ function inboxTableLayoutScript(): string {
 function inboxTableLayoutStyles(): string {
   return `
     .inbox-page .import-rows {
-      --inbox-table-columns: 34px 76px 44px 74px 76px minmax(140px, 1.55fr) 88px minmax(112px, 1fr) minmax(132px, 1.15fr) 128px;
+      --inbox-table-columns: 34px 66px 38px 68px 60px minmax(96px, 1.1fr) 76px minmax(82px, 0.75fr) minmax(180px, 1.55fr) 122px;
     }
     .inbox-page .import-table-header {
       display: none;
@@ -248,7 +248,7 @@ function inboxTableLayoutStyles(): string {
       .inbox-page .import-row {
         display: grid !important;
         grid-template-columns: var(--inbox-table-columns) !important;
-        min-width: 850px;
+        min-width: 822px;
       }
       .inbox-page .import-table-header {
         background: var(--surface-soft);
@@ -395,11 +395,11 @@ function inboxTableLayoutStyles(): string {
       }
       .inbox-page .import-table-observations .candidate-list {
         display: grid;
-        gap: 3px;
+        gap: 5px;
         margin: 0;
       }
       .inbox-page .import-table-observations .candidate-card {
-        align-items: start;
+        align-items: stretch;
         background: transparent;
         border: 0;
         border-left: 2px solid var(--cyan);
@@ -418,12 +418,19 @@ function inboxTableLayoutStyles(): string {
         margin: 1px 0 0;
       }
       .inbox-page .import-table-observations .candidate-card .inline-actions {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 3px;
         justify-content: flex-start;
+        width: 100%;
       }
       .inbox-page .import-table-observations .candidate-card button {
-        min-height: 28px;
-        padding: 3px 7px;
-        width: auto;
+        height: auto;
+        min-height: 34px !important;
+        min-width: 0;
+        padding: 3px 5px;
+        white-space: normal;
+        width: 100% !important;
       }
       .inbox-page .row-action-cluster {
         align-content: center;
@@ -461,10 +468,12 @@ function inboxTableLayoutStyles(): string {
         grid-column: 1 / -1;
       }
       .inbox-page .row-action-cluster .compact-row-action {
-        min-height: 34px;
-        min-width: 34px;
-        padding: 0;
-        width: 34px;
+        flex: 0 0 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        min-width: 34px !important;
+        padding: 0 !important;
+        width: 34px !important;
       }
     }
 
