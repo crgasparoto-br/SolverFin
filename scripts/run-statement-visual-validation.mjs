@@ -7,6 +7,7 @@ try {
   await import("./statement-visual/main.mjs");
   await import("./statement-visual/inbox-category-hierarchy.mjs");
   await import("./statement-visual/inbox-status-control.mjs");
+  await import("./statement-visual/inbox-date-filter.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
