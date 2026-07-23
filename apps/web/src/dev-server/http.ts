@@ -59,9 +59,7 @@ function isInboxDocument(html: string): boolean {
 }
 
 function enhanceInboxDocument(html: string): string {
-  return enhanceInboxTableLayout(
-    enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html)),
-  );
+  return enhanceInboxTableLayout(enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html)));
 }
 
 function enhanceSolverFinBranding(html: string): string {
