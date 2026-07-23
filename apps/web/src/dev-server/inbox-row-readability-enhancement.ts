@@ -18,44 +18,6 @@ function inboxRowReadabilityStyles(): string {
       min-width: 28px;
       padding-inline: 2px !important;
     }
-    .inbox-page .import-table-select-cell input[type="checkbox"] {
-      -webkit-appearance: none !important;
-      appearance: none !important;
-      background-color: transparent;
-      background-image: radial-gradient(
-        circle at center,
-        var(--surface) 0 6px,
-        #64748b 6px 8px,
-        transparent 8px
-      );
-      border: 0;
-      border-radius: 50%;
-      box-shadow: none;
-      cursor: pointer;
-      flex: 0 0 24px !important;
-      height: 24px !important;
-      margin: 0;
-      min-height: 24px !important;
-      padding: 0;
-      width: 24px !important;
-    }
-    .inbox-page .import-table-select-cell input[type="checkbox"]:checked {
-      background-image: radial-gradient(
-        circle at center,
-        var(--primary) 0 5px,
-        var(--surface) 5px 7px,
-        var(--primary) 7px 8px,
-        transparent 8px
-      );
-    }
-    .inbox-page .import-table-select-cell input[type="checkbox"]:focus-visible {
-      outline: 2px solid var(--cyan);
-      outline-offset: 1px;
-    }
-    .inbox-page .import-table-select-cell input[type="checkbox"]:disabled {
-      cursor: not-allowed;
-      opacity: 0.55;
-    }
     .inbox-page .import-table-header > span,
     .inbox-page .import-table-status,
     .inbox-page .row-heading .status-pill,

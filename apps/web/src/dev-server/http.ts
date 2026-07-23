@@ -7,6 +7,7 @@ import { enhanceInboxRowReadability } from "./inbox-row-readability-enhancement.
 import { enhanceInboxStatusAndActions } from "./inbox-status-and-actions-enhancement.js";
 import { enhanceInboxStatusControl } from "./inbox-status-control-enhancement.js";
 import { enhanceInboxTableLayout } from "./inbox-table-layout-enhancement.js";
+import { enhanceRoundSelectionControls } from "./round-selection-control-enhancement.js";
 
 const solverFinLogoPath = "/icons/solverfin-512.png";
 const solverFinDescription =
@@ -41,7 +42,10 @@ export function sendJson(
 export function sendHtml(response: ServerResponse, statusCode: number, html: string): void {
   response.writeHead(statusCode, { "content-type": "text/html; charset=utf-8" });
   const brandedHtml = enhanceSolverFinBranding(html);
-  response.end(isInboxDocument(brandedHtml) ? enhanceInboxDocument(brandedHtml) : brandedHtml);
+  const standardizedHtml = enhanceRoundSelectionControls(brandedHtml);
+  response.end(
+    isInboxDocument(standardizedHtml) ? enhanceInboxDocument(standardizedHtml) : standardizedHtml,
+  );
 }
 
 export function apiError(code: string, message: string, correlationId: string) {
