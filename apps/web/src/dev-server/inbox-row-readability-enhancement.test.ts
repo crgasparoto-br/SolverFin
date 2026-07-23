@@ -27,16 +27,20 @@ test("reduz visualmente o seletor circular sem diminuir o alvo acessível", () =
   );
 });
 
-test("amplia status, data, valor e conta sem truncamento", () => {
+test("dimensiona todas as colunas para preservar o conteúdo integral", () => {
   const enhanced = enhanceInboxRowReadability(page);
 
   assert.match(
     enhanced,
-    /--inbox-table-columns: 28px 80px 38px 82px 56px minmax\(52px, 1fr\) 110px minmax\(110px, 0\.9fr\) minmax\(170px, 1\.25fr\) 122px;/,
+    /--inbox-table-columns: 28px minmax\(92px, 120px\) 42px minmax\(82px, 96px\) minmax\(96px, 112px\) minmax\(180px, 1\.45fr\) minmax\(120px, 136px\) minmax\(150px, 1fr\) minmax\(210px, 1\.35fr\) 122px;/,
   );
   assert.match(
     enhanced,
-    /\.import-table-status,[\s\S]*?overflow: visible !important;[\s\S]*?overflow-wrap: anywhere;[\s\S]*?text-overflow: clip !important;[\s\S]*?white-space: normal !important;/,
+    /\.import-table-header > span,[\s\S]*?\.import-table-cell \.row-summary-value-preview,[\s\S]*?\.import-table-observations \.candidate-card p \{[\s\S]*?overflow: visible !important;[\s\S]*?overflow-wrap: anywhere;[\s\S]*?text-overflow: clip !important;[\s\S]*?white-space: normal !important;/,
+  );
+  assert.match(
+    enhanced,
+    /\.import-table-cell-type,[\s\S]*?\.import-table-cell-type \.row-summary-value-preview \{[\s\S]*?overflow: visible !important;[\s\S]*?overflow-wrap: anywhere;[\s\S]*?text-overflow: clip !important;[\s\S]*?white-space: normal !important;/,
   );
   assert.match(
     enhanced,
@@ -46,7 +50,7 @@ test("amplia status, data, valor e conta sem truncamento", () => {
     enhanced,
     /\.import-table-cell-account,[\s\S]*?\.row-summary-value-preview,[\s\S]*?overflow-wrap: anywhere;[\s\S]*?text-overflow: clip !important;[\s\S]*?white-space: normal !important;/,
   );
-  assert.match(enhanced, /@media \(min-width: 1024px\) \{[\s\S]*?min-width: 848px;/);
+  assert.match(enhanced, /@media \(min-width: 1024px\) \{[\s\S]*?min-width: 1152px;/);
   assert.match(
     enhanced,
     /\.candidate-card \{[\s\S]*?gap: 2px;[\s\S]*?padding-block: 0;[\s\S]*?\.candidate-card p \{[\s\S]*?line-height: 1\.15;/,
