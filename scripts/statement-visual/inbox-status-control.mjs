@@ -124,14 +124,25 @@ try {
   assert.equal(confirmedStatus.color, "rgb(21, 128, 61)");
   assert.equal(confirmedStatus.backgroundColor, "rgba(0, 0, 0, 0)");
 
-  const longAccountText = await applyLongAccountContent(browser.cdp, fixture.confirmedSuggestionId);
+  const adversarialColumnText = await applyAdversarialColumnContent(
+    browser.cdp,
+    fixture.confirmedSuggestionId,
+  );
   const confirmedLayout = await readRowLayout(browser.cdp, fixture.confirmedSuggestionId);
+  const columnLayouts = await readColumnLayouts(browser.cdp, fixture.confirmedSuggestionId);
   assert.equal(confirmedLayout.selector.width, 24);
   assert.equal(confirmedLayout.selector.height, 24);
   assert.equal(confirmedLayout.selector.borderRadius, "50%");
   assert.match(confirmedLayout.selector.backgroundImage, /radial-gradient/);
   assert.equal(confirmedLayout.status.clipped, false);
   assert.equal(confirmedLayout.account.clipped, false);
+  assert.equal(columnLayouts.find((item) => item.name === "type")?.text, "Transferência");
+  assert.equal(columnLayouts.find((item) => item.name === "type")?.whiteSpace, "normal");
+  assert.equal(
+    columnLayouts.every((item) => !item.clipped),
+    true,
+    `Clipped Inbox columns: ${JSON.stringify(columnLayouts.filter((item) => item.clipped))}`,
+  );
 
   const screenshotName = "inbox-status-control-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, screenshotName));
@@ -149,7 +160,8 @@ try {
     rejectedStatus,
     confirmedStatus,
     confirmedLayout,
-    longAccountText,
+    adversarialColumnText,
+    columnLayouts,
     screenshot: screenshotName,
   };
 } finally {
@@ -237,16 +249,29 @@ async function readActionTooltips(cdp, suggestionId) {
   );
 }
 
-async function applyLongAccountContent(cdp, suggestionId) {
+async function applyAdversarialColumnContent(cdp, suggestionId) {
   return evaluate(
     cdp,
     `(() => {
       const row = document.querySelector('[data-suggestion-id="${suggestionId}"]');
-      const account = row?.querySelector('.import-table-cell-account .row-summary-value-preview, .import-table-cell-account');
-      if (!account) return "";
-      const text = "Conta empresarial de investimentos e reservas de longo prazo";
-      account.textContent = text;
-      return text;
+      const values = {
+        type: "Transferência",
+        description: "Pagamento recorrente com descrição extensa para validar a leitura integral da coluna",
+        amount: "R$ 123.456.789,99",
+        account: "Conta empresarial de investimentos e reservas de longo prazo",
+        observations: "Observação operacional extensa que deve permanecer completamente legível"
+      };
+      const targets = {
+        type: row?.querySelector('.import-table-cell-type .row-summary-value-preview, .import-table-cell-type'),
+        description: row?.querySelector('.import-table-cell-description .row-summary-value-preview, .import-table-cell-description'),
+        amount: row?.querySelector('.import-table-cell-amount .row-summary-value-preview, .import-table-cell-amount'),
+        account: row?.querySelector('.import-table-cell-account .row-summary-value-preview, .import-table-cell-account'),
+        observations: row?.querySelector('.import-table-observations')
+      };
+      for (const [name, target] of Object.entries(targets)) {
+        if (target) target.textContent = values[name];
+      }
+      return values;
     })()`,
   );
 }
@@ -278,6 +303,41 @@ async function readRowLayout(cdp, suggestionId) {
         status: measure(status),
         account: measure(account)
       };
+    })()`,
+  );
+}
+
+async function readColumnLayouts(cdp, suggestionId) {
+  return evaluate(
+    cdp,
+    `(() => {
+      const row = document.querySelector('[data-suggestion-id="${suggestionId}"]');
+      const selectors = [
+        ["status", ".import-table-status, .row-heading .status-pill"],
+        ["line", ".import-table-line"],
+        ["date", ".import-table-cell-date .row-summary-value-preview, .import-table-cell-date"],
+        ["type", ".import-table-cell-type .row-summary-value-preview, .import-table-cell-type"],
+        ["description", ".import-table-cell-description .row-summary-value-preview, .import-table-cell-description"],
+        ["amount", ".import-table-cell-amount .row-summary-value-preview, .import-table-cell-amount"],
+        ["account", ".import-table-cell-account .row-summary-value-preview, .import-table-cell-account"],
+        ["observations", ".import-table-observations"],
+        ["actions", ".row-action-cluster"]
+      ];
+      return selectors.map(([name, selector]) => {
+        const node = row?.querySelector(selector);
+        const style = node ? getComputedStyle(node) : undefined;
+        return {
+          name,
+          text: node?.textContent?.trim() || "",
+          width: node ? Math.round(node.getBoundingClientRect().width) : 0,
+          height: node ? Math.round(node.getBoundingClientRect().height) : 0,
+          whiteSpace: style?.whiteSpace || "",
+          overflow: style?.overflow || "",
+          overflowWrap: style?.overflowWrap || "",
+          textOverflow: style?.textOverflow || "",
+          clipped: !node || node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1
+        };
+      });
     })()`,
   );
 }
