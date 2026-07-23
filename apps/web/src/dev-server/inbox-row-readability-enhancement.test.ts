@@ -32,7 +32,7 @@ test("dimensiona todas as colunas para preservar o conteúdo integral", () => {
 
   assert.match(
     enhanced,
-    /--inbox-table-columns: 28px 72px 38px 78px 88px minmax\(80px, 1fr\) 100px minmax\(100px, 0\.9fr\) minmax\(140px, 1\.25fr\) 122px;/,
+    /--inbox-table-columns: 28px 72px 38px 78px 76px minmax\(150px, 1\.25fr\) 100px minmax\(110px, 0\.9fr\) minmax\(84px, 1fr\) 112px;/,
   );
   assert.match(
     enhanced,
@@ -47,6 +47,10 @@ test("dimensiona todas as colunas para preservar o conteúdo integral", () => {
     /\.import-table-cell-account,[\s\S]*?\.row-summary-value-preview,[\s\S]*?overflow-wrap: anywhere;[\s\S]*?text-overflow: clip !important;[\s\S]*?white-space: normal !important;/,
   );
   assert.match(enhanced, /@media \(min-width: 1024px\) \{[\s\S]*?min-width: 848px;/);
+  assert.match(
+    enhanced,
+    /\.import-table-select-cell,[\s\S]*?\.row-action-cluster \{[\s\S]*?padding-block: 2px !important;/,
+  );
   assert.match(
     enhanced,
     /\.candidate-card \{[\s\S]*?gap: 2px;[\s\S]*?padding-block: 0;[\s\S]*?\.candidate-card p \{[\s\S]*?line-height: 1\.15;/,
