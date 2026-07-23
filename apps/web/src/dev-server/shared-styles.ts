@@ -34,6 +34,7 @@ export function sharedShellStyles(): string {
       --shadow-focus: 0 0 0 3px rgba(34,211,238,.35);
     }
     *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     body {
       margin: 0;
       min-height: 100vh;

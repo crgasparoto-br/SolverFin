@@ -1,5 +1,13 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
+import { enhanceInboxDateFilterAction } from "./inbox-date-filter-action-enhancement.js";
+import { enhanceInboxInterfaceAccessibility } from "./inbox-interface-accessibility-enhancement.js";
+import { enhanceInboxInterface } from "./inbox-interface-enhancement.js";
+import { enhanceInboxRowReadability } from "./inbox-row-readability-enhancement.js";
+import { enhanceInboxStatusAndActions } from "./inbox-status-and-actions-enhancement.js";
+import { enhanceInboxStatusControl } from "./inbox-status-control-enhancement.js";
+import { enhanceInboxTableLayout } from "./inbox-table-layout-enhancement.js";
+
 const solverFinLogoPath = "/icons/solverfin-512.png";
 const solverFinDescription =
   "Controle financeiro inteligente para pessoas, MEIs, autônomos e pequenos negócios.";
@@ -32,7 +40,8 @@ export function sendJson(
 
 export function sendHtml(response: ServerResponse, statusCode: number, html: string): void {
   response.writeHead(statusCode, { "content-type": "text/html; charset=utf-8" });
-  response.end(enhanceSolverFinBranding(html));
+  const brandedHtml = enhanceSolverFinBranding(html);
+  response.end(isInboxDocument(brandedHtml) ? enhanceInboxDocument(brandedHtml) : brandedHtml);
 }
 
 export function apiError(code: string, message: string, correlationId: string) {
@@ -47,6 +56,22 @@ export function resolveCorrelationId(request: IncomingMessage): string {
   }
 
   return `corr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function isInboxDocument(html: string): boolean {
+  return html.includes("<title>Inbox - SolverFin</title>");
+}
+
+function enhanceInboxDocument(html: string): string {
+  return enhanceInboxDateFilterAction(
+    enhanceInboxRowReadability(
+      enhanceInboxStatusAndActions(
+        enhanceInboxStatusControl(
+          enhanceInboxTableLayout(enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html))),
+        ),
+      ),
+    ),
+  );
 }
 
 function enhanceSolverFinBranding(html: string): string {

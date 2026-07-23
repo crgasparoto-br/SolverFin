@@ -102,6 +102,8 @@ describe("Inbox list layout enhancement", () => {
     assert.match(enhanced, /import-layout \{ grid-template-columns: 1fr !important/);
     assert.doesNotMatch(enhanced, /text-overflow: ellipsis/);
     assert.match(enhanced, /data-line-action='edit'/);
+    assert.match(enhanced, /value\?\.dataset\.fullValue/);
+    assert.match(enhanced, /row-summary-value-preview/);
     assert.match(enhanced, /Nenhum lançamento no período selecionado/);
     assert.ok(enhanced.includes(html.split("<body>")[1]?.split("</body>")[0] ?? ""));
   });
