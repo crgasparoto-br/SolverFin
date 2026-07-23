@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
+import { enhanceInboxDateFilter } from "./inbox-date-filter-enhancement.js";
 import { enhanceInboxInterfaceAccessibility } from "./inbox-interface-accessibility-enhancement.js";
 import { enhanceInboxInterface } from "./inbox-interface-enhancement.js";
 import { enhanceInboxRowReadability } from "./inbox-row-readability-enhancement.js";
@@ -62,10 +63,12 @@ function isInboxDocument(html: string): boolean {
 }
 
 function enhanceInboxDocument(html: string): string {
-  return enhanceInboxRowReadability(
-    enhanceInboxStatusAndActions(
-      enhanceInboxStatusControl(
-        enhanceInboxTableLayout(enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html))),
+  return enhanceInboxDateFilter(
+    enhanceInboxRowReadability(
+      enhanceInboxStatusAndActions(
+        enhanceInboxStatusControl(
+          enhanceInboxTableLayout(enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html))),
+        ),
       ),
     ),
   );
