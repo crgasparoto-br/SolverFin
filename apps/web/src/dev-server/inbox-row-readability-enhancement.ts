@@ -12,7 +12,7 @@ export function enhanceInboxRowReadability(html: string): string {
 function inboxRowReadabilityStyles(): string {
   return `
     .inbox-page .import-rows {
-      --inbox-table-columns: 28px 84px 38px 68px 60px minmax(110px, 1.05fr) 76px minmax(116px, 0.9fr) minmax(160px, 1.35fr) 122px;
+      --inbox-table-columns: 28px 84px 38px minmax(82px, max-content) 60px minmax(104px, 1fr) minmax(98px, max-content) minmax(116px, 0.9fr) minmax(150px, 1.25fr) 122px;
     }
     .inbox-page .import-table-select-cell {
       min-width: 28px;
@@ -66,6 +66,14 @@ function inboxRowReadabilityStyles(): string {
       white-space: normal !important;
       word-break: normal;
     }
+    .inbox-page .import-table-cell-date,
+    .inbox-page .import-table-cell-date .row-summary-value-preview,
+    .inbox-page .import-table-cell-amount,
+    .inbox-page .import-table-cell-amount .row-summary-value-preview {
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: nowrap !important;
+    }
     .inbox-page .import-table-cell-account,
     .inbox-page .import-table-cell-account .row-summary-value-preview,
     .inbox-page .import-table-account-secondary {
@@ -82,11 +90,25 @@ function inboxRowReadabilityStyles(): string {
       overflow-wrap: anywhere;
       white-space: normal;
     }
+    .inbox-page .import-table-header-date,
+    .inbox-page .import-table-header-amount {
+      white-space: nowrap;
+    }
 
     @media (min-width: 1024px) {
       .inbox-page .import-table-header,
       .inbox-page .import-row {
-        min-width: 848px;
+        min-width: 882px;
+      }
+    }
+
+    @media (max-width: 1023px) {
+      .inbox-page .import-table-cell-date,
+      .inbox-page .import-table-cell-date .row-summary-value-preview,
+      .inbox-page .import-table-cell-amount,
+      .inbox-page .import-table-cell-amount .row-summary-value-preview {
+        overflow-wrap: anywhere;
+        white-space: normal !important;
       }
     }
 
