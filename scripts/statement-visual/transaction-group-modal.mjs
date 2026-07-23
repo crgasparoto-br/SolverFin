@@ -47,7 +47,7 @@ try {
         displayOn: "2026-07-28"
       })).group;
       const plannedOne = (await request("/api/transactions", "POST", {
-        accountId: ${JSON.stringify("fixture-account-placeholder")}.replace("fixture-account-placeholder", fixtureIds.longAccountId),
+        accountId: ${JSON.stringify(fixtureIds.longAccountId)},
         kind: "expense",
         amountMinor: 32100,
         occurredOn: "2026-07-29",
@@ -58,7 +58,7 @@ try {
         currency: "BRL"
       })).transaction;
       const plannedTwo = (await request("/api/transactions", "POST", {
-        accountId: ${JSON.stringify("fixture-account-placeholder")}.replace("fixture-account-placeholder", fixtureIds.longAccountId),
+        accountId: ${JSON.stringify(fixtureIds.longAccountId)},
         kind: "expense",
         amountMinor: 65400,
         occurredOn: "2026-07-30",
