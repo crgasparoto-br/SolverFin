@@ -53,6 +53,7 @@ function inboxAccessibilityStyles(): string {
     .inbox-page .batch-item {
       border-radius: 0 !important;
       gap: 1px !important;
+      min-height: 34px !important;
     }
     .inbox-page .bulk-actions {
       min-height: 36px;
