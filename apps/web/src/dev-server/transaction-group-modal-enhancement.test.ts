@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { enhanceTransactionGroupModal } from "./transaction-group-modal-enhancement.js";
 
 const source = `<!doctype html><html><head></head><body>
+<dialog data-modal><section><h2 data-modal-title>Novo lançamento</h2><form data-form><input name="kind"><input name="amountMinor"><input name="plannedOn"><input name="effectiveOn"><input name="repeatMode"><input name="destinationAccountId"><input name="categoryId"><input name="description"><input name="status"></form></section></dialog>
 <dialog class="modal" data-group-modal>
   <section class="modal-panel group-modal-panel">
     <header><h2 data-group-title>Unificar lançamentos</h2></header>
@@ -22,6 +23,7 @@ const enhanced = enhanceTransactionGroupModal(source);
 assert.match(enhanced, /data-transaction-group-modal-enhancement/);
 assert.match(enhanced, /data-transaction-group-modal-controller/);
 assert.match(enhanced, /Valor efetivo/);
+assert.match(enhanced, /Moeda/);
 assert.match(enhanced, /Lançamentos unificados/);
 assert.match(enhanced, /data-member-action="clone"/);
 assert.match(enhanced, /data-member-action="edit"/);
@@ -29,4 +31,9 @@ assert.match(enhanced, /data-member-action="void"/);
 assert.match(enhanced, /Marcar como conciliado/);
 assert.match(enhanced, /Clonar grupo/);
 assert.match(enhanced, /Excluir grupo/);
+assert.match(enhanced, /Efetive os lançamentos previstos antes de conciliar/);
+assert.match(enhanced, /transactionModal\.showModal\(\)/);
+assert.match(enhanced, /transactionForm\.dataset\.path = clone/);
+assert.match(enhanced, /"\/api\/transactions"/);
+assert.doesNotMatch(enhanced, /data-group-member-editor/);
 assert.equal(enhanceTransactionGroupModal(enhanced), enhanced, "enhancement must be idempotent");
