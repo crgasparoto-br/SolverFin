@@ -32,9 +32,18 @@ try {
     actionTooltips.map((item) => item.text),
     ["Corrigir linha", "Confirmar linha", "Rejeitar linha"],
   );
-  assert.equal(actionTooltips.every((item) => item.visible), true);
-  assert.equal(actionTooltips.every((item) => item.dataTooltip === item.text), true);
-  assert.equal(actionTooltips.every((item) => item.describedBy === "inbox-action-tooltip"), true);
+  assert.equal(
+    actionTooltips.every((item) => item.visible),
+    true,
+  );
+  assert.equal(
+    actionTooltips.every((item) => item.dataTooltip === item.text),
+    true,
+  );
+  assert.equal(
+    actionTooltips.every((item) => item.describedBy === "inbox-action-tooltip"),
+    true,
+  );
 
   const correction = await evaluate(
     browser.cdp,
