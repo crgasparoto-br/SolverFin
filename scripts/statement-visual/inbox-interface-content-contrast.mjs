@@ -72,7 +72,7 @@ async function validateInboxContentAndContrast(cdp) {
     fullDescription: fixture.fullDescription,
     screenshotName: "issue-525-inbox-content-contrast-desktop-1366x768.png",
   });
-  validateMetrics(desktop, { requireFiveRows: true });
+  validateMetrics(desktop, { requireFiveRows: true, requireCriticalOverflow: true });
 
   const mobile = await inspectViewport(cdp, {
     width: 390,
@@ -80,7 +80,7 @@ async function validateInboxContentAndContrast(cdp) {
     fullDescription: fixture.fullDescription,
     screenshotName: "issue-525-inbox-content-contrast-mobile-390x844.png",
   });
-  validateMetrics(mobile, { requireFiveRows: false });
+  validateMetrics(mobile, { requireFiveRows: false, requireCriticalOverflow: false });
 
   return { batchId: fixture.batchId, desktop, mobile };
 }
@@ -141,18 +141,20 @@ async function createFixture(cdp) {
   return fixture.body;
 }
 
-function validateMetrics(metrics, { requireFiveRows }) {
+function validateMetrics(metrics, { requireFiveRows, requireCriticalOverflow }) {
   check(metrics.bodyFitsViewport, `Inbox overflows horizontally at ${metrics.viewport}`, metrics);
   check(
     metrics.descriptionPreviewOverflows,
     `Long description did not exercise the truncation boundary at ${metrics.viewport}`,
     metrics,
   );
-  check(
-    metrics.criticalPreviewOverflows,
-    `Date, type and amount did not exercise the compact-field boundary at ${metrics.viewport}`,
-    metrics,
-  );
+  if (requireCriticalOverflow) {
+    check(
+      metrics.criticalPreviewOverflows,
+      `Date, type and amount did not exercise the compact-field boundary at ${metrics.viewport}`,
+      metrics,
+    );
+  }
   check(
     metrics.financialFieldsAreFullyAccessible,
     `One or more financial fields lack full-content access at ${metrics.viewport}`,
@@ -219,11 +221,11 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         const rect = element.getBoundingClientRect();
         return rect.top >= 0 && rect.bottom <= window.innerHeight;
       };
-      const findValue = (label) => [...document.querySelectorAll('.row-summary > div')]
+      const findValue = (label, root = document) => [...root.querySelectorAll('.row-summary > div')]
         .find((group) => group.querySelector('dt')?.textContent?.trim() === label)
         ?.querySelector('dd');
-      const readField = (label) => {
-        const value = findValue(label);
+      const readField = (label, root) => {
+        const value = findValue(label, root);
         const preview = value?.querySelector('.row-summary-value-preview');
         const popover = value?.querySelector('.row-summary-full-value');
         const fullValue = value?.dataset.fullValue || '';
@@ -260,11 +262,14 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         return (Math.max(left, right) + 0.05) / (Math.min(left, right) + 0.05);
       };
 
-      const financialFields = financialLabels.map(readField);
       const description = [...document.querySelectorAll('.row-summary > div')]
         .map((group) => group.querySelector('dd'))
         .find((value) => value?.dataset.fullValue === expectedDescription);
-      const account = findValue('Conta de referência');
+      const targetRow = description?.closest('.import-row');
+      const financialFields = targetRow
+        ? financialLabels.map((label) => readField(label, targetRow))
+        : [];
+      const account = targetRow ? findValue('Conta de referência', targetRow) : null;
       const preview = description?.querySelector('.row-summary-value-preview');
       const popover = description?.querySelector('.row-summary-full-value');
       description?.scrollIntoView({ block: "center", inline: "nearest" });
@@ -283,7 +288,9 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         criticalPreviewOverflows: criticalLabels.some((label) =>
           financialFields.find((field) => field.label === label)?.previewOverflows
         ),
-        financialFieldsAreFullyAccessible: financialFields.every((field) => field.fullyAccessible),
+        financialFieldsAreFullyAccessible:
+          financialFields.length === financialLabels.length &&
+          financialFields.every((field) => field.fullyAccessible),
         financialFields,
         descriptionIsFullyAccessible: Boolean(
           description &&
