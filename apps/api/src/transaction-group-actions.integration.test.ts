@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
@@ -50,11 +51,45 @@ async function main(): Promise<void> {
       }),
     ),
   );
+
+  const installmentId = randomUUID();
+  await query(
+    `insert into "Installment"
+      ("id","organizationId","financialProfileId","status","sequenceNumber","totalInstallments",
+       "dueOn","amountMinor","currency","createdByUserId","updatedByUserId","createdAt","updatedAt")
+     values ($1,$2,$3,'POSTED',1,3,$4,$5,'BRL',$6,$6,now(),now())`,
+    [
+      installmentId,
+      context.organizationId,
+      context.financialProfileId,
+      "2028-02-01",
+      1000,
+      context.userId,
+    ],
+  );
+  await query(
+    `update "Transaction" set "installmentId"=$1 where "id"=$2 and "organizationId"=$3 and "financialProfileId"=$4`,
+    [installmentId, members[0]!.id, context.organizationId, context.financialProfileId],
+  );
+
   const group = await createTransactionGroupForContext(context, {
     memberIds: members.map((member) => member.id),
     description: "Grupo com ações",
     displayOn: "2028-02-03",
   });
+
+  const foreignContext: TenantContext = {
+    ...context,
+    organizationId: randomUUID(),
+    financialProfileId: randomUUID(),
+  };
+  await assert.rejects(
+    () =>
+      updateTransactionGroupMemberForContext(foreignContext, group.id, members[0]!.id, {
+        description: "Tentativa fora do tenant",
+      }),
+    hasCode("TENANT_RESOURCE_NOT_FOUND"),
+  );
 
   const edited = await updateTransactionGroupMemberForContext(context, group.id, members[0]!.id, {
     amountMinor: 1500,
@@ -65,6 +100,34 @@ async function main(): Promise<void> {
   assert.equal(
     edited.members.find((member) => member.id === members[0]!.id)?.description,
     "Membro alterado",
+  );
+
+  const installments = await query<{ dueOn: Date; amountMinor: number; updatedByUserId: string | null }>(
+    `select "dueOn","amountMinor","updatedByUserId" from "Installment"
+      where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3`,
+    [installmentId, context.organizationId, context.financialProfileId],
+  );
+  assert.equal(installments[0]?.dueOn.toISOString().slice(0, 10), "2028-02-10");
+  assert.equal(installments[0]?.amountMinor, 1500);
+  assert.equal(installments[0]?.updatedByUserId, context.userId);
+
+  await assert.rejects(
+    () =>
+      updateTransactionGroupMemberForContext(context, group.id, members[0]!.id, {
+        categoryId: randomUUID(),
+        amountMinor: 9999,
+      }),
+    hasCode("TRANSACTION_CATEGORY_INVALID"),
+  );
+  assert.equal((await getTransactionGroupForContext(context, group.id)).totalAmountMinor, 6500);
+  assert.equal(
+    (
+      await query<{ amountMinor: number }>(
+        `select "amountMinor" from "Installment" where "id"=$1`,
+        [installmentId],
+      )
+    )[0]?.amountMinor,
+    1500,
   );
 
   const reconciled = await setTransactionGroupStatusForContext(context, group.id, "reconciled");
@@ -88,6 +151,44 @@ async function main(): Promise<void> {
   for (const clone of groupClones) {
     assert.equal((await getTransactionForContext(context, clone.id)).transactionGroupId, undefined);
   }
+  const originalRows = await query<{ total: number; grouped: number }>(
+    `select coalesce(sum("amountMinor"),0)::int as total,
+            count(*) filter (where "transactionGroupId"=$1)::int as grouped
+       from "Transaction"
+      where "organizationId"=$2 and "financialProfileId"=$3 and "id"=any($4::uuid[])`,
+    [group.id, context.organizationId, context.financialProfileId, members.map((member) => member.id)],
+  );
+  assert.equal(originalRows[0]?.total, 6500);
+  assert.equal(originalRows[0]?.grouped, 3);
+
+  const plannedMembers = await Promise.all(
+    [7000, 8000].map((amountMinor, index) =>
+      createTransactionForContext(context, {
+        accountId: account.id,
+        kind: "expense",
+        status: "planned",
+        amountMinor,
+        occurredOn: `2028-04-0${index + 1}`,
+        plannedOn: `2028-04-0${index + 1}`,
+        effectiveOn: null,
+        description: `Membro previsto ${index + 1}`,
+      }),
+    ),
+  );
+  const plannedGroup = await createTransactionGroupForContext(context, {
+    memberIds: plannedMembers.map((member) => member.id),
+    description: "Grupo previsto",
+    displayOn: "2028-04-02",
+  });
+  await assert.rejects(
+    () => setTransactionGroupStatusForContext(context, plannedGroup.id, "reconciled"),
+    hasCode("TRANSACTION_GROUP_RECONCILE_REQUIRES_EFFECTIVE"),
+  );
+  assert.ok(
+    (await getTransactionGroupForContext(context, plannedGroup.id)).members.every(
+      (member) => member.status === "planned",
+    ),
+  );
 
   const firstRemoval = await voidTransactionGroupMemberForContext(
     context,
@@ -137,4 +238,11 @@ async function main(): Promise<void> {
     [group.id],
   );
   assert.ok((audits[0]?.count ?? 0) >= 6);
+}
+
+function hasCode(expected: string): (error: unknown) => boolean {
+  return (error) => {
+    assert.equal((error as { code?: string }).code, expected);
+    return true;
+  };
 }
