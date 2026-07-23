@@ -12,7 +12,7 @@ export function enhanceInboxRowReadability(html: string): string {
 function inboxRowReadabilityStyles(): string {
   return `
     .inbox-page .import-rows {
-      --inbox-table-columns: 28px minmax(92px, 120px) 42px minmax(82px, 96px) minmax(96px, 112px) minmax(180px, 1.45fr) minmax(120px, 136px) minmax(150px, 1fr) minmax(210px, 1.35fr) 122px;
+      --inbox-table-columns: 28px 72px 38px 78px 88px minmax(80px, 1fr) 100px minmax(100px, 0.9fr) minmax(140px, 1.25fr) 122px;
     }
     .inbox-page .import-table-select-cell {
       min-width: 28px;
@@ -75,14 +75,6 @@ function inboxRowReadabilityStyles(): string {
       white-space: normal !important;
       word-break: normal;
     }
-    .inbox-page .import-table-cell-date,
-    .inbox-page .import-table-cell-date .row-summary-value-preview,
-    .inbox-page .import-table-cell-amount,
-    .inbox-page .import-table-cell-amount .row-summary-value-preview {
-      overflow: visible !important;
-      text-overflow: clip !important;
-      white-space: nowrap !important;
-    }
     .inbox-page .import-table-cell-type,
     .inbox-page .import-table-cell-type .row-summary-value-preview {
       min-width: 0;
@@ -110,7 +102,7 @@ function inboxRowReadabilityStyles(): string {
     @media (min-width: 1024px) {
       .inbox-page .import-table-header,
       .inbox-page .import-row {
-        min-width: 1152px;
+        min-width: 848px;
       }
       .inbox-page .import-table-observations .candidate-card {
         gap: 2px;
@@ -124,16 +116,6 @@ function inboxRowReadabilityStyles(): string {
         gap: 3px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
-      }
-    }
-
-    @media (max-width: 1023px) {
-      .inbox-page .import-table-cell-date,
-      .inbox-page .import-table-cell-date .row-summary-value-preview,
-      .inbox-page .import-table-cell-amount,
-      .inbox-page .import-table-cell-amount .row-summary-value-preview {
-        overflow-wrap: anywhere;
-        white-space: normal !important;
       }
     }
 
