@@ -1,9 +1,14 @@
+import { enhanceTransactionGroupModal } from "./transaction-group-modal-enhancement.js";
+
 const DISCLOSURE_STYLE_MARKER = "data-account-remuneration-disclosure-affordance";
 const DISCLOSURE_SUMMARY = `<summary aria-label="Ver memória do cálculo" title="Ver memória do cálculo"><span class="account-remuneration-disclosure-full">Ver memória do cálculo</span><span class="account-remuneration-disclosure-compact" aria-hidden="true">Memória</span></summary>`;
 
 export function enhanceAccountRemunerationDisclosure(html: string): string {
-  if (!html.includes('details class="account-remuneration-audit"')) return html;
-  if (html.includes(DISCLOSURE_STYLE_MARKER)) return html;
+  const groupEnhancedHtml = enhanceTransactionGroupModal(html);
+  if (!groupEnhancedHtml.includes('details class="account-remuneration-audit"')) {
+    return groupEnhancedHtml;
+  }
+  if (groupEnhancedHtml.includes(DISCLOSURE_STYLE_MARKER)) return groupEnhancedHtml;
 
   const styles = `
       <style ${DISCLOSURE_STYLE_MARKER}>
@@ -19,7 +24,7 @@ export function enhanceAccountRemunerationDisclosure(html: string): string {
         .account-remuneration-audit summary:focus-visible{border-radius:4px;outline:2px solid var(--primary);outline-offset:2px}
         @media(max-width:1600px){.account-remuneration-disclosure-full{display:none}.account-remuneration-disclosure-compact{display:inline}}
       </style>`;
-  const enhancedHtml = html.replaceAll(
+  const enhancedHtml = groupEnhancedHtml.replaceAll(
     "<summary>Ver memória do cálculo</summary>",
     DISCLOSURE_SUMMARY,
   );
