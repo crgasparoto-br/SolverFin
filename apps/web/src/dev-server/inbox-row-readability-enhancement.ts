@@ -12,7 +12,7 @@ export function enhanceInboxRowReadability(html: string): string {
 function inboxRowReadabilityStyles(): string {
   return `
     .inbox-page .import-rows {
-      --inbox-table-columns: 28px 80px 38px 82px 56px minmax(52px, 1fr) 110px minmax(110px, 0.9fr) minmax(170px, 1.25fr) 122px;
+      --inbox-table-columns: 28px minmax(92px, 120px) 42px minmax(82px, 96px) minmax(96px, 112px) minmax(180px, 1.45fr) minmax(120px, 136px) minmax(150px, 1fr) minmax(210px, 1.35fr) 122px;
     }
     .inbox-page .import-table-select-cell {
       min-width: 28px;
@@ -56,9 +56,18 @@ function inboxRowReadabilityStyles(): string {
       cursor: not-allowed;
       opacity: 0.55;
     }
+    .inbox-page .import-table-header > span,
     .inbox-page .import-table-status,
-    .inbox-page .row-heading .status-pill {
-      max-width: 100% !important;
+    .inbox-page .row-heading .status-pill,
+    .inbox-page .import-table-line,
+    .inbox-page .import-table-cell,
+    .inbox-page .import-table-cell .row-summary-value-preview,
+    .inbox-page .import-table-observations,
+    .inbox-page .import-table-observations .warning,
+    .inbox-page .import-table-observations .candidate-card,
+    .inbox-page .import-table-observations .candidate-card strong,
+    .inbox-page .import-table-observations .candidate-card p {
+      max-width: 100%;
       min-width: 0;
       overflow: visible !important;
       overflow-wrap: anywhere;
@@ -74,6 +83,14 @@ function inboxRowReadabilityStyles(): string {
       text-overflow: clip !important;
       white-space: nowrap !important;
     }
+    .inbox-page .import-table-cell-type,
+    .inbox-page .import-table-cell-type .row-summary-value-preview {
+      min-width: 0;
+      overflow: visible !important;
+      overflow-wrap: anywhere;
+      text-overflow: clip !important;
+      white-space: normal !important;
+    }
     .inbox-page .import-table-cell-account,
     .inbox-page .import-table-cell-account .row-summary-value-preview,
     .inbox-page .import-table-account-secondary {
@@ -85,20 +102,15 @@ function inboxRowReadabilityStyles(): string {
       white-space: normal !important;
       word-break: break-word;
     }
-    .inbox-page .import-table-header-status,
-    .inbox-page .import-table-header-account {
-      overflow-wrap: anywhere;
-      white-space: normal;
-    }
     .inbox-page .import-table-header-date,
     .inbox-page .import-table-header-amount {
-      white-space: nowrap;
+      white-space: nowrap !important;
     }
 
     @media (min-width: 1024px) {
       .inbox-page .import-table-header,
       .inbox-page .import-row {
-        min-width: 848px;
+        min-width: 1152px;
       }
       .inbox-page .import-table-observations .candidate-card {
         gap: 2px;
