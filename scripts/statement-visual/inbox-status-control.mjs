@@ -45,6 +45,15 @@ try {
     true,
   );
 
+  const initialLayout = await readRowLayout(browser.cdp, fixture.confirmedSuggestionId);
+  assert.equal(initialLayout.selector.width, 16);
+  assert.equal(initialLayout.selector.height, 16);
+  assert.equal(initialLayout.selector.borderRadius, "50%");
+  assert.equal(initialLayout.status.whiteSpace, "normal");
+  assert.equal(initialLayout.status.clipped, false);
+  assert.equal(initialLayout.account.whiteSpace, "normal");
+  assert.equal(initialLayout.account.clipped, false);
+
   const correction = await evaluate(
     browser.cdp,
     `(async () => {
@@ -114,6 +123,14 @@ try {
   assert.equal(confirmedStatus.color, "rgb(21, 128, 61)");
   assert.equal(confirmedStatus.backgroundColor, "rgba(0, 0, 0, 0)");
 
+  const longAccountText = await applyLongAccountContent(browser.cdp, fixture.confirmedSuggestionId);
+  const confirmedLayout = await readRowLayout(browser.cdp, fixture.confirmedSuggestionId);
+  assert.equal(confirmedLayout.selector.width, 16);
+  assert.equal(confirmedLayout.selector.height, 16);
+  assert.equal(confirmedLayout.selector.borderRadius, "50%");
+  assert.equal(confirmedLayout.status.clipped, false);
+  assert.equal(confirmedLayout.account.clipped, false);
+
   const screenshotName = "inbox-status-control-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, screenshotName));
 
@@ -125,9 +142,12 @@ try {
     confirmedSuggestionId: fixture.confirmedSuggestionId,
     rejectedSuggestionId: fixture.rejectedSuggestionId,
     actionTooltips,
+    initialLayout,
     correctedStatus,
     rejectedStatus,
     confirmedStatus,
+    confirmedLayout,
+    longAccountText,
     screenshot: screenshotName,
   };
 } finally {
@@ -138,7 +158,7 @@ await writeFile(
   join(outputDir, "inbox-status-control.json"),
   `${JSON.stringify(evidence, null, 2)}\n`,
 );
-console.log("Inbox status colors and action tooltips validation passed.");
+console.log("Inbox status, selector and readable columns validation passed.");
 
 async function createFixture(cdp) {
   const result = await evaluate(
@@ -211,6 +231,50 @@ async function readActionTooltips(cdp, suggestionId) {
           visible: Boolean(tooltip && !tooltip.hidden)
         };
       });
+    })()`,
+  );
+}
+
+async function applyLongAccountContent(cdp, suggestionId) {
+  return evaluate(
+    cdp,
+    `(() => {
+      const row = document.querySelector('[data-suggestion-id="${suggestionId}"]');
+      const account = row?.querySelector('.import-table-cell-account .row-summary-value-preview, .import-table-cell-account');
+      if (!account) return "";
+      const text = "Conta empresarial de investimentos e reservas de longo prazo";
+      account.textContent = text;
+      return text;
+    })()`,
+  );
+}
+
+async function readRowLayout(cdp, suggestionId) {
+  return evaluate(
+    cdp,
+    `(() => {
+      const row = document.querySelector('[data-suggestion-id="${suggestionId}"]');
+      const selector = row?.querySelector('.import-table-select-cell input[type="checkbox"]');
+      const status = row?.querySelector('.import-table-status, .row-heading .status-pill');
+      const account = row?.querySelector('.import-table-cell-account .row-summary-value-preview, .import-table-cell-account');
+      const measure = (node) => {
+        if (!node) return { width: 0, height: 0, borderRadius: "", whiteSpace: "", clipped: true };
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return {
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          borderRadius: style.borderRadius,
+          whiteSpace: style.whiteSpace,
+          overflowWrap: style.overflowWrap,
+          clipped: node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1
+        };
+      };
+      return {
+        selector: measure(selector),
+        status: measure(status),
+        account: measure(account)
+      };
     })()`,
   );
 }
