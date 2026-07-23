@@ -47,7 +47,7 @@ try {
         displayOn: "2026-07-28"
       })).group;
       const plannedOne = (await request("/api/transactions", "POST", {
-        accountId: ${JSON.stringify(fixtureIds.longAccountId)},
+        accountId: ${JSON.stringify("fixture-account-placeholder")}.replace("fixture-account-placeholder", fixtureIds.longAccountId),
         kind: "expense",
         amountMinor: 32100,
         occurredOn: "2026-07-29",
@@ -58,7 +58,7 @@ try {
         currency: "BRL"
       })).transaction;
       const plannedTwo = (await request("/api/transactions", "POST", {
-        accountId: ${JSON.stringify(fixtureIds.longAccountId)},
+        accountId: ${JSON.stringify("fixture-account-placeholder")}.replace("fixture-account-placeholder", fixtureIds.longAccountId),
         kind: "expense",
         amountMinor: 65400,
         occurredOn: "2026-07-30",
@@ -86,7 +86,11 @@ try {
   assert.equal(desktop.currency, "BRL", "Currency field is not rendered in the group modal.");
   assert.equal(desktop.memberCount, 2, "Posted group modal does not show both members.");
   assert.equal(desktop.actionCount, 10, "Expected row and group actions are not available.");
-  assert.equal(desktop.horizontalOverflow, false, "Group modal has horizontal overflow on desktop.");
+  assert.equal(
+    desktop.horizontalOverflow,
+    false,
+    "Group modal has horizontal overflow on desktop.",
+  );
   await screenshot(browser.cdp, join(outputDir, "transaction-group-modal-desktop.png"));
 
   const editFlow = await evaluate(
@@ -159,7 +163,11 @@ try {
     })()`,
   );
   assert.equal(cloneFlow.transactionModalOpen, true, "Clone does not reuse the transaction modal.");
-  assert.equal(cloneFlow.groupModalOpen, false, "Group modal remained open behind the clone modal.");
+  assert.equal(
+    cloneFlow.groupModalOpen,
+    false,
+    "Group modal remained open behind the clone modal.",
+  );
   assert.equal(cloneFlow.method, "POST");
   assert.equal(cloneFlow.path, "/api/transactions");
   assert.equal(cloneFlow.title, "Clonar lançamento");
