@@ -72,6 +72,10 @@ test("mantém seleção compacta com alvos acessíveis e botões no padrão do d
     accessibilityStyles,
     /\.inbox-page \.heading-actions button,[\s\S]*?\.inbox-page \.bulk-actions button \{[\s\S]*?min-height: 34px !important;/,
   );
+  assert.match(
+    accessibilityStyles,
+    /\.inbox-page \.batch-item \{[\s\S]*?min-height: 34px !important;/,
+  );
   assert.match(enhanced, /\.inbox-page \.bulk-actions button \{[\s\S]*?width: auto;/);
 });
 
