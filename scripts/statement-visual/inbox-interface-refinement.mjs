@@ -66,6 +66,7 @@ async function validateInboxInterfaceRefinement(cdp) {
     width: 1366,
     height: 768,
     screenshotName: "issue-525-inbox-desktop-1366x768.png",
+    verifyKeyboardFocus: true,
   });
   check(desktop.bodyFitsViewport, "Inbox overflows horizontally at 1366x768", desktop);
   check(desktop.headerVisible, "Batch header is not fully visible at 1366x768", desktop);
@@ -95,9 +96,17 @@ async function validateInboxInterfaceRefinement(cdp) {
   });
   check(tablet.bodyFitsViewport, "Inbox overflows horizontally at 768x1024", tablet);
   check(tablet.toolbarVisible, "Bulk selection toolbar is not visible on tablet", tablet);
-  check(tablet.completeRows >= 1, "No complete imported row is visible with the tablet toolbar", tablet);
+  check(
+    tablet.completeRows >= 1,
+    "No complete imported row is visible with the tablet toolbar",
+    tablet,
+  );
   check(tablet.bulkControlsIntrinsic, "Bulk selection controls are stretched on tablet", tablet);
-  check(tablet.labelActivatesCheckbox, "Bulk selection label does not toggle its checkbox on tablet", tablet);
+  check(
+    tablet.labelActivatesCheckbox,
+    "Bulk selection label does not toggle its checkbox on tablet",
+    tablet,
+  );
 
   const mobile = await inspectViewport(cdp, {
     width: 390,
@@ -113,7 +122,11 @@ async function validateInboxInterfaceRefinement(cdp) {
   );
   check(mobile.actionsFitViewport, "Inbox actions overflow the mobile viewport", mobile);
   check(mobile.toolbarVisible, "Bulk selection toolbar is not visible in the mobile evidence", mobile);
-  check(mobile.completeRows >= 1, "No complete imported row is visible with the mobile toolbar", mobile);
+  check(
+    mobile.completeRows >= 1,
+    "No complete imported row is visible with the mobile toolbar",
+    mobile,
+  );
   check(
     mobile.bulkControlsIntrinsic,
     "Bulk selection controls unnecessarily fill mobile width",
@@ -172,7 +185,10 @@ async function createFixture(cdp) {
   return fixture;
 }
 
-async function inspectViewport(cdp, { width, height, screenshotName, scrollTarget }) {
+async function inspectViewport(
+  cdp,
+  { width, height, screenshotName, scrollTarget, verifyKeyboardFocus = false },
+) {
   await setViewport(cdp, width, height);
   await evaluate(
     cdp,
@@ -186,6 +202,8 @@ async function inspectViewport(cdp, { width, height, screenshotName, scrollTarge
       : `(() => { window.scrollTo(0, 0); return true; })()`,
   );
   await sleep(250);
+
+  if (verifyKeyboardFocus) await focusSelectedBatchByKeyboard(cdp);
 
   const metrics = await evaluate(
     cdp,
@@ -208,8 +226,6 @@ async function inspectViewport(cdp, { width, height, screenshotName, scrollTarge
       const unselectedStyle = unselectedBatch ? getComputedStyle(unselectedBatch) : null;
       const listStyle = batchList ? getComputedStyle(batchList) : null;
       const rowStyle = rows[0] ? getComputedStyle(rows[0]) : null;
-      selectedBatch?.focus();
-      const focusedStyle = selectedBatch ? getComputedStyle(selectedBatch) : null;
       const actionElements = [...document.querySelectorAll('.inbox-page button, .inbox-page .button-link')]
         .filter((element) => element.getBoundingClientRect().width > 0);
       const compactFilterButtons = [...document.querySelectorAll('.inbox-page .compact-filters button')]
@@ -234,7 +250,7 @@ async function inspectViewport(cdp, { width, height, screenshotName, scrollTarge
         }),
         batchIsContinuous: Boolean(unselectedStyle && listStyle && unselectedStyle.borderRadius === '0px' && listStyle.gap === '0px' && unselectedStyle.backgroundColor === 'rgba(0, 0, 0, 0)'),
         selectedBatchHasIndicator: Boolean(selectedStyle && selectedStyle.borderLeftWidth !== '0px' && selectedStyle.borderLeftColor !== 'rgba(0, 0, 0, 0)'),
-        focusIsVisible: document.activeElement === selectedBatch && Boolean(focusedStyle && focusedStyle.boxShadow !== 'none'),
+        focusIsVisible: document.activeElement === selectedBatch && Boolean(selectedStyle && selectedStyle.boxShadow !== 'none'),
         bulkControlsIntrinsic: Boolean(bulk && bulkLabel && bulkCheckbox && bulkButton && bulkLabel.getBoundingClientRect().width < bulk.getBoundingClientRect().width * 0.6 && bulkCheckbox.getBoundingClientRect().width <= 24 && bulkButton.getBoundingClientRect().width < bulk.getBoundingClientRect().width * 0.7),
         compactFilterActionsIntrinsic: compactFilterButtons.every((button) => {
           const parent = button.parentElement;
@@ -265,6 +281,42 @@ async function inspectViewport(cdp, { width, height, screenshotName, scrollTarge
 
   await screenshot(cdp, join(outputDir, screenshotName));
   return { ...metrics, screenshot: screenshotName };
+}
+
+async function focusSelectedBatchByKeyboard(cdp) {
+  const prepared = await evaluate(
+    cdp,
+    `(() => {
+      const selectedBatch = document.querySelector('.batch-item.selected');
+      if (!selectedBatch) return false;
+      const focusable = [...document.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+        .filter((element) => element.getClientRects().length > 0);
+      const index = focusable.indexOf(selectedBatch);
+      if (index < 0) return false;
+      if (index > 0) focusable[index - 1].focus();
+      else {
+        document.body.tabIndex = -1;
+        document.body.focus();
+      }
+      return true;
+    })()`,
+  );
+  assert.equal(prepared, true, "Unable to prepare keyboard focus validation for selected batch");
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "rawKeyDown",
+    key: "Tab",
+    code: "Tab",
+    windowsVirtualKeyCode: 9,
+    nativeVirtualKeyCode: 9,
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Tab",
+    code: "Tab",
+    windowsVirtualKeyCode: 9,
+    nativeVirtualKeyCode: 9,
+  });
+  await sleep(100);
 }
 
 function check(condition, message, details) {
