@@ -412,7 +412,7 @@ function inboxTableLayoutStyles(): string {
       .inbox-page .import-table-observations .candidate-card strong,
       .inbox-page .import-table-observations .candidate-card p {
         font-size: 0.6875rem;
-        line-height: 1.3;
+        line-height: 1.2;
       }
       .inbox-page .import-table-observations .candidate-card p {
         margin: 1px 0 0;
