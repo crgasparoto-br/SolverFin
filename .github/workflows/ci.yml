@@ -57,6 +57,32 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Format issue 528 files for diagnostics
+        run: >-
+          npx prettier --write
+          apps/api/src/repositories/transaction-group-actions.ts
+          apps/api/src/transaction-group-actions-router.ts
+          apps/api/src/transaction-group-actions.integration.test.ts
+          apps/api/src/server.ts
+          apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
+          apps/web/src/dev-server/transaction-group-modal-enhancement.ts
+          apps/web/src/dev-server/transaction-group-modal-enhancement.test.ts
+          docs/API_TRANSACTION_GROUP_ACTIONS.md
+
+      - name: Upload formatted issue 528 files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-528-formatted-files
+          path: |
+            apps/api/src/repositories/transaction-group-actions.ts
+            apps/api/src/transaction-group-actions-router.ts
+            apps/api/src/transaction-group-actions.integration.test.ts
+            apps/api/src/server.ts
+            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
+            apps/web/src/dev-server/transaction-group-modal-enhancement.ts
+            apps/web/src/dev-server/transaction-group-modal-enhancement.test.ts
+            docs/API_TRANSACTION_GROUP_ACTIONS.md
+
       - name: Check environment example
         run: npm run env:check
 
@@ -145,7 +171,14 @@ jobs:
         run: npm run db:seed
 
       - name: Run API integration tests
-        run: npm run test:integration --workspace @solverfin/api
+        run: npm run test:integration --workspace @solverfin/api 2>&1 | tee integration-test.log
+
+      - name: Upload integration diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-528-integration-log
+          path: integration-test.log
 
       - name: Verify import statement consistency
         run: npm run diagnose:import-statement-consistency -- --expect-zero
