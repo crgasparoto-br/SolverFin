@@ -9,24 +9,6 @@ const page = `<!doctype html>
   <body><main class="inbox-page"></main></body>
 </html>`;
 
-test("reduz visualmente o seletor circular sem diminuir o alvo acessível", () => {
-  const enhanced = enhanceInboxRowReadability(page);
-
-  assert.match(enhanced, /data-inbox-row-readability="enhanced"/);
-  assert.match(
-    enhanced,
-    /input\[type="checkbox"\] \{[\s\S]*?appearance: none !important;[\s\S]*?background-image: radial-gradient\([\s\S]*?#64748b 6px 8px,[\s\S]*?transparent 8px[\s\S]*?border-radius: 50%;[\s\S]*?flex: 0 0 24px !important;[\s\S]*?height: 24px !important;[\s\S]*?width: 24px !important;/,
-  );
-  assert.match(
-    enhanced,
-    /input\[type="checkbox"\]:checked \{[\s\S]*?background-image: radial-gradient\([\s\S]*?var\(--primary\) 7px 8px,[\s\S]*?transparent 8px/,
-  );
-  assert.match(
-    enhanced,
-    /input\[type="checkbox"\]:focus-visible \{[\s\S]*?outline: 2px solid var\(--cyan\);/,
-  );
-});
-
 test("dimensiona todas as colunas para preservar o conteúdo integral", () => {
   const enhanced = enhanceInboxRowReadability(page);
 
@@ -70,7 +52,7 @@ test("mantém a coluna de ações visível durante a rolagem interna", () => {
   );
 });
 
-test("mantém conteúdo integral e seletor compacto no fluxo responsivo", () => {
+test("mantém conteúdo integral e coluna de seleção compacta no fluxo responsivo", () => {
   const enhanced = enhanceInboxRowReadability(page);
 
   assert.match(

@@ -108,6 +108,8 @@ A interface deve ser **mobile-first**, limpa e orientada a rotina diaria. O usua
 - Use pagina dedicada apenas quando o formulario for longo, exigir comparacao ampla, envolver fluxo guiado em varias etapas ou precisar de contexto visual extenso.
 - O botao principal de criacao deve ficar em local consistente da tela e pode usar icone de adicionar quando o contexto estiver claro.
 - Acoes por linha, como editar, duplicar, arquivar, excluir ou visualizar, devem priorizar icones com tooltip/label acessivel.
+- Selecao de itens em listas e tabelas deve usar o marcador circular padrao do sistema, com alvo interativo de 24 x 24 px, foco visivel e estados marcado, desmarcado e desabilitado claramente distinguiveis.
+- Checkbox quadrado deve ficar reservado a opcoes booleanas de formulario; o marcador circular padrao representa selecao operacional de linhas ou itens.
 - Confirmacoes destrutivas devem usar modal curto, com titulo direto, impacto claro e acao primaria segura.
 - Modais devem ter titulo objetivo, campos agrupados por necessidade real, botoes claros, fechamento por cancelar/esc e foco acessivel.
 - Em mobile, modais podem se comportar como bottom sheet ou tela sobreposta, preservando a sensacao de fluxo rapido.
