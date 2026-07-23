@@ -30,14 +30,10 @@ try {
   );
 
   await setPeriod(browser.cdp, "2026-07-10", "2026-07-20");
-  await sleep(750);
+  await waitFor(browser.cdp, `document.querySelectorAll('.import-row:not([hidden])').length === 3`);
   const range = await readFilterState(browser.cdp);
-  await writeFile(
-    join(outputDir, "inbox-date-filter-debug.json"),
-    `${JSON.stringify({ stage: "range", range }, null, 2)}\n`,
-  );
-  assert.deepEqual(range.visibleDates, ["10/07/2026", "20/07/2026"]);
-  assert.equal(range.counter, "2 de 4 linha(s)");
+  assert.deepEqual(range.visibleDates, ["10/07/2026", "15/07/2026", "20/07/2026"]);
+  assert.equal(range.counter, "3 de 4 linha(s)");
   assert.equal(range.lineStart, "2026-07-10");
   assert.equal(range.lineEnd, "2026-07-20");
 
@@ -144,37 +140,19 @@ async function readFilterState(cdp) {
   return evaluate(
     cdp,
     `(() => {
-      const readDateDetails = (row) => {
+      const readDate = (row) => {
         const group = [...row.querySelectorAll('.row-summary > div')].find(
           (item) => item.querySelector('dt')?.textContent?.trim() === 'Data'
         );
         const value = group?.querySelector('dd');
-        return {
-          fullValue: value?.dataset.fullValue || '',
-          preview: value?.querySelector('.row-summary-value-preview')?.textContent?.trim() || '',
-          title: value?.getAttribute('title') || '',
-          text: value?.textContent?.trim() || ''
-        };
+        return value?.dataset.fullValue || value?.querySelector('.row-summary-value-preview')?.textContent?.trim() || value?.textContent?.trim() || '';
       };
-      const rows = [...document.querySelectorAll('.import-row')];
       const url = new URL(window.location.href);
       return {
-        visibleDates: rows.filter((row) => !row.hidden).map((row) => {
-          const date = readDateDetails(row);
-          return date.fullValue || date.preview || date.text;
-        }).sort(),
+        visibleDates: [...document.querySelectorAll('.import-row:not([hidden])')].map(readDate).sort(),
         counter: document.getElementById('inbox-visible-lines')?.textContent?.trim() || '',
         lineStart: url.searchParams.get('lineStart'),
-        lineEnd: url.searchParams.get('lineEnd'),
-        controls: {
-          start: document.getElementById('inbox-date-start')?.value || '',
-          end: document.getElementById('inbox-date-end')?.value || '',
-          sort: document.getElementById('inbox-date-sort')?.value || ''
-        },
-        rows: rows.map((row) => ({
-          hidden: row.hidden,
-          date: readDateDetails(row)
-        }))
+        lineEnd: url.searchParams.get('lineEnd')
       };
     })()`,
   );
