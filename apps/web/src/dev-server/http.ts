@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { enhanceInboxInterfaceAccessibility } from "./inbox-interface-accessibility-enhancement.js";
 import { enhanceInboxInterface } from "./inbox-interface-enhancement.js";
+import { enhanceInboxRowReadability } from "./inbox-row-readability-enhancement.js";
 import { enhanceInboxStatusAndActions } from "./inbox-status-and-actions-enhancement.js";
 import { enhanceInboxStatusControl } from "./inbox-status-control-enhancement.js";
 import { enhanceInboxTableLayout } from "./inbox-table-layout-enhancement.js";
@@ -61,9 +62,11 @@ function isInboxDocument(html: string): boolean {
 }
 
 function enhanceInboxDocument(html: string): string {
-  return enhanceInboxStatusAndActions(
-    enhanceInboxStatusControl(
-      enhanceInboxTableLayout(enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html))),
+  return enhanceInboxRowReadability(
+    enhanceInboxStatusAndActions(
+      enhanceInboxStatusControl(
+        enhanceInboxTableLayout(enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html))),
+      ),
     ),
   );
 }
