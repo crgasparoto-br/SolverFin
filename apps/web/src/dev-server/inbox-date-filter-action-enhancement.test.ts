@@ -27,10 +27,7 @@ test("injeta botão explícito para aplicar o filtro de datas", () => {
 test("mantém ocultas as linhas removidas pelo filtro no layout tabular", () => {
   const enhanced = enhanceInboxDateFilterAction(page);
 
-  assert.match(
-    enhanced,
-    /\.inbox-page \.import-row\[hidden\] \{[\s\S]*?display: none !important;/,
-  );
+  assert.match(enhanced, /\.inbox-page \.import-row\[hidden\] \{[\s\S]*?display: none !important;/);
   assert.doesNotMatch(enhanced, /function applyDateFilter/);
 });
 
