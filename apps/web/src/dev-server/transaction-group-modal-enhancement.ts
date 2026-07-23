@@ -8,7 +8,7 @@ export function enhanceTransactionGroupModal(html: string): string {
     <style ${STYLE_MARKER}>
       .group-modal-panel{display:flex;flex-direction:column;max-height:min(92vh,920px);max-width:none;overflow:hidden;width:min(1060px,calc(100vw - 28px))}
       .group-modal-panel>header{background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;margin:0;padding-bottom:12px;position:sticky;top:0;z-index:4}
-      .group-modal-panel form[data-group-form]{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));min-height:0;overflow:auto;padding:2px 2px 0}
+      .group-modal-panel form[data-group-form]{display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr));min-height:0;overflow:auto;padding:2px 2px 0}
       .group-modal-panel form[data-group-form]>label{min-width:0}
       .group-modal-panel form[data-group-form]>label input{font-variant-numeric:tabular-nums;width:100%}
       .group-modal-panel [data-group-effective-input]{font-size:1rem;font-weight:800}
@@ -38,15 +38,11 @@ export function enhanceTransactionGroupModal(html: string): string {
       .group-modal-panel .group-action-status.success{color:var(--success)}
       .group-modal-panel [data-group-ungroup]{display:none!important}
       .group-modal-panel .save-row{background:var(--surface);border-top:1px solid var(--line);bottom:0;grid-column:1/-1;margin:0;padding-top:10px;position:sticky;z-index:3}
-      [data-group-member-editor] .modal-panel{max-width:620px;width:min(620px,calc(100vw - 28px))}
-      [data-group-member-editor-form]{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
-      [data-group-member-editor-form] .full{grid-column:1/-1}
-      [data-group-member-editor-form] .editor-actions{display:flex;gap:8px;grid-column:1/-1;justify-content:flex-end}
-      [data-group-member-editor-status].error{color:var(--danger)}
-      [data-group-member-editor-status].success{color:var(--success)}
+      @media(max-width:900px){
+        .group-modal-panel form[data-group-form]{grid-template-columns:repeat(2,minmax(0,1fr))}
+      }
       @media(max-width:760px){
         .group-modal-panel{max-height:96vh;width:calc(100vw - 14px)}
-        .group-modal-panel form[data-group-form]{grid-template-columns:1fr 1fr}
         .group-modal-panel .group-member-row{align-items:start;grid-template-columns:minmax(0,1fr) auto}
         .group-modal-panel .group-member-main{grid-column:1/-1}
         .group-modal-panel .group-member-date{grid-column:1}
@@ -55,8 +51,7 @@ export function enhanceTransactionGroupModal(html: string): string {
         .group-modal-panel .group-action-status{flex-basis:100%;margin-left:0}
       }
       @media(max-width:520px){
-        .group-modal-panel form[data-group-form],[data-group-member-editor-form]{grid-template-columns:1fr}
-        [data-group-member-editor-form] .full,[data-group-member-editor-form] .editor-actions{grid-column:auto}
+        .group-modal-panel form[data-group-form]{grid-template-columns:1fr}
       }
     </style>`;
 
@@ -71,6 +66,8 @@ export function enhanceTransactionGroupModal(html: string): string {
         const summaryNode = form.querySelector("[data-group-summary]");
         const saveRow = form.querySelector(".save-row");
         const titleNode = document.querySelector("[data-group-title]");
+        const transactionModal = document.querySelector("[data-modal]");
+        const transactionForm = document.querySelector("[data-form]");
         if (!membersNode || !summaryNode || !saveRow) return;
 
         const icon = {
@@ -84,9 +81,11 @@ export function enhanceTransactionGroupModal(html: string): string {
         const effectiveField = readonlyField("Valor efetivo", "group-effective-input");
         const kindField = readonlyField("Tipo", "group-kind-input");
         const statusField = readonlyField("Situação", "group-status-input");
+        const currencyField = readonlyField("Moeda", "group-currency-input");
         form.insertBefore(effectiveField.label, form.firstElementChild);
         form.insertBefore(kindField.label, summaryNode);
         form.insertBefore(statusField.label, summaryNode);
+        form.insertBefore(currencyField.label, summaryNode);
 
         const heading = document.createElement("div");
         heading.className = "group-members-heading";
@@ -104,12 +103,7 @@ export function enhanceTransactionGroupModal(html: string): string {
           '<span class="group-action-status" data-group-action-status aria-live="polite"></span>';
         form.insertBefore(actions, saveRow);
 
-        const editor = createEditor();
-        document.body.appendChild(editor);
-        const editorForm = editor.querySelector("[data-group-member-editor-form]");
-        const editorStatus = editor.querySelector("[data-group-member-editor-status]");
         let currentGroup;
-        let editingMember;
 
         function readonlyField(labelText, dataName) {
           const label = document.createElement("label");
@@ -121,36 +115,12 @@ export function enhanceTransactionGroupModal(html: string): string {
           return { label: label, input: input };
         }
 
-        function createEditor() {
-          const dialog = document.createElement("dialog");
-          dialog.setAttribute("data-group-member-editor", "");
-          dialog.innerHTML =
-            '<section class="modal-panel"><header><div><p class="eyebrow">Lançamento do grupo</p><h2>Editar lançamento</h2></div><button type="button" class="icon-btn" data-editor-close aria-label="Fechar">&times;</button></header>' +
-            '<form data-group-member-editor-form>' +
-              '<label class="full">Descrição<input name="description" maxlength="240" required></label>' +
-              '<label>Data<input name="date" type="date" required></label>' +
-              '<label>Valor (R$)<input name="amount" inputmode="decimal" required></label>' +
-              '<label class="full">Categoria<select name="categoryId"></select></label>' +
-              '<p class="full muted" data-group-member-editor-status aria-live="polite"></p>' +
-              '<div class="editor-actions"><button type="button" class="ghost-btn" data-editor-close>Cancelar</button><button type="submit">Salvar alteração</button></div>' +
-            '</form></section>';
-          dialog.querySelectorAll("[data-editor-close]").forEach(function (button) {
-            button.addEventListener("click", function () { dialog.close(); });
-          });
-          return dialog;
-        }
-
         function money(minor, currency) {
           return (Number(minor || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: currency || "BRL" });
         }
 
         function moneyInput(minor) {
           return (Number(minor || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function moneyToMinor(value) {
-          const normalized = String(value || "").replace(/\\./g, "").replace(",", ".");
-          return Math.round(Number(normalized || 0) * 100);
         }
 
         function formatDate(value) {
@@ -196,6 +166,7 @@ export function enhanceTransactionGroupModal(html: string): string {
           effectiveField.input.value = money(total, currency);
           kindField.input.value = formatKind(selected[0] && selected[0].dataset.kind || "");
           statusField.input.value = formatStatus(selected[0] && selected[0].dataset.status || "");
+          currencyField.input.value = currency;
           heading.querySelector("[data-group-member-count]").textContent = selected.length + " itens";
           membersNode.innerHTML = selected.map(function (item) {
             return memberRow({
@@ -219,12 +190,19 @@ export function enhanceTransactionGroupModal(html: string): string {
           effectiveField.input.value = money(signedTotal, group.currency);
           kindField.input.value = formatKind(group.kind);
           statusField.input.value = formatStatus(group.status);
+          currencyField.input.value = group.currency || "BRL";
           heading.querySelector("[data-group-member-count]").textContent = group.members.length + " itens";
           membersNode.innerHTML = group.members.map(function (member) { return memberRow(member, true); }).join("");
           const statusButton = actions.querySelector('[data-group-action="status"]');
+          const statusNode = actions.querySelector("[data-group-action-status]");
           const reconcile = group.status !== "reconciled";
+          const canReconcile = !reconcile || group.members.every(function (member) { return Boolean(member.effectiveOn); });
           statusButton.dataset.targetStatus = reconcile ? "reconciled" : "posted";
           statusButton.innerHTML = icon.check + '<span>' + (reconcile ? "Marcar como conciliado" : "Desconciliar") + '</span>';
+          statusButton.disabled = !canReconcile;
+          statusButton.title = canReconcile ? "" : "Efetive os lançamentos previstos antes de conciliá-los.";
+          statusNode.textContent = canReconcile ? "" : "Efetive os lançamentos previstos antes de conciliar.";
+          statusNode.className = "group-action-status";
         }
 
         function memberRow(member, actionable) {
@@ -253,6 +231,41 @@ export function enhanceTransactionGroupModal(html: string): string {
           } else renderCreateMode();
         }
 
+        function setTransactionStatus(status) {
+          if (!transactionForm) return;
+          const button = transactionForm.querySelector('[data-status-option="' + status + '"]');
+          if (button) button.click();
+          else if (transactionForm.status) transactionForm.status.value = status;
+        }
+
+        function openTransactionFlow(member, clone) {
+          const statusNode = actions.querySelector("[data-group-action-status]");
+          if (!transactionModal || !transactionForm) {
+            statusNode.textContent = "O formulário de lançamento não está disponível.";
+            statusNode.className = "group-action-status error";
+            return;
+          }
+          modal.close();
+          transactionForm.reset();
+          transactionForm.dataset.path = clone
+            ? "/api/transactions"
+            : "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/members/" + encodeURIComponent(member.id);
+          transactionForm.dataset.method = clone ? "POST" : "PATCH";
+          transactionForm.kind.value = member.kind;
+          transactionForm.amountMinor.value = moneyInput(member.amountMinor);
+          transactionForm.plannedOn.value = member.plannedOn || member.occurredOn || member.effectiveOn || "";
+          transactionForm.effectiveOn.value = member.effectiveOn || "";
+          transactionForm.repeatMode.value = "single";
+          transactionForm.destinationAccountId.value = "";
+          transactionForm.categoryId.value = member.categoryId || "";
+          transactionForm.description.value = clone ? "Cópia de " + member.description : member.description;
+          setTransactionStatus(clone ? (member.effectiveOn ? "posted" : "planned") : member.status);
+          transactionForm.kind.dispatchEvent(new Event("change", { bubbles: true }));
+          const transactionTitle = document.querySelector("[data-modal-title]");
+          if (transactionTitle) transactionTitle.textContent = clone ? "Clonar lançamento" : "Editar lançamento";
+          transactionModal.showModal();
+        }
+
         modal.addEventListener("toggle", function () {
           if (modal.open) window.setTimeout(refreshModal, 0);
         });
@@ -263,12 +276,11 @@ export function enhanceTransactionGroupModal(html: string): string {
           const member = currentGroup.members.find(function (candidate) { return candidate.id === button.dataset.memberId; });
           if (!member) return;
           if (button.dataset.memberAction === "edit") {
-            openEditor(member);
+            openTransactionFlow(member, false);
             return;
           }
           if (button.dataset.memberAction === "clone") {
-            if (!window.confirm("Clonar este lançamento como um novo item independente?")) return;
-            await runRequest(button, "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/members/" + encodeURIComponent(member.id) + "/clone", "POST", {}, "Lançamento clonado.");
+            openTransactionFlow(member, true);
             return;
           }
           if (button.dataset.memberAction === "void") {
@@ -282,7 +294,7 @@ export function enhanceTransactionGroupModal(html: string): string {
 
         actions.addEventListener("click", async function (event) {
           const button = event.target.closest("[data-group-action]");
-          if (!button || !currentGroup) return;
+          if (!button || !currentGroup || button.disabled) return;
           const action = button.dataset.groupAction;
           if (action === "status") {
             const targetStatus = button.dataset.targetStatus;
@@ -307,57 +319,6 @@ export function enhanceTransactionGroupModal(html: string): string {
             if (!window.confirm("Excluir o grupo e todos os seus lançamentos? Esta ação não apenas desagrupa os itens.")) return;
             await runRequest(button, "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/void", "POST", {}, "Grupo excluído.");
           }
-        });
-
-        function openEditor(member) {
-          editingMember = member;
-          editorForm.reset();
-          editorStatus.textContent = "";
-          editorStatus.className = "full muted";
-          editorForm.description.value = member.description || "";
-          editorForm.date.value = member.effectiveOn || member.plannedOn || member.occurredOn || "";
-          editorForm.amount.value = moneyInput(member.amountMinor);
-          const categorySelect = editorForm.categoryId;
-          const sourceSelect = document.querySelector('[data-form] select[name="categoryId"]');
-          categorySelect.innerHTML = sourceSelect ? sourceSelect.innerHTML : '<option value="">Sem categoria</option>';
-          Array.from(categorySelect.options).forEach(function (option) {
-            const kind = option.dataset.kind;
-            option.disabled = Boolean(kind && kind !== member.kind);
-          });
-          categorySelect.value = member.categoryId || "";
-          editor.showModal();
-        }
-
-        editorForm.addEventListener("submit", async function (event) {
-          event.preventDefault();
-          if (!currentGroup || !editingMember) return;
-          const submit = editorForm.querySelector('[type="submit"]');
-          submit.disabled = true;
-          editorStatus.textContent = "Salvando alteração...";
-          editorStatus.className = "full muted";
-          const response = await fetch(
-            "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/members/" + encodeURIComponent(editingMember.id),
-            {
-              method: "PATCH",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({
-                description: editorForm.description.value,
-                date: editorForm.date.value,
-                amountMinor: moneyToMinor(editorForm.amount.value),
-                categoryId: editorForm.categoryId.value || null
-              })
-            }
-          );
-          const responseBody = await response.json().catch(function () { return {}; });
-          submit.disabled = false;
-          if (!response.ok) {
-            editorStatus.textContent = responseBody.error && responseBody.error.message || "Não foi possível salvar a alteração.";
-            editorStatus.className = "full error";
-            return;
-          }
-          editorStatus.textContent = "Alteração salva. Atualizando o extrato...";
-          editorStatus.className = "full success";
-          window.setTimeout(function () { window.location.reload(); }, 350);
         });
 
         async function runRequest(button, path, method, body, successMessage) {
