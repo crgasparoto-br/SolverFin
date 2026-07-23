@@ -21,7 +21,7 @@ Campos aceitos:
 }
 ```
 
-Conta, tipo, moeda e situação não podem ser alterados por esta rota, pois são propriedades de compatibilidade do grupo. O total do agrupamento é recalculado a partir dos membros persistidos.
+O formulário padrão de lançamentos também pode enviar `plannedOn` e `effectiveOn`; a API usa a data aplicável ao membro. Conta, tipo, moeda e situação não podem ser alterados por esta rota, pois são propriedades de compatibilidade do grupo. O total do agrupamento é recalculado a partir dos membros persistidos. Quando o membro está associado a uma parcela, vencimento e valor da `Installment` são sincronizados na mesma transação de banco.
 
 ## Clonar um lançamento
 
@@ -30,6 +30,8 @@ POST /api/transaction-groups/:groupId/members/:memberId/clone
 ```
 
 Cria um lançamento independente, sem `transactionGroupId`, recorrência, parcela ou proveniência de importação. O clone recebe fonte `manual`; lançamentos efetivados ou conciliados são clonados como `posted`, e lançamentos previstos permanecem `planned`.
+
+Na interface, a ação por linha reutiliza o formulário padrão de novo lançamento, preenchido com os dados do membro, para permitir revisão antes de salvar.
 
 ## Excluir um lançamento
 
@@ -55,7 +57,7 @@ ou
 { "status": "posted" }
 ```
 
-A alteração é atômica. A conciliação exige que todos os membros estejam efetivados.
+A alteração é atômica. A conciliação exige que todos os membros estejam efetivados. Para grupos previstos, a interface mantém a ação desabilitada e informa que os lançamentos precisam ser efetivados antes da conciliação.
 
 ## Clonar todos os membros
 
@@ -85,4 +87,5 @@ O `DELETE` apenas desagrupa e preserva os lançamentos.
 - ações em lote usam transação de banco;
 - logs registram somente metadados redigidos, sem valores ou descrições financeiras;
 - clones não carregam vínculos de agrupamento ou proveniência;
+- edição de membro mantém a parcela associada consistente;
 - nenhuma ação cria dupla contagem financeira.
