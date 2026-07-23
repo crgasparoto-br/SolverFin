@@ -134,6 +134,52 @@ async function main(): Promise<void> {
     1500,
   );
 
+  await query(`drop trigger if exists "Issue528_installment_sync_failure" on "Installment"`);
+  await query(`drop function if exists issue528_installment_sync_failure()`);
+  await query(
+    `create function issue528_installment_sync_failure() returns trigger as $$
+       begin
+         if new."amountMinor" = 1777 then
+           raise exception 'issue 528 rollback probe';
+         end if;
+         return new;
+       end;
+     $$ language plpgsql`,
+  );
+  await query(
+    `create trigger "Issue528_installment_sync_failure"
+       before update on "Installment"
+       for each row execute function issue528_installment_sync_failure()`,
+  );
+  try {
+    await assert.rejects(
+      () =>
+        updateTransactionGroupMemberForContext(context, group.id, members[0]!.id, {
+          amountMinor: 1777,
+          description: "Alteração que deve reverter",
+        }),
+      /issue 528 rollback probe/,
+    );
+  } finally {
+    await query(`drop trigger if exists "Issue528_installment_sync_failure" on "Installment"`);
+    await query(`drop function if exists issue528_installment_sync_failure()`);
+  }
+  const rolledBackGroup = await getTransactionGroupForContext(context, group.id);
+  assert.equal(rolledBackGroup.totalAmountMinor, 6500);
+  assert.equal(
+    rolledBackGroup.members.find((member) => member.id === members[0]!.id)?.amountMinor,
+    1500,
+  );
+  assert.equal(
+    (
+      await query<{ amountMinor: number }>(
+        `select "amountMinor" from "Installment" where "id"=$1`,
+        [installmentId],
+      )
+    )[0]?.amountMinor,
+    1500,
+  );
+
   const reconciled = await setTransactionGroupStatusForContext(context, group.id, "reconciled");
   assert.equal(reconciled.status, "reconciled");
   assert.ok(reconciled.members.every((member) => member.status === "reconciled"));
