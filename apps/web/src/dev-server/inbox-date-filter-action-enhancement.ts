@@ -41,6 +41,76 @@ export function enhanceInboxDateFilterAction(html: string): string {
     (() => {
       const applyIcon = ${applyIcon};
 
+      function normalizeDate(value) {
+        const text = String(value || "").trim();
+        const iso = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(text);
+        const brazilian = /^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/.exec(text);
+        return iso ? text : brazilian ? brazilian[3] + "-" + brazilian[2] + "-" + brazilian[1] : "";
+      }
+
+      function readRowDate(row) {
+        const group = [...row.querySelectorAll(".row-summary > div")].find(
+          (item) => item.querySelector("dt")?.textContent?.trim() === "Data",
+        );
+        const value = group?.querySelector("dd");
+        return normalizeDate(
+          value?.dataset.fullValue ||
+            value?.querySelector(".row-summary-value-preview")?.textContent ||
+            value?.getAttribute("title") ||
+            value?.textContent ||
+            "",
+        );
+      }
+
+      function applyDateFilter() {
+        const container = document.querySelector("#import-batch-detail .import-rows");
+        if (!container) return;
+
+        const startsOn = normalizeDate(document.getElementById("inbox-date-start")?.value);
+        const endsOn = normalizeDate(document.getElementById("inbox-date-end")?.value);
+        const sort = document.getElementById("inbox-date-sort")?.value === "date_asc" ? "date_asc" : "date_desc";
+        const rows = [...container.querySelectorAll(":scope > .import-row")];
+
+        rows.sort((left, right) => {
+          const leftDate = readRowDate(left);
+          const rightDate = readRowDate(right);
+          if (!leftDate && !rightDate) return 0;
+          if (!leftDate) return 1;
+          if (!rightDate) return -1;
+          return sort === "date_asc" ? leftDate.localeCompare(rightDate) : rightDate.localeCompare(leftDate);
+        });
+        rows.forEach((row) => container.appendChild(row));
+
+        let visibleCount = 0;
+        rows.forEach((row) => {
+          const rowDate = readRowDate(row);
+          const visible = Boolean(rowDate) && (!startsOn || rowDate >= startsOn) && (!endsOn || rowDate <= endsOn);
+          row.hidden = !visible;
+          if (visible) visibleCount += 1;
+        });
+
+        const url = new URL(window.location.href);
+        if (startsOn) url.searchParams.set("lineStart", startsOn); else url.searchParams.delete("lineStart");
+        if (endsOn) url.searchParams.set("lineEnd", endsOn); else url.searchParams.delete("lineEnd");
+        if (sort !== "date_desc") url.searchParams.set("lineSort", sort); else url.searchParams.delete("lineSort");
+        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+
+        const counter = document.getElementById("inbox-visible-lines");
+        if (counter) counter.textContent = rows.length ? visibleCount + " de " + rows.length + " linha(s)" : "";
+
+        let emptyState = document.getElementById("inbox-date-empty-state");
+        if (rows.length > 0 && visibleCount === 0) {
+          if (!emptyState) {
+            container.insertAdjacentHTML(
+              "beforeend",
+              '<div class="empty-state inbox-list-empty" id="inbox-date-empty-state"><strong>Nenhum lançamento no período selecionado.</strong><p class="muted">Ajuste as datas ou limpe o período para voltar a exibir as linhas.</p></div>',
+            );
+          }
+        } else {
+          emptyState?.remove();
+        }
+      }
+
       function ensureApplyButton() {
         if (document.getElementById("apply-inbox-date-filters")) return;
         const clearButton = document.getElementById("clear-inbox-date-filters");
@@ -57,8 +127,8 @@ export function enhanceInboxDateFilterAction(html: string): string {
 
         applyButton.addEventListener("click", (event) => {
           event.preventDefault();
-          const trigger = document.getElementById("inbox-date-start");
-          trigger?.dispatchEvent(new Event("change", { bubbles: true }));
+          event.stopPropagation();
+          applyDateFilter();
         });
 
         ["inbox-date-start", "inbox-date-end"].forEach((id) => {
