@@ -41,7 +41,11 @@ try {
       return { ok: response.ok, status: response.status, body: await response.json().catch(() => ({})) };
     })()`,
   );
-  assert.equal(correction.ok, true, `Correction failed: ${correction.status} ${JSON.stringify(correction.body)}`);
+  assert.equal(
+    correction.ok,
+    true,
+    `Correction failed: ${correction.status} ${JSON.stringify(correction.body)}`,
+  );
 
   await navigate(browser.cdp, inboxUrl);
   await waitForStatus(browser.cdp, fixture.suggestionId, "Corrigido");
@@ -85,7 +89,10 @@ try {
   await browser.close(outputDir);
 }
 
-await writeFile(join(outputDir, "inbox-status-control.json"), `${JSON.stringify(evidence, null, 2)}\n`);
+await writeFile(
+  join(outputDir, "inbox-status-control.json"),
+  `${JSON.stringify(evidence, null, 2)}\n`,
+);
 console.log("Inbox corrected and confirmed status validation passed.");
 
 async function createFixture(cdp) {
