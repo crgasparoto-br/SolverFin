@@ -104,18 +104,25 @@ export async function setTransactionGroupStatusForContext(
       );
     }
 
+    await detachGroupMembers(executeQuery, context, groupId);
     await executeQuery(
       `update "Transaction"
           set "status"=$1, "reconciledAt"=$2, "updatedByUserId"=$3, "updatedAt"=now()
-        where "organizationId"=$4 and "financialProfileId"=$5 and "transactionGroupId"=$6`,
+        where "organizationId"=$4 and "financialProfileId"=$5 and "id"=any($6::uuid[])`,
       [
         status.toUpperCase(),
         status === "reconciled" ? new Date() : null,
         context.userId,
         context.organizationId,
         context.financialProfileId,
-        groupId,
+        members.map((member) => member.id),
       ],
+    );
+    await attachGroupMembers(
+      executeQuery,
+      context,
+      groupId,
+      members.map((member) => member.id),
     );
     await insertGroupAudit(
       executeQuery,
@@ -177,10 +184,15 @@ export async function voidTransactionGroupMemberForContext(
 
     await executeQuery(
       `update "Transaction"
-          set "status"='VOIDED', "voidedAt"=now(), "transactionGroupId"=null,
-              "updatedByUserId"=$1, "updatedAt"=now()
+          set "transactionGroupId"=null, "updatedByUserId"=$1, "updatedAt"=now()
         where "id"=$2 and "organizationId"=$3 and "financialProfileId"=$4 and "transactionGroupId"=$5`,
       [context.userId, memberId, context.organizationId, context.financialProfileId, groupId],
+    );
+    await executeQuery(
+      `update "Transaction"
+          set "status"='VOIDED', "voidedAt"=now(), "updatedByUserId"=$1, "updatedAt"=now()
+        where "id"=$2 and "organizationId"=$3 and "financialProfileId"=$4 and "transactionGroupId" is null`,
+      [context.userId, memberId, context.organizationId, context.financialProfileId],
     );
 
     let groupRemoved = false;
@@ -208,12 +220,17 @@ export async function voidTransactionGroupMemberForContext(
 export async function voidTransactionGroupForContext(context: TenantContext, groupId: string) {
   return withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
+    await detachGroupMembers(executeQuery, context, groupId);
     await executeQuery(
       `update "Transaction"
-          set "status"='VOIDED', "voidedAt"=now(), "transactionGroupId"=null,
-              "updatedByUserId"=$1, "updatedAt"=now()
-        where "organizationId"=$2 and "financialProfileId"=$3 and "transactionGroupId"=$4`,
-      [context.userId, context.organizationId, context.financialProfileId, groupId],
+          set "status"='VOIDED', "voidedAt"=now(), "updatedByUserId"=$1, "updatedAt"=now()
+        where "organizationId"=$2 and "financialProfileId"=$3 and "id"=any($4::uuid[])`,
+      [
+        context.userId,
+        context.organizationId,
+        context.financialProfileId,
+        members.map((member) => member.id),
+      ],
     );
     await deleteGroup(executeQuery, context, groupId);
     await insertGroupAudit(executeQuery, context, groupId, "SOFT_DELETE", {
@@ -331,6 +348,33 @@ async function insertClone(
     ],
   );
   return rows[0] ?? { id, status, description };
+}
+
+async function detachGroupMembers(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  groupId: string,
+): Promise<void> {
+  await executeQuery(
+    `update "Transaction"
+        set "transactionGroupId"=null, "updatedByUserId"=$1, "updatedAt"=now()
+      where "organizationId"=$2 and "financialProfileId"=$3 and "transactionGroupId"=$4`,
+    [context.userId, context.organizationId, context.financialProfileId, groupId],
+  );
+}
+
+async function attachGroupMembers(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  groupId: string,
+  memberIds: string[],
+): Promise<void> {
+  await executeQuery(
+    `update "Transaction"
+        set "transactionGroupId"=$1, "updatedByUserId"=$2, "updatedAt"=now()
+      where "organizationId"=$3 and "financialProfileId"=$4 and "id"=any($5::uuid[])`,
+    [groupId, context.userId, context.organizationId, context.financialProfileId, memberIds],
+  );
 }
 
 async function deleteGroup(
