@@ -46,9 +46,10 @@ try {
   );
 
   const initialLayout = await readRowLayout(browser.cdp, fixture.confirmedSuggestionId);
-  assert.equal(initialLayout.selector.width, 16);
-  assert.equal(initialLayout.selector.height, 16);
+  assert.equal(initialLayout.selector.width, 24);
+  assert.equal(initialLayout.selector.height, 24);
   assert.equal(initialLayout.selector.borderRadius, "50%");
+  assert.match(initialLayout.selector.backgroundImage, /radial-gradient/);
   assert.equal(initialLayout.status.whiteSpace, "normal");
   assert.equal(initialLayout.status.clipped, false);
   assert.equal(initialLayout.account.whiteSpace, "normal");
@@ -125,9 +126,10 @@ try {
 
   const longAccountText = await applyLongAccountContent(browser.cdp, fixture.confirmedSuggestionId);
   const confirmedLayout = await readRowLayout(browser.cdp, fixture.confirmedSuggestionId);
-  assert.equal(confirmedLayout.selector.width, 16);
-  assert.equal(confirmedLayout.selector.height, 16);
+  assert.equal(confirmedLayout.selector.width, 24);
+  assert.equal(confirmedLayout.selector.height, 24);
   assert.equal(confirmedLayout.selector.borderRadius, "50%");
+  assert.match(confirmedLayout.selector.backgroundImage, /radial-gradient/);
   assert.equal(confirmedLayout.status.clipped, false);
   assert.equal(confirmedLayout.account.clipped, false);
 
@@ -258,13 +260,14 @@ async function readRowLayout(cdp, suggestionId) {
       const status = row?.querySelector('.import-table-status, .row-heading .status-pill');
       const account = row?.querySelector('.import-table-cell-account .row-summary-value-preview, .import-table-cell-account');
       const measure = (node) => {
-        if (!node) return { width: 0, height: 0, borderRadius: "", whiteSpace: "", clipped: true };
+        if (!node) return { width: 0, height: 0, borderRadius: "", backgroundImage: "", whiteSpace: "", clipped: true };
         const style = getComputedStyle(node);
         const rect = node.getBoundingClientRect();
         return {
           width: Math.round(rect.width),
           height: Math.round(rect.height),
           borderRadius: style.borderRadius,
+          backgroundImage: style.backgroundImage,
           whiteSpace: style.whiteSpace,
           overflowWrap: style.overflowWrap,
           clipped: node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1
