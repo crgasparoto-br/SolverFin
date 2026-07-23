@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { enhanceInboxInterfaceAccessibility } from "./inbox-interface-accessibility-enhancement.js";
 import { enhanceInboxInterface } from "./inbox-interface-enhancement.js";
+import { enhanceInboxTableLayout } from "./inbox-table-layout-enhancement.js";
 
 const solverFinLogoPath = "/icons/solverfin-512.png";
 const solverFinDescription =
@@ -58,7 +59,9 @@ function isInboxDocument(html: string): boolean {
 }
 
 function enhanceInboxDocument(html: string): string {
-  return enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html));
+  return enhanceInboxTableLayout(
+    enhanceInboxInterfaceAccessibility(enhanceInboxInterface(html)),
+  );
 }
 
 function enhanceSolverFinBranding(html: string): string {
