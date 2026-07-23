@@ -57,49 +57,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Generate date filter remediation
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const file = 'apps/web/src/dev-server/inbox-list-layout-enhancement.ts';
-          const before = '          return normalizeInboxDate(entry?.querySelector("dd")?.textContent || "");';
-          const after = `          const value = entry?.querySelector("dd");
-          return normalizeInboxDate(
-            value?.dataset.fullValue ||
-              value?.querySelector(".row-summary-value-preview")?.textContent ||
-              value?.getAttribute("title") ||
-              value?.textContent ||
-              "",
-          );`;
-          const source = fs.readFileSync(file, 'utf8');
-          if (!source.includes(before)) throw new Error('Date reader snippet not found');
-          fs.writeFileSync(file, source.replace(before, after));
-          NODE
-          npx prettier --write \
-            apps/web/src/dev-server/inbox-date-filter-enhancement.ts \
-            apps/web/src/dev-server/inbox-date-filter-enhancement.test.ts \
-            apps/web/src/dev-server/inbox-list-layout-enhancement.ts \
-            apps/web/src/dev-server/http.ts \
-            scripts/run-statement-visual-validation.mjs \
-            scripts/statement-visual/inbox-date-filter.mjs
-          mkdir -p artifacts/date-filter-remediation
-          cp --parents \
-            apps/web/src/dev-server/inbox-date-filter-enhancement.ts \
-            apps/web/src/dev-server/inbox-date-filter-enhancement.test.ts \
-            apps/web/src/dev-server/inbox-list-layout-enhancement.ts \
-            apps/web/src/dev-server/http.ts \
-            scripts/run-statement-visual-validation.mjs \
-            scripts/statement-visual/inbox-date-filter.mjs \
-            artifacts/date-filter-remediation/
-
-      - name: Upload date filter remediation
-        uses: actions/upload-artifact@v4
-        with:
-          name: date-filter-remediation-${{ github.sha }}
-          path: artifacts/date-filter-remediation
-          if-no-files-found: error
-          retention-days: 7
-
       - name: Check environment example
         run: npm run env:check
 
