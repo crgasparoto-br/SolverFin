@@ -17,8 +17,14 @@ test("reduz o seletor da linha e usa apresentação circular", () => {
     enhanced,
     /input\[type="checkbox"\] \{[\s\S]*?appearance: none !important;[\s\S]*?border-radius: 50%;[\s\S]*?flex: 0 0 16px !important;[\s\S]*?height: 16px !important;[\s\S]*?width: 16px !important;/,
   );
-  assert.match(enhanced, /input\[type="checkbox"\]:checked \{[\s\S]*?box-shadow: inset 0 0 0 3px var\(--surface\);/);
-  assert.match(enhanced, /input\[type="checkbox"\]:focus-visible \{[\s\S]*?outline: 2px solid var\(--cyan\);/);
+  assert.match(
+    enhanced,
+    /input\[type="checkbox"\]:checked \{[\s\S]*?box-shadow: inset 0 0 0 3px var\(--surface\);/,
+  );
+  assert.match(
+    enhanced,
+    /input\[type="checkbox"\]:focus-visible \{[\s\S]*?outline: 2px solid var\(--cyan\);/,
+  );
 });
 
 test("amplia status e conta e permite quebra sem truncamento", () => {
