@@ -25,6 +25,7 @@ function inboxAccessibilityStyles(): string {
   return `
     .inbox-page .heading-actions button,
     .inbox-page .compact-filters button,
+    .inbox-page .line-filter-bar button,
     .inbox-page .detail-heading .inline-actions button,
     .inbox-page .detail-heading .inline-actions .button-link,
     .inbox-page .row-editor > .inline-actions button,
@@ -153,8 +154,10 @@ function inboxAccessibilityStyles(): string {
       }
     }
     @media (max-width: 520px) {
-      .inbox-page .compact-filters button {
+      .inbox-page .compact-filters button,
+      .inbox-page .line-filter-bar button {
         flex: 0 0 auto !important;
+        justify-self: start !important;
         max-width: 100%;
         width: max-content !important;
       }
