@@ -26,7 +26,7 @@ try {
   await navigate(browser.cdp, inboxUrl);
   await waitFor(
     browser.cdp,
-    `document.querySelectorAll('.import-row').length === 4 && Boolean(document.getElementById('inbox-date-start'))`,
+    `document.querySelectorAll('.import-row').length === 4 && Boolean(document.getElementById('inbox-date-start')) && Boolean(document.getElementById('apply-inbox-date-filters'))`,
   );
 
   await setPeriod(browser.cdp, "2026-07-10", "2026-07-20");
@@ -36,6 +36,8 @@ try {
   assert.equal(range.counter, "3 de 4 linha(s)");
   assert.equal(range.lineStart, "2026-07-10");
   assert.equal(range.lineEnd, "2026-07-20");
+  assert.equal(range.applyButtonText, "Aplicar filtro");
+  assert.equal(range.applyButtonLabel, "Aplicar filtro de datas");
 
   await setPeriod(browser.cdp, "2026-07-15", "2026-07-15");
   await waitFor(browser.cdp, `document.querySelectorAll('.import-row:not([hidden])').length === 1`);
@@ -127,10 +129,10 @@ async function setPeriod(cdp, startsOn, endsOn) {
     `(() => {
       const start = document.getElementById('inbox-date-start');
       const end = document.getElementById('inbox-date-end');
+      const apply = document.getElementById('apply-inbox-date-filters');
       start.value = ${JSON.stringify(startsOn)};
       end.value = ${JSON.stringify(endsOn)};
-      start.dispatchEvent(new Event('change', { bubbles: true }));
-      end.dispatchEvent(new Event('change', { bubbles: true }));
+      apply.click();
       return true;
     })()`,
   );
@@ -148,11 +150,14 @@ async function readFilterState(cdp) {
         return value?.dataset.fullValue || value?.querySelector('.row-summary-value-preview')?.textContent?.trim() || value?.textContent?.trim() || '';
       };
       const url = new URL(window.location.href);
+      const applyButton = document.getElementById('apply-inbox-date-filters');
       return {
         visibleDates: [...document.querySelectorAll('.import-row:not([hidden])')].map(readDate).sort(),
         counter: document.getElementById('inbox-visible-lines')?.textContent?.trim() || '',
         lineStart: url.searchParams.get('lineStart'),
-        lineEnd: url.searchParams.get('lineEnd')
+        lineEnd: url.searchParams.get('lineEnd'),
+        applyButtonText: applyButton?.textContent?.trim() || '',
+        applyButtonLabel: applyButton?.getAttribute('aria-label') || ''
       };
     })()`,
   );
