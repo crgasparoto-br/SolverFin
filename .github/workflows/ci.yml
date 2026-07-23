@@ -57,21 +57,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Generate temporary Prettier remediation patch
-        run: |
-          npm run format
-          mkdir -p artifacts/prettier
-          git diff -- . > artifacts/prettier/prettier.patch
-          git diff --name-only > artifacts/prettier/files.txt
-
-      - name: Upload temporary Prettier remediation patch
-        uses: actions/upload-artifact@v4
-        with:
-          name: prettier-remediation-${{ github.sha }}
-          path: artifacts/prettier
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Check environment example
         run: npm run env:check
 
