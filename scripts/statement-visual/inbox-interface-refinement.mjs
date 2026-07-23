@@ -84,21 +84,26 @@ async function validateInboxInterfaceRefinement(cdp) {
     desktop,
   );
   check(desktop.bulkControlsIntrinsic, "Bulk selection controls are stretched on desktop", desktop);
+  check(desktop.labelActivatesCheckbox, "Bulk selection label does not toggle its checkbox", desktop);
   check(desktop.rowsAreContinuous, "Imported rows still look like individual cards", desktop);
 
   const tablet = await inspectViewport(cdp, {
     width: 768,
     height: 1024,
     screenshotName: "issue-525-inbox-tablet-768x1024.png",
+    scrollTarget: ".bulk-actions",
   });
   check(tablet.bodyFitsViewport, "Inbox overflows horizontally at 768x1024", tablet);
   check(tablet.toolbarVisible, "Bulk selection toolbar is not visible on tablet", tablet);
+  check(tablet.completeRows >= 1, "No complete imported row is visible with the tablet toolbar", tablet);
   check(tablet.bulkControlsIntrinsic, "Bulk selection controls are stretched on tablet", tablet);
+  check(tablet.labelActivatesCheckbox, "Bulk selection label does not toggle its checkbox on tablet", tablet);
 
   const mobile = await inspectViewport(cdp, {
     width: 390,
     height: 844,
     screenshotName: "issue-525-inbox-mobile-390x844.png",
+    scrollTarget: ".bulk-actions",
   });
   check(mobile.bodyFitsViewport, "Inbox overflows horizontally at 390x844", mobile);
   check(
@@ -107,9 +112,21 @@ async function validateInboxInterfaceRefinement(cdp) {
     mobile,
   );
   check(mobile.actionsFitViewport, "Inbox actions overflow the mobile viewport", mobile);
+  check(mobile.toolbarVisible, "Bulk selection toolbar is not visible in the mobile evidence", mobile);
+  check(mobile.completeRows >= 1, "No complete imported row is visible with the mobile toolbar", mobile);
   check(
     mobile.bulkControlsIntrinsic,
     "Bulk selection controls unnecessarily fill mobile width",
+    mobile,
+  );
+  check(
+    mobile.compactFilterActionsIntrinsic,
+    "A short filter action unnecessarily fills the mobile width",
+    mobile,
+  );
+  check(
+    mobile.labelActivatesCheckbox,
+    "Bulk selection label does not toggle its checkbox on mobile",
     mobile,
   );
 
@@ -155,9 +172,19 @@ async function createFixture(cdp) {
   return fixture;
 }
 
-async function inspectViewport(cdp, { width, height, screenshotName }) {
+async function inspectViewport(cdp, { width, height, screenshotName, scrollTarget }) {
   await setViewport(cdp, width, height);
-  await evaluate(cdp, `(() => { window.scrollTo(0, 0); return true; })()`);
+  await evaluate(
+    cdp,
+    scrollTarget
+      ? `(() => {
+          const target = document.querySelector(${JSON.stringify(scrollTarget)});
+          target?.scrollIntoView({ block: 'start', inline: 'nearest' });
+          window.scrollBy(0, -8);
+          return Boolean(target);
+        })()`
+      : `(() => { window.scrollTo(0, 0); return true; })()`,
+  );
   await sleep(250);
 
   const metrics = await evaluate(
@@ -185,6 +212,15 @@ async function inspectViewport(cdp, { width, height, screenshotName }) {
       const focusedStyle = selectedBatch ? getComputedStyle(selectedBatch) : null;
       const actionElements = [...document.querySelectorAll('.inbox-page button, .inbox-page .button-link')]
         .filter((element) => element.getBoundingClientRect().width > 0);
+      const compactFilterButtons = [...document.querySelectorAll('.inbox-page .compact-filters button')]
+        .filter((element) => element.getBoundingClientRect().width > 0);
+      let labelActivatesCheckbox = false;
+      if (bulkLabel && bulkCheckbox && !bulkCheckbox.disabled) {
+        const initialChecked = bulkCheckbox.checked;
+        bulkLabel.click();
+        labelActivatesCheckbox = bulkCheckbox.checked !== initialChecked;
+        bulkLabel.click();
+      }
       return {
         viewport: window.innerWidth + 'x' + window.innerHeight,
         bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -200,6 +236,13 @@ async function inspectViewport(cdp, { width, height, screenshotName }) {
         selectedBatchHasIndicator: Boolean(selectedStyle && selectedStyle.borderLeftWidth !== '0px' && selectedStyle.borderLeftColor !== 'rgba(0, 0, 0, 0)'),
         focusIsVisible: document.activeElement === selectedBatch && Boolean(focusedStyle && focusedStyle.boxShadow !== 'none'),
         bulkControlsIntrinsic: Boolean(bulk && bulkLabel && bulkCheckbox && bulkButton && bulkLabel.getBoundingClientRect().width < bulk.getBoundingClientRect().width * 0.6 && bulkCheckbox.getBoundingClientRect().width <= 24 && bulkButton.getBoundingClientRect().width < bulk.getBoundingClientRect().width * 0.7),
+        compactFilterActionsIntrinsic: compactFilterButtons.every((button) => {
+          const parent = button.parentElement;
+          const parentWidth = parent?.getBoundingClientRect().width || window.innerWidth;
+          const style = getComputedStyle(button);
+          return style.flexGrow === '0' && button.getBoundingClientRect().width < parentWidth * 0.8;
+        }),
+        labelActivatesCheckbox,
         rowsAreContinuous: Boolean(rowStyle && rowStyle.borderRadius === '0px' && rowStyle.borderTopWidth === '0px' && rowStyle.borderBottomWidth !== '0px'),
         navScrollsHorizontally: Boolean(nav && getComputedStyle(nav).display === 'flex' && nav.scrollWidth > nav.clientWidth),
         actionsFitViewport: actionElements.every((element) => {
@@ -212,6 +255,7 @@ async function inspectViewport(cdp, { width, height, screenshotName }) {
           bulkWidth: bulk ? Math.round(bulk.getBoundingClientRect().width) : 0,
           bulkLabelWidth: bulkLabel ? Math.round(bulkLabel.getBoundingClientRect().width) : 0,
           bulkButtonWidth: bulkButton ? Math.round(bulkButton.getBoundingClientRect().width) : 0,
+          compactFilterButtonWidths: compactFilterButtons.map((button) => Math.round(button.getBoundingClientRect().width)),
           navClientWidth: nav?.clientWidth || 0,
           navScrollWidth: nav?.scrollWidth || 0
         }
