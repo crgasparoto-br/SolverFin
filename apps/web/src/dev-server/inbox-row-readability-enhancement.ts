@@ -12,7 +12,7 @@ export function enhanceInboxRowReadability(html: string): string {
 function inboxRowReadabilityStyles(): string {
   return `
     .inbox-page .import-rows {
-      --inbox-table-columns: 28px 72px 38px 78px 76px minmax(150px, 1.25fr) 100px minmax(110px, 0.9fr) minmax(84px, 1fr) 112px;
+      --inbox-table-columns: 28px minmax(92px, 120px) 42px minmax(82px, 96px) minmax(96px, 112px) minmax(180px, 1.45fr) minmax(120px, 136px) minmax(150px, 1fr) minmax(210px, 1.35fr) 122px;
     }
     .inbox-page .import-table-select-cell {
       min-width: 28px;
@@ -75,6 +75,14 @@ function inboxRowReadabilityStyles(): string {
       white-space: normal !important;
       word-break: normal;
     }
+    .inbox-page .import-table-cell-date,
+    .inbox-page .import-table-cell-date .row-summary-value-preview,
+    .inbox-page .import-table-cell-amount,
+    .inbox-page .import-table-cell-amount .row-summary-value-preview {
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: nowrap !important;
+    }
     .inbox-page .import-table-cell-type,
     .inbox-page .import-table-cell-type .row-summary-value-preview {
       min-width: 0;
@@ -102,15 +110,25 @@ function inboxRowReadabilityStyles(): string {
     @media (min-width: 1024px) {
       .inbox-page .import-table-header,
       .inbox-page .import-row {
-        min-width: 848px;
+        min-width: 1152px;
       }
-      .inbox-page .import-table-select-cell,
-      .inbox-page .import-table-status,
-      .inbox-page .import-table-line,
-      .inbox-page .import-table-cell,
-      .inbox-page .import-table-observations,
+      .inbox-page .import-table-header-actions,
       .inbox-page .row-action-cluster {
-        padding-block: 2px !important;
+        background: var(--surface);
+        box-shadow: -1px 0 0 var(--line), -8px 0 12px -12px rgba(15, 23, 42, 0.45);
+        position: sticky;
+        right: 0;
+        z-index: 4;
+      }
+      .inbox-page .import-table-header-actions {
+        background: var(--surface-soft);
+        z-index: 5;
+      }
+      .inbox-page .import-row:hover .row-action-cluster {
+        background: var(--surface-soft);
+      }
+      .inbox-page .import-row:has(.import-table-select-cell input:checked) .row-action-cluster {
+        background: var(--primary-soft);
       }
       .inbox-page .import-table-observations .candidate-card {
         gap: 2px;
@@ -124,6 +142,16 @@ function inboxRowReadabilityStyles(): string {
         gap: 3px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
+      }
+    }
+
+    @media (max-width: 1023px) {
+      .inbox-page .import-table-cell-date,
+      .inbox-page .import-table-cell-date .row-summary-value-preview,
+      .inbox-page .import-table-cell-amount,
+      .inbox-page .import-table-cell-amount .row-summary-value-preview {
+        overflow-wrap: anywhere;
+        white-space: normal !important;
       }
     }
 
