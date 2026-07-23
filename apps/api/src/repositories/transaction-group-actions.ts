@@ -148,10 +148,7 @@ export async function cloneTransactionGroupMemberForContext(
   return transaction;
 }
 
-export async function cloneTransactionGroupForContext(
-  context: TenantContext,
-  groupId: string,
-) {
+export async function cloneTransactionGroupForContext(context: TenantContext, groupId: string) {
   const transactions = await withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
     const clones = [];
@@ -174,7 +171,9 @@ export async function voidTransactionGroupMemberForContext(
   const result = await withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
     requireMember(members, memberId);
-    const remainingIds = members.filter((member) => member.id !== memberId).map((member) => member.id);
+    const remainingIds = members
+      .filter((member) => member.id !== memberId)
+      .map((member) => member.id);
 
     await executeQuery(
       `update "Transaction"
@@ -237,11 +236,7 @@ async function loadLockedGroup(
   );
   const group = groups[0];
   if (!group) {
-    throw groupError(
-      "TENANT_RESOURCE_NOT_FOUND",
-      "Grupo não encontrado para este perfil.",
-      404,
-    );
+    throw groupError("TENANT_RESOURCE_NOT_FOUND", "Grupo não encontrado para este perfil.", 404);
   }
 
   const members = await executeQuery<GroupMemberRow>(
