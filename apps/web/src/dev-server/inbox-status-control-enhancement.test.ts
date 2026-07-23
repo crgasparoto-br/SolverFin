@@ -69,6 +69,19 @@ test("injeta captura antecipada e atualização acessível do status", () => {
   assert.match(enhanced, /data-controlled-status/);
 });
 
+test("inclui o filtro Corrigidos sem alterar a elegibilidade das linhas", () => {
+  const enhanced = enhanceInboxStatusControl(page);
+
+  assert.match(enhanced, /data-inbox-corrected-filter="enhanced"/);
+  assert.match(enhanced, /option\.textContent = "Corrigidos"/);
+  assert.match(enhanced, /option\.value = "all"/);
+  assert.match(enhanced, /data-inbox-controlled-filter/);
+  assert.match(enhanced, /inbox-corrected-filter-hidden/);
+  assert.match(enhanced, /inboxCorrectedFilterDisabled/);
+  assert.match(enhanced, /Nenhum registro corrigido neste filtro/);
+  assert.match(enhanced, /visibleCorrected \+ " de " \+ rows\.length/);
+});
+
 test("não duplica o controle de status", () => {
   const enhanced = enhanceInboxStatusControl(page);
   const repeated = enhanceInboxStatusControl(enhanced);
@@ -76,4 +89,5 @@ test("não duplica o controle de status", () => {
   assert.equal(repeated, enhanced);
   assert.equal(repeated.match(/data-inbox-status-control="enhanced"/g)?.length, 1);
   assert.equal(repeated.match(/data-inbox-status-control-script="enhanced"/g)?.length, 1);
+  assert.equal(repeated.match(/data-inbox-corrected-filter="enhanced"/g)?.length, 1);
 });
