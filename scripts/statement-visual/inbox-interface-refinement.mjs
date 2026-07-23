@@ -85,7 +85,11 @@ async function validateInboxInterfaceRefinement(cdp) {
     desktop,
   );
   check(desktop.bulkControlsIntrinsic, "Bulk selection controls are stretched on desktop", desktop);
-  check(desktop.labelActivatesCheckbox, "Bulk selection label does not toggle its checkbox", desktop);
+  check(
+    desktop.labelActivatesCheckbox,
+    "Bulk selection label does not toggle its checkbox",
+    desktop,
+  );
   check(desktop.rowsAreContinuous, "Imported rows still look like individual cards", desktop);
 
   const tablet = await inspectViewport(cdp, {
@@ -121,7 +125,11 @@ async function validateInboxInterfaceRefinement(cdp) {
     mobile,
   );
   check(mobile.actionsFitViewport, "Inbox actions overflow the mobile viewport", mobile);
-  check(mobile.toolbarVisible, "Bulk selection toolbar is not visible in the mobile evidence", mobile);
+  check(
+    mobile.toolbarVisible,
+    "Bulk selection toolbar is not visible in the mobile evidence",
+    mobile,
+  );
   check(
     mobile.completeRows >= 1,
     "No complete imported row is visible with the mobile toolbar",
@@ -303,11 +311,7 @@ async function focusSelectedBatchByKeyboard(cdp) {
       return true;
     })()`,
   );
-  assert.equal(
-    prepared,
-    true,
-    "Unable to prepare keyboard focus validation for selected batch",
-  );
+  assert.equal(prepared, true, "Unable to prepare keyboard focus validation for selected batch");
   await cdp.send("Input.dispatchKeyEvent", {
     type: "rawKeyDown",
     key: "Tab",
