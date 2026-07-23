@@ -139,7 +139,7 @@ test("usa navegação horizontal compacta e ações intrínsecas no mobile", () 
   );
   assert.match(
     enhanced,
-    /@media \(max-width: 520px\) \{[\s\S]*?\.inbox-page \.compact-filters button \{[\s\S]*?flex: 0 0 auto !important;[\s\S]*?width: max-content !important;/,
+    /@media \(max-width: 520px\) \{[\s\S]*?\.inbox-page \.compact-filters button,[\s\S]*?\.inbox-page \.line-filter-bar button \{[\s\S]*?flex: 0 0 auto !important;[\s\S]*?justify-self: start !important;[\s\S]*?width: max-content !important;/,
   );
   assert.doesNotMatch(
     enhanced,
