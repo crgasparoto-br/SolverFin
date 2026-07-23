@@ -102,7 +102,11 @@ async function main(): Promise<void> {
     "Membro alterado",
   );
 
-  const installments = await query<{ dueOn: Date; amountMinor: number; updatedByUserId: string | null }>(
+  const installments = await query<{
+    dueOn: Date;
+    amountMinor: number;
+    updatedByUserId: string | null;
+  }>(
     `select "dueOn","amountMinor","updatedByUserId" from "Installment"
       where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3`,
     [installmentId, context.organizationId, context.financialProfileId],
@@ -156,7 +160,12 @@ async function main(): Promise<void> {
             count(*) filter (where "transactionGroupId"=$1)::int as grouped
        from "Transaction"
       where "organizationId"=$2 and "financialProfileId"=$3 and "id"=any($4::uuid[])`,
-    [group.id, context.organizationId, context.financialProfileId, members.map((member) => member.id)],
+    [
+      group.id,
+      context.organizationId,
+      context.financialProfileId,
+      members.map((member) => member.id),
+    ],
   );
   assert.equal(originalRows[0]?.total, 6500);
   assert.equal(originalRows[0]?.grouped, 3);
