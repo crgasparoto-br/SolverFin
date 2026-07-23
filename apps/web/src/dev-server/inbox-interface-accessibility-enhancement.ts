@@ -157,7 +157,14 @@ function inboxAccessibilityStyles(): string {
 
 function inboxAccessibilityScript(): string {
   return `(() => {
-    const revealableLabels = new Set(["Descrição", "Conta de referência", "Outra conta"]);
+    const revealableLabels = new Set([
+      "Data",
+      "Tipo",
+      "Valor",
+      "Descrição",
+      "Conta de referência",
+      "Outra conta",
+    ]);
 
     const enhanceGroup = (group) => {
       const label = group.querySelector("dt")?.textContent?.trim();
