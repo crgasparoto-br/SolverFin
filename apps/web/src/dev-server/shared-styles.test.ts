@@ -26,6 +26,12 @@ describe("shared shell styles", () => {
     assert.match(css, /\.topbar/);
   });
 
+  it("keeps hidden elements out of layout when components define display rules", () => {
+    const css = sharedShellStyles();
+
+    assert.match(css, /\[hidden\]\s*\{\s*display:\s*none\s*!important;\s*\}/);
+  });
+
   it("applies the authenticated content width globally", () => {
     const css = sharedShellStyles();
 
