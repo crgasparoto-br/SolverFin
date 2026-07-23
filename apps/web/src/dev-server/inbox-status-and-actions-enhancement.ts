@@ -23,6 +23,9 @@ function statusAndActionsStyles(): string {
       box-shadow: none !important;
       color: inherit;
     }
+    .inbox-page .row-heading .status-pill:not(.import-table-status) {
+      border: 0 !important;
+    }
     .inbox-page .import-table-status {
       border-left: 0 !important;
       border-top: 0 !important;
@@ -75,6 +78,7 @@ function statusAndActionsStyles(): string {
 function statusAndActionsScript(): string {
   return `(() => {
     const tooltipId = "inbox-action-tooltip";
+    const actionSelector = ".row-action-cluster .compact-row-action";
     let activeControl;
 
     function ensureTooltip() {
@@ -89,14 +93,26 @@ function statusAndActionsScript(): string {
       return tooltip;
     }
 
+    function describeControl(control) {
+      const description = control.getAttribute("aria-label") || control.getAttribute("title") || "";
+      if (!description) return;
+      control.dataset.tooltip = description;
+      control.setAttribute("title", description);
+    }
+
     function describeActions(root) {
-      const controls = root.querySelectorAll?.(".inbox-page .row-action-cluster .compact-row-action") || [];
-      controls.forEach((control) => {
-        const description = control.getAttribute("aria-label") || control.getAttribute("title") || "";
-        if (!description) return;
-        control.dataset.tooltip = description;
-        control.setAttribute("title", description);
-      });
+      const controls = [];
+      if (root instanceof Element && root.matches(actionSelector) && root.closest(".inbox-page")) {
+        controls.push(root);
+      }
+      if ("querySelectorAll" in root) {
+        controls.push(
+          ...Array.from(root.querySelectorAll(actionSelector)).filter((control) =>
+            control.closest(".inbox-page"),
+          ),
+        );
+      }
+      controls.forEach(describeControl);
     }
 
     function positionTooltip(control, tooltip) {
@@ -131,19 +147,19 @@ function statusAndActionsScript(): string {
     }
 
     document.addEventListener("pointerover", (event) => {
-      const control = event.target?.closest?.(".inbox-page .row-action-cluster .compact-row-action");
+      const control = event.target?.closest?.(".inbox-page " + actionSelector);
       if (control) showTooltip(control);
     });
     document.addEventListener("pointerout", (event) => {
-      const control = event.target?.closest?.(".inbox-page .row-action-cluster .compact-row-action");
+      const control = event.target?.closest?.(".inbox-page " + actionSelector);
       if (control && !control.contains(event.relatedTarget)) hideTooltip(control);
     });
     document.addEventListener("focusin", (event) => {
-      const control = event.target?.closest?.(".inbox-page .row-action-cluster .compact-row-action");
+      const control = event.target?.closest?.(".inbox-page " + actionSelector);
       if (control) showTooltip(control);
     });
     document.addEventListener("focusout", (event) => {
-      const control = event.target?.closest?.(".inbox-page .row-action-cluster .compact-row-action");
+      const control = event.target?.closest?.(".inbox-page " + actionSelector);
       if (control) hideTooltip(control);
     });
     document.addEventListener("keydown", (event) => {
@@ -166,7 +182,10 @@ function statusAndActionsScript(): string {
       }
     };
 
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
-    else start();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", start, { once: true });
+    } else {
+      start();
+    }
   })();`;
 }
