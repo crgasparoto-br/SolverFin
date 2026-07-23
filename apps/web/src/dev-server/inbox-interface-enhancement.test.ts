@@ -75,14 +75,17 @@ test("mantém seleção compacta com alvos acessíveis e botões no padrão do d
   assert.match(enhanced, /\.inbox-page \.bulk-actions button \{[\s\S]*?width: auto;/);
 });
 
-test("mantém conteúdo financeiro integral acessível e contraste AA no estado desabilitado", () => {
+test("mantém todos os dados financeiros integralmente acessíveis e contraste AA desabilitado", () => {
   const enhanced = enhancePage(page);
   const accessibilityStyles = enhanced.slice(
     enhanced.indexOf('<style data-inbox-interface-accessibility="enhanced">'),
   );
 
   assert.match(enhanced, /data-inbox-interface-accessibility-script="enhanced"/);
-  assert.match(enhanced, /new Set\(\["Descrição", "Conta de referência", "Outra conta"\]\)/);
+  assert.match(
+    enhanced,
+    /new Set\(\[[\s\S]*?"Data",[\s\S]*?"Tipo",[\s\S]*?"Valor",[\s\S]*?"Descrição",[\s\S]*?"Conta de referência",[\s\S]*?"Outra conta",[\s\S]*?\]\)/,
+  );
   assert.match(enhanced, /value\.dataset\.fullValueEnhanced = "true"/);
   assert.match(enhanced, /value\.setAttribute\("aria-label", label \+ ": " \+ fullValue\)/);
   assert.match(enhanced, /value\.tabIndex = 0/);
