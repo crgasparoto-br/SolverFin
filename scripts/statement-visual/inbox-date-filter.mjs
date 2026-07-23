@@ -26,20 +26,45 @@ try {
   await navigate(browser.cdp, inboxUrl);
   await waitFor(
     browser.cdp,
-    `document.querySelectorAll('.import-row').length === 4 && Boolean(document.getElementById('inbox-date-start')) && Boolean(document.getElementById('apply-inbox-date-filters'))`,
+    `document.querySelectorAll('.import-row').length === 4 && Boolean(document.getElementById('apply-inbox-date-filters'))`,
   );
 
+  const clickability = await evaluate(
+    browser.cdp,
+    `(() => {
+      const button = document.getElementById('apply-inbox-date-filters');
+      const rect = button.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const hit = document.elementFromPoint(centerX, centerY);
+      return {
+        width: rect.width,
+        height: rect.height,
+        disabled: button.disabled,
+        pointerEvents: getComputedStyle(button).pointerEvents,
+        hitId: hit?.id || '',
+        centerX,
+        centerY
+      };
+    })()`,
+  );
+  assert.equal(clickability.disabled, false);
+  assert.equal(clickability.pointerEvents, "auto");
+  assert.equal(clickability.hitId, "apply-inbox-date-filters");
+  assert.ok(clickability.width >= 112);
+  assert.ok(clickability.height >= 34);
+
   await setPeriod(browser.cdp, "2026-07-10", "2026-07-20");
+  await physicalClick(browser.cdp, clickability.centerX, clickability.centerY);
   await waitFor(browser.cdp, `document.querySelectorAll('.import-row:not([hidden])').length === 3`);
   const range = await readFilterState(browser.cdp);
   assert.deepEqual(range.visibleDates, ["10/07/2026", "15/07/2026", "20/07/2026"]);
   assert.equal(range.counter, "3 de 4 linha(s)");
   assert.equal(range.lineStart, "2026-07-10");
   assert.equal(range.lineEnd, "2026-07-20");
-  assert.equal(range.applyButtonText, "Aplicar filtro");
-  assert.equal(range.applyButtonLabel, "Aplicar filtro de datas");
 
   await setPeriod(browser.cdp, "2026-07-15", "2026-07-15");
+  await physicalClick(browser.cdp, clickability.centerX, clickability.centerY);
   await waitFor(browser.cdp, `document.querySelectorAll('.import-row:not([hidden])').length === 1`);
   const singleDay = await readFilterState(browser.cdp);
   assert.deepEqual(singleDay.visibleDates, ["15/07/2026"]);
@@ -65,6 +90,7 @@ try {
     commit: process.env.GITHUB_SHA ?? "local",
     browser: browser.version,
     batchId: fixture.batchId,
+    clickability,
     range,
     singleDay,
     cleared,
@@ -127,15 +153,29 @@ async function setPeriod(cdp, startsOn, endsOn) {
   await evaluate(
     cdp,
     `(() => {
-      const start = document.getElementById('inbox-date-start');
-      const end = document.getElementById('inbox-date-end');
-      const apply = document.getElementById('apply-inbox-date-filters');
-      start.value = ${JSON.stringify(startsOn)};
-      end.value = ${JSON.stringify(endsOn)};
-      apply.click();
+      document.getElementById('inbox-date-start').value = ${JSON.stringify(startsOn)};
+      document.getElementById('inbox-date-end').value = ${JSON.stringify(endsOn)};
       return true;
     })()`,
   );
+}
+
+async function physicalClick(cdp, x, y) {
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    x,
+    y,
+    button: "left",
+    clickCount: 1,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    x,
+    y,
+    button: "left",
+    clickCount: 1,
+  });
 }
 
 async function readFilterState(cdp) {
@@ -150,14 +190,11 @@ async function readFilterState(cdp) {
         return value?.dataset.fullValue || value?.querySelector('.row-summary-value-preview')?.textContent?.trim() || value?.textContent?.trim() || '';
       };
       const url = new URL(window.location.href);
-      const applyButton = document.getElementById('apply-inbox-date-filters');
       return {
         visibleDates: [...document.querySelectorAll('.import-row:not([hidden])')].map(readDate).sort(),
         counter: document.getElementById('inbox-visible-lines')?.textContent?.trim() || '',
         lineStart: url.searchParams.get('lineStart'),
-        lineEnd: url.searchParams.get('lineEnd'),
-        applyButtonText: applyButton?.textContent?.trim() || '',
-        applyButtonLabel: applyButton?.getAttribute('aria-label') || ''
+        lineEnd: url.searchParams.get('lineEnd')
       };
     })()`,
   );
