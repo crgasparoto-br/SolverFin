@@ -50,7 +50,7 @@ if (failures.length > 0) {
   if (fatalError?.stack) console.error(fatalError.stack);
   process.exitCode = 1;
 } else {
-  console.log("Inbox full-content access and disabled contrast validation passed.");
+  console.log("Inbox full-content visibility, access and disabled contrast validation passed.");
 }
 
 async function validateInboxContentAndContrast(cdp) {
@@ -72,7 +72,7 @@ async function validateInboxContentAndContrast(cdp) {
     fullDescription: fixture.fullDescription,
     screenshotName: "issue-525-inbox-content-contrast-desktop-1366x768.png",
   });
-  validateMetrics(desktop, { requireFiveRows: true, requireCriticalOverflow: true });
+  validateMetrics(desktop, { requireFiveRows: true });
 
   const mobile = await inspectViewport(cdp, {
     width: 390,
@@ -80,7 +80,7 @@ async function validateInboxContentAndContrast(cdp) {
     fullDescription: fixture.fullDescription,
     screenshotName: "issue-525-inbox-content-contrast-mobile-390x844.png",
   });
-  validateMetrics(mobile, { requireFiveRows: false, requireCriticalOverflow: false });
+  validateMetrics(mobile, { requireFiveRows: false });
 
   return { batchId: fixture.batchId, desktop, mobile };
 }
@@ -141,20 +141,18 @@ async function createFixture(cdp) {
   return fixture.body;
 }
 
-function validateMetrics(metrics, { requireFiveRows, requireCriticalOverflow }) {
+function validateMetrics(metrics, { requireFiveRows }) {
   check(metrics.bodyFitsViewport, `Inbox overflows horizontally at ${metrics.viewport}`, metrics);
   check(
     metrics.descriptionPreviewOverflows,
     `Long description did not exercise the truncation boundary at ${metrics.viewport}`,
     metrics,
   );
-  if (requireCriticalOverflow) {
-    check(
-      metrics.criticalPreviewOverflows,
-      `Date, type and amount did not exercise the compact-field boundary at ${metrics.viewport}`,
-      metrics,
-    );
-  }
+  check(
+    metrics.dateAndAmountAreFullyVisible,
+    `Date or amount is clipped at ${metrics.viewport}`,
+    metrics,
+  );
   check(
     metrics.financialFieldsAreFullyAccessible,
     `One or more financial fields lack full-content access at ${metrics.viewport}`,
@@ -209,7 +207,7 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
     `(() => {
       const expectedDescription = ${JSON.stringify(fullDescription)};
       const financialLabels = ['Data', 'Tipo', 'Valor', 'Descrição', 'Conta de referência'];
-      const criticalLabels = ['Data', 'Tipo', 'Valor'];
+      const fullyVisibleLabels = ['Data', 'Valor'];
       const visible = (element) => {
         if (!element) return false;
         const rect = element.getBoundingClientRect();
@@ -285,8 +283,8 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         completeRows: rows.filter(withinViewport).length,
         descriptionPreviewOverflows: Boolean(preview && preview.scrollWidth > preview.clientWidth),
-        criticalPreviewOverflows: criticalLabels.some((label) =>
-          financialFields.find((field) => field.label === label)?.previewOverflows
+        dateAndAmountAreFullyVisible: fullyVisibleLabels.every(
+          (label) => !financialFields.find((field) => field.label === label)?.previewOverflows
         ),
         financialFieldsAreFullyAccessible:
           financialFields.length === financialLabels.length &&
