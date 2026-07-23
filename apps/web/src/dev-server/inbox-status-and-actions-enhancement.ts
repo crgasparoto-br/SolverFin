@@ -129,6 +129,7 @@ function statusAndActionsScript(): string {
     }
 
     function showTooltip(control) {
+      if (!control?.dataset?.tooltip) describeControl(control);
       const description = control?.dataset?.tooltip;
       if (!description) return;
       const tooltip = ensureTooltip();
