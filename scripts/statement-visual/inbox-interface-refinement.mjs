@@ -230,6 +230,8 @@ async function inspectViewport(
         .filter((element) => element.getBoundingClientRect().width > 0);
       const compactFilterButtons = [...document.querySelectorAll('.inbox-page .compact-filters button')]
         .filter((element) => element.getBoundingClientRect().width > 0);
+      const focusIsVisible = document.activeElement === selectedBatch
+        && Boolean(selectedStyle && selectedStyle.boxShadow !== 'none');
       let labelActivatesCheckbox = false;
       if (bulkLabel && bulkCheckbox && !bulkCheckbox.disabled) {
         const initialChecked = bulkCheckbox.checked;
@@ -250,7 +252,7 @@ async function inspectViewport(
         }),
         batchIsContinuous: Boolean(unselectedStyle && listStyle && unselectedStyle.borderRadius === '0px' && listStyle.gap === '0px' && unselectedStyle.backgroundColor === 'rgba(0, 0, 0, 0)'),
         selectedBatchHasIndicator: Boolean(selectedStyle && selectedStyle.borderLeftWidth !== '0px' && selectedStyle.borderLeftColor !== 'rgba(0, 0, 0, 0)'),
-        focusIsVisible: document.activeElement === selectedBatch && Boolean(selectedStyle && selectedStyle.boxShadow !== 'none'),
+        focusIsVisible,
         bulkControlsIntrinsic: Boolean(bulk && bulkLabel && bulkCheckbox && bulkButton && bulkLabel.getBoundingClientRect().width < bulk.getBoundingClientRect().width * 0.6 && bulkCheckbox.getBoundingClientRect().width <= 24 && bulkButton.getBoundingClientRect().width < bulk.getBoundingClientRect().width * 0.7),
         compactFilterActionsIntrinsic: compactFilterButtons.every((button) => {
           const parent = button.parentElement;
@@ -301,7 +303,11 @@ async function focusSelectedBatchByKeyboard(cdp) {
       return true;
     })()`,
   );
-  assert.equal(prepared, true, "Unable to prepare keyboard focus validation for selected batch");
+  assert.equal(
+    prepared,
+    true,
+    "Unable to prepare keyboard focus validation for selected batch",
+  );
   await cdp.send("Input.dispatchKeyEvent", {
     type: "rawKeyDown",
     key: "Tab",
