@@ -28,7 +28,7 @@ test("preserva os dados e transforma apenas a apresentação das colunas", () =>
 
   assert.match(enhanced, /\["Conta de referência", "account"\]/);
   assert.match(enhanced, /\["Outra conta", "other-account"\]/);
-  assert.match(enhanced, /secondary\.textContent = "Outra conta: "/);
+  assert.match(enhanced, /otherAccountValue\.dataset\.fullValue/);
   assert.match(enhanced, /legacyNotice/);
   assert.match(enhanced, /candidateList/);
   assert.match(enhanced, /row\.setAttribute\("role", "row"\)/);
@@ -57,6 +57,10 @@ test("mantém tabela no desktop e retorna ao fluxo vertical em telas menores", (
   assert.match(enhanced, /@media \(max-width: 520px\)/);
   assert.match(enhanced, /overflow-x: auto/);
   assert.match(enhanced, /:has\(\.import-table-select-cell input:checked\)/);
+  assert.match(
+    enhanced,
+    /\.import-table-select-cell input\[type="checkbox"\] \{[\s\S]*?height: 24px;[\s\S]*?width: 24px;/,
+  );
 });
 
 test("não duplica o aprimoramento quando aplicado novamente", () => {
