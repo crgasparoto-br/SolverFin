@@ -131,9 +131,9 @@ function matchActionRoute(method: string, pathname: string): ActionRoute | undef
     };
   }
 
-  const memberActionMatch = new RegExp(
-    `^${BASE_PATH}/([^/]+)/members/([^/]+)/(clone|void)$`,
-  ).exec(pathname);
+  const memberActionMatch = new RegExp(`^${BASE_PATH}/([^/]+)/members/([^/]+)/(clone|void)$`).exec(
+    pathname,
+  );
   if (method === "POST" && memberActionMatch?.[1] && memberActionMatch[2] && memberActionMatch[3]) {
     return {
       action: memberActionMatch[3] === "clone" ? "clone_member" : "void_member",
