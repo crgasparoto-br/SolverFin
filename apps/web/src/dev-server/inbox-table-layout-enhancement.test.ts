@@ -59,7 +59,7 @@ test("mantém tabela no desktop e retorna ao fluxo vertical em telas menores", (
   assert.match(enhanced, /:has\(\.import-table-select-cell input:checked\)/);
   assert.match(
     enhanced,
-    /\.import-table-select-cell input\[type="checkbox"\] \{[\s\S]*?height: 24px;[\s\S]*?width: 24px;/,
+    /\.import-table-select-cell input\[type="checkbox"\] \{[\s\S]*?flex: 0 0 24px;[\s\S]*?height: 24px;[\s\S]*?width: 24px;/,
   );
 });
 
