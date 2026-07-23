@@ -14,6 +14,7 @@ interface GroupMemberRow {
   id: string;
   accountId: string | null;
   categoryId: string | null;
+  installmentId: string | null;
   kind: string;
   status: string;
   amountMinor: number;
@@ -79,6 +80,14 @@ export async function updateTransactionGroupMemberForContext(
         context.financialProfileId,
         groupId,
       ],
+    );
+    await syncInstallmentForMember(
+      executeQuery,
+      context,
+      member.installmentId,
+      date,
+      amountMinor,
+      member.currency,
     );
     await insertGroupAudit(executeQuery, context, groupId, "UPDATE", {
       groupMember: "updated",
@@ -257,7 +266,7 @@ async function loadLockedGroup(
   }
 
   const members = await executeQuery<GroupMemberRow>(
-    `select "id", "accountId", "categoryId", "kind", "status", "amountMinor", "currency",
+    `select "id", "accountId", "categoryId", "installmentId", "kind", "status", "amountMinor", "currency",
             "occurredOn", "plannedOn", "effectiveOn", "description", "note"
        from "Transaction"
       where "organizationId"=$1 and "financialProfileId"=$2 and "transactionGroupId"=$3
@@ -312,6 +321,32 @@ async function validateCategory(
       409,
     );
   }
+}
+
+async function syncInstallmentForMember(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  installmentId: string | null,
+  dueOn: string,
+  amountMinor: number,
+  currency: string,
+): Promise<void> {
+  if (!installmentId) return;
+  await executeQuery(
+    `update "Installment"
+        set "dueOn"=$1, "amountMinor"=$2, "currency"=$3,
+            "updatedByUserId"=$4, "updatedAt"=now()
+      where "id"=$5 and "organizationId"=$6 and "financialProfileId"=$7`,
+    [
+      dueOn,
+      amountMinor,
+      currency,
+      context.userId,
+      installmentId,
+      context.organizationId,
+      context.financialProfileId,
+    ],
+  );
 }
 
 async function insertClone(
