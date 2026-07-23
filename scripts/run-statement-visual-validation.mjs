@@ -6,6 +6,7 @@ const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-vi
 try {
   await import("./statement-visual/main.mjs");
   await import("./statement-visual/inbox-category-hierarchy.mjs");
+  await import("./statement-visual/inbox-status-control.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
