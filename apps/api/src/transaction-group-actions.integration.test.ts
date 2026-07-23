@@ -16,7 +16,10 @@ import {
   createTransactionGroupForContext,
   getTransactionGroupForContext,
 } from "./repositories/transaction-groups.js";
-import { createTransactionForContext, getTransactionForContext } from "./repositories/transactions.js";
+import {
+  createTransactionForContext,
+  getTransactionForContext,
+} from "./repositories/transactions.js";
 
 const context: TenantContext = {
   organizationId: "22222222-2222-4222-8222-222222222222",
@@ -53,12 +56,11 @@ async function main(): Promise<void> {
     displayOn: "2028-02-03",
   });
 
-  const edited = await updateTransactionGroupMemberForContext(
-    context,
-    group.id,
-    members[0]!.id,
-    { amountMinor: 1500, date: "2028-02-10", description: "Membro alterado" },
-  );
+  const edited = await updateTransactionGroupMemberForContext(context, group.id, members[0]!.id, {
+    amountMinor: 1500,
+    date: "2028-02-10",
+    description: "Membro alterado",
+  });
   assert.equal(edited.totalAmountMinor, 6500);
   assert.equal(
     edited.members.find((member) => member.id === members[0]!.id)?.description,
@@ -71,7 +73,11 @@ async function main(): Promise<void> {
   const posted = await setTransactionGroupStatusForContext(context, group.id, "posted");
   assert.ok(posted.members.every((member) => member.status === "posted"));
 
-  const singleClone = await cloneTransactionGroupMemberForContext(context, group.id, members[0]!.id);
+  const singleClone = await cloneTransactionGroupMemberForContext(
+    context,
+    group.id,
+    members[0]!.id,
+  );
   const persistedSingleClone = await getTransactionForContext(context, singleClone.id);
   assert.equal(persistedSingleClone.transactionGroupId, undefined);
   assert.equal(persistedSingleClone.status, "posted");
@@ -83,7 +89,11 @@ async function main(): Promise<void> {
     assert.equal((await getTransactionForContext(context, clone.id)).transactionGroupId, undefined);
   }
 
-  const firstRemoval = await voidTransactionGroupMemberForContext(context, group.id, members[0]!.id);
+  const firstRemoval = await voidTransactionGroupMemberForContext(
+    context,
+    group.id,
+    members[0]!.id,
+  );
   assert.equal(firstRemoval.groupRemoved, false);
   assert.equal((await getTransactionGroupForContext(context, group.id)).members.length, 2);
   const secondRemoval = await voidTransactionGroupMemberForContext(
@@ -93,7 +103,10 @@ async function main(): Promise<void> {
   );
   assert.equal(secondRemoval.groupRemoved, true);
   await assert.rejects(() => getTransactionGroupForContext(context, group.id));
-  assert.equal((await getTransactionForContext(context, members[2]!.id)).transactionGroupId, undefined);
+  assert.equal(
+    (await getTransactionForContext(context, members[2]!.id)).transactionGroupId,
+    undefined,
+  );
 
   const deleteMembers = await Promise.all(
     [4000, 5000].map((amountMinor, index) =>
