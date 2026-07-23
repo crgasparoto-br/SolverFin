@@ -134,6 +134,10 @@ test("usa navegação horizontal compacta e ações intrínsecas no mobile", () 
     enhanced,
     /@media \(max-width: 520px\) \{[\s\S]*?\.inbox-page \.heading-actions > \*,[\s\S]*?width: auto;/,
   );
+  assert.match(
+    enhanced,
+    /@media \(max-width: 520px\) \{[\s\S]*?\.inbox-page \.compact-filters button \{[\s\S]*?flex: 0 0 auto !important;[\s\S]*?width: max-content !important;/,
+  );
   assert.doesNotMatch(enhanced, /\.inbox-page \.maintenance-actions button \{\s*width: 100%;/);
 });
 
