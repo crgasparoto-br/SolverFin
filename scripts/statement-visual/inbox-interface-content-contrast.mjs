@@ -63,7 +63,7 @@ async function validateInboxContentAndContrast(cdp) {
   await navigate(cdp, `${baseUrl}/inbox?importBatchId=${encodeURIComponent(fixture.batchId)}`);
   await waitFor(
     cdp,
-    `document.querySelectorAll('.row-summary dd[data-full-value-enhanced="true"]').length >= 2`,
+    `document.querySelectorAll('.row-summary dd[data-full-value-enhanced="true"]').length >= 5`,
   );
 
   const desktop = await inspectViewport(cdp, {
@@ -104,7 +104,11 @@ async function createFixture(cdp) {
       const rows = Array.from({ length: 10 }, (_, index) => {
         const day = String(index + 1).padStart(2, '0');
         const description = index === 0 ? fullDescription : 'Linha de contraste ' + String(index + 1) + ' ' + suffix;
-        const amount = index % 3 === 0 ? String(100 + index) + '.50' : '-' + String(20 + index) + '.75';
+        const amount = index === 0
+          ? '1234567.89'
+          : index % 3 === 0
+            ? String(100 + index) + '.50'
+            : '-' + String(20 + index) + '.75';
         return '2026-07-' + day + ',' + description + ',' + amount;
       });
       const created = await readJson(await fetch('/api/import-batches/csv', {
@@ -142,6 +146,16 @@ function validateMetrics(metrics, { requireFiveRows }) {
   check(
     metrics.descriptionPreviewOverflows,
     `Long description did not exercise the truncation boundary at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.criticalPreviewOverflows,
+    `Date, type and amount did not exercise the compact-field boundary at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.financialFieldsAreFullyAccessible,
+    `One or more financial fields lack full-content access at ${metrics.viewport}`,
     metrics,
   );
   check(
@@ -192,6 +206,8 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
     cdp,
     `(() => {
       const expectedDescription = ${JSON.stringify(fullDescription)};
+      const financialLabels = ['Data', 'Tipo', 'Valor', 'Descrição', 'Conta de referência'];
+      const criticalLabels = ['Data', 'Tipo', 'Valor'];
       const visible = (element) => {
         if (!element) return false;
         const rect = element.getBoundingClientRect();
@@ -206,6 +222,25 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
       const findValue = (label) => [...document.querySelectorAll('.row-summary > div')]
         .find((group) => group.querySelector('dt')?.textContent?.trim() === label)
         ?.querySelector('dd');
+      const readField = (label) => {
+        const value = findValue(label);
+        const preview = value?.querySelector('.row-summary-value-preview');
+        const popover = value?.querySelector('.row-summary-full-value');
+        const fullValue = value?.dataset.fullValue || '';
+        return {
+          label,
+          fullValue,
+          previewOverflows: Boolean(preview && preview.scrollWidth > preview.clientWidth),
+          fullyAccessible: Boolean(
+            value &&
+            value.dataset.fullValueEnhanced === 'true' &&
+            value.tabIndex === 0 &&
+            value.getAttribute('aria-label') === label + ': ' + fullValue &&
+            value.getAttribute('title') === fullValue &&
+            popover?.textContent?.trim() === fullValue
+          )
+        };
+      };
       const parseRgb = (value) => {
         const parts = value.match(/[\\d.]+/g)?.slice(0, 3).map(Number) || [];
         return parts.length === 3 ? parts : [0, 0, 0];
@@ -225,6 +260,7 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         return (Math.max(left, right) + 0.05) / (Math.min(left, right) + 0.05);
       };
 
+      const financialFields = financialLabels.map(readField);
       const description = [...document.querySelectorAll('.row-summary > div')]
         .map((group) => group.querySelector('dd'))
         .find((value) => value?.dataset.fullValue === expectedDescription);
@@ -244,6 +280,11 @@ async function inspectViewport(cdp, { width, height, fullDescription, screenshot
         bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         completeRows: rows.filter(withinViewport).length,
         descriptionPreviewOverflows: Boolean(preview && preview.scrollWidth > preview.clientWidth),
+        criticalPreviewOverflows: criticalLabels.some((label) =>
+          financialFields.find((field) => field.label === label)?.previewOverflows
+        ),
+        financialFieldsAreFullyAccessible: financialFields.every((field) => field.fullyAccessible),
+        financialFields,
         descriptionIsFullyAccessible: Boolean(
           description &&
           description.tabIndex === 0 &&
