@@ -207,7 +207,7 @@ function inboxTableLayoutScript(): string {
 function inboxTableLayoutStyles(): string {
   return `
     .inbox-page .import-rows {
-      --inbox-table-columns: 28px 76px 44px 74px 76px minmax(140px, 1.55fr) 88px minmax(112px, 1fr) minmax(132px, 1.15fr) 128px;
+      --inbox-table-columns: 34px 76px 44px 74px 76px minmax(140px, 1.55fr) 88px minmax(112px, 1fr) minmax(132px, 1.15fr) 128px;
     }
     .inbox-page .import-table-header {
       display: none;
@@ -313,6 +313,7 @@ function inboxTableLayoutStyles(): string {
       }
       .inbox-page .import-table-select-cell input[type="checkbox"] {
         accent-color: var(--primary);
+        flex: 0 0 24px;
         height: 24px;
         margin: 0;
         min-height: 24px;
@@ -483,6 +484,7 @@ function inboxTableLayoutStyles(): string {
         padding-top: 2px;
       }
       .inbox-page .import-table-select-cell input[type="checkbox"] {
+        flex: 0 0 24px;
         height: 24px;
         margin: 0;
         min-height: 24px;
