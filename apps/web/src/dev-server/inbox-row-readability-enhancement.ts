@@ -12,7 +12,7 @@ export function enhanceInboxRowReadability(html: string): string {
 function inboxRowReadabilityStyles(): string {
   return `
     .inbox-page .import-rows {
-      --inbox-table-columns: 28px 84px 38px minmax(82px, max-content) 60px minmax(104px, 1fr) minmax(98px, max-content) minmax(116px, 0.9fr) minmax(150px, 1.25fr) 122px;
+      --inbox-table-columns: 28px 84px 38px 82px 60px minmax(88px, 1fr) 110px minmax(116px, 0.9fr) minmax(120px, 1.25fr) 122px;
     }
     .inbox-page .import-table-select-cell {
       min-width: 28px;
@@ -98,7 +98,7 @@ function inboxRowReadabilityStyles(): string {
     @media (min-width: 1024px) {
       .inbox-page .import-table-header,
       .inbox-page .import-row {
-        min-width: 882px;
+        min-width: 848px;
       }
     }
 
