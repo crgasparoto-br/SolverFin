@@ -16,31 +16,41 @@ function inboxRowReadabilityStyles(): string {
     }
     .inbox-page .import-table-select-cell {
       min-width: 28px;
-      padding-inline: 4px !important;
+      padding-inline: 2px !important;
     }
     .inbox-page .import-table-select-cell input[type="checkbox"] {
       -webkit-appearance: none !important;
       appearance: none !important;
-      background: var(--surface);
-      border: 1.5px solid #64748b;
+      background-color: transparent;
+      background-image: radial-gradient(
+        circle at center,
+        var(--surface) 0 6px,
+        #64748b 6px 8px,
+        transparent 8px
+      );
+      border: 0;
       border-radius: 50%;
       box-shadow: none;
       cursor: pointer;
-      flex: 0 0 16px !important;
-      height: 16px !important;
+      flex: 0 0 24px !important;
+      height: 24px !important;
       margin: 0;
-      min-height: 16px !important;
+      min-height: 24px !important;
       padding: 0;
-      width: 16px !important;
+      width: 24px !important;
     }
     .inbox-page .import-table-select-cell input[type="checkbox"]:checked {
-      background: var(--primary);
-      border-color: var(--primary);
-      box-shadow: inset 0 0 0 3px var(--surface);
+      background-image: radial-gradient(
+        circle at center,
+        var(--primary) 0 5px,
+        var(--surface) 5px 7px,
+        var(--primary) 7px 8px,
+        transparent 8px
+      );
     }
     .inbox-page .import-table-select-cell input[type="checkbox"]:focus-visible {
       outline: 2px solid var(--cyan);
-      outline-offset: 2px;
+      outline-offset: 1px;
     }
     .inbox-page .import-table-select-cell input[type="checkbox"]:disabled {
       cursor: not-allowed;
@@ -82,11 +92,11 @@ function inboxRowReadabilityStyles(): string {
 
     @media (max-width: 520px) {
       .inbox-page .import-row {
-        grid-template-columns: 20px minmax(0, 1fr) !important;
+        grid-template-columns: 24px minmax(0, 1fr) !important;
       }
       .inbox-page .import-table-select-cell {
-        min-width: 20px;
-        padding-inline: 2px !important;
+        min-width: 24px;
+        padding-inline: 0 !important;
       }
     }
   `;
