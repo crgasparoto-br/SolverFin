@@ -113,7 +113,11 @@ async function createFixture(cdp) {
     })()`,
   );
 
-  assert.equal(result.ok, true, `Date filter fixture failed: ${result.status} ${JSON.stringify(result.body)}`);
+  assert.equal(
+    result.ok,
+    true,
+    `Date filter fixture failed: ${result.status} ${JSON.stringify(result.body)}`,
+  );
   return result.body;
 }
 
