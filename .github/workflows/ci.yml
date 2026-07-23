@@ -57,6 +57,24 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Generate Prettier remediation patch
+        run: |
+          npx prettier --write \
+            apps/web/src/dev-server/http.ts \
+            apps/web/src/dev-server/inbox-status-and-actions-enhancement.ts \
+            apps/web/src/dev-server/inbox-status-and-actions-enhancement.test.ts \
+            scripts/statement-visual/inbox-status-control.mjs
+          git diff --binary > prettier-remediation.patch
+          git checkout -- .
+
+      - name: Upload Prettier remediation patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: prettier-remediation-${{ github.sha }}
+          path: prettier-remediation.patch
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Check environment example
         run: npm run env:check
 
