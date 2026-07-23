@@ -42,7 +42,10 @@ test("organiza a inbox como uma lista operacional com navegação por seção", 
 test("isola estados claros e contínuos para os lotes da inbox", () => {
   const enhanced = enhancePage(page);
 
-  assert.match(enhanced, /\.inbox-page \.import-batch-list \{[\s\S]*?gap: 0;[\s\S]*?padding: 0;/);
+  assert.match(
+    enhanced,
+    /\.inbox-page \.import-batch-list \{[\s\S]*?gap: 0;[\s\S]*?padding: 0;/,
+  );
   assert.match(
     enhanced,
     /\.inbox-page \.batch-item \{[\s\S]*?background: transparent;[\s\S]*?border-bottom: 1px solid var\(--line\);[\s\S]*?border-radius: 0;[\s\S]*?color: var\(--text\);/,
@@ -138,7 +141,10 @@ test("usa navegação horizontal compacta e ações intrínsecas no mobile", () 
     enhanced,
     /@media \(max-width: 520px\) \{[\s\S]*?\.inbox-page \.compact-filters button \{[\s\S]*?flex: 0 0 auto !important;[\s\S]*?width: max-content !important;/,
   );
-  assert.doesNotMatch(enhanced, /\.inbox-page \.maintenance-actions button \{\s*width: 100%;/);
+  assert.doesNotMatch(
+    enhanced,
+    /\.inbox-page \.maintenance-actions button \{\s*width: 100%;/,
+  );
 });
 
 test("não duplica os aprimoramentos quando aplicados novamente", () => {
