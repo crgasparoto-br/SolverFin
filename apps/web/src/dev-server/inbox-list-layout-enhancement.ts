@@ -218,7 +218,14 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
           const entry = [...row.querySelectorAll(".row-summary > div")].find(
             (item) => item.querySelector("dt")?.textContent?.trim() === "Data",
           );
-          return normalizeInboxDate(entry?.querySelector("dd")?.textContent || "");
+          const value = entry?.querySelector("dd");
+          return normalizeInboxDate(
+            value?.dataset.fullValue ||
+              value?.querySelector(".row-summary-value-preview")?.textContent ||
+              value?.getAttribute("title") ||
+              value?.textContent ||
+              "",
+          );
         }
 
         function visibleEligibleCheckboxes() {
