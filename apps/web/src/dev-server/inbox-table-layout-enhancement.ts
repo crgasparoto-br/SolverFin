@@ -10,9 +10,7 @@ export function enhanceInboxTableLayout(html: string): string {
   const styles = `<style ${TABLE_LAYOUT_MARKER}>${inboxTableLayoutStyles()}</style>`;
   const script = inboxTableLayoutScript();
 
-  return html
-    .replace("</head>", `${styles}</head>`)
-    .replace("</body>", `${script}</body>`);
+  return html.replace("</head>", `${styles}</head>`).replace("</body>", `${script}</body>`);
 }
 
 function inboxTableLayoutScript(): string {
