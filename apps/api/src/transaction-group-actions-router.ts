@@ -55,13 +55,14 @@ export async function handleTransactionGroupActionsApiRequest(
     if (!("memberId" in route)) return undefined;
 
     if (route.action === "update_member") {
+      const memberDate = readMemberDate(body);
       const group = await updateTransactionGroupMemberForContext(
         context,
         route.groupId,
         route.memberId,
         {
           ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
-          ...(body.date !== undefined ? { date: String(body.date) } : {}),
+          ...(memberDate !== undefined ? { date: memberDate } : {}),
           ...(body.description !== undefined ? { description: String(body.description) } : {}),
           ...(body.categoryId !== undefined
             ? { categoryId: readNullableString(body.categoryId) }
@@ -148,6 +149,11 @@ function matchActionRoute(method: string, pathname: string): ActionRoute | undef
 function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null) return {};
   return body as Record<string, unknown>;
+}
+
+function readMemberDate(body: Record<string, unknown>): string | undefined {
+  const value = body.date ?? body.effectiveOn ?? body.plannedOn;
+  return value === undefined || value === null || value === "" ? undefined : String(value);
 }
 
 function readNullableString(value: unknown): string | null {
