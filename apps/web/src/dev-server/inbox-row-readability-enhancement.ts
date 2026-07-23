@@ -12,7 +12,7 @@ export function enhanceInboxRowReadability(html: string): string {
 function inboxRowReadabilityStyles(): string {
   return `
     .inbox-page .import-rows {
-      --inbox-table-columns: 28px 72px 38px 78px 88px minmax(80px, 1fr) 100px minmax(100px, 0.9fr) minmax(140px, 1.25fr) 122px;
+      --inbox-table-columns: 28px 72px 38px 78px 76px minmax(150px, 1.25fr) 100px minmax(110px, 0.9fr) minmax(84px, 1fr) 112px;
     }
     .inbox-page .import-table-select-cell {
       min-width: 28px;
@@ -103,6 +103,14 @@ function inboxRowReadabilityStyles(): string {
       .inbox-page .import-table-header,
       .inbox-page .import-row {
         min-width: 848px;
+      }
+      .inbox-page .import-table-select-cell,
+      .inbox-page .import-table-status,
+      .inbox-page .import-table-line,
+      .inbox-page .import-table-cell,
+      .inbox-page .import-table-observations,
+      .inbox-page .row-action-cluster {
+        padding-block: 2px !important;
       }
       .inbox-page .import-table-observations .candidate-card {
         gap: 2px;
