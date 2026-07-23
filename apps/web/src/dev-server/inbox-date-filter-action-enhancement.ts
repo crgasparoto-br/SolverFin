@@ -15,11 +15,21 @@ export function enhanceInboxDateFilterAction(html: string): string {
   const styles = `<style ${DATE_FILTER_ACTION_MARKER}>
     .inbox-list-toolbar #apply-inbox-date-filters {
       align-items: center;
+      cursor: pointer;
       display: inline-flex;
       gap: 5px;
+      isolation: isolate;
       justify-content: center;
       min-height: 34px;
+      min-width: 112px;
+      pointer-events: auto !important;
+      position: relative;
+      touch-action: manipulation;
       white-space: nowrap;
+      z-index: 4;
+    }
+    .inbox-list-toolbar .inbox-visible-lines {
+      pointer-events: none;
     }
     @media (min-width: 1121px) {
       .line-filter-bar.inbox-list-toolbar {
@@ -41,14 +51,13 @@ export function enhanceInboxDateFilterAction(html: string): string {
         applyButton.id = "apply-inbox-date-filters";
         applyButton.title = "Aplicar o período e a ordenação selecionados";
         applyButton.setAttribute("aria-label", "Aplicar filtro de datas");
+        applyButton.dataset.inboxFilterClickable = "true";
         applyButton.innerHTML = applyIcon + " Aplicar filtro";
         clearButton.before(applyButton);
 
-        applyButton.addEventListener("click", () => {
-          const trigger =
-            document.getElementById("inbox-date-start") ||
-            document.getElementById("inbox-date-end") ||
-            document.getElementById("inbox-date-sort");
+        applyButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          const trigger = document.getElementById("inbox-date-start");
           trigger?.dispatchEvent(new Event("change", { bubbles: true }));
         });
 
