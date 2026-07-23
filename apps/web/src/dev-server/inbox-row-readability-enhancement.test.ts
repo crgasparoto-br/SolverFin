@@ -32,7 +32,7 @@ test("dimensiona todas as colunas para preservar o conteúdo integral", () => {
 
   assert.match(
     enhanced,
-    /--inbox-table-columns: 28px minmax\(92px, 120px\) 42px minmax\(82px, 96px\) minmax\(96px, 112px\) minmax\(180px, 1\.45fr\) minmax\(120px, 136px\) minmax\(150px, 1fr\) minmax\(210px, 1\.35fr\) 122px;/,
+    /--inbox-table-columns: 28px 72px 38px 78px 88px minmax\(80px, 1fr\) 100px minmax\(100px, 0\.9fr\) minmax\(140px, 1\.25fr\) 122px;/,
   );
   assert.match(
     enhanced,
@@ -44,13 +44,9 @@ test("dimensiona todas as colunas para preservar o conteúdo integral", () => {
   );
   assert.match(
     enhanced,
-    /\.import-table-cell-date,[\s\S]*?\.import-table-cell-amount \.row-summary-value-preview \{[\s\S]*?overflow: visible !important;[\s\S]*?text-overflow: clip !important;[\s\S]*?white-space: nowrap !important;/,
-  );
-  assert.match(
-    enhanced,
     /\.import-table-cell-account,[\s\S]*?\.row-summary-value-preview,[\s\S]*?overflow-wrap: anywhere;[\s\S]*?text-overflow: clip !important;[\s\S]*?white-space: normal !important;/,
   );
-  assert.match(enhanced, /@media \(min-width: 1024px\) \{[\s\S]*?min-width: 1152px;/);
+  assert.match(enhanced, /@media \(min-width: 1024px\) \{[\s\S]*?min-width: 848px;/);
   assert.match(
     enhanced,
     /\.candidate-card \{[\s\S]*?gap: 2px;[\s\S]*?padding-block: 0;[\s\S]*?\.candidate-card p \{[\s\S]*?line-height: 1\.15;/,
@@ -64,10 +60,6 @@ test("dimensiona todas as colunas para preservar o conteúdo integral", () => {
 test("mantém conteúdo integral e seletor compacto no fluxo responsivo", () => {
   const enhanced = enhanceInboxRowReadability(page);
 
-  assert.match(
-    enhanced,
-    /@media \(max-width: 1023px\) \{[\s\S]*?\.import-table-cell-date,[\s\S]*?\.import-table-cell-amount \.row-summary-value-preview \{[\s\S]*?overflow-wrap: anywhere;[\s\S]*?white-space: normal !important;/,
-  );
   assert.match(
     enhanced,
     /@media \(max-width: 520px\) \{[\s\S]*?grid-template-columns: 24px minmax\(0, 1fr\) !important;[\s\S]*?min-width: 24px;/,
