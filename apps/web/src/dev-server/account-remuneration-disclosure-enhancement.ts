@@ -3,19 +3,25 @@ import { enhanceTransactionGroupModal } from "./transaction-group-modal-enhancem
 import { enhanceTransactionGroupModalLayout } from "./transaction-group-modal-layout-enhancement.js";
 import { enhanceTransactionGroupPendingFixes } from "./transaction-group-pending-fixes.js";
 
-const DISCLOSURE_STYLE_MARKER = "data-account-remuneration-disclosure-affordance";
+const DISCLOSURE_STYLE_MARKER =
+  "data-account-remuneration-disclosure-affordance";
 const DISCLOSURE_SUMMARY = `<summary aria-label="Ver memória do cálculo" title="Ver memória do cálculo"><span class="account-remuneration-disclosure-full">Ver memória do cálculo</span><span class="account-remuneration-disclosure-compact" aria-hidden="true">Memória</span></summary>`;
 
 export function enhanceAccountRemunerationDisclosure(html: string): string {
   const groupEnhancedHtml = enhanceTransactionGroupPendingFixes(
     enhanceTransactionGroupModalLayout(
-      enhanceTransactionGroupMemberFormGuard(enhanceTransactionGroupModal(html)),
+      enhanceTransactionGroupMemberFormGuard(
+        enhanceTransactionGroupModal(html),
+      ),
     ),
   );
-  if (!groupEnhancedHtml.includes('details class="account-remuneration-audit"')) {
+  if (
+    !groupEnhancedHtml.includes('details class="account-remuneration-audit"')
+  ) {
     return groupEnhancedHtml;
   }
-  if (groupEnhancedHtml.includes(DISCLOSURE_STYLE_MARKER)) return groupEnhancedHtml;
+  if (groupEnhancedHtml.includes(DISCLOSURE_STYLE_MARKER))
+    return groupEnhancedHtml;
 
   const styles = `
       <style ${DISCLOSURE_STYLE_MARKER}>
