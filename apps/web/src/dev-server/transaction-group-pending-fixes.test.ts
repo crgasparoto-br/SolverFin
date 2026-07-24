@@ -19,12 +19,18 @@ const enhanced = enhanceTransactionGroupPendingFixes(source);
 assert.match(enhanced, /data-transaction-group-pending-fixes/);
 assert.match(enhanced, /MAX_DESCRIPTION_LENGTH = 240/);
 assert.match(enhanced, /descriptionInput\.maxLength = MAX_DESCRIPTION_LENGTH/);
-assert.match(enhanced, /descriptionInput\.value\.slice\(0, MAX_DESCRIPTION_LENGTH\)/);
+assert.match(
+  enhanced,
+  /descriptionInput\.value\.slice\(0, MAX_DESCRIPTION_LENGTH\)/,
+);
 assert.match(enhanced, /data-group-member-mode/);
 assert.match(enhanced, /MutationObserver/);
 assert.match(enhanced, /groupProjectionAmountMinor/);
 assert.match(enhanced, /deltaMinor = nextAmountMinor - previousAmountMinor/);
-assert.match(enhanced, /updateBalance\(affectedRow, deltaMinor, group\.currency\)/);
+assert.match(
+  enhanced,
+  /updateBalance\(affectedRow, deltaMinor, group\.currency\)/,
+);
 assert.match(enhanced, /statement-status-/);
 assert.match(enhanced, /lançamentos agrupados/);
 assert.equal(
