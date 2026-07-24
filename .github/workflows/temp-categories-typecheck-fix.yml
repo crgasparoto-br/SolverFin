@@ -55,21 +55,30 @@ jobs:
           echo "exit_code=${typecheck_status}" >> "$GITHUB_OUTPUT"
           exit 0
 
-      - name: Upload typecheck diagnostic
+      - name: Capture web tests
+        id: web-tests
+        if: steps.typecheck.outputs.exit_code == '0'
+        continue-on-error: true
+        run: |
+          set +e
+          npm run test --workspace @solverfin/web 2>&1 | tee web-test.log
+          test_status=${PIPESTATUS[0]}
+          echo "exit_code=${test_status}" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload validation diagnostic
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: categories-typecheck-diagnostic
+          name: categories-validation-diagnostic
           path: |
             apps/web/src/dev-server/categories-icons-enhancement.ts
+            apps/web/src/dev-server/categories-icons-enhancement.test.ts
             typecheck.log
-
-      - name: Validate web tests
-        if: steps.typecheck.outputs.exit_code == '0'
-        run: npm run test --workspace @solverfin/web
+            web-test.log
 
       - name: Commit correction
-        if: steps.typecheck.outputs.exit_code == '0'
+        if: steps.typecheck.outputs.exit_code == '0' && steps.web-tests.outputs.exit_code == '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -78,6 +87,6 @@ jobs:
           git commit -m "fix(web): tornar resumo de categorias type-safe"
           git push origin HEAD:feat/categories-design-interface
 
-      - name: Preserve typecheck result
-        if: steps.typecheck.outputs.exit_code != '0'
+      - name: Preserve validation result
+        if: steps.typecheck.outputs.exit_code != '0' || steps.web-tests.outputs.exit_code != '0'
         run: exit 1
