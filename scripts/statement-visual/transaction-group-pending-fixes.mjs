@@ -2,24 +2,15 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
 if (!chromePath)
-  throw new Error(
-    "CHROME_BIN is required for transaction group pending fixes validation.",
-  );
+  throw new Error("CHROME_BIN is required for transaction group pending fixes validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let groupId;
@@ -28,11 +19,7 @@ try {
   await setViewport(browser.cdp, 1366, 900);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
-  assert.equal(
-    login.ok,
-    true,
-    `Demo login failed: ${login.status} ${login.body}`,
-  );
+  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
   const fixtureIds = await evaluate(browser.cdp, fixtureExpression());
   const route = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.longAccountId)}&month=2026-07`;
 
@@ -104,16 +91,8 @@ try {
       return { open: modal.open, focusInside: modal.contains(document.activeElement) };
     })()`,
   );
-  assert.equal(
-    keyboardOpen.open,
-    true,
-    "The group modal did not open with Enter.",
-  );
-  assert.equal(
-    keyboardOpen.focusInside,
-    true,
-    "Focus did not move into the opened group modal.",
-  );
+  assert.equal(keyboardOpen.open, true, "The group modal did not open with Enter.");
+  assert.equal(keyboardOpen.focusInside, true, "Focus did not move into the opened group modal.");
 
   await pressKey(browser.cdp, "Tab", "Tab", 9);
   const tabState = await evaluate(
@@ -131,16 +110,8 @@ try {
       restored: document.activeElement === document.querySelector('[data-group-details="${created.groupId}"]')
     }))()`,
   );
-  assert.equal(
-    keyboardClose.open,
-    false,
-    "Escape did not close the group modal.",
-  );
-  assert.equal(
-    keyboardClose.restored,
-    true,
-    "Focus was not restored to the group details button.",
-  );
+  assert.equal(keyboardClose.open, false, "Escape did not close the group modal.");
+  assert.equal(keyboardClose.restored, true, "Focus was not restored to the group details button.");
 
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(100);
@@ -162,11 +133,7 @@ try {
       };
     })()`,
   );
-  assert.equal(
-    cloneDescription.modalOpen,
-    true,
-    "Clone form did not open by keyboard.",
-  );
+  assert.equal(cloneDescription.modalOpen, true, "Clone form did not open by keyboard.");
   assert.equal(cloneDescription.maxLength, 240);
   assert.equal(
     cloneDescription.length,
@@ -178,10 +145,7 @@ try {
   await pressKey(browser.cdp, "Escape", "Escape", 27);
   await sleep(100);
   assert.equal(
-    await evaluate(
-      browser.cdp,
-      `document.querySelector("[data-group-modal]").open`,
-    ),
+    await evaluate(browser.cdp, `document.querySelector("[data-group-modal]").open`),
     true,
     "Closing the clone form did not restore the group modal.",
   );
@@ -209,27 +173,15 @@ try {
   const afterEdit = await readProjection(browser.cdp, created.groupId);
   assert.equal(afterEdit.groupTotalMinor, 65000);
   assert.equal(afterEdit.rowProjectionMinor, 65000);
-  assert.equal(
-    afterEdit.groupBalanceMinor - beforeEdit.groupBalanceMinor,
-    5000,
-  );
-  assert.equal(
-    afterEdit.followingBalanceMinor - beforeEdit.followingBalanceMinor,
-    5000,
-  );
+  assert.equal(afterEdit.groupBalanceMinor - beforeEdit.groupBalanceMinor, 5000);
+  assert.equal(afterEdit.followingBalanceMinor - beforeEdit.followingBalanceMinor, 5000);
   assert.match(afterEdit.amountText, /650,00/);
 
   await evaluate(browser.cdp, `window.confirm = () => true`);
-  await evaluate(
-    browser.cdp,
-    `document.querySelector('[data-group-action="status"]').focus()`,
-  );
+  await evaluate(browser.cdp, `document.querySelector('[data-group-action="status"]').focus()`);
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(250);
-  const reconciledProjection = await readProjection(
-    browser.cdp,
-    created.groupId,
-  );
+  const reconciledProjection = await readProjection(browser.cdp, created.groupId);
   assert.equal(reconciledProjection.groupStatus, "reconciled");
   assert.equal(reconciledProjection.rowStatus, "Conciliado");
 
@@ -244,14 +196,8 @@ try {
   assert.equal(afterDelete.memberCount, 2);
   assert.equal(afterDelete.groupTotalMinor, 35000);
   assert.equal(afterDelete.rowProjectionMinor, 35000);
-  assert.equal(
-    afterDelete.groupBalanceMinor - beforeDelete.groupBalanceMinor,
-    -30000,
-  );
-  assert.equal(
-    afterDelete.followingBalanceMinor - beforeDelete.followingBalanceMinor,
-    -30000,
-  );
+  assert.equal(afterDelete.groupBalanceMinor - beforeDelete.groupBalanceMinor, -30000);
+  assert.equal(afterDelete.followingBalanceMinor - beforeDelete.followingBalanceMinor, -30000);
   assert.match(afterDelete.memberCountText, /^2 lançamentos agrupados$/);
   assert.equal(afterDelete.rowStatus, "Conciliado");
 
