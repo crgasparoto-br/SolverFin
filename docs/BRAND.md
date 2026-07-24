@@ -97,7 +97,18 @@ A interface deve ser **mobile-first**, limpa e orientada a rotina diaria. O usua
 - Graficos simples: linhas, barras e donuts apenas quando ajudarem decisao.
 - Contraste forte para acessibilidade.
 - Microcopy direta, sem jargao bancario.
-- Priorizar icones reconheciveis para acoes recorrentes, sempre com nome acessivel (`aria-label`, `title` ou texto visivel quando necessario).
+- Toda acao visivel deve incluir um icone reconhecivel e semanticamente coerente, sem depender apenas do texto ou da cor para comunicar sua finalidade.
+
+### Padrao obrigatorio de icones
+
+- Use o catalogo central `icon(...)` de `apps/web/src/dev-server/icons.ts`, baseado nos desenhos Lucide e com `currentColor` para herdar o tema.
+- Quando um icone necessario nao existir, adicione-o ao catalogo central; nao replique SVG em componentes, templates ou estilos isolados.
+- Nao use emoji, simbolos Unicode, fontes de icones ou desenhos ad hoc como substitutos de icones da interface.
+- Botoes primarios, acoes destrutivas, acoes pouco frequentes e comandos com risco de ambiguidade devem combinar **icone + texto**.
+- Acoes recorrentes e compactas podem usar somente icone quando o contexto for inequivoco, mantendo `aria-label`, `title` ou tooltip, alvo interativo adequado e foco visivel.
+- Icones decorativos devem usar `aria-hidden="true"`; icon-only buttons devem possuir nome acessivel que descreva a acao, nao o desenho.
+- Mantenha tamanho, espessura, alinhamento e espacamento consistentes entre acoes equivalentes. O tamanho padrao e 16 x 16 px, salvo hierarquia visual documentada.
+- Estados como ativo, selecionado, erro, sucesso e desabilitado nao podem depender apenas da cor; combine estilo, texto acessivel e estado semantico.
 
 ### Padrao de telas e CRUD
 
@@ -106,8 +117,8 @@ A interface deve ser **mobile-first**, limpa e orientada a rotina diaria. O usua
 - Preferir estados vazios compactos com uma frase curta e uma acao principal.
 - Criacao e edicao de registros devem acontecer em **pop-up/modal sempre que possivel**, sem navegar para outra pagina.
 - Use pagina dedicada apenas quando o formulario for longo, exigir comparacao ampla, envolver fluxo guiado em varias etapas ou precisar de contexto visual extenso.
-- O botao principal de criacao deve ficar em local consistente da tela e pode usar icone de adicionar quando o contexto estiver claro.
-- Acoes por linha, como editar, duplicar, arquivar, excluir ou visualizar, devem priorizar icones com tooltip/label acessivel.
+- O botao principal de criacao deve ficar em local consistente da tela e usar o icone de adicionar acompanhado do rotulo da acao.
+- Acoes por linha, como editar, duplicar, arquivar, excluir ou visualizar, devem usar icones do catalogo central com tooltip e nome acessivel.
 - Selecao de itens em listas e tabelas deve usar o marcador circular padrao do sistema, com alvo interativo de 24 x 24 px, foco visivel e estados marcado, desmarcado e desabilitado claramente distinguiveis.
 - Checkbox quadrado deve ficar reservado a opcoes booleanas de formulario; o marcador circular padrao representa selecao operacional de linhas ou itens.
 - Confirmacoes destrutivas devem usar modal curto, com titulo direto, impacto claro e acao primaria segura.
