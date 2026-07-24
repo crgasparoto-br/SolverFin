@@ -1,3 +1,5 @@
+import { icon as renderIcon } from "./icons.js";
+
 const STYLE_MARKER = "data-transaction-bulk-selection-enhancement";
 const SCRIPT_MARKER = "data-transaction-bulk-selection-controller";
 
@@ -36,12 +38,12 @@ export function enhanceTransactionBulkSelection(html: string): string {
         if (!selectionBar || selectionBar.dataset.bulkSelectionEnhanced === "true") return;
         selectionBar.dataset.bulkSelectionEnhanced = "true";
 
-        const icon = {
-          check: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-          undo: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 14 5 10l4-4M5 10h9a5 5 0 1 1 0 10h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-          trash: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-          group: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="7" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 4h9a2 2 0 0 1 2 2v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
-        };
+        const icon = ${JSON.stringify({
+          check: renderIcon("check", 16),
+          undo: renderIcon("refresh-cw", 16),
+          trash: renderIcon("trash-2", 16),
+          group: renderIcon("layers", 16),
+        })};
 
         const actions = document.createElement("span");
         actions.className = "bulk-selection-actions";
