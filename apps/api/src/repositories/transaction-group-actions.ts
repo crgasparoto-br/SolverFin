@@ -155,13 +155,10 @@ export async function cloneTransactionGroupMemberForContext(
   memberId: string,
   input: CloneTransactionGroupMemberInput = {},
 ) {
-  const transaction = await withTransaction(async (executeQuery) => {
+  return withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
     const member = requireMember(members, memberId);
-    const values = await resolveMemberValues(executeQuery, context, member, {
-      ...input,
-      description: input.description ?? `Cópia de ${member.description}`.slice(0, 240),
-    });
+    const values = await resolveCloneValues(executeQuery, context, member, input);
     const clone = await insertClone(executeQuery, context, member, values);
     await insertGroupAudit(executeQuery, context, groupId, "CREATE", {
       groupClone: "single_member",
@@ -169,23 +166,31 @@ export async function cloneTransactionGroupMemberForContext(
     });
     return clone;
   });
-
-  return transaction;
 }
 
 export async function cloneTransactionGroupForContext(context: TenantContext, groupId: string) {
-  const transactions = await withTransaction(async (executeQuery) => {
+  return withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
+    const preparedMembers: Array<{ member: GroupMemberRow; values: ResolvedMemberValues }> = [];
+
+    for (const member of members) {
+      preparedMembers.push({
+        member,
+        values: await resolveCloneValues(executeQuery, context, member),
+      });
+    }
+
     const clones = [];
-    for (const member of members) clones.push(await insertClone(executeQuery, context, member));
+    for (const prepared of preparedMembers) {
+      clones.push(await insertClone(executeQuery, context, prepared.member, prepared.values));
+    }
+
     await insertGroupAudit(executeQuery, context, groupId, "CREATE", {
       groupClone: "all_members",
       cloneCount: clones.length,
     });
     return clones;
   });
-
-  return transactions;
 }
 
 export async function voidTransactionGroupMemberForContext(
@@ -232,7 +237,8 @@ export async function voidTransactionGroupMemberForContext(
     return { groupRemoved, voidedMemberId: memberId, remainingMemberIds: remainingIds };
   });
 
-  return result;
+  if (result.groupRemoved) return result;
+  return { ...result, group: await getTransactionGroupForContext(context, groupId) };
 }
 
 export async function voidTransactionGroupForContext(context: TenantContext, groupId: string) {
@@ -302,6 +308,18 @@ function requireMember(members: GroupMemberRow[], memberId: string): GroupMember
     );
   }
   return member;
+}
+
+async function resolveCloneValues(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  member: GroupMemberRow,
+  input: CloneTransactionGroupMemberInput = {},
+): Promise<ResolvedMemberValues> {
+  return resolveMemberValues(executeQuery, context, member, {
+    ...input,
+    description: input.description ?? `Cópia de ${member.description}`.slice(0, 240),
+  });
 }
 
 async function resolveMemberValues(
@@ -390,15 +408,11 @@ async function insertClone(
   executeQuery: QueryExecutor,
   context: TenantContext,
   member: GroupMemberRow,
-  values?: ResolvedMemberValues,
+  values: ResolvedMemberValues,
 ): Promise<{ id: string; status: string; description: string }> {
   const id = randomUUID();
   const status = member.effectiveOn ? "POSTED" : "PLANNED";
-  const amountMinor = values?.amountMinor ?? member.amountMinor;
-  const date = values?.date ?? toDateOnly(member.effectiveOn ?? member.plannedOn);
-  const description = values?.description ?? `Cópia de ${member.description}`.slice(0, 240);
-  const categoryId = values ? values.categoryId : member.categoryId;
-  const effectiveOn = status === "POSTED" ? date : null;
+  const effectiveOn = status === "POSTED" ? values.date : null;
   const rows = await executeQuery<{ id: string; status: string; description: string }>(
     `insert into "Transaction"
       ("id", "organizationId", "financialProfileId", "accountId", "categoryId", "kind", "status",
@@ -411,20 +425,20 @@ async function insertClone(
       context.organizationId,
       context.financialProfileId,
       member.accountId,
-      categoryId,
+      values.categoryId,
       member.kind,
       status,
-      amountMinor,
+      values.amountMinor,
       member.currency,
-      date,
-      date,
+      values.date,
+      values.date,
       effectiveOn,
-      description,
+      values.description,
       member.note,
       context.userId,
     ],
   );
-  return rows[0] ?? { id, status, description };
+  return rows[0] ?? { id, status, description: values.description };
 }
 
 async function detachGroupMembers(
