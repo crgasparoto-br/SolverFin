@@ -166,6 +166,8 @@ async function validateKeyboardModal(cdp) {
     type: "keyDown",
     key: "Enter",
     code: "Enter",
+    text: "\r",
+    unmodifiedText: "\r",
     windowsVirtualKeyCode: 13,
     nativeVirtualKeyCode: 13,
   });
