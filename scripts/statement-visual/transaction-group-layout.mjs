@@ -2,14 +2,22 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-if (!chromePath) throw new Error("CHROME_BIN is required for transaction group layout validation.");
+if (!chromePath)
+  throw new Error("CHROME_BIN is required for transaction group layout validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let groupId;
@@ -51,12 +59,30 @@ try {
   await openGroup(browser.cdp, groupId);
   const desktop = await measureLayout(browser.cdp);
   assert.equal(desktop.open, true, "Group modal did not open on desktop.");
-  assert.ok(desktop.dialogWidth >= 1100, `Group modal remained narrow: ${desktop.dialogWidth}px.`);
+  assert.ok(
+    desktop.dialogWidth >= 1100,
+    `Group modal remained narrow: ${desktop.dialogWidth}px.`,
+  );
   assert.equal(desktop.insideViewport, true, "Group modal escapes the desktop viewport.");
-  assert.equal(desktop.panelHorizontalOverflow, false, "Group panel has horizontal overflow.");
-  assert.equal(desktop.formHorizontalOverflow, false, "Group form has horizontal overflow.");
-  assert.equal(desktop.membersHorizontalOverflow, false, "Group members have horizontal overflow.");
-  await screenshot(browser.cdp, join(outputDir, "transaction-group-layout-desktop-1366x768.png"));
+  assert.equal(
+    desktop.panelHorizontalOverflow,
+    false,
+    "Group panel has horizontal overflow.",
+  );
+  assert.equal(
+    desktop.formHorizontalOverflow,
+    false,
+    "Group form has horizontal overflow.",
+  );
+  assert.equal(
+    desktop.membersHorizontalOverflow,
+    false,
+    "Group members have horizontal overflow.",
+  );
+  await screenshot(
+    browser.cdp,
+    join(outputDir, "transaction-group-layout-desktop-1366x768.png"),
+  );
 
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}${route}`);
@@ -65,10 +91,25 @@ try {
   const mobile = await measureLayout(browser.cdp);
   assert.equal(mobile.open, true, "Group modal did not open on mobile.");
   assert.equal(mobile.insideViewport, true, "Group modal escapes the mobile viewport.");
-  assert.equal(mobile.panelHorizontalOverflow, false, "Group panel has mobile horizontal overflow.");
-  assert.equal(mobile.formHorizontalOverflow, false, "Group form has mobile horizontal overflow.");
-  assert.equal(mobile.membersHorizontalOverflow, false, "Group members have mobile horizontal overflow.");
-  await screenshot(browser.cdp, join(outputDir, "transaction-group-layout-mobile-390x844.png"));
+  assert.equal(
+    mobile.panelHorizontalOverflow,
+    false,
+    "Group panel has mobile horizontal overflow.",
+  );
+  assert.equal(
+    mobile.formHorizontalOverflow,
+    false,
+    "Group form has mobile horizontal overflow.",
+  );
+  assert.equal(
+    mobile.membersHorizontalOverflow,
+    false,
+    "Group members have mobile horizontal overflow.",
+  );
+  await screenshot(
+    browser.cdp,
+    join(outputDir, "transaction-group-layout-mobile-390x844.png"),
+  );
 
   await writeFile(
     join(outputDir, "transaction-group-layout.json"),
