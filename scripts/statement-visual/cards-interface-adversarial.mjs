@@ -106,7 +106,6 @@ async function validateCompactDesktop(cdp) {
   return measurements;
 }
 
-
 async function validateLiveRegionStability(cdp) {
   const initial = await evaluate(
     cdp,
@@ -181,9 +180,7 @@ async function readAccessibilitySummary(cdp) {
   const tree = await cdp.send("Accessibility.getFullAXTree");
   const roles = Array.from(
     new Set(
-      (tree.nodes ?? [])
-        .map((node) => node.role?.value)
-        .filter((role) => typeof role === "string"),
+      (tree.nodes ?? []).map((node) => node.role?.value).filter((role) => typeof role === "string"),
     ),
   );
   return { nodeCount: tree.nodes?.length ?? 0, roles };
