@@ -1,13 +1,16 @@
 import { enhanceTransactionGroupMemberFormGuard } from "./transaction-group-member-form-guard.js";
 import { enhanceTransactionGroupModal } from "./transaction-group-modal-enhancement.js";
 import { enhanceTransactionGroupModalLayout } from "./transaction-group-modal-layout-enhancement.js";
+import { enhanceTransactionGroupPendingFixes } from "./transaction-group-pending-fixes.js";
 
 const DISCLOSURE_STYLE_MARKER = "data-account-remuneration-disclosure-affordance";
 const DISCLOSURE_SUMMARY = `<summary aria-label="Ver memória do cálculo" title="Ver memória do cálculo"><span class="account-remuneration-disclosure-full">Ver memória do cálculo</span><span class="account-remuneration-disclosure-compact" aria-hidden="true">Memória</span></summary>`;
 
 export function enhanceAccountRemunerationDisclosure(html: string): string {
-  const groupEnhancedHtml = enhanceTransactionGroupModalLayout(
-    enhanceTransactionGroupMemberFormGuard(enhanceTransactionGroupModal(html)),
+  const groupEnhancedHtml = enhanceTransactionGroupPendingFixes(
+    enhanceTransactionGroupModalLayout(
+      enhanceTransactionGroupMemberFormGuard(enhanceTransactionGroupModal(html)),
+    ),
   );
   if (!groupEnhancedHtml.includes('details class="account-remuneration-audit"')) {
     return groupEnhancedHtml;
