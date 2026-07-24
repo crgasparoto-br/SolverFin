@@ -16,7 +16,8 @@ assert.match(enhanced, /O clone será único, manual e independente/);
 assert.match(enhanced, /event\.stopImmediatePropagation\(\)/);
 assert.match(enhanced, /\(clone \? "\/clone" : ""\)/);
 assert.match(enhanced, /transactionForm\.dataset\.groupMemberMode/);
-assert.match(enhanced, /setField\("repeatMode",/);
+assert.match(enhanced, /"repeatMode"/);
+assert.match(enhanced, /setField\(name, true, true\)/);
 assert.equal(
   enhanceTransactionGroupMemberFormGuard(enhanced),
   enhanced,
