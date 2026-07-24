@@ -66,7 +66,7 @@ function extractCategorySummary(html: string): CategoryPageSummary {
   };
 
   for (const record of records) {
-    const [, classNames, kind, status] = record;
+    const [, classNames = "", kind = "", status = ""] = record;
     if (!classNames.includes("category-tree-child")) summary.roots += 1;
     if (status === "archived") summary.archived += 1;
     else summary.active += 1;

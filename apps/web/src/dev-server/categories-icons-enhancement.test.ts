@@ -131,7 +131,7 @@ describe("categories design enhancement", () => {
     assert.match(html, /category-status-badge category-status-active">Ativo/);
     assert.match(html, /category-status-badge category-status-archived">Arquivado/);
     assert.match(html, /aria-label="Editar categoria Moradia" title="Editar categoria Moradia"/);
-    assert.match(html, /category-path">[\s\S]*?chevron-right[\s\S]*?Moradia &gt; Aluguel/);
+    assert.match(html, /category-path"><svg[^>]*>[\s\S]*?<span>Moradia &gt; Aluguel<\/span>/);
     assert.match(
       html,
       /\.category-tree-node \{ background: transparent; border: 0; border-bottom: 1px solid var\(--line\)/,
