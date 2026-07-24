@@ -1,0 +1,83 @@
+name: Temporary categories visual fix
+
+on:
+  push:
+    branches:
+      - feat/categories-design-interface
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-validate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/categories-design-interface
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Correct category visual constraints
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("apps/web/src/dev-server/categories-icons-enhancement.ts")
+          source = path.read_text()
+
+          replacements = [
+              (
+                  'main[${enhancementMarker}] .category-directory { box-shadow: var(--shadow-sm); overflow: visible; }',
+                  'main[${enhancementMarker}] .category-directory { box-shadow: var(--shadow-sm); overflow: visible; }\n      main[${enhancementMarker}] .category-directory, main[${enhancementMarker}] .category-kind-group, main[${enhancementMarker}] .category-tree-nodes, main[${enhancementMarker}] .category-tree-node, main[${enhancementMarker}] .category-node-row, main[${enhancementMarker}] .category-node-button, main[${enhancementMarker}] .category-node-text { max-width: 100%; min-width: 0; }',
+              ),
+              (
+                  'main[${enhancementMarker}] .category-node-button { align-items: center; gap: 10px; grid-template-columns: auto minmax(0, 1fr) minmax(8rem, auto); min-height: 34px; }',
+                  'main[${enhancementMarker}] .category-node-button { align-items: center; gap: 10px; grid-template-columns: auto minmax(0, 1fr) minmax(8rem, auto); min-height: 34px; width: 100%; }',
+              ),
+              (
+                  'main[${enhancementMarker}] .category-path { align-items: center; background: transparent; border-radius: 0; color: var(--muted); display: inline-flex; font-size: .75rem; font-weight: 500; gap: 4px; justify-self: end; max-width: 24rem; padding: 0; text-align: right; }',
+                  'main[${enhancementMarker}] .category-path { align-items: center; background: transparent; border-radius: 0; color: var(--muted); display: inline-flex; font-size: .75rem; font-weight: 500; gap: 4px; justify-self: end; max-width: 24rem; min-width: 0; overflow: hidden; padding: 0; text-align: right; }\n      main[${enhancementMarker}] .category-path > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+              ),
+              (
+                  'main[${enhancementMarker}] .category-dialog-header { border-bottom: 1px solid var(--line); padding: 16px 18px 14px; }',
+                  'main[${enhancementMarker}] .category-dialog-header { border-bottom: 1px solid var(--line); padding: 16px 18px 14px; }\n      main[${enhancementMarker}] .category-dialog-header .icon-button { min-height: 36px; min-width: 36px; width: 36px; }',
+              ),
+              (
+                  'main[${enhancementMarker}] .category-tree-children { margin-left: 20px; padding-left: 6px; }',
+                  'main[${enhancementMarker}] .category-tree-children { margin-left: 20px; max-width: calc(100% - 20px); min-width: 0; padding-left: 6px; }',
+              ),
+          ]
+
+          for old, new in replacements:
+              if old not in source:
+                  raise SystemExit(f"Expected CSS fragment was not found: {old}")
+              source = source.replace(old, new, 1)
+
+          path.write_text(source)
+          PY
+          npx prettier --write apps/web/src/dev-server/categories-icons-enhancement.ts
+
+      - name: Validate root typecheck
+        run: npm run typecheck
+
+      - name: Validate web tests
+        run: npm run test --workspace @solverfin/web
+
+      - name: Commit validated visual correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/categories-icons-enhancement.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(web): corrigir limites visuais de categorias"
+          git push origin HEAD:feat/categories-design-interface
