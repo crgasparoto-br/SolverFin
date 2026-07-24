@@ -10,15 +10,21 @@ export function enhanceTransactionBulkSelection(html: string): string {
       .selection-bar .bulk-selection-action{align-items:center;display:inline-flex;gap:6px;min-height:34px;white-space:nowrap}
       .selection-bar .bulk-selection-action.danger{background:var(--surface);border:1px solid var(--danger);color:var(--danger)}
       .selection-bar .bulk-selection-action.danger:hover,.selection-bar .bulk-selection-action.danger:focus-visible{background:var(--danger-bg)}
+      .selection-bar .bulk-selection-help{color:var(--muted);flex-basis:100%;font-size:.8125rem;line-height:1.35;text-align:right}
       .selection-bar .bulk-selection-status{color:var(--muted);flex-basis:100%;font-size:.8125rem;text-align:right}
       .selection-bar .bulk-selection-status.error{color:var(--danger)}
       .selection-bar .bulk-selection-status.success{color:var(--success)}
       .grouped-row:has(> .col-select input[data-selection-entity="group"]:checked){background:var(--primary-soft);box-shadow:inset 3px 0 0 var(--primary)}
+      .grouped-row .grouped-status{align-items:center;display:inline-flex;gap:6px}
+      .grouped-row .grouped-status>.statement-status{flex:0 0 auto}
+      .grouped-row .transaction-group-state{align-items:center;border-radius:999px;color:var(--primary);display:inline-flex;flex:0 0 auto;justify-content:center;min-height:28px;min-width:28px;outline-offset:2px}
+      .grouped-row .transaction-group-state:focus-visible{outline:2px solid var(--primary)}
+      .grouped-row .transaction-group-state svg{display:block}
       @media(max-width:760px){
         .selection-bar .bulk-selection-actions{display:grid;flex:1 1 100%;grid-template-columns:repeat(2,minmax(0,1fr))}
         .selection-bar .bulk-selection-action{justify-content:center;white-space:normal}
         .selection-bar .bulk-selection-action.danger{grid-column:1/-1}
-        .selection-bar .bulk-selection-status{text-align:left}
+        .selection-bar .bulk-selection-help,.selection-bar .bulk-selection-status{text-align:left}
       }
     </style>`;
 
@@ -33,7 +39,8 @@ export function enhanceTransactionBulkSelection(html: string): string {
         const icon = {
           check: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
           undo: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 14 5 10l4-4M5 10h9a5 5 0 1 1 0 10h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-          trash: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+          trash: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+          group: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="7" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 4h9a2 2 0 0 1 2 2v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
         };
 
         const actions = document.createElement("span");
@@ -43,6 +50,13 @@ export function enhanceTransactionBulkSelection(html: string): string {
           '<button type="button" class="ghost-btn bulk-selection-action" data-bulk-selection-action="unreconcile">' + icon.undo + '<span>Desmarcar conciliado</span></button>' +
           '<button type="button" class="bulk-selection-action danger" data-bulk-selection-action="void">' + icon.trash + '<span>Excluir selecionados</span></button>';
         selectionBar.insertBefore(actions, groupOpen || null);
+
+        const helpNode = document.createElement("span");
+        helpNode.id = "bulk-selection-help";
+        helpNode.className = "bulk-selection-help";
+        helpNode.dataset.bulkSelectionHelp = "";
+        helpNode.setAttribute("aria-live", "polite");
+        selectionBar.appendChild(helpNode);
 
         const statusNode = document.createElement("span");
         statusNode.className = "bulk-selection-status";
@@ -74,6 +88,27 @@ export function enhanceTransactionBulkSelection(html: string): string {
           input.setAttribute("aria-label", "Selecionar agrupamento " + (group.description || "sem descrição") + ", " + group.members.length + " lançamentos");
           label.appendChild(input);
           indicator.replaceWith(label);
+
+          const financialStatus = row.querySelector(".col-status");
+          if (financialStatus && !row.querySelector("[data-transaction-group-state]")) {
+            const groupedStatus = document.createElement("span");
+            groupedStatus.className = "col-status grouped-status";
+            financialStatus.classList.remove("col-status");
+            financialStatus.replaceWith(groupedStatus);
+            groupedStatus.appendChild(financialStatus);
+
+            const groupState = document.createElement("span");
+            const groupStateLabel = "Agrupamento com " + group.members.length + " lançamentos";
+            groupState.className = "transaction-group-state";
+            groupState.dataset.transactionGroupState = "";
+            groupState.setAttribute("role", "img");
+            groupState.setAttribute("aria-label", groupStateLabel);
+            groupState.setAttribute("title", groupStateLabel);
+            groupState.setAttribute("data-tooltip", groupStateLabel);
+            groupState.tabIndex = 0;
+            groupState.innerHTML = icon.group;
+            groupedStatus.appendChild(groupState);
+          }
         });
 
         function simpleInputs() {
@@ -138,6 +173,7 @@ export function enhanceTransactionBulkSelection(html: string): string {
               : simple.length > 1 && !canGroup
                 ? "Selecione lançamentos do mesmo tipo, moeda e situação."
                 : "";
+            groupOpen.setAttribute("aria-describedby", helpNode.id);
           }
 
           const eligibleStatuses = items.every(function (item) {
@@ -153,12 +189,30 @@ export function enhanceTransactionBulkSelection(html: string): string {
           voidButton.disabled = items.length === 0;
           reconcileButton.title = eligibleStatuses ? "" : "Efetive os lançamentos previstos antes de conciliá-los.";
           unreconcileButton.title = eligibleStatuses ? "" : "Somente lançamentos efetivados ou conciliados podem ser alterados.";
+          reconcileButton.setAttribute("aria-describedby", helpNode.id);
+          unreconcileButton.setAttribute("aria-describedby", helpNode.id);
+          voidButton.setAttribute("aria-describedby", helpNode.id);
+
+          const explanations = [];
+          if (groups.length > 0) {
+            explanations.push("Unificar lançamentos indisponível: desmarque os agrupamentos para unificar somente lançamentos simples.");
+          } else if (simple.length > 1 && !compatibleForGrouping(simple)) {
+            explanations.push("Unificar lançamentos indisponível: selecione lançamentos do mesmo tipo, moeda e situação.");
+          }
+          if (items.length > 0 && !eligibleStatuses) {
+            explanations.push("Conciliação indisponível: efetive os lançamentos previstos antes de alterar a conciliação.");
+          } else if (items.length > 0) {
+            if (!hasPosted) explanations.push("Marcar como conciliado indisponível: todos os lançamentos selecionados já estão conciliados.");
+            if (!hasReconciled) explanations.push("Desmarcar conciliado indisponível: nenhum lançamento selecionado está conciliado.");
+          }
+          helpNode.textContent = explanations.join(" ");
         }
 
         simpleInputs().forEach(function (input) { input.addEventListener("change", syncSelection); });
         groupInputs().forEach(function (input) { input.addEventListener("change", syncSelection); });
         selectionBar.querySelector("[data-selection-clear]")?.addEventListener("click", function () {
           simpleInputs().concat(groupInputs()).forEach(function (input) { input.checked = false; });
+          showStatus("", "");
           syncSelection();
         });
 
@@ -215,6 +269,9 @@ export function enhanceTransactionBulkSelection(html: string): string {
         function setBusy(busy) {
           actions.querySelectorAll("button").forEach(function (button) { button.disabled = busy; });
           if (groupOpen) groupOpen.disabled = busy;
+          simpleInputs().concat(groupInputs()).forEach(function (input) { input.disabled = busy; });
+          const clearButton = selectionBar.querySelector("[data-selection-clear]");
+          if (clearButton) clearButton.disabled = busy;
         }
 
         function showStatus(message, tone) {
