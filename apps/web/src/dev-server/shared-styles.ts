@@ -20,6 +20,9 @@ export function sharedShellStyles(): string {
       --primary: #0f3d4c;
       --primary-soft: #e8f3f6;
       --primary-hover: #0a2e3a;
+      --neutral-control-hover: #f1f7f9;
+      --neutral-control-border-hover: #a5cbd6;
+      --neutral-control-active-hover: #dceef3;
       --cyan: #0891b2;
       --cyan-soft: #cffafe;
       --success: #166534;
@@ -122,6 +125,26 @@ export function sharedShellStyles(): string {
     }
     button:hover:not(:disabled), .button-link:hover { background: var(--primary-hover); }
     button:disabled { cursor: not-allowed; opacity: 0.5; }
+    button[aria-pressed]:hover:not(:disabled),
+    button[aria-pressed]:focus-visible,
+    button[aria-selected]:hover:not(:disabled),
+    button[aria-selected]:focus-visible,
+    button[aria-haspopup="listbox"]:hover:not(:disabled),
+    button[aria-haspopup="listbox"]:focus-visible,
+    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):hover:not(:disabled),
+    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):focus-visible,
+    .ghost-button:hover:not(:disabled),
+    .ghost-button:focus-visible {
+      background: var(--neutral-control-hover);
+      border-color: var(--neutral-control-border-hover);
+      color: var(--primary);
+    }
+    button[aria-pressed="true"]:hover:not(:disabled),
+    button[aria-pressed="true"]:focus-visible,
+    button[aria-selected="true"]:hover:not(:disabled),
+    button[aria-selected="true"]:focus-visible {
+      background: var(--neutral-control-active-hover);
+    }
     .secondary-button {
       background: var(--surface);
       border-color: var(--line);

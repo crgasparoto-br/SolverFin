@@ -26,6 +26,25 @@ describe("shared shell styles", () => {
     assert.match(css, /\.topbar/);
   });
 
+  it("uses the light statement hover palette for neutral controls globally", () => {
+    const css = sharedShellStyles();
+
+    assert.match(css, /--neutral-control-hover:\s*#f1f7f9/);
+    assert.match(css, /--neutral-control-border-hover:\s*#a5cbd6/);
+    assert.match(css, /--neutral-control-active-hover:\s*#dceef3/);
+    assert.match(css, /button\[aria-pressed\]:hover:not\(:disabled\)/);
+    assert.match(css, /button\[aria-selected\]:focus-visible/);
+    assert.match(css, /button\[aria-haspopup="listbox"\]:hover:not\(:disabled\)/);
+    assert.match(css, /button\[role="menuitem"\][^{]+:hover:not\(:disabled\)/);
+    assert.match(css, /background:\s*var\(--neutral-control-hover\)/);
+    assert.match(css, /background:\s*var\(--neutral-control-active-hover\)/);
+    assert.ok(
+      css.indexOf('button[aria-pressed]:hover:not(:disabled)') >
+        css.indexOf("button:hover:not(:disabled)"),
+      "the neutral hover rule must override the generic dark primary hover",
+    );
+  });
+
   it("keeps hidden elements out of layout when components define display rules", () => {
     const css = sharedShellStyles();
 
