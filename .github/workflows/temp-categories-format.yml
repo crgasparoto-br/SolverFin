@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feat/categories-design-interface
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -22,13 +25,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Correct root summary counting
         run: |
@@ -72,10 +72,18 @@ jobs:
           PY
 
       - name: Format changed files
-        run: pnpm exec prettier --write apps/web/src/dev-server/categories-icons-enhancement.ts apps/web/src/dev-server/categories-icons-enhancement.test.ts
+        run: npx prettier --write apps/web/src/dev-server/categories-icons-enhancement.ts apps/web/src/dev-server/categories-icons-enhancement.test.ts
 
       - name: Run web tests
-        run: pnpm --filter @solverfin/web test
+        run: npm run test --workspace @solverfin/web
+
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: categories-formatted-files
+          path: |
+            apps/web/src/dev-server/categories-icons-enhancement.ts
+            apps/web/src/dev-server/categories-icons-enhancement.test.ts
 
       - name: Commit formatted correction
         run: |
