@@ -45,13 +45,31 @@ jobs:
           PY
           npx prettier --write apps/web/src/dev-server/categories-icons-enhancement.ts
 
-      - name: Validate web typecheck
-        run: npm run typecheck --workspace @solverfin/web
+      - name: Capture web typecheck
+        id: typecheck
+        continue-on-error: true
+        run: |
+          set +e
+          npm run typecheck --workspace @solverfin/web 2>&1 | tee typecheck.log
+          typecheck_status=${PIPESTATUS[0]}
+          echo "exit_code=${typecheck_status}" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload typecheck diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: categories-typecheck-diagnostic
+          path: |
+            apps/web/src/dev-server/categories-icons-enhancement.ts
+            typecheck.log
 
       - name: Validate web tests
+        if: steps.typecheck.outputs.exit_code == '0'
         run: npm run test --workspace @solverfin/web
 
       - name: Commit correction
+        if: steps.typecheck.outputs.exit_code == '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -59,3 +77,7 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "fix(web): tornar resumo de categorias type-safe"
           git push origin HEAD:feat/categories-design-interface
+
+      - name: Preserve typecheck result
+        if: steps.typecheck.outputs.exit_code != '0'
+        run: exit 1
