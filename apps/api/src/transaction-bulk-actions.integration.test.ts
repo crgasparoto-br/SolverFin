@@ -133,6 +133,51 @@ async function main(): Promise<void> {
   assert.equal((await getTransactionForContext(context, directPosted.id)).status, "posted");
   assert.equal((await getTransactionForContext(context, planned.id)).status, "planned");
 
+  const rollbackAuditCountBefore = await countAudits(group.id);
+  const rollbackSuffix = randomUUID().replaceAll("-", "");
+  const rollbackFunctionName = `raise_bulk_rollback_${rollbackSuffix}`;
+  const rollbackTriggerName = `transaction_bulk_rollback_${rollbackSuffix}`;
+  await query(
+    `create function "${rollbackFunctionName}"() returns trigger
+       language plpgsql
+       as $$
+       begin
+         raise exception 'intentional bulk action audit failure';
+       end;
+       $$`,
+  );
+  try {
+    await query(
+      `create trigger "${rollbackTriggerName}"
+         before insert on "AuditLogEntry"
+         for each row
+         when (new."entityId"='${group.id}' and new."action"='RECONCILE')
+         execute function "${rollbackFunctionName}"()`,
+    );
+    try {
+      await assert.rejects(
+        () =>
+          executeTransactionBulkActionForContext(context, {
+            action: "reconcile",
+            groupIds: [group.id],
+          }),
+        /intentional bulk action audit failure/,
+      );
+    } finally {
+      await query(`drop trigger if exists "${rollbackTriggerName}" on "AuditLogEntry"`);
+    }
+  } finally {
+    await query(`drop function if exists "${rollbackFunctionName}"()`);
+  }
+
+  const groupAfterIntermediateFailure = await getTransactionGroupForContext(context, group.id);
+  assert.equal(groupAfterIntermediateFailure.members.length, members.length);
+  for (const member of groupAfterIntermediateFailure.members) {
+    assert.equal(member.status, "posted");
+    assert.equal(member.transactionGroupId, group.id);
+  }
+  assert.equal(await countAudits(group.id), rollbackAuditCountBefore);
+
   const foreignContext: TenantContext = {
     ...context,
     organizationId: randomUUID(),
@@ -196,6 +241,14 @@ async function main(): Promise<void> {
       /Direto|Membro|Grupo da seleção|BRL|amount|description|currency/i,
     );
   }
+}
+
+async function countAudits(entityId: string): Promise<number> {
+  const rows = await query<{ count: number }>(
+    `select count(*)::int as "count" from "AuditLogEntry" where "entityId"=$1`,
+    [entityId],
+  );
+  return rows[0]?.count ?? 0;
 }
 
 function readAuditChanges(value: unknown): Record<string, unknown> {
