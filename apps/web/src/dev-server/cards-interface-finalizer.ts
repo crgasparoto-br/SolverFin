@@ -15,18 +15,21 @@ export function finalizeCardsInterface(html: string): string {
           search.style.minHeight = "44px";
         }
 
+        const focusableFieldSelector =
+          "input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])";
+
+        root.querySelectorAll("dialog[data-modal]").forEach((dialog) => {
+          dialog.querySelector(focusableFieldSelector)?.setAttribute("autofocus", "");
+        });
+
         root.querySelectorAll("[data-open-modal]").forEach((button) => {
           button.addEventListener("click", () => {
-            queueMicrotask(() => {
+            window.setTimeout(() => {
               const dialog = root.querySelector(
                 'dialog[data-modal="' + button.dataset.openModal + '"]',
               );
-              dialog
-                ?.querySelector(
-                  "input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])",
-                )
-                ?.focus();
-            });
+              dialog?.querySelector(focusableFieldSelector)?.focus();
+            }, 0);
           });
         });
       })();
