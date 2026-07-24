@@ -45,7 +45,10 @@ const report = {
   ],
 };
 
-await writeFile(join(outputDir, "categories-interface.json"), `${JSON.stringify(report, null, 2)}\n`);
+await writeFile(
+  join(outputDir, "categories-interface.json"),
+  `${JSON.stringify(report, null, 2)}\n`,
+);
 await writeFile(join(outputDir, "CATEGORIES-INTERFACE.md"), renderReport(report));
 
 if (failures.length > 0) {
@@ -71,15 +74,43 @@ async function validateDesktop(cdp) {
   const measurements = await evaluate(cdp, pageMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-desktop.png"));
 
-  check(measurements.viewport.width === 1440, "Categories desktop viewport is not 1440px", measurements);
-  check(measurements.noHorizontalOverflow, "Categories desktop page has horizontal overflow", measurements);
-  check(measurements.summaryCount === 4, "Categories summary does not have four indicators", measurements);
-  check(measurements.filterCount === 5, "Categories toolbar does not have five filters", measurements);
+  check(
+    measurements.viewport.width === 1440,
+    "Categories desktop viewport is not 1440px",
+    measurements,
+  );
+  check(
+    measurements.noHorizontalOverflow,
+    "Categories desktop page has horizontal overflow",
+    measurements,
+  );
+  check(
+    measurements.summaryCount === 4,
+    "Categories summary does not have four indicators",
+    measurements,
+  );
+  check(
+    measurements.filterCount === 5,
+    "Categories toolbar does not have five filters",
+    measurements,
+  );
   check(measurements.search.visible, "Categories search is not visible on desktop", measurements);
-  check(measurements.directory.visible, "Categories directory is not visible on desktop", measurements);
-  check(measurements.allFilterPressed, "All categories filter is not selected initially", measurements);
+  check(
+    measurements.directory.visible,
+    "Categories directory is not visible on desktop",
+    measurements,
+  );
+  check(
+    measurements.allFilterPressed,
+    "All categories filter is not selected initially",
+    measurements,
+  );
   check(measurements.rowCount > 0, "Categories hierarchy rendered no rows", measurements);
-  check(measurements.minimumRowHeight >= 44, "Category rows are smaller than the interaction target", measurements);
+  check(
+    measurements.minimumRowHeight >= 44,
+    "Category rows are smaller than the interaction target",
+    measurements,
+  );
 
   const search = await validateSearch(cdp);
   return { viewport: "1440x1000", measurements, search, screenshot: "categories-desktop.png" };
@@ -118,7 +149,10 @@ async function validateSearch(cdp) {
     query,
     result,
   });
-  check(result.clearVisible, "Category search clear action did not become visible", { query, result });
+  check(result.clearVisible, "Category search clear action did not become visible", {
+    query,
+    result,
+  });
 
   await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
   await sleep(80);
@@ -134,7 +168,11 @@ async function validateDesktopModal(cdp) {
   check(measurements.visible, "Category modal did not open on desktop", measurements);
   check(measurements.insideViewport, "Category modal exceeds the desktop viewport", measurements);
   check(measurements.hasDescription, "Category modal has no accessible description", measurements);
-  check(measurements.labelledControls === 3, "Category modal controls are not fully labelled", measurements);
+  check(
+    measurements.labelledControls === 3,
+    "Category modal controls are not fully labelled",
+    measurements,
+  );
   check(measurements.nameFocused, "Category name did not receive initial focus", measurements);
   check(measurements.closeTarget >= 34, "Category modal close action is too small", measurements);
 
@@ -149,13 +187,41 @@ async function validateMobile(cdp) {
   const measurements = await evaluate(cdp, pageMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-mobile.png"));
 
-  check(measurements.viewport.width === 390, "Categories mobile viewport is not 390px", measurements);
-  check(measurements.noHorizontalOverflow, "Categories mobile page has horizontal overflow", measurements);
-  check(measurements.heroAction.height >= 44, "New category mobile action is smaller than 44px", measurements);
-  check(measurements.search.height >= 44, "Category search mobile target is smaller than 44px", measurements);
-  check(measurements.filterCount === 5, "Categories filters are incomplete on mobile", measurements);
-  check(measurements.summaryCount === 4, "Categories summary is incomplete on mobile", measurements);
-  check(measurements.minimumMenuTarget >= 40, "Category row menu target is too small on mobile", measurements);
+  check(
+    measurements.viewport.width === 390,
+    "Categories mobile viewport is not 390px",
+    measurements,
+  );
+  check(
+    measurements.noHorizontalOverflow,
+    "Categories mobile page has horizontal overflow",
+    measurements,
+  );
+  check(
+    measurements.heroAction.height >= 44,
+    "New category mobile action is smaller than 44px",
+    measurements,
+  );
+  check(
+    measurements.search.height >= 44,
+    "Category search mobile target is smaller than 44px",
+    measurements,
+  );
+  check(
+    measurements.filterCount === 5,
+    "Categories filters are incomplete on mobile",
+    measurements,
+  );
+  check(
+    measurements.summaryCount === 4,
+    "Categories summary is incomplete on mobile",
+    measurements,
+  );
+  check(
+    measurements.minimumMenuTarget >= 40,
+    "Category row menu target is too small on mobile",
+    measurements,
+  );
 
   return { viewport: "390x844", measurements, screenshot: "categories-mobile.png" };
 }
@@ -169,7 +235,11 @@ async function validateMobileModal(cdp) {
   check(measurements.visible, "Category modal did not open on mobile", measurements);
   check(measurements.insideViewport, "Category modal exceeds the mobile viewport", measurements);
   check(measurements.singleColumn, "Category modal is not single-column on mobile", measurements);
-  check(measurements.minimumActionHeight >= 44, "Category modal mobile actions are smaller than 44px", measurements);
+  check(
+    measurements.minimumActionHeight >= 44,
+    "Category modal mobile actions are smaller than 44px",
+    measurements,
+  );
 
   await closeModal(cdp);
   return { viewport: "390x844", measurements, screenshot: "categories-modal-mobile.png" };
@@ -200,7 +270,10 @@ async function waitForModal(cdp) {
 }
 
 async function closeModal(cdp) {
-  await evaluate(cdp, `document.querySelector('[data-category-modal] [data-close-category-modal]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-category-modal] [data-close-category-modal]')?.click()`,
+  );
   await sleep(80);
 }
 
