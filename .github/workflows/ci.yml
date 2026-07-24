@@ -69,6 +69,23 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      - name: Generate formatting diagnostic
+        if: failure()
+        run: |
+          npm run format
+          mkdir -p artifacts/prettier
+          git diff -- . > artifacts/prettier/prettier.patch
+          git diff --name-only -- . > artifacts/prettier/files.txt
+
+      - name: Upload formatting diagnostic
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prettier-diagnostic-${{ github.sha }}
+          path: artifacts/prettier
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Lint
         run: npm run lint
 
