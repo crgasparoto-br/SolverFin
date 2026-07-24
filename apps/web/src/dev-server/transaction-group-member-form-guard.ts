@@ -77,6 +77,16 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
           try { return JSON.parse(node.textContent || "{}"); } catch { return undefined; }
         }
 
+        function returnToGroup(group, message, tone) {
+          if (!group) {
+            window.location.reload();
+            return;
+          }
+          document.dispatchEvent(new CustomEvent("solverfin:transaction-group:return", {
+            detail: { group: group, message: message || "", tone: tone || "success" }
+          }));
+        }
+
         function control(name) {
           return transactionForm.elements.namedItem(name);
         }
@@ -126,6 +136,7 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
           delete transactionForm.dataset.groupMemberMode;
           delete transactionForm.dataset.groupId;
           delete transactionForm.dataset.memberId;
+          delete transactionForm.dataset.groupReturnPending;
           context.hidden = true;
           [
             "kind",
@@ -149,13 +160,17 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
             button.removeAttribute("aria-disabled");
           });
           const submit = transactionForm.querySelector('[type="submit"]');
-          if (submit) submit.textContent = "Salvar lançamento";
+          if (submit) {
+            submit.disabled = false;
+            submit.textContent = "Salvar lançamento";
+          }
         }
 
         function applyMode(group, member, clone) {
           transactionForm.dataset.groupMemberMode = clone ? "clone" : "edit";
           transactionForm.dataset.groupId = group.id;
           transactionForm.dataset.memberId = member.id;
+          transactionForm.dataset.groupReturnPending = "true";
           context.hidden = false;
           context.querySelector("[data-group-member-context-title]").textContent = clone
             ? "Clonagem de lançamento do agrupamento"
@@ -247,6 +262,7 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
           if (!mode) return;
           event.preventDefault();
           event.stopImmediatePropagation();
+          const groupId = transactionForm.dataset.groupId;
           const formStatus = transactionForm.querySelector(".form-status");
           const submit = transactionForm.querySelector('[type="submit"]');
           if (submit) submit.disabled = true;
@@ -254,38 +270,54 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
             formStatus.className = "form-status muted full";
             formStatus.textContent = mode === "clone" ? "Clonando..." : "Salvando...";
           }
-          const response = await fetch(transactionForm.dataset.path, {
-            method: transactionForm.dataset.method || (mode === "clone" ? "POST" : "PATCH"),
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              amountMinor: moneyToMinor(transactionForm.amountMinor.value),
-              date: transactionForm.plannedOn.value,
-              description: transactionForm.description.value,
-              categoryId: transactionForm.categoryId.value || null
-            })
-          });
-          const responseBody = await response.json().catch(function () { return {}; });
-          if (submit) submit.disabled = false;
-          if (!response.ok) {
+
+          try {
+            const response = await fetch(transactionForm.dataset.path, {
+              method: transactionForm.dataset.method || (mode === "clone" ? "POST" : "PATCH"),
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                amountMinor: moneyToMinor(transactionForm.amountMinor.value),
+                date: transactionForm.plannedOn.value,
+                description: transactionForm.description.value,
+                categoryId: transactionForm.categoryId.value || null
+              })
+            });
+            const responseBody = await response.json().catch(function () { return {}; });
+            if (!response.ok) {
+              if (formStatus) {
+                formStatus.className = "form-status error full";
+                formStatus.textContent =
+                  responseBody.error && responseBody.error.message ||
+                  "Não foi possível concluir a ação.";
+              }
+              return;
+            }
+
+            const group = responseBody.group || (groupId ? loadGroup(groupId) : undefined);
+            delete transactionForm.dataset.groupReturnPending;
+            transactionModal.close();
+            returnToGroup(
+              group,
+              mode === "clone" ? "Lançamento clonado." : "Lançamento atualizado.",
+              "success",
+            );
+          } catch {
             if (formStatus) {
               formStatus.className = "form-status error full";
               formStatus.textContent =
-                responseBody.error && responseBody.error.message ||
-                "Não foi possível concluir a ação.";
+                "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.";
             }
-            return;
+          } finally {
+            if (submit) submit.disabled = false;
           }
-          if (formStatus) {
-            formStatus.className = "form-status success full";
-            formStatus.textContent =
-              (mode === "clone" ? "Lançamento clonado." : "Lançamento atualizado.") +
-              " Atualizando...";
-          }
-          window.setTimeout(function () { window.location.reload(); }, 350);
         }, true);
 
         transactionModal.addEventListener("close", function () {
+          const shouldReturn = transactionForm.dataset.groupReturnPending === "true";
+          const groupId = transactionForm.dataset.groupId;
+          const group = shouldReturn && groupId ? loadGroup(groupId) : undefined;
           if (transactionForm.dataset.groupMemberMode) clearMode();
+          if (shouldReturn) returnToGroup(group, "", "success");
         });
       })();
     </script>`;
