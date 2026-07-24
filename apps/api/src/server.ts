@@ -17,6 +17,7 @@ import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
+import { handleTransactionGroupActionsApiRequest } from "./transaction-group-actions-router.js";
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.API_PORT ?? 4000);
@@ -140,6 +141,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (creditCardAccountsResult) {
       writeResponse(response, creditCardAccountsResult);
+      return;
+    }
+
+    const transactionGroupActionsResult = await handleTransactionGroupActionsApiRequest(apiRequest);
+
+    if (transactionGroupActionsResult) {
+      writeResponse(response, transactionGroupActionsResult);
       return;
     }
 
