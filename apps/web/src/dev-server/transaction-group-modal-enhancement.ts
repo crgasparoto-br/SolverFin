@@ -102,6 +102,7 @@ export function enhanceTransactionGroupModal(html: string): string {
         form.insertBefore(actions, saveRow);
 
         let currentGroup;
+        let skipNextToggleRefresh = false;
 
         function readonlyField(labelText, dataName) {
           const label = document.createElement("label");
@@ -246,15 +247,21 @@ export function enhanceTransactionGroupModal(html: string): string {
           storeGroup(group);
           form.dataset.mode = "details";
           form.dataset.groupId = group.id;
-          if (!modal.open) modal.showModal();
-          window.setTimeout(function () {
-            renderDetailsMode(group);
-            showStatus(detail.message || "", detail.tone || "success");
-          }, 0);
+          if (!modal.open) {
+            skipNextToggleRefresh = true;
+            modal.showModal();
+          }
+          renderDetailsMode(group);
+          showStatus(detail.message || "", detail.tone || "success");
         });
 
         modal.addEventListener("toggle", function () {
-          if (modal.open) window.setTimeout(refreshModal, 0);
+          if (!modal.open) return;
+          if (skipNextToggleRefresh) {
+            skipNextToggleRefresh = false;
+            return;
+          }
+          window.setTimeout(refreshModal, 0);
         });
 
         membersNode.addEventListener("click", async function (event) {
