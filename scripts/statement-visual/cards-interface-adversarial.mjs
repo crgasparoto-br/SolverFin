@@ -20,6 +20,7 @@ const report = {
   viewport: "1366x768",
   compactDesktop: undefined,
   liveRegion: undefined,
+  longContent: undefined,
   collapsedGroups: undefined,
   keyboardModal: undefined,
   screenshots: [],
@@ -30,6 +31,7 @@ try {
   report.compactDesktop = await validateCompactDesktop(browser.cdp);
   report.screenshots.push("cards-compact-desktop.png");
   report.liveRegion = await validateLiveRegionStability(browser.cdp);
+  report.longContent = await validateLongContent(browser.cdp);
   report.collapsedGroups = await validateCollapsedGroups(browser.cdp);
   report.screenshots.push("cards-collapsed-groups.png");
   report.keyboardModal = await validateKeyboardModal(browser.cdp);
@@ -143,6 +145,76 @@ async function validateLiveRegionStability(cdp) {
   await sleep(150);
 
   return { initial, search, clear, toggle };
+}
+
+async function validateLongContent(cdp) {
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const groupName = document.querySelector('[data-instrument-purchase-group] .purchase-group-name');
+      const description = document.querySelector('[data-purchase-item] .purchase-description strong');
+      const category = document.querySelector('[data-purchase-item] .purchase-description span');
+      const amount = document.querySelector('[data-purchase-item] .purchase-amount');
+      const originals = {
+        groupName: groupName?.textContent || '',
+        description: description?.textContent || '',
+        category: category?.textContent || '',
+        amount: amount?.textContent || '',
+      };
+      if (groupName) groupName.textContent = 'Cartão corporativo internacional adicional com identificação extensa';
+      if (description) description.textContent = 'Assinatura internacional recorrente com uma descrição operacional deliberadamente extensa para validar quebra de linha';
+      if (category) category.textContent = 'Serviços profissionais e tecnologia internacional';
+      if (amount) amount.textContent = '-R$ 12.345.678,90';
+      return originals;
+    })()`,
+  );
+  await sleep(100);
+
+  const measurements = await evaluate(
+    cdp,
+    `(() => {
+      const list = document.querySelector('.purchase-list[aria-label="Compras da fatura"]');
+      const action = document.querySelector('[data-purchase-item] .purchase-actions summary');
+      const actionRect = action?.getBoundingClientRect();
+      return {
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+        listInsideViewport: Boolean(list && list.getBoundingClientRect().right <= window.innerWidth + 1),
+        rowActionVisible: Boolean(actionRect && actionRect.width > 0 && actionRect.height > 0),
+      };
+    })()`,
+  );
+
+  assert.equal(
+    measurements.noHorizontalOverflow,
+    true,
+    "Long card content creates horizontal overflow",
+  );
+  assert.equal(
+    measurements.listInsideViewport,
+    true,
+    "Long card content pushes the purchase list outside the viewport",
+  );
+  assert.equal(
+    measurements.rowActionVisible,
+    true,
+    "Long card content hides the purchase row action",
+  );
+
+  await evaluate(
+    cdp,
+    `((originals) => {
+      const groupName = document.querySelector('[data-instrument-purchase-group] .purchase-group-name');
+      const description = document.querySelector('[data-purchase-item] .purchase-description strong');
+      const category = document.querySelector('[data-purchase-item] .purchase-description span');
+      const amount = document.querySelector('[data-purchase-item] .purchase-amount');
+      if (groupName) groupName.textContent = originals.groupName;
+      if (description) description.textContent = originals.description;
+      if (category) category.textContent = originals.category;
+      if (amount) amount.textContent = originals.amount;
+    })(${JSON.stringify(result)})`,
+  );
+  await sleep(80);
+  return measurements;
 }
 
 async function probeLiveRegionAction(cdp, actionExpression) {
@@ -323,7 +395,64 @@ async function validateKeyboardModal(cdp) {
   );
   assert.equal(closed.closed, true, "Escape did not close the purchase modal");
   assert.equal(closed.focusRestored, true, "Focus was not restored to the modal opener");
-  return { opened, closed };
+
+  await evaluate(
+    cdp,
+    `(() => {
+      const button = document.querySelector('[data-open-modal="purchase"]');
+      button?.focus();
+      return document.activeElement === button;
+    })()`,
+  );
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: " ",
+    code: "Space",
+    text: " ",
+    unmodifiedText: " ",
+    windowsVirtualKeyCode: 32,
+    nativeVirtualKeyCode: 32,
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: " ",
+    code: "Space",
+    windowsVirtualKeyCode: 32,
+    nativeVirtualKeyCode: 32,
+  });
+  await waitForModal(cdp);
+  const spaceOpened = await evaluate(
+    cdp,
+    `Boolean(document.querySelector('dialog[data-modal="purchase"][open]'))`,
+  );
+  assert.equal(spaceOpened, true, "Space did not open the purchase modal");
+
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  });
+  await sleep(100);
+  const spaceClosed = await evaluate(
+    cdp,
+    `(() => ({
+      closed: !document.querySelector('dialog[data-modal="purchase"]')?.open,
+      focusRestored: document.activeElement === document.querySelector('[data-open-modal="purchase"]'),
+    }))()`,
+  );
+  assert.equal(spaceClosed.closed, true, "Escape did not close the modal opened with Space");
+  assert.equal(spaceClosed.focusRestored, true, "Focus was not restored after Space activation");
+
+  return { opened, closed, spaceOpened, spaceClosed };
 }
 
 async function waitForCards(cdp) {
@@ -351,5 +480,5 @@ async function waitForModal(cdp) {
 }
 
 function renderReport(value) {
-  return `# Cards interface adversarial validation\n\n- Status: **APPROVED**\n- Browser: ${value.browser}\n- Commit: ${value.commit}\n- Viewport: ${value.viewport}\n- Scenarios: compact desktop, accessibility tree, single live-region announcement, collapsed instrument groups, keyboard modal flow\n- Screenshots: ${value.screenshots.join(", ")}\n`;
+  return `# Cards interface adversarial validation\n\n- Status: **APPROVED**\n- Browser: ${value.browser}\n- Commit: ${value.commit}\n- Viewport: ${value.viewport}\n- Scenarios: compact desktop, accessibility tree, single live-region announcement, long content, collapsed instrument groups, Enter and Space keyboard modal flow\n- Screenshots: ${value.screenshots.join(", ")}\n`;
 }
