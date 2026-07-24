@@ -18,6 +18,35 @@ Grupos legados com menos de dois membros nao geram linha consolidada: os membros
 apresentados individualmente. Criacao e desagrupamento sao transacionais e geram auditoria
 redigida contendo apenas a natureza da operacao e a quantidade de membros.
 
+As acoes de administracao de um agrupamento estao documentadas em
+[`API_TRANSACTION_GROUP_ACTIONS.md`](./API_TRANSACTION_GROUP_ACTIONS.md).
+
+## Selecao e acoes em massa
+
+A linha consolidada de um agrupamento participa da selecao operacional do Extrato pelo mesmo
+marcador circular das linhas simples. Selecionar um grupo representa todos os seus membros; o
+cliente envia apenas o `groupId`, e o servidor resolve novamente a composicao persistida dentro
+da transacao da acao.
+
+A selecao pode combinar lancamentos simples e agrupados. A barra informa quantidade de itens,
+quantidade real de lancamentos representados quando forem diferentes e total financeiro sem
+dupla contagem. Um agrupamento selecionado impede nova unificacao, pois grupos nao podem ser
+aninhados.
+
+As acoes em massa disponiveis sao:
+
+- marcar lancamentos efetivados como conciliados;
+- desmarcar a conciliacao de lancamentos conciliados;
+- excluir logicamente os lancamentos selecionados e remover somente os agrupamentos selecionados.
+
+O servidor deduplica IDs, rejeita alteracao direta de membro agrupado sem o respectivo grupo,
+respeita organizacao e perfil financeiro, executa a operacao de forma atomica e registra apenas
+metadados redigidos de auditoria. Conciliação e desconciliação preservam o grupo; exclusao logica
+remove os grupos selecionados sem criar nova movimentacao financeira.
+
+O contrato completo do endpoint, estados elegiveis, respostas e regras de rollback esta em
+[`API_TRANSACTION_BULK_ACTIONS.md`](./API_TRANSACTION_BULK_ACTIONS.md).
+
 Este documento registra o contrato inicial da tela de lancamentos do SolverFin Web.
 
 A implementacao atual fica em `apps/web/src/transactions/` e segue a estrategia das issues anteriores de frontend: contratos TypeScript, validacoes puras, filtros deterministas, CSS base e mocks isolados, sem escolher framework web nem consumir APIs inexistentes.
