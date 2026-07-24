@@ -251,10 +251,13 @@ try {
   );
   assert.equal(keyboardPrepared.focused, true);
   const reconcileLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
+  await browser.cdp.send("Page.bringToFront");
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
+    type: "rawKeyDown",
     key: "Enter",
     code: "Enter",
+    text: "\r",
+    unmodifiedText: "\r",
     windowsVirtualKeyCode: 13,
     nativeVirtualKeyCode: 13,
   });
