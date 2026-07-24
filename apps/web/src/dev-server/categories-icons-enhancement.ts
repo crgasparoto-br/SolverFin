@@ -368,6 +368,7 @@ function injectStyles(html: string): string {
       .kind-meter-copy strong { font-size: .8125rem; }
       .kind-meter-copy span { white-space: nowrap; }
       main[${enhancementMarker}] .category-directory { box-shadow: var(--shadow-sm); overflow: visible; }
+      main[${enhancementMarker}] .category-directory, main[${enhancementMarker}] .category-kind-group, main[${enhancementMarker}] .category-tree-nodes, main[${enhancementMarker}] .category-tree-node, main[${enhancementMarker}] .category-node-row, main[${enhancementMarker}] .category-node-button, main[${enhancementMarker}] .category-node-text { max-width: 100%; min-width: 0; }
       main[${enhancementMarker}] .category-toolbar { align-items: end; display: grid; gap: 12px 16px; grid-template-columns: minmax(13rem, .7fr) minmax(0, 1.8fr); padding: 14px 16px 12px; }
       .category-toolbar-copy { display: grid; gap: 3px; min-width: 0; }
       .category-toolbar-controls { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; min-width: 0; }
@@ -406,7 +407,7 @@ function injectStyles(html: string): string {
       main[${enhancementMarker}] .category-collapse-button:hover:not(:disabled), main[${enhancementMarker}] .category-collapse-button:focus-visible { background: var(--surface); border-color: #c8dde5; color: var(--primary); }
       .category-collapse-button svg { transition: transform .15s ease; }
       .category-tree-node[data-category-collapsed="true"] > .category-node-row .category-collapse-button svg { transform: rotate(-90deg); }
-      main[${enhancementMarker}] .category-node-button { align-items: center; gap: 10px; grid-template-columns: auto minmax(0, 1fr) minmax(8rem, auto); min-height: 34px; }
+      main[${enhancementMarker}] .category-node-button { align-items: center; gap: 10px; grid-template-columns: auto minmax(0, 1fr) minmax(8rem, auto); min-height: 34px; width: 100%; }
       button.category-node-button:hover:not(:disabled), button.category-node-button:focus-visible { background: transparent; color: inherit; }
       main[${enhancementMarker}] .category-node-text { gap: 2px; }
       main[${enhancementMarker}] .category-node-text strong { font-size: .875rem; line-height: 1.3; }
@@ -414,7 +415,8 @@ function injectStyles(html: string): string {
       .category-status-badge { border: 1px solid transparent; border-radius: 999px; font-size: .6875rem; font-weight: 700; line-height: 1.3; padding: 1px 6px; }
       .category-status-active { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); }
       .category-status-archived { background: var(--warning-bg); border-color: #fde68a; color: var(--warning); }
-      main[${enhancementMarker}] .category-path { align-items: center; background: transparent; border-radius: 0; color: var(--muted); display: inline-flex; font-size: .75rem; font-weight: 500; gap: 4px; justify-self: end; max-width: 24rem; padding: 0; text-align: right; }
+      main[${enhancementMarker}] .category-path { align-items: center; background: transparent; border-radius: 0; color: var(--muted); display: inline-flex; font-size: .75rem; font-weight: 500; gap: 4px; justify-self: end; max-width: 24rem; min-width: 0; overflow: hidden; padding: 0; text-align: right; }
+      main[${enhancementMarker}] .category-path > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       main[${enhancementMarker}] .category-path[data-redundant-path="true"] { display: none; }
       main[${enhancementMarker}] .category-menu-button { min-height: 34px; width: 34px; }
       main[${enhancementMarker}] .category-menu-popover { min-width: 176px; z-index: 12; }
@@ -424,6 +426,7 @@ function injectStyles(html: string): string {
       main[${enhancementMarker}] .empty-state { margin: 12px 16px; }
       main[${enhancementMarker}] .category-dialog { gap: 16px; max-width: 640px; padding: 0; width: min(calc(100vw - 32px), 640px); }
       main[${enhancementMarker}] .category-dialog-header { border-bottom: 1px solid var(--line); padding: 16px 18px 14px; }
+      main[${enhancementMarker}] .category-dialog-header .icon-button { min-height: 36px; min-width: 36px; width: 36px; }
       main[${enhancementMarker}] .category-dialog-header > div { gap: 4px; max-width: 520px; }
       main[${enhancementMarker}] .category-form { gap: 14px; grid-template-columns: minmax(10rem, .7fr) minmax(0, 1.3fr); padding: 0 18px 18px; }
       main[${enhancementMarker}] .category-form label > small { color: var(--muted); font-size: .75rem; font-weight: 400; line-height: 1.35; }
@@ -460,7 +463,7 @@ function injectStyles(html: string): string {
         main[${enhancementMarker}] .category-node-button { grid-template-columns: auto minmax(0, 1fr); }
         main[${enhancementMarker}] .category-path { grid-column: 2; justify-self: start; max-width: 100%; text-align: left; }
         main[${enhancementMarker}] .category-menu-button, main[${enhancementMarker}] .category-collapse-button { min-height: 40px; width: 40px; }
-        main[${enhancementMarker}] .category-tree-children { margin-left: 20px; padding-left: 6px; }
+        main[${enhancementMarker}] .category-tree-children { margin-left: 20px; max-width: calc(100% - 20px); min-width: 0; padding-left: 6px; }
         main[${enhancementMarker}] .category-dialog { max-height: calc(100svh - 16px); width: min(calc(100vw - 16px), 640px); }
         main[${enhancementMarker}] .category-dialog-header { padding: 14px; }
         main[${enhancementMarker}] .category-form { grid-template-columns: 1fr; padding: 0 14px 14px; }
