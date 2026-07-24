@@ -23,7 +23,10 @@ assert.match(enhanced, /Não foi possível comunicar com o servidor/);
 assert.match(enhanced, /catch \{/);
 assert.match(enhanced, /finally \{/);
 assert.match(enhanced, /if \(submit\) submit\.disabled = false/);
-assert.doesNotMatch(enhanced, /window\.setTimeout\(function \(\) \{ window\.location\.reload\(\); \}, 350\)/);
+assert.doesNotMatch(
+  enhanced,
+  /window\.setTimeout\(function \(\) \{ window\.location\.reload\(\); \}, 350\)/,
+);
 assert.equal(
   enhanceTransactionGroupMemberFormGuard(enhanced),
   enhanced,
