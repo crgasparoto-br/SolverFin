@@ -155,9 +155,7 @@ function readMutableMemberInput(body: Record<string, unknown>) {
     ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
     ...(memberDate !== undefined ? { date: memberDate } : {}),
     ...(body.description !== undefined ? { description: String(body.description) } : {}),
-    ...(body.categoryId !== undefined
-      ? { categoryId: readNullableString(body.categoryId) }
-      : {}),
+    ...(body.categoryId !== undefined ? { categoryId: readNullableString(body.categoryId) } : {}),
   };
 }
 
