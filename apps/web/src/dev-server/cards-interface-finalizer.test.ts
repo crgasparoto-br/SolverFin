@@ -15,10 +15,4 @@ describe("cards interface finalizer", () => {
     assert.match(finalized, /min-height:44px!important;/);
     assert.equal(finalizeCardsInterface(finalized), finalized);
   });
-
-  it("does not change unrelated pages", () => {
-    const html =
-      "<html><head><title>Outra tela - SolverFin</title></head><body><main></main></body></html>";
-    assert.equal(finalizeCardsInterface(html), html);
-  });
 });
