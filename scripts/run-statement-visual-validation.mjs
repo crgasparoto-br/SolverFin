@@ -4,9 +4,11 @@ import { join } from "node:path";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 
 try {
+  await import("./statement-visual/format-issue-528.mjs");
   await import("./statement-visual/main.mjs");
   await import("./statement-visual/transaction-group-layout.mjs");
   await import("./statement-visual/transaction-group-modal.mjs");
+  await import("./statement-visual/transaction-group-pending-fixes.mjs");
   await import("./statement-visual/inbox-category-hierarchy.mjs");
   await import("./statement-visual/inbox-status-control.mjs");
   await import("./statement-visual/inbox-date-filter.mjs");
