@@ -1,38 +1,23 @@
-const cardsInterfaceMarker = "data-cards-interface-enhanced";
+const cardsPageTitle = "<title>Cartões de Crédito - SolverFin</title>";
 const finalizerMarker = "data-cards-interface-finalized";
 
 export function finalizeCardsInterface(html: string): string {
-  if (!html.includes(cardsInterfaceMarker)) return html;
+  if (!html.includes(cardsPageTitle)) return html;
   if (html.includes(finalizerMarker)) return html;
 
-  const finalizer = `
+  const withInitialFocus = html.replace(
+    /(<dialog data-modal="purchase"[\s\S]*?<input)(\s+name="amountMinor")/,
+    "$1 autofocus$2",
+  );
+  const styles = `
     <style ${finalizerMarker}>
       @media(max-width:760px){
         main[data-cards-interface-enhanced] .purchase-search input{
-          height:44px;
-          min-height:44px;
+          height:44px!important;
+          min-height:44px!important;
         }
       }
-    </style>
-    <script data-cards-interface-finalizer>
-      (() => {
-        const root = document.querySelector("main[data-cards-interface-enhanced]");
-        if (!root) return;
+    </style>`;
 
-        root.querySelectorAll("[data-open-modal]").forEach((button) => {
-          button.addEventListener("click", () => {
-            const dialog = root.querySelector(
-              'dialog[data-modal="' + button.dataset.openModal + '"]',
-            );
-            dialog
-              ?.querySelector(
-                "input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])",
-              )
-              ?.focus();
-          });
-        });
-      })();
-    </script>`;
-
-  return html.replace("</body>", `${finalizer}</body>`);
+  return withInitialFocus.replace("</head>", `${styles}</head>`);
 }
