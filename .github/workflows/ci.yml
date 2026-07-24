@@ -149,3 +149,53 @@ jobs:
 
       - name: Verify import statement consistency
         run: npm run diagnose:import-statement-consistency -- --expect-zero
+
+  issue-528-format-artifact:
+    name: Format issue 528 artifact
+    if: github.event_name == 'pull_request' && github.head_ref == 'feat/528-group-modal-actions'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout issue branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format changed issue files
+        run: >-
+          npx prettier --write
+          apps/api/src/repositories/transaction-group-actions.ts
+          apps/api/src/transaction-group-clone-validation.integration.test.ts
+          apps/web/src/dev-server/transaction-group-member-form-guard.ts
+          apps/web/src/dev-server/transaction-group-member-form-guard.test.ts
+          apps/web/src/dev-server/transaction-group-modal-enhancement.ts
+          apps/web/src/dev-server/transaction-group-modal-enhancement.test.ts
+          scripts/run-statement-visual-validation.mjs
+          scripts/statement-visual/transaction-group-modal.mjs
+
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-528-prettier-${{ github.sha }}
+          path: |
+            apps/api/src/repositories/transaction-group-actions.ts
+            apps/api/src/transaction-group-clone-validation.integration.test.ts
+            apps/web/src/dev-server/transaction-group-member-form-guard.ts
+            apps/web/src/dev-server/transaction-group-member-form-guard.test.ts
+            apps/web/src/dev-server/transaction-group-modal-enhancement.ts
+            apps/web/src/dev-server/transaction-group-modal-enhancement.test.ts
+            scripts/run-statement-visual-validation.mjs
+            scripts/statement-visual/transaction-group-modal.mjs
+          if-no-files-found: error
+          retention-days: 1
