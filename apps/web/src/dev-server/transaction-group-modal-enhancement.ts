@@ -66,8 +66,6 @@ export function enhanceTransactionGroupModal(html: string): string {
         const summaryNode = form.querySelector("[data-group-summary]");
         const saveRow = form.querySelector(".save-row");
         const titleNode = document.querySelector("[data-group-title]");
-        const transactionModal = document.querySelector("[data-modal]");
-        const transactionForm = document.querySelector("[data-form]");
         if (!membersNode || !summaryNode || !saveRow) return;
 
         const icon = {
@@ -119,10 +117,6 @@ export function enhanceTransactionGroupModal(html: string): string {
           return (Number(minor || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: currency || "BRL" });
         }
 
-        function moneyInput(minor) {
-          return (Number(minor || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
         function formatDate(value) {
           if (!value) return "—";
           const parts = String(value).split("-");
@@ -150,6 +144,11 @@ export function enhanceTransactionGroupModal(html: string): string {
           const node = document.querySelector('script[data-group="' + CSS.escape(groupId) + '"]');
           if (!node) return undefined;
           try { return JSON.parse(node.textContent || "{}"); } catch { return undefined; }
+        }
+
+        function storeGroup(group) {
+          const node = document.querySelector('script[data-group="' + CSS.escape(group.id) + '"]');
+          if (node) node.textContent = JSON.stringify(group);
         }
 
         function selectedItems() {
@@ -231,65 +230,48 @@ export function enhanceTransactionGroupModal(html: string): string {
           } else renderCreateMode();
         }
 
-        function setTransactionStatus(status) {
-          if (!transactionForm) return;
-          const button = transactionForm.querySelector('[data-status-option="' + status + '"]');
-          if (button) button.click();
-          else if (transactionForm.status) transactionForm.status.value = status;
+        function showStatus(message, tone) {
+          const statusNode = actions.querySelector("[data-group-action-status]");
+          statusNode.textContent = message || "";
+          statusNode.className = "group-action-status" + (tone ? " " + tone : "");
         }
 
-        function openTransactionFlow(member, clone) {
-          const statusNode = actions.querySelector("[data-group-action-status]");
-          if (!transactionModal || !transactionForm) {
-            statusNode.textContent = "O formulário de lançamento não está disponível.";
-            statusNode.className = "group-action-status error";
+        document.addEventListener("solverfin:transaction-group:return", function (event) {
+          const detail = event.detail || {};
+          const group = detail.group;
+          if (!group || !Array.isArray(group.members)) {
+            window.location.reload();
             return;
           }
-          modal.close();
-          transactionForm.reset();
-          transactionForm.dataset.path = clone
-            ? "/api/transactions"
-            : "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/members/" + encodeURIComponent(member.id);
-          transactionForm.dataset.method = clone ? "POST" : "PATCH";
-          transactionForm.kind.value = member.kind;
-          transactionForm.amountMinor.value = moneyInput(member.amountMinor);
-          transactionForm.plannedOn.value = member.plannedOn || member.occurredOn || member.effectiveOn || "";
-          transactionForm.effectiveOn.value = member.effectiveOn || "";
-          transactionForm.repeatMode.value = "single";
-          transactionForm.destinationAccountId.value = "";
-          transactionForm.categoryId.value = member.categoryId || "";
-          transactionForm.description.value = clone ? "Cópia de " + member.description : member.description;
-          setTransactionStatus(clone ? (member.effectiveOn ? "posted" : "planned") : member.status);
-          transactionForm.kind.dispatchEvent(new Event("change", { bubbles: true }));
-          const transactionTitle = document.querySelector("[data-modal-title]");
-          if (transactionTitle) transactionTitle.textContent = clone ? "Clonar lançamento" : "Editar lançamento";
-          transactionModal.showModal();
-        }
+          storeGroup(group);
+          form.dataset.mode = "details";
+          form.dataset.groupId = group.id;
+          renderDetailsMode(group);
+          showStatus(detail.message || "", detail.tone || "success");
+          if (!modal.open) modal.showModal();
+        });
 
         modal.addEventListener("toggle", function () {
           if (modal.open) window.setTimeout(refreshModal, 0);
         });
 
         membersNode.addEventListener("click", async function (event) {
-          const button = event.target.closest("[data-member-action]");
+          const button = event.target.closest('[data-member-action="void"]');
           if (!button || !currentGroup) return;
           const member = currentGroup.members.find(function (candidate) { return candidate.id === button.dataset.memberId; });
           if (!member) return;
-          if (button.dataset.memberAction === "edit") {
-            openTransactionFlow(member, false);
-            return;
-          }
-          if (button.dataset.memberAction === "clone") {
-            openTransactionFlow(member, true);
-            return;
-          }
-          if (button.dataset.memberAction === "void") {
-            const message = member.status === "reconciled"
-              ? "Este lançamento está conciliado. Excluir apenas esta linha?"
-              : "Excluir apenas este lançamento do agrupamento?";
-            if (!window.confirm(message)) return;
-            await runRequest(button, "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/members/" + encodeURIComponent(member.id) + "/void", "POST", {}, "Lançamento excluído.");
-          }
+          const message = member.status === "reconciled"
+            ? "Este lançamento está conciliado. Excluir apenas esta linha?"
+            : "Excluir apenas este lançamento do agrupamento?";
+          if (!window.confirm(message)) return;
+          await runRequest(
+            button,
+            "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/members/" + encodeURIComponent(member.id) + "/void",
+            "POST",
+            {},
+            "Lançamento excluído.",
+            "refresh",
+          );
         });
 
         actions.addEventListener("click", async function (event) {
@@ -302,45 +284,90 @@ export function enhanceTransactionGroupModal(html: string): string {
               ? "Marcar todos os lançamentos deste grupo como conciliados?"
               : "Desconciliar todos os lançamentos deste grupo?";
             if (!window.confirm(message)) return;
-            await runRequest(button, "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/status", "PATCH", { status: targetStatus }, targetStatus === "reconciled" ? "Grupo conciliado." : "Grupo desconciliado.");
+            await runRequest(
+              button,
+              "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/status",
+              "PATCH",
+              { status: targetStatus },
+              targetStatus === "reconciled" ? "Grupo conciliado." : "Grupo desconciliado.",
+              "refresh",
+            );
             return;
           }
           if (action === "clone") {
             if (!window.confirm("Clonar todos os lançamentos como itens independentes? O grupo original será preservado.")) return;
-            await runRequest(button, "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/clone", "POST", {}, "Grupo clonado.");
+            await runRequest(
+              button,
+              "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/clone",
+              "POST",
+              {},
+              "Grupo clonado.",
+              "keep",
+            );
             return;
           }
           if (action === "ungroup") {
             if (!window.confirm("Desagrupar estes lançamentos? Os lançamentos serão mantidos individualmente.")) return;
-            await runRequest(button, "/api/transaction-groups/" + encodeURIComponent(currentGroup.id), "DELETE", {}, "Lançamentos desagrupados.");
+            await runRequest(
+              button,
+              "/api/transaction-groups/" + encodeURIComponent(currentGroup.id),
+              "DELETE",
+              {},
+              "Lançamentos desagrupados.",
+              "reload",
+            );
             return;
           }
           if (action === "void") {
             if (!window.confirm("Excluir o grupo e todos os seus lançamentos? Esta ação não apenas desagrupa os itens.")) return;
-            await runRequest(button, "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/void", "POST", {}, "Grupo excluído.");
+            await runRequest(
+              button,
+              "/api/transaction-groups/" + encodeURIComponent(currentGroup.id) + "/void",
+              "POST",
+              {},
+              "Grupo excluído.",
+              "reload",
+            );
           }
         });
 
-        async function runRequest(button, path, method, body, successMessage) {
-          const statusNode = actions.querySelector("[data-group-action-status]");
+        async function runRequest(button, path, method, body, successMessage, behavior) {
           button.disabled = true;
-          statusNode.textContent = "Processando...";
-          statusNode.className = "group-action-status";
-          const response = await fetch(path, {
-            method: method,
-            headers: { "content-type": "application/json" },
-            body: method === "DELETE" ? undefined : JSON.stringify(body)
-          });
-          const responseBody = await response.json().catch(function () { return {}; });
-          button.disabled = false;
-          if (!response.ok) {
-            statusNode.textContent = responseBody.error && responseBody.error.message || "Não foi possível concluir a ação.";
-            statusNode.className = "group-action-status error";
-            return;
+          showStatus("Processando...", "");
+          let renderedGroup = false;
+          let shouldReload = false;
+          try {
+            const response = await fetch(path, {
+              method: method,
+              headers: { "content-type": "application/json" },
+              body: method === "DELETE" ? undefined : JSON.stringify(body)
+            });
+            const responseBody = await response.json().catch(function () { return {}; });
+            if (!response.ok) {
+              showStatus(
+                responseBody.error && responseBody.error.message || "Não foi possível concluir a ação.",
+                "error",
+              );
+              return;
+            }
+
+            if (responseBody.group && Array.isArray(responseBody.group.members)) {
+              storeGroup(responseBody.group);
+              renderDetailsMode(responseBody.group);
+              renderedGroup = true;
+            }
+
+            shouldReload = behavior === "reload" || responseBody.groupRemoved === true;
+            showStatus(successMessage + (shouldReload ? " Atualizando..." : ""), "success");
+            if (shouldReload) window.setTimeout(function () { window.location.reload(); }, 350);
+          } catch {
+            showStatus(
+              "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.",
+              "error",
+            );
+          } finally {
+            if (!renderedGroup && !shouldReload) button.disabled = false;
           }
-          statusNode.textContent = successMessage + " Atualizando...";
-          statusNode.className = "group-action-status success";
-          window.setTimeout(function () { window.location.reload(); }, 350);
         }
       })();
     </script>`;
