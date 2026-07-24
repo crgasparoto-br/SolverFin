@@ -161,11 +161,46 @@ async function main(): Promise<void> {
   }
   assert.equal((await getTransactionForContext(context, directReconciled.id)).status, "posted");
 
-  const audits = await query<{ count: number }>(
-    `select count(*)::int as count from "AuditLogEntry" where "entityId"=$1`,
+  const audits = await query<{ action: string; redactedChanges: unknown }>(
+    `select "action", "redactedChanges" from "AuditLogEntry" where "entityId"=$1 order by "occurredAt"`,
     [group.id],
   );
-  assert.ok((audits[0]?.count ?? 0) >= 3);
+  const bulkAudits = audits
+    .map((audit) => ({ action: audit.action, changes: readAuditChanges(audit.redactedChanges) }))
+    .filter((audit) => audit.changes.bulkSelection === true);
+  assert.equal(bulkAudits.length, 3);
+  assert.deepEqual(
+    bulkAudits.map((audit) => audit.action),
+    ["RECONCILE", "UNRECONCILE", "SOFT_DELETE"],
+  );
+
+  const expectedKeys = [
+    "action",
+    "affectedTransactionCount",
+    "bulkSelection",
+    "selectedDirectCount",
+    "selectedGroupCount",
+  ];
+  for (const audit of bulkAudits) {
+    assert.deepEqual(Object.keys(audit.changes).sort(), expectedKeys);
+    assert.equal(audit.changes.bulkSelection, true);
+    assert.ok(["reconcile", "unreconcile", "void"].includes(String(audit.changes.action)));
+    assert.equal(Number.isInteger(audit.changes.selectedGroupCount), true);
+    assert.equal(Number.isInteger(audit.changes.selectedDirectCount), true);
+    assert.equal(Number.isInteger(audit.changes.affectedTransactionCount), true);
+    assert.doesNotMatch(
+      JSON.stringify(audit.changes),
+      /Direto|Membro|Grupo da seleção|BRL|amount|description|currency/i,
+    );
+  }
+}
+
+function readAuditChanges(value: unknown): Record<string, unknown> {
+  const parsed = typeof value === "string" ? (JSON.parse(value) as unknown) : value;
+  assert.equal(typeof parsed, "object");
+  assert.notEqual(parsed, null);
+  assert.equal(Array.isArray(parsed), false);
+  return parsed as Record<string, unknown>;
 }
 
 function hasCode(expected: string): (error: unknown) => boolean {
