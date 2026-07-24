@@ -12,42 +12,43 @@ const failures = [];
 
 if (!chromePath) throw new Error("CHROME_BIN is required for categories visual validation.");
 await mkdir(outputDir, { recursive: true });
-const browser = await launchChrome({ baseUrl, chromePath });
 let desktop;
 let desktopModal;
 let mobile;
 let mobileModal;
+let browserVersion = "unknown";
+const completedScreenshots = [];
 
-try {
-  await loginAndOpenCategories(browser.cdp);
-  desktop = await validateDesktop(browser.cdp);
-  desktopModal = await validateDesktopModal(browser.cdp);
-  mobile = await validateMobile(browser.cdp);
-  mobileModal = await validateMobileModal(browser.cdp);
-} finally {
-  await browser.close(outputDir);
-}
+await runViewportSession("desktop", 1440, 1000, async (cdp) => {
+  desktop = await validateDesktop(cdp);
+  completedScreenshots.push("categories-desktop.png");
+  desktopModal = await validateDesktopModal(cdp);
+  completedScreenshots.push("categories-modal-desktop.png");
+});
+
+await runViewportSession("mobile", 390, 844, async (cdp) => {
+  mobile = await validateMobile(cdp);
+  completedScreenshots.push("categories-mobile.png");
+  mobileModal = await validateMobileModal(cdp);
+  completedScreenshots.push("categories-modal-mobile.png");
+});
 
 const report = {
   generatedAt: new Date().toISOString(),
   commit: process.env.GITHUB_SHA ?? "local",
-  browser: browser.version,
+  browser: browserVersion,
   failures,
   desktop,
   desktopModal,
   mobile,
   mobileModal,
-  screenshots: [
-    "categories-desktop.png",
-    "categories-modal-desktop.png",
-    "categories-mobile.png",
-    "categories-modal-mobile.png",
-  ],
+  screenshots: completedScreenshots,
 };
 
 await writeFile(
   join(outputDir, "categories-interface.json"),
-  `${JSON.stringify(report, null, 2)}\n`,
+  `${JSON.stringify(report, null, 2)}
+`,
 );
 await writeFile(join(outputDir, "CATEGORIES-INTERFACE.md"), renderReport(report));
 
@@ -58,8 +59,33 @@ if (failures.length > 0) {
   console.log("Categories desktop, modal and mobile visual validation passed.");
 }
 
-async function loginAndOpenCategories(cdp) {
-  await setViewport(cdp, 1440, 1000);
+async function runViewportSession(label, width, height, validate) {
+  let browser;
+  try {
+    browser = await launchChrome({ baseUrl, chromePath });
+    browserVersion = browser.version;
+    console.log(`Starting categories ${label} validation.`);
+    await loginAndOpenCategories(browser.cdp, width, height);
+    await validate(browser.cdp);
+  } catch (error) {
+    const details = serializeError(error);
+    failures.push({ message: `Categories ${label} validation crashed`, details });
+    console.error(`Categories ${label} validation crashed:`, details);
+  } finally {
+    if (browser) await browser.close(outputDir);
+    await sleep(250);
+  }
+}
+
+function serializeError(error) {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack ?? "" };
+  }
+  return { name: "UnknownError", message: String(error), stack: "" };
+}
+
+async function loginAndOpenCategories(cdp, width, height) {
+  await setViewport(cdp, width, height);
   await navigate(cdp, `${baseUrl}/login`);
   const login = await evaluate(cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
@@ -342,5 +368,6 @@ function check(condition, message, details) {
 
 function renderReport(report) {
   const status = report.failures.length === 0 ? "APROVADO" : "REPROVADO";
-  return `# Evidência visual — Categorias\n\n- Status: **${status}**\n- Commit: \`${report.commit}\`\n- Navegador: ${report.browser}\n- Desktop: \`${report.desktop.screenshot}\`\n- Modal desktop: \`${report.desktopModal.screenshot}\`\n- Mobile: \`${report.mobile.screenshot}\`\n- Modal mobile: \`${report.mobileModal.screenshot}\`\n\n## Falhas\n\n${report.failures.length === 0 ? "Nenhuma falha encontrada.\n" : report.failures.map((failure) => `- ${failure.message}`).join("\n") + "\n"}`;
+  const screenshot = (result) => result?.screenshot ?? "não gerada";
+  return `# Evidência visual — Categorias\n\n- Status: **${status}**\n- Commit: \`${report.commit}\`\n- Navegador: ${report.browser}\n- Desktop: \`${screenshot(report.desktop)}\`\n- Modal desktop: \`${screenshot(report.desktopModal)}\`\n- Mobile: \`${screenshot(report.mobile)}\`\n- Modal mobile: \`${screenshot(report.mobileModal)}\`\n\n## Falhas\n\n${report.failures.length === 0 ? "Nenhuma falha encontrada.\n" : report.failures.map((failure) => `- ${failure.message}`).join("\n") + "\n"}`;
 }
