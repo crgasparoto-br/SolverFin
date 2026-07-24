@@ -98,8 +98,16 @@ try {
   assert.equal(desktop.currency, "BRL", "Currency field is not rendered in the group modal.");
   assert.equal(desktop.memberCount, 3, "Posted group modal does not show all members.");
   assert.equal(desktop.actionCount, 13, "Expected row and group actions are not available.");
-  assert.equal(desktop.horizontalOverflow, false, "Group modal has horizontal overflow on desktop.");
-  assert.equal(desktop.accessibleActionCount, 13, "Every group action must have an accessible name.");
+  assert.equal(
+    desktop.horizontalOverflow,
+    false,
+    "Group modal has horizontal overflow on desktop.",
+  );
+  assert.equal(
+    desktop.accessibleActionCount,
+    13,
+    "Every group action must have an accessible name.",
+  );
   await screenshot(browser.cdp, join(outputDir, "transaction-group-modal-desktop.png"));
 
   const editFlow = await openMemberFlow(browser.cdp, "edit");
@@ -137,8 +145,16 @@ try {
       return result;
     })()`,
   );
-  assert.equal(formNetworkFailure.modalOpen, true, "The transaction modal closed after a network error.");
-  assert.equal(formNetworkFailure.submitDisabled, false, "The submit button remained disabled after a network error.");
+  assert.equal(
+    formNetworkFailure.modalOpen,
+    true,
+    "The transaction modal closed after a network error.",
+  );
+  assert.equal(
+    formNetworkFailure.submitDisabled,
+    false,
+    "The submit button remained disabled after a network error.",
+  );
   assert.equal(formNetworkFailure.description, "QA falha de rede preservada");
   assert.match(formNetworkFailure.message, /Verifique sua conexão e tente novamente/);
 
@@ -171,7 +187,11 @@ try {
       };
     })()`,
   );
-  assert.equal(editedState.groupModalOpen, true, "The grouping modal was not restored after editing.");
+  assert.equal(
+    editedState.groupModalOpen,
+    true,
+    "The grouping modal was not restored after editing.",
+  );
   assert.equal(editedState.transactionModalOpen, false);
   assert.equal(editedState.amountMinor, 12345);
   assert.equal(editedState.effectiveOn, "2026-07-27");
@@ -181,7 +201,11 @@ try {
 
   const cloneFlow = await openMemberFlow(browser.cdp, "clone");
   assert.equal(cloneFlow.transactionModalOpen, true, "Clone does not reuse the transaction modal.");
-  assert.equal(cloneFlow.groupModalOpen, false, "Group modal remained open behind the clone modal.");
+  assert.equal(
+    cloneFlow.groupModalOpen,
+    false,
+    "Group modal remained open behind the clone modal.",
+  );
   assert.equal(cloneFlow.method, "POST");
   assert.match(cloneFlow.path, /\/api\/transaction-groups\/.+\/members\/.+\/clone/);
   assert.equal(cloneFlow.mode, "clone");
@@ -231,7 +255,11 @@ try {
       };
     })()`,
   );
-  assert.equal(clonedState.groupModalOpen, true, "The grouping modal was not restored after cloning.");
+  assert.equal(
+    clonedState.groupModalOpen,
+    true,
+    "The grouping modal was not restored after cloning.",
+  );
   assert.match(clonedState.message, /Lançamento clonado/);
   assert.deepEqual(clonedState.matches, [
     {
@@ -267,7 +295,11 @@ try {
     })()`,
   );
   assert.equal(groupNetworkFailure.modalOpen, true);
-  assert.equal(groupNetworkFailure.buttonDisabled, false, "The group action remained disabled after a network error.");
+  assert.equal(
+    groupNetworkFailure.buttonDisabled,
+    false,
+    "The group action remained disabled after a network error.",
+  );
   assert.match(groupNetworkFailure.message, /Verifique sua conexão e tente novamente/);
 
   const statusTransitions = await evaluate(
@@ -330,7 +362,11 @@ try {
       return result;
     })()`,
   );
-  assert.equal(groupClone.after - groupClone.before, 3, "Group clone count differs from member count.");
+  assert.equal(
+    groupClone.after - groupClone.before,
+    3,
+    "Group clone count differs from member count.",
+  );
   assert.equal(groupClone.memberCount, 3, "Group cloning changed the original membership.");
   assert.equal(groupClone.modalOpen, true);
   assert.match(groupClone.message, /Grupo clonado/);
@@ -355,7 +391,11 @@ try {
       return result;
     })()`,
   );
-  assert.equal(memberDeletion.modalOpen, true, "Deleting one of three members closed the group flow.");
+  assert.equal(
+    memberDeletion.modalOpen,
+    true,
+    "Deleting one of three members closed the group flow.",
+  );
   assert.equal(memberDeletion.memberCount, 2);
   assert.equal(memberDeletion.renderedCount, 2);
   assert.equal(memberDeletion.deletedStillPresent, false);
@@ -389,21 +429,25 @@ try {
 
   await writeFile(
     join(outputDir, "transaction-group-modal.json"),
-    `${JSON.stringify({
-      created,
-      desktop,
-      editFlow,
-      formNetworkFailure,
-      editedState,
-      cloneFlow,
-      clonedState,
-      groupNetworkFailure,
-      statusTransitions,
-      groupClone,
-      memberDeletion,
-      planned,
-      mobile,
-    }, null, 2)}\n`,
+    `${JSON.stringify(
+      {
+        created,
+        desktop,
+        editFlow,
+        formNetworkFailure,
+        editedState,
+        cloneFlow,
+        clonedState,
+        groupNetworkFailure,
+        statusTransitions,
+        groupClone,
+        memberDeletion,
+        planned,
+        mobile,
+      },
+      null,
+      2,
+    )}\n`,
   );
 } finally {
   if (groupIds.length > 0) {
