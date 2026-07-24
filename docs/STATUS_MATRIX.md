@@ -17,6 +17,9 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/ARCHITECTURE.md`
 - `docs/PRODUCT.md`
 - `docs/CARDS.md`
+- `docs/TRANSACTIONS.md`
+- `docs/API_TRANSACTION_GROUP_ACTIONS.md`
+- `docs/API_TRANSACTION_BULK_ACTIONS.md`
 - `docs/IMPORTS.md`
 - `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`
 - `docs/AI_REVIEW_QUEUE.md`
@@ -26,7 +29,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/API_PAYABLES_RECEIVABLES.md`
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412 e #414.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414 e #531.
 
 ## Decisao atual sobre pagar/receber
 
@@ -59,9 +62,9 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 - Dominio/API/persistencia: Feito.
 - UI: Feito para o fluxo atual.
-- Testes: integracao feita; unitarios parciais.
+- Testes: integracao e validacao visual feitas; unitarios parciais.
 - Documentacao: Feito para o fluxo atual.
-- Nota: web preserva Extrato da conta com resumo, agrupamento por data, criacao, detalhe via acao, edicao e cancelamento/estorno. Tambem e a tela ativa para compromissos previstos de conta corrente.
+- Nota: web preserva Extrato da conta com resumo, agrupamento por data, criacao, detalhe via acao, edicao e cancelamento/estorno. Linhas simples e agrupadas participam da selecao operacional; a barra combinada permite conciliar, desconciliar e excluir logicamente em massa, com expansao dos grupos, deduplicacao, isolamento por perfil e atomicidade no servidor. Tambem e a tela ativa para compromissos previstos de conta corrente.
 - Decisao: os chips **Pendentes**, **Nao conciliados** e **Conciliados** sao indicadores de resumo; nao sao filtros interativos no estado atual.
 
 ### Recorrencias
@@ -213,7 +216,10 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Criar: Sim, por formulario/modal de novo lancamento ou compromisso previsto.
 - Editar: Sim.
 - Cancelar/estornar: Sim.
-- Excluir: Nao.
+- Selecionar linhas simples e agrupadas: Sim, inclusive em uma selecao combinada.
+- Conciliar/desconciliar em massa: Sim, para lancamentos efetivados ou conciliados elegiveis.
+- Excluir logicamente em massa: Sim, para selecao simples, agrupada ou combinada.
+- Excluir fisicamente: Nao.
 - Decisao: chips de status sao indicadores de resumo, nao filtros interativos.
 
 ### Recorrencias e parcelas

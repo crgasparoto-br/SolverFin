@@ -12,12 +12,16 @@ import {
 } from "./repositories/transaction-group-actions.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
+import { handleTransactionBulkActionsApiRequest } from "./transaction-bulk-actions-router.js";
 
 const BASE_PATH = "/api/transaction-groups";
 
 export async function handleTransactionGroupActionsApiRequest(
   request: ApiRequest,
 ): Promise<ApiResponse | undefined> {
+  const bulkResult = await handleTransactionBulkActionsApiRequest(request);
+  if (bulkResult) return bulkResult;
+
   const route = matchActionRoute(request.method, request.pathname);
   if (!route) return undefined;
   const correlationId = resolveCorrelationId(request.headers);

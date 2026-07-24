@@ -33,6 +33,9 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 ## Dominio financeiro
 
 - [`DOMAIN_MODEL.md`](./DOMAIN_MODEL.md): modelo conceitual e tecnico do core financeiro.
+- [`TRANSACTIONS.md`](./TRANSACTIONS.md): lancamentos do Extrato, filtros, agrupamentos e invariantes dos membros.
+- [`API_TRANSACTION_GROUP_ACTIONS.md`](./API_TRANSACTION_GROUP_ACTIONS.md): edicao, clonagem, exclusao logica e conciliacao de agrupamentos.
+- [`API_TRANSACTION_BULK_ACTIONS.md`](./API_TRANSACTION_BULK_ACTIONS.md): selecao combinada e acoes atomicas em massa no Extrato.
 - [`CARDS.md`](./CARDS.md): cartoes agrupadores/faturas e instrumentos internos.
 - [`ACCOUNT_REMUNERATION_CDI.md`](./ACCOUNT_REMUNERATION_CDI.md): remuneracao prevista de contas com CDI e base compartilhada de indices financeiros.
 - [`API_ACCOUNT_REMUNERATION.md`](./API_ACCOUNT_REMUNERATION.md): endpoints, operacao diaria, idempotencia e configuracao do scheduler CDI.

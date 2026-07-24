@@ -8,6 +8,9 @@ try {
   await import("./statement-visual/transaction-group-layout.mjs");
   await import("./statement-visual/transaction-group-modal.mjs");
   await import("./statement-visual/transaction-group-pending-fixes.mjs");
+  await import("./statement-visual/transaction-bulk-selection.mjs");
+  await import("./statement-visual/transaction-bulk-selection-keyboard.mjs");
+  await import("./statement-visual/transaction-bulk-selection-clearance.mjs");
   await import("./statement-visual/inbox-category-hierarchy.mjs");
   await import("./statement-visual/inbox-status-control.mjs");
   await import("./statement-visual/inbox-date-filter.mjs");
