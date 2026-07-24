@@ -63,17 +63,24 @@ export function finalizeCardsInterface(html: string): string {
 
         const focusableFieldSelector =
           "input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])";
+        const modalOpeners = new WeakMap();
 
         root.querySelectorAll("dialog[data-modal]").forEach((dialog) => {
           dialog.querySelector(focusableFieldSelector)?.setAttribute("autofocus", "");
+          dialog.addEventListener("close", () => {
+            const opener = modalOpeners.get(dialog);
+            if (opener?.isConnected) opener.focus();
+            modalOpeners.delete(dialog);
+          });
         });
 
         root.querySelectorAll("[data-open-modal]").forEach((button) => {
           button.addEventListener("click", () => {
+            const dialog = root.querySelector(
+              'dialog[data-modal="' + button.dataset.openModal + '"]',
+            );
+            if (dialog) modalOpeners.set(dialog, button);
             window.setTimeout(() => {
-              const dialog = root.querySelector(
-                'dialog[data-modal="' + button.dataset.openModal + '"]',
-              );
               dialog?.querySelector(focusableFieldSelector)?.focus();
             }, 0);
           });
