@@ -55,19 +55,11 @@ export async function handleTransactionGroupActionsApiRequest(
     if (!("memberId" in route)) return undefined;
 
     if (route.action === "update_member") {
-      const memberDate = readMemberDate(body);
       const group = await updateTransactionGroupMemberForContext(
         context,
         route.groupId,
         route.memberId,
-        {
-          ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
-          ...(memberDate !== undefined ? { date: memberDate } : {}),
-          ...(body.description !== undefined ? { description: String(body.description) } : {}),
-          ...(body.categoryId !== undefined
-            ? { categoryId: readNullableString(body.categoryId) }
-            : {}),
-        },
+        readMutableMemberInput(body),
       );
       return json(200, { group });
     }
@@ -77,6 +69,7 @@ export async function handleTransactionGroupActionsApiRequest(
         context,
         route.groupId,
         route.memberId,
+        readMutableMemberInput(body),
       );
       return json(201, { transaction });
     }
@@ -154,6 +147,18 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
 function readMemberDate(body: Record<string, unknown>): string | undefined {
   const value = body.date ?? body.effectiveOn ?? body.plannedOn;
   return value === undefined || value === null || value === "" ? undefined : String(value);
+}
+
+function readMutableMemberInput(body: Record<string, unknown>) {
+  const memberDate = readMemberDate(body);
+  return {
+    ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
+    ...(memberDate !== undefined ? { date: memberDate } : {}),
+    ...(body.description !== undefined ? { description: String(body.description) } : {}),
+    ...(body.categoryId !== undefined
+      ? { categoryId: readNullableString(body.categoryId) }
+      : {}),
+  };
 }
 
 function readNullableString(value: unknown): string | null {
