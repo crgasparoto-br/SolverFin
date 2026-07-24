@@ -68,7 +68,11 @@ async function main(): Promise<void> {
     `select count(*)::int as count from "Transaction"
       where "organizationId"=$1 and "financialProfileId"=$2
         and "description" like $3`,
-    [context.organizationId, context.financialProfileId, `Cópia de Clone em lote validado ${suffix}%`],
+    [
+      context.organizationId,
+      context.financialProfileId,
+      `Cópia de Clone em lote validado ${suffix}%`,
+    ],
   );
   assert.equal(cloneRows[0]?.count, 0, "group cloning must validate all members before inserting");
 
