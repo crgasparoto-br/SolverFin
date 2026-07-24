@@ -60,7 +60,7 @@ try {
         description: "QA issue 530 teclado",
         displayOn: "2026-07-27"
       })).group;
-      return { groupId: group.id };
+      return { groupId: group.id, memberIds: members.map((member) => member.id) };
     })()`,
   );
   groupId = created.groupId;
@@ -147,9 +147,41 @@ try {
   assert.equal(persisted.groupPresent, true);
   assert.equal(persisted.status, "Conciliado");
 
+  const ungroupedResponse = await evaluate(
+    browser.cdp,
+    `(async () => {
+      const response = await fetch('/api/transaction-groups/' + encodeURIComponent(${JSON.stringify(
+        created.groupId,
+      )}), { method: 'DELETE' });
+      return { ok: response.ok, status: response.status };
+    })()`,
+  );
+  assert.equal(ungroupedResponse.ok, true, `Ungroup failed with ${ungroupedResponse.status}.`);
+  groupId = undefined;
+
+  await navigate(browser.cdp, `${baseUrl}${route}`);
+  await sleep(160);
+  const ungrouped = await evaluate(
+    browser.cdp,
+    `(() => {
+      const memberIds = ${JSON.stringify(created.memberIds)};
+      const rows = memberIds.map((id) => document.querySelector('[data-select-transaction][value="' + CSS.escape(id) + '"]')?.closest('.statement-row'));
+      return {
+        groupedRowPresent: Boolean(document.querySelector('[data-group-row="${created.groupId}"]')),
+        individualRowCount: rows.filter(Boolean).length,
+        groupIconCount: rows.reduce((count, row) => count + (row?.querySelectorAll('[data-transaction-group-state]').length || 0), 0),
+        groupedMarkerCount: rows.reduce((count, row) => count + (row?.querySelectorAll('[data-selection-entity="group"]').length || 0), 0)
+      };
+    })()`,
+  );
+  assert.equal(ungrouped.groupedRowPresent, false);
+  assert.equal(ungrouped.individualRowCount, created.memberIds.length);
+  assert.equal(ungrouped.groupIconCount, 0);
+  assert.equal(ungrouped.groupedMarkerCount, 0);
+
   await writeFile(
     join(outputDir, "issue-530-keyboard-activation.json"),
-    `${JSON.stringify({ prepared, activation, persisted }, null, 2)}\n`,
+    `${JSON.stringify({ prepared, activation, persisted, ungroupedResponse, ungrouped }, null, 2)}\n`,
   );
 } finally {
   if (groupId) {
