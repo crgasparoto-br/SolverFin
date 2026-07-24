@@ -12,10 +12,12 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
     <style ${STYLE_MARKER}>
       .selection-bar {
         align-self: end;
-        height: max-content;
+        bottom: auto;
+        height: auto;
         max-width: 100%;
         min-height: 0;
         min-width: 0;
+        position: relative;
         width: 100%;
       }
       .selection-bar .bulk-selection-help,
