@@ -19,6 +19,10 @@ describe("cards interface finalizer", () => {
     assert.match(finalized, /addEventListener\("toggle"/);
     assert.match(finalized, /setAttribute\("aria-rowcount", String\(displayedCount\)\)/);
     assert.match(finalized, /setAttribute\("autofocus", ""\)/);
+    assert.match(finalized, /const modalOpeners = new WeakMap\(\)/);
+    assert.match(finalized, /addEventListener\("close"/);
+    assert.match(finalized, /modalOpeners\.set\(dialog, button\)/);
+    assert.match(finalized, /opener\?\.isConnected/);
     assert.match(finalized, /window\.setTimeout/);
     assert.match(finalized, /input:not\(\[type=hidden\]\):not\(\[disabled\]\)/);
     assert.equal(finalizeCardsInterface(finalized), finalized);
