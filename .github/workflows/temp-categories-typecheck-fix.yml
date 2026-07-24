@@ -45,12 +45,12 @@ jobs:
           PY
           npx prettier --write apps/web/src/dev-server/categories-icons-enhancement.ts
 
-      - name: Capture web typecheck
+      - name: Capture root typecheck
         id: typecheck
         continue-on-error: true
         run: |
           set +e
-          npm run typecheck --workspace @solverfin/web 2>&1 | tee typecheck.log
+          npm run typecheck 2>&1 | tee typecheck.log
           typecheck_status=${PIPESTATUS[0]}
           echo "exit_code=${typecheck_status}" >> "$GITHUB_OUTPUT"
           exit 0
