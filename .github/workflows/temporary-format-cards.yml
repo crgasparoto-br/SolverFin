@@ -1,6 +1,9 @@
 name: Temporary format cards files
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - feat/533-cards-design-interface
