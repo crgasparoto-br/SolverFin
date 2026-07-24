@@ -42,7 +42,7 @@ export function enhanceTransactionGroupModalLayout(html: string): string {
         dialog[data-group-modal] .group-modal-panel form[data-group-form]{grid-template-columns:repeat(2,minmax(0,1fr));max-height:calc(100dvh - 82px);scrollbar-gutter:auto}
         dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:nth-of-type(n){grid-column:span 1}
         dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:nth-of-type(2),dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:nth-of-type(4){grid-column:1/-1}
-        dialog[data-group-modal] .group-members{max-height:38vh;scrollbar-gutter:auto}
+        dialog[data-group-modal] .group-members{height:auto;max-height:38vh;min-height:min(286px,38vh);scrollbar-gutter:auto}
         dialog[data-group-modal] .group-member-row{grid-template-columns:minmax(0,1fr) auto;width:100%}
         dialog[data-group-modal] .group-member-actions{flex-wrap:wrap}
         dialog[data-group-modal] .group-actions button{flex:1 1 calc(50% - 8px)}
