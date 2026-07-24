@@ -1,5 +1,9 @@
 export function finalizeCardsInterface(html: string): string {
-  const withInitialFocus = html.replace(
+  const withoutPreviousStyles = html.replace(
+    /\s*<style data-cards-interface-finalized>[\s\S]*?<\/style>/g,
+    "",
+  );
+  const withInitialFocus = withoutPreviousStyles.replace(
     /(<dialog data-modal="purchase"[\s\S]*?<input)(\s+name="amountMinor")/,
     "$1 autofocus$2",
   );
