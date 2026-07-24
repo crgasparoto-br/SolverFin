@@ -190,11 +190,24 @@ async function main(): Promise<void> {
     context,
     group.id,
     members[0]!.id,
+    {
+      amountMinor: 2222,
+      date: "2028-02-12",
+      description: "Cópia revisada pelo formulário",
+      categoryId: null,
+    },
   );
   const persistedSingleClone = await getTransactionForContext(context, singleClone.id);
   assert.equal(persistedSingleClone.transactionGroupId, undefined);
+  assert.equal(persistedSingleClone.installmentId, undefined);
+  assert.equal(persistedSingleClone.recurrenceId, undefined);
+  assert.equal(persistedSingleClone.importBatchId, undefined);
+  assert.equal(persistedSingleClone.source, "manual");
   assert.equal(persistedSingleClone.status, "posted");
-  assert.match(persistedSingleClone.description, /^Cópia de /);
+  assert.equal(persistedSingleClone.amountMinor, 2222);
+  assert.equal(persistedSingleClone.plannedOn, "2028-02-12");
+  assert.equal(persistedSingleClone.effectiveOn, "2028-02-12");
+  assert.equal(persistedSingleClone.description, "Cópia revisada pelo formulário");
 
   const groupClones = await cloneTransactionGroupForContext(context, group.id);
   assert.equal(groupClones.length, 3);
@@ -239,11 +252,26 @@ async function main(): Promise<void> {
     () => setTransactionGroupStatusForContext(context, plannedGroup.id, "reconciled"),
     hasCode("TRANSACTION_GROUP_RECONCILE_REQUIRES_EFFECTIVE"),
   );
+  await assert.rejects(
+    () => setTransactionGroupStatusForContext(context, plannedGroup.id, "posted"),
+    hasCode("TRANSACTION_GROUP_UNRECONCILE_REQUIRES_RECONCILED"),
+  );
   assert.ok(
     (await getTransactionGroupForContext(context, plannedGroup.id)).members.every(
       (member) => member.status === "planned",
     ),
   );
+  const plannedClone = await cloneTransactionGroupMemberForContext(
+    context,
+    plannedGroup.id,
+    plannedMembers[0]!.id,
+    { date: "2028-04-05", description: "Cópia prevista revisada" },
+  );
+  const persistedPlannedClone = await getTransactionForContext(context, plannedClone.id);
+  assert.equal(persistedPlannedClone.status, "planned");
+  assert.equal(persistedPlannedClone.plannedOn, "2028-04-05");
+  assert.equal(persistedPlannedClone.effectiveOn, undefined);
+  assert.equal(persistedPlannedClone.transactionGroupId, undefined);
 
   const firstRemoval = await voidTransactionGroupMemberForContext(
     context,
