@@ -1,7 +1,8 @@
 const SCRIPT_MARKER = "data-transaction-group-pending-fixes";
 
 export function enhanceTransactionGroupPendingFixes(html: string): string {
-  if (!html.includes("data-group-modal") || html.includes(SCRIPT_MARKER)) return html;
+  if (!html.includes("data-group-modal") || html.includes(SCRIPT_MARKER))
+    return html;
 
   const script = `
     <script ${SCRIPT_MARKER}>
