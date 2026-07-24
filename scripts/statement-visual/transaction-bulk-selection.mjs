@@ -2,22 +2,14 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-if (!chromePath)
-  throw new Error("CHROME_BIN is required for issue 530 visual validation.");
+if (!chromePath) throw new Error("CHROME_BIN is required for issue 530 visual validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let groupId;

@@ -16,8 +16,6 @@ assert.equal(
   "layout enhancement must be idempotent",
 );
 assert.equal(
-  enhanceTransactionBulkSelectionLayout(
-    "<!doctype html><html><head></head><body></body></html>",
-  ),
+  enhanceTransactionBulkSelectionLayout("<!doctype html><html><head></head><body></body></html>"),
   "<!doctype html><html><head></head><body></body></html>",
 );
