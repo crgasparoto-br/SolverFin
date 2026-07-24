@@ -24,7 +24,7 @@ interface LockedTransactionRow {
 }
 
 interface SelectedTransaction extends LockedTransactionRow {
-  selectedGroupId?: string;
+  selectedGroupId?: string | undefined;
 }
 
 export interface TransactionBulkActionResult {
@@ -152,10 +152,7 @@ async function loadTransactions(
   );
 }
 
-function validateGroupMembership(
-  groups: LockedGroupRow[],
-  members: SelectedTransaction[],
-): void {
+function validateGroupMembership(groups: LockedGroupRow[], members: SelectedTransaction[]): void {
   for (const group of groups) {
     const count = members.filter((member) => member.selectedGroupId === group.id).length;
     if (count < 2) {

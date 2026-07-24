@@ -54,10 +54,7 @@ function readAction(value: unknown): TransactionBulkAction {
 function readIds(value: unknown, label: string): string[] {
   if (value === undefined) return [];
   if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
-    throw requestError(
-      "TRANSACTION_BULK_SELECTION_INVALID",
-      `A seleção de ${label} é inválida.`,
-    );
+    throw requestError("TRANSACTION_BULK_SELECTION_INVALID", `A seleção de ${label} é inválida.`);
   }
   return value;
 }
