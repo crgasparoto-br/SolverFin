@@ -5,7 +5,9 @@ import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
-import { executeTransactionBulkActionForContext } from "./repositories/transaction-bulk-actions.js";
+import {
+  executeTransactionBulkActionForContext,
+} from "./repositories/transaction-bulk-actions.js";
 import {
   createTransactionGroupForContext,
   getTransactionGroupForContext,
@@ -86,8 +88,14 @@ async function main(): Promise<void> {
       (member) => member.status === "reconciled",
     ),
   );
-  assert.equal((await getTransactionForContext(context, directPosted.id)).status, "reconciled");
-  assert.equal((await getTransactionForContext(context, directReconciled.id)).status, "reconciled");
+  assert.equal(
+    (await getTransactionForContext(context, directPosted.id)).status,
+    "reconciled",
+  );
+  assert.equal(
+    (await getTransactionForContext(context, directReconciled.id)).status,
+    "reconciled",
+  );
 
   const unreconciled = await executeTransactionBulkActionForContext(context, {
     action: "unreconcile",
@@ -100,8 +108,14 @@ async function main(): Promise<void> {
       (member) => member.status === "posted",
     ),
   );
-  assert.equal((await getTransactionForContext(context, directPosted.id)).status, "posted");
-  assert.equal((await getTransactionForContext(context, directReconciled.id)).status, "posted");
+  assert.equal(
+    (await getTransactionForContext(context, directPosted.id)).status,
+    "posted",
+  );
+  assert.equal(
+    (await getTransactionForContext(context, directReconciled.id)).status,
+    "posted",
+  );
 
   await assert.rejects(
     () =>
@@ -130,8 +144,14 @@ async function main(): Promise<void> {
       }),
     hasCode("TRANSACTION_BULK_STATUS_INVALID"),
   );
-  assert.equal((await getTransactionForContext(context, directPosted.id)).status, "posted");
-  assert.equal((await getTransactionForContext(context, planned.id)).status, "planned");
+  assert.equal(
+    (await getTransactionForContext(context, directPosted.id)).status,
+    "posted",
+  );
+  assert.equal(
+    (await getTransactionForContext(context, planned.id)).status,
+    "planned",
+  );
 
   const foreignContext: TenantContext = {
     ...context,
@@ -155,18 +175,30 @@ async function main(): Promise<void> {
   assert.equal(deleted.affectedTransactionIds.length, 3);
   assert.deepEqual(deleted.removedGroupIds, [group.id]);
   await assert.rejects(() => getTransactionGroupForContext(context, group.id));
-  assert.equal((await getTransactionForContext(context, directPosted.id)).status, "voided");
+  assert.equal(
+    (await getTransactionForContext(context, directPosted.id)).status,
+    "voided",
+  );
   for (const member of members) {
-    assert.equal((await getTransactionForContext(context, member.id)).status, "voided");
+    assert.equal(
+      (await getTransactionForContext(context, member.id)).status,
+      "voided",
+    );
   }
-  assert.equal((await getTransactionForContext(context, directReconciled.id)).status, "posted");
+  assert.equal(
+    (await getTransactionForContext(context, directReconciled.id)).status,
+    "posted",
+  );
 
   const audits = await query<{ action: string; redactedChanges: unknown }>(
     `select "action", "redactedChanges" from "AuditLogEntry" where "entityId"=$1 order by "occurredAt"`,
     [group.id],
   );
   const bulkAudits = audits
-    .map((audit) => ({ action: audit.action, changes: readAuditChanges(audit.redactedChanges) }))
+    .map((audit) => ({
+      action: audit.action,
+      changes: readAuditChanges(audit.redactedChanges),
+    }))
     .filter((audit) => audit.changes.bulkSelection === true);
   assert.equal(bulkAudits.length, 3);
   assert.deepEqual(
@@ -184,10 +216,17 @@ async function main(): Promise<void> {
   for (const audit of bulkAudits) {
     assert.deepEqual(Object.keys(audit.changes).sort(), expectedKeys);
     assert.equal(audit.changes.bulkSelection, true);
-    assert.ok(["reconcile", "unreconcile", "void"].includes(String(audit.changes.action)));
+    assert.ok(
+      ["reconcile", "unreconcile", "void"].includes(
+        String(audit.changes.action),
+      ),
+    );
     assert.equal(Number.isInteger(audit.changes.selectedGroupCount), true);
     assert.equal(Number.isInteger(audit.changes.selectedDirectCount), true);
-    assert.equal(Number.isInteger(audit.changes.affectedTransactionCount), true);
+    assert.equal(
+      Number.isInteger(audit.changes.affectedTransactionCount),
+      true,
+    );
     assert.doesNotMatch(
       JSON.stringify(audit.changes),
       /Direto|Membro|Grupo da seleção|BRL|amount|description|currency/i,
@@ -196,7 +235,8 @@ async function main(): Promise<void> {
 }
 
 function readAuditChanges(value: unknown): Record<string, unknown> {
-  const parsed = typeof value === "string" ? (JSON.parse(value) as unknown) : value;
+  const parsed =
+    typeof value === "string" ? (JSON.parse(value) as unknown) : value;
   assert.equal(typeof parsed, "object");
   assert.notEqual(parsed, null);
   assert.equal(Array.isArray(parsed), false);
