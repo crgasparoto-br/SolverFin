@@ -110,6 +110,7 @@ jobs:
           node scripts/statement-visual/inbox-interface-accessibility.mjs
           node scripts/statement-visual/inbox-interface-content-contrast.mjs
           node scripts/statement-visual/categories-interface.mjs
+          node scripts/statement-visual/cards-interface.mjs
 
       - name: Preserve server log
         if: always()
