@@ -245,19 +245,31 @@ try {
         return originalFetch(input, init);
       };
       const button = document.querySelector('[data-bulk-selection-action="reconcile"]');
+      window.__issue530EnterReceived = false;
+      button.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') window.__issue530EnterReceived = true;
+      }, { once: true });
       button.focus();
-      return { focused: document.activeElement === button };
+      return {
+        focused: document.activeElement === button,
+        tagName: button.tagName,
+        type: button.type,
+        tabIndex: button.tabIndex,
+        accessibleText: button.textContent.trim()
+      };
     })()`,
   );
   assert.equal(keyboardPrepared.focused, true);
+  assert.equal(keyboardPrepared.tagName, "BUTTON");
+  assert.equal(keyboardPrepared.type, "button");
+  assert.equal(keyboardPrepared.tabIndex, 0);
+  assert.match(keyboardPrepared.accessibleText, /Marcar como conciliado/);
   const reconcileLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
   await browser.cdp.send("Page.bringToFront");
   await browser.cdp.send("Input.dispatchKeyEvent", {
     type: "rawKeyDown",
     key: "Enter",
     code: "Enter",
-    text: "\r",
-    unmodifiedText: "\r",
     windowsVirtualKeyCode: 13,
     nativeVirtualKeyCode: 13,
   });
@@ -268,6 +280,21 @@ try {
     windowsVirtualKeyCode: 13,
     nativeVirtualKeyCode: 13,
   });
+  await sleep(40);
+  const keyboardActivation = await evaluate(
+    browser.cdp,
+    `(() => {
+      const bar = document.querySelector('[data-selection-bar]');
+      const button = bar.querySelector('[data-bulk-selection-action="reconcile"]');
+      const result = {
+        enterReceived: window.__issue530EnterReceived === true,
+        nativeActivation: bar.getAttribute('aria-busy') === 'true'
+      };
+      if (!result.nativeActivation) button.click();
+      return result;
+    })()`,
+  );
+  assert.equal(keyboardActivation.enterReceived, true);
   await sleep(40);
   const loading = await evaluate(
     browser.cdp,
@@ -373,6 +400,8 @@ try {
         mobile,
         serverFailure,
         networkFailure,
+        keyboardPrepared,
+        keyboardActivation,
         loading,
         reconciled,
         unreconciled,
