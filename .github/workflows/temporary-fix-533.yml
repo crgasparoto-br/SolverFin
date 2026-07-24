@@ -1,9 +1,13 @@
 name: Temporary fix issue 533
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/533-cards-design-interface
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   contents: write
