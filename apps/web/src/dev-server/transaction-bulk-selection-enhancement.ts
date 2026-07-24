@@ -101,7 +101,7 @@ export function enhanceTransactionBulkSelection(html: string): string {
 
             const groupState = document.createElement("span");
             const groupStateLabel = "Agrupamento com " + group.members.length + " lançamentos";
-            groupState.className = "transaction-group-state";
+            groupState.className = "statement-status transaction-group-state";
             groupState.dataset.transactionGroupState = "";
             groupState.setAttribute("role", "img");
             groupState.setAttribute("aria-label", groupStateLabel);
@@ -269,9 +269,9 @@ export function enhanceTransactionBulkSelection(html: string): string {
         });
 
         function setBusy(busy) {
+          selectionBar.setAttribute("aria-busy", String(busy));
           actions.querySelectorAll("button").forEach(function (button) { button.disabled = busy; });
           if (groupOpen) groupOpen.disabled = busy;
-          simpleInputs().concat(groupInputs()).forEach(function (input) { input.disabled = busy; });
           const clearButton = selectionBar.querySelector("[data-selection-clear]");
           if (clearButton) clearButton.disabled = busy;
         }

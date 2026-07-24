@@ -20,6 +20,7 @@ assert.match(enhanced, /data-transaction-bulk-selection-enhancement/);
 assert.match(enhanced, /data-transaction-bulk-selection-controller/);
 assert.match(enhanced, /dataset\.selectionEntity = "group"/);
 assert.match(enhanced, /data-transaction-group-state/);
+assert.match(enhanced, /statement-status transaction-group-state/);
 assert.match(enhanced, /Agrupamento com/);
 assert.match(enhanced, /grouped-status/);
 assert.match(enhanced, /Marcar como conciliado/);
