@@ -1,0 +1,116 @@
+name: Issue 530 diagnostics
+
+on:
+  push:
+    branches:
+      - feat/530-group-bulk-selection
+
+permissions:
+  contents: read
+
+jobs:
+  formatting-patch:
+    name: Generate formatting patch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format issue files
+        run: >-
+          npx prettier --write
+          apps/api/src/repositories/transaction-bulk-actions.ts
+          apps/api/src/transaction-bulk-actions-router.ts
+          apps/api/src/transaction-group-actions-router.ts
+          apps/api/src/transaction-bulk-actions.integration.test.ts
+          apps/web/src/dev-server/transaction-bulk-selection-enhancement.ts
+          apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts
+          apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
+          docs/API_TRANSACTION_BULK_ACTIONS.md
+
+      - name: Build formatting patch
+        run: git diff --binary > issue-530-format.patch
+
+      - name: Upload formatting patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-530-format-patch
+          path: issue-530-format.patch
+          if-no-files-found: error
+
+  integration-diagnostic:
+    name: Capture integration failure
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare database
+        run: |
+          npm run prisma:generate
+          npm run build:packages
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Run integration suite and capture output
+        id: integration
+        shell: bash
+        run: |
+          set +e
+          npm run test:integration --workspace @solverfin/api > issue-530-integration.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload integration log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-530-integration-log
+          path: issue-530-integration.log
+          if-no-files-found: error
+
+      - name: Report integration result
+        if: steps.integration.outputs.status != '0'
+        run: |
+          cat issue-530-integration.log
+          exit 1
