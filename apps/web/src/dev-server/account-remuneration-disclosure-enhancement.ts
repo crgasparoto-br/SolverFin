@@ -1,4 +1,5 @@
 import { enhanceTransactionBulkSelection } from "./transaction-bulk-selection-enhancement.js";
+import { enhanceTransactionBulkSelectionLayout } from "./transaction-bulk-selection-layout-enhancement.js";
 import { enhanceTransactionGroupMemberFormGuard } from "./transaction-group-member-form-guard.js";
 import { enhanceTransactionGroupModal } from "./transaction-group-modal-enhancement.js";
 import { enhanceTransactionGroupModalLayout } from "./transaction-group-modal-layout-enhancement.js";
@@ -8,10 +9,12 @@ const DISCLOSURE_STYLE_MARKER = "data-account-remuneration-disclosure-affordance
 const DISCLOSURE_SUMMARY = `<summary aria-label="Ver memória do cálculo" title="Ver memória do cálculo"><span class="account-remuneration-disclosure-full">Ver memória do cálculo</span><span class="account-remuneration-disclosure-compact" aria-hidden="true">Memória</span></summary>`;
 
 export function enhanceAccountRemunerationDisclosure(html: string): string {
-  const groupEnhancedHtml = enhanceTransactionBulkSelection(
-    enhanceTransactionGroupPendingFixes(
-      enhanceTransactionGroupModalLayout(
-        enhanceTransactionGroupMemberFormGuard(enhanceTransactionGroupModal(html)),
+  const groupEnhancedHtml = enhanceTransactionBulkSelectionLayout(
+    enhanceTransactionBulkSelection(
+      enhanceTransactionGroupPendingFixes(
+        enhanceTransactionGroupModalLayout(
+          enhanceTransactionGroupMemberFormGuard(enhanceTransactionGroupModal(html)),
+        ),
       ),
     ),
   );
