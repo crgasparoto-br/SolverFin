@@ -89,7 +89,11 @@ async function measureClearance(cdp) {
 }
 
 function assertClearance(metrics, viewport) {
-  assert.equal(metrics.visibleInViewport, true, `${viewport}: selection bar is outside the viewport`);
+  assert.equal(
+    metrics.visibleInViewport,
+    true,
+    `${viewport}: selection bar is outside the viewport`,
+  );
   assert.ok(
     metrics.paddingBottom >= metrics.barHeight + 16,
     `${viewport}: reserved space is smaller than the selection bar: ${JSON.stringify(metrics)}`,
