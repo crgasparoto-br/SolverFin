@@ -12,7 +12,7 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
     <style ${STYLE_MARKER}>
       .selection-bar {
         align-self: end;
-        bottom: auto;
+        bottom: 16px;
         display: grid;
         gap: 8px 12px;
         grid-template-columns: auto auto minmax(0, 1fr) auto auto;
@@ -20,7 +20,7 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
         max-width: 100%;
         min-height: 0;
         min-width: 0;
-        position: relative;
+        position: sticky;
         width: 100%;
       }
       .selection-bar > strong { grid-column: 1; grid-row: 1; }
