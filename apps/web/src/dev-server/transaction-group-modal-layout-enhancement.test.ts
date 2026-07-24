@@ -19,6 +19,7 @@ assert.match(
 assert.match(enhanced, /form\[data-group-form\]\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /\.group-members\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /\.group-member-row\{[^}]*min-width:0;[^}]*width:100%/);
+assert.match(enhanced, /min-height:min\(286px,38vh\)/);
 assert.match(enhanced, /@media\(max-width:760px\)/);
 assert.match(enhanced, /@media\(max-width:520px\)/);
 assert.equal(
