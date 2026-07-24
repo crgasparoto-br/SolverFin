@@ -19,6 +19,14 @@ assert.match(enhanced, /bulk-selection-status:empty \{ display: none; \}/);
 assert.match(enhanced, /min-width: 0/);
 assert.match(enhanced, /overflow-wrap: anywhere/);
 assert.match(enhanced, /text-align: left/);
+assert.match(
+  enhanced,
+  /statement-panel:has\(> \.selection-bar:not\(\[hidden\]\)\) > \.statement-table/,
+);
+assert.match(enhanced, /padding-bottom: 192px/);
+assert.match(enhanced, /scroll-padding-bottom: 192px/);
+assert.match(enhanced, /padding-bottom: 360px/);
+assert.match(enhanced, /scroll-padding-bottom: 360px/);
 assert.equal(
   enhanceTransactionBulkSelectionLayout(enhanced),
   enhanced,
