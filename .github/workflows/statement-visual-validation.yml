@@ -1,4 +1,4 @@
-# Reexecuta a evidência final em Chrome para o fluxo CSV da issue #494.
+# Reexecuta a evidência final em Chrome para os principais fluxos visuais do SolverFin.
 name: Statement visual validation
 
 on:
@@ -94,7 +94,7 @@ jobs:
           echo "path=$chrome_bin" >> "$GITHUB_OUTPUT"
           "$chrome_bin" --version
 
-      - name: Validate statement, sidebar and Inbox UI in Chrome
+      - name: Validate core interfaces in Chrome
         env:
           CHROME_BIN: ${{ steps.chrome.outputs.path }}
           SOLVERFIN_WEB_URL: http://127.0.0.1:5173
@@ -109,6 +109,7 @@ jobs:
           node scripts/statement-visual/inbox-interface-refinement.mjs
           node scripts/statement-visual/inbox-interface-accessibility.mjs
           node scripts/statement-visual/inbox-interface-content-contrast.mjs
+          node scripts/statement-visual/categories-interface.mjs
 
       - name: Preserve server log
         if: always()
