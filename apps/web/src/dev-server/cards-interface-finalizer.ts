@@ -1,15 +1,22 @@
 const searchTargetMarker = "data-cards-search-target";
+const amountFieldMarker = "data-cards-initial-focus";
 
 export function finalizeCardsInterface(html: string): string {
-  const withInitialFocus = html.replace(
-    /(<dialog data-modal="purchase"[\s\S]*?<input)(\s+name="amountMinor")/,
-    "$1 autofocus$2",
-  );
+  let finalized = html;
 
-  if (withInitialFocus.includes(searchTargetMarker)) return withInitialFocus;
+  if (!finalized.includes(amountFieldMarker)) {
+    finalized = finalized.replace(
+      'name="amountMinor" data-money',
+      `name="amountMinor" data-money autofocus ${amountFieldMarker}`,
+    );
+  }
 
-  return withInitialFocus.replace(
-    /<input\b([^>]*\bdata-purchase-search\b[^>]*)>/,
-    `<input ${searchTargetMarker} style="height:44px;min-height:44px"$1>`,
-  );
+  if (!finalized.includes(searchTargetMarker)) {
+    finalized = finalized.replace(
+      "data-purchase-search",
+      `data-purchase-search ${searchTargetMarker} style="height:44px;min-height:44px"`,
+    );
+  }
+
+  return finalized;
 }
