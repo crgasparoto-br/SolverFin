@@ -57,29 +57,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Format issue 528 layout files for diagnostics
-        run: >-
-          npx prettier
-          apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
-          apps/web/src/dev-server/transaction-group-modal-layout-enhancement.ts
-          apps/web/src/dev-server/transaction-group-modal-layout-enhancement.test.ts
-          scripts/run-statement-visual-validation.mjs
-          scripts/statement-visual/transaction-group-layout.mjs
-          --write
-
-      - name: Upload formatted issue 528 layout files
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-528-layout-formatted-files
-          path: |
-            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
-            apps/web/src/dev-server/transaction-group-modal-layout-enhancement.ts
-            apps/web/src/dev-server/transaction-group-modal-layout-enhancement.test.ts
-            scripts/run-statement-visual-validation.mjs
-            scripts/statement-visual/transaction-group-layout.mjs
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Check environment example
         run: npm run env:check
 
