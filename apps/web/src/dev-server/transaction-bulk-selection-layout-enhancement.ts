@@ -11,17 +11,20 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
   const styles = `
     <style ${STYLE_MARKER}>
       .selection-bar {
-        align-self: end;
         bottom: 16px;
         display: grid;
         gap: 8px 12px;
         grid-template-columns: auto auto minmax(0, 1fr) auto auto;
         height: auto;
-        max-width: 100%;
+        left: 50%;
+        max-height: calc(100vh - 32px);
+        max-width: calc(100vw - 32px);
         min-height: 0;
         min-width: 0;
-        position: sticky;
-        width: 100%;
+        overflow: auto;
+        position: fixed;
+        transform: translateX(-50%);
+        width: 760px;
       }
       .selection-bar > strong { grid-column: 1; grid-row: 1; }
       .selection-bar > [data-selection-total] { grid-column: 2; grid-row: 1; }
@@ -46,6 +49,7 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
       @media(max-width:760px) {
         .selection-bar {
           grid-template-columns: 1fr 1fr;
+          width: calc(100vw - 32px);
         }
         .selection-bar > strong,
         .selection-bar > [data-selection-total],
