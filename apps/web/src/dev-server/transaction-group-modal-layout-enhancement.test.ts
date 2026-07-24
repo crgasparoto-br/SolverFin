@@ -8,8 +8,14 @@ const source = `<!doctype html><html><head></head><body>
 
 const enhanced = enhanceTransactionGroupModalLayout(source);
 assert.match(enhanced, /data-transaction-group-modal-layout/);
-assert.match(enhanced, /dialog\[data-group-modal\]\{[^}]*max-width:min\(1220px,calc\(100vw - 24px\)\)/);
-assert.match(enhanced, /form\[data-group-form\]\{[^}]*grid-template-columns:repeat\(12,minmax\(0,1fr\)\)/);
+assert.match(
+  enhanced,
+  /dialog\[data-group-modal\]\{[^}]*max-width:min\(1220px,calc\(100vw - 24px\)\)/,
+);
+assert.match(
+  enhanced,
+  /form\[data-group-form\]\{[^}]*grid-template-columns:repeat\(12,minmax\(0,1fr\)\)/,
+);
 assert.match(enhanced, /form\[data-group-form\]\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /\.group-members\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /\.group-member-row\{[^}]*min-width:0;[^}]*width:100%/);
