@@ -30,59 +30,44 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Make regex captures type-safe
+      - name: Correct category validation contracts
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          path = Path("apps/web/src/dev-server/categories-icons-enhancement.ts")
-          source = path.read_text()
-          old = 'const [, classNames, kind, status] = record;'
-          new = 'const [, classNames = "", kind = "", status = ""] = record;'
-          if old not in source:
+          source_path = Path("apps/web/src/dev-server/categories-icons-enhancement.ts")
+          source = source_path.read_text()
+          source_old = 'const [, classNames, kind, status] = record;'
+          source_new = 'const [, classNames = "", kind = "", status = ""] = record;'
+          if source_old not in source:
               raise SystemExit("Expected category summary destructuring was not found")
-          path.write_text(source.replace(old, new, 1))
+          source_path.write_text(source.replace(source_old, source_new, 1))
+
+          test_path = Path("apps/web/src/dev-server/categories-icons-enhancement.test.ts")
+          test = test_path.read_text()
+          test_old = 'assert.match(html, /category-path">[\\s\\S]*?chevron-right[\\s\\S]*?Moradia &gt; Aluguel/);'
+          test_new = 'assert.match(html, /category-path"><svg[^>]*>[\\s\\S]*?<span>Moradia &gt; Aluguel<\\/span>/);'
+          if test_old not in test:
+              raise SystemExit("Expected category path assertion was not found")
+          test_path.write_text(test.replace(test_old, test_new, 1))
           PY
-          npx prettier --write apps/web/src/dev-server/categories-icons-enhancement.ts
-
-      - name: Capture root typecheck
-        id: typecheck
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run typecheck 2>&1 | tee typecheck.log
-
-      - name: Capture web tests
-        id: web-tests
-        if: steps.typecheck.outcome == 'success'
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run test --workspace @solverfin/web 2>&1 | tee web-test.log
-
-      - name: Upload validation diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: categories-validation-diagnostic
-          path: |
-            apps/web/src/dev-server/categories-icons-enhancement.ts
+          npx prettier --write \
+            apps/web/src/dev-server/categories-icons-enhancement.ts \
             apps/web/src/dev-server/categories-icons-enhancement.test.ts
-            typecheck.log
-            web-test.log
 
-      - name: Commit correction
-        if: steps.typecheck.outcome == 'success' && steps.web-tests.outcome == 'success'
+      - name: Validate root typecheck
+        run: npm run typecheck
+
+      - name: Validate web tests
+        run: npm run test --workspace @solverfin/web
+
+      - name: Commit validated correction
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/src/dev-server/categories-icons-enhancement.ts
+          git add \
+            apps/web/src/dev-server/categories-icons-enhancement.ts \
+            apps/web/src/dev-server/categories-icons-enhancement.test.ts
           git diff --cached --quiet && exit 0
-          git commit -m "fix(web): tornar resumo de categorias type-safe"
+          git commit -m "fix(web): validar resumo e caminho de categorias"
           git push origin HEAD:feat/categories-design-interface
-
-      - name: Preserve validation result
-        if: steps.typecheck.outcome != 'success' || steps.web-tests.outcome != 'success'
-        run: exit 1
