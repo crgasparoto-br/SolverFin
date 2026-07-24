@@ -10,7 +10,7 @@ export function enhanceTransactionGroupModalLayout(html: string): string {
       dialog[data-group-modal] .group-modal-panel>header{align-items:center;display:flex;gap:16px;justify-content:space-between;padding-bottom:14px}
       dialog[data-group-modal] .group-modal-panel>header>div{min-width:0}
       dialog[data-group-modal] .group-modal-panel>header h2{overflow-wrap:anywhere}
-      dialog[data-group-modal] .group-modal-panel form[data-group-form]{grid-template-columns:repeat(12,minmax(0,1fr));min-width:0;overflow-x:hidden;overflow-y:auto;padding:4px 2px 0;scrollbar-gutter:stable}
+      dialog[data-group-modal] .group-modal-panel form[data-group-form]{grid-auto-flow:row dense;grid-template-columns:repeat(12,minmax(0,1fr));min-width:0;overflow-x:hidden;overflow-y:auto;padding:4px 2px 0;scrollbar-gutter:stable}
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label{box-sizing:border-box;min-width:0}
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:nth-of-type(1){grid-column:span 3}
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:nth-of-type(2){grid-column:span 5}
