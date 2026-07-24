@@ -86,16 +86,15 @@ function serializeError(error) {
 
 async function loginAndOpenCategories(cdp, width, height) {
   await setViewport(cdp, width, height);
-  await navigate(cdp, `${baseUrl}/login`);
+  await navigateWithRetry(cdp, `${baseUrl}/login`, "login");
   const login = await evaluate(cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
-  await navigate(cdp, `${baseUrl}/categorias`);
+  await navigateWithRetry(cdp, `${baseUrl}/categorias`, "categories");
   await waitForCategories(cdp);
 }
 
 async function validateDesktop(cdp) {
   await setViewport(cdp, 1440, 1000);
-  await navigate(cdp, `${baseUrl}/categorias`);
   await waitForCategories(cdp);
   const measurements = await evaluate(cdp, pageMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-desktop.png"));
@@ -208,7 +207,6 @@ async function validateDesktopModal(cdp) {
 
 async function validateMobile(cdp) {
   await setViewport(cdp, 390, 844);
-  await navigate(cdp, `${baseUrl}/categorias`);
   await waitForCategories(cdp);
   const measurements = await evaluate(cdp, pageMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-mobile.png"));
@@ -269,6 +267,35 @@ async function validateMobileModal(cdp) {
 
   await closeModal(cdp);
   return { viewport: "390x844", measurements, screenshot: "categories-modal-mobile.png" };
+}
+
+async function navigateWithRetry(cdp, url, label) {
+  const attempts = 3;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await navigate(cdp, url);
+      return;
+    } catch (error) {
+      let pageState = { href: "", readyState: "" };
+      try {
+        pageState = await evaluate(
+          cdp,
+          `({ href: window.location.href, readyState: document.readyState })`,
+        );
+      } catch {
+        // The renderer may still be restarting; retry below.
+      }
+
+      if (pageState.href.startsWith(url) && pageState.readyState !== "loading") {
+        console.warn(`Navigation to ${label} reached the page despite a missing load event.`);
+        return;
+      }
+
+      if (attempt === attempts) throw error;
+      console.warn(`Navigation to ${label} failed on attempt ${attempt}; retrying.`);
+      await sleep(400 * attempt);
+    }
+  }
 }
 
 async function waitForCategories(cdp) {
