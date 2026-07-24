@@ -33,6 +33,15 @@ export interface UpdateTransactionGroupMemberInput {
   categoryId?: string | null;
 }
 
+export type CloneTransactionGroupMemberInput = UpdateTransactionGroupMemberInput;
+
+interface ResolvedMemberValues {
+  amountMinor: number;
+  date: string;
+  description: string;
+  categoryId: string | null;
+}
+
 export async function updateTransactionGroupMemberForContext(
   context: TenantContext,
   groupId: string,
@@ -42,26 +51,8 @@ export async function updateTransactionGroupMemberForContext(
   await withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
     const member = requireMember(members, memberId);
-    const amountMinor = input.amountMinor ?? member.amountMinor;
-    const description = input.description?.trim() ?? member.description;
-    const date = input.date ?? toDateOnly(member.effectiveOn ?? member.plannedOn);
-    const categoryId = input.categoryId === undefined ? member.categoryId : input.categoryId;
-
-    if (!Number.isInteger(amountMinor) || amountMinor <= 0) {
-      throw groupError("TRANSACTION_AMOUNT_INVALID", "Informe um valor positivo válido.");
-    }
-    if (!description || description.length > 240) {
-      throw groupError(
-        "TRANSACTION_DESCRIPTION_INVALID",
-        "Informe uma descrição de até 240 caracteres.",
-      );
-    }
-    if (!isDateOnly(date)) {
-      throw groupError("TRANSACTION_DATE_REQUIRED", "Informe uma data válida.");
-    }
-
-    await validateCategory(executeQuery, context, categoryId, member.kind);
-    const effectiveOn = member.status === "PLANNED" ? null : date;
+    const values = await resolveMemberValues(executeQuery, context, member, input);
+    const effectiveOn = member.status === "PLANNED" ? null : values.date;
 
     await executeQuery(
       `update "Transaction"
@@ -69,11 +60,11 @@ export async function updateTransactionGroupMemberForContext(
               "description"=$4, "categoryId"=$5, "updatedByUserId"=$6, "updatedAt"=now()
         where "id"=$7 and "organizationId"=$8 and "financialProfileId"=$9 and "transactionGroupId"=$10`,
       [
-        amountMinor,
-        date,
+        values.amountMinor,
+        values.date,
         effectiveOn,
-        description,
-        categoryId,
+        values.description,
+        values.categoryId,
         context.userId,
         memberId,
         context.organizationId,
@@ -85,8 +76,8 @@ export async function updateTransactionGroupMemberForContext(
       executeQuery,
       context,
       member.installmentId,
-      date,
-      amountMinor,
+      values.date,
+      values.amountMinor,
       member.currency,
     );
     await insertGroupAudit(executeQuery, context, groupId, "UPDATE", {
@@ -105,10 +96,23 @@ export async function setTransactionGroupStatusForContext(
 ) {
   await withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
-    if (status === "reconciled" && members.some((member) => member.effectiveOn === null)) {
+    const targetStatus = status.toUpperCase();
+    if (members.every((member) => member.status === targetStatus)) return;
+
+    if (
+      status === "reconciled" &&
+      members.some((member) => member.effectiveOn === null || member.status !== "POSTED")
+    ) {
       throw groupError(
         "TRANSACTION_GROUP_RECONCILE_REQUIRES_EFFECTIVE",
         "Efetive os lançamentos previstos antes de conciliá-los.",
+        409,
+      );
+    }
+    if (status === "posted" && members.some((member) => member.status !== "RECONCILED")) {
+      throw groupError(
+        "TRANSACTION_GROUP_UNRECONCILE_REQUIRES_RECONCILED",
+        "Somente grupos conciliados podem ser desconciliados.",
         409,
       );
     }
@@ -119,7 +123,7 @@ export async function setTransactionGroupStatusForContext(
           set "status"=$1, "reconciledAt"=$2, "updatedByUserId"=$3, "updatedAt"=now()
         where "organizationId"=$4 and "financialProfileId"=$5 and "id"=any($6::uuid[])`,
       [
-        status.toUpperCase(),
+        targetStatus,
         status === "reconciled" ? new Date() : null,
         context.userId,
         context.organizationId,
@@ -149,11 +153,16 @@ export async function cloneTransactionGroupMemberForContext(
   context: TenantContext,
   groupId: string,
   memberId: string,
+  input: CloneTransactionGroupMemberInput = {},
 ) {
   const transaction = await withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
     const member = requireMember(members, memberId);
-    const clone = await insertClone(executeQuery, context, member);
+    const values = await resolveMemberValues(executeQuery, context, member, {
+      ...input,
+      description: input.description ?? `Cópia de ${member.description}`.slice(0, 240),
+    });
+    const clone = await insertClone(executeQuery, context, member, values);
     await insertGroupAudit(executeQuery, context, groupId, "CREATE", {
       groupClone: "single_member",
       cloneCount: 1,
@@ -295,6 +304,34 @@ function requireMember(members: GroupMemberRow[], memberId: string): GroupMember
   return member;
 }
 
+async function resolveMemberValues(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  member: GroupMemberRow,
+  input: UpdateTransactionGroupMemberInput,
+): Promise<ResolvedMemberValues> {
+  const amountMinor = input.amountMinor ?? member.amountMinor;
+  const description = input.description?.trim() ?? member.description;
+  const date = input.date ?? toDateOnly(member.effectiveOn ?? member.plannedOn);
+  const categoryId = input.categoryId === undefined ? member.categoryId : input.categoryId;
+
+  if (!Number.isInteger(amountMinor) || amountMinor <= 0) {
+    throw groupError("TRANSACTION_AMOUNT_INVALID", "Informe um valor positivo válido.");
+  }
+  if (!description || description.length > 240) {
+    throw groupError(
+      "TRANSACTION_DESCRIPTION_INVALID",
+      "Informe uma descrição de até 240 caracteres.",
+    );
+  }
+  if (!isDateOnly(date)) {
+    throw groupError("TRANSACTION_DATE_REQUIRED", "Informe uma data válida.");
+  }
+
+  await validateCategory(executeQuery, context, categoryId, member.kind);
+  return { amountMinor, date, description, categoryId };
+}
+
 async function validateCategory(
   executeQuery: QueryExecutor,
   context: TenantContext,
@@ -353,10 +390,15 @@ async function insertClone(
   executeQuery: QueryExecutor,
   context: TenantContext,
   member: GroupMemberRow,
+  values?: ResolvedMemberValues,
 ): Promise<{ id: string; status: string; description: string }> {
   const id = randomUUID();
   const status = member.effectiveOn ? "POSTED" : "PLANNED";
-  const description = `Cópia de ${member.description}`.slice(0, 240);
+  const amountMinor = values?.amountMinor ?? member.amountMinor;
+  const date = values?.date ?? toDateOnly(member.effectiveOn ?? member.plannedOn);
+  const description = values?.description ?? `Cópia de ${member.description}`.slice(0, 240);
+  const categoryId = values ? values.categoryId : member.categoryId;
+  const effectiveOn = status === "POSTED" ? date : null;
   const rows = await executeQuery<{ id: string; status: string; description: string }>(
     `insert into "Transaction"
       ("id", "organizationId", "financialProfileId", "accountId", "categoryId", "kind", "status",
@@ -369,14 +411,14 @@ async function insertClone(
       context.organizationId,
       context.financialProfileId,
       member.accountId,
-      member.categoryId,
+      categoryId,
       member.kind,
       status,
-      member.amountMinor,
+      amountMinor,
       member.currency,
-      member.occurredOn,
-      member.plannedOn,
-      member.effectiveOn,
+      date,
+      date,
+      effectiveOn,
       description,
       member.note,
       context.userId,
