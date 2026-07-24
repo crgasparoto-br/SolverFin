@@ -47,7 +47,7 @@ function enhanceHeading(html: string): string {
       '<p class="eyebrow">Gest\u00e3o da fatura</p>',
     )
     .replace(
-      '<h1>Cart\u00f5es de Cr\u00e9dito</h1>',
+      "<h1>Cart\u00f5es de Cr\u00e9dito</h1>",
       '<h1 id="cards-page-title">Cart\u00f5es de Cr\u00e9dito</h1>',
     )
     .replace(
@@ -77,11 +77,8 @@ function enhanceInvoiceSummary(html: string): string {
   const original = html.slice(start, end);
   if (!original.includes("Valor a pagar")) return html;
 
-  const status =
-    extractMatch(original, /<p class="eyebrow">Fatura ([^<]+)<\/p>/) || "Fatura";
-  const amountDue = normalizeDebitDisplay(
-    extractSummaryValue(original, "Valor a pagar"),
-  );
+  const status = extractMatch(original, /<p class="eyebrow">Fatura ([^<]+)<\/p>/) || "Fatura";
+  const amountDue = normalizeDebitDisplay(extractSummaryValue(original, "Valor a pagar"));
   const invoiceTotal = normalizeDebitDisplay(extractSummaryValue(original, "Total"));
   const dueOn = extractSummaryValue(original, "Vencimento");
   const closingOn = extractSummaryValue(original, "Fechamento");
@@ -115,28 +112,25 @@ function enhanceInvoiceSummary(html: string): string {
   nextAside = nextAside.replace(marker, `${marker}${overview}`);
   nextAside = nextAside
     .replace(
-      '<h2>Fatura atual (R$)</h2>',
+      "<h2>Fatura atual (R$)</h2>",
       `<h2 class="summary-block-title">${icon("receipt", 13)} Composi\u00e7\u00e3o da fatura</h2>`,
     )
     .replace(summaryRowPattern("Fechamento"), "")
     .replace(summaryRowPattern("Vencimento"), "")
     .replace(summaryRowPattern("Valor a pagar"), "")
     .replace(
-      '<h2>Detalhamento</h2>',
+      "<h2>Detalhamento</h2>",
       `<h2 class="summary-block-title">${icon("check-circle", 13)} Concilia\u00e7\u00e3o</h2>`,
     )
     .replace(
-      '<h2>Totais por cart\u00e3o (R$)</h2>',
+      "<h2>Totais por cart\u00e3o (R$)</h2>",
       `<h2 class="summary-block-title">${icon("layers", 13)} Compras por instrumento</h2>`,
     )
     .replace(
-      '<h2>Limite (Total)</h2>',
+      "<h2>Limite (Total)</h2>",
       `<h2 class="summary-block-title">${icon("wallet", 13)} Limite do cart\u00e3o</h2>`,
     )
-    .replace(
-      /<section class="summary-block">/g,
-      '<section class="summary-block summary-section">',
-    );
+    .replace(/<section class="summary-block">/g, '<section class="summary-block summary-section">');
 
   return html.slice(0, start) + nextAside + html.slice(end);
 }
@@ -181,11 +175,7 @@ function enhancePurchaseWorkspace(html: string, summary: PurchaseSummary): strin
     '<h2 id="invoice-purchases-title">$1</h2>',
   );
   enhanced = enhancePurchaseSearch(enhanced);
-  enhanced = enhanceReconciliationToggle(
-    enhanced,
-    "unreconciled",
-    summary.unreconciled,
-  );
+  enhanced = enhanceReconciliationToggle(enhanced, "unreconciled", summary.unreconciled);
   enhanced = enhanceReconciliationToggle(enhanced, "reconciled", summary.reconciled);
   enhanced = insertPurchaseResultStatus(enhanced, summary.total);
   enhanced = enhancePurchaseRows(enhanced);
@@ -200,11 +190,7 @@ function enhancePurchaseSearch(html: string): string {
     (_match, rawAttributes: string) => {
       let attributes = rawAttributes;
       attributes = upsertAttribute(attributes, "id", "purchase-search-input");
-      attributes = upsertAttribute(
-        attributes,
-        "aria-label",
-        "Buscar compras da fatura",
-      );
+      attributes = upsertAttribute(attributes, "aria-label", "Buscar compras da fatura");
       attributes = upsertAttribute(attributes, "autocomplete", "off");
       return `<label class="purchase-search" for="purchase-search-input">
                 <span class="visually-hidden">Buscar compras da fatura</span>
@@ -345,12 +331,7 @@ function enhanceDialogs(html: string): string {
   return enhanced;
 }
 
-function enhanceDialog(
-  html: string,
-  name: string,
-  titleId: string,
-  description: string,
-): string {
+function enhanceDialog(html: string, name: string, titleId: string, description: string): string {
   const marker = `<dialog data-modal="${name}">`;
   const start = html.indexOf(marker);
   if (start < 0) return html;

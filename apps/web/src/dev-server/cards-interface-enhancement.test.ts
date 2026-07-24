@@ -55,10 +55,7 @@ describe("cards interface enhancement", () => {
     const enhanced = enhanceCardsInterface(cardHtml);
 
     assert.match(enhanced, /aria-label="Buscar compras da fatura"/);
-    assert.match(
-      enhanced,
-      /data-purchase-results-status aria-live="polite">2 compras exibidas/,
-    );
+    assert.match(enhanced, /data-purchase-results-status aria-live="polite">2 compras exibidas/);
     assert.match(
       enhanced,
       /data-reconciliation-toggle="unreconciled"[^>]*>[\s\S]*?<small>1<\/small>/,

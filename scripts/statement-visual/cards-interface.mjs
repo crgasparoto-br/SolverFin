@@ -96,18 +96,38 @@ async function validateDesktop(cdp) {
   await screenshot(cdp, join(outputDir, "cards-desktop.png"));
 
   check(measurements.viewport.width === 1440, "Cards desktop viewport is not 1440px", measurements);
-  check(measurements.noHorizontalOverflow, "Cards desktop page has horizontal overflow", measurements);
+  check(
+    measurements.noHorizontalOverflow,
+    "Cards desktop page has horizontal overflow",
+    measurements,
+  );
   check(measurements.overview.visible, "Invoice overview is not visible on desktop", measurements);
   check(measurements.amountDue.visible, "Amount due is not visible on desktop", measurements);
   check(measurements.status.visible, "Invoice status is not visible on desktop", measurements);
-  check(measurements.keyDateCount === 2, "Invoice overview does not show both key dates", measurements);
+  check(
+    measurements.keyDateCount === 2,
+    "Invoice overview does not show both key dates",
+    measurements,
+  );
   check(measurements.search.visible, "Purchase search is not visible on desktop", measurements);
   check(measurements.filterCount === 2, "Reconciliation filters are incomplete", measurements);
   check(measurements.rowCount > 0, "Cards page rendered no purchase rows", measurements);
-  check(measurements.tableHeaderVisible, "Purchase table header is not visible on desktop", measurements);
+  check(
+    measurements.tableHeaderVisible,
+    "Purchase table header is not visible on desktop",
+    measurements,
+  );
   check(measurements.minimumRowHeight >= 44, "Purchase rows are smaller than 44px", measurements);
-  check(measurements.statusCount === measurements.rowCount, "Purchase statuses are incomplete", measurements);
-  check(measurements.resultAnnouncement.includes("compras exibidas"), "Purchase count is not announced", measurements);
+  check(
+    measurements.statusCount === measurements.rowCount,
+    "Purchase statuses are incomplete",
+    measurements,
+  );
+  check(
+    measurements.resultAnnouncement.includes("compras exibidas"),
+    "Purchase count is not announced",
+    measurements,
+  );
 
   const filters = await validateSearchAndFilters(cdp);
   return { viewport: "1440x900", measurements, filters, screenshot: "cards-desktop.png" };
@@ -172,7 +192,11 @@ async function validateSearchAndFilters(cdp) {
   );
 
   check(filtered.visibleRows > 0, "Unreconciled filter hid every purchase", filtered);
-  check(filtered.onlyUnreconciled, "Reconciliation filter left reconciled purchases visible", filtered);
+  check(
+    filtered.onlyUnreconciled,
+    "Reconciliation filter left reconciled purchases visible",
+    filtered,
+  );
 
   await evaluate(cdp, `document.querySelector('[data-reset-purchase-filters]')?.click()`);
   await sleep(80);
@@ -190,7 +214,11 @@ async function validateDesktopModal(cdp) {
   check(measurements.labelled, "Purchase modal is not labelled", measurements);
   check(measurements.described, "Purchase modal has no accessible description", measurements);
   check(measurements.closeTarget >= 34, "Purchase modal close action is too small", measurements);
-  check(measurements.firstFieldFocused, "Purchase modal did not focus its first field", measurements);
+  check(
+    measurements.firstFieldFocused,
+    "Purchase modal did not focus its first field",
+    measurements,
+  );
 
   await closeModal(cdp, "purchase");
   return { viewport: "1440x900", measurements, screenshot: "cards-modal-desktop.png" };
@@ -203,14 +231,38 @@ async function validateMobile(cdp) {
   await screenshot(cdp, join(outputDir, "cards-mobile.png"));
 
   check(measurements.viewport.width === 390, "Cards mobile viewport is not 390px", measurements);
-  check(measurements.noHorizontalOverflow, "Cards mobile page has horizontal overflow", measurements);
+  check(
+    measurements.noHorizontalOverflow,
+    "Cards mobile page has horizontal overflow",
+    measurements,
+  );
   check(measurements.overview.visible, "Invoice overview is not visible on mobile", measurements);
-  check(measurements.heroAction.height >= 44, "New purchase action is smaller than 44px", measurements);
+  check(
+    measurements.heroAction.height >= 44,
+    "New purchase action is smaller than 44px",
+    measurements,
+  );
   check(measurements.search.height >= 44, "Purchase search is smaller than 44px", measurements);
-  check(!measurements.tableHeaderVisible, "Desktop purchase header remains visible on mobile", measurements);
-  check(measurements.mobileDateLabel.includes("Data"), "Mobile date field lost its contextual label", measurements);
-  check(measurements.mobileStatusLabel.includes("Situação"), "Mobile status field lost its contextual label", measurements);
-  check(measurements.minimumActionTarget >= 40, "Purchase action target is smaller than 40px", measurements);
+  check(
+    !measurements.tableHeaderVisible,
+    "Desktop purchase header remains visible on mobile",
+    measurements,
+  );
+  check(
+    measurements.mobileDateLabel.includes("Data"),
+    "Mobile date field lost its contextual label",
+    measurements,
+  );
+  check(
+    measurements.mobileStatusLabel.includes("Situação"),
+    "Mobile status field lost its contextual label",
+    measurements,
+  );
+  check(
+    measurements.minimumActionTarget >= 40,
+    "Purchase action target is smaller than 40px",
+    measurements,
+  );
 
   return { viewport: "390x844", measurements, screenshot: "cards-mobile.png" };
 }
@@ -224,7 +276,11 @@ async function validateMobileModal(cdp) {
   check(measurements.visible, "Purchase modal did not open on mobile", measurements);
   check(measurements.insideViewport, "Purchase modal exceeds the mobile viewport", measurements);
   check(measurements.singleColumn, "Purchase modal is not single-column on mobile", measurements);
-  check(measurements.minimumActionHeight >= 44, "Purchase modal actions are smaller than 44px", measurements);
+  check(
+    measurements.minimumActionHeight >= 44,
+    "Purchase modal actions are smaller than 44px",
+    measurements,
+  );
 
   await closeModal(cdp, "purchase");
   return { viewport: "390x844", measurements, screenshot: "cards-modal-mobile.png" };
@@ -239,7 +295,10 @@ async function navigateWithRetry(cdp, url, label) {
     } catch (error) {
       let pageState = { href: "", readyState: "" };
       try {
-        pageState = await evaluate(cdp, `({ href: window.location.href, readyState: document.readyState })`);
+        pageState = await evaluate(
+          cdp,
+          `({ href: window.location.href, readyState: document.readyState })`,
+        );
       } catch {
         // The renderer may still be restarting; retry below.
       }
