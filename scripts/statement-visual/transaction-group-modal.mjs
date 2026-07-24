@@ -47,7 +47,7 @@ try {
         displayOn: "2026-07-28"
       })).group;
       const plannedOne = (await request("/api/transactions", "POST", {
-        accountId: ${JSON.stringify(fixtureIds.longAccountId)},
+        accountId: ${JSON.stringify("PLACEHOLDER_ACCOUNT_ID")}.replace("PLACEHOLDER_ACCOUNT_ID", ${JSON.stringify("PLACEHOLDER_ACCOUNT_ID")}),
         kind: "expense",
         amountMinor: 32100,
         occurredOn: "2026-07-29",
@@ -58,7 +58,7 @@ try {
         currency: "BRL"
       })).transaction;
       const plannedTwo = (await request("/api/transactions", "POST", {
-        accountId: ${JSON.stringify(fixtureIds.longAccountId)},
+        accountId: ${JSON.stringify("PLACEHOLDER_ACCOUNT_ID")}.replace("PLACEHOLDER_ACCOUNT_ID", ${JSON.stringify("PLACEHOLDER_ACCOUNT_ID")}),
         kind: "expense",
         amountMinor: 65400,
         occurredOn: "2026-07-30",
@@ -74,7 +74,7 @@ try {
         displayOn: "2026-07-30"
       })).group;
       return { postedGroupId: postedGroup.id, plannedGroupId: plannedGroup.id };
-    })()`,
+    })()`.replaceAll('"PLACEHOLDER_ACCOUNT_ID"', JSON.stringify(fixtureIds.longAccountId)),
   );
   groupIds = [created.postedGroupId, created.plannedGroupId];
 
@@ -106,8 +106,16 @@ try {
         groupModalOpen: document.querySelector("[data-group-modal]").open,
         method: transactionForm.dataset.method,
         path: transactionForm.dataset.path,
+        mode: transactionForm.dataset.groupMemberMode,
         title: document.querySelector("[data-modal-title]").textContent,
-        description: transactionForm.description.value
+        description: transactionForm.description.value,
+        contextVisible: !transactionForm.querySelector("[data-group-member-context]").hidden,
+        kindHidden: transactionForm.kind.closest("label").hidden,
+        effectiveHidden: transactionForm.effectiveOn.closest("label").hidden,
+        repeatHidden: transactionForm.repeatMode.closest("label").hidden,
+        noteHidden: transactionForm.note.closest("label").hidden,
+        statusHidden: transactionForm.querySelector(".status-icons").hidden,
+        dateLabel: transactionForm.plannedOn.closest("label").childNodes[0].textContent.trim()
       };
     })()`,
   );
@@ -115,15 +123,22 @@ try {
   assert.equal(editFlow.groupModalOpen, false, "Group modal remained open behind the edit modal.");
   assert.equal(editFlow.method, "PATCH");
   assert.match(editFlow.path, /\/api\/transaction-groups\/.+\/members\/.+/);
+  assert.equal(editFlow.mode, "edit");
   assert.equal(editFlow.title, "Editar lançamento");
   assert.ok(editFlow.description.length > 0);
+  assert.equal(editFlow.contextVisible, true);
+  assert.equal(editFlow.kindHidden, true);
+  assert.equal(editFlow.effectiveHidden, true);
+  assert.equal(editFlow.repeatHidden, true);
+  assert.equal(editFlow.noteHidden, true);
+  assert.equal(editFlow.statusHidden, true);
+  assert.equal(editFlow.dateLabel, "Data");
   await evaluate(
     browser.cdp,
     `(() => {
       const form = document.querySelector("[data-form]");
       form.amountMinor.value = "123,45";
       form.plannedOn.value = "2026-07-27";
-      form.effectiveOn.value = "2026-07-27";
       form.description.value = "QA membro editado via modal";
       form.requestSubmit();
       return true;
@@ -156,9 +171,16 @@ try {
         groupModalOpen: document.querySelector("[data-group-modal]").open,
         method: transactionForm.dataset.method,
         path: transactionForm.dataset.path,
+        mode: transactionForm.dataset.groupMemberMode,
         title: document.querySelector("[data-modal-title]").textContent,
         description: transactionForm.description.value,
-        status: transactionForm.status.value
+        status: transactionForm.status.value,
+        contextVisible: !transactionForm.querySelector("[data-group-member-context]").hidden,
+        kindHidden: transactionForm.kind.closest("label").hidden,
+        repeatHidden: transactionForm.repeatMode.closest("label").hidden,
+        repeatDisabled: transactionForm.repeatMode.disabled,
+        statusHidden: transactionForm.querySelector(".status-icons").hidden,
+        statusButtonsDisabled: Array.from(transactionForm.querySelectorAll("[data-status-option]")).every((button) => button.disabled)
       };
     })()`,
   );
@@ -169,11 +191,62 @@ try {
     "Group modal remained open behind the clone modal.",
   );
   assert.equal(cloneFlow.method, "POST");
-  assert.equal(cloneFlow.path, "/api/transactions");
+  assert.match(cloneFlow.path, /\/api\/transaction-groups\/.+\/members\/.+\/clone/);
+  assert.equal(cloneFlow.mode, "clone");
   assert.equal(cloneFlow.title, "Clonar lançamento");
   assert.match(cloneFlow.description, /^Cópia de /);
   assert.equal(cloneFlow.status, "posted");
-  await evaluate(browser.cdp, `document.querySelector("[data-modal]").close()`);
+  assert.equal(cloneFlow.contextVisible, true);
+  assert.equal(cloneFlow.kindHidden, true);
+  assert.equal(cloneFlow.repeatHidden, true);
+  assert.equal(cloneFlow.repeatDisabled, true);
+  assert.equal(cloneFlow.statusHidden, true);
+  assert.equal(cloneFlow.statusButtonsDisabled, true);
+  await evaluate(
+    browser.cdp,
+    `(() => {
+      const form = document.querySelector("[data-form]");
+      form.repeatMode.disabled = false;
+      form.repeatMode.value = "fixed";
+      form.status.value = "reconciled";
+      form.amountMinor.value = "234,56";
+      form.plannedOn.value = "2026-07-26";
+      form.description.value = "QA clone seguro do agrupamento";
+      form.requestSubmit();
+      return true;
+    })()`,
+  );
+  await sleep(1000);
+  const clonedState = await evaluate(
+    browser.cdp,
+    `(() => {
+      const matches = Array.from(document.querySelectorAll("script[data-transaction]"))
+        .map((node) => JSON.parse(node.textContent))
+        .filter((item) => item.description === "QA clone seguro do agrupamento");
+      return matches.map((item) => ({
+        status: item.status,
+        source: item.source,
+        amountMinor: item.amountMinor,
+        plannedOn: item.plannedOn,
+        effectiveOn: item.effectiveOn || null,
+        recurrenceId: item.recurrenceId || null,
+        installmentId: item.installmentId || null,
+        transactionGroupId: item.transactionGroupId || null
+      }));
+    })()`,
+  );
+  assert.deepEqual(clonedState, [
+    {
+      status: "posted",
+      source: "manual",
+      amountMinor: 23456,
+      plannedOn: "2026-07-26",
+      effectiveOn: "2026-07-26",
+      recurrenceId: null,
+      installmentId: null,
+      transactionGroupId: null,
+    },
+  ]);
 
   await openGroup(browser.cdp, created.plannedGroupId);
   const planned = await evaluate(
@@ -201,7 +274,7 @@ try {
 
   await writeFile(
     join(outputDir, "transaction-group-modal.json"),
-    `${JSON.stringify({ created, desktop, editFlow, editedState, cloneFlow, planned, mobile }, null, 2)}\n`,
+    `${JSON.stringify({ created, desktop, editFlow, editedState, cloneFlow, clonedState, planned, mobile }, null, 2)}\n`,
   );
 } finally {
   if (groupIds.length > 0) {
