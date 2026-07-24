@@ -387,11 +387,12 @@ async function syncInstallmentForMember(
   currency: string,
 ): Promise<void> {
   if (!installmentId) return;
-  await executeQuery(
+  const rows = await executeQuery<{ id: string }>(
     `update "Installment"
         set "dueOn"=$1, "amountMinor"=$2, "currency"=$3,
             "updatedByUserId"=$4, "updatedAt"=now()
-      where "id"=$5 and "organizationId"=$6 and "financialProfileId"=$7`,
+      where "id"=$5 and "organizationId"=$6 and "financialProfileId"=$7
+      returning "id"`,
     [
       dueOn,
       amountMinor,
@@ -402,6 +403,13 @@ async function syncInstallmentForMember(
       context.financialProfileId,
     ],
   );
+  if (!rows[0]) {
+    throw groupError(
+      "TRANSACTION_INSTALLMENT_NOT_FOUND",
+      "A parcela vinculada ao lançamento não foi encontrada para este perfil.",
+      409,
+    );
+  }
 }
 
 async function insertClone(
