@@ -1,0 +1,45 @@
+name: Temporary format issue 530
+
+on:
+  push:
+    branches:
+      - feat/530-group-bulk-selection
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.event.head_commit.message != 'style(issue-530): aplicar prettier'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/530-group-bulk-selection
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply repository formatter
+        run: >-
+          npx prettier
+          apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
+          apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.ts
+          apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts
+          scripts/statement-visual/transaction-bulk-selection.mjs
+          --write
+      - name: Commit formatted files
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts \
+            apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.ts \
+            apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts \
+            scripts/statement-visual/transaction-bulk-selection.mjs
+          git commit -m "style(issue-530): aplicar prettier"
+          git push origin HEAD:feat/530-group-bulk-selection
