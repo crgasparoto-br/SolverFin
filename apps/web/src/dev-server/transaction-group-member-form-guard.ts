@@ -257,7 +257,8 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
         }, true);
 
         transactionForm.addEventListener("reset", clearMode);
-        transactionForm.addEventListener("submit", async function (event) {
+        document.addEventListener("submit", async function (event) {
+          if (event.target !== transactionForm) return;
           const mode = transactionForm.dataset.groupMemberMode;
           if (!mode) return;
           event.preventDefault();
