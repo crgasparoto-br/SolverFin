@@ -3,34 +3,22 @@ import { describe, it } from "node:test";
 
 import { finalizeCardsInterface } from "./cards-interface-finalizer.js";
 
-const deferredController = `        root.querySelectorAll("[data-open-modal]").forEach((button) => {
-          button.addEventListener("click", () =>
-            requestAnimationFrame(() => {
-              const dialog = root.querySelector(
-                'dialog[data-modal="' + button.dataset.openModal + '"]',
-              );
-              dialog
-                ?.querySelector(
-                  "input:not([type=hidden]):not([disabled]), select:not([disabled]), button:not([disabled])",
-                )
-                ?.focus();
-            }),
-          );
-        });`;
-
 describe("cards interface finalizer", () => {
-  it("enforces the mobile search target and immediate modal focus", () => {
-    const html = `<main data-cards-interface-enhanced><style>main[data-cards-interface-enhanced] .purchase-search input{min-height:44px}</style><script>${deferredController}</script></main>`;
+  it("injects a reliable mobile target and immediate modal focus controller", () => {
+    const html =
+      '<html><body><main data-cards-interface-enhanced><button data-open-modal="purchase">Nova compra</button><dialog data-modal="purchase"><input name="amountMinor" /></dialog></main></body></html>';
     const finalized = finalizeCardsInterface(html);
 
-    assert.match(finalized, /purchase-search input\{height:44px;min-height:44px\}/);
-    assert.doesNotMatch(finalized, /requestAnimationFrame\(\(\) => \{\s+const dialog/);
-    assert.match(finalized, /button\.addEventListener\("click", \(\) => \{\s+const dialog/);
+    assert.match(finalized, /data-cards-interface-finalized/);
+    assert.match(finalized, /purchase-search input\{\s+height:44px;\s+min-height:44px/);
+    assert.match(finalized, /data-cards-interface-finalizer/);
+    assert.match(finalized, /button\.addEventListener\("click", \(\) => \{/);
+    assert.match(finalized, /textarea:not\(\[disabled\]\)/);
     assert.equal(finalizeCardsInterface(finalized), finalized);
   });
 
   it("does not change unrelated pages", () => {
-    const html = "<main><h1>Outra tela</h1></main>";
+    const html = "<html><body><main><h1>Outra tela</h1></main></body></html>";
     assert.equal(finalizeCardsInterface(html), html);
   });
 });
