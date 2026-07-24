@@ -57,6 +57,7 @@ try {
   assert.equal(desktop.formHorizontalOverflow, false, "Group form has horizontal overflow.");
   assert.equal(desktop.membersHorizontalOverflow, false, "Group members have horizontal overflow.");
   assert.equal(desktop.memberCount, 2, "Desktop group members were not rendered.");
+  assert.ok(desktop.membersHeight >= 120, "Desktop member list has insufficient visible height.");
   assert.ok(desktop.minimumRowHeight >= 44, "Desktop group rows collapsed.");
   assert.equal(desktop.membersOverlapActions, false, "Desktop group rows overlap the actions.");
   await screenshot(browser.cdp, join(outputDir, "transaction-group-layout-desktop-1366x768.png"));
@@ -80,6 +81,7 @@ try {
     "Group members have mobile horizontal overflow.",
   );
   assert.equal(mobile.memberCount, 2, "Mobile group members were not rendered.");
+  assert.ok(mobile.membersHeight >= 220, "Mobile member list has insufficient visible height.");
   assert.ok(mobile.minimumRowHeight >= 72, "Mobile group rows collapsed.");
   assert.equal(mobile.membersOverlapActions, false, "Mobile group rows overlap the actions.");
   await screenshot(browser.cdp, join(outputDir, "transaction-group-layout-mobile-390x844.png"));
