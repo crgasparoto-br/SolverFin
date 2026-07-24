@@ -10,6 +10,11 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
 
   const styles = `
     <style ${STYLE_MARKER}>
+      .selection-bar {
+        align-self: end;
+        height: max-content;
+        min-height: 0;
+      }
       .selection-bar .bulk-selection-help,
       .selection-bar .bulk-selection-status {
         flex: 1 1 100%;
