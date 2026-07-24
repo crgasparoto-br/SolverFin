@@ -45,7 +45,9 @@ Use exemplos ficticios, minimizados e seguros.
 
 - Para criacao e edicao de registros, use pop-up ou modal sempre que possivel, evitando navegar para outra tela quando o formulario couber em fluxo contextual.
 - Mantenha telas limpas, com foco em dados e acoes; evite textos longos, banners permanentes e cards explicativos sem necessidade operacional.
-- Prefira icones para acoes recorrentes quando o contexto for claro, mantendo tooltip, nome acessivel ou texto equivalente.
+- Toda acao visivel em botao, menu, barra, linha, card ou modal deve incluir um icone reconhecivel do catalogo central `icon(...)` em `apps/web/src/dev-server/icons.ts`.
+- Combine icone e texto em acoes primarias, destrutivas, pouco frequentes ou ambiguas. Use somente icone apenas em acoes recorrentes e inequivocas, com `aria-label`, `title` ou tooltip e foco visivel.
+- Quando faltar um icone, amplie o catalogo central baseado em Lucide; nao duplique SVG e nao use emoji, caracteres Unicode ou desenhos ad hoc como icone de interface.
 - Use pagina dedicada apenas para formularios longos, fluxos guiados, comparacoes amplas ou quando o contexto visual for indispensavel.
 
 ## Validacao
