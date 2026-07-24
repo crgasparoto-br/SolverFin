@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 
 import { enhanceTransactionBulkSelectionLayout } from "./transaction-bulk-selection-layout-enhancement.js";
 
-const source = `<!doctype html><html><head><style data-transaction-bulk-selection-enhancement></style></head><body><aside class="selection-bar"><span class="bulk-selection-help"></span><span class="bulk-selection-status"></span></aside></body></html>`;
+const source = `<!doctype html><html><head><style data-transaction-bulk-selection-enhancement></style></head><body><aside class="selection-bar"><strong><span data-selection-count>0</span> selecionados</strong><span data-selection-total>R$ 0,00</span><button data-selection-clear>Limpar</button><span class="bulk-selection-actions"></span><button data-group-open>Unificar lançamentos</button><span class="bulk-selection-help"></span><span class="bulk-selection-status"></span></aside></body></html>`;
 
 const enhanced = enhanceTransactionBulkSelectionLayout(source);
 assert.match(enhanced, /data-transaction-bulk-selection-layout-enhancement/);
-assert.match(enhanced, /flex: 1 1 100%/);
+assert.match(enhanced, /display: grid/);
+assert.match(enhanced, /grid-template-columns: auto auto minmax\(0, 1fr\) auto auto/);
+assert.match(enhanced, /grid-column: 1 \/ -1/);
+assert.match(enhanced, /bulk-selection-status:empty \{ display: none; \}/);
 assert.match(enhanced, /min-width: 0/);
 assert.match(enhanced, /overflow-wrap: anywhere/);
 assert.match(enhanced, /text-align: left/);
