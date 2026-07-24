@@ -4,17 +4,16 @@ import { describe, it } from "node:test";
 import { finalizeCardsInterface } from "./cards-interface-finalizer.js";
 
 describe("cards interface finalizer", () => {
-  it("adds native initial focus and a definitive search target", () => {
+  it("adds an idempotent DOM controller for search sizing and modal focus", () => {
     const html =
-      '<html><body><main data-cards-interface-enhanced><input type="search" data-purchase-search /><dialog data-modal="purchase"><form><input name="amountMinor" data-money inputmode="decimal" /></form></dialog></main></body></html>';
+      '<html><body><main data-cards-interface-enhanced><input type="search" data-purchase-search /><button data-open-modal="purchase">Nova compra</button><dialog data-modal="purchase"><input name="amountMinor" /></dialog></main></body></html>';
     const finalized = finalizeCardsInterface(html);
 
-    assert.match(
-      finalized,
-      /name="amountMinor" data-money autofocus data-cards-initial-focus/,
-    );
-    assert.match(finalized, /data-purchase-search data-cards-search-target/);
-    assert.match(finalized, /style="height:44px;min-height:44px"/);
+    assert.match(finalized, /data-cards-interface-finalizer/);
+    assert.match(finalized, /input\[data-purchase-search\]/);
+    assert.match(finalized, /search\.style\.height = "44px"/);
+    assert.match(finalized, /queueMicrotask/);
+    assert.match(finalized, /input:not\(\[type=hidden\]\):not\(\[disabled\]\)/);
     assert.equal(finalizeCardsInterface(finalized), finalized);
   });
 });
