@@ -121,6 +121,7 @@ export async function launchChrome({ baseUrl, chromePath, debugPort = 0 }) {
     await cdp.send("Page.enable");
     await cdp.send("Runtime.enable");
     await cdp.send("Network.enable");
+    await cdp.send("Emulation.setFocusEmulationEnabled", { enabled: true });
 
     return {
       cdp,
