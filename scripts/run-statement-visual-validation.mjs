@@ -5,6 +5,7 @@ const outputDir =
   process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 
 try {
+  await import("./statement-visual/format-issue-528.mjs");
   await import("./statement-visual/main.mjs");
   await import("./statement-visual/transaction-group-layout.mjs");
   await import("./statement-visual/transaction-group-modal.mjs");
