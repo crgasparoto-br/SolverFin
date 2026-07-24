@@ -73,9 +73,13 @@ jobs:
         if: failure()
         run: |
           npm run format
-          mkdir -p artifacts/prettier
+          mkdir -p artifacts/prettier/formatted
           git diff -- . > artifacts/prettier/prettier.patch
           git diff --name-only -- . > artifacts/prettier/files.txt
+          while IFS= read -r file; do
+            mkdir -p "artifacts/prettier/formatted/$(dirname "$file")"
+            cp "$file" "artifacts/prettier/formatted/$file"
+          done < artifacts/prettier/files.txt
 
       - name: Upload formatting diagnostic
         if: failure()
