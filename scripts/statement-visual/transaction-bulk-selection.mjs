@@ -2,14 +2,24 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-if (!chromePath) throw new Error("CHROME_BIN is required for issue 530 visual validation.");
+if (!chromePath) {
+  throw new Error("CHROME_BIN is required for issue 530 visual validation.");
+}
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let groupId;
@@ -18,9 +28,15 @@ try {
   await setViewport(browser.cdp, 1366, 900);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
-  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
+  assert.equal(
+    login.ok,
+    true,
+    `Demo login failed: ${login.status} ${login.body}`,
+  );
   const fixtureIds = await evaluate(browser.cdp, fixtureExpression());
-  const route = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.longAccountId)}&month=2026-07`;
+  const route =
+    `/lancamentos?accountId=${encodeURIComponent(fixtureIds.longAccountId)}` +
+    "&month=2026-07";
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const created = await evaluate(
@@ -112,7 +128,10 @@ try {
   assert.equal(mixedSelection.unreconcileDisabled, true);
   assert.equal(mixedSelection.voidDisabled, false);
   assert.match(mixedSelection.help, /desmarque os agrupamentos/i);
-  assert.match(mixedSelection.help, /nenhum lançamento selecionado está conciliado/i);
+  assert.match(
+    mixedSelection.help,
+    /nenhum lançamento selecionado está conciliado/i,
+  );
 
   await evaluate(
     browser.cdp,
@@ -120,16 +139,22 @@ try {
   );
   await sleep(120);
   const desktop = await readBarMetrics(browser.cdp);
-  assert.equal(desktop.computedPosition, "sticky");
+  assert.equal(desktop.computedPosition, "fixed");
   assert.equal(desktop.computedBottom, "16px");
   assert.equal(desktop.visibleInViewport, true);
   assert.equal(desktop.bodyOverflow, false);
-  assert.ok(desktop.barHeight < 220, `Selection bar dimensions are invalid: ${JSON.stringify(desktop)}`);
+  assert.ok(
+    desktop.barHeight < 220,
+    `Selection bar dimensions are invalid: ${JSON.stringify(desktop)}`,
+  );
   assert.ok(
     desktop.barScrollWidth <= desktop.barClientWidth + 1,
     `Selection bar has horizontal overflow: ${JSON.stringify(desktop)}`,
   );
-  await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-1366x900.png"));
+  await screenshot(
+    browser.cdp,
+    join(outputDir, "issue-530-mixed-selection-1366x900.png"),
+  );
 
   await setViewport(browser.cdp, 1366, 768);
   await sleep(150);
@@ -137,7 +162,10 @@ try {
   assert.equal(shortDesktop.visibleInViewport, true);
   assert.equal(shortDesktop.bodyOverflow, false);
   assert.ok(shortDesktop.barHeight < 240);
-  await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-1366x768.png"));
+  await screenshot(
+    browser.cdp,
+    join(outputDir, "issue-530-mixed-selection-1366x768.png"),
+  );
 
   await setViewport(browser.cdp, 390, 844);
   await sleep(150);
@@ -164,7 +192,10 @@ try {
   assert.equal(mobile.visibleInViewport, true);
   assert.equal(mobile.actionCount, 3);
   assert.equal(mobile.helpVisible, true);
-  await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-390x844.png"));
+  await screenshot(
+    browser.cdp,
+    join(outputDir, "issue-530-mixed-selection-390x844.png"),
+  );
 
   await setViewport(browser.cdp, 1366, 900);
   await navigate(browser.cdp, `${baseUrl}${route}`);
@@ -221,7 +252,10 @@ try {
     })()`,
   );
   assert.equal(networkFailure.selectedCount, 2);
-  assert.match(networkFailure.status, /verifique sua conexão e tente novamente/i);
+  assert.match(
+    networkFailure.status,
+    /verifique sua conexão e tente novamente/i,
+  );
   assert.equal(networkFailure.ariaBusy, "false");
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
@@ -285,7 +319,10 @@ try {
   assert.equal(reconciled.directStatus, "Conciliado");
 
   await selectMixed(browser.cdp, created);
-  const unreconcileLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
+  const unreconcileLoaded = browser.cdp.once(
+    "Page.loadEventFired",
+    20_000,
+  );
   await evaluate(
     browser.cdp,
     `(() => {
