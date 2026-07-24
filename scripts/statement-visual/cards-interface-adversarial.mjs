@@ -37,10 +37,7 @@ try {
     join(outputDir, "cards-interface-adversarial.json"),
     `${JSON.stringify(report, null, 2)}\n`,
   );
-  await writeFile(
-    join(outputDir, "CARDS-INTERFACE-ADVERSARIAL.md"),
-    renderReport(report),
-  );
+  await writeFile(join(outputDir, "CARDS-INTERFACE-ADVERSARIAL.md"), renderReport(report));
   console.log("Cards compact desktop, collapsed groups and keyboard validation passed.");
 } finally {
   await browser.close(outputDir);
