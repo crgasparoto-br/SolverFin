@@ -18,6 +18,12 @@ assert.match(enhanced, /\(clone \? "\/clone" : ""\)/);
 assert.match(enhanced, /transactionForm\.dataset\.groupMemberMode/);
 assert.match(enhanced, /"repeatMode"/);
 assert.match(enhanced, /setField\(name, true, true\)/);
+assert.match(enhanced, /solverfin:transaction-group:return/);
+assert.match(enhanced, /Não foi possível comunicar com o servidor/);
+assert.match(enhanced, /catch \{/);
+assert.match(enhanced, /finally \{/);
+assert.match(enhanced, /if \(submit\) submit\.disabled = false/);
+assert.doesNotMatch(enhanced, /window\.setTimeout\(function \(\) \{ window\.location\.reload\(\); \}, 350\)/);
 assert.equal(
   enhanceTransactionGroupMemberFormGuard(enhanced),
   enhanced,
