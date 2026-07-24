@@ -51,7 +51,7 @@ export function enhanceCategoriesIconsAndTooltips(html: string): string {
 function extractCategorySummary(html: string): CategoryPageSummary {
   const records = Array.from(
     html.matchAll(
-      /<article class="category-tree-node[^"]*" data-category-item data-category-kind="([^"]+)" data-category-status="([^"]+)"/g,
+      /<article class="category-tree-node([^"]*)" data-category-item data-category-kind="([^"]+)" data-category-status="([^"]+)"/g,
     ),
   );
 
@@ -60,13 +60,14 @@ function extractCategorySummary(html: string): CategoryPageSummary {
     archived: 0,
     expense: 0,
     income: 0,
-    roots: (html.match(/data-category-parent-id=""/g) ?? []).length,
+    roots: 0,
     total: records.length,
     transfer: 0,
   };
 
   for (const record of records) {
-    const [, kind, status] = record;
+    const [, classNames, kind, status] = record;
+    if (!classNames.includes("category-tree-child")) summary.roots += 1;
     if (status === "archived") summary.archived += 1;
     else summary.active += 1;
     if (kind === "expense") summary.expense += 1;
@@ -94,10 +95,7 @@ function replaceVisibleCopy(html: string): string {
     ["Nova categoria", "Nova categoria"],
   ];
 
-  return replacements.reduce(
-    (content, [from, to]) => content.replaceAll(from, to),
-    html,
-  );
+  return replacements.reduce((content, [from, to]) => content.replaceAll(from, to), html);
 }
 
 function enhanceRetryAction(html: string): string {
@@ -150,18 +148,10 @@ function replaceCategoryInsights(html: string, summary: CategoryPageSummary): st
             </div>
           </section>`;
 
-  return html.replace(
-    /<aside class="sf-panel categories-insights"[\s\S]*?<\/aside>/,
-    insights,
-  );
+  return html.replace(/<aside class="sf-panel categories-insights"[\s\S]*?<\/aside>/, insights);
 }
 
-function renderKindMeter(
-  label: string,
-  count: number,
-  total: number,
-  tone: string,
-): string {
+function renderKindMeter(label: string, count: number, total: number, tone: string): string {
   const percent = total > 0 ? Math.round((count / total) * 100) : 0;
   return `
     <article class="kind-meter kind-meter-${tone}">
@@ -267,9 +257,7 @@ function enhanceCategoryGroups(html: string): string {
   ];
 
   return presentations.reduce((content, [label, iconName, description]) => {
-    const pattern = new RegExp(
-      `<h3>${label}</h3>\\s*<p class="sf-muted">([^<]+)</p>`,
-    );
+    const pattern = new RegExp(`<h3>${label}</h3>\\s*<p class="sf-muted">([^<]+)</p>`);
     return content.replace(
       pattern,
       `<div class="category-kind-title"><span class="category-kind-icon" aria-hidden="true">${icon(iconName, 14)}</span><div><h3>${label}</h3><p class="sf-muted">${description} · $1</p></div></div>`,

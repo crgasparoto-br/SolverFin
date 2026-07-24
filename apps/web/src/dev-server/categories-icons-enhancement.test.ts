@@ -47,7 +47,7 @@ const categoryHtml = `<!doctype html>
                       <span class="category-node-text"><strong>Moradia</strong><span>Categoria principal - Ativo</span></span>
                       <span class="category-path">Moradia</span>
                     </button>
-                    <div class="category-action-menu"><button data-category-menu-button></button><div data-category-menu><button role="menuitem">Editar</button></div></div>
+                    <div class="category-action-menu"><button data-category-menu-button></button><div data-category-menu><button role="menuitem" data-category-parent-id="">Editar</button></div></div>
                   </div>
                   <div class="category-tree-children">
                     <article class="category-tree-node category-tree-child" data-category-item data-category-kind="expense" data-category-status="archived" data-category-collapsed="false">
@@ -106,6 +106,7 @@ describe("categories design enhancement", () => {
     assert.match(html, /<span>Total<\/span><strong>2<\/strong>/);
     assert.match(html, /<span>Ativas<\/span><strong>1<\/strong>/);
     assert.match(html, /<span>Arquivadas<\/span><strong>1<\/strong>/);
+    assert.match(html, /<span>Principais<\/span><strong>1<\/strong>/);
     assert.match(html, /data-category-search-input/);
     assert.match(html, /placeholder="Buscar por nome ou caminho"/);
     assert.match(html, /data-clear-category-search/);
@@ -131,7 +132,10 @@ describe("categories design enhancement", () => {
     assert.match(html, /category-status-badge category-status-archived">Arquivado/);
     assert.match(html, /aria-label="Editar categoria Moradia" title="Editar categoria Moradia"/);
     assert.match(html, /category-path">[\s\S]*?chevron-right[\s\S]*?Moradia &gt; Aluguel/);
-    assert.match(html, /\.category-tree-node \{ background: transparent; border: 0; border-bottom: 1px solid var\(--line\)/);
+    assert.match(
+      html,
+      /\.category-tree-node \{ background: transparent; border: 0; border-bottom: 1px solid var\(--line\)/,
+    );
   });
 
   it("improves the category modal without changing its API hooks", () => {
@@ -144,7 +148,10 @@ describe("categories design enhancement", () => {
     assert.match(html, /id="category-parent-help"/);
     assert.match(html, /data-category-status-action hidden/);
     assert.match(html, /data-category-submit title="Salvar categoria"/);
-    assert.match(html, /data-close-category-modal aria-label="Fechar modal" title="Fechar">[\s\S]*?<svg/);
+    assert.match(
+      html,
+      /data-close-category-modal aria-label="Fechar modal" title="Fechar">[\s\S]*?<svg/,
+    );
     assert.match(html, /data-close-category-modal title="Fechar sem salvar">[\s\S]*?<svg/);
     assert.match(html, /modal\?\.addEventListener\("keydown"/);
     assert.match(html, /event\.key !== "Tab"/);
