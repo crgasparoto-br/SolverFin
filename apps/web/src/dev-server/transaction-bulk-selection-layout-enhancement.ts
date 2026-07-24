@@ -26,6 +26,10 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
         transform: translateX(-50%);
         width: 760px;
       }
+      .statement-panel:has(> .selection-bar:not([hidden])) > .statement-table {
+        padding-bottom: 192px;
+        scroll-padding-bottom: 192px;
+      }
       .selection-bar > strong { grid-column: 1; grid-row: 1; }
       .selection-bar > [data-selection-total] { grid-column: 2; grid-row: 1; }
       .selection-bar > [data-selection-clear] { grid-column: 4; grid-row: 1; }
@@ -50,6 +54,10 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
         .selection-bar {
           grid-template-columns: 1fr 1fr;
           width: calc(100vw - 32px);
+        }
+        .statement-panel:has(> .selection-bar:not([hidden])) > .statement-table {
+          padding-bottom: 360px;
+          scroll-padding-bottom: 360px;
         }
         .selection-bar > strong,
         .selection-bar > [data-selection-total],
