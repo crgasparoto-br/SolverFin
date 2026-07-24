@@ -2,14 +2,22 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-if (!chromePath) throw new Error("CHROME_BIN is required for issue 530 visual validation.");
+if (!chromePath)
+  throw new Error("CHROME_BIN is required for issue 530 visual validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let groupId;
@@ -140,8 +148,14 @@ try {
   assert.match(mixedSelection.help, /desmarque os agrupamentos/i);
   assert.match(mixedSelection.help, /nenhum lançamento selecionado está conciliado/i);
   assert.equal(mixedSelection.bodyOverflow, false);
-  assert.ok(mixedSelection.barHeight < 180, `Selection bar is too tall: ${mixedSelection.barHeight}px`);
-  assert.ok(mixedSelection.barScrollWidth <= mixedSelection.barClientWidth + 1, "Selection bar has horizontal overflow.");
+  assert.ok(
+    mixedSelection.barHeight < 180,
+    `Selection bar is too tall: ${mixedSelection.barHeight}px`,
+  );
+  assert.ok(
+    mixedSelection.barScrollWidth <= mixedSelection.barClientWidth + 1,
+    "Selection bar has horizontal overflow.",
+  );
 
   await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-1366x900.png"));
 
