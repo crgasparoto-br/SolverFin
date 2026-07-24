@@ -19,6 +19,7 @@ const report = {
   browser: browser.version,
   viewport: "1366x768",
   compactDesktop: undefined,
+  liveRegion: undefined,
   collapsedGroups: undefined,
   keyboardModal: undefined,
   screenshots: [],
@@ -28,6 +29,7 @@ try {
   await loginAndOpenCards(browser.cdp);
   report.compactDesktop = await validateCompactDesktop(browser.cdp);
   report.screenshots.push("cards-compact-desktop.png");
+  report.liveRegion = await validateLiveRegionStability(browser.cdp);
   report.collapsedGroups = await validateCollapsedGroups(browser.cdp);
   report.screenshots.push("cards-collapsed-groups.png");
   report.keyboardModal = await validateKeyboardModal(browser.cdp);
@@ -38,7 +40,9 @@ try {
     `${JSON.stringify(report, null, 2)}\n`,
   );
   await writeFile(join(outputDir, "CARDS-INTERFACE-ADVERSARIAL.md"), renderReport(report));
-  console.log("Cards compact desktop, collapsed groups and keyboard validation passed.");
+  console.log(
+    "Cards compact desktop, live region, collapsed groups and keyboard validation passed.",
+  );
 } finally {
   await browser.close(outputDir);
 }
@@ -72,6 +76,10 @@ async function validateCompactDesktop(cdp) {
         searchVisible: visible(search),
         searchHeight: rect(search)?.height || 0,
         tableHeaderVisible: visible(tableHeader),
+        ariaRowCount: document.querySelector('.purchase-list[aria-label="Compras da fatura"]')?.getAttribute("aria-rowcount") ?? null,
+        resultControllerCount: document.querySelectorAll(
+          "script[data-cards-interface-finalizer], script[data-cards-interface-controller]",
+        ).length,
       };
     })()`,
   );
@@ -82,8 +90,103 @@ async function validateCompactDesktop(cdp) {
   assert.equal(measurements.searchVisible, true, "Purchase search is unavailable at 1366x768");
   assert.ok(measurements.searchHeight >= 44, "Purchase search target is smaller than 44px");
   assert.equal(measurements.tableHeaderVisible, true, "Desktop header is hidden at 1366x768");
+  assert.equal(measurements.ariaRowCount, null, "Fully rendered table must omit aria-rowcount");
+  assert.equal(
+    measurements.resultControllerCount,
+    1,
+    "Purchase results must have a single interface controller",
+  );
+
+  const accessibility = await readAccessibilitySummary(cdp);
+  for (const role of ["table", "row", "columnheader", "cell"]) {
+    assert.ok(accessibility.roles.includes(role), `Accessibility tree is missing ${role}`);
+  }
+  measurements.accessibility = accessibility;
   await screenshot(cdp, join(outputDir, "cards-compact-desktop.png"));
   return measurements;
+}
+
+
+async function validateLiveRegionStability(cdp) {
+  const initial = await evaluate(
+    cdp,
+    `(() => ({
+      status: document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '',
+      rowCount: document.querySelectorAll('[data-purchase-item]').length,
+    }))()`,
+  );
+
+  const search = await probeLiveRegionAction(
+    cdp,
+    `(() => {
+      const input = document.querySelector('[data-purchase-search]');
+      input.value = '__solverfin_no_purchase_matches__';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    })()`,
+  );
+  assert.equal(search.status, "0 compras exibidas");
+  assert.equal(search.mutations, 1, "Search must announce the result count exactly once");
+
+  const clear = await probeLiveRegionAction(
+    cdp,
+    `document.querySelector('[data-clear-purchase-search]')?.click()`,
+  );
+  assert.equal(clear.status, `${initial.rowCount} compras exibidas`);
+  assert.equal(clear.mutations, 1, "Clearing search must announce the result count exactly once");
+
+  const toggle = await probeLiveRegionAction(
+    cdp,
+    `document.querySelector('[data-reconciliation-toggle]')?.click()`,
+  );
+  assert.ok(toggle.mutations <= 1, "A reconciliation filter must not repeat live announcements");
+
+  await evaluate(cdp, `document.querySelector('[data-reconciliation-toggle]')?.click()`);
+  await sleep(150);
+
+  return { initial, search, clear, toggle };
+}
+
+async function probeLiveRegionAction(cdp, actionExpression) {
+  await evaluate(
+    cdp,
+    `(() => {
+      const status = document.querySelector('[data-purchase-results-status]');
+      const probe = { mutations: 0 };
+      probe.observer = new MutationObserver((records) => {
+        probe.mutations += records.length;
+      });
+      probe.observer.observe(status, { childList: true, characterData: true, subtree: true });
+      window.__solverfinCardsLiveRegionProbe = probe;
+    })()`,
+  );
+  await evaluate(cdp, actionExpression);
+  await sleep(180);
+  return evaluate(
+    cdp,
+    `(() => {
+      const probe = window.__solverfinCardsLiveRegionProbe;
+      probe?.observer?.disconnect();
+      const result = {
+        mutations: probe?.mutations ?? -1,
+        status: document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '',
+      };
+      delete window.__solverfinCardsLiveRegionProbe;
+      return result;
+    })()`,
+  );
+}
+
+async function readAccessibilitySummary(cdp) {
+  await cdp.send("Accessibility.enable");
+  const tree = await cdp.send("Accessibility.getFullAXTree");
+  const roles = Array.from(
+    new Set(
+      (tree.nodes ?? [])
+        .map((node) => node.role?.value)
+        .filter((role) => typeof role === "string"),
+    ),
+  );
+  return { nodeCount: tree.nodes?.length ?? 0, roles };
 }
 
 async function validateCollapsedGroups(cdp) {
@@ -114,7 +217,7 @@ async function validateCollapsedGroups(cdp) {
         matchingRows: matchingRows.length,
         displayedRows: displayedRows.length,
         resultStatus: document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '',
-        ariaRowCount: document.querySelector('.purchase-list[aria-label="Compras da fatura"]')?.getAttribute('aria-rowcount'),
+        ariaRowCount: document.querySelector('.purchase-list[aria-label="Compras da fatura"]')?.getAttribute('aria-rowcount') ?? null,
         emptyVisible: Boolean(empty && !empty.hidden),
         closedGroups: Array.from(document.querySelectorAll('[data-instrument-purchase-group]')).filter((group) => !group.open).length,
       };
@@ -124,7 +227,7 @@ async function validateCollapsedGroups(cdp) {
   assert.ok(collapsed.matchingRows > 0, "Collapsed groups lost matching purchases");
   assert.equal(collapsed.displayedRows, 0, "Purchases remain displayed inside collapsed groups");
   assert.equal(collapsed.resultStatus, "0 compras exibidas");
-  assert.equal(collapsed.ariaRowCount, "0");
+  assert.equal(collapsed.ariaRowCount, null);
   assert.equal(
     collapsed.emptyVisible,
     false,
@@ -143,11 +246,11 @@ async function validateCollapsedGroups(cdp) {
     cdp,
     `(() => ({
       resultStatus: document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '',
-      ariaRowCount: document.querySelector('.purchase-list[aria-label="Compras da fatura"]')?.getAttribute('aria-rowcount'),
+      ariaRowCount: document.querySelector('.purchase-list[aria-label="Compras da fatura"]')?.getAttribute('aria-rowcount') ?? null,
     }))()`,
   );
   assert.equal(restored.resultStatus, `${initial.rowCount} compras exibidas`);
-  assert.equal(restored.ariaRowCount, String(initial.rowCount));
+  assert.equal(restored.ariaRowCount, null);
   return { initial, collapsed, restored };
 }
 
@@ -251,5 +354,5 @@ async function waitForModal(cdp) {
 }
 
 function renderReport(value) {
-  return `# Cards interface adversarial validation\n\n- Status: **APPROVED**\n- Browser: ${value.browser}\n- Commit: ${value.commit}\n- Viewport: ${value.viewport}\n- Scenarios: compact desktop, collapsed instrument groups, keyboard modal flow\n- Screenshots: ${value.screenshots.join(", ")}\n`;
+  return `# Cards interface adversarial validation\n\n- Status: **APPROVED**\n- Browser: ${value.browser}\n- Commit: ${value.commit}\n- Viewport: ${value.viewport}\n- Scenarios: compact desktop, accessibility tree, single live-region announcement, collapsed instrument groups, keyboard modal flow\n- Screenshots: ${value.screenshots.join(", ")}\n`;
 }

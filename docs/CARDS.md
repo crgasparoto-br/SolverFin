@@ -222,7 +222,7 @@ A lista de compras deve:
 
 Os modais de compra e pagamento devem ter titulo e descricao acessiveis, fechamento por controle identificado, foco inicial em campo interativo e layout de coluna unica nas viewports moveis.
 
-A validacao visual permanente fica em `scripts/statement-visual/cards-interface.mjs` e deve preservar as evidencias `cards-desktop.png`, `cards-modal-desktop.png`, `cards-mobile.png` e `cards-modal-mobile.png` no workflow `Statement visual validation`.
+A validacao visual permanente usa `scripts/statement-visual/cards-interface.mjs` para os estados principal e modal em desktop e mobile, e `scripts/statement-visual/cards-interface-adversarial.mjs` para `1366x768`, arvore de acessibilidade, anuncio unico da regiao viva, agrupamentos recolhidos e fluxo completo por teclado. O workflow `Statement visual validation` deve preservar as evidencias `cards-desktop.png`, `cards-modal-desktop.png`, `cards-mobile.png`, `cards-modal-mobile.png`, `cards-compact-desktop.png`, `cards-collapsed-groups.png`, `cards-modal-compact-desktop.png`, `cards-interface.json` e `cards-interface-adversarial.json`.
 
 ## Cobertura esperada
 

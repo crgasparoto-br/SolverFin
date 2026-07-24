@@ -3,6 +3,10 @@ const finalizerMarker = "data-cards-interface-finalizer";
 export function finalizeCardsInterface(html: string): string {
   if (html.includes(finalizerMarker)) return html;
 
+  const normalizedHtml = html
+    .replace(/\s*<script data-cards-interface-controller>[\s\S]*?<\/script>/, "")
+    .replace(/\saria-rowcount="[^"]*"/g, "");
+
   const controller = `
     <script ${finalizerMarker}>
       (() => {
@@ -21,6 +25,9 @@ export function finalizeCardsInterface(html: string): string {
         const toggles = Array.from(root.querySelectorAll("[data-reconciliation-toggle]"));
         const resultStatus = root.querySelector("[data-purchase-results-status]");
         const filteredEmpty = root.querySelector("[data-purchase-filter-empty]");
+        const clear = root.querySelector("[data-clear-purchase-search]");
+        const reset = root.querySelector("[data-reset-purchase-filters]");
+        let updateQueued = false;
 
         const rowMatchesFilters = (row) => {
           const group = row.closest("[data-instrument-purchase-group]");
@@ -37,23 +44,52 @@ export function finalizeCardsInterface(html: string): string {
           count + (count === 1 ? " compra exibida" : " compras exibidas");
 
         const updateDisplayedResults = () => {
+          updateQueued = false;
           const matchingCount = rows.filter(rowMatchesFilters).length;
           const displayedCount = rows.filter(rowIsDisplayed).length;
-          if (resultStatus) resultStatus.textContent = formatCount(displayedCount);
-          if (filteredEmpty) filteredEmpty.hidden = rows.length === 0 || matchingCount > 0;
-          if (list) list.setAttribute("aria-rowcount", String(displayedCount));
+          const nextStatus = formatCount(displayedCount);
+          const nextEmptyHidden = rows.length === 0 || matchingCount > 0;
+
+          if (resultStatus && resultStatus.textContent !== nextStatus) {
+            resultStatus.textContent = nextStatus;
+          }
+          if (filteredEmpty && filteredEmpty.hidden !== nextEmptyHidden) {
+            filteredEmpty.hidden = nextEmptyHidden;
+          }
+          if (clear) clear.hidden = !String(search?.value || "").trim();
         };
 
-        search?.addEventListener("input", () => requestAnimationFrame(updateDisplayedResults));
+        const scheduleDisplayedResultsUpdate = () => {
+          if (updateQueued) return;
+          updateQueued = true;
+          requestAnimationFrame(updateDisplayedResults);
+        };
+
+        search?.addEventListener("input", scheduleDisplayedResultsUpdate);
         toggles.forEach((toggle) =>
-          toggle.addEventListener("click", () => requestAnimationFrame(updateDisplayedResults)),
+          toggle.addEventListener("click", scheduleDisplayedResultsUpdate),
         );
         groups.forEach((group) =>
-          group.addEventListener("toggle", () => requestAnimationFrame(updateDisplayedResults)),
+          group.addEventListener("toggle", scheduleDisplayedResultsUpdate),
         );
+        clear?.addEventListener("click", () => {
+          if (!search) return;
+          search.value = "";
+          search.dispatchEvent(new Event("input", { bubbles: true }));
+          search.focus();
+        });
+        reset?.addEventListener("click", () => {
+          if (search) {
+            search.value = "";
+            search.dispatchEvent(new Event("input", { bubbles: true }));
+          }
+          toggles.forEach((toggle) => {
+            if (toggle.getAttribute("aria-pressed") !== "true") toggle.click();
+          });
+        });
 
         if (list) {
-          const observer = new MutationObserver(() => requestAnimationFrame(updateDisplayedResults));
+          const observer = new MutationObserver(scheduleDisplayedResultsUpdate);
           observer.observe(list, {
             attributes: true,
             attributeFilter: ["hidden", "open"],
@@ -90,5 +126,5 @@ export function finalizeCardsInterface(html: string): string {
       })();
     </script>`;
 
-  return html.replace("</body>", `${controller}</body>`);
+  return normalizedHtml.replace("</body>", `${controller}</body>`);
 }
