@@ -12,7 +12,8 @@ describe("cards interface finalizer", () => {
     assert.match(finalized, /data-cards-interface-finalizer/);
     assert.match(finalized, /input\[data-purchase-search\]/);
     assert.match(finalized, /search\.style\.height = "44px"/);
-    assert.match(finalized, /queueMicrotask/);
+    assert.match(finalized, /setAttribute\("autofocus", ""\)/);
+    assert.match(finalized, /window\.setTimeout/);
     assert.match(finalized, /input:not\(\[type=hidden\]\):not\(\[disabled\]\)/);
     assert.equal(finalizeCardsInterface(finalized), finalized);
   });
