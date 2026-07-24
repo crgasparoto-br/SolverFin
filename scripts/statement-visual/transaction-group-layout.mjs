@@ -56,6 +56,9 @@ try {
   assert.equal(desktop.panelHorizontalOverflow, false, "Group panel has horizontal overflow.");
   assert.equal(desktop.formHorizontalOverflow, false, "Group form has horizontal overflow.");
   assert.equal(desktop.membersHorizontalOverflow, false, "Group members have horizontal overflow.");
+  assert.equal(desktop.memberCount, 2, "Desktop group members were not rendered.");
+  assert.ok(desktop.minimumRowHeight >= 44, "Desktop group rows collapsed.");
+  assert.equal(desktop.membersOverlapActions, false, "Desktop group rows overlap the actions.");
   await screenshot(browser.cdp, join(outputDir, "transaction-group-layout-desktop-1366x768.png"));
 
   await setViewport(browser.cdp, 390, 844);
@@ -76,6 +79,9 @@ try {
     false,
     "Group members have mobile horizontal overflow.",
   );
+  assert.equal(mobile.memberCount, 2, "Mobile group members were not rendered.");
+  assert.ok(mobile.minimumRowHeight >= 72, "Mobile group rows collapsed.");
+  assert.equal(mobile.membersOverlapActions, false, "Mobile group rows overlap the actions.");
   await screenshot(browser.cdp, join(outputDir, "transaction-group-layout-mobile-390x844.png"));
 
   await writeFile(
@@ -103,7 +109,7 @@ async function openGroup(cdp, id) {
     })()`,
   );
   assert.equal(opened, true);
-  await sleep(120);
+  await sleep(180);
 }
 
 async function measureLayout(cdp) {
@@ -114,7 +120,12 @@ async function measureLayout(cdp) {
       const panel = dialog.querySelector(".group-modal-panel");
       const form = dialog.querySelector("[data-group-form]");
       const members = dialog.querySelector("[data-group-members]");
+      const actions = dialog.querySelector(".group-actions");
+      const rows = Array.from(members.querySelectorAll("[data-group-member]"));
       const rect = dialog.getBoundingClientRect();
+      const membersRect = members.getBoundingClientRect();
+      const actionsRect = actions.getBoundingClientRect();
+      const rowHeights = rows.map((row) => row.getBoundingClientRect().height);
       return {
         open: dialog.open,
         dialogWidth: Math.round(rect.width),
@@ -122,7 +133,11 @@ async function measureLayout(cdp) {
         insideViewport: rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1,
         panelHorizontalOverflow: panel.scrollWidth > panel.clientWidth + 1,
         formHorizontalOverflow: form.scrollWidth > form.clientWidth + 1,
-        membersHorizontalOverflow: members.scrollWidth > members.clientWidth + 1
+        membersHorizontalOverflow: members.scrollWidth > members.clientWidth + 1,
+        memberCount: rows.length,
+        membersHeight: Math.round(membersRect.height),
+        minimumRowHeight: Math.round(Math.min(...rowHeights)),
+        membersOverlapActions: membersRect.bottom > actionsRect.top + 1
       };
     })()`,
   );
