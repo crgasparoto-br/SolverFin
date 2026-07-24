@@ -1,0 +1,87 @@
+name: Temporary categories formatting
+
+on:
+  push:
+    branches:
+      - feat/categories-design-interface
+
+permissions:
+  contents: write
+
+jobs:
+  format-and-test:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/categories-design-interface
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Correct root summary counting
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          source_path = Path("apps/web/src/dev-server/categories-icons-enhancement.ts")
+          source = source_path.read_text()
+          replacements = [
+              (
+                  '/<article class="category-tree-node[^"]*" data-category-item data-category-kind="([^"]+)" data-category-status="([^"]+)"/g,',
+                  '/<article class="category-tree-node([^"]*)" data-category-item data-category-kind="([^"]+)" data-category-status="([^"]+)"/g,',
+              ),
+              (
+                  'roots: (html.match(/data-category-parent-id=""/g) ?? []).length,',
+                  'roots: 0,',
+              ),
+              (
+                  'const [, kind, status] = record;\n    if (status === "archived") summary.archived += 1;',
+                  'const [, classNames, kind, status] = record;\n    if (!classNames.includes("category-tree-child")) summary.roots += 1;\n    if (status === "archived") summary.archived += 1;',
+              ),
+          ]
+          for old, new in replacements:
+              if old not in source:
+                  raise SystemExit(f"Expected source fragment not found: {old}")
+              source = source.replace(old, new, 1)
+          source_path.write_text(source)
+
+          test_path = Path("apps/web/src/dev-server/categories-icons-enhancement.test.ts")
+          test = test_path.read_text()
+          old_menu = '<div class="category-action-menu"><button data-category-menu-button></button><div data-category-menu><button role="menuitem">Editar</button></div></div>'
+          new_menu = '<div class="category-action-menu"><button data-category-menu-button></button><div data-category-menu><button role="menuitem" data-category-parent-id="">Editar</button></div></div>'
+          if old_menu not in test:
+              raise SystemExit("Expected category action menu fixture not found")
+          test = test.replace(old_menu, new_menu, 1)
+          old_assertion = 'assert.match(html, /<span>Arquivadas<\\/span><strong>1<\\/strong>/);'
+          new_assertion = old_assertion + '\n    assert.match(html, /<span>Principais<\\/span><strong>1<\\/strong>/);'
+          if old_assertion not in test:
+              raise SystemExit("Expected archived summary assertion not found")
+          test_path.write_text(test.replace(old_assertion, new_assertion, 1))
+          PY
+
+      - name: Format changed files
+        run: pnpm exec prettier --write apps/web/src/dev-server/categories-icons-enhancement.ts apps/web/src/dev-server/categories-icons-enhancement.test.ts
+
+      - name: Run web tests
+        run: pnpm --filter @solverfin/web test
+
+      - name: Commit formatted correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/categories-icons-enhancement.ts apps/web/src/dev-server/categories-icons-enhancement.test.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(web): formatar revisao de categorias"
+          git push origin HEAD:feat/categories-design-interface
