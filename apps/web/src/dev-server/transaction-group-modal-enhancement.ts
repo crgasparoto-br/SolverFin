@@ -246,9 +246,11 @@ export function enhanceTransactionGroupModal(html: string): string {
           storeGroup(group);
           form.dataset.mode = "details";
           form.dataset.groupId = group.id;
-          renderDetailsMode(group);
-          showStatus(detail.message || "", detail.tone || "success");
           if (!modal.open) modal.showModal();
+          window.setTimeout(function () {
+            renderDetailsMode(group);
+            showStatus(detail.message || "", detail.tone || "success");
+          }, 0);
         });
 
         modal.addEventListener("toggle", function () {
