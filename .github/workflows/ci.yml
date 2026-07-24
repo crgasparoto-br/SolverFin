@@ -57,30 +57,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Format issue 528 pending files for diagnostics
-        run: >-
-          npx prettier --write
-          apps/api/src/repositories/transaction-group-actions.ts
-          apps/api/src/transaction-group-actions-router.ts
-          apps/api/src/transaction-group-actions.integration.test.ts
-          apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
-          apps/web/src/dev-server/transaction-group-member-form-guard.ts
-          apps/web/src/dev-server/transaction-group-member-form-guard.test.ts
-          scripts/statement-visual/transaction-group-modal.mjs
-
-      - name: Upload formatted issue 528 pending files
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-528-final-formatted-files
-          path: |
-            apps/api/src/repositories/transaction-group-actions.ts
-            apps/api/src/transaction-group-actions-router.ts
-            apps/api/src/transaction-group-actions.integration.test.ts
-            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
-            apps/web/src/dev-server/transaction-group-member-form-guard.ts
-            apps/web/src/dev-server/transaction-group-member-form-guard.test.ts
-            scripts/statement-visual/transaction-group-modal.mjs
-
       - name: Check environment example
         run: npm run env:check
 
