@@ -23,6 +23,7 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
         width: 100%;
       }
       .selection-bar .bulk-selection-actions {
+        grid-column: 1 / -1;
         justify-self: end;
         min-width: 0;
       }
