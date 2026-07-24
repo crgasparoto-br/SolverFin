@@ -10,5 +10,14 @@ assert.match(enhanced, /flex: 1 1 100%/);
 assert.match(enhanced, /min-width: 0/);
 assert.match(enhanced, /overflow-wrap: anywhere/);
 assert.match(enhanced, /text-align: left/);
-assert.equal(enhanceTransactionBulkSelectionLayout(enhanced), enhanced, "layout enhancement must be idempotent");
-assert.equal(enhanceTransactionBulkSelectionLayout("<!doctype html><html><head></head><body></body></html>"), "<!doctype html><html><head></head><body></body></html>");
+assert.equal(
+  enhanceTransactionBulkSelectionLayout(enhanced),
+  enhanced,
+  "layout enhancement must be idempotent",
+);
+assert.equal(
+  enhanceTransactionBulkSelectionLayout(
+    "<!doctype html><html><head></head><body></body></html>",
+  ),
+  "<!doctype html><html><head></head><body></body></html>",
+);
