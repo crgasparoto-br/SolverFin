@@ -39,7 +39,7 @@ describe("shared shell styles", () => {
     assert.match(css, /background:\s*var\(--neutral-control-hover\)/);
     assert.match(css, /background:\s*var\(--neutral-control-active-hover\)/);
     assert.ok(
-      css.indexOf('button[aria-pressed]:hover:not(:disabled)') >
+      css.indexOf("button[aria-pressed]:hover:not(:disabled)") >
         css.indexOf("button:hover:not(:disabled)"),
       "the neutral hover rule must override the generic dark primary hover",
     );
