@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { promisify } from "node:util";
 
-import { format } from "prettier";
+import { format, resolveConfig } from "prettier";
 
 const executeFile = promisify(execFile);
 const outputDir =
@@ -21,7 +21,8 @@ const files = [
 await mkdir(outputDir, { recursive: true });
 for (const file of files) {
   const source = await readFile(file, "utf8");
-  const formatted = await format(source, { filepath: file });
+  const config = await resolveConfig(file);
+  const formatted = await format(source, { ...config, filepath: file });
   await writeFile(join(outputDir, `${basename(file)}.formatted`), formatted);
 }
 
