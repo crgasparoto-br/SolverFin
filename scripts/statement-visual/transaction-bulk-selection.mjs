@@ -114,6 +114,9 @@ try {
       direct.dispatchEvent(new Event('change', { bubbles: true }));
       document.querySelector('[data-selection-bar]').scrollIntoView({ block: 'end' });
       const bar = document.querySelector('[data-selection-bar]');
+      const rect = bar.getBoundingClientRect();
+      const parentRect = bar.parentElement.getBoundingClientRect();
+      const computed = getComputedStyle(bar);
       return {
         hidden: bar.hidden,
         count: bar.querySelector('[data-selection-count]').textContent.trim(),
@@ -123,12 +126,25 @@ try {
         unreconcileDisabled: bar.querySelector('[data-bulk-selection-action="unreconcile"]').disabled,
         voidDisabled: bar.querySelector('[data-bulk-selection-action="void"]').disabled,
         help: bar.querySelector('[data-bulk-selection-help]').textContent.trim(),
-        barHeight: Math.round(bar.getBoundingClientRect().height),
+        barHeight: Math.round(rect.height),
+        barWidth: Math.round(rect.width),
         barScrollWidth: bar.scrollWidth,
         barClientWidth: bar.clientWidth,
+        parentHeight: Math.round(parentRect.height),
+        parentWidth: Math.round(parentRect.width),
+        computedDisplay: computed.display,
+        computedPosition: computed.position,
+        computedHeight: computed.height,
+        computedWidth: computed.width,
+        computedGridTemplateColumns: computed.gridTemplateColumns,
+        childCount: bar.children.length,
         bodyOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
       };
     })()`,
+  );
+  await writeFile(
+    join(outputDir, "issue-530-bulk-selection-diagnostic.json"),
+    `${JSON.stringify({ initial, mixedSelection }, null, 2)}\n`,
   );
   assert.equal(mixedSelection.hidden, false);
   assert.equal(mixedSelection.count, "2 itens · 3 lançamentos");
@@ -142,11 +158,11 @@ try {
   assert.equal(mixedSelection.bodyOverflow, false);
   assert.ok(
     mixedSelection.barHeight < 180,
-    `Selection bar is too tall: ${mixedSelection.barHeight}px`,
+    `Selection bar dimensions are invalid: ${JSON.stringify(mixedSelection)}`,
   );
   assert.ok(
     mixedSelection.barScrollWidth <= mixedSelection.barClientWidth + 1,
-    "Selection bar has horizontal overflow.",
+    `Selection bar has horizontal overflow: ${JSON.stringify(mixedSelection)}`,
   );
 
   await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-1366x900.png"));
