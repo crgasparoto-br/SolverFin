@@ -132,16 +132,16 @@ export function sharedShellStyles(): string {
      * padrões compartilhados e legados usados por abas, filtros, ordenação,
      * navegação temporal, menus, toolbars e botões somente com ícone.
      */
-    button[aria-pressed]:hover:not(:disabled),
-    button[aria-pressed]:focus-visible,
-    button[aria-selected]:hover:not(:disabled),
-    button[aria-selected]:focus-visible,
-    button[aria-haspopup="listbox"]:hover:not(:disabled),
-    button[aria-haspopup="listbox"]:focus-visible,
-    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):hover:not(:disabled),
-    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):focus-visible,
-    button[data-button-variant="neutral"]:hover:not(:disabled),
-    button[data-button-variant="neutral"]:focus-visible,
+    button[aria-pressed]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-pressed]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[aria-selected]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-selected]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[aria-haspopup="listbox"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-haspopup="listbox"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
     button:is(
       .neutral-button,
       .secondary-button,
@@ -157,7 +157,7 @@ export function sharedShellStyles(): string {
       .row-action,
       .toolbar-button,
       .nav-button
-    ):not(.danger):not(.danger-action):not(.danger-menu-item):hover:not(:disabled),
+    ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
     button:is(
       .neutral-button,
       .secondary-button,
@@ -173,15 +173,15 @@ export function sharedShellStyles(): string {
       .row-action,
       .toolbar-button,
       .nav-button
-    ):not(.danger):not(.danger-action):not(.danger-menu-item):focus-visible {
+    ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible {
       background: var(--neutral-control-hover);
       border-color: var(--neutral-control-border-hover);
       color: var(--neutral-control-text-hover);
     }
-    button[aria-pressed="true"]:hover:not(:disabled),
-    button[aria-pressed="true"]:focus-visible,
-    button[aria-selected="true"]:hover:not(:disabled),
-    button[aria-selected="true"]:focus-visible {
+    button[aria-pressed="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-pressed="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[aria-selected="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-selected="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible {
       background: var(--neutral-control-active-hover);
     }
     .secondary-button {
@@ -199,7 +199,14 @@ export function sharedShellStyles(): string {
       border-color: #fecaca;
       color: var(--danger);
     }
-    .danger-action:hover:not(:disabled) { background: #fecaca; }
+    .danger-action:hover:not(:disabled),
+    .danger-action:focus-visible { background: #fecaca; }
+    .danger-icon-button:hover:not(:disabled),
+    .danger-icon-button:focus-visible {
+      background: var(--danger-bg);
+      border-color: #fecaca;
+      color: var(--danger);
+    }
 
     /* ── Feedback ── */
     .error {
@@ -433,13 +440,15 @@ export function sharedDialogStyles(): string {
       width: 30px;
       transition: background 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out;
     }
-    .icon-button:hover { background: var(--neutral-control-hover); border-color: var(--neutral-control-border-hover); color: var(--neutral-control-text-hover); }
+    .icon-button:hover:not(:disabled),
+    .icon-button:focus-visible { background: var(--neutral-control-hover); border-color: var(--neutral-control-border-hover); color: var(--neutral-control-text-hover); }
     .danger-icon-button {
       background: var(--surface);
       border-color: var(--line);
       color: var(--muted);
     }
-    .danger-icon-button:hover { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
+    .danger-icon-button:hover:not(:disabled),
+    .danger-icon-button:focus-visible { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
     .action-icon { display: block; height: 15px; width: 15px; }
     @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 760px) { .edit-grid { grid-template-columns: 1fr; } }
