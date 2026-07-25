@@ -1,9 +1,9 @@
 name: Issue 537 maintenance patch
 
 on:
-  push:
+  pull_request:
     branches:
-      - fix/537-hover-claro-controles-neutros
+      - main
     paths:
       - .github/workflows/issue-537-maintenance.yml
 
@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   patch-and-validate:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
