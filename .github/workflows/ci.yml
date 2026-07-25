@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -149,40 +149,3 @@ jobs:
 
       - name: Verify import statement consistency
         run: npm run diagnose:import-statement-consistency -- --expect-zero
-
-  issue-537-apply-formatting:
-    name: Apply issue 537 visual formatting
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout issue branch
-        uses: actions/checkout@v4
-        with:
-          ref: fix/537-hover-claro-controles-neutros
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Format issue 537 files
-        run: npx prettier apps/web/src/dev-server/shared-styles.ts apps/web/src/dev-server/shared-styles.test.ts docs/BRAND.md scripts/run-statement-visual-validation.mjs scripts/statement-visual/issue-537-hover-states.mjs --write
-
-      - name: Restore canonical CI and publish formatted files
-        shell: bash
-        run: |
-          git fetch origin main
-          git show origin/main:.github/workflows/ci.yml > .github/workflows/ci.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/src/dev-server/shared-styles.ts apps/web/src/dev-server/shared-styles.test.ts docs/BRAND.md scripts/run-statement-visual-validation.mjs scripts/statement-visual/issue-537-hover-states.mjs .github/workflows/ci.yml
-          git diff --cached --quiet && exit 0
-          git commit -m "style(ui): format issue 537 visual regression"
-          git push origin HEAD:fix/537-hover-claro-controles-neutros

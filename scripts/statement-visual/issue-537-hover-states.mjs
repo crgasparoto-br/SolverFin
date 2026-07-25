@@ -79,7 +79,10 @@ try {
   await sleep(120);
 
   const focusStyles = await readStyles(browser.cdp);
-  await screenshot(browser.cdp, join(outputDir, "issue-537-destructive-focus-desktop-1440x900.png"));
+  await screenshot(
+    browser.cdp,
+    join(outputDir, "issue-537-destructive-focus-desktop-1440x900.png"),
+  );
   scenarios.push({
     kind: "focus-visible",
     viewport: "1440x900",
