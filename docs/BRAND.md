@@ -99,6 +99,15 @@ A interface deve ser **mobile-first**, limpa e orientada a rotina diaria. O usua
 - Microcopy direta, sem jargao bancario.
 - Priorizar icones reconheciveis para acoes recorrentes, sempre com nome acessivel (`aria-label`, `title` ou texto visivel quando necessario).
 
+### Estados interativos
+
+- O fundo azul-petroleo escuro e reservado ao hover de acoes primarias explicitas.
+- Controles operacionais neutros, como abas, filtros, ordenacao, navegacao temporal, menus, botoes ghost e botoes somente com icone, devem usar superficie clara no hover e no foco visivel.
+- O hover neutro deve combinar fundo claro, borda perceptivel e texto azul-petroleo, sem inverter o controle para branco sobre fundo escuro.
+- Controles selecionados podem usar uma superficie clara um pouco mais marcada, preservando distincao em relacao ao estado apenas apontado.
+- Acoes destrutivas devem manter tratamento vermelho controlado e nao herdar o hover neutro.
+- Novos controles neutros devem reutilizar as classes semanticas do design system ou declarar `data-button-variant="neutral"`; nao criar cores de hover isoladas por tela.
+
 ### Padrao de telas e CRUD
 
 - Telas de listagem devem ser limpas, objetivas e orientadas a acao.
