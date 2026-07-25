@@ -491,7 +491,7 @@ function standardizationScript(): string {
               lastDialogTrigger = pendingTrigger;
               const destructive = (form.dataset.apiMethod || 'POST').toUpperCase() === 'DELETE';
               const confirmation = form.dataset.confirm || 'Confirme esta ação.';
-              const subject = confirmation.split('?')[0].replace(/^Inativar\\s+/i, '').replace(/^Excluir\\s+/i, '').trim();
+              const subject = confirmation.split('?')[0].replace(/^Inativar\\s+/i, '').replace(/^Arquivar\\s+/i, '').replace(/^Excluir\\s+/i, '').trim();
               title.textContent = (destructive ? 'Excluir' : 'Arquivar') + (subject ? ' ' + subject : ' registro');
               message.textContent = confirmation;
               submit.textContent = destructive ? 'Excluir' : 'Arquivar';
