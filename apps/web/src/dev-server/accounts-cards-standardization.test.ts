@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { standardizeAccountsCardsPage } from "./accounts-cards-standardization.js";
@@ -50,4 +51,15 @@ test("injeta modal, CDI por icone, tooltips e formularios agrupados", () => {
   assert.match(html, /Arquivar\\s\+/);
   assert.doesNotMatch(html, /window\.confirm/);
   assert.equal(standardizeAccountsCardsPage(html), html);
+});
+
+test("preserva escapes da regex executada pelo gate visual", () => {
+  const visualGateSource = readFileSync(
+    new URL("../../../scripts/statement-visual/accounts-cards-interface.mjs", import.meta.url),
+    "utf8",
+  );
+  const expectedRuntimeRegex =
+    "hasUnmaskedLongNumber: /(?:\\\\d[ -]?){12,19}/.test(text.replace(/\\\\*+/g, '')),";
+
+  assert.ok(visualGateSource.includes(expectedRuntimeRegex));
 });
