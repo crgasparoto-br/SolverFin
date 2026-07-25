@@ -63,31 +63,61 @@ async function captureState(cdp, expectedTab, width, height, filename) {
   }
   const measurements = await evaluate(cdp, pageStateExpression());
   await screenshot(cdp, join(outputDir, filename));
-  scenarios.push({ kind: "page", expectedTab, viewport: `${width}x${height}`, filename, measurements });
+  scenarios.push({
+    kind: "page",
+    expectedTab,
+    viewport: `${width}x${height}`,
+    filename,
+    measurements,
+  });
 
-  check(measurements.selectedTab === expectedTab, `Issue 535 did not select ${expectedTab}`, measurements);
-  check(measurements.contextActionCount === 1, "Issue 535 must expose one primary action", measurements);
+  check(
+    measurements.selectedTab === expectedTab,
+    `Issue 535 did not select ${expectedTab}`,
+    measurements,
+  );
+  check(
+    measurements.contextActionCount === 1,
+    "Issue 535 must expose one primary action",
+    measurements,
+  );
   check(
     measurements.contextActionLabel ===
       (expectedTab === "cards" ? "Adicionar cartão" : "Adicionar conta"),
     `Issue 535 primary action does not match ${expectedTab}`,
     measurements,
   );
-  check(!measurements.hasConnectionsTab, "Issue 535 still exposes the Connections tab", measurements);
+  check(
+    !measurements.hasConnectionsTab,
+    "Issue 535 still exposes the Connections tab",
+    measurements,
+  );
   check(
     JSON.stringify(measurements.statusOptions) === JSON.stringify(["all", "active", "inactive"]),
     "Issue 535 status filter is incomplete",
     measurements,
   );
-  check(!measurements.globalOverflow, `Issue 535 overflows horizontally at ${width}px`, measurements);
-  check(measurements.minimumActionTarget >= 40, "Issue 535 has row actions smaller than 40px", measurements);
+  check(
+    !measurements.globalOverflow,
+    `Issue 535 overflows horizontally at ${width}px`,
+    measurements,
+  );
+  check(
+    measurements.minimumActionTarget >= 40,
+    "Issue 535 has row actions smaller than 40px",
+    measurements,
+  );
   check(
     measurements.itemFooterCount === measurements.itemCount,
     "Issue 535 rows were not normalized into a comparable footer",
     measurements,
   );
   if (expectedTab === "cards") {
-    check(measurements.instrumentDisclosureCount > 0, "Issue 535 has no instrument disclosures", measurements);
+    check(
+      measurements.instrumentDisclosureCount > 0,
+      "Issue 535 has no instrument disclosures",
+      measurements,
+    );
     check(
       measurements.openInstrumentDisclosureCount === 0,
       "Issue 535 instrument disclosures are not closed by default",
@@ -109,10 +139,22 @@ async function captureModal(cdp, width, height, filename) {
   scenarios.push({ kind: "modal", viewport: `${width}x${height}`, filename, measurements });
 
   check(measurements.open, "Issue 535 card modal did not open", measurements);
-  check(measurements.insideViewport, `Issue 535 card modal exceeds ${width}x${height}`, measurements);
-  check(measurements.hasCloseButton, "Issue 535 card modal has no accessible close action", measurements);
+  check(
+    measurements.insideViewport,
+    `Issue 535 card modal exceeds ${width}x${height}`,
+    measurements,
+  );
+  check(
+    measurements.hasCloseButton,
+    "Issue 535 card modal has no accessible close action",
+    measurements,
+  );
   check(measurements.hasCancelButton, "Issue 535 card modal has no Cancel action", measurements);
-  check(measurements.hasSinglePrimaryAction, "Issue 535 card modal primary action is ambiguous", measurements);
+  check(
+    measurements.hasSinglePrimaryAction,
+    "Issue 535 card modal primary action is ambiguous",
+    measurements,
+  );
 
   await evaluate(
     cdp,
