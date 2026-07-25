@@ -9,6 +9,8 @@ import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancemen
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { apiGet, handleApiRequest } from "./dev-server/api.js";
 import { enhanceCardInstrumentSubtotals } from "./dev-server/card-instrument-subtotals-enhancement.js";
+import { finalizeCardsInterface } from "./dev-server/cards-interface-finalizer.js";
+import { enhanceCardsInterface } from "./dev-server/cards-interface-enhancement.js";
 import { renderCardsPageWithMonthNavigation } from "./dev-server/cards-page-month-navigation.js";
 import { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
@@ -156,7 +158,9 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     await materializeCardInvoiceRecurrences(token, url);
     const html = await renderCardsPageWithMonthNavigation(token, url);
     const sortedHtml = enhanceCardListSorting(html, url);
-    sendHtml(response, 200, enhanceCardInstrumentSubtotals(sortedHtml));
+    const groupedHtml = enhanceCardInstrumentSubtotals(sortedHtml);
+    const enhancedHtml = enhanceCardsInterface(groupedHtml);
+    sendHtml(response, 200, finalizeCardsInterface(enhancedHtml));
     return;
   }
 

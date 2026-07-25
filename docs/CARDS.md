@@ -198,6 +198,32 @@ Exemplo minimo de criacao de instrumento em agrupador existente:
 }
 ```
 
+## Hierarquia da tela `Cartoes`
+
+A rota `/cartoes` deve priorizar a decisao operacional sobre a fatura selecionada, sem alterar os contratos financeiros descritos neste documento.
+
+Ordem esperada de leitura:
+
+1. selecao do cartao e do periodo da fatura;
+2. valor a pagar, estado da fatura, fechamento e vencimento;
+3. acoes disponiveis para fechar ou pagar a fatura;
+4. composicao, conciliacao, compras por instrumento e limite do cartao;
+5. busca, filtros e lista de compras.
+
+A lista de compras deve:
+
+- preservar o agrupamento e os subtotais por instrumento;
+- exibir cabecalho comparavel no desktop com data, compra, situacao, valor e acoes;
+- manter rotulos de contexto por campo no mobile, sem depender da posicao de uma coluna;
+- representar conciliacao com icone e texto acessivel, sem depender apenas de cor;
+- mostrar contadores nos filtros e anunciar a quantidade de compras visiveis;
+- oferecer estado vazio especifico quando busca e filtros nao retornarem resultados;
+- manter identificadores de cartao sempre mascarados.
+
+Os modais de compra e pagamento devem ter titulo e descricao acessiveis, fechamento por controle identificado, foco inicial em campo interativo e layout de coluna unica nas viewports moveis.
+
+A validacao visual permanente usa `scripts/statement-visual/cards-interface.mjs` para os estados principal e modal em desktop e mobile, e `scripts/statement-visual/cards-interface-adversarial.mjs` para `1366x768`, arvore de acessibilidade, anuncio unico da regiao viva, agrupamentos recolhidos e fluxo completo por teclado. O workflow `Statement visual validation` deve preservar as evidencias `cards-desktop.png`, `cards-modal-desktop.png`, `cards-mobile.png`, `cards-modal-mobile.png`, `cards-compact-desktop.png`, `cards-collapsed-groups.png`, `cards-modal-compact-desktop.png`, `cards-interface.json` e `cards-interface-adversarial.json`.
+
 ## Cobertura esperada
 
 A cobertura automatizada deve proteger pelo menos:
@@ -215,4 +241,5 @@ A cobertura automatizada deve proteger pelo menos:
 - parcelas e recorrencias preservando o instrumento da compra;
 - recorrencias preservando o instrumento definido na criacao;
 - movimentacao segura de compra para outro periodo de fatura;
-- tela `Contas e Cartoes` com lista hierarquica, criacao, edicao, default, arquivamento, estado bloqueado/inativo e ausencia do fluxo legado.
+- tela `Contas e Cartoes` com lista hierarquica, criacao, edicao, default, arquivamento, estado bloqueado/inativo e ausencia do fluxo legado;
+- tela `Cartoes` com hierarquia da fatura, busca, filtros, lista responsiva, estados acessiveis e modais validados em desktop e mobile.
