@@ -409,7 +409,16 @@ async function verifyConfirmationCancellation(cdp) {
   const opened = await evaluate(
     cdp,
     `(() => {
-      const form = document.querySelector('[data-tab-panel="cards"]:not([hidden]) form[data-confirm]');
+      const instrumentsTrigger = document.querySelector('[data-tab-panel="cards"]:not([hidden]) [data-view-instruments]');
+      if (!instrumentsTrigger) return false;
+      instrumentsTrigger.click();
+      const instrumentsDialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
+      const forms = instrumentsDialog ? Array.from(instrumentsDialog.querySelectorAll('form[data-confirm]')) : [];
+      const form = forms.find((candidate) => {
+        const candidateTrigger = candidate.querySelector('button[type="submit"]:not([disabled])');
+        const rect = candidateTrigger?.getBoundingClientRect();
+        return Boolean(rect && rect.width > 0 && rect.height > 0);
+      });
       const trigger = form?.querySelector('button[type="submit"]:not([disabled])');
       if (!form || !trigger) return false;
       window.__issue535OriginalFetch = window.fetch;
