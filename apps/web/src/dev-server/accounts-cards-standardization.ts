@@ -3,7 +3,10 @@ export function standardizeAccountsCardsPage(html: string): string {
 
   let standardized = html
     .replace(/\s*<p class="eyebrow">Cadastros financeiros<\/p>/, "")
-    .replace(/\s*<p class="muted">Mantenha contas, dinheiro, investimentos e cartões em um único cadastro mestre\.<\/p>/, "")
+    .replace(
+      /\s*<p class="muted">Mantenha contas, dinheiro, investimentos e cartões em um único cadastro mestre\.<\/p>/,
+      "",
+    )
     .replace("<h1>Contas e Cartões</h1>", "<h1>Contas e cartões</h1>")
     .replace(/\s*<button id="connections-tab"[\s\S]*?<\/button>/, "")
     .replace(/\s*<section id="connections-panel"[\s\S]*?<\/section>/, "")
@@ -17,11 +20,17 @@ export function standardizeAccountsCardsPage(html: string): string {
     );
 
   if (!standardized.includes("data-accounts-cards-standardization-styles")) {
-    standardized = standardized.replace("</head>", `${standardizationStyles()}</head>`);
+    standardized = standardized.replace(
+      "</head>",
+      `${standardizationStyles()}</head>`,
+    );
   }
 
   if (!standardized.includes("data-accounts-cards-standardization-script")) {
-    standardized = standardized.replace("</body>", `${standardizationScript()}</body>`);
+    standardized = standardized.replace(
+      "</body>",
+      `${standardizationScript()}</body>`,
+    );
   }
 
   return standardized;
