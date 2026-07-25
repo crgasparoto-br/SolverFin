@@ -1,0 +1,74 @@
+name: Fix issue 535 dialog focus
+
+on:
+  push:
+    branches:
+      - feat/535-padronizar-contas-cartoes
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/535-padronizar-contas-cartoes
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Harden dialog close and focus restoration
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/web/src/dev-server/accounts-cards-standardization.ts')
+          content = path.read_text()
+
+          replacements = [
+              (
+                  "        let lastDialogTrigger = null;\n",
+                  "        let lastDialogTrigger = null;\n        const dialogTriggers = new WeakMap();\n",
+              ),
+              (
+                  "        function openDialogFromTrigger(trigger) {\n          const dialogId = trigger?.dataset.openDialog;\n          const dialog = dialogId ? document.getElementById(dialogId) : null;\n          if (!dialog) return;\n          lastDialogTrigger = trigger;\n",
+                  "        function rememberDialogTrigger(dialog, trigger) {\n          if (!dialog || !trigger) return;\n          lastDialogTrigger = trigger;\n          dialogTriggers.set(dialog, trigger);\n        }\n\n        function restoreDialogFocus(dialog) {\n          const trigger = dialogTriggers.get(dialog) || lastDialogTrigger;\n          if (!trigger || typeof trigger.focus !== 'function') return;\n          window.setTimeout(() => trigger.focus(), 0);\n        }\n\n        function openDialogFromTrigger(trigger) {\n          const dialogId = trigger?.dataset.openDialog;\n          const dialog = dialogId ? document.getElementById(dialogId) : null;\n          if (!dialog) return;\n          rememberDialogTrigger(dialog, trigger);\n",
+              ),
+              (
+                  "            dialog.addEventListener('close', () => {\n              if (lastDialogTrigger && typeof lastDialogTrigger.focus === 'function') lastDialogTrigger.focus();\n            });\n",
+                  "            dialog.addEventListener('cancel', (event) => {\n              event.preventDefault();\n              closeDialog(dialog);\n            });\n            dialog.addEventListener('keydown', (event) => {\n              if (event.key !== 'Escape') return;\n              event.preventDefault();\n              closeDialog(dialog);\n            });\n            dialog.addEventListener('close', () => restoreDialogFocus(dialog));\n",
+              ),
+              (
+                  "          document.addEventListener('click', (event) => {\n            const trigger = event.target.closest('[data-open-dialog]');\n            if (trigger) lastDialogTrigger = trigger;\n          }, true);\n",
+                  "          document.addEventListener('click', (event) => {\n            const trigger = event.target.closest('[data-open-dialog]');\n            const dialogId = trigger?.dataset.openDialog;\n            const dialog = dialogId ? document.getElementById(dialogId) : null;\n            if (dialog) rememberDialogTrigger(dialog, trigger);\n          }, true);\n",
+              ),
+              (
+                  "          dialog.addEventListener('cancel', (event) => {\n            if (processing) event.preventDefault();\n          });\n",
+                  "          dialog.addEventListener('cancel', (event) => {\n            event.preventDefault();\n            if (!processing) closeDialog(dialog);\n          });\n          dialog.addEventListener('keydown', (event) => {\n            if (event.key !== 'Escape' || processing) return;\n            event.preventDefault();\n            closeDialog(dialog);\n          });\n",
+              ),
+              (
+                  "          dialog.addEventListener('close', () => {\n            if (processing) return;\n            pendingForm = null;\n            status.className = 'form-status muted';\n            status.textContent = '';\n            if (pendingTrigger) pendingTrigger.focus();\n          });\n",
+                  "          dialog.addEventListener('close', () => {\n            if (processing) return;\n            const trigger = pendingTrigger;\n            pendingForm = null;\n            pendingTrigger = null;\n            status.className = 'form-status muted';\n            status.textContent = '';\n            if (trigger && typeof trigger.focus === 'function') {\n              window.setTimeout(() => trigger.focus(), 0);\n            }\n          });\n",
+              ),
+          ]
+
+          for before, after in replacements:
+              if before not in content:
+                  raise SystemExit(f'expected snippet not found: {before[:80]!r}')
+              content = content.replace(before, after, 1)
+
+          path.write_text(content)
+          PY
+          npx prettier --write apps/web/src/dev-server/accounts-cards-standardization.ts
+          rm .github/workflows/fix-issue-535-dialog-focus.yml
+
+      - name: Commit fix and cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/accounts-cards-standardization.ts
+          git add .github/workflows/fix-issue-535-dialog-focus.yml
+          git commit -m "fix: restaurar foco e Escape nos modais da issue 535"
+          git push
