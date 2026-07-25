@@ -26,43 +26,25 @@ jobs:
 
           path = Path('scripts/statement-visual/accounts-cards-interface.mjs')
           content = path.read_text()
-          before = '''    `(() => {
-      const form = document.querySelector('[data-tab-panel="cards"]:not([hidden]) form[data-confirm]');
-      const trigger = form?.querySelector('button[type="submit"]:not([disabled])');
-      if (!form || !trigger) return false;
-      window.__issue535OriginalFetch = window.fetch;
-      window.__issue535FetchCount = 0;
-      window.fetch = (...args) => {
-        window.__issue535FetchCount += 1;
-        return window.__issue535OriginalFetch(...args);
-      };
-      form.requestSubmit(trigger);
-      return true;
-    })()`,
-'''
-          after = '''    `(() => {
-      const instrumentsTrigger = document.querySelector('[data-tab-panel="cards"]:not([hidden]) [data-view-instruments]');
-      if (!instrumentsTrigger) return false;
-      instrumentsTrigger.click();
-      const instrumentsDialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
-      const forms = instrumentsDialog ? Array.from(instrumentsDialog.querySelectorAll('form[data-confirm]')) : [];
-      const form = forms.find((candidate) => {
-        const candidateTrigger = candidate.querySelector('button[type="submit"]:not([disabled])');
-        const rect = candidateTrigger?.getBoundingClientRect();
-        return Boolean(rect && rect.width > 0 && rect.height > 0);
-      });
-      const trigger = form?.querySelector('button[type="submit"]:not([disabled])');
-      if (!form || !trigger) return false;
-      window.__issue535OriginalFetch = window.fetch;
-      window.__issue535FetchCount = 0;
-      window.fetch = (...args) => {
-        window.__issue535FetchCount += 1;
-        return window.__issue535OriginalFetch(...args);
-      };
-      form.requestSubmit(trigger);
-      return true;
-    })()`,
-'''
+          before = (
+              "      const form = document.querySelector('[data-tab-panel=\"cards\"]:not([hidden]) form[data-confirm]');\n"
+              "      const trigger = form?.querySelector('button[type=\"submit\"]:not([disabled])');\n"
+              "      if (!form || !trigger) return false;\n"
+          )
+          after = (
+              "      const instrumentsTrigger = document.querySelector('[data-tab-panel=\"cards\"]:not([hidden]) [data-view-instruments]');\n"
+              "      if (!instrumentsTrigger) return false;\n"
+              "      instrumentsTrigger.click();\n"
+              "      const instrumentsDialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');\n"
+              "      const forms = instrumentsDialog ? Array.from(instrumentsDialog.querySelectorAll('form[data-confirm]')) : [];\n"
+              "      const form = forms.find((candidate) => {\n"
+              "        const candidateTrigger = candidate.querySelector('button[type=\"submit\"]:not([disabled])');\n"
+              "        const rect = candidateTrigger?.getBoundingClientRect();\n"
+              "        return Boolean(rect && rect.width > 0 && rect.height > 0);\n"
+              "      });\n"
+              "      const trigger = form?.querySelector('button[type=\"submit\"]:not([disabled])');\n"
+              "      if (!form || !trigger) return false;\n"
+          )
           if before not in content:
               raise SystemExit('expected confirmation scenario was not found')
           path.write_text(content.replace(before, after, 1))
