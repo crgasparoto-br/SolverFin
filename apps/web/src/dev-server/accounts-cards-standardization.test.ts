@@ -57,7 +57,7 @@ test("injeta modal, CDI por icone, tooltips e formularios agrupados", () => {
   assert.equal(standardizeAccountsCardsPage(html), html);
 });
 
-test("preserva escapes da regex executada pelo gate visual", () => {
+test("preserva contratos do gate visual", () => {
   const visualGateSource = readFileSync(
     new URL("../../../scripts/statement-visual/accounts-cards-interface.mjs", import.meta.url),
     "utf8",
@@ -66,4 +66,10 @@ test("preserva escapes da regex executada pelo gate visual", () => {
     "hasUnmaskedLongNumber: /(?:\\\\d[ -]?){12,19}/.test(text.replace(/\\\\*+/g, '')),";
 
   assert.ok(visualGateSource.includes(expectedRuntimeRegex));
+  assert.ok(
+    visualGateSource.includes(
+      "const instrumentsDialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');",
+    ),
+  );
+  assert.ok(visualGateSource.includes("rect && rect.width > 0 && rect.height > 0"));
 });
