@@ -36,10 +36,11 @@ try {
   await browser.cdp.send("DOM.enable");
   await browser.cdp.send("CSS.enable");
 
+  const { root } = await browser.cdp.send("DOM.getDocument", { depth: -1, pierce: true });
   const nodes = {
-    primary: await findNode(browser.cdp, selectors.primary),
-    neutral: await findNode(browser.cdp, selectors.neutral),
-    destructive: await findNode(browser.cdp, selectors.destructive),
+    primary: await findNode(browser.cdp, root.nodeId, selectors.primary),
+    neutral: await findNode(browser.cdp, root.nodeId, selectors.neutral),
+    destructive: await findNode(browser.cdp, root.nodeId, selectors.destructive),
   };
 
   await forceState(browser.cdp, nodes.primary, ["hover"]);
@@ -119,10 +120,9 @@ if (failures.length > 0) {
   console.log("Issue 537 hover and focus visual validation passed.");
 }
 
-async function findNode(cdp, selector) {
-  const { root } = await cdp.send("DOM.getDocument", { depth: -1, pierce: true });
+async function findNode(cdp, rootNodeId, selector) {
   const { nodeId } = await cdp.send("DOM.querySelector", {
-    nodeId: root.nodeId,
+    nodeId: rootNodeId,
     selector,
   });
   assert.ok(nodeId, `Unable to find visual validation control: ${selector}`);
