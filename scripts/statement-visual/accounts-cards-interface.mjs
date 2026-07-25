@@ -551,7 +551,7 @@ function instrumentModalStateExpression() {
       hasInstrumentListOrEmptyState: Boolean(dialog.querySelector('.instrument-list, [data-instrument-empty-state]')),
       hasAddInstrumentAction: Boolean(dialog.querySelector('[data-toggle-instrument-create]')),
       minimumInstrumentActionTarget: actionSizes.length > 0 ? Math.min(...actionSizes) : 40,
-      hasUnmaskedLongNumber: /(?:\d[ -]?){12,19}/.test(text.replace(/\*+/g, '')),
+      hasUnmaskedLongNumber: /(?:\\d[ -]?){12,19}/.test(text.replace(/\\*+/g, '')),
       width: rect.width,
       height: rect.height,
       viewport: { width: window.innerWidth, height: window.innerHeight },
