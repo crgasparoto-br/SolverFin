@@ -1,3 +1,5 @@
+import { icon } from "./icons.js";
+
 const finalizerMarker = "data-cards-interface-finalizer";
 
 export function finalizeCardsInterface(html: string): string {
@@ -150,9 +152,9 @@ function finalizePurchaseSearch(html: string): string {
       attributes = upsertAttribute(attributes, "autocomplete", "off");
       return `<label class="purchase-search" for="purchase-search-input">
                 <span class="visually-hidden">Buscar compras da fatura</span>
-                <span class="purchase-search-icon" aria-hidden="true">⌕</span>
+                <span class="purchase-search-icon" aria-hidden="true">${icon("search", 15)}</span>
                 <input${attributes}>
-                <button type="button" class="purchase-search-clear" data-clear-purchase-search aria-label="Limpar busca" title="Limpar busca" hidden>×</button>
+                <button type="button" class="purchase-search-clear" data-clear-purchase-search aria-label="Limpar busca" title="Limpar busca" hidden>${icon("x", 14)}</button>
               </label>`;
     },
   );
