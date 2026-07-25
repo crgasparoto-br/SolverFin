@@ -20,17 +20,11 @@ export function standardizeAccountsCardsPage(html: string): string {
     );
 
   if (!standardized.includes("data-accounts-cards-standardization-styles")) {
-    standardized = standardized.replace(
-      "</head>",
-      `${standardizationStyles()}</head>`,
-    );
+    standardized = standardized.replace("</head>", `${standardizationStyles()}</head>`);
   }
 
   if (!standardized.includes("data-accounts-cards-standardization-script")) {
-    standardized = standardized.replace(
-      "</body>",
-      `${standardizationScript()}</body>`,
-    );
+    standardized = standardized.replace("</body>", `${standardizationScript()}</body>`);
   }
 
   return standardized;
