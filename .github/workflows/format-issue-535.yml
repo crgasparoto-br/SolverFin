@@ -1,0 +1,134 @@
+name: Format issue 535
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.head_ref == 'feat/535-padronizar-contas-cartoes'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply issue 535 corrections
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const standardizationPath = 'apps/web/src/dev-server/accounts-cards-standardization.ts';
+          let standardization = fs.readFileSync(standardizationPath, 'utf8');
+          standardization = standardization.replace(
+            'if (html.includes("data-master-status")) return html;',
+            'if (html.includes("<select data-master-status>")) return html;',
+          );
+          standardization = standardization.replace(
+            '        function collapseInstrumentLists() {',
+            `        function restoreInstrumentRows() {
+          document.querySelectorAll('.card-account-item').forEach((card) => {
+            const dialogListSection = card.querySelector('.dialog-instrument-list');
+            const list = dialogListSection?.querySelector('.instrument-list');
+            const main = card.querySelector(':scope > .item-main');
+            if (list && main && !main.querySelector(':scope > .instrument-list')) {
+              main.append(list);
+              dialogListSection.remove();
+            }
+
+            const editDialog = card.querySelector('dialog[id^="edit-card-dialog-"]');
+            const toggle = editDialog?.querySelector('[data-toggle-instrument-create]');
+            const actions = card.querySelector(':scope > .item-footer > .item-actions, :scope > .item-actions');
+            if (!editDialog || !toggle || !actions || actions.querySelector('[data-add-instrument-direct]')) return;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'icon-button';
+            button.setAttribute('data-add-instrument-direct', '');
+            button.setAttribute('aria-label', 'Adicionar instrumento');
+            button.title = 'Adicionar instrumento';
+            button.innerHTML = '<svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+            button.addEventListener('click', () => {
+              lastDialogTrigger = button;
+              if (typeof editDialog.showModal === 'function') {
+                if (!editDialog.open) editDialog.showModal();
+              } else {
+                editDialog.setAttribute('open', '');
+              }
+              if (toggle.getAttribute('aria-expanded') !== 'true') toggle.click();
+              const formId = toggle.dataset.toggleInstrumentCreate;
+              const form = formId ? document.getElementById(formId) : null;
+              const firstField = form?.querySelector('input, select, button');
+              if (firstField && typeof firstField.focus === 'function') firstField.focus();
+            });
+
+            const editAction = actions.querySelector('[data-open-dialog^="edit-card-dialog-"]');
+            if (editAction?.nextSibling) actions.insertBefore(button, editAction.nextSibling);
+            else actions.append(button);
+          });
+        }
+
+        function collapseInstrumentLists() {`,
+          );
+          standardization = standardization.replace(
+            '        standardizeRows();\n        collapseInstrumentLists();',
+            '        standardizeRows();\n        restoreInstrumentRows();\n        collapseInstrumentLists();',
+          );
+          standardization = standardization.replace(
+            '        .item-actions { flex-wrap: wrap; justify-content: flex-start; }',
+            '        .item-actions { flex-wrap: wrap; justify-content: flex-start; }\n        .item-footer .cdi-action-button { width: auto; }',
+          );
+          fs.writeFileSync(standardizationPath, standardization);
+
+          const visualPath = 'scripts/statement-visual/accounts-cards-interface.mjs';
+          let visual = fs.readFileSync(visualPath, 'utf8');
+          visual = visual.replace(
+            `    const submitButtons = dialog.querySelectorAll('button[type="submit"]');`,
+            `    const submitButtons = Array.from(dialog.querySelectorAll('button[type="submit"]')).filter((button) => {
+      const buttonRect = button.getBoundingClientRect();
+      return !button.hidden && buttonRect.width > 0 && buttonRect.height > 0;
+    });`,
+          );
+          fs.writeFileSync(visualPath, visual);
+
+          const testPath = 'apps/web/src/dev-server/accounts-cards-standardization.test.ts';
+          let test = fs.readFileSync(testPath, 'utf8');
+          test = test.replace(
+            '  assert.match(html, /standardizeRows/);',
+            '  assert.match(html, /standardizeRows/);\n  assert.match(html, /restoreInstrumentRows/);\n  assert.match(html, /data-add-instrument-direct/);',
+          );
+          fs.writeFileSync(testPath, test);
+          NODE
+
+          npx prettier --write \
+            apps/web/src/dev-server/accounts-cards-standardization.ts \
+            apps/web/src/dev-server/accounts-cards-standardization.test.ts \
+            scripts/statement-visual/accounts-cards-interface.mjs
+
+      - name: Commit corrections
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/accounts-cards-standardization.ts
+          git add apps/web/src/dev-server/accounts-cards-standardization.test.ts
+          git add scripts/statement-visual/accounts-cards-interface.mjs
+          git commit -m "fix: concluir composição visual de contas e cartões"
+          git push
