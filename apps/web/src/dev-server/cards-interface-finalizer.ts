@@ -135,6 +135,15 @@ function finalizePurchaseSearch(html: string): string {
   const misplacedSearchWrapper =
     /<label class="purchase-search" for="purchase-search-input">\s*<span class="visually-hidden">Buscar compras da fatura<\/span>\s*<span class="purchase-search-icon" aria-hidden="true">[\s\S]*?<\/span>\s*(<input(?=[^>]*\sdata-purchase-search-state(?:\s|\/?>))[^>]*>)\s*<button type="button" class="purchase-search-clear"[\s\S]*?<\/button>\s*<\/label>/;
   let normalized = html.replace(misplacedSearchWrapper, "$1");
+  normalized = normalized.replace(
+    /<input(?=[^>]*\sdata-purchase-search-state(?:\s|\/?>))([^>]*)>/,
+    (_match, rawAttributes: string) => {
+      let attributes = removeAttribute(rawAttributes, "id");
+      attributes = removeAttribute(attributes, "aria-label");
+      attributes = removeAttribute(attributes, "autocomplete");
+      return `<input${attributes}>`;
+    },
+  );
 
   if (
     /<label class="purchase-search"[^>]*>[\s\S]*?<input(?=[^>]*\stype="search")(?=[^>]*\sdata-purchase-search(?:\s|\/?>))/.test(
@@ -166,4 +175,8 @@ function upsertAttribute(attributes: string, name: string, value: string): strin
     return attributes.replace(pattern, ` ${name}="${value}"`);
   }
   return `${attributes} ${name}="${value}"`;
+}
+
+function removeAttribute(attributes: string, name: string): string {
+  return attributes.replace(new RegExp(`\\s${name}="[^"]*"`, "g"), "");
 }
