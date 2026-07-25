@@ -6,7 +6,10 @@ import { standardizeAccountsCardsPage } from "./accounts-cards-standardization.j
 const fixture = `<!doctype html><html><head></head><body>
 <section class="master-heading"><div><p class="eyebrow">Cadastros financeiros</p><h1>Contas e Cartões</h1><p class="muted">Mantenha contas, dinheiro, investimentos e cartões em um único cadastro mestre.</p></div><div class="master-actions" aria-label="Ações principais"><button type="button" data-open-dialog="new-account-dialog">Adicionar conta</button><button type="button" data-open-dialog="new-card-dialog">Adicionar cartão</button></div></section>
 <section class="master-toolbar"><div class="tab-list"><button id="accounts-tab" data-tab="accounts" aria-selected="true">Contas bancárias <span>2</span></button><button id="cards-tab" data-tab="cards" aria-selected="false">Cartões de crédito <span>1</span></button><button id="connections-tab" data-tab="connections">Conexões</button></div><div class="filter-row"><label>Buscar<input data-master-search /></label><label class="active-filter-switch"><input data-active-filter-input /></label></div></section>
-<section data-tab-panel="accounts"><article data-master-item><div class="amount-stack"></div><div class="item-actions"></div></article></section><section data-tab-panel="cards"><article class="card-account-item" data-master-item><div class="item-main"><div class="instrument-list"><div data-card-instrument></div></div></div><div class="amount-stack"></div><div class="item-actions"></div></article></section><section id="connections-panel">Futuro</section>
+<section data-tab-panel="accounts"><article data-master-item><div class="amount-stack"></div><div class="item-actions"><button data-account-remuneration-action>Ativar CDI</button></div></article></section>
+<section data-tab-panel="cards"><article class="card-account-item" data-master-item><div class="item-main"></div><div class="amount-stack"></div><div class="item-actions"><button type="button" class="icon-button" data-view-instruments data-open-dialog="card-instruments-dialog-card-1" aria-label="Ver instrumentos">lista</button></div></article></section>
+<section id="connections-panel">Futuro</section>
+<dialog id="new-card-dialog" class="master-dialog"><form data-api-form data-payload-kind="credit-card-account"><label>Nome<input name="name" /></label><label>Instituição<select name="institutionKey"></select></label><label>Bandeira<select name="brandKey"></select></label><label>Fechamento<input name="closingDay" /></label><label>Vencimento<input name="dueDay" /></label><label>Limite<input name="creditLimitMinor" /></label><label>Conta<select name="paymentAccountId"></select></label><label>Tipo<select name="instrumentType"></select></label><label>Titular<select name="instrumentHolder"></select></label><label>Nome instrumento<input name="instrumentName" /></label><label>Final<input name="instrumentMaskedIdentifier" /></label><label>Limite instrumento<input name="instrumentCreditLimitMinor" /></label><button type="submit">Criar</button></form></dialog>
 <script>if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) return;</script>
 </body></html>`;
 
@@ -27,16 +30,22 @@ test("padroniza cabecalho, abas, filtros e acao contextual", () => {
   assert.match(html, /accounts-cards-toolbar/);
 });
 
-test("injeta estrutura visual e interacoes acessiveis", () => {
+test("injeta modal, CDI por icone, tooltips e formularios agrupados", () => {
   const html = standardizeAccountsCardsPage(fixture);
 
   assert.match(html, /standardizeRows/);
   assert.match(html, /item-footer/);
-  assert.match(html, /instrument-disclosure/);
-  assert.match(html, /aria-expanded/);
-  assert.match(html, /aria-live="polite"/);
+  assert.doesNotMatch(html, /instrument-disclosure/);
+  assert.match(html, /standardizeCdiActions/);
+  assert.match(html, /MutationObserver/);
+  assert.match(html, /presentation\.label/);
+  assert.match(html, /data-tooltip/);
+  assert.match(html, /Identificação do cartão/);
+  assert.match(html, /Instrumento inicial/);
   assert.match(html, /Buscar por nome, instituição, bandeira ou final/);
   assert.match(html, /Processando\.\.\./);
+  assert.match(html, /destructive \? 'Excluir' : 'Arquivar'/);
+  assert.match(html, /confirmation\.split/);
   assert.doesNotMatch(html, /window\.confirm/);
   assert.equal(standardizeAccountsCardsPage(html), html);
 });
