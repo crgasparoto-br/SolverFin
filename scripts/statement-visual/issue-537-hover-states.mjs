@@ -46,7 +46,7 @@ try {
   await forceState(browser.cdp, nodes.primary, ["hover"]);
   await forceState(browser.cdp, nodes.neutral, ["hover"]);
   await forceState(browser.cdp, nodes.destructive, ["hover"]);
-  await sleep(120);
+  await sleep(250);
 
   const hoverStyles = await readStyles(browser.cdp);
   await screenshot(browser.cdp, join(outputDir, "issue-537-hover-states-desktop-1440x900.png"));
@@ -77,7 +77,7 @@ try {
   await forceState(browser.cdp, nodes.primary, []);
   await forceState(browser.cdp, nodes.neutral, []);
   await forceState(browser.cdp, nodes.destructive, ["focus", "focus-visible"]);
-  await sleep(120);
+  await sleep(250);
 
   const focusStyles = await readStyles(browser.cdp);
   await screenshot(
