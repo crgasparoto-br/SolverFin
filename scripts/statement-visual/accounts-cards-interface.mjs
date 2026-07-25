@@ -10,29 +10,59 @@ const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-vi
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 const scenarios = [];
+const viewports = [
+  { width: 1440, height: 900, suffix: "desktop-1440x900" },
+  { width: 1366, height: 768, suffix: "desktop-1366x768" },
+  { width: 390, height: 844, suffix: "mobile-390x844" },
+];
 
 if (!chromePath) throw new Error("CHROME_BIN is required for accounts and cards validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 
 try {
-  await setViewport(browser.cdp, 1366, 768);
+  await browser.cdp.send("Accessibility.enable");
+  await setViewport(browser.cdp, 1440, 900);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
-  await captureState(browser.cdp, "accounts", 1366, 768, "issue-535-accounts-desktop-1366x768.png");
-  await activateCards(browser.cdp);
-  await captureState(browser.cdp, "cards", 1366, 768, "issue-535-cards-desktop-1366x768.png");
-  await captureModal(browser.cdp, 1366, 768, "issue-535-card-modal-desktop-1366x768.png");
+  await verifyKeyboardTabsAndFilterPersistence(browser.cdp);
 
-  await setViewport(browser.cdp, 390, 844);
-  await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
-  await sleep(350);
-  await captureState(browser.cdp, "accounts", 390, 844, "issue-535-accounts-mobile-390x844.png");
-  await activateCards(browser.cdp);
-  await captureState(browser.cdp, "cards", 390, 844, "issue-535-cards-mobile-390x844.png");
-  await captureModal(browser.cdp, 390, 844, "issue-535-card-modal-mobile-390x844.png");
+  for (const viewport of viewports) {
+    await setViewport(browser.cdp, viewport.width, viewport.height);
+    await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
+    await sleep(500);
+    await captureState(
+      browser.cdp,
+      "accounts",
+      viewport.width,
+      viewport.height,
+      `issue-535-accounts-${viewport.suffix}.png`,
+    );
+    await activateCards(browser.cdp);
+    await captureState(
+      browser.cdp,
+      "cards",
+      viewport.width,
+      viewport.height,
+      `issue-535-cards-${viewport.suffix}.png`,
+    );
+    await captureInstrumentModal(
+      browser.cdp,
+      viewport.width,
+      viewport.height,
+      `issue-535-instruments-modal-${viewport.suffix}.png`,
+    );
+    await captureCardCreateModal(
+      browser.cdp,
+      viewport.width,
+      viewport.height,
+      `issue-535-card-create-modal-${viewport.suffix}.png`,
+    );
+
+    if (viewport.width === 1366) await verifyConfirmationCancellation(browser.cdp);
+  }
 } finally {
   await browser.close(outputDir);
 }
@@ -59,9 +89,10 @@ if (failures.length > 0) {
 async function captureState(cdp, expectedTab, width, height, filename) {
   if (expectedTab === "accounts") {
     await navigate(cdp, `${baseUrl}/contas-cartoes`);
-    await sleep(350);
+    await sleep(500);
   }
   const measurements = await evaluate(cdp, pageStateExpression());
+  const accessibility = await accessibilitySummary(cdp);
   await screenshot(cdp, join(outputDir, filename));
   scenarios.push({
     kind: "page",
@@ -69,6 +100,7 @@ async function captureState(cdp, expectedTab, width, height, filename) {
     viewport: `${width}x${height}`,
     filename,
     measurements,
+    accessibility,
   });
 
   check(
@@ -88,6 +120,14 @@ async function captureState(cdp, expectedTab, width, height, filename) {
     measurements,
   );
   check(
+    measurements.searchPlaceholder ===
+      (expectedTab === "cards"
+        ? "Buscar por nome, instituição, bandeira ou final"
+        : "Buscar por nome, instituição ou conta"),
+    `Issue 535 search placeholder does not match ${expectedTab}`,
+    measurements,
+  );
+  check(
     !measurements.hasConnectionsTab,
     "Issue 535 still exposes the Connections tab",
     measurements,
@@ -104,7 +144,7 @@ async function captureState(cdp, expectedTab, width, height, filename) {
   );
   check(
     measurements.minimumActionTarget >= 40,
-    "Issue 535 has row actions smaller than 40px",
+    "Issue 535 has visible row actions smaller than 40px",
     measurements,
   );
   check(
@@ -112,15 +152,42 @@ async function captureState(cdp, expectedTab, width, height, filename) {
     "Issue 535 rows were not normalized into a comparable footer",
     measurements,
   );
+  check(
+    measurements.tooltipVisibleOnFocus,
+    "Issue 535 tooltip is not exposed when an icon action receives focus",
+    measurements,
+  );
+  check(accessibility.tabCount >= 2, "Issue 535 accessibility tree has no tab semantics", accessibility);
+
+  if (expectedTab === "accounts") {
+    check(measurements.cdiActionCount > 0, "Issue 535 exposes no CDI actions", measurements);
+    check(measurements.cdiActionsIconOnly, "Issue 535 CDI actions still render text", measurements);
+    check(
+      measurements.enabledCdiLabelsValid,
+      "Issue 535 enabled CDI actions lack Ativar/Configurar accessible labels",
+      measurements,
+    );
+  }
+
   if (expectedTab === "cards") {
     check(
-      measurements.instrumentDisclosureCount > 0,
-      "Issue 535 has no instrument disclosures",
+      measurements.inlineInstrumentListCount === 0,
+      "Issue 535 still renders instruments inside card rows",
       measurements,
     );
     check(
-      measurements.openInstrumentDisclosureCount === 0,
-      "Issue 535 instrument disclosures are not closed by default",
+      measurements.instrumentDisclosureCount === 0,
+      "Issue 535 still renders inline instrument disclosures",
+      measurements,
+    );
+    check(
+      measurements.viewInstrumentActionCount === measurements.cardRowCount,
+      "Issue 535 does not expose one Ver instrumentos action per card",
+      measurements,
+    );
+    check(
+      measurements.dedicatedInstrumentDialogCount === measurements.cardRowCount,
+      "Issue 535 does not expose one dedicated instrument dialog per card",
       measurements,
     );
   }
@@ -131,74 +198,343 @@ async function activateCards(cdp) {
   await sleep(180);
 }
 
-async function captureModal(cdp, width, height, filename) {
-  await evaluate(cdp, `document.querySelector('[data-context-action]')?.click()`);
+async function captureInstrumentModal(cdp, width, height, filename) {
+  const opened = await evaluate(
+    cdp,
+    `(() => {
+      const trigger = document.querySelector('[data-tab-panel="cards"] .card-account-item [data-view-instruments]');
+      if (!trigger) return false;
+      trigger.click();
+      return true;
+    })()`,
+  );
+  check(opened, "Issue 535 has no Ver instrumentos trigger", { width, height });
+  if (!opened) return;
   await sleep(180);
-  const measurements = await evaluate(cdp, modalStateExpression());
-  await screenshot(cdp, join(outputDir, filename));
-  scenarios.push({ kind: "modal", viewport: `${width}x${height}`, filename, measurements });
 
-  check(measurements.open, "Issue 535 card modal did not open", measurements);
+  const createFormState = await evaluate(
+    cdp,
+    `(() => {
+      const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
+      const button = dialog?.querySelector('[data-toggle-instrument-create]:not([disabled])');
+      if (!button) return { available: false };
+      button.click();
+      const formId = button.dataset.toggleInstrumentCreate;
+      const form = formId ? document.getElementById(formId) : null;
+      return {
+        available: true,
+        visible: Boolean(form && !form.hidden),
+        focusedInsideForm: Boolean(form && form.contains(document.activeElement)),
+      };
+    })()`,
+  );
+  await sleep(80);
+  const measurements = await evaluate(cdp, instrumentModalStateExpression());
+  const accessibility = await accessibilitySummary(cdp);
+  await screenshot(cdp, join(outputDir, filename));
+  scenarios.push({
+    kind: "instrument-modal",
+    viewport: `${width}x${height}`,
+    filename,
+    measurements,
+    createFormState,
+    accessibility,
+  });
+
+  check(measurements.open, "Issue 535 instrument modal did not open", measurements);
   check(
     measurements.insideViewport,
-    `Issue 535 card modal exceeds ${width}x${height}`,
+    `Issue 535 instrument modal exceeds ${width}x${height}`,
     measurements,
   );
   check(
-    measurements.hasCloseButton,
-    "Issue 535 card modal has no accessible close action",
+    measurements.title === "Instrumentos do cartão",
+    "Issue 535 instrument modal has an unexpected title",
     measurements,
   );
+  check(measurements.identifiesCard, "Issue 535 instrument modal does not identify the card", measurements);
+  check(
+    measurements.hasInstrumentListOrEmptyState,
+    "Issue 535 instrument modal has neither a list nor an empty state",
+    measurements,
+  );
+  check(
+    measurements.hasAddInstrumentAction,
+    "Issue 535 instrument modal has no Add instrument action",
+    measurements,
+  );
+  check(
+    measurements.minimumInstrumentActionTarget >= 40,
+    "Issue 535 instrument actions are smaller than 40px",
+    measurements,
+  );
+  check(
+    !measurements.hasUnmaskedLongNumber,
+    "Issue 535 instrument modal exposes an unmasked long number",
+    measurements,
+  );
+  check(
+    accessibility.dialogCount >= 1,
+    "Issue 535 instrument modal is absent from the accessibility tree",
+    accessibility,
+  );
+  if (createFormState.available) {
+    check(createFormState.visible, "Issue 535 Add instrument action did not reveal the form", createFormState);
+    check(
+      createFormState.focusedInsideForm,
+      "Issue 535 Add instrument action did not move focus into the form",
+      createFormState,
+    );
+  }
+
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
+  await sleep(100);
+  const closeState = await evaluate(
+    cdp,
+    `(() => ({
+      open: Boolean(document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]')),
+      focusRestored: document.activeElement?.matches?.('[data-view-instruments]') === true,
+    }))()`,
+  );
+  check(!closeState.open, "Issue 535 instrument modal did not close with Escape", closeState);
+  check(closeState.focusRestored, "Issue 535 did not restore focus after closing instruments", closeState);
+}
+
+async function captureCardCreateModal(cdp, width, height, filename) {
+  await evaluate(cdp, `document.querySelector('[data-context-action]')?.click()`);
+  await sleep(180);
+  const measurements = await evaluate(cdp, cardCreateModalStateExpression());
+  await screenshot(cdp, join(outputDir, filename));
+  scenarios.push({ kind: "card-create-modal", viewport: `${width}x${height}`, filename, measurements });
+
+  check(measurements.open, "Issue 535 card creation modal did not open", measurements);
+  check(
+    measurements.insideViewport,
+    `Issue 535 card creation modal exceeds ${width}x${height}`,
+    measurements,
+  );
+  check(measurements.hasCloseButton, "Issue 535 card modal has no accessible close action", measurements);
   check(measurements.hasCancelButton, "Issue 535 card modal has no Cancel action", measurements);
   check(
     measurements.hasSinglePrimaryAction,
     "Issue 535 card modal primary action is ambiguous",
     measurements,
   );
+  check(
+    JSON.stringify(measurements.groupLabels) ===
+      JSON.stringify([
+        "Identificação do cartão",
+        "Datas e limite",
+        "Conta de pagamento",
+        "Instrumento inicial",
+      ]),
+    "Issue 535 card creation form is not grouped as specified",
+    measurements,
+  );
 
-  await evaluate(
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
+  await sleep(100);
+  const focusRestored = await evaluate(
+    cdp,
+    `document.activeElement?.matches?.('[data-context-action]') === true`,
+  );
+  check(focusRestored, "Issue 535 did not restore focus after closing card creation", {
+    width,
+    height,
+  });
+}
+
+async function verifyKeyboardTabsAndFilterPersistence(cdp) {
+  await navigate(cdp, `${baseUrl}/contas-cartoes`);
+  await sleep(500);
+  const result = await evaluate(
     cdp,
     `(() => {
-      const dialog = document.querySelector('dialog[open]');
-      if (dialog && typeof dialog.close === 'function') dialog.close();
+      const accounts = document.querySelector('#accounts-tab');
+      const cards = document.querySelector('#cards-tab');
+      const search = document.querySelector('[data-master-search]');
+      const status = document.querySelector('[data-master-status]');
+      accounts?.focus();
+      accounts?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      const arrowSelectedCards = cards?.getAttribute('aria-selected') === 'true' && document.activeElement === cards;
+      search.value = 'teste preservado';
+      search.dispatchEvent(new Event('input', { bubbles: true }));
+      status.value = 'inactive';
+      status.dispatchEvent(new Event('change', { bubbles: true }));
+      cards?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+      const homeSelectedAccounts = accounts?.getAttribute('aria-selected') === 'true' && document.activeElement === accounts;
+      const preserved = search.value === 'teste preservado' && status.value === 'inactive';
+      search.value = '';
+      search.dispatchEvent(new Event('input', { bubbles: true }));
+      status.value = 'all';
+      status.dispatchEvent(new Event('change', { bubbles: true }));
+      return { arrowSelectedCards, homeSelectedAccounts, preserved };
     })()`,
   );
-  await sleep(80);
+  scenarios.push({ kind: "keyboard-and-filter", viewport: "1440x900", result });
+  check(result.arrowSelectedCards, "Issue 535 ArrowRight tab navigation failed", result);
+  check(result.homeSelectedAccounts, "Issue 535 Home tab navigation failed", result);
+  check(result.preserved, "Issue 535 filters were not preserved between tabs", result);
+}
+
+async function verifyConfirmationCancellation(cdp) {
+  await activateCards(cdp);
+  const opened = await evaluate(
+    cdp,
+    `(() => {
+      const form = document.querySelector('[data-tab-panel="cards"]:not([hidden]) form[data-confirm]');
+      const trigger = form?.querySelector('button[type="submit"]:not([disabled])');
+      if (!form || !trigger) return false;
+      window.__issue535OriginalFetch = window.fetch;
+      window.__issue535FetchCount = 0;
+      window.fetch = (...args) => {
+        window.__issue535FetchCount += 1;
+        return window.__issue535OriginalFetch(...args);
+      };
+      form.requestSubmit(trigger);
+      return true;
+    })()`,
+  );
+  if (!opened) {
+    check(false, "Issue 535 has no destructive action available for confirmation validation", {});
+    return;
+  }
+  await sleep(120);
+  const openState = await evaluate(
+    cdp,
+    `(() => {
+      const dialog = document.querySelector('dialog.confirm-dialog[open]');
+      return {
+        open: Boolean(dialog),
+        title: dialog?.querySelector('[data-confirm-title]')?.textContent?.trim() || '',
+        action: dialog?.querySelector('[data-confirm-submit]')?.textContent?.trim() || '',
+      };
+    })()`,
+  );
+  await evaluate(cdp, `document.querySelector('dialog.confirm-dialog[open] [data-confirm-cancel]')?.click()`);
+  await sleep(100);
+  const cancelState = await evaluate(
+    cdp,
+    `(() => {
+      const result = {
+        requestCount: window.__issue535FetchCount,
+        open: Boolean(document.querySelector('dialog.confirm-dialog[open]')),
+        focusRestored: document.activeElement?.closest?.('form[data-confirm]') !== null,
+      };
+      if (window.__issue535OriginalFetch) window.fetch = window.__issue535OriginalFetch;
+      delete window.__issue535OriginalFetch;
+      delete window.__issue535FetchCount;
+      return result;
+    })()`,
+  );
+  scenarios.push({ kind: "confirmation-cancel", viewport: "1366x768", openState, cancelState });
+  check(openState.open, "Issue 535 confirmation modal did not open", openState);
+  check(
+    openState.title.startsWith("Arquivar ") || openState.title.startsWith("Excluir "),
+    "Issue 535 confirmation title is not direct",
+    openState,
+  );
+  check(
+    openState.action === "Arquivar" || openState.action === "Excluir",
+    "Issue 535 confirmation final action is not explicit",
+    openState,
+  );
+  check(cancelState.requestCount === 0, "Issue 535 Cancel sent an API request", cancelState);
+  check(!cancelState.open, "Issue 535 confirmation stayed open after Cancel", cancelState);
+  check(cancelState.focusRestored, "Issue 535 confirmation did not restore focus", cancelState);
+}
+
+async function accessibilitySummary(cdp) {
+  const tree = await cdp.send("Accessibility.getFullAXTree");
+  const nodes = Array.isArray(tree.nodes) ? tree.nodes : [];
+  return {
+    nodeCount: nodes.length,
+    tabCount: nodes.filter((node) => node.role?.value === "tab").length,
+    dialogCount: nodes.filter((node) => node.role?.value === "dialog").length,
+    buttonCount: nodes.filter((node) => node.role?.value === "button").length,
+  };
 }
 
 function pageStateExpression() {
   return `(() => {
     const root = document.documentElement;
     const action = document.querySelector('[data-context-action]');
-    const actionButtons = Array.from(document.querySelectorAll('.item-actions button'));
-    const actionSizes = actionButtons.map((button) => {
+    const visibleActionButtons = Array.from(document.querySelectorAll('.item-actions button')).filter((button) => {
+      const rect = button.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
+    });
+    const actionSizes = visibleActionButtons.map((button) => {
       const rect = button.getBoundingClientRect();
       return Math.min(rect.width, rect.height);
-    }).filter((value) => value > 0);
+    });
     const status = document.querySelector('[data-master-status]');
-    const details = Array.from(document.querySelectorAll('.instrument-disclosure'));
+    const cardRows = Array.from(document.querySelectorAll('[data-tab-panel="cards"] > .master-list > .card-account-item, [data-tab-panel="cards"] .master-list > .card-account-item'));
+    const cdiActions = Array.from(document.querySelectorAll('[data-account-remuneration-action]'));
+    const enabledCdiActions = cdiActions.filter((button) => !button.disabled);
+    const tooltipTarget = visibleActionButtons.find((button) => button.dataset.tooltip);
+    if (tooltipTarget) tooltipTarget.focus();
+    const tooltipVisibleOnFocus = !tooltipTarget || document.querySelector('.accounts-cards-tooltip')?.dataset.visible === 'true';
     return {
       selectedTab: document.querySelector('[data-tab][aria-selected="true"]')?.dataset.tab || '',
       contextActionCount: document.querySelectorAll('[data-context-action]').length,
       contextActionLabel: action?.getAttribute('aria-label') || action?.textContent?.trim() || '',
+      searchPlaceholder: document.querySelector('[data-master-search]')?.getAttribute('placeholder') || '',
       hasConnectionsTab: Boolean(document.querySelector('#connections-tab')),
       statusOptions: status ? Array.from(status.options).map((option) => option.value) : [],
       globalOverflow: root.scrollWidth > root.clientWidth + 1,
       minimumActionTarget: actionSizes.length > 0 ? Math.min(...actionSizes) : 0,
       itemCount: document.querySelectorAll('[data-master-item]').length,
       itemFooterCount: document.querySelectorAll('[data-master-item] > .item-footer').length,
-      instrumentDisclosureCount: details.length,
-      openInstrumentDisclosureCount: details.filter((detail) => detail.open).length,
+      cardRowCount: cardRows.length,
+      inlineInstrumentListCount: document.querySelectorAll('.card-account-item > .item-main .instrument-list').length,
+      instrumentDisclosureCount: document.querySelectorAll('.instrument-disclosure').length,
+      viewInstrumentActionCount: document.querySelectorAll('.card-account-item > .item-footer [data-view-instruments], .card-account-item > .item-actions [data-view-instruments]').length,
+      dedicatedInstrumentDialogCount: document.querySelectorAll('dialog[data-card-instruments-dedicated-dialog]').length,
+      cdiActionCount: cdiActions.length,
+      cdiActionsIconOnly: cdiActions.every((button) => button.textContent.trim() === '' && Boolean(button.querySelector('svg'))),
+      enabledCdiLabelsValid: enabledCdiActions.every((button) => ['Ativar CDI', 'Configurar CDI'].includes(button.getAttribute('aria-label'))),
+      tooltipVisibleOnFocus,
       visiblePanel: document.querySelector('[data-tab-panel]:not([hidden])')?.dataset.tabPanel || '',
-      toolbarHeight: document.querySelector('.accounts-cards-toolbar')?.getBoundingClientRect().height || 0,
     };
   })()`;
 }
 
-function modalStateExpression() {
+function instrumentModalStateExpression() {
   return `(() => {
-    const dialog = document.querySelector('dialog[open]');
-    if (!dialog) return { open: false, insideViewport: false, hasCloseButton: false, hasCancelButton: false, hasSinglePrimaryAction: false };
+    const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
+    if (!dialog) return { open: false, insideViewport: false, title: '', identifiesCard: false, hasInstrumentListOrEmptyState: false, hasAddInstrumentAction: false, minimumInstrumentActionTarget: 0, hasUnmaskedLongNumber: false };
+    const rect = dialog.getBoundingClientRect();
+    const actionButtons = Array.from(dialog.querySelectorAll('.instrument-actions button')).filter((button) => {
+      const buttonRect = button.getBoundingClientRect();
+      return buttonRect.width > 0 && buttonRect.height > 0;
+    });
+    const actionSizes = actionButtons.map((button) => {
+      const buttonRect = button.getBoundingClientRect();
+      return Math.min(buttonRect.width, buttonRect.height);
+    });
+    const text = dialog.textContent || '';
+    return {
+      open: dialog.open === true,
+      insideViewport: rect.left >= 0 && rect.top >= 0 && rect.right <= window.innerWidth && rect.bottom <= window.innerHeight,
+      title: dialog.querySelector('h2')?.textContent?.trim() || '',
+      identifiesCard: Boolean(dialog.querySelector('.card-instruments-dialog-heading .muted')?.textContent?.trim()),
+      hasInstrumentListOrEmptyState: Boolean(dialog.querySelector('.instrument-list, [data-instrument-empty-state]')),
+      hasAddInstrumentAction: Boolean(dialog.querySelector('[data-toggle-instrument-create]')),
+      minimumInstrumentActionTarget: actionSizes.length > 0 ? Math.min(...actionSizes) : 40,
+      hasUnmaskedLongNumber: /(?:\d[ -]?){12,19}/.test(text.replace(/\*+/g, '')),
+      width: rect.width,
+      height: rect.height,
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+    };
+  })()`;
+}
+
+function cardCreateModalStateExpression() {
+  return `(() => {
+    const dialog = document.querySelector('#new-card-dialog[open]');
+    if (!dialog) return { open: false, insideViewport: false, hasCloseButton: false, hasCancelButton: false, hasSinglePrimaryAction: false, groupLabels: [] };
     const rect = dialog.getBoundingClientRect();
     const submitButtons = dialog.querySelectorAll('button[type="submit"]');
     return {
@@ -207,6 +543,7 @@ function modalStateExpression() {
       hasCloseButton: Boolean(dialog.querySelector('.dialog-standard-close[aria-label="Fechar"]')),
       hasCancelButton: Array.from(dialog.querySelectorAll('button')).some((button) => button.textContent?.trim() === 'Cancelar'),
       hasSinglePrimaryAction: submitButtons.length === 1,
+      groupLabels: Array.from(dialog.querySelectorAll('.card-form-group > legend')).map((legend) => legend.textContent?.trim()),
       width: rect.width,
       height: rect.height,
       viewport: { width: window.innerWidth, height: window.innerHeight },
