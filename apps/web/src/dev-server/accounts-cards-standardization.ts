@@ -364,7 +364,7 @@ function standardizationScript(): string {
               if (lastDialogTrigger && typeof lastDialogTrigger.focus === 'function') lastDialogTrigger.focus();
             });
 
-            const form = dialog.querySelector('form[data-api-form]');
+            const form = dialog.querySelector('form[data-api-form].edit-grid');
             const submit = form?.querySelector('button[type="submit"]');
             if (form && submit && !form.querySelector('.dialog-standard-actions')) {
               const actions = document.createElement('div');
