@@ -1,22 +1,22 @@
 name: Format issue 535
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - feat/535-padronizar-contas-cartoes
 
 permissions:
   contents: write
 
 jobs:
   format:
-    if: github.head_ref == 'feat/535-padronizar-contas-cartoes'
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: feat/535-padronizar-contas-cartoes
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
