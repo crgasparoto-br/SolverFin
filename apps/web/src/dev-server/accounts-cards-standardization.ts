@@ -156,6 +156,7 @@ function standardizationScript(): string {
         const plusIcon = ${plusIcon};
         const closeIcon = ${closeIcon};
         let lastDialogTrigger = null;
+        const dialogTriggers = new WeakMap();
         const contextAction = document.querySelector('[data-context-action]');
         const contextActionLabel = contextAction?.querySelector('[data-context-action-label]');
         const searchInput = document.querySelector('[data-master-search]');
@@ -164,11 +165,23 @@ function standardizationScript(): string {
           return document.querySelector('[data-tab][aria-selected="true"]')?.dataset.tab || 'accounts';
         }
 
+        function rememberDialogTrigger(dialog, trigger) {
+          if (!dialog || !trigger) return;
+          lastDialogTrigger = trigger;
+          dialogTriggers.set(dialog, trigger);
+        }
+
+        function restoreDialogFocus(dialog) {
+          const trigger = dialogTriggers.get(dialog) || lastDialogTrigger;
+          if (!trigger || typeof trigger.focus !== 'function') return;
+          window.setTimeout(() => trigger.focus(), 0);
+        }
+
         function openDialogFromTrigger(trigger) {
           const dialogId = trigger?.dataset.openDialog;
           const dialog = dialogId ? document.getElementById(dialogId) : null;
           if (!dialog) return;
-          lastDialogTrigger = trigger;
+          rememberDialogTrigger(dialog, trigger);
           if (typeof dialog.showModal === 'function') {
             if (!dialog.open) dialog.showModal();
           } else {
@@ -360,9 +373,16 @@ function standardizationScript(): string {
             close.innerHTML = closeIcon;
             close.addEventListener('click', () => closeDialog(dialog));
             dialog.prepend(close);
-            dialog.addEventListener('close', () => {
-              if (lastDialogTrigger && typeof lastDialogTrigger.focus === 'function') lastDialogTrigger.focus();
+            dialog.addEventListener('cancel', (event) => {
+              event.preventDefault();
+              closeDialog(dialog);
             });
+            dialog.addEventListener('keydown', (event) => {
+              if (event.key !== 'Escape') return;
+              event.preventDefault();
+              closeDialog(dialog);
+            });
+            dialog.addEventListener('close', () => restoreDialogFocus(dialog));
 
             const form = dialog.querySelector('form[data-api-form].edit-grid');
             const submit = form?.querySelector('button[type="submit"]');
@@ -381,7 +401,9 @@ function standardizationScript(): string {
 
           document.addEventListener('click', (event) => {
             const trigger = event.target.closest('[data-open-dialog]');
-            if (trigger) lastDialogTrigger = trigger;
+            const dialogId = trigger?.dataset.openDialog;
+            const dialog = dialogId ? document.getElementById(dialogId) : null;
+            if (dialog) rememberDialogTrigger(dialog, trigger);
           }, true);
         }
 
@@ -472,14 +494,24 @@ function standardizationScript(): string {
             if (!processing) closeDialog(dialog);
           });
           dialog.addEventListener('cancel', (event) => {
-            if (processing) event.preventDefault();
+            event.preventDefault();
+            if (!processing) closeDialog(dialog);
+          });
+          dialog.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape' || processing) return;
+            event.preventDefault();
+            closeDialog(dialog);
           });
           dialog.addEventListener('close', () => {
             if (processing) return;
+            const trigger = pendingTrigger;
             pendingForm = null;
+            pendingTrigger = null;
             status.className = 'form-status muted';
             status.textContent = '';
-            if (pendingTrigger) pendingTrigger.focus();
+            if (trigger && typeof trigger.focus === 'function') {
+              window.setTimeout(() => trigger.focus(), 0);
+            }
           });
 
           document.querySelectorAll('form[data-confirm]').forEach((form) => {
