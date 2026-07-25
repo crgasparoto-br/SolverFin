@@ -1,0 +1,55 @@
+name: Format issue 535 v2
+
+on:
+  push:
+    branches:
+      - feat/535-padronizar-contas-cartoes
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/535-padronizar-contas-cartoes
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format issue files
+        run: |
+          npx prettier --write \
+            apps/web/src/dev-server/accounts-cards-page-dialog-only.ts \
+            apps/web/src/dev-server/accounts-cards-standardization.ts \
+            apps/web/src/dev-server/accounts-cards-standardization.test.ts \
+            apps/web/src/dev-server-accounts-cards-actions.test.ts \
+            scripts/statement-visual/accounts-cards-interface.mjs \
+            docs/CARDS.md
+
+      - name: Commit formatting
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/accounts-cards-page-dialog-only.ts
+          git add apps/web/src/dev-server/accounts-cards-standardization.ts
+          git add apps/web/src/dev-server/accounts-cards-standardization.test.ts
+          git add apps/web/src/dev-server-accounts-cards-actions.test.ts
+          git add scripts/statement-visual/accounts-cards-interface.mjs
+          git add docs/CARDS.md
+          git commit -m "style: formatar entrega da issue 535"
+          git push
