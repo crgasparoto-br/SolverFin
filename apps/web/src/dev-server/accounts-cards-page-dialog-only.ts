@@ -1,4 +1,4 @@
-import { renderAccountsCardsPage as renderBaseAccountsCardsPage } from "./accounts-cards-page.js";
+import { icon } from "./icons.js";
 
 interface InstrumentCreateDialog {
   cardId: string;
@@ -6,22 +6,29 @@ interface InstrumentCreateDialog {
   formHtml: string;
 }
 
-interface CardInstrumentList {
+interface CardInstrumentDialogSource {
   cardId: string;
+  cardNameHtml: string;
+  instrumentCount: number;
+  isArchived: boolean;
   listHtml: string;
+  warningHtml: string;
 }
 
 export async function renderAccountsCardsPage(token: string): Promise<string> {
+  const { renderAccountsCardsPage: renderBaseAccountsCardsPage } =
+    await import("./accounts-cards-page.js");
   const html = await renderBaseAccountsCardsPage(token);
 
-  return keepCardInstrumentsInsideEditDialog(html);
+  return moveCardInstrumentsToDedicatedDialog(html);
 }
 
-export function keepCardInstrumentsInsideEditDialog(html: string): string {
-  if (html.includes("data-card-instruments-dialog-list")) return html;
+export function moveCardInstrumentsToDedicatedDialog(html: string): string {
+  if (html.includes("data-card-instruments-dedicated-dialog")) return html;
 
   const createDialogs = collectCreateInstrumentDialogs(html);
-  const instrumentLists = collectCardInstrumentLists(html);
+  const createDialogsByCard = new Map(createDialogs.map((dialog) => [dialog.cardId, dialog]));
+  const instrumentSources = collectCardInstrumentSources(html);
   let nextHtml = html;
 
   createDialogs.forEach((dialog) => {
@@ -30,7 +37,7 @@ export function keepCardInstrumentsInsideEditDialog(html: string): string {
 
   nextHtml = nextHtml.replace(
     "Cadastre o cartão agrupador e acompanhe os instrumentos internos usados nas compras.",
-    "Cadastre o cartão agrupador e gerencie seus instrumentos pelo pop-up de edição.",
+    "Cadastre o cartão agrupador e gerencie seus instrumentos em um modal dedicado.",
   );
   nextHtml = removeInlineInstrumentSections(nextHtml);
   nextHtml = removeNestedDivByClass(nextHtml, "instrument-list");
@@ -38,18 +45,21 @@ export function keepCardInstrumentsInsideEditDialog(html: string): string {
   nextHtml = removeStandaloneNewInstrumentButtons(nextHtml);
   nextHtml = removeLegacyStatusFilter(nextHtml);
 
-  instrumentLists.forEach((instrumentList) => {
-    nextHtml = insertDialogInstrumentList(nextHtml, instrumentList);
+  instrumentSources.forEach((source) => {
+    nextHtml = insertDedicatedInstrumentDialog(
+      nextHtml,
+      source,
+      createDialogsByCard.get(source.cardId),
+    );
   });
 
-  createDialogs.forEach((dialog) => {
-    nextHtml = insertInlineCreateInstrumentForm(nextHtml, dialog);
-  });
+  nextHtml = installDedicatedInstrumentDialogStyles(nextHtml);
 
-  nextHtml = installDialogInstrumentListStyles(nextHtml);
-
-  return installInlineCreateInstrumentScript(nextHtml);
+  return installDedicatedInstrumentDialogScript(nextHtml);
 }
+
+// Backward-compatible alias for existing internal callers.
+export const keepCardInstrumentsInsideEditDialog = moveCardInstrumentsToDedicatedDialog;
 
 function removeLegacyStatusFilter(html: string): string {
   return html.replace(
@@ -81,20 +91,34 @@ function collectCreateInstrumentDialogs(html: string): InstrumentCreateDialog[] 
   return createDialogs;
 }
 
-function collectCardInstrumentLists(html: string): CardInstrumentList[] {
+function collectCardInstrumentSources(html: string): CardInstrumentDialogSource[] {
   const cardArticlePattern = /<article class="master-item card-account-item"[\s\S]*?<\/article>/g;
-  const instrumentLists: CardInstrumentList[] = [];
+  const sources: CardInstrumentDialogSource[] = [];
 
   for (const match of html.matchAll(cardArticlePattern)) {
     const articleHtml = match[0];
     const cardId = articleHtml.match(/<dialog id="edit-card-dialog-([^"]+)"/)?.[1];
+    const cardNameHtml = articleHtml.match(
+      /<div class="item-title-row">\s*<strong>([\s\S]*?)<\/strong>/,
+    )?.[1];
     const listHtml = extractNestedDivByClass(articleHtml, "instrument-list");
 
-    if (!cardId || !listHtml) continue;
-    instrumentLists.push({ cardId, listHtml });
+    if (!cardId || !cardNameHtml || !listHtml) continue;
+
+    const warningHtml = articleHtml.match(/<p class="instrument-warning"[\s\S]*?<\/p>/)?.[0] ?? "";
+    const instrumentCount = (listHtml.match(/data-card-instrument/g) ?? []).length;
+
+    sources.push({
+      cardId,
+      cardNameHtml,
+      instrumentCount,
+      isArchived: /data-status="archived"/.test(articleHtml),
+      listHtml,
+      warningHtml,
+    });
   }
 
-  return instrumentLists;
+  return sources;
 }
 
 function removeStandaloneNewInstrumentButtons(html: string): string {
@@ -169,71 +193,129 @@ function findClosingDivEnd(html: string, startIndex: number): number {
   return -1;
 }
 
-function insertDialogInstrumentList(html: string, instrumentList: CardInstrumentList): string {
-  const editDialogNeedle = `<dialog id="edit-card-dialog-${instrumentList.cardId}"`;
-  const dialogStart = html.indexOf(editDialogNeedle);
-  if (dialogStart === -1) return html;
+function insertDedicatedInstrumentDialog(
+  html: string,
+  source: CardInstrumentDialogSource,
+  createDialog: InstrumentCreateDialog | undefined,
+): string {
+  const editDialogNeedle = `<dialog id="edit-card-dialog-${source.cardId}"`;
+  const editDialogStart = html.indexOf(editDialogNeedle);
+  if (editDialogStart === -1) return html;
 
-  const dialogEnd = html.indexOf("</dialog>", dialogStart);
-  if (dialogEnd === -1) return html;
+  const articleStart = html.lastIndexOf(
+    '<article class="master-item card-account-item"',
+    editDialogStart,
+  );
+  if (articleStart === -1) return html;
 
-  const listSection = renderDialogInstrumentListSection(instrumentList);
+  const actionListStart = html.indexOf('<div class="item-actions"', articleStart);
+  const actionListOpenEnd =
+    actionListStart >= 0 && actionListStart < editDialogStart
+      ? html.indexOf(">", actionListStart) + 1
+      : -1;
+  if (actionListOpenEnd <= 0) return html;
 
-  return `${html.slice(0, dialogEnd)}${listSection}${html.slice(dialogEnd)}`;
+  const dialogId = `card-instruments-dialog-${source.cardId}`;
+  const viewAction = `
+        <button type="button" class="icon-button" data-open-dialog="${escapeAttribute(dialogId)}" data-view-instruments aria-label="Ver instrumentos" title="Ver instrumentos">${icon("list", 16, "action-icon")}</button>`;
+  const withAction = `${html.slice(0, actionListOpenEnd)}${viewAction}${html.slice(actionListOpenEnd)}`;
+  const adjustedEditDialogStart = withAction.indexOf(
+    editDialogNeedle,
+    editDialogStart + viewAction.length,
+  );
+  if (adjustedEditDialogStart === -1) return withAction;
+
+  const dialogHtml = renderDedicatedInstrumentDialog(source, createDialog, dialogId);
+
+  return `${withAction.slice(0, adjustedEditDialogStart)}${dialogHtml}${withAction.slice(adjustedEditDialogStart)}`;
 }
 
-function renderDialogInstrumentListSection(instrumentList: CardInstrumentList): string {
+function renderDedicatedInstrumentDialog(
+  source: CardInstrumentDialogSource,
+  createDialog: InstrumentCreateDialog | undefined,
+  dialogId: string,
+): string {
+  const titleId = `${dialogId}-title`;
+  const formId = `new-card-instrument-form-${source.cardId}`;
+  const listContent = renderInstrumentListContent(source, formId, Boolean(createDialog));
+  const createSection = createDialog
+    ? renderDedicatedCreateInstrumentSection(createDialog, source, formId)
+    : "";
+
   return `
-      <section class="dialog-subsection dialog-instrument-list" aria-label="Instrumentos cadastrados no cartão">
-        <div class="dialog-subsection-heading">
+      <dialog id="${escapeAttribute(dialogId)}" class="master-dialog card-instruments-dialog" aria-labelledby="${escapeAttribute(titleId)}" data-card-instruments-dedicated-dialog>
+        <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
+        <div class="dialog-heading card-instruments-dialog-heading">
           <div>
-            <p class="eyebrow">Instrumentos do cartão</p>
-            <h3>Lista de instrumentos</h3>
+            <p class="eyebrow">Cartão</p>
+            <h2 id="${escapeAttribute(titleId)}">Instrumentos do cartão</h2>
+            <p class="muted">${source.cardNameHtml}</p>
           </div>
         </div>
-        ${instrumentList.listHtml}
-      </section>
+        <section class="dialog-subsection dialog-instrument-list" aria-label="Instrumentos cadastrados no cartão">
+          ${listContent}
+        </section>
+        ${createSection}
+        <form method="dialog" class="instrument-dialog-footer"><button type="submit" class="secondary-button">Fechar</button></form>
+      </dialog>
 `;
 }
 
-function insertInlineCreateInstrumentForm(html: string, dialog: InstrumentCreateDialog): string {
-  const editDialogNeedle = `<dialog id="edit-card-dialog-${dialog.cardId}"`;
-  const dialogStart = html.indexOf(editDialogNeedle);
-  if (dialogStart === -1) return html;
+function renderInstrumentListContent(
+  source: CardInstrumentDialogSource,
+  formId: string,
+  canCreate: boolean,
+): string {
+  if (source.instrumentCount === 0) {
+    const action = canCreate
+      ? `<button type="button" data-toggle-instrument-create="${escapeAttribute(formId)}" aria-expanded="false"${source.isArchived ? " disabled" : ""}>${icon("plus", 15)} Adicionar primeiro instrumento</button>`
+      : "";
 
-  const dialogEnd = html.indexOf("</dialog>", dialogStart);
-  if (dialogEnd === -1) return html;
+    return `
+          <div class="instrument-empty-state" data-instrument-empty-state>
+            <strong>Nenhum instrumento cadastrado.</strong>
+            <p class="muted">Adicione o primeiro instrumento para voltar a usar este cartão em novos lançamentos.</p>
+            ${action}
+          </div>`;
+  }
 
-  const createSection = renderInlineCreateInstrumentSection(dialog);
-
-  return `${html.slice(0, dialogEnd)}${createSection}${html.slice(dialogEnd)}`;
+  return `${source.warningHtml}${source.listHtml}`;
 }
 
-function renderInlineCreateInstrumentSection(dialog: InstrumentCreateDialog): string {
-  const formId = `new-card-instrument-form-${dialog.cardId}`;
+function renderDedicatedCreateInstrumentSection(
+  dialog: InstrumentCreateDialog,
+  source: CardInstrumentDialogSource,
+  formId: string,
+): string {
   const formHtml = dialog.formHtml.replace(
     "<form data-api-form",
     `<form id="${escapeAttribute(formId)}" hidden data-api-form`,
   );
+  const headerAction =
+    source.instrumentCount > 0
+      ? `<button type="button" data-toggle-instrument-create="${escapeAttribute(formId)}" aria-expanded="false"${source.isArchived ? " disabled" : ""}>${icon("plus", 15)} Adicionar instrumento</button>`
+      : "";
 
   return `
-      <section class="dialog-subsection" aria-label="Novo instrumento do cartão">
-        <div class="dialog-subsection-heading">
-          <div>
-            <p class="eyebrow">Novo instrumento</p>
-            <h3>Adicionar instrumento</h3>
+        <section class="dialog-subsection instrument-create-section" aria-label="Adicionar instrumento ao cartão">
+          <div class="dialog-subsection-heading">
+            <div>
+              <p class="eyebrow">Novo instrumento</p>
+              <h3>Adicionar instrumento</h3>
+            </div>
+            ${headerAction}
           </div>
-          <button type="button" class="secondary-button" data-toggle-instrument-create="${escapeAttribute(formId)}" aria-expanded="false">Novo instrumento</button>
-        </div>
-        ${formHtml}
-      </section>
+          ${formHtml}
+        </section>
 `;
 }
 
-function installDialogInstrumentListStyles(html: string): string {
+function installDedicatedInstrumentDialogStyles(html: string): string {
   const styles = `
-    <style data-card-instruments-dialog-list>
-      .dialog-instrument-list .instrument-list { margin-top: 0; max-height: min(38vh, 340px); overflow: auto; }
+    <style data-card-instruments-dedicated-dialog-styles>
+      .card-instruments-dialog { max-width: 760px; width: min(760px, calc(100vw - 32px)); }
+      .card-instruments-dialog-heading { padding-right: 52px; }
+      .dialog-instrument-list .instrument-list { margin-top: 0; max-height: min(38vh, 340px); overflow: auto; overscroll-behavior: contain; }
       .dialog-instrument-list .instrument-item { background: var(--surface); padding: 8px 10px; }
       .dialog-instrument-list .instrument-side { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
       .dialog-instrument-list .instrument-tags { justify-content: flex-end; }
@@ -241,10 +323,16 @@ function installDialogInstrumentListStyles(html: string): string {
       .dialog-instrument-list .instrument-actions .icon-button { background: #fff; border-color: #e2e8f0; color: #64748b; }
       .dialog-instrument-list .instrument-actions .icon-button:hover:not(:disabled), .dialog-instrument-list .instrument-actions .icon-button:focus-visible { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }
       .dialog-instrument-list .instrument-actions .danger-icon-button:hover:not(:disabled), .dialog-instrument-list .instrument-actions .danger-icon-button:focus-visible { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
+      .instrument-empty-state { align-items: flex-start; background: var(--surface-soft); border: 1px dashed var(--line); border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; padding: 16px; }
+      .instrument-empty-state p { margin: 0; }
+      .instrument-create-section[hidden] { display: none; }
+      .instrument-dialog-footer { display: flex; justify-content: flex-end; padding-top: 4px; }
       @media (max-width: 760px) {
+        .card-instruments-dialog { width: calc(100vw - 24px); }
         .dialog-instrument-list .instrument-side { align-items: flex-start; justify-content: flex-start; }
         .dialog-instrument-list .instrument-tags { justify-content: flex-start; }
         .dialog-instrument-list .instrument-actions { margin-left: 0; }
+        .instrument-dialog-footer button { width: 100%; }
       }
     </style>`;
 
@@ -253,25 +341,35 @@ function installDialogInstrumentListStyles(html: string): string {
   return `${styles}${html}`;
 }
 
-function installInlineCreateInstrumentScript(html: string): string {
+function installDedicatedInstrumentDialogScript(html: string): string {
   const script = `
-    <script>
-      document.querySelectorAll("[data-toggle-instrument-create]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const formId = button.dataset.toggleInstrumentCreate;
+    <script data-card-instruments-dedicated-dialog-script>
+      (() => {
+        const toggles = Array.from(document.querySelectorAll("[data-toggle-instrument-create]"));
+
+        function setFormVisibility(formId, shouldShow) {
           const form = formId ? document.getElementById(formId) : null;
           if (!form) return;
-
-          const shouldShow = form.hidden;
           form.hidden = !shouldShow;
-          button.setAttribute("aria-expanded", String(shouldShow));
+          toggles
+            .filter((button) => button.dataset.toggleInstrumentCreate === formId)
+            .forEach((button) => button.setAttribute("aria-expanded", String(shouldShow)));
 
           if (shouldShow) {
             const firstField = form.querySelector("input, select, button");
             if (firstField && typeof firstField.focus === "function") firstField.focus();
           }
+        }
+
+        toggles.forEach((button) => {
+          button.addEventListener("click", () => {
+            const formId = button.dataset.toggleInstrumentCreate;
+            const form = formId ? document.getElementById(formId) : null;
+            if (!form) return;
+            setFormVisibility(formId, form.hidden);
+          });
         });
-      });
+      })();
     </script>
 `;
 
