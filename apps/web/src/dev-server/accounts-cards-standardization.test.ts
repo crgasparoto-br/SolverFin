@@ -49,6 +49,10 @@ test("injeta modal, CDI por icone, tooltips e formularios agrupados", () => {
   assert.match(html, /confirmation\.split/);
   assert.match(html, /form\[data-api-form\]\.edit-grid/);
   assert.match(html, /Arquivar\\s\+/);
+  assert.match(html, /dialogTriggers = new WeakMap/);
+  assert.match(html, /dialog\.addEventListener\('cancel'/);
+  assert.match(html, /event\.key !== 'Escape'/);
+  assert.match(html, /window\.setTimeout\(\(\) => trigger\.focus\(\), 0\)/);
   assert.doesNotMatch(html, /window\.confirm/);
   assert.equal(standardizeAccountsCardsPage(html), html);
 });
