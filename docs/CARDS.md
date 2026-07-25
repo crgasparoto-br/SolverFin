@@ -198,6 +198,25 @@ Exemplo minimo de criacao de instrumento em agrupador existente:
 }
 ```
 
+## Gestao na tela `Contas e Cartoes`
+
+A rota `/contas-cartoes` deve manter a listagem compacta e comparavel. Cada aba possui uma unica acao principal contextual, e busca e filtro de status permanecem disponiveis ao alternar entre `Contas` e `Cartoes`.
+
+Na aba `Cartoes`:
+
+- a linha do cartao mostra somente identificacao, instituicao, bandeira, datas, conta de pagamento, quantidade de instrumentos ativos, limite, status e acoes;
+- a lista de instrumentos nao aparece expandida na linha nem dentro do modal de edicao do cartao;
+- a acao de icone `Ver instrumentos` abre um modal dedicado que identifica o cartao;
+- o modal lista nome, tipo, titularidade, identificador mascarado, limite individual, status e marcador de default de cada instrumento;
+- adicionar, editar, definir como padrao e arquivar instrumentos reutilizam os contratos de API existentes;
+- ausencia de instrumentos ou de instrumento ativo deve ser explicada no proprio modal, com a acao de adicionar como caminho principal;
+- dados sensiveis permanecem mascarados, e o modal deve suportar lista extensa com rolagem interna;
+- o modal fecha por controle identificado e por `Escape`, restaurando o foco para `Ver instrumentos`.
+
+Acoes recorrentes de conta, cartao e instrumento usam icones da biblioteca do projeto com nome acessivel e tooltip em hover e foco. Arquivamento e exclusao exigem modal de confirmacao; cancelar ou fechar nao envia requisicao.
+
+A validacao visual permanente da rota usa `scripts/statement-visual/accounts-cards-interface.mjs` e cobre `1440x900`, `1366x768` e `390x844`, incluindo abas por teclado, persistencia de filtros, alvos de acao, CDI por icone, modal de instrumentos, formulario agrupado, arvore de acessibilidade, `Escape`, restauracao de foco e cancelamento de confirmacao sem chamada de API.
+
 ## Hierarquia da tela `Cartoes`
 
 A rota `/cartoes` deve priorizar a decisao operacional sobre a fatura selecionada, sem alterar os contratos financeiros descritos neste documento.
@@ -241,5 +260,5 @@ A cobertura automatizada deve proteger pelo menos:
 - parcelas e recorrencias preservando o instrumento da compra;
 - recorrencias preservando o instrumento definido na criacao;
 - movimentacao segura de compra para outro periodo de fatura;
-- tela `Contas e Cartoes` com lista hierarquica, criacao, edicao, default, arquivamento, estado bloqueado/inativo e ausencia do fluxo legado;
+- tela `Contas e Cartoes` com lista compacta, criacao e edicao em modal, gestao de instrumentos em modal dedicado, default, arquivamento, estado bloqueado/inativo e ausencia do fluxo legado;
 - tela `Cartoes` com hierarquia da fatura, busca, filtros, lista responsiva, estados acessiveis e modais validados em desktop e mobile.
