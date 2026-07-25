@@ -3,7 +3,7 @@ const finalizerMarker = "data-cards-interface-finalizer";
 export function finalizeCardsInterface(html: string): string {
   if (html.includes(finalizerMarker)) return html;
 
-  const normalizedHtml = html
+  const normalizedHtml = finalizePurchaseSearch(html)
     .replace(/\s*<script data-cards-interface-controller>[\s\S]*?<\/script>/, "")
     .replace(/\saria-rowcount="[^"]*"/g, "");
 
@@ -13,7 +13,7 @@ export function finalizeCardsInterface(html: string): string {
         const root = document.querySelector("main[data-cards-interface-enhanced]");
         if (!root) return;
 
-        const search = root.querySelector("input[data-purchase-search]");
+        const search = root.querySelector('input[type="search"][data-purchase-search]');
         if (search) {
           search.style.height = "44px";
           search.style.minHeight = "44px";
@@ -127,4 +127,41 @@ export function finalizeCardsInterface(html: string): string {
     </script>`;
 
   return normalizedHtml.replace("</body>", `${controller}</body>`);
+}
+
+function finalizePurchaseSearch(html: string): string {
+  const misplacedSearchWrapper =
+    /<label class="purchase-search" for="purchase-search-input">\s*<span class="visually-hidden">Buscar compras da fatura<\/span>\s*<span class="purchase-search-icon" aria-hidden="true">[\s\S]*?<\/span>\s*(<input(?=[^>]*\sdata-purchase-search-state(?:\s|\/?>))[^>]*>)\s*<button type="button" class="purchase-search-clear"[\s\S]*?<\/button>\s*<\/label>/;
+  let normalized = html.replace(misplacedSearchWrapper, "$1");
+
+  if (
+    /<label class="purchase-search"[^>]*>[\s\S]*?<input(?=[^>]*\stype="search")(?=[^>]*\sdata-purchase-search(?:\s|\/?>))/.test(
+      normalized,
+    )
+  ) {
+    return normalized;
+  }
+
+  return normalized.replace(
+    /<input(?=[^>]*\stype="search")(?=[^>]*\sdata-purchase-search(?:\s|\/?>))([^>]*)>/,
+    (_match, rawAttributes: string) => {
+      let attributes = upsertAttribute(rawAttributes, "id", "purchase-search-input");
+      attributes = upsertAttribute(attributes, "aria-label", "Buscar compras da fatura");
+      attributes = upsertAttribute(attributes, "autocomplete", "off");
+      return `<label class="purchase-search" for="purchase-search-input">
+                <span class="visually-hidden">Buscar compras da fatura</span>
+                <span class="purchase-search-icon" aria-hidden="true">⌕</span>
+                <input${attributes}>
+                <button type="button" class="purchase-search-clear" data-clear-purchase-search aria-label="Limpar busca" title="Limpar busca" hidden>×</button>
+              </label>`;
+    },
+  );
+}
+
+function upsertAttribute(attributes: string, name: string, value: string): string {
+  const pattern = new RegExp(`\\s${name}="[^"]*"`);
+  if (pattern.test(attributes)) {
+    return attributes.replace(pattern, ` ${name}="${value}"`);
+  }
+  return `${attributes} ${name}="${value}"`;
 }
