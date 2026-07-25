@@ -1,13 +1,33 @@
 import { icon } from "./icons.js";
 
 const finalizerMarker = "data-cards-interface-finalizer";
+const statusAlignmentMarker = "data-cards-status-alignment";
+const postedIcon =
+  '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>';
 
 export function finalizeCardsInterface(html: string): string {
   if (html.includes(finalizerMarker)) return html;
 
-  const normalizedHtml = finalizePurchaseSearch(html)
+  const normalizedHtml = finalizePurchaseStatuses(finalizePurchaseSearch(html))
     .replace(/\s*<script data-cards-interface-controller>[\s\S]*?<\/script>/, "")
     .replace(/\saria-rowcount="[^"]*"/g, "");
+
+  const statusStyles = `
+    <style ${statusAlignmentMarker}>
+      main[data-cards-interface-enhanced] .purchase-status.statement-status {
+        align-items: center;
+        border-radius: 999px;
+        display: inline-flex;
+        height: 30px;
+        justify-content: center;
+        justify-self: center;
+        padding: 0;
+        width: 30px;
+      }
+      main[data-cards-interface-enhanced] .purchase-status.statement-status svg {
+        flex: 0 0 auto;
+      }
+    </style>`;
 
   const controller = `
     <script ${finalizerMarker}>
@@ -128,7 +148,18 @@ export function finalizeCardsInterface(html: string): string {
       })();
     </script>`;
 
-  return normalizedHtml.replace("</body>", `${controller}</body>`);
+  return normalizedHtml.replace("</body>", `${statusStyles}${controller}</body>`);
+}
+
+function finalizePurchaseStatuses(html: string): string {
+  return html.replace(
+    /<span class="purchase-status purchase-status-(ok|pending)" role="cell" data-label="Situação" title="([^"]+)">([\s\S]*?)<span>[^<]+<\/span><\/span>/g,
+    (_match, tone: "ok" | "pending", label: string, iconHtml: string) => {
+      const statementTone = tone === "ok" ? "ok" : "posted";
+      const statusIcon = tone === "ok" ? icon("check", 15) : postedIcon;
+      return `<span class="statement-status statement-status-${statementTone} purchase-status" role="img" tabindex="0" aria-label="${label}" title="${label}" data-tooltip="${label}" data-label="Situação">${statusIcon || iconHtml}</span>`;
+    },
+  );
 }
 
 function finalizePurchaseSearch(html: string): string {
