@@ -16,9 +16,8 @@ interface CardInstrumentDialogSource {
 }
 
 export async function renderAccountsCardsPage(token: string): Promise<string> {
-  const { renderAccountsCardsPage: renderBaseAccountsCardsPage } = await import(
-    "./accounts-cards-page.js"
-  );
+  const { renderAccountsCardsPage: renderBaseAccountsCardsPage } =
+    await import("./accounts-cards-page.js");
   const html = await renderBaseAccountsCardsPage(token);
 
   return moveCardInstrumentsToDedicatedDialog(html);
@@ -106,8 +105,7 @@ function collectCardInstrumentSources(html: string): CardInstrumentDialogSource[
 
     if (!cardId || !cardNameHtml || !listHtml) continue;
 
-    const warningHtml =
-      articleHtml.match(/<p class="instrument-warning"[\s\S]*?<\/p>/)?.[0] ?? "";
+    const warningHtml = articleHtml.match(/<p class="instrument-warning"[\s\S]*?<\/p>/)?.[0] ?? "";
     const instrumentCount = (listHtml.match(/data-card-instrument/g) ?? []).length;
 
     sources.push({
@@ -204,7 +202,10 @@ function insertDedicatedInstrumentDialog(
   const editDialogStart = html.indexOf(editDialogNeedle);
   if (editDialogStart === -1) return html;
 
-  const articleStart = html.lastIndexOf('<article class="master-item card-account-item"', editDialogStart);
+  const articleStart = html.lastIndexOf(
+    '<article class="master-item card-account-item"',
+    editDialogStart,
+  );
   if (articleStart === -1) return html;
 
   const actionListStart = html.indexOf('<div class="item-actions"', articleStart);
@@ -218,7 +219,10 @@ function insertDedicatedInstrumentDialog(
   const viewAction = `
         <button type="button" class="icon-button" data-open-dialog="${escapeAttribute(dialogId)}" data-view-instruments aria-label="Ver instrumentos" title="Ver instrumentos">${icon("list", 16, "action-icon")}</button>`;
   const withAction = `${html.slice(0, actionListOpenEnd)}${viewAction}${html.slice(actionListOpenEnd)}`;
-  const adjustedEditDialogStart = withAction.indexOf(editDialogNeedle, editDialogStart + viewAction.length);
+  const adjustedEditDialogStart = withAction.indexOf(
+    editDialogNeedle,
+    editDialogStart + viewAction.length,
+  );
   if (adjustedEditDialogStart === -1) return withAction;
 
   const dialogHtml = renderDedicatedInstrumentDialog(source, createDialog, dialogId);

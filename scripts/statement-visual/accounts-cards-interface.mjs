@@ -157,7 +157,11 @@ async function captureState(cdp, expectedTab, width, height, filename) {
     "Issue 535 tooltip is not exposed when an icon action receives focus",
     measurements,
   );
-  check(accessibility.tabCount >= 2, "Issue 535 accessibility tree has no tab semantics", accessibility);
+  check(
+    accessibility.tabCount >= 2,
+    "Issue 535 accessibility tree has no tab semantics",
+    accessibility,
+  );
 
   if (expectedTab === "accounts") {
     check(measurements.cdiActionCount > 0, "Issue 535 exposes no CDI actions", measurements);
@@ -252,7 +256,11 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     "Issue 535 instrument modal has an unexpected title",
     measurements,
   );
-  check(measurements.identifiesCard, "Issue 535 instrument modal does not identify the card", measurements);
+  check(
+    measurements.identifiesCard,
+    "Issue 535 instrument modal does not identify the card",
+    measurements,
+  );
   check(
     measurements.hasInstrumentListOrEmptyState,
     "Issue 535 instrument modal has neither a list nor an empty state",
@@ -279,7 +287,11 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     accessibility,
   );
   if (createFormState.available) {
-    check(createFormState.visible, "Issue 535 Add instrument action did not reveal the form", createFormState);
+    check(
+      createFormState.visible,
+      "Issue 535 Add instrument action did not reveal the form",
+      createFormState,
+    );
     check(
       createFormState.focusedInsideForm,
       "Issue 535 Add instrument action did not move focus into the form",
@@ -298,7 +310,11 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     }))()`,
   );
   check(!closeState.open, "Issue 535 instrument modal did not close with Escape", closeState);
-  check(closeState.focusRestored, "Issue 535 did not restore focus after closing instruments", closeState);
+  check(
+    closeState.focusRestored,
+    "Issue 535 did not restore focus after closing instruments",
+    closeState,
+  );
 }
 
 async function captureCardCreateModal(cdp, width, height, filename) {
@@ -306,7 +322,12 @@ async function captureCardCreateModal(cdp, width, height, filename) {
   await sleep(180);
   const measurements = await evaluate(cdp, cardCreateModalStateExpression());
   await screenshot(cdp, join(outputDir, filename));
-  scenarios.push({ kind: "card-create-modal", viewport: `${width}x${height}`, filename, measurements });
+  scenarios.push({
+    kind: "card-create-modal",
+    viewport: `${width}x${height}`,
+    filename,
+    measurements,
+  });
 
   check(measurements.open, "Issue 535 card creation modal did not open", measurements);
   check(
@@ -314,7 +335,11 @@ async function captureCardCreateModal(cdp, width, height, filename) {
     `Issue 535 card creation modal exceeds ${width}x${height}`,
     measurements,
   );
-  check(measurements.hasCloseButton, "Issue 535 card modal has no accessible close action", measurements);
+  check(
+    measurements.hasCloseButton,
+    "Issue 535 card modal has no accessible close action",
+    measurements,
+  );
   check(measurements.hasCancelButton, "Issue 535 card modal has no Cancel action", measurements);
   check(
     measurements.hasSinglePrimaryAction,
@@ -413,7 +438,10 @@ async function verifyConfirmationCancellation(cdp) {
       };
     })()`,
   );
-  await evaluate(cdp, `document.querySelector('dialog.confirm-dialog[open] [data-confirm-cancel]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('dialog.confirm-dialog[open] [data-confirm-cancel]')?.click()`,
+  );
   await sleep(100);
   const cancelState = await evaluate(
     cdp,
