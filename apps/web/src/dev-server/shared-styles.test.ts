@@ -33,11 +33,14 @@ describe("shared shell styles", () => {
     assert.match(css, /--neutral-control-border-hover:\s*#a5cbd6/);
     assert.match(css, /--neutral-control-active-hover:\s*#dceef3/);
     assert.match(css, /--neutral-control-text-hover:\s*#0f3d4c/);
-    assert.match(css, /button\[aria-pressed\]:hover:not\(:disabled\)/);
-    assert.match(css, /button\[aria-selected\]:focus-visible/);
-    assert.match(css, /button\[aria-haspopup="listbox"\]:hover:not\(:disabled\)/);
+    assert.match(css, /button\[aria-pressed\][^{]+:hover:not\(:disabled\)/);
+    assert.match(css, /button\[aria-selected\][^{]+:focus-visible/);
+    assert.match(css, /button\[aria-haspopup="listbox"\][^{]+:hover:not\(:disabled\)/);
     assert.match(css, /button\[role="menuitem"\][^{]+:hover:not\(:disabled\)/);
-    assert.match(css, /button\[data-button-variant="neutral"\]:hover:not\(:disabled\)/);
+    assert.match(
+      css,
+      /button\[data-button-variant="neutral"\][^{]+:hover:not\(:disabled\)/,
+    );
     assert.match(css, /\.tab-button/);
     assert.match(css, /\.sort-button/);
     assert.match(css, /\.month-nav-button/);
@@ -46,7 +49,7 @@ describe("shared shell styles", () => {
     assert.match(css, /background:\s*var\(--neutral-control-active-hover\)/);
     assert.match(css, /color:\s*var\(--neutral-control-text-hover\)/);
     assert.ok(
-      css.indexOf("button[aria-pressed]:hover:not(:disabled)") >
+      css.indexOf("button[aria-pressed]:not(.danger)") >
         css.indexOf("button:hover:not(:disabled)"),
       "the neutral hover rule must override the generic dark primary hover",
     );
@@ -55,13 +58,30 @@ describe("shared shell styles", () => {
   it("keeps primary and destructive actions outside the neutral hover contract", () => {
     const css = sharedShellStyles();
 
-    assert.match(css, /button:hover:not\(:disabled\), \.button-link:hover \{ background: var\(--primary-hover\); \}/);
-    assert.match(css, /:not\(\.danger\):not\(\.danger-action\):not\(\.danger-menu-item\)/);
-    assert.match(css, /\.danger-action:hover:not\(:disabled\) \{ background: #fecaca; \}/);
-    assert.ok(
-      css.indexOf(".danger-action:hover:not(:disabled)") >
-        css.indexOf("button:is("),
-      "the destructive hover rule must keep precedence over neutral controls",
+    assert.match(
+      css,
+      /button:hover:not\(:disabled\), \.button-link:hover \{ background: var\(--primary-hover\); \}/,
+    );
+    assert.match(
+      css,
+      /:not\(\.danger\):not\(\.danger-action\):not\(\.danger-menu-item\):not\(\.danger-icon-button\)/,
+    );
+    assert.match(
+      css,
+      /\.danger-action:hover:not\(:disabled\),\s*\.danger-action:focus-visible \{ background: #fecaca; \}/,
+    );
+  });
+
+  it("keeps icon-only destructive controls red on hover and keyboard focus", () => {
+    const css = sharedShellStyles();
+    const accountsCardsSource = readFileSync(join(currentDir, "accounts-cards-page.js"), "utf8");
+
+    assert.match(accountsCardsSource, /class="icon-button danger-icon-button"/);
+    assert.match(css, /:not\(\.danger-icon-button\):hover:not\(:disabled\)/);
+    assert.match(css, /:not\(\.danger-icon-button\):focus-visible/);
+    assert.match(
+      css,
+      /\.danger-icon-button:hover:not\(:disabled\),\s*\.danger-icon-button:focus-visible \{\s*background: var\(--danger-bg\);\s*border-color: #fecaca;\s*color: var\(--danger\);\s*\}/,
     );
   });
 
