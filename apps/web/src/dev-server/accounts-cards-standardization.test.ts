@@ -46,6 +46,7 @@ test("injeta modal, CDI por icone, tooltips e formularios agrupados", () => {
   assert.match(html, /Processando\.\.\./);
   assert.match(html, /destructive \? 'Excluir' : 'Arquivar'/);
   assert.match(html, /confirmation\.split/);
+  assert.match(html, /form\[data-api-form\]\.edit-grid/);
   assert.doesNotMatch(html, /window\.confirm/);
   assert.equal(standardizeAccountsCardsPage(html), html);
 });
