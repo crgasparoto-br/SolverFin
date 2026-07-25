@@ -7,6 +7,7 @@ import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-in
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
+import { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
 import { apiGet, handleApiRequest } from "./dev-server/api.js";
 import { enhanceCardInstrumentSubtotals } from "./dev-server/card-instrument-subtotals-enhancement.js";
 import { finalizeCardsInterface } from "./dev-server/cards-interface-finalizer.js";
@@ -37,6 +38,7 @@ export { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-in
 export { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
+export { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
 export { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
 export { renderAccountsPage, renderBudgetsPage } from "./dev-server/pages.js";
 export { renderCardsPage } from "./dev-server/cards-page.js";
@@ -140,7 +142,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/contas-cartoes" && token) {
-    sendHtml(response, 200, enhanceAccountsCardsTabs(await renderAccountsCardsPage(token)));
+    const html = enhanceAccountsCardsTabs(await renderAccountsCardsPage(token));
+    sendHtml(response, 200, standardizeAccountsCardsPage(html));
     return;
   }
 
