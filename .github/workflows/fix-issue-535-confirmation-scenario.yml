@@ -1,0 +1,80 @@
+name: Fix issue 535 confirmation scenario
+
+on:
+  push:
+    branches:
+      - feat/535-padronizar-contas-cartoes
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/535-padronizar-contas-cartoes
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Exercise a visible destructive action
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/statement-visual/accounts-cards-interface.mjs')
+          content = path.read_text()
+          before = '''    `(() => {
+      const form = document.querySelector('[data-tab-panel="cards"]:not([hidden]) form[data-confirm]');
+      const trigger = form?.querySelector('button[type="submit"]:not([disabled])');
+      if (!form || !trigger) return false;
+      window.__issue535OriginalFetch = window.fetch;
+      window.__issue535FetchCount = 0;
+      window.fetch = (...args) => {
+        window.__issue535FetchCount += 1;
+        return window.__issue535OriginalFetch(...args);
+      };
+      form.requestSubmit(trigger);
+      return true;
+    })()`,
+'''
+          after = '''    `(() => {
+      const instrumentsTrigger = document.querySelector('[data-tab-panel="cards"]:not([hidden]) [data-view-instruments]');
+      if (!instrumentsTrigger) return false;
+      instrumentsTrigger.click();
+      const instrumentsDialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
+      const forms = instrumentsDialog ? Array.from(instrumentsDialog.querySelectorAll('form[data-confirm]')) : [];
+      const form = forms.find((candidate) => {
+        const candidateTrigger = candidate.querySelector('button[type="submit"]:not([disabled])');
+        const rect = candidateTrigger?.getBoundingClientRect();
+        return Boolean(rect && rect.width > 0 && rect.height > 0);
+      });
+      const trigger = form?.querySelector('button[type="submit"]:not([disabled])');
+      if (!form || !trigger) return false;
+      window.__issue535OriginalFetch = window.fetch;
+      window.__issue535FetchCount = 0;
+      window.fetch = (...args) => {
+        window.__issue535FetchCount += 1;
+        return window.__issue535OriginalFetch(...args);
+      };
+      form.requestSubmit(trigger);
+      return true;
+    })()`,
+'''
+          if before not in content:
+              raise SystemExit('expected confirmation scenario was not found')
+          path.write_text(content.replace(before, after, 1))
+          PY
+          npx prettier --write scripts/statement-visual/accounts-cards-interface.mjs
+          rm .github/workflows/fix-issue-535-confirmation-scenario.yml
+
+      - name: Commit fix and cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/statement-visual/accounts-cards-interface.mjs
+          git add .github/workflows/fix-issue-535-confirmation-scenario.yml
+          git commit -m "test: validar confirmacao por acao visivel da issue 535"
+          git push
