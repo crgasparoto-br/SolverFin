@@ -67,4 +67,27 @@ describe("cards interface finalizer", () => {
     assert.equal((finalized.match(/class="purchase-search"/g) ?? []).length, 1);
     assert.equal((finalized.match(/data-clear-purchase-search/g) ?? []).length, 2);
   });
+
+  it("aligns purchase situations with the icon-only statement status pattern", () => {
+    const html = `<html><body><main data-cards-interface-enhanced>
+      <span class="purchase-status purchase-status-ok" role="cell" data-label="Situação" title="Conciliada"><svg aria-hidden="true"></svg><span>Conciliada</span></span>
+      <span class="purchase-status purchase-status-pending" role="cell" data-label="Situação" title="Não conciliada"><svg aria-hidden="true"></svg><span>Não conciliada</span></span>
+    </main></body></html>`;
+
+    const finalized = finalizeCardsInterface(html);
+
+    assert.match(
+      finalized,
+      /class="statement-status statement-status-ok purchase-status" role="img" tabindex="0" aria-label="Conciliada"/,
+    );
+    assert.match(
+      finalized,
+      /class="statement-status statement-status-posted purchase-status" role="img" tabindex="0" aria-label="Não conciliada"/,
+    );
+    assert.match(finalized, /data-tooltip="Conciliada"/);
+    assert.match(finalized, /data-tooltip="Não conciliada"/);
+    assert.match(finalized, /data-cards-status-alignment/);
+    assert.doesNotMatch(finalized, />Conciliada<\/span>/);
+    assert.doesNotMatch(finalized, />Não conciliada<\/span>/);
+  });
 });
