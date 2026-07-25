@@ -49,7 +49,7 @@ export function standardizeAccountsCardsPage(html: string): string {
 }
 
 function ensureStatusFilter(html: string): string {
-  if (html.includes("data-master-status")) return html;
+  if (html.includes("<select data-master-status>")) return html;
 
   return html.replace(
     /(<div class="filter-row">[\s\S]*?)(\s*<\/div>)/,
@@ -92,7 +92,6 @@ function standardizationStyles(): string {
       .instrument-disclosure > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
       .instrument-disclosure[open] > summary { margin-bottom: 6px; }
       .master-dialog { max-height: min(90vh, 760px); overflow: auto; }
-      .master-dialog .dialog-close-form { display: none; }
       .dialog-standard-close { align-items: center; background: transparent; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); display: inline-flex; height: 40px; justify-content: center; padding: 0; position: absolute; right: 16px; top: 16px; width: 40px; }
       .dialog-standard-close:hover, .dialog-standard-close:focus-visible { background: var(--surface-soft); color: var(--text); }
       .dialog-standard-actions { align-items: center; display: flex; gap: 8px; grid-column: 1 / -1; justify-content: flex-end; margin-top: 6px; }
@@ -120,6 +119,7 @@ function standardizationStyles(): string {
         .item-footer { border-top: 1px solid var(--line); display: grid; gap: 10px; grid-template-columns: 1fr; padding-left: 0; padding-top: 10px; }
         .item-footer .amount-stack { align-items: center; display: flex; justify-content: space-between; min-width: 0; text-align: left; width: 100%; }
         .item-actions { flex-wrap: wrap; justify-content: flex-start; }
+        .item-footer .cdi-action-button { width: auto; }
         .dialog-standard-actions { flex-direction: column-reverse; }
         .dialog-standard-actions button { width: 100%; }
       }
@@ -180,9 +180,51 @@ function standardizationScript(): string {
           });
         }
 
+        function restoreInstrumentRows() {
+          document.querySelectorAll('.card-account-item').forEach((card) => {
+            const dialogListSection = card.querySelector('.dialog-instrument-list');
+            const list = dialogListSection?.querySelector('.instrument-list');
+            const main = card.querySelector(':scope > .item-main');
+            if (list && main && !main.querySelector(':scope > .instrument-list')) {
+              main.append(list);
+              dialogListSection.remove();
+            }
+
+            const editDialog = card.querySelector('dialog[id^="edit-card-dialog-"]');
+            const toggle = editDialog?.querySelector('[data-toggle-instrument-create]');
+            const actions = card.querySelector(':scope > .item-footer > .item-actions, :scope > .item-actions');
+            if (!editDialog || !toggle || !actions || actions.querySelector('[data-add-instrument-direct]')) return;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'icon-button';
+            button.setAttribute('data-add-instrument-direct', '');
+            button.setAttribute('aria-label', 'Adicionar instrumento');
+            button.title = 'Adicionar instrumento';
+            button.innerHTML = '<svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+            button.addEventListener('click', () => {
+              lastDialogTrigger = button;
+              if (typeof editDialog.showModal === 'function') {
+                if (!editDialog.open) editDialog.showModal();
+              } else {
+                editDialog.setAttribute('open', '');
+              }
+              if (toggle.getAttribute('aria-expanded') !== 'true') toggle.click();
+              const formId = toggle.dataset.toggleInstrumentCreate;
+              const form = formId ? document.getElementById(formId) : null;
+              const firstField = form?.querySelector('input, select, button');
+              if (firstField && typeof firstField.focus === 'function') firstField.focus();
+            });
+
+            const editAction = actions.querySelector('[data-open-dialog^="edit-card-dialog-"]');
+            if (editAction?.nextSibling) actions.insertBefore(button, editAction.nextSibling);
+            else actions.append(button);
+          });
+        }
+
         function collapseInstrumentLists() {
           document.querySelectorAll('.card-account-item').forEach((card, index) => {
-            const list = card.querySelector('.instrument-list');
+            const list = card.querySelector(':scope > .item-main > .instrument-list');
             if (!list || list.closest('.instrument-disclosure')) return;
             const count = list.querySelectorAll('[data-card-instrument]').length;
             const details = document.createElement('details');
@@ -201,8 +243,6 @@ function standardizationScript(): string {
             details.append(summary);
             list.replaceWith(details);
             details.append(list);
-            const warning = card.querySelector('.instrument-warning');
-            if (warning) details.append(warning);
           });
         }
 
@@ -216,6 +256,7 @@ function standardizationScript(): string {
           document.querySelectorAll('dialog.master-dialog').forEach((dialog) => {
             if (dialog.dataset.standardized === 'true') return;
             dialog.dataset.standardized = 'true';
+            dialog.querySelector('.dialog-close-form')?.remove();
             const close = document.createElement('button');
             close.type = 'button';
             close.className = 'dialog-standard-close';
@@ -333,7 +374,7 @@ function standardizationScript(): string {
               response = await fetch(form.dataset.apiPath, {
                 method: form.dataset.apiMethod || 'POST',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
               });
             } catch (_error) {
               status.className = 'form-status error';
@@ -358,6 +399,7 @@ function standardizationScript(): string {
 
         wireTabs();
         standardizeRows();
+        restoreInstrumentRows();
         collapseInstrumentLists();
         standardizeDialogs();
         wireConfirmations();
