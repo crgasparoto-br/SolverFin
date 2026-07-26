@@ -255,20 +255,11 @@ export async function updateTransactionForContext(
     : undefined;
   const category = categoryId ? await findCategoryRow(context, categoryId) : undefined;
 
-  const removingCategory = prepared.payload.categoryId === null;
-  const domainTransaction =
-    removingCategory && currentTransaction
-      ? { ...currentTransaction, categoryId: undefined }
-      : currentTransaction;
-  const domainPayload = removingCategory
-    ? { ...prepared.payload, categoryId: undefined }
-    : prepared.payload;
-
   const result = updateTransactionDomain({
     context,
-    transaction: domainTransaction,
+    transaction: currentTransaction,
     now: new Date().toISOString(),
-    payload: domainPayload,
+    payload: prepared.payload,
     ...(account ? { account } : {}),
     ...(destinationAccount ? { destinationAccount } : {}),
     ...(category ? { category } : {}),
