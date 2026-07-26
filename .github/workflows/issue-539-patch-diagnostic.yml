@@ -1,0 +1,42 @@
+name: Diagnose issue 539 correction anchors
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/539-operational-installments
+      - name: Extract and run correction script
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('.github/workflows/issue-539-audit-corrections.yml').read_text(encoding='utf-8')
+          start = text.index("          python - <<'PY'\n") + len("          python - <<'PY'\n")
+          end = text.index("\n          PY\n", start)
+          lines = text[start:end].splitlines()
+          script = "\n".join(line[10:] if line.startswith("          ") else line for line in lines) + "\n"
+          Path('/tmp/issue-539-patch.py').write_text(script, encoding='utf-8')
+          PY
+          set +e
+          python /tmp/issue-539-patch.py > /tmp/issue-539-patch.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/issue-539-patch.log
+          printf '%s\n' "$status" > /tmp/issue-539-patch-status.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-539-patch-diagnostic
+          path: |
+            /tmp/issue-539-patch.log
+            /tmp/issue-539-patch-status.txt
