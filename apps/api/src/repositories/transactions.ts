@@ -141,6 +141,17 @@ export interface UpdateTransactionOptions {
   denyCanonicalInstallmentMutation?: boolean;
 }
 
+function isCanonicalInstallmentReconciliation(
+  payload: UpdateTransactionPayloadWithMetadata,
+): boolean {
+  const keys = Object.keys(payload);
+  return (
+    keys.length === 1 &&
+    payload.status !== undefined &&
+    (payload.status === "posted" || payload.status === "reconciled")
+  );
+}
+
 type TransactionMetadata = {
   applyToFuturePlanned?: boolean;
 };
@@ -218,7 +229,11 @@ export async function updateTransactionForContext(
 ): Promise<TransactionWithAccountRemuneration> {
   const currentTransaction = await findTransactionRow(context, transactionId);
 
-  if (options.denyCanonicalInstallmentMutation === true && currentTransaction?.installmentId) {
+  if (
+    options.denyCanonicalInstallmentMutation === true &&
+    currentTransaction?.installmentId &&
+    !isCanonicalInstallmentReconciliation(payload)
+  ) {
     throw Object.assign(new Error("Use a manutenção da parcela para alterar este lançamento."), {
       code: "INSTALLMENT_DIRECT_UPDATE_REQUIRED",
       statusCode: 409,

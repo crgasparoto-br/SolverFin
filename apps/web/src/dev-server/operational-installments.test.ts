@@ -14,7 +14,7 @@ import {
 test("builds one scoped account installments query for the selected month", () => {
   assert.equal(
     buildAccountInstallmentsPath("account-demo", "2026-02", "profile-demo"),
-    "/api/installments?accountId=account-demo&dueFrom=2026-02-01&dueTo=2026-02-28&status=all&profileId=profile-demo",
+    "/api/installments?accountId=account-demo&operationalFrom=2026-02-01&operationalTo=2026-02-28&status=all&profileId=profile-demo",
   );
 });
 
@@ -37,6 +37,13 @@ test("sends only changed safe fields and uses null to remove category", () => {
     buildInstallmentPatch(
       { description: "Parcela", note: "", categoryId: "" },
       { description: "Parcela", note: "", categoryId: "" },
+    ),
+    {},
+  );
+  assert.deepEqual(
+    buildInstallmentPatch(
+      { description: "Parcela", note: "Observação", categoryId: "" },
+      { description: "Parcela", note: "  Observação  ", categoryId: "" },
     ),
     {},
   );

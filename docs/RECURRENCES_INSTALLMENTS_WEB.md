@@ -58,7 +58,7 @@ Ocorrências anteriores, efetivadas, conciliadas, anuladas ou não elegíveis pe
 
 ## Parcelas canônicas incorporadas às linhas
 
-As telas `/lancamentos` e `/cartoes` enriquecem as linhas já existentes com `Parcela X de Y`, associando o retorno de `/api/installments` por `transaction.id`. A consulta é única por tela/escopo e degradável: indisponibilidade da API de parcelas não bloqueia a lista principal. No Extrato, as ações de edição ficam temporariamente indisponíveis quando a elegibilidade não pode ser consultada; o endpoint genérico de transações também rejeita mutação de lançamento vinculado a parcela canônica, impedindo que a restrição seja contornada.
+As telas `/lancamentos` e `/cartoes` enriquecem as linhas já existentes com `Parcela X de Y`, associando o retorno de `/api/installments` por `transaction.id`. A consulta é única por tela/escopo e degradável: indisponibilidade da API de parcelas não bloqueia a lista principal. O Extrato usa o período da data operacional exibida, não apenas `dueOn`, e mantém as ações de edição temporariamente indisponíveis quando a elegibilidade não pode ser consultada. O endpoint genérico rejeita mutações de dados da parcela canônica, preservando somente o payload de situação usado para conciliar ou desconciliar.
 
 No Extrato, a ação da própria linha abre o modal existente em modo restrito. Apenas descrição, observação e categoria podem ser alteradas quando `editable=true`; número, total, vencimento, valor, situação, conta, tipo e repetição permanecem somente leitura. Quando bloqueada, a mesma ação abre detalhes compactos com o motivo traduzido.
 

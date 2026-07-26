@@ -48,8 +48,8 @@ export function buildAccountInstallmentsPath(
   const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
   const query = new URLSearchParams({
     accountId,
-    dueFrom: `${month}-01`,
-    dueTo: `${month}-${String(lastDay).padStart(2, "0")}`,
+    operationalFrom: `${month}-01`,
+    operationalTo: `${month}-${String(lastDay).padStart(2, "0")}`,
     status: "all",
   });
   if (profileId) query.set("profileId", profileId);
@@ -75,8 +75,10 @@ export function buildInstallmentPatch(
 ): Record<string, string | null> {
   const patch: Record<string, string | null> = {};
   const description = current.description.trim();
+  const initialNote = initial.note.trim();
+  const currentNote = current.note.trim();
   if (description !== initial.description.trim()) patch.description = description;
-  if (current.note !== initial.note) patch.note = current.note.trim() || null;
+  if (currentNote !== initialNote) patch.note = currentNote || null;
   if (current.categoryId !== initial.categoryId) patch.categoryId = current.categoryId || null;
   return patch;
 }
@@ -260,7 +262,7 @@ export function operationalInstallmentsController(): string {
         const parts = month.split("-").map(Number);
         const lastDay = new Date(Date.UTC(parts[0], parts[1], 0)).getUTCDate();
         return "/api/installments?accountId=" + encodeURIComponent(accountId)
-          + "&dueFrom=" + month + "-01&dueTo=" + month + "-" + String(lastDay).padStart(2, "0")
+          + "&operationalFrom=" + month + "-01&operationalTo=" + month + "-" + String(lastDay).padStart(2, "0")
           + "&status=all";
       }
 
@@ -462,8 +464,10 @@ export function operationalInstallmentsController(): string {
           categoryId: String(form.categoryId.value || ""),
         };
         const patch = {};
+        const initialNote = String(initial.note || "").trim();
+        const currentNote = current.note.trim();
         if (current.description !== String(initial.description || "").trim()) patch.description = current.description;
-        if (current.note !== String(initial.note || "")) patch.note = current.note.trim() || null;
+        if (currentNote !== initialNote) patch.note = currentNote || null;
         if (current.categoryId !== String(initial.categoryId || "")) patch.categoryId = current.categoryId || null;
         return patch;
       }

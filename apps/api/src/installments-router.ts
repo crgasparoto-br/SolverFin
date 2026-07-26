@@ -158,6 +158,12 @@ function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
       : {}),
     ...(request.query.get("dueFrom") ? { dueFrom: String(request.query.get("dueFrom")) } : {}),
     ...(request.query.get("dueTo") ? { dueTo: String(request.query.get("dueTo")) } : {}),
+    ...(request.query.get("operationalFrom")
+      ? { operationalFrom: String(request.query.get("operationalFrom")) }
+      : {}),
+    ...(request.query.get("operationalTo")
+      ? { operationalTo: String(request.query.get("operationalTo")) }
+      : {}),
     ...(request.query.get("status")
       ? { status: request.query.get("status") as InstallmentStatus | "all" }
       : {}),

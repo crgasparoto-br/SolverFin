@@ -24,6 +24,8 @@ try {
 
   await validateAccountDesktop(fixture);
   await validateAccountMobile(fixture);
+  await validateBlockedAccountDesktop(fixture);
+  await validateConflictAccountDesktop(fixture);
   await validateCardDesktop(fixture);
   await validateCardMobile(fixture);
 } finally {
@@ -216,6 +218,135 @@ async function validateAccountMobile(fixture) {
   check(closed, "Escape did not close the installment modal", { closed });
 }
 
+async function validateBlockedAccountDesktop(fixture) {
+  await setViewport(browser.cdp, 1366, 768);
+  const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-08`;
+  await navigate(browser.cdp, `${baseUrl}${route}`);
+  const line = await waitForAccountLine(fixture.blockedAccountTransactionId);
+  check(line.installmentEditable === false, "Blocked installment was presented as editable", line);
+
+  await evaluate(
+    browser.cdp,
+    `document.querySelector('[data-edit="${fixture.blockedAccountTransactionId}"]').click()`,
+  );
+  await sleep(250);
+  const modal = await readAccountModal(fixture.archivedCategoryId);
+  check(modal.open, "Read-only installment modal did not open", modal);
+  check(modal.title === "Detalhes da parcela", "Read-only modal title is incorrect", modal);
+  check(modal.visibleEditableNames.length === 0, "Read-only modal exposes editable fields", modal);
+  check(modal.saveHidden, "Read-only modal still exposes the save action", modal);
+  check(
+    modal.reasonText === "O lançamento já foi efetivado, conciliado ou cancelado.",
+    "Read-only modal did not translate the block reason",
+    modal,
+  );
+
+  const filename = "issue-539-account-installment-blocked-desktop-1366x768.png";
+  await screenshot(browser.cdp, join(outputDir, filename));
+  scenarios.push({
+    route,
+    viewport: "1366x768",
+    state: "read-only reconciled installment",
+    screenshot: filename,
+    modal,
+  });
+  await evaluate(browser.cdp, `document.querySelector("[data-modal]").close()`);
+}
+
+async function validateConflictAccountDesktop(fixture) {
+  await setViewport(browser.cdp, 1366, 768);
+  const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-09`;
+  await navigate(browser.cdp, `${baseUrl}${route}`);
+  await waitForAccountLine(fixture.conflictAccountTransactionId);
+  await evaluate(
+    browser.cdp,
+    `document.querySelector('[data-edit="${fixture.conflictAccountTransactionId}"]').click()`,
+  );
+  await sleep(250);
+  const attemptedDescription = `Conflito preservado ${Date.now().toString(36)}`;
+  const conflict = await evaluate(
+    browser.cdp,
+    `(async () => {
+      const form = document.querySelector("[data-form]");
+      const nativeFetch = window.fetch.bind(window);
+      const nativeSetTimeout = window.setTimeout.bind(window);
+      form.description.value = ${JSON.stringify(attemptedDescription)};
+      const statusResponse = await nativeFetch("/api/transactions/${fixture.conflictAccountTransactionId}", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status: "reconciled" })
+      });
+      let patchResult;
+      window.fetch = async (...args) => {
+        const response = await nativeFetch(...args);
+        const path = String(args[0] || "");
+        const method = String(args[1]?.method || "GET").toUpperCase();
+        if (path.includes("/api/installments/") && method === "PATCH") {
+          patchResult = { status: response.status, body: await response.clone().json().catch(() => ({})) };
+        }
+        return response;
+      };
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      for (let attempt = 0; attempt < 50 && !patchResult; attempt += 1) {
+        await new Promise((resolve) => nativeSetTimeout(resolve, 100));
+      }
+      window.fetch = nativeFetch;
+      return {
+        statusUpdate: statusResponse.status,
+        patchResult,
+        modalOpen: document.querySelector("[data-modal]").open,
+        statusText: form.querySelector("[data-installment-status-message]")?.textContent || "",
+        descriptionValue: form.description.value,
+        reloadVisible: Boolean(form.querySelector("[data-installment-reload]"))
+      };
+    })()`,
+  );
+  check(conflict.statusUpdate === 200, "Concurrent status transition failed", conflict);
+  check(conflict.patchResult?.status === 409, "Stale installment edit was not rejected", conflict);
+  check(conflict.modalOpen, "Conflict closed the installment modal", conflict);
+  check(
+    conflict.descriptionValue === attemptedDescription,
+    "Conflict did not preserve the typed description",
+    conflict,
+  );
+  check(conflict.reloadVisible, "Conflict did not expose the reload action", conflict);
+  check(
+    conflict.statusText.includes("estado da parcela mudou"),
+    "Conflict message is not actionable",
+    conflict,
+  );
+
+  const filename = "issue-539-account-installment-conflict-desktop-1366x768.png";
+  await screenshot(browser.cdp, join(outputDir, filename));
+  scenarios.push({
+    route,
+    viewport: "1366x768",
+    state: "stale edit conflict",
+    screenshot: filename,
+    conflict,
+  });
+
+  await evaluate(browser.cdp, `document.querySelector("[data-installment-reload]").click()`);
+  await sleep(300);
+  const reloaded = await readAccountModal(fixture.archivedCategoryId);
+  check(
+    reloaded.title === "Detalhes da parcela",
+    "Reload did not reflect the blocked state",
+    reloaded,
+  );
+  check(
+    reloaded.visibleEditableNames.length === 0,
+    "Reload kept blocked fields editable",
+    reloaded,
+  );
+  check(
+    reloaded.descriptionValue === fixture.conflictAccountOriginalDescription,
+    "Reload did not restore the persisted description",
+    reloaded,
+  );
+  await evaluate(browser.cdp, `document.querySelector("[data-modal]").close()`);
+}
+
 async function validateCardDesktop(fixture) {
   await setViewport(browser.cdp, 1366, 768);
   const route = `/cartoes?cardId=${encodeURIComponent(fixture.cardId)}&invoiceId=${encodeURIComponent(fixture.invoiceId)}`;
@@ -296,6 +427,7 @@ async function waitForAccountLine(transactionId) {
           return {
             badge: badge.textContent.trim(),
             editable: Boolean(edit.dataset.installmentEdit) && !edit.disabled,
+            installmentEditable: edit.dataset.installmentEditable === "true",
             hasRecurrenceIndicator: Boolean(row.querySelector(".recurrence-indicator")),
             globalOverflow: document.documentElement.scrollWidth > window.innerWidth
           };
@@ -354,6 +486,10 @@ async function readAccountModal(categoryId) {
         categoryOptionDisabled: Boolean(option?.disabled),
         visibleEditableNames,
         focusName: document.activeElement?.name || "",
+        reasonText: form.querySelector("[data-installment-reason]")?.textContent || "",
+        saveHidden: Boolean(form.querySelector('.save-row button[type="submit"]')?.hidden),
+        descriptionValue: form.description.value,
+        reloadVisible: Boolean(form.querySelector("[data-installment-reload]")),
         globalOverflow: document.documentElement.scrollWidth > window.innerWidth,
         dialogWithinViewport: rect.left >= 0 && rect.right <= window.innerWidth && rect.top >= 0 && rect.bottom <= window.innerHeight
       };
@@ -407,6 +543,19 @@ function fixtureExpression() {
     const accountInstallment = accountInstallments.find(
       (item) => item.dueOn === "2026-07-05" && item.transaction?.id,
     );
+    const blockedAccountInstallment = accountInstallments.find(
+      (item) => item.dueOn === "2026-08-05" && item.transaction?.id,
+    );
+    const conflictAccountInstallment = accountInstallments.find(
+      (item) => item.dueOn === "2026-09-05" && item.transaction?.id,
+    );
+    if (blockedAccountInstallment?.transaction?.id) {
+      await request(
+        "/api/transactions/" + blockedAccountInstallment.transaction.id,
+        "PATCH",
+        { status: "reconciled" },
+      );
+    }
     await request("/api/categories/" + category.id + "/archive", "POST");
 
     const card = (await request("/api/credit-card-accounts", "POST", {
@@ -442,7 +591,12 @@ function fixtureExpression() {
       (item) => item.dueOn === "2026-07-08" && item.transaction?.invoiceId,
     );
 
-    if (!accountInstallment?.transaction?.id || !cardInstallment?.transaction?.invoiceId) {
+    if (
+      !accountInstallment?.transaction?.id ||
+      !blockedAccountInstallment?.transaction?.id ||
+      !conflictAccountInstallment?.transaction?.id ||
+      !cardInstallment?.transaction?.invoiceId
+    ) {
       throw new Error("Issue 539 fixture did not create linked operational installments");
     }
 
@@ -452,6 +606,9 @@ function fixtureExpression() {
       accountInstallmentId: accountInstallment.id,
       accountTransactionId: accountInstallment.transaction.id,
       accountBadge: "Parcela " + accountInstallment.sequenceNumber + " de " + accountInstallment.totalInstallments,
+      blockedAccountTransactionId: blockedAccountInstallment.transaction.id,
+      conflictAccountTransactionId: conflictAccountInstallment.transaction.id,
+      conflictAccountOriginalDescription: conflictAccountInstallment.transaction.description,
       cardId: card.id,
       invoiceId: cardInstallment.transaction.invoiceId,
       cardTransactionId: cardInstallment.transaction.id,

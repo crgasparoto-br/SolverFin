@@ -37,7 +37,11 @@ async function main(): Promise<void> {
   const editableInstallment = installmentRefs[0] ?? assert.fail("Expected editable installment.");
   const concurrentInstallment =
     installmentRefs[1] ?? assert.fail("Expected concurrent installment.");
+  const reconciliationInstallment =
+    installmentRefs[2] ?? assert.fail("Expected reconciliation installment.");
   await assertRejectsGenericTransactionMutation(token, editableInstallment);
+  await assertAllowsGenericReconciliation(token, reconciliationInstallment);
+  await assertFiltersOperationalPeriod(token, reconciliationInstallment, account.id);
   await assertUpdatesEligibleInstallment(
     token,
     editableInstallment.installmentId,
@@ -162,6 +166,74 @@ async function assertRejectsGenericTransactionMutation(
   const current = await readInstallment(token, ref.installmentId);
   assert.equal(current.amountMinor, ref.amountMinor);
   assert.equal(current.transaction?.description, ref.originalDescription);
+}
+
+async function assertAllowsGenericReconciliation(
+  token: string,
+  ref: InstallmentRef,
+): Promise<void> {
+  const reconcileResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/transactions/${ref.transactionId}`,
+    { status: "reconciled" },
+  );
+  assert.equal(reconcileResponse.statusCode, 200);
+  assert.equal(
+    readBody<{ transaction: { status: string } }>(reconcileResponse).transaction.status,
+    "reconciled",
+  );
+
+  const reconciled = await readInstallment(token, ref.installmentId);
+  assert.equal(reconciled.transaction?.status, "reconciled");
+  assert.equal(reconciled.editBlockedReason, "transaction_status_locked");
+
+  const reopenResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/transactions/${ref.transactionId}`,
+    { status: "posted" },
+  );
+  assert.equal(reopenResponse.statusCode, 200);
+  assert.equal(
+    readBody<{ transaction: { status: string } }>(reopenResponse).transaction.status,
+    "posted",
+  );
+}
+
+async function assertFiltersOperationalPeriod(
+  token: string,
+  ref: InstallmentRef,
+  accountId: string,
+): Promise<void> {
+  await getPool().query(
+    `update "Transaction"
+        set "status" = 'POSTED', "effectiveOn" = $2
+      where "id" = $1`,
+    [ref.transactionId, "2026-10-15"],
+  );
+
+  const operationalResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/installments?accountId=${accountId}&operationalFrom=2026-10-01&operationalTo=2026-10-31&status=all`,
+  );
+  assert.equal(operationalResponse.statusCode, 200);
+  const operationalIds = readBody<{ installments: ApiInstallmentHistory[] }>(
+    operationalResponse,
+  ).installments.map((installment) => installment.id);
+  assert.equal(operationalIds.includes(ref.installmentId), true);
+
+  const dueOnlyResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/installments?accountId=${accountId}&dueFrom=2026-10-01&dueTo=2026-10-31&status=all`,
+  );
+  assert.equal(dueOnlyResponse.statusCode, 200);
+  const dueOnlyIds = readBody<{ installments: ApiInstallmentHistory[] }>(
+    dueOnlyResponse,
+  ).installments.map((installment) => installment.id);
+  assert.equal(dueOnlyIds.includes(ref.installmentId), false);
 }
 
 async function assertRevalidatesConcurrentStateChange(
@@ -310,6 +382,14 @@ async function assertRejectsInvalidFilters(token: string): Promise<void> {
   );
   assert.equal(invertedPeriod.statusCode, 400);
   assert.equal(readErrorCode(invertedPeriod), "INSTALLMENTS_FILTER_INVALID");
+
+  const invertedOperationalPeriod = await apiRequest(
+    token,
+    "GET",
+    "/api/installments?operationalFrom=2026-08-01&operationalTo=2026-07-01",
+  );
+  assert.equal(invertedOperationalPeriod.statusCode, 400);
+  assert.equal(readErrorCode(invertedOperationalPeriod), "INSTALLMENTS_FILTER_INVALID");
 }
 
 async function loginAndReadToken(): Promise<string> {

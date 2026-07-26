@@ -20,6 +20,8 @@ export interface ListInstallmentsFilters {
   categoryId?: EntityId;
   dueFrom?: string;
   dueTo?: string;
+  operationalFrom?: string;
+  operationalTo?: string;
   status?: InstallmentStatus | "all";
 }
 
@@ -103,6 +105,20 @@ export async function listInstallmentsForContext(
   if (filters.dueTo !== undefined) {
     params.push(filters.dueTo);
     where.push(`i."dueOn" <= $${params.length}`);
+  }
+
+  if (filters.operationalFrom !== undefined) {
+    params.push(filters.operationalFrom);
+    where.push(
+      `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", i."dueOn") >= $${params.length}`,
+    );
+  }
+
+  if (filters.operationalTo !== undefined) {
+    params.push(filters.operationalTo);
+    where.push(
+      `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", i."dueOn") <= $${params.length}`,
+    );
   }
 
   const rows = await query<Row>(
@@ -294,6 +310,22 @@ function validateFilters(filters: ListInstallmentsFilters): void {
     filters.dueFrom > filters.dueTo
   ) {
     throwInstallmentsFilterInvalid("Periodo de vencimento invertido.");
+  }
+
+  if (filters.operationalFrom !== undefined && !isIsoDate(filters.operationalFrom)) {
+    throwInstallmentsFilterInvalid("Data operacional inicial invalida.");
+  }
+
+  if (filters.operationalTo !== undefined && !isIsoDate(filters.operationalTo)) {
+    throwInstallmentsFilterInvalid("Data operacional final invalida.");
+  }
+
+  if (
+    filters.operationalFrom !== undefined &&
+    filters.operationalTo !== undefined &&
+    filters.operationalFrom > filters.operationalTo
+  ) {
+    throwInstallmentsFilterInvalid("Periodo operacional invertido.");
   }
 }
 
