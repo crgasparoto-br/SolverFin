@@ -1,0 +1,78 @@
+name: Fix issue 539 submit interception
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/539-operational-installments
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Intercept installment submits before the generic form handler
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/web/src/dev-server/operational-installments.ts')
+          content = path.read_text(encoding='utf-8')
+          old = '''      document.querySelector("[data-form]")?.addEventListener("submit", async (event) => {
+                const form = event.currentTarget;
+                const installmentId = form.dataset.installmentId;
+                if (!installmentId) return;
+          '''
+          new = '''      document.addEventListener("submit", async (event) => {
+                const form = event.target;
+                if (!form || !form.matches || !form.matches("[data-form]")) return;
+                const installmentId = form.dataset.installmentId;
+                if (!installmentId) return;
+          '''
+          if content.count(old) != 1:
+              raise SystemExit(f'expected one submit listener anchor, found {content.count(old)}')
+          path.write_text(content.replace(old, new, 1), encoding='utf-8')
+
+          test_path = Path('apps/web/src/dev-server/operational-installments.test.ts')
+          test_content = test_path.read_text(encoding='utf-8')
+          test_anchor = '  assert.match(script, /stopImmediatePropagation/);\n'
+          test_replacement = '''  assert.match(script, /document\\.addEventListener\\("submit"/);
+            assert.doesNotMatch(
+              script,
+              /document\\.querySelector\\("\\[data-form\\]"\\)\\?\\.addEventListener\\("submit"/,
+            );
+            assert.match(script, /stopImmediatePropagation/);
+          '''
+          if test_content.count(test_anchor) != 1:
+              raise SystemExit(f'expected one test anchor, found {test_content.count(test_anchor)}')
+          test_path.write_text(test_content.replace(test_anchor, test_replacement, 1), encoding='utf-8')
+          PY
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Format changed files
+        run: >-
+          npx prettier --write
+          apps/web/src/dev-server/operational-installments.ts
+          apps/web/src/dev-server/operational-installments.test.ts
+      - name: Validate repository
+        run: npm run validate
+      - name: Persist submit interception correction
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web/src/dev-server/operational-installments.ts
+          git add apps/web/src/dev-server/operational-installments.test.ts
+          git commit -m 'fix: intercept canonical installment submit before generic handler'
+          git push origin HEAD:feat/539-operational-installments
