@@ -129,9 +129,39 @@ export function sharedShellStyles(): string {
 
     /*
      * Controles operacionais não são ações primárias. Esta lista cobre os
-     * padrões compartilhados e legados usados por abas, filtros, ordenação,
-     * navegação temporal, menus, toolbars e botões somente com ícone.
+     * padrões compartilhados e os aliases legados ainda usados por abas,
+     * filtros, ordenação, navegação temporal, menus, toolbars, fechamento e
+     * botões somente com ícone.
      */
+    form.close-form > button:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
+    button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
+    button:is(
+      .neutral-button,
+      .secondary-button,
+      .ghost-button,
+      .ghost-btn,
+      .icon-button,
+      .icon-btn,
+      .tab-button,
+      .filter-button,
+      .sort-button,
+      .month-nav-button,
+      .menu-button,
+      .toggle-button,
+      .pagination-button,
+      .row-action,
+      .toolbar-button,
+      .nav-button,
+      .actions-item,
+      .status-icon-btn,
+      .account-select-trigger,
+      .close-form
+    ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
+    .button-link.secondary-link {
+      background: var(--surface);
+      border-color: var(--line);
+      color: var(--primary);
+    }
     button[aria-pressed]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
     button[aria-pressed]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
     button[aria-selected]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
@@ -140,13 +170,17 @@ export function sharedShellStyles(): string {
     button[aria-haspopup="listbox"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
     button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
     button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    form.close-form > button:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    form.close-form > button:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
     button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
     button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
     button:is(
       .neutral-button,
       .secondary-button,
       .ghost-button,
+      .ghost-btn,
       .icon-button,
+      .icon-btn,
       .tab-button,
       .filter-button,
       .sort-button,
@@ -156,13 +190,19 @@ export function sharedShellStyles(): string {
       .pagination-button,
       .row-action,
       .toolbar-button,
-      .nav-button
+      .nav-button,
+      .actions-item,
+      .status-icon-btn,
+      .account-select-trigger,
+      .close-form
     ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
     button:is(
       .neutral-button,
       .secondary-button,
       .ghost-button,
+      .ghost-btn,
       .icon-button,
+      .icon-btn,
       .tab-button,
       .filter-button,
       .sort-button,
@@ -172,8 +212,14 @@ export function sharedShellStyles(): string {
       .pagination-button,
       .row-action,
       .toolbar-button,
-      .nav-button
-    ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible {
+      .nav-button,
+      .actions-item,
+      .status-icon-btn,
+      .account-select-trigger,
+      .close-form
+    ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    .button-link.secondary-link:hover,
+    .button-link.secondary-link:focus-visible {
       background: var(--neutral-control-hover);
       border-color: var(--neutral-control-border-hover);
       color: var(--neutral-control-text-hover);
