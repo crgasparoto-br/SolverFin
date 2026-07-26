@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
@@ -23,7 +30,9 @@ const statementNeutralSelectors = {
   recurrenceClose: "button.close-form[data-recurrence-scope-cancel]",
 };
 
-if (!chromePath) throw new Error("CHROME_BIN is required for issue 537 visual validation.");
+if (!chromePath) {
+  throw new Error("CHROME_BIN is required for issue 537 visual validation.");
+}
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 
@@ -76,7 +85,10 @@ async function validateAccountsCardsStates() {
   await sleep(250);
 
   const hoverStyles = await readStyles(accountsCardsSelectors);
-  await screenshot(browser.cdp, join(outputDir, "issue-537-hover-states-desktop-1440x900.png"));
+  await screenshot(
+    browser.cdp,
+    join(outputDir, "issue-537-hover-states-desktop-1440x900.png"),
+  );
   scenarios.push({
     route: "/contas-cartoes",
     kind: "hover",
@@ -127,7 +139,9 @@ async function validateStatementNeutralStates(width, height, label) {
     browser.cdp,
     `(() => {
       const dialog = document.querySelector("[data-recurrence-scope-modal]");
-      if (dialog && typeof dialog.showModal === "function" && !dialog.open) dialog.showModal();
+      if (dialog && typeof dialog.showModal === "function" && !dialog.open) {
+        dialog.showModal();
+      }
       document.querySelector(${JSON.stringify(statementNeutralSelectors.recurrenceClose)})?.scrollIntoView({ block: "center" });
     })()`,
   );
@@ -135,7 +149,9 @@ async function validateStatementNeutralStates(width, height, label) {
   await enablePseudoStateDomains();
 
   const nodes = await findNodes(statementNeutralSelectors);
-  for (const nodeId of Object.values(nodes)) await forceState(browser.cdp, nodeId, ["hover"]);
+  for (const nodeId of Object.values(nodes)) {
+    await forceState(browser.cdp, nodeId, ["hover"]);
+  }
   await sleep(250);
 
   const hoverStyles = await readStyles(statementNeutralSelectors);
@@ -149,9 +165,13 @@ async function validateStatementNeutralStates(width, height, label) {
     styles: hoverStyles,
   });
 
-  for (const [name, styles] of Object.entries(hoverStyles)) checkNeutral(name, styles);
+  for (const [name, styles] of Object.entries(hoverStyles)) {
+    checkNeutral(name, styles);
+  }
 
-  for (const nodeId of Object.values(nodes)) await forceState(browser.cdp, nodeId, []);
+  for (const nodeId of Object.values(nodes)) {
+    await forceState(browser.cdp, nodeId, []);
+  }
   await forceState(browser.cdp, nodes.recurrenceClose, ["focus", "focus-visible"]);
   await sleep(250);
 
@@ -180,7 +200,10 @@ async function enablePseudoStateDomains() {
 }
 
 async function findNodes(selectors) {
-  const { root } = await browser.cdp.send("DOM.getDocument", { depth: -1, pierce: true });
+  const { root } = await browser.cdp.send("DOM.getDocument", {
+    depth: -1,
+    pierce: true,
+  });
   return Object.fromEntries(
     await Promise.all(
       Object.entries(selectors).map(async ([name, selector]) => [
@@ -220,7 +243,10 @@ async function readStyles(selectors) {
         };
       };
       return Object.fromEntries(
-        Object.entries(${JSON.stringify(selectors)}).map(([name, selector]) => [name, read(selector)]),
+        Object.entries(${JSON.stringify(selectors)}).map(([name, selector]) => [
+          name,
+          read(selector),
+        ]),
       );
     })()`,
   );
