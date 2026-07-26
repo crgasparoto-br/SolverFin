@@ -142,14 +142,15 @@ export interface UpdateTransactionOptions {
 }
 
 function isCanonicalInstallmentReconciliation(
+  currentStatus: TransactionStatus,
   payload: UpdateTransactionPayloadWithMetadata,
 ): boolean {
   const keys = Object.keys(payload);
-  return (
-    keys.length === 1 &&
-    payload.status !== undefined &&
-    (payload.status === "posted" || payload.status === "reconciled")
-  );
+  if (keys.length !== 1 || payload.status === undefined) return false;
+  if (payload.status === "reconciled") {
+    return currentStatus === "planned" || currentStatus === "posted";
+  }
+  return payload.status === "posted" && currentStatus === "reconciled";
 }
 
 type TransactionMetadata = {
@@ -232,7 +233,7 @@ export async function updateTransactionForContext(
   if (
     options.denyCanonicalInstallmentMutation === true &&
     currentTransaction?.installmentId &&
-    !isCanonicalInstallmentReconciliation(payload)
+    !isCanonicalInstallmentReconciliation(currentTransaction.status, payload)
   ) {
     throw Object.assign(new Error("Use a manutenção da parcela para alterar este lançamento."), {
       code: "INSTALLMENT_DIRECT_UPDATE_REQUIRED",

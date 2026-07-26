@@ -40,6 +40,7 @@ async function main(): Promise<void> {
   const reconciliationInstallment =
     installmentRefs[2] ?? assert.fail("Expected reconciliation installment.");
   await assertRejectsGenericTransactionMutation(token, editableInstallment);
+  await assertRejectsGenericPostingOfPlannedInstallment(token, editableInstallment);
   await assertAllowsGenericReconciliation(token, reconciliationInstallment);
   await assertFiltersOperationalPeriod(token, reconciliationInstallment, account.id);
   await assertUpdatesEligibleInstallment(
@@ -166,6 +167,20 @@ async function assertRejectsGenericTransactionMutation(
   const current = await readInstallment(token, ref.installmentId);
   assert.equal(current.amountMinor, ref.amountMinor);
   assert.equal(current.transaction?.description, ref.originalDescription);
+}
+
+async function assertRejectsGenericPostingOfPlannedInstallment(
+  token: string,
+  ref: InstallmentRef,
+): Promise<void> {
+  const response = await apiRequest(token, "PATCH", `/api/transactions/${ref.transactionId}`, {
+    status: "posted",
+  });
+  assert.equal(response.statusCode, 409);
+  assert.equal(readErrorCode(response), "INSTALLMENT_DIRECT_UPDATE_REQUIRED");
+
+  const current = await readInstallment(token, ref.installmentId);
+  assert.equal(current.transaction?.status, "planned");
 }
 
 async function assertAllowsGenericReconciliation(
