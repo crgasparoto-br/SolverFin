@@ -42,14 +42,16 @@ export function buildAccountInstallmentsPath(
   accountId: string,
   month: string,
   profileId?: string,
+  day?: string,
 ): string {
   const year = Number(month.slice(0, 4));
   const monthNumber = Number(month.slice(5, 7));
   const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+  const selectedDay = /^\d{4}-\d{2}-\d{2}$/.test(day ?? "") && day?.startsWith(`${month}-`) ? day : undefined;
   const query = new URLSearchParams({
     accountId,
-    operationalFrom: `${month}-01`,
-    operationalTo: `${month}-${String(lastDay).padStart(2, "0")}`,
+    operationalFrom: selectedDay ?? `${month}-01`,
+    operationalTo: selectedDay ?? `${month}-${String(lastDay).padStart(2, "0")}`,
     status: "all",
   });
   if (profileId) query.set("profileId", profileId);
@@ -259,10 +261,14 @@ export function operationalInstallmentsController(): string {
         const accountId = document.querySelector("[data-account-input]")?.value || urlParams.get("accountId") || "";
         const month = document.querySelector("#filter-month")?.value || urlParams.get("month") || "";
         if (!accountId || !/^\\d{4}-\\d{2}$/.test(month)) return "";
+        const day = urlParams.get("day") || "";
+        const selectedDay = /^\\d{4}-\\d{2}-\\d{2}$/.test(day) && day.startsWith(month + "-") ? day : "";
         const parts = month.split("-").map(Number);
         const lastDay = new Date(Date.UTC(parts[0], parts[1], 0)).getUTCDate();
+        const operationalFrom = selectedDay || month + "-01";
+        const operationalTo = selectedDay || month + "-" + String(lastDay).padStart(2, "0");
         return "/api/installments?accountId=" + encodeURIComponent(accountId)
-          + "&operationalFrom=" + month + "-01&operationalTo=" + month + "-" + String(lastDay).padStart(2, "0")
+          + "&operationalFrom=" + operationalFrom + "&operationalTo=" + operationalTo
           + "&status=all";
       }
 
@@ -529,10 +535,10 @@ export function operationalInstallmentsController(): string {
       document.querySelector("[data-modal]")?.addEventListener("close", restoreRestrictedForm);
 
       document.addEventListener("submit", async (event) => {
-      const form = event.target;
-      if (!form || !form.matches || !form.matches("[data-form]")) return;
-      const installmentId = form.dataset.installmentId;
-      if (!installmentId) return;
+        const form = event.target;
+        if (!form || !form.matches || !form.matches("[data-form]")) return;
+        const installmentId = form.dataset.installmentId;
+        if (!installmentId) return;
         event.preventDefault();
         event.stopImmediatePropagation();
         const installment = installmentsById.get(installmentId);
