@@ -1,0 +1,144 @@
+name: Tighten issue 539 reconciliation transition
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/539-operational-installments
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Restrict status-only exception to reconciliation transitions
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path_value: str, old: str, new: str) -> None:
+              path = Path(path_value)
+              content = path.read_text(encoding="utf-8")
+              if content.count(old) != 1:
+                  raise SystemExit(f"expected one anchor in {path_value}, found {content.count(old)}")
+              path.write_text(content.replace(old, new, 1), encoding="utf-8")
+
+          replace_once(
+              "apps/api/src/repositories/transactions.ts",
+              '''function isCanonicalInstallmentReconciliation(
+            payload: UpdateTransactionPayloadWithMetadata,
+          ): boolean {
+            const keys = Object.keys(payload);
+            return (
+              keys.length === 1 &&
+              payload.status !== undefined &&
+              (payload.status === "posted" || payload.status === "reconciled")
+            );
+          }
+          ''',
+              '''function isCanonicalInstallmentReconciliation(
+            currentStatus: TransactionStatus,
+            payload: UpdateTransactionPayloadWithMetadata,
+          ): boolean {
+            const keys = Object.keys(payload);
+            if (keys.length !== 1 || payload.status === undefined) return false;
+            if (payload.status === "reconciled") {
+              return currentStatus === "planned" || currentStatus === "posted";
+            }
+            return payload.status === "posted" && currentStatus === "reconciled";
+          }
+          ''',
+          )
+          replace_once(
+              "apps/api/src/repositories/transactions.ts",
+              '''    currentTransaction?.installmentId &&
+              !isCanonicalInstallmentReconciliation(payload)
+          ''',
+              '''    currentTransaction?.installmentId &&
+              !isCanonicalInstallmentReconciliation(currentTransaction.status, payload)
+          ''',
+          )
+          replace_once(
+              "apps/api/src/installments-router.integration.test.ts",
+              '''  await assertRejectsGenericTransactionMutation(token, editableInstallment);
+            await assertAllowsGenericReconciliation(token, reconciliationInstallment);
+          ''',
+              '''  await assertRejectsGenericTransactionMutation(token, editableInstallment);
+            await assertRejectsGenericPostingOfPlannedInstallment(token, editableInstallment);
+            await assertAllowsGenericReconciliation(token, reconciliationInstallment);
+          ''',
+          )
+          replace_once(
+              "apps/api/src/installments-router.integration.test.ts",
+              '''async function assertAllowsGenericReconciliation(
+          ''',
+              '''async function assertRejectsGenericPostingOfPlannedInstallment(
+            token: string,
+            ref: InstallmentRef,
+          ): Promise<void> {
+            const response = await apiRequest(
+              token,
+              "PATCH",
+              `/api/transactions/${ref.transactionId}`,
+              { status: "posted" },
+            );
+            assert.equal(response.statusCode, 409);
+            assert.equal(readErrorCode(response), "INSTALLMENT_DIRECT_UPDATE_REQUIRED");
+
+            const current = await readInstallment(token, ref.installmentId);
+            assert.equal(current.transaction?.status, "planned");
+          }
+
+          async function assertAllowsGenericReconciliation(
+          ''',
+          )
+          PY
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Format changed files
+        run: >-
+          npx prettier --write
+          apps/api/src/repositories/transactions.ts
+          apps/api/src/installments-router.integration.test.ts
+      - name: Validate corrected implementation
+        run: npm run validate
+      - name: Validate PostgreSQL integration
+        run: npm run test:integration
+      - name: Persist transition guard and remove temporary workflow
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/api/src/repositories/transactions.ts
+          git add apps/api/src/installments-router.integration.test.ts
+          git rm .github/workflows/issue-539-reconciliation-transition-fix.yml
+          git commit -m 'fix: restrict canonical installment reconciliation transitions'
+          git push origin HEAD:feat/539-operational-installments
