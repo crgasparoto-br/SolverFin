@@ -68,7 +68,26 @@ jobs:
           apps/web/src/dev-server/operational-installments.ts
           apps/web/src/dev-server/operational-installments.test.ts
       - name: Validate repository
-        run: npm run validate
+        shell: bash
+        run: |
+          set +e
+          npm run validate > /tmp/issue-539-submit-validate.log 2>&1
+          status=$?
+          printf '%s\n' "$status" > /tmp/issue-539-submit-validate.status
+          tail -n 160 /tmp/issue-539-submit-validate.log
+          exit 0
+      - name: Upload validation diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-539-submit-validation-${{ github.sha }}
+          path: |
+            /tmp/issue-539-submit-validate.log
+            /tmp/issue-539-submit-validate.status
+          if-no-files-found: error
+          retention-days: 1
+      - name: Assert validation
+        run: test "$(cat /tmp/issue-539-submit-validate.status)" = "0"
       - name: Persist submit interception correction
         shell: bash
         run: |
