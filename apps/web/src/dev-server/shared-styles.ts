@@ -23,6 +23,7 @@ export function sharedShellStyles(): string {
       --neutral-control-hover: #f1f7f9;
       --neutral-control-border-hover: #a5cbd6;
       --neutral-control-active-hover: #dceef3;
+      --neutral-control-text-hover: #0f3d4c;
       --cyan: #0891b2;
       --cyan-soft: #cffafe;
       --success: #166534;
@@ -120,29 +121,107 @@ export function sharedShellStyles(): string {
       min-height: 34px;
       padding: 0 12px;
       text-decoration: none;
-      transition: background 120ms ease-out, box-shadow 120ms ease-out, opacity 120ms ease-out;
+      transition: background 120ms ease-out, border-color 120ms ease-out, box-shadow 120ms ease-out, color 120ms ease-out, opacity 120ms ease-out;
       white-space: nowrap;
     }
     button:hover:not(:disabled), .button-link:hover { background: var(--primary-hover); }
     button:disabled { cursor: not-allowed; opacity: 0.5; }
-    button[aria-pressed]:hover:not(:disabled),
-    button[aria-pressed]:focus-visible,
-    button[aria-selected]:hover:not(:disabled),
-    button[aria-selected]:focus-visible,
-    button[aria-haspopup="listbox"]:hover:not(:disabled),
-    button[aria-haspopup="listbox"]:focus-visible,
-    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):hover:not(:disabled),
-    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):focus-visible,
-    .ghost-button:hover:not(:disabled),
-    .ghost-button:focus-visible {
-      background: var(--neutral-control-hover);
-      border-color: var(--neutral-control-border-hover);
+
+    /*
+     * Controles operacionais não são ações primárias. O estado base é definido
+     * aqui apenas para variantes semânticas compartilhadas; aliases legados
+     * mantêm seus estados de repouso locais e recebem daqui somente hover/foco.
+     */
+    form.close-form > button:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
+    button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
+    button:is(
+      .neutral-button,
+      .secondary-button,
+      .ghost-button,
+      .icon-button,
+      .tab-button,
+      .filter-button,
+      .sort-button,
+      .month-nav-button,
+      .menu-button,
+      .toggle-button,
+      .pagination-button,
+      .row-action,
+      .toolbar-button,
+      .nav-button,
+      .close-form
+    ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
+    .button-link.secondary-link {
+      background: var(--surface);
+      border-color: var(--line);
       color: var(--primary);
     }
-    button[aria-pressed="true"]:hover:not(:disabled),
-    button[aria-pressed="true"]:focus-visible,
-    button[aria-selected="true"]:hover:not(:disabled),
-    button[aria-selected="true"]:focus-visible {
+    button[aria-pressed]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-pressed]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[aria-selected]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-selected]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[aria-haspopup="listbox"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-haspopup="listbox"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    form.close-form > button:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    form.close-form > button:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button:is(
+      .neutral-button,
+      .secondary-button,
+      .ghost-button,
+      .ghost-btn,
+      .icon-button,
+      .icon-btn,
+      .tab-button,
+      .filter-button,
+      .sort-button,
+      .month-nav-button,
+      .menu-button,
+      .toggle-button,
+      .pagination-button,
+      .row-action,
+      .toolbar-button,
+      .nav-button,
+      .actions-item,
+      .status-icon-btn,
+      .account-select-trigger,
+      .close-form
+    ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button:is(
+      .neutral-button,
+      .secondary-button,
+      .ghost-button,
+      .ghost-btn,
+      .icon-button,
+      .icon-btn,
+      .tab-button,
+      .filter-button,
+      .sort-button,
+      .month-nav-button,
+      .menu-button,
+      .toggle-button,
+      .pagination-button,
+      .row-action,
+      .toolbar-button,
+      .nav-button,
+      .actions-item,
+      .status-icon-btn,
+      .account-select-trigger,
+      .close-form
+    ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    .button-link.secondary-link:hover,
+    .button-link.secondary-link:focus-visible {
+      background: var(--neutral-control-hover);
+      border-color: var(--neutral-control-border-hover);
+      color: var(--neutral-control-text-hover);
+    }
+    button[aria-pressed="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-pressed="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[aria-selected="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-selected="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible {
       background: var(--neutral-control-active-hover);
     }
     .secondary-button {
@@ -150,13 +229,24 @@ export function sharedShellStyles(): string {
       border-color: var(--line);
       color: var(--primary);
     }
-    .secondary-button:hover:not(:disabled) { background: var(--primary-soft); border-color: #c8dde5; }
+    .secondary-button:hover:not(:disabled) {
+      background: var(--neutral-control-hover);
+      border-color: var(--neutral-control-border-hover);
+      color: var(--neutral-control-text-hover);
+    }
     .danger-action {
       background: var(--danger-bg);
       border-color: #fecaca;
       color: var(--danger);
     }
-    .danger-action:hover:not(:disabled) { background: #fecaca; }
+    .danger-action:hover:not(:disabled),
+    .danger-action:focus-visible { background: #fecaca; }
+    .danger-icon-button:hover:not(:disabled),
+    .danger-icon-button:focus-visible {
+      background: var(--danger-bg);
+      border-color: #fecaca;
+      color: var(--danger);
+    }
 
     /* ── Feedback ── */
     .error {
@@ -390,13 +480,15 @@ export function sharedDialogStyles(): string {
       width: 30px;
       transition: background 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out;
     }
-    .icon-button:hover { background: var(--primary-soft); border-color: #c8dde5; }
+    .icon-button:hover:not(:disabled),
+    .icon-button:focus-visible { background: var(--neutral-control-hover); border-color: var(--neutral-control-border-hover); color: var(--neutral-control-text-hover); }
     .danger-icon-button {
       background: var(--surface);
       border-color: var(--line);
       color: var(--muted);
     }
-    .danger-icon-button:hover { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
+    .danger-icon-button:hover:not(:disabled),
+    .danger-icon-button:focus-visible { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
     .action-icon { display: block; height: 15px; width: 15px; }
     @media (max-width: 900px) { .edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 760px) { .edit-grid { grid-template-columns: 1fr; } }
