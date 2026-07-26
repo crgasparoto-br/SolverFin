@@ -112,7 +112,7 @@ async function validateAccountDesktop(fixture) {
         return nativeSetTimeout(callback, delay, ...args);
       };
       form.description.value = ${JSON.stringify(newDescription)};
-      form.requestSubmit();
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
       for (let attempt = 0; attempt < 50 && !patchResult; attempt += 1) {
         await new Promise((resolve) => nativeSetTimeout(resolve, 100));
       }
