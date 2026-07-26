@@ -33,6 +33,7 @@ testCreateTransferTransaction();
 testPlannedTransactionsClearEffectiveDate();
 testValidations();
 testListAndUpdateTransactions();
+testCategoryRemoval();
 testTenantIsolation();
 testVoidTransaction();
 
@@ -289,6 +290,34 @@ function testListAndUpdateTransactions(): void {
   assertEqual(updated.transaction.status, "reconciled", "updated status");
   assertEqual(updated.transaction.reconciledAt, "2026-06-15T11:00:00.000Z", "reconciled at");
   assertEqual(updated.auditEntry.action, "update", "updated audit action");
+}
+
+function testCategoryRemoval(): void {
+  const account = createAccountFixture(tenantA, "account-category-removal", "active");
+  const category = createCategoryFixture(tenantA, "category-removal", "expense", "active");
+  const created = createTransaction({
+    id: "transaction-category-removal",
+    context: tenantA,
+    now,
+    account,
+    category,
+    payload: {
+      kind: "expense",
+      amountMinor: 1500,
+      occurredOn: "2026-06-15",
+      accountId: account.id,
+      categoryId: category.id,
+    },
+  });
+  const updated = updateTransaction({
+    context: tenantA,
+    transaction: created.transaction,
+    now: "2026-06-15T11:30:00.000Z",
+    account,
+    payload: { categoryId: null },
+  });
+
+  assertEqual(updated.transaction.categoryId, undefined, "removed category");
 }
 
 function testTenantIsolation(): void {
