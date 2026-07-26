@@ -12,6 +12,9 @@ jobs:
   fix:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
     steps:
       - uses: actions/checkout@v4
         with:
