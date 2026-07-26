@@ -128,10 +128,9 @@ export function sharedShellStyles(): string {
     button:disabled { cursor: not-allowed; opacity: 0.5; }
 
     /*
-     * Controles operacionais não são ações primárias. Esta lista cobre os
-     * padrões compartilhados e os aliases legados ainda usados por abas,
-     * filtros, ordenação, navegação temporal, menus, toolbars, fechamento e
-     * botões somente com ícone.
+     * Controles operacionais não são ações primárias. O estado base é definido
+     * aqui apenas para variantes semânticas compartilhadas; aliases legados
+     * mantêm seus estados de repouso locais e recebem daqui somente hover/foco.
      */
     form.close-form > button:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
     button[data-button-variant="neutral"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
@@ -139,9 +138,7 @@ export function sharedShellStyles(): string {
       .neutral-button,
       .secondary-button,
       .ghost-button,
-      .ghost-btn,
       .icon-button,
-      .icon-btn,
       .tab-button,
       .filter-button,
       .sort-button,
@@ -152,9 +149,6 @@ export function sharedShellStyles(): string {
       .row-action,
       .toolbar-button,
       .nav-button,
-      .actions-item,
-      .status-icon-btn,
-      .account-select-trigger,
       .close-form
     ):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button),
     .button-link.secondary-link {
