@@ -17,14 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - name: Package repository checkout
         shell: bash
         run: |
-          tar --exclude=.git -czf /tmp/solverfin-issue-539-source.tar.gz .
+          tar -czf /tmp/solverfin-issue-539-source.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
-          name: solverfin-issue-539-source-${{ github.sha }}
+          name: solverfin-issue-539-source-${{ github.event.pull_request.head.sha || github.sha }}
           path: /tmp/solverfin-issue-539-source.tar.gz
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 1
