@@ -36,6 +36,8 @@ jobs:
           PY
       - name: Install dependencies
         run: npm ci
+      - name: Build shared packages
+        run: npm run build:packages
       - name: Format web implementation
         run: npx prettier --write apps/web/src/dev-server/operational-installments.ts
       - name: Typecheck web
