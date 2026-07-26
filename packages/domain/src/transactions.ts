@@ -111,7 +111,7 @@ export interface UpdateTransactionPayload {
   description?: string;
   accountId?: EntityId;
   destinationAccountId?: EntityId;
-  categoryId?: EntityId;
+  categoryId?: EntityId | null;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
 }
@@ -266,7 +266,10 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
   const nextDestinationAccountId =
     input.payload.destinationAccountId ??
     (kind === "transfer" ? currentTransaction.destinationAccountId : undefined);
-  const nextCategoryId = input.payload.categoryId ?? currentTransaction.categoryId;
+  const nextCategoryId =
+    input.payload.categoryId === null
+      ? undefined
+      : (input.payload.categoryId ?? currentTransaction.categoryId);
 
   if (nextDestinationAccountId !== undefined) {
     payload.destinationAccountId = nextDestinationAccountId;
