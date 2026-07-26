@@ -1,0 +1,54 @@
+name: Apply issue 539 typecheck fix
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/539-operational-installments
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Fix strict month parsing
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          file = Path('apps/web/src/dev-server/operational-installments.ts')
+          content = file.read_text(encoding='utf-8')
+          old = '  const [year, monthNumber] = month.split("-").map(Number);\n  const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();'
+          new = '  const year = Number(month.slice(0, 4));\n  const monthNumber = Number(month.slice(5, 7));\n  const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();'
+          if content.count(old) != 1:
+              raise SystemExit('month parsing anchor not found exactly once')
+          file.write_text(content.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Install dependencies
+        run: npm ci
+      - name: Format web implementation
+        run: npx prettier --write apps/web/src/dev-server/operational-installments.ts
+      - name: Typecheck web
+        run: npm run typecheck --workspace @solverfin/web
+      - name: Commit typecheck fix
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web/src/dev-server/operational-installments.ts
+          if git diff --cached --quiet; then
+            echo 'No typecheck fix to commit.'
+            exit 0
+          fi
+          git commit -m 'fix: satisfy strict installment month parsing'
+          git push origin HEAD:feat/539-operational-installments
