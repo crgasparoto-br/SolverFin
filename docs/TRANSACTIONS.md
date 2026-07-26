@@ -146,3 +146,9 @@ Enquanto nao houver app executavel, a validacao automatica esperada para este co
 Essas validacoes verificam o contrato TypeScript/CSS e a consistencia dos exemplos exportados.
 
 Quando o app web tiver runtime, esta documentacao deve ser revisitada para incluir screenshots mobile/desktop, testes de formulario, testes de filtro em UI e validacao integrada com APIs reais.
+
+## Identificação e manutenção de parcelas canônicas
+
+O Extrato consulta as parcelas canônicas pela conta e pelo período selecionados e associa cada item pela transação vinculada. A linha continua sendo a própria transação; o indicador `Parcela X de Y` não transforma descrições como `1/6` em parcela canônica.
+
+A edição direta usa o modal de lançamento em modo restrito. Somente `description`, `note` e `categoryId` podem ser enviados ao contrato de parcelas, e `categoryId: null` remove a categoria. Mudanças de valor, datas, conta, tipo, situação, repetição ou redistribuição permanecem fora desse fluxo.

@@ -143,3 +143,13 @@ Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. Recurso inex
 - `/lancamentos`: listar parcelas por `accountId`, periodo e vinculo com a transacao original de conta, exibindo manutencao apenas quando `editable` for verdadeiro.
 - `/cartoes`: listar historico por cartao agrupador, instrumento, fatura, periodo e compra/recorrencia quando os vinculos existirem.
 - `/relatorios`: usar a mesma leitura como base para visao consolidada somente leitura.
+
+## Consumo nas listas operacionais
+
+- `/lancamentos` executa no máximo uma consulta complementar por renderização, usando `accountId`, `dueFrom`, `dueTo`, `status=all` e o `profileId` ativo quando existir. A associação acontece por `installment.transaction.id` com a linha já renderizada. Falha nessa consulta não impede o carregamento do extrato.
+- `/cartoes` executa no máximo uma consulta complementar usando o `invoiceId` selecionado e associa a parcela pela transação da compra. Não usar `cardId` isolado nesse fluxo, pois ele omite parcelas já vinculadas à fatura.
+- A interface mostra `Parcela X de Y` dentro da própria linha. Não existe painel, rota ou linha paralela de parcelas.
+- `categoryId` aceita uma string válida ou `null`; `null` remove a categoria da transação vinculada. String vazia continua inválida.
+- A edição direta de parcela de conta envia apenas os campos efetivamente alterados entre `description`, `note` e `categoryId`. Sem alteração, o cliente não envia `PATCH`.
+- Para `409 INSTALLMENT_EDIT_BLOCKED`, o modal permanece aberto, conserva os valores digitados e permite recarregar o estado atual.
+- Parcelas com `invoice_linked` são mantidas em leitura no contrato de parcelas; a edição operacional continua exclusivamente no endpoint da compra da fatura.

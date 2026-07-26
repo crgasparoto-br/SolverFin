@@ -26,7 +26,7 @@ export interface ListInstallmentsFilters {
 export interface UpdateInstallmentPayload {
   description?: string;
   note?: string | null;
-  categoryId?: EntityId;
+  categoryId?: EntityId | null;
 }
 
 export type InstallmentEditBlockedReason =
@@ -112,6 +112,7 @@ export async function listInstallmentsForContext(
        t."recurrenceId" as "transactionRecurrenceId", t."amountMinor" as "transactionAmountMinor",
        t."currency" as "transactionCurrency", t."occurredOn" as "transactionOccurredOn",
        t."plannedOn" as "transactionPlannedOn", t."description" as "transactionDescription",
+       t."note" as "transactionNote",
        r."status" as "recurrenceStatus", r."kind" as "recurrenceKind",
        r."frequency" as "recurrenceFrequency", r."interval" as "recurrenceInterval",
        r."description" as "recurrenceDescription",
@@ -190,9 +191,9 @@ function shouldHideCardInstallmentsWithLinkedPurchases(filters: ListInstallments
 function buildTransactionUpdatePayload(payload: UpdateInstallmentPayload): {
   description?: string;
   note?: string | null;
-  categoryId?: EntityId;
+  categoryId?: EntityId | null;
 } {
-  const update: { description?: string; note?: string | null; categoryId?: EntityId } = {};
+  const update: { description?: string; note?: string | null; categoryId?: EntityId | null } = {};
 
   if (payload.description !== undefined) update.description = payload.description;
   if (payload.note !== undefined) update.note = payload.note;
@@ -318,6 +319,7 @@ function attachTransaction(installment: InstallmentHistoryItem, row: Row): void 
     occurredOn: dateOnly(row.transactionOccurredOn ?? row.dueOn),
     plannedOn: dateOnly(row.transactionPlannedOn ?? row.dueOn),
     description: text(row.transactionDescription),
+    note: text(row.transactionNote),
     ...optionalId("accountId", row.transactionAccountId),
     ...optionalId("cardId", row.transactionCardId),
     ...optionalId("cardInstrumentId", row.transactionCardInstrumentId),

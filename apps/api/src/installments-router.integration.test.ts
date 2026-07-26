@@ -148,7 +148,19 @@ async function assertUpdatesEligibleInstallment(
   assert.equal(installment.id, installmentId);
   assert.equal(installment.transaction?.description, description);
   assert.equal(installment.transaction?.categoryId, categoryId);
+  assert.equal(installment.transaction?.note, "Observacao ficticia minimizada");
   assert.equal(installment.editable, true);
+
+  const clearCategoryResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/installments/${installmentId}`,
+    { categoryId: null },
+  );
+  assert.equal(clearCategoryResponse.statusCode, 200);
+  const cleared = readBody<{ installment: ApiInstallmentHistory }>(clearCategoryResponse).installment;
+  assert.equal(cleared.transaction?.categoryId, undefined);
+  assert.equal(cleared.category, undefined);
 }
 
 async function assertRejectsInvalidInstallmentPatch(
@@ -297,7 +309,7 @@ interface ApiInstallmentHistory {
   id: string;
   financialProfileId: string;
   recurrence?: { id: string };
-  transaction?: { accountId?: string; categoryId?: string; description?: string };
+  transaction?: { accountId?: string; categoryId?: string; description?: string; note?: string };
   category?: { id: string };
   editable: boolean;
   editBlockedReason?: string;

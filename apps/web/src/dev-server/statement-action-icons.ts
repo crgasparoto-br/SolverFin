@@ -1,4 +1,5 @@
 import { icon } from "./icons.js";
+import { operationalInstallmentsController } from "./operational-installments.js";
 
 const MONTH_TYPOGRAPHY_CSS = `
   #filter-month,
@@ -174,5 +175,6 @@ export function statementActionIconsController(): string {
         }
       }
     })();
+    ${operationalInstallmentsController()}
   `;
 }

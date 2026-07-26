@@ -55,3 +55,11 @@ Para um lançamento não recorrente, a nova `accountId` é aplicada somente ao r
 - **Este lançamento e os próximos** altera a ocorrência selecionada, as ocorrências futuras elegíveis com status `planned` e a `accountId` da regra de recorrência usada nas próximas materializações.
 
 Ocorrências anteriores, efetivadas, conciliadas, anuladas ou não elegíveis permanecem inalteradas. Transferências continuam exigindo contas de origem e destino diferentes.
+
+## Parcelas canônicas incorporadas às linhas
+
+As telas `/lancamentos` e `/cartoes` enriquecem as linhas já existentes com `Parcela X de Y`, associando o retorno de `/api/installments` por `transaction.id`. A consulta é única por tela/escopo e degradável: indisponibilidade da API de parcelas não bloqueia a lista principal.
+
+No Extrato, a ação da própria linha abre o modal existente em modo restrito. Apenas descrição, observação e categoria podem ser alteradas quando `editable=true`; número, total, vencimento, valor, situação, conta, tipo e repetição permanecem somente leitura. Quando bloqueada, a mesma ação abre detalhes compactos com o motivo traduzido.
+
+Em Cartões, a parcela apenas identifica a compra. A manutenção continua usando o contrato da compra, respeitando o bloqueio da fatura. `invoice_linked` não cria bloqueio adicional sobre uma compra que já seja editável.

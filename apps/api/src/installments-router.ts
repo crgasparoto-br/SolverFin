@@ -164,7 +164,7 @@ function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
   };
 }
 
-function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPayload {
+export function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPayload {
   const payload = requireObjectBody(body);
   const allowedEntries = Object.entries(payload).filter(([key]) => ALLOWED_PATCH_FIELDS.has(key));
 
@@ -195,11 +195,15 @@ function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPayload {
   }
 
   if (payload.categoryId !== undefined) {
-    if (typeof payload.categoryId !== "string" || !payload.categoryId.trim()) {
-      throwInstallmentPayloadInvalid("Categoria da parcela invalida.");
-    }
+    if (payload.categoryId === null) {
+      update.categoryId = null;
+    } else {
+      if (typeof payload.categoryId !== "string" || !payload.categoryId.trim()) {
+        throwInstallmentPayloadInvalid("Categoria da parcela invalida.");
+      }
 
-    update.categoryId = payload.categoryId;
+      update.categoryId = payload.categoryId;
+    }
   }
 
   return update;

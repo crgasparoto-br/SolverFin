@@ -78,10 +78,10 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Parcelas
 
 - Dominio/schema: Feito.
-- Repository/API/UI: Parcial.
-- Testes: Parcial.
-- Documentacao: Parcial.
-- Nota: parcelas aparecem no fluxo de geracao de recorrencias, podem ser consultadas por API, aparecem em `/cartoes` no recorte da fatura e tambem em `/relatorios` como consolidado somente leitura. Ainda nao ha manutencao direta de parcelas ja geradas.
+- Repository/API/UI: Feito para identificação nas listas operacionais e manutenção conservadora de parcelas de conta.
+- Testes: Feito para contrato web e integração da manutenção segura; validação visual permanece no fluxo de QA da interface.
+- Documentacao: Feito para o fluxo atual.
+- Nota: parcelas canônicas aparecem incorporadas às linhas de `/lancamentos` e `/cartoes` como `Parcela X de Y`, sem painel ou rota próprios. O Extrato permite alterar somente descrição, observação e categoria quando a parcela está elegível; Cartões mantém a compra como único ponto de manutenção operacional. `/relatorios` continua somente leitura.
 
 ### Cartoes / Faturas
 

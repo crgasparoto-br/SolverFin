@@ -24,3 +24,12 @@ Este documento registra quais acoes de manutencao ficam visiveis nas telas naveg
 
 - Recorrencias, parcelas e contas a pagar/receber ficam para issues especificas, para evitar misturar novos fluxos com a manutencao das telas ja navegaveis.
 - A UI nao implementa exclusao fisica de dados financeiros; o comportamento esperado segue arquivamento, cancelamento, bloqueio ou restauracao conforme o dominio.
+
+## Parcelas nas listas operacionais
+
+| Superfície | Identificação | Manutenção | Endpoint |
+| --- | --- | --- | --- |
+| Extrato `/lancamentos` | `Parcela X de Y` na linha da transação | Modal em modo restrito; descrição, observação e categoria quando elegível | `PATCH /api/installments/:installmentId` |
+| Cartões `/cartoes` | `Parcela X de Y` na linha da compra | Mantém a edição operacional da compra e os bloqueios da fatura | Endpoint existente da compra |
+
+A consulta complementar é limitada a uma chamada por renderização e preserva `profileId`. Falha da consulta não remove nem bloqueia a listagem principal. O modal mantém foco acessível, fechamento por Escape, mensagens em `aria-live` e recuperação explícita de conflito `409`.

@@ -262,3 +262,9 @@ A cobertura automatizada deve proteger pelo menos:
 - movimentacao segura de compra para outro periodo de fatura;
 - tela `Contas e Cartoes` com lista compacta, criacao e edicao em modal, gestao de instrumentos em modal dedicado, default, arquivamento, estado bloqueado/inativo e ausencia do fluxo legado;
 - tela `Cartoes` com hierarquia da fatura, busca, filtros, lista responsiva, estados acessiveis e modais validados em desktop e mobile.
+
+## Parcelas canônicas na fatura
+
+A tela de Cartões consulta parcelas pelo `invoiceId` selecionado e associa o metadado à compra por `transaction.id`. O indicador `Parcela X de Y` aparece na própria linha da compra, sem reintroduzir blocos separados de parcelas ou histórico.
+
+A manutenção continua exclusivamente pelo endpoint da compra. O bloqueio `invoice_linked` pertence ao contrato de edição direta de parcelas e não desabilita, por si só, uma compra que a situação da fatura permite editar. Faturas fechadas, pagas ou canceladas mantêm os bloqueios existentes; vencimento isolado não cria novo bloqueio.

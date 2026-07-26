@@ -131,7 +131,8 @@ type CreateTransactionPayloadWithMetadata = CreateTransactionPayload & {
   note?: string | null;
   applyToFuturePlanned?: boolean;
 };
-type UpdateTransactionPayloadWithMetadata = UpdateTransactionPayload & {
+type UpdateTransactionPayloadWithMetadata = Omit<UpdateTransactionPayload, "categoryId"> & {
+  categoryId?: EntityId | null;
   note?: string | null;
   applyToFuturePlanned?: boolean;
 };
@@ -243,7 +244,10 @@ export async function updateTransactionForContext(
   const accountId = prepared.payload.accountId ?? currentTransaction?.accountId;
   const destinationAccountId =
     prepared.payload.destinationAccountId ?? currentTransaction?.destinationAccountId;
-  const categoryId = prepared.payload.categoryId ?? currentTransaction?.categoryId;
+  const categoryId =
+    prepared.payload.categoryId === undefined
+      ? currentTransaction?.categoryId
+      : (prepared.payload.categoryId ?? undefined);
 
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
   const destinationAccount = destinationAccountId
@@ -251,11 +255,20 @@ export async function updateTransactionForContext(
     : undefined;
   const category = categoryId ? await findCategoryRow(context, categoryId) : undefined;
 
+  const removingCategory = prepared.payload.categoryId === null;
+  const domainTransaction =
+    removingCategory && currentTransaction
+      ? { ...currentTransaction, categoryId: undefined }
+      : currentTransaction;
+  const domainPayload = removingCategory
+    ? { ...prepared.payload, categoryId: undefined }
+    : prepared.payload;
+
   const result = updateTransactionDomain({
     context,
-    transaction: currentTransaction,
+    transaction: domainTransaction,
     now: new Date().toISOString(),
-    payload: prepared.payload,
+    payload: domainPayload,
     ...(account ? { account } : {}),
     ...(destinationAccount ? { destinationAccount } : {}),
     ...(category ? { category } : {}),
