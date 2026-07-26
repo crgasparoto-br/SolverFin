@@ -18,6 +18,17 @@ test("builds one scoped account installments query for the selected month", () =
   );
 });
 
+test("uses the exact displayed day when the statement has a valid daily filter", () => {
+  assert.equal(
+    buildAccountInstallmentsPath("account-demo", "2026-02", "profile-demo", "2026-02-15"),
+    "/api/installments?accountId=account-demo&operationalFrom=2026-02-15&operationalTo=2026-02-15&status=all&profileId=profile-demo",
+  );
+  assert.equal(
+    buildAccountInstallmentsPath("account-demo", "2026-02", undefined, "2026-03-15"),
+    "/api/installments?accountId=account-demo&operationalFrom=2026-02-01&operationalTo=2026-02-28&status=all",
+  );
+});
+
 test("builds the invoice query using invoiceId instead of isolated cardId", () => {
   assert.equal(
     buildInvoiceInstallmentsPath("invoice-demo", "profile-demo"),
@@ -119,4 +130,7 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /stopImmediatePropagation/);
   assert.match(script, /function installmentLabel\(installment\)/);
   assert.match(script, /installmentLabel\(installment\)/);
+  assert.match(script, /urlParams\.get\("day"\)/);
+  assert.match(script, /operationalFrom=" \+ operationalFrom/);
+  assert.match(script, /operationalTo=" \+ operationalTo/);
 });
