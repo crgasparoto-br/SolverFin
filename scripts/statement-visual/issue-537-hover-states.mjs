@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-
-import * as prettier from "prettier";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
@@ -24,17 +22,8 @@ const statementNeutralSelectors = {
   status: '.status-icon-btn[data-status-option="posted"]',
   recurrenceClose: "button.close-form[data-recurrence-scope-cancel]",
 };
-const formattingTargets = [
-  "apps/web/src/dev-server/shared-styles.ts",
-  "apps/web/src/dev-server/shared-styles.test.ts",
-  "docs/BRAND.md",
-  "scripts/run-statement-visual-validation.mjs",
-  "scripts/statement-visual/issue-537-hover-states.mjs",
-];
-
 if (!chromePath) throw new Error("CHROME_BIN is required for issue 537 visual validation.");
 await mkdir(outputDir, { recursive: true });
-await writeFormattingSnapshots();
 const browser = await launchChrome({ baseUrl, chromePath });
 
 try {
@@ -67,16 +56,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log("Issue 537 hover and focus visual validation passed.");
-}
-
-async function writeFormattingSnapshots() {
-  for (const target of formattingTargets) {
-    const source = await readFile(target, "utf8");
-    const config = (await prettier.resolveConfig(target)) ?? {};
-    const formatted = await prettier.format(source, { ...config, filepath: target });
-    const artifactName = `prettier-${target.replaceAll("/", "__")}`;
-    await writeFile(join(outputDir, artifactName), formatted);
-  }
 }
 
 async function validateAccountsCardsStates() {
