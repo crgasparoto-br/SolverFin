@@ -133,7 +133,11 @@ async function resolveContext(request: ApiRequest) {
 }
 
 export function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
-  const dueFrom = readOptionalDateFilter(request, "dueFrom", "Data inicial de vencimento invalida.");
+  const dueFrom = readOptionalDateFilter(
+    request,
+    "dueFrom",
+    "Data inicial de vencimento invalida.",
+  );
   const dueTo = readOptionalDateFilter(request, "dueTo", "Data final de vencimento invalida.");
   const operationalFrom = readOptionalDateFilter(
     request,
@@ -224,7 +228,11 @@ export function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPay
   return update;
 }
 
-function readOptionalDateFilter(request: ApiRequest, name: string, message: string): string | undefined {
+function readOptionalDateFilter(
+  request: ApiRequest,
+  name: string,
+  message: string,
+): string | undefined {
   const value = request.query.get(name);
   if (!value) return undefined;
   if (!isValidDateOnly(value)) throwInstallmentsFilterInvalid(message);
@@ -241,9 +249,7 @@ export function isValidDateOnly(value: string): boolean {
   const date = new Date(Date.UTC(year, month - 1, day));
 
   return (
-    date.getUTCFullYear() === year &&
-    date.getUTCMonth() === month - 1 &&
-    date.getUTCDate() === day
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
   );
 }
 
