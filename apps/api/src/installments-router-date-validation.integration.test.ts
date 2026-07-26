@@ -50,6 +50,7 @@ async function request(token: string, path: string): Promise<ApiResponse> {
     pathname: url.pathname,
     query: url.searchParams,
     headers: { authorization: `Bearer ${token}` },
+    body: undefined,
   };
 
   return (
