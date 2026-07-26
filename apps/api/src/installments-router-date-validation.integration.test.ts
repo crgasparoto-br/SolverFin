@@ -1,13 +1,18 @@
 import assert from "node:assert/strict";
 
+import { closePool } from "./db.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 
-void main().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+void main()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await closePool();
+  });
 
 async function main(): Promise<void> {
   const token = await loginAndReadToken();
