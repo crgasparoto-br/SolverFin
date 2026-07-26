@@ -67,22 +67,22 @@ O simbolo deve funcionar sozinho em favicon/app icon e tambem junto ao nome. A m
 
 ### Cores principais
 
-| Papel | Cor | Hex | Uso |
-| --- | --- | --- | --- |
-| Primaria | Azul petroleo profundo | `#0F3D4C` | Confianca, seguranca, base institucional |
-| Secundaria | Verde financeiro inteligente | `#16A34A` | Saude financeira, progresso, confirmacao |
-| Destaque | Ciano tecnologico | `#22D3EE` | IA, automacao, estados ativos e highlights |
-| Fundo claro | Branco gelo | `#F8FAFC` | Interfaces limpas e documentacao |
-| Texto principal | Grafite azulado | `#0F172A` | Leitura e hierarquia |
+| Papel           | Cor                          | Hex       | Uso                                        |
+| --------------- | ---------------------------- | --------- | ------------------------------------------ |
+| Primaria        | Azul petroleo profundo       | `#0F3D4C` | Confianca, seguranca, base institucional   |
+| Secundaria      | Verde financeiro inteligente | `#16A34A` | Saude financeira, progresso, confirmacao   |
+| Destaque        | Ciano tecnologico            | `#22D3EE` | IA, automacao, estados ativos e highlights |
+| Fundo claro     | Branco gelo                  | `#F8FAFC` | Interfaces limpas e documentacao           |
+| Texto principal | Grafite azulado              | `#0F172A` | Leitura e hierarquia                       |
 
 ### Cores de suporte
 
-| Papel | Cor | Hex | Uso |
-| --- | --- | --- | --- |
-| Alerta | Ambar | `#F59E0B` | Avisos, pendencias, revisao |
-| Erro | Vermelho controlado | `#DC2626` | Falhas, riscos, inconsistencias |
-| Sucesso suave | Verde claro | `#DCFCE7` | Estados positivos de baixo ruido |
-| Superficie escura | Azul noite | `#061923` | Dark mode, hero, materiais premium |
+| Papel             | Cor                 | Hex       | Uso                                |
+| ----------------- | ------------------- | --------- | ---------------------------------- |
+| Alerta            | Ambar               | `#F59E0B` | Avisos, pendencias, revisao        |
+| Erro              | Vermelho controlado | `#DC2626` | Falhas, riscos, inconsistencias    |
+| Sucesso suave     | Verde claro         | `#DCFCE7` | Estados positivos de baixo ruido   |
+| Superficie escura | Azul noite          | `#061923` | Dark mode, hero, materiais premium |
 
 ## Direcao de UI
 
