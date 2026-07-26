@@ -90,6 +90,24 @@ describe("shared shell styles", () => {
     );
   });
 
+  it("keeps legacy semantic resting states outside the neutral base selector", () => {
+    const css = sharedShellStyles();
+    const transactionsSource = readFileSync(
+      join(currentDir, "transactions-page.js"),
+      "utf8",
+    );
+    const baseRuleStart = css.indexOf("form.close-form > button");
+    const hoverRuleStart = css.indexOf("button[aria-pressed]", baseRuleStart);
+    const neutralBaseRule = css.slice(baseRuleStart, hoverRuleStart);
+
+    assert.doesNotMatch(neutralBaseRule, /\.status-icon-btn/);
+    assert.doesNotMatch(neutralBaseRule, /\.actions-item/);
+    assert.match(
+      transactionsSource,
+      /\.status-icon-btn\[data-status-option=posted\]\.active \{ background: #e0f2fe;/,
+    );
+  });
+
   it("keeps primary and destructive actions outside the neutral hover contract", () => {
     const css = sharedShellStyles();
 
