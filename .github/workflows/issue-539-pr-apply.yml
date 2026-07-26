@@ -34,16 +34,8 @@ jobs:
           patch = Path('/tmp/apply_issue_539.py')
           patch.write_bytes(gzip.decompress(base64.b64decode(match.group(1))))
           source = patch.read_text(encoding='utf-8')
-          old = '''replace_once(
-    "apps/api/src/repositories/installments.ts",
-    "  categoryId?: EntityId;\\n}",
-    "  categoryId?: EntityId | null;\\n}",
-)'''
-          new = '''replace_once(
-    "apps/api/src/repositories/installments.ts",
-    "export interface UpdateInstallmentPayload {\\n  description?: string;\\n  note?: string | null;\\n  categoryId?: EntityId;\\n}",
-    "export interface UpdateInstallmentPayload {\\n  description?: string;\\n  note?: string | null;\\n  categoryId?: EntityId | null;\\n}",
-)'''
+          old = 'replace_once(\n    "apps/api/src/repositories/installments.ts",\n    "  categoryId?: EntityId;\\n}",\n    "  categoryId?: EntityId | null;\\n}",\n)'
+          new = 'replace_once(\n    "apps/api/src/repositories/installments.ts",\n    "export interface UpdateInstallmentPayload {\\n  description?: string;\\n  note?: string | null;\\n  categoryId?: EntityId;\\n}",\n    "export interface UpdateInstallmentPayload {\\n  description?: string;\\n  note?: string | null;\\n  categoryId?: EntityId | null;\\n}",\n)'
           if old not in source:
               raise SystemExit('old patch anchor not found')
           patch.write_text(source.replace(old, new, 1), encoding='utf-8')
