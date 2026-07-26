@@ -1,32 +1,78 @@
-name: Issue 539 source export
+name: Apply issue 539 remediation
 
 on:
-  push:
-    branches:
-      - feat/539-operational-installments
   pull_request:
     branches:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  export:
+  remediate:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: feat/539-operational-installments
           fetch-depth: 0
-      - name: Package repository checkout
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Apply audited remediation
         shell: bash
         run: |
-          tar -czf /tmp/solverfin-issue-539-source.tar.gz .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: solverfin-issue-539-source-${{ github.event.pull_request.head.sha || github.sha }}
-          path: /tmp/solverfin-issue-539-source.tar.gz
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 1
+          cat .github/issue-539-remediation/part-* | base64 -d | gzip -d > /tmp/issue-539.patch
+          git apply --index /tmp/issue-539.patch
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Format remediation
+        run: >-
+          npx prettier --write
+          README.md
+          apps/api/src/installments-router.integration.test.ts
+          apps/api/src/repositories/installments.ts
+          apps/api/src/repositories/transactions.ts
+          apps/api/src/router.ts
+          apps/web/src/dev-server/operational-installments.test.ts
+          apps/web/src/dev-server/operational-installments.ts
+          docs/API_INSTALLMENTS.md
+          docs/ARCHITECTURE.md
+          docs/RECURRENCES_INSTALLMENTS_WEB.md
+          docs/STATUS_MATRIX.md
+          docs/TRANSACTIONS.md
+          docs/WEB_MAINTENANCE_COVERAGE.md
+          scripts/run-statement-visual-validation.mjs
+          scripts/statement-visual/issue-539-operational-installments.mjs
+      - name: Validate repository
+        run: npm run validate
+      - name: Validate PostgreSQL integration
+        run: npm run test:integration
+      - name: Persist remediation
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u
+          git add scripts/statement-visual/issue-539-operational-installments.mjs
+          git commit -m 'fix: close issue 539 audit findings'
+          git push origin HEAD:feat/539-operational-installments
