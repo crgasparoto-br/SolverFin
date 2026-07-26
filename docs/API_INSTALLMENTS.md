@@ -36,11 +36,11 @@ status
 profileId
 ```
 
-`dueFrom`, `dueTo`, `operationalFrom` e `operationalTo` usam `YYYY-MM-DD`. `status` aceita `planned`, `posted`, `reconciled`, `cancelled` ou `all`.
+`dueFrom`, `dueTo`, `operationalFrom` e `operationalTo` usam `YYYY-MM-DD` e precisam representar uma data real do calendario. `status` aceita `planned`, `posted`, `reconciled`, `cancelled` ou `all`.
 
 `accountId` filtra parcelas pela transacao vinculada a uma conta. No Extrato, `operationalFrom` e `operationalTo` acompanham a mesma precedencia de data exibida pela linha (`effectiveOn`, `plannedOn`, `occurredOn` e `dueOn` como fallback), inclusive quando a efetivacao ocorreu em mes diferente do vencimento.
 
-Periodo invertido, data invalida ou status desconhecido retornam erro controlado `400 INSTALLMENTS_FILTER_INVALID`.
+Periodo invertido, data inexistente como `2026-02-31`, formato invalido ou status desconhecido retornam erro controlado `400 INSTALLMENTS_FILTER_INVALID`.
 
 ## Resposta de consulta
 
@@ -148,7 +148,7 @@ Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. A leitura de
 
 ## Consumo nas listas operacionais
 
-- `/lancamentos` executa no máximo uma consulta complementar por renderização, usando `accountId`, `operationalFrom`, `operationalTo`, `status=all` e o `profileId` ativo quando existir. A associação acontece por `installment.transaction.id` com a linha já renderizada. Falha nessa consulta não impede o carregamento do extrato.
+- `/lancamentos` executa no máximo uma consulta complementar por renderização, usando `accountId`, `operationalFrom`, `operationalTo`, `status=all` e o `profileId` ativo quando existir. Na visão mensal, o período cobre o mês selecionado; quando o filtro `day` estiver ativo, os dois limites usam exatamente o dia exibido. A associação acontece por `installment.transaction.id` com a linha já renderizada. Falha nessa consulta não impede o carregamento do extrato.
 - `/cartoes` executa no máximo uma consulta complementar usando o `invoiceId` selecionado e associa a parcela pela transação da compra. Não usar `cardId` isolado nesse fluxo, pois ele omite parcelas já vinculadas à fatura.
 - A interface mostra `Parcela X de Y` dentro da própria linha. Não existe painel, rota ou linha paralela de parcelas.
 - `categoryId` aceita uma string válida ou `null`; `null` remove a categoria da transação vinculada. String vazia continua inválida.
