@@ -404,7 +404,9 @@ function fixtureExpression() {
     const accountInstallments = (await request(
       "/api/installments?recurrenceId=" + accountRecurrence.id + "&status=all"
     )).installments;
-    const accountInstallment = accountInstallments.find((item) => item.transaction?.id);
+    const accountInstallment = accountInstallments.find(
+      (item) => item.dueOn === "2026-07-05" && item.transaction?.id,
+    );
     await request("/api/categories/" + category.id + "/archive", "POST");
 
     const card = (await request("/api/credit-card-accounts", "POST", {
@@ -436,7 +438,9 @@ function fixtureExpression() {
     const cardInstallments = (await request(
       "/api/installments?recurrenceId=" + cardRecurrence.id + "&status=all"
     )).installments;
-    const cardInstallment = cardInstallments.find((item) => item.transaction?.invoiceId);
+    const cardInstallment = cardInstallments.find(
+      (item) => item.dueOn === "2026-07-08" && item.transaction?.invoiceId,
+    );
 
     if (!accountInstallment?.transaction?.id || !cardInstallment?.transaction?.invoiceId) {
       throw new Error("Issue 539 fixture did not create linked operational installments");
