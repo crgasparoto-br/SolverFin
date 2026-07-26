@@ -1,0 +1,92 @@
+name: Apply issue 539 audit corrections v2
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/539-operational-installments
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Apply audited corrections
+        shell: bash
+        run: |
+          set -o pipefail
+          python .github/scripts/apply_issue_539_audit_corrections.py 2>&1 | tee /tmp/issue-539-corrections.log
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Format changed files
+        run: >-
+          npx prettier --write
+          apps/api/src/repositories/transactions.ts
+          apps/api/src/repositories/installments.ts
+          apps/api/src/installments-router.ts
+          apps/api/src/installments-router.integration.test.ts
+          apps/web/src/dev-server/operational-installments.ts
+          apps/web/src/dev-server/operational-installments.test.ts
+          scripts/statement-visual/issue-539-operational-installments.mjs
+          docs/API_INSTALLMENTS.md
+          docs/RECURRENCES_INSTALLMENTS_WEB.md
+          docs/WEB_MAINTENANCE_COVERAGE.md
+          docs/TRANSACTIONS.md
+          docs/STATUS_MATRIX.md
+      - name: Validate corrected implementation
+        run: npm run validate
+      - name: Validate PostgreSQL integration
+        run: npm run test:integration
+      - name: Persist issue 539 audit corrections
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/api/src/repositories/transactions.ts
+          git add apps/api/src/repositories/installments.ts
+          git add apps/api/src/installments-router.ts
+          git add apps/api/src/installments-router.integration.test.ts
+          git add apps/web/src/dev-server/operational-installments.ts
+          git add apps/web/src/dev-server/operational-installments.test.ts
+          git add scripts/statement-visual/issue-539-operational-installments.mjs
+          git add docs/API_INSTALLMENTS.md
+          git add docs/RECURRENCES_INSTALLMENTS_WEB.md
+          git add docs/WEB_MAINTENANCE_COVERAGE.md
+          git add docs/TRANSACTIONS.md
+          git add docs/STATUS_MATRIX.md
+          git commit -m 'fix: resolve issue 539 audit findings'
+          git push origin HEAD:feat/539-operational-installments
+      - name: Upload correction log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-539-correction-log-${{ github.sha }}
+          path: /tmp/issue-539-corrections.log
+          if-no-files-found: ignore
