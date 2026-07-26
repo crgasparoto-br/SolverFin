@@ -38,17 +38,17 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Apply verified final patch
+      - name: Restore verified final files
         shell: bash
         run: |
           set -euo pipefail
-          test "$(wc -c < .github/issue-539-final-polish.patch.gz.b64)" = "3580"
-          test "$(sha256sum .github/issue-539-final-polish.patch.gz.b64 | cut -d' ' -f1)" = "59bf77481a7a4ade705123d9e82f0234d1b12ebbc4254781fe50041a7e3d330a"
-          base64 -d < .github/issue-539-final-polish.patch.gz.b64 | gzip -d > /tmp/issue-539-final.patch
-          test "$(wc -c < /tmp/issue-539-final.patch)" = "8463"
-          test "$(sha256sum /tmp/issue-539-final.patch | cut -d' ' -f1)" = "b99161114d592f7ee4369d30ae0f9f04994c85ba05c6f8985dfd1bea7cf56ff6"
-          git apply --3way --index /tmp/issue-539-final.patch
-          test -z "$(git ls-files -u)"
+          test "$(wc -c < .github/issue-539-final-polish.patch.gz.b64)" = "14696"
+          test "$(sha256sum .github/issue-539-final-polish.patch.gz.b64 | cut -d' ' -f1)" = "8a7fb68fe5ccd7619b90756484b1587e6d4b802e589641afabaf08303b14a108"
+          base64 -d < .github/issue-539-final-polish.patch.gz.b64 > /tmp/issue-539-final-files.tar.gz
+          test "$(wc -c < /tmp/issue-539-final-files.tar.gz)" = "11022"
+          test "$(sha256sum /tmp/issue-539-final-files.tar.gz | cut -d' ' -f1)" = "51b7e73b69402602154e4626bf8f23d23e3f5a9f7ee024d8b77804a0031b03d6"
+          tar -xzf /tmp/issue-539-final-files.tar.gz
+          node --check scripts/statement-visual/issue-539-operational-installments.mjs
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Format final changes
