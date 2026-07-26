@@ -55,13 +55,14 @@ try {
     { focusOrder },
   );
 
+  const filename = "issue-539-installment-keyboard-1366x768.png";
+  await screenshot(browser.cdp, join(outputDir, filename));
+
   await pressKey("Escape");
   await sleep(100);
   const closed = await evaluate(browser.cdp, `!document.querySelector("[data-modal]").open`);
   check(closed, "Escape did not close the restricted installment modal", { closed });
 
-  const filename = "issue-539-installment-keyboard-1366x768.png";
-  await screenshot(browser.cdp, join(outputDir, filename));
   scenarios.push({ route, viewport: "1366x768", focusOrder, screenshot: filename, requestScope });
 } finally {
   await browser.close(outputDir);
@@ -90,25 +91,22 @@ async function waitForInstallmentLine(transactionId) {
   return evaluate(
     browser.cdp,
     `(async () => {
-      const nativeFetch = window.fetch.bind(window);
-      let installmentQuery = "";
-      window.fetch = async (...args) => {
-        const path = String(args[0] || "");
-        if (path.startsWith("/api/installments?accountId=")) installmentQuery = path;
-        return nativeFetch(...args);
-      };
       for (let attempt = 0; attempt < 80; attempt += 1) {
         const node = document.querySelector('script[data-transaction="${transactionId}"]');
         const row = node?.closest("article");
         const edit = row?.querySelector('[data-edit="${transactionId}"]');
         const badge = row?.querySelector("[data-installment-badge]");
         if (row && edit && badge && !edit.disabled) {
-          window.fetch = nativeFetch;
-          return { installmentQuery, badge: badge.textContent.trim() };
+          const installmentQuery = performance.getEntriesByType("resource")
+            .map((entry) => new URL(entry.name, window.location.origin))
+            .find((url) => url.pathname === "/api/installments" && url.searchParams.has("accountId"));
+          return {
+            installmentQuery: installmentQuery ? installmentQuery.pathname + installmentQuery.search : "",
+            badge: badge.textContent.trim()
+          };
         }
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      window.fetch = nativeFetch;
       throw new Error("Timed out waiting for the installment line");
     })()`,
   );
