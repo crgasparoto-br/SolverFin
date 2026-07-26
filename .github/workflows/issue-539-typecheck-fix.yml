@@ -39,10 +39,28 @@ jobs:
       - name: Format web implementation
         run: npx prettier --write apps/web/src/dev-server/operational-installments.ts
       - name: Typecheck web
-        run: npm run typecheck --workspace @solverfin/web
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck --workspace @solverfin/web > web-typecheck.log 2>&1
+          status=$?
+          set -e
+          echo "$status" > web-typecheck.status
+          cat web-typecheck.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: issue-539-web-typecheck
+          path: |
+            web-typecheck.log
+            web-typecheck.status
       - name: Commit typecheck fix
         shell: bash
         run: |
+          status=$(cat web-typecheck.status)
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add apps/web/src/dev-server/operational-installments.ts
