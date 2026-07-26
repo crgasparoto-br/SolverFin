@@ -63,10 +63,7 @@ describe("shared shell styles", () => {
 
   it("maps legacy operational controls and close actions to the shared neutral contract", () => {
     const css = sharedShellStyles();
-    const recurrenceSource = readFileSync(
-      join(currentDir, "recurrences-section.js"),
-      "utf8",
-    );
+    const recurrenceSource = readFileSync(join(currentDir, "recurrences-section.js"), "utf8");
 
     for (const alias of legacyNeutralAliases) {
       assert.ok(css.includes(alias), `${alias} is not neutral`);
@@ -84,18 +81,14 @@ describe("shared shell styles", () => {
       /<button type="button" class="close-form" data-recurrence-scope-cancel aria-label="Fechar">/,
     );
     assert.ok(
-      css.lastIndexOf("form.close-form > button") >
-        css.indexOf("button:hover:not(:disabled)"),
+      css.lastIndexOf("form.close-form > button") > css.indexOf("button:hover:not(:disabled)"),
       "close actions must override the generic primary hover",
     );
   });
 
   it("keeps legacy semantic resting states outside the neutral base selector", () => {
     const css = sharedShellStyles();
-    const transactionsSource = readFileSync(
-      join(currentDir, "transactions-page.js"),
-      "utf8",
-    );
+    const transactionsSource = readFileSync(join(currentDir, "transactions-page.js"), "utf8");
     const baseRuleStart = css.indexOf("form.close-form > button");
     const hoverRuleStart = css.indexOf("button[aria-pressed]", baseRuleStart);
     const neutralBaseRule = css.slice(baseRuleStart, hoverRuleStart);
@@ -127,10 +120,7 @@ describe("shared shell styles", () => {
 
   it("keeps icon-only destructive controls red on hover and keyboard focus", () => {
     const css = sharedShellStyles();
-    const accountsCardsSource = readFileSync(
-      join(currentDir, "accounts-cards-page.js"),
-      "utf8",
-    );
+    const accountsCardsSource = readFileSync(join(currentDir, "accounts-cards-page.js"), "utf8");
 
     assert.match(accountsCardsSource, /class="icon-button danger-icon-button"/);
     assert.match(css, /:not\(\.danger-icon-button\):hover:not\(:disabled\)/);
