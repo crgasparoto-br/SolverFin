@@ -41,42 +41,26 @@ jobs:
       - name: Apply audited remediation
         shell: bash
         run: |
-          set +e
-          {
-            cat .github/issue-539-remediation/part-* > /tmp/issue-539.patch.gz.b64
-            echo "payload-bytes=$(wc -c < /tmp/issue-539.patch.gz.b64)"
-            sha256sum /tmp/issue-539.patch.gz.b64
-            base64 -d < /tmp/issue-539.patch.gz.b64 > /tmp/issue-539.patch.gz
-            echo "base64-status=$?"
-            gzip -t /tmp/issue-539.patch.gz
-            echo "gzip-status=$?"
-            gzip -dc /tmp/issue-539.patch.gz > /tmp/issue-539.patch
-            echo "patch-bytes=$(wc -c < /tmp/issue-539.patch)"
-            git apply --check /tmp/issue-539.patch
-            echo "apply-check-status=$?"
-            git apply --index /tmp/issue-539.patch
-            echo "apply-status=$?"
-          } > /tmp/issue-539-remediation.log 2>&1
-          status=$?
-          printf '%s\n' "$status" > /tmp/issue-539-remediation.status
-          cat /tmp/issue-539-remediation.log
-          exit 0
-      - name: Upload remediation diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-539-remediation-diagnostic-${{ github.sha }}
-          path: |
-            /tmp/issue-539-remediation.log
-            /tmp/issue-539-remediation.status
-            /tmp/issue-539.patch
-          if-no-files-found: warn
-          retention-days: 1
-      - name: Assert remediation applied
-        shell: bash
-        run: |
-          test "$(cat /tmp/issue-539-remediation.status)" = "0"
-          git diff --cached --quiet && { echo "Remediation produced no staged changes"; exit 1; } || true
+          set -euo pipefail
+          cat .github/issue-539-remediation/part-* > /tmp/issue-539.patch.gz.b64
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('/tmp/issue-539.patch.gz.b64')
+          content = path.read_text(encoding='utf-8')
+          broken = 'SczpnhLgRN2'
+          corrected = 'SczpnhhLgRN2'
+          if content.count(broken) != 1:
+              raise SystemExit(f'expected one transport anchor, found {content.count(broken)}')
+          path.write_text(content.replace(broken, corrected, 1), encoding='utf-8')
+          PY
+          test "$(wc -c < /tmp/issue-539.patch.gz.b64)" = "18580"
+          test "$(sha256sum /tmp/issue-539.patch.gz.b64 | cut -d' ' -f1)" = "97db1336a5ae7d8f24fb85d18d634272b9012fb7e706e90c21398aa74843d814"
+          base64 -d < /tmp/issue-539.patch.gz.b64 | gzip -d > /tmp/issue-539.patch
+          test "$(wc -c < /tmp/issue-539.patch)" = "52321"
+          test "$(sha256sum /tmp/issue-539.patch | cut -d' ' -f1)" = "e781d38deefedb6a205ffde52761a7f057f590d79726459facddc6e687a9214d"
+          git apply --check /tmp/issue-539.patch
+          git apply --index /tmp/issue-539.patch
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Format remediation
