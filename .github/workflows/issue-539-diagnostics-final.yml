@@ -1,0 +1,69 @@
+name: Diagnose issue 539 final failures
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/539-operational-installments
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Capture lint
+        shell: bash
+        run: |
+          set +e
+          npm run lint > issue-539-lint.log 2>&1
+          echo "$?" > issue-539-lint.status
+          set -e
+      - name: Prepare integration database
+        run: |
+          npm run prisma:generate
+          npm run build:packages
+          npm run db:deploy
+          npm run db:seed
+      - name: Capture integration
+        shell: bash
+        run: |
+          set +e
+          npm run test:integration --workspace @solverfin/api > issue-539-integration.log 2>&1
+          echo "$?" > issue-539-integration.status
+          set -e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: issue-539-final-diagnostics
+          path: |
+            issue-539-lint.log
+            issue-539-lint.status
+            issue-539-integration.log
+            issue-539-integration.status
