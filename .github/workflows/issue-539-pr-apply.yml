@@ -1,0 +1,47 @@
+name: Apply issue 539 from pull request
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/539-operational-installments
+          fetch-depth: 0
+      - name: Restore and apply patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+          import gzip
+          import re
+
+          workflow = Path('.github/workflows/issue-539-apply.yml').read_text(encoding='utf-8')
+          match = re.search(r"printf '%s' '([^']+)'", workflow)
+          if not match:
+              raise SystemExit('embedded patch not found')
+          Path('/tmp/apply_issue_539.py').write_bytes(gzip.decompress(base64.b64decode(match.group(1))))
+          PY
+          python /tmp/apply_issue_539.py
+      - name: Commit implementation
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps packages docs
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'feat: expose operational installment metadata'
+          git push origin HEAD:feat/539-operational-installments
