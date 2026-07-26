@@ -91,15 +91,44 @@ async function validateAccountDesktop(fixture) {
   });
 
   const newDescription = `QA issue 539 ajustada ${Date.now().toString(36)}`;
-  await evaluate(
+  const saveResult = await evaluate(
     browser.cdp,
-    `(() => {
+    `(async () => {
       const form = document.querySelector("[data-form]");
+      const nativeFetch = window.fetch.bind(window);
+      const nativeSetTimeout = window.setTimeout.bind(window);
+      let patchResult;
+      window.fetch = async (...args) => {
+        const response = await nativeFetch(...args);
+        const path = String(args[0] || "");
+        const method = String(args[1]?.method || "GET").toUpperCase();
+        if (path.includes("/api/installments/") && method === "PATCH") {
+          patchResult = { status: response.status, body: await response.clone().json().catch(() => ({})) };
+        }
+        return response;
+      };
+      window.setTimeout = (callback, delay, ...args) => {
+        if (delay === 450 && String(callback).includes("location.reload")) return 0;
+        return nativeSetTimeout(callback, delay, ...args);
+      };
       form.description.value = ${JSON.stringify(newDescription)};
-      form.querySelector('.save-row button[type="submit"]').click();
+      form.requestSubmit();
+      for (let attempt = 0; attempt < 50 && !patchResult; attempt += 1) {
+        await new Promise((resolve) => nativeSetTimeout(resolve, 100));
+      }
+      window.fetch = nativeFetch;
+      window.setTimeout = nativeSetTimeout;
+      return {
+        patchResult,
+        statusText: form.querySelector("[data-installment-status-message]")?.textContent || ""
+      };
     })()`,
   );
-  await sleep(900);
+  check(
+    saveResult.patchResult?.status === 200,
+    "Installment form did not persist through PATCH",
+    saveResult,
+  );
   const persisted = await evaluate(
     browser.cdp,
     `fetch("/api/installments?installmentId=${fixture.accountInstallmentId}&status=all")
@@ -169,14 +198,18 @@ async function validateAccountMobile(fixture) {
   });
 
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
+    type: "rawKeyDown",
     key: "Escape",
     code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
   });
   await browser.cdp.send("Input.dispatchKeyEvent", {
     type: "keyUp",
     key: "Escape",
     code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
   });
   await sleep(120);
   const closed = await evaluate(browser.cdp, `!document.querySelector("[data-modal]").open`);
@@ -357,6 +390,7 @@ function fixtureExpression() {
     const accountRecurrence = (await request("/api/recurrences", "POST", {
       frequency: "monthly",
       startOn: "2026-07-05",
+      endOn: "2026-09-05",
       amountMinor: 12345,
       description: "QA issue 539 parcela conta",
       kind: "expense",
@@ -370,9 +404,7 @@ function fixtureExpression() {
     const accountInstallments = (await request(
       "/api/installments?recurrenceId=" + accountRecurrence.id + "&status=all"
     )).installments;
-    const accountInstallment = accountInstallments.find(
-      (item) => item.dueOn === "2026-07-05" && item.transaction?.id,
-    );
+    const accountInstallment = accountInstallments.find((item) => item.transaction?.id);
     await request("/api/categories/" + category.id + "/archive", "POST");
 
     const card = (await request("/api/credit-card-accounts", "POST", {
@@ -391,6 +423,7 @@ function fixtureExpression() {
     const cardRecurrence = (await request("/api/recurrences", "POST", {
       frequency: "monthly",
       startOn: "2026-07-08",
+      endOn: "2026-09-08",
       amountMinor: 2468,
       description: "QA issue 539 parcela cartao",
       cardId: card.id,
@@ -403,9 +436,7 @@ function fixtureExpression() {
     const cardInstallments = (await request(
       "/api/installments?recurrenceId=" + cardRecurrence.id + "&status=all"
     )).installments;
-    const cardInstallment = cardInstallments.find(
-      (item) => item.dueOn === "2026-07-08" && item.transaction?.invoiceId,
-    );
+    const cardInstallment = cardInstallments.find((item) => item.transaction?.invoiceId);
 
     if (!accountInstallment?.transaction?.id || !cardInstallment?.transaction?.invoiceId) {
       throw new Error("Issue 539 fixture did not create linked operational installments");

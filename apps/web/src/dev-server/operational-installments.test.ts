@@ -6,6 +6,7 @@ import {
   buildHistoricalCategoryOption,
   buildInstallmentPatch,
   buildInvoiceInstallmentsPath,
+  formatInstallmentSequence,
   operationalInstallmentsController,
   translateInstallmentBlockReason,
 } from "./operational-installments.js";
@@ -74,6 +75,11 @@ test("preserves an archived historical category while editing other fields", () 
   );
 });
 
+test("formats unbounded recurrence installments without exposing zero as a total", () => {
+  assert.equal(formatInstallmentSequence(1, 0), "Parcela 1 de ?");
+  assert.equal(formatInstallmentSequence(2, 6), "Parcela 2 de 6");
+});
+
 test("translates stable backend block reasons", () => {
   assert.equal(
     translateInstallmentBlockReason("invoice_linked"),
@@ -99,5 +105,6 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /setAccountEditLookupState\("unavailable"\)/);
   assert.match(script, /Edição temporariamente indisponível/);
   assert.match(script, /stopImmediatePropagation/);
-  assert.match(script, /Parcela " \+ installment\.sequenceNumber \+ " de/);
+  assert.match(script, /function installmentLabel\(installment\)/);
+  assert.match(script, /installmentLabel\(installment\)/);
 });

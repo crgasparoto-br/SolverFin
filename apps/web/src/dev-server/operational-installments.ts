@@ -62,6 +62,13 @@ export function buildInvoiceInstallmentsPath(invoiceId: string, profileId?: stri
   return `/api/installments?${query.toString()}`;
 }
 
+export function formatInstallmentSequence(
+  sequenceNumber: number,
+  totalInstallments: number,
+): string {
+  return `Parcela ${sequenceNumber} de ${totalInstallments > 0 ? totalInstallments : "?"}`;
+}
+
 export function buildInstallmentPatch(
   initial: InstallmentEditableValues,
   current: InstallmentEditableValues,
@@ -182,14 +189,19 @@ export function operationalInstallmentsController(): string {
         return reason ? (blockReasonLabels[reason] || "Esta parcela não pode ser alterada.") : "";
       }
 
+      function installmentLabel(installment) {
+        const total = Number(installment.totalInstallments) > 0 ? installment.totalInstallments : "?";
+        return "Parcela " + installment.sequenceNumber + " de " + total;
+      }
+
       function addBadge(row, installment) {
         const description = row && row.querySelector(".description strong");
         if (!description || description.querySelector('[data-installment-badge="' + installment.id + '"]')) return;
         const badge = document.createElement("span");
         badge.className = "installment-badge";
         badge.dataset.installmentBadge = installment.id;
-        badge.textContent = "Parcela " + installment.sequenceNumber + " de " + installment.totalInstallments;
-        badge.setAttribute("aria-label", "Parcela " + installment.sequenceNumber + " de " + installment.totalInstallments);
+        badge.textContent = installmentLabel(installment);
+        badge.setAttribute("aria-label", installmentLabel(installment));
         badge.title = blockReason(installment.editBlockedReason) || badge.textContent;
         description.appendChild(badge);
       }
@@ -414,7 +426,7 @@ export function operationalInstallmentsController(): string {
         form.categoryId.value = initial.categoryId;
 
         const details = createDetails(form);
-        details.querySelector("[data-installment-sequence]").textContent = installment.sequenceNumber + " de " + installment.totalInstallments;
+        details.querySelector("[data-installment-sequence]").textContent = installmentLabel(installment).replace("Parcela ", "");
         details.querySelector("[data-installment-due]").textContent = formatDate(installment.dueOn);
         details.querySelector("[data-installment-status]").textContent = statusLabel(installment.status);
         details.querySelector("[data-installment-amount]").textContent = formatMoney(installment.amountMinor, installment.currency);
