@@ -47,8 +47,8 @@ jobs:
           base64 -d < .github/issue-539-final-polish.patch.gz.b64 | gzip -d > /tmp/issue-539-final.patch
           test "$(wc -c < /tmp/issue-539-final.patch)" = "8463"
           test "$(sha256sum /tmp/issue-539-final.patch | cut -d' ' -f1)" = "b99161114d592f7ee4369d30ae0f9f04994c85ba05c6f8985dfd1bea7cf56ff6"
-          git apply --check /tmp/issue-539-final.patch
-          git apply --index /tmp/issue-539-final.patch
+          git apply --3way --index /tmp/issue-539-final.patch
+          test -z "$(git ls-files -u)"
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Format final changes
