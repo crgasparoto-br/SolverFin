@@ -34,6 +34,7 @@ testPlannedTransactionsClearEffectiveDate();
 testValidations();
 testListAndUpdateTransactions();
 testCategoryRemoval();
+testArchivedCategoryPreservedOnUnrelatedUpdate();
 testTenantIsolation();
 testVoidTransaction();
 
@@ -318,6 +319,58 @@ function testCategoryRemoval(): void {
   });
 
   assertEqual(updated.transaction.categoryId, undefined, "removed category");
+}
+
+function testArchivedCategoryPreservedOnUnrelatedUpdate(): void {
+  const account = createAccountFixture(tenantA, "account-archived-category", "active");
+  const category = createCategoryFixture(
+    tenantA,
+    "category-archived-history",
+    "expense",
+    "archived",
+  );
+  const historicalTransaction: Transaction = {
+    ...createTransactionFixture(
+      tenantA,
+      "transaction-archived-category-history",
+      "expense",
+      account.id,
+    ),
+    categoryId: category.id,
+  };
+  const updated = updateTransaction({
+    context: tenantA,
+    transaction: historicalTransaction,
+    now: "2026-06-15T11:45:00.000Z",
+    account,
+    category,
+    payload: { description: "Descricao ajustada sem reclassificar" },
+  });
+
+  assertEqual(updated.transaction.categoryId, category.id, "preserved archived category");
+  assertEqual(
+    updated.transaction.description,
+    "Descricao ajustada sem reclassificar",
+    "updated unrelated field",
+  );
+
+  assertTransactionError(
+    () =>
+      updateTransaction({
+        context: tenantA,
+        transaction: createTransactionFixture(
+          tenantA,
+          "transaction-new-archived-category",
+          "expense",
+          account.id,
+        ),
+        now: "2026-06-15T11:50:00.000Z",
+        account,
+        category,
+        payload: { categoryId: category.id },
+      }),
+    "TRANSACTION_CATEGORY_ARCHIVED",
+  );
 }
 
 function testTenantIsolation(): void {
