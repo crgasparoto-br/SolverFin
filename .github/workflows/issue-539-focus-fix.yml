@@ -1,0 +1,114 @@
+name: Issue 539 focus fix
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: issue-539-focus-fix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apply-focus-fix:
+    name: Apply installment modal focus trap
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Patch focus containment and tests
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const sourcePath = 'apps/web/src/dev-server/operational-installments.ts';
+          let source = fs.readFileSync(sourcePath, 'utf8');
+          const listenerNeedle = '      document.addEventListener("click", (event) => {';
+          const focusHelpers = `      function focusableInstallmentControls(modal) {
+                return Array.from(
+                  modal.querySelectorAll(
+                    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+                  ),
+                ).filter(
+                  (control) =>
+                    !control.hidden &&
+                    control.getAttribute("aria-hidden") !== "true" &&
+                    control.getClientRects().length > 0,
+                );
+              }
+
+              function keepInstallmentFocusInsideModal(event) {
+                if (event.key !== "Tab") return;
+                const modal = event.currentTarget;
+                const form = modal.querySelector("[data-form]");
+                if (!form?.dataset.installmentMode) return;
+                const controls = focusableInstallmentControls(modal);
+                if (controls.length === 0) return;
+                const first = controls[0];
+                const last = controls[controls.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                  event.preventDefault();
+                  last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                  event.preventDefault();
+                  first.focus();
+                }
+              }
+
+          `;
+          if (!source.includes('function keepInstallmentFocusInsideModal')) {
+            if (!source.includes(listenerNeedle)) throw new Error('click listener insertion point not found');
+            source = source.replace(listenerNeedle, focusHelpers + listenerNeedle);
+          }
+          const closeNeedle = '      document.querySelector("[data-modal]")?.addEventListener("close", restoreRestrictedForm);';
+          const keydownLine = '      document.querySelector("[data-modal]")?.addEventListener("keydown", keepInstallmentFocusInsideModal);';
+          if (!source.includes(keydownLine)) {
+            if (!source.includes(closeNeedle)) throw new Error('modal close listener not found');
+            source = source.replace(closeNeedle, closeNeedle + '\n' + keydownLine);
+          }
+          fs.writeFileSync(sourcePath, source);
+
+          const testPath = 'apps/web/src/dev-server/operational-installments.test.ts';
+          let test = fs.readFileSync(testPath, 'utf8');
+          const testNeedle = '  assert.match(script, /operationalTo=" \\+ operationalTo/);';
+          const testLines = `  assert.match(script, /function keepInstallmentFocusInsideModal\\(event\\)/);
+            assert.match(script, /event\\.key !== "Tab"/);
+            assert.match(script, /addEventListener\\("keydown", keepInstallmentFocusInsideModal\\)/);`;
+          if (!test.includes('addEventListener\\("keydown", keepInstallmentFocusInsideModal')) {
+            if (!test.includes(testNeedle)) throw new Error('test insertion point not found');
+            test = test.replace(testNeedle, testNeedle + '\n' + testLines);
+          }
+          fs.writeFileSync(testPath, test);
+          NODE
+
+      - name: Format changes
+        run: npm run format
+
+      - name: Commit focus correction
+        run: |
+          if git diff --quiet; then
+            echo "Focus correction already applied."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/operational-installments.ts apps/web/src/dev-server/operational-installments.test.ts
+          git commit -m "fix(#539): manter foco dentro do modal de parcela"
+          git push origin HEAD:${{ github.head_ref }}
