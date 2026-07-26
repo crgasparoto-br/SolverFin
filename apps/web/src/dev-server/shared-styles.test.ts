@@ -55,16 +55,22 @@ describe("shared shell styles", () => {
     assert.match(css, /background:\s*var\(--neutral-control-active-hover\)/);
     assert.match(css, /color:\s*var\(--neutral-control-text-hover\)/);
     assert.ok(
-      css.indexOf("button[aria-pressed]:not(.danger)") > css.indexOf("button:hover:not(:disabled)"),
+      css.indexOf("button[aria-pressed]:not(.danger)") >
+        css.indexOf("button:hover:not(:disabled)"),
       "the neutral hover rule must override the generic dark primary hover",
     );
   });
 
   it("maps legacy operational controls and close actions to the shared neutral contract", () => {
     const css = sharedShellStyles();
-    const recurrenceSource = readFileSync(join(currentDir, "recurrences-section.js"), "utf8");
+    const recurrenceSource = readFileSync(
+      join(currentDir, "recurrences-section.js"),
+      "utf8",
+    );
 
-    for (const alias of legacyNeutralAliases) assert.ok(css.includes(alias), `${alias} is not neutral`);
+    for (const alias of legacyNeutralAliases) {
+      assert.ok(css.includes(alias), `${alias} is not neutral`);
+    }
     assert.match(
       css,
       /form\.close-form > button[^,{]*,\s*button\[data-button-variant="neutral"\][^{]+\{\s*background: var\(--surface\);\s*border-color: var\(--line\);\s*color: var\(--primary\);/,
@@ -78,7 +84,8 @@ describe("shared shell styles", () => {
       /<button type="button" class="close-form" data-recurrence-scope-cancel aria-label="Fechar">/,
     );
     assert.ok(
-      css.lastIndexOf("form.close-form > button") > css.indexOf("button:hover:not(:disabled)"),
+      css.lastIndexOf("form.close-form > button") >
+        css.indexOf("button:hover:not(:disabled)"),
       "close actions must override the generic primary hover",
     );
   });
@@ -102,7 +109,10 @@ describe("shared shell styles", () => {
 
   it("keeps icon-only destructive controls red on hover and keyboard focus", () => {
     const css = sharedShellStyles();
-    const accountsCardsSource = readFileSync(join(currentDir, "accounts-cards-page.js"), "utf8");
+    const accountsCardsSource = readFileSync(
+      join(currentDir, "accounts-cards-page.js"),
+      "utf8",
+    );
 
     assert.match(accountsCardsSource, /class="icon-button danger-icon-button"/);
     assert.match(css, /:not\(\.danger-icon-button\):hover:not\(:disabled\)/);
