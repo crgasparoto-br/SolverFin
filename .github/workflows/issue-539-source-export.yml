@@ -82,9 +82,47 @@ jobs:
           scripts/run-statement-visual-validation.mjs
           scripts/statement-visual/issue-539-operational-installments.mjs
       - name: Validate repository
-        run: npm run validate
+        shell: bash
+        run: |
+          set +e
+          npm run validate > /tmp/issue-539-validate.log 2>&1
+          status=$?
+          printf '%s\n' "$status" > /tmp/issue-539-validate.status
+          tail -n 120 /tmp/issue-539-validate.log
+          exit 0
+      - name: Upload validation diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-539-validation-diagnostic-${{ github.sha }}
+          path: |
+            /tmp/issue-539-validate.log
+            /tmp/issue-539-validate.status
+          if-no-files-found: error
+          retention-days: 1
+      - name: Assert repository validation
+        run: test "$(cat /tmp/issue-539-validate.status)" = "0"
       - name: Validate PostgreSQL integration
-        run: npm run test:integration
+        shell: bash
+        run: |
+          set +e
+          npm run test:integration > /tmp/issue-539-integration.log 2>&1
+          status=$?
+          printf '%s\n' "$status" > /tmp/issue-539-integration.status
+          tail -n 120 /tmp/issue-539-integration.log
+          exit 0
+      - name: Upload integration diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-539-integration-diagnostic-${{ github.sha }}
+          path: |
+            /tmp/issue-539-integration.log
+            /tmp/issue-539-integration.status
+          if-no-files-found: warn
+          retention-days: 1
+      - name: Assert PostgreSQL integration
+        run: test "$(cat /tmp/issue-539-integration.status)" = "0"
       - name: Persist remediation
         shell: bash
         run: |
