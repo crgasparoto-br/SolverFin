@@ -59,7 +59,8 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /fetch\("\/api\/session", \{ method: "DELETE" \}\)/);
     assert.match(html, /window\.location\.assign\("\/login"\)/);
     assert.match(html, /form\.dataset\.method = "PATCH"/);
-    assert.doesNotMatch(html, /document\.addEventListener\("submit"/);
+    assert.match(html, /document\.addEventListener\("submit"/);
+    assert.match(html, /form\.matches\("\[data-form\]"\)/);
     assert.match(html, /event\.target\.closest[\s\S]*data-explicit-edit-scope/);
     assert.match(html, /event\.stopImmediatePropagation\(\)/);
   });
@@ -75,6 +76,7 @@ describe("authenticated SSR shell", () => {
     assert.doesNotMatch(html, /statement-tooltip-layer/);
     assert.doesNotMatch(html, /statement-status::after/);
     assert.doesNotMatch(html, /restoreNativeTitle/);
+    assert.doesNotMatch(html, /document\.addEventListener\("submit"/);
   });
 
   it("renders every navigable private route in the shared navigation", () => {

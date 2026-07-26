@@ -524,10 +524,11 @@ export function operationalInstallmentsController(): string {
 
       document.querySelector("[data-modal]")?.addEventListener("close", restoreRestrictedForm);
 
-      document.querySelector("[data-form]")?.addEventListener("submit", async (event) => {
-        const form = event.currentTarget;
-        const installmentId = form.dataset.installmentId;
-        if (!installmentId) return;
+      document.addEventListener("submit", async (event) => {
+      const form = event.target;
+      if (!form || !form.matches || !form.matches("[data-form]")) return;
+      const installmentId = form.dataset.installmentId;
+      if (!installmentId) return;
         event.preventDefault();
         event.stopImmediatePropagation();
         const installment = installmentsById.get(installmentId);

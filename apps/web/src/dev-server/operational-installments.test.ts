@@ -104,6 +104,11 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /setAccountEditLookupState\("loading"\)/);
   assert.match(script, /setAccountEditLookupState\("unavailable"\)/);
   assert.match(script, /Edição temporariamente indisponível/);
+  assert.match(script, /document\.addEventListener\("submit"/);
+  assert.doesNotMatch(
+    script,
+    /document\.querySelector\("\[data-form\]"\)\?\.addEventListener\("submit"/,
+  );
   assert.match(script, /stopImmediatePropagation/);
   assert.match(script, /function installmentLabel\(installment\)/);
   assert.match(script, /installmentLabel\(installment\)/);
