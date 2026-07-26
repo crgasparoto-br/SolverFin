@@ -38,7 +38,8 @@ export function buildAccountInstallmentsPath(
   month: string,
   profileId?: string,
 ): string {
-  const [year, monthNumber] = month.split("-").map(Number);
+  const year = Number(month.slice(0, 4));
+  const monthNumber = Number(month.slice(5, 7));
   const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
   const query = new URLSearchParams({
     accountId,
