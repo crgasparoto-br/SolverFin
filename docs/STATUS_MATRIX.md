@@ -79,9 +79,9 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 - Dominio/schema: Feito.
 - Repository/API/UI: Feito para identificação nas listas operacionais e manutenção conservadora de parcelas de conta.
-- Testes: Feito para contrato web e integração da manutenção segura; validação visual permanece no fluxo de QA da interface.
+- Testes: contrato web, fronteira pública, concorrência com PostgreSQL e validação visual dedicada fazem parte do fluxo atual.
 - Documentacao: Feito para o fluxo atual.
-- Nota: parcelas canônicas aparecem incorporadas às linhas de `/lancamentos` e `/cartoes` como `Parcela X de Y`, sem painel ou rota próprios. O Extrato permite alterar somente descrição, observação e categoria quando a parcela está elegível; Cartões mantém a compra como único ponto de manutenção operacional. `/relatorios` continua somente leitura.
+- Nota: parcelas canônicas aparecem incorporadas às linhas de `/lancamentos` e `/cartoes` como `Parcela X de Y`, sem painel ou rota próprios. O Extrato permite alterar somente descrição, observação e categoria quando a parcela está elegível; Cartões mantém a compra como único ponto de manutenção operacional. `/relatorios` continua somente leitura. O modo manual `Repeticao = Parcelado` do Extrato ainda cria várias `Transaction` independentes e não cria `Installment`; essa lacuna permanece explícita e esses registros não são tratados como parcelas canônicas.
 
 ### Cartoes / Faturas
 

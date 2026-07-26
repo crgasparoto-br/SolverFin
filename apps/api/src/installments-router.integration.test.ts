@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { closePool } from "./db.js";
+import { closePool, getPool } from "./db.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
@@ -28,15 +28,25 @@ async function main(): Promise<void> {
   const recurrence = await createRecurrence(token, suffix, account.id, category.id);
 
   await generateInstallments(token, recurrence.id);
-  const editableInstallmentId = await assertListsGeneratedInstallments(
+  const installmentRefs = await assertListsGeneratedInstallments(
     token,
     recurrence.id,
     account.id,
     category.id,
   );
-  await assertUpdatesEligibleInstallment(token, editableInstallmentId, category.id, suffix);
-  await assertRejectsInvalidInstallmentPatch(token, editableInstallmentId);
-  await assertRejectsOutOfProfileInstallmentPatch(token, editableInstallmentId);
+  const editableInstallment = installmentRefs[0] ?? assert.fail("Expected editable installment.");
+  const concurrentInstallment =
+    installmentRefs[1] ?? assert.fail("Expected concurrent installment.");
+  await assertRejectsGenericTransactionMutation(token, editableInstallment);
+  await assertUpdatesEligibleInstallment(
+    token,
+    editableInstallment.installmentId,
+    category.id,
+    suffix,
+  );
+  await assertRejectsInvalidInstallmentPatch(token, editableInstallment.installmentId);
+  await assertRejectsOutOfProfileInstallmentPatch(token, editableInstallment.installmentId);
+  await assertRevalidatesConcurrentStateChange(token, concurrentInstallment, suffix);
   await assertFiltersTenantProfile(token, recurrence.id);
   await assertRejectsInvalidFilters(token);
 }
@@ -97,7 +107,7 @@ async function assertListsGeneratedInstallments(
   recurrenceId: string,
   accountId: string,
   categoryId: string,
-): Promise<string> {
+): Promise<InstallmentRef[]> {
   const response = await apiRequest(
     token,
     "GET",
@@ -127,7 +137,91 @@ async function assertListsGeneratedInstallments(
     0,
   );
 
-  return installments[0]?.id ?? assert.fail("Expected at least one editable installment.");
+  return installments.map((installment) => ({
+    installmentId: installment.id,
+    transactionId:
+      installment.transaction?.id ?? assert.fail("Expected linked transaction for installment."),
+    originalDescription:
+      installment.transaction?.description ?? assert.fail("Expected installment description."),
+    amountMinor: installment.amountMinor,
+  }));
+}
+
+async function assertRejectsGenericTransactionMutation(
+  token: string,
+  ref: InstallmentRef,
+): Promise<void> {
+  const response = await apiRequest(token, "PATCH", `/api/transactions/${ref.transactionId}`, {
+    amountMinor: 1,
+    description: "Tentativa de edição genérica",
+  });
+
+  assert.equal(response.statusCode, 409);
+  assert.equal(readErrorCode(response), "INSTALLMENT_DIRECT_UPDATE_REQUIRED");
+
+  const current = await readInstallment(token, ref.installmentId);
+  assert.equal(current.amountMinor, ref.amountMinor);
+  assert.equal(current.transaction?.description, ref.originalDescription);
+}
+
+async function assertRevalidatesConcurrentStateChange(
+  token: string,
+  ref: InstallmentRef,
+  suffix: string,
+): Promise<void> {
+  const client = await getPool().connect();
+  let transactionOpen = false;
+
+  try {
+    await client.query("BEGIN");
+    transactionOpen = true;
+    await client.query(
+      `update "Transaction"
+          set "status" = 'POSTED', "effectiveOn" = "plannedOn"
+        where "id" = $1`,
+      [ref.transactionId],
+    );
+
+    const patchPromise = apiRequest(token, "PATCH", `/api/installments/${ref.installmentId}`, {
+      description: `Concorrência rejeitada ${suffix}`,
+    });
+
+    await delay(150);
+    await client.query("COMMIT");
+    transactionOpen = false;
+
+    const response = await patchPromise;
+    assert.equal(response.statusCode, 409);
+    assert.equal(readErrorCode(response), "INSTALLMENT_EDIT_BLOCKED");
+
+    const current = await readInstallment(token, ref.installmentId);
+    assert.equal(current.transaction?.status, "posted");
+    assert.equal(current.transaction?.description, ref.originalDescription);
+  } finally {
+    if (transactionOpen) await client.query("ROLLBACK");
+    client.release();
+  }
+}
+
+async function readInstallment(
+  token: string,
+  installmentId: string,
+): Promise<ApiInstallmentHistory> {
+  const response = await apiRequest(
+    token,
+    "GET",
+    `/api/installments?installmentId=${installmentId}&status=all`,
+  );
+  assert.equal(response.statusCode, 200);
+
+  return (
+    readBody<{ installments: ApiInstallmentHistory[] }>(response).installments[0] ??
+    assert.fail("Expected installment to be returned.")
+  );
+}
+
+async function delay(milliseconds: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 async function assertUpdatesEligibleInstallment(
@@ -307,11 +401,26 @@ interface ApiRecurrence {
   financialProfileId: string;
 }
 
+interface InstallmentRef {
+  installmentId: string;
+  transactionId: string;
+  originalDescription: string;
+  amountMinor: number;
+}
+
 interface ApiInstallmentHistory {
   id: string;
   financialProfileId: string;
+  amountMinor: number;
   recurrence?: { id: string };
-  transaction?: { accountId?: string; categoryId?: string; description?: string; note?: string };
+  transaction?: {
+    id?: string;
+    accountId?: string;
+    categoryId?: string;
+    description?: string;
+    note?: string;
+    status?: string;
+  };
   category?: { id: string };
   editable: boolean;
   editBlockedReason?: string;

@@ -29,7 +29,7 @@ A web continua usando o proxy autenticado do servidor SSR. As chamadas seguem a 
 
 ## Limite conhecido
 
-O backend ainda nao expoe uma rota de leitura dedicada para listar parcelas historicas de uma recorrencia — so os lancamentos ja materializados (visiveis na lista normal) e o que a acao "Gerar parcelas" retorna na hora.
+A rota `GET /api/installments` permite consultar parcelas historicas, atuais e futuras por recorrencia e pelos escopos operacionais. O limite atual esta na criacao parcelada manual do Extrato: `Repeticao = Parcelado` ainda cria `Transaction` independentes, sem `Installment`, e por isso esses registros nao recebem o indicador nem a manutencao conservadora desta funcionalidade.
 
 ## Modal de escopo da edição
 
@@ -58,7 +58,7 @@ Ocorrências anteriores, efetivadas, conciliadas, anuladas ou não elegíveis pe
 
 ## Parcelas canônicas incorporadas às linhas
 
-As telas `/lancamentos` e `/cartoes` enriquecem as linhas já existentes com `Parcela X de Y`, associando o retorno de `/api/installments` por `transaction.id`. A consulta é única por tela/escopo e degradável: indisponibilidade da API de parcelas não bloqueia a lista principal.
+As telas `/lancamentos` e `/cartoes` enriquecem as linhas já existentes com `Parcela X de Y`, associando o retorno de `/api/installments` por `transaction.id`. A consulta é única por tela/escopo e degradável: indisponibilidade da API de parcelas não bloqueia a lista principal. No Extrato, as ações de edição ficam temporariamente indisponíveis quando a elegibilidade não pode ser consultada; o endpoint genérico de transações também rejeita mutação de lançamento vinculado a parcela canônica, impedindo que a restrição seja contornada.
 
 No Extrato, a ação da própria linha abre o modal existente em modo restrito. Apenas descrição, observação e categoria podem ser alteradas quando `editable=true`; número, total, vencimento, valor, situação, conta, tipo e repetição permanecem somente leitura. Quando bloqueada, a mesma ação abre detalhes compactos com o motivo traduzido.
 

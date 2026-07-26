@@ -137,6 +137,10 @@ type UpdateTransactionPayloadWithMetadata = Omit<UpdateTransactionPayload, "cate
   applyToFuturePlanned?: boolean;
 };
 
+export interface UpdateTransactionOptions {
+  denyCanonicalInstallmentMutation?: boolean;
+}
+
 type TransactionMetadata = {
   applyToFuturePlanned?: boolean;
 };
@@ -210,8 +214,16 @@ export async function updateTransactionForContext(
   context: TenantContext,
   transactionId: EntityId,
   payload: UpdateTransactionPayloadWithMetadata,
+  options: UpdateTransactionOptions = {},
 ): Promise<TransactionWithAccountRemuneration> {
   const currentTransaction = await findTransactionRow(context, transactionId);
+
+  if (options.denyCanonicalInstallmentMutation === true && currentTransaction?.installmentId) {
+    throw Object.assign(new Error("Use a manutenção da parcela para alterar este lançamento."), {
+      code: "INSTALLMENT_DIRECT_UPDATE_REQUIRED",
+      statusCode: 409,
+    });
+  }
 
   if (
     currentTransaction?.transactionGroupId &&

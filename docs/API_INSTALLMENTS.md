@@ -129,7 +129,7 @@ A mutacao atualiza a transacao vinculada de forma atomica pelo fluxo existente d
 }
 ```
 
-Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. Recurso inexistente ou fora do tenant/profile ativo retorna o comportamento padrao de recurso nao encontrado.
+Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. A leitura de elegibilidade, o bloqueio das linhas de `Transaction`/`Installment`, a atualização e a auditoria ocorrem na mesma transação de banco para impedir alteração após mudança concorrente de estado. Recurso inexistente ou fora do tenant/profile ativo retorna o comportamento padrao de recurso nao encontrado.
 
 ## Tenant e privacidade
 
@@ -150,6 +150,6 @@ Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. Recurso inex
 - `/cartoes` executa no máximo uma consulta complementar usando o `invoiceId` selecionado e associa a parcela pela transação da compra. Não usar `cardId` isolado nesse fluxo, pois ele omite parcelas já vinculadas à fatura.
 - A interface mostra `Parcela X de Y` dentro da própria linha. Não existe painel, rota ou linha paralela de parcelas.
 - `categoryId` aceita uma string válida ou `null`; `null` remove a categoria da transação vinculada. String vazia continua inválida.
-- A edição direta de parcela de conta envia apenas os campos efetivamente alterados entre `description`, `note` e `categoryId`. Sem alteração, o cliente não envia `PATCH`.
-- Para `409 INSTALLMENT_EDIT_BLOCKED`, o modal permanece aberto, conserva os valores digitados e permite recarregar o estado atual.
+- A edição direta de parcela de conta envia apenas os campos efetivamente alterados entre `description`, `note` e `categoryId`. Sem alteração, o cliente não envia `PATCH`. Categoria arquivada vinculada ao histórico é preservada no formulário e só é removida quando o usuário escolhe explicitamente **Sem categoria**.
+- Para `409 INSTALLMENT_EDIT_BLOCKED`, o modal permanece aberto, conserva os valores digitados e permite recarregar o estado atual. O endpoint genérico `PATCH /api/transactions/:transactionId` retorna `409 INSTALLMENT_DIRECT_UPDATE_REQUIRED` quando a transação possui `installmentId`; assim, indisponibilidade ou atraso da consulta complementar da web não libera alteração de valor, datas, conta, situação ou outros campos fora da allowlist.
 - Parcelas com `invoice_linked` são mantidas em leitura no contrato de parcelas; a edição operacional continua exclusivamente no endpoint da compra da fatura.

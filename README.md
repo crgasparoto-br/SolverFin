@@ -17,7 +17,7 @@ A rotina operacional atual esta consolidada assim:
 - cartoes de credito usam o modelo de **cartao agrupador/fatura** com **instrumentos internos**, documentado em `docs/CARDS.md`;
 - `PayableReceivable` permanece como dominio/API legado de compatibilidade, documentado em `docs/PAYABLES_RECEIVABLES.md` e no plano de transicao `docs/PAYABLES_RECEIVABLES_TRANSITION.md`.
 
-Parcelas historicas ainda nao possuem manutencao direta completa. OFX, conciliacao ampla, automacoes avancadas e provedor real de IA ainda evoluem por issues dedicadas.
+Parcelas canonicas aparecem incorporadas ao Extrato e as compras da fatura. A manutencao direta de parcelas de conta e conservadora: somente descricao, observacao e categoria podem mudar quando o backend confirma elegibilidade; valor, vencimento, situacao e redistribuicao permanecem fora desse fluxo. OFX, conciliacao ampla, automacoes avancadas e provedor real de IA ainda evoluem por issues dedicadas.
 
 ## Requisitos locais
 

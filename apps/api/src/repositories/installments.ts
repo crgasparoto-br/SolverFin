@@ -6,7 +6,7 @@ import type {
   TransactionStatus,
 } from "@solverfin/domain";
 
-import { query } from "../db.js";
+import { query, withSharedTransaction } from "../db.js";
 import { updateTransactionForContext } from "./transactions.js";
 
 export interface ListInstallmentsFilters {
@@ -168,21 +168,53 @@ export async function updateInstallmentForContext(
   installmentId: EntityId,
   payload: UpdateInstallmentPayload,
 ): Promise<InstallmentHistoryItem> {
-  const current = await getInstallmentForMutation(context, installmentId);
+  return withSharedTransaction(async () => {
+    await lockInstallmentMutationRows(context, installmentId);
+    const current = await getInstallmentForMutation(context, installmentId);
 
-  if (!current.editable) {
-    throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
-  }
+    if (!current.editable) {
+      throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
+    }
 
-  const transactionId = readNestedId(current.transaction);
+    const transactionId = readNestedId(current.transaction);
 
-  if (!transactionId) {
-    throwInstallmentEditBlocked("linked_transaction_missing");
-  }
+    if (!transactionId) {
+      throwInstallmentEditBlocked("linked_transaction_missing");
+    }
 
-  await updateTransactionForContext(context, transactionId, buildTransactionUpdatePayload(payload));
+    await updateTransactionForContext(
+      context,
+      transactionId,
+      buildTransactionUpdatePayload(payload),
+    );
 
-  return getInstallmentForMutation(context, installmentId);
+    return getInstallmentForMutation(context, installmentId);
+  });
+}
+
+async function lockInstallmentMutationRows(
+  context: TenantContext,
+  installmentId: EntityId,
+): Promise<void> {
+  await query(
+    `select "id"
+       from "Transaction"
+      where "installmentId" = $1
+        and "organizationId" = $2
+        and "financialProfileId" = $3
+      for update`,
+    [installmentId, context.organizationId, context.financialProfileId],
+  );
+
+  await query(
+    `select "id"
+       from "Installment"
+      where "id" = $1
+        and "organizationId" = $2
+        and "financialProfileId" = $3
+      for update`,
+    [installmentId, context.organizationId, context.financialProfileId],
+  );
 }
 
 function shouldHideCardInstallmentsWithLinkedPurchases(filters: ListInstallmentsFilters): boolean {

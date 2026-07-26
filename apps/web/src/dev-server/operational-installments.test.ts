@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   buildAccountInstallmentsPath,
+  buildHistoricalCategoryOption,
   buildInstallmentPatch,
   buildInvoiceInstallmentsPath,
   operationalInstallmentsController,
@@ -40,6 +41,39 @@ test("sends only changed safe fields and uses null to remove category", () => {
   );
 });
 
+test("preserves an archived historical category while editing other fields", () => {
+  assert.deepEqual(
+    buildHistoricalCategoryOption({
+      id: "installment-demo",
+      sequenceNumber: 2,
+      totalInstallments: 6,
+      dueOn: "2026-08-05",
+      amountMinor: 12345,
+      currency: "BRL",
+      status: "planned",
+      editable: true,
+      transaction: { categoryId: "category-archived" },
+      category: {
+        id: "category-archived",
+        name: "Categoria histórica",
+        status: "archived",
+      },
+    }),
+    {
+      value: "category-archived",
+      label: "Categoria histórica (arquivada)",
+      disabled: true,
+    },
+  );
+  assert.deepEqual(
+    buildInstallmentPatch(
+      { description: "Parcela", note: "", categoryId: "category-archived" },
+      { description: "Parcela ajustada", note: "", categoryId: "category-archived" },
+    ),
+    { description: "Parcela ajustada" },
+  );
+});
+
 test("translates stable backend block reasons", () => {
   assert.equal(
     translateInstallmentBlockReason("invoice_linked"),
@@ -59,6 +93,11 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /Recarregar estado atual/);
   assert.match(script, /rememberAndSet\(saveButton, "hidden", !editable\)/);
   assert.match(script, /data-installment-reload/);
+  assert.match(script, /data-installment-historical-category/);
+  assert.match(script, /ensureHistoricalCategoryOption\(form\.categoryId, installment\)/);
+  assert.match(script, /setAccountEditLookupState\("loading"\)/);
+  assert.match(script, /setAccountEditLookupState\("unavailable"\)/);
+  assert.match(script, /Edição temporariamente indisponível/);
   assert.match(script, /stopImmediatePropagation/);
   assert.match(script, /Parcela " \+ installment\.sequenceNumber \+ " de/);
 });

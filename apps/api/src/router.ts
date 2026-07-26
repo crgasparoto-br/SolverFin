@@ -506,6 +506,7 @@ async function updateTransactionHandler(
       ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
       ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
     },
+    { denyCanonicalInstallmentMutation: true },
   );
 
   return json(200, { transaction });

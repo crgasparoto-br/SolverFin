@@ -14,6 +14,11 @@ export interface OperationalInstallmentRecord {
     note?: string;
     categoryId?: string;
   };
+  category?: {
+    id?: string;
+    name?: string;
+    status?: string;
+  };
 }
 
 export interface InstallmentEditableValues {
@@ -67,6 +72,28 @@ export function buildInstallmentPatch(
   if (current.note !== initial.note) patch.note = current.note.trim() || null;
   if (current.categoryId !== initial.categoryId) patch.categoryId = current.categoryId || null;
   return patch;
+}
+
+export interface HistoricalCategoryOption {
+  value: string;
+  label: string;
+  disabled: boolean;
+}
+
+export function buildHistoricalCategoryOption(
+  installment: OperationalInstallmentRecord,
+): HistoricalCategoryOption | undefined {
+  const categoryId = installment.transaction?.categoryId?.trim();
+  if (!categoryId) return undefined;
+
+  const name = installment.category?.name?.trim() || "Categoria histórica";
+  const archived = installment.category?.status === "archived";
+
+  return {
+    value: categoryId,
+    label: archived ? `${name} (arquivada)` : name,
+    disabled: archived,
+  };
 }
 
 const OPERATIONAL_INSTALLMENTS_CSS = `
@@ -170,12 +197,44 @@ export function operationalInstallmentsController(): string {
       async function fetchInstallments(path) {
         try {
           const response = await fetch(apiPath(path), { headers: { accept: "application/json" } });
-          if (!response.ok) return [];
+          if (!response.ok) return undefined;
           const body = await response.json();
           return Array.isArray(body.installments) ? body.installments : [];
         } catch (_error) {
-          return [];
+          return undefined;
         }
+      }
+
+      function setAccountEditLookupState(state) {
+        document.querySelectorAll("[data-edit]").forEach((button) => {
+          const label = button.querySelector("span");
+          if (!("installmentOriginalDisabled" in button.dataset)) {
+            button.dataset.installmentOriginalDisabled = String(Boolean(button.disabled));
+            button.dataset.installmentOriginalTitle = button.title || "";
+            if (label) button.dataset.installmentOriginalLabel = label.textContent || "Editar";
+          }
+
+          if (state === "loading") {
+            button.disabled = true;
+            button.title = "Verificando se o lançamento pertence a uma parcela";
+            if (label) label.textContent = "Verificando parcela";
+            return;
+          }
+
+          if (state === "unavailable") {
+            button.disabled = true;
+            button.title = "Edição temporariamente indisponível. Recarregue a página para tentar novamente.";
+            if (label) label.textContent = "Edição indisponível";
+            return;
+          }
+
+          button.disabled = button.dataset.installmentOriginalDisabled === "true";
+          button.title = button.dataset.installmentOriginalTitle || "";
+          if (label) label.textContent = button.dataset.installmentOriginalLabel || "Editar";
+          delete button.dataset.installmentOriginalDisabled;
+          delete button.dataset.installmentOriginalTitle;
+          delete button.dataset.installmentOriginalLabel;
+        });
       }
 
       function findNodeByData(selector, value) {
@@ -196,7 +255,13 @@ export function operationalInstallmentsController(): string {
       async function decorateAccountInstallments() {
         const path = accountQueryPath();
         if (!path) return;
+        setAccountEditLookupState("loading");
         const installments = await fetchInstallments(path);
+        if (!installments) {
+          setAccountEditLookupState("unavailable");
+          return;
+        }
+        setAccountEditLookupState("ready");
         installments.forEach((installment) => {
           const transactionId = installment.transaction && installment.transaction.id;
           if (!transactionId) return;
@@ -219,6 +284,7 @@ export function operationalInstallmentsController(): string {
         const invoiceId = document.querySelector("[data-invoice-input]")?.value || urlParams.get("invoiceId") || "";
         if (!invoiceId) return;
         const installments = await fetchInstallments("/api/installments?invoiceId=" + encodeURIComponent(invoiceId) + "&status=all");
+        if (!installments) return;
         installments.forEach((installment) => {
           const transactionId = installment.transaction && installment.transaction.id;
           if (!transactionId) return;
@@ -276,6 +342,7 @@ export function operationalInstallmentsController(): string {
       function restoreRestrictedForm() {
         const form = document.querySelector("[data-form]");
         if (!form || !form.dataset.installmentMode) return;
+        form.querySelectorAll("[data-installment-historical-category]").forEach((node) => node.remove());
         form.querySelectorAll("[data-installment-managed]").forEach((node) => {
           if ("installmentOriginalHidden" in node.dataset) node.hidden = node.dataset.installmentOriginalHidden === "true";
           if ("installmentOriginalDisabled" in node.dataset) node.disabled = node.dataset.installmentOriginalDisabled === "true";
@@ -297,6 +364,19 @@ export function operationalInstallmentsController(): string {
           modalTitle.textContent = modalTitle.dataset.installmentOriginalTitle;
           delete modalTitle.dataset.installmentOriginalTitle;
         }
+      }
+
+      function ensureHistoricalCategoryOption(select, installment) {
+        const categoryId = String(installment.transaction?.categoryId || "").trim();
+        if (!categoryId || Array.from(select.options || []).some((option) => option.value === categoryId)) return;
+        const categoryName = String(installment.category?.name || "Categoria histórica").trim();
+        const archived = installment.category?.status === "archived";
+        const option = document.createElement("option");
+        option.value = categoryId;
+        option.textContent = archived ? categoryName + " (arquivada)" : categoryName;
+        option.disabled = archived;
+        option.dataset.installmentHistoricalCategory = "";
+        select.appendChild(option);
       }
 
       function restrictForm(form, installment) {
@@ -330,6 +410,7 @@ export function operationalInstallmentsController(): string {
 
         form.description.value = initial.description;
         form.note.value = initial.note;
+        ensureHistoricalCategoryOption(form.categoryId, installment);
         form.categoryId.value = initial.categoryId;
 
         const details = createDetails(form);

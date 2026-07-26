@@ -16,6 +16,7 @@ try {
   await import("./statement-visual/inbox-date-filter.mjs");
   await import("./statement-visual/accounts-cards-interface.mjs");
   await import("./statement-visual/issue-537-hover-states.mjs");
+  await import("./statement-visual/issue-539-operational-installments.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
