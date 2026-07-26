@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feat/539-operational-installments
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
