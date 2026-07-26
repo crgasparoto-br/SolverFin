@@ -79,7 +79,12 @@ export async function listInstallmentsForContext(
   addEqualsFilter(where, params, `i."cardId"`, filters.cardId);
   addEqualsFilter(where, params, `i."cardInstrumentId"`, filters.cardInstrumentId);
   addEqualsFilter(where, params, `t."invoiceId"`, filters.invoiceId);
-  addEqualsFilter(where, params, `coalesce(t."categoryId", r."categoryId")`, filters.categoryId);
+  addEqualsFilter(
+    where,
+    params,
+    `case when t."id" is not null then t."categoryId" else r."categoryId" end`,
+    filters.categoryId,
+  );
 
   if (shouldHideCardInstallmentsWithLinkedPurchases(filters)) {
     where.push(`not (i."cardId" is not null and t."id" is not null and t."invoiceId" is not null)`);
@@ -147,7 +152,7 @@ export async function listInstallmentsForContext(
       and ci."organizationId" = i."organizationId"
       and ci."financialProfileId" = i."financialProfileId"
      left join "Category" cat
-       on cat."id" = coalesce(t."categoryId", r."categoryId")
+       on cat."id" = case when t."id" is not null then t."categoryId" else r."categoryId" end
       and cat."organizationId" = i."organizationId"
       and cat."financialProfileId" = i."financialProfileId"
      where ${where.join(" and ")}

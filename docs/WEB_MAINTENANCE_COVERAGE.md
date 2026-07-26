@@ -27,9 +27,9 @@ Este documento registra quais acoes de manutencao ficam visiveis nas telas naveg
 
 ## Parcelas nas listas operacionais
 
-| Superfície | Identificação | Manutenção | Endpoint |
-| --- | --- | --- | --- |
+| Superfície             | Identificação                          | Manutenção                                                                | Endpoint                                 |
+| ---------------------- | -------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------- |
 | Extrato `/lancamentos` | `Parcela X de Y` na linha da transação | Modal em modo restrito; descrição, observação e categoria quando elegível | `PATCH /api/installments/:installmentId` |
-| Cartões `/cartoes` | `Parcela X de Y` na linha da compra | Mantém a edição operacional da compra e os bloqueios da fatura | Endpoint existente da compra |
+| Cartões `/cartoes`     | `Parcela X de Y` na linha da compra    | Mantém a edição operacional da compra e os bloqueios da fatura            | Endpoint existente da compra             |
 
 A consulta complementar é limitada a uma chamada por renderização e preserva `profileId`. Falha da consulta não remove nem bloqueia a listagem principal. O modal mantém foco acessível, fechamento por Escape, mensagens em `aria-live` e recuperação explícita de conflito `409`.

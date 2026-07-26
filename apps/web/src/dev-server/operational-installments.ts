@@ -284,6 +284,7 @@ export function operationalInstallmentsController(): string {
         });
         form.querySelector("[data-installment-details]")?.remove();
         form.querySelector("[data-installment-status-message]")?.remove();
+        form.querySelector("[data-installment-reload]")?.remove();
         const saveButton = form.querySelector('.save-row button[type="submit"]');
         if (saveButton && form.dataset.installmentOriginalSaveLabel) saveButton.textContent = form.dataset.installmentOriginalSaveLabel;
         delete form.dataset.installmentOriginalSaveLabel;
@@ -352,10 +353,10 @@ export function operationalInstallmentsController(): string {
         const saveButton = form.querySelector('.save-row button[type="submit"]');
         if (saveButton) {
           if (!form.dataset.installmentOriginalSaveLabel) form.dataset.installmentOriginalSaveLabel = saveButton.textContent || "Salvar lançamento";
-          saveButton.hidden = !editable;
-          saveButton.disabled = !editable;
-          saveButton.textContent = "Salvar parcela";
           saveButton.dataset.installmentManaged = "";
+          rememberAndSet(saveButton, "hidden", !editable);
+          rememberAndSet(saveButton, "disabled", !editable);
+          saveButton.textContent = "Salvar parcela";
         }
       }
 

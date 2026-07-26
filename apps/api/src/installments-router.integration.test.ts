@@ -158,7 +158,9 @@ async function assertUpdatesEligibleInstallment(
     { categoryId: null },
   );
   assert.equal(clearCategoryResponse.statusCode, 200);
-  const cleared = readBody<{ installment: ApiInstallmentHistory }>(clearCategoryResponse).installment;
+  const cleared = readBody<{ installment: ApiInstallmentHistory }>(
+    clearCategoryResponse,
+  ).installment;
   assert.equal(cleared.transaction?.categoryId, undefined);
   assert.equal(cleared.category, undefined);
 }

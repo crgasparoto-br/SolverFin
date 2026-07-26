@@ -57,6 +57,8 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.doesNotMatch(script, /data-installment-edit.*data-edit-purchase/s);
   assert.match(script, /INSTALLMENT_EDIT_BLOCKED/);
   assert.match(script, /Recarregar estado atual/);
+  assert.match(script, /rememberAndSet\(saveButton, "hidden", !editable\)/);
+  assert.match(script, /data-installment-reload/);
   assert.match(script, /stopImmediatePropagation/);
   assert.match(script, /Parcela \" \+ installment\.sequenceNumber \+ \" de/);
 });
