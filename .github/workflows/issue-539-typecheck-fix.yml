@@ -39,34 +39,17 @@ jobs:
       - name: Format web implementation
         run: npx prettier --write apps/web/src/dev-server/operational-installments.ts
       - name: Typecheck web
+        run: npm run typecheck --workspace @solverfin/web
+      - name: Persist typecheck fix
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          set +e
-          npm run typecheck --workspace @solverfin/web > web-typecheck.log 2>&1
-          status=$?
-          set -e
-          echo "$status" > web-typecheck.status
-          cat web-typecheck.log
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: issue-539-web-typecheck
-          path: |
-            web-typecheck.log
-            web-typecheck.status
-      - name: Commit typecheck fix
-        shell: bash
-        run: |
-          status=$(cat web-typecheck.status)
-          if [ "$status" -ne 0 ]; then
-            exit "$status"
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add apps/web/src/dev-server/operational-installments.ts
-          if git diff --cached --quiet; then
-            echo 'No typecheck fix to commit.'
-            exit 0
-          fi
-          git commit -m 'fix: satisfy strict installment month parsing'
-          git push origin HEAD:feat/539-operational-installments
+          path='apps/web/src/dev-server/operational-installments.ts'
+          current_sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${path}?ref=feat/539-operational-installments" --jq .sha)
+          encoded=$(base64 -w 0 "$path")
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${path}" \
+            -f message='fix: satisfy strict installment month parsing' \
+            -f branch='feat/539-operational-installments' \
+            -f sha="$current_sha" \
+            -f content="$encoded"
