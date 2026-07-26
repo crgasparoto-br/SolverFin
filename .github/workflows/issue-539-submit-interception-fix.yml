@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Intercept installment submits before the generic form handler
+      - name: Apply submit interception and shell contracts
         shell: bash
         run: |
           python - <<'PY'
@@ -89,7 +89,26 @@ jobs:
           apps/web/src/dev-server/operational-installments.test.ts
           apps/web/src/dev-server/shell.test.ts
       - name: Validate repository
-        run: npm run validate
+        shell: bash
+        run: |
+          set +e
+          npm run validate > /tmp/issue-539-submit-final.log 2>&1
+          status=$?
+          printf '%s\n' "$status" > /tmp/issue-539-submit-final.status
+          tail -n 200 /tmp/issue-539-submit-final.log
+          exit 0
+      - name: Upload validation diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-539-submit-final-${{ github.sha }}
+          path: |
+            /tmp/issue-539-submit-final.log
+            /tmp/issue-539-submit-final.status
+          if-no-files-found: error
+          retention-days: 1
+      - name: Assert validation
+        run: test "$(cat /tmp/issue-539-submit-final.status)" = "0"
       - name: Persist submit interception correction
         shell: bash
         run: |
