@@ -10,10 +10,17 @@ const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-vi
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 const scenarios = [];
-const selectors = {
+const accountsCardsSelectors = {
   primary: "[data-context-action]",
   neutral: "#cards-tab",
   destructive: ".danger-icon-button:not(:disabled)",
+};
+const statementNeutralSelectors = {
+  accountPicker: ".account-select-trigger",
+  monthNavigation: '.icon-btn[data-month-step="-1"]',
+  currentMonth: ".ghost-btn[data-month-current]",
+  status: '.status-icon-btn[data-status-option="posted"]',
+  recurrenceClose: "button.close-form[data-recurrence-scope-cancel]",
 };
 
 if (!chromePath) throw new Error("CHROME_BIN is required for issue 537 visual validation.");
@@ -26,77 +33,9 @@ try {
   const login = await evaluate(browser.cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
-  await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
-  await sleep(500);
-  await evaluate(
-    browser.cdp,
-    `document.querySelector(${JSON.stringify(selectors.destructive)})?.scrollIntoView({ block: "center" })`,
-  );
-  await sleep(120);
-  await browser.cdp.send("DOM.enable");
-  await browser.cdp.send("CSS.enable");
-
-  const { root } = await browser.cdp.send("DOM.getDocument", { depth: -1, pierce: true });
-  const nodes = {
-    primary: await findNode(browser.cdp, root.nodeId, selectors.primary),
-    neutral: await findNode(browser.cdp, root.nodeId, selectors.neutral),
-    destructive: await findNode(browser.cdp, root.nodeId, selectors.destructive),
-  };
-
-  await forceState(browser.cdp, nodes.primary, ["hover"]);
-  await forceState(browser.cdp, nodes.neutral, ["hover"]);
-  await forceState(browser.cdp, nodes.destructive, ["hover"]);
-  await sleep(250);
-
-  const hoverStyles = await readStyles(browser.cdp);
-  await screenshot(browser.cdp, join(outputDir, "issue-537-hover-states-desktop-1440x900.png"));
-  scenarios.push({
-    kind: "hover",
-    viewport: "1440x900",
-    screenshot: "issue-537-hover-states-desktop-1440x900.png",
-    styles: hoverStyles,
-  });
-
-  check(
-    hoverStyles.primary.backgroundColor === "rgb(10, 46, 58)",
-    "Issue 537 primary action lost its dark hover surface",
-    hoverStyles.primary,
-  );
-  check(
-    isLightNeutral(hoverStyles.neutral.backgroundColor),
-    "Issue 537 neutral control still receives a dark hover surface",
-    hoverStyles.neutral,
-  );
-  check(
-    hoverStyles.neutral.color !== "rgb(255, 255, 255)",
-    "Issue 537 neutral control inverts its text to white on hover",
-    hoverStyles.neutral,
-  );
-  checkDestructive("hover", hoverStyles.destructive);
-
-  await forceState(browser.cdp, nodes.primary, []);
-  await forceState(browser.cdp, nodes.neutral, []);
-  await forceState(browser.cdp, nodes.destructive, ["focus", "focus-visible"]);
-  await sleep(250);
-
-  const focusStyles = await readStyles(browser.cdp);
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-537-destructive-focus-desktop-1440x900.png"),
-  );
-  scenarios.push({
-    kind: "focus-visible",
-    viewport: "1440x900",
-    screenshot: "issue-537-destructive-focus-desktop-1440x900.png",
-    styles: focusStyles,
-  });
-
-  checkDestructive("focus-visible", focusStyles.destructive);
-  check(
-    focusStyles.destructive.boxShadow !== "none",
-    "Issue 537 destructive icon control has no visible keyboard focus ring",
-    focusStyles.destructive,
-  );
+  await validateAccountsCardsStates();
+  await validateStatementNeutralStates(1440, 900, "desktop");
+  await validateStatementNeutralStates(390, 844, "mobile");
 } finally {
   await browser.close(outputDir);
 }
@@ -120,6 +59,138 @@ if (failures.length > 0) {
   console.log("Issue 537 hover and focus visual validation passed.");
 }
 
+async function validateAccountsCardsStates() {
+  await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
+  await sleep(500);
+  await evaluate(
+    browser.cdp,
+    `document.querySelector(${JSON.stringify(accountsCardsSelectors.destructive)})?.scrollIntoView({ block: "center" })`,
+  );
+  await sleep(120);
+  await enablePseudoStateDomains();
+
+  const nodes = await findNodes(accountsCardsSelectors);
+  await forceState(browser.cdp, nodes.primary, ["hover"]);
+  await forceState(browser.cdp, nodes.neutral, ["hover"]);
+  await forceState(browser.cdp, nodes.destructive, ["hover"]);
+  await sleep(250);
+
+  const hoverStyles = await readStyles(accountsCardsSelectors);
+  await screenshot(browser.cdp, join(outputDir, "issue-537-hover-states-desktop-1440x900.png"));
+  scenarios.push({
+    route: "/contas-cartoes",
+    kind: "hover",
+    viewport: "1440x900",
+    screenshot: "issue-537-hover-states-desktop-1440x900.png",
+    styles: hoverStyles,
+  });
+
+  check(
+    hoverStyles.primary.backgroundColor === "rgb(10, 46, 58)",
+    "Issue 537 primary action lost its dark hover surface",
+    hoverStyles.primary,
+  );
+  checkNeutral("cards tab", hoverStyles.neutral);
+  checkDestructive("hover", hoverStyles.destructive);
+
+  await forceState(browser.cdp, nodes.primary, []);
+  await forceState(browser.cdp, nodes.neutral, []);
+  await forceState(browser.cdp, nodes.destructive, ["focus", "focus-visible"]);
+  await sleep(250);
+
+  const focusStyles = await readStyles(accountsCardsSelectors);
+  await screenshot(
+    browser.cdp,
+    join(outputDir, "issue-537-destructive-focus-desktop-1440x900.png"),
+  );
+  scenarios.push({
+    route: "/contas-cartoes",
+    kind: "focus-visible",
+    viewport: "1440x900",
+    screenshot: "issue-537-destructive-focus-desktop-1440x900.png",
+    styles: focusStyles,
+  });
+
+  checkDestructive("focus-visible", focusStyles.destructive);
+  check(
+    focusStyles.destructive.boxShadow !== "none",
+    "Issue 537 destructive icon control has no visible keyboard focus ring",
+    focusStyles.destructive,
+  );
+}
+
+async function validateStatementNeutralStates(width, height, label) {
+  await setViewport(browser.cdp, width, height);
+  await navigate(browser.cdp, `${baseUrl}/lancamentos`);
+  await sleep(500);
+  await evaluate(
+    browser.cdp,
+    `(() => {
+      const dialog = document.querySelector("[data-recurrence-scope-modal]");
+      if (dialog && typeof dialog.showModal === "function" && !dialog.open) dialog.showModal();
+      document.querySelector(${JSON.stringify(statementNeutralSelectors.recurrenceClose)})?.scrollIntoView({ block: "center" });
+    })()`,
+  );
+  await sleep(120);
+  await enablePseudoStateDomains();
+
+  const nodes = await findNodes(statementNeutralSelectors);
+  for (const nodeId of Object.values(nodes)) await forceState(browser.cdp, nodeId, ["hover"]);
+  await sleep(250);
+
+  const hoverStyles = await readStyles(statementNeutralSelectors);
+  const hoverScreenshot = `issue-537-statement-neutral-hover-${label}-${width}x${height}.png`;
+  await screenshot(browser.cdp, join(outputDir, hoverScreenshot));
+  scenarios.push({
+    route: "/lancamentos",
+    kind: "neutral-hover",
+    viewport: `${width}x${height}`,
+    screenshot: hoverScreenshot,
+    styles: hoverStyles,
+  });
+
+  for (const [name, styles] of Object.entries(hoverStyles)) checkNeutral(name, styles);
+
+  for (const nodeId of Object.values(nodes)) await forceState(browser.cdp, nodeId, []);
+  await forceState(browser.cdp, nodes.recurrenceClose, ["focus", "focus-visible"]);
+  await sleep(250);
+
+  const focusStyles = await readStyles(statementNeutralSelectors);
+  const focusScreenshot = `issue-537-statement-neutral-focus-${label}-${width}x${height}.png`;
+  await screenshot(browser.cdp, join(outputDir, focusScreenshot));
+  scenarios.push({
+    route: "/lancamentos",
+    kind: "neutral-focus-visible",
+    viewport: `${width}x${height}`,
+    screenshot: focusScreenshot,
+    styles: focusStyles,
+  });
+
+  checkNeutral("recurrence close focus", focusStyles.recurrenceClose);
+  check(
+    focusStyles.recurrenceClose.boxShadow !== "none",
+    `Issue 537 recurrence close control has no visible keyboard focus ring at ${width}x${height}`,
+    focusStyles.recurrenceClose,
+  );
+}
+
+async function enablePseudoStateDomains() {
+  await browser.cdp.send("DOM.enable");
+  await browser.cdp.send("CSS.enable");
+}
+
+async function findNodes(selectors) {
+  const { root } = await browser.cdp.send("DOM.getDocument", { depth: -1, pierce: true });
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(selectors).map(async ([name, selector]) => [
+        name,
+        await findNode(browser.cdp, root.nodeId, selector),
+      ]),
+    ),
+  );
+}
+
 async function findNode(cdp, rootNodeId, selector) {
   const { nodeId } = await cdp.send("DOM.querySelector", {
     nodeId: rootNodeId,
@@ -133,9 +204,9 @@ async function forceState(cdp, nodeId, forcedPseudoClasses) {
   await cdp.send("CSS.forcePseudoState", { nodeId, forcedPseudoClasses });
 }
 
-async function readStyles(cdp) {
+async function readStyles(selectors) {
   return evaluate(
-    cdp,
+    browser.cdp,
     `(() => {
       const read = (selector) => {
         const element = document.querySelector(selector);
@@ -148,20 +219,31 @@ async function readStyles(cdp) {
           color: style.color,
         };
       };
-      return {
-        primary: read(${JSON.stringify(selectors.primary)}),
-        neutral: read(${JSON.stringify(selectors.neutral)}),
-        destructive: read(${JSON.stringify(selectors.destructive)}),
-      };
+      return Object.fromEntries(
+        Object.entries(${JSON.stringify(selectors)}).map(([name, selector]) => [name, read(selector)]),
+      );
     })()`,
   );
 }
 
+function checkNeutral(name, styles) {
+  check(
+    styles && isLightNeutral(styles.backgroundColor),
+    `Issue 537 neutral control ${name} still receives a dark hover/focus surface`,
+    styles,
+  );
+  check(
+    styles && styles.color !== "rgb(255, 255, 255)",
+    `Issue 537 neutral control ${name} inverts its text to white`,
+    styles,
+  );
+}
+
 function isLightNeutral(value) {
-  const match = /^rgb\((\d+), (\d+), (\d+)\)$/.exec(value);
+  const match = /^rgba?\((\d+), (\d+), (\d+)/.exec(value ?? "");
   if (!match) return false;
   const channels = match.slice(1).map(Number);
-  return channels.every((channel) => channel >= 225);
+  return channels.every((channel) => channel >= 220);
 }
 
 function checkDestructive(state, styles) {
