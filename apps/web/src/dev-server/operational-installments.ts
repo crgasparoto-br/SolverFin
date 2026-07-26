@@ -47,7 +47,8 @@ export function buildAccountInstallmentsPath(
   const year = Number(month.slice(0, 4));
   const monthNumber = Number(month.slice(5, 7));
   const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
-  const selectedDay = /^\d{4}-\d{2}-\d{2}$/.test(day ?? "") && day?.startsWith(`${month}-`) ? day : undefined;
+  const selectedDay =
+    /^\d{4}-\d{2}-\d{2}$/.test(day ?? "") && day?.startsWith(`${month}-`) ? day : undefined;
   const query = new URLSearchParams({
     accountId,
     operationalFrom: selectedDay ?? `${month}-01`,
