@@ -60,5 +60,5 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /rememberAndSet\(saveButton, "hidden", !editable\)/);
   assert.match(script, /data-installment-reload/);
   assert.match(script, /stopImmediatePropagation/);
-  assert.match(script, /Parcela \" \+ installment\.sequenceNumber \+ \" de/);
+  assert.match(script, /Parcela " \+ installment\.sequenceNumber \+ " de/);
 });
