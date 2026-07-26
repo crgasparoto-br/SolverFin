@@ -61,25 +61,68 @@ jobs:
           test "$(sha256sum /tmp/issue-539.patch | cut -d' ' -f1)" = "e781d38deefedb6a205ffde52761a7f057f590d79726459facddc6e687a9214d"
           git apply --check /tmp/issue-539.patch
           git apply --index /tmp/issue-539.patch
-      - name: Scope recurring modal layout assertion
+      - name: Apply scoped integration corrections
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          path = Path('apps/web/src/dev-server/recurring-card-scope-controller.test.ts')
-          content = path.read_text(encoding='utf-8')
-          old = '  assert.doesNotMatch(script, /grid-template-columns: repeat\\(2/);\n'
-          new = '''  assert.doesNotMatch(
-            script,
-            /\\.recurrence-scope-panel\\s*\\{[^}]*grid-template-columns: repeat\\(2/s,
-          );
-          '''
-          if content.count(old) != 1:
-              raise SystemExit(f'expected one test assertion anchor, found {content.count(old)}')
-          path.write_text(content.replace(old, new, 1), encoding='utf-8')
+          def replace_once(path_value: str, old: str, new: str) -> None:
+              path = Path(path_value)
+              content = path.read_text(encoding='utf-8')
+              if content.count(old) != 1:
+                  raise SystemExit(f'expected one anchor in {path_value}, found {content.count(old)}')
+              path.write_text(content.replace(old, new, 1), encoding='utf-8')
+
+          replace_once(
+              'apps/web/src/dev-server/recurring-card-scope-controller.test.ts',
+              '  assert.doesNotMatch(script, /grid-template-columns: repeat\\(2/);\n',
+              '''  assert.doesNotMatch(
+                script,
+                /\\.recurrence-scope-panel\\s*\\{[^}]*grid-template-columns: repeat\\(2/s,
+              );
+              ''',
+          )
+          replace_once(
+              'apps/web/src/dev-server/statement-action-icons.ts',
+              'import { operationalInstallmentsController } from "./operational-installments.js";\n',
+              '',
+          )
+          replace_once(
+              'apps/web/src/dev-server/statement-action-icons.ts',
+              '    })();\n    ${operationalInstallmentsController()}\n  `;',
+              '    })();\n  `;',
+          )
+          replace_once(
+              'apps/web/src/dev-server/shell.ts',
+              'import { icon } from "./icons.js";\n',
+              'import { icon } from "./icons.js";\nimport { operationalInstallmentsController } from "./operational-installments.js";\n',
+          )
+          replace_once(
+              'apps/web/src/dev-server/shell.ts',
+              '    ${recurringCardScopeControllerScript()}\n  `;',
+              '    ${recurringCardScopeControllerScript()}\n    ${renderOperationalInstallmentsScript(input.activePathname)}\n  `;',
+          )
+          replace_once(
+              'apps/web/src/dev-server/shell.ts',
+              '''function hasStatementPresentation(content: string): boolean {
+                return content.includes('class="statement-layout"');
+              }
+              ''',
+              '''function renderOperationalInstallmentsScript(activePathname: string): string {
+                if (activePathname !== "/lancamentos" && activePathname !== "/cartoes") return "";
+                return `<script>${operationalInstallmentsController()}</script>`;
+              }
+
+              function hasStatementPresentation(content: string): boolean {
+                return content.includes('class="statement-layout"');
+              }
+              ''',
+          )
           PY
           git add apps/web/src/dev-server/recurring-card-scope-controller.test.ts
+          git add apps/web/src/dev-server/statement-action-icons.ts
+          git add apps/web/src/dev-server/shell.ts
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Format remediation
@@ -93,6 +136,8 @@ jobs:
           apps/web/src/dev-server/operational-installments.test.ts
           apps/web/src/dev-server/operational-installments.ts
           apps/web/src/dev-server/recurring-card-scope-controller.test.ts
+          apps/web/src/dev-server/shell.ts
+          apps/web/src/dev-server/statement-action-icons.ts
           docs/API_INSTALLMENTS.md
           docs/ARCHITECTURE.md
           docs/RECURRENCES_INSTALLMENTS_WEB.md
