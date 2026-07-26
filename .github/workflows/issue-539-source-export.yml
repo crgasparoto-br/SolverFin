@@ -21,10 +21,10 @@ jobs:
       - name: Package repository checkout
         shell: bash
         run: |
-          tar --exclude=.git -czf solverfin-issue-539-source.tar.gz .
+          tar --exclude=.git -czf /tmp/solverfin-issue-539-source.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
           name: solverfin-issue-539-source-${{ github.sha }}
-          path: solverfin-issue-539-source.tar.gz
+          path: /tmp/solverfin-issue-539-source.tar.gz
           if-no-files-found: error
           retention-days: 1
