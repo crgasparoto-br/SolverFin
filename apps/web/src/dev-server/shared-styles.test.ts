@@ -16,6 +16,15 @@ const consumingModules = [
   "settings-page.js",
 ] as const;
 
+const legacyNeutralAliases = [
+  ".ghost-btn",
+  ".icon-btn",
+  ".actions-item",
+  ".status-icon-btn",
+  ".account-select-trigger",
+  ".close-form",
+] as const;
+
 describe("shared shell styles", () => {
   it("defines the design tokens and shell chrome used across SSR pages", () => {
     const css = sharedShellStyles();
@@ -48,6 +57,29 @@ describe("shared shell styles", () => {
     assert.ok(
       css.indexOf("button[aria-pressed]:not(.danger)") > css.indexOf("button:hover:not(:disabled)"),
       "the neutral hover rule must override the generic dark primary hover",
+    );
+  });
+
+  it("maps legacy operational controls and close actions to the shared neutral contract", () => {
+    const css = sharedShellStyles();
+    const recurrenceSource = readFileSync(join(currentDir, "recurrences-section.js"), "utf8");
+
+    for (const alias of legacyNeutralAliases) assert.ok(css.includes(alias), `${alias} is not neutral`);
+    assert.match(
+      css,
+      /form\.close-form > button[^,{]*,\s*button\[data-button-variant="neutral"\][^{]+\{\s*background: var\(--surface\);\s*border-color: var\(--line\);\s*color: var\(--primary\);/,
+    );
+    assert.match(
+      css,
+      /form\.close-form > button[^,{]+:hover:not\(:disabled\)[^{]+\{\s*background: var\(--neutral-control-hover\);/,
+    );
+    assert.match(
+      recurrenceSource,
+      /<button type="button" class="close-form" data-recurrence-scope-cancel aria-label="Fechar">/,
+    );
+    assert.ok(
+      css.lastIndexOf("form.close-form > button") > css.indexOf("button:hover:not(:disabled)"),
+      "close actions must override the generic primary hover",
     );
   });
 
