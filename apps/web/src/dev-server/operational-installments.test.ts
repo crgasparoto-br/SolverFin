@@ -133,4 +133,7 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /urlParams\.get\("day"\)/);
   assert.match(script, /operationalFrom=" \+ operationalFrom/);
   assert.match(script, /operationalTo=" \+ operationalTo/);
+  assert.match(script, /function keepInstallmentFocusInsideModal\(event\)/);
+  assert.match(script, /event\.key !== "Tab"/);
+  assert.match(script, /addEventListener\("keydown", keepInstallmentFocusInsideModal\)/);
 });

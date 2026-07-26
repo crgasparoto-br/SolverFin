@@ -508,6 +508,37 @@ export function operationalInstallmentsController(): string {
         }
       }
 
+      function focusableInstallmentControls(modal) {
+      return Array.from(
+        modal.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter(
+        (control) =>
+          !control.hidden &&
+          control.getAttribute("aria-hidden") !== "true" &&
+          control.getClientRects().length > 0,
+      );
+    }
+
+    function keepInstallmentFocusInsideModal(event) {
+      if (event.key !== "Tab") return;
+      const modal = event.currentTarget;
+      const form = modal.querySelector("[data-form]");
+      if (!form?.dataset.installmentMode) return;
+      const controls = focusableInstallmentControls(modal);
+      if (controls.length === 0) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
       document.addEventListener("click", (event) => {
         const target = event.target && event.target.closest ? event.target.closest("button") : null;
         const installmentId = target && target.dataset ? target.dataset.installmentEdit : "";
@@ -534,6 +565,7 @@ export function operationalInstallmentsController(): string {
       }, true);
 
       document.querySelector("[data-modal]")?.addEventListener("close", restoreRestrictedForm);
+      document.querySelector("[data-modal]")?.addEventListener("keydown", keepInstallmentFocusInsideModal);
 
       document.addEventListener("submit", async (event) => {
         const form = event.target;
