@@ -103,22 +103,14 @@ jobs:
               '    ${recurringCardScopeControllerScript()}\n  `;',
               '    ${recurringCardScopeControllerScript()}\n    ${renderOperationalInstallmentsScript(input.activePathname)}\n  `;',
           )
-          replace_once(
-              'apps/web/src/dev-server/shell.ts',
-              '''function hasStatementPresentation(content: string): boolean {
-                return content.includes('class="statement-layout"');
-              }
-              ''',
-              '''function renderOperationalInstallmentsScript(activePathname: string): string {
-                if (activePathname !== "/lancamentos" && activePathname !== "/cartoes") return "";
-                return `<script>${operationalInstallmentsController()}</script>`;
-              }
+          marker = 'function hasStatementPresentation(content: string): boolean {'
+          helper = '''function renderOperationalInstallmentsScript(activePathname: string): string {
+            if (activePathname !== "/lancamentos" && activePathname !== "/cartoes") return "";
+            return `<script>${operationalInstallmentsController()}</script>`;
+          }
 
-              function hasStatementPresentation(content: string): boolean {
-                return content.includes('class="statement-layout"');
-              }
-              ''',
-          )
+          '''
+          replace_once('apps/web/src/dev-server/shell.ts', marker, helper + marker)
           PY
           git add apps/web/src/dev-server/recurring-card-scope-controller.test.ts
           git add apps/web/src/dev-server/statement-action-icons.ts
