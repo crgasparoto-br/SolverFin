@@ -23,7 +23,8 @@ export interface SsrRegisteredStyleProviderRequirement {
   providerId: SsrRegisteredStyleProviderId;
   kind: "page" | "auxiliary";
   moduleFileName: string;
-  requiredCssFragments: readonly string[];
+  requiredCssFragments?: readonly string[];
+  requiredStyleBlockMarkers?: readonly string[];
 }
 
 export interface SsrStyleRouteContract {
@@ -32,6 +33,7 @@ export interface SsrStyleRouteContract {
   shell: SsrShellKind;
   moduleFileName: string;
   pageStyleMode: SsrPageStyleMode;
+  representativeHtmlFragments: readonly string[];
   requiredHeadProviders: readonly SsrHeadStyleProviderId[];
   conditionalHeadProviders: readonly SsrConditionalHeadProviderRequirement[];
   registeredStyleProviders: readonly SsrRegisteredStyleProviderRequirement[];
@@ -49,35 +51,146 @@ export interface RenderedSsrStyleValidationInput {
   providers: SsrStyleProviderCss;
 }
 
-const recurrenceAuxiliaryProvider: SsrRegisteredStyleProviderRequirement = {
-  providerId: "aux:recurrences-section",
-  kind: "auxiliary",
-  moduleFileName: "recurrences-section.js",
-  requiredCssFragments: [".recurrence-indicator{"],
-};
+const recurrenceAuxiliaryProvider = cssProvider(
+  "aux:recurrences-section",
+  "recurrences-section.js",
+  ".recurrence-indicator{",
+);
 
-const inboxRuntimeStyleProviders: readonly SsrRegisteredStyleProviderRequirement[] = [
-  {
-    providerId: "runtime:inbox-interface",
-    kind: "auxiliary",
-    moduleFileName: "inbox-interface-enhancement.js",
-    requiredCssFragments: [".inbox-page {"],
-  },
-  {
-    providerId: "runtime:round-selection",
-    kind: "auxiliary",
-    moduleFileName: "round-selection-control-enhancement.js",
-    requiredCssFragments: [".system-round-selector {"],
-  },
-];
+const transactionRuntimeProviders = [
+  markerProvider("runtime:list-sorting", "list-sorting-enhancement.js", "data-list-sorting-styles"),
+  markerProvider(
+    "runtime:account-remuneration-disclosure",
+    "account-remuneration-disclosure-enhancement.js",
+    "data-account-remuneration-statement-styles",
+  ),
+  markerProvider(
+    "runtime:transaction-group-modal",
+    "transaction-group-modal-enhancement.js",
+    "data-transaction-group-modal-enhancement",
+  ),
+  markerProvider(
+    "runtime:transaction-group-member-form-guard",
+    "transaction-group-member-form-guard.js",
+    "data-transaction-group-member-form-guard",
+  ),
+  markerProvider(
+    "runtime:transaction-group-modal-layout",
+    "transaction-group-modal-layout-enhancement.js",
+    "data-transaction-group-modal-layout",
+  ),
+  markerProvider(
+    "runtime:transaction-bulk-selection",
+    "transaction-bulk-selection-enhancement.js",
+    "data-transaction-bulk-selection-enhancement",
+  ),
+  markerProvider(
+    "runtime:transaction-bulk-selection-layout",
+    "transaction-bulk-selection-layout-enhancement.js",
+    "data-transaction-bulk-selection-layout-enhancement",
+  ),
+  markerProvider(
+    "runtime:round-selection",
+    "round-selection-control-enhancement.js",
+    'data-round-selection-control="enhanced"',
+  ),
+] as const;
+
+const cardRuntimeProviders = [
+  markerProvider(
+    "runtime:invoice-month-navigation",
+    "cards-page-month-navigation.js",
+    "data-invoice-month-navigation-styles",
+  ),
+  markerProvider("runtime:list-sorting", "list-sorting-enhancement.js", "data-list-sorting-styles"),
+  markerProvider(
+    "runtime:cards-interface",
+    "cards-interface-enhancement.js",
+    "data-cards-interface-styles",
+  ),
+  markerProvider(
+    "runtime:cards-status-alignment",
+    "cards-interface-finalizer.js",
+    "data-cards-status-alignment",
+  ),
+] as const;
+
+const accountsCardsRuntimeProviders = [
+  markerProvider(
+    "runtime:card-instruments-dialog",
+    "accounts-cards-page-dialog-only.js",
+    "data-card-instruments-dedicated-dialog-styles",
+  ),
+  markerProvider(
+    "runtime:accounts-cards-neutral",
+    "accounts-cards-enhancement.js",
+    "data-accounts-cards-neutral-styles",
+  ),
+  markerProvider(
+    "runtime:account-remuneration-modal",
+    "accounts-cards-enhancement.js",
+    "data-account-remuneration-modal-styles",
+  ),
+  markerProvider(
+    "runtime:accounts-cards-standardization",
+    "accounts-cards-standardization.js",
+    "data-accounts-cards-standardization-styles",
+  ),
+] as const;
+
+const inboxRuntimeProviders = [
+  markerProvider(
+    "runtime:inbox-list-layout",
+    "inbox-list-layout-enhancement.js",
+    'id="inbox-list-layout-styles"',
+  ),
+  markerProvider(
+    "runtime:round-selection",
+    "round-selection-control-enhancement.js",
+    'data-round-selection-control="enhanced"',
+  ),
+  cssProvider("runtime:inbox-interface", "inbox-interface-enhancement.js", ".inbox-page {"),
+  markerProvider(
+    "runtime:inbox-accessibility",
+    "inbox-interface-accessibility-enhancement.js",
+    'data-inbox-interface-accessibility="enhanced"',
+  ),
+  markerProvider(
+    "runtime:inbox-table-layout",
+    "inbox-table-layout-enhancement.js",
+    'data-inbox-table-layout="enhanced"',
+  ),
+  markerProvider(
+    "runtime:inbox-corrected-filter",
+    "inbox-status-control-enhancement.js",
+    'data-inbox-corrected-filter="enhanced"',
+  ),
+  markerProvider(
+    "runtime:inbox-status-actions",
+    "inbox-status-and-actions-enhancement.js",
+    'data-inbox-status-actions="enhanced"',
+  ),
+  markerProvider(
+    "runtime:inbox-row-readability",
+    "inbox-row-readability-enhancement.js",
+    'data-inbox-row-readability="enhanced"',
+  ),
+  markerProvider(
+    "runtime:inbox-date-filter-action",
+    "inbox-date-filter-action-enhancement.js",
+    'data-inbox-date-filter-action="explicit"',
+  ),
+] as const;
 
 export const solverFinSsrStyleContracts = [
   authenticated("dashboard", "/dashboard", "dashboard-page.js", {
+    representativeHtmlFragments: ['class="dashboard-heading"'],
     pageCssFragments: [".dashboard-heading {"],
   }),
   authenticated("transactions", "/lancamentos", "transactions-page.js", {
+    representativeHtmlFragments: ['class="statement-layout"'],
     pageCssFragments: [".statement-layout {"],
-    auxiliaryStyleProviders: [recurrenceAuxiliaryProvider],
+    auxiliaryStyleProviders: [recurrenceAuxiliaryProvider, ...transactionRuntimeProviders],
     conditionalHeadProviders: [
       {
         providerId: "statement-presentation",
@@ -86,35 +199,55 @@ export const solverFinSsrStyleContracts = [
     ],
   }),
   authenticated("cards", "/cartoes", "cards-page.js", {
+    representativeHtmlFragments: ['class="cards-layout"'],
     pageCssFragments: [".cards-layout {"],
-    auxiliaryStyleProviders: [recurrenceAuxiliaryProvider],
+    auxiliaryStyleProviders: [recurrenceAuxiliaryProvider, ...cardRuntimeProviders],
   }),
   authenticated("accountsCards", "/contas-cartoes", "accounts-cards-page.js", {
+    representativeHtmlFragments: ['data-tab-panel="accounts"'],
     pageCssFragments: [".master-toolbar, .master-panel {"],
+    auxiliaryStyleProviders: accountsCardsRuntimeProviders,
   }),
   authenticated("accountRemuneration", "/remuneracao-contas", "account-remuneration-page.js", {
+    representativeHtmlFragments: ['class="configuration-list"'],
     pageCssFragments: [".configuration-card {"],
   }),
   authenticated("categories", "/categorias", "categories-page.js", {
+    representativeHtmlFragments: [
+      'class="categories-workspace"',
+      "data-categories-design-enhanced",
+    ],
     pageCssFragments: [".categories-workspace {"],
+    auxiliaryStyleProviders: [
+      cssProvider(
+        "runtime:categories-interface",
+        "categories-icons-enhancement.js",
+        ".category-summary {",
+      ),
+    ],
   }),
   authenticated("budgets", "/orcamentos", "pages.js", {
+    representativeHtmlFragments: ['class="budgets-heading"'],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
     pageCssFragments: [".budgets-heading {"],
   }),
   authenticated("inbox", "/inbox", "inbox-page.js", {
+    representativeHtmlFragments: ['class="import-layout"'],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
     pageCssFragments: [".import-layout {"],
-    auxiliaryStyleProviders: inboxRuntimeStyleProviders,
+    auxiliaryStyleProviders: inboxRuntimeProviders,
   }),
   authenticated("reports", "/relatorios", "reports-page.js", {
+    representativeHtmlFragments: ['class="reports-heading"'],
     pageCssFragments: [".reports-heading {"],
   }),
   authenticated("settings", "/configuracoes", "settings-page.js", {
+    representativeHtmlFragments: ['class="secondary-heading"'],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
     pageCssFragments: [".secondary-heading {"],
   }),
   authenticated("adminInstitutions", "/admin/instituicoes", "admin-institutions-page.js", {
+    representativeHtmlFragments: ['class="admin-heading"'],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
     pageCssFragments: [".admin-heading {"],
   }),
@@ -123,6 +256,7 @@ export const solverFinSsrStyleContracts = [
     "/admin/indices-financeiros",
     "admin-financial-indexes-page.js",
     {
+      representativeHtmlFragments: ['class="operation-grid"'],
       pageCssFragments: [".operation-grid {"],
     },
   ),
@@ -132,6 +266,7 @@ export const solverFinSsrStyleContracts = [
     shell: "public",
     moduleFileName: "login-page.js",
     pageStyleMode: "page-specific",
+    representativeHtmlFragments: ['class="login-shell"'],
     requiredHeadProviders: ["login-public"],
     conditionalHeadProviders: [],
     registeredStyleProviders: [],
@@ -182,7 +317,7 @@ export function validateSsrStyleContractParity(
       );
     }
 
-    validateRegisteredProviderDeclarations(contract, violations);
+    validateContractDeclarations(contract, violations);
   }
 
   for (const route of availableRoutes) {
@@ -201,6 +336,18 @@ export function validateRenderedSsrStyleDocument(input: RenderedSsrStyleValidati
   const { contract, html, providers } = input;
   const headCss = extractHeadStyleCss(html);
   const bodyStyleBlocks = extractBodyStyleBlocks(html);
+
+  for (const fragment of contract.representativeHtmlFragments) {
+    if (!html.includes(fragment)) {
+      violations.push(
+        formatViolation(
+          contract,
+          "representative-html",
+          `normal representative HTML is disconnected; missing ${JSON.stringify(fragment)}`,
+        ),
+      );
+    }
+  }
 
   if (headCss.trim().length === 0) {
     violations.push(formatViolation(contract, "head", "final head CSS is empty or disconnected"));
@@ -242,7 +389,7 @@ export function validateRenderedSsrStyleDocument(input: RenderedSsrStyleValidati
   }
 
   for (const provider of contract.registeredStyleProviders) {
-    validateRegisteredProviderInFinalCss(contract, provider, headCss, violations);
+    validateRegisteredProviderInFinalDocument(contract, provider, html, headCss, violations);
   }
 
   for (const conditional of contract.conditionalHeadProviders) {
@@ -302,8 +449,15 @@ export function removeStyleProviderFromDocument(html: string, providerCss: strin
   return providerCss.length === 0 ? html : html.replace(providerCss, "");
 }
 
+export function removeStyleBlockByMarker(html: string, marker: string): string {
+  return html.replace(/<style\b([^>]*)>[\s\S]*?<\/style>/gi, (styleBlock, attributes) =>
+    String(attributes).includes(marker) ? "" : styleBlock,
+  );
+}
+
 interface AuthenticatedContractOverrides {
   pageStyleMode?: SsrPageStyleMode;
+  representativeHtmlFragments?: readonly string[];
   requiredHeadProviders?: readonly SsrHeadStyleProviderId[];
   conditionalHeadProviders?: readonly SsrConditionalHeadProviderRequirement[];
   pageCssFragments?: readonly string[];
@@ -335,13 +489,40 @@ function authenticated(
     shell: "authenticated",
     moduleFileName,
     pageStyleMode,
+    representativeHtmlFragments: overrides.representativeHtmlFragments ?? [],
     requiredHeadProviders: overrides.requiredHeadProviders ?? ["shared-shell"],
     conditionalHeadProviders: overrides.conditionalHeadProviders ?? [],
     registeredStyleProviders: [...pageProvider, ...(overrides.auxiliaryStyleProviders ?? [])],
   };
 }
 
-function validateRegisteredProviderDeclarations(
+function cssProvider(
+  providerId: SsrRegisteredStyleProviderId,
+  moduleFileName: string,
+  fragment: string,
+): SsrRegisteredStyleProviderRequirement {
+  return {
+    providerId,
+    kind: "auxiliary",
+    moduleFileName,
+    requiredCssFragments: [fragment],
+  };
+}
+
+function markerProvider(
+  providerId: SsrRegisteredStyleProviderId,
+  moduleFileName: string,
+  marker: string,
+): SsrRegisteredStyleProviderRequirement {
+  return {
+    providerId,
+    kind: "auxiliary",
+    moduleFileName,
+    requiredStyleBlockMarkers: [marker],
+  };
+}
+
+function validateContractDeclarations(
   contract: SsrStyleRouteContract,
   violations: string[],
 ): void {
@@ -368,6 +549,22 @@ function validateRegisteredProviderDeclarations(
       ),
     );
   }
+  if (contract.representativeHtmlFragments.length === 0) {
+    violations.push(
+      formatViolation(
+        contract,
+        "representative-html",
+        "route has no executable normal-state HTML fragment",
+      ),
+    );
+  }
+  for (const fragment of contract.representativeHtmlFragments) {
+    if (fragment.trim().length === 0) {
+      violations.push(
+        formatViolation(contract, "representative-html", "route has an empty HTML fragment"),
+      );
+    }
+  }
 
   const seenProviderIds = new Set<string>();
   for (const provider of contract.registeredStyleProviders) {
@@ -377,22 +574,25 @@ function validateRegisteredProviderDeclarations(
       );
     }
     seenProviderIds.add(provider.providerId);
-    if (provider.requiredCssFragments.length === 0) {
+
+    const cssFragments = provider.requiredCssFragments ?? [];
+    const styleMarkers = provider.requiredStyleBlockMarkers ?? [];
+    if (cssFragments.length === 0 && styleMarkers.length === 0) {
       violations.push(
         formatViolation(
           contract,
           provider.providerId,
-          "registered provider has no executable CSS fragments",
+          "registered provider has no executable CSS evidence",
         ),
       );
     }
-    for (const fragment of provider.requiredCssFragments) {
+    for (const fragment of [...cssFragments, ...styleMarkers]) {
       if (fragment.trim().length === 0) {
         violations.push(
           formatViolation(
             contract,
             provider.providerId,
-            "registered provider has an empty CSS fragment",
+            "registered provider has an empty CSS evidence fragment",
           ),
         );
       }
@@ -412,36 +612,46 @@ function validateRegisteredProviderDeclarations(
   }
 }
 
-function validateRegisteredProviderInFinalCss(
+function validateRegisteredProviderInFinalDocument(
   contract: SsrStyleRouteContract,
   provider: SsrRegisteredStyleProviderRequirement,
+  html: string,
   finalCss: string,
   violations: string[],
 ): void {
-  if (provider.requiredCssFragments.length === 0) {
-    violations.push(
-      formatViolation(
-        contract,
-        provider.providerId,
-        "registered provider has no executable CSS fragments",
-      ),
-    );
-    return;
-  }
+  const cssFragments = provider.requiredCssFragments ?? [];
+  const styleMarkers = provider.requiredStyleBlockMarkers ?? [];
 
-  for (const fragment of provider.requiredCssFragments) {
-    if (fragment.trim().length === 0) {
-      violations.push(
-        formatViolation(contract, provider.providerId, "registered provider returned empty CSS"),
-      );
-      continue;
-    }
+  for (const fragment of cssFragments) {
     if (!finalCss.includes(fragment)) {
       violations.push(
         formatViolation(
           contract,
           provider.providerId,
           `registered ${provider.kind} provider is disconnected from final HTML; missing CSS fragment ${JSON.stringify(fragment)} from ${provider.moduleFileName}`,
+        ),
+      );
+    }
+  }
+
+  for (const marker of styleMarkers) {
+    const css = findStyleBlockCssByMarker(html, marker);
+    if (css === undefined) {
+      violations.push(
+        formatViolation(
+          contract,
+          provider.providerId,
+          `registered ${provider.kind} provider is disconnected from final HTML; missing style block marker ${JSON.stringify(marker)} from ${provider.moduleFileName}`,
+        ),
+      );
+      continue;
+    }
+    if (css.trim().length === 0) {
+      violations.push(
+        formatViolation(
+          contract,
+          provider.providerId,
+          `registered ${provider.kind} provider returned empty CSS in style block ${JSON.stringify(marker)} from ${provider.moduleFileName}`,
         ),
       );
     }
@@ -464,6 +674,13 @@ function validateProviderInFinalCss(
       formatViolation(contract, providerId, "provider is disconnected from final HTML"),
     );
   }
+}
+
+function findStyleBlockCssByMarker(html: string, marker: string): string | undefined {
+  for (const match of html.matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi)) {
+    if ((match[1] ?? "").includes(marker)) return match[2] ?? "";
+  }
+  return undefined;
 }
 
 function extractStyleBlocks(fragment: string): string[] {
