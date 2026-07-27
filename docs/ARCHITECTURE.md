@@ -45,8 +45,9 @@ Fontes principais:
 - `apps/web/src/dev-server/shell.ts`: documento HTML e shell autenticado;
 - `apps/web/src/dev-server/shared-styles.ts`: CSS compartilhado e dialogos;
 - renderers em `apps/web/src/dev-server/*-page.ts` e `pages.ts`: CSS especifico;
+- `apps/web/src/dev-server/recurrences-section.ts`: CSS auxiliar de recorrencias;
 - `apps/web/src/dev-server/statement-presentation.ts`: CSS condicional do Extrato;
-- `apps/web/src/dev-server/ssr-style-contract.ts`: manifesto tipado por rota;
+- `apps/web/src/dev-server/ssr-style-contract.ts`: manifesto tipado por rota e provedor;
 - `scripts/validate-web-ssr-styles.mjs`: verificacao executavel do HTML final.
 
 ### Invariantes do contrato
@@ -57,18 +58,21 @@ Toda rota com `status: "available"` deve ter exatamente um contrato, inclusive:
 - rotas ocultas na navegacao, como `/remuneracao-contas`;
 - rotas master `/admin/instituicoes` e `/admin/indices-financeiros`.
 
-O manifesto registra rota, renderer, shell, classificacao de CSS e provedores obrigatorios/condicionais. O build falha quando:
+O manifesto registra rota, renderer, shell, classificacao de CSS, provedores de cabecalho, o provedor especifico `page:<routeId>`, auxiliares independentes e gatilhos condicionais. O build falha quando:
 
 - a cobertura diverge da fonte canonica;
-- um provedor retorna CSS vazio;
-- o resultado do provedor existe no codigo mas nao esta incorporado ao HTML final;
-- uma rota `page-specific` nao possui CSS especifico alem dos provedores compartilhados;
+- um provedor compartilhado ou condicional retorna CSS vazio;
+- o resultado de um provedor compartilhado/condicional existe no codigo mas nao esta incorporado ao HTML final;
+- um fragmento discriminante de provedor de pagina ou auxiliar registrado nao aparece no CSS final;
+- uma rota `page-specific` nao registra exatamente um provedor de pagina;
+- uma rota `shared-only` registra silenciosamente um provedor de pagina;
 - o CSS de navegacao autenticada nao aparece no corpo;
-- o conteudo representativo nao ativa ou nao recebe o CSS condicional esperado.
+- o renderer real nao produz o fragmento HTML necessario para ativar um provedor condicional;
+- o provedor condicional ativado nao aparece no cabecalho final.
 
-Rotas que dependem apenas do CSS compartilhado devem declarar `shared-only`; essa classificacao nao e inferida silenciosamente.
+O portao nao infere CSS especifico apenas pela existencia de qualquer regra remanescente. Cada provedor de pagina ou auxiliar possui identificador e fragmentos CSS proprios; os controles negativos removem um provedor por vez, mantendo os demais presentes.
 
-A validacao renderiza as funcoes reais com `fetch` ficticio e seguro. Ela nao acessa API, banco, rede externa ou secrets e nao exige `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
+A validacao renderiza as funcoes reais com `fetch` ficticio e seguro. Para `/lancamentos`, contas e categorias recebem respostas de sucesso vazias, permitindo que o renderer real produza `.statement-layout` e exercite `statement-presentation`. Ela nao acessa API, banco, rede externa ou secrets e nao exige `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
 
 O documento dono das regras operacionais do shell e `docs/APP_SHELL.md`; `docs/DESIGN_SYSTEM.md` descreve a propriedade visual dos provedores.
 
