@@ -1,4 +1,6 @@
+import { once } from "node:events";
 import { existsSync } from "node:fs";
+import { request } from "node:http";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -55,92 +57,65 @@ const violations = [
 
 validateProviderOutputs(providers, violations);
 
-const renderers = new Map([
-  ["signIn", () => webModule.renderLoginPage()],
-  ["dashboard", () => webModule.renderDashboardPage("ssr-style-fixture-token")],
-  [
-    "transactions",
-    () =>
-      webModule.renderTransactionsPage(
-        "ssr-style-fixture-token",
-        new URL("http://solverfin.test/lancamentos?month=2026-07"),
-      ),
-  ],
-  [
-    "cards",
-    () =>
-      webModule.renderCardsPage(
-        "ssr-style-fixture-token",
-        new URL("http://solverfin.test/cartoes?month=2026-07"),
-      ),
-  ],
-  ["accountsCards", () => webModule.renderAccountsCardsPage("ssr-style-fixture-token")],
-  ["accountRemuneration", () => webModule.renderAccountRemunerationPage("ssr-style-fixture-token")],
-  ["categories", () => webModule.renderCategoriesPage("ssr-style-fixture-token")],
-  ["budgets", () => webModule.renderBudgetsPage("ssr-style-fixture-token")],
-  ["inbox", () => webModule.renderInboxPage("ssr-style-fixture-token")],
-  [
-    "reports",
-    () =>
-      webModule.renderReportsPage(
-        "ssr-style-fixture-token",
-        new URL("http://solverfin.test/relatorios?month=2026-07"),
-      ),
-  ],
-  ["settings", () => webModule.renderSettingsPage("ssr-style-fixture-token")],
-  [
-    "adminInstitutions",
-    () =>
-      webModule.renderAdminInstitutionsPage(
-        "ssr-style-fixture-token",
-        new URL("http://solverfin.test/admin/instituicoes"),
-      ),
-  ],
-  [
-    "adminFinancialIndexes",
-    () => webModule.renderAdminFinancialIndexesPage("ssr-style-fixture-token"),
-  ],
-]);
-
-const rendererIds = [...renderers.keys()].sort();
-const contractIds = solverFinSsrStyleContracts.map((contract) => contract.routeId).sort();
-if (JSON.stringify(rendererIds) !== JSON.stringify(contractIds)) {
+if (typeof webModule.createSolverFinWebServer !== "function") {
   violations.push(
-    `[SolverFin SSR style contract] route=all provider=renderer-registry module=scripts/validate-web-ssr-styles.mjs: renderer registry differs from the canonical style contract (renderers=${rendererIds.join(
-      ",",
-    )}; contracts=${contractIds.join(",")})`,
+    "[SolverFin SSR style contract] route=all provider=runtime-server module=apps/web/dist/dev-server.js: createSolverFinWebServer() is unavailable",
   );
+  fail(violations);
 }
 
 const originalFetch = globalThis.fetch;
 globalThis.fetch = async (input) => fixtureApiResponse(input);
 
+const server = webModule.createSolverFinWebServer();
 const renderedDocuments = new Map();
-try {
-  for (const contract of solverFinSsrStyleContracts) {
-    const renderer = renderers.get(contract.routeId);
-    if (!renderer) continue;
 
-    try {
-      const html = await renderer();
-      renderedDocuments.set(contract.routeId, html);
-      violations.push(
-        ...validateRenderedSsrStyleDocument({ contract, html, providers }).map(
-          (violation) => `${violation} [actual renderer]`,
-        ),
-      );
-    } catch (error) {
-      violations.push(
-        `[SolverFin SSR style contract] route=${contract.path} provider=renderer module=${contract.moduleFileName}: renderer failed (${formatError(
-          error,
-        )})`,
-      );
+try {
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    violations.push(
+      "[SolverFin SSR style contract] route=all provider=runtime-server module=apps/web/dist/dev-server.js: server did not expose a TCP address",
+    );
+  } else {
+    for (const contract of solverFinSsrStyleContracts) {
+      try {
+        const response = await requestRenderedRoute(
+          address.port,
+          representativePath(contract.path),
+          contract.shell === "authenticated",
+        );
+
+        if (response.statusCode !== 200) {
+          violations.push(
+            `[SolverFin SSR style contract] route=${contract.path} provider=runtime-dispatch module=${contract.moduleFileName}: actual SSR route returned status ${response.statusCode}${response.location ? ` and location ${response.location}` : ""}`,
+          );
+          continue;
+        }
+
+        renderedDocuments.set(contract.routeId, response.body);
+        violations.push(
+          ...validateRenderedSsrStyleDocument({ contract, html: response.body, providers }).map(
+            (violation) => `${violation} [actual HTTP renderer]`,
+          ),
+        );
+      } catch (error) {
+        violations.push(
+          `[SolverFin SSR style contract] route=${contract.path} provider=runtime-server module=${contract.moduleFileName}: HTTP renderer failed (${formatError(
+            error,
+          )})`,
+        );
+      }
     }
   }
 } finally {
+  server.close();
+  if (server.listening) await once(server, "close");
   globalThis.fetch = originalFetch;
 }
 
+validateRuntimePostProcessing(renderedDocuments, violations);
 runNegativeControls({
   providers,
   renderedDocuments,
@@ -152,8 +127,45 @@ runNegativeControls({
 if (violations.length > 0) fail(violations);
 
 console.log(
-  `[SolverFin SSR style contract] validated ${solverFinSsrStyleContracts.length} available routes, all registered providers, actual SSR HTML and negative controls`,
+  `[SolverFin SSR style contract] validated ${solverFinSsrStyleContracts.length} available routes through the actual HTTP server, all registered providers, runtime post-processing and negative controls`,
 );
+
+function representativePath(pathname) {
+  if (pathname === "/lancamentos" || pathname === "/cartoes" || pathname === "/relatorios") {
+    return `${pathname}?month=2026-07`;
+  }
+  return pathname;
+}
+
+function requestRenderedRoute(port, requestPath, authenticated) {
+  return new Promise((resolve, reject) => {
+    const headers = authenticated
+      ? { cookie: "sf_session_token=ssr-style-fixture-token" }
+      : undefined;
+    const clientRequest = request(
+      {
+        host: "127.0.0.1",
+        port,
+        path: requestPath,
+        method: "GET",
+        headers,
+      },
+      (response) => {
+        const chunks = [];
+        response.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+        response.on("end", () => {
+          resolve({
+            statusCode: response.statusCode ?? 0,
+            location: response.headers.location,
+            body: Buffer.concat(chunks).toString("utf8"),
+          });
+        });
+      },
+    );
+    clientRequest.on("error", reject);
+    clientRequest.end();
+  });
+}
 
 function fixtureApiResponse(input) {
   const requestUrl =
@@ -162,6 +174,8 @@ function fixtureApiResponse(input) {
 
   if (pathname === "/api/accounts") return jsonResponse({ accounts: [] });
   if (pathname === "/api/categories") return jsonResponse({ categories: [] });
+  if (pathname === "/api/cards") return jsonResponse({ cards: [] });
+  if (pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
 
   return new Response(
     JSON.stringify({
@@ -189,6 +203,34 @@ function validateProviderOutputs(providerCss, target) {
     if (typeof css !== "string" || css.trim().length === 0) {
       target.push(
         `[SolverFin SSR style contract] route=all provider=${providerName} module=provider: provider returned empty CSS`,
+      );
+    }
+  }
+}
+
+function validateRuntimePostProcessing(documents, target) {
+  const inboxHtml = documents.get("inbox");
+  if (!inboxHtml) return;
+
+  const runtimeRequirements = [
+    {
+      providerId: "runtime:inbox-interface",
+      moduleFileName: "inbox-interface-enhancement.js",
+      fragment: ".inbox-page {",
+    },
+    {
+      providerId: "runtime:round-selection",
+      moduleFileName: "round-selection-control-enhancement.js",
+      fragment: "data-selection-control-enhanced",
+    },
+  ];
+
+  for (const requirement of runtimeRequirements) {
+    if (!inboxHtml.includes(requirement.fragment)) {
+      target.push(
+        `[SolverFin SSR style contract] route=/inbox provider=${requirement.providerId} module=${requirement.moduleFileName}: runtime post-processing is disconnected from final HTTP HTML; missing ${JSON.stringify(
+          requirement.fragment,
+        )}`,
       );
     }
   }
@@ -337,7 +379,7 @@ function runNegativeControls({
         providers: providerCss,
       }),
       `provider=${conditional.providerId}`,
-      "conditional style disconnection on actual renderer",
+      "conditional style disconnection on actual HTTP renderer",
       target,
     );
 
@@ -348,9 +390,24 @@ function runNegativeControls({
         providers: providerCss,
       }),
       "representative renderer did not activate conditional provider trigger",
-      "conditional trigger missing on actual renderer",
+      "conditional trigger missing on actual HTTP renderer",
       target,
     );
+  }
+
+  const inboxHtml = documents.get("inbox");
+  if (inboxHtml) {
+    const brokenInbox = inboxHtml.replace(".inbox-page {", "");
+    if (brokenInbox.includes(".inbox-page {")) {
+      target.push(
+        "[SolverFin SSR style contract] route=/inbox provider=runtime:inbox-interface module=inbox-interface-enhancement.js: negative control could not remove runtime CSS fragment",
+      );
+    }
+    if (!inboxHtml.includes(".inbox-page {") || brokenInbox.includes(".inbox-page {")) {
+      target.push(
+        "[SolverFin SSR style contract] route=/inbox provider=runtime:inbox-interface module=inbox-interface-enhancement.js: validator did not prove runtime post-processing disconnection",
+      );
+    }
   }
 
   const missingContractRoutes = [
