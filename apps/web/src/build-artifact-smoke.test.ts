@@ -27,8 +27,14 @@ assert.equal(existsSync(staleArtifact), false, "web build must remove stale dist
 
 const compiledEntry = path.join(webDist, "dev-server.js");
 const compiledShell = path.join(webDist, "dev-server", "shell.js");
+const compiledSharedStyles = path.join(webDist, "dev-server", "shared-styles.js");
 assert.equal(existsSync(compiledEntry), true, "web build must emit dist/dev-server.js");
 assert.equal(existsSync(compiledShell), true, "web build must emit the SSR shell module");
+assert.equal(
+  existsSync(compiledSharedStyles),
+  true,
+  "web build must emit the shared SSR style provider",
+);
 
 const shellModule = (await import(
   `${pathToFileURL(compiledShell).href}?build-smoke=${Date.now()}`
@@ -40,14 +46,20 @@ const shellModule = (await import(
     styles: string;
   }): string;
 };
+const sharedStylesModule = (await import(
+  `${pathToFileURL(compiledSharedStyles).href}?build-smoke=${Date.now()}`
+)) as {
+  sharedShellStyles(): string;
+};
 
 const html = shellModule.renderAuthenticatedShellDocument({
   activePathname: "/dashboard",
   content: "<section>Resumo financeiro</section>",
   currentLabel: "Resumo",
-  styles: "",
+  styles: `${sharedStylesModule.sharedShellStyles()}\n.build-smoke-page { display: block; }`,
 });
 
 assert.match(html, /<!doctype html>/i);
+assert.match(html, /<style>[\s\S]*--primary:\s*#0f3d4c[\s\S]*\.build-smoke-page/);
 assert.match(html, /<nav[^>]*aria-label="Menu principal"[\s\S]*?<svg\b/);
 assert.match(html, /<button[^>]*data-logout[^>]*>[\s\S]*?<svg\b/);
