@@ -19,6 +19,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`PRODUCT.md`](./PRODUCT.md): escopo e principios do produto.
 - [`BRAND.md`](./BRAND.md): identidade, tom, experiencia e direcao visual.
 - [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, componentes e orientacoes de interface.
+- [`REPORTS.md`](./REPORTS.md): estado atual, regras funcionais e evolucao planejada da area de Relatorios.
 - [`WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md): cobertura esperada de manutencao web.
 
 ## Arquitetura, seguranca e operacao
