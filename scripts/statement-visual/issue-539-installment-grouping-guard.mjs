@@ -26,13 +26,21 @@ try {
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const desktop = await waitForGuardedLine(fixture.installmentTransactionId);
   check(desktop.badge === fixture.badge, "Canonical installment badge is missing", desktop);
-  check(desktop.selectionDisabled, "Canonical installment remained selectable for grouping", desktop);
+  check(
+    desktop.selectionDisabled,
+    "Canonical installment remained selectable for grouping",
+    desktop,
+  );
   check(
     desktop.selectionLabel.includes("indisponível para agrupamento"),
     "Disabled grouping selection is not explained accessibly",
     desktop,
   );
-  check(desktop.installmentQueries === 1, "Grouping guard added another installments query", desktop);
+  check(
+    desktop.installmentQueries === 1,
+    "Grouping guard added another installments query",
+    desktop,
+  );
 
   const apiGuard = await evaluate(
     browser.cdp,
