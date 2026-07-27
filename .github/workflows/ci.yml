@@ -85,44 +85,10 @@ jobs:
         run: npm run db:seed
 
       - name: Test
-        id: tests
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run test 2>&1 | tee canonical-test-output.log
-          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
-
-      - name: Upload canonical test output
-        uses: actions/upload-artifact@v4
-        with:
-          name: canonical-test-output
-          path: canonical-test-output.log
-          if-no-files-found: error
-
-      - name: Propagate test result
-        if: steps.tests.outputs.exit_code != '0'
-        run: exit 1
+        run: npm run test
 
       - name: Build
-        id: build
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run build 2>&1 | tee canonical-build-output.log
-          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
-
-      - name: Upload canonical build output
-        uses: actions/upload-artifact@v4
-        with:
-          name: canonical-build-output
-          path: canonical-build-output.log
-          if-no-files-found: error
-
-      - name: Propagate build result
-        if: steps.build.outputs.exit_code != '0'
-        run: exit 1
+        run: npm run build
 
   integration-api-postgres:
     name: Integration API + PostgreSQL
