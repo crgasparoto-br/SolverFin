@@ -91,7 +91,9 @@ export function validateSsrStyleContractParity(
 
     const route = availableByPath.get(contract.path);
     if (!route) {
-      violations.push(formatViolation(contract, "coverage", "contract does not match an available route"));
+      violations.push(
+        formatViolation(contract, "coverage", "contract does not match an available route"),
+      );
       continue;
     }
     if (route.id !== contract.routeId) {
@@ -127,9 +129,7 @@ export function validateSsrStyleContractParity(
   return violations;
 }
 
-export function validateRenderedSsrStyleDocument(
-  input: RenderedSsrStyleValidationInput,
-): string[] {
+export function validateRenderedSsrStyleDocument(input: RenderedSsrStyleValidationInput): string[] {
   const violations: string[] = [];
   const { contract, html, providers } = input;
   const headCss = extractHeadStyleCss(html);
@@ -141,7 +141,9 @@ export function validateRenderedSsrStyleDocument(
 
   if (contract.shell === "public") {
     if (!contract.requiredHeadProviders.includes("login-public")) {
-      violations.push(formatViolation(contract, "login-public", "public route is not explicitly classified"));
+      violations.push(
+        formatViolation(contract, "login-public", "public route is not explicitly classified"),
+      );
     }
     if (headCss.trim().length === 0) {
       violations.push(formatViolation(contract, "login-public", "public CSS is empty"));
@@ -150,7 +152,9 @@ export function validateRenderedSsrStyleDocument(
   }
 
   if (!contract.requiredHeadProviders.includes("shared-shell")) {
-    violations.push(formatViolation(contract, "shared-shell", "authenticated route omitted shared provider"));
+    violations.push(
+      formatViolation(contract, "shared-shell", "authenticated route omitted shared provider"),
+    );
   }
 
   const providerValues = new Map<SsrHeadStyleProviderId, string>([
@@ -161,7 +165,13 @@ export function validateRenderedSsrStyleDocument(
 
   for (const providerId of contract.requiredHeadProviders) {
     if (providerId === "login-public") continue;
-    validateProviderInFinalCss(contract, providerId, providerValues.get(providerId) ?? "", headCss, violations);
+    validateProviderInFinalCss(
+      contract,
+      providerId,
+      providerValues.get(providerId) ?? "",
+      headCss,
+      violations,
+    );
   }
 
   const shouldRequireConditional =
@@ -170,7 +180,13 @@ export function validateRenderedSsrStyleDocument(
 
   if (shouldRequireConditional) {
     for (const providerId of contract.conditionalHeadProviders) {
-      validateProviderInFinalCss(contract, providerId, providerValues.get(providerId) ?? "", headCss, violations);
+      validateProviderInFinalCss(
+        contract,
+        providerId,
+        providerValues.get(providerId) ?? "",
+        headCss,
+        violations,
+      );
     }
   }
 
@@ -229,10 +245,7 @@ export function extractBodyStyleBlocks(html: string): string[] {
 }
 
 export function replaceHeadStyleCss(html: string, css: string): string {
-  return html.replace(
-    /(<head\b[^>]*>[\s\S]*?<style\b[^>]*>)[\s\S]*?(<\/style>)/i,
-    `$1${css}$2`,
-  );
+  return html.replace(/(<head\b[^>]*>[\s\S]*?<style\b[^>]*>)[\s\S]*?(<\/style>)/i, `$1${css}$2`);
 }
 
 export function removeStyleProviderFromDocument(html: string, providerCss: string): string {
@@ -276,12 +289,17 @@ function validateProviderInFinalCss(
     return;
   }
   if (!finalCss.includes(providerCss)) {
-    violations.push(formatViolation(contract, providerId, "provider is disconnected from final HTML"));
+    violations.push(
+      formatViolation(contract, providerId, "provider is disconnected from final HTML"),
+    );
   }
 }
 
 function extractStyleBlocks(fragment: string): string[] {
-  return Array.from(fragment.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi), (match) => match[1] ?? "");
+  return Array.from(
+    fragment.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi),
+    (match) => match[1] ?? "",
+  );
 }
 
 function removeFirst(value: string, fragment: string): string {
