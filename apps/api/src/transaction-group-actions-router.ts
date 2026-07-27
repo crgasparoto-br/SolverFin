@@ -1,6 +1,7 @@
 import { TenantAuthorizationError, TenantError } from "@solverfin/domain";
 
 import { auth } from "./auth-service.js";
+import { query } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   cloneTransactionGroupForContext,
@@ -15,6 +16,12 @@ import { resolveRequestTenantContext } from "./tenant-context.js";
 import { handleTransactionBulkActionsApiRequest } from "./transaction-bulk-actions-router.js";
 
 const BASE_PATH = "/api/transaction-groups";
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+interface GroupMemberScopeRow {
+  id: string;
+  installmentId: string | null;
+}
 
 export async function handleTransactionGroupActionsApiRequest(
   request: ApiRequest,
@@ -33,6 +40,13 @@ export async function handleTransactionGroupActionsApiRequest(
       request.query.get("profileId") ?? undefined,
     );
     const body = requireObjectBody(request.body);
+
+    if (route.action === "create_group") {
+      await assertCreateGroupHasNoCanonicalInstallments(context, body);
+      return undefined;
+    }
+
+    await assertExistingGroupHasNoCanonicalInstallments(context, route.groupId);
 
     if (route.action === "status") {
       const status = String(body.status ?? "");
@@ -99,6 +113,7 @@ export async function handleTransactionGroupActionsApiRequest(
 }
 
 type ActionRoute =
+  | { action: "create_group" }
   | { action: "status" | "clone_group" | "void_group"; groupId: string }
   | {
       action: "update_member" | "clone_member" | "void_member";
@@ -107,6 +122,10 @@ type ActionRoute =
     };
 
 function matchActionRoute(method: string, pathname: string): ActionRoute | undefined {
+  if (method === "POST" && pathname === BASE_PATH) {
+    return { action: "create_group" };
+  }
+
   const statusMatch = new RegExp(`^${BASE_PATH}/([^/]+)/status$`).exec(pathname);
   if (method === "PATCH" && statusMatch?.[1]) {
     return { action: "status", groupId: decodeURIComponent(statusMatch[1]) };
@@ -141,6 +160,56 @@ function matchActionRoute(method: string, pathname: string): ActionRoute | undef
   }
 
   return undefined;
+}
+
+async function assertCreateGroupHasNoCanonicalInstallments(
+  context: { organizationId: string; financialProfileId: string },
+  body: Record<string, unknown>,
+): Promise<void> {
+  if (!Array.isArray(body.memberIds) || body.memberIds.some((item) => typeof item !== "string")) {
+    return;
+  }
+
+  const memberIds = [...new Set(body.memberIds.map(String))];
+  if (memberIds.length < 2 || memberIds.some((memberId) => !UUID_PATTERN.test(memberId))) return;
+
+  const rows = await query<GroupMemberScopeRow>(
+    `select "id", "installmentId"
+       from "Transaction"
+      where "organizationId" = $1
+        and "financialProfileId" = $2
+        and "id" = any($3::uuid[])`,
+    [context.organizationId, context.financialProfileId, memberIds],
+  );
+
+  if (rows.length !== memberIds.length) return;
+  if (rows.some((row) => row.installmentId !== null)) throwCanonicalInstallmentGroupBlocked();
+}
+
+async function assertExistingGroupHasNoCanonicalInstallments(
+  context: { organizationId: string; financialProfileId: string },
+  groupId: string,
+): Promise<void> {
+  if (!UUID_PATTERN.test(groupId)) return;
+
+  const rows = await query<GroupMemberScopeRow>(
+    `select "id", "installmentId"
+       from "Transaction"
+      where "organizationId" = $1
+        and "financialProfileId" = $2
+        and "transactionGroupId" = $3`,
+    [context.organizationId, context.financialProfileId, groupId],
+  );
+
+  if (rows.some((row) => row.installmentId !== null)) throwCanonicalInstallmentGroupBlocked();
+}
+
+function throwCanonicalInstallmentGroupBlocked(): never {
+  throw requestError(
+    "TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE",
+    "Parcelas canônicas não podem participar de agrupamentos. Desagrupe para manter a parcela.",
+    409,
+  );
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
