@@ -51,6 +51,7 @@ npm run lint:fix
 npm run typecheck
 npm run test
 npm run test:integration
+npm run validate:ssr-styles --workspace @solverfin/web
 npm run build
 npm run validate
 ```
@@ -122,6 +123,28 @@ npm run test:integration --workspace @solverfin/api
 
 O teste cria dados ficticios adicionais no banco configurado em `DATABASE_URL`. Use uma base local ou efemera de teste.
 
+## Contrato de estilos SSR
+
+O catalogo canonico de rotas fica em `apps/web/src/app-shell/routes.ts`. Toda rota com `status: "available"` deve possuir uma entrada correspondente em `apps/web/src/dev-server/ssr-style-contract.ts`, incluindo `/login`, rotas ocultas da navegacao e rotas master.
+
+Executar o portao diretamente:
+
+```bash
+npm run validate:ssr-styles --workspace @solverfin/web
+```
+
+O comando limpa e recompila `apps/web/dist`, renderiza as paginas reais com respostas `fetch` ficticias e verifica o CSS efetivamente conectado ao HTML. Ele falha quando encontra:
+
+- rota disponível sem contrato ou contrato sem rota disponível;
+- CSS publico, compartilhado, especifico, auxiliar ou condicional vazio;
+- provedor registrado mas ausente da composicao final;
+- rota `page-specific` sem regras especificas;
+- CSS de navegacao autenticada desconectado do corpo do documento.
+
+Uma rota pode usar somente CSS compartilhado quando o manifesto a classifica explicitamente como `shared-only`.
+
+O portao nao depende de API em execucao, banco, rede externa, secrets nem de `apps/web/dist` preexistente. O documento dono do contrato e `docs/APP_SHELL.md`.
+
 ## CI
 
 O workflow `.github/workflows/ci.yml` roda em `pull_request` e em `push` para `main` com dois jobs isolados.
@@ -141,6 +164,8 @@ npm run typecheck
 npm run test
 npm run build
 ```
+
+`npm run build` executa o contrato de estilos SSR por meio do build de `@solverfin/web`. O YAML nao mantem uma lista paralela de rotas ou provedores.
 
 Para reproduzir localmente:
 
@@ -195,7 +220,7 @@ Documentos obrigatorios antes de implementar issues:
 - `docs/STATUS_MATRIX.md`: estado observado do MVP por area.
 - `docs/adr/README.md`: processo de ADRs e indice de decisoes.
 
-Contratos especificos devem ser consultados quando a issue tocar o respectivo dominio, por exemplo cartoes (`docs/CARDS.md`), autenticacao (`docs/AUTH.md`), tenant (`docs/TENANT.md`), privacidade (`docs/PRIVACY.md`), importacao (`docs/IMPORTS.md`), Inbox (`docs/BANK_MESSAGE_INBOX.md`), regras automaticas (`docs/AUTOMATION_RULES.md`), conciliacao (`docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`) e sugestoes revisaveis (`docs/AI_REVIEW_QUEUE.md`).
+Contratos especificos devem ser consultados quando a issue tocar o respectivo dominio, por exemplo shell e estilos SSR (`docs/APP_SHELL.md`), cartoes (`docs/CARDS.md`), autenticacao (`docs/AUTH.md`), tenant (`docs/TENANT.md`), privacidade (`docs/PRIVACY.md`), importacao (`docs/IMPORTS.md`), Inbox (`docs/BANK_MESSAGE_INBOX.md`), regras automaticas (`docs/AUTOMATION_RULES.md`), conciliacao (`docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`) e sugestoes revisaveis (`docs/AI_REVIEW_QUEUE.md`).
 
 Arquivos historicos usados apenas para criar o backlog inicial nao fazem parte da documentacao viva. Issues abertas no GitHub sao a fonte de verdade para planejamento atual.
 
@@ -230,6 +255,7 @@ Arquivos historicos usados apenas para criar o backlog inicial nao fazem parte d
 |-- docs/
 |   |-- README.md
 |   |-- ARCHITECTURE.md
+|   |-- APP_SHELL.md
 |   |-- PRODUCT.md
 |   |-- STATUS_MATRIX.md
 |   |-- CARDS.md
