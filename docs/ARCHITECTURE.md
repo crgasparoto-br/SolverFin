@@ -42,13 +42,15 @@ O SSR web mantem CSS como strings retornadas por funcoes TypeScript e incorporad
 Fontes principais:
 
 - `apps/web/src/app-shell/routes.ts`: catalogo canonico de rotas e status;
+- `apps/web/src/dev-server.ts`: servidor, despacho HTTP e pos-processamentos por rota;
 - `apps/web/src/dev-server/shell.ts`: documento HTML e shell autenticado;
+- `apps/web/src/dev-server/http.ts`: finalizacao comum antes do envio do HTML;
 - `apps/web/src/dev-server/shared-styles.ts`: CSS compartilhado e dialogos;
 - renderers em `apps/web/src/dev-server/*-page.ts` e `pages.ts`: CSS especifico;
 - `apps/web/src/dev-server/recurrences-section.ts`: CSS auxiliar de recorrencias;
 - `apps/web/src/dev-server/statement-presentation.ts`: CSS condicional do Extrato;
 - `apps/web/src/dev-server/ssr-style-contract.ts`: manifesto tipado por rota e provedor;
-- `scripts/validate-web-ssr-styles.mjs`: verificacao executavel do HTML final.
+- `scripts/validate-web-ssr-styles.mjs`: verificacao executavel do HTML final servido.
 
 ### Invariantes do contrato
 
@@ -58,21 +60,22 @@ Toda rota com `status: "available"` deve ter exatamente um contrato, inclusive:
 - rotas ocultas na navegacao, como `/remuneracao-contas`;
 - rotas master `/admin/instituicoes` e `/admin/indices-financeiros`.
 
-O manifesto registra rota, renderer, shell, classificacao de CSS, provedores de cabecalho, o provedor especifico `page:<routeId>`, auxiliares independentes e gatilhos condicionais. O build falha quando:
+O manifesto registra rota, renderer, shell, classificacao de CSS, provedores de cabecalho, o provedor especifico `page:<routeId>`, auxiliares independentes, provedores inseridos no runtime e gatilhos condicionais. O build falha quando:
 
 - a cobertura diverge da fonte canonica;
+- uma rota canonica disponivel redireciona, retorna erro ou deixa de ser servida pelo despacho real;
 - um provedor compartilhado ou condicional retorna CSS vazio;
 - o resultado de um provedor compartilhado/condicional existe no codigo mas nao esta incorporado ao HTML final;
-- um fragmento discriminante de provedor de pagina ou auxiliar registrado nao aparece no CSS final;
+- um fragmento discriminante de provedor de pagina, auxiliar ou runtime registrado nao aparece no CSS final;
 - uma rota `page-specific` nao registra exatamente um provedor de pagina;
 - uma rota `shared-only` registra silenciosamente um provedor de pagina;
 - o CSS de navegacao autenticada nao aparece no corpo;
-- o renderer real nao produz o fragmento HTML necessario para ativar um provedor condicional;
+- o HTML real nao produz o fragmento necessario para ativar um provedor condicional;
 - o provedor condicional ativado nao aparece no cabecalho final.
 
-O portao nao infere CSS especifico apenas pela existencia de qualquer regra remanescente. Cada provedor de pagina ou auxiliar possui identificador e fragmentos CSS proprios; os controles negativos removem um provedor por vez, mantendo os demais presentes.
+O portao nao infere CSS especifico apenas pela existencia de qualquer regra remanescente. Cada provedor de pagina, auxiliar ou runtime possui identificador e fragmentos CSS proprios; os controles negativos removem um provedor por vez, mantendo os demais presentes.
 
-A validacao renderiza as funcoes reais com `fetch` ficticio e seguro. Para `/lancamentos`, contas e categorias recebem respostas de sucesso vazias, permitindo que o renderer real produza `.statement-layout` e exercite `statement-presentation`. Ela nao acessa API, banco, rede externa ou secrets e nao exige `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
+A validacao inicia `createSolverFinWebServer()` em `127.0.0.1` com porta efemera e requisita todas as rotas canonicas. Rotas autenticadas recebem cookie ficticio; chamadas internas usam `fetch` ficticio e seguro. Dessa forma, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos e `sendHtml`, sem acessar API, banco, rede externa ou secrets e sem exigir `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
 
 O documento dono das regras operacionais do shell e `docs/APP_SHELL.md`; `docs/DESIGN_SYSTEM.md` descreve a propriedade visual dos provedores.
 
@@ -156,8 +159,9 @@ Usuario
 
 Build Web
   -> TypeScript
-  -> HTML SSR real por rota
-  -> Contrato de estilos SSR
+  -> servidor Node http em porta efemera
+  -> requisicoes HTTP para todas as rotas disponiveis
+  -> contrato de estilos SSR sobre HTML final
   -> artefato aceito ou falha agregada
 ```
 
@@ -205,6 +209,7 @@ Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes 
 - Documentar contratos publicos, migrations e novos precedentes arquiteturais.
 - Preservar dados antigos de `PayableReceivable` ate existir plano explicito de migracao.
 - Tratar `solverFinShellRoutes` como fonte canonica de cobertura SSR.
+- Validar o HTML final pelo despacho HTTP antes de aceitar o artefato web.
 - Nao introduzir uma lista paralela de rotas no CI sem paridade automatica.
 
 ## Dados e privacidade
