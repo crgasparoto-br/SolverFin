@@ -85,7 +85,24 @@ jobs:
         run: npm run db:seed
 
       - name: Test
-        run: npm run test
+        id: tests
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test 2>&1 | tee canonical-test-output.log
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload canonical test output
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-test-output
+          path: canonical-test-output.log
+          if-no-files-found: error
+
+      - name: Propagate test result
+        if: steps.tests.outputs.exit_code != '0'
+        run: exit 1
 
       - name: Build
         run: npm run build
