@@ -18,8 +18,6 @@ const retiredPrivateRouteRedirects = new Map([
   ["/pagar-receber", "/lancamentos"],
   ["/app/pagar-receber", "/lancamentos"],
   ["/contas", "/contas-cartoes"],
-  ["/remuneracao-contas", "/contas-cartoes"],
-  ["/app/remuneracao-contas", "/contas-cartoes"],
 ]);
 
 const legacyAppRouteRedirects = new Map(
