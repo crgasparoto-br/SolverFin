@@ -13,7 +13,7 @@ import {
 const providers = {
   sharedShell: ":root { --primary: #0f3d4c; }",
   sharedDialog: "dialog { display: grid; }",
-  statementPresentation: ".statement-layout { min-width: 0; }",
+  statementPresentation: ".statement-layout .summary-totals { grid-template-columns: 1fr; }",
 };
 
 const navigationCss = `
