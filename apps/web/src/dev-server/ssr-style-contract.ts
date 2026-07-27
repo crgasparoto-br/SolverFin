@@ -522,10 +522,7 @@ function markerProvider(
   };
 }
 
-function validateContractDeclarations(
-  contract: SsrStyleRouteContract,
-  violations: string[],
-): void {
+function validateContractDeclarations(contract: SsrStyleRouteContract, violations: string[]): void {
   const pageProviders = contract.registeredStyleProviders.filter(
     (provider) => provider.kind === "page",
   );

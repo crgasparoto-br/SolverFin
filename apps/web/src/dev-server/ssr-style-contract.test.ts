@@ -173,7 +173,11 @@ describe("SSR style contract", () => {
       `<style ${marker}>.accounts-cards-tab { display: grid; }</style>`,
       `<style ${marker}> </style>`,
     );
-    const emptyViolations = validateRenderedSsrStyleDocument({ contract, html: emptyHtml, providers });
+    const emptyViolations = validateRenderedSsrStyleDocument({
+      contract,
+      html: emptyHtml,
+      providers,
+    });
     assert.ok(
       emptyViolations.some((violation) =>
         violation.includes("provider=runtime:accounts-cards-neutral"),
