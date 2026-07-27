@@ -321,7 +321,9 @@ function runNegativeControls({
   }
 
   const runtimeContract = contracts.find((contract) =>
-    contract.registeredStyleProviders.some((provider) => provider.providerId.startsWith("runtime:")),
+    contract.registeredStyleProviders.some((provider) =>
+      provider.providerId.startsWith("runtime:"),
+    ),
   );
   const runtimeHtml = runtimeContract ? documents.get(runtimeContract.routeId) : undefined;
   const runtimeProvider = runtimeContract?.registeredStyleProviders.find((provider) =>

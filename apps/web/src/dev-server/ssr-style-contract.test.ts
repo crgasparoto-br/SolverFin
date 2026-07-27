@@ -127,8 +127,12 @@ describe("SSR style contract", () => {
 
     const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
 
-    assert.ok(violations.some((violation) => violation.includes("provider=runtime:inbox-interface")));
-    assert.ok(violations.some((violation) => violation.includes("provider=runtime:round-selection")));
+    assert.ok(
+      violations.some((violation) => violation.includes("provider=runtime:inbox-interface")),
+    );
+    assert.ok(
+      violations.some((violation) => violation.includes("provider=runtime:round-selection")),
+    );
   });
 
   it("rejects removal of the page provider even when an auxiliary provider remains", () => {
