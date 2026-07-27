@@ -45,8 +45,10 @@ export function transactionGroupInstallmentGuardScript(): string {
       function addLegacyGroupGuidance(row) {
         const description = row && row.querySelector(".description");
         if (!description || description.querySelector("[data-installment-group-guidance]")) return;
+        const groupKey = String(row.dataset.groupRow || "legacy").replace(/[^a-zA-Z0-9_-]/g, "");
         const guidance = document.createElement("span");
         guidance.dataset.installmentGroupGuidance = "";
+        guidance.id = "installment-group-guidance-" + groupKey;
         guidance.className = "muted";
         guidance.textContent = groupingMessage;
         description.appendChild(guidance);
@@ -54,7 +56,7 @@ export function transactionGroupInstallmentGuardScript(): string {
         const detailsButton = row.querySelector("[data-group-details]");
         if (detailsButton) {
           detailsButton.title = groupingMessage;
-          detailsButton.setAttribute("aria-describedby", guidance.id || "");
+          detailsButton.setAttribute("aria-describedby", guidance.id);
         }
       }
 
