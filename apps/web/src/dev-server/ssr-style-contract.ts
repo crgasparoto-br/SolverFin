@@ -50,7 +50,7 @@ const recurrenceAuxiliaryProvider: SsrRegisteredStyleProviderRequirement = {
   providerId: "aux:recurrences-section",
   kind: "auxiliary",
   moduleFileName: "recurrences-section.js",
-  requiredCssFragments: [".recurrence-indicator"],
+  requiredCssFragments: [".recurrence-indicator{"],
 };
 
 export const solverFinSsrStyleContracts = [
@@ -72,7 +72,7 @@ export const solverFinSsrStyleContracts = [
     auxiliaryStyleProviders: [recurrenceAuxiliaryProvider],
   }),
   authenticated("accountsCards", "/contas-cartoes", "accounts-cards-page.js", {
-    pageCssFragments: [".master-toolbar {"],
+    pageCssFragments: [".master-toolbar, .master-panel {"],
   }),
   authenticated("accountRemuneration", "/remuneracao-contas", "account-remuneration-page.js", {
     pageCssFragments: [".configuration-card {"],
