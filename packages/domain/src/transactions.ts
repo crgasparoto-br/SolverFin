@@ -111,7 +111,7 @@ export interface UpdateTransactionPayload {
   description?: string;
   accountId?: EntityId;
   destinationAccountId?: EntityId;
-  categoryId?: EntityId;
+  categoryId?: EntityId | null;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
 }
@@ -266,7 +266,10 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
   const nextDestinationAccountId =
     input.payload.destinationAccountId ??
     (kind === "transfer" ? currentTransaction.destinationAccountId : undefined);
-  const nextCategoryId = input.payload.categoryId ?? currentTransaction.categoryId;
+  const nextCategoryId =
+    input.payload.categoryId === null
+      ? undefined
+      : (input.payload.categoryId ?? currentTransaction.categoryId);
 
   if (nextDestinationAccountId !== undefined) {
     payload.destinationAccountId = nextDestinationAccountId;
@@ -393,7 +396,13 @@ interface BuildTransactionInput {
 function buildTransaction(input: BuildTransactionInput): Transaction {
   const account = assertAccount(input.context, input.account, input.payload.accountId);
   const destinationAccount = assertDestinationAccount(input);
-  assertCategory(input.context, input.category, input.payload.categoryId, input.kind);
+  assertCategory(
+    input.context,
+    input.category,
+    input.payload.categoryId,
+    input.kind,
+    input.existingTransaction?.categoryId,
+  );
 
   const status = validateTransactionStatus(input.payload.status ?? "posted");
   const plannedOn = validateTransactionDate(input.payload.plannedOn ?? input.payload.occurredOn);
@@ -522,6 +531,7 @@ function assertCategory(
   category: Category | undefined,
   categoryId: EntityId | undefined,
   kind: TransactionKind,
+  existingCategoryId: EntityId | undefined,
 ): void {
   if (!categoryId) {
     return;
@@ -536,7 +546,7 @@ function assertCategory(
     );
   }
 
-  if (scopedCategory.status !== "active") {
+  if (scopedCategory.status !== "active" && scopedCategory.id !== existingCategoryId) {
     throw new TransactionError(
       "TRANSACTION_CATEGORY_ARCHIVED",
       "Transaction category must be active.",

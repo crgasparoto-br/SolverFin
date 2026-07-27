@@ -22,5 +22,16 @@ Este documento registra quais acoes de manutencao ficam visiveis nas telas naveg
 
 ## Pendencias intencionais
 
-- Recorrencias, parcelas e contas a pagar/receber ficam para issues especificas, para evitar misturar novos fluxos com a manutencao das telas ja navegaveis.
+- Recorrencias e parcelas usam manutenção incorporada às linhas operacionais conforme as seções abaixo. Contas a pagar/receber permanecem em transição por issues específicas, sem reintroduzir uma tela paralela.
 - A UI nao implementa exclusao fisica de dados financeiros; o comportamento esperado segue arquivamento, cancelamento, bloqueio ou restauracao conforme o dominio.
+
+## Parcelas nas listas operacionais
+
+| Superfície             | Identificação                          | Manutenção                                                                | Endpoint                                 |
+| ---------------------- | -------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------- |
+| Extrato `/lancamentos` | `Parcela X de Y` na linha da transação | Modal em modo restrito; descrição, observação e categoria quando elegível | `PATCH /api/installments/:installmentId` |
+| Cartões `/cartoes`     | `Parcela X de Y` na linha da compra    | Mantém a edição operacional da compra e os bloqueios da fatura            | Endpoint existente da compra             |
+
+A consulta complementar é limitada a uma chamada por renderização, preserva `profileId` e usa a data operacional do Extrato. Falha da consulta não remove nem bloqueia a listagem principal; no Extrato, a edição fica indisponível enquanto a elegibilidade não puder ser confirmada, e a API genérica rejeita alterações de dados fora do contrato da parcela. A ação existente de conciliar ou desconciliar continua permitida somente com payload exclusivo de situação e preserva descrição, observação e categoria confirmadas por uma edição concorrente. Categorias arquivadas são exibidas como valor histórico e não são removidas sem escolha explícita. O modal mantém foco acessível, fechamento por Escape, mensagens em `aria-live` e recuperação explícita de conflito `409`.
+
+A exclusão lógica individual ou em massa continua disponível como transição operacional: a transação fica `voided`, a parcela permanece consultável para histórico e a manutenção direta passa a ser somente leitura por `transaction_status_locked`. Não existe exclusão física de parcela por esses fluxos.

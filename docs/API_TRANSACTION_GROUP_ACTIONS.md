@@ -4,6 +4,14 @@ Os agrupamentos do Extrato são projeções de apresentação. Eles não criam u
 
 Todas as rotas exigem autenticação e usam o perfil financeiro ativo. Recursos fora do tenant retornam `404 TENANT_RESOURCE_NOT_FOUND`.
 
+## Parcelas canônicas e agrupamento
+
+Lançamentos vinculados a `Installment` por `Transaction.installmentId` não são elegíveis para novos agrupamentos. O marcador da linha permanece disponível para as ações operacionais em massa; quando uma parcela canônica está selecionada, somente **Unificar lançamentos** fica desabilitado e orienta o usuário a desmarcá-la. Uma tentativa direta pela API retorna `409 TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE` sem alterar o lançamento, a parcela, o grupo ou a auditoria.
+
+Agrupamentos legados que já contenham uma parcela preservam o indicador **Parcela X de Y** na linha consolidada e mostram orientação para desagrupar. Enquanto o vínculo existir, ações de edição, clonagem, conciliação, desconciliação ou exclusão do grupo e de seus membros retornam o mesmo erro controlado. O contrato `DELETE /api/transaction-groups/:groupId` permanece disponível para desagrupar sem alterar os lançamentos; depois disso, a parcela volta ao fluxo conservador de manutenção documentado em [`API_INSTALLMENTS.md`](./API_INSTALLMENTS.md).
+
+Essa restrição impede que valor, vencimento, situação ou exclusão de uma parcela canônica sejam alterados por um contrato de agrupamento mais amplo que o contrato direto da parcela.
+
 ## Editar um lançamento do grupo
 
 ```http
@@ -21,7 +29,7 @@ Campos aceitos:
 }
 ```
 
-O formulário padrão de lançamentos também pode enviar `plannedOn` e `effectiveOn`; a API usa a data aplicável ao membro. Conta, tipo, moeda e situação não podem ser alterados por esta rota, pois são propriedades de compatibilidade do grupo. O total do agrupamento é recalculado a partir dos membros persistidos. Quando o membro está associado a uma parcela, vencimento e valor da `Installment` são sincronizados na mesma transação de banco.
+O formulário padrão de lançamentos também pode enviar `plannedOn` e `effectiveOn`; a API usa a data aplicável ao membro. Conta, tipo, moeda e situação não podem ser alterados por esta rota, pois são propriedades de compatibilidade do grupo. O total do agrupamento é recalculado a partir dos membros persistidos. Essa manutenção se aplica somente a lançamentos sem vínculo canônico de parcela.
 
 Após uma edição persistida, o modal, a linha consolidada e os saldos posteriores do Extrato são atualizados imediatamente com o delta do novo valor, sem manter a projeção anterior até um recarregamento da página.
 
@@ -91,6 +99,7 @@ O `DELETE` apenas desagrupa e preserva os lançamentos.
 - ações em lote usam transação de banco;
 - logs registram somente metadados redigidos, sem valores ou descrições financeiras;
 - clones não carregam vínculos de agrupamento ou proveniência;
-- edição de membro mantém a parcela associada consistente;
+- parcelas canônicas são recusadas antes de qualquer mutação de agrupamento;
+- agrupamentos legados com parcelas permanecem somente desagrupáveis;
 - nenhuma ação cria dupla contagem financeira;
 - ações por teclado preservam o foco entre o Extrato, o modal do grupo e o formulário reutilizado.

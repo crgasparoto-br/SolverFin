@@ -132,7 +132,24 @@ async function resolveContext(request: ApiRequest) {
   return resolveRequestTenantContext(user, request.query.get("profileId") ?? undefined);
 }
 
-function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
+export function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
+  const dueFrom = readOptionalDateFilter(
+    request,
+    "dueFrom",
+    "Data inicial de vencimento invalida.",
+  );
+  const dueTo = readOptionalDateFilter(request, "dueTo", "Data final de vencimento invalida.");
+  const operationalFrom = readOptionalDateFilter(
+    request,
+    "operationalFrom",
+    "Data operacional inicial invalida.",
+  );
+  const operationalTo = readOptionalDateFilter(
+    request,
+    "operationalTo",
+    "Data operacional final invalida.",
+  );
+
   return {
     ...(request.query.get("installmentId")
       ? { installmentId: String(request.query.get("installmentId")) }
@@ -156,15 +173,17 @@ function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {
     ...(request.query.get("categoryId")
       ? { categoryId: String(request.query.get("categoryId")) }
       : {}),
-    ...(request.query.get("dueFrom") ? { dueFrom: String(request.query.get("dueFrom")) } : {}),
-    ...(request.query.get("dueTo") ? { dueTo: String(request.query.get("dueTo")) } : {}),
+    ...(dueFrom ? { dueFrom } : {}),
+    ...(dueTo ? { dueTo } : {}),
+    ...(operationalFrom ? { operationalFrom } : {}),
+    ...(operationalTo ? { operationalTo } : {}),
     ...(request.query.get("status")
       ? { status: request.query.get("status") as InstallmentStatus | "all" }
       : {}),
   };
 }
 
-function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPayload {
+export function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPayload {
   const payload = requireObjectBody(body);
   const allowedEntries = Object.entries(payload).filter(([key]) => ALLOWED_PATCH_FIELDS.has(key));
 
@@ -195,14 +214,43 @@ function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPayload {
   }
 
   if (payload.categoryId !== undefined) {
-    if (typeof payload.categoryId !== "string" || !payload.categoryId.trim()) {
-      throwInstallmentPayloadInvalid("Categoria da parcela invalida.");
-    }
+    if (payload.categoryId === null) {
+      update.categoryId = null;
+    } else {
+      if (typeof payload.categoryId !== "string" || !payload.categoryId.trim()) {
+        throwInstallmentPayloadInvalid("Categoria da parcela invalida.");
+      }
 
-    update.categoryId = payload.categoryId;
+      update.categoryId = payload.categoryId;
+    }
   }
 
   return update;
+}
+
+function readOptionalDateFilter(
+  request: ApiRequest,
+  name: string,
+  message: string,
+): string | undefined {
+  const value = request.query.get(name);
+  if (!value) return undefined;
+  if (!isValidDateOnly(value)) throwInstallmentsFilterInvalid(message);
+  return value;
+}
+
+export function isValidDateOnly(value: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
@@ -229,6 +277,13 @@ function requireParam(params: Readonly<Record<string, string>>, name: string): s
 function throwInstallmentPayloadInvalid(message: string): never {
   throw Object.assign(new Error(message), {
     code: "INSTALLMENT_PAYLOAD_INVALID",
+    statusCode: 400,
+  });
+}
+
+function throwInstallmentsFilterInvalid(message: string): never {
+  throw Object.assign(new Error(message), {
+    code: "INSTALLMENTS_FILTER_INVALID",
     statusCode: 400,
   });
 }

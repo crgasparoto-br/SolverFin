@@ -6,7 +6,7 @@ import type {
   TransactionStatus,
 } from "@solverfin/domain";
 
-import { query } from "../db.js";
+import { query, withSharedTransaction } from "../db.js";
 import { updateTransactionForContext } from "./transactions.js";
 
 export interface ListInstallmentsFilters {
@@ -20,13 +20,15 @@ export interface ListInstallmentsFilters {
   categoryId?: EntityId;
   dueFrom?: string;
   dueTo?: string;
+  operationalFrom?: string;
+  operationalTo?: string;
   status?: InstallmentStatus | "all";
 }
 
 export interface UpdateInstallmentPayload {
   description?: string;
   note?: string | null;
-  categoryId?: EntityId;
+  categoryId?: EntityId | null;
 }
 
 export type InstallmentEditBlockedReason =
@@ -79,7 +81,12 @@ export async function listInstallmentsForContext(
   addEqualsFilter(where, params, `i."cardId"`, filters.cardId);
   addEqualsFilter(where, params, `i."cardInstrumentId"`, filters.cardInstrumentId);
   addEqualsFilter(where, params, `t."invoiceId"`, filters.invoiceId);
-  addEqualsFilter(where, params, `coalesce(t."categoryId", r."categoryId")`, filters.categoryId);
+  addEqualsFilter(
+    where,
+    params,
+    `case when t."id" is not null then t."categoryId" else r."categoryId" end`,
+    filters.categoryId,
+  );
 
   if (shouldHideCardInstallmentsWithLinkedPurchases(filters)) {
     where.push(`not (i."cardId" is not null and t."id" is not null and t."invoiceId" is not null)`);
@@ -100,6 +107,20 @@ export async function listInstallmentsForContext(
     where.push(`i."dueOn" <= $${params.length}`);
   }
 
+  if (filters.operationalFrom !== undefined) {
+    params.push(filters.operationalFrom);
+    where.push(
+      `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", i."dueOn") >= $${params.length}`,
+    );
+  }
+
+  if (filters.operationalTo !== undefined) {
+    params.push(filters.operationalTo);
+    where.push(
+      `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", i."dueOn") <= $${params.length}`,
+    );
+  }
+
   const rows = await query<Row>(
     `select
        i."id", i."organizationId", i."financialProfileId", i."recurrenceId", i."cardId",
@@ -112,6 +133,7 @@ export async function listInstallmentsForContext(
        t."recurrenceId" as "transactionRecurrenceId", t."amountMinor" as "transactionAmountMinor",
        t."currency" as "transactionCurrency", t."occurredOn" as "transactionOccurredOn",
        t."plannedOn" as "transactionPlannedOn", t."description" as "transactionDescription",
+       t."note" as "transactionNote",
        r."status" as "recurrenceStatus", r."kind" as "recurrenceKind",
        r."frequency" as "recurrenceFrequency", r."interval" as "recurrenceInterval",
        r."description" as "recurrenceDescription",
@@ -146,7 +168,7 @@ export async function listInstallmentsForContext(
       and ci."organizationId" = i."organizationId"
       and ci."financialProfileId" = i."financialProfileId"
      left join "Category" cat
-       on cat."id" = coalesce(t."categoryId", r."categoryId")
+       on cat."id" = case when t."id" is not null then t."categoryId" else r."categoryId" end
       and cat."organizationId" = i."organizationId"
       and cat."financialProfileId" = i."financialProfileId"
      where ${where.join(" and ")}
@@ -162,21 +184,53 @@ export async function updateInstallmentForContext(
   installmentId: EntityId,
   payload: UpdateInstallmentPayload,
 ): Promise<InstallmentHistoryItem> {
-  const current = await getInstallmentForMutation(context, installmentId);
+  return withSharedTransaction(async () => {
+    await lockInstallmentMutationRows(context, installmentId);
+    const current = await getInstallmentForMutation(context, installmentId);
 
-  if (!current.editable) {
-    throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
-  }
+    if (!current.editable) {
+      throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
+    }
 
-  const transactionId = readNestedId(current.transaction);
+    const transactionId = readNestedId(current.transaction);
 
-  if (!transactionId) {
-    throwInstallmentEditBlocked("linked_transaction_missing");
-  }
+    if (!transactionId) {
+      throwInstallmentEditBlocked("linked_transaction_missing");
+    }
 
-  await updateTransactionForContext(context, transactionId, buildTransactionUpdatePayload(payload));
+    await updateTransactionForContext(
+      context,
+      transactionId,
+      buildTransactionUpdatePayload(payload),
+    );
 
-  return getInstallmentForMutation(context, installmentId);
+    return getInstallmentForMutation(context, installmentId);
+  });
+}
+
+async function lockInstallmentMutationRows(
+  context: TenantContext,
+  installmentId: EntityId,
+): Promise<void> {
+  await query(
+    `select "id"
+       from "Transaction"
+      where "installmentId" = $1
+        and "organizationId" = $2
+        and "financialProfileId" = $3
+      for update`,
+    [installmentId, context.organizationId, context.financialProfileId],
+  );
+
+  await query(
+    `select "id"
+       from "Installment"
+      where "id" = $1
+        and "organizationId" = $2
+        and "financialProfileId" = $3
+      for update`,
+    [installmentId, context.organizationId, context.financialProfileId],
+  );
 }
 
 function shouldHideCardInstallmentsWithLinkedPurchases(filters: ListInstallmentsFilters): boolean {
@@ -190,9 +244,9 @@ function shouldHideCardInstallmentsWithLinkedPurchases(filters: ListInstallments
 function buildTransactionUpdatePayload(payload: UpdateInstallmentPayload): {
   description?: string;
   note?: string | null;
-  categoryId?: EntityId;
+  categoryId?: EntityId | null;
 } {
-  const update: { description?: string; note?: string | null; categoryId?: EntityId } = {};
+  const update: { description?: string; note?: string | null; categoryId?: EntityId | null } = {};
 
   if (payload.description !== undefined) update.description = payload.description;
   if (payload.note !== undefined) update.note = payload.note;
@@ -257,6 +311,22 @@ function validateFilters(filters: ListInstallmentsFilters): void {
   ) {
     throwInstallmentsFilterInvalid("Periodo de vencimento invertido.");
   }
+
+  if (filters.operationalFrom !== undefined && !isIsoDate(filters.operationalFrom)) {
+    throwInstallmentsFilterInvalid("Data operacional inicial invalida.");
+  }
+
+  if (filters.operationalTo !== undefined && !isIsoDate(filters.operationalTo)) {
+    throwInstallmentsFilterInvalid("Data operacional final invalida.");
+  }
+
+  if (
+    filters.operationalFrom !== undefined &&
+    filters.operationalTo !== undefined &&
+    filters.operationalFrom > filters.operationalTo
+  ) {
+    throwInstallmentsFilterInvalid("Periodo operacional invertido.");
+  }
 }
 
 function isIsoDate(value: string): boolean {
@@ -318,6 +388,7 @@ function attachTransaction(installment: InstallmentHistoryItem, row: Row): void 
     occurredOn: dateOnly(row.transactionOccurredOn ?? row.dueOn),
     plannedOn: dateOnly(row.transactionPlannedOn ?? row.dueOn),
     description: text(row.transactionDescription),
+    note: text(row.transactionNote),
     ...optionalId("accountId", row.transactionAccountId),
     ...optionalId("cardId", row.transactionCardId),
     ...optionalId("cardInstrumentId", row.transactionCardInstrumentId),
@@ -399,9 +470,15 @@ function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
   };
 }
 
-function resolveEditBlockedReason(row: Row): InstallmentEditBlockedReason | undefined {
+export function resolveEditBlockedReason(
+  row: Readonly<Record<string, unknown>>,
+): InstallmentEditBlockedReason | undefined {
   if (!row.transactionId || !row.transactionStatus) {
     return "linked_transaction_missing";
+  }
+
+  if (row.invoiceId) {
+    return "invoice_linked";
   }
 
   if (lower(row.status) !== "planned") {
@@ -410,10 +487,6 @@ function resolveEditBlockedReason(row: Row): InstallmentEditBlockedReason | unde
 
   if (lower(row.transactionStatus) !== "planned") {
     return "transaction_status_locked";
-  }
-
-  if (row.invoiceId) {
-    return "invoice_linked";
   }
 
   return undefined;

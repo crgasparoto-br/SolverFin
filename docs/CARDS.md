@@ -102,7 +102,7 @@ No modo de edicao:
 
 Compras de faturas `closed`, `paid` ou `cancelled` tem a acao de edicao desabilitada na tela e sao rejeitadas pela API com o codigo `CARD_PURCHASE_INVOICE_LOCKED` (HTTP 409) caso a chamada ocorra mesmo assim. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria.
 
-A `Installment` tecnica vinculada a uma compra recorrente materializada (mesma `Transaction` que ja aparece como compra operacional com indicador de recorrencia) nao e exibida em nenhuma area da tela `Cartoes`; ela e filtrada da secao de historico de parcelas.
+A `Installment` tecnica vinculada a uma compra recorrente materializada nao aparece em painel, historico ou linha separada na tela `Cartoes`. Quando o vinculo for canonico, o metadado `Parcela X de Y` e exibido na propria linha da compra, e a manutencao continua exclusivamente pelo endpoint operacional da compra.
 
 ## Movimentacao de compra entre faturas/periodos
 
@@ -262,3 +262,9 @@ A cobertura automatizada deve proteger pelo menos:
 - movimentacao segura de compra para outro periodo de fatura;
 - tela `Contas e Cartoes` com lista compacta, criacao e edicao em modal, gestao de instrumentos em modal dedicado, default, arquivamento, estado bloqueado/inativo e ausencia do fluxo legado;
 - tela `Cartoes` com hierarquia da fatura, busca, filtros, lista responsiva, estados acessiveis e modais validados em desktop e mobile.
+
+## Parcelas canônicas na fatura
+
+A tela de Cartões consulta parcelas pelo `invoiceId` selecionado e associa o metadado à compra por `transaction.id`. O indicador `Parcela X de Y` aparece na própria linha da compra, sem reintroduzir blocos separados de parcelas ou histórico.
+
+A manutenção continua exclusivamente pelo endpoint da compra. O bloqueio `invoice_linked` pertence ao contrato de edição direta de parcelas, prevalece sobre motivos genéricos de situação da transação e não desabilita, por si só, uma compra que a situação da fatura permite editar. O indicador associa essa explicação por `aria-describedby` e oferece tooltip acionável por hover e foco de teclado. Faturas fechadas, pagas ou canceladas mantêm os bloqueios existentes; vencimento isolado não cria novo bloqueio.

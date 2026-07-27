@@ -131,10 +131,27 @@ type CreateTransactionPayloadWithMetadata = CreateTransactionPayload & {
   note?: string | null;
   applyToFuturePlanned?: boolean;
 };
-type UpdateTransactionPayloadWithMetadata = UpdateTransactionPayload & {
+type UpdateTransactionPayloadWithMetadata = Omit<UpdateTransactionPayload, "categoryId"> & {
+  categoryId?: EntityId | null;
   note?: string | null;
   applyToFuturePlanned?: boolean;
 };
+
+export interface UpdateTransactionOptions {
+  denyCanonicalInstallmentMutation?: boolean;
+}
+
+function isCanonicalInstallmentReconciliation(
+  currentStatus: TransactionStatus,
+  payload: UpdateTransactionPayloadWithMetadata,
+): boolean {
+  const keys = Object.keys(payload);
+  if (keys.length !== 1 || payload.status === undefined) return false;
+  if (payload.status === "reconciled") {
+    return currentStatus === "planned" || currentStatus === "posted";
+  }
+  return payload.status === "posted" && currentStatus === "reconciled";
+}
 
 type TransactionMetadata = {
   applyToFuturePlanned?: boolean;
@@ -209,8 +226,20 @@ export async function updateTransactionForContext(
   context: TenantContext,
   transactionId: EntityId,
   payload: UpdateTransactionPayloadWithMetadata,
+  options: UpdateTransactionOptions = {},
 ): Promise<TransactionWithAccountRemuneration> {
   const currentTransaction = await findTransactionRow(context, transactionId);
+
+  if (
+    options.denyCanonicalInstallmentMutation === true &&
+    currentTransaction?.installmentId &&
+    !isCanonicalInstallmentReconciliation(currentTransaction.status, payload)
+  ) {
+    throw Object.assign(new Error("Use a manutenção da parcela para alterar este lançamento."), {
+      code: "INSTALLMENT_DIRECT_UPDATE_REQUIRED",
+      statusCode: 409,
+    });
+  }
 
   if (
     currentTransaction?.transactionGroupId &&
@@ -243,7 +272,10 @@ export async function updateTransactionForContext(
   const accountId = prepared.payload.accountId ?? currentTransaction?.accountId;
   const destinationAccountId =
     prepared.payload.destinationAccountId ?? currentTransaction?.destinationAccountId;
-  const categoryId = prepared.payload.categoryId ?? currentTransaction?.categoryId;
+  const categoryId =
+    prepared.payload.categoryId === undefined
+      ? currentTransaction?.categoryId
+      : (prepared.payload.categoryId ?? undefined);
 
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
   const destinationAccount = destinationAccountId

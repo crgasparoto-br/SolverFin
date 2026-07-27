@@ -44,7 +44,10 @@ function assertCompactLayoutContract(): void {
   assert.doesNotMatch(script, /max-width: 600px/);
   assert.doesNotMatch(script, /min-height: 104px/);
   assert.doesNotMatch(script, /recurrence-scope-option-description/);
-  assert.doesNotMatch(script, /grid-template-columns: repeat\(2/);
+  assert.doesNotMatch(
+    script,
+    /\.recurrence-scope-panel\s*\{[^}]*grid-template-columns: repeat\(2/s,
+  );
 }
 
 function assertAccountEditContract(): void {

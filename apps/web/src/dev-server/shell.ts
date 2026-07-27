@@ -5,11 +5,13 @@ import {
   type ShellRouteId,
 } from "../app-shell/routes.js";
 import { icon } from "./icons.js";
+import { operationalInstallmentsController } from "./operational-installments.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
 import {
   statementPresentationScript,
   statementPresentationStyles,
 } from "./statement-presentation.js";
+import { transactionGroupInstallmentGuardScript } from "./transaction-group-installment-guard.js";
 
 export interface ShellDocumentInput {
   body: string;
@@ -86,6 +88,7 @@ export function renderAuthenticatedShell(
     ${cardPurchaseEditRouteScript()}
     ${hasStatementPresentation(input.content) ? statementPresentationScript() : ""}
     ${recurringCardScopeControllerScript()}
+    ${renderOperationalInstallmentsScript(input.activePathname)}
   `;
 }
 
@@ -123,6 +126,15 @@ const groupLabelMap: Record<string, string> = {
   settings: "Ajustes",
   admin: "Admin",
 };
+
+function renderOperationalInstallmentsScript(activePathname: string): string {
+  if (activePathname !== "/lancamentos" && activePathname !== "/cartoes") return "";
+  const groupingGuard =
+    activePathname === "/lancamentos"
+      ? `<script>${transactionGroupInstallmentGuardScript()}</script>`
+      : "";
+  return `${groupingGuard}<script>${operationalInstallmentsController()}</script>`;
+}
 
 function hasStatementPresentation(content: string): boolean {
   return content.includes('class="statement-layout"');
