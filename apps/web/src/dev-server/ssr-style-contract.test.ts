@@ -27,7 +27,7 @@ const navigationCss = `
 `;
 
 const transactionsPageCss = ".statement-layout { display: grid; }";
-const recurrenceAuxiliaryCss = ".recurrence-indicator { display: inline-flex; }";
+const recurrenceAuxiliaryCss = ".recurrence-indicator{display:inline-flex;}";
 
 describe("SSR style contract", () => {
   it("has exact parity with every available canonical route, including public, hidden and master routes", () => {
