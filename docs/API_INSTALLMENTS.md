@@ -131,7 +131,28 @@ A mutacao atualiza a transacao vinculada de forma atomica pelo fluxo existente d
 }
 ```
 
-Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. A leitura de elegibilidade, o bloqueio das linhas de `Transaction`/`Installment`, a atualização e a auditoria ocorrem na mesma transação de banco para impedir alteração após mudança concorrente de estado. Recurso inexistente ou fora do tenant/profile ativo retorna o comportamento padrao de recurso nao encontrado.
+Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. A leitura de elegibilidade, o bloqueio das linhas de `Transaction`/`Installment`, a atualizacao e a auditoria ocorrem na mesma transacao de banco para impedir alteracao depois de uma mudanca concorrente de estado. Recurso inexistente ou fora do tenant/profile ativo retorna o comportamento padrao de recurso nao encontrado.
+
+A conciliacao e a desconciliacao continuam disponiveis pelo payload exclusivo de situacao do endpoint operacional de transacoes. Uma protecao de persistencia preserva `description`, `note` e `categoryId` da versao mais recente quando uma conciliacao que leu um snapshot anterior retoma depois de um `PATCH` de parcela. Assim, as duas operacoes podem concluir sem que a conciliacao restaure silenciosamente os valores antigos da parcela.
+
+## Exclusao logica e historico
+
+A exclusao fisica de parcelas continua proibida. A exclusao logica da transacao vinculada permanece uma transicao operacional permitida pelos contratos existentes:
+
+```http
+POST /api/transactions/:transactionId/void
+POST /api/transactions/bulk-actions
+```
+
+Na acao em massa, o contrato usa `action: "void"`. O resultado esperado e:
+
+- a `Transaction` passa para `voided`;
+- a `Installment` permanece persistida para rastreabilidade historica;
+- a consulta da parcela continua retornando o vinculo com a transacao anulada;
+- `editable` passa a `false` e `editBlockedReason` retorna `transaction_status_locked`;
+- nenhuma rota permite exclusao fisica ou reutiliza o `PATCH` de parcela para alterar a situacao.
+
+Essa decisao preserva a acao de exclusao logica ja existente no Extrato sem transformar o contrato conservador de manutencao em uma rota generica de mudanca de estado.
 
 ## Tenant e privacidade
 
@@ -148,11 +169,11 @@ Bloqueios de elegibilidade retornam `409 INSTALLMENT_EDIT_BLOCKED`. A leitura de
 
 ## Consumo nas listas operacionais
 
-- `/lancamentos` executa no máximo uma consulta complementar por renderização, usando `accountId`, `operationalFrom`, `operationalTo`, `status=all` e o `profileId` ativo quando existir. Na visão mensal, o período cobre o mês selecionado; quando o filtro `day` estiver ativo, os dois limites usam exatamente o dia exibido. A associação acontece por `installment.transaction.id` com a linha já renderizada. Falha nessa consulta não impede o carregamento do extrato.
-- `/cartoes` executa no máximo uma consulta complementar usando o `invoiceId` selecionado e associa a parcela pela transação da compra. Não usar `cardId` isolado nesse fluxo, pois ele omite parcelas já vinculadas à fatura.
-- A interface mostra `Parcela X de Y` dentro da própria linha. Não existe painel, rota ou linha paralela de parcelas.
-- Uma parcela canônica não é elegível para novo agrupamento no Extrato. A UI desabilita seu marcador de seleção e a API retorna `409 TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE` antes de qualquer mutação. Agrupamentos legados preservam o indicador, ficam somente desagrupáveis e não podem usar ações do grupo como caminho alternativo para alterar valor, vencimento, situação ou exclusão da parcela.
-- `categoryId` aceita uma string válida ou `null`; `null` remove a categoria da transação vinculada. String vazia continua inválida.
-- A edição direta de parcela de conta envia apenas os campos efetivamente alterados entre `description`, `note` e `categoryId`. Sem alteração, o cliente não envia `PATCH`. Categoria arquivada vinculada ao histórico é preservada no formulário e só é removida quando o usuário escolhe explicitamente **Sem categoria**.
-- Para `409 INSTALLMENT_EDIT_BLOCKED`, o modal permanece aberto, conserva os valores digitados e permite recarregar o estado atual. O endpoint genérico `PATCH /api/transactions/:transactionId` retorna `409 INSTALLMENT_DIRECT_UPDATE_REQUIRED` para mutações de dados de uma transação com `installmentId`; a única exceção é o payload exclusivo de situação usado pela ação operacional existente de conciliar ou desconciliar. A exceção valida o estado atual: `planned|posted -> reconciled` e `reconciled -> posted` são permitidos; `planned -> posted`, payload combinado e qualquer outro status continuam bloqueados. Assim, indisponibilidade ou atraso da consulta complementar não libera alteração de valor, datas, conta, descrição, categoria ou outros campos fora do contrato da parcela.
-- Parcelas com `invoice_linked` são mantidas em leitura no contrato de parcelas; a edição operacional continua exclusivamente no endpoint da compra da fatura.
+- `/lancamentos` executa no maximo uma consulta complementar por renderizacao, usando `accountId`, `operationalFrom`, `operationalTo`, `status=all` e o `profileId` ativo quando existir. Na visao mensal, o periodo cobre o mes selecionado; quando o filtro `day` estiver ativo, os dois limites usam exatamente o dia exibido. A associacao acontece por `installment.transaction.id` com a linha ja renderizada. Falha nessa consulta nao impede o carregamento do extrato.
+- `/cartoes` executa no maximo uma consulta complementar usando o `invoiceId` selecionado e associa a parcela pela transacao da compra. Nao usar `cardId` isolado nesse fluxo, pois ele omite parcelas ja vinculadas a fatura.
+- A interface mostra `Parcela X de Y` dentro da propria linha. Nao existe painel, rota ou linha paralela de parcelas.
+- Uma parcela canonica nao e elegivel para novo agrupamento no Extrato. A UI desabilita seu marcador de selecao e a API retorna `409 TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE` antes de qualquer mutacao. Agrupamentos legados preservam o indicador, ficam somente desagrupaveis e nao podem usar acoes do grupo como caminho alternativo para alterar valor, vencimento, situacao ou exclusao da parcela.
+- `categoryId` aceita uma string valida ou `null`; `null` remove a categoria da transacao vinculada. String vazia continua invalida.
+- A edicao direta de parcela de conta envia apenas os campos efetivamente alterados entre `description`, `note` e `categoryId`. Sem alteracao, o cliente nao envia `PATCH`. Categoria arquivada vinculada ao historico e preservada no formulario e so e removida quando o usuario escolhe explicitamente **Sem categoria**.
+- Para `409 INSTALLMENT_EDIT_BLOCKED`, o modal permanece aberto, conserva os valores digitados e permite recarregar o estado atual. O endpoint generico `PATCH /api/transactions/:transactionId` retorna `409 INSTALLMENT_DIRECT_UPDATE_REQUIRED` para mutacoes de dados de uma transacao com `installmentId`; a unica excecao e o payload exclusivo de situacao usado pela acao operacional existente de conciliar ou desconciliar. A excecao valida o estado atual: `planned|posted -> reconciled` e `reconciled -> posted` sao permitidos; `planned -> posted`, payload combinado e qualquer outro status continuam bloqueados. Assim, indisponibilidade ou atraso da consulta complementar nao libera alteracao de valor, datas, conta, descricao, categoria ou outros campos fora do contrato da parcela.
+- Parcelas com `invoice_linked` sao mantidas em leitura no contrato de parcelas; a edicao operacional continua exclusivamente no endpoint da compra da fatura.
