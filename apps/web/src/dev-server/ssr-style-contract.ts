@@ -191,7 +191,10 @@ export function validateRenderedSsrStyleDocument(input: RenderedSsrStyleValidati
   }
 
   const shellNavigationCss = bodyStyleBlocks.find(
-    (css) => css.includes(".sidebar > nav") && css.includes(".nav-more-toggle"),
+    (css) =>
+      css.includes(".sidebar > nav") &&
+      css.includes("scrollbar-gutter: stable") &&
+      css.includes("@media (max-width: 760px)"),
   );
   if (!shellNavigationCss || shellNavigationCss.trim().length === 0) {
     violations.push(
