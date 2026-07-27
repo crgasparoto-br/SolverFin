@@ -1,6 +1,13 @@
 name: Format issue 541 remediation
 
 on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
   push:
     branches:
       - feat/541-ssr-style-contract
@@ -21,6 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: feat/541-ssr-style-contract
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
@@ -65,4 +73,4 @@ jobs:
             docs/DESIGN_SYSTEM.md \
             scripts/validate-web-ssr-styles.mjs
           git commit -m "style: format issue 541 remediation"
-          git push
+          git push origin HEAD:feat/541-ssr-style-contract
