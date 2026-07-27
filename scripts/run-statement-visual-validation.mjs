@@ -18,6 +18,7 @@ try {
   await import("./statement-visual/issue-537-hover-states.mjs");
   await import("./statement-visual/issue-539-operational-installments.mjs");
   await import("./statement-visual/issue-539-operational-installments-keyboard.mjs");
+  await import("./statement-visual/issue-539-installment-grouping-guard.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
