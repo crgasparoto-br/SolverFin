@@ -16,7 +16,7 @@ Manter uma moldura comum para as telas financeiras, com navegacao, estados prote
 - `dev-server.ts`: despacho HTTP real das rotas e composicao dos pos-processamentos antes de `sendHtml`;
 - `dev-server/shell.ts`: documento HTML e shell autenticado compartilhado;
 - `dev-server/shared-styles.ts`: tokens, reset, shell visual e primitivas recorrentes;
-- `dev-server/ssr-style-contract.ts`: manifesto tipado que relaciona cada rota disponivel ao renderer, provedores de cabecalho, provedores de pagina/auxiliares, provedores inseridos no runtime e gatilhos condicionais;
+- `dev-server/ssr-style-contract.ts`: manifesto tipado que relaciona cada rota disponivel ao renderer, HTML representativo, provedores de cabecalho, provedores de pagina/auxiliares, blocos inseridos no runtime e gatilhos condicionais;
 - `scripts/validate-web-ssr-styles.mjs`: portao executavel que sobe o servidor em porta efemera, requisita cada rota e valida o HTML final servido.
 
 ## Rotas disponiveis
@@ -48,29 +48,43 @@ Cada rota disponivel possui uma entrada em `solverFinSsrStyleContracts` com:
 - `routeId`, caminho e modulo renderer;
 - classificacao `public` ou `authenticated`;
 - classificacao `page-specific` ou `shared-only`;
+- fragmentos obrigatorios do HTML normal da rota, separados da folha CSS;
 - provedores de cabecalho obrigatorios, como `shared-shell` e `shared-dialog`;
 - provedor especifico `page:<routeId>` com fragmentos CSS executaveis e exclusivos da pagina;
 - provedores auxiliares registrados separadamente, como `aux:recurrences-section`;
-- provedores inseridos pelo pipeline HTTP, como `runtime:inbox-interface` e `runtime:round-selection`;
+- provedores inseridos pelo pipeline HTTP, identificados por fragmento CSS ou por marcador do bloco `<style>`;
 - provedores condicionais, como `statement-presentation`, acompanhados do fragmento HTML que deve ativar a condicao no renderer real.
 
 O portao valida paridade exata entre o manifesto e `solverFinShellRoutes`. Uma nova rota marcada como disponivel sem contrato faz o build falhar.
 
 Para rotas autenticadas, o HTML final deve conter:
 
-1. CSS compartilhado nao vazio;
-2. cada fragmento registrado do provedor especifico da pagina, salvo classificacao explicita `shared-only`;
-3. cada provedor auxiliar ou de runtime registrado, sem aceitar outro CSS remanescente como substituto;
-4. CSS de navegacao do shell conectado ao corpo;
-5. o gatilho HTML condicional produzido pelo renderer real e o CSS condicional correspondente incorporado ao cabecalho.
+1. o fragmento normal representativo da propria tela, de modo que uma pagina generica de erro com CSS residual nao seja aceita;
+2. CSS compartilhado nao vazio;
+3. cada fragmento registrado do provedor especifico da pagina, salvo classificacao explicita `shared-only`;
+4. cada provedor auxiliar ou de runtime registrado, sem aceitar outro CSS remanescente como substituto;
+5. CSS de navegacao do shell conectado ao corpo;
+6. o gatilho HTML condicional produzido pelo renderer real e o CSS condicional correspondente incorporado ao cabecalho.
 
 A verificacao de pagina nao e inferida apenas pela existencia de qualquer CSS restante depois dos provedores compartilhados. Cada provedor possui identificador proprio e evidencia discriminante no HTML final. Os controles negativos removem um provedor por vez, preservando os provedores irmaos, para impedir falso positivo por CSS auxiliar ainda presente.
 
-Para `/login`, o CSS publico deve ser nao vazio e estar incorporado ao documento final.
+### Pos-processadores protegidos
+
+O contrato registra os blocos runtime observados na composicao final:
+
+- Extrato: ordenacao, divulgacao de remuneracao, modal de agrupamento, guarda de formulario do grupo, layout do modal, selecao em lote, layout da selecao e seletor redondo;
+- Cartoes: navegacao de fatura, ordenacao, interface consolidada e alinhamento de status;
+- Contas e Cartoes: dialogo de instrumentos, abas neutras, modal de remuneracao e padronizacao final;
+- Categorias: CSS da interface aprimorada incorporado ao bloco principal;
+- Inbox: layout de lista, seletor redondo, interface principal, acessibilidade, tabela, filtro corrigido, acoes de status, legibilidade e acao explicita do filtro de data.
+
+Blocos marcados por atributos `data-*` ou `id` precisam existir e conter CSS nao vazio. Para provedores sem bloco proprio, o contrato exige um fragmento CSS discriminante. Os controles negativos removem e esvaziam cada bloco marcado individualmente.
+
+Para `/login`, o CSS publico deve ser nao vazio, o documento precisa conter o shell normal de login e ambos devem estar incorporados ao HTML final.
 
 A validacao usa `createSolverFinWebServer()` para iniciar o mesmo servidor Node `http` em `127.0.0.1` com porta efemera. Cada rota e requisitada pelo caminho canonico, com cookie ficticio quando autenticada. Assim, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos de cada rota e `sendHtml`, em vez de aceitar apenas a saida de um renderer isolado.
 
-As chamadas internas dos renderers usam respostas `fetch` ficticias e minimizadas. A execucao nao depende de PostgreSQL, API ativa, rede externa, secrets ou `apps/web/dist` preexistente.
+As chamadas internas dos renderers usam respostas `fetch` ficticias, minimizadas e suficientes para renderizar o estado normal vazio de cada tela. Uma resposta ausente devolve erro controlado e o contrato falha pela ausencia do fragmento representativo. A execucao nao depende de PostgreSQL, API ativa, rede externa, secrets ou `apps/web/dist` preexistente.
 
 ## Comandos oficiais
 
@@ -108,4 +122,4 @@ Mobile:
 
 ## Limites
 
-Este contrato nao escolhe framework, bundler ou folha CSS externa. Ele tambem nao substitui testes visuais em navegador nem valida a semantica completa de todos os seletores; garante que as rotas canonicas respondam pelo servidor real e que os provedores registrados estejam presentes e conectados ao HTML final antes de o artefato ser aceito.
+Este contrato nao escolhe framework, bundler ou folha CSS externa. Ele tambem nao substitui testes visuais em navegador nem valida a semantica completa de todos os seletores; garante que as rotas canonicas respondam pelo servidor real, produzam o estado normal representativo e mantenham os provedores registrados conectados ao HTML final antes de o artefato ser aceito.
