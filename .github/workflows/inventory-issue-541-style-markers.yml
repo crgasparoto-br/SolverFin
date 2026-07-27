@@ -1,0 +1,116 @@
+name: Inventory issue 541 style markers
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+concurrency:
+  group: inventory-issue-541-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Compile web
+        run: npm run build:compile --workspace @solverfin/web
+
+      - name: Inventory final HTTP style markers
+        shell: bash
+        run: |
+          cat > /tmp/inventory-style-markers.mjs <<'EOF'
+          import { once } from "node:events";
+          import { request } from "node:http";
+          import { pathToFileURL } from "node:url";
+          import path from "node:path";
+
+          const root = process.cwd();
+          const importDist = (file) => import(pathToFileURL(path.join(root, "apps/web/dist", file)).href);
+          const { createSolverFinWebServer } = await importDist("dev-server.js");
+          const { solverFinSsrStyleContracts } = await importDist("dev-server/ssr-style-contract.js");
+          const originalFetch = globalThis.fetch;
+          globalThis.fetch = async (input) => {
+            const raw = typeof input === "string" || input instanceof URL ? String(input) : String(input.url);
+            const { pathname } = new URL(raw);
+            const payloads = {
+              "/api/accounts": { accounts: [] },
+              "/api/categories": { categories: [] },
+              "/api/cards": { cards: [] },
+              "/api/recurrences": { recurrences: [] },
+            };
+            const body = payloads[pathname];
+            return new Response(JSON.stringify(body ?? { error: { code: "FIXTURE", message: "fixture" } }), {
+              status: body ? 200 : 503,
+              headers: { "content-type": "application/json; charset=utf-8" },
+            });
+          };
+
+          const server = createSolverFinWebServer();
+          server.listen(0, "127.0.0.1");
+          await once(server, "listening");
+          const address = server.address();
+          if (!address || typeof address === "string") throw new Error("missing address");
+
+          const get = (route, authenticated) => new Promise((resolve, reject) => {
+            const req = request({
+              host: "127.0.0.1",
+              port: address.port,
+              path: route,
+              headers: authenticated ? { cookie: "sf_session_token=fixture" } : undefined,
+            }, (response) => {
+              const chunks = [];
+              response.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+              response.on("end", () => resolve({ status: response.statusCode, html: Buffer.concat(chunks).toString("utf8") }));
+            });
+            req.on("error", reject);
+            req.end();
+          });
+
+          const result = {};
+          for (const contract of solverFinSsrStyleContracts) {
+            const pathWithFixture = ["/lancamentos", "/cartoes", "/relatorios"].includes(contract.path)
+              ? `${contract.path}?month=2026-07`
+              : contract.path;
+            const response = await get(pathWithFixture, contract.shell === "authenticated");
+            const styles = Array.from(response.html.matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi), (match) => ({
+              attributes: (match[1] ?? "").trim(),
+              cssLength: (match[2] ?? "").trim().length,
+            }));
+            result[contract.path] = { status: response.status, styles };
+          }
+
+          console.log(JSON.stringify(result, null, 2));
+          await new Promise((resolve) => server.close(resolve));
+          globalThis.fetch = originalFetch;
+          EOF
+          node /tmp/inventory-style-markers.mjs > issue-541-style-markers.json
+          cat issue-541-style-markers.json
+
+      - name: Upload inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-541-style-markers
+          path: issue-541-style-markers.json
+          if-no-files-found: error
