@@ -118,6 +118,19 @@ describe("SSR style contract", () => {
     );
   });
 
+  it("rejects runtime post-processing providers disconnected from the final HTTP document", () => {
+    const contract = contractFor("inbox");
+    const html = authenticatedDocument(
+      `${providers.sharedShell}${providers.sharedDialog}.import-layout { display: grid; }`,
+      '<section class="import-layout">Inbox ficticia</section>',
+    );
+
+    const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
+
+    assert.ok(violations.some((violation) => violation.includes("provider=runtime:inbox-interface")));
+    assert.ok(violations.some((violation) => violation.includes("provider=runtime:round-selection")));
+  });
+
   it("rejects removal of the page provider even when an auxiliary provider remains", () => {
     const contract = contractFor("transactions");
     const html = authenticatedDocument(
