@@ -69,23 +69,6 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Prepare formatting diagnostic
-        if: failure()
-        run: |
-          npm run format
-          git diff > prettier.patch
-          git diff --name-only -z | tar --null -T - -czf prettier-formatted-files.tgz
-
-      - name: Upload formatting diagnostic
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: prettier-diagnostic-${{ github.sha }}
-          path: |
-            prettier.patch
-            prettier-formatted-files.tgz
-          if-no-files-found: error
-
       - name: Lint
         run: npm run lint
 
