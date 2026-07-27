@@ -31,7 +31,6 @@ const importCompiled = async (modulePath) =>
 
 const routesModule = await importCompiled("app-shell/routes.js");
 const webModule = await importCompiled("dev-server.js");
-const shellModule = await importCompiled("dev-server/shell.js");
 const sharedStylesModule = await importCompiled("dev-server/shared-styles.js");
 const statementModule = await importCompiled("dev-server/statement-presentation.js");
 const contractModule = await importCompiled("dev-server/ssr-style-contract.js");
@@ -114,19 +113,7 @@ if (JSON.stringify(rendererIds) !== JSON.stringify(contractIds)) {
 }
 
 const originalFetch = globalThis.fetch;
-globalThis.fetch = async () =>
-  new Response(
-    JSON.stringify({
-      error: {
-        code: "SSR_STYLE_FIXTURE",
-        message: "Fixture SSR sem dependencia de API.",
-      },
-    }),
-    {
-      status: 503,
-      headers: { "content-type": "application/json; charset=utf-8" },
-    },
-  );
+globalThis.fetch = async (input) => fixtureApiResponse(input);
 
 const renderedDocuments = new Map();
 try {
@@ -157,7 +144,6 @@ try {
 runNegativeControls({
   providers,
   renderedDocuments,
-  shellModule,
   solverFinSsrStyleContracts,
   validateRenderedSsrStyleDocument,
   violations,
@@ -168,6 +154,35 @@ if (violations.length > 0) fail(violations);
 console.log(
   `[SolverFin SSR style contract] validated ${solverFinSsrStyleContracts.length} available routes, all registered providers, actual SSR HTML and negative controls`,
 );
+
+function fixtureApiResponse(input) {
+  const requestUrl =
+    typeof input === "string" || input instanceof URL ? String(input) : String(input.url);
+  const { pathname } = new URL(requestUrl);
+
+  if (pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+  if (pathname === "/api/categories") return jsonResponse({ categories: [] });
+
+  return new Response(
+    JSON.stringify({
+      error: {
+        code: "SSR_STYLE_FIXTURE",
+        message: "Fixture SSR sem dependencia de API.",
+      },
+    }),
+    {
+      status: 503,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    },
+  );
+}
+
+function jsonResponse(body) {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
+}
 
 function validateProviderOutputs(providerCss, target) {
   for (const [providerName, css] of Object.entries(providerCss)) {
@@ -182,7 +197,6 @@ function validateProviderOutputs(providerCss, target) {
 function runNegativeControls({
   providers: providerCss,
   renderedDocuments: documents,
-  shellModule: shell,
   solverFinSsrStyleContracts: contracts,
   validateRenderedSsrStyleDocument: validateDocument,
   violations: target,
@@ -201,7 +215,13 @@ function runNegativeControls({
       target,
     );
 
-    const sharedOnlyContract = { ...dashboardContract, pageStyleMode: "shared-only" };
+    const sharedOnlyContract = {
+      ...dashboardContract,
+      pageStyleMode: "shared-only",
+      registeredStyleProviders: dashboardContract.registeredStyleProviders.filter(
+        (provider) => provider.kind !== "page",
+      ),
+    };
     const sharedOnlyHtml = replaceHeadStyleCss(dashboardHtml, providerCss.sharedShell);
     const sharedOnlyViolations = validateDocument({
       contract: sharedOnlyContract,
@@ -216,16 +236,22 @@ function runNegativeControls({
       );
     }
 
-    expectViolation(
-      validateDocument({
-        contract: dashboardContract,
-        html: replaceHeadStyleCss(dashboardHtml, providerCss.sharedShell),
-        providers: providerCss,
-      }),
-      `provider=page:${dashboardContract.routeId}`,
-      "page-specific empty CSS",
-      target,
+    const dashboardPageProvider = dashboardContract.registeredStyleProviders.find(
+      (provider) => provider.kind === "page",
     );
+    const dashboardPageFragment = dashboardPageProvider?.requiredCssFragments[0];
+    if (dashboardPageProvider && dashboardPageFragment) {
+      expectViolation(
+        validateDocument({
+          contract: dashboardContract,
+          html: removeStyleProviderFromDocument(dashboardHtml, dashboardPageFragment),
+          providers: providerCss,
+        }),
+        `provider=${dashboardPageProvider.providerId}`,
+        "page-specific provider disconnection",
+        target,
+      );
+    }
 
     const withoutBodyStyles = dashboardHtml.replace(
       /<body\b([^>]*)>[\s\S]*?<style\b[^>]*>[\s\S]*?<\/style>/i,
@@ -255,7 +281,28 @@ function runNegativeControls({
         providers: providerCss,
       }),
       "provider=shared-dialog",
-      "auxiliary style disconnection",
+      "auxiliary head style disconnection",
+      target,
+    );
+  }
+
+  const auxiliaryContract = contracts.find((contract) =>
+    contract.registeredStyleProviders.some((provider) => provider.kind === "auxiliary"),
+  );
+  const auxiliaryHtml = auxiliaryContract ? documents.get(auxiliaryContract.routeId) : undefined;
+  const auxiliaryProvider = auxiliaryContract?.registeredStyleProviders.find(
+    (provider) => provider.kind === "auxiliary",
+  );
+  const auxiliaryFragment = auxiliaryProvider?.requiredCssFragments[0];
+  if (auxiliaryContract && auxiliaryHtml && auxiliaryProvider && auxiliaryFragment) {
+    expectViolation(
+      validateDocument({
+        contract: auxiliaryContract,
+        html: removeStyleProviderFromDocument(auxiliaryHtml, auxiliaryFragment),
+        providers: providerCss,
+      }),
+      `provider=${auxiliaryProvider.providerId}`,
+      "registered auxiliary provider disconnection",
       target,
     );
   }
@@ -276,34 +323,35 @@ function runNegativeControls({
   }
 
   const conditionalContract = contracts.find(
-    (contract) => contract.conditionalHeadProviders.length > 0 && contract.representativeContent,
+    (contract) => contract.conditionalHeadProviders.length > 0,
   );
-  if (conditionalContract) {
-    const fixtureHtml = shell.renderAuthenticatedShellDocument({
-      activePathname: conditionalContract.path,
-      content: conditionalContract.representativeContent,
-      currentLabel: "Contrato SSR",
-      styles: `${providerCss.sharedShell}\n.ssr-style-contract-fixture { display: block; }`,
-    });
-    const fixtureViolations = validateDocument({
-      contract: conditionalContract,
-      html: fixtureHtml,
-      providers: providerCss,
-      requireConditionalProviders: true,
-    });
-    if (fixtureViolations.length > 0) {
-      target.push(...fixtureViolations.map((violation) => `${violation} [conditional fixture]`));
-    }
+  const conditionalHtml = conditionalContract
+    ? documents.get(conditionalContract.routeId)
+    : undefined;
+  const conditional = conditionalContract?.conditionalHeadProviders[0];
+  if (conditionalContract && conditionalHtml && conditional) {
+    expectViolation(
+      validateDocument({
+        contract: conditionalContract,
+        html: removeStyleProviderFromDocument(
+          conditionalHtml,
+          providerCss.statementPresentation,
+        ),
+        providers: providerCss,
+      }),
+      `provider=${conditional.providerId}`,
+      "conditional style disconnection on actual renderer",
+      target,
+    );
 
     expectViolation(
       validateDocument({
         contract: conditionalContract,
-        html: removeStyleProviderFromDocument(fixtureHtml, providerCss.statementPresentation),
+        html: conditionalHtml.replace(conditional.triggerHtmlFragment, ""),
         providers: providerCss,
-        requireConditionalProviders: true,
       }),
-      "provider=statement-presentation",
-      "conditional style disconnection",
+      "representative renderer did not activate conditional provider trigger",
+      "conditional trigger missing on actual renderer",
       target,
     );
   }
