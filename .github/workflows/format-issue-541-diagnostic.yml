@@ -1,0 +1,62 @@
+name: Format issue 541 diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format issue files
+        run: |
+          npx prettier --write \
+            README.md \
+            apps/web/package.json \
+            apps/web/src/build-artifact-smoke.test.ts \
+            apps/web/src/dev-server/shared-styles.test.ts \
+            apps/web/src/dev-server/shell-pages.test.ts \
+            apps/web/src/dev-server/ssr-style-contract.test.ts \
+            apps/web/src/dev-server/ssr-style-contract.ts \
+            docs/APP_SHELL.md \
+            docs/ARCHITECTURE.md \
+            docs/DESIGN_SYSTEM.md \
+            docs/README.md \
+            scripts/build-web.mjs \
+            scripts/validate-web-ssr-styles.mjs
+
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-541-formatted-files
+          if-no-files-found: error
+          path: |
+            README.md
+            apps/web/package.json
+            apps/web/src/build-artifact-smoke.test.ts
+            apps/web/src/dev-server/shared-styles.test.ts
+            apps/web/src/dev-server/shell-pages.test.ts
+            apps/web/src/dev-server/ssr-style-contract.test.ts
+            apps/web/src/dev-server/ssr-style-contract.ts
+            docs/APP_SHELL.md
+            docs/ARCHITECTURE.md
+            docs/DESIGN_SYSTEM.md
+            docs/README.md
+            scripts/build-web.mjs
+            scripts/validate-web-ssr-styles.mjs
