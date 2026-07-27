@@ -55,10 +55,7 @@ async function main(): Promise<void> {
     { amountMinor: 1 },
   );
   assert.equal(blockedLegacyEdit.statusCode, 409);
-  assert.equal(
-    readErrorCode(blockedLegacyEdit),
-    "TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE",
-  );
+  assert.equal(readErrorCode(blockedLegacyEdit), "TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE");
 
   const ungroupGuard = await guardRequest(
     token,
