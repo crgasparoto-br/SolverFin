@@ -6,7 +6,7 @@ Todas as rotas exigem autenticação e usam o perfil financeiro ativo. Recursos 
 
 ## Parcelas canônicas e agrupamento
 
-Lançamentos vinculados a `Installment` por `Transaction.installmentId` não são elegíveis para novos agrupamentos. O marcador de seleção fica desabilitado no Extrato, e uma tentativa direta pela API retorna `409 TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE` sem alterar o lançamento, a parcela, o grupo ou a auditoria.
+Lançamentos vinculados a `Installment` por `Transaction.installmentId` não são elegíveis para novos agrupamentos. O marcador da linha permanece disponível para as ações operacionais em massa; quando uma parcela canônica está selecionada, somente **Unificar lançamentos** fica desabilitado e orienta o usuário a desmarcá-la. Uma tentativa direta pela API retorna `409 TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE` sem alterar o lançamento, a parcela, o grupo ou a auditoria.
 
 Agrupamentos legados que já contenham uma parcela preservam o indicador **Parcela X de Y** na linha consolidada e mostram orientação para desagrupar. Enquanto o vínculo existir, ações de edição, clonagem, conciliação, desconciliação ou exclusão do grupo e de seus membros retornam o mesmo erro controlado. O contrato `DELETE /api/transaction-groups/:groupId` permanece disponível para desagrupar sem alterar os lançamentos; depois disso, a parcela volta ao fluxo conservador de manutenção documentado em [`API_INSTALLMENTS.md`](./API_INSTALLMENTS.md).
 
