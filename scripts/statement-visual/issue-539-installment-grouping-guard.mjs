@@ -111,7 +111,11 @@ try {
     installmentId: fixture.installmentId,
     transactionId: fixture.installmentTransactionId,
   });
-  check(unreconcile.transaction?.status === "posted", "Canonical transaction was not posted", unreconcile);
+  check(
+    unreconcile.transaction?.status === "posted",
+    "Canonical transaction was not posted",
+    unreconcile,
+  );
   check(
     unreconcile.installment?.transaction?.status === "posted",
     "Installment did not reflect unreconciliation",
