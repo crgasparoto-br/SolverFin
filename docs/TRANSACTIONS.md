@@ -128,8 +128,17 @@ selecionada como referência histórica.
 Mudanças de valor, datas, conta, tipo, situação, repetição ou redistribuição permanecem fora desse
 fluxo. O endpoint genérico de transações rejeita atualizações de dados de registros com
 `installmentId`, exceto o payload exclusivo de situação usado pela ação operacional de conciliar ou
-desconciliar. O contrato de agrupamento também não pode ser usado como caminho alternativo: parcelas
-não entram em novos grupos, e grupos legados precisam ser desagrupados antes da manutenção.
+desconciliar. Quando esse payload foi construído a partir de um snapshot anterior, a persistência
+preserva `description`, `note` e `categoryId` já confirmados por uma edição concorrente da parcela, sem
+restaurar silenciosamente os valores antigos.
+
+A exclusão lógica individual ou em massa continua permitida como transição operacional. Nesse caso, a
+`Transaction` passa para `voided`, a `Installment` permanece consultável para histórico e a manutenção
+direta fica bloqueada com `transaction_status_locked`. Essa regra não autoriza exclusão física nem
+transforma o `PATCH` de parcela em rota de mudança de situação.
+
+O contrato de agrupamento também não pode ser usado como caminho alternativo: parcelas não entram em
+novos grupos, e grupos legados precisam ser desagrupados antes da manutenção.
 
 O modo manual **Repetição = Parcelado** ainda cria transações independentes e não cria registros
 `Installment`; por isso esses lançamentos não recebem o indicador nem a manutenção conservadora de
