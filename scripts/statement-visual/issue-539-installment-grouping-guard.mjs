@@ -42,40 +42,42 @@ try {
     desktop,
   );
 
-  await selectTransactions([fixture.installmentTransactionId, fixture.ordinaryTransactionId]);
-  const desktopSelection = await readSelectionState(
+  await selectTransactions([fixture.installmentTransactionId]);
+  const unreconcileSelection = await readSelectionState(
     fixture.installmentTransactionId,
     fixture.ordinaryTransactionId,
   );
   check(
-    desktopSelection.canonicalSelected,
+    unreconcileSelection.canonicalSelected,
     "Canonical installment was not selected",
-    desktopSelection,
+    unreconcileSelection,
   );
   check(
-    desktopSelection.ordinarySelected,
-    "Ordinary transaction was not selected",
-    desktopSelection,
-  );
-  check(
-    desktopSelection.groupingDisabled,
+    unreconcileSelection.groupingDisabled,
     "Grouping remained available with a canonical installment",
-    desktopSelection,
+    unreconcileSelection,
   );
   check(
-    desktopSelection.groupingTitle.includes("Desmarque as parcelas canônicas"),
+    unreconcileSelection.groupingTitle.includes("Desmarque as parcelas canônicas"),
     "Grouping restriction is not explained on the action",
-    desktopSelection,
+    unreconcileSelection,
   );
   check(
-    desktopSelection.help.includes("continuam disponíveis para conciliar, desconciliar ou excluir"),
+    unreconcileSelection.help.includes(
+      "continuam disponíveis para conciliar, desconciliar ou excluir",
+    ),
     "Bulk action help does not distinguish grouping from allowed actions",
-    desktopSelection,
+    unreconcileSelection,
   );
   check(
-    !desktopSelection.voidDisabled,
+    !unreconcileSelection.unreconcileDisabled,
+    "Unreconciliation was blocked for the canonical installment",
+    unreconcileSelection,
+  );
+  check(
+    !unreconcileSelection.voidDisabled,
     "Logical deletion was blocked for the canonical installment",
-    desktopSelection,
+    unreconcileSelection,
   );
 
   const apiGuard = await evaluate(
@@ -102,13 +104,65 @@ try {
 
   const desktopScreenshot = "issue-539-installment-grouping-guard-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, desktopScreenshot));
+
+  const unreconcile = await executeBulkAction({
+    action: "unreconcile",
+    expectedStatusText: "Conciliação desmarcada",
+    installmentId: fixture.installmentId,
+    transactionId: fixture.installmentTransactionId,
+  });
+  check(unreconcile.transaction?.status === "posted", "Canonical transaction was not posted", unreconcile);
+  check(
+    unreconcile.installment?.transaction?.status === "posted",
+    "Installment did not reflect unreconciliation",
+    unreconcile,
+  );
+
+  await navigate(browser.cdp, `${baseUrl}${route}`);
+  await waitForGuardedLine(fixture.installmentTransactionId);
+  await selectTransactions([fixture.installmentTransactionId]);
+  const reconcileSelection = await readSelectionState(
+    fixture.installmentTransactionId,
+    fixture.ordinaryTransactionId,
+  );
+  check(
+    !reconcileSelection.reconcileDisabled,
+    "Reconciliation was blocked for the canonical installment",
+    reconcileSelection,
+  );
+  check(
+    reconcileSelection.groupingDisabled,
+    "Grouping became available during reconciliation selection",
+    reconcileSelection,
+  );
+
+  const reconcile = await executeBulkAction({
+    action: "reconcile",
+    expectedStatusText: "Lançamentos conciliados",
+    installmentId: fixture.installmentId,
+    transactionId: fixture.installmentTransactionId,
+  });
+  check(
+    reconcile.transaction?.status === "reconciled",
+    "Canonical transaction was not reconciled",
+    reconcile,
+  );
+  check(
+    reconcile.installment?.transaction?.status === "reconciled",
+    "Installment did not reflect reconciliation",
+    reconcile,
+  );
+
   scenarios.push({
     route,
     viewport: "1366x768",
-    state: "canonical installment selected for bulk actions with grouping disabled",
+    state: "canonical installment reconciled and unreconciled through bulk actions",
     screenshot: desktopScreenshot,
     desktop,
-    desktopSelection,
+    unreconcileSelection,
+    unreconcile,
+    reconcileSelection,
+    reconcile,
     apiGuard,
   });
 
@@ -138,12 +192,13 @@ try {
   const mobileScreenshot = "issue-539-installment-grouping-guard-390x844.png";
   await screenshot(browser.cdp, join(outputDir, mobileScreenshot));
 
-  const bulkVoid = await executeBulkVoid(fixture.installmentId, fixture.ordinaryTransactionId);
-  check(
-    bulkVoid.statusText.includes("Lançamentos excluídos"),
-    "Bulk logical deletion did not complete",
-    bulkVoid,
-  );
+  const bulkVoid = await executeBulkAction({
+    action: "void",
+    expectedStatusText: "Lançamentos excluídos",
+    installmentId: fixture.installmentId,
+    transactionId: fixture.installmentTransactionId,
+    additionalTransactionId: fixture.ordinaryTransactionId,
+  });
   check(
     bulkVoid.installment?.id === fixture.installmentId,
     "Installment history was removed",
@@ -161,7 +216,7 @@ try {
     bulkVoid,
   );
   check(
-    bulkVoid.ordinaryTransaction?.status === "voided",
+    bulkVoid.additionalTransaction?.status === "voided",
     "Ordinary selected transaction was not voided",
     bulkVoid,
   );
@@ -249,6 +304,8 @@ async function readSelectionState(canonicalTransactionId, ordinaryTransactionId)
       const canonical = document.querySelector('[data-select-transaction][value="${canonicalTransactionId}"]');
       const ordinary = document.querySelector('[data-select-transaction][value="${ordinaryTransactionId}"]');
       const groupOpen = document.querySelector("[data-group-open]");
+      const reconcileButton = document.querySelector('[data-bulk-selection-action="reconcile"]');
+      const unreconcileButton = document.querySelector('[data-bulk-selection-action="unreconcile"]');
       const voidButton = document.querySelector('[data-bulk-selection-action="void"]');
       return {
         canonicalSelected: canonical?.checked === true,
@@ -256,6 +313,8 @@ async function readSelectionState(canonicalTransactionId, ordinaryTransactionId)
         groupingDisabled: groupOpen?.disabled === true,
         groupingTitle: groupOpen?.title || "",
         help: document.querySelector("[data-bulk-selection-help]")?.textContent || "",
+        reconcileDisabled: reconcileButton?.disabled !== false,
+        unreconcileDisabled: unreconcileButton?.disabled !== false,
         voidDisabled: voidButton?.disabled !== false,
         selectionCount: document.querySelector("[data-selection-count]")?.textContent || "",
         globalOverflow: document.documentElement.scrollWidth > window.innerWidth
@@ -264,7 +323,13 @@ async function readSelectionState(canonicalTransactionId, ordinaryTransactionId)
   );
 }
 
-async function executeBulkVoid(installmentId, ordinaryTransactionId) {
+async function executeBulkAction({
+  action,
+  expectedStatusText,
+  installmentId,
+  transactionId,
+  additionalTransactionId,
+}) {
   await evaluate(
     browser.cdp,
     `(() => {
@@ -274,8 +339,8 @@ async function executeBulkVoid(installmentId, ordinaryTransactionId) {
         if (typeof callback === "function" && String(callback).includes("window.location.reload")) return 0;
         return nativeSetTimeout(callback, delay, ...args);
       };
-      const button = document.querySelector('[data-bulk-selection-action="void"]');
-      if (!button || button.disabled) throw new Error("Bulk logical deletion is unavailable");
+      const button = document.querySelector('[data-bulk-selection-action="${action}"]');
+      if (!button || button.disabled) throw new Error("Bulk ${action} action is unavailable");
       button.click();
     })()`,
   );
@@ -285,21 +350,28 @@ async function executeBulkVoid(installmentId, ordinaryTransactionId) {
     `(async () => {
       for (let attempt = 0; attempt < 80; attempt += 1) {
         const statusText = document.querySelector("[data-bulk-selection-status]")?.textContent || "";
-        if (statusText.includes("Lançamentos excluídos")) {
+        if (statusText.includes(${JSON.stringify(expectedStatusText)})) {
           const installmentResponse = await fetch("/api/installments?installmentId=${installmentId}&status=all");
           const installmentBody = await installmentResponse.json();
-          const ordinaryResponse = await fetch("/api/transactions/${ordinaryTransactionId}");
-          const ordinaryBody = await ordinaryResponse.json();
+          const transactionResponse = await fetch("/api/transactions/${transactionId}");
+          const transactionBody = await transactionResponse.json();
+          let additionalTransaction;
+          if (${JSON.stringify(additionalTransactionId ?? "")}) {
+            const additionalResponse = await fetch("/api/transactions/${additionalTransactionId ?? ""}");
+            const additionalBody = await additionalResponse.json();
+            additionalTransaction = additionalBody.transaction;
+          }
           return {
             statusText,
             installment: installmentBody.installments?.[0],
-            ordinaryTransaction: ordinaryBody.transaction
+            transaction: transactionBody.transaction,
+            additionalTransaction
           };
         }
         if (statusText.includes("Não foi possível")) throw new Error(statusText);
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      throw new Error("Timed out waiting for bulk logical deletion");
+      throw new Error("Timed out waiting for bulk ${action} action");
     })()`,
   );
 }
@@ -347,17 +419,24 @@ function fixtureExpression() {
     )).installments;
     const installment = installments.find((item) => item.transaction?.id);
     if (!installment?.transaction?.id) throw new Error("Grouping guard fixture did not create an installment");
+    await request("/api/transactions/" + installment.transaction.id, "PATCH", {
+      status: "reconciled"
+    });
 
     const ordinary = (await request("/api/transactions", "POST", {
       kind: "expense",
-      status: "planned",
+      status: "posted",
       amountMinor: 6789,
       occurredOn: "2026-07-15",
       plannedOn: "2026-07-15",
+      effectiveOn: "2026-07-15",
       accountId: account.id,
       categoryId: category.id,
       description: "QA lançamento comum para agrupamento"
     })).transaction;
+    await request("/api/transactions/" + ordinary.id, "PATCH", {
+      status: "reconciled"
+    });
 
     return {
       accountId: account.id,
