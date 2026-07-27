@@ -333,10 +333,7 @@ function runNegativeControls({
     expectViolation(
       validateDocument({
         contract: conditionalContract,
-        html: removeStyleProviderFromDocument(
-          conditionalHtml,
-          providerCss.statementPresentation,
-        ),
+        html: removeStyleProviderFromDocument(conditionalHtml, providerCss.statementPresentation),
         providers: providerCss,
       }),
       `provider=${conditional.providerId}`,

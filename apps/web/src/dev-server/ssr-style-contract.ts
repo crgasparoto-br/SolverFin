@@ -74,14 +74,9 @@ export const solverFinSsrStyleContracts = [
   authenticated("accountsCards", "/contas-cartoes", "accounts-cards-page.js", {
     pageCssFragments: [".master-toolbar {"],
   }),
-  authenticated(
-    "accountRemuneration",
-    "/remuneracao-contas",
-    "account-remuneration-page.js",
-    {
-      pageCssFragments: [".configuration-card {"],
-    },
-  ),
+  authenticated("accountRemuneration", "/remuneracao-contas", "account-remuneration-page.js", {
+    pageCssFragments: [".configuration-card {"],
+  }),
   authenticated("categories", "/categorias", "categories-page.js", {
     pageCssFragments: [".categories-workspace {"],
   }),
@@ -323,10 +318,7 @@ function authenticated(
     pageStyleMode,
     requiredHeadProviders: overrides.requiredHeadProviders ?? ["shared-shell"],
     conditionalHeadProviders: overrides.conditionalHeadProviders ?? [],
-    registeredStyleProviders: [
-      ...pageProvider,
-      ...(overrides.auxiliaryStyleProviders ?? []),
-    ],
+    registeredStyleProviders: [...pageProvider, ...(overrides.auxiliaryStyleProviders ?? [])],
   };
 }
 
@@ -350,7 +342,11 @@ function validateRegisteredProviderDeclarations(
   }
   if (contract.pageStyleMode === "shared-only" && pageProviders.length > 0) {
     violations.push(
-      formatViolation(contract, "shared-only", "shared-only route must not register a page provider"),
+      formatViolation(
+        contract,
+        "shared-only",
+        "shared-only route must not register a page provider",
+      ),
     );
   }
 
@@ -374,7 +370,11 @@ function validateRegisteredProviderDeclarations(
     for (const fragment of provider.requiredCssFragments) {
       if (fragment.trim().length === 0) {
         violations.push(
-          formatViolation(contract, provider.providerId, "registered provider has an empty CSS fragment"),
+          formatViolation(
+            contract,
+            provider.providerId,
+            "registered provider has an empty CSS fragment",
+          ),
         );
       }
     }
