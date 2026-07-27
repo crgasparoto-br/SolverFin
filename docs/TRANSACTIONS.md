@@ -58,8 +58,9 @@ copiados nem alterados. O total é recalculado pela soma inteira de `amountMinor
 
 O primeiro corte aceita somente dois ou mais lançamentos da mesma organização, perfil, conta, moeda,
 tipo (`income` ou `expense`) e status; exclui cartões, transferências, `suggested`, `voided`, itens já
-agrupados e lançamentos com `installmentId`. O marcador de seleção de uma parcela canônica fica
-desabilitado, e a API rejeita tentativa direta de agrupamento com
+agrupados e lançamentos com `installmentId`. A parcela canônica continua selecionável para ações
+operacionais em massa, mas sua presença na seleção desabilita somente **Unificar lançamentos**. A API
+rejeita tentativa direta de agrupamento com
 `409 TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE`.
 
 Alterações posteriores de conta, tipo, moeda, status ou exclusão são bloqueadas até o usuário
@@ -85,8 +86,10 @@ ação.
 
 A seleção pode combinar lançamentos simples e agrupados. A barra informa quantidade de itens,
 quantidade real de lançamentos representados quando forem diferentes e total financeiro sem dupla
-contagem. Um agrupamento selecionado impede nova unificação, pois grupos não podem ser aninhados.
-Agrupamentos legados com parcela canônica não participam da seleção até serem desagrupados.
+contagem. Um agrupamento selecionado impede nova unificação, pois grupos não podem ser aninhados. Uma
+parcela canônica selecionada também impede somente a unificação, sem bloquear conciliação,
+desconciliação ou exclusão lógica quando os estados forem elegíveis. Agrupamentos legados com parcela
+canônica não participam da seleção até serem desagrupados.
 
 As ações em massa disponíveis são:
 
