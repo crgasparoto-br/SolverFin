@@ -26,7 +26,11 @@ try {
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const desktop = await waitForGuardedLine(fixture.installmentTransactionId);
   check(desktop.badge === fixture.badge, "Canonical installment badge is missing", desktop);
-  check(!desktop.selectionDisabled, "Canonical installment is unavailable for bulk actions", desktop);
+  check(
+    !desktop.selectionDisabled,
+    "Canonical installment is unavailable for bulk actions",
+    desktop,
+  );
   check(
     desktop.selectionLabel.includes("indisponível para unificação"),
     "Canonical selection does not explain the grouping restriction",
@@ -38,17 +42,26 @@ try {
     desktop,
   );
 
-  await selectTransactions([
-    fixture.installmentTransactionId,
-    fixture.ordinaryTransactionId,
-  ]);
+  await selectTransactions([fixture.installmentTransactionId, fixture.ordinaryTransactionId]);
   const desktopSelection = await readSelectionState(
     fixture.installmentTransactionId,
     fixture.ordinaryTransactionId,
   );
-  check(desktopSelection.canonicalSelected, "Canonical installment was not selected", desktopSelection);
-  check(desktopSelection.ordinarySelected, "Ordinary transaction was not selected", desktopSelection);
-  check(desktopSelection.groupingDisabled, "Grouping remained available with a canonical installment", desktopSelection);
+  check(
+    desktopSelection.canonicalSelected,
+    "Canonical installment was not selected",
+    desktopSelection,
+  );
+  check(
+    desktopSelection.ordinarySelected,
+    "Ordinary transaction was not selected",
+    desktopSelection,
+  );
+  check(
+    desktopSelection.groupingDisabled,
+    "Grouping remained available with a canonical installment",
+    desktopSelection,
+  );
   check(
     desktopSelection.groupingTitle.includes("Desmarque as parcelas canônicas"),
     "Grouping restriction is not explained on the action",
@@ -59,7 +72,11 @@ try {
     "Bulk action help does not distinguish grouping from allowed actions",
     desktopSelection,
   );
-  check(!desktopSelection.voidDisabled, "Logical deletion was blocked for the canonical installment", desktopSelection);
+  check(
+    !desktopSelection.voidDisabled,
+    "Logical deletion was blocked for the canonical installment",
+    desktopSelection,
+  );
 
   const apiGuard = await evaluate(
     browser.cdp,
@@ -98,35 +115,56 @@ try {
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const mobile = await waitForGuardedLine(fixture.installmentTransactionId);
-  check(!mobile.selectionDisabled, "Mobile canonical installment is unavailable for bulk actions", mobile);
+  check(
+    !mobile.selectionDisabled,
+    "Mobile canonical installment is unavailable for bulk actions",
+    mobile,
+  );
   check(!mobile.globalOverflow, "Grouping guard caused horizontal overflow on mobile", mobile);
 
-  await selectTransactions([
-    fixture.installmentTransactionId,
-    fixture.ordinaryTransactionId,
-  ]);
+  await selectTransactions([fixture.installmentTransactionId, fixture.ordinaryTransactionId]);
   const mobileSelection = await readSelectionState(
     fixture.installmentTransactionId,
     fixture.ordinaryTransactionId,
   );
   check(mobileSelection.groupingDisabled, "Mobile grouping remained available", mobileSelection);
   check(!mobileSelection.voidDisabled, "Mobile logical deletion remained blocked", mobileSelection);
-  check(!mobileSelection.globalOverflow, "Bulk selection caused horizontal overflow on mobile", mobileSelection);
+  check(
+    !mobileSelection.globalOverflow,
+    "Bulk selection caused horizontal overflow on mobile",
+    mobileSelection,
+  );
 
   const mobileScreenshot = "issue-539-installment-grouping-guard-390x844.png";
   await screenshot(browser.cdp, join(outputDir, mobileScreenshot));
 
   const bulkVoid = await executeBulkVoid(fixture.installmentId, fixture.ordinaryTransactionId);
-  check(bulkVoid.statusText.includes("Lançamentos excluídos"), "Bulk logical deletion did not complete", bulkVoid);
-  check(bulkVoid.installment?.id === fixture.installmentId, "Installment history was removed", bulkVoid);
-  check(bulkVoid.installment?.transaction?.status === "voided", "Canonical transaction was not voided", bulkVoid);
+  check(
+    bulkVoid.statusText.includes("Lançamentos excluídos"),
+    "Bulk logical deletion did not complete",
+    bulkVoid,
+  );
+  check(
+    bulkVoid.installment?.id === fixture.installmentId,
+    "Installment history was removed",
+    bulkVoid,
+  );
+  check(
+    bulkVoid.installment?.transaction?.status === "voided",
+    "Canonical transaction was not voided",
+    bulkVoid,
+  );
   check(bulkVoid.installment?.editable === false, "Voided installment remained editable", bulkVoid);
   check(
     bulkVoid.installment?.editBlockedReason === "transaction_status_locked",
     "Voided installment returned the wrong block reason",
     bulkVoid,
   );
-  check(bulkVoid.ordinaryTransaction?.status === "voided", "Ordinary selected transaction was not voided", bulkVoid);
+  check(
+    bulkVoid.ordinaryTransaction?.status === "voided",
+    "Ordinary selected transaction was not voided",
+    bulkVoid,
+  );
 
   scenarios.push({
     route,
