@@ -9,7 +9,10 @@ export type SsrHeadStyleProviderId =
   | "shared-shell"
   | "shared-dialog"
   | "statement-presentation";
-export type SsrRegisteredStyleProviderId = `page:${ShellRouteId}` | "aux:recurrences-section";
+export type SsrRegisteredStyleProviderId =
+  | `page:${ShellRouteId}`
+  | `aux:${string}`
+  | `runtime:${string}`;
 
 export interface SsrConditionalHeadProviderRequirement {
   providerId: Exclude<SsrHeadStyleProviderId, "login-public" | "shared-shell" | "shared-dialog">;
@@ -53,6 +56,21 @@ const recurrenceAuxiliaryProvider: SsrRegisteredStyleProviderRequirement = {
   requiredCssFragments: [".recurrence-indicator{"],
 };
 
+const inboxRuntimeStyleProviders: readonly SsrRegisteredStyleProviderRequirement[] = [
+  {
+    providerId: "runtime:inbox-interface",
+    kind: "auxiliary",
+    moduleFileName: "inbox-interface-enhancement.js",
+    requiredCssFragments: [".inbox-page {"],
+  },
+  {
+    providerId: "runtime:round-selection",
+    kind: "auxiliary",
+    moduleFileName: "round-selection-control-enhancement.js",
+    requiredCssFragments: [".system-round-selector {"],
+  },
+];
+
 export const solverFinSsrStyleContracts = [
   authenticated("dashboard", "/dashboard", "dashboard-page.js", {
     pageCssFragments: [".dashboard-heading {"],
@@ -87,6 +105,7 @@ export const solverFinSsrStyleContracts = [
   authenticated("inbox", "/inbox", "inbox-page.js", {
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
     pageCssFragments: [".import-layout {"],
+    auxiliaryStyleProviders: inboxRuntimeStyleProviders,
   }),
   authenticated("reports", "/relatorios", "reports-page.js", {
     pageCssFragments: [".reports-heading {"],
