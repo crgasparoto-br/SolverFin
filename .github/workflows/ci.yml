@@ -66,38 +66,8 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
-      - name: Format issue 539 correction files
-        run: >-
-          npx prettier --write
-          apps/web/src/dev-server/transaction-group-installment-guard.ts
-          apps/web/src/dev-server/transaction-group-installment-guard.test.ts
-          scripts/statement-visual/issue-539-installment-grouping-guard.mjs
-          docs/API_INSTALLMENTS.md
-          docs/API_TRANSACTION_GROUP_ACTIONS.md
-          docs/TRANSACTIONS.md
-
-      - name: Package formatted issue 539 files
-        run: >-
-          tar -czf issue-539-formatted.tgz
-          apps/web/src/dev-server/transaction-group-installment-guard.ts
-          apps/web/src/dev-server/transaction-group-installment-guard.test.ts
-          scripts/statement-visual/issue-539-installment-grouping-guard.mjs
-          docs/API_INSTALLMENTS.md
-          docs/API_TRANSACTION_GROUP_ACTIONS.md
-          docs/TRANSACTIONS.md
-
-      - name: Upload formatted issue 539 files
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-539-formatted
-          path: issue-539-formatted.tgz
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Stop after formatter artifact
-        run: |
-          git diff --stat
-          exit 1
+      - name: Check formatting
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
