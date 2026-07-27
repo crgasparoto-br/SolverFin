@@ -4,14 +4,14 @@ on:
   push:
     branches:
       - feat/539-operational-installments
-    paths:
-      - .github/workflows/issue-539-apply-audit-fixes.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   apply-fixes:
+    if: github.actor != 'solverfin-orchestrator[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -20,41 +20,29 @@ jobs:
           ref: feat/539-operational-installments
           fetch-depth: 0
 
-      - name: Apply audited fixes
+      - name: Apply fixes
         shell: bash
         run: |
           python <<'PY'
           from pathlib import Path
+          import re
 
-          def replace_once(path: str, old: str, new: str) -> None:
-              file = Path(path)
-              text = file.read_text(encoding="utf-8")
-              count = text.count(old)
+          def read(path: str) -> str:
+              return Path(path).read_text(encoding="utf-8")
+
+          def write(path: str, text: str) -> None:
+              Path(path).write_text(text, encoding="utf-8")
+
+          def sub_once(path: str, pattern: str, replacement: str, flags: int = 0) -> None:
+              text = read(path)
+              updated, count = re.subn(pattern, replacement, text, count=1, flags=flags)
               if count != 1:
-                  raise SystemExit(f"{path}: expected one replacement, found {count}")
-              file.write_text(text.replace(old, new, 1), encoding="utf-8")
+                  raise SystemExit(f"{path}: pattern matched {count} times: {pattern[:80]}")
+              write(path, updated)
 
-          replace_once(
+          sub_once(
               "apps/api/src/repositories/installments.ts",
-              '''function resolveEditBlockedReason(row: Row): InstallmentEditBlockedReason | undefined {
-            if (!row.transactionId || !row.transactionStatus) {
-              return "linked_transaction_missing";
-            }
-
-            if (lower(row.status) !== "planned") {
-              return "installment_status_locked";
-            }
-
-            if (lower(row.transactionStatus) !== "planned") {
-              return "transaction_status_locked";
-            }
-
-            if (row.invoiceId) {
-              return "invoice_linked";
-            }
-
-            return undefined;
-          }''',
+              r"function resolveEditBlockedReason\(row: Row\): InstallmentEditBlockedReason \| undefined \{.*?\n\}\n\nfunction readNestedId",
               '''export function resolveEditBlockedReason(
             row: Readonly<Record<string, unknown>>,
           ): InstallmentEditBlockedReason | undefined {
@@ -75,14 +63,70 @@ jobs:
             }
 
             return undefined;
-          }''',
+          }
+
+          function readNestedId''',
+              re.S,
           )
 
-          replace_once(
-              "apps/web/src/dev-server/operational-installments.ts",
-              '''  .installment-details {
-              background: #f8fafc;''',
-              '''  .installment-badge[data-installment-block-reason] {
+          api_test = Path("apps/api/src/repositories/installments-edit-block-reason.test.ts")
+          api_test.write_text('''import assert from "node:assert/strict";
+          import test from "node:test";
+
+          import { resolveEditBlockedReason } from "./installments.js";
+
+          for (const transactionStatus of ["PLANNED", "POSTED", "RECONCILED", "CANCELLED"]) {
+            test(`invoice-linked installment takes precedence over ${transactionStatus.toLowerCase()} transaction status`, () => {
+              assert.equal(
+                resolveEditBlockedReason({
+                  transactionId: "transaction-demo",
+                  transactionStatus,
+                  status: "PLANNED",
+                  invoiceId: "invoice-demo",
+                }),
+                "invoice_linked",
+              );
+            });
+          }
+
+          test("invoice-linked reason takes precedence over a non-planned installment", () => {
+            assert.equal(
+              resolveEditBlockedReason({
+                transactionId: "transaction-demo",
+                transactionStatus: "POSTED",
+                status: "POSTED",
+                invoiceId: "invoice-demo",
+              }),
+              "invoice_linked",
+            );
+          });
+
+          test("non-invoice installments retain status-specific reasons", () => {
+            assert.equal(
+              resolveEditBlockedReason({
+                transactionId: "transaction-demo",
+                transactionStatus: "POSTED",
+                status: "PLANNED",
+              }),
+              "transaction_status_locked",
+            );
+            assert.equal(
+              resolveEditBlockedReason({
+                transactionId: "transaction-demo",
+                transactionStatus: "PLANNED",
+                status: "POSTED",
+              }),
+              "installment_status_locked",
+            );
+            assert.equal(resolveEditBlockedReason({ status: "PLANNED" }), "linked_transaction_missing");
+          });
+          ''', encoding="utf-8")
+
+          web_path = "apps/web/src/dev-server/operational-installments.ts"
+          web = read(web_path)
+          css_anchor = '''  .installment-details {
+              background: #f8fafc;'''
+          css_insert = '''  .installment-badge[data-installment-block-reason] {
               cursor: help;
               position: relative;
             }
@@ -121,22 +165,15 @@ jobs:
               width: 1px;
             }
             .installment-details {
-              background: #f8fafc;''',
-          )
+              background: #f8fafc;'''
+          if css_anchor not in web:
+              raise SystemExit("operational-installments.ts: CSS anchor not found")
+          web = web.replace(css_anchor, css_insert, 1)
+          write(web_path, web)
 
-          replace_once(
-              "apps/web/src/dev-server/operational-installments.ts",
-              '''      function addBadge(row, installment) {
-                const description = row && row.querySelector(".description strong");
-                if (!description || description.querySelector('[data-installment-badge="' + installment.id + '"]')) return;
-                const badge = document.createElement("span");
-                badge.className = "installment-badge";
-                badge.dataset.installmentBadge = installment.id;
-                badge.textContent = installmentLabel(installment);
-                badge.setAttribute("aria-label", installmentLabel(installment));
-                badge.title = blockReason(installment.editBlockedReason) || badge.textContent;
-                description.appendChild(badge);
-              }''',
+          sub_once(
+              web_path,
+              r"      function addBadge\(row, installment\) \{.*?\n      \}\n\n      async function fetchInstallments",
               '''      function addBadge(row, installment) {
                 const description = row && row.querySelector(".description strong");
                 if (!description || description.querySelector('[data-installment-badge="' + installment.id + '"]')) return;
@@ -160,85 +197,32 @@ jobs:
                   description.appendChild(reason);
                 }
                 description.appendChild(badge);
-              }''',
+              }
+
+              async function fetchInstallments''',
+              re.S,
           )
 
-          test_file = Path("apps/api/src/repositories/installments-edit-block-reason.test.ts")
-          test_file.write_text('''import assert from "node:assert/strict";
-          import test from "node:test";
-
-          import { resolveEditBlockedReason } from "./installments.js";
-
-          for (const transactionStatus of ["PLANNED", "POSTED", "RECONCILED", "CANCELLED"]) {
-            test(`invoice-linked installment takes precedence over ${transactionStatus.toLowerCase()} transaction status`, () => {
-              assert.equal(
-                resolveEditBlockedReason({
-                  transactionId: "transaction-demo",
-                  transactionStatus,
-                  status: "PLANNED",
-                  invoiceId: "invoice-demo",
-                }),
-                "invoice_linked",
-              );
-            });
-          }
-
-          test("invoice-linked reason also takes precedence over a non-planned installment status", () => {
-            assert.equal(
-              resolveEditBlockedReason({
-                transactionId: "transaction-demo",
-                transactionStatus: "POSTED",
-                status: "POSTED",
-                invoiceId: "invoice-demo",
-              }),
-              "invoice_linked",
-            );
-          });
-
-          test("non-invoice installments retain the existing status-specific reasons", () => {
-            assert.equal(
-              resolveEditBlockedReason({
-                transactionId: "transaction-demo",
-                transactionStatus: "POSTED",
-                status: "PLANNED",
-              }),
-              "transaction_status_locked",
-            );
-            assert.equal(
-              resolveEditBlockedReason({
-                transactionId: "transaction-demo",
-                transactionStatus: "PLANNED",
-                status: "POSTED",
-              }),
-              "installment_status_locked",
-            );
-            assert.equal(
-              resolveEditBlockedReason({ status: "PLANNED" }),
-              "linked_transaction_missing",
-            );
-          });
-          ''', encoding="utf-8")
-
-          replace_once(
-              "apps/web/src/dev-server/operational-installments.test.ts",
-              '''  assert.match(script, /addEventListener\("keydown", keepInstallmentFocusInsideModal\)/);
-          });''',
-              '''  assert.match(script, /addEventListener\("keydown", keepInstallmentFocusInsideModal\)/);
-            assert.match(script, /badge\.tabIndex = 0/);
+          test_path = "apps/web/src/dev-server/operational-installments.test.ts"
+          test_text = read(test_path)
+          marker = '  assert.match(script, /addEventListener\\("keydown", keepInstallmentFocusInsideModal\\)/);\n});'
+          replacement = '''  assert.match(script, /addEventListener\\("keydown", keepInstallmentFocusInsideModal\\)/);
+            assert.match(script, /badge\\.tabIndex = 0/);
             assert.match(script, /aria-describedby/);
             assert.match(script, /installment-assistive-text/);
             assert.match(script, /installmentBlockReason/);
-          });''',
-          )
+          });'''
+          if marker not in test_text:
+              raise SystemExit("operational-installments.test.ts: assertion anchor not found")
+          write(test_path, test_text.replace(marker, replacement, 1))
 
-          replace_once(
-              "scripts/statement-visual/issue-539-operational-installments.mjs",
-              '''  check(line.badge === fixture.cardBadge, "Card installment badge is missing", line);
+          visual_path = "scripts/statement-visual/issue-539-operational-installments.mjs"
+          visual = read(visual_path)
+          card_checks = '''  check(line.badge === fixture.cardBadge, "Card installment badge is missing", line);
             check(line.purchaseEditEnabled, "Open invoice purchase was incorrectly blocked", line);
             check(!line.hasInstallmentEdit, "Card purchase was redirected to installment PATCH", line);
-
-            await evaluate(''',
-              '''  check(line.badge === fixture.cardBadge, "Card installment badge is missing", line);
+          '''
+          card_checks_new = '''  check(line.badge === fixture.cardBadge, "Card installment badge is missing", line);
             check(line.purchaseEditEnabled, "Open invoice purchase was incorrectly blocked", line);
             check(!line.hasInstallmentEdit, "Card purchase was redirected to installment PATCH", line);
             check(
@@ -252,8 +236,7 @@ jobs:
               "Blocked installment badge is missing an accessible description",
               line,
             );
-
-            const focusedBadge = await evaluate(
+            const badgeFocus = await evaluate(
               browser.cdp,
               `(() => {
                 const badge = document.querySelector('[data-installment-badge="${fixture.cardInstallmentId}"]');
@@ -264,9 +247,8 @@ jobs:
                 };
               })()`,
             );
-            check(focusedBadge.focused, "Blocked installment badge did not receive keyboard focus", focusedBadge);
-            check(focusedBadge.tooltipVisible, "Block reason tooltip did not open on focus", focusedBadge);
-
+            check(badgeFocus.focused, "Blocked installment badge did not receive focus", badgeFocus);
+            check(badgeFocus.tooltipVisible, "Block reason tooltip did not open on focus", badgeFocus);
             const installmentState = await evaluate(
               browser.cdp,
               `fetch("/api/installments?installmentId=${fixture.cardInstallmentId}&status=all")
@@ -278,19 +260,18 @@ jobs:
               "API did not prioritize invoice_linked for the card purchase",
               installmentState,
             );
+          '''
+          if card_checks not in visual:
+              raise SystemExit("visual script: card checks anchor not found")
+          visual = visual.replace(card_checks, card_checks_new, 1)
 
-            await evaluate(''',
-          )
-
-          replace_once(
-              "scripts/statement-visual/issue-539-operational-installments.mjs",
-              '''          return {
+          return_anchor = '''          return {
                     badge: badge.textContent.trim(),
                     purchaseEditEnabled: !edit.disabled,
                     hasInstallmentEdit: Boolean(edit.dataset.installmentEdit),
                     globalOverflow: document.documentElement.scrollWidth > window.innerWidth
-                  };''',
-              '''          const descriptionId = badge.getAttribute("aria-describedby") || "";
+                  };'''
+          return_new = '''          const descriptionId = badge.getAttribute("aria-describedby") || "";
                   return {
                     badge: badge.textContent.trim(),
                     purchaseEditEnabled: !edit.disabled,
@@ -299,47 +280,45 @@ jobs:
                     badgeTabIndex: badge.tabIndex,
                     accessibleDescription: document.getElementById(descriptionId)?.textContent || "",
                     globalOverflow: document.documentElement.scrollWidth > window.innerWidth
-                  };''',
-          )
+                  };'''
+          if return_anchor not in visual:
+              raise SystemExit("visual script: card line anchor not found")
+          visual = visual.replace(return_anchor, return_new, 1)
 
-          replace_once(
-              "scripts/statement-visual/issue-539-operational-installments.mjs",
-              '''      cardTransactionId: cardInstallment.transaction.id,
-                cardBadge: "Parcela " + cardInstallment.sequenceNumber + " de " + cardInstallment.totalInstallments
-              };''',
-              '''      cardInstallmentId: cardInstallment.id,
+          fixture_anchor = '''      cardTransactionId: cardInstallment.transaction.id,
+                cardBadge: "Parcela " + cardInstallment.sequenceNumber + " de " + cardInstallment.totalInstallments'''
+          fixture_new = '''      cardInstallmentId: cardInstallment.id,
                 cardTransactionId: cardInstallment.transaction.id,
-                cardBadge: "Parcela " + cardInstallment.sequenceNumber + " de " + cardInstallment.totalInstallments
-              };''',
-          )
+                cardBadge: "Parcela " + cardInstallment.sequenceNumber + " de " + cardInstallment.totalInstallments'''
+          if fixture_anchor not in visual:
+              raise SystemExit("visual script: fixture anchor not found")
+          write(visual_path, visual.replace(fixture_anchor, fixture_new, 1))
 
-          replace_once(
-              "docs/API_INSTALLMENTS.md",
-              '''Parcelas ligadas a fatura, transacao postada/conciliada/cancelada, parcela nao planejada ou sem transacao vinculada nao devem exibir acao de edicao direta. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.''',
-              '''Parcelas ligadas a fatura, transacao postada/conciliada/cancelada, parcela nao planejada ou sem transacao vinculada nao devem exibir acao de edicao direta. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.''',
-          )
+          api_doc = "docs/API_INSTALLMENTS.md"
+          api_doc_text = read(api_doc)
+          old = "Parcelas ligadas a fatura, transacao postada/conciliada/cancelada, parcela nao planejada ou sem transacao vinculada nao devem exibir acao de edicao direta. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento."
+          new = "Parcelas ligadas a fatura, transacao postada/conciliada/cancelada, parcela nao planejada ou sem transacao vinculada nao devem exibir acao de edicao direta. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento."
+          if old not in api_doc_text:
+              raise SystemExit("API_INSTALLMENTS.md: anchor not found")
+          write(api_doc, api_doc_text.replace(old, new, 1))
 
-          replace_once(
-              "docs/CARDS.md",
-              '''A manutenção continua exclusivamente pelo endpoint da compra. O bloqueio `invoice_linked` pertence ao contrato de edição direta de parcelas e não desabilita, por si só, uma compra que a situação da fatura permite editar. Faturas fechadas, pagas ou canceladas mantêm os bloqueios existentes; vencimento isolado não cria novo bloqueio.''',
-              '''A manutenção continua exclusivamente pelo endpoint da compra. O bloqueio `invoice_linked` pertence ao contrato de edição direta de parcelas, prevalece sobre motivos genéricos de situação da transação e não desabilita, por si só, uma compra que a situação da fatura permite editar. O indicador associa essa explicação por `aria-describedby` e oferece tooltip acionável por hover e foco de teclado. Faturas fechadas, pagas ou canceladas mantêm os bloqueios existentes; vencimento isolado não cria novo bloqueio.''',
-          )
+          cards_doc = "docs/CARDS.md"
+          cards_text = read(cards_doc)
+          old = "A manutenção continua exclusivamente pelo endpoint da compra. O bloqueio `invoice_linked` pertence ao contrato de edição direta de parcelas e não desabilita, por si só, uma compra que a situação da fatura permite editar. Faturas fechadas, pagas ou canceladas mantêm os bloqueios existentes; vencimento isolado não cria novo bloqueio."
+          new = "A manutenção continua exclusivamente pelo endpoint da compra. O bloqueio `invoice_linked` pertence ao contrato de edição direta de parcelas, prevalece sobre motivos genéricos de situação da transação e não desabilita, por si só, uma compra que a situação da fatura permite editar. O indicador associa essa explicação por `aria-describedby` e oferece tooltip acionável por hover e foco de teclado. Faturas fechadas, pagas ou canceladas mantêm os bloqueios existentes; vencimento isolado não cria novo bloqueio."
+          if old not in cards_text:
+              raise SystemExit("CARDS.md: anchor not found")
+          write(cards_doc, cards_text.replace(old, new, 1))
 
           Path(".github/workflows/issue-539-apply-audit-fixes.yml").unlink()
           PY
 
-      - name: Commit fixes
+      - name: Commit and push fixes
         shell: bash
         run: |
           git config user.name "solverfin-orchestrator[bot]"
           git config user.email "solverfin-orchestrator[bot]@users.noreply.github.com"
-          git add apps/api/src/repositories/installments.ts \
-            apps/api/src/repositories/installments-edit-block-reason.test.ts \
-            apps/web/src/dev-server/operational-installments.ts \
-            apps/web/src/dev-server/operational-installments.test.ts \
-            scripts/statement-visual/issue-539-operational-installments.mjs \
-            docs/API_INSTALLMENTS.md docs/CARDS.md \
-            .github/workflows/issue-539-apply-audit-fixes.yml
+          git add -A
           git diff --cached --check
           git commit -m "fix: corrigir motivos e acessibilidade de parcelas (#539)"
           git push origin HEAD:feat/539-operational-installments
