@@ -30,7 +30,19 @@ jobs:
           fetch-depth: 0
 
       - name: Apply audited fixes
-        run: python scripts/apply-issue-539-audit-fixes.py
+        run: |
+          python scripts/apply-issue-539-audit-fixes.py
+          python <<'PY'
+          from pathlib import Path
+          path = Path("apps/web/src/dev-server/operational-installments.ts")
+          text = path.read_text(encoding="utf-8")
+          old = ".installment-badge[data-installment-block-reason]:focus-visible::after"
+          new = ".installment-badge[data-installment-block-reason]:focus::after"
+          if text.count(old) != 1:
+              raise SystemExit("expected one focus-visible tooltip selector")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+          git restore --source=HEAD -- .github/workflows/ci.yml .github/workflows/issue-539-apply-audit-fixes.yml
 
       - name: Commit and push fixes
         run: |
