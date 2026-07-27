@@ -33,12 +33,7 @@ async function main(): Promise<void> {
   const individualVoid = installments[1] ?? assert.fail("Missing individual void installment.");
   const bulkVoid = installments[2] ?? assert.fail("Missing bulk void installment.");
 
-  await assertConcurrentReconciliationPreservesPatch(
-    token,
-    concurrent,
-    updatedCategory.id,
-    suffix,
-  );
+  await assertConcurrentReconciliationPreservesPatch(token, concurrent, updatedCategory.id, suffix);
   await assertIndividualLogicalVoidKeepsInstallmentHistory(token, individualVoid);
   await assertBulkLogicalVoidKeepsInstallmentHistory(token, bulkVoid);
 }
@@ -66,12 +61,11 @@ async function assertConcurrentReconciliationPreservesPatch(
       [transactionId, installment.organizationId, installment.financialProfileId],
     );
 
-    const installmentPatch = apiRequest(
-      token,
-      "PATCH",
-      `/api/installments/${installment.id}`,
-      { description, note, categoryId },
-    );
+    const installmentPatch = apiRequest(token, "PATCH", `/api/installments/${installment.id}`, {
+      description,
+      note,
+      categoryId,
+    });
     await waitForBlockedQuery('%from "Transaction"%for update%');
 
     const reconciliation = apiRequest(token, "PATCH", `/api/transactions/${transactionId}`, {
@@ -108,7 +102,10 @@ async function assertIndividualLogicalVoidKeepsInstallmentHistory(
   const transactionId = requireTransactionId(installment);
   const response = await apiRequest(token, "POST", `/api/transactions/${transactionId}/void`);
   assert.equal(response.statusCode, 200);
-  assert.equal(readBody<{ transaction: { status: string } }>(response).transaction.status, "voided");
+  assert.equal(
+    readBody<{ transaction: { status: string } }>(response).transaction.status,
+    "voided",
+  );
 
   const current = await readInstallment(token, installment.id);
   assert.equal(current.status, "planned");
