@@ -57,13 +57,26 @@ jobs:
           globalThis.fetch = async (input) => {
             const raw = typeof input === "string" || input instanceof URL ? String(input) : String(input.url);
             const { pathname } = new URL(raw);
-            const payloads = {
-              "/api/accounts": { accounts: [] },
-              "/api/categories": { categories: [] },
-              "/api/cards": { cards: [] },
-              "/api/recurrences": { recurrences: [] },
-            };
-            const body = payloads[pathname];
+            const payloads = new Map([
+              ["/api/financial-summary", { availableBalanceMinor: 0, incomeMinor: 0, expensesMinor: 0, plannedCommitmentsMinor: 0, recentItems: [] }],
+              ["/api/transactions", { transactions: [] }],
+              ["/api/transaction-groups", { groups: [] }],
+              ["/api/bank-message-inbox", { messages: [] }],
+              ["/api/ai-review-queue", { suggestions: [] }],
+              ["/api/invoices", { invoices: [] }],
+              ["/api/accounts", { accounts: [] }],
+              ["/api/categories", { categories: [] }],
+              ["/api/cards", { cards: [] }],
+              ["/api/credit-card-accounts", { creditCardAccounts: [] }],
+              ["/api/recurrences", { recurrences: [] }],
+              ["/api/installments", { installments: [] }],
+              ["/api/account-remuneration/configurations", { configurations: [] }],
+              ["/api/financial-profiles", { profiles: [] }],
+              ["/api/automation-rules", { rules: [] }],
+              ["/api/admin/institutions", { institutions: [], summary: { total: 0, active: 0, withLogo: 0, usingFallback: 0, updatedAt: null }, pagination: { page: 1, pageSize: 25, total: 0 } }],
+              ["/api/admin/financial-indexes/status", { status: { latestCdiRate: null, latestImport: null, latestProcessing: null, activeConfigurations: 0, pendingCompetences: 0, configurationsWithoutRates: 0, pendingConfigurations: 0 } }],
+            ]);
+            const body = payloads.get(pathname);
             return new Response(JSON.stringify(body ?? { error: { code: "FIXTURE", message: "fixture" } }), {
               status: body ? 200 : 503,
               headers: { "content-type": "application/json; charset=utf-8" },
