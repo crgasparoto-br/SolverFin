@@ -102,7 +102,7 @@ No modo de edicao:
 
 Compras de faturas `closed`, `paid` ou `cancelled` tem a acao de edicao desabilitada na tela e sao rejeitadas pela API com o codigo `CARD_PURCHASE_INVOICE_LOCKED` (HTTP 409) caso a chamada ocorra mesmo assim. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria.
 
-A `Installment` tecnica vinculada a uma compra recorrente materializada (mesma `Transaction` que ja aparece como compra operacional com indicador de recorrencia) nao e exibida em nenhuma area da tela `Cartoes`; ela e filtrada da secao de historico de parcelas.
+A `Installment` tecnica vinculada a uma compra recorrente materializada nao aparece em painel, historico ou linha separada na tela `Cartoes`. Quando o vinculo for canonico, o metadado `Parcela X de Y` e exibido na propria linha da compra, e a manutencao continua exclusivamente pelo endpoint operacional da compra.
 
 ## Movimentacao de compra entre faturas/periodos
 
