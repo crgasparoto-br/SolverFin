@@ -3,10 +3,12 @@ import { describe, it } from "node:test";
 
 import { solverFinShellRoutes } from "../app-shell/routes.js";
 import {
+  removeStyleBlockByMarker,
   removeStyleProviderFromDocument,
   solverFinSsrStyleContracts,
   validateRenderedSsrStyleDocument,
   validateSsrStyleContractParity,
+  type SsrRegisteredStyleProviderRequirement,
   type SsrStyleRouteContract,
 } from "./ssr-style-contract.js";
 
@@ -26,6 +28,7 @@ const navigationCss = `
   }
 `;
 
+const dashboardPageCss = ".dashboard-heading { display: grid; }";
 const transactionsPageCss = ".statement-layout { display: grid; }";
 const recurrenceAuxiliaryCss = ".recurrence-indicator{display:inline-flex;}";
 
@@ -68,11 +71,34 @@ describe("SSR style contract", () => {
     assert.match(violations[0] ?? "", /available route has no style contract/);
   });
 
+  it("accepts a representative normal-state route with its shared and page providers", () => {
+    const contract = contractFor("dashboard");
+    const html = authenticatedDocument(
+      `${providers.sharedShell}${dashboardPageCss}`,
+      '<section class="dashboard-heading">Resumo</section>',
+    );
+
+    assert.deepEqual(validateRenderedSsrStyleDocument({ contract, html, providers }), []);
+  });
+
+  it("rejects a generic error document that retains page CSS but loses normal route HTML", () => {
+    const contract = contractFor("dashboard");
+    const html = authenticatedDocument(
+      `${providers.sharedShell}${dashboardPageCss}`,
+      '<section class="panel"><p class="error">Falha</p></section>',
+    );
+
+    const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
+
+    assert.ok(violations.some((violation) => violation.includes("provider=representative-html")));
+  });
+
   it("rejects empty shared, page-specific, shell and conditional providers in one pass", () => {
-    const contract = contractFor("transactions");
+    const base = contractFor("transactions");
+    const contract = withProviders(base, ["page:transactions", "aux:recurrences-section"]);
     const html = authenticatedDocument(
       `${providers.sharedShell}${providers.statementPresentation}${transactionsPageCss}${recurrenceAuxiliaryCss}`,
-      '<section class="statement-layout">Extrato ficticio</section>',
+      '<section class="statement-layout">Extrato fictício</section>',
     );
     const brokenHtml = removeStyleProviderFromDocument(
       removeStyleProviderFromDocument(
@@ -97,7 +123,7 @@ describe("SSR style contract", () => {
   it("rejects empty public login CSS", () => {
     const violations = validateRenderedSsrStyleDocument({
       contract: contractFor("signIn"),
-      html: publicDocument(""),
+      html: publicDocument("", '<main class="login-shell">Login</main>'),
       providers,
     });
 
@@ -105,10 +131,11 @@ describe("SSR style contract", () => {
   });
 
   it("rejects a registered auxiliary provider disconnected from final HTML", () => {
-    const contract = contractFor("transactions");
+    const base = contractFor("transactions");
+    const contract = withProviders(base, ["page:transactions", "aux:recurrences-section"]);
     const html = authenticatedDocument(
       `${providers.sharedShell}${providers.statementPresentation}${transactionsPageCss}`,
-      '<section class="statement-layout">Extrato ficticio</section>',
+      '<section class="statement-layout">Extrato fictício</section>',
     );
 
     const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
@@ -118,28 +145,48 @@ describe("SSR style contract", () => {
     );
   });
 
-  it("rejects runtime post-processing providers disconnected from the final HTTP document", () => {
-    const contract = contractFor("inbox");
+  it("rejects missing and empty marker-backed runtime style blocks", () => {
+    const base = contractFor("accountsCards");
+    const target = providerFor(base, "runtime:accounts-cards-neutral");
+    const contract = withProviders(base, ["page:accountsCards", target.providerId]);
+    const marker = target.requiredStyleBlockMarkers?.[0] ?? assert.fail("missing marker");
     const html = authenticatedDocument(
-      `${providers.sharedShell}${providers.sharedDialog}.import-layout { display: grid; }`,
-      '<section class="import-layout">Inbox ficticia</section>',
+      `${providers.sharedShell}.master-toolbar, .master-panel { display: grid; }`,
+      '<section data-tab-panel="accounts">Contas</section>',
+      [`<style ${marker}>.accounts-cards-tab { display: grid; }</style>`],
     );
 
-    const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
+    assert.deepEqual(validateRenderedSsrStyleDocument({ contract, html, providers }), []);
 
+    const missingViolations = validateRenderedSsrStyleDocument({
+      contract,
+      html: removeStyleBlockByMarker(html, marker),
+      providers,
+    });
     assert.ok(
-      violations.some((violation) => violation.includes("provider=runtime:inbox-interface")),
+      missingViolations.some((violation) =>
+        violation.includes("provider=runtime:accounts-cards-neutral"),
+      ),
     );
+
+    const emptyHtml = html.replace(
+      `<style ${marker}>.accounts-cards-tab { display: grid; }</style>`,
+      `<style ${marker}> </style>`,
+    );
+    const emptyViolations = validateRenderedSsrStyleDocument({ contract, html: emptyHtml, providers });
     assert.ok(
-      violations.some((violation) => violation.includes("provider=runtime:round-selection")),
+      emptyViolations.some((violation) =>
+        violation.includes("provider=runtime:accounts-cards-neutral"),
+      ),
     );
   });
 
   it("rejects removal of the page provider even when an auxiliary provider remains", () => {
-    const contract = contractFor("transactions");
+    const base = contractFor("transactions");
+    const contract = withProviders(base, ["page:transactions", "aux:recurrences-section"]);
     const html = authenticatedDocument(
       `${providers.sharedShell}${providers.statementPresentation}${recurrenceAuxiliaryCss}`,
-      '<section class="statement-layout">Extrato ficticio</section>',
+      '<section class="statement-layout">Extrato fictício</section>',
     );
 
     const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
@@ -151,7 +198,8 @@ describe("SSR style contract", () => {
   });
 
   it("requires the representative renderer to activate each conditional provider", () => {
-    const contract = contractFor("transactions");
+    const base = contractFor("transactions");
+    const contract = withProviders(base, ["page:transactions", "aux:recurrences-section"]);
     const html = authenticatedDocument(
       `${providers.sharedShell}${providers.statementPresentation}${transactionsPageCss}${recurrenceAuxiliaryCss}`,
       "<section>Extrato sem gatilho representativo</section>",
@@ -179,7 +227,10 @@ describe("SSR style contract", () => {
     assert.deepEqual(
       validateRenderedSsrStyleDocument({
         contract: sharedOnlyContract,
-        html: authenticatedDocument(providers.sharedShell, "<section>Resumo</section>"),
+        html: authenticatedDocument(
+          providers.sharedShell,
+          '<section class="dashboard-heading">Resumo</section>',
+        ),
         providers,
       }),
       [],
@@ -194,10 +245,36 @@ function contractFor(routeId: SsrStyleRouteContract["routeId"]): SsrStyleRouteCo
   );
 }
 
-function authenticatedDocument(headCss: string, content: string): string {
-  return `<!doctype html><html><head><style>${headCss}</style></head><body><style>${navigationCss}</style>${content}</body></html>`;
+function providerFor(
+  contract: SsrStyleRouteContract,
+  providerId: SsrRegisteredStyleProviderRequirement["providerId"],
+): SsrRegisteredStyleProviderRequirement {
+  return (
+    contract.registeredStyleProviders.find((provider) => provider.providerId === providerId) ??
+    assert.fail(`Missing provider ${providerId}`)
+  );
 }
 
-function publicDocument(headCss: string): string {
-  return `<!doctype html><html><head><style>${headCss}</style></head><body>Login</body></html>`;
+function withProviders(
+  contract: SsrStyleRouteContract,
+  providerIds: readonly SsrRegisteredStyleProviderRequirement["providerId"][],
+): SsrStyleRouteContract {
+  return {
+    ...contract,
+    registeredStyleProviders: contract.registeredStyleProviders.filter((provider) =>
+      providerIds.includes(provider.providerId),
+    ),
+  };
+}
+
+function authenticatedDocument(
+  headCss: string,
+  content: string,
+  extraStyles: readonly string[] = [],
+): string {
+  return `<!doctype html><html><head><style>${headCss}</style>${extraStyles.join("")}</head><body><style>${navigationCss}</style>${content}</body></html>`;
+}
+
+function publicDocument(headCss: string, content: string): string {
+  return `<!doctype html><html><head><style>${headCss}</style></head><body>${content}</body></html>`;
 }
