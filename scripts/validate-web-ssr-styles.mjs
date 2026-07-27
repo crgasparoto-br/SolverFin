@@ -115,7 +115,6 @@ try {
   globalThis.fetch = originalFetch;
 }
 
-validateRuntimePostProcessing(renderedDocuments, violations);
 runNegativeControls({
   providers,
   renderedDocuments,
@@ -203,34 +202,6 @@ function validateProviderOutputs(providerCss, target) {
     if (typeof css !== "string" || css.trim().length === 0) {
       target.push(
         `[SolverFin SSR style contract] route=all provider=${providerName} module=provider: provider returned empty CSS`,
-      );
-    }
-  }
-}
-
-function validateRuntimePostProcessing(documents, target) {
-  const inboxHtml = documents.get("inbox");
-  if (!inboxHtml) return;
-
-  const runtimeRequirements = [
-    {
-      providerId: "runtime:inbox-interface",
-      moduleFileName: "inbox-interface-enhancement.js",
-      fragment: ".inbox-page {",
-    },
-    {
-      providerId: "runtime:round-selection",
-      moduleFileName: "round-selection-control-enhancement.js",
-      fragment: "data-selection-control-enhanced",
-    },
-  ];
-
-  for (const requirement of runtimeRequirements) {
-    if (!inboxHtml.includes(requirement.fragment)) {
-      target.push(
-        `[SolverFin SSR style contract] route=/inbox provider=${requirement.providerId} module=${requirement.moduleFileName}: runtime post-processing is disconnected from final HTTP HTML; missing ${JSON.stringify(
-          requirement.fragment,
-        )}`,
       );
     }
   }
@@ -329,11 +300,11 @@ function runNegativeControls({
   }
 
   const auxiliaryContract = contracts.find((contract) =>
-    contract.registeredStyleProviders.some((provider) => provider.kind === "auxiliary"),
+    contract.registeredStyleProviders.some((provider) => provider.providerId.startsWith("aux:")),
   );
   const auxiliaryHtml = auxiliaryContract ? documents.get(auxiliaryContract.routeId) : undefined;
-  const auxiliaryProvider = auxiliaryContract?.registeredStyleProviders.find(
-    (provider) => provider.kind === "auxiliary",
+  const auxiliaryProvider = auxiliaryContract?.registeredStyleProviders.find((provider) =>
+    provider.providerId.startsWith("aux:"),
   );
   const auxiliaryFragment = auxiliaryProvider?.requiredCssFragments[0];
   if (auxiliaryContract && auxiliaryHtml && auxiliaryProvider && auxiliaryFragment) {
@@ -345,6 +316,27 @@ function runNegativeControls({
       }),
       `provider=${auxiliaryProvider.providerId}`,
       "registered auxiliary provider disconnection",
+      target,
+    );
+  }
+
+  const runtimeContract = contracts.find((contract) =>
+    contract.registeredStyleProviders.some((provider) => provider.providerId.startsWith("runtime:")),
+  );
+  const runtimeHtml = runtimeContract ? documents.get(runtimeContract.routeId) : undefined;
+  const runtimeProvider = runtimeContract?.registeredStyleProviders.find((provider) =>
+    provider.providerId.startsWith("runtime:"),
+  );
+  const runtimeFragment = runtimeProvider?.requiredCssFragments[0];
+  if (runtimeContract && runtimeHtml && runtimeProvider && runtimeFragment) {
+    expectViolation(
+      validateDocument({
+        contract: runtimeContract,
+        html: removeStyleProviderFromDocument(runtimeHtml, runtimeFragment),
+        providers: providerCss,
+      }),
+      `provider=${runtimeProvider.providerId}`,
+      "runtime post-processing provider disconnection",
       target,
     );
   }
@@ -393,21 +385,6 @@ function runNegativeControls({
       "conditional trigger missing on actual HTTP renderer",
       target,
     );
-  }
-
-  const inboxHtml = documents.get("inbox");
-  if (inboxHtml) {
-    const brokenInbox = inboxHtml.replace(".inbox-page {", "");
-    if (brokenInbox.includes(".inbox-page {")) {
-      target.push(
-        "[SolverFin SSR style contract] route=/inbox provider=runtime:inbox-interface module=inbox-interface-enhancement.js: negative control could not remove runtime CSS fragment",
-      );
-    }
-    if (!inboxHtml.includes(".inbox-page {") || brokenInbox.includes(".inbox-page {")) {
-      target.push(
-        "[SolverFin SSR style contract] route=/inbox provider=runtime:inbox-interface module=inbox-interface-enhancement.js: validator did not prove runtime post-processing disconnection",
-      );
-    }
   }
 
   const missingContractRoutes = [
