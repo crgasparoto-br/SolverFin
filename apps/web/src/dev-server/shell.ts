@@ -11,6 +11,7 @@ import {
   statementPresentationScript,
   statementPresentationStyles,
 } from "./statement-presentation.js";
+import { transactionGroupInstallmentGuardScript } from "./transaction-group-installment-guard.js";
 
 export interface ShellDocumentInput {
   body: string;
@@ -128,7 +129,11 @@ const groupLabelMap: Record<string, string> = {
 
 function renderOperationalInstallmentsScript(activePathname: string): string {
   if (activePathname !== "/lancamentos" && activePathname !== "/cartoes") return "";
-  return `<script>${operationalInstallmentsController()}</script>`;
+  const groupingGuard =
+    activePathname === "/lancamentos"
+      ? `<script>${transactionGroupInstallmentGuardScript()}</script>`
+      : "";
+  return `${groupingGuard}<script>${operationalInstallmentsController()}</script>`;
 }
 
 function hasStatementPresentation(content: string): boolean {
