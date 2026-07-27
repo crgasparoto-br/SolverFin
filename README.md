@@ -179,3 +179,78 @@ Validar `.env.example`:
 ```bash
 npm run env:check
 ```
+
+Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` quando passarem a consumir variaveis obrigatorias em runtime.
+
+## Documentacao viva
+
+Use `docs/README.md` como indice principal da documentacao do projeto.
+
+Documentos obrigatorios antes de implementar issues:
+
+- `AGENTS.md`: regras globais para agentes de IA.
+- `.github/copilot-instructions.md`: instrucoes especificas para Copilot e agentes GitHub.
+- `docs/PRODUCT.md`: visao de produto, personas, jornadas, escopo MVP, fases e limites.
+- `docs/ARCHITECTURE.md`: arquitetura atual, stack-alvo e regras tecnicas.
+- `docs/STATUS_MATRIX.md`: estado observado do MVP por area.
+- `docs/adr/README.md`: processo de ADRs e indice de decisoes.
+
+Contratos especificos devem ser consultados quando a issue tocar o respectivo dominio, por exemplo cartoes (`docs/CARDS.md`), autenticacao (`docs/AUTH.md`), tenant (`docs/TENANT.md`), privacidade (`docs/PRIVACY.md`), importacao (`docs/IMPORTS.md`), Inbox (`docs/BANK_MESSAGE_INBOX.md`), regras automaticas (`docs/AUTOMATION_RULES.md`), conciliacao (`docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`) e sugestoes revisaveis (`docs/AI_REVIEW_QUEUE.md`).
+
+Arquivos historicos usados apenas para criar o backlog inicial nao fazem parte da documentacao viva. Issues abertas no GitHub sao a fonte de verdade para planejamento atual.
+
+## Como trabalhar nas issues
+
+1. Leia a issue e confirme objetivo, escopo, fora de escopo e criterios de aceite.
+2. Consulte os documentos centrais e ADRs relacionados.
+3. Localize arquivos existentes antes de criar novos.
+4. Implemente uma mudanca pequena, rastreavel e coerente com a issue.
+5. Atualize documentacao quando alterar produto, arquitetura, contrato, modelo de dados, fluxo ou decisao relevante.
+6. Execute as validacoes disponiveis no repositorio e registre o resultado na PR.
+
+## Estrutura do repositorio
+
+```text
+.
+|-- AGENTS.md
+|-- README.md
+|-- .env.example
+|-- docker-compose.yml
+|-- package.json
+|-- apps/
+|   |-- api/
+|   `-- web/
+|-- packages/
+|   |-- ai/
+|   |-- config/
+|   |-- domain/
+|   `-- shared/
+|-- prisma/
+|-- scripts/
+|-- docs/
+|   |-- README.md
+|   |-- ARCHITECTURE.md
+|   |-- PRODUCT.md
+|   |-- STATUS_MATRIX.md
+|   |-- CARDS.md
+|   |-- ENVIRONMENT.md
+|   `-- adr/
+`-- .github/
+```
+
+## Responsabilidades dos workspaces
+
+- `apps/web`: aplicacao web/PWA mobile-first.
+- `apps/api`: API backend modular.
+- `packages/domain`: regras e entidades do dominio financeiro, sem acoplamento direto a UI, banco ou IA.
+- `packages/shared`: tipos, utilitarios e contratos compartilhados.
+- `packages/ai`: abstracoes de IA, schemas estruturados e politicas de uso seguro.
+- `packages/config`: configuracoes compartilhadas e contratos de ambiente.
+- `prisma`: schema, migrations e seeds da persistencia.
+- `scripts`: automacoes auxiliares seguras do repositorio.
+
+## Privacidade e seguranca
+
+SolverFin lida com dados financeiros. Nunca inclua dados reais de clientes, numeros completos de cartao ou conta, tokens, chaves, mensagens bancarias sensiveis, prints com dados privados ou fixtures que permitam identificar uma pessoa.
+
+Exemplos devem ser ficticios, minimizados e seguros por padrao.
