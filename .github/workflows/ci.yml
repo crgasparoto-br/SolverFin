@@ -85,23 +85,7 @@ jobs:
         run: npm run db:seed
 
       - name: Test
-        id: diagnostic-tests
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          npm run test 2>&1 | tee issue-541-test-diagnostic.log
-
-      - name: Upload issue 541 test diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-541-test-diagnostic
-          path: issue-541-test-diagnostic.log
-          if-no-files-found: error
-
-      - name: Fail when tests fail
-        if: steps.diagnostic-tests.outcome == 'failure'
-        run: exit 1
+        run: npm run test
 
       - name: Build
         run: npm run build
