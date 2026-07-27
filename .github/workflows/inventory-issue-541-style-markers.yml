@@ -35,7 +35,7 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Compile web
-        run: npm run build:compile --workspace @solverfin/web
+        run: npx tsc --project apps/web/tsconfig.json
 
       - name: Inventory final HTTP style markers
         shell: bash
