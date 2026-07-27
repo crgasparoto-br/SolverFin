@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport } from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
@@ -26,14 +26,10 @@ try {
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const desktop = await waitForGuardedLine(fixture.installmentTransactionId);
   check(desktop.badge === fixture.badge, "Canonical installment badge is missing", desktop);
+  check(!desktop.selectionDisabled, "Canonical installment is unavailable for bulk actions", desktop);
   check(
-    desktop.selectionDisabled,
-    "Canonical installment remained selectable for grouping",
-    desktop,
-  );
-  check(
-    desktop.selectionLabel.includes("indisponível para agrupamento"),
-    "Disabled grouping selection is not explained accessibly",
+    desktop.selectionLabel.includes("indisponível para unificação"),
+    "Canonical selection does not explain the grouping restriction",
     desktop,
   );
   check(
@@ -41,6 +37,29 @@ try {
     "Grouping guard added another installments query",
     desktop,
   );
+
+  await selectTransactions([
+    fixture.installmentTransactionId,
+    fixture.ordinaryTransactionId,
+  ]);
+  const desktopSelection = await readSelectionState(
+    fixture.installmentTransactionId,
+    fixture.ordinaryTransactionId,
+  );
+  check(desktopSelection.canonicalSelected, "Canonical installment was not selected", desktopSelection);
+  check(desktopSelection.ordinarySelected, "Ordinary transaction was not selected", desktopSelection);
+  check(desktopSelection.groupingDisabled, "Grouping remained available with a canonical installment", desktopSelection);
+  check(
+    desktopSelection.groupingTitle.includes("Desmarque as parcelas canônicas"),
+    "Grouping restriction is not explained on the action",
+    desktopSelection,
+  );
+  check(
+    desktopSelection.help.includes("continuam disponíveis para conciliar, desconciliar ou excluir"),
+    "Bulk action help does not distinguish grouping from allowed actions",
+    desktopSelection,
+  );
+  check(!desktopSelection.voidDisabled, "Logical deletion was blocked for the canonical installment", desktopSelection);
 
   const apiGuard = await evaluate(
     browser.cdp,
@@ -69,26 +88,54 @@ try {
   scenarios.push({
     route,
     viewport: "1366x768",
-    state: "canonical installment grouping disabled",
+    state: "canonical installment selected for bulk actions with grouping disabled",
     screenshot: desktopScreenshot,
     desktop,
+    desktopSelection,
     apiGuard,
   });
 
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const mobile = await waitForGuardedLine(fixture.installmentTransactionId);
-  check(mobile.selectionDisabled, "Mobile grouping selection remained enabled", mobile);
+  check(!mobile.selectionDisabled, "Mobile canonical installment is unavailable for bulk actions", mobile);
   check(!mobile.globalOverflow, "Grouping guard caused horizontal overflow on mobile", mobile);
+
+  await selectTransactions([
+    fixture.installmentTransactionId,
+    fixture.ordinaryTransactionId,
+  ]);
+  const mobileSelection = await readSelectionState(
+    fixture.installmentTransactionId,
+    fixture.ordinaryTransactionId,
+  );
+  check(mobileSelection.groupingDisabled, "Mobile grouping remained available", mobileSelection);
+  check(!mobileSelection.voidDisabled, "Mobile logical deletion remained blocked", mobileSelection);
+  check(!mobileSelection.globalOverflow, "Bulk selection caused horizontal overflow on mobile", mobileSelection);
 
   const mobileScreenshot = "issue-539-installment-grouping-guard-390x844.png";
   await screenshot(browser.cdp, join(outputDir, mobileScreenshot));
+
+  const bulkVoid = await executeBulkVoid(fixture.installmentId, fixture.ordinaryTransactionId);
+  check(bulkVoid.statusText.includes("Lançamentos excluídos"), "Bulk logical deletion did not complete", bulkVoid);
+  check(bulkVoid.installment?.id === fixture.installmentId, "Installment history was removed", bulkVoid);
+  check(bulkVoid.installment?.transaction?.status === "voided", "Canonical transaction was not voided", bulkVoid);
+  check(bulkVoid.installment?.editable === false, "Voided installment remained editable", bulkVoid);
+  check(
+    bulkVoid.installment?.editBlockedReason === "transaction_status_locked",
+    "Voided installment returned the wrong block reason",
+    bulkVoid,
+  );
+  check(bulkVoid.ordinaryTransaction?.status === "voided", "Ordinary selected transaction was not voided", bulkVoid);
+
   scenarios.push({
     route,
     viewport: "390x844",
-    state: "canonical installment grouping disabled",
+    state: "canonical installment bulk logical deletion preserved history",
     screenshot: mobileScreenshot,
     mobile,
+    mobileSelection,
+    bulkVoid,
   });
 } finally {
   await browser.close(outputDir);
@@ -122,7 +169,7 @@ async function waitForGuardedLine(transactionId) {
         const row = node?.closest("article");
         const selection = row?.querySelector("[data-select-transaction]");
         const badge = row?.querySelector("[data-installment-badge]");
-        if (row && selection && badge && selection.disabled) {
+        if (row && selection && badge && selection.dataset.canonicalInstallment === "true") {
           const installmentQueries = performance.getEntriesByType("resource")
             .map((entry) => new URL(entry.name, window.location.origin))
             .filter((url) => url.pathname === "/api/installments" && url.searchParams.has("accountId"))
@@ -138,6 +185,83 @@ async function waitForGuardedLine(transactionId) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       throw new Error("Timed out waiting for canonical installment grouping guard");
+    })()`,
+  );
+}
+
+async function selectTransactions(transactionIds) {
+  await evaluate(
+    browser.cdp,
+    `(() => {
+      const ids = ${JSON.stringify(transactionIds)};
+      ids.forEach((id) => {
+        const input = document.querySelector('[data-select-transaction][value="' + id + '"]');
+        if (!input) throw new Error("Missing selection input for " + id);
+        if (!input.checked) input.click();
+      });
+    })()`,
+  );
+  await sleep(150);
+}
+
+async function readSelectionState(canonicalTransactionId, ordinaryTransactionId) {
+  return evaluate(
+    browser.cdp,
+    `(() => {
+      const canonical = document.querySelector('[data-select-transaction][value="${canonicalTransactionId}"]');
+      const ordinary = document.querySelector('[data-select-transaction][value="${ordinaryTransactionId}"]');
+      const groupOpen = document.querySelector("[data-group-open]");
+      const voidButton = document.querySelector('[data-bulk-selection-action="void"]');
+      return {
+        canonicalSelected: canonical?.checked === true,
+        ordinarySelected: ordinary?.checked === true,
+        groupingDisabled: groupOpen?.disabled === true,
+        groupingTitle: groupOpen?.title || "",
+        help: document.querySelector("[data-bulk-selection-help]")?.textContent || "",
+        voidDisabled: voidButton?.disabled !== false,
+        selectionCount: document.querySelector("[data-selection-count]")?.textContent || "",
+        globalOverflow: document.documentElement.scrollWidth > window.innerWidth
+      };
+    })()`,
+  );
+}
+
+async function executeBulkVoid(installmentId, ordinaryTransactionId) {
+  await evaluate(
+    browser.cdp,
+    `(() => {
+      const nativeSetTimeout = window.setTimeout.bind(window);
+      window.confirm = () => true;
+      window.setTimeout = function (callback, delay, ...args) {
+        if (typeof callback === "function" && String(callback).includes("window.location.reload")) return 0;
+        return nativeSetTimeout(callback, delay, ...args);
+      };
+      const button = document.querySelector('[data-bulk-selection-action="void"]');
+      if (!button || button.disabled) throw new Error("Bulk logical deletion is unavailable");
+      button.click();
+    })()`,
+  );
+
+  return evaluate(
+    browser.cdp,
+    `(async () => {
+      for (let attempt = 0; attempt < 80; attempt += 1) {
+        const statusText = document.querySelector("[data-bulk-selection-status]")?.textContent || "";
+        if (statusText.includes("Lançamentos excluídos")) {
+          const installmentResponse = await fetch("/api/installments?installmentId=${installmentId}&status=all");
+          const installmentBody = await installmentResponse.json();
+          const ordinaryResponse = await fetch("/api/transactions/${ordinaryTransactionId}");
+          const ordinaryBody = await ordinaryResponse.json();
+          return {
+            statusText,
+            installment: installmentBody.installments?.[0],
+            ordinaryTransaction: ordinaryBody.transaction
+          };
+        }
+        if (statusText.includes("Não foi possível")) throw new Error(statusText);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      throw new Error("Timed out waiting for bulk logical deletion");
     })()`,
   );
 }
@@ -199,6 +323,7 @@ function fixtureExpression() {
 
     return {
       accountId: account.id,
+      installmentId: installment.id,
       installmentTransactionId: installment.transaction.id,
       ordinaryTransactionId: ordinary.id,
       badge: "Parcela " + installment.sequenceNumber + " de " + installment.totalInstallments
