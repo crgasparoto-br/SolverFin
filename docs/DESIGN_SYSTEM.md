@@ -37,14 +37,17 @@ A composicao SSR e organizada por responsabilidade:
 
 - `shared-shell`: tokens, reset, shell autenticado e primitivas recorrentes, fornecido por `sharedShellStyles()`;
 - `shared-dialog`: estrutura compartilhada de dialogos, fornecida por `sharedDialogStyles()` quando a rota usa modal;
-- `page:<routeId>`: regras especificas do renderer da rota;
+- `page:<routeId>`: regras especificas do renderer da rota, com fragmentos CSS discriminantes registrados no contrato;
+- `aux:recurrences-section`: regras auxiliares de recorrencias, registradas separadamente do CSS principal das paginas que as consomem;
 - `statement-presentation`: regras condicionais para conteudo com `.statement-layout`;
 - `authenticated-shell-navigation`: regras de navegacao incorporadas pelo shell autenticado;
 - `login-public`: regras exclusivas do documento publico de login.
 
-O manifesto tipado em `apps/web/src/dev-server/ssr-style-contract.ts` registra quais provedores cada rota disponível exige. O contrato aceita uma rota sem CSS especifico apenas quando ela estiver explicitamente classificada como `shared-only`.
+O manifesto tipado em `apps/web/src/dev-server/ssr-style-contract.ts` registra quais provedores cada rota disponivel exige. O contrato aceita uma rota sem CSS especifico apenas quando ela estiver explicitamente classificada como `shared-only`.
 
-O portao nao usa somente busca por seletor ou presenca de arquivo. Ele renderiza o HTML SSR real, compara os resultados exatos dos provedores compartilhados/auxiliares/condicionais com os blocos `<style>` finais e verifica se sobra CSS especifico quando obrigatorio.
+O portao nao usa somente busca em arquivos nem infere CSS especifico pela simples existencia de qualquer regra remanescente. Ele renderiza o HTML SSR real, compara os resultados completos dos provedores compartilhados e condicionais, exige os fragmentos registrados de cada provedor de pagina/auxiliar e remove um provedor por vez nos controles negativos. Assim, CSS auxiliar ainda presente nao mascara a perda do CSS principal da pagina.
+
+Para provedores condicionais, o renderer real deve produzir o fragmento HTML registrado como gatilho. A fixture de `/lancamentos` entrega respostas ficticias de sucesso suficientes para gerar `.statement-layout`; somente entao o portao exige `statement-presentation` no cabecalho final.
 
 ## Componentes base
 
@@ -91,7 +94,7 @@ Esses exemplos sao intencionalmente pequenos para servirem como referencia inter
 - Dialogs devem prender foco quando abertos e permitir fechamento por Escape quando nao forem bloqueantes.
 - Toasts confirmam resultado; erros de formulario devem aparecer perto do campo quando possivel.
 - Nao duplique tokens ou shell completo em um renderer quando um provedor compartilhado ja existir.
-- Ao criar uma rota `status: "available"`, registre o renderer e seus provedores no contrato SSR na mesma mudanca.
+- Ao criar uma rota `status: "available"`, registre o renderer, o provedor `page:<routeId>`, auxiliares e condicionais no contrato SSR na mesma mudanca.
 - Nao use dados reais em exemplos, screenshots, fixtures ou documentacao.
 
 ## Validacao
