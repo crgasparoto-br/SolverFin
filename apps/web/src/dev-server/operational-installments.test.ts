@@ -136,4 +136,8 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /function keepInstallmentFocusInsideModal\(event\)/);
   assert.match(script, /event\.key !== "Tab"/);
   assert.match(script, /addEventListener\("keydown", keepInstallmentFocusInsideModal\)/);
+  assert.match(script, /badge\.tabIndex = 0/);
+  assert.match(script, /aria-describedby/);
+  assert.match(script, /installment-assistive-text/);
+  assert.match(script, /installmentBlockReason/);
 });

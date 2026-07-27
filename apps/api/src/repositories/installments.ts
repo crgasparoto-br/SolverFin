@@ -470,9 +470,15 @@ function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
   };
 }
 
-function resolveEditBlockedReason(row: Row): InstallmentEditBlockedReason | undefined {
+export function resolveEditBlockedReason(
+  row: Readonly<Record<string, unknown>>,
+): InstallmentEditBlockedReason | undefined {
   if (!row.transactionId || !row.transactionStatus) {
     return "linked_transaction_missing";
+  }
+
+  if (row.invoiceId) {
+    return "invoice_linked";
   }
 
   if (lower(row.status) !== "planned") {
@@ -481,10 +487,6 @@ function resolveEditBlockedReason(row: Row): InstallmentEditBlockedReason | unde
 
   if (lower(row.transactionStatus) !== "planned") {
     return "transaction_status_locked";
-  }
-
-  if (row.invoiceId) {
-    return "invoice_linked";
   }
 
   return undefined;

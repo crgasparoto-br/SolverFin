@@ -355,6 +355,43 @@ async function validateCardDesktop(fixture) {
   check(line.badge === fixture.cardBadge, "Card installment badge is missing", line);
   check(line.purchaseEditEnabled, "Open invoice purchase was incorrectly blocked", line);
   check(!line.hasInstallmentEdit, "Card purchase was redirected to installment PATCH", line);
+  check(
+    line.blockReason === "Esta parcela é alterada pela compra da fatura.",
+    "Invoice-linked installment exposed the wrong block reason",
+    line,
+  );
+  check(line.badgeTabIndex === 0, "Blocked installment badge is not keyboard focusable", line);
+  check(
+    line.accessibleDescription === line.blockReason,
+    "Blocked installment badge is missing an accessible description",
+    line,
+  );
+
+  const badgeFocus = await evaluate(
+    browser.cdp,
+    `(() => {
+      const badge = document.querySelector('[data-installment-badge="${fixture.cardInstallmentId}"]');
+      badge.focus();
+      return {
+        focused: document.activeElement === badge,
+        tooltipVisible: getComputedStyle(badge, "::after").display !== "none"
+      };
+    })()`,
+  );
+  check(badgeFocus.focused, "Blocked installment badge did not receive focus", badgeFocus);
+  check(badgeFocus.tooltipVisible, "Block reason tooltip did not open on focus", badgeFocus);
+
+  const installmentState = await evaluate(
+    browser.cdp,
+    `fetch("/api/installments?installmentId=${fixture.cardInstallmentId}&status=all")
+      .then((response) => response.json())
+      .then((body) => body.installments[0])`,
+  );
+  check(
+    installmentState.editBlockedReason === "invoice_linked",
+    "API did not prioritize invoice_linked for the card purchase",
+    installmentState,
+  );
 
   await evaluate(
     browser.cdp,
@@ -449,10 +486,14 @@ async function waitForCardLine(transactionId) {
         const edit = row?.querySelector('[data-edit-purchase="${transactionId}"]');
         const badge = row?.querySelector("[data-installment-badge]");
         if (row && edit && badge) {
+          const descriptionId = badge.getAttribute("aria-describedby") || "";
           return {
             badge: badge.textContent.trim(),
             purchaseEditEnabled: !edit.disabled,
             hasInstallmentEdit: Boolean(edit.dataset.installmentEdit),
+            blockReason: badge.dataset.installmentBlockReason || "",
+            badgeTabIndex: badge.tabIndex,
+            accessibleDescription: document.getElementById(descriptionId)?.textContent || "",
             globalOverflow: document.documentElement.scrollWidth > window.innerWidth
           };
         }
@@ -611,6 +652,7 @@ function fixtureExpression() {
       conflictAccountOriginalDescription: conflictAccountInstallment.transaction.description,
       cardId: card.id,
       invoiceId: cardInstallment.transaction.invoiceId,
+      cardInstallmentId: cardInstallment.id,
       cardTransactionId: cardInstallment.transaction.id,
       cardBadge: "Parcela " + cardInstallment.sequenceNumber + " de " + cardInstallment.totalInstallments
     };

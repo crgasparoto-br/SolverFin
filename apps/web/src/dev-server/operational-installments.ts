@@ -123,6 +123,44 @@ const OPERATIONAL_INSTALLMENTS_CSS = `
     padding: 3px 7px;
     vertical-align: middle;
   }
+  .installment-badge[data-installment-block-reason] {
+    cursor: help;
+    position: relative;
+  }
+  .installment-badge[data-installment-block-reason]::after {
+    background: #0f172a;
+    border-radius: 8px;
+    color: #f8fafc;
+    content: attr(data-installment-block-reason);
+    display: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    left: 0;
+    line-height: 1.35;
+    max-width: min(320px, calc(100vw - 32px));
+    padding: 8px 10px;
+    position: absolute;
+    top: calc(100% + 6px);
+    white-space: normal;
+    width: max-content;
+    z-index: 30;
+  }
+  .installment-badge[data-installment-block-reason]:hover::after,
+  .installment-badge[data-installment-block-reason]:focus::after {
+    display: block;
+  }
+  .installment-assistive-text {
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
   .installment-details {
     background: #f8fafc;
     border: 1px solid #cbd5e1;
@@ -202,12 +240,25 @@ export function operationalInstallmentsController(): string {
       function addBadge(row, installment) {
         const description = row && row.querySelector(".description strong");
         if (!description || description.querySelector('[data-installment-badge="' + installment.id + '"]')) return;
+        const label = installmentLabel(installment);
+        const reasonText = blockReason(installment.editBlockedReason);
         const badge = document.createElement("span");
         badge.className = "installment-badge";
         badge.dataset.installmentBadge = installment.id;
-        badge.textContent = installmentLabel(installment);
-        badge.setAttribute("aria-label", installmentLabel(installment));
-        badge.title = blockReason(installment.editBlockedReason) || badge.textContent;
+        badge.textContent = label;
+        badge.setAttribute("aria-label", label);
+        badge.title = reasonText || label;
+        if (reasonText) {
+          const reasonId = "installment-block-reason-" + String(installment.id).replace(/[^a-zA-Z0-9_-]/g, "");
+          const reason = document.createElement("span");
+          reason.className = "installment-assistive-text";
+          reason.id = reasonId;
+          reason.textContent = reasonText;
+          badge.tabIndex = 0;
+          badge.dataset.installmentBlockReason = reasonText;
+          badge.setAttribute("aria-describedby", reasonId);
+          description.appendChild(reason);
+        }
         description.appendChild(badge);
       }
 
