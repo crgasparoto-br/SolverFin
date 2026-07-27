@@ -6,7 +6,7 @@ import { transactionGroupInstallmentGuardScript } from "./transaction-group-inst
 test("keeps canonical installments selectable for bulk actions and blocks only grouping", () => {
   const script = transactionGroupInstallmentGuardScript();
   const directSelectionGuard = script.match(
-    /function markCanonicalSelection\(input\) \{([\s\S]*?)\n      \}/,
+    /function markCanonicalSelection\(input\) \{([\s\S]*?)\n {6}}/,
   )?.[1];
 
   assert.ok(directSelectionGuard, "missing direct canonical installment selection guard");
