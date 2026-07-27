@@ -18,8 +18,13 @@ const providers = {
 };
 
 const navigationCss = `
-  .sidebar > nav { overflow-y: auto; }
-  .nav-more-toggle { display: inline-flex; }
+  @media (min-width: 761px) {
+    .sidebar > .brand, .sidebar > .logout { flex: 0 0 auto; }
+    .sidebar > nav { overflow-y: auto; scrollbar-gutter: stable; }
+  }
+  @media (max-width: 760px) {
+    .sidebar > nav { overflow-y: visible; }
+  }
 `;
 
 describe("SSR style contract", () => {
