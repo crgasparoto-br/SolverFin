@@ -9,6 +9,19 @@ export type SsrHeadStyleProviderId =
   | "shared-shell"
   | "shared-dialog"
   | "statement-presentation";
+export type SsrRegisteredStyleProviderId = `page:${ShellRouteId}` | "aux:recurrences-section";
+
+export interface SsrConditionalHeadProviderRequirement {
+  providerId: Exclude<SsrHeadStyleProviderId, "login-public" | "shared-shell" | "shared-dialog">;
+  triggerHtmlFragment: string;
+}
+
+export interface SsrRegisteredStyleProviderRequirement {
+  providerId: SsrRegisteredStyleProviderId;
+  kind: "page" | "auxiliary";
+  moduleFileName: string;
+  requiredCssFragments: readonly string[];
+}
 
 export interface SsrStyleRouteContract {
   routeId: ShellRouteId;
@@ -17,8 +30,8 @@ export interface SsrStyleRouteContract {
   moduleFileName: string;
   pageStyleMode: SsrPageStyleMode;
   requiredHeadProviders: readonly SsrHeadStyleProviderId[];
-  conditionalHeadProviders: readonly SsrHeadStyleProviderId[];
-  representativeContent?: string;
+  conditionalHeadProviders: readonly SsrConditionalHeadProviderRequirement[];
+  registeredStyleProviders: readonly SsrRegisteredStyleProviderRequirement[];
 }
 
 export interface SsrStyleProviderCss {
@@ -31,36 +44,73 @@ export interface RenderedSsrStyleValidationInput {
   contract: SsrStyleRouteContract;
   html: string;
   providers: SsrStyleProviderCss;
-  requireConditionalProviders?: boolean;
 }
 
+const recurrenceAuxiliaryProvider: SsrRegisteredStyleProviderRequirement = {
+  providerId: "aux:recurrences-section",
+  kind: "auxiliary",
+  moduleFileName: "recurrences-section.js",
+  requiredCssFragments: [".recurrence-indicator"],
+};
+
 export const solverFinSsrStyleContracts = [
-  authenticated("dashboard", "/dashboard", "dashboard-page.js"),
-  authenticated("transactions", "/lancamentos", "transactions-page.js", {
-    conditionalHeadProviders: ["statement-presentation"],
-    representativeContent: '<section class="statement-layout">Extrato ficticio</section>',
+  authenticated("dashboard", "/dashboard", "dashboard-page.js", {
+    pageCssFragments: [".dashboard-heading {"],
   }),
-  authenticated("cards", "/cartoes", "cards-page.js"),
-  authenticated("accountsCards", "/contas-cartoes", "accounts-cards-page.js"),
-  authenticated("accountRemuneration", "/remuneracao-contas", "account-remuneration-page.js"),
-  authenticated("categories", "/categorias", "categories-page.js"),
+  authenticated("transactions", "/lancamentos", "transactions-page.js", {
+    pageCssFragments: [".statement-layout {"],
+    auxiliaryStyleProviders: [recurrenceAuxiliaryProvider],
+    conditionalHeadProviders: [
+      {
+        providerId: "statement-presentation",
+        triggerHtmlFragment: 'class="statement-layout"',
+      },
+    ],
+  }),
+  authenticated("cards", "/cartoes", "cards-page.js", {
+    pageCssFragments: [".cards-layout {"],
+    auxiliaryStyleProviders: [recurrenceAuxiliaryProvider],
+  }),
+  authenticated("accountsCards", "/contas-cartoes", "accounts-cards-page.js", {
+    pageCssFragments: [".master-toolbar {"],
+  }),
+  authenticated(
+    "accountRemuneration",
+    "/remuneracao-contas",
+    "account-remuneration-page.js",
+    {
+      pageCssFragments: [".configuration-card {"],
+    },
+  ),
+  authenticated("categories", "/categorias", "categories-page.js", {
+    pageCssFragments: [".categories-workspace {"],
+  }),
   authenticated("budgets", "/orcamentos", "pages.js", {
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
+    pageCssFragments: [".budgets-heading {"],
   }),
   authenticated("inbox", "/inbox", "inbox-page.js", {
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
+    pageCssFragments: [".import-layout {"],
   }),
-  authenticated("reports", "/relatorios", "reports-page.js"),
+  authenticated("reports", "/relatorios", "reports-page.js", {
+    pageCssFragments: [".reports-heading {"],
+  }),
   authenticated("settings", "/configuracoes", "settings-page.js", {
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
+    pageCssFragments: [".secondary-heading {"],
   }),
   authenticated("adminInstitutions", "/admin/instituicoes", "admin-institutions-page.js", {
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
+    pageCssFragments: [".admin-heading {"],
   }),
   authenticated(
     "adminFinancialIndexes",
     "/admin/indices-financeiros",
     "admin-financial-indexes-page.js",
+    {
+      pageCssFragments: [".operation-grid {"],
+    },
   ),
   {
     routeId: "signIn",
@@ -70,6 +120,7 @@ export const solverFinSsrStyleContracts = [
     pageStyleMode: "page-specific",
     requiredHeadProviders: ["login-public"],
     conditionalHeadProviders: [],
+    registeredStyleProviders: [],
   },
 ] as const satisfies readonly SsrStyleRouteContract[];
 
@@ -116,6 +167,8 @@ export function validateSsrStyleContractParity(
         ),
       );
     }
+
+    validateRegisteredProviderDeclarations(contract, violations);
   }
 
   for (const route of availableRoutes) {
@@ -174,20 +227,28 @@ export function validateRenderedSsrStyleDocument(input: RenderedSsrStyleValidati
     );
   }
 
-  const shouldRequireConditional =
-    input.requireConditionalProviders === true ||
-    (contract.representativeContent !== undefined && html.includes(contract.representativeContent));
+  for (const provider of contract.registeredStyleProviders) {
+    validateRegisteredProviderInFinalCss(contract, provider, headCss, violations);
+  }
 
-  if (shouldRequireConditional) {
-    for (const providerId of contract.conditionalHeadProviders) {
-      validateProviderInFinalCss(
-        contract,
-        providerId,
-        providerValues.get(providerId) ?? "",
-        headCss,
-        violations,
+  for (const conditional of contract.conditionalHeadProviders) {
+    if (!html.includes(conditional.triggerHtmlFragment)) {
+      violations.push(
+        formatViolation(
+          contract,
+          conditional.providerId,
+          `representative renderer did not activate conditional provider trigger ${JSON.stringify(conditional.triggerHtmlFragment)}`,
+        ),
       );
+      continue;
     }
+    validateProviderInFinalCss(
+      contract,
+      conditional.providerId,
+      providerValues.get(conditional.providerId) ?? "",
+      headCss,
+      violations,
+    );
   }
 
   const shellNavigationCss = bodyStyleBlocks.find(
@@ -204,34 +265,6 @@ export function validateRenderedSsrStyleDocument(input: RenderedSsrStyleValidati
         "shell navigation CSS is empty or disconnected from the final HTML",
       ),
     );
-  }
-
-  if (contract.pageStyleMode === "page-specific") {
-    let pageSpecificRemainder = headCss;
-    for (const providerId of contract.requiredHeadProviders) {
-      if (providerId === "login-public") continue;
-      pageSpecificRemainder = removeFirst(
-        pageSpecificRemainder,
-        providerValues.get(providerId) ?? "",
-      );
-    }
-    if (shouldRequireConditional) {
-      for (const providerId of contract.conditionalHeadProviders) {
-        pageSpecificRemainder = removeFirst(
-          pageSpecificRemainder,
-          providerValues.get(providerId) ?? "",
-        );
-      }
-    }
-    if (pageSpecificRemainder.trim().length === 0) {
-      violations.push(
-        formatViolation(
-          contract,
-          `page:${contract.routeId}`,
-          "page-specific CSS is empty or disconnected from the final composition",
-        ),
-      );
-    }
   }
 
   return violations;
@@ -255,29 +288,145 @@ export function removeStyleProviderFromDocument(html: string, providerCss: strin
   return providerCss.length === 0 ? html : html.replace(providerCss, "");
 }
 
+interface AuthenticatedContractOverrides {
+  pageStyleMode?: SsrPageStyleMode;
+  requiredHeadProviders?: readonly SsrHeadStyleProviderId[];
+  conditionalHeadProviders?: readonly SsrConditionalHeadProviderRequirement[];
+  pageCssFragments?: readonly string[];
+  auxiliaryStyleProviders?: readonly SsrRegisteredStyleProviderRequirement[];
+}
+
 function authenticated(
   routeId: Exclude<ShellRouteId, "signIn">,
   path: string,
   moduleFileName: string,
-  overrides: Partial<
-    Pick<
-      SsrStyleRouteContract,
-      "requiredHeadProviders" | "conditionalHeadProviders" | "representativeContent"
-    >
-  > = {},
+  overrides: AuthenticatedContractOverrides = {},
 ): SsrStyleRouteContract {
+  const pageStyleMode = overrides.pageStyleMode ?? "page-specific";
+  const pageProvider: SsrRegisteredStyleProviderRequirement[] =
+    pageStyleMode === "page-specific"
+      ? [
+          {
+            providerId: `page:${routeId}`,
+            kind: "page",
+            moduleFileName,
+            requiredCssFragments: overrides.pageCssFragments ?? [],
+          },
+        ]
+      : [];
+
   return {
     routeId,
     path,
     shell: "authenticated",
     moduleFileName,
-    pageStyleMode: "page-specific",
+    pageStyleMode,
     requiredHeadProviders: overrides.requiredHeadProviders ?? ["shared-shell"],
     conditionalHeadProviders: overrides.conditionalHeadProviders ?? [],
-    ...(overrides.representativeContent !== undefined
-      ? { representativeContent: overrides.representativeContent }
-      : {}),
+    registeredStyleProviders: [
+      ...pageProvider,
+      ...(overrides.auxiliaryStyleProviders ?? []),
+    ],
   };
+}
+
+function validateRegisteredProviderDeclarations(
+  contract: SsrStyleRouteContract,
+  violations: string[],
+): void {
+  const pageProviders = contract.registeredStyleProviders.filter(
+    (provider) => provider.kind === "page",
+  );
+  if (contract.shell === "authenticated" && contract.pageStyleMode === "page-specific") {
+    if (pageProviders.length !== 1) {
+      violations.push(
+        formatViolation(
+          contract,
+          `page:${contract.routeId}`,
+          `page-specific route must register exactly one page provider; received ${pageProviders.length}`,
+        ),
+      );
+    }
+  }
+  if (contract.pageStyleMode === "shared-only" && pageProviders.length > 0) {
+    violations.push(
+      formatViolation(contract, "shared-only", "shared-only route must not register a page provider"),
+    );
+  }
+
+  const seenProviderIds = new Set<string>();
+  for (const provider of contract.registeredStyleProviders) {
+    if (seenProviderIds.has(provider.providerId)) {
+      violations.push(
+        formatViolation(contract, provider.providerId, "duplicate registered style provider"),
+      );
+    }
+    seenProviderIds.add(provider.providerId);
+    if (provider.requiredCssFragments.length === 0) {
+      violations.push(
+        formatViolation(
+          contract,
+          provider.providerId,
+          "registered provider has no executable CSS fragments",
+        ),
+      );
+    }
+    for (const fragment of provider.requiredCssFragments) {
+      if (fragment.trim().length === 0) {
+        violations.push(
+          formatViolation(contract, provider.providerId, "registered provider has an empty CSS fragment"),
+        );
+      }
+    }
+  }
+
+  for (const conditional of contract.conditionalHeadProviders) {
+    if (conditional.triggerHtmlFragment.trim().length === 0) {
+      violations.push(
+        formatViolation(
+          contract,
+          conditional.providerId,
+          "conditional provider has an empty HTML trigger",
+        ),
+      );
+    }
+  }
+}
+
+function validateRegisteredProviderInFinalCss(
+  contract: SsrStyleRouteContract,
+  provider: SsrRegisteredStyleProviderRequirement,
+  finalCss: string,
+  violations: string[],
+): void {
+  if (provider.requiredCssFragments.length === 0) {
+    violations.push(
+      formatViolation(
+        contract,
+        provider.providerId,
+        "registered provider has no executable CSS fragments",
+      ),
+    );
+    return;
+  }
+
+  for (const fragment of provider.requiredCssFragments) {
+    if (fragment.trim().length === 0) {
+      violations.push(
+        formatViolation(contract, provider.providerId, "registered provider returned empty CSS"),
+      );
+      continue;
+    }
+    if (!finalCss.includes(fragment)) {
+      violations.push(
+        formatViolation(
+          contract,
+          provider.providerId,
+          `registered ${provider.kind} provider is disconnected from final HTML; missing CSS fragment ${JSON.stringify(fragment)} from ${provider.moduleFileName}`,
+        ),
+      );
+    }
+  }
 }
 
 function validateProviderInFinalCss(
@@ -303,10 +452,6 @@ function extractStyleBlocks(fragment: string): string[] {
     fragment.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi),
     (match) => match[1] ?? "",
   );
-}
-
-function removeFirst(value: string, fragment: string): string {
-  return fragment.length === 0 ? value : value.replace(fragment, "");
 }
 
 function formatViolation(
