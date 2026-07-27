@@ -1,86 +1,104 @@
 # Shell da aplicacao web/PWA
 
-Este documento registra o contrato inicial do shell de navegacao do SolverFin Web.
+Este documento registra o contrato atual do shell de navegacao e da composicao de estilos SSR do SolverFin Web.
 
-A implementacao atual fica em `apps/web/src/app-shell/` e segue a mesma estrategia do design system inicial: contratos TypeScript e CSS base, sem escolher React, Vue, Svelte, roteador ou autenticacao real antes de uma ADR ou issue especifica.
+A implementacao executavel usa Node `http` puro e TypeScript em `apps/web/src/`. O catalogo canonico de rotas fica em `apps/web/src/app-shell/routes.ts`; a renderizacao SSR compartilhada fica em `apps/web/src/dev-server/shell.ts`.
 
 ## Objetivo
 
-Criar a moldura comum das telas financeiras para que as proximas issues de frontend usem a mesma navegacao, os mesmos estados protegidos e a mesma organizacao responsiva.
+Manter uma moldura comum para as telas financeiras, com navegacao, estados protegidos e composicao de estilos verificaveis sem antecipar a adocao de React, Vue, Svelte ou outro framework.
 
-## Estrutura criada
+## Estrutura atual
 
-- `routes.ts`: mapa de rotas principais do MVP e requisitos de acesso.
-- `access.ts`: avaliacao de acesso para loading, login obrigatorio, perfil financeiro ausente, erro e rota pronta.
-- `navigation.ts`: grupos de navegacao e modelo de cabecalho/contexto.
-- `styles.ts`: CSS base do shell com sidebar desktop, header, area principal, estado central e barra mobile.
-- `examples.ts`: exemplos de estados com dados ficticios.
-- `index.ts`: export publico do modulo.
+- `app-shell/routes.ts`: fonte canonica das rotas, acesso, visibilidade e estado de implementacao;
+- `app-shell/access.ts`: avaliacao de acesso para loading, login obrigatorio, perfil ausente, erro e rota pronta;
+- `app-shell/navigation.ts`: grupos de navegacao e prioridade mobile;
+- `dev-server/shell.ts`: documento HTML e shell autenticado compartilhado;
+- `dev-server/shared-styles.ts`: tokens, reset, shell visual e primitivas recorrentes;
+- `dev-server/ssr-style-contract.ts`: manifesto tipado que relaciona cada rota disponível ao renderer e aos provedores de CSS obrigatorios;
+- `scripts/validate-web-ssr-styles.mjs`: portao executavel que renderiza HTML real e valida a composicao final.
 
-## Rotas principais
+## Rotas disponíveis
 
-| Rota                 | Label              | Grupo     | Autenticacao | Perfil financeiro |
-| -------------------- | ------------------ | --------- | ------------ | ----------------- |
-| `/app`               | Resumo             | Rotina    | Sim          | Sim               |
-| `/app/lancamentos`   | Lancamentos        | Rotina    | Sim          | Sim               |
-| `/app/contas`        | Contas             | Organizar | Sim          | Sim               |
-| `/app/cartoes`       | Cartoes de Credito | Rotina    | Sim          | Sim               |
-| `/app/categorias`    | Categorias         | Organizar | Sim          | Sim               |
-| `/app/orcamentos`    | Orcamentos         | Rotina    | Sim          | Sim               |
-| `/app/relatorios`    | Relatorios         | Rotina    | Sim          | Sim               |
-| `/app/revisao`       | Revisao            | Revisar   | Sim          | Sim               |
-| `/app/configuracoes` | Configuracoes      | Ajustes   | Sim          | Nao               |
-| `/entrar`            | Entrar             | Publico   | Nao          | Nao               |
+A lista abaixo e derivada conceitualmente de `solverFinShellRoutes`; o arquivo TypeScript permanece a unica fonte de verdade executavel.
 
-Todas as rotas privadas estao marcadas como `placeholder` porque ainda nao existe aplicacao web executavel nem conteudo completo de tela.
+| Rota | Area | Acesso |
+| --- | --- | --- |
+| `/dashboard` | Dashboard | autenticado |
+| `/lancamentos` | Extrato da conta | autenticado |
+| `/cartoes` | Cartoes de Credito | autenticado |
+| `/contas-cartoes` | Contas e Cartoes | autenticado |
+| `/remuneracao-contas` | Remuneracao pelo CDI | autenticado, oculta na navegacao |
+| `/categorias` | Categorias | autenticado |
+| `/orcamentos` | Orcamentos | autenticado |
+| `/inbox` | Inbox | autenticado |
+| `/relatorios` | Relatorios | autenticado |
+| `/configuracoes` | Configuracoes | autenticado |
+| `/admin/instituicoes` | Instituicoes | master |
+| `/admin/indices-financeiros` | Indices financeiros | master |
+| `/login` | Login | publico |
 
-## Estados de acesso
+Rotas legadas em `/app` podem redirecionar para os caminhos canonicos. A composicao de estilos cobre rotas com `status: "available"`, independentemente de aparecerem no menu ou exigirem acesso master.
 
-`evaluateShellRouteAccess` retorna:
+## Contrato de estilos SSR
 
-- `loading`: contexto inicial em carregamento;
-- `redirect`: usuario nao autenticado tentando acessar rota privada;
-- `missing-profile`: usuario autenticado sem perfil financeiro ativo em rota que exige contexto;
-- `error`: falha ao carregar dados iniciais;
-- `ready`: rota liberada para renderizar conteudo.
+Cada rota disponível possui uma entrada em `solverFinSsrStyleContracts` com:
 
-Os textos dos estados sao voltados ao usuario final e evitam detalhes de backend ou arquitetura.
+- `routeId`, caminho e modulo renderer;
+- classificacao `public` ou `authenticated`;
+- classificacao `page-specific` ou `shared-only`;
+- provedores de cabecalho obrigatorios, como `shared-shell` e `shared-dialog`;
+- provedores condicionais, como `statement-presentation`;
+- conteudo representativo quando uma condicao precisa ser exercitada no build.
+
+O portao valida paridade exata entre o manifesto e `solverFinShellRoutes`. Uma nova rota marcada como disponível sem contrato faz o build falhar.
+
+Para rotas autenticadas, o HTML final deve conter:
+
+1. CSS compartilhado nao vazio;
+2. CSS especifico nao vazio, salvo classificacao explicita `shared-only`;
+3. auxiliares registrados e conectados ao `<style>` final;
+4. CSS de navegacao do shell conectado ao corpo;
+5. CSS condicional quando o conteudo representativo ativa a condicao.
+
+Para `/login`, o CSS publico deve ser nao vazio e estar incorporado ao documento final.
+
+A validacao usa os renderizadores reais com respostas `fetch` ficticias. Nao depende de banco, API em execucao, rede externa, secrets ou `dist` preexistente.
+
+## Comandos oficiais
+
+Executar apenas o contrato SSR:
+
+```bash
+npm run validate:ssr-styles --workspace @solverfin/web
+```
+
+O comando limpa e recompila `apps/web/dist` antes da verificacao. O mesmo portao e executado automaticamente por:
+
+```bash
+npm run build --workspace @solverfin/web
+npm run build
+npm run validate
+```
+
+No GitHub Actions, o job `Validate monorepo` executa `npm run build`; portanto, nao existe uma segunda implementacao do contrato no YAML.
+
+Logs e falhas usam o prefixo estavel `SolverFin SSR style contract` e identificam rota, provedor e modulo responsavel. Todas as violacoes encontradas na mesma execucao sao reportadas juntas.
 
 ## Navegacao responsiva
 
 Desktop:
 
-- sidebar fixa com grupos `Rotina`, `Organizar`, `Revisar` e `Ajustes`;
-- header com rota atual, usuario e perfil financeiro ativo;
+- sidebar com grupos `Rotina`, `Organizar`, `Revisar`, `Ajustes` e `Admin` quando autorizado;
+- topbar com rota atual e usuario;
 - area principal para o conteudo da tela.
 
 Mobile:
 
-- sidebar fica oculta;
-- header fica mais compacto;
-- barra inferior destaca rotas de uso frequente: resumo, lancamentos e revisao;
-- conteudo ganha espaco inferior para nao ficar encoberto pela barra mobile.
+- rotas primarias permanecem em destaque;
+- o controle `Mais` revela rotas secundarias;
+- o shell preserva foco visivel, labels acessiveis e espaco para o conteudo.
 
-## Fora deste corte
+## Limites
 
-- Implementacao concreta em framework web.
-- Roteador real.
-- Provedor de autenticacao.
-- Tela de login executavel.
-- Seletor real de tenant/perfil financeiro.
-- Testes visuais em navegador.
-- Evidencia visual por screenshot.
-
-Esses itens dependem da aplicacao web executavel e devem ser tratados nas proximas issues de frontend/bootstrap.
-
-## Validacao esperada
-
-Enquanto nao houver app executavel, a validacao automatica esperada para este corte e:
-
-- `format:check`;
-- `lint`;
-- `typecheck`;
-- testes placeholders existentes;
-- `build`.
-
-Quando o app web tiver framework e runtime, esta documentacao deve ser revisitada para incluir validacao visual mobile/desktop e testes de rota protegida.
+Este contrato nao escolhe framework, bundler ou folha CSS externa. Ele tambem nao substitui testes visuais em navegador; garante que a composicao SSR versionada esteja completa e conectada antes de o artefato ser aceito.
