@@ -20,6 +20,8 @@ jobs:
   root-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
     services:
       postgres:
         image: postgres:16-alpine
@@ -34,11 +36,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    env:
-      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
-      DIRECT_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
-      SESSION_SECRET: ci_session_secret_with_at_least_32_chars
-      API_BASE_URL: http://localhost:4000
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
