@@ -63,6 +63,8 @@ describe("authenticated SSR shell", () => {
     assert.match(html, /form\.matches\("\[data-form\]"\)/);
     assert.match(html, /event\.target\.closest[\s\S]*data-explicit-edit-scope/);
     assert.match(html, /event\.stopImmediatePropagation\(\)/);
+    assert.match(html, /transaction\.installmentId/);
+    assert.match(html, /Parcelas devem permanecer fora de agrupamentos/);
   });
 
   it("keeps statement presentation assets out of unrelated authenticated pages", () => {
@@ -77,6 +79,7 @@ describe("authenticated SSR shell", () => {
     assert.doesNotMatch(html, /statement-status::after/);
     assert.doesNotMatch(html, /restoreNativeTitle/);
     assert.doesNotMatch(html, /document\.addEventListener\("submit"/);
+    assert.doesNotMatch(html, /Parcelas devem permanecer fora de agrupamentos/);
   });
 
   it("renders every navigable private route in the shared navigation", () => {
