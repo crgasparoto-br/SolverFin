@@ -14,7 +14,9 @@ const requiredModules = [
   "dev-server/ssr-style-contract.js",
 ];
 
-const missingModules = requiredModules.filter((modulePath) => !existsSync(path.join(webDist, modulePath)));
+const missingModules = requiredModules.filter(
+  (modulePath) => !existsSync(path.join(webDist, modulePath)),
+);
 if (missingModules.length > 0) {
   fail([
     `[SolverFin SSR style contract] route=all provider=build module=apps/web/dist: compiled modules are missing (${missingModules.join(
@@ -74,10 +76,7 @@ const renderers = new Map([
       ),
   ],
   ["accountsCards", () => webModule.renderAccountsCardsPage("ssr-style-fixture-token")],
-  [
-    "accountRemuneration",
-    () => webModule.renderAccountRemunerationPage("ssr-style-fixture-token"),
-  ],
+  ["accountRemuneration", () => webModule.renderAccountRemunerationPage("ssr-style-fixture-token")],
   ["categories", () => webModule.renderCategoriesPage("ssr-style-fixture-token")],
   ["budgets", () => webModule.renderBudgetsPage("ssr-style-fixture-token")],
   ["inbox", () => webModule.renderInboxPage("ssr-style-fixture-token")],
