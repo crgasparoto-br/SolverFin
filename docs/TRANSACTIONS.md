@@ -57,14 +57,21 @@ datas, categorias, recorrência, parcela, importação, transferência e concili
 copiados nem alterados. O total é recalculado pela soma inteira de `amountMinor`.
 
 O primeiro corte aceita somente dois ou mais lançamentos da mesma organização, perfil, conta, moeda,
-tipo (`income` ou `expense`) e status; exclui cartões, transferências, `suggested`, `voided` e itens já
-agrupados. Alterações posteriores de conta, tipo, moeda, status ou exclusão são bloqueadas até o
-usuário desagrupar. Alterações de descrição, data, categoria ou valor permanecem refletidas
-automaticamente no grupo.
+tipo (`income` ou `expense`) e status; exclui cartões, transferências, `suggested`, `voided`, itens já
+agrupados e lançamentos com `installmentId`. O marcador de seleção de uma parcela canônica fica
+desabilitado, e a API rejeita tentativa direta de agrupamento com
+`409 TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE`.
+
+Alterações posteriores de conta, tipo, moeda, status ou exclusão são bloqueadas até o usuário
+desagrupar. Alterações de descrição, data, categoria ou valor permanecem refletidas automaticamente
+no grupo somente para membros sem vínculo canônico de parcela.
 
 Grupos legados com menos de dois membros não geram linha consolidada: os membros voltam a ser
-apresentados individualmente. Criação e desagrupamento são transacionais e geram auditoria redigida
-contendo apenas a natureza da operação e a quantidade de membros.
+apresentados individualmente. Um grupo legado que contenha parcela continua visível, preserva o
+indicador **Parcela X de Y** e informa que precisa ser desagrupado; ações de manutenção do grupo ou
+de seus membros ficam bloqueadas para impedir alteração fora do contrato conservador da parcela.
+Criação e desagrupamento são transacionais e geram auditoria redigida contendo apenas a natureza da
+operação e a quantidade de membros.
 
 As ações de administração de um agrupamento estão documentadas em
 [`API_TRANSACTION_GROUP_ACTIONS.md`](./API_TRANSACTION_GROUP_ACTIONS.md).
@@ -79,6 +86,7 @@ ação.
 A seleção pode combinar lançamentos simples e agrupados. A barra informa quantidade de itens,
 quantidade real de lançamentos representados quando forem diferentes e total financeiro sem dupla
 contagem. Um agrupamento selecionado impede nova unificação, pois grupos não podem ser aninhados.
+Agrupamentos legados com parcela canônica não participam da seleção até serem desagrupados.
 
 As ações em massa disponíveis são:
 
@@ -120,7 +128,8 @@ selecionada como referência histórica.
 Mudanças de valor, datas, conta, tipo, situação, repetição ou redistribuição permanecem fora desse
 fluxo. O endpoint genérico de transações rejeita atualizações de dados de registros com
 `installmentId`, exceto o payload exclusivo de situação usado pela ação operacional de conciliar ou
-desconciliar.
+desconciliar. O contrato de agrupamento também não pode ser usado como caminho alternativo: parcelas
+não entram em novos grupos, e grupos legados precisam ser desagrupados antes da manutenção.
 
 O modo manual **Repetição = Parcelado** ainda cria transações independentes e não cria registros
 `Installment`; por isso esses lançamentos não recebem o indicador nem a manutenção conservadora de
