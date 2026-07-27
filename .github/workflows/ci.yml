@@ -49,26 +49,103 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Format issue 539 browser scenario
-        run: npx prettier --write scripts/statement-visual/issue-539-installment-grouping-guard.mjs
+      - name: Check environment example
+        run: npm run env:check
 
-      - name: Upload formatted issue 539 browser scenario
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-539-browser-formatted
-          path: scripts/statement-visual/issue-539-installment-grouping-guard.mjs
-          if-no-files-found: error
-          retention-days: 1
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
 
-      - name: Stop after formatter artifact
-        run: exit 1
+      - name: Check demo seed script
+        run: npm run db:seed:check
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed demo data
+        run: npm run db:seed
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
 
   integration-api-postgres:
     name: Integration API + PostgreSQL
-    if: ${{ false }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - run: echo skipped during temporary formatter run
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Build packages
+        run: npm run build:packages
+
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed demo data
+        run: npm run db:seed
+
+      - name: Run API integration tests
+        run: npm run test:integration --workspace @solverfin/api
+
+      - name: Verify import statement consistency
+        run: npm run diagnose:import-statement-consistency -- --expect-zero
