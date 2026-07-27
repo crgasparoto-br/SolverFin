@@ -4,7 +4,6 @@ import { describe, it } from "node:test";
 import { solverFinShellRoutes } from "../app-shell/routes.js";
 import {
   removeStyleProviderFromDocument,
-  replaceHeadStyleCss,
   solverFinSsrStyleContracts,
   validateRenderedSsrStyleDocument,
   validateSsrStyleContractParity,
@@ -26,6 +25,9 @@ const navigationCss = `
     .sidebar > nav { overflow-y: visible; }
   }
 `;
+
+const transactionsPageCss = ".statement-layout { display: grid; }";
+const recurrenceAuxiliaryCss = ".recurrence-indicator { display: inline-flex; }";
 
 describe("SSR style contract", () => {
   it("has exact parity with every available canonical route, including public, hidden and master routes", () => {
@@ -69,21 +71,18 @@ describe("SSR style contract", () => {
   it("rejects empty shared, page-specific, shell and conditional providers in one pass", () => {
     const contract = contractFor("transactions");
     const html = authenticatedDocument(
-      `${providers.sharedShell}${providers.statementPresentation}.transactions-page { display: grid; }`,
-      contract.representativeContent ?? "",
+      `${providers.sharedShell}${providers.statementPresentation}${transactionsPageCss}${recurrenceAuxiliaryCss}`,
+      '<section class="statement-layout">Extrato ficticio</section>',
     );
     const brokenHtml = removeStyleProviderFromDocument(
-      removeStyleProviderFromDocument(html, providers.sharedShell),
-      providers.statementPresentation,
+      removeStyleProviderFromDocument(
+        removeStyleProviderFromDocument(html, providers.sharedShell),
+        providers.statementPresentation,
+      ),
+      ".statement-layout {",
     ).replace(navigationCss, "");
-    const withoutPageCss = replaceHeadStyleCss(brokenHtml, "");
 
-    const violations = validateRenderedSsrStyleDocument({
-      contract,
-      html: withoutPageCss,
-      providers,
-      requireConditionalProviders: true,
-    });
+    const violations = validateRenderedSsrStyleDocument({ contract, html: brokenHtml, providers });
 
     assert.ok(violations.some((violation) => violation.includes("provider=shared-shell")));
     assert.ok(
@@ -105,26 +104,59 @@ describe("SSR style contract", () => {
     assert.ok(violations.some((violation) => violation.includes("provider=login-public")));
   });
 
-  it("rejects a required auxiliary provider disconnected from final HTML", () => {
-    const contract = contractFor("settings");
+  it("rejects a registered auxiliary provider disconnected from final HTML", () => {
+    const contract = contractFor("transactions");
     const html = authenticatedDocument(
-      `${providers.sharedShell}${providers.sharedDialog}.settings-page { display: grid; }`,
-      "<section>Configuracoes</section>",
+      `${providers.sharedShell}${providers.statementPresentation}${transactionsPageCss}`,
+      '<section class="statement-layout">Extrato ficticio</section>',
     );
 
-    const violations = validateRenderedSsrStyleDocument({
-      contract,
-      html: removeStyleProviderFromDocument(html, providers.sharedDialog),
-      providers,
-    });
+    const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
 
-    assert.ok(violations.some((violation) => violation.includes("provider=shared-dialog")));
+    assert.ok(
+      violations.some((violation) => violation.includes("provider=aux:recurrences-section")),
+    );
+  });
+
+  it("rejects removal of the page provider even when an auxiliary provider remains", () => {
+    const contract = contractFor("transactions");
+    const html = authenticatedDocument(
+      `${providers.sharedShell}${providers.statementPresentation}${recurrenceAuxiliaryCss}`,
+      '<section class="statement-layout">Extrato ficticio</section>',
+    );
+
+    const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
+
+    assert.ok(violations.some((violation) => violation.includes("provider=page:transactions")));
+    assert.ok(
+      violations.every((violation) => !violation.includes("provider=aux:recurrences-section")),
+    );
+  });
+
+  it("requires the representative renderer to activate each conditional provider", () => {
+    const contract = contractFor("transactions");
+    const html = authenticatedDocument(
+      `${providers.sharedShell}${providers.statementPresentation}${transactionsPageCss}${recurrenceAuxiliaryCss}`,
+      "<section>Extrato sem gatilho representativo</section>",
+    );
+
+    const violations = validateRenderedSsrStyleDocument({ contract, html, providers });
+
+    assert.ok(
+      violations.some((violation) =>
+        violation.includes("representative renderer did not activate conditional provider trigger"),
+      ),
+    );
   });
 
   it("accepts an explicitly shared-only authenticated route", () => {
+    const dashboardContract = contractFor("dashboard");
     const sharedOnlyContract: SsrStyleRouteContract = {
-      ...contractFor("dashboard"),
+      ...dashboardContract,
       pageStyleMode: "shared-only",
+      registeredStyleProviders: dashboardContract.registeredStyleProviders.filter(
+        (provider) => provider.kind !== "page",
+      ),
     };
 
     assert.deepEqual(
