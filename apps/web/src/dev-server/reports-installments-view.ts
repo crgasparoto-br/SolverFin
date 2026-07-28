@@ -44,6 +44,25 @@ interface InstallmentRecord {
   category?: { id: string; name: string; kind: string; status: string };
 }
 
+interface InstallmentSummary {
+  activeCount: number;
+  totalMinor: number;
+  plannedOpenCount: number;
+  plannedOpenMinor: number;
+  postedClosedCount: number;
+  postedClosedMinor: number;
+  overdueCount: number;
+  overdueMinor: number;
+  futureCount: number;
+  futureMinor: number;
+}
+
+interface AggregateRow {
+  label: string;
+  count: number;
+  amountMinor: number;
+}
+
 export async function renderInstallmentsView(token: string, url: URL): Promise<string> {
   const filters = readInstallmentFilters(url);
   const cardsParams = new URLSearchParams({ status: "all" });
@@ -146,29 +165,37 @@ function renderInstallments(
   filters: InstallmentFilters,
 ): string {
   if (installments.length === 0) {
-    return renderState(
-      "empty",
-      "Nenhuma parcela no período.",
-      "Ajuste mês, cartão, categoria ou status para revisar outro recorte.",
-    );
+    return `<section class="panel report-results" data-report-state="empty">
+      <div class="section-heading"><div><p class="eyebrow">Parcelas</p><h2>${escapeHtml(formatMonthYear(filters.month))}</h2></div></div>
+      ${renderCompactEmptyState(
+        "Nenhuma parcela no período.",
+        "Ajuste mês, cartão, categoria ou status para revisar outro recorte.",
+      )}
+    </section>`;
   }
-  const active = installments.filter((item) => item.status !== "cancelled");
-  const posted = installments.filter(
-    (item) =>
-      item.status === "posted" ||
-      item.status === "reconciled" ||
-      item.invoice?.status === "closed" ||
-      item.invoice?.status === "paid",
-  );
-  const planned = installments.filter(
-    (item) => item.status === "planned" && !posted.includes(item),
-  );
-  const total = active.reduce((sum, item) => sum + item.amountMinor, 0);
+
+  const summary = summarizeInstallments(installments, todayDateOnly());
   return `<div data-report-state="ready">
     <section class="summary-grid" aria-label="Indicadores de parcelas">
-      ${renderMetric("Abertas/planejadas", planned.length, sumMoney(planned))}
-      ${renderMetric("Postadas/fechadas", posted.length, sumMoney(posted))}
-      ${renderMetric("Total mensal", active.length, total, true)}
+      ${renderMetric("Abertas/planejadas", summary.plannedOpenCount, summary.plannedOpenMinor)}
+      ${renderMetric("Postadas/fechadas", summary.postedClosedCount, summary.postedClosedMinor)}
+      ${renderMetric("Vencidas", summary.overdueCount, summary.overdueMinor, "warning")}
+      ${renderMetric("Futuras", summary.futureCount, summary.futureMinor)}
+      ${renderMetric("Total mensal", summary.activeCount, summary.totalMinor, "primary")}
+    </section>
+    <section class="report-grid" aria-label="Agrupamentos de parcelas">
+      <section class="panel report-results">
+        <div class="section-heading"><h2>Comprometimento por mês</h2><span>${escapeHtml(formatMonthYear(filters.month))}</span></div>
+        ${renderAggregateRows(groupByMonth(installments), "month")}
+      </section>
+      <section class="panel report-results">
+        <div class="section-heading"><h2>Por cartão</h2><span>${summary.activeCount} parcelas</span></div>
+        ${renderAggregateRows(groupByCard(installments), "card")}
+      </section>
+      <section class="panel report-results">
+        <div class="section-heading"><h2>Por categoria</h2><span>${summary.activeCount} parcelas</span></div>
+        ${renderAggregateRows(groupByCategory(installments), "category")}
+      </section>
     </section>
     <section class="panel report-results"><div class="section-heading"><div><p class="eyebrow">Consulta somente leitura</p><h2>Parcelas consideradas</h2></div><span>${installments.length} registros</span></div>
       <div class="installment-table" role="table" aria-label="Parcelas do relatório"><div class="installment-table-head" role="row"><span>Vencimento</span><span>Parcela</span><span>Origem</span><span>Cartão</span><span>Categoria</span><span>Status</span><span>Valor</span></div>${installments.map(renderInstallmentRow).join("")}</div>
@@ -177,8 +204,121 @@ function renderInstallments(
   </div>`;
 }
 
-function renderMetric(label: string, count: number, amountMinor: number, primary = false): string {
-  return `<article class="metric-card${primary ? " metric-primary" : ""}"><span>${escapeHtml(label)}</span><strong>${count}</strong><p>${escapeHtml(formatMinorCurrency(amountMinor))}</p></article>`;
+function summarizeInstallments(
+  installments: readonly InstallmentRecord[],
+  today: string,
+): InstallmentSummary {
+  return installments.reduce<InstallmentSummary>(
+    (summary, installment) => {
+      const amountMinor = installment.status === "cancelled" ? 0 : installment.amountMinor;
+      const postedClosed = isPostedOrClosed(installment);
+      const plannedOpen = installment.status === "planned" && !postedClosed;
+      const overdue = plannedOpen && installment.dueOn < today;
+      const future = installment.status !== "cancelled" && installment.dueOn > today;
+
+      if (installment.status !== "cancelled") {
+        summary.activeCount += 1;
+        summary.totalMinor += amountMinor;
+      }
+      if (plannedOpen) {
+        summary.plannedOpenCount += 1;
+        summary.plannedOpenMinor += amountMinor;
+      }
+      if (postedClosed) {
+        summary.postedClosedCount += 1;
+        summary.postedClosedMinor += amountMinor;
+      }
+      if (overdue) {
+        summary.overdueCount += 1;
+        summary.overdueMinor += amountMinor;
+      }
+      if (future) {
+        summary.futureCount += 1;
+        summary.futureMinor += amountMinor;
+      }
+      return summary;
+    },
+    {
+      activeCount: 0,
+      totalMinor: 0,
+      plannedOpenCount: 0,
+      plannedOpenMinor: 0,
+      postedClosedCount: 0,
+      postedClosedMinor: 0,
+      overdueCount: 0,
+      overdueMinor: 0,
+      futureCount: 0,
+      futureMinor: 0,
+    },
+  );
+}
+
+function isPostedOrClosed(installment: InstallmentRecord): boolean {
+  return (
+    installment.status === "posted" ||
+    installment.status === "reconciled" ||
+    installment.invoice?.status === "closed" ||
+    installment.invoice?.status === "paid"
+  );
+}
+
+function groupByMonth(installments: readonly InstallmentRecord[]): AggregateRow[] {
+  return aggregateBy(installments, (installment) => formatMonthYear(installment.dueOn.slice(0, 7)));
+}
+
+function groupByCard(installments: readonly InstallmentRecord[]): AggregateRow[] {
+  return aggregateBy(
+    installments,
+    (installment) => installment.card?.name ?? "Sem cartão informado",
+  );
+}
+
+function groupByCategory(installments: readonly InstallmentRecord[]): AggregateRow[] {
+  return aggregateBy(installments, (installment) => installment.category?.name ?? "Sem categoria");
+}
+
+function aggregateBy(
+  installments: readonly InstallmentRecord[],
+  labelFor: (installment: InstallmentRecord) => string,
+): AggregateRow[] {
+  const groups = new Map<string, AggregateRow>();
+  for (const installment of installments) {
+    const label = labelFor(installment);
+    const current = groups.get(label) ?? { label, count: 0, amountMinor: 0 };
+    current.count += 1;
+    if (installment.status !== "cancelled") current.amountMinor += installment.amountMinor;
+    groups.set(label, current);
+  }
+  return Array.from(groups.values()).sort(
+    (left, right) => right.amountMinor - left.amountMinor || left.label.localeCompare(right.label),
+  );
+}
+
+function renderAggregateRows(rows: readonly AggregateRow[], kind: string): string {
+  if (rows.length === 0) {
+    return renderCompactEmptyState(
+      "Sem dados para agrupar.",
+      "As parcelas do filtro selecionado aparecerão aqui.",
+    );
+  }
+  return `<div class="aggregate-list" data-aggregate-kind="${escapeHtml(kind)}">${rows
+    .map(
+      (row) => `<article class="aggregate-row"><div><strong>${escapeHtml(row.label)}</strong><span>${row.count} parcela${row.count === 1 ? "" : "s"}</span></div><strong>${escapeHtml(formatMinorCurrency(row.amountMinor))}</strong></article>`,
+    )
+    .join("")}</div>`;
+}
+
+function renderMetric(
+  label: string,
+  count: number,
+  amountMinor: number,
+  tone: "default" | "warning" | "primary" = "default",
+): string {
+  return `<article class="metric-card metric-${tone}"><span>${escapeHtml(label)}</span><strong>${count}</strong><p>${escapeHtml(formatMinorCurrency(amountMinor))}</p></article>`;
+}
+
+function renderCompactEmptyState(title: string, description: string): string {
+  return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
 }
 
 function renderInstallmentRow(item: InstallmentRecord): string {
@@ -219,7 +359,11 @@ function nonEmpty(value: string | null): string | undefined {
 }
 
 function currentMonth(): string {
-  return new Date().toISOString().slice(0, 7);
+  return todayDateOnly().slice(0, 7);
+}
+
+function todayDateOnly(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function monthEnd(month: string): string {
@@ -254,10 +398,6 @@ function formatInvoiceStatus(status: string): string {
   if (status === "overdue") return "vencida";
   if (status === "cancelled") return "cancelada";
   return status;
-}
-
-function sumMoney(items: InstallmentRecord[]): number {
-  return items.reduce((sum, item) => sum + (item.status === "cancelled" ? 0 : item.amountMinor), 0);
 }
 
 function installmentsSorted(items: InstallmentRecord[]): InstallmentRecord[] {
