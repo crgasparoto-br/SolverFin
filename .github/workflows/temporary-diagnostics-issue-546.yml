@@ -1,4 +1,4 @@
-name: Temporary diagnostics issue 546
+name: Temporary lint remediation issue 546
 
 on:
   pull_request:
@@ -6,78 +6,35 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  lint:
-    name: Capture lint diagnostics
+  remediate:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-slim
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - run: npm ci --no-audit --no-fund
-      - name: Capture lint output
-        run: |
-          mkdir -p artifacts/issue-546-diagnostics
-          set +e
-          npm run lint > artifacts/issue-546-diagnostics/lint.log 2>&1
-          echo "$?" > artifacts/issue-546-diagnostics/lint.exit-code
-          exit 0
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: issue-546-lint-diagnostics-${{ github.sha }}
-          path: artifacts/issue-546-diagnostics
-          if-no-files-found: error
+          ref: feat/546-category-evolution-controls-account-filter
 
-  integration:
-    name: Capture integration diagnostics
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      NODE_ENV: test
-      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: solverfin_ci
-          POSTGRES_USER: solverfin
-          POSTGRES_PASSWORD: solverfin_ci_password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - run: npm ci --no-audit --no-fund
-      - run: npm run prisma:generate
-      - run: npm run build:packages
-      - run: npm run db:deploy
-      - run: npm run db:seed
-      - name: Capture integration output
+      - name: Remove unnecessary regex escape
         run: |
-          mkdir -p artifacts/issue-546-diagnostics
-          set +e
-          npm run test:integration --workspace @solverfin/api > artifacts/issue-546-diagnostics/integration.log 2>&1
-          echo "$?" > artifacts/issue-546-diagnostics/integration.exit-code
-          exit 0
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: issue-546-integration-diagnostics-${{ github.sha }}
-          path: artifacts/issue-546-diagnostics
-          if-no-files-found: error
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("apps/web/src/dev-server/reports-route-page.test.ts")
+          text = path.read_text()
+          before = r'[^\"]*'
+          after = r'[^"]*'
+          if before not in text:
+              raise SystemExit("Expected lint pattern was not found")
+          path.write_text(text.replace(before, after, 1))
+          PY
+
+      - name: Commit lint remediation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/reports-route-page.test.ts
+          git commit -m "fix: remove unnecessary regex escape"
+          git push origin HEAD:feat/546-category-evolution-controls-account-filter
