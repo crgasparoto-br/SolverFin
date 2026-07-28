@@ -25,41 +25,66 @@ interface AggregatedMovementRow {
   amountMinor: string | number;
 }
 
+export type CategoryEvolutionSourceFilter =
+  | { kind: "all" }
+  | { kind: "account"; id: string }
+  | { kind: "card"; id: string };
+
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export class CategoryEvolutionAccountNotAvailableError extends Error {
-  readonly code = "REPORT_CATEGORY_EVOLUTION_ACCOUNT_NOT_AVAILABLE";
+export class CategoryEvolutionSourceNotAvailableError extends Error {
+  readonly code = "REPORT_CATEGORY_EVOLUTION_SOURCE_NOT_AVAILABLE";
   readonly statusCode = 404;
 
   constructor() {
-    super("A conta informada não está disponível para este relatório.");
-    this.name = "CategoryEvolutionAccountNotAvailableError";
+    super("A conta ou o cartão informado não está disponível para este relatório.");
+    this.name = "CategoryEvolutionSourceNotAvailableError";
   }
 }
 
-export function parseCategoryEvolutionAccountId(searchParams: URLSearchParams): string | undefined {
-  const value = searchParams.get("accountId");
-  if (value === null) return undefined;
+export function parseCategoryEvolutionSourceFilter(
+  searchParams: URLSearchParams,
+): CategoryEvolutionSourceFilter {
+  const accountId = searchParams.get("accountId");
+  const cardId = searchParams.get("cardId");
 
-  if (!UUID_PATTERN.test(value)) {
+  if (accountId !== null && cardId !== null) {
     throw new CategoryEvolutionFilterError(
-      "Conta inválida. Informe um identificador de conta válido.",
+      "Filtro inválido. Informe somente uma conta ou um cartão de crédito.",
     );
   }
 
-  return value.toLowerCase();
+  if (accountId !== null) {
+    return { kind: "account", id: parseSourceId(accountId, "Conta") };
+  }
+
+  if (cardId !== null) {
+    return { kind: "card", id: parseSourceId(cardId, "Cartão") };
+  }
+
+  return { kind: "all" };
 }
 
-export async function buildCategoryEvolutionReportForAccountContext(
+export async function buildCategoryEvolutionReportForSourceContext(
   context: TenantContext,
   filters: CategoryEvolutionFilters,
-  accountId: string | undefined,
+  source: CategoryEvolutionSourceFilter,
 ): Promise<CategoryEvolutionReport> {
-  if (accountId === undefined) {
+  if (source.kind === "all") {
     return buildCategoryEvolutionReportForContext(context, filters);
   }
 
-  await assertActiveAccountForContext(context, accountId);
+  await assertSourceAvailableForContext(context, source);
+
+  const sourcePredicate =
+    source.kind === "account"
+      ? 'movement."accountId" = $5'
+      : `movement."cardId" = $5
+          and not exists (
+            select 1
+              from "Invoice" invoice
+             where invoice."paymentTransactionId" = movement."id"
+          )`;
 
   const [categories, movements] = await Promise.all([
     query<CategoryRow>(
@@ -90,7 +115,7 @@ export async function buildCategoryEvolutionReportForAccountContext(
           and movement."occurredOn" <= report_periods."endsOn"
         where movement."organizationId" = $1
           and movement."financialProfileId" = $2
-          and movement."accountId" = $5
+          and ${sourcePredicate}
           and movement."kind" in ('INCOME', 'EXPENSE')
           and movement."status" in ('POSTED', 'RECONCILED')
         group by report_periods."periodIndex",
@@ -106,7 +131,7 @@ export async function buildCategoryEvolutionReportForAccountContext(
         context.financialProfileId,
         filters.periods.map((period) => period.startsOn),
         filters.periods.map((period) => period.endsOn),
-        accountId,
+        source.id,
       ],
     ),
   ]);
@@ -114,22 +139,44 @@ export async function buildCategoryEvolutionReportForAccountContext(
   return buildCategoryEvolutionReport(filters, { categories, movements });
 }
 
-async function assertActiveAccountForContext(
-  context: TenantContext,
-  accountId: string,
-): Promise<void> {
-  const accounts = await query<{ id: string }>(
-    `select "id"
-       from "Account"
-      where "id" = $1
-        and "organizationId" = $2
-        and "financialProfileId" = $3
-        and lower("status"::text) = 'active'
-      limit 1`,
-    [accountId, context.organizationId, context.financialProfileId],
-  );
+function parseSourceId(value: string, label: "Conta" | "Cartão"): string {
+  if (!UUID_PATTERN.test(value)) {
+    throw new CategoryEvolutionFilterError(
+      `${label} inválido. Informe um identificador válido.`,
+    );
+  }
 
-  if (!accounts[0]) {
-    throw new CategoryEvolutionAccountNotAvailableError();
+  return value.toLowerCase();
+}
+
+async function assertSourceAvailableForContext(
+  context: TenantContext,
+  source: Exclude<CategoryEvolutionSourceFilter, { kind: "all" }>,
+): Promise<void> {
+  const rows =
+    source.kind === "account"
+      ? await query<{ id: string }>(
+          `select "id"
+             from "Account"
+            where "id" = $1
+              and "organizationId" = $2
+              and "financialProfileId" = $3
+              and lower("status"::text) = 'active'
+            limit 1`,
+          [source.id, context.organizationId, context.financialProfileId],
+        )
+      : await query<{ id: string }>(
+          `select "id"
+             from "Card"
+            where "id" = $1
+              and "organizationId" = $2
+              and "financialProfileId" = $3
+              and lower("status"::text) in ('active', 'blocked')
+            limit 1`,
+          [source.id, context.organizationId, context.financialProfileId],
+        );
+
+  if (!rows[0]) {
+    throw new CategoryEvolutionSourceNotAvailableError();
   }
 }
