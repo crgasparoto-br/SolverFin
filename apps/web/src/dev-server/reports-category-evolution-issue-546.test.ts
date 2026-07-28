@@ -37,13 +37,16 @@ describe("reports category evolution issue 546", () => {
       html,
       new RegExp(`<option value="account:${ACCOUNT_ID}" selected>Conta principal</option>`),
     );
-    assert.match(html, /<option value="account:cccccccc-cccc-4ccc-8ccc-cccccccccccc">Reserva<\/option>/);
-    assert.doesNotMatch(html, />Conta arquivada<\/option>/);
     assert.match(
       html,
-      new RegExp(`<option value="card:${CARD_ID}">Cartão principal</option>`),
+      /<option value="account:cccccccc-cccc-4ccc-8ccc-cccccccccccc">Reserva<\/option>/,
     );
-    assert.match(html, /<option value="card:dddddddd-dddd-4ddd-8ddd-dddddddddddd">Cartão bloqueado<\/option>/);
+    assert.doesNotMatch(html, />Conta arquivada<\/option>/);
+    assert.match(html, new RegExp(`<option value="card:${CARD_ID}">Cartão principal</option>`));
+    assert.match(
+      html,
+      /<option value="card:dddddddd-dddd-4ddd-8ddd-dddddddddddd">Cartão bloqueado<\/option>/,
+    );
     assert.doesNotMatch(html, />Cartão arquivado<\/option>/);
     assert.match(
       html,
@@ -117,7 +120,10 @@ describe("reports category evolution issue 546", () => {
     assert.match(html, /Não foi possível carregar contas e cartões/);
     assert.doesNotMatch(html, />Conta principal<\/option>/);
     assert.doesNotMatch(html, />Cartão principal<\/option>/);
-    assert.equal(calls.some((call) => call.startsWith("/api/reports/category-evolution?")), false);
+    assert.equal(
+      calls.some((call) => call.startsWith("/api/reports/category-evolution?")),
+      false,
+    );
   });
 
   it("styles only negative result cells while preserving their textual sign", async () => {
@@ -181,7 +187,11 @@ function installFetchMock(calls: string[], options: MockOptions = {}): void {
         accounts: [
           { id: ACCOUNT_ID, name: "Conta principal", status: "active" },
           { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", name: "Reserva", status: "active" },
-          { id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", name: "Conta arquivada", status: "archived" },
+          {
+            id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+            name: "Conta arquivada",
+            status: "archived",
+          },
         ],
       });
     }

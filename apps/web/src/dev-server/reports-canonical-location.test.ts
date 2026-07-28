@@ -48,9 +48,7 @@ describe("reports canonical location", () => {
   it("keeps canonical selected and malformed values for normal validation", () => {
     assert.equal(
       resolveReportsCanonicalLocation(
-        new URL(
-          `http://localhost/relatorios?view=category-evolution&accountId=${ACCOUNT_ID}`,
-        ),
+        new URL(`http://localhost/relatorios?view=category-evolution&accountId=${ACCOUNT_ID}`),
       ),
       undefined,
     );

@@ -142,7 +142,7 @@ export async function buildCategoryEvolutionReportForSourceContext(
 function parseSourceId(value: string, label: "Conta" | "Cartão"): string {
   if (!UUID_PATTERN.test(value)) {
     throw new CategoryEvolutionFilterError(
-      `${label} inválido. Informe um identificador válido.`,
+      `${label === "Conta" ? "Conta inválida" : "Cartão inválido"}. Informe um identificador válido.`,
     );
   }
 

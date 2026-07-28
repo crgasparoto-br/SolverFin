@@ -39,7 +39,7 @@ describe("category evolution source filter", () => {
           (error: unknown) =>
             error instanceof CategoryEvolutionFilterError &&
             error.code === "REPORT_CATEGORY_EVOLUTION_FILTER_INVALID" &&
-            error.message.includes(`${label} inválido`),
+            error.message.includes(label === "Conta" ? "Conta inválida" : "Cartão inválido"),
         );
       }
     }

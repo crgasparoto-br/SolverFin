@@ -194,8 +194,16 @@ async function validateDesktop(cdp, seeded) {
   screenshots.push("issue-546-reports-category-controls-desktop.png");
 
   check(interaction.ok, "Section and hierarchy controls were not available", interaction);
-  check(interaction.childHidden, "Collapsing a category did not hide its full subtree", interaction);
-  check(interaction.sectionHidden, "Collapsing Receitas did not hide the full section tree", interaction);
+  check(
+    interaction.childHidden,
+    "Collapsing a category did not hide its full subtree",
+    interaction,
+  );
+  check(
+    interaction.sectionHidden,
+    "Collapsing Receitas did not hide the full section tree",
+    interaction,
+  );
   check(
     interaction.descendantStatePreserved,
     "A descendant collapsed state was lost after reopening the Receitas section",
@@ -208,9 +216,21 @@ async function validateDesktop(cdp, seeded) {
     "Selected account was not preserved",
     measurements,
   );
-  check(measurements.sectionToggleCount >= 2, "Receitas/Despesas controls were not rendered", measurements);
-  check(measurements.categoryToggleCount >= 2, "Multilevel category controls were not rendered", measurements);
-  check(measurements.negativeCells >= 3, "Negative Result cells were not highlighted", measurements);
+  check(
+    measurements.sectionToggleCount >= 2,
+    "Receitas/Despesas controls were not rendered",
+    measurements,
+  );
+  check(
+    measurements.categoryToggleCount >= 2,
+    "Multilevel category controls were not rendered",
+    measurements,
+  );
+  check(
+    measurements.negativeCells >= 3,
+    "Negative Result cells were not highlighted",
+    measurements,
+  );
   check(measurements.pageFitsViewport, "Desktop page leaks horizontal overflow", measurements);
   return { viewport: "1440x900", interaction, measurements, screenshot: screenshots.at(-1) };
 }
@@ -255,7 +275,11 @@ async function validateMobile(cdp, seeded) {
   );
   check(measurements.accountId === null, "Card filter emitted accountId", measurements);
   check(measurements.cardId === seeded.cardId, "Card filter URL was not preserved", measurements);
-  check(measurements.negativeCells >= 3, "Card result was not negative and highlighted", measurements);
+  check(
+    measurements.negativeCells >= 3,
+    "Card result was not negative and highlighted",
+    measurements,
+  );
   return { viewport: "390x844", measurements, screenshot: screenshots.at(-1) };
 }
 

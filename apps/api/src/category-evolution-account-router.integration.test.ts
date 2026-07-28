@@ -49,7 +49,10 @@ async function main(): Promise<void> {
     const malformed = await reportRequest(token, profile.id, { [field]: "not-a-uuid" });
     assert.equal(malformed.statusCode, 400);
     assert.equal(readError(malformed).code, "REPORT_CATEGORY_EVOLUTION_FILTER_INVALID");
-    assert.match(readError(malformed).message ?? "", field === "accountId" ? /Conta inválido/ : /Cartão inválido/);
+    assert.match(
+      readError(malformed).message ?? "",
+      field === "accountId" ? /Conta inválida/ : /Cartão inválido/,
+    );
     assert.equal(hasReportPayload(malformed), false);
   }
 

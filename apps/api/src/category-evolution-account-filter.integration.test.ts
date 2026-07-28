@@ -119,28 +119,24 @@ async function assertAccountFilter(
     description: `Transferência com destino na conta selecionada issue 546 ${suffix}`,
   });
 
-  const allSources = await buildCategoryEvolutionReportForSourceContext(
-    PERSONAL_CONTEXT,
-    filters,
-    { kind: "all" },
-  );
+  const allSources = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
+    kind: "all",
+  });
   assert.equal(allSources.currencyBlocks[0]?.income.totalMinor, 20_000);
   assert.equal(allSources.currencyBlocks[0]?.expense.totalMinor, 3_000);
 
-  const selected = await buildCategoryEvolutionReportForSourceContext(
-    PERSONAL_CONTEXT,
-    filters,
-    { kind: "account", id: selectedAccount.id },
-  );
+  const selected = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
+    kind: "account",
+    id: selectedAccount.id,
+  });
   assert.equal(selected.currencyBlocks[0]?.income.totalMinor, 12_000);
   assert.equal(selected.currencyBlocks[0]?.expense.totalMinor, 3_000);
   assert.equal(selected.currencyBlocks[0]?.result.totalMinor, 9_000);
 
-  const empty = await buildCategoryEvolutionReportForSourceContext(
-    PERSONAL_CONTEXT,
-    filters,
-    { kind: "account", id: emptyAccount.id },
-  );
+  const empty = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
+    kind: "account",
+    id: emptyAccount.id,
+  });
   assert.deepEqual(empty.currencyBlocks, []);
 
   await assert.rejects(
@@ -256,29 +252,26 @@ async function assertCardFilter(
     paidOn: "2032-03-15",
   });
 
-  const selected = await buildCategoryEvolutionReportForSourceContext(
-    PERSONAL_CONTEXT,
-    filters,
-    { kind: "card", id: selectedCard.id },
-  );
+  const selected = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
+    kind: "card",
+    id: selectedCard.id,
+  });
   assert.equal(selected.currencyBlocks[0]?.expense.totalMinor, 2_000);
   assert.equal(selected.currencyBlocks[0]?.result.totalMinor, -2_000);
 
   await updateCreditCardAccountForContext(PERSONAL_CONTEXT, selectedCard.id, {
     status: "blocked",
   });
-  const blocked = await buildCategoryEvolutionReportForSourceContext(
-    PERSONAL_CONTEXT,
-    filters,
-    { kind: "card", id: selectedCard.id },
-  );
+  const blocked = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
+    kind: "card",
+    id: selectedCard.id,
+  });
   assert.equal(blocked.currencyBlocks[0]?.expense.totalMinor, 2_000);
 
-  const empty = await buildCategoryEvolutionReportForSourceContext(
-    PERSONAL_CONTEXT,
-    filters,
-    { kind: "card", id: emptyCard.id },
-  );
+  const empty = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
+    kind: "card",
+    id: emptyCard.id,
+  });
   assert.deepEqual(empty.currencyBlocks, []);
 
   await assert.rejects(

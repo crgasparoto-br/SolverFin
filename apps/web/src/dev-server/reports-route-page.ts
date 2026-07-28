@@ -197,7 +197,11 @@ async function renderCategoryEvolutionView(
   ]);
 
   if (!accountsResult.ok || !cardsResult.ok) {
-    const sourceError = !accountsResult.ok ? accountsResult.error : cardsResult.error;
+    const sourceError = !accountsResult.ok
+      ? accountsResult.error
+      : !cardsResult.ok
+        ? cardsResult.error
+        : "Não foi possível carregar as origens financeiras.";
     return renderShell(
       heading +
         navigation +
@@ -372,7 +376,15 @@ function renderCurrencyMatrix(
     renderCategoryBranch(node, block.currency, "income", 1, blockIndex, [index], [incomeSectionId]),
   );
   const expenseBranches = block.expenseCategories.map((node, index) =>
-    renderCategoryBranch(node, block.currency, "expense", 1, blockIndex, [index], [expenseSectionId]),
+    renderCategoryBranch(
+      node,
+      block.currency,
+      "expense",
+      1,
+      blockIndex,
+      [index],
+      [expenseSectionId],
+    ),
   );
   const incomeRows = incomeBranches.map((branch) => branch.html).join("");
   const expenseRows = expenseBranches.map((branch) => branch.html).join("");
@@ -549,7 +561,9 @@ function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
     throw new Error("Conta inválida. Selecione uma conta disponível ou Todas as contas e cartões.");
   }
   if (draft.invalid.cardId) {
-    throw new Error("Cartão inválido. Selecione um cartão disponível ou Todas as contas e cartões.");
+    throw new Error(
+      "Cartão inválido. Selecione um cartão disponível ou Todas as contas e cartões.",
+    );
   }
 
   const rawPeriods = draft.periods;

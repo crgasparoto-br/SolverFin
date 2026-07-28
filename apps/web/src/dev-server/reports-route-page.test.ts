@@ -133,10 +133,7 @@ describe("reports route page", () => {
       ),
     );
     assert.match(invalidAccount, /data-report-state="filter-error"/);
-    assert.match(
-      invalidAccount,
-      /value="account:invalid" selected>Conta selecionada indisponível/,
-    );
+    assert.match(invalidAccount, /value="account:invalid" selected>Conta selecionada indisponível/);
     assert.match(invalidAccount, /data-invalid-filter="origin"/);
 
     const invalidCard = await renderReportsRoutePage(
