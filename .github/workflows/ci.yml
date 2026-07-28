@@ -96,24 +96,7 @@ jobs:
         run: npm run test --workspace @solverfin/api
 
       - name: Test web
-        id: web_tests
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run test --workspace @solverfin/web 2>&1 | tee web-test-output.log
-          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
-
-      - name: Upload web test output
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-test-output
-          path: web-test-output.log
-          if-no-files-found: error
-
-      - name: Propagate web test result
-        if: steps.web_tests.outputs.exit_code != '0'
-        run: exit 1
+        run: npm run test --workspace @solverfin/web
 
       - name: Test AI package
         run: npm run test --workspace @solverfin/ai
@@ -128,7 +111,24 @@ jobs:
         run: npm run test --workspace @solverfin/shared
 
       - name: Build
-        run: npm run build
+        id: build
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build-output.log
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: build-output.log
+          if-no-files-found: error
+
+      - name: Propagate build result
+        if: steps.build.outputs.exit_code != '0'
+        run: exit 1
 
   integration-api-postgres:
     name: Integration API + PostgreSQL
