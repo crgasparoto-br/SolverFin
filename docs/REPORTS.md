@@ -37,7 +37,7 @@ Quando o inicio esta ausente, a ultima coluna termina no mes ou ano UTC corrente
 
 O campo **Conta** lista, na ordem retornada por `/api/accounts`, somente contas ativas do perfil autorizado. A primeira opcao e **Todas as contas**:
 
-- **Todas as contas** remove `accountId` da consulta enviada a API e preserva o resultado geral anterior, inclusive movimentos elegiveis sem conta;
+- **Todas as contas** remove `accountId` da consulta enviada a API e preserva o resultado geral anterior;
 - uma conta selecionada grava `accountId=<uuid>` e inclui apenas movimentos vinculados diretamente a ela;
 - alterar intervalo, inicio ou quantidade preserva a conta;
 - trocar `profileId` remove o filtro de conta antes da navegacao, evitando transportar uma conta entre perfis;

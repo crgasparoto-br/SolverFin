@@ -52,7 +52,7 @@ A consulta considera uma vez cada `Transaction` que atenda simultaneamente:
 - `status` igual a `posted` ou `reconciled`;
 - `occurredOn` dentro de um dos periodos, com limites inclusivos.
 
-Sem `accountId`, o contrato anterior e preservado integralmente: entram todas as transacoes elegiveis do perfil, inclusive movimentos sem conta vinculada.
+Sem `accountId`, o contrato anterior e preservado integralmente: entram todas as transacoes elegiveis do perfil.
 
 Com `accountId`, entra somente a transacao cujo `Transaction.accountId` seja exatamente a conta selecionada. Movimentos de outra conta, sem `accountId` ou que mencionem a conta apenas em `destinationAccountId` nao entram no recorte.
 
