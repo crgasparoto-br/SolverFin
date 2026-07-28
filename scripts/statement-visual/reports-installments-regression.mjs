@@ -2,29 +2,18 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 const screenshots = [];
 const scenarios = [];
 let browserVersion = "unknown";
 
-if (!chromePath)
-  throw new Error(
-    "CHROME_BIN is required for reports installments validation.",
-  );
+if (!chromePath) throw new Error("CHROME_BIN is required for reports installments validation.");
 await mkdir(outputDir, { recursive: true });
 
 let browser;
@@ -34,11 +23,7 @@ try {
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
-  assert.equal(
-    login.ok,
-    true,
-    `Demo login failed: ${login.status} ${login.body}`,
-  );
+  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
   const fixture = await evaluate(browser.cdp, fixtureExpression());
   await validateDesktop(browser.cdp, fixture);
@@ -64,28 +49,19 @@ await writeFile(
   join(outputDir, "reports-installments-regression.json"),
   `${JSON.stringify(report, null, 2)}\n`,
 );
-await writeFile(
-  join(outputDir, "REPORTS-INSTALLMENTS-REGRESSION.md"),
-  renderMarkdown(report),
-);
+await writeFile(join(outputDir, "REPORTS-INSTALLMENTS-REGRESSION.md"), renderMarkdown(report));
 
 if (failures.length > 0) {
   for (const failure of failures) console.error(`- ${failure.message}`);
   process.exitCode = 1;
 } else {
-  console.log(
-    "Reports installments desktop and mobile regression validation passed.",
-  );
+  console.log("Reports installments desktop and mobile regression validation passed.");
 }
 
 async function validateDesktop(cdp, fixture) {
   await setViewport(cdp, 1366, 768);
   const route = `/relatorios?view=installments&month=${fixture.month}`;
-  await navigateWithRetry(
-    cdp,
-    `${baseUrl}${route}`,
-    "reports installments desktop",
-  );
+  await navigateWithRetry(cdp, `${baseUrl}${route}`, "reports installments desktop");
   await waitForState(cdp, "ready");
   const measurements = await evaluate(cdp, measurementExpression());
   const filename = "reports-installments-desktop-1366x768.png";
@@ -109,31 +85,14 @@ async function validateDesktop(cdp, fixture) {
     measurements,
   );
   check(
-    measurements.groupHeadings.join("|") ===
-      "Comprometimento por mês|Por cartão|Por categoria",
+    measurements.groupHeadings.join("|") === "Comprometimento por mês|Por cartão|Por categoria",
     "Installment aggregate headings are incomplete",
     measurements,
   );
-  check(
-    measurements.installmentRows >= 3,
-    "Installment detail list is incomplete",
-    measurements,
-  );
-  check(
-    measurements.hasCardName,
-    "Card grouping did not render the seeded card",
-    measurements,
-  );
-  check(
-    measurements.hasFirstCategory,
-    "First category grouping is missing",
-    measurements,
-  );
-  check(
-    measurements.hasSecondCategory,
-    "Second category grouping is missing",
-    measurements,
-  );
+  check(measurements.installmentRows >= 3, "Installment detail list is incomplete", measurements);
+  check(measurements.hasCardName, "Card grouping did not render the seeded card", measurements);
+  check(measurements.hasFirstCategory, "First category grouping is missing", measurements);
+  check(measurements.hasSecondCategory, "Second category grouping is missing", measurements);
   check(
     measurements.explicitView === "installments",
     "Installment form lost explicit view",
@@ -167,11 +126,7 @@ async function validateDesktop(cdp, fixture) {
 async function validateMobile(cdp, fixture) {
   await setViewport(cdp, 390, 844);
   const route = `/relatorios?view=installments&month=${fixture.month}`;
-  await navigateWithRetry(
-    cdp,
-    `${baseUrl}${route}`,
-    "reports installments mobile",
-  );
+  await navigateWithRetry(cdp, `${baseUrl}${route}`, "reports installments mobile");
   await waitForState(cdp, "ready");
   const measurements = await evaluate(cdp, measurementExpression());
   const filename = "reports-installments-mobile-390x844.png";
@@ -387,9 +342,7 @@ async function navigateWithRetry(cdp, url, label) {
       return;
     } catch (error) {
       if (attempt === 3) throw error;
-      console.warn(
-        `Navigation to ${label} failed on attempt ${attempt}; retrying.`,
-      );
+      console.warn(`Navigation to ${label} failed on attempt ${attempt}; retrying.`);
       await sleep(400 * attempt);
     }
   }
