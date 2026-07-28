@@ -68,10 +68,7 @@ interface AggregateRow {
   amountMinor: number;
 }
 
-export async function renderInstallmentsView(
-  token: string,
-  url: URL,
-): Promise<string> {
+export async function renderInstallmentsView(token: string, url: URL): Promise<string> {
   const filters = readInstallmentFilters(url);
   const cardsParams = new URLSearchParams({ status: "all" });
   const categoriesParams = new URLSearchParams({ kind: "expense" });
@@ -79,26 +76,16 @@ export async function renderInstallmentsView(
     cardsParams.set("profileId", filters.profileId);
     categoriesParams.set("profileId", filters.profileId);
   }
-  const [installmentsResult, cardsResult, categoriesResult] = await Promise.all(
-    [
-      apiGet<{ installments: InstallmentRecord[] }>(
-        token,
-        buildInstallmentsPath(filters),
-      ),
-      apiGet<{ cards: CardRecord[] }>(
-        token,
-        `/api/cards?${cardsParams.toString()}`,
-      ),
-      apiGet<{ categories: CategoryRecord[] }>(
-        token,
-        `/api/categories?${categoriesParams.toString()}`,
-      ),
-    ],
-  );
+  const [installmentsResult, cardsResult, categoriesResult] = await Promise.all([
+    apiGet<{ installments: InstallmentRecord[] }>(token, buildInstallmentsPath(filters)),
+    apiGet<{ cards: CardRecord[] }>(token, `/api/cards?${cardsParams.toString()}`),
+    apiGet<{ categories: CategoryRecord[] }>(
+      token,
+      `/api/categories?${categoriesParams.toString()}`,
+    ),
+  ]);
   const cards = cardsResult.ok ? cardsResult.data.cards : [];
-  const categories = categoriesResult.ok
-    ? categoriesResult.data.categories
-    : [];
+  const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
   const header =
     renderHeading(
       "Parcelas consolidadas",
@@ -110,21 +97,14 @@ export async function renderInstallmentsView(
     return renderShell(
       header +
         form +
-        renderState(
-          "api-error",
-          "Não foi possível carregar as parcelas",
-          installmentsResult.error,
-        ),
+        renderState("api-error", "Não foi possível carregar as parcelas", installmentsResult.error),
     );
   }
 
   return renderShell(
     header +
       form +
-      renderInstallments(
-        installmentsSorted(installmentsResult.data.installments),
-        filters,
-      ),
+      renderInstallments(installmentsSorted(installmentsResult.data.installments), filters),
   );
 }
 
@@ -235,13 +215,11 @@ function summarizeInstallments(
 ): InstallmentSummary {
   return installments.reduce<InstallmentSummary>(
     (summary, installment) => {
-      const amountMinor =
-        installment.status === "cancelled" ? 0 : installment.amountMinor;
+      const amountMinor = installment.status === "cancelled" ? 0 : installment.amountMinor;
       const postedClosed = isPostedOrClosed(installment);
       const plannedOpen = installment.status === "planned" && !postedClosed;
       const overdue = plannedOpen && installment.dueOn < today;
-      const future =
-        installment.status !== "cancelled" && installment.dueOn > today;
+      const future = installment.status !== "cancelled" && installment.dueOn > today;
 
       if (installment.status !== "cancelled") {
         summary.activeCount += 1;
@@ -289,30 +267,19 @@ function isPostedOrClosed(installment: InstallmentRecord): boolean {
   );
 }
 
-function groupByMonth(
-  installments: readonly InstallmentRecord[],
-): AggregateRow[] {
-  return aggregateBy(installments, (installment) =>
-    formatMonthYear(installment.dueOn.slice(0, 7)),
-  );
+function groupByMonth(installments: readonly InstallmentRecord[]): AggregateRow[] {
+  return aggregateBy(installments, (installment) => formatMonthYear(installment.dueOn.slice(0, 7)));
 }
 
-function groupByCard(
-  installments: readonly InstallmentRecord[],
-): AggregateRow[] {
+function groupByCard(installments: readonly InstallmentRecord[]): AggregateRow[] {
   return aggregateBy(
     installments,
     (installment) => installment.card?.name ?? "Sem cartão informado",
   );
 }
 
-function groupByCategory(
-  installments: readonly InstallmentRecord[],
-): AggregateRow[] {
-  return aggregateBy(
-    installments,
-    (installment) => installment.category?.name ?? "Sem categoria",
-  );
+function groupByCategory(installments: readonly InstallmentRecord[]): AggregateRow[] {
+  return aggregateBy(installments, (installment) => installment.category?.name ?? "Sem categoria");
 }
 
 function aggregateBy(
@@ -324,21 +291,15 @@ function aggregateBy(
     const label = labelFor(installment);
     const current = groups.get(label) ?? { label, count: 0, amountMinor: 0 };
     current.count += 1;
-    if (installment.status !== "cancelled")
-      current.amountMinor += installment.amountMinor;
+    if (installment.status !== "cancelled") current.amountMinor += installment.amountMinor;
     groups.set(label, current);
   }
   return Array.from(groups.values()).sort(
-    (left, right) =>
-      right.amountMinor - left.amountMinor ||
-      left.label.localeCompare(right.label),
+    (left, right) => right.amountMinor - left.amountMinor || left.label.localeCompare(right.label),
   );
 }
 
-function renderAggregateRows(
-  rows: readonly AggregateRow[],
-  kind: string,
-): string {
+function renderAggregateRows(rows: readonly AggregateRow[], kind: string): string {
   if (rows.length === 0) {
     return renderCompactEmptyState(
       "Sem dados para agrupar.",
@@ -367,8 +328,7 @@ function renderCompactEmptyState(title: string, description: string): string {
 }
 
 function renderInstallmentRow(item: InstallmentRecord): string {
-  const source =
-    item.transaction?.description ?? item.recurrence?.description ?? "Parcela";
+  const source = item.transaction?.description ?? item.recurrence?.description ?? "Parcela";
   const invoice = item.invoice?.status
     ? ` · Fatura ${formatInvoiceStatus(item.invoice.status)}`
     : "";
@@ -395,8 +355,7 @@ function normalizeMonth(value: string | null): string | undefined {
 }
 
 function normalizeStatus(value: string | null): string {
-  return value &&
-    new Set(["all", "planned", "posted", "reconciled", "cancelled"]).has(value)
+  return value && new Set(["all", "planned", "posted", "reconciled", "cancelled"]).has(value)
     ? value
     : "all";
 }
@@ -422,14 +381,11 @@ function monthEnd(month: string): string {
 function formatMonthYear(month: string): string {
   const year = Number(month.slice(0, 4));
   const monthNumber = Number(month.slice(5, 7));
-  const label = new Date(Date.UTC(year, monthNumber - 1, 1)).toLocaleDateString(
-    "pt-BR",
-    {
-      month: "long",
-      year: "numeric",
-      timeZone: "UTC",
-    },
-  );
+  const label = new Date(Date.UTC(year, monthNumber - 1, 1)).toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
@@ -451,9 +407,7 @@ function formatInvoiceStatus(status: string): string {
 }
 
 function installmentsSorted(items: InstallmentRecord[]): InstallmentRecord[] {
-  return items
-    .slice()
-    .sort((left, right) => left.dueOn.localeCompare(right.dueOn));
+  return items.slice().sort((left, right) => left.dueOn.localeCompare(right.dueOn));
 }
 
 function byName(left: { name: string }, right: { name: string }): number {
