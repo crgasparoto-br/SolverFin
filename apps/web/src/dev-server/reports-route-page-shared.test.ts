@@ -4,7 +4,7 @@ import { describe, it } from "node:test";
 import { renderReportViewNavigation } from "./reports-route-page-shared.js";
 
 describe("reports view navigation", () => {
-  it("keeps the active category view on the current URL so account filters are not discarded", () => {
+  it("keeps active category navigation on the current URL", () => {
     const html = renderReportViewNavigation("category-evolution", "profile-1");
 
     assert.match(html, /<a href="#" aria-current="page">Evolução por categoria<\/a>/);
@@ -14,7 +14,7 @@ describe("reports view navigation", () => {
     );
   });
 
-  it("keeps the active installments view on the current URL while preserving profile on view changes", () => {
+  it("keeps active installment navigation on the current URL", () => {
     const html = renderReportViewNavigation("installments", "profile-1");
 
     assert.match(
