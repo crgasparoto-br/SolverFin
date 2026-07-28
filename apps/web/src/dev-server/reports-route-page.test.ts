@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 
-import { renderReportsRoutePage, resolveReportsView } from "./reports-route-page.js";
+import {
+  renderReportsRoutePage,
+  resolveReportsView,
+} from "./reports-route-page.js";
 
 const originalFetch = globalThis.fetch;
 
@@ -11,25 +14,39 @@ afterEach(() => {
 
 describe("reports route page", () => {
   it("selects the compatible view and rejects mixed implicit filters", () => {
-    assert.deepEqual(resolveReportsView(new URL("http://localhost/relatorios")), {
-      view: "category-evolution",
-    });
-    assert.deepEqual(resolveReportsView(new URL("http://localhost/relatorios?month=2026-07")), {
-      view: "installments",
-    });
-    assert.deepEqual(resolveReportsView(new URL("http://localhost/relatorios?interval=annual")), {
-      view: "category-evolution",
-    });
+    assert.deepEqual(
+      resolveReportsView(new URL("http://localhost/relatorios")),
+      {
+        view: "category-evolution",
+      },
+    );
+    assert.deepEqual(
+      resolveReportsView(new URL("http://localhost/relatorios?month=2026-07")),
+      {
+        view: "installments",
+      },
+    );
+    assert.deepEqual(
+      resolveReportsView(
+        new URL("http://localhost/relatorios?interval=annual"),
+      ),
+      {
+        view: "category-evolution",
+      },
+    );
     assert.match(
-      resolveReportsView(new URL("http://localhost/relatorios?month=2026-07&interval=annual"))
-        .error ?? "",
+      resolveReportsView(
+        new URL("http://localhost/relatorios?month=2026-07&interval=annual"),
+      ).error ?? "",
       /misturados/,
     );
   });
 
   it("renders the category evolution matrix with explicit filters, tenant profile and accessible table", async () => {
     const paths: string[] = [];
-    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    globalThis.fetch = async (
+      input: string | URL | Request,
+    ): Promise<Response> => {
       const url = new URL(String(input));
       paths.push(`${url.pathname}${url.search}`);
       assert.equal(url.pathname, "/api/reports/category-evolution");
@@ -235,10 +252,16 @@ describe("reports route page", () => {
 
   it("preserves all consolidated installment indicators, groupings and explicit tenant navigation", async () => {
     const paths: string[] = [];
-    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-    const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const tomorrow = new Date(Date.now() + 86_400_000)
+      .toISOString()
+      .slice(0, 10);
 
-    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    globalThis.fetch = async (
+      input: string | URL | Request,
+    ): Promise<Response> => {
       const url = new URL(String(input));
       paths.push(`${url.pathname}${url.search}`);
       if (url.pathname === "/api/installments") {
@@ -253,7 +276,11 @@ describe("reports route page", () => {
               dueOn: yesterday,
               amountMinor: 15000,
               currency: "BRL",
-              transaction: { id: "t-posted", description: "Notebook", status: "posted" },
+              transaction: {
+                id: "t-posted",
+                description: "Notebook",
+                status: "posted",
+              },
               card: { id: "card-1", name: "Principal", status: "active" },
               category: {
                 id: "cat-tech",
@@ -270,7 +297,11 @@ describe("reports route page", () => {
               dueOn: yesterday,
               amountMinor: 5000,
               currency: "BRL",
-              recurrence: { id: "r-overdue", description: "Assinatura", status: "active" },
+              recurrence: {
+                id: "r-overdue",
+                description: "Assinatura",
+                status: "active",
+              },
               card: { id: "card-1", name: "Principal", status: "active" },
               category: {
                 id: "cat-subscription",
@@ -287,7 +318,11 @@ describe("reports route page", () => {
               dueOn: tomorrow,
               amountMinor: 7000,
               currency: "BRL",
-              recurrence: { id: "r-future", description: "Curso", status: "active" },
+              recurrence: {
+                id: "r-future",
+                description: "Curso",
+                status: "active",
+              },
               card: { id: "card-2", name: "Reserva", status: "active" },
               category: {
                 id: "cat-tech",
@@ -300,13 +335,16 @@ describe("reports route page", () => {
         });
       }
       if (url.pathname === "/api/cards") return jsonResponse({ cards: [] });
-      if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+      if (url.pathname === "/api/categories")
+        return jsonResponse({ categories: [] });
       return jsonResponse({});
     };
 
     const html = await renderReportsRoutePage(
       "token",
-      new URL("http://localhost/relatorios?view=installments&month=2026-07&profileId=profile-1"),
+      new URL(
+        "http://localhost/relatorios?view=installments&month=2026-07&profileId=profile-1",
+      ),
     );
 
     assert.equal(paths.length, 3);
