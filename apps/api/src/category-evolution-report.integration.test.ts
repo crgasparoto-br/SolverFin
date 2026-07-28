@@ -8,10 +8,7 @@ import {
 } from "./category-evolution-report.js";
 import { closePool } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
-import {
-  archiveCategoryForContext,
-  createCategoryForContext,
-} from "./repositories/categories.js";
+import { archiveCategoryForContext, createCategoryForContext } from "./repositories/categories.js";
 import { createTransactionForContext } from "./repositories/transactions.js";
 
 const PERSONAL_CONTEXT: TenantContext = {
