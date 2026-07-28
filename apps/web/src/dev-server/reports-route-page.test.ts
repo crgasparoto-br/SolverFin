@@ -119,23 +119,118 @@ describe("reports route page", () => {
     );
   });
 
-  it("renders filter errors before requesting the API", async () => {
+  it("preserves raw invalid filters in the correction form without requesting the API", async () => {
     let calls = 0;
     globalThis.fetch = async (): Promise<Response> => {
       calls += 1;
       return jsonResponse({});
     };
 
+    const invalidInterval = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=quarterly&start=2026-06&periods=2",
+      ),
+    );
+    assert.match(invalidInterval, /data-report-state="filter-error"/);
+    assert.match(invalidInterval, /name="interval" value="quarterly"/);
+    assert.match(invalidInterval, /data-invalid-filter="interval"/);
+    assert.match(invalidInterval, /<code>quarterly<\/code>/);
+
+    const invalidStart = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-13&periods=2",
+      ),
+    );
+    assert.match(invalidStart, /data-report-state="filter-error"/);
+    assert.match(
+      invalidStart,
+      /id="report-start" type="text" name="start" value="2026-13" aria-invalid="true" data-invalid-filter="start"/,
+    );
+
+    const invalidPeriods = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=abc",
+      ),
+    );
+    assert.match(invalidPeriods, /data-report-state="filter-error"/);
+    assert.match(
+      invalidPeriods,
+      /id="report-periods" type="text" name="periods" value="abc" aria-invalid="true" data-invalid-filter="periods"/,
+    );
+    assert.equal(calls, 0);
+  });
+
+  it("renders an accessible currency-neutral matrix when the period has no movements", async () => {
+    globalThis.fetch = async (): Promise<Response> =>
+      jsonResponse({
+        report: {
+          interval: "monthly",
+          start: "2026-06",
+          periodCount: 2,
+          periods: [
+            {
+              key: "2026-06",
+              label: "Jun/26",
+              accessibleLabel: "Junho de 2026",
+              startsOn: "2026-06-01",
+              endsOn: "2026-06-30",
+            },
+            {
+              key: "2026-07",
+              label: "Jul/26",
+              accessibleLabel: "Julho de 2026",
+              startsOn: "2026-07-01",
+              endsOn: "2026-07-31",
+            },
+          ],
+          currencyBlocks: [],
+        },
+      });
+
     const html = await renderReportsRoutePage(
       "token",
       new URL(
-        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-13&periods=12",
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2",
       ),
     );
 
-    assert.equal(calls, 0);
-    assert.match(html, /data-report-state="filter-error"/);
-    assert.match(html, /Início inválido/);
+    assert.match(html, /data-report-state="empty"/);
+    assert.match(html, /Matriz sem movimentos e sem moeda definida/);
+    assert.match(html, /aria-hidden="true">Jun\/26/);
+    assert.match(html, /Junho de 2026/);
+    assert.match(html, /Julho de 2026/);
+    assert.match(html, /scope="row"[^>]*><span>Receitas<\/span>/);
+    assert.match(html, /scope="row"[^>]*><span>Despesas<\/span>/);
+    assert.match(html, /scope="row"[^>]*><span>Resultado<\/span>/);
+    assert.doesNotMatch(html, /R\$|US\$/);
+  });
+
+  it("renders an API error without presenting a partial report", async () => {
+    globalThis.fetch = async (): Promise<Response> =>
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "API_UNEXPECTED_ERROR",
+            message: "Não foi possível concluir a ação. Tente novamente.",
+            correlationId: "corr-report-test",
+          },
+        }),
+        { status: 500, headers: { "content-type": "application/json" } },
+      );
+
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2",
+      ),
+    );
+
+    assert.match(html, /data-report-state="api-error"/);
+    assert.doesNotMatch(html, /data-report-state="ready"/);
+    assert.doesNotMatch(html, /class="currency-report-list"/);
   });
 
   it("preserves the installment report and emits view and profileId explicitly", async () => {
