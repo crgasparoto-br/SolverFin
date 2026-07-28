@@ -61,7 +61,7 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "Issue 546 account filter, hierarchy controls and negative result validation passed.",
+    "Issue 546 account/card filter, section/category controls and negative result validation passed.",
   );
 }
 
@@ -85,6 +85,21 @@ async function seedScenario(cdp) {
           method: 'POST',
           body: JSON.stringify({ name: 'Conta visual issue 546 ' + suffix, kind: 'checking', openingBalanceMinor: 0 }),
         })).account;
+        const card = (await request('/api/credit-card-accounts', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: 'Cartão visual issue 546 ' + suffix,
+            closingDay: 20,
+            dueDay: 10,
+            instruments: [{
+              type: 'physical',
+              holder: 'primary',
+              name: 'Principal visual',
+              maskedIdentifier: '**** 0546'
+            }]
+          }),
+        })).creditCardAccount;
+        const instrument = card.instruments[0];
         const incomeRoot = (await request('/api/categories', {
           method: 'POST', body: JSON.stringify({ name: 'Receitas visuais ' + suffix, kind: 'income' }),
         })).category;
@@ -94,8 +109,11 @@ async function seedScenario(cdp) {
         const incomeLeaf = (await request('/api/categories', {
           method: 'POST', body: JSON.stringify({ name: 'Consultoria visual ' + suffix, kind: 'income', parentCategoryId: incomeChild.id }),
         })).category;
-        const expense = (await request('/api/categories', {
-          method: 'POST', body: JSON.stringify({ name: 'Despesa visual issue 546 ' + suffix, kind: 'expense' }),
+        const expenseRoot = (await request('/api/categories', {
+          method: 'POST', body: JSON.stringify({ name: 'Despesas visuais ' + suffix, kind: 'expense' }),
+        })).category;
+        const expenseLeaf = (await request('/api/categories', {
+          method: 'POST', body: JSON.stringify({ name: 'Software visual ' + suffix, kind: 'expense', parentCategoryId: expenseRoot.id }),
         })).category;
         const occurredOn = new Date().toISOString().slice(0, 10);
         const createTransaction = (payload) => request('/api/transactions', {
@@ -103,8 +121,28 @@ async function seedScenario(cdp) {
           body: JSON.stringify({ status: 'posted', occurredOn, plannedOn: occurredOn, accountId: account.id, ...payload }),
         });
         await createTransaction({ kind: 'income', categoryId: incomeLeaf.id, amountMinor: 10000, description: 'Receita issue 546 ' + suffix });
-        await createTransaction({ kind: 'expense', categoryId: expense.id, amountMinor: 20000, description: 'Despesa issue 546 ' + suffix });
-        return { accountId: account.id, accountName: account.name, month: occurredOn.slice(0, 7) };
+        await createTransaction({ kind: 'expense', categoryId: expenseLeaf.id, amountMinor: 20000, description: 'Despesa issue 546 ' + suffix });
+        await request('/api/credit-card-accounts/' + card.id + '/purchases', {
+          method: 'POST',
+          body: JSON.stringify({
+            occurredOn,
+            amountMinor: 25000,
+            description: 'Compra cartão issue 546 ' + suffix,
+            categoryId: expenseLeaf.id,
+            cardInstrumentId: instrument.id
+          })
+        });
+        await request('/api/credit-card-accounts/' + card.id, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'blocked' })
+        });
+        return {
+          accountId: account.id,
+          accountName: account.name,
+          cardId: card.id,
+          cardName: card.name,
+          month: occurredOn.slice(0, 7)
+        };
       };
       return run();
     })()`,
@@ -122,53 +160,57 @@ async function validateDesktop(cdp, seeded) {
   const interaction = await evaluate(
     cdp,
     `(() => {
-      const toggles = Array.from(document.querySelectorAll('[data-category-toggle]'));
-      const root = toggles[0];
-      const child = toggles[1];
-      if (!(root instanceof HTMLButtonElement) || !(child instanceof HTMLButtonElement)) return { ok: false };
+      const incomeSection = document.querySelector('[data-section-toggle="income"]');
+      const expenseSection = document.querySelector('[data-section-toggle="expense"]');
+      const categoryToggles = Array.from(document.querySelectorAll('[data-category-toggle]:not([data-section-toggle])'));
+      const child = categoryToggles[1];
+      if (!(incomeSection instanceof HTMLButtonElement) ||
+          !(expenseSection instanceof HTMLButtonElement) ||
+          !(child instanceof HTMLButtonElement)) return { ok: false };
       const childDescendantIds = (child.getAttribute('aria-controls') || '').split(' ').filter(Boolean);
       child.click();
       const childHidden = childDescendantIds.every((id) => document.getElementById(id)?.hidden === true);
-      root.click();
-      root.click();
+      const incomeIds = (incomeSection.getAttribute('aria-controls') || '').split(' ').filter(Boolean);
+      incomeSection.click();
+      const sectionHidden = incomeIds.every((id) => document.getElementById(id)?.hidden === true);
+      incomeSection.click();
       const descendantStatePreserved = child.getAttribute('aria-expanded') === 'false' &&
         childDescendantIds.every((id) => document.getElementById(id)?.hidden === true);
       child.click();
-      root.focus();
-      return { ok: true, childHidden, descendantStatePreserved, rootFocused: document.activeElement === root };
+      incomeSection.focus();
+      return {
+        ok: true,
+        childHidden,
+        sectionHidden,
+        descendantStatePreserved,
+        sectionFocused: document.activeElement === incomeSection,
+        incomeLabel: incomeSection.textContent,
+        expenseExpanded: expenseSection.getAttribute('aria-expanded')
+      };
     })()`,
   );
   const measurements = await evaluate(cdp, measurementExpression());
   await screenshot(cdp, join(outputDir, "issue-546-reports-category-controls-desktop.png"));
   screenshots.push("issue-546-reports-category-controls-desktop.png");
 
-  check(interaction.ok, "Hierarchy controls were not available", interaction);
-  check(
-    interaction.childHidden,
-    "Collapsing a category did not hide its full subtree",
-    interaction,
-  );
+  check(interaction.ok, "Section and hierarchy controls were not available", interaction);
+  check(interaction.childHidden, "Collapsing a category did not hide its full subtree", interaction);
+  check(interaction.sectionHidden, "Collapsing Receitas did not hide the full section tree", interaction);
   check(
     interaction.descendantStatePreserved,
-    "A descendant collapsed state was lost after reopening an ancestor",
+    "A descendant collapsed state was lost after reopening the Receitas section",
     interaction,
   );
-  check(interaction.rootFocused, "Hierarchy control did not accept keyboard focus", interaction);
+  check(interaction.sectionFocused, "Section control did not accept keyboard focus", interaction);
+  check(interaction.expenseExpanded === "true", "Despesas was changed by Receitas", interaction);
   check(
-    measurements.selectedAccount === seeded.accountId,
+    measurements.selectedOrigin === `account:${seeded.accountId}`,
     "Selected account was not preserved",
     measurements,
   );
-  check(
-    measurements.toggleCount >= 2,
-    "Multilevel hierarchy controls were not rendered",
-    measurements,
-  );
-  check(
-    measurements.negativeCells >= 3,
-    "Negative Result cells were not highlighted",
-    measurements,
-  );
+  check(measurements.sectionToggleCount >= 2, "Receitas/Despesas controls were not rendered", measurements);
+  check(measurements.categoryToggleCount >= 2, "Multilevel category controls were not rendered", measurements);
+  check(measurements.negativeCells >= 3, "Negative Result cells were not highlighted", measurements);
   check(measurements.pageFitsViewport, "Desktop page leaks horizontal overflow", measurements);
   return { viewport: "1440x900", interaction, measurements, screenshot: screenshots.at(-1) };
 }
@@ -177,7 +219,7 @@ async function validateApiError(cdp) {
   await setViewport(cdp, 1024, 700);
   await navigateWithRetry(
     cdp,
-    `${baseUrl}/relatorios?view=category-evolution&interval=monthly&start=2099-01&periods=1&accountId=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
+    `${baseUrl}/relatorios?view=category-evolution&interval=monthly&start=2099-01&periods=1&cardId=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
     "issue 546 api error",
   );
   await waitForState(cdp, "api-error");
@@ -194,8 +236,8 @@ async function validateMobile(cdp, seeded) {
   await setViewport(cdp, 390, 844);
   await navigateWithRetry(
     cdp,
-    `${baseUrl}/relatorios?view=category-evolution&interval=monthly&start=${seeded.month}&periods=12&accountId=${seeded.accountId}`,
-    "issue 546 mobile",
+    `${baseUrl}/relatorios?view=category-evolution&interval=monthly&start=${seeded.month}&periods=12&cardId=${seeded.cardId}`,
+    "issue 546 mobile card filter",
   );
   await waitForState(cdp, "ready");
   const measurements = await evaluate(cdp, measurementExpression());
@@ -207,10 +249,13 @@ async function validateMobile(cdp, seeded) {
   check(measurements.tableScrollable, "Mobile matrix is not horizontally scrollable", measurements);
   check(measurements.filterColumns === 1, "Mobile report filters are not stacked", measurements);
   check(
-    measurements.selectedAccount === seeded.accountId,
-    "Mobile account selection was lost",
+    measurements.selectedOrigin === `card:${seeded.cardId}`,
+    "Blocked card selection was lost on mobile",
     measurements,
   );
+  check(measurements.accountId === null, "Card filter emitted accountId", measurements);
+  check(measurements.cardId === seeded.cardId, "Card filter URL was not preserved", measurements);
+  check(measurements.negativeCells >= 3, "Card result was not negative and highlighted", measurements);
   return { viewport: "390x844", measurements, screenshot: screenshots.at(-1) };
 }
 
@@ -219,6 +264,7 @@ function measurementExpression() {
     const scroller = document.querySelector('.evolution-table-scroll');
     const form = document.querySelector('.evolution-filters');
     const style = form ? getComputedStyle(form) : null;
+    const url = new URL(window.location.href);
     return {
       state: document.querySelector('[data-report-state]')?.getAttribute('data-report-state') || '',
       hasReadyReport: Boolean(document.querySelector('[data-report-state="ready"]')),
@@ -226,8 +272,11 @@ function measurementExpression() {
       pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1,
       tableScrollable: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
       filterColumns: style ? style.gridTemplateColumns.split(' ').filter(Boolean).length : 0,
-      selectedAccount: document.querySelector('select[name="accountId"]')?.value || '',
-      toggleCount: document.querySelectorAll('[data-category-toggle]').length,
+      selectedOrigin: document.querySelector('select[name="origin"]')?.value || '',
+      accountId: url.searchParams.get('accountId'),
+      cardId: url.searchParams.get('cardId'),
+      sectionToggleCount: document.querySelectorAll('[data-section-toggle]').length,
+      categoryToggleCount: document.querySelectorAll('[data-category-toggle]:not([data-section-toggle])').length,
       negativeCells: document.querySelectorAll('[data-negative-value="true"]').length,
     };
   })()`;
