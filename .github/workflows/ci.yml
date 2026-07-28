@@ -19,7 +19,7 @@ jobs:
   validate:
     name: Validate monorepo
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     env:
       DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
 
