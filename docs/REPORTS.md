@@ -73,7 +73,17 @@ A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-e
 
 ## Parcelas consolidadas
 
-A visao permanece somente leitura e usa `GET /api/installments`. Mantem filtros por mes, status, cartao e categoria, indicadores consolidados e a lista de parcelas consideradas. `profileId` e encaminhado explicitamente quando presente.
+A visao permanece somente leitura e usa `GET /api/installments`. Mantem filtros por mes, status, cartao e categoria, com `profileId` encaminhado explicitamente quando presente.
+
+Os indicadores preservados sao:
+
+- abertas ou planejadas;
+- postadas ou ligadas a faturas fechadas;
+- vencidas;
+- futuras;
+- total mensal.
+
+Abaixo dos indicadores, a tela preserva os agrupamentos por mes, cartao e categoria e a lista completa das parcelas consideradas. Parcelas canceladas permanecem identificaveis na lista e nao entram nos valores ativos consolidados.
 
 ## Estados
 
@@ -88,7 +98,7 @@ Exportacao PDF/CSV/Excel, impressao formatada, graficos adicionais, comparacao c
 
 ## Testes
 
-A entrega cobre geracao dos tres intervalos, limites, totais, medias, percentuais, denominador zero, hierarquia multinivel, arquivadas, Sem categoria, moedas, tenant, estados SSR, preservacao de filtros invalidos e regressao da visao de parcelas. A fronteira publica da API compara perfil autorizado, inexistente, arquivado e requisicao sem autenticacao. O gate visual em Chrome visita `/relatorios` em desktop e mobile e registra os estados preenchido, vazio e de erro de filtro.
+A entrega cobre geracao dos tres intervalos, limites, totais, medias, percentuais, denominador zero, hierarquia multinivel, arquivadas, Sem categoria, moedas, tenant, estados SSR, preservacao de filtros invalidos e regressao integral da visao de parcelas. A fronteira publica da API compara perfil autorizado, inexistente, arquivado e requisicao sem autenticacao, alem de proteger os rotulos compactos no limite inferior de anos suportados. O gate visual em Chrome visita Evolucao por categoria e Parcelas consolidadas em desktop e mobile e registra os estados preenchido, vazio e de erro de filtro.
 
 ## Referencias
 
