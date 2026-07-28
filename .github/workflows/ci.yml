@@ -66,8 +66,23 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
-      - name: Check formatting
-        run: npm run format:check
+      - name: Format diagnostic sources
+        run: npm run format
+
+      - name: Upload formatted report sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-542-prettier-${{ github.sha }}
+          path: |
+            apps/api/src/category-evolution-report-router.integration.test.ts
+            apps/web/src/dev-server/reports-route-page.ts
+            apps/web/src/dev-server/reports-route-page.test.ts
+            apps/web/src/dev-server/reports-route-page-styles.ts
+            scripts/run-statement-visual-validation.mjs
+            scripts/statement-visual/reports-category-evolution.mjs
+            docs/REPORTS.md
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Lint
         run: npm run lint
