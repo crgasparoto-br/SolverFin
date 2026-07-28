@@ -4,7 +4,11 @@ import { closePool } from "./db.js";
 import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleReportsApiRequest } from "./reports-router.js";
-import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
+import {
+  handleApiRequest,
+  type ApiRequest,
+  type ApiResponse,
+} from "./router.js";
 
 void main()
   .catch((error: unknown) => {
@@ -43,8 +47,9 @@ async function main(): Promise<void> {
   );
   assert.equal(lowerYearMonthly.statusCode, 200);
   assert.equal(
-    readBody<{ report: { periods: Array<{ label: string }> } }>(lowerYearMonthly).report.periods[0]
-      ?.label,
+    readBody<{ report: { periods: Array<{ label: string }> } }>(
+      lowerYearMonthly,
+    ).report.periods[0]?.label,
     "Jan/01",
   );
 
@@ -55,8 +60,9 @@ async function main(): Promise<void> {
   );
   assert.equal(lowerYearRolling.statusCode, 200);
   assert.equal(
-    readBody<{ report: { periods: Array<{ label: string }> } }>(lowerYearRolling).report.periods[0]
-      ?.label,
+    readBody<{ report: { periods: Array<{ label: string }> } }>(
+      lowerYearRolling,
+    ).report.periods[0]?.label,
     "Jan/01–Dez/01",
   );
 
@@ -66,7 +72,10 @@ async function main(): Promise<void> {
     `/api/reports/category-evolution?profileId=${profile.id}&interval=monthly&start=2031-01&periods=abc`,
   );
   assert.equal(invalidFilter.statusCode, 400);
-  assert.equal(readError(invalidFilter).code, "REPORT_CATEGORY_EVOLUTION_FILTER_INVALID");
+  assert.equal(
+    readError(invalidFilter).code,
+    "REPORT_CATEGORY_EVOLUTION_FILTER_INVALID",
+  );
   assert.equal(hasReportPayload(invalidFilter), false);
 
   const missingProfile = await apiRequest(
@@ -158,7 +167,10 @@ function readError(response: Pick<ApiResponse, "body">): {
   code?: string;
   message?: string;
 } {
-  return readBody<{ error?: { code?: string; message?: string } }>(response).error ?? {};
+  return (
+    readBody<{ error?: { code?: string; message?: string } }>(response).error ??
+    {}
+  );
 }
 
 function hasReportPayload(response: Pick<ApiResponse, "body">): boolean {
