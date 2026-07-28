@@ -33,6 +33,18 @@ describe("category evolution report", () => {
     assert.equal(rolling.start, "2023-08");
     assert.equal(rolling.periods[2]?.startsOn, "2025-08-01");
     assert.equal(rolling.periods[2]?.endsOn, "2026-07-31");
+
+    const lowerYearMonthly = parseCategoryEvolutionFilters(
+      new URLSearchParams({ interval: "monthly", start: "0001-01", periods: "1" }),
+      reference,
+    );
+    assert.equal(lowerYearMonthly.periods[0]?.label, "Jan/01");
+
+    const lowerYearRolling = parseCategoryEvolutionFilters(
+      new URLSearchParams({ interval: "rolling-year", start: "0001-01", periods: "1" }),
+      reference,
+    );
+    assert.equal(lowerYearRolling.periods[0]?.label, "Jan/01–Dez/01");
   });
 
   it("rejects sent invalid filters instead of silently applying defaults", () => {

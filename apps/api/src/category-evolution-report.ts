@@ -531,7 +531,7 @@ function monthlyPeriod(year: number, month: number): CategoryEvolutionPeriod {
 }
 
 function compactMonth(year: number, month: number): string {
-  return `${MONTH_LABELS[month - 1]}/${String(year).slice(-2)}`;
+  return `${MONTH_LABELS[month - 1]}/${String(year).padStart(4, "0").slice(-2)}`;
 }
 
 function accessibleMonth(year: number, month: number): string {

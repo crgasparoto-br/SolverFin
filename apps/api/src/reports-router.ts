@@ -4,29 +4,12 @@ import { requireAuthenticatedRequest } from "./auth-service.js";
 import {
   buildCategoryEvolutionReportForContext,
   parseCategoryEvolutionFilters,
-  type CategoryEvolutionPeriod,
-  type CategoryEvolutionReport,
 } from "./category-evolution-report.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
 const CATEGORY_EVOLUTION_PATH = "/api/reports/category-evolution";
-const MONTH_LABELS = [
-  "Jan",
-  "Fev",
-  "Mar",
-  "Abr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Set",
-  "Out",
-  "Nov",
-  "Dez",
-] as const;
-
 export async function handleReportsApiRequest(
   request: ApiRequest,
 ): Promise<ApiResponse | undefined> {
@@ -45,9 +28,7 @@ export async function handleReportsApiRequest(
       request.query.get("profileId") ?? undefined,
     );
     const filters = parseCategoryEvolutionFilters(request.query);
-    const report = normalizeCategoryEvolutionPeriodLabels(
-      await buildCategoryEvolutionReportForContext(context, filters),
-    );
+    const report = await buildCategoryEvolutionReportForContext(context, filters);
 
     return json(200, { report });
   } catch (error) {
@@ -57,31 +38,6 @@ export async function handleReportsApiRequest(
     });
     return json(response.statusCode, response.body);
   }
-}
-
-export function normalizeCategoryEvolutionPeriodLabels(
-  report: CategoryEvolutionReport,
-): CategoryEvolutionReport {
-  if (report.interval === "annual") return report;
-
-  return {
-    ...report,
-    periods: report.periods.map((period) => ({
-      ...period,
-      label:
-        report.interval === "monthly"
-          ? compactMonth(period.startsOn)
-          : `${compactMonth(period.startsOn)}–${compactMonth(period.endsOn)}`,
-    })),
-  };
-}
-
-function compactMonth(periodDate: CategoryEvolutionPeriod["startsOn"]): string {
-  const year = periodDate.slice(0, 4);
-  const month = Number(periodDate.slice(5, 7));
-  const monthLabel = MONTH_LABELS[month - 1];
-  if (!monthLabel) return periodDate.slice(0, 7);
-  return `${monthLabel}/${year.slice(-2)}`;
 }
 
 function mapDomainError(error: unknown): unknown {
