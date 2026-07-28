@@ -18,13 +18,14 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 
 - [`PRODUCT.md`](./PRODUCT.md): escopo e principios do produto.
 - [`BRAND.md`](./BRAND.md): identidade, tom, experiencia e direcao visual.
-- [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, componentes e orientacoes de interface.
+- [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, componentes, provedores de CSS SSR e orientacoes de interface.
+- [`APP_SHELL.md`](./APP_SHELL.md): rotas canonicas, shell autenticado e contrato executavel de composicao de estilos SSR.
 - [`REPORTS.md`](./REPORTS.md): estado atual, regras funcionais e evolucao planejada da area de Relatorios.
 - [`WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md): cobertura esperada de manutencao web.
 
 ## Arquitetura, seguranca e operacao
 
-- [`ARCHITECTURE.md`](./ARCHITECTURE.md): arquitetura geral e regras tecnicas.
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md): arquitetura geral, regras tecnicas e integracao do portao SSR ao build/CI.
 - [`CONVENTIONS.md`](./CONVENTIONS.md): convencoes de TypeScript, organizacao, lint e formatacao.
 - [`ENVIRONMENT.md`](./ENVIRONMENT.md): variaveis de ambiente, secrets e validacao segura.
 - [`PRIVACY.md`](./PRIVACY.md): politica operacional de privacidade, retencao, minimizacao e mascaramento.
@@ -64,7 +65,7 @@ ADRs registram decisoes duradouras. Crie ou atualize ADRs quando a mudanca alter
 
 ## Regras de manutencao documental
 
-- Evite duplicar contratos extensos entre documentos. Quando necessario, escolha um documento dono e referencie-o nos demais.
+- Evite duplicar contratos extensos entre documentos. `APP_SHELL.md` e o documento dono do contrato de estilos SSR; os demais apenas resumem e apontam para ele.
 - Documentos com sufixo `.draft` nao devem permanecer versionados depois que o conteudo estiver consolidado.
 - Planos antigos de criacao de issues devem ser removidos quando as issues ja estiverem no GitHub.
 - Atualize a matriz de status quando uma issue mudar o estado real de dominio, API, persistencia, UI, testes ou documentacao.

@@ -4,25 +4,34 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
+import { solverFinShellRoutes } from "../app-shell/routes.js";
+import {
+  solverFinSsrStyleContracts,
+  validateSsrStyleContractParity,
+} from "./ssr-style-contract.js";
+
 const currentDir = dirname(fileURLToPath(import.meta.url));
 
-const migratedShellModules = [
-  "accounts-cards-page.js",
-  "cards-page.js",
-  "categories-page.js",
-  "inbox-page.js",
-  "settings-page.js",
-  "transactions-page.js",
-] as const;
+describe("SSR shell pages", () => {
+  it("derives exact route and module coverage from the canonical available routes", () => {
+    assert.deepEqual(
+      validateSsrStyleContractParity(solverFinShellRoutes, solverFinSsrStyleContracts),
+      [],
+    );
+  });
 
-describe("migrated SSR shell pages", () => {
-  for (const moduleFileName of migratedShellModules) {
-    it(`${moduleFileName} keeps using the shared authenticated shell`, () => {
-      const source = readFileSync(join(currentDir, moduleFileName), "utf8");
+  for (const contract of solverFinSsrStyleContracts) {
+    it(`${contract.path} keeps its renderer connected to the expected SSR shell`, () => {
+      const source = readFileSync(join(currentDir, contract.moduleFileName), "utf8");
+
+      if (contract.shell === "public") {
+        assert.match(source, /renderLoginPage/);
+        assert.match(source, /<style>\$\{loginCss\(\)\}<\/style>/);
+        return;
+      }
 
       assert.match(source, /renderAuthenticatedShellDocument/);
-      assert.doesNotMatch(source, /data-logout/);
-      assert.doesNotMatch(source, /privateRoutes/);
+      assert.match(source, /sharedShellStyles\(\)/);
     });
   }
 });

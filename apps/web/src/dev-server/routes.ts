@@ -41,6 +41,14 @@ export function resolveRoute(
     };
   }
 
+  if (
+    pathname === "/remuneracao-contas" &&
+    hasSession &&
+    process.env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1"
+  ) {
+    return { statusCode: 200, kind: "placeholder" };
+  }
+
   const retiredRedirect = retiredPrivateRouteRedirects.get(pathname);
 
   if (retiredRedirect) {

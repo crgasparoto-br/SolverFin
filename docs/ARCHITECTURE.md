@@ -2,48 +2,93 @@
 
 ## Objetivo
 
-Este documento define a direcao arquitetural inicial do SolverFin para orientar implementacoes futuras por humanos e agentes de IA.
+Este documento define a arquitetura observada do SolverFin e as regras tecnicas que orientam implementacoes por humanos e agentes de IA.
 
-Ele nao substitui ADRs. Decisoes duradouras, mudancas de stack, integracoes externas e alteracoes relevantes de modelo devem ser registradas em `docs/adr/`.
+Ele nao substitui ADRs. Mudancas duradouras de stack, provider, integracao externa ou modelo persistente devem ser registradas em `docs/adr/`.
 
 ## Estado atual
 
 O nucleo financeiro do MVP esta ligado de ponta a ponta com persistencia real:
 
-- `apps/api` e um servidor HTTP em Node `http` puro (sem framework) que resolve sessao/tenant, chama `packages/domain` para validar regras e persiste via `pg` (SQL parametrizado) em PostgreSQL. Cobre contas, categorias, lancamentos, recorrencias/parcelas, cartoes/faturas, orcamentos e o dominio legado de contas a pagar/receber, incluindo trilha de auditoria (`AuditLogEntry`).
-- O modelo atual de cartoes de credito usa cartao agrupador/fatura como recurso pai e instrumentos internos como origem rastreavel das compras. A fatura pertence ao agrupador e compras feitas por instrumentos fisicos, virtuais, do titular principal ou adicionais consolidam no mesmo periodo. As regras detalhadas ficam em `docs/CARDS.md`.
-- `apps/web` e um servidor SSR em Node `http` puro que autentica contra a API real (token guardado em cookie HttpOnly) e renderiza dashboard, contas, categorias, lancamentos (com lancamentos recorrentes da conta na mesma lista), cartoes agrupadores (com instrumentos internos e compras recorrentes do cartao na mesma lista) e orcamentos com dados reais; demais rotas do menu ainda sao placeholder ou fluxos parciais.
-- Recorrencias nao tem rota web nem bloco proprio: cada lancamento que pertence a uma recorrencia aparece como uma linha normal na lista de `/lancamentos` (escopada por conta) e `/cartoes` (escopada por cartao), com indicador visual e as acoes de editar/pausar/retomar/cancelar/gerar parcelas no menu daquele lancamento. A criacao acontece pelo proprio modal de novo lancamento/nova compra com repeticao "Fixo", e ja materializa o primeiro vencimento como lancamento real. A API `/api/installments` permite reler parcelas historicas, atuais e futuras por recorrencia e pelos escopos operacionais; a web usa essa leitura para enriquecer as linhas existentes, sem criar rota ou bloco separado.
-- A rotina operacional de contas a pagar/receber foi consolidada fora de uma tela propria: receitas, despesas, transferencias e lancamentos previstos ficam em `/lancamentos`; compras, faturas, fechamento e pagamento de cartao ficam em `/cartoes`. O Dashboard e a disponibilidade diaria devem usar `Transaction`, `Invoice`, recorrencias e parcelas materializadas como fontes principais.
-- `PayableReceivable` permanece como compatibilidade tecnica: possui dominio, schema Prisma, migration, repository SQL, API dedicada em `/api/payables-receivables` e cobertura de integracao, mas nao deve ser tratado como jornada operacional ativa nem como destino de navegacao. Leituras temporarias desse dominio devem evitar dupla contagem quando houver `settlementTransactionId` ou `Transaction` equivalente. O seed demo nao cria registros desse dominio no estado atual.
-- Importacao (CSV/OFX/mensagens bancarias), deduplicacao, conciliacao, regras de automacao e a camada de IA tem dominio implementado e testado, mas ainda sem repositorio/API/UI ligados a banco real.
-- Auth e tenant continuam no formato MVP descrito em `docs/AUTH.md`/`docs/TENANT.md` para execucao local. A autenticacao produtiva definitiva esta aceita na ADR `docs/adr/0004-autenticacao-produtiva.md`: provider gerenciado OIDC/OAuth2, credenciais delegadas e sessao propria persistente/revogavel no SolverFin.
+- `apps/api` e um servidor HTTP em Node `http` puro que resolve sessao/tenant, chama `packages/domain` e persiste via `pg` com SQL parametrizado em PostgreSQL;
+- `apps/web` e um servidor SSR em Node `http` puro que autentica contra a API real, guarda o token em cookie HttpOnly e renderiza HTML com CSS gerado por funcoes TypeScript;
+- contas, categorias, lancamentos, recorrencias/parcelas, cartoes/faturas, orcamentos, autenticacao local, Inbox e fluxos administrativos possuem implementacoes executaveis em diferentes niveis de maturidade;
+- o modelo de cartoes usa cartao agrupador/fatura como recurso pai e instrumentos internos como origem rastreavel das compras, conforme `docs/CARDS.md`;
+- recorrencias aparecem incorporadas ao Extrato e as compras de cartao, sem rota web operacional separada;
+- a rotina ativa de compromissos usa `Transaction`, `Invoice`, recorrencias e parcelas materializadas; `PayableReceivable` permanece como compatibilidade tecnica documentada;
+- importacao, deduplicacao, conciliacao, automacao e IA possuem contratos de dominio e evoluem por issues dedicadas;
+- autenticacao produtiva segue a decisao aceita em `docs/adr/0004-autenticacao-produtiva.md`.
 
-A decisao inicial de stack esta registrada em `docs/adr/0001-stack-inicial.md`. Node `http` puro foi mantido tanto na API quanto no Web para nao antecipar uma escolha de framework (Express, React etc.) sem ADR dedicada.
+A decisao inicial de stack esta em `docs/adr/0001-stack-inicial.md`. Node `http` puro continua deliberadamente em API e Web para nao antecipar framework sem ADR.
 
 ## Stack inicial
 
-Stack-alvo inicial:
+- TypeScript;
+- monorepo npm workspaces;
+- Web SSR/PWA mobile-first;
+- API modular em Node `http`;
+- PostgreSQL;
+- Prisma para schema, migrations e client onde aplicavel;
+- `pg` para persistencia SQL atual da API;
+- testes automatizados por dominio, API, UI e integracao;
+- GitHub Actions para instalacao reprodutivel, lint, typecheck, testes e build;
+- camada de dominio desacoplada de UI, banco e provedores externos;
+- provedores de IA acessados por abstracoes proprias, schemas estruturados e logs seguros.
 
-- TypeScript como linguagem principal.
-- Monorepo para frontend, backend e pacotes compartilhados.
-- Frontend web/PWA mobile-first.
-- Backend API modular.
-- PostgreSQL como banco relacional inicial.
-- Prisma como ORM e ferramenta de migrations inicial.
-- Testes automatizados organizados por dominio, API, UI e integracoes.
-- CI no GitHub Actions para instalar dependencias de forma reprodutivel, lint, typecheck, testes e build quando o bootstrap existir.
-- Camada de dominio financeiro isolada de frameworks e provedores externos sempre que possivel.
-- Provedores de IA acessados por abstracao propria, com schemas estruturados e logs seguros.
-- Autenticacao produtiva delegada a provider gerenciado compatibilizado por uma camada propria de sessao, usuario local, tenant e auditoria.
+## Web SSR e composicao de estilos
 
-Frameworks concretos de frontend/backend, runtime e provedores de IA ainda devem ser definidos em issues de bootstrap ou ADRs complementares.
+O SSR web mantem CSS como strings retornadas por funcoes TypeScript e incorporadas em blocos `<style>`. Nao existe bundler CSS, framework frontend ou folha externa como fonte de verdade atual.
+
+Fontes principais:
+
+- `apps/web/src/app-shell/routes.ts`: catalogo canonico de rotas e status;
+- `apps/web/src/dev-server.ts`: servidor, despacho HTTP e pos-processamentos por rota;
+- `apps/web/src/dev-server/shell.ts`: documento HTML e shell autenticado;
+- `apps/web/src/dev-server/http.ts`: finalizacao comum antes do envio do HTML;
+- `apps/web/src/dev-server/shared-styles.ts`: CSS compartilhado e dialogos;
+- renderers em `apps/web/src/dev-server/*-page.ts` e `pages.ts`: CSS especifico;
+- `apps/web/src/dev-server/recurrences-section.ts`: CSS auxiliar de recorrencias;
+- `apps/web/src/dev-server/statement-presentation.ts`: CSS condicional do Extrato;
+- `apps/web/src/dev-server/list-sorting-enhancement.ts`: ordenacao e estilos estruturais de remuneracao no Extrato;
+- `apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts`: affordance visual da memoria de calculo da remuneracao;
+- `apps/web/src/dev-server/ssr-style-contract.ts`: manifesto tipado por rota e provedor;
+- `scripts/validate-web-ssr-styles.mjs`: verificacao executavel do HTML final servido.
+
+### Invariantes do contrato
+
+Toda rota com `status: "available"` deve ter exatamente um contrato, inclusive:
+
+- `/login`;
+- renderers ocultos na navegacao, como `/remuneracao-contas`;
+- rotas master `/admin/instituicoes` e `/admin/indices-financeiros`.
+
+O manifesto registra rota, renderer, shell, classificacao de CSS, provedores de cabecalho, o provedor especifico `page:<routeId>`, auxiliares independentes, provedores inseridos no runtime e gatilhos condicionais. O build falha quando:
+
+- a cobertura diverge da fonte canonica;
+- uma rota operacional disponivel redireciona, retorna erro ou deixa de ser servida pelo despacho real;
+- o renderer legado de `/remuneracao-contas` nao pode ser exercitado no modo interno do portao enquanto o redirecionamento publico permanece preservado;
+- um provedor compartilhado ou condicional retorna CSS vazio;
+- o resultado de um provedor compartilhado/condicional existe no codigo mas nao esta incorporado ao HTML final;
+- um fragmento discriminante de provedor de pagina, auxiliar ou runtime registrado nao aparece no CSS final;
+- uma rota `page-specific` nao registra exatamente um provedor de pagina;
+- uma rota `shared-only` registra silenciosamente um provedor de pagina;
+- o CSS de navegacao autenticada nao aparece no corpo;
+- o HTML real nao produz o fragmento necessario para ativar um provedor condicional;
+- o provedor condicional ativado nao aparece no cabecalho final.
+
+O portao nao infere CSS especifico apenas pela existencia de qualquer regra remanescente. Cada provedor de pagina, auxiliar ou runtime possui identificador e fragmentos CSS proprios; os controles negativos removem um provedor por vez, mantendo os demais presentes.
+
+Marcadores de blocos runtime possuem propriedade explicita por modulo. No Extrato, `data-account-remuneration-statement-styles` e produzido por `list-sorting-enhancement.ts`, enquanto `data-account-remuneration-disclosure-affordance` e produzido por `account-remuneration-disclosure-enhancement.ts`. O contrato os registra como provedores distintos para impedir que um bloco valido de um modulo mascare a perda do outro.
+
+A validacao inicia `createSolverFinWebServer()` em `127.0.0.1` com porta efemera e requisita os renderers cobertos. Rotas autenticadas recebem cookie ficticio; chamadas internas usam `fetch` ficticio e seguro. Em execucao normal, `/remuneracao-contas` e `/app/remuneracao-contas` continuam redirecionando para `/contas-cartoes`; somente o processo filho iniciado por `scripts/build-web.mjs` define `SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION=1` para exercitar o renderer legado sem alterar esse contrato publico. A fixture de `/lancamentos` inclui conta ativa e lancamento ficticio de remuneracao CDI para ativar tanto os estilos estruturais quanto a affordance de divulgacao. Dessa forma, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos e `sendHtml`, sem acessar API, banco, rede externa ou secrets e sem exigir `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
+
+O documento dono das regras operacionais do shell e `docs/APP_SHELL.md`; `docs/DESIGN_SYSTEM.md` descreve a propriedade visual dos provedores.
 
 ## CI
 
-O workflow `.github/workflows/ci.yml` roda em `pull_request` e `push` para `main` com jobs separados para validacoes rapidas e integracao com banco.
+O workflow `.github/workflows/ci.yml` roda em `pull_request` e `push` para `main`.
 
-O job `Validate monorepo` nao depende de banco, Docker ou secrets reais. Checks executados:
+### Validate monorepo
 
 ```bash
 npm ci --no-audit --no-fund
@@ -57,7 +102,17 @@ npm run test
 npm run build
 ```
 
-O job `Integration API + PostgreSQL` sobe um PostgreSQL 16 efemero como service do GitHub Actions e usa apenas valores ficticios de teste na `DATABASE_URL`. Ele separa as etapas de preparacao e validacao para que falhas de migrations, seed e testes aparecam de forma independente:
+O build raiz chama o build de `@solverfin/web`; `scripts/build-web.mjs` limpa `apps/web/dist`, compila TypeScript e executa `scripts/validate-web-ssr-styles.mjs`. Assim, o job usa a implementacao oficial do contrato sem manter inventario paralelo no YAML.
+
+O comando explicito para o mesmo portao e:
+
+```bash
+npm run validate:ssr-styles --workspace @solverfin/web
+```
+
+### Integration API + PostgreSQL
+
+O job de integracao sobe PostgreSQL 16 efemero e executa migrations, seed ficticio e testes da API com uma base dedicada.
 
 ```bash
 npm ci --no-audit --no-fund
@@ -68,28 +123,22 @@ npm run db:seed
 npm run test:integration --workspace @solverfin/api
 ```
 
-Como o `package-lock.json` esta versionado, os jobs usam `npm ci` para instalacao reprodutivel e habilitam cache de npm baseado nesse lockfile.
+Como o `package-lock.json` e versionado, os jobs usam `npm ci` e cache baseado no lockfile.
 
 ## Ambientes e secrets
 
-A politica inicial de ambientes fica em `docs/ENVIRONMENT.md`. A politica inicial de privacidade, consentimento, retencao e mascaramento fica em `docs/PRIVACY.md`.
+A politica de ambientes fica em `docs/ENVIRONMENT.md`; privacidade, consentimento, retencao e mascaramento ficam em `docs/PRIVACY.md`.
 
-Direcao tecnica atual:
+Direcao atual:
 
-- `.env.example` documenta variaveis obrigatorias com placeholders seguros.
-- `.env`, `.env.*`, `.envrc`, certificados e chaves locais ficam ignorados pelo Git.
-- `npm run env:check` valida o exemplo versionado e evita padroes aparentes de secrets reais.
-- `packages/config` exporta `validateRuntimeEnvironment` para apps falharem claramente quando variaveis obrigatorias estiverem ausentes ou invalidas.
-- Mensagens de erro devem citar nomes de variaveis, nunca valores sensiveis.
-- Secrets reais devem ser configurados apenas nos ambientes que precisam deles, como GitHub Actions, preview, producao ou gerenciador externo futuro.
-- Variaveis produtivas de autenticacao devem seguir a ADR 0004 e ficar ausentes de logs, fixtures e exemplos com valores reais.
-- Dados financeiros brutos, mensagens bancarias e respostas de IA devem seguir minimizacao, retencao e mascaramento definidos em `docs/PRIVACY.md`.
+- `.env.example` usa apenas placeholders seguros;
+- `.env`, certificados, chaves e arquivos locais ficam ignorados;
+- `npm run env:check` valida o exemplo versionado;
+- mensagens de erro citam nomes de variaveis, nunca valores sensiveis;
+- secrets reais ficam somente nos ambientes que precisam deles;
+- dados financeiros brutos e respostas de IA seguem minimizacao e retencao documentadas.
 
 ## Ambiente local de banco
-
-O banco relacional local usa PostgreSQL via `docker-compose.yml`, com variaveis documentadas em `.env.example`.
-
-Comandos principais:
 
 ```bash
 docker compose up -d postgres
@@ -98,141 +147,101 @@ docker compose down
 docker compose down -v
 ```
 
-O comando `docker compose down -v` apaga o volume local de desenvolvimento e deve ser usado apenas para resetar o banco.
-
-A aplicacao e o Prisma devem usar `DATABASE_URL` quando o schema e as migrations forem implementados. Nenhum segredo real deve ser colocado em `.env.example`; valores ali sao placeholders seguros para desenvolvimento.
+`docker compose down -v` apaga o volume local e deve ser usado apenas para reset deliberado. Aplicacao e Prisma usam `DATABASE_URL`; nenhum segredo real deve ser colocado em exemplos.
 
 ## Diagrama textual de componentes
 
 ```text
 Usuario
-  -> Web/PWA
-    -> Provider gerenciado de identidade
+  -> Web SSR/PWA
+    -> Provider gerenciado de identidade (direcao produtiva)
     -> API backend
-      -> Sessao propria e tenant SolverFin
+      -> Sessao e tenant SolverFin
       -> Dominio financeiro
-      -> Servicos de importacao e conciliacao
-      -> Servicos de IA explicavel
-      -> Prisma
-        -> PostgreSQL
+      -> Importacao e conciliacao
+      -> IA explicavel
+      -> Persistencia PostgreSQL
 
-Web/PWA
-  -> revisa sugestoes, lancamentos, faturas, alertas e relatorios
-
-Dominio financeiro
-  -> valida regras de contas, categorias, lancamentos, recorrencias, faturas, cartoes agrupadores/instrumentos, orcamentos e conciliacao
-
-Servicos de IA
-  -> recebem dados minimizados
-  -> retornam sugestoes estruturadas
-  -> registram origem, confianca, explicacao e estado de revisao
+Build Web
+  -> TypeScript
+  -> servidor Node http em porta efemera
+  -> requisicoes HTTP para renderers cobertos
+  -> modo interno isolado para renderer legado de remuneracao
+  -> contrato de estilos SSR sobre HTML final
+  -> artefato aceito ou falha agregada
 ```
 
-## Boundaries iniciais
+## Boundaries
 
 ### Produto e documentacao
 
-Responsavel por visao, escopo, personas, tom, criterios, privacidade e regras de produto.
-
-Arquivos principais:
-
-- `docs/PRODUCT.md`
-- `docs/CARDS.md`
-- `docs/BRAND.md`
-- `docs/PRIVACY.md`
-- `README.md`
+Responsavel por visao, escopo, personas, tom, criterios, privacidade e contratos vivos. Arquivos centrais: `docs/PRODUCT.md`, `docs/BRAND.md`, `docs/PRIVACY.md`, `docs/APP_SHELL.md` e `README.md`.
 
 ### Dominio financeiro
 
-Responsavel por entidades e regras como contas, categorias, lancamentos, recorrencias, parcelas, faturas, cartoes agrupadores, instrumentos internos, orcamentos, metas, compatibilidade legada de contas a pagar/receber e conciliacao.
-
-Regras de dominio nao devem depender diretamente de detalhes de UI, banco, fila, provedores de IA ou APIs externas. Novos compromissos financeiros devem ser modelados preferencialmente como `Transaction`, `Invoice`, recorrencias ou parcelas materializadas, conforme a origem do fluxo.
-
-Cartoes de credito seguem o modelo descrito em `docs/CARDS.md`: o agrupador e dono da fatura, instrumentos registram a origem da compra e o fluxo principal nao deve depender de `CardAdditionalLink` para cadastro, compras, faturas, recorrencias, parcelas, previsoes ou exibicao principal.
+Responsavel por contas, categorias, lancamentos, recorrencias, parcelas, faturas, cartoes agrupadores, instrumentos, orcamentos, metas, compatibilidade legada e conciliacao. Regras de dominio nao devem depender de UI, banco, fila, IA ou APIs externas.
 
 ### Identidade e tenant
 
-Responsavel por vincular identidade externa validada, usuario local, organizacao, perfil financeiro, permissoes e isolamento de dados.
-
-Em producao, credenciais ficam delegadas ao provider gerenciado. O SolverFin mantém usuario local, tenant, perfil financeiro, sessao de aplicacao e auditoria operacional.
-
-Todo dado financeiro persistente deve ter vinculo claro com usuario, tenant ou perfil financeiro.
+Responsavel por identidade validada, usuario local, organizacao, perfil financeiro, permissoes e isolamento. Todo dado financeiro persistente deve ter vinculo claro com tenant/perfil.
 
 ### Persistencia
 
-Responsavel por schemas Prisma, migrations, seeds seguros, consultas e transacoes.
-
-Persistencia nao deve conter regra de produto que possa viver no dominio financeiro. Seeds e fixtures devem ser ficticios e minimizados.
+Responsavel por schema, migrations, seeds seguros, consultas e transacoes. Regras de produto devem permanecer no dominio quando possivel.
 
 ### Importacao e conciliacao
 
-Responsavel por receber CSV, OFX, textos de mensagens bancarias e outras origens autorizadas, normalizar dados, detectar duplicidades e sugerir conciliacao.
-
-Dados brutos sensiveis devem ser minimizados, protegidos e descartados ou retidos conforme `docs/PRIVACY.md`.
+Responsavel por receber CSV, OFX, mensagens autorizadas e outras origens, normalizar, deduplicar e sugerir conciliacao. Dados brutos seguem minimizacao e descarte documentados.
 
 ### IA financeira
 
-Responsavel por extracao, classificacao, explicacao, sugestoes, insights e assistente financeiro.
-
-A IA deve produzir saidas estruturadas, revisaveis e auditaveis. Regras deterministicas devem ser preferidas quando forem suficientes. Dados enviados a provedores devem ser minimizados conforme `docs/PRIVACY.md`.
+Responsavel por extracao, classificacao, explicacao, sugestoes e insights. Saidas devem ser estruturadas, revisaveis e auditaveis; regras deterministicas sao preferidas quando suficientes.
 
 ### Interface web/PWA
 
-Responsavel por fluxos de rotina diaria, revisao de sugestoes, dashboards, relatorios e configuracoes.
-
-A interface deve ser mobile-first, acessivel, clara e coerente com `docs/BRAND.md`. A experiencia ativa de pagar e receber compromissos nao deve depender de `/pagar-receber`: contas de conta corrente vivem em `/lancamentos` e compromissos de cartao vivem em `/cartoes`, com agrupadores como recursos principais e instrumentos internos como detalhe operacional.
+Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes e shell SSR. A interface deve ser mobile-first, acessivel e coerente com `docs/BRAND.md` e `docs/DESIGN_SYSTEM.md`.
 
 ## Regras arquiteturais
 
-- Manter dominio financeiro separado de frameworks sempre que isso reduzir acoplamento real.
+- Manter dominio financeiro separado de frameworks quando isso reduzir acoplamento real.
 - Nao criar integracao externa sem ADR ou issue dedicada.
 - Nao acoplar regras de negocio a prompts de IA.
-- Modelar saidas de IA com schemas estruturados e validacao.
+- Modelar saidas de IA com schemas estruturados.
 - Registrar auditoria para mudancas financeiras relevantes.
-- Auditar eventos de seguranca relevantes sem armazenar senhas, tokens brutos ou respostas sensiveis do provider.
+- Nao armazenar senhas, tokens brutos ou respostas sensiveis em logs.
 - Preferir exclusao logica para dados financeiros.
-- Proteger tenant/perfil financeiro em consultas, comandos e testes.
-- Evitar fixtures com dados reais ou identificaveis.
-- Aplicar `docs/PRIVACY.md` antes de persistir dado bruto, processar mensagens bancarias ou enviar dados a IA.
-- Documentar novos contratos publicos e migracoes relevantes.
-- Preservar dados antigos de `PayableReceivable` ate existir plano explicito de migracao/compatibilidade; nenhuma remocao fisica deve acontecer por efeito colateral.
+- Proteger tenant/perfil em consultas, comandos e testes.
+- Usar fixtures ficticias e minimizadas.
+- Documentar contratos publicos, migrations e novos precedentes arquiteturais.
+- Preservar dados antigos de `PayableReceivable` ate existir plano explicito de migracao.
+- Tratar `solverFinShellRoutes` como fonte canonica de cobertura SSR.
+- Validar o HTML final pelo despacho HTTP antes de aceitar o artefato web, usando modo interno isolado quando um renderer legado precisa permanecer coberto sem reativar a rota publica.
+- Nao introduzir uma lista paralela de rotas ou workspaces no CI quando os comandos oficiais ja mantem essa composicao.
 
 ## Dados e privacidade
 
-Dados financeiros, mensagens bancarias, identificadores de conta/cartao, documentos, tokens e chaves devem ser tratados como sensiveis.
+Dados financeiros, mensagens bancarias, identificadores, documentos, tokens e chaves sao sensiveis.
 
-A politica operacional inicial fica em `docs/PRIVACY.md` e diferencia:
-
-- dado bruto, como arquivo original, mensagem bancaria integral, anexo, resposta de provedor ou segredo;
-- dado normalizado, como valor, data, descricao minimizada, hash de origem e status;
-- sugestao revisavel, com origem, explicacao, confianca, estado de revisao e trilha de aceite, edicao ou rejeicao.
-
-Diretrizes iniciais:
+Diretrizes:
 
 - persistir apenas o necessario;
 - descartar dado bruto apos normalizacao por padrao;
-- mascarar identificadores em logs e telas quando o valor completo nao for indispensavel;
-- auditar alteracoes financeiras relevantes com mudancas redigidas;
-- registrar consentimento para importacoes, captura de mensagens e uso de IA;
-- permitir rastrear origem e revisao de sugestoes automatizadas;
-- usar apenas dados ficticios e minimizados em seeds, fixtures e documentacao.
+- mascarar identificadores quando o valor completo nao for indispensavel;
+- auditar alteracoes financeiras com mudancas redigidas;
+- registrar consentimento para importacoes, mensagens e IA;
+- manter origem e revisao de sugestoes;
+- usar somente dados ficticios em seeds, fixtures e documentacao.
 
 ## Validacao esperada por tipo de mudanca
 
-Enquanto nao houver bootstrap tecnico, validacao documental e suficiente para issues documentais.
+- dominio: testes unitarios e casos de borda;
+- APIs: contrato, autorizacao, tenant e integracao;
+- banco: schema, migrations e dados seguros;
+- frontend: renderizacao, acessibilidade, estados e contrato SSR quando estilos/rotas forem afetados;
+- IA/importacao: schemas, fallback e revisao humana;
+- documentacao: consistencia, links e ADR quando houver decisao duradoura.
 
-Quando a stack existir, novas PRs devem executar validacoes compativeis com a mudanca:
-
-- dominio financeiro: testes unitarios e casos de borda;
-- APIs: testes de contrato, autorizacao e tenant;
-- banco: migrations, rollback quando aplicavel e dados de exemplo seguros;
-- frontend: testes de componentes/fluxos, acessibilidade e estados vazios;
-- IA/importacao: fixtures ficticias, schemas, fallback e revisao humana;
-- documentacao: links, consistencia e ADR quando houver decisao.
-
-## Estrutura-alvo sugerida
-
-A estrutura sera criada em issues de bootstrap. A direcao inicial e:
+## Estrutura principal
 
 ```text
 apps/
@@ -243,17 +252,17 @@ packages/
   shared/
   ai/
   config/
+scripts/
 docs/
   adr/
+prisma/
 ```
-
-Essa estrutura nao deve ser criada fora de uma issue de bootstrap tecnico, salvo necessidade justificada.
 
 ## Perguntas abertas
 
-- Qual framework web/backend sera escolhido no bootstrap tecnico?
-- Qual provider gerenciado sera contratado para cumprir a ADR 0004?
-- Quais excecoes de retencao de dados brutos exigirao ADR, consentimento adicional ou contrato de suporte?
+- Qual framework web/backend sera escolhido quando houver beneficio suficiente para uma ADR?
+- Qual provider gerenciado cumprira a ADR 0004?
+- Quais excecoes de retencao de dados brutos exigirao consentimento ou ADR?
 - Quais operacoes exigirao revisao humana obrigatoria antes de persistir efeitos financeiros?
 
 Essas respostas devem ser resolvidas por issues especificas e ADRs.

@@ -7,6 +7,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 const webRoot = path.join(repoRoot, "apps", "web");
 const distDir = path.join(webRoot, "dist");
 const tscBin = path.join(repoRoot, "node_modules", "typescript", "bin", "tsc");
+const styleContractValidator = path.join(repoRoot, "scripts", "validate-web-ssr-styles.mjs");
 
 rmSync(distDir, { force: true, recursive: true });
 
@@ -21,3 +22,19 @@ if (build.error) {
 }
 
 if (build.status !== 0) process.exit(build.status ?? 1);
+
+const styleContract = spawnSync(process.execPath, [styleContractValidator], {
+  cwd: repoRoot,
+  env: {
+    ...process.env,
+    SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION: "1",
+  },
+  stdio: "inherit",
+});
+
+if (styleContract.error) {
+  console.error(styleContract.error);
+  process.exit(1);
+}
+
+if (styleContract.status !== 0) process.exit(styleContract.status ?? 1);

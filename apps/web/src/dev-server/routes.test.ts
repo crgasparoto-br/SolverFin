@@ -21,6 +21,7 @@ describe("dev-server route contract", () => {
 
     assert.deepEqual(Array.from(implementedRoutes), availableRoutePaths);
     assert.equal(implementedRoutes.has("/relatorios"), true);
+    assert.equal(implementedRoutes.has("/remuneracao-contas"), true);
   });
 
   it("redirects active legacy /app routes to canonical private paths", () => {

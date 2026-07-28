@@ -12,6 +12,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/web --include .test.js",
+    "validate:ssr-styles": "node ../../scripts/build-web.mjs",
     "build": "node ../../scripts/build-web.mjs"
   },
   "dependencies": {

@@ -74,9 +74,13 @@ const passwordResetUrl = resolvePasswordResetUrl();
 const monthPattern = /^\d{4}-\d{2}$/;
 const manifest = buildSolverFinWebManifest();
 
-const server = createServer((request, response) => {
-  void handleRequest(request, response);
-});
+export function createSolverFinWebServer() {
+  return createServer((request, response) => {
+    void handleRequest(request, response);
+  });
+}
+
+const server = createSolverFinWebServer();
 
 if (process.argv[1]?.endsWith("dev-server.js") === true) {
   server.listen(port, host, () => {

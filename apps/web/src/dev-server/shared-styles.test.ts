@@ -5,16 +5,17 @@ import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
 import { sharedShellStyles } from "./shared-styles.js";
+import { solverFinSsrStyleContracts } from "./ssr-style-contract.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 
 const consumingModules = [
-  "accounts-cards-page.js",
-  "categories-page.js",
-  "inbox-page.js",
-  "pages.js",
-  "settings-page.js",
-] as const;
+  ...new Set(
+    solverFinSsrStyleContracts
+      .filter((contract) => contract.shell === "authenticated")
+      .map((contract) => contract.moduleFileName),
+  ),
+].sort();
 
 const legacyNeutralAliases = [
   ".ghost-btn",
