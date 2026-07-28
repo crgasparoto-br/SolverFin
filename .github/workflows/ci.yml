@@ -66,6 +66,25 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
+      - name: Format diagnostic snapshot
+        run: npm run format
+
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-541-formatted-files
+          path: |
+            apps/web/src/dev-server/ssr-style-contract.ts
+            apps/web/src/dev-server/ssr-style-contract.test.ts
+            scripts/validate-web-ssr-styles.mjs
+            docs/APP_SHELL.md
+            docs/ARCHITECTURE.md
+            docs/DESIGN_SYSTEM.md
+          if-no-files-found: error
+
+      - name: Stop after formatting snapshot
+        run: git diff --exit-code
+
       - name: Check formatting
         run: npm run format:check
 
