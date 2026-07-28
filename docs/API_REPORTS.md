@@ -6,9 +6,15 @@
 
 ### Autenticacao e tenant
 
-O endpoint exige sessao valida e resolve organizacao/perfil com `resolveRequestTenantContext`. O cliente pode informar somente `profileId`; `organizationId` e `financialProfileId` nunca sao aceitos como escopo confiavel.
+O endpoint exige sessao valida e resolve organizacao/perfil com `resolveRequestTenantContext`. O cliente pode informar `profileId`; `organizationId` e `financialProfileId` nunca sao aceitos como escopo confiavel.
 
-Perfis inexistentes, arquivados ou fora do contexto seguem o contrato publico de erros de tenant e nao retornam agregados parciais.
+Quando `accountId` e informado, a API valida antes dos agregados que a conta existe, esta ativa e pertence simultaneamente a organizacao e ao perfil financeiro resolvidos. Conta inexistente, arquivada ou fora desse escopo usa o mesmo contrato publico, sem revelar qual condicao ocorreu:
+
+```text
+404 REPORT_CATEGORY_EVOLUTION_ACCOUNT_NOT_AVAILABLE
+```
+
+Nenhum agregado parcial e retornado nesses casos.
 
 ### Parametros
 
@@ -18,6 +24,7 @@ start=AAAA-MM        # monthly e rolling-year
 start=AAAA           # annual
 periods=<inteiro>
 profileId=<uuid>     # opcional, conforme docs/TENANT.md
+accountId=<uuid>     # opcional; ausencia significa Todas as contas
 ```
 
 Padroes e limites:
@@ -28,13 +35,13 @@ Padroes e limites:
 | `annual`       | ultima coluna e o ano UTC corrente                    |                 3 |     10 |
 | `rolling-year` | ultima coluna de 12 meses termina no mes UTC corrente |                 3 |     10 |
 
-Parametro ausente usa o padrao. Parametro presente e invalido retorna:
+Parametro ausente usa o padrao. Parametro presente e invalido, inclusive `accountId` vazio ou malformado, retorna:
 
 ```text
 400 REPORT_CATEGORY_EVOLUTION_FILTER_INVALID
 ```
 
-A mensagem identifica com seguranca o campo que deve ser corrigido. Nenhuma consulta financeira e executada depois de falha de validacao.
+A mensagem identifica com seguranca o campo que deve ser corrigido. A validacao dos filtros ocorre antes da consulta financeira do relatorio.
 
 ### Fonte e consulta
 
@@ -45,9 +52,13 @@ A consulta considera uma vez cada `Transaction` que atenda simultaneamente:
 - `status` igual a `posted` ou `reconciled`;
 - `occurredOn` dentro de um dos periodos, com limites inclusivos.
 
+Sem `accountId`, o contrato anterior e preservado integralmente: entram todas as transacoes elegiveis do perfil, inclusive movimentos sem conta vinculada.
+
+Com `accountId`, entra somente a transacao cujo `Transaction.accountId` seja exatamente a conta selecionada. Movimentos de outra conta, sem `accountId` ou que mencionem a conta apenas em `destinationAccountId` nao entram no recorte.
+
 `transfer`, `planned`, `suggested` e `voided` nao entram. Vinculos com grupo, parcela, fatura, recorrencia, importacao, sugestao ou origem nao criam movimentos adicionais.
 
-A implementacao usa uma consulta agregada por periodos/categoria/moeda e uma consulta da taxonomia atual. A quantidade de consultas nao cresce com a quantidade de colunas ou categorias. Nao ha escrita nem `AuditLogEntry` de mutacao.
+A implementacao usa uma validacao constante da conta, uma consulta agregada por periodos/categoria/moeda e uma consulta da taxonomia atual. A quantidade de consultas nao cresce com a quantidade de colunas, contas ou categorias. Nao ha escrita nem `AuditLogEntry` de mutacao.
 
 ### Resposta
 
@@ -102,7 +113,7 @@ Regras:
 - percentuais sao arredondados para ate duas casas;
 - media monetaria inclui periodos zerados e usa empate afastado de zero;
 - `averagePercentage` usa a mesma razao agregada de `totalPercentage`;
-- o payload nao contem lancamentos individuais, descricoes, contas, cartoes ou IDs de transacao.
+- o payload nao contem dados da conta, lancamentos individuais, descricoes, cartoes ou IDs de transacao; `accountId` e somente filtro de entrada.
 
 ### Categorias
 
@@ -118,8 +129,8 @@ Cada no possui `categoryId`, `name`, `status`, `series` e `children`.
 
 ### Erros
 
-A API nao retorna sucesso parcial. Alem dos erros de autenticacao/tenant e do erro de filtro, falhas inesperadas usam o envelope padrao com `correlationId`, sem dados financeiros brutos.
+A API nao retorna sucesso parcial. Alem dos erros de autenticacao/tenant, de filtro e de conta nao consultavel, falhas inesperadas usam o envelope padrao com `correlationId`, sem dados financeiros brutos.
 
 ## Interface web relacionada
 
-`/relatorios?view=category-evolution` consome este endpoint por SSR. A visao `view=installments` continua usando `GET /api/installments`. Consulte [`REPORTS.md`](./REPORTS.md) para navegacao, apresentacao e estados da interface.
+`/relatorios?view=category-evolution` consome este endpoint por SSR e consulta `GET /api/accounts?status=active` para montar o seletor. A visao `view=installments` continua usando `GET /api/installments`. Consulte [`REPORTS.md`](./REPORTS.md) para navegacao, apresentacao e estados da interface.
