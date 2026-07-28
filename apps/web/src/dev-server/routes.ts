@@ -18,6 +18,8 @@ const retiredPrivateRouteRedirects = new Map([
   ["/pagar-receber", "/lancamentos"],
   ["/app/pagar-receber", "/lancamentos"],
   ["/contas", "/contas-cartoes"],
+  ["/remuneracao-contas", "/contas-cartoes"],
+  ["/app/remuneracao-contas", "/contas-cartoes"],
 ]);
 
 const legacyAppRouteRedirects = new Map(
@@ -37,6 +39,14 @@ export function resolveRoute(
       kind: hasSession ? "dashboard" : "login",
       location: hasSession ? "/dashboard" : "/login",
     };
+  }
+
+  if (
+    pathname === "/remuneracao-contas" &&
+    hasSession &&
+    process.env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1"
+  ) {
+    return { statusCode: 200, kind: "placeholder" };
   }
 
   const retiredRedirect = retiredPrivateRouteRedirects.get(pathname);
