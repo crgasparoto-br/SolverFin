@@ -1,4 +1,8 @@
 export function resolveReportsCanonicalLocation(url: URL): string | undefined {
+  if (url.searchParams.has("accountId") && url.searchParams.has("cardId")) {
+    return undefined;
+  }
+
   const origin = url.searchParams.get("origin");
   if (origin !== null && !url.searchParams.has("accountId") && !url.searchParams.has("cardId")) {
     const canonical = new URL(url);
