@@ -109,6 +109,14 @@ describe("reports route page", () => {
     assert.match(html, /Resultado/);
     assert.match(html, /name="view" value="category-evolution"/);
     assert.match(html, /name="profileId" value="profile-1"/);
+    assert.match(
+      html,
+      /href="\/relatorios\?view=category-evolution&interval=annual&profileId=profile-1"/,
+    );
+    assert.doesNotMatch(
+      html,
+      /href="\/relatorios\?view=category-evolution&interval=annual[^"]*(start|periods)=/,
+    );
   });
 
   it("renders filter errors before requesting the API", async () => {
