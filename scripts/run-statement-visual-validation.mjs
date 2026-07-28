@@ -1,29 +1,8 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
-import { format } from "prettier";
-
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
-const formatSnapshotDir = join(outputDir, "format-snapshot");
-const formatSnapshotFiles = [
-  "apps/api/src/reports-router.ts",
-  "apps/api/src/category-evolution-report-router.integration.test.ts",
-  "apps/web/src/dev-server/reports-installments-view.ts",
-  "apps/web/src/dev-server/reports-route-page-styles.ts",
-  "apps/web/src/dev-server/reports-route-page.test.ts",
-  "docs/REPORTS.md",
-  "scripts/statement-visual/reports-installments-regression.mjs",
-  "scripts/run-statement-visual-validation.mjs",
-];
-
-await mkdir(formatSnapshotDir, { recursive: true });
-for (const filepath of formatSnapshotFiles) {
-  const source = await readFile(filepath, "utf8");
-  const formatted = await format(source, { filepath });
-  const target = join(formatSnapshotDir, filepath);
-  await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, formatted);
-}
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 
 try {
   await import("./statement-visual/main.mjs");
@@ -45,7 +24,8 @@ try {
   await import("./statement-visual/reports-installments-regression.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
-  const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
+  const message =
+    error instanceof Error ? (error.stack ?? error.message) : String(error);
   await writeFile(join(outputDir, "fatal-error.log"), `${message}\n`);
   console.error(message);
   process.exitCode = 1;
