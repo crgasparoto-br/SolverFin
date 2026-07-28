@@ -25,6 +25,10 @@ if (build.status !== 0) process.exit(build.status ?? 1);
 
 const styleContract = spawnSync(process.execPath, [styleContractValidator], {
   cwd: repoRoot,
+  env: {
+    ...process.env,
+    SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION: "1",
+  },
   stdio: "inherit",
 });
 
