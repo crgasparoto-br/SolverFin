@@ -35,7 +35,7 @@ A visao apresenta uma matriz hierarquica por moeda, com coluna de descricao, col
 
 Quando o inicio esta ausente, a ultima coluna termina no mes ou ano UTC corrente. Periodos sem movimento permanecem na matriz. Parametros presentes e invalidos nunca sao corrigidos silenciosamente.
 
-O formulario funciona sem JavaScript. Ao recarregar com outro intervalo, o servidor apresenta o formato e os limites correspondentes.
+O formulario funciona sem JavaScript. Ao recarregar com outro intervalo, o servidor apresenta o formato e os limites correspondentes. Quando um valor invalido e enviado, o estado de erro preserva literalmente `interval`, `start` e `periods` para que a pessoa possa identificar e corrigir a entrada original.
 
 ### Fonte financeira
 
@@ -43,7 +43,7 @@ A evolucao usa `Transaction.occurredOn` e inclui somente `income|expense` com `p
 
 Nao entram transferencias nem estados `planned`, `suggested` ou `voided`. `TransactionGroup`, `Installment`, `Invoice`, `Recurrence` e outros vinculos nao sao somados como movimentos adicionais. A API agrega no servidor e nao envia historico bruto ao frontend.
 
-Moedas diferentes geram blocos independentes, sem conversao ou soma entre codigos.
+Moedas diferentes geram blocos independentes, sem conversao ou soma entre codigos. Quando a API nao retorna bloco monetario porque o recorte nao possui movimentos, a matriz vazia apresenta zeros neutros e nao fabrica simbolo ou codigo de moeda.
 
 ### Hierarquia
 
@@ -69,7 +69,7 @@ Moedas diferentes geram blocos independentes, sem conversao ou soma entre codigo
 
 ### SSR, responsividade e acessibilidade
 
-A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-error`. A matriz usa tabela semantica, cabecalhos de coluna/linha, rotulos acessiveis de periodo e sinal textual. Em desktop, cabecalho e descricao permanecem fixos durante a rolagem quando suportado. Em telas menores, filtros quebram em linhas e a matriz rola horizontalmente sem cortar dados.
+A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-error`. A matriz usa tabela semantica, cabecalhos de coluna/linha, rotulos acessiveis de periodo e sinal textual em todos os estados, inclusive no recorte vazio. Em desktop, cabecalho e descricao permanecem fixos durante a rolagem quando suportado. Em telas menores, filtros quebram em linhas e a matriz rola horizontalmente sem cortar dados.
 
 ## Parcelas consolidadas
 
@@ -78,8 +78,8 @@ A visao permanece somente leitura e usa `GET /api/installments`. Mantem filtros 
 ## Estados
 
 - `ready`: matriz ou parcelas renderizadas;
-- `empty`: cabecalhos e linhas principais preservados, com orientacao para outro recorte;
-- `filter-error`: erro local antes da consulta financeira;
+- `empty`: cabecalhos e linhas principais preservados, com valores neutros quando nao existir moeda no recorte e orientacao para outro periodo;
+- `filter-error`: erro local antes da consulta financeira, preservando os valores enviados para correcao;
 - `api-error`: falha segura da API, sem sucesso parcial.
 
 ## Fora do escopo atual
@@ -88,7 +88,7 @@ Exportacao PDF/CSV/Excel, impressao formatada, graficos adicionais, comparacao c
 
 ## Testes
 
-A entrega cobre geracao dos tres intervalos, limites, totais, medias, percentuais, denominador zero, hierarquia multinivel, arquivadas, Sem categoria, moedas, tenant, estados SSR, filtros e preservacao da visao de parcelas.
+A entrega cobre geracao dos tres intervalos, limites, totais, medias, percentuais, denominador zero, hierarquia multinivel, arquivadas, Sem categoria, moedas, tenant, estados SSR, preservacao de filtros invalidos e regressao da visao de parcelas. A fronteira publica da API compara perfil autorizado, inexistente, arquivado e requisicao sem autenticacao. O gate visual em Chrome visita `/relatorios` em desktop e mobile e registra os estados preenchido, vazio e de erro de filtro.
 
 ## Referencias
 
