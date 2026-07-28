@@ -72,11 +72,13 @@ A verificacao de pagina nao e inferida apenas pela existencia de qualquer CSS re
 
 O contrato registra os blocos runtime observados na composicao final:
 
-- Extrato: ordenacao, divulgacao de remuneracao, modal de agrupamento, guarda de formulario do grupo, layout do modal, selecao em lote, layout da selecao e seletor redondo;
+- Extrato: ordenacao; estilos estruturais de remuneracao emitidos por `list-sorting-enhancement.js`; affordance de divulgacao emitida por `account-remuneration-disclosure-enhancement.js`; modal de agrupamento; guarda de formulario do grupo; layout do modal; selecao em lote; layout da selecao; e seletor redondo;
 - Cartoes: navegacao de fatura, ordenacao, interface consolidada e alinhamento de status;
 - Contas e Cartoes: dialogo de instrumentos, abas neutras, modal de remuneracao e padronizacao final;
 - Categorias: CSS da interface aprimorada incorporado ao bloco principal;
 - Inbox: layout de lista, seletor redondo, interface principal, acessibilidade, tabela, filtro corrigido, acoes de status, legibilidade e acao explicita do filtro de data.
+
+No Extrato, `data-account-remuneration-statement-styles` pertence a `list-sorting-enhancement.js`, enquanto `data-account-remuneration-disclosure-affordance` pertence a `account-remuneration-disclosure-enhancement.js`. O manifesto registra esses provedores separadamente para que a presenca de um bloco nao possa mascarar a perda do outro.
 
 Blocos marcados por atributos `data-*` ou `id` precisam existir e conter CSS nao vazio. Para provedores sem bloco proprio, o contrato exige um fragmento CSS discriminante. Os controles negativos removem e esvaziam cada bloco marcado individualmente.
 
@@ -84,7 +86,7 @@ Para `/login`, o CSS publico deve ser nao vazio, o documento precisa conter o sh
 
 A validacao usa `createSolverFinWebServer()` para iniciar o mesmo servidor Node `http` em `127.0.0.1` com porta efemera. Cada rota e requisitada pelo caminho canonico, com cookie ficticio quando autenticada. Assim, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos de cada rota e `sendHtml`, em vez de aceitar apenas a saida de um renderer isolado.
 
-As chamadas internas dos renderers usam respostas `fetch` ficticias, minimizadas e suficientes para renderizar o estado normal vazio de cada tela. Uma resposta ausente devolve erro controlado e o contrato falha pela ausencia do fragmento representativo. A execucao nao depende de PostgreSQL, API ativa, rede externa, secrets ou `apps/web/dist` preexistente.
+As chamadas internas dos renderers usam respostas `fetch` ficticias e minimizadas. Para `/lancamentos`, a fixture inclui uma conta ativa e um lancamento ficticio de remuneracao CDI, suficientes para produzir `account-remuneration-audit` e ativar os dois provedores runtime de remuneracao. Uma resposta ausente devolve erro controlado e o contrato falha pela ausencia do fragmento representativo. A execucao nao depende de PostgreSQL, API ativa, rede externa, secrets ou `apps/web/dist` preexistente.
 
 ## Comandos oficiais
 
