@@ -27,7 +27,7 @@ describe("reports route page", () => {
     );
   });
 
-  it("renders the category evolution matrix with accounts, explicit filters and accessible table", async () => {
+  it("renders the category evolution matrix with source groups and accessible table", async () => {
     const paths: string[] = [];
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
@@ -37,12 +37,18 @@ describe("reports route page", () => {
         assert.equal(url.searchParams.get("profileId"), "profile-1");
         return jsonResponse({ accounts: [] });
       }
+      if (url.pathname === "/api/credit-card-accounts") {
+        assert.equal(url.searchParams.get("status"), "all");
+        assert.equal(url.searchParams.get("profileId"), "profile-1");
+        return jsonResponse({ creditCardAccounts: [] });
+      }
       assert.equal(url.pathname, "/api/reports/category-evolution");
       assert.equal(url.searchParams.get("interval"), "monthly");
       assert.equal(url.searchParams.get("start"), "2026-06");
       assert.equal(url.searchParams.get("periods"), "2");
       assert.equal(url.searchParams.get("profileId"), "profile-1");
       assert.equal(url.searchParams.has("accountId"), false);
+      assert.equal(url.searchParams.has("cardId"), false);
       return jsonResponse({ report: readyReport() });
     };
 
@@ -54,7 +60,7 @@ describe("reports route page", () => {
       new Date("2026-07-28T12:00:00.000Z"),
     );
 
-    assert.equal(paths.length, 2);
+    assert.equal(paths.length, 3);
     assert.match(html, /data-report-state="ready"/);
     assert.match(html, /<table class="evolution-table"[^>]*>/);
     assert.match(html, /scope="col"/);
@@ -67,8 +73,10 @@ describe("reports route page", () => {
     assert.match(html, /Resultado/);
     assert.match(html, /name="view" value="category-evolution"/);
     assert.match(html, /name="profileId" value="profile-1"/);
-    assert.match(html, /<select id="report-account" name="accountId"/);
-    assert.match(html, /<option value="" selected>Todas as contas<\/option>/);
+    assert.match(html, /<select id="report-origin" name="origin"/);
+    assert.match(html, /<option value="" selected>Todas as contas e cartões<\/option>/);
+    assert.match(html, /<optgroup label="Contas">/);
+    assert.match(html, /<optgroup label="Cartões de crédito">/);
     assert.match(
       html,
       /href="\/relatorios\?view=category-evolution&interval=annual&profileId=profile-1"/,
@@ -125,8 +133,21 @@ describe("reports route page", () => {
       ),
     );
     assert.match(invalidAccount, /data-report-state="filter-error"/);
-    assert.match(invalidAccount, /value="invalid" selected>Conta selecionada indisponível/);
-    assert.match(invalidAccount, /data-invalid-filter="accountId"/);
+    assert.match(
+      invalidAccount,
+      /value="account:invalid" selected>Conta selecionada indisponível/,
+    );
+    assert.match(invalidAccount, /data-invalid-filter="origin"/);
+
+    const invalidCard = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&cardId=invalid",
+      ),
+    );
+    assert.match(invalidCard, /data-report-state="filter-error"/);
+    assert.match(invalidCard, /value="card:invalid" selected>Cartão selecionado indisponível/);
+    assert.match(invalidCard, /data-invalid-filter="origin"/);
     assert.equal(calls, 0);
   });
 
@@ -134,6 +155,9 @@ describe("reports route page", () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
       if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (url.pathname === "/api/credit-card-accounts") {
+        return jsonResponse({ creditCardAccounts: [] });
+      }
       return jsonResponse({ report: emptyReport() });
     };
 
@@ -159,6 +183,9 @@ describe("reports route page", () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
       if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (url.pathname === "/api/credit-card-accounts") {
+        return jsonResponse({ creditCardAccounts: [] });
+      }
       return errorResponse();
     };
 
@@ -174,10 +201,11 @@ describe("reports route page", () => {
     assert.doesNotMatch(html, /class="currency-report-list"/);
   });
 
-  it("stops safely when accounts cannot be loaded", async () => {
+  it("stops safely when either source list cannot be loaded", async () => {
     let reportCalls = 0;
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
+      if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
       if (url.pathname === "/api/reports/category-evolution") reportCalls += 1;
       return errorResponse();
     };
@@ -185,12 +213,12 @@ describe("reports route page", () => {
     const html = await renderReportsRoutePage(
       "token",
       new URL(
-        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&accountId=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&cardId=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       ),
     );
 
-    assert.match(html, /Não foi possível carregar as contas/);
-    assert.match(html, /value="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" selected/);
+    assert.match(html, /Não foi possível carregar contas e cartões/);
+    assert.match(html, /value="card:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" selected/);
     assert.equal(reportCalls, 0);
   });
 
