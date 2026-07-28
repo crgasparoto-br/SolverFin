@@ -2,8 +2,8 @@ import { TenantAuthorizationError, TenantError } from "@solverfin/domain";
 
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import {
-  buildCategoryEvolutionReportForAccountContext,
-  parseCategoryEvolutionAccountId,
+  buildCategoryEvolutionReportForSourceContext,
+  parseCategoryEvolutionSourceFilter,
 } from "./category-evolution-account-filter.js";
 import { parseCategoryEvolutionFilters } from "./category-evolution-report.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
@@ -25,12 +25,12 @@ export async function handleReportsApiRequest(
       authorization: request.headers.authorization,
     });
     const filters = parseCategoryEvolutionFilters(request.query);
-    const accountId = parseCategoryEvolutionAccountId(request.query);
+    const source = parseCategoryEvolutionSourceFilter(request.query);
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
     );
-    const report = await buildCategoryEvolutionReportForAccountContext(context, filters, accountId);
+    const report = await buildCategoryEvolutionReportForSourceContext(context, filters, source);
 
     return json(200, { report });
   } catch (error) {
