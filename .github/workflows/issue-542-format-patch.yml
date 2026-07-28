@@ -1,9 +1,9 @@
 name: Issue 542 interval patch
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - feat/542-category-evolution-report
 
 permissions:
   contents: write
@@ -18,10 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout pull request branch
+      - name: Checkout branch
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,7 +33,6 @@ jobs:
 
       - name: Apply interval patch
         run: |
-          cp /tmp/empty /tmp/empty 2>/dev/null || true
           python .github/scripts/issue-542-interval-fix.py
           npm run format
           rm .github/workflows/issue-542-format-patch.yml
@@ -48,4 +45,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "fix(reports): switch intervals without JavaScript"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git push origin HEAD:feat/542-category-evolution-report
