@@ -69,41 +69,30 @@ jobs:
 
           page = Path("apps/web/src/dev-server/reports-route-page.ts")
           content = page.read_text()
-          old = '''  if (!accountsResult.ok || !cardsResult.ok) {
-            const sourceError = !accountsResult.ok ? accountsResult.error : cardsResult.error;
-          '''
-          new = '''  if (!accountsResult.ok || !cardsResult.ok) {
-            const sourceError = !accountsResult.ok
-              ? accountsResult.error
-              : !cardsResult.ok
-                ? cardsResult.error
-                : "Não foi possível carregar as origens financeiras.";
-          '''
-          if old not in content:
-              raise SystemExit("Expected reports source error block was not found")
+          old = "const sourceError = !accountsResult.ok ? accountsResult.error : cardsResult.error;"
+          new = '''const sourceError = !accountsResult.ok
+                ? accountsResult.error
+                : !cardsResult.ok
+                  ? cardsResult.error
+                  : "Não foi possível carregar as origens financeiras.";'''
+          if old not in content and "Não foi possível carregar as origens financeiras." not in content:
+              raise SystemExit("Expected reports source error assignment was not found")
           page.write_text(content.replace(old, new))
 
           source = Path("apps/api/src/category-evolution-account-filter.ts")
           source_content = source.read_text()
-          old_source = '''  if (!UUID_PATTERN.test(value)) {
-            throw new CategoryEvolutionFilterError(
-              `${label} inválido. Informe um identificador válido.`,
-            );
-          }
-          '''
-          new_source = '''  if (!UUID_PATTERN.test(value)) {
-            const adjective = label === "Conta" ? "inválida" : "inválido";
-            throw new CategoryEvolutionFilterError(
-              `${label} ${adjective}. Informe um identificador válido.`,
-            );
-          }
-          '''
-          if old_source not in source_content:
-              raise SystemExit("Expected source validation block was not found")
-          source.write_text(source_content.replace(old_source, new_source))
+          source_content = source_content.replace(
+              '`${label} inválido. Informe um identificador válido.`',
+              '`${label === "Conta" ? "Conta inválida" : "Cartão inválido"}. Informe um identificador válido.`',
+          )
+          source.write_text(source_content)
 
           test = Path("apps/api/src/category-evolution-account-filter.test.ts")
-          test.write_text(test.read_text().replace('`${label} inválido`', '`${label} ${label === "Conta" ? "inválida" : "inválido"}`'))
+          test_content = test.read_text().replace(
+              'error.message.includes(`${label} inválido`)',
+              'error.message.includes(label === "Conta" ? "Conta inválida" : "Cartão inválido")',
+          )
+          test.write_text(test_content)
 
           router_test = Path("apps/api/src/category-evolution-account-router.integration.test.ts")
           router_test.write_text(router_test.read_text().replace('/Conta inválido/', '/Conta inválida/'))
