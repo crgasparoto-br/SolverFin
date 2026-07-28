@@ -30,7 +30,10 @@ const MONTH_LABELS = [
 export async function handleReportsApiRequest(
   request: ApiRequest,
 ): Promise<ApiResponse | undefined> {
-  if (request.pathname !== CATEGORY_EVOLUTION_PATH || request.method !== "GET") {
+  if (
+    request.pathname !== CATEGORY_EVOLUTION_PATH ||
+    request.method !== "GET"
+  ) {
     return undefined;
   }
 
@@ -93,7 +96,11 @@ function mapDomainError(error: unknown): unknown {
     };
   }
   if (error instanceof TenantAuthorizationError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
   return error;
 }
