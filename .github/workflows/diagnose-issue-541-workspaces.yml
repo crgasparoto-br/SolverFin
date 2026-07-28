@@ -1,0 +1,111 @@
+name: Diagnose issue 541 workspace tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diagnose-issue-541-workspaces-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workspace-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare database
+        run: |
+          npm run prisma:generate
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Root test guards
+        run: |
+          npm run startup:check
+          npm run integration-db-guard:check
+          npm run build:packages
+
+      - name: API tests
+        id: api
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/api
+
+      - name: Web tests
+        id: web
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/web
+
+      - name: AI package tests
+        id: ai
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/ai
+
+      - name: Config package tests
+        id: config
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/config
+
+      - name: Domain package tests
+        id: domain
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/domain
+
+      - name: Shared package tests
+        id: shared
+        continue-on-error: true
+        run: npm run test --workspace @solverfin/shared
+
+      - name: Report workspace outcomes
+        env:
+          API_OUTCOME: ${{ steps.api.outcome }}
+          WEB_OUTCOME: ${{ steps.web.outcome }}
+          AI_OUTCOME: ${{ steps.ai.outcome }}
+          CONFIG_OUTCOME: ${{ steps.config.outcome }}
+          DOMAIN_OUTCOME: ${{ steps.domain.outcome }}
+          SHARED_OUTCOME: ${{ steps.shared.outcome }}
+        run: |
+          printf 'api=%s\nweb=%s\nai=%s\nconfig=%s\ndomain=%s\nshared=%s\n' \
+            "$API_OUTCOME" "$WEB_OUTCOME" "$AI_OUTCOME" "$CONFIG_OUTCOME" "$DOMAIN_OUTCOME" "$SHARED_OUTCOME"
+          test "$API_OUTCOME" = success
+          test "$WEB_OUTCOME" = success
+          test "$AI_OUTCOME" = success
+          test "$CONFIG_OUTCOME" = success
+          test "$DOMAIN_OUTCOME" = success
+          test "$SHARED_OUTCOME" = success
