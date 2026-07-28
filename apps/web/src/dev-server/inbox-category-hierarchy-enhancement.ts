@@ -1,3 +1,5 @@
+import { enhanceInboxOfxImport } from "./inbox-ofx-import-enhancement.js";
+
 export interface CategoryRecord {
   id: string;
   name: string;
@@ -118,8 +120,9 @@ export function enhanceInboxCategoryHierarchy(
   html: string,
   categories: readonly CategoryRecord[],
 ): string {
-  if (!html.includes('id="csv-line-edit-dialog"')) return html;
-  if (html.includes("data-inbox-category-hierarchy-enhanced")) return html;
+  const ofxEnhanced = enhanceInboxOfxImport(html);
+  if (!ofxEnhanced.includes('id="csv-line-edit-dialog"')) return ofxEnhanced;
+  if (ofxEnhanced.includes("data-inbox-category-hierarchy-enhanced")) return ofxEnhanced;
 
   const choices = buildInboxCategoryChoices(categories);
   const choicesJson = JSON.stringify(choices).replace(/</g, "\\u003c");
@@ -181,18 +184,18 @@ export function enhanceInboxCategoryHierarchy(
           setStatus(lineEditStatus, "Revise os campos e salve para executar uma nova análise de duplicidade.", "muted");
         });`;
 
-  let enhanced = html.replace(categoryOptionsPattern, categoryOptionsReplacement);
-  if (enhanced === html) return html;
+  let enhanced = ofxEnhanced.replace(categoryOptionsPattern, categoryOptionsReplacement);
+  if (enhanced === ofxEnhanced) return ofxEnhanced;
 
   const withStatus = enhanced.replace(statusAnchor, statusReplacement);
-  if (withStatus === enhanced) return html;
+  if (withStatus === enhanced) return ofxEnhanced;
   enhanced = withStatus;
 
   const withKindListener = enhanced.replace(kindListenerPattern, kindListenerReplacement);
-  if (withKindListener === enhanced) return html;
+  if (withKindListener === enhanced) return ofxEnhanced;
   enhanced = withKindListener;
 
-  enhanced = enhanced.replace("<main>", "<main data-inbox-category-hierarchy-enhanced>");
+  enhanced = enhanced.replace("<main", '<main data-inbox-category-hierarchy-enhanced');
   enhanced = enhanced.replace(
     "</style>",
     `
