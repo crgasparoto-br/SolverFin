@@ -59,13 +59,14 @@ Fontes principais:
 Toda rota com `status: "available"` deve ter exatamente um contrato, inclusive:
 
 - `/login`;
-- rotas ocultas na navegacao, como `/remuneracao-contas`;
+- renderers ocultos na navegacao, como `/remuneracao-contas`;
 - rotas master `/admin/instituicoes` e `/admin/indices-financeiros`.
 
 O manifesto registra rota, renderer, shell, classificacao de CSS, provedores de cabecalho, o provedor especifico `page:<routeId>`, auxiliares independentes, provedores inseridos no runtime e gatilhos condicionais. O build falha quando:
 
 - a cobertura diverge da fonte canonica;
-- uma rota canonica disponivel redireciona, retorna erro ou deixa de ser servida pelo despacho real;
+- uma rota operacional disponivel redireciona, retorna erro ou deixa de ser servida pelo despacho real;
+- o renderer legado de `/remuneracao-contas` nao pode ser exercitado no modo interno do portao enquanto o redirecionamento publico permanece preservado;
 - um provedor compartilhado ou condicional retorna CSS vazio;
 - o resultado de um provedor compartilhado/condicional existe no codigo mas nao esta incorporado ao HTML final;
 - um fragmento discriminante de provedor de pagina, auxiliar ou runtime registrado nao aparece no CSS final;
@@ -79,7 +80,7 @@ O portao nao infere CSS especifico apenas pela existencia de qualquer regra rema
 
 Marcadores de blocos runtime possuem propriedade explicita por modulo. No Extrato, `data-account-remuneration-statement-styles` e produzido por `list-sorting-enhancement.ts`, enquanto `data-account-remuneration-disclosure-affordance` e produzido por `account-remuneration-disclosure-enhancement.ts`. O contrato os registra como provedores distintos para impedir que um bloco valido de um modulo mascare a perda do outro.
 
-A validacao inicia `createSolverFinWebServer()` em `127.0.0.1` com porta efemera e requisita todas as rotas canonicas. Rotas autenticadas recebem cookie ficticio; chamadas internas usam `fetch` ficticio e seguro. A fixture de `/lancamentos` inclui conta ativa e lancamento ficticio de remuneracao CDI para ativar tanto os estilos estruturais quanto a affordance de divulgacao. Dessa forma, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos e `sendHtml`, sem acessar API, banco, rede externa ou secrets e sem exigir `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
+A validacao inicia `createSolverFinWebServer()` em `127.0.0.1` com porta efemera e requisita os renderers cobertos. Rotas autenticadas recebem cookie ficticio; chamadas internas usam `fetch` ficticio e seguro. Em execucao normal, `/remuneracao-contas` e `/app/remuneracao-contas` continuam redirecionando para `/contas-cartoes`; somente o processo filho iniciado por `scripts/build-web.mjs` define `SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION=1` para exercitar o renderer legado sem alterar esse contrato publico. A fixture de `/lancamentos` inclui conta ativa e lancamento ficticio de remuneracao CDI para ativar tanto os estilos estruturais quanto a affordance de divulgacao. Dessa forma, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos e `sendHtml`, sem acessar API, banco, rede externa ou secrets e sem exigir `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
 
 O documento dono das regras operacionais do shell e `docs/APP_SHELL.md`; `docs/DESIGN_SYSTEM.md` descreve a propriedade visual dos provedores.
 
@@ -164,7 +165,8 @@ Usuario
 Build Web
   -> TypeScript
   -> servidor Node http em porta efemera
-  -> requisicoes HTTP para todas as rotas disponiveis
+  -> requisicoes HTTP para renderers cobertos
+  -> modo interno isolado para renderer legado de remuneracao
   -> contrato de estilos SSR sobre HTML final
   -> artefato aceito ou falha agregada
 ```
@@ -213,8 +215,8 @@ Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes 
 - Documentar contratos publicos, migrations e novos precedentes arquiteturais.
 - Preservar dados antigos de `PayableReceivable` ate existir plano explicito de migracao.
 - Tratar `solverFinShellRoutes` como fonte canonica de cobertura SSR.
-- Validar o HTML final pelo despacho HTTP antes de aceitar o artefato web.
-- Nao introduzir uma lista paralela de rotas no CI sem paridade automatica.
+- Validar o HTML final pelo despacho HTTP antes de aceitar o artefato web, usando modo interno isolado quando um renderer legado precisa permanecer coberto sem reativar a rota publica.
+- Nao introduzir uma lista paralela de rotas ou workspaces no CI quando os comandos oficiais ja mantem essa composicao.
 
 ## Dados e privacidade
 
