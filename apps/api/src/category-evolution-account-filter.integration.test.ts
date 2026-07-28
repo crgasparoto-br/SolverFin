@@ -7,7 +7,7 @@ import {
   CategoryEvolutionAccountNotAvailableError,
 } from "./category-evolution-account-filter.js";
 import { parseCategoryEvolutionFilters } from "./category-evolution-report.js";
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 import { archiveAccountForContext, createAccountForContext } from "./repositories/accounts.js";
 import { createCategoryForContext } from "./repositories/categories.js";
 import { createTransactionForContext } from "./repositories/transactions.js";
@@ -89,6 +89,37 @@ async function main(): Promise<void> {
     plannedOn: "2032-03-12",
     description: `Receita outra conta issue 546 ${suffix}`,
   });
+  await createTransactionForContext(PERSONAL_CONTEXT, {
+    categoryId: incomeCategory.id,
+    kind: "income",
+    status: "posted",
+    amountMinor: 2_000,
+    occurredOn: "2032-03-13",
+    plannedOn: "2032-03-13",
+    description: `Receita sem conta issue 546 ${suffix}`,
+  });
+  const destinationOnly = await createTransactionForContext(PERSONAL_CONTEXT, {
+    categoryId: incomeCategory.id,
+    kind: "income",
+    status: "posted",
+    amountMinor: 4_000,
+    occurredOn: "2032-03-14",
+    plannedOn: "2032-03-14",
+    description: `Receita apenas no destino issue 546 ${suffix}`,
+  });
+  await query(
+    `update "Transaction"
+        set "destinationAccountId" = $1
+      where "id" = $2
+        and "organizationId" = $3
+        and "financialProfileId" = $4`,
+    [
+      selectedAccount.id,
+      destinationOnly.id,
+      PERSONAL_CONTEXT.organizationId,
+      PERSONAL_CONTEXT.financialProfileId,
+    ],
+  );
 
   const filters = parseCategoryEvolutionFilters(
     new URLSearchParams({ interval: "monthly", start: "2032-03", periods: "1" }),
@@ -99,7 +130,7 @@ async function main(): Promise<void> {
     filters,
     undefined,
   );
-  assert.equal(allAccounts.currencyBlocks[0]?.income.totalMinor, 20_000);
+  assert.equal(allAccounts.currencyBlocks[0]?.income.totalMinor, 26_000);
   assert.equal(allAccounts.currencyBlocks[0]?.expense.totalMinor, 3_000);
 
   const selected = await buildCategoryEvolutionReportForAccountContext(
