@@ -20,7 +20,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`BRAND.md`](./BRAND.md): identidade, tom, experiencia e direcao visual.
 - [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, componentes, provedores de CSS SSR e orientacoes de interface.
 - [`APP_SHELL.md`](./APP_SHELL.md): rotas canonicas, shell autenticado e contrato executavel de composicao de estilos SSR.
-- [`REPORTS.md`](./REPORTS.md): estado atual, regras funcionais e evolucao planejada da area de Relatorios.
+- [`REPORTS.md`](./REPORTS.md): visoes, filtros, calculos e estados da area de Relatorios.
 - [`WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md): cobertura esperada de manutencao web.
 
 ## Arquitetura, seguranca e operacao
@@ -36,6 +36,8 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 
 - [`DOMAIN_MODEL.md`](./DOMAIN_MODEL.md): modelo conceitual e tecnico do core financeiro.
 - [`TRANSACTIONS.md`](./TRANSACTIONS.md): lancamentos do Extrato, filtros, agrupamentos e invariantes dos membros.
+- [`API_TRANSACTIONS.md`](./API_TRANSACTIONS.md): contrato dos lancamentos usados como fonte financeira canonica.
+- [`API_REPORTS.md`](./API_REPORTS.md): endpoint agregado de evolucao por categoria, periodos, moedas e hierarquia.
 - [`API_TRANSACTION_GROUP_ACTIONS.md`](./API_TRANSACTION_GROUP_ACTIONS.md): edicao, clonagem, exclusao logica e conciliacao de agrupamentos.
 - [`API_TRANSACTION_BULK_ACTIONS.md`](./API_TRANSACTION_BULK_ACTIONS.md): selecao combinada e acoes atomicas em massa no Extrato.
 - [`CARDS.md`](./CARDS.md): cartoes agrupadores/faturas e instrumentos internos.
