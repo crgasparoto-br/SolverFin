@@ -73,7 +73,7 @@ describe("reports route page", () => {
       html,
       /href="\/relatorios\?view=category-evolution&interval=annual&profileId=profile-1"/,
     );
-    assert.doesNotMatch(html, /href="\/relatorios\?view=category-evolution[^\"]*(start|periods)=/);
+    assert.doesNotMatch(html, /href="\/relatorios\?view=category-evolution[^"]*(start|periods)=/);
   });
 
   it("preserves raw invalid filters in the correction form without requesting the API", async () => {
