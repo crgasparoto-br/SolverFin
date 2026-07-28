@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
@@ -8,7 +7,7 @@ import {
   CategoryEvolutionAccountNotAvailableError,
 } from "./category-evolution-account-filter.js";
 import { parseCategoryEvolutionFilters } from "./category-evolution-report.js";
-import { closePool, query } from "./db.js";
+import { closePool } from "./db.js";
 import { archiveAccountForContext, createAccountForContext } from "./repositories/accounts.js";
 import { createCategoryForContext } from "./repositories/categories.js";
 import { createTransactionForContext } from "./repositories/transactions.js";
@@ -90,18 +89,15 @@ async function main(): Promise<void> {
     plannedOn: "2032-03-12",
     description: `Receita outra conta issue 546 ${suffix}`,
   });
-  await insertDetachedIncome({
-    categoryId: incomeCategory.id,
-    amountMinor: 2_000,
-    occurredOn: "2032-03-13",
-    description: `Receita sem conta issue 546 ${suffix}`,
-  });
-  await insertDetachedIncome({
+  await createTransactionForContext(PERSONAL_CONTEXT, {
+    accountId: otherAccount.id,
     destinationAccountId: selectedAccount.id,
-    categoryId: incomeCategory.id,
+    kind: "transfer",
+    status: "posted",
     amountMinor: 4_000,
     occurredOn: "2032-03-14",
-    description: `Receita apenas no destino issue 546 ${suffix}`,
+    plannedOn: "2032-03-14",
+    description: `Transferência com destino na conta selecionada issue 546 ${suffix}`,
   });
 
   const filters = parseCategoryEvolutionFilters(
@@ -113,7 +109,7 @@ async function main(): Promise<void> {
     filters,
     undefined,
   );
-  assert.equal(allAccounts.currencyBlocks[0]?.income.totalMinor, 26_000);
+  assert.equal(allAccounts.currencyBlocks[0]?.income.totalMinor, 20_000);
   assert.equal(allAccounts.currencyBlocks[0]?.expense.totalMinor, 3_000);
 
   const selected = await buildCategoryEvolutionReportForAccountContext(
@@ -160,34 +156,6 @@ async function main(): Promise<void> {
         "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       ),
     isAccountNotAvailable,
-  );
-}
-
-async function insertDetachedIncome(input: {
-  destinationAccountId?: string;
-  categoryId: string;
-  amountMinor: number;
-  occurredOn: string;
-  description: string;
-}): Promise<void> {
-  await query(
-    `insert into "Transaction"
-      ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
-       "categoryId", "kind", "status", "source", "amountMinor", "currency", "occurredOn",
-       "plannedOn", "description", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
-     values ($1, $2, $3, null, $4, $5, 'INCOME', 'POSTED', 'MANUAL', $6, 'BRL', $7, $7,
-             $8, $9, $9, now(), now())`,
-    [
-      randomUUID(),
-      PERSONAL_CONTEXT.organizationId,
-      PERSONAL_CONTEXT.financialProfileId,
-      input.destinationAccountId ?? null,
-      input.categoryId,
-      input.amountMinor,
-      input.occurredOn,
-      input.description,
-      PERSONAL_CONTEXT.userId,
-    ],
   );
 }
 
