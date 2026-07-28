@@ -249,7 +249,11 @@ function buildAmountProblem(
       "O valor precisa ser diferente de zero.",
     );
   }
-  return rowError(rowNumber, "IMPORT_ROW_NUMBER_INVALID", "O valor possui formato numerico invalido.");
+  return rowError(
+    rowNumber,
+    "IMPORT_ROW_NUMBER_INVALID",
+    "O valor possui formato numerico invalido.",
+  );
 }
 
 function normalizeOfxDate(value: string | undefined): string | undefined {
@@ -282,7 +286,7 @@ function inferTrnTypeDirection(value: string | undefined): "inflow" | "outflow" 
 }
 
 function readOfxTag(block: string, tagName: string): string | undefined {
-  const expression = new RegExp(`<\s*${tagName}\\s*>\\s*([^<\\r\\n]+)`, "i");
+  const expression = new RegExp(`<\\s*${tagName}\\s*>\\s*([^<\\r\\n]+)`, "i");
   return normalizeText(expression.exec(block)?.[1]);
 }
 
