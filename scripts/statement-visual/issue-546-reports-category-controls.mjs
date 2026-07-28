@@ -20,6 +20,7 @@ const report = {
   browser: "unknown",
   desktop: null,
   mobile: null,
+  apiError: null,
   failures,
   screenshots,
 };
@@ -35,6 +36,7 @@ try {
   const seeded = await seedScenario(browser.cdp);
   report.desktop = await validateDesktop(browser.cdp, seeded);
   report.mobile = await validateMobile(browser.cdp, seeded);
+  report.apiError = await validateApiError(browser.cdp);
 } catch (error) {
   failures.push({ message: "Issue 546 visual validation crashed", details: serializeError(error) });
 } finally {
@@ -149,6 +151,23 @@ async function validateDesktop(cdp, seeded) {
   return { viewport: "1440x900", interaction, measurements, screenshot: screenshots.at(-1) };
 }
 
+async function validateApiError(cdp) {
+  await setViewport(cdp, 1024, 700);
+  await navigateWithRetry(
+    cdp,
+    `${baseUrl}/relatorios?view=category-evolution&interval=monthly&start=2099-01&periods=1&accountId=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
+    "issue 546 api error",
+  );
+  await waitForState(cdp, "api-error");
+  const measurements = await evaluate(cdp, measurementExpression());
+  await screenshot(cdp, join(outputDir, "issue-546-reports-category-controls-api-error.png"));
+  screenshots.push("issue-546-reports-category-controls-api-error.png");
+
+  check(measurements.state === "api-error", "Safe API error state was not rendered", measurements);
+  check(!measurements.hasReadyReport, "API error exposed a partial ready report", measurements);
+  return { viewport: "1024x700", measurements, screenshot: screenshots.at(-1) };
+}
+
 async function validateMobile(cdp, seeded) {
   await setViewport(cdp, 390, 844);
   await navigateWithRetry(
@@ -175,6 +194,8 @@ function measurementExpression() {
     const form = document.querySelector('.evolution-filters');
     const style = form ? getComputedStyle(form) : null;
     return {
+      state: document.querySelector('[data-report-state]')?.getAttribute('data-report-state') || '',
+      hasReadyReport: Boolean(document.querySelector('[data-report-state="ready"]')),
       viewportWidth: window.innerWidth,
       pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1,
       tableScrollable: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
