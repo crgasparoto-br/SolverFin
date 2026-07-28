@@ -14,6 +14,10 @@ export function reportPageStyles(): string {
     .evolution-filters { grid-template-columns:minmax(12rem,1.2fr) minmax(10rem,1fr) minmax(8rem,.6fr) auto; }
     .installment-filters { grid-template-columns:minmax(9rem,.8fr) minmax(9rem,.8fr) minmax(11rem,1fr) minmax(11rem,1fr) auto; }
     .filter-hint { color:var(--muted); font-size:.75rem; margin-top:8px; }
+    .interval-switcher { align-items:center; border:0; display:flex; flex-wrap:wrap; gap:5px; margin:0; min-width:0; padding:0; }
+    .interval-switcher legend { color:var(--text); font-size:.8125rem; font-weight:700; margin-bottom:5px; width:100%; }
+    .interval-switcher a { border:1px solid var(--line); border-radius:999px; color:var(--text); font-size:.75rem; font-weight:700; padding:7px 10px; text-decoration:none; }
+    .interval-switcher a[aria-current="page"] { background:var(--primary); border-color:var(--primary); color:#fff; }
     .report-state { display:grid; gap:4px; }
     .report-state-filter-error,.report-state-api-error { border-color:#fecaca; }
     .currency-report-list { display:grid; gap:14px; }
