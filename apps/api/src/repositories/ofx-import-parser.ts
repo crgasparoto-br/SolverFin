@@ -190,7 +190,12 @@ function parseOfxDocument(input: {
     });
   });
 
-  return { currency, totalRows: blocks.length, suggestions, problems };
+  return {
+    ...(currency === undefined ? {} : { currency }),
+    totalRows: blocks.length,
+    suggestions,
+    problems,
+  };
 }
 
 function assertOfxInput(originalFileName: string, content: string): void {
@@ -315,3 +320,4 @@ function stripUtf8Bom(value: string): string {
 function rowError(rowNumber: number, code: string, message: string): ImportProblem {
   return { rowNumber, severity: "error", code, message };
 }
+

@@ -1,0 +1,59 @@
+name: Format issue 548 artifacts
+
+on:
+  push:
+    branches:
+      - feat/548-ofx-inbox-import
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format issue files
+        run: |
+          npx prettier --write \
+            apps/api/src/import-batches-router.ts \
+            apps/api/src/ofx-import-review.integration.test.ts \
+            apps/api/src/ofx-imports.test.ts \
+            apps/api/src/repositories/ofx-import-parser.ts \
+            apps/api/src/repositories/ofx-import-store.ts \
+            apps/web/src/dev-server/inbox-ofx-import-enhancement.test.ts \
+            apps/web/src/dev-server/inbox-ofx-import-enhancement.ts \
+            docs/STATUS_MATRIX.md
+
+      - name: Package formatted files
+        run: |
+          tar -czf issue-548-formatted.tar.gz \
+            apps/api/src/import-batches-router.ts \
+            apps/api/src/ofx-import-review.integration.test.ts \
+            apps/api/src/ofx-imports.test.ts \
+            apps/api/src/repositories/ofx-import-parser.ts \
+            apps/api/src/repositories/ofx-import-store.ts \
+            apps/web/src/dev-server/inbox-ofx-import-enhancement.test.ts \
+            apps/web/src/dev-server/inbox-ofx-import-enhancement.ts \
+            docs/STATUS_MATRIX.md
+
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-548-formatted
+          path: issue-548-formatted.tar.gz
+          if-no-files-found: error
+          retention-days: 1
