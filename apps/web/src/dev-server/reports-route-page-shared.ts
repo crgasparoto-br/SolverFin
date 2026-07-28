@@ -1,0 +1,47 @@
+import { renderAuthenticatedShellDocument } from "./shell.js";
+import { reportPageStyles } from "./reports-route-page-styles.js";
+
+export type ReportsView = "category-evolution" | "installments";
+
+export function renderReportHeading(title: string, description: string): string {
+  return `
+    <section class="reports-heading">
+      <div><p class="eyebrow">Relatórios</p><h1>${escapeReportHtml(title)}</h1><p class="muted">${escapeReportHtml(description)}</p></div>
+      <span class="readonly-pill">Somente leitura</span>
+    </section>`;
+}
+
+export function renderReportViewNavigation(selected: ReportsView, profileId?: string): string {
+  const suffix = profileId ? `&profileId=${encodeURIComponent(profileId)}` : "";
+  return `
+    <nav class="report-view-tabs" aria-label="Visões de relatórios">
+      <a href="/relatorios?view=category-evolution${suffix}"${selected === "category-evolution" ? ' aria-current="page"' : ""}>Evolução por categoria</a>
+      <a href="/relatorios?view=installments${suffix}"${selected === "installments" ? ' aria-current="page"' : ""}>Parcelas consolidadas</a>
+    </nav>`;
+}
+
+export function renderReportState(
+  state: "empty" | "filter-error" | "api-error",
+  title: string,
+  description: string,
+): string {
+  return `<section class="panel report-state report-state-${state}" data-report-state="${state}" role="${state === "empty" ? "status" : "alert"}"><strong>${escapeReportHtml(title)}</strong><p class="muted">${escapeReportHtml(description)}</p></section>`;
+}
+
+export function renderReportsShell(content: string): string {
+  return renderAuthenticatedShellDocument({
+    activePathname: "/relatorios",
+    content,
+    currentLabel: "Relatórios",
+    styles: reportPageStyles(),
+  });
+}
+
+export function escapeReportHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
