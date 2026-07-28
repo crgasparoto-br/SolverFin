@@ -96,7 +96,36 @@ jobs:
         run: npm run test --workspace @solverfin/api
 
       - name: Test web
-        run: npm run test --workspace @solverfin/web
+        id: web_tests
+        continue-on-error: true
+        shell: bash
+        run: |
+          status=0
+          for attempt in 1 2 3; do
+            echo "Running web test attempt ${attempt}"
+            if npm run test --workspace @solverfin/web > "web-test-attempt-${attempt}.log" 2>&1; then
+              echo "attempt ${attempt}: success" | tee -a web-test-summary.log
+            else
+              status=$?
+              echo "attempt ${attempt}: failure (${status})" | tee -a web-test-summary.log
+              tail -n 200 "web-test-attempt-${attempt}.log"
+              break
+            fi
+          done
+          echo "exit_code=${status}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload web test output
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-test-output
+          path: |
+            web-test-summary.log
+            web-test-attempt-*.log
+          if-no-files-found: error
+
+      - name: Propagate web test result
+        if: steps.web_tests.outputs.exit_code != '0'
+        run: exit 1
 
       - name: Test AI package
         run: npm run test --workspace @solverfin/ai
