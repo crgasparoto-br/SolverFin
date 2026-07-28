@@ -26,6 +26,7 @@ describe("dev-server route contract", () => {
 
   it("redirects active legacy /app routes to canonical private paths", () => {
     for (const route of listPrivateShellRoutes()) {
+      if (route.path === "/remuneracao-contas") continue;
       const legacyPath = route.path === "/dashboard" ? "/app" : `/app${route.path}`;
 
       assert.deepEqual(resolveRoute(legacyPath, true), {
@@ -69,21 +70,19 @@ describe("dev-server route contract", () => {
     });
   });
 
-  it("keeps remuneration as an available canonical route", () => {
-    assert.deepEqual(resolveRoute("/remuneracao-contas", true), {
-      statusCode: 200,
-      kind: "placeholder",
-    });
-    assert.deepEqual(resolveRoute("/remuneracao-contas", false), {
-      statusCode: 302,
-      kind: "login",
-      location: "/login",
-    });
-    assert.deepEqual(resolveRoute("/app/remuneracao-contas", true), {
-      statusCode: 302,
-      kind: "dashboard",
-      location: "/remuneracao-contas",
-    });
+  it("redirects the retired remuneration page to accounts and cards", () => {
+    for (const retiredPath of ["/remuneracao-contas", "/app/remuneracao-contas"] as const) {
+      assert.deepEqual(resolveRoute(retiredPath, true), {
+        statusCode: 302,
+        kind: "placeholder",
+        location: "/contas-cartoes",
+      });
+      assert.deepEqual(resolveRoute(retiredPath, false), {
+        statusCode: 302,
+        kind: "login",
+        location: "/login",
+      });
+    }
   });
 
   it("resolves public and private entry points by session state", () => {
