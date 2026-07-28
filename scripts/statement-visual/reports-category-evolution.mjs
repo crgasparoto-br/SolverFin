@@ -48,10 +48,7 @@ await writeFile(
   join(outputDir, "reports-category-evolution.json"),
   `${JSON.stringify(report, null, 2)}\n`,
 );
-await writeFile(
-  join(outputDir, "REPORTS-CATEGORY-EVOLUTION.md"),
-  renderMarkdown(report),
-);
+await writeFile(join(outputDir, "REPORTS-CATEGORY-EVOLUTION.md"), renderMarkdown(report));
 
 if (failures.length > 0) {
   for (const failure of failures) console.error(`- ${failure.message}`);
@@ -141,13 +138,29 @@ async function validateReadyDesktop(cdp, month) {
   await screenshot(cdp, join(outputDir, "reports-category-evolution-desktop.png"));
   screenshots.push("reports-category-evolution-desktop.png");
 
-  check(measurements.state === "ready", "Reports desktop did not render the ready state", measurements);
+  check(
+    measurements.state === "ready",
+    "Reports desktop did not render the ready state",
+    measurements,
+  );
   check(measurements.tableCount >= 1, "Reports desktop rendered no semantic table", measurements);
-  check(measurements.columnHeaders >= 4, "Reports desktop has incomplete column headers", measurements);
+  check(
+    measurements.columnHeaders >= 4,
+    "Reports desktop has incomplete column headers",
+    measurements,
+  );
   check(measurements.rowHeaders >= 3, "Reports desktop has incomplete row headers", measurements);
   check(measurements.headerSticky, "Reports desktop header is not sticky", measurements);
-  check(measurements.descriptionSticky, "Reports desktop description column is not sticky", measurements);
-  check(measurements.scrollerTabIndex === 0, "Reports matrix is not keyboard focusable", measurements);
+  check(
+    measurements.descriptionSticky,
+    "Reports desktop description column is not sticky",
+    measurements,
+  );
+  check(
+    measurements.scrollerTabIndex === 0,
+    "Reports matrix is not keyboard focusable",
+    measurements,
+  );
   check(measurements.pageFitsViewport, "Reports desktop leaks horizontal overflow", measurements);
   return { viewport: "1440x900", measurements, screenshot: screenshots.at(-1) };
 }
@@ -167,8 +180,16 @@ async function validateReadyMobile(cdp, month) {
 
   check(measurements.viewportWidth === 390, "Reports mobile viewport is not 390px", measurements);
   check(measurements.pageFitsViewport, "Reports mobile page has horizontal overflow", measurements);
-  check(measurements.tableScrollable, "Reports mobile matrix is not horizontally scrollable", measurements);
-  check(measurements.scrollerFocused, "Reports mobile matrix did not accept keyboard focus", measurements);
+  check(
+    measurements.tableScrollable,
+    "Reports mobile matrix is not horizontally scrollable",
+    measurements,
+  );
+  check(
+    measurements.scrollerFocused,
+    "Reports mobile matrix did not accept keyboard focus",
+    measurements,
+  );
   check(measurements.filterColumns === 1, "Reports mobile filters are not stacked", measurements);
   return { viewport: "390x844", measurements, screenshot: screenshots.at(-1) };
 }
@@ -187,7 +208,11 @@ async function validateEmptyState(cdp) {
 
   check(measurements.state === "empty", "Reports empty state was not rendered", measurements);
   check(measurements.rowHeaders >= 3, "Reports empty state lost its principal rows", measurements);
-  check(measurements.hasAccessiblePeriod, "Reports empty state lost accessible period labels", measurements);
+  check(
+    measurements.hasAccessiblePeriod,
+    "Reports empty state lost accessible period labels",
+    measurements,
+  );
   check(!measurements.hasCurrencySymbol, "Reports empty state invented a currency", measurements);
   return { viewport: "1024x700", measurements, screenshot: screenshots.at(-1) };
 }
@@ -204,10 +229,18 @@ async function validateFilterError(cdp) {
   await screenshot(cdp, join(outputDir, "reports-category-evolution-filter-error.png"));
   screenshots.push("reports-category-evolution-filter-error.png");
 
-  check(measurements.intervalValue === "quarterly", "Invalid interval was not preserved", measurements);
+  check(
+    measurements.intervalValue === "quarterly",
+    "Invalid interval was not preserved",
+    measurements,
+  );
   check(measurements.startValue === "2026-13", "Invalid start was not preserved", measurements);
   check(measurements.periodsValue === "abc", "Invalid periods were not preserved", measurements);
-  check(measurements.invalidControls >= 3, "Invalid controls are not identified accessibly", measurements);
+  check(
+    measurements.invalidControls >= 3,
+    "Invalid controls are not identified accessibly",
+    measurements,
+  );
   return { viewport: "1024x700", measurements, screenshot: screenshots.at(-1) };
 }
 

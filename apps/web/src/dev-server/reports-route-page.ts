@@ -216,9 +216,7 @@ function renderEvolutionFilterForm(filters: EvolutionFilterFormValues): string {
   const maxPeriods = INTERVAL_LIMITS[filters.interval].maxPeriods;
   const periodsInputType = filters.invalid.periods ? "text" : "number";
   const periodsConstraints =
-    periodsInputType === "number"
-      ? ` inputmode="numeric" min="1" max="${maxPeriods}"`
-      : "";
+    periodsInputType === "number" ? ` inputmode="numeric" min="1" max="${maxPeriods}"` : "";
   return `
     <section class="panel report-filter-panel" aria-label="Filtros da evolução por categoria">
       <form class="report-filters evolution-filters" method="get" action="/relatorios">
@@ -304,7 +302,7 @@ function renderNeutralSeriesRow(
 }
 
 function renderNeutralValueCell(): string {
-  return '<td><strong>0</strong><span>—</span></td>';
+  return "<td><strong>0</strong><span>—</span></td>";
 }
 
 function renderCategoryRows(
@@ -397,7 +395,8 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
   const invalidStart =
     requestedStart !== null &&
     (!isEvolutionStartValid(interval, requestedStart) ||
-      (validRequestedPeriods && !isEvolutionEndRepresentable(interval, requestedStart, periodsForDefault)));
+      (validRequestedPeriods &&
+        !isEvolutionEndRepresentable(interval, requestedStart, periodsForDefault)));
 
   return {
     interval,
