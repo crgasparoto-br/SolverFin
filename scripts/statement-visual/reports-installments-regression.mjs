@@ -194,7 +194,7 @@ function fixtureExpression() {
     );
     if (postedInstallment?.transaction?.id) {
       await request("/api/transactions/" + postedInstallment.transaction.id, "PATCH", {
-        status: "posted"
+        status: "reconciled"
       });
     }
 
