@@ -250,25 +250,28 @@ async function readJsonBody(request: IncomingMessage): Promise<unknown> {
     return undefined;
   }
 
-  const rawBody = Buffer.concat(chunks).toString("utf8");
+  const raw = Buffer.concat(chunks).toString("utf8").trim();
+
+  if (!raw) {
+    return undefined;
+  }
 
   try {
-    return JSON.parse(rawBody) as unknown;
+    return JSON.parse(raw);
   } catch {
     throw Object.assign(new Error("Request body must be valid JSON."), {
-      code: "API_REQUEST_BODY_INVALID",
+      code: "API_REQUEST_BODY_INVALID_JSON",
       statusCode: 400,
     });
   }
 }
 
-function normalizeHeaders(
-  headers: IncomingMessage["headers"],
-): Readonly<Record<string, string | undefined>> {
-  return Object.fromEntries(
-    Object.entries(headers).map(([name, value]) => [
-      name,
-      Array.isArray(value) ? value.join(",") : value,
-    ]),
-  );
+function normalizeHeaders(headers: IncomingMessage["headers"]): Record<string, string | undefined> {
+  const normalized: Record<string, string | undefined> = {};
+
+  for (const [key, value] of Object.entries(headers)) {
+    normalized[key.toLowerCase()] = Array.isArray(value) ? value.join(", ") : value;
+  }
+
+  return normalized;
 }
