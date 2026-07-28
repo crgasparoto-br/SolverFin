@@ -1,8 +1,20 @@
+import { spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const outputDir =
   process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+
+await mkdir(outputDir, { recursive: true });
+const prettierCheck = spawnSync(
+  "pnpm",
+  ["exec", "prettier", ".", "--check"],
+  { encoding: "utf8" },
+);
+await writeFile(
+  join(outputDir, "prettier-check.log"),
+  `${prettierCheck.stdout}${prettierCheck.stderr}`,
+);
 
 try {
   await import("./statement-visual/main.mjs");
