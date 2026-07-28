@@ -29,6 +29,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/API_PAYABLES_RECEIVABLES.md`
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
+- `docs/API_REPORTS.md`
 - PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414 e #531.
 
 ## Decisao atual sobre pagar/receber
@@ -133,7 +134,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - UI: Parcial/Feito para revisao operacional via Inbox.
 - Testes: Parcial.
 - Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
-- Nota: a varredura cria candidaturas idempotentes com vínculo estruturado. A Inbox permite aprovar/rejeitar; duplicidade rejeita a linha de origem e conciliação atualiza o lançamento alvo e resolve a origem atomicamente.
+- Nota: a varredura cria candidaturas idempotentes com vínculo estruturado. A Inbox permite aprovar/rejeitar; duplicidade rejeita a linha de origem e conciliação atualiza o lancamento alvo e resolve a origem atomicamente.
 
 ### Conciliacao
 
@@ -176,9 +177,11 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 ### Relatorios
 
-- UI: Parcial/Feito para a primeira visao de parcelas consolidadas.
-- API/dominio especifico: Parcial; a tela usa `/api/installments` com filtros por periodo, cartao, categoria e status.
-- Nota: `/relatorios` substitui o placeholder por uma consulta somente leitura de parcelas com indicadores de abertas/planejadas, postadas/fechadas, vencidas, futuras e total mensal, alem de agrupamentos por mes, cartao e categoria. Ainda faltam relatorios financeiros mais amplos para Dashboard, Extrato, Orcamentos, importacao e sugestoes revisaveis.
+- UI: Feito para Evolucao por categoria e Parcelas consolidadas em `/relatorios`.
+- API/dominio especifico: Feito para `GET /api/reports/category-evolution`; parcelas continuam usando `/api/installments`.
+- Testes: unitarios e web cobrem periodos, calculos, hierarquia, moedas, filtros, estados SSR e regressao de parcelas; integracao PostgreSQL permanece no gate geral do repositorio.
+- Documentacao: Feito em `docs/REPORTS.md` e `docs/API_REPORTS.md`.
+- Nota: a evolucao agrega `Transaction` realizada por `occurredOn`, tenant, categoria e moeda, sem conversao ou dupla contagem. A selecao de visao e os filtros ficam na URL, e a interface permanece somente leitura.
 
 ### Configuracoes
 
@@ -259,6 +262,9 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 ### Relatorios (`/relatorios`)
 
+- Consultar evolucao por categoria: Sim, por intervalo mensal, anual ou anual com inicio movel.
 - Consultar parcelas por periodo: Sim.
-- Filtrar por cartao, categoria e status: Sim, conforme filtros aceitos pela API de parcelas.
-- Ver indicadores consolidados: Sim, para abertas/planejadas, postadas/fechadas, vencidas, futuras e total mensal.
+- Filtrar evolucao por inicio e quantidade de periodos: Sim.
+- Filtrar parcelas por cartao, categoria e status: Sim, conforme filtros aceitos pela API de parcelas.
+- Ver moedas separadas, totais, medias, percentuais e hierarquia atual: Sim.
+- Ver indicadores consolidados de parcelas: Sim, para abertas/planejadas, postadas/fechadas e total mensal.
