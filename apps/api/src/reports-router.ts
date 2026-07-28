@@ -21,7 +21,9 @@ export async function handleReportsApiRequest(
   const correlationId = resolveCorrelationId(request.headers);
 
   try {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest({
+      authorization: request.headers.authorization,
+    });
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -37,12 +39,6 @@ export async function handleReportsApiRequest(
     });
     return json(response.statusCode, response.body);
   }
-}
-
-function buildAuthHeaders(authorization: string | undefined): Headers {
-  const headers = new Headers();
-  if (authorization) headers.set("authorization", authorization);
-  return headers;
 }
 
 function mapDomainError(error: unknown): unknown {
