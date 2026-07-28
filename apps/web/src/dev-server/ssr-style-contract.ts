@@ -60,9 +60,14 @@ const recurrenceAuxiliaryProvider = cssProvider(
 const transactionRuntimeProviders = [
   markerProvider("runtime:list-sorting", "list-sorting-enhancement.js", "data-list-sorting-styles"),
   markerProvider(
+    "runtime:account-remuneration-statement",
+    "list-sorting-enhancement.js",
+    "data-account-remuneration-statement-styles",
+  ),
+  markerProvider(
     "runtime:account-remuneration-disclosure",
     "account-remuneration-disclosure-enhancement.js",
-    "data-account-remuneration-statement-styles",
+    "data-account-remuneration-disclosure-affordance",
   ),
   markerProvider(
     "runtime:transaction-group-modal",
