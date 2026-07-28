@@ -10,10 +10,10 @@ export function renderCategoryEvolutionRuntime(): string {
         const updateToggle = (button) => {
           const rowId = button.getAttribute('data-category-toggle') || '';
           const expanded = !collapsed.has(rowId);
-          const categoryName = button.getAttribute('data-category-name') || 'categoria';
+          const itemName = button.getAttribute('data-category-name') || 'categoria';
           button.setAttribute('aria-expanded', String(expanded));
           const label = button.querySelector('[data-category-toggle-label]');
-          if (label) label.textContent = (expanded ? 'Recolher ' : 'Expandir ') + categoryName;
+          if (label) label.textContent = (expanded ? 'Recolher ' : 'Expandir ') + itemName;
           const icon = button.querySelector('[data-category-toggle-icon]');
           if (icon) icon.textContent = expanded ? '−' : '+';
         };
@@ -40,17 +40,28 @@ export function renderCategoryEvolutionRuntime(): string {
       }
 
       const form = document.querySelector('form.evolution-filters');
-      const accountSelect = form?.querySelector('select[name="accountId"]');
+      const originSelect = form?.querySelector('select[name="origin"]');
       form?.addEventListener('submit', () => {
-        if (accountSelect instanceof HTMLSelectElement && accountSelect.value === '') {
-          accountSelect.removeAttribute('name');
-        }
+        if (!(originSelect instanceof HTMLSelectElement)) return;
+        originSelect.removeAttribute('name');
+        form.querySelectorAll('[data-origin-filter]').forEach((input) => input.remove());
+        const separator = originSelect.value.indexOf(':');
+        if (separator < 1) return;
+        const kind = originSelect.value.slice(0, separator);
+        const id = originSelect.value.slice(separator + 1);
+        if (!id || (kind !== 'account' && kind !== 'card')) return;
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = kind === 'account' ? 'accountId' : 'cardId';
+        input.value = id;
+        input.setAttribute('data-origin-filter', 'true');
+        form.appendChild(input);
       });
 
       document.addEventListener('change', (event) => {
         const target = event.target;
         if (!(target instanceof HTMLSelectElement) || target.name !== 'profileId') return;
-        if (accountSelect instanceof HTMLSelectElement) accountSelect.value = '';
+        if (originSelect instanceof HTMLSelectElement) originSelect.value = '';
       });
 
       document.addEventListener('click', (event) => {
@@ -64,6 +75,8 @@ export function renderCategoryEvolutionRuntime(): string {
         const destinationProfileId = destination.searchParams.get('profileId') || '';
         if (destinationProfileId === currentProfileId) return;
         destination.searchParams.delete('accountId');
+        destination.searchParams.delete('cardId');
+        destination.searchParams.delete('origin');
         link.href = destination.pathname + destination.search + destination.hash;
       });
     })();
