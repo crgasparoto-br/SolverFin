@@ -13,11 +13,11 @@ A rota `/relatorios` possui duas visoes:
 - **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
 - **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais.
 
-Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start` ou `periods` selecionam evolucao. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
 
 ## Evolucao por categoria
 
-**Status:** disponivel desde a issue #542.
+**Status:** disponivel desde a issue #542 e ampliada pela issue #546.
 
 A visao apresenta uma matriz hierarquica por moeda, com coluna de descricao, colunas de periodo, **Media** e **Total**. A ordem e:
 
@@ -27,7 +27,7 @@ A visao apresenta uma matriz hierarquica por moeda, com coluna de descricao, col
 4. arvore de categorias de despesa;
 5. Resultado.
 
-### Intervalos
+### Intervalos e origem financeira
 
 - `monthly`: inicio `AAAA-MM`, 1 a 24 meses, padrao 12;
 - `annual`: inicio `AAAA`, 1 a 10 anos, padrao 3;
@@ -35,17 +35,36 @@ A visao apresenta uma matriz hierarquica por moeda, com coluna de descricao, col
 
 Quando o inicio esta ausente, a ultima coluna termina no mes ou ano UTC corrente. Periodos sem movimento permanecem na matriz. Parametros presentes e invalidos nunca sao corrigidos silenciosamente.
 
-O formulario funciona sem JavaScript. Ao recarregar com outro intervalo, o servidor apresenta o formato e os limites correspondentes. Quando um valor invalido e enviado, o estado de erro preserva literalmente `interval`, `start` e `periods` para que a pessoa possa identificar e corrigir a entrada original.
+O campo **Conta ou cartao** usa um unico seletor com dois grupos:
+
+- **Contas**: contas ativas do perfil, na ordem de `/api/accounts`;
+- **Cartoes de credito**: cartoes agrupadores `active` ou `blocked`, na ordem de `/api/credit-card-accounts`.
+
+A primeira opcao e **Todas as contas e cartoes**:
+
+- remove simultaneamente `accountId` e `cardId` e preserva o resultado geral anterior, inclusive movimentos elegiveis sem esses vinculos;
+- uma conta selecionada emite somente `accountId=<uuid>` e inclui movimentos cujo `Transaction.accountId` corresponda exatamente a ela;
+- um cartao selecionado emite somente `cardId=<uuid>` e inclui compras de todos os instrumentos fisicos, virtuais, principais e adicionais do agrupador;
+- instrumentos internos nao aparecem como opcoes separadas;
+- cartao bloqueado continua selecionavel para consulta do historico;
+- alterar intervalo, inicio ou quantidade preserva a origem selecionada;
+- trocar `profileId` remove os dois identificadores antes da navegacao;
+- se nao houver origem consultavel, permanece apenas **Todas as contas e cartoes**;
+- se contas ou cartoes falharem ao carregar, a pagina exibe `api-error`, sem lista parcial nem troca silenciosa da selecao.
+
+`accountId` e `cardId` sao mutuamente exclusivos. A interface nao gera ambos, e a web e a API rejeitam URLs externas que contenham os dois.
+
+O formulario funciona sem JavaScript. O valor unico `origin=account:<uuid>|card:<uuid>` produzido pelo seletor e redirecionado para a URL canonica com somente `accountId` ou `cardId`. Com JavaScript, o mesmo contrato e enviado diretamente. Quando um valor invalido e recebido, o estado de erro preserva a entrada para correcao.
 
 ### Fonte financeira
 
 A evolucao usa `Transaction.occurredOn` e inclui somente `income|expense` com `posted|reconciled`.
 
-Nao entram transferencias nem estados `planned`, `suggested` ou `voided`. `TransactionGroup`, `Installment`, `Invoice`, `Recurrence` e outros vinculos nao sao somados como movimentos adicionais. A API agrega no servidor e nao envia historico bruto ao frontend.
+Nao entram transferencias nem estados `planned`, `suggested` ou `voided`. `TransactionGroup`, `Installment`, `Invoice`, `Recurrence` e outros vinculos nao sao somados como movimentos adicionais. No recorte por cartao, o pagamento da fatura continua excluido e nao e somado novamente a compra. A API agrega no servidor e nao envia historico bruto ao frontend.
 
 Moedas diferentes geram blocos independentes, sem conversao ou soma entre codigos. Quando a API nao retorna bloco monetario porque o recorte nao possui movimentos, a matriz vazia apresenta zeros neutros e nao fabrica simbolo ou codigo de moeda.
 
-### Hierarquia
+### Hierarquia recolhivel
 
 - a categoria principal consolida seus valores diretos e descendentes;
 - filhos consolidam a propria subarvore;
@@ -55,6 +74,20 @@ Moedas diferentes geram blocos independentes, sem conversao ou soma entre codigo
 - lancamentos nao classificados aparecem em **Sem categoria**;
 - nos totalmente zerados sao ocultados;
 - irmaos sao ordenados por magnitude total e depois por nome `pt-BR`.
+
+As linhas **Receitas** e **Despesas** apresentam um controle quando sua secao possui categorias. O controle oculta ou exibe toda a arvore daquela secao sem alterar os valores consolidados da linha. Categorias com filhos tambem possuem controle proprio; categorias folha, secoes vazias e **Resultado** nao possuem controle.
+
+Todos os controles sao botoes com foco visivel, nome acessivel, `aria-expanded` e `aria-controls`. O nome da raiz identifica explicitamente a secao, como **Recolher receitas** ou **Expandir despesas**.
+
+Todas as arvores chegam expandidas no HTML SSR. O JavaScript apenas melhora a interacao:
+
+- recolher **Receitas** ou **Despesas** oculta a arvore completa e mantem a linha da secao visivel;
+- recolher uma categoria oculta toda a subarvore sem alterar os valores consolidados;
+- o estado de cada secao, categoria e bloco de moeda e independente;
+- fechar e reabrir uma secao ou ancestral preserva os estados recolhidos dos descendentes;
+- aplicar filtros ou recarregar reinicia tudo expandido;
+- o estado nao e persistido em URL, sessao ou armazenamento local;
+- sem JavaScript, todas as linhas permanecem visiveis e o formulario continua funcional.
 
 ### Valores e percentuais
 
@@ -67,9 +100,11 @@ Moedas diferentes geram blocos independentes, sem conversao ou soma entre codigo
 - denominador zero aparece como `—` na interface;
 - percentuais de Media e Total usam numeradores e denominadores agregados, nao media simples das colunas.
 
+Somente as celulas negativas da linha **Resultado**, inclusive **Media** e **Total**, usam o token semantico `--danger`. O sinal de menos permanece no texto; a cor e reforco visual, nao a unica indicacao. Zero, valores positivos e linhas de despesa nao recebem esse destaque por essa regra.
+
 ### SSR, responsividade e acessibilidade
 
-A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-error`. A matriz usa tabela semantica, cabecalhos de coluna/linha, rotulos acessiveis de periodo e sinal textual em todos os estados, inclusive no recorte vazio. Em desktop, cabecalho e descricao permanecem fixos durante a rolagem quando suportado. Em telas menores, filtros quebram em linhas e a matriz rola horizontalmente sem cortar dados.
+A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-error`. A matriz usa tabela semantica, cabecalhos de coluna/linha, rotulos acessiveis de periodo e sinal textual em todos os estados, inclusive no recorte vazio. Em desktop, cabecalho e descricao permanecem fixos durante a rolagem quando suportado. Em telas menores, filtros quebram em linhas e a matriz rola horizontalmente sem cortar dados. Botoes de secao e categoria operam por mouse e teclado e possuem foco visivel.
 
 ## Parcelas consolidadas
 
@@ -88,23 +123,36 @@ Abaixo dos indicadores, a tela preserva os agrupamentos por mes, cartao e catego
 ## Estados
 
 - `ready`: matriz ou parcelas renderizadas;
-- `empty`: cabecalhos e linhas principais preservados, com valores neutros quando nao existir moeda no recorte e orientacao para outro periodo;
+- `empty`: cabecalhos e linhas principais preservados, com valores neutros quando nao existir moeda no recorte e orientacao para outro periodo, conta ou cartao;
 - `filter-error`: erro local antes da consulta financeira, preservando os valores enviados para correcao;
-- `api-error`: falha segura da API, sem sucesso parcial.
+- `api-error`: falha segura ao carregar contas, cartoes ou relatorio, sem sucesso parcial.
 
 ## Fora do escopo atual
 
-Exportacao PDF/CSV/Excel, impressao formatada, graficos adicionais, comparacao com orcamento, drill-down, filtros avancados, conversao cambial e persistencia de preferencias fora da URL.
+Exportacao PDF/CSV/Excel, impressao formatada, graficos adicionais, comparacao com orcamento, drill-down, multiplas contas ou cartoes simultaneos, combinacao conta+cartao, conversao cambial e persistencia do estado da arvore.
 
 ## Testes
 
-A entrega cobre geracao dos tres intervalos, limites, totais, medias, percentuais, denominador zero, hierarquia multinivel, arquivadas, Sem categoria, moedas, tenant, estados SSR, preservacao de filtros invalidos e regressao integral da visao de parcelas. A fronteira publica da API compara perfil autorizado, inexistente, arquivado e requisicao sem autenticacao, alem de proteger os rotulos compactos no limite inferior de anos suportados. O gate visual em Chrome visita Evolucao por categoria e Parcelas consolidadas em desktop e mobile e registra os estados preenchido, vazio e de erro de filtro.
+A entrega cobre geracao dos tres intervalos, limites, totais, medias, percentuais, denominador zero, hierarquia multinivel, arquivadas, Sem categoria, moedas, tenant, estados SSR, preservacao de filtros invalidos e regressao integral da visao de parcelas.
+
+A issue #546 acrescenta testes para:
+
+- conta ativa, conta sem movimentos, conta arquivada/inexistente/fora do perfil e correspondencia exata de `accountId`;
+- cartao `active` ou `blocked`, cartao sem movimentos, arquivado/inexistente/fora do perfil, varios instrumentos e instrumento arquivado com historico;
+- pagamento de fatura excluido do recorte por cartao e ausencia de dupla contagem;
+- UUID invalido e presenca simultanea de `accountId` e `cardId`;
+- contrato **Todas as contas e cartoes**;
+- seletor SSR agrupado, falha de qualquer lista sem sucesso parcial e limpeza ao trocar perfil;
+- controles acessiveis nas secoes e categorias, hierarquia multinivel, independencia por bloco e preservacao do estado de descendentes;
+- destaque de **Resultado** negativo;
+- validacao Chrome em desktop e mobile com conta e cartao.
 
 ## Referencias
 
 - [`API_REPORTS.md`](./API_REPORTS.md)
 - [`API_TRANSACTIONS.md`](./API_TRANSACTIONS.md)
 - [`API_CATEGORIES.md`](./API_CATEGORIES.md)
+- [`CARDS.md`](./CARDS.md)
 - [`TENANT.md`](./TENANT.md)
 - [`STATUS_MATRIX.md`](./STATUS_MATRIX.md)
 - [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)

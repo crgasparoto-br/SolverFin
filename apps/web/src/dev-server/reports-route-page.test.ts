@@ -27,65 +27,29 @@ describe("reports route page", () => {
     );
   });
 
-  it("renders the category evolution matrix with explicit filters, tenant profile and accessible table", async () => {
+  it("renders the category evolution matrix with source groups and accessible table", async () => {
     const paths: string[] = [];
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
       paths.push(`${url.pathname}${url.search}`);
+      if (url.pathname === "/api/accounts") {
+        assert.equal(url.searchParams.get("status"), "active");
+        assert.equal(url.searchParams.get("profileId"), "profile-1");
+        return jsonResponse({ accounts: [] });
+      }
+      if (url.pathname === "/api/credit-card-accounts") {
+        assert.equal(url.searchParams.get("status"), "all");
+        assert.equal(url.searchParams.get("profileId"), "profile-1");
+        return jsonResponse({ creditCardAccounts: [] });
+      }
       assert.equal(url.pathname, "/api/reports/category-evolution");
       assert.equal(url.searchParams.get("interval"), "monthly");
       assert.equal(url.searchParams.get("start"), "2026-06");
       assert.equal(url.searchParams.get("periods"), "2");
       assert.equal(url.searchParams.get("profileId"), "profile-1");
-      return jsonResponse({
-        report: {
-          interval: "monthly",
-          start: "2026-06",
-          periodCount: 2,
-          periods: [
-            {
-              key: "2026-06",
-              label: "Jun/26",
-              accessibleLabel: "Junho de 2026",
-              startsOn: "2026-06-01",
-              endsOn: "2026-06-30",
-            },
-            {
-              key: "2026-07",
-              label: "Jul/26",
-              accessibleLabel: "Julho de 2026",
-              startsOn: "2026-07-01",
-              endsOn: "2026-07-31",
-            },
-          ],
-          currencyBlocks: [
-            {
-              currency: "BRL",
-              income: series([100000, 120000], [null, null]),
-              incomeCategories: [
-                {
-                  categoryId: "income-1",
-                  name: "Salário",
-                  status: "active",
-                  series: series([100000, 120000], [100, 100]),
-                  children: [],
-                },
-              ],
-              expense: series([40000, 30000], [40, 25]),
-              expenseCategories: [
-                {
-                  categoryId: "expense-1",
-                  name: "Moradia",
-                  status: "archived",
-                  series: series([40000, 30000], [100, 100]),
-                  children: [],
-                },
-              ],
-              result: series([60000, 90000], [60, 75]),
-            },
-          ],
-        },
-      });
+      assert.equal(url.searchParams.has("accountId"), false);
+      assert.equal(url.searchParams.has("cardId"), false);
+      return jsonResponse({ report: readyReport() });
     };
 
     const html = await renderReportsRoutePage(
@@ -96,9 +60,9 @@ describe("reports route page", () => {
       new Date("2026-07-28T12:00:00.000Z"),
     );
 
-    assert.equal(paths.length, 1);
+    assert.equal(paths.length, 3);
     assert.match(html, /data-report-state="ready"/);
-    assert.match(html, /<table class="evolution-table">/);
+    assert.match(html, /<table class="evolution-table"[^>]*>/);
     assert.match(html, /scope="col"/);
     assert.match(html, /scope="row"/);
     assert.match(html, /Junho de 2026/);
@@ -109,14 +73,15 @@ describe("reports route page", () => {
     assert.match(html, /Resultado/);
     assert.match(html, /name="view" value="category-evolution"/);
     assert.match(html, /name="profileId" value="profile-1"/);
+    assert.match(html, /<select id="report-origin" name="origin"/);
+    assert.match(html, /<option value="" selected>Todas as contas e cartões<\/option>/);
+    assert.match(html, /<optgroup label="Contas">/);
+    assert.match(html, /<optgroup label="Cartões de crédito">/);
     assert.match(
       html,
       /href="\/relatorios\?view=category-evolution&interval=annual&profileId=profile-1"/,
     );
-    assert.doesNotMatch(
-      html,
-      /href="\/relatorios\?view=category-evolution&interval=annual[^"]*(start|periods)=/,
-    );
+    assert.doesNotMatch(html, /href="\/relatorios\?view=category-evolution[^"]*(start|periods)=/);
   });
 
   it("preserves raw invalid filters in the correction form without requesting the API", async () => {
@@ -160,35 +125,38 @@ describe("reports route page", () => {
       invalidPeriods,
       /id="report-periods" type="text" name="periods" value="abc" aria-invalid="true" data-invalid-filter="periods"/,
     );
+
+    const invalidAccount = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&accountId=invalid",
+      ),
+    );
+    assert.match(invalidAccount, /data-report-state="filter-error"/);
+    assert.match(invalidAccount, /value="account:invalid" selected>Conta selecionada indisponível/);
+    assert.match(invalidAccount, /data-invalid-filter="origin"/);
+
+    const invalidCard = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&cardId=invalid",
+      ),
+    );
+    assert.match(invalidCard, /data-report-state="filter-error"/);
+    assert.match(invalidCard, /value="card:invalid" selected>Cartão selecionado indisponível/);
+    assert.match(invalidCard, /data-invalid-filter="origin"/);
     assert.equal(calls, 0);
   });
 
   it("renders an accessible currency-neutral matrix when the period has no movements", async () => {
-    globalThis.fetch = async (): Promise<Response> =>
-      jsonResponse({
-        report: {
-          interval: "monthly",
-          start: "2026-06",
-          periodCount: 2,
-          periods: [
-            {
-              key: "2026-06",
-              label: "Jun/26",
-              accessibleLabel: "Junho de 2026",
-              startsOn: "2026-06-01",
-              endsOn: "2026-06-30",
-            },
-            {
-              key: "2026-07",
-              label: "Jul/26",
-              accessibleLabel: "Julho de 2026",
-              startsOn: "2026-07-01",
-              endsOn: "2026-07-31",
-            },
-          ],
-          currencyBlocks: [],
-        },
-      });
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input));
+      if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (url.pathname === "/api/credit-card-accounts") {
+        return jsonResponse({ creditCardAccounts: [] });
+      }
+      return jsonResponse({ report: emptyReport() });
+    };
 
     const html = await renderReportsRoutePage(
       "token",
@@ -209,17 +177,14 @@ describe("reports route page", () => {
   });
 
   it("renders an API error without presenting a partial report", async () => {
-    globalThis.fetch = async (): Promise<Response> =>
-      new Response(
-        JSON.stringify({
-          error: {
-            code: "API_UNEXPECTED_ERROR",
-            message: "Não foi possível concluir a ação. Tente novamente.",
-            correlationId: "corr-report-test",
-          },
-        }),
-        { status: 500, headers: { "content-type": "application/json" } },
-      );
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input));
+      if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (url.pathname === "/api/credit-card-accounts") {
+        return jsonResponse({ creditCardAccounts: [] });
+      }
+      return errorResponse();
+    };
 
     const html = await renderReportsRoutePage(
       "token",
@@ -231,6 +196,27 @@ describe("reports route page", () => {
     assert.match(html, /data-report-state="api-error"/);
     assert.doesNotMatch(html, /data-report-state="ready"/);
     assert.doesNotMatch(html, /class="currency-report-list"/);
+  });
+
+  it("stops safely when either source list cannot be loaded", async () => {
+    let reportCalls = 0;
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input));
+      if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (url.pathname === "/api/reports/category-evolution") reportCalls += 1;
+      return errorResponse();
+    };
+
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&cardId=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      ),
+    );
+
+    assert.match(html, /Não foi possível carregar contas e cartões/);
+    assert.match(html, /value="card:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" selected/);
+    assert.equal(reportCalls, 0);
   });
 
   it("preserves all consolidated installment indicators, groupings and explicit tenant navigation", async () => {
@@ -245,69 +231,35 @@ describe("reports route page", () => {
         assert.equal(url.searchParams.get("profileId"), "profile-1");
         return jsonResponse({
           installments: [
-            {
-              id: "i-posted",
-              status: "posted",
-              sequenceNumber: 1,
-              totalInstallments: 2,
-              dueOn: yesterday,
-              amountMinor: 15000,
-              currency: "BRL",
-              transaction: {
-                id: "t-posted",
-                description: "Notebook",
-                status: "posted",
-              },
-              card: { id: "card-1", name: "Principal", status: "active" },
-              category: {
-                id: "cat-tech",
-                name: "Tecnologia",
-                kind: "expense",
-                status: "active",
-              },
-            },
-            {
-              id: "i-overdue",
-              status: "planned",
-              sequenceNumber: 1,
-              totalInstallments: 1,
-              dueOn: yesterday,
-              amountMinor: 5000,
-              currency: "BRL",
-              recurrence: {
-                id: "r-overdue",
-                description: "Assinatura",
-                status: "active",
-              },
-              card: { id: "card-1", name: "Principal", status: "active" },
-              category: {
-                id: "cat-subscription",
-                name: "Assinaturas",
-                kind: "expense",
-                status: "active",
-              },
-            },
-            {
-              id: "i-future",
-              status: "planned",
-              sequenceNumber: 1,
-              totalInstallments: 1,
-              dueOn: tomorrow,
-              amountMinor: 7000,
-              currency: "BRL",
-              recurrence: {
-                id: "r-future",
-                description: "Curso",
-                status: "active",
-              },
-              card: { id: "card-2", name: "Reserva", status: "active" },
-              category: {
-                id: "cat-tech",
-                name: "Tecnologia",
-                kind: "expense",
-                status: "active",
-              },
-            },
+            installment(
+              "i-posted",
+              "posted",
+              yesterday,
+              15000,
+              "Notebook",
+              "Principal",
+              "Tecnologia",
+            ),
+            installment(
+              "i-overdue",
+              "planned",
+              yesterday,
+              5000,
+              "Assinatura",
+              "Principal",
+              "Assinaturas",
+              true,
+            ),
+            installment(
+              "i-future",
+              "planned",
+              tomorrow,
+              7000,
+              "Curso",
+              "Reserva",
+              "Tecnologia",
+              true,
+            ),
           ],
         });
       }
@@ -345,6 +297,97 @@ describe("reports route page", () => {
   });
 });
 
+function readyReport() {
+  return {
+    interval: "monthly",
+    start: "2026-06",
+    periodCount: 2,
+    periods: periods(),
+    currencyBlocks: [
+      {
+        currency: "BRL",
+        income: series([100000, 120000], [null, null]),
+        incomeCategories: [category("income-1", "Salário", "active", [100000, 120000], [100, 100])],
+        expense: series([40000, 30000], [40, 25]),
+        expenseCategories: [
+          category("expense-1", "Moradia", "archived", [40000, 30000], [100, 100]),
+        ],
+        result: series([60000, 90000], [60, 75]),
+      },
+    ],
+  };
+}
+
+function emptyReport() {
+  return {
+    interval: "monthly",
+    start: "2026-06",
+    periodCount: 2,
+    periods: periods(),
+    currencyBlocks: [],
+  };
+}
+
+function periods() {
+  return [
+    {
+      key: "2026-06",
+      label: "Jun/26",
+      accessibleLabel: "Junho de 2026",
+      startsOn: "2026-06-01",
+      endsOn: "2026-06-30",
+    },
+    {
+      key: "2026-07",
+      label: "Jul/26",
+      accessibleLabel: "Julho de 2026",
+      startsOn: "2026-07-01",
+      endsOn: "2026-07-31",
+    },
+  ];
+}
+
+function category(
+  categoryId: string,
+  name: string,
+  status: string,
+  amounts: number[],
+  percentages: Array<number | null>,
+) {
+  return { categoryId, name, status, series: series(amounts, percentages), children: [] };
+}
+
+function installment(
+  id: string,
+  status: string,
+  dueOn: string,
+  amountMinor: number,
+  description: string,
+  cardName: string,
+  categoryName: string,
+  recurring = false,
+) {
+  return {
+    id,
+    status,
+    sequenceNumber: 1,
+    totalInstallments: status === "posted" ? 2 : 1,
+    dueOn,
+    amountMinor,
+    currency: "BRL",
+    ...(recurring
+      ? { recurrence: { id: `r-${id}`, description, status: "active" } }
+      : { transaction: { id: `t-${id}`, description, status } }),
+    card: { id: `card-${cardName}`, name: cardName, status: "active" },
+    category: {
+      id: `cat-${categoryName}`,
+      name: categoryName,
+      kind: "expense",
+      status: "active",
+    },
+  };
+}
+
 function series(amounts: number[], percentages: Array<number | null>) {
   const totalMinor = amounts.reduce((sum, amount) => sum + amount, 0);
   return {
@@ -364,4 +407,17 @@ function jsonResponse(body: unknown): Response {
     status: 200,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
+}
+
+function errorResponse(): Response {
+  return new Response(
+    JSON.stringify({
+      error: {
+        code: "API_UNEXPECTED_ERROR",
+        message: "Não foi possível concluir a ação. Tente novamente.",
+        correlationId: "corr-report-test",
+      },
+    }),
+    { status: 500, headers: { "content-type": "application/json" } },
+  );
 }

@@ -13,10 +13,14 @@ export function renderReportHeading(title: string, description: string): string 
 
 export function renderReportViewNavigation(selected: ReportsView, profileId?: string): string {
   const suffix = profileId ? `&profileId=${encodeURIComponent(profileId)}` : "";
+  const categoryHref =
+    selected === "category-evolution" ? "#" : `/relatorios?view=category-evolution${suffix}`;
+  const installmentsHref =
+    selected === "installments" ? "#" : `/relatorios?view=installments${suffix}`;
   return `
     <nav class="report-view-tabs" aria-label="Visões de relatórios">
-      <a href="/relatorios?view=category-evolution${suffix}"${selected === "category-evolution" ? ' aria-current="page"' : ""}>Evolução por categoria</a>
-      <a href="/relatorios?view=installments${suffix}"${selected === "installments" ? ' aria-current="page"' : ""}>Parcelas consolidadas</a>
+      <a href="${categoryHref}"${selected === "category-evolution" ? ' aria-current="page"' : ""}>Evolução por categoria</a>
+      <a href="${installmentsHref}"${selected === "installments" ? ' aria-current="page"' : ""}>Parcelas consolidadas</a>
     </nav>`;
 }
 

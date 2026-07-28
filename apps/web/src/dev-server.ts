@@ -26,6 +26,7 @@ import {
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
+import { resolveReportsCanonicalLocation } from "./dev-server/reports-canonical-location.js";
 import { renderReportsRoutePage } from "./dev-server/reports-route-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
 import { getSessionTokenFromRequest } from "./dev-server/session.js";
@@ -187,6 +188,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/relatorios" && token) {
+    const canonicalLocation = resolveReportsCanonicalLocation(url);
+    if (canonicalLocation) {
+      response.writeHead(302, { location: canonicalLocation });
+      response.end();
+      return;
+    }
+
     sendHtml(response, 200, await renderReportsRoutePage(token, url));
     return;
   }

@@ -1,6 +1,7 @@
 import { formatMinorCurrency } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { renderCategoryEvolutionRuntime } from "./reports-category-evolution-runtime.js";
 import { renderInstallmentsView } from "./reports-installments-view.js";
 import {
   escapeReportHtml as escapeHtml,
@@ -24,6 +25,8 @@ interface EvolutionFilters {
   start: string;
   periods: number;
   profileId?: string;
+  accountId?: string;
+  cardId?: string;
 }
 
 interface EvolutionFilterFormValues {
@@ -32,11 +35,28 @@ interface EvolutionFilterFormValues {
   start: string;
   periods: string;
   profileId?: string;
+  accountId: string;
+  cardId: string;
   invalid: {
     interval: boolean;
     start: boolean;
     periods: boolean;
+    accountId: boolean;
+    cardId: boolean;
+    sourceConflict: boolean;
   };
+}
+
+interface ReportAccount {
+  id: string;
+  name: string;
+  status: string;
+}
+
+interface ReportCreditCardAccount {
+  id: string;
+  name: string;
+  status: string;
 }
 
 interface ReportCell {
@@ -81,13 +101,19 @@ interface CategoryEvolutionReport {
   }>;
 }
 
+interface RenderedCategoryBranch {
+  html: string;
+  rowIds: string[];
+}
+
 const LEGACY_FILTERS = ["month", "status", "cardId", "categoryId"] as const;
-const EVOLUTION_FILTERS = ["interval", "start", "periods"] as const;
+const EVOLUTION_FILTERS = ["interval", "start", "periods", "accountId"] as const;
 const INTERVAL_LIMITS: Record<ReportInterval, { defaultPeriods: number; maxPeriods: number }> = {
   monthly: { defaultPeriods: 12, maxPeriods: 24 },
   annual: { defaultPeriods: 3, maxPeriods: 10 },
   "rolling-year": { defaultPeriods: 3, maxPeriods: 10 },
 };
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function renderReportsRoutePage(
   token: string,
@@ -140,31 +166,70 @@ async function renderCategoryEvolutionView(
   try {
     filters = readEvolutionFilters(url, referenceDate);
   } catch (error) {
+    const draft = readEvolutionFilterDraft(url, referenceDate);
     return renderShell(
       renderHeading(
         "Evolução por categoria",
         "Acompanhe receitas, despesas e resultado ao longo do tempo.",
       ) +
-        renderViewNavigation("category-evolution", url.searchParams.get("profileId") ?? undefined) +
-        renderEvolutionFilterForm(readEvolutionFilterDraft(url, referenceDate)) +
+        renderViewNavigation("category-evolution", draft.profileId) +
+        renderEvolutionFilterForm(draft, [], []) +
         renderState(
           "filter-error",
           "Revise os filtros",
           error instanceof Error ? error.message : "Os filtros informados são inválidos.",
-        ),
+        ) +
+        renderCategoryEvolutionRuntime(),
     );
   }
 
+  const heading = renderHeading(
+    "Evolução por categoria",
+    "Acompanhe receitas, despesas e resultado por período, moeda, conta ou cartão.",
+  );
+  const navigation = renderViewNavigation("category-evolution", filters.profileId);
+  const [accountsResult, cardsResult] = await Promise.all([
+    apiGet<{ accounts: ReportAccount[] }>(token, buildAccountsApiPath(filters.profileId)),
+    apiGet<{ creditCardAccounts: ReportCreditCardAccount[] }>(
+      token,
+      buildCreditCardAccountsApiPath(filters.profileId),
+    ),
+  ]);
+
+  if (!accountsResult.ok || !cardsResult.ok) {
+    const sourceError = !accountsResult.ok
+      ? accountsResult.error
+      : !cardsResult.ok
+        ? cardsResult.error
+        : "Não foi possível carregar as origens financeiras.";
+    return renderShell(
+      heading +
+        navigation +
+        renderEvolutionFilterForm(formValuesFromFilters(filters), [], []) +
+        renderState(
+          "api-error",
+          "Não foi possível carregar contas e cartões",
+          `${sourceError} Tente novamente antes de consultar o relatório.`,
+        ) +
+        renderCategoryEvolutionRuntime(),
+    );
+  }
+
+  const activeAccounts = accountsResult.data.accounts.filter(
+    (account) => account.status === "active",
+  );
+  const availableCards = cardsResult.data.creditCardAccounts.filter(
+    (card) => card.status === "active" || card.status === "blocked",
+  );
+  const form = renderEvolutionFilterForm(
+    formValuesFromFilters(filters),
+    activeAccounts,
+    availableCards,
+  );
   const reportResult = await apiGet<{ report: CategoryEvolutionReport }>(
     token,
     buildEvolutionApiPath(filters),
   );
-  const heading = renderHeading(
-    "Evolução por categoria",
-    "Acompanhe receitas, despesas e resultado por período e moeda.",
-  );
-  const navigation = renderViewNavigation("category-evolution", filters.profileId);
-  const form = renderEvolutionFilterForm(formValuesFromFilters(filters));
 
   if (!reportResult.ok) {
     return renderShell(
@@ -175,7 +240,8 @@ async function renderCategoryEvolutionView(
           "api-error",
           "Não foi possível carregar o relatório",
           `${reportResult.error} Revise os filtros ou tente novamente.`,
-        ),
+        ) +
+        renderCategoryEvolutionRuntime(),
     );
   }
 
@@ -188,9 +254,10 @@ async function renderCategoryEvolutionView(
         renderState(
           "empty",
           "Nenhum lançamento realizado no período",
-          "Os períodos continuam disponíveis. Ajuste o início ou a quantidade para consultar outro recorte.",
+          "Os períodos continuam disponíveis. Ajuste o início, a quantidade, a conta ou o cartão para consultar outro recorte.",
         ) +
-        renderEmptyEvolutionMatrix(report),
+        renderEmptyEvolutionMatrix(report) +
+        renderCategoryEvolutionRuntime(),
     );
   }
 
@@ -199,12 +266,17 @@ async function renderCategoryEvolutionView(
       navigation +
       form +
       `<div data-report-state="ready" class="currency-report-list">${report.currencyBlocks
-        .map((block) => renderCurrencyMatrix(report, block))
-        .join("")}</div>`,
+        .map((block, blockIndex) => renderCurrencyMatrix(report, block, blockIndex))
+        .join("")}</div>` +
+      renderCategoryEvolutionRuntime(),
   );
 }
 
-function renderEvolutionFilterForm(filters: EvolutionFilterFormValues): string {
+function renderEvolutionFilterForm(
+  filters: EvolutionFilterFormValues,
+  accounts: readonly ReportAccount[],
+  cards: readonly ReportCreditCardAccount[],
+): string {
   const startInputType = filters.invalid.start
     ? "text"
     : filters.interval === "annual"
@@ -217,9 +289,39 @@ function renderEvolutionFilterForm(filters: EvolutionFilterFormValues): string {
   const periodsInputType = filters.invalid.periods ? "text" : "number";
   const periodsConstraints =
     periodsInputType === "number" ? ` inputmode="numeric" min="1" max="${maxPeriods}"` : "";
+  const selectedOrigin = filters.accountId
+    ? `account:${filters.accountId}`
+    : filters.cardId
+      ? `card:${filters.cardId}`
+      : "";
+  const knownSelectedAccount = accounts.some((account) => account.id === filters.accountId);
+  const knownSelectedCard = cards.some((card) => card.id === filters.cardId);
+  const unavailableAccountOption =
+    filters.accountId && !knownSelectedAccount
+      ? `<option value="account:${escapeHtml(filters.accountId)}" selected>Conta selecionada indisponível</option>`
+      : "";
+  const unavailableCardOption =
+    filters.cardId && !knownSelectedCard
+      ? `<option value="card:${escapeHtml(filters.cardId)}" selected>Cartão selecionado indisponível</option>`
+      : "";
+  const accountOptions = accounts
+    .map(
+      (account) =>
+        `<option value="account:${escapeHtml(account.id)}"${account.id === filters.accountId ? " selected" : ""}>${escapeHtml(account.name)}</option>`,
+    )
+    .join("");
+  const cardOptions = cards
+    .map(
+      (card) =>
+        `<option value="card:${escapeHtml(card.id)}"${card.id === filters.cardId ? " selected" : ""}>${escapeHtml(card.name)}</option>`,
+    )
+    .join("");
+  const sourceInvalid =
+    filters.invalid.accountId || filters.invalid.cardId || filters.invalid.sourceConflict;
+
   return `
     <section class="panel report-filter-panel" aria-label="Filtros da evolução por categoria">
-      <form class="report-filters evolution-filters" method="get" action="/relatorios">
+      <form class="report-filters evolution-filters" method="get" action="/relatorios" data-current-profile-id="${escapeHtml(filters.profileId ?? "")}">
         <input type="hidden" name="view" value="category-evolution" />
         ${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
         <input type="hidden" name="interval" value="${escapeHtml(filters.intervalValue)}" />
@@ -230,11 +332,18 @@ function renderEvolutionFilterForm(filters: EvolutionFilterFormValues): string {
           ${intervalSwitchLink("rolling-year", "Anual com início móvel", filters)}
           ${filters.invalid.interval ? `<p class="filter-invalid-value" data-invalid-filter="interval">Valor informado: <code>${escapeHtml(filters.intervalValue)}</code></p>` : ""}
         </fieldset>
+        <label for="report-origin">Conta ou cartão
+          <select id="report-origin" name="origin"${sourceInvalid ? ' aria-invalid="true" data-invalid-filter="origin"' : ""}>
+            <option value=""${selectedOrigin ? "" : " selected"}>Todas as contas e cartões</option>
+            <optgroup label="Contas">${unavailableAccountOption}${accountOptions}</optgroup>
+            <optgroup label="Cartões de crédito">${unavailableCardOption}${cardOptions}</optgroup>
+          </select>
+        </label>
         <label for="report-start">Início${startControl}</label>
         <label for="report-periods">Período<input id="report-periods" type="${periodsInputType}"${periodsConstraints} name="periods" value="${escapeHtml(filters.periods)}"${filters.invalid.periods ? ' aria-invalid="true" data-invalid-filter="periods"' : ""} required /></label>
         <button type="submit">Carregar</button>
       </form>
-      <p class="filter-hint">Escolha outro intervalo para carregar campos e padrões compatíveis antes de ajustar o recorte.</p>
+      <p class="filter-hint">Todas as contas e cartões mantêm a visão geral. O estado de expansão da árvore reinicia ao aplicar filtros.</p>
     </section>`;
 }
 
@@ -245,6 +354,12 @@ function intervalSwitchLink(
 ): string {
   const params = new URLSearchParams({ view: "category-evolution", interval: value });
   if (filters.profileId) params.set("profileId", filters.profileId);
+  if (filters.accountId && !filters.invalid.accountId && !filters.invalid.sourceConflict) {
+    params.set("accountId", filters.accountId);
+  }
+  if (filters.cardId && !filters.invalid.cardId && !filters.invalid.sourceConflict) {
+    params.set("cardId", filters.cardId);
+  }
   return `<a href="/relatorios?${params.toString()}"${
     !filters.invalid.interval && value === filters.interval ? ' aria-current="page"' : ""
   }>${escapeHtml(label)}</a>`;
@@ -253,20 +368,53 @@ function intervalSwitchLink(
 function renderCurrencyMatrix(
   report: CategoryEvolutionReport,
   block: CategoryEvolutionReport["currencyBlocks"][number],
+  blockIndex: number,
 ): string {
+  const incomeSectionId = `report-section-${blockIndex}-income`;
+  const expenseSectionId = `report-section-${blockIndex}-expense`;
+  const incomeBranches = block.incomeCategories.map((node, index) =>
+    renderCategoryBranch(node, block.currency, "income", 1, blockIndex, [index], [incomeSectionId]),
+  );
+  const expenseBranches = block.expenseCategories.map((node, index) =>
+    renderCategoryBranch(
+      node,
+      block.currency,
+      "expense",
+      1,
+      blockIndex,
+      [index],
+      [expenseSectionId],
+    ),
+  );
+  const incomeRows = incomeBranches.map((branch) => branch.html).join("");
+  const expenseRows = expenseBranches.map((branch) => branch.html).join("");
+  const incomeRowIds = incomeBranches.flatMap((branch) => branch.rowIds);
+  const expenseRowIds = expenseBranches.flatMap((branch) => branch.rowIds);
+  const currencyId = `currency-${blockIndex}-${safeId(block.currency)}`;
+  const incomeToggle = renderTreeToggle(incomeSectionId, "receitas", incomeRowIds, "income");
+  const expenseToggle = renderTreeToggle(expenseSectionId, "despesas", expenseRowIds, "expense");
+
   return `
-    <section class="panel evolution-block" aria-labelledby="currency-${escapeHtml(block.currency)}">
-      <div class="section-heading"><div><p class="eyebrow">Moeda</p><h2 id="currency-${escapeHtml(block.currency)}">${escapeHtml(block.currency)}</h2></div><span>${report.periodCount} período${report.periodCount === 1 ? "" : "s"}</span></div>
+    <section class="panel evolution-block" aria-labelledby="${currencyId}">
+      <div class="section-heading"><div><p class="eyebrow">Moeda</p><h2 id="${currencyId}">${escapeHtml(block.currency)}</h2></div><span>${report.periodCount} período${report.periodCount === 1 ? "" : "s"}</span></div>
       <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução em ${escapeHtml(block.currency)}">
-        <table class="evolution-table">
+        <table class="evolution-table" data-category-tree="${blockIndex}">
           <thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods
             .map(renderPeriodHeader)
             .join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
           <tbody>
-            ${renderSeriesRow("Receitas", block.income, block.currency, "income", 0)}
-            ${block.incomeCategories.map((node) => renderCategoryRows(node, block.currency, "income", 1)).join("")}
-            ${renderSeriesRow("Despesas", block.expense, block.currency, "expense", 0)}
-            ${block.expenseCategories.map((node) => renderCategoryRows(node, block.currency, "expense", 1)).join("")}
+            ${renderSeriesRow("Receitas", block.income, block.currency, "income", 0, false, {
+              rowId: incomeSectionId,
+              ancestorRowIds: [],
+              toggle: incomeToggle,
+            })}
+            ${incomeRows}
+            ${renderSeriesRow("Despesas", block.expense, block.currency, "expense", 0, false, {
+              rowId: expenseSectionId,
+              ancestorRowIds: [],
+              toggle: expenseToggle,
+            })}
+            ${expenseRows}
             ${renderSeriesRow("Resultado", block.result, block.currency, "result", 0)}
           </tbody>
         </table>
@@ -305,16 +453,60 @@ function renderNeutralValueCell(): string {
   return "<td><strong>0</strong><span>—</span></td>";
 }
 
-function renderCategoryRows(
+function renderCategoryBranch(
   node: ReportCategoryNode,
   currency: string,
   kind: "income" | "expense",
   depth: number,
-): string {
-  return (
-    renderSeriesRow(node.name, node.series, currency, kind, depth, node.status === "archived") +
-    node.children.map((child) => renderCategoryRows(child, currency, kind, depth + 1)).join("")
+  blockIndex: number,
+  path: readonly number[],
+  ancestorRowIds: readonly string[],
+): RenderedCategoryBranch {
+  const rowId = `report-category-${blockIndex}-${kind}-${path.join("-")}`;
+  const childBranches = node.children.map((child, index) =>
+    renderCategoryBranch(
+      child,
+      currency,
+      kind,
+      depth + 1,
+      blockIndex,
+      [...path, index],
+      [...ancestorRowIds, rowId],
+    ),
   );
+  const descendantIds = childBranches.flatMap((branch) => branch.rowIds);
+  const toggle = renderTreeToggle(rowId, node.name, descendantIds);
+  const row = renderSeriesRow(
+    node.name,
+    node.series,
+    currency,
+    kind,
+    depth,
+    node.status === "archived",
+    {
+      rowId,
+      ancestorRowIds,
+      toggle,
+    },
+  );
+
+  return {
+    html: row + childBranches.map((branch) => branch.html).join(""),
+    rowIds: [rowId, ...descendantIds],
+  };
+}
+
+function renderTreeToggle(
+  rowId: string,
+  label: string,
+  descendantIds: readonly string[],
+  section?: "income" | "expense",
+): string {
+  if (descendantIds.length === 0) {
+    return '<span class="category-tree-spacer" aria-hidden="true"></span>';
+  }
+
+  return `<button class="category-tree-toggle" type="button" data-category-toggle="${rowId}" data-category-name="${escapeHtml(label)}"${section ? ` data-section-toggle="${section}"` : ""} aria-expanded="true" aria-controls="${descendantIds.join(" ")}"><span aria-hidden="true" data-category-toggle-icon>−</span><span class="sr-only" data-category-toggle-label>Recolher ${escapeHtml(label)}</span></button>`;
 }
 
 function renderSeriesRow(
@@ -324,9 +516,16 @@ function renderSeriesRow(
   kind: "income" | "expense" | "result",
   depth: number,
   archived = false,
+  tree?: { rowId: string; ancestorRowIds: readonly string[]; toggle: string },
 ): string {
-  return `<tr class="report-row report-row-${kind}${depth === 0 ? " report-section-row" : ""}">
-    <th scope="row" class="sticky-description" style="--report-depth:${depth}"><span>${escapeHtml(label)}</span>${archived ? "<small>Arquivada</small>" : ""}</th>
+  const treeAttributes = tree
+    ? ` id="${tree.rowId}" data-category-row="${tree.rowId}" data-tree-ancestors="${tree.ancestorRowIds.join(" ")}"`
+    : "";
+  const labelContent = tree
+    ? `<span class="report-category-label">${tree.toggle}<span>${escapeHtml(label)}</span></span>`
+    : `<span>${escapeHtml(label)}</span>`;
+  return `<tr class="report-row report-row-${kind}${depth === 0 ? " report-section-row" : ""}"${treeAttributes}>
+    <th scope="row" class="sticky-description" style="--report-depth:${depth}">${labelContent}${archived ? "<small>Arquivada</small>" : ""}</th>
     ${series.cells.map((cell) => renderValueCell(cell.amountMinor, cell.percentage, currency, kind)).join("")}
     ${renderValueCell(series.averageMinor, series.averagePercentage, currency, kind)}
     ${renderValueCell(series.totalMinor, series.totalPercentage, currency, kind)}
@@ -341,7 +540,8 @@ function renderValueCell(
 ): string {
   const presentedAmount = kind === "expense" ? -Math.abs(amountMinor) : amountMinor;
   const normalized = Object.is(presentedAmount, -0) ? 0 : presentedAmount;
-  return `<td><strong>${escapeHtml(formatMinorCurrency(normalized, { currency }))}</strong><span>${percentage === null ? "—" : `${formatPercentage(percentage)}%`}</span></td>`;
+  const negativeResult = kind === "result" && normalized < 0;
+  return `<td${negativeResult ? ' class="report-value-negative" data-negative-value="true"' : ""}><strong>${escapeHtml(formatMinorCurrency(normalized, { currency }))}</strong><span>${percentage === null ? "—" : `${formatPercentage(percentage)}%`}</span></td>`;
 }
 
 function formatPercentage(value: number): string {
@@ -353,6 +553,17 @@ function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
   const requestedInterval = url.searchParams.get("interval");
   if (requestedInterval !== null && !isInterval(requestedInterval)) {
     throw new Error("Intervalo inválido. Escolha mensal, anual ou anual com início móvel.");
+  }
+  if (draft.invalid.sourceConflict) {
+    throw new Error("Filtro inválido. Selecione somente uma conta ou um cartão de crédito.");
+  }
+  if (draft.invalid.accountId) {
+    throw new Error("Conta inválida. Selecione uma conta disponível ou Todas as contas e cartões.");
+  }
+  if (draft.invalid.cardId) {
+    throw new Error(
+      "Cartão inválido. Selecione um cartão disponível ou Todas as contas e cartões.",
+    );
   }
 
   const rawPeriods = draft.periods;
@@ -372,6 +583,8 @@ function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
     start: draft.start,
     periods,
     ...(draft.profileId ? { profileId: draft.profileId } : {}),
+    ...(draft.accountId ? { accountId: draft.accountId.toLowerCase() } : {}),
+    ...(draft.cardId ? { cardId: draft.cardId.toLowerCase() } : {}),
   };
 }
 
@@ -392,6 +605,10 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
   const requestedStart = url.searchParams.get("start");
   const start = requestedStart ?? deriveEvolutionStart(interval, periodsForDefault, referenceDate);
   const profileId = nonEmpty(url.searchParams.get("profileId"));
+  const requestedAccountId = url.searchParams.get("accountId");
+  const requestedCardId = url.searchParams.get("cardId");
+  const accountId = nonEmpty(requestedAccountId) ?? "";
+  const cardId = nonEmpty(requestedCardId) ?? "";
   const invalidStart =
     requestedStart !== null &&
     (!isEvolutionStartValid(interval, requestedStart) ||
@@ -404,10 +621,15 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
     start,
     periods,
     ...(profileId ? { profileId } : {}),
+    accountId,
+    cardId,
     invalid: {
       interval: requestedInterval !== null && !isInterval(requestedInterval),
       start: invalidStart,
       periods: requestedPeriods !== null && !validRequestedPeriods,
+      accountId: accountId !== "" && !UUID_PATTERN.test(accountId),
+      cardId: cardId !== "" && !UUID_PATTERN.test(cardId),
+      sourceConflict: requestedAccountId !== null && requestedCardId !== null,
     },
   };
 }
@@ -419,7 +641,16 @@ function formValuesFromFilters(filters: EvolutionFilters): EvolutionFilterFormVa
     start: filters.start,
     periods: String(filters.periods),
     ...(filters.profileId ? { profileId: filters.profileId } : {}),
-    invalid: { interval: false, start: false, periods: false },
+    accountId: filters.accountId ?? "",
+    cardId: filters.cardId ?? "",
+    invalid: {
+      interval: false,
+      start: false,
+      periods: false,
+      accountId: false,
+      cardId: false,
+      sourceConflict: false,
+    },
   };
 }
 
@@ -473,12 +704,26 @@ function addMonths(year: number, month: number, offset: number): { year: number;
   return { year: Math.floor(absolute / 12), month: (((absolute % 12) + 12) % 12) + 1 };
 }
 
+function buildAccountsApiPath(profileId: string | undefined): string {
+  const params = new URLSearchParams({ status: "active" });
+  if (profileId) params.set("profileId", profileId);
+  return `/api/accounts?${params.toString()}`;
+}
+
+function buildCreditCardAccountsApiPath(profileId: string | undefined): string {
+  const params = new URLSearchParams({ status: "all" });
+  if (profileId) params.set("profileId", profileId);
+  return `/api/credit-card-accounts?${params.toString()}`;
+}
+
 function buildEvolutionApiPath(filters: EvolutionFilters): string {
   return `/api/reports/category-evolution?${new URLSearchParams({
     interval: filters.interval,
     start: filters.start,
     periods: String(filters.periods),
     ...(filters.profileId ? { profileId: filters.profileId } : {}),
+    ...(filters.accountId ? { accountId: filters.accountId } : {}),
+    ...(filters.cardId ? { cardId: filters.cardId } : {}),
   }).toString()}`;
 }
 
@@ -488,4 +733,8 @@ function isInterval(value: string | null): value is ReportInterval {
 
 function nonEmpty(value: string | null): string | undefined {
   return value?.trim() || undefined;
+}
+
+function safeId(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "-");
 }
