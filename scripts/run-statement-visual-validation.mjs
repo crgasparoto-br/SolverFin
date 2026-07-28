@@ -1,8 +1,31 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+
+import { format } from "prettier";
 
 const outputDir =
   process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const formatSnapshotDir = join(outputDir, "format-snapshot");
+const formatSnapshotFiles = [
+  "apps/api/src/reports-router.ts",
+  "apps/api/src/category-evolution-report-router.integration.test.ts",
+  "apps/web/src/dev-server/reports-installments-view.ts",
+  "apps/web/src/dev-server/reports-route-page-styles.ts",
+  "apps/web/src/dev-server/reports-route-page.test.ts",
+  "docs/REPORTS.md",
+  "scripts/statement-visual/reports-installments-regression.mjs",
+  "scripts/run-statement-visual-validation.final.mjs",
+  "scripts/run-statement-visual-validation.mjs",
+];
+
+await mkdir(formatSnapshotDir, { recursive: true });
+for (const filepath of formatSnapshotFiles) {
+  const source = await readFile(filepath, "utf8");
+  const formatted = await format(source, { filepath });
+  const target = join(formatSnapshotDir, filepath);
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(target, formatted);
+}
 
 try {
   await import("./statement-visual/main.mjs");
