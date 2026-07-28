@@ -1,0 +1,61 @@
+from pathlib import Path
+
+page = Path("apps/web/src/dev-server/reports-route-page.ts")
+content = page.read_text()
+before = '''        <label for="report-interval">Intervalo<select id="report-interval" name="interval">
+          ${intervalOption("monthly", "Mensal", filters.interval)}
+          ${intervalOption("annual", "Anual", filters.interval)}
+          ${intervalOption("rolling-year", "Anual com início móvel", filters.interval)}
+        </select></label>
+        <label for="report-start">Início${startControl}</label>
+        <label for="report-periods">Período<input id="report-periods" type="number" inputmode="numeric" min="1" max="${maxPeriods}" name="periods" value="${filters.periods}" required /></label>
+        <button type="submit">Carregar</button>
+      </form>
+      <p class="filter-hint">Ao trocar o intervalo, carregue a página para aplicar o formato e os limites correspondentes.</p>
+    </section>`;
+}
+
+function intervalOption(value: ReportInterval, label: string, selected: ReportInterval): string {
+  return `<option value="${value}"${value === selected ? " selected" : ""}>${escapeHtml(label)}</option>`;
+}
+'''
+after = '''        <input type="hidden" name="interval" value="${filters.interval}" />
+        <fieldset class="interval-switcher">
+          <legend>Intervalo</legend>
+          ${intervalSwitchLink("monthly", "Mensal", filters)}
+          ${intervalSwitchLink("annual", "Anual", filters)}
+          ${intervalSwitchLink("rolling-year", "Anual com início móvel", filters)}
+        </fieldset>
+        <label for="report-start">Início${startControl}</label>
+        <label for="report-periods">Período<input id="report-periods" type="number" inputmode="numeric" min="1" max="${maxPeriods}" name="periods" value="${filters.periods}" required /></label>
+        <button type="submit">Carregar</button>
+      </form>
+      <p class="filter-hint">Escolha outro intervalo para carregar campos e padrões compatíveis antes de ajustar o recorte.</p>
+    </section>`;
+}
+
+function intervalSwitchLink(
+  value: ReportInterval,
+  label: string,
+  filters: EvolutionFilters,
+): string {
+  const params = new URLSearchParams({ view: "category-evolution", interval: value });
+  if (filters.profileId) params.set("profileId", filters.profileId);
+  return `<a href="/relatorios?${params.toString()}"${value === filters.interval ? ' aria-current="page"' : ""}>${escapeHtml(label)}</a>`;
+}
+'''
+if before not in content:
+    raise SystemExit("expected interval form source not found")
+page.write_text(content.replace(before, after, 1))
+
+styles = Path("apps/web/src/dev-server/reports-route-page-styles.ts")
+style_content = styles.read_text()
+marker = "    .filter-hint { color:var(--muted); font-size:.75rem; margin-top:8px; }\n"
+addition = '''    .interval-switcher { align-items:center; border:0; display:flex; flex-wrap:wrap; gap:5px; margin:0; min-width:0; padding:0; }
+    .interval-switcher legend { color:var(--text); font-size:.8125rem; font-weight:700; margin-bottom:5px; width:100%; }
+    .interval-switcher a { border:1px solid var(--line); border-radius:999px; color:var(--text); font-size:.75rem; font-weight:700; padding:7px 10px; text-decoration:none; }
+    .interval-switcher a[aria-current="page"] { background:var(--primary); border-color:var(--primary); color:#fff; }
+'''
+if marker not in style_content:
+    raise SystemExit("expected style marker not found")
+styles.write_text(style_content.replace(marker, marker + addition, 1))
