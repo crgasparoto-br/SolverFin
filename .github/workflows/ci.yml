@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -69,11 +71,11 @@ jobs:
       - name: Format diagnostic sources
         run: npm run format
 
-      - name: Upload formatted report sources
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-542-prettier-${{ github.sha }}
-          path: |
+      - name: Commit formatted report sources
+        env:
+          HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          paths=(
             apps/api/src/category-evolution-report-router.integration.test.ts
             apps/web/src/dev-server/reports-route-page.ts
             apps/web/src/dev-server/reports-route-page.test.ts
@@ -81,8 +83,14 @@ jobs:
             scripts/run-statement-visual-validation.mjs
             scripts/statement-visual/reports-category-evolution.mjs
             docs/REPORTS.md
-          if-no-files-found: error
-          retention-days: 1
+          )
+          if ! git diff --quiet -- "${paths[@]}"; then
+            git config user.name "solverfin-ci"
+            git config user.email "solverfin-ci@users.noreply.github.com"
+            git add -- "${paths[@]}"
+            git commit -m "style: aplicar formatacao da issue 542"
+            git push origin "HEAD:${HEAD_BRANCH}"
+          fi
 
       - name: Lint
         run: npm run lint
