@@ -6,10 +6,9 @@ const outputDir =
   process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 
 await mkdir(outputDir, { recursive: true });
-const prettierCheck = spawnSync(
-  "pnpm exec prettier . --check",
-  { encoding: "utf8", shell: true },
-);
+const prettierCheck = spawnSync("npm", ["run", "format:check"], {
+  encoding: "utf8",
+});
 const diagnostic = {
   status: prettierCheck.status,
   signal: prettierCheck.signal,
