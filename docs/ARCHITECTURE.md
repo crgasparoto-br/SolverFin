@@ -49,6 +49,8 @@ Fontes principais:
 - renderers em `apps/web/src/dev-server/*-page.ts` e `pages.ts`: CSS especifico;
 - `apps/web/src/dev-server/recurrences-section.ts`: CSS auxiliar de recorrencias;
 - `apps/web/src/dev-server/statement-presentation.ts`: CSS condicional do Extrato;
+- `apps/web/src/dev-server/list-sorting-enhancement.ts`: ordenacao e estilos estruturais de remuneracao no Extrato;
+- `apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts`: affordance visual da memoria de calculo da remuneracao;
 - `apps/web/src/dev-server/ssr-style-contract.ts`: manifesto tipado por rota e provedor;
 - `scripts/validate-web-ssr-styles.mjs`: verificacao executavel do HTML final servido.
 
@@ -75,7 +77,9 @@ O manifesto registra rota, renderer, shell, classificacao de CSS, provedores de 
 
 O portao nao infere CSS especifico apenas pela existencia de qualquer regra remanescente. Cada provedor de pagina, auxiliar ou runtime possui identificador e fragmentos CSS proprios; os controles negativos removem um provedor por vez, mantendo os demais presentes.
 
-A validacao inicia `createSolverFinWebServer()` em `127.0.0.1` com porta efemera e requisita todas as rotas canonicas. Rotas autenticadas recebem cookie ficticio; chamadas internas usam `fetch` ficticio e seguro. Dessa forma, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos e `sendHtml`, sem acessar API, banco, rede externa ou secrets e sem exigir `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
+Marcadores de blocos runtime possuem propriedade explicita por modulo. No Extrato, `data-account-remuneration-statement-styles` e produzido por `list-sorting-enhancement.ts`, enquanto `data-account-remuneration-disclosure-affordance` e produzido por `account-remuneration-disclosure-enhancement.ts`. O contrato os registra como provedores distintos para impedir que um bloco valido de um modulo mascare a perda do outro.
+
+A validacao inicia `createSolverFinWebServer()` em `127.0.0.1` com porta efemera e requisita todas as rotas canonicas. Rotas autenticadas recebem cookie ficticio; chamadas internas usam `fetch` ficticio e seguro. A fixture de `/lancamentos` inclui conta ativa e lancamento ficticio de remuneracao CDI para ativar tanto os estilos estruturais quanto a affordance de divulgacao. Dessa forma, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos e `sendHtml`, sem acessar API, banco, rede externa ou secrets e sem exigir `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
 
 O documento dono das regras operacionais do shell e `docs/APP_SHELL.md`; `docs/DESIGN_SYSTEM.md` descreve a propriedade visual dos provedores.
 
