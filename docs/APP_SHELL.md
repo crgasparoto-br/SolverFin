@@ -17,29 +17,33 @@ Manter uma moldura comum para as telas financeiras, com navegacao, estados prote
 - `dev-server/shell.ts`: documento HTML e shell autenticado compartilhado;
 - `dev-server/shared-styles.ts`: tokens, reset, shell visual e primitivas recorrentes;
 - `dev-server/ssr-style-contract.ts`: manifesto tipado que relaciona cada rota disponivel ao renderer, HTML representativo, provedores de cabecalho, provedores de pagina/auxiliares, blocos inseridos no runtime e gatilhos condicionais;
-- `scripts/validate-web-ssr-styles.mjs`: portao executavel que sobe o servidor em porta efemera, requisita cada rota e valida o HTML final servido.
+- `scripts/validate-web-ssr-styles.mjs`: portao executavel que sobe o servidor em porta efemera, requisita cada renderer coberto e valida o HTML final servido.
 
 ## Rotas disponiveis
 
 A lista abaixo e derivada conceitualmente de `solverFinShellRoutes`; o arquivo TypeScript permanece a unica fonte de verdade executavel.
 
-| Rota                         | Area                 | Acesso                           |
-| ---------------------------- | -------------------- | -------------------------------- |
-| `/dashboard`                 | Dashboard            | autenticado                      |
-| `/lancamentos`               | Extrato da conta     | autenticado                      |
-| `/cartoes`                   | Cartoes de Credito   | autenticado                      |
-| `/contas-cartoes`            | Contas e Cartoes     | autenticado                      |
-| `/remuneracao-contas`        | Remuneracao pelo CDI | autenticado, oculta na navegacao |
-| `/categorias`                | Categorias           | autenticado                      |
-| `/orcamentos`                | Orcamentos           | autenticado                      |
-| `/inbox`                     | Inbox                | autenticado                      |
-| `/relatorios`                | Relatorios           | autenticado                      |
-| `/configuracoes`             | Configuracoes        | autenticado                      |
-| `/admin/instituicoes`        | Instituicoes         | master                           |
-| `/admin/indices-financeiros` | Indices financeiros  | master                           |
-| `/login`                     | Login                | publico                          |
+| Rota                         | Area                 | Acesso                                             |
+| ---------------------------- | -------------------- | -------------------------------------------------- |
+| `/dashboard`                 | Dashboard            | autenticado                                        |
+| `/lancamentos`               | Extrato da conta     | autenticado                                        |
+| `/cartoes`                   | Cartoes de Credito   | autenticado                                        |
+| `/contas-cartoes`            | Contas e Cartoes     | autenticado                                        |
+| `/remuneracao-contas`        | Remuneracao pelo CDI | renderer legado coberto; rota redireciona no uso   |
+| `/categorias`                | Categorias           | autenticado                                        |
+| `/orcamentos`                | Orcamentos           | autenticado                                        |
+| `/inbox`                     | Inbox                | autenticado                                        |
+| `/relatorios`                | Relatorios           | autenticado                                        |
+| `/configuracoes`             | Configuracoes        | autenticado                                        |
+| `/admin/instituicoes`        | Instituicoes         | master                                             |
+| `/admin/indices-financeiros` | Indices financeiros  | master                                             |
+| `/login`                     | Login                | publico                                            |
 
-Rotas legadas em `/app` podem redirecionar para os caminhos canonicos. A composicao de estilos cobre rotas com `status: "available"`, independentemente de aparecerem no menu ou exigirem acesso master. Uma rota canonica disponivel deve responder `200` no servidor representativo; um redirecionamento residual e tratado como violacao do contrato.
+Rotas legadas em `/app` podem redirecionar para os caminhos canonicos. A composicao de estilos cobre todas as entradas com `status: "available"`, independentemente de aparecerem no menu ou exigirem acesso master.
+
+`/remuneracao-contas` permanece no catalogo para manter o renderer legado sob cobertura, mas nao voltou a ser uma jornada operacional. Em execucao normal, `/remuneracao-contas` e `/app/remuneracao-contas` respondem `302` para `/contas-cartoes` quando o usuario esta autenticado e seguem o fluxo de login sem sessao. Somente o processo interno do portao, iniciado por `scripts/build-web.mjs`, define `SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION=1` para exercitar o renderer pelo servidor representativo sem alterar o comportamento publico.
+
+Fora dessa excecao de compatibilidade, uma rota operacional disponivel deve responder `200` no servidor representativo; um redirecionamento residual e tratado como violacao do contrato.
 
 ## Contrato de estilos SSR
 
@@ -84,7 +88,7 @@ Blocos marcados por atributos `data-*` ou `id` precisam existir e conter CSS nao
 
 Para `/login`, o CSS publico deve ser nao vazio, o documento precisa conter o shell normal de login e ambos devem estar incorporados ao HTML final.
 
-A validacao usa `createSolverFinWebServer()` para iniciar o mesmo servidor Node `http` em `127.0.0.1` com porta efemera. Cada rota e requisitada pelo caminho canonico, com cookie ficticio quando autenticada. Assim, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos de cada rota e `sendHtml`, em vez de aceitar apenas a saida de um renderer isolado.
+A validacao usa `createSolverFinWebServer()` para iniciar o mesmo servidor Node `http` em `127.0.0.1` com porta efemera. As rotas operacionais sao requisitadas pelo caminho canonico, com cookie ficticio quando autenticadas. O renderer legado de `/remuneracao-contas` e requisitado no mesmo servidor somente no modo interno de validacao descrito acima. Assim, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos e `sendHtml`, sem reativar a rota aposentada no uso normal.
 
 As chamadas internas dos renderers usam respostas `fetch` ficticias e minimizadas. Para `/lancamentos`, a fixture inclui uma conta ativa e um lancamento ficticio de remuneracao CDI, suficientes para produzir `account-remuneration-audit` e ativar os dois provedores runtime de remuneracao. Uma resposta ausente devolve erro controlado e o contrato falha pela ausencia do fragmento representativo. A execucao nao depende de PostgreSQL, API ativa, rede externa, secrets ou `apps/web/dist` preexistente.
 
@@ -104,7 +108,7 @@ npm run build
 npm run validate
 ```
 
-No GitHub Actions, o job `Validate monorepo` executa `npm run build`; portanto, nao existe uma segunda implementacao do contrato no YAML.
+No GitHub Actions, o job `Validate monorepo` executa `npm run test` e `npm run build`; portanto, o YAML nao enumera workspaces nem mantem uma segunda implementacao do contrato.
 
 Logs e falhas usam o prefixo estavel `SolverFin SSR style contract` e identificam rota, provedor e modulo responsavel. Todas as violacoes encontradas na mesma execucao sao reportadas juntas.
 
@@ -124,4 +128,4 @@ Mobile:
 
 ## Limites
 
-Este contrato nao escolhe framework, bundler ou folha CSS externa. Ele tambem nao substitui testes visuais em navegador nem valida a semantica completa de todos os seletores; garante que as rotas canonicas respondam pelo servidor real, produzam o estado normal representativo e mantenham os provedores registrados conectados ao HTML final antes de o artefato ser aceito.
+Este contrato nao escolhe framework, bundler ou folha CSS externa. Ele tambem nao substitui testes visuais em navegador nem valida a semantica completa de todos os seletores; garante que os renderers cobertos produzam o estado normal representativo e mantenham os provedores registrados conectados ao HTML final antes de o artefato ser aceito, preservando redirecionamentos funcionais existentes.
