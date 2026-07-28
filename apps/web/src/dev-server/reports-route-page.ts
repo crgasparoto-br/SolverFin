@@ -202,21 +202,31 @@ function renderEvolutionFilterForm(filters: EvolutionFilters): string {
       <form class="report-filters evolution-filters" method="get" action="/relatorios">
         <input type="hidden" name="view" value="category-evolution" />
         ${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
-        <label for="report-interval">Intervalo<select id="report-interval" name="interval">
-          ${intervalOption("monthly", "Mensal", filters.interval)}
-          ${intervalOption("annual", "Anual", filters.interval)}
-          ${intervalOption("rolling-year", "Anual com início móvel", filters.interval)}
-        </select></label>
+        <input type="hidden" name="interval" value="${filters.interval}" />
+        <fieldset class="interval-switcher">
+          <legend>Intervalo</legend>
+          ${intervalSwitchLink("monthly", "Mensal", filters)}
+          ${intervalSwitchLink("annual", "Anual", filters)}
+          ${intervalSwitchLink("rolling-year", "Anual com início móvel", filters)}
+        </fieldset>
         <label for="report-start">Início${startControl}</label>
         <label for="report-periods">Período<input id="report-periods" type="number" inputmode="numeric" min="1" max="${maxPeriods}" name="periods" value="${filters.periods}" required /></label>
         <button type="submit">Carregar</button>
       </form>
-      <p class="filter-hint">Ao trocar o intervalo, carregue a página para aplicar o formato e os limites correspondentes.</p>
+      <p class="filter-hint">Escolha outro intervalo para carregar campos e padrões compatíveis antes de ajustar o recorte.</p>
     </section>`;
 }
 
-function intervalOption(value: ReportInterval, label: string, selected: ReportInterval): string {
-  return `<option value="${value}"${value === selected ? " selected" : ""}>${escapeHtml(label)}</option>`;
+function intervalSwitchLink(
+  value: ReportInterval,
+  label: string,
+  filters: EvolutionFilters,
+): string {
+  const params = new URLSearchParams({ view: "category-evolution", interval: value });
+  if (filters.profileId) params.set("profileId", filters.profileId);
+  return `<a href="/relatorios?${params.toString()}"${
+    value === filters.interval ? ' aria-current="page"' : ""
+  }>${escapeHtml(label)}</a>`;
 }
 
 function renderCurrencyMatrix(
