@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -56,77 +56,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
-      - name: Apply controlled issue 546 formatting
-        if: github.event_name == 'pull_request' && github.head_ref == 'feat/546-category-evolution-controls-account-filter'
-        env:
-          TARGET_BRANCH: ${{ github.head_ref }}
-        run: |
-          git fetch origin "$TARGET_BRANCH:$TARGET_BRANCH"
-          git checkout "$TARGET_BRANCH"
-          python - <<'PY'
-          from pathlib import Path
-
-          page = Path("apps/web/src/dev-server/reports-route-page.ts")
-          content = page.read_text()
-          old = "const sourceError = !accountsResult.ok ? accountsResult.error : cardsResult.error;"
-          new = '''const sourceError = !accountsResult.ok
-                ? accountsResult.error
-                : !cardsResult.ok
-                  ? cardsResult.error
-                  : "Não foi possível carregar as origens financeiras.";'''
-          if old not in content and "Não foi possível carregar as origens financeiras." not in content:
-              raise SystemExit("Expected reports source error assignment was not found")
-          page.write_text(content.replace(old, new))
-
-          source = Path("apps/api/src/category-evolution-account-filter.ts")
-          source_content = source.read_text()
-          source_content = source_content.replace(
-              '`${label} inválido. Informe um identificador válido.`',
-              '`${label === "Conta" ? "Conta inválida" : "Cartão inválido"}. Informe um identificador válido.`',
-          )
-          source.write_text(source_content)
-
-          test = Path("apps/api/src/category-evolution-account-filter.test.ts")
-          test_content = test.read_text().replace(
-              'error.message.includes(`${label} inválido`)',
-              'error.message.includes(label === "Conta" ? "Conta inválida" : "Cartão inválido")',
-          )
-          test.write_text(test_content)
-
-          router_test = Path("apps/api/src/category-evolution-account-router.integration.test.ts")
-          router_test.write_text(router_test.read_text().replace('/Conta inválido/', '/Conta inválida/'))
-          PY
-          npx prettier --write \
-            apps/api/src/category-evolution-account-filter.integration.test.ts \
-            apps/api/src/category-evolution-account-filter.ts \
-            apps/api/src/category-evolution-account-filter.test.ts \
-            apps/api/src/category-evolution-account-router.integration.test.ts \
-            apps/web/src/dev-server/reports-canonical-location.test.ts \
-            apps/web/src/dev-server/reports-canonical-location.ts \
-            apps/web/src/dev-server/reports-category-evolution-issue-546.test.ts \
-            apps/web/src/dev-server/reports-route-page.test.ts \
-            apps/web/src/dev-server/reports-route-page.ts \
-            scripts/statement-visual/issue-546-reports-category-controls.mjs
-          if git diff --quiet; then
-            echo "Issue 546 files already formatted."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add \
-              apps/api/src/category-evolution-account-filter.integration.test.ts \
-              apps/api/src/category-evolution-account-filter.ts \
-              apps/api/src/category-evolution-account-filter.test.ts \
-              apps/api/src/category-evolution-account-router.integration.test.ts \
-              apps/web/src/dev-server/reports-canonical-location.test.ts \
-              apps/web/src/dev-server/reports-canonical-location.ts \
-              apps/web/src/dev-server/reports-category-evolution-issue-546.test.ts \
-              apps/web/src/dev-server/reports-route-page.test.ts \
-              apps/web/src/dev-server/reports-route-page.ts \
-              scripts/statement-visual/issue-546-reports-category-controls.mjs
-            git commit -m "style(reports): format issue 546 remediation"
-            git push origin "HEAD:$TARGET_BRANCH"
-          fi
 
       - name: Check environment example
         run: npm run env:check
