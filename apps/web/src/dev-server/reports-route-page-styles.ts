@@ -44,7 +44,7 @@ export function reportPageStyles(): string {
     .evolution-table td span { color:var(--muted); display:block; font-size:.6875rem; margin-top:2px; }
     .report-section-row th,.report-section-row td { background:var(--primary-soft); font-weight:700; }
     .report-row-result th,.report-row-result td { border-top:2px solid var(--primary); }
-    .report-value-negative strong,.report-value-negative span { color:var(--danger,#b91c1c); }
+    .report-value-negative strong,.report-value-negative span { color:var(--danger); }
     .summary-grid { display:grid; gap:10px; grid-template-columns:repeat(5,minmax(0,1fr)); }
     .metric-card { display:grid; gap:5px; min-width:0; padding:12px 14px; }
     .metric-card span { color:var(--muted); font-size:.6875rem; font-weight:700; text-transform:uppercase; }
