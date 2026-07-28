@@ -185,6 +185,69 @@ describe("SSR style contract", () => {
     );
   });
 
+  it("tracks remuneration statement and disclosure runtime styles independently", () => {
+    const base = contractFor("transactions");
+    const statementProvider = providerFor(base, "runtime:account-remuneration-statement");
+    const disclosureProvider = providerFor(base, "runtime:account-remuneration-disclosure");
+    const contract = withProviders(base, [
+      "page:transactions",
+      statementProvider.providerId,
+      disclosureProvider.providerId,
+    ]);
+    const statementMarker =
+      statementProvider.requiredStyleBlockMarkers?.[0] ?? assert.fail("missing statement marker");
+    const disclosureMarker =
+      disclosureProvider.requiredStyleBlockMarkers?.[0] ?? assert.fail("missing disclosure marker");
+
+    assert.equal(statementProvider.moduleFileName, "list-sorting-enhancement.js");
+    assert.equal(statementMarker, "data-account-remuneration-statement-styles");
+    assert.equal(disclosureProvider.moduleFileName, "account-remuneration-disclosure-enhancement.js");
+    assert.equal(disclosureMarker, "data-account-remuneration-disclosure-affordance");
+
+    const html = authenticatedDocument(
+      `${providers.sharedShell}${providers.statementPresentation}${transactionsPageCss}`,
+      '<section class="statement-layout"><details class="account-remuneration-audit">Memória</details></section>',
+      [
+        `<style ${statementMarker}>.account-remuneration-audit { display: block; }</style>`,
+        `<style ${disclosureMarker}>.account-remuneration-audit summary { display: inline-flex; }</style>`,
+      ],
+    );
+
+    assert.deepEqual(validateRenderedSsrStyleDocument({ contract, html, providers }), []);
+
+    const withoutStatement = validateRenderedSsrStyleDocument({
+      contract,
+      html: removeStyleBlockByMarker(html, statementMarker),
+      providers,
+    });
+    assert.ok(
+      withoutStatement.some((violation) =>
+        violation.includes("provider=runtime:account-remuneration-statement"),
+      ),
+    );
+    assert.ok(
+      withoutStatement.every(
+        (violation) => !violation.includes("provider=runtime:account-remuneration-disclosure"),
+      ),
+    );
+
+    const withoutDisclosure = validateRenderedSsrStyleDocument({
+      contract,
+      html: removeStyleBlockByMarker(html, disclosureMarker),
+      providers,
+    });
+    assert.ok(
+      withoutDisclosure.some((violation) =>
+        violation.includes("provider=runtime:account-remuneration-disclosure"),
+      ),
+    );
+    assert.ok(
+      withoutDisclosure.every(
+        (violation) => !violation.includes("provider=runtime:account-remuneration-statement"),
+      ),
+    );
+  });
+
   it("rejects removal of the page provider even when an auxiliary provider remains", () => {
     const base = contractFor("transactions");
     const contract = withProviders(base, ["page:transactions", "aux:recurrences-section"]);
