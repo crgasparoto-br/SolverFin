@@ -26,6 +26,19 @@ interface EvolutionFilters {
   profileId?: string;
 }
 
+interface EvolutionFilterFormValues {
+  interval: ReportInterval;
+  intervalValue: string;
+  start: string;
+  periods: string;
+  profileId?: string;
+  invalid: {
+    interval: boolean;
+    start: boolean;
+    periods: boolean;
+  };
+}
+
 interface ReportCell {
   amountMinor: number;
   percentage: number | null;
@@ -151,7 +164,7 @@ async function renderCategoryEvolutionView(
     "Acompanhe receitas, despesas e resultado por período e moeda.",
   );
   const navigation = renderViewNavigation("category-evolution", filters.profileId);
-  const form = renderEvolutionFilterForm(filters);
+  const form = renderEvolutionFilterForm(formValuesFromFilters(filters));
 
   if (!reportResult.ok) {
     return renderShell(
@@ -191,26 +204,36 @@ async function renderCategoryEvolutionView(
   );
 }
 
-function renderEvolutionFilterForm(filters: EvolutionFilters): string {
-  const startControl =
-    filters.interval === "annual"
-      ? `<input id="report-start" type="number" inputmode="numeric" min="1" max="9999" name="start" value="${escapeHtml(filters.start)}" required />`
-      : `<input id="report-start" type="month" name="start" value="${escapeHtml(filters.start)}" required />`;
+function renderEvolutionFilterForm(filters: EvolutionFilterFormValues): string {
+  const startInputType = filters.invalid.start
+    ? "text"
+    : filters.interval === "annual"
+      ? "number"
+      : "month";
+  const startConstraints =
+    startInputType === "number" ? ' inputmode="numeric" min="1" max="9999"' : "";
+  const startControl = `<input id="report-start" type="${startInputType}"${startConstraints} name="start" value="${escapeHtml(filters.start)}"${filters.invalid.start ? ' aria-invalid="true" data-invalid-filter="start"' : ""} required />`;
   const maxPeriods = INTERVAL_LIMITS[filters.interval].maxPeriods;
+  const periodsInputType = filters.invalid.periods ? "text" : "number";
+  const periodsConstraints =
+    periodsInputType === "number"
+      ? ` inputmode="numeric" min="1" max="${maxPeriods}"`
+      : "";
   return `
     <section class="panel report-filter-panel" aria-label="Filtros da evolução por categoria">
       <form class="report-filters evolution-filters" method="get" action="/relatorios">
         <input type="hidden" name="view" value="category-evolution" />
         ${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
-        <input type="hidden" name="interval" value="${filters.interval}" />
-        <fieldset class="interval-switcher">
+        <input type="hidden" name="interval" value="${escapeHtml(filters.intervalValue)}" />
+        <fieldset class="interval-switcher"${filters.invalid.interval ? ' aria-invalid="true"' : ""}>
           <legend>Intervalo</legend>
           ${intervalSwitchLink("monthly", "Mensal", filters)}
           ${intervalSwitchLink("annual", "Anual", filters)}
           ${intervalSwitchLink("rolling-year", "Anual com início móvel", filters)}
+          ${filters.invalid.interval ? `<p class="filter-invalid-value" data-invalid-filter="interval">Valor informado: <code>${escapeHtml(filters.intervalValue)}</code></p>` : ""}
         </fieldset>
         <label for="report-start">Início${startControl}</label>
-        <label for="report-periods">Período<input id="report-periods" type="number" inputmode="numeric" min="1" max="${maxPeriods}" name="periods" value="${filters.periods}" required /></label>
+        <label for="report-periods">Período<input id="report-periods" type="${periodsInputType}"${periodsConstraints} name="periods" value="${escapeHtml(filters.periods)}"${filters.invalid.periods ? ' aria-invalid="true" data-invalid-filter="periods"' : ""} required /></label>
         <button type="submit">Carregar</button>
       </form>
       <p class="filter-hint">Escolha outro intervalo para carregar campos e padrões compatíveis antes de ajustar o recorte.</p>
@@ -220,12 +243,12 @@ function renderEvolutionFilterForm(filters: EvolutionFilters): string {
 function intervalSwitchLink(
   value: ReportInterval,
   label: string,
-  filters: EvolutionFilters,
+  filters: EvolutionFilterFormValues,
 ): string {
   const params = new URLSearchParams({ view: "category-evolution", interval: value });
   if (filters.profileId) params.set("profileId", filters.profileId);
   return `<a href="/relatorios?${params.toString()}"${
-    value === filters.interval ? ' aria-current="page"' : ""
+    !filters.invalid.interval && value === filters.interval ? ' aria-current="page"' : ""
   }>${escapeHtml(label)}</a>`;
 }
 
@@ -239,10 +262,7 @@ function renderCurrencyMatrix(
       <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução em ${escapeHtml(block.currency)}">
         <table class="evolution-table">
           <thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods
-            .map(
-              (period) =>
-                `<th scope="col"><span aria-hidden="true">${escapeHtml(period.label)}</span><span class="sr-only">${escapeHtml(period.accessibleLabel)}</span></th>`,
-            )
+            .map(renderPeriodHeader)
             .join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
           <tbody>
             ${renderSeriesRow("Receitas", block.income, block.currency, "income", 0)}
@@ -256,21 +276,35 @@ function renderCurrencyMatrix(
     </section>`;
 }
 
+function renderPeriodHeader(period: CategoryEvolutionReport["periods"][number]): string {
+  return `<th scope="col"><span aria-hidden="true">${escapeHtml(period.label)}</span><span class="sr-only">${escapeHtml(period.accessibleLabel)}</span></th>`;
+}
+
 function renderEmptyEvolutionMatrix(report: CategoryEvolutionReport): string {
-  const emptySeries: ReportSeries = {
-    cells: report.periods.map(() => ({ amountMinor: 0, percentage: null })),
-    totalMinor: 0,
-    totalPercentage: null,
-    averageMinor: 0,
-    averagePercentage: null,
-  };
   return `
-    <section class="panel evolution-block" aria-label="Matriz sem movimentos">
-      <div class="evolution-table-scroll" tabindex="0">
-        <table class="evolution-table"><thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods.map((period) => `<th scope="col">${escapeHtml(period.label)}</th>`).join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
-        <tbody>${renderSeriesRow("Receitas", emptySeries, "BRL", "income", 0)}${renderSeriesRow("Despesas", emptySeries, "BRL", "expense", 0)}${renderSeriesRow("Resultado", emptySeries, "BRL", "result", 0)}</tbody></table>
+    <section class="panel evolution-block" aria-label="Matriz sem movimentos e sem moeda definida">
+      <p class="sr-only">Não há moeda associada a movimentos neste período.</p>
+      <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução sem movimentos">
+        <table class="evolution-table"><thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods.map(renderPeriodHeader).join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
+        <tbody>${renderNeutralSeriesRow("Receitas", report.periodCount, "income")}${renderNeutralSeriesRow("Despesas", report.periodCount, "expense")}${renderNeutralSeriesRow("Resultado", report.periodCount, "result")}</tbody></table>
       </div>
     </section>`;
+}
+
+function renderNeutralSeriesRow(
+  label: string,
+  periodCount: number,
+  kind: "income" | "expense" | "result",
+): string {
+  const cells = Array.from({ length: periodCount + 2 }, () => renderNeutralValueCell()).join("");
+  return `<tr class="report-row report-row-${kind} report-section-row">
+    <th scope="row" class="sticky-description" style="--report-depth:0"><span>${escapeHtml(label)}</span></th>
+    ${cells}
+  </tr>`;
+}
+
+function renderNeutralValueCell(): string {
+  return '<td><strong>0</strong><span>—</span></td>';
 }
 
 function renderCategoryRows(
@@ -318,61 +352,108 @@ function formatPercentage(value: number): string {
 
 function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
   const draft = readEvolutionFilterDraft(url, referenceDate);
-  const interval = draft.interval;
-  const rawStart = url.searchParams.get("start");
-  const rawPeriods = url.searchParams.get("periods");
-  if (url.searchParams.has("interval") && !isInterval(url.searchParams.get("interval"))) {
+  const requestedInterval = url.searchParams.get("interval");
+  if (requestedInterval !== null && !isInterval(requestedInterval)) {
     throw new Error("Intervalo inválido. Escolha mensal, anual ou anual com início móvel.");
   }
-  if (rawPeriods !== null && !/^\d+$/.test(rawPeriods)) {
+
+  const rawPeriods = draft.periods;
+  if (!/^\d+$/.test(rawPeriods)) {
     throw new Error("Período inválido. Informe uma quantidade inteira de colunas.");
   }
-  const max = INTERVAL_LIMITS[interval].maxPeriods;
-  if (draft.periods < 1 || draft.periods > max) {
+  const periods = Number(rawPeriods);
+  const max = INTERVAL_LIMITS[draft.interval].maxPeriods;
+  if (periods < 1 || periods > max) {
     throw new Error(`Período inválido. Informe entre 1 e ${max}.`);
   }
-  if (rawStart !== null) validateEvolutionStart(interval, rawStart);
-  validateEvolutionEnd(interval, draft.start, draft.periods);
-  return draft;
+
+  validateEvolutionStart(draft.interval, draft.start);
+  validateEvolutionEnd(draft.interval, draft.start, periods);
+  return {
+    interval: draft.interval,
+    start: draft.start,
+    periods,
+    ...(draft.profileId ? { profileId: draft.profileId } : {}),
+  };
 }
 
-function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilters {
+function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilterFormValues {
   const requestedInterval = url.searchParams.get("interval");
   const interval = isInterval(requestedInterval) ? requestedInterval : "monthly";
   const requestedPeriods = url.searchParams.get("periods");
-  const parsedPeriods =
-    requestedPeriods && /^\d+$/.test(requestedPeriods) ? Number(requestedPeriods) : undefined;
-  const periods = parsedPeriods ?? INTERVAL_LIMITS[interval].defaultPeriods;
+  const maxPeriods = INTERVAL_LIMITS[interval].maxPeriods;
+  const validRequestedPeriods =
+    requestedPeriods !== null &&
+    /^\d+$/.test(requestedPeriods) &&
+    Number(requestedPeriods) >= 1 &&
+    Number(requestedPeriods) <= maxPeriods;
+  const periodsForDefault = validRequestedPeriods
+    ? Number(requestedPeriods)
+    : INTERVAL_LIMITS[interval].defaultPeriods;
+  const periods = requestedPeriods ?? String(periodsForDefault);
   const requestedStart = url.searchParams.get("start");
-  const start = requestedStart ?? deriveEvolutionStart(interval, periods, referenceDate);
+  const start = requestedStart ?? deriveEvolutionStart(interval, periodsForDefault, referenceDate);
   const profileId = nonEmpty(url.searchParams.get("profileId"));
-  return { interval, start, periods, ...(profileId ? { profileId } : {}) };
+  const invalidStart =
+    requestedStart !== null &&
+    (!isEvolutionStartValid(interval, requestedStart) ||
+      (validRequestedPeriods && !isEvolutionEndRepresentable(interval, requestedStart, periodsForDefault)));
+
+  return {
+    interval,
+    intervalValue: requestedInterval ?? interval,
+    start,
+    periods,
+    ...(profileId ? { profileId } : {}),
+    invalid: {
+      interval: requestedInterval !== null && !isInterval(requestedInterval),
+      start: invalidStart,
+      periods: requestedPeriods !== null && !validRequestedPeriods,
+    },
+  };
+}
+
+function formValuesFromFilters(filters: EvolutionFilters): EvolutionFilterFormValues {
+  return {
+    interval: filters.interval,
+    intervalValue: filters.interval,
+    start: filters.start,
+    periods: String(filters.periods),
+    ...(filters.profileId ? { profileId: filters.profileId } : {}),
+    invalid: { interval: false, start: false, periods: false },
+  };
+}
+
+function isEvolutionStartValid(interval: ReportInterval, start: string): boolean {
+  if (interval === "annual") return /^\d{4}$/.test(start) && Number(start) >= 1;
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(start) && Number(start.slice(0, 4)) >= 1;
 }
 
 function validateEvolutionStart(interval: ReportInterval, start: string): void {
+  if (isEvolutionStartValid(interval, start)) return;
   if (interval === "annual") {
-    if (!/^\d{4}$/.test(start) || Number(start) < 1) {
-      throw new Error("Início inválido. Informe um ano no formato AAAA.");
-    }
-    return;
+    throw new Error("Início inválido. Informe um ano no formato AAAA.");
   }
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(start) || Number(start.slice(0, 4)) < 1) {
-    throw new Error("Início inválido. Informe um mês no formato AAAA-MM.");
-  }
+  throw new Error("Início inválido. Informe um mês no formato AAAA-MM.");
 }
 
-function validateEvolutionEnd(interval: ReportInterval, start: string, periods: number): void {
-  validateEvolutionStart(interval, start);
-  if (interval === "annual") {
-    if (Number(start) + periods - 1 > 9999)
-      throw new Error("O período calculado ultrapassa o ano 9999.");
-    return;
-  }
+function isEvolutionEndRepresentable(
+  interval: ReportInterval,
+  start: string,
+  periods: number,
+): boolean {
+  if (!isEvolutionStartValid(interval, start)) return false;
+  if (interval === "annual") return Number(start) + periods - 1 <= 9999;
   const year = Number(start.slice(0, 4));
   const month = Number(start.slice(5, 7));
   const offset = interval === "monthly" ? periods - 1 : periods * 12 - 1;
-  const end = addMonths(year, month, offset);
-  if (end.year > 9999) throw new Error("O período calculado ultrapassa o ano 9999.");
+  return addMonths(year, month, offset).year <= 9999;
+}
+
+function validateEvolutionEnd(interval: ReportInterval, start: string, periods: number): void {
+  if (!isEvolutionEndRepresentable(interval, start, periods)) {
+    throw new Error("O período calculado ultrapassa o ano 9999.");
+  }
 }
 
 function deriveEvolutionStart(
