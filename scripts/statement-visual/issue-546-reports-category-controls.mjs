@@ -32,7 +32,11 @@ try {
   await setViewport(browser.cdp, 1440, 900);
   await navigateWithRetry(browser.cdp, `${baseUrl}/login`, "login");
   const loginResult = await evaluate(browser.cdp, loginExpression());
-  assert.equal(loginResult.ok, true, `Demo login failed: ${loginResult.status} ${loginResult.body}`);
+  assert.equal(
+    loginResult.ok,
+    true,
+    `Demo login failed: ${loginResult.status} ${loginResult.body}`,
+  );
   const seeded = await seedScenario(browser.cdp);
   report.desktop = await validateDesktop(browser.cdp, seeded);
   report.mobile = await validateMobile(browser.cdp, seeded);
@@ -56,7 +60,9 @@ if (failures.length > 0) {
   failures.forEach((failure) => console.error(`- ${failure.message}`));
   process.exitCode = 1;
 } else {
-  console.log("Issue 546 account filter, hierarchy controls and negative result validation passed.");
+  console.log(
+    "Issue 546 account filter, hierarchy controls and negative result validation passed.",
+  );
 }
 
 async function seedScenario(cdp) {
@@ -137,16 +143,32 @@ async function validateDesktop(cdp, seeded) {
   screenshots.push("issue-546-reports-category-controls-desktop.png");
 
   check(interaction.ok, "Hierarchy controls were not available", interaction);
-  check(interaction.childHidden, "Collapsing a category did not hide its full subtree", interaction);
+  check(
+    interaction.childHidden,
+    "Collapsing a category did not hide its full subtree",
+    interaction,
+  );
   check(
     interaction.descendantStatePreserved,
     "A descendant collapsed state was lost after reopening an ancestor",
     interaction,
   );
   check(interaction.rootFocused, "Hierarchy control did not accept keyboard focus", interaction);
-  check(measurements.selectedAccount === seeded.accountId, "Selected account was not preserved", measurements);
-  check(measurements.toggleCount >= 2, "Multilevel hierarchy controls were not rendered", measurements);
-  check(measurements.negativeCells >= 3, "Negative Result cells were not highlighted", measurements);
+  check(
+    measurements.selectedAccount === seeded.accountId,
+    "Selected account was not preserved",
+    measurements,
+  );
+  check(
+    measurements.toggleCount >= 2,
+    "Multilevel hierarchy controls were not rendered",
+    measurements,
+  );
+  check(
+    measurements.negativeCells >= 3,
+    "Negative Result cells were not highlighted",
+    measurements,
+  );
   check(measurements.pageFitsViewport, "Desktop page leaks horizontal overflow", measurements);
   return { viewport: "1440x900", interaction, measurements, screenshot: screenshots.at(-1) };
 }
@@ -184,7 +206,11 @@ async function validateMobile(cdp, seeded) {
   check(measurements.pageFitsViewport, "Mobile page leaks horizontal overflow", measurements);
   check(measurements.tableScrollable, "Mobile matrix is not horizontally scrollable", measurements);
   check(measurements.filterColumns === 1, "Mobile report filters are not stacked", measurements);
-  check(measurements.selectedAccount === seeded.accountId, "Mobile account selection was lost", measurements);
+  check(
+    measurements.selectedAccount === seeded.accountId,
+    "Mobile account selection was lost",
+    measurements,
+  );
   return { viewport: "390x844", measurements, screenshot: screenshots.at(-1) };
 }
 

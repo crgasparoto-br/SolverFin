@@ -37,7 +37,10 @@ describe("reports category evolution issue 546", () => {
     );
 
     assert.equal(calls.length, 2);
-    assert.match(html, new RegExp(`<option value="${ACCOUNT_ID}" selected>Conta principal</option>`));
+    assert.match(
+      html,
+      new RegExp(`<option value="${ACCOUNT_ID}" selected>Conta principal</option>`),
+    );
     assert.match(html, /<option value="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb">Reserva<\/option>/);
     assert.doesNotMatch(html, />Arquivada<\/option>/);
     assert.match(
@@ -87,8 +90,9 @@ describe("reports category evolution issue 546", () => {
     assert.match(html, /report-value-negative[^>]*><strong>-R\$\s*25,00<\/strong>/);
     assert.match(html, /report-value-negative[^>]*><strong>-R\$\s*50,00<\/strong>/);
     const expenseRow =
-      html.match(/<tr class="report-row report-row-expense report-section-row">[\s\S]*?<\/tr>/)?.[0] ??
-      "";
+      html.match(
+        /<tr class="report-row report-row-expense report-section-row">[\s\S]*?<\/tr>/,
+      )?.[0] ?? "";
     assert.doesNotMatch(expenseRow, /report-value-negative/);
     assert.match(html, /<strong>R\$\s*0,00<\/strong>/);
   });
@@ -100,9 +104,12 @@ function nestedReport() {
   const root = node("income-root", "Receitas operacionais", [1000, 2000], [child]);
   const expenseChild = node("expense-child", "Hospedagem", [200, 300], []);
   const expenseRoot = node("expense-root", "Tecnologia", [200, 300], [expenseChild]);
-  const secondCurrencyRoot = node("usd-root", "Receita exterior", [500, 500], [
-    node("usd-child", "Consultoria", [500, 500], []),
-  ]);
+  const secondCurrencyRoot = node(
+    "usd-root",
+    "Receita exterior",
+    [500, 500],
+    [node("usd-child", "Consultoria", [500, 500], [])],
+  );
   return {
     interval: "monthly",
     start: "2026-07",

@@ -73,10 +73,7 @@ describe("reports route page", () => {
       html,
       /href="\/relatorios\?view=category-evolution&interval=annual&profileId=profile-1"/,
     );
-    assert.doesNotMatch(
-      html,
-      /href="\/relatorios\?view=category-evolution[^\"]*(start|periods)=/,
-    );
+    assert.doesNotMatch(html, /href="\/relatorios\?view=category-evolution[^\"]*(start|periods)=/);
   });
 
   it("preserves raw invalid filters in the correction form without requesting the API", async () => {
@@ -209,7 +206,15 @@ describe("reports route page", () => {
         assert.equal(url.searchParams.get("profileId"), "profile-1");
         return jsonResponse({
           installments: [
-            installment("i-posted", "posted", yesterday, 15000, "Notebook", "Principal", "Tecnologia"),
+            installment(
+              "i-posted",
+              "posted",
+              yesterday,
+              15000,
+              "Notebook",
+              "Principal",
+              "Tecnologia",
+            ),
             installment(
               "i-overdue",
               "planned",
@@ -277,9 +282,7 @@ function readyReport() {
       {
         currency: "BRL",
         income: series([100000, 120000], [null, null]),
-        incomeCategories: [
-          category("income-1", "Salário", "active", [100000, 120000], [100, 100]),
-        ],
+        incomeCategories: [category("income-1", "Salário", "active", [100000, 120000], [100, 100])],
         expense: series([40000, 30000], [40, 25]),
         expenseCategories: [
           category("expense-1", "Moradia", "archived", [40000, 30000], [100, 100]),

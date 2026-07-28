@@ -30,11 +30,7 @@ export async function handleReportsApiRequest(
       user,
       request.query.get("profileId") ?? undefined,
     );
-    const report = await buildCategoryEvolutionReportForAccountContext(
-      context,
-      filters,
-      accountId,
-    );
+    const report = await buildCategoryEvolutionReportForAccountContext(context, filters, accountId);
 
     return json(200, { report });
   } catch (error) {

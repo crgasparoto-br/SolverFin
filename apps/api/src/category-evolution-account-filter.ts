@@ -25,8 +25,7 @@ interface AggregatedMovementRow {
   amountMinor: string | number;
 }
 
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class CategoryEvolutionAccountNotAvailableError extends Error {
   readonly code = "REPORT_CATEGORY_EVOLUTION_ACCOUNT_NOT_AVAILABLE";
@@ -38,9 +37,7 @@ export class CategoryEvolutionAccountNotAvailableError extends Error {
   }
 }
 
-export function parseCategoryEvolutionAccountId(
-  searchParams: URLSearchParams,
-): string | undefined {
+export function parseCategoryEvolutionAccountId(searchParams: URLSearchParams): string | undefined {
   const value = searchParams.get("accountId");
   if (value === null) return undefined;
 

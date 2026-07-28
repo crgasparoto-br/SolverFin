@@ -148,11 +148,7 @@ async function main(): Promise<void> {
   await archiveAccountForContext(PERSONAL_CONTEXT, selectedAccount.id);
   await assert.rejects(
     () =>
-      buildCategoryEvolutionReportForAccountContext(
-        PERSONAL_CONTEXT,
-        filters,
-        selectedAccount.id,
-      ),
+      buildCategoryEvolutionReportForAccountContext(PERSONAL_CONTEXT, filters, selectedAccount.id),
     isAccountNotAvailable,
   );
 
@@ -196,7 +192,5 @@ async function insertDetachedIncome(input: {
 }
 
 function isAccountNotAvailable(error: unknown): boolean {
-  return (
-    error instanceof CategoryEvolutionAccountNotAvailableError && error.statusCode === 404
-  );
+  return error instanceof CategoryEvolutionAccountNotAvailableError && error.statusCode === 404;
 }

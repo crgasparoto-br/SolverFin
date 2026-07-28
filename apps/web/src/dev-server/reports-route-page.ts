@@ -103,8 +103,7 @@ const INTERVAL_LIMITS: Record<ReportInterval, { defaultPeriods: number; maxPerio
   annual: { defaultPeriods: 3, maxPeriods: 10 },
   "rolling-year": { defaultPeriods: 3, maxPeriods: 10 },
 };
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function renderReportsRoutePage(
   token: string,
@@ -198,7 +197,9 @@ async function renderCategoryEvolutionView(
     );
   }
 
-  const activeAccounts = accountsResult.data.accounts.filter((account) => account.status === "active");
+  const activeAccounts = accountsResult.data.accounts.filter(
+    (account) => account.status === "active",
+  );
   const form = renderEvolutionFilterForm(formValuesFromFilters(filters), activeAccounts);
   const reportResult = await apiGet<{ report: CategoryEvolutionReport }>(
     token,

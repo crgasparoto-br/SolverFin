@@ -48,11 +48,7 @@ async function main(): Promise<void> {
   const crossProfile = await reportRequest(token, profile.id, otherProfileAccount.id);
   assertSafeUnavailable(crossProfile);
 
-  const missing = await reportRequest(
-    token,
-    profile.id,
-    "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-  );
+  const missing = await reportRequest(token, profile.id, "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
   assertSafeUnavailable(missing);
   assert.equal(readError(crossProfile).message, readError(missing).message);
 
