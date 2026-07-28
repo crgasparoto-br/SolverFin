@@ -36,6 +36,30 @@ async function main(): Promise<void> {
   assert.equal(authorizedBody.report.periodCount, 2);
   assert.deepEqual(authorizedBody.report.currencyBlocks, []);
 
+  const lowerYearMonthly = await apiRequest(
+    token,
+    "GET",
+    `/api/reports/category-evolution?profileId=${profile.id}&interval=monthly&start=0001-01&periods=1`,
+  );
+  assert.equal(lowerYearMonthly.statusCode, 200);
+  assert.equal(
+    readBody<{ report: { periods: Array<{ label: string }> } }>(lowerYearMonthly).report.periods[0]
+      ?.label,
+    "Jan/01",
+  );
+
+  const lowerYearRolling = await apiRequest(
+    token,
+    "GET",
+    `/api/reports/category-evolution?profileId=${profile.id}&interval=rolling-year&start=0001-01&periods=1`,
+  );
+  assert.equal(lowerYearRolling.statusCode, 200);
+  assert.equal(
+    readBody<{ report: { periods: Array<{ label: string }> } }>(lowerYearRolling).report.periods[0]
+      ?.label,
+    "Jan/01–Dez/01",
+  );
+
   const invalidFilter = await apiRequest(
     token,
     "GET",
