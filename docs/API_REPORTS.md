@@ -8,10 +8,14 @@
 
 O endpoint exige sessao valida e resolve organizacao/perfil com `resolveRequestTenantContext`. O cliente pode informar `profileId`; `organizationId` e `financialProfileId` nunca sao aceitos como escopo confiavel.
 
-Quando `accountId` e informado, a API valida antes dos agregados que a conta existe, esta ativa e pertence simultaneamente a organizacao e ao perfil financeiro resolvidos. Conta inexistente, arquivada ou fora desse escopo usa o mesmo contrato publico, sem revelar qual condicao ocorreu:
+Quando `accountId` e informado, a API valida antes dos agregados que a conta existe, esta ativa e pertence simultaneamente a organizacao e ao perfil financeiro resolvidos.
+
+Quando `cardId` e informado, a API valida que o cartao agrupador existe, possui status `active` ou `blocked` e pertence a mesma organizacao e perfil financeiro.
+
+Conta ou cartao inexistente, arquivado ou fora desse escopo usa o mesmo contrato publico, sem revelar entidade, existencia, status ou vinculo:
 
 ```text
-404 REPORT_CATEGORY_EVOLUTION_ACCOUNT_NOT_AVAILABLE
+404 REPORT_CATEGORY_EVOLUTION_SOURCE_NOT_AVAILABLE
 ```
 
 Nenhum agregado parcial e retornado nesses casos.
@@ -24,8 +28,11 @@ start=AAAA-MM        # monthly e rolling-year
 start=AAAA           # annual
 periods=<inteiro>
 profileId=<uuid>     # opcional, conforme docs/TENANT.md
-accountId=<uuid>     # opcional; ausencia significa Todas as contas
+accountId=<uuid>     # opcional e mutuamente exclusivo com cardId
+cardId=<uuid>        # opcional e mutuamente exclusivo com accountId
 ```
+
+A ausencia simultanea de `accountId` e `cardId` representa **Todas as contas e cartoes**. Enviar os dois identificadores na mesma requisicao nao representa intersecao ou precedencia; a API rejeita a requisicao antes da consulta financeira.
 
 Padroes e limites:
 
@@ -35,13 +42,13 @@ Padroes e limites:
 | `annual`       | ultima coluna e o ano UTC corrente                    |                 3 |     10 |
 | `rolling-year` | ultima coluna de 12 meses termina no mes UTC corrente |                 3 |     10 |
 
-Parametro ausente usa o padrao. Parametro presente e invalido, inclusive `accountId` vazio ou malformado, retorna:
+Parametro ausente usa o padrao. Parametro presente e invalido, inclusive `accountId`/`cardId` vazio, malformado ou combinado, retorna:
 
 ```text
 400 REPORT_CATEGORY_EVOLUTION_FILTER_INVALID
 ```
 
-A mensagem identifica com seguranca o campo que deve ser corrigido. A validacao dos filtros ocorre antes da consulta financeira do relatorio.
+A mensagem identifica com seguranca o campo ou o conflito que deve ser corrigido. A validacao dos filtros ocorre antes da consulta financeira do relatorio.
 
 ### Fonte e consulta
 
@@ -52,13 +59,17 @@ A consulta considera uma vez cada `Transaction` que atenda simultaneamente:
 - `status` igual a `posted` ou `reconciled`;
 - `occurredOn` dentro de um dos periodos, com limites inclusivos.
 
-Sem `accountId`, o contrato anterior e preservado integralmente: entram todas as transacoes elegiveis do perfil.
+Sem `accountId` e sem `cardId`, o contrato anterior e preservado integralmente: entram todas as transacoes elegiveis do perfil, inclusive movimentos sem conta ou cartao vinculados.
 
 Com `accountId`, entra somente a transacao cujo `Transaction.accountId` seja exatamente a conta selecionada. Movimentos de outra conta, sem `accountId` ou que mencionem a conta apenas em `destinationAccountId` nao entram no recorte.
 
-`transfer`, `planned`, `suggested` e `voided` nao entram. Vinculos com grupo, parcela, fatura, recorrencia, importacao, sugestao ou origem nao criam movimentos adicionais.
+Com `cardId`, entra somente a transacao cujo `Transaction.cardId` seja exatamente o cartao agrupador selecionado. Como todos os instrumentos da compra persistem o mesmo `cardId`, o recorte abrange instrumentos fisicos, virtuais, principais e adicionais, inclusive instrumento posteriormente arquivado quando a transacao historica continua elegivel. `cardInstrumentId` e `invoiceId` nao sao filtros desta API.
 
-A implementacao usa uma validacao constante da conta, uma consulta agregada por periodos/categoria/moeda e uma consulta da taxonomia atual. A quantidade de consultas nao cresce com a quantidade de colunas, contas ou categorias. Nao ha escrita nem `AuditLogEntry` de mutacao.
+O pagamento da fatura e identificado pela referencia canonica `Invoice.paymentTransactionId` e permanece excluido do recorte por cartao. Assim, a compra nao e contabilizada novamente pelo pagamento. As exclusoes existentes de `transfer`, `planned`, `suggested` e `voided` permanecem efetivas.
+
+Vinculos com grupo, parcela, fatura, recorrencia, importacao, sugestao ou origem nao criam movimentos adicionais.
+
+A implementacao usa uma validacao constante da origem, uma consulta agregada por periodos/categoria/moeda e uma consulta da taxonomia atual. A quantidade de consultas nao cresce com a quantidade de contas, cartoes, instrumentos, periodos ou categorias. Nao ha escrita nem `AuditLogEntry` de mutacao.
 
 ### Resposta
 
@@ -113,7 +124,8 @@ Regras:
 - percentuais sao arredondados para ate duas casas;
 - media monetaria inclui periodos zerados e usa empate afastado de zero;
 - `averagePercentage` usa a mesma razao agregada de `totalPercentage`;
-- o payload nao contem dados da conta, lancamentos individuais, descricoes, cartoes ou IDs de transacao; `accountId` e somente filtro de entrada.
+- o payload nao contem conta, cartao, instrumento, fatura, lancamentos individuais, descricoes ou IDs de transacao;
+- `accountId` e `cardId` sao somente filtros de entrada e nao aparecem na resposta.
 
 ### Categorias
 
@@ -129,8 +141,8 @@ Cada no possui `categoryId`, `name`, `status`, `series` e `children`.
 
 ### Erros
 
-A API nao retorna sucesso parcial. Alem dos erros de autenticacao/tenant, de filtro e de conta nao consultavel, falhas inesperadas usam o envelope padrao com `correlationId`, sem dados financeiros brutos.
+A API nao retorna sucesso parcial. Alem dos erros de autenticacao/tenant, de filtro e de origem nao consultavel, falhas inesperadas usam o envelope padrao com `correlationId`, sem dados financeiros brutos.
 
 ## Interface web relacionada
 
-`/relatorios?view=category-evolution` consome este endpoint por SSR e consulta `GET /api/accounts?status=active` para montar o seletor. A visao `view=installments` continua usando `GET /api/installments`. Consulte [`REPORTS.md`](./REPORTS.md) para navegacao, apresentacao e estados da interface.
+`/relatorios?view=category-evolution` consome este endpoint por SSR e consulta `GET /api/accounts?status=active` e `GET /api/credit-card-accounts?status=all` para montar um unico seletor agrupado. Se qualquer lista falhar, a pagina nao apresenta a outra como resultado parcial. A visao `view=installments` continua usando `GET /api/installments`. Consulte [`REPORTS.md`](./REPORTS.md) para navegacao, apresentacao e estados da interface.
