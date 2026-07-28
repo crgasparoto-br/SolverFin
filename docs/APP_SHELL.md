@@ -23,21 +23,21 @@ Manter uma moldura comum para as telas financeiras, com navegacao, estados prote
 
 A lista abaixo e derivada conceitualmente de `solverFinShellRoutes`; o arquivo TypeScript permanece a unica fonte de verdade executavel.
 
-| Rota                         | Area                 | Acesso                                             |
-| ---------------------------- | -------------------- | -------------------------------------------------- |
-| `/dashboard`                 | Dashboard            | autenticado                                        |
-| `/lancamentos`               | Extrato da conta     | autenticado                                        |
-| `/cartoes`                   | Cartoes de Credito   | autenticado                                        |
-| `/contas-cartoes`            | Contas e Cartoes     | autenticado                                        |
-| `/remuneracao-contas`        | Remuneracao pelo CDI | renderer legado coberto; rota redireciona no uso   |
-| `/categorias`                | Categorias           | autenticado                                        |
-| `/orcamentos`                | Orcamentos           | autenticado                                        |
-| `/inbox`                     | Inbox                | autenticado                                        |
-| `/relatorios`                | Relatorios           | autenticado                                        |
-| `/configuracoes`             | Configuracoes        | autenticado                                        |
-| `/admin/instituicoes`        | Instituicoes         | master                                             |
-| `/admin/indices-financeiros` | Indices financeiros  | master                                             |
-| `/login`                     | Login                | publico                                            |
+| Rota                         | Area                 | Acesso                                           |
+| ---------------------------- | -------------------- | ------------------------------------------------ |
+| `/dashboard`                 | Dashboard            | autenticado                                      |
+| `/lancamentos`               | Extrato da conta     | autenticado                                      |
+| `/cartoes`                   | Cartoes de Credito   | autenticado                                      |
+| `/contas-cartoes`            | Contas e Cartoes     | autenticado                                      |
+| `/remuneracao-contas`        | Remuneracao pelo CDI | renderer legado coberto; rota redireciona no uso |
+| `/categorias`                | Categorias           | autenticado                                      |
+| `/orcamentos`                | Orcamentos           | autenticado                                      |
+| `/inbox`                     | Inbox                | autenticado                                      |
+| `/relatorios`                | Relatorios           | autenticado                                      |
+| `/configuracoes`             | Configuracoes        | autenticado                                      |
+| `/admin/instituicoes`        | Instituicoes         | master                                           |
+| `/admin/indices-financeiros` | Indices financeiros  | master                                           |
+| `/login`                     | Login                | publico                                          |
 
 Rotas legadas em `/app` podem redirecionar para os caminhos canonicos. A composicao de estilos cobre todas as entradas com `status: "available"`, independentemente de aparecerem no menu ou exigirem acesso master.
 
