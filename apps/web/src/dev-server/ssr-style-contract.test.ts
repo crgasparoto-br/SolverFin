@@ -201,7 +201,10 @@ describe("SSR style contract", () => {
 
     assert.equal(statementProvider.moduleFileName, "list-sorting-enhancement.js");
     assert.equal(statementMarker, "data-account-remuneration-statement-styles");
-    assert.equal(disclosureProvider.moduleFileName, "account-remuneration-disclosure-enhancement.js");
+    assert.equal(
+      disclosureProvider.moduleFileName,
+      "account-remuneration-disclosure-enhancement.js",
+    );
     assert.equal(disclosureMarker, "data-account-remuneration-disclosure-affordance");
 
     const html = authenticatedDocument(
