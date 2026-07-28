@@ -19,6 +19,8 @@ try {
   await import("./statement-visual/issue-539-operational-installments.mjs");
   await import("./statement-visual/issue-539-operational-installments-keyboard.mjs");
   await import("./statement-visual/issue-539-installment-grouping-guard.mjs");
+  await import("./statement-visual/reports-category-evolution.mjs");
+  await import("./statement-visual/reports-installments-regression.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);

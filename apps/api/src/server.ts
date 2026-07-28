@@ -16,6 +16,7 @@ import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
+import { handleReportsApiRequest } from "./reports-router.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 import { handleTransactionGroupActionsApiRequest } from "./transaction-group-actions-router.js";
 
@@ -105,6 +106,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (installmentsResult) {
       writeResponse(response, installmentsResult);
+      return;
+    }
+
+    const reportsResult = await handleReportsApiRequest(apiRequest);
+
+    if (reportsResult) {
+      writeResponse(response, reportsResult);
       return;
     }
 
