@@ -58,7 +58,7 @@ try {
     browser.cdp,
     `(() => {
       const active = document.querySelector('.report-view-tabs a[aria-current="page"]');
-      const accountSelect = document.querySelector('select[name="accountId"]');
+      const originSelect = document.querySelector('select[name="origin"]');
       const before = window.location.pathname + window.location.search;
       if (!(active instanceof HTMLAnchorElement)) return { ok: false, reason: 'active-link-missing' };
       active.click();
@@ -69,7 +69,8 @@ try {
         before,
         after,
         accountId: new URL(window.location.href).searchParams.get('accountId'),
-        selectedAccount: accountSelect instanceof HTMLSelectElement ? accountSelect.value : null
+        cardId: new URL(window.location.href).searchParams.get('cardId'),
+        selectedOrigin: originSelect instanceof HTMLSelectElement ? originSelect.value : null
       };
     })()`,
   );
@@ -78,13 +79,14 @@ try {
   assert.equal(result.href, "#", JSON.stringify(result));
   assert.equal(result.after, result.before, JSON.stringify(result));
   assert.equal(result.accountId, accountId, JSON.stringify(result));
-  assert.equal(result.selectedAccount, accountId, JSON.stringify(result));
+  assert.equal(result.cardId, null, JSON.stringify(result));
+  assert.equal(result.selectedOrigin, `account:${accountId}`, JSON.stringify(result));
 
   await writeFile(
     join(outputDir, "issue-546-selected-view-navigation.json"),
     `${JSON.stringify({ accountId, result }, null, 2)}\n`,
   );
-  console.log("Issue 546 selected-view navigation preserves accountId.");
+  console.log("Issue 546 selected-view navigation preserves the account source.");
 } finally {
   if (browser) await browser.close(outputDir);
 }
