@@ -160,7 +160,9 @@ export async function buildCategoryEvolutionReportForContext(
 ): Promise<CategoryEvolutionReport> {
   const [categories, movements] = await Promise.all([
     query<CategoryRow>(
-      `select "id", "parentCategoryId", "name", "kind", "status"
+      `select "id", "parentCategoryId", "name",
+              lower("kind"::text) as "kind",
+              lower("status"::text) as "status"
          from "Category"
         where "organizationId" = $1
           and "financialProfileId" = $2`,
@@ -175,7 +177,7 @@ export async function buildCategoryEvolutionReportForContext(
                 as period("startsOn", "endsOn", ordinality)
        )
        select report_periods."periodIndex",
-              movement."kind",
+              lower(movement."kind"::text) as "kind",
               movement."currency",
               movement."categoryId",
               sum(movement."amountMinor")::bigint as "amountMinor"
@@ -185,8 +187,8 @@ export async function buildCategoryEvolutionReportForContext(
           and movement."occurredOn" <= report_periods."endsOn"
         where movement."organizationId" = $1
           and movement."financialProfileId" = $2
-          and movement."kind" in ('income', 'expense')
-          and movement."status" in ('posted', 'reconciled')
+          and movement."kind" in ('INCOME', 'EXPENSE')
+          and movement."status" in ('POSTED', 'RECONCILED')
         group by report_periods."periodIndex",
                  movement."kind",
                  movement."currency",
