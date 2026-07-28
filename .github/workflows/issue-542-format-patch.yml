@@ -1,0 +1,46 @@
+name: Issue 542 format patch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issue-542-format-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format-patch:
+    name: Generate Prettier patch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format repository
+        run: npm run format
+
+      - name: Capture patch
+        run: git diff --binary > issue-542-format.patch
+
+      - name: Upload patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-542-format-patch-${{ github.sha }}
+          path: issue-542-format.patch
+          if-no-files-found: error
+          retention-days: 1
