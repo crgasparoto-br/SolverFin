@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: issue-542-format-${{ github.ref }}
@@ -14,12 +14,14 @@ concurrency:
 
 jobs:
   format-patch:
-    name: Generate Prettier patch
+    name: Apply Prettier patch
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout repository
+      - name: Checkout pull request branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -31,16 +33,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Format repository
-        run: npm run format
+      - name: Format and remove temporary workflow
+        run: |
+          npm run format
+          rm .github/workflows/issue-542-format-patch.yml
 
-      - name: Capture patch
-        run: git diff --binary > issue-542-format.patch
-
-      - name: Upload patch
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-542-format-patch-${{ github.sha }}
-          path: issue-542-format.patch
-          if-no-files-found: error
-          retention-days: 1
+      - name: Commit formatted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "style(reports): apply repository formatting"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
