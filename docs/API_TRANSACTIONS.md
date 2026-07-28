@@ -102,6 +102,8 @@ Uma linha CSV revisada como transferência preserva a conta de referência e a d
 
 Filtros por conta devem considerar tanto `accountId` quanto `destinationAccountId`. Dashboard, relatórios e orçamento contabilizam apenas `income` e `expense`; uma transferência não aumenta receitas, despesas ou resultado e aparece com sinais opostos nos extratos das duas contas.
 
+O contrato agregado de leitura que transforma essas transacoes em periodos, moedas e hierarquia de categorias esta em [`API_REPORTS.md`](./API_REPORTS.md).
+
 ## Movimentos financeiros
 
 O contrato de dominio retorna movimentos derivados para que a camada de
