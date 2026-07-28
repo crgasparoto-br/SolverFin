@@ -49,9 +49,7 @@ describe("category evolution report", () => {
     );
     assert.throws(
       () =>
-        parseCategoryEvolutionFilters(
-          new URLSearchParams({ interval: "monthly", periods: "25" }),
-        ),
+        parseCategoryEvolutionFilters(new URLSearchParams({ interval: "monthly", periods: "25" })),
       /entre 1 e 24/,
     );
   });
@@ -93,23 +91,59 @@ describe("category evolution report", () => {
         },
       ],
       movements: [
-        { periodIndex: 0, kind: "income", currency: "BRL", categoryId: "income-root", amountMinor: 10000 },
-        { periodIndex: 0, kind: "income", currency: "BRL", categoryId: "income-child", amountMinor: 5000 },
-        { periodIndex: 1, kind: "income", currency: "BRL", categoryId: "income-child", amountMinor: 30000 },
-        { periodIndex: 0, kind: "expense", currency: "BRL", categoryId: "expense-child", amountMinor: 6000 },
+        {
+          periodIndex: 0,
+          kind: "income",
+          currency: "BRL",
+          categoryId: "income-root",
+          amountMinor: 10000,
+        },
+        {
+          periodIndex: 0,
+          kind: "income",
+          currency: "BRL",
+          categoryId: "income-child",
+          amountMinor: 5000,
+        },
+        {
+          periodIndex: 1,
+          kind: "income",
+          currency: "BRL",
+          categoryId: "income-child",
+          amountMinor: 30000,
+        },
+        {
+          periodIndex: 0,
+          kind: "expense",
+          currency: "BRL",
+          categoryId: "expense-child",
+          amountMinor: 6000,
+        },
         { periodIndex: 1, kind: "expense", currency: "BRL", categoryId: null, amountMinor: 9000 },
         { periodIndex: 1, kind: "income", currency: "USD", categoryId: null, amountMinor: 2000 },
       ],
     });
 
-    assert.deepEqual(report.currencyBlocks.map((block) => block.currency), ["BRL", "USD"]);
+    assert.deepEqual(
+      report.currencyBlocks.map((block) => block.currency),
+      ["BRL", "USD"],
+    );
     const brl = report.currencyBlocks[0];
     assert.ok(brl);
-    assert.deepEqual(brl.income.cells.map((cell) => cell.amountMinor), [15000, 30000]);
+    assert.deepEqual(
+      brl.income.cells.map((cell) => cell.amountMinor),
+      [15000, 30000],
+    );
     assert.equal(brl.income.totalMinor, 45000);
     assert.equal(brl.income.averageMinor, 22500);
-    assert.deepEqual(brl.expense.cells.map((cell) => cell.amountMinor), [6000, 9000]);
-    assert.deepEqual(brl.result.cells.map((cell) => cell.amountMinor), [9000, 21000]);
+    assert.deepEqual(
+      brl.expense.cells.map((cell) => cell.amountMinor),
+      [6000, 9000],
+    );
+    assert.deepEqual(
+      brl.result.cells.map((cell) => cell.amountMinor),
+      [9000, 21000],
+    );
     assert.equal(brl.expense.cells[0]?.percentage, 40);
     assert.equal(brl.result.cells[0]?.percentage, 60);
 

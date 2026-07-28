@@ -22,11 +22,11 @@ profileId=<uuid>     # opcional, conforme docs/TENANT.md
 
 Padroes e limites:
 
-| Intervalo | Inicio padrao | Quantidade padrao | Limite |
-| --- | --- | ---: | ---: |
-| `monthly` | ultima coluna termina no mes UTC corrente | 12 | 24 |
-| `annual` | ultima coluna e o ano UTC corrente | 3 | 10 |
-| `rolling-year` | ultima coluna de 12 meses termina no mes UTC corrente | 3 | 10 |
+| Intervalo      | Inicio padrao                                         | Quantidade padrao | Limite |
+| -------------- | ----------------------------------------------------- | ----------------: | -----: |
+| `monthly`      | ultima coluna termina no mes UTC corrente             |                12 |     24 |
+| `annual`       | ultima coluna e o ano UTC corrente                    |                 3 |     10 |
+| `rolling-year` | ultima coluna de 12 meses termina no mes UTC corrente |                 3 |     10 |
 
 Parametro ausente usa o padrao. Parametro presente e invalido retorna:
 

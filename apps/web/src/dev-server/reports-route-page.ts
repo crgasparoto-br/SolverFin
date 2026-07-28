@@ -128,7 +128,10 @@ async function renderCategoryEvolutionView(
     filters = readEvolutionFilters(url, referenceDate);
   } catch (error) {
     return renderShell(
-      renderHeading("Evolução por categoria", "Acompanhe receitas, despesas e resultado ao longo do tempo.") +
+      renderHeading(
+        "Evolução por categoria",
+        "Acompanhe receitas, despesas e resultado ao longo do tempo.",
+      ) +
         renderViewNavigation("category-evolution", url.searchParams.get("profileId") ?? undefined) +
         renderEvolutionFilterForm(readEvolutionFilterDraft(url, referenceDate)) +
         renderState(
@@ -226,7 +229,10 @@ function renderCurrencyMatrix(
       <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução em ${escapeHtml(block.currency)}">
         <table class="evolution-table">
           <thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods
-            .map((period) => `<th scope="col"><span aria-hidden="true">${escapeHtml(period.label)}</span><span class="sr-only">${escapeHtml(period.accessibleLabel)}</span></th>`)
+            .map(
+              (period) =>
+                `<th scope="col"><span aria-hidden="true">${escapeHtml(period.label)}</span><span class="sr-only">${escapeHtml(period.accessibleLabel)}</span></th>`,
+            )
             .join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
           <tbody>
             ${renderSeriesRow("Receitas", block.income, block.currency, "income", 0)}
@@ -278,7 +284,7 @@ function renderSeriesRow(
   archived = false,
 ): string {
   return `<tr class="report-row report-row-${kind}${depth === 0 ? " report-section-row" : ""}">
-    <th scope="row" class="sticky-description" style="--report-depth:${depth}"><span>${escapeHtml(label)}</span>${archived ? '<small>Arquivada</small>' : ""}</th>
+    <th scope="row" class="sticky-description" style="--report-depth:${depth}"><span>${escapeHtml(label)}</span>${archived ? "<small>Arquivada</small>" : ""}</th>
     ${series.cells.map((cell) => renderValueCell(cell.amountMinor, cell.percentage, currency, kind)).join("")}
     ${renderValueCell(series.averageMinor, series.averagePercentage, currency, kind)}
     ${renderValueCell(series.totalMinor, series.totalPercentage, currency, kind)}
@@ -324,7 +330,8 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
   const requestedInterval = url.searchParams.get("interval");
   const interval = isInterval(requestedInterval) ? requestedInterval : "monthly";
   const requestedPeriods = url.searchParams.get("periods");
-  const parsedPeriods = requestedPeriods && /^\d+$/.test(requestedPeriods) ? Number(requestedPeriods) : undefined;
+  const parsedPeriods =
+    requestedPeriods && /^\d+$/.test(requestedPeriods) ? Number(requestedPeriods) : undefined;
   const periods = parsedPeriods ?? INTERVAL_LIMITS[interval].defaultPeriods;
   const requestedStart = url.searchParams.get("start");
   const start = requestedStart ?? deriveEvolutionStart(interval, periods, referenceDate);
@@ -347,7 +354,8 @@ function validateEvolutionStart(interval: ReportInterval, start: string): void {
 function validateEvolutionEnd(interval: ReportInterval, start: string, periods: number): void {
   validateEvolutionStart(interval, start);
   if (interval === "annual") {
-    if (Number(start) + periods - 1 > 9999) throw new Error("O período calculado ultrapassa o ano 9999.");
+    if (Number(start) + periods - 1 > 9999)
+      throw new Error("O período calculado ultrapassa o ano 9999.");
     return;
   }
   const year = Number(start.slice(0, 4));
@@ -357,7 +365,11 @@ function validateEvolutionEnd(interval: ReportInterval, start: string, periods: 
   if (end.year > 9999) throw new Error("O período calculado ultrapassa o ano 9999.");
 }
 
-function deriveEvolutionStart(interval: ReportInterval, periods: number, referenceDate: Date): string {
+function deriveEvolutionStart(
+  interval: ReportInterval,
+  periods: number,
+  referenceDate: Date,
+): string {
   const year = referenceDate.getUTCFullYear();
   const month = referenceDate.getUTCMonth() + 1;
   if (interval === "annual") return String(year - periods + 1).padStart(4, "0");
@@ -368,7 +380,7 @@ function deriveEvolutionStart(interval: ReportInterval, periods: number, referen
 
 function addMonths(year: number, month: number, offset: number): { year: number; month: number } {
   const absolute = year * 12 + month - 1 + offset;
-  return { year: Math.floor(absolute / 12), month: ((absolute % 12) + 12) % 12 + 1 };
+  return { year: Math.floor(absolute / 12), month: (((absolute % 12) + 12) % 12) + 1 };
 }
 
 function buildEvolutionApiPath(filters: EvolutionFilters): string {

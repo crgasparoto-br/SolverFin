@@ -73,11 +73,7 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     return renderShell(
       header +
         form +
-        renderState(
-          "api-error",
-          "Não foi possível carregar as parcelas",
-          installmentsResult.error,
-        ),
+        renderState("api-error", "Não foi possível carregar as parcelas", installmentsResult.error),
     );
   }
 
@@ -181,12 +177,7 @@ function renderInstallments(
   </div>`;
 }
 
-function renderMetric(
-  label: string,
-  count: number,
-  amountMinor: number,
-  primary = false,
-): string {
+function renderMetric(label: string, count: number, amountMinor: number, primary = false): string {
   return `<article class="metric-card${primary ? " metric-primary" : ""}"><span>${escapeHtml(label)}</span><strong>${count}</strong><p>${escapeHtml(formatMinorCurrency(amountMinor))}</p></article>`;
 }
 
@@ -266,10 +257,7 @@ function formatInvoiceStatus(status: string): string {
 }
 
 function sumMoney(items: InstallmentRecord[]): number {
-  return items.reduce(
-    (sum, item) => sum + (item.status === "cancelled" ? 0 : item.amountMinor),
-    0,
-  );
+  return items.reduce((sum, item) => sum + (item.status === "cancelled" ? 0 : item.amountMinor), 0);
 }
 
 function installmentsSorted(items: InstallmentRecord[]): InstallmentRecord[] {

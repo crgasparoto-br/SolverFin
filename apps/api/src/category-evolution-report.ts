@@ -211,7 +211,9 @@ export function buildCategoryEvolutionReport(
   filters: CategoryEvolutionFilters,
   source: CategoryEvolutionSourceData,
 ): CategoryEvolutionReport {
-  const currencies = Array.from(new Set(source.movements.map((movement) => movement.currency))).sort();
+  const currencies = Array.from(
+    new Set(source.movements.map((movement) => movement.currency)),
+  ).sort();
 
   return {
     interval: filters.interval,
@@ -265,17 +267,19 @@ function buildCategoryTree(
   sectionDenominators: readonly number[],
 ): CategoryEvolutionCategoryNode[] {
   const categoryById = new Map(
-    categories.filter((category) => category.kind === kind).map((category) => [category.id, category]),
+    categories
+      .filter((category) => category.kind === kind)
+      .map((category) => [category.id, category]),
   );
   const directByCategory = new Map<string | null, number[]>();
 
   for (const movement of movements) {
     if (movement.kind !== kind) continue;
-    const categoryId = movement.categoryId && categoryById.has(movement.categoryId)
-      ? movement.categoryId
-      : null;
+    const categoryId =
+      movement.categoryId && categoryById.has(movement.categoryId) ? movement.categoryId : null;
     const direct = directByCategory.get(categoryId) ?? zeroSeries(periodCount);
-    direct[movement.periodIndex] = (direct[movement.periodIndex] ?? 0) + toSafeMinor(movement.amountMinor);
+    direct[movement.periodIndex] =
+      (direct[movement.periodIndex] ?? 0) + toSafeMinor(movement.amountMinor);
     directByCategory.set(categoryId, direct);
   }
 
@@ -367,7 +371,8 @@ function sortCategoryNodes(
   nodes: readonly CategoryEvolutionCategoryNode[],
 ): CategoryEvolutionCategoryNode[] {
   return nodes.slice().sort((left, right) => {
-    const magnitudeDifference = Math.abs(right.series.totalMinor) - Math.abs(left.series.totalMinor);
+    const magnitudeDifference =
+      Math.abs(right.series.totalMinor) - Math.abs(left.series.totalMinor);
     return magnitudeDifference || left.name.localeCompare(right.name, "pt-BR");
   });
 }
@@ -398,8 +403,7 @@ function buildSeries(
   return {
     cells: amounts.map((amount, index) => ({
       amountMinor: normalizeZero(amount),
-      percentage:
-        denominators === undefined ? null : percentage(amount, denominators[index] ?? 0),
+      percentage: denominators === undefined ? null : percentage(amount, denominators[index] ?? 0),
     })),
     totalMinor,
     totalPercentage,
@@ -410,7 +414,9 @@ function buildSeries(
 
 function parseInterval(value: string): CategoryEvolutionInterval {
   if (value === "monthly" || value === "annual" || value === "rolling-year") return value;
-  throw new CategoryEvolutionFilterError("Intervalo inválido. Escolha mensal, anual ou anual com início móvel.");
+  throw new CategoryEvolutionFilterError(
+    "Intervalo inválido. Escolha mensal, anual ou anual com início móvel.",
+  );
 }
 
 function parsePeriodCount(
@@ -419,7 +425,9 @@ function parsePeriodCount(
   interval: CategoryEvolutionInterval,
 ): number {
   if (!/^\d+$/.test(value)) {
-    throw new CategoryEvolutionFilterError("Período inválido. Informe uma quantidade inteira de colunas.");
+    throw new CategoryEvolutionFilterError(
+      "Período inválido. Informe uma quantidade inteira de colunas.",
+    );
   }
   const parsed = Number(value);
   if (parsed < 1 || parsed > maxPeriods) {
@@ -531,14 +539,16 @@ function accessibleMonth(year: number, month: number): string {
 function addMonths(year: number, month: number, offset: number): { year: number; month: number } {
   const absolute = year * 12 + (month - 1) + offset;
   const nextYear = Math.floor(absolute / 12);
-  const nextMonth = ((absolute % 12) + 12) % 12 + 1;
+  const nextMonth = (((absolute % 12) + 12) % 12) + 1;
   assertRepresentableYear(nextYear);
   return { year: nextYear, month: nextMonth };
 }
 
 function assertRepresentableYear(year: number): void {
   if (!Number.isInteger(year) || year < 1 || year > 9999) {
-    throw new CategoryEvolutionFilterError("O período calculado ultrapassa o intervalo de anos suportado.");
+    throw new CategoryEvolutionFilterError(
+      "O período calculado ultrapassa o intervalo de anos suportado.",
+    );
   }
 }
 

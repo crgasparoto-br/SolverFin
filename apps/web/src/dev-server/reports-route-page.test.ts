@@ -14,18 +14,15 @@ describe("reports route page", () => {
     assert.deepEqual(resolveReportsView(new URL("http://localhost/relatorios")), {
       view: "category-evolution",
     });
-    assert.deepEqual(
-      resolveReportsView(new URL("http://localhost/relatorios?month=2026-07")),
-      { view: "installments" },
-    );
-    assert.deepEqual(
-      resolveReportsView(new URL("http://localhost/relatorios?interval=annual")),
-      { view: "category-evolution" },
-    );
+    assert.deepEqual(resolveReportsView(new URL("http://localhost/relatorios?month=2026-07")), {
+      view: "installments",
+    });
+    assert.deepEqual(resolveReportsView(new URL("http://localhost/relatorios?interval=annual")), {
+      view: "category-evolution",
+    });
     assert.match(
-      resolveReportsView(
-        new URL("http://localhost/relatorios?month=2026-07&interval=annual"),
-      ).error ?? "",
+      resolveReportsView(new URL("http://localhost/relatorios?month=2026-07&interval=annual"))
+        .error ?? "",
       /misturados/,
     );
   });
@@ -164,9 +161,7 @@ describe("reports route page", () => {
 
     const html = await renderReportsRoutePage(
       "token",
-      new URL(
-        "http://localhost/relatorios?view=installments&month=2026-07&profileId=profile-1",
-      ),
+      new URL("http://localhost/relatorios?view=installments&month=2026-07&profileId=profile-1"),
     );
 
     assert.equal(paths.length, 3);
