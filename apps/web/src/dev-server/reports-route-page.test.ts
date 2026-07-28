@@ -233,8 +233,11 @@ describe("reports route page", () => {
     assert.doesNotMatch(html, /class="currency-report-list"/);
   });
 
-  it("preserves the installment report and emits view and profileId explicitly", async () => {
+  it("preserves all consolidated installment indicators, groupings and explicit tenant navigation", async () => {
     const paths: string[] = [];
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
       paths.push(`${url.pathname}${url.search}`);
@@ -243,16 +246,55 @@ describe("reports route page", () => {
         return jsonResponse({
           installments: [
             {
-              id: "i-1",
+              id: "i-posted",
               status: "posted",
               sequenceNumber: 1,
               totalInstallments: 2,
-              dueOn: "2026-07-10",
+              dueOn: yesterday,
               amountMinor: 15000,
               currency: "BRL",
-              transaction: { id: "t-1", description: "Notebook", status: "posted" },
+              transaction: { id: "t-posted", description: "Notebook", status: "posted" },
               card: { id: "card-1", name: "Principal", status: "active" },
-              category: { id: "cat-1", name: "Tecnologia", kind: "expense", status: "active" },
+              category: {
+                id: "cat-tech",
+                name: "Tecnologia",
+                kind: "expense",
+                status: "active",
+              },
+            },
+            {
+              id: "i-overdue",
+              status: "planned",
+              sequenceNumber: 1,
+              totalInstallments: 1,
+              dueOn: yesterday,
+              amountMinor: 5000,
+              currency: "BRL",
+              recurrence: { id: "r-overdue", description: "Assinatura", status: "active" },
+              card: { id: "card-1", name: "Principal", status: "active" },
+              category: {
+                id: "cat-subscription",
+                name: "Assinaturas",
+                kind: "expense",
+                status: "active",
+              },
+            },
+            {
+              id: "i-future",
+              status: "planned",
+              sequenceNumber: 1,
+              totalInstallments: 1,
+              dueOn: tomorrow,
+              amountMinor: 7000,
+              currency: "BRL",
+              recurrence: { id: "r-future", description: "Curso", status: "active" },
+              card: { id: "card-2", name: "Reserva", status: "active" },
+              category: {
+                id: "cat-tech",
+                name: "Tecnologia",
+                kind: "expense",
+                status: "active",
+              },
             },
           ],
         });
@@ -269,7 +311,23 @@ describe("reports route page", () => {
 
     assert.equal(paths.length, 3);
     assert.match(html, /Parcelas consolidadas/);
+    assert.match(html, /Abertas\/planejadas<\/span><strong>2<\/strong>/);
+    assert.match(html, /Postadas\/fechadas<\/span><strong>1<\/strong>/);
+    assert.match(html, /Vencidas<\/span><strong>1<\/strong>/);
+    assert.match(html, /Futuras<\/span><strong>1<\/strong>/);
+    assert.match(html, /Total mensal<\/span><strong>3<\/strong>/);
+    assert.match(html, /Comprometimento por mês/);
+    assert.match(html, /Por cartão/);
+    assert.match(html, /Por categoria/);
+    assert.match(html, /data-aggregate-kind="month"/);
+    assert.match(html, /data-aggregate-kind="card"/);
+    assert.match(html, /data-aggregate-kind="category"/);
+    assert.match(html, /Principal/);
+    assert.match(html, /Reserva/);
+    assert.match(html, /Tecnologia/);
+    assert.match(html, /Assinaturas/);
     assert.match(html, /Notebook/);
+    assert.match(html, /3 registros/);
     assert.match(html, /name="view" value="installments"/);
     assert.match(html, /name="profileId" value="profile-1"/);
   });
