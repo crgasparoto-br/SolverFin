@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
@@ -89,37 +90,19 @@ async function main(): Promise<void> {
     plannedOn: "2032-03-12",
     description: `Receita outra conta issue 546 ${suffix}`,
   });
-  await createTransactionForContext(PERSONAL_CONTEXT, {
+  await insertDetachedIncome({
     categoryId: incomeCategory.id,
-    kind: "income",
-    status: "posted",
     amountMinor: 2_000,
     occurredOn: "2032-03-13",
-    plannedOn: "2032-03-13",
     description: `Receita sem conta issue 546 ${suffix}`,
   });
-  const destinationOnly = await createTransactionForContext(PERSONAL_CONTEXT, {
+  await insertDetachedIncome({
+    destinationAccountId: selectedAccount.id,
     categoryId: incomeCategory.id,
-    kind: "income",
-    status: "posted",
     amountMinor: 4_000,
     occurredOn: "2032-03-14",
-    plannedOn: "2032-03-14",
     description: `Receita apenas no destino issue 546 ${suffix}`,
   });
-  await query(
-    `update "Transaction"
-        set "destinationAccountId" = $1
-      where "id" = $2
-        and "organizationId" = $3
-        and "financialProfileId" = $4`,
-    [
-      selectedAccount.id,
-      destinationOnly.id,
-      PERSONAL_CONTEXT.organizationId,
-      PERSONAL_CONTEXT.financialProfileId,
-    ],
-  );
 
   const filters = parseCategoryEvolutionFilters(
     new URLSearchParams({ interval: "monthly", start: "2032-03", periods: "1" }),
@@ -149,6 +132,19 @@ async function main(): Promise<void> {
   );
   assert.deepEqual(empty.currencyBlocks, []);
 
+  await assert.rejects(
+    () =>
+      buildCategoryEvolutionReportForAccountContext(
+        {
+          ...PERSONAL_CONTEXT,
+          organizationId: "44444444-4444-4444-8444-444444444444",
+        },
+        filters,
+        selectedAccount.id,
+      ),
+    isAccountNotAvailable,
+  );
+
   await archiveAccountForContext(PERSONAL_CONTEXT, selectedAccount.id);
   await assert.rejects(
     () =>
@@ -157,8 +153,7 @@ async function main(): Promise<void> {
         filters,
         selectedAccount.id,
       ),
-    (error: unknown) =>
-      error instanceof CategoryEvolutionAccountNotAvailableError && error.statusCode === 404,
+    isAccountNotAvailable,
   );
 
   await assert.rejects(
@@ -168,7 +163,40 @@ async function main(): Promise<void> {
         filters,
         "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       ),
-    (error: unknown) =>
-      error instanceof CategoryEvolutionAccountNotAvailableError && error.statusCode === 404,
+    isAccountNotAvailable,
+  );
+}
+
+async function insertDetachedIncome(input: {
+  destinationAccountId?: string;
+  categoryId: string;
+  amountMinor: number;
+  occurredOn: string;
+  description: string;
+}): Promise<void> {
+  await query(
+    `insert into "Transaction"
+      ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
+       "categoryId", "kind", "status", "source", "amountMinor", "currency", "occurredOn",
+       "plannedOn", "description", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+     values ($1, $2, $3, null, $4, $5, 'INCOME', 'POSTED', 'MANUAL', $6, 'BRL', $7, $7,
+             $8, $9, $9, now(), now())`,
+    [
+      randomUUID(),
+      PERSONAL_CONTEXT.organizationId,
+      PERSONAL_CONTEXT.financialProfileId,
+      input.destinationAccountId ?? null,
+      input.categoryId,
+      input.amountMinor,
+      input.occurredOn,
+      input.description,
+      PERSONAL_CONTEXT.userId,
+    ],
+  );
+}
+
+function isAccountNotAvailable(error: unknown): boolean {
+  return (
+    error instanceof CategoryEvolutionAccountNotAvailableError && error.statusCode === 404
   );
 }
