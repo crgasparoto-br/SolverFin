@@ -16,6 +16,7 @@ import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
+import { handleReportsApiRequest } from "./reports-router.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 import { handleTransactionGroupActionsApiRequest } from "./transaction-group-actions-router.js";
 
@@ -105,6 +106,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (installmentsResult) {
       writeResponse(response, installmentsResult);
+      return;
+    }
+
+    const reportsResult = await handleReportsApiRequest(apiRequest);
+
+    if (reportsResult) {
+      writeResponse(response, reportsResult);
       return;
     }
 
@@ -242,28 +250,25 @@ async function readJsonBody(request: IncomingMessage): Promise<unknown> {
     return undefined;
   }
 
-  const raw = Buffer.concat(chunks).toString("utf8").trim();
-
-  if (!raw) {
-    return undefined;
-  }
+  const rawBody = Buffer.concat(chunks).toString("utf8");
 
   try {
-    return JSON.parse(raw);
+    return JSON.parse(rawBody) as unknown;
   } catch {
     throw Object.assign(new Error("Request body must be valid JSON."), {
-      code: "API_REQUEST_BODY_INVALID_JSON",
+      code: "API_REQUEST_BODY_INVALID",
       statusCode: 400,
     });
   }
 }
 
-function normalizeHeaders(headers: IncomingMessage["headers"]): Record<string, string | undefined> {
-  const normalized: Record<string, string | undefined> = {};
-
-  for (const [key, value] of Object.entries(headers)) {
-    normalized[key.toLowerCase()] = Array.isArray(value) ? value.join(", ") : value;
-  }
-
-  return normalized;
+function normalizeHeaders(
+  headers: IncomingMessage["headers"],
+): Readonly<Record<string, string | undefined>> {
+  return Object.fromEntries(
+    Object.entries(headers).map(([name, value]) => [
+      name,
+      Array.isArray(value) ? value.join(",") : value,
+    ]),
+  );
 }
