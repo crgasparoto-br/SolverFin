@@ -365,7 +365,7 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
   }
   if (body.amountMinor !== undefined) {
     const value = Number(body.amountMinor);
-    if (!Number.isSafeInter(value) || value <= 0) {
+    if (!Number.isSafeInteger(value) || value <= 0) {
       throw new ImportReviewError(
         "IMPORT_AMOUNT_INVALID",
         "Valor precisa ser um inteiro positivo em centavos.",
@@ -378,4 +378,167 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
   if (body.otherAccountId === null) payload.otherAccountId = null;
   else if (body.otherAccountId !== undefined)
     payload.otherAccountId = requireString(body, "otherAccountId");
-  if (body.categoryId === null) payload.categoryId = nullì(€•±Í”¥˜€¡‰½‘ä¹…Ñ•½Éå%€„ôôÕ¹‘•™¥¹•¤(€€€Á…å±½…¹…Ñ•½Éå%€ôÉ•ÅÕ¥É•MÑÉ¥¹œ¡‰½‘ä°€‰…Ñ•½Éå%ˆ¤ì(€¥˜€¡=‰©•Ğ¹­•åÌ¡Á…å±½…¤¹±•¹Ñ €ôôô€À¤ì(€€€Ñ¡É½Ü¹•Ü%µÁ½ÉÑI•Ù¥•İÉÉ½È (€€€€€€‰%5A=IQ}UAQ}IEU%Iˆ°(€€€€€€‰%¹™½Éµ”…¼µ•¹½ÌÕ´…µÁ¼Á…É„½ÉÉ¥¥È„±¥¹¡„¸ˆ°(€€€€¤ì(€ô(€É•ÑÕÉ¸Á…å±½…ì)ô()™Õ¹Ñ¥½¸É•…‘ÍÙ5…ÁÁ¥¹œ¡Ù…±Õ”èÕ¹­¹½İ¸¤èÍÙ%µÁ½ÉÑ5…ÁÁ¥¹œğÕ¹‘•™¥¹•ì(€¥˜€¡Ù…±Õ”€ôôôÕ¹‘•™¥¹•¤É•ÑÕÉ¸Õ¹‘•™¥¹•ì(€¥˜€¡ÑåÁ•½˜Ù…±Õ”€„ôô€‰½‰©•ĞˆñğÙ…±Õ”€ôôô¹Õ±°ñğÉÉ…ä¹¥ÍÉÉ…ä¡Ù…±Õ”¤¤ì(€€€Ñ¡É½Ü¹•Ü%µÁ½ÉÑI•Ù¥•İÉÉ½È (€€€€€€‰%5A=IQ}MY}5AA%9}%9Y1%ˆ°(€€€€€€‰5…Á•…µ•¹Ñ¼MXÁÉ•¥Í„Í•ÈÕ´½‰©•Ñ¼¸ˆ°(€€€€¤ì(€ô(€½¹ÍĞ¥¹ÁÕĞ€ôÙ…±Õ”…ÌI•½ÉñÍÑÉ¥¹œ°Õ¹­¹½İ¸øì(€½¹ÍĞÉ•…‘=ÁÑ¥½¹…±MÑÉ¥¹œ€ô€¡­•äèÍÑÉ¥¹œ¤èÍÑÉ¥¹œğÕ¹‘•™¥¹•€ôøì(€€€½¹ÍĞ…¹‘¥‘…Ñ”€ô¥¹ÁÕÑm­•åtì(€€€¥˜€¡…¹‘¥‘…Ñ”€ôôôÕ¹‘•™¥¹•ñğ…¹‘¥‘…Ñ”€ôôô¹Õ±°ñğMÑÉ¥¹œ¡…¹‘¥‘…Ñ”¤¹ÑÉ¥´ ¤¹±•¹Ñ €ôôô€À¤ì(€€€€€É•ÑÕÉ¸Õ¹‘•™¥¹•ì(€€€ô(€€€É•ÑÕÉ¸MÑÉ¥¹œ¡…¹‘¥‘…Ñ”¤ì(€ôì(€½¹ÍĞ‘…Ñ”€ôÉ•…‘=ÁÑ¥½¹…±MÑÉ¥¹œ ‰‘…Ñ”ˆ¤ì(€½¹ÍĞ‘•ÍÉ¥ÁÑ¥½¸€ôÉ•…‘=ÁÑ¥½¹…±MÑÉ¥¹œ ‰‘•ÍÉ¥ÁÑ¥½¸ˆ¤ì(€½¹ÍĞ…µ½Õ¹Ğ€ôÉ•…‘=ÁÑ¥½¹…±MÑÉ¥¹œ ‰…µ½Õ¹Ğˆ¤ì(€½¹ÍĞ¥¹½µ•µ½Õ¹Ğ€ôÉ•…‘=ÁÑ¥½¹…±MÑÉ¥¹œ ‰¥¹½µ•µ½Õ¹Ğˆ¤ì(€½¹ÍĞ•áÁ•¹Í•µ½Õ¹Ğ€ôÉ•…‘=ÁÑ¥½¹…±MÑÉ¥¹œ ‰•áÁ•¹Í•µ½Õ¹Ğˆ¤ì(€½¹ÍĞÉ•ÅÕ•ÍÑÍXÈ€ô(€€€¥¹ÁÕĞ¹Ù•ÉÍ¥½¸€ôôô€Èñğ(€€€¥¹ÁÕĞ¹Ù…±Õ•MÑÉ…Ñ•ä€„ôôÕ¹‘•™¥¹•ñğ(€€€¥¹½µ•µ½Õ¹Ğ€„ôôÕ¹‘•™¥¹•ñğ(€€€•áÁ•¹Í•µ½Õ¹Ğ€„ôôÕ¹‘•™¥¹•ì((€¥˜€¡É•ÅÕ•ÍÑÍXÈ¤ì(€€€½¹ÍĞÙ…±Õ•MÑÉ…Ñ•ä€ôMÑÉ¥¹œ¡¥¹ÁÕĞ¹Ù…±Õ•MÑÉ…Ñ•ä€üü€ˆˆ¤ì(€€€¥˜€¡Ù…±Õ•MÑÉ…Ñ•ä€„ôô€‰Í¥¹•ˆ€˜˜Ù…±Õ•MÑÉ…Ñ•ä€„ôô€‰ÍÁ±¥Ğˆ¤ì(€€€€€Ñ¡É½Ü¹•Ü%µÁ½ÉÑI•Ù¥•İÉÉ½È (€€€€€€€€‰%5A=IQ}MY}5AA%9}%9Y1%ˆ°(€€€€€€€€‰Í½±¡„Í”¼…ÉÅÕ¥Ù¼ÕÍ„Õ´Ù…±½È½´Í¥¹…°½Ô½±Õ¹…ÌÍ•Á…É…‘…Ì‘”•¹ÑÉ…‘„”Í‡µ‘„¸ˆ°(€€€€€€¤ì(€€€ô(€€€¥˜€¡Ù…±Õ•MÑÉ…Ñ•ä€ôôô€‰Í¥¹•ˆ¤ì(€€€€€¥˜€¡¥¹½µ•µ½Õ¹Ğ€„ôôÕ¹‘•™¥¹•ñğ•áÁ•¹Í•µµ½Õ¹Ğ€„ôôÕ¹‘•™¥¹•¤ì(€€€€€€€Ñ¡É½Ü¹•Ü%µÁ½ÉÑI•Ù¥•İÉÉ½È (€€€€€€€€€€‰%5A=IQ}MY}5AA%9}%9Y1%ˆ°(€€€€€€€€€€‰Y…±½Èƒé¹¥¼»¼Á½‘”Í•È½µ‰¥¹…‘¼½´½±Õ¹…Ì‘”•¹ÑÉ…‘„”Í‡µ‘„¸ˆ°(€€€€€€€€¤ì(€€€€€ô(€€€€€É•ÑÕÉ¸ì(€€€€€€€Ù•ÉÍ¥½¸è€È°(€€€€€€€Ù…±Õ•MÑÉ…Ñ•äè€‰Í¥¹•ˆ°(€€€€€€€€¸¸¸¡‘…Ñ”€ôôôÕ¹‘•™¥¹•€üíô€èì‘…Ñ”ô¤°(€€€€€€€€¸¸¸¡‘•ÍÉ¥ÁÑ¥½¸€ôôôÕ¹‘•™¥¹•€üíô€èì‘•ÍÉ¥ÁÑ¥½¸ô¤°(€€€€€€€€¸¸¸¡…µ½Õ¹Ğ€ôôôÕ¹‘•™¥¹•€üíô€èì…µ½Õ¹Ğô¤°(€€€€€ôì(€€€ô(€€€¥˜€¡…µ½Õ¹Ğ€„ôôÕ¹‘•™¥¹•¤ì(€€€€€Ñ¡É½Ü¹•Ü%µÁ½ÉÑI•Ù¥•İÉÉ½È (€€€€€€€€‰%5A=IQ}MY}5AA%9}%9Y1%ˆ°(€€€€€€€€‰½±Õ¹…ÌÍ•Á…É…‘…Ì‘”•¹ÑÉ…‘„”Í‡µ‘„»¼Á½‘•´Í•È½µ‰¥¹…‘…Ì½´Ù…±½Èƒé¹¥¼¸ˆ°(€€€€€€¤ì(€€€ô(€€€É•ÑÕÉ¸ì(€€€€€Ù•ÉÍ¥½¸è€È°(€€€€€Ù…±Õ•MÑÉ…Ñ•äè€‰ÍÁ±¥Ğˆ°(€€€€€€¸¸¸¡‘…Ñ”€ôôôÕ¹‘•™¥¹•€üíô€èì‘…Ñ”ô¤°(€€€€€€¸¸¸¡‘•ÍÉ¥ÁÑ¥½¸€ôôôÕ¹‘•™¥¹•€üíô€èì‘•ÍÉ¥ÁÑ¥½¸ô¤°(€€€€€€¸¸¸¡¥¹½µ•µ½Õ¹Ğ€ôôôÕ¹‘•™¥¹•€üíô€èì¥¹½µ•µ½Õ¹Ğô¤°(€€€€€€¸¸¸¡•áÁ•¹Í•µ½Õ¹Ğ€ôôôÕ¹‘•™¥¹•€üíô€èì•áÁ•¹Í•µ½Õ¹Ğô¤°(€€€ôì(€ô((€É•ÑÕÉ¸ì(€€€Ù•ÉÍ¥½¸è€È°(€€€Ù…±Õ•MÑÉ…Ñ•äè€‰Í¥¹•ˆ°(€€€€¸¸¸¡‘…Ñ”€ôôôÕ¹‘•™¥¹•€üíô€èì‘…Ñ”ô¤°(€€€€¸¸¸¡‘•ÍÉ¥ÁÑ¥½¸€ôôôÕ¹‘•™¥¹•€üíô€èì‘•ÍÉ¥ÁÑ¥½¸ô¤°(€€€€¸¸¸¡…µ½Õ¹Ğ€ôôôÕ¹‘•™¥¹•€üíô€èì…µ½Õ¹Ğô¤°(€ôì)ô()™Õ¹Ñ¥½¸É•…‘ÍÙ•±¥µ¥Ñ•È¡Ù…±Õ”èÕ¹­¹½İ¸¤èÍÙ•±¥µ¥Ñ•ÈğÕ¹‘•™¥¹•ì(€¥˜€¡Ù…±Õ”€ôôôÕ¹‘•™¥¹•¤É•ÑÕÉ¸Õ¹‘•™¥¹•ì(€¥˜€¡Ù…±Õ”€„ôô€ˆ°ˆ€˜˜Ù…±Õ”€„ôô€ˆìˆ¤ì(€€€Ñ¡É½Ü¹•Ü%µÁ½ÉÑI•Ù¥•İÉÉ½È (€€€€€€‰%5A=IQ}MY}1%5%QI}%9Y1%ˆ°(€€€€€€‰M•Á…É…‘½ÈMX‘•Ù”Í•ÈÙ¥ÉÕ±„½ÔÁ½¹Ñ¼”Ù¥ÉÕ±„¸ˆ°(€€€€¤ì(€ô(€É•ÑÕÉ¸Ù…±Õ”ì)ô()™Õ¹Ñ¥½¸½ÁÑ¥½¹…±=‰©•Ñ	½‘ä¡‰½‘äèÕ¹­¹½İ¸¤èI•½ÉñÍÑÉ¥¹œ°Õ¹­¹½İ¸øì(€É•ÑÕÉ¸‰½‘ä€ôôôÕ¹‘•™¥¹•€üíô€èÉ•ÅÕ¥É•=‰©•Ñ	½‘ä¡‰½‘ä¤ì)ô()™Õ¹Ñ¥½¸É•ÅÕ¥É•=‰©•Ñ	½‘ä¡‰½‘äèÕ¹­¹½İ¸¤èI•½ÉñÍÑÉ¥¹œ°Õ¹­¹½İ¸øì(€¥˜€¡ÑåÁ•½˜‰½‘ä€„ôô€‰½‰©•Ğˆñğ‰½‘ä€ôôô¹Õ±°ñğÉÉ…ä¹¥ÍÉÉ…ä¡‰½‘ä¤¤ì(€€€Ñ¡É½Ü¹•ÜÕÑ¡ÉÉ½È ‰UQ!}%9Y1%}I9Q%1Lˆ°€‰I•ÅÕ•ÍĞ‰½‘äµÕÍĞ‰”„)M=8½‰©•Ğ¸ˆ°€ĞÀÀ¤ì(€ô(€É•ÑÕÉ¸‰½‘ä…ÌI•½ÉñÍÑÉ¥¹œ°Õ¹­¹½İ¸øì)ô()™Õ¹Ñ¥½¸É•ÅÕ¥É•MÑÉ¥¹œ¡‰½‘äèI•½ÉñÍÑÉ¥¹œ°Õ¹­¹½İ¸ø°­•äèÍÑÉ¥¹œ¤èÍÑÉ¥¹œì(€½¹ÍĞÙ…±Õ”€ô‰½‘åm­•åtì(€¥˜€¡ÑåÁ•½˜Ù…±Õ”€„ôô€‰ÍÑÉ¥¹œˆñğÙ…±Õ”¹ÑÉ¥´ ¤¹±•¹Ñ €ôôô€À¤ì(€€€Ñ¡É½Ü¹•Ü%µÁ½ÉÑI•Ù¥•İÉÉ½È (€€€€€€‰%5A=IQ}%1}IEU%Iˆ°(€€€€€…µÁ¼€‘í­•åô”½‰É¥…Ñ½É¥¼Á…É„½¹Ñ¥¹Õ…È¹€°(€€€€¤ì(€ô(€É•ÑÕÉ¸Ù…±Õ”¹ÑÉ¥´ ¤ì)ô()™Õ¹Ñ¥½¸É•ÅÕ¥É•A…É…´¡µ…Ñ èI•…‘½¹±äñI•½ÉñÍÑÉ¥¹œ°ÍÑÉ¥¹œøø°¹…µ”èÍÑÉ¥¹œ¤èÍÑÉ¥¹œì(€½¹ÍĞÙ…±Õ”€ôµ…Ñ¡m¹…µ•tì(€¥˜€ …Ù…±Õ”¤Ñ¡É½Ü¹•ÜÕÑ¡ÉÉ½È ‰UQ!}MMM%=9}IEU%Iˆ°€‰5¥ÍÍ¥¹œÉ•ÅÕ¥É•Á…Ñ Á…É…µ•Ñ•È¸ˆ°€ĞÀÀ¤ì(€É•ÑÕÉ¸Ù…±Õ”ì)ô()™Õ¹Ñ¥½¸‰Õ¥±‘ÕÑ¡!•…‘•ÉÌ¡…ÕÑ¡½É¥é…Ñ¥½¸èÍÑÉ¥¹œğÕ¹‘•™¥¹•¤èì(€…ÕÑ¡½É¥é…Ñ¥½¸üèÍÑÉ¥¹œì)ôì(€É•ÑÕÉ¸…ÕÑ¡½É¥é…Ñ¥½¸€ôôôÕ¹‘•™¥¹•€üíô€èì…ÕÑ¡½É¥é…Ñ¥½¸ôì)ô()™Õ¹Ñ¥½¸©Í½¸¡ÍÑ…ÑÕÍ½‘”è¹Õµ‰•È°‰½‘äèÕ¹­¹½İ¸¤èÁ¥I•ÍÁ½¹Í”ì(€É•ÑÕÉ¸ì(€€€ÍÑ…ÑÕÍ½‘”°(€€€¡•…‘•ÉÌèì€‰½¹Ñ•¹ĞµÑåÁ”ˆè€‰…ÁÁ±¥…Ñ¥½¸½©Í½¸ì¡…ÉÍ•ĞõÕÑ˜´àˆô°(€€€‰½‘ä°(€ôì)ô()™Õ¹Ñ¥½¸µ…Á½µ…¥¹ÉÉ½È¡•ÉÉ½ÈèÕ¹­¹½İ¸¤èÕ¹­¹½İ¸ì(€¥˜€¡•ÉÉ½È¥¹ÍÑ…¹•½˜%µÁ½ÉÑ¥±•ÉÉ½Èñğ•ÉÉ½È¥¹ÍÑ…¹•½˜%µÁ½ÉÑI•Ù¥•İÉÉ½È¤ì(€€€É•ÑÕÉ¸ì(€€€€€½‘”è•ÉÉ½È¹½‘”°(€€€€€ÍÑ…ÑÕÍ½‘”è•ÉÉ½È¹ÍÑ…ÑÕÍ½‘”°(€€€€€µ•ÍÍ…”è•ÉÉ½È¹µ•ÍÍ…”°(€€€ôì(€ô(€¥˜€¡•ÉÉ½È¥¹ÍÑ…¹•½˜Q•¹…¹ÑÉÉ½È¤ì(€€€É•ÑÕÉ¸ì(€€€€€½‘”è•ÉÉ½È¹½‘”°(€€€€€ÍÑ…ÑÕÍ½‘”è•ÉÉ½È¹½‘”€ôôô€‰Q99Q}AI=%1}IEU%Iˆ€ü€ĞÀĞ€è€ĞÀÌ°(€€€€€µ•ÍÍ…”è•ÉÉ½È¹µ•ÍÍ…”°(€€€ôì(€ô(€¥˜€¡•ÉÉ½È¥¹ÍÑ…¹•½˜Q•¹…¹ÑÕÑ¡½É¥é…Ñ¥½¹ÉÉ½È¤ì(€€€É•ÑÕÉ¸ì(€€€€€½‘”è•ÉÉ½È¹½‘”°(€€€€€ÍÑ…ÑÕÍ½‘”è•ÉÉ½È¹ÍÑ…ÑÕÍ½‘”°(€€€€€µ•ÍÍ…”è•ÉÉ½È¹µ•ÍÍ…”°(€€€ôì(€ô(€É•ÑÕÉ¸•ÉÉ½Èì)ô(
+  if (body.categoryId === null) payload.categoryId = null;
+  else if (body.categoryId !== undefined)
+    payload.categoryId = requireString(body, "categoryId");
+  if (Object.keys(payload).length === 0) {
+    throw new ImportReviewError(
+      "IMPORT_UPDATE_REQUIRED",
+      "Informe ao menos um campo para corrigir a linha.",
+    );
+  }
+  return payload;
+}
+
+function readCsvMapping(value: unknown): CsvImportMapping | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new ImportReviewError(
+      "IMPORT_CSV_MAPPING_INVALID",
+      "Mapeamento CSV precisa ser um objeto.",
+    );
+  }
+  const input = value as Record<string, unknown>;
+  const readOptionalString = (key: string): string | undefined => {
+    const candidate = input[key];
+    if (candidate === undefined || candidate === null || String(candidate).trim().length === 0) {
+      return undefined;
+    }
+    return String(candidate);
+  };
+  const date = readOptionalString("date");
+  const description = readOptionalString("description");
+  const amount = readOptionalString("amount");
+  const incomeAmount = readOptionalString("incomeAmount");
+  const expenseAmount = readOptionalString("expenseAmount");
+  const requestsV2 =
+    input.version === 2 ||
+    input.valueStrategy !== undefined ||
+    incomeAmount !== undefined ||
+    expenseAmount !== undefined;
+
+  if (requestsV2) {
+    const valueStrategy = String(input.valueStrategy ?? "");
+    if (valueStrategy !== "signed" && valueStrategy !== "split") {
+      throw new ImportReviewError(
+        "IMPORT_CSV_MAPPING_INVALID",
+        "Escolha se o arquivo usa um valor com sinal ou colunas separadas de entrada e saÃ­da.",
+      );
+    }
+    if (valueStrategy === "signed") {
+      if (incomeAmount !== undefined || expenseAmount !== undefined) {
+        throw new ImportReviewError(
+          "IMPORT_CSV_MAPPING_INVALID",
+          "Valor Ãºnico nÃ£o pode ser combinado com colunas de entrada e saÃ­da.",
+        );
+      }
+      return {
+        version: 2,
+        valueStrategy: "signed",
+        ...(date === undefined ? {} : { date }),
+        ...(description === undefined ? {} : { description }),
+        ...(amount === undefined ? {} : { amount }),
+      };
+    }
+    if (amount !== undefined) {
+      throw new ImportReviewError(
+        "IMPORT_CSV_MAPPING_INVALID",
+        "Colunas separadas de entrada e saÃ­da nÃ£o podem ser combinadas com valor Ãºnico.",
+      );
+    }
+    return {
+      version: 2,
+      valueStrategy: "split",
+      ...(date === undefined ? {} : { date }),
+      ...(description === undefined ? {} : { description }),
+      ...(incomeAmount === undefined ? {} : { incomeAmount }),
+      ...(expenseAmount === undefined ? {} : { expenseAmount }),
+    };
+  }
+
+  return {
+    version: 2,
+    valueStrategy: "signed",
+    ...(date === undefined ? {} : { date }),
+    ...(description === undefined ? {} : { description }),
+    ...(amount === undefined ? {} : { amount }),
+  };
+}
+
+function readCsvDelimiter(value: unknown): CsvDelimiter | undefined {
+  if (value === undefined) return undefined;
+  if (value !== "," && value !== ";") {
+    throw new ImportReviewError(
+      "IMPORT_CSV_DELIMITER_INVALID",
+      "Separador CSV deve ser virgula ou ponto e virgula.",
+    );
+  }
+  return value;
+}
+
+function optionalObjectBody(body: unknown): Record<string, unknown> {
+  return body === undefined ? {} : requireObjectBody(body);
+}
+
+function requireObjectBody(body: unknown): Record<string, unknown> {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
+  }
+  return body as Record<string, unknown>;
+}
+
+function requireString(body: Record<string, unknown>, key: string): string {
+  const value = body[key];
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new ImportReviewError(
+      "IMPORT_FIELD_REQUIRED",
+      `Campo ${key} e obrigatorio para continuar.`,
+    );
+  }
+  return value.trim();
+}
+
+function requireParam(match: Readonly<Record<string, string>>, name: string): string {
+  const value = match[name];
+  if (!value) throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
+  return value;
+}
+
+function buildAuthHeaders(authorization: string | undefined): {
+  authorization?: string;
+} {
+  return authorization === undefined ? {} : { authorization };
+}
+
+function json(statusCode: number, body: unknown): ApiResponse {
+  return {
+    statusCode,
+    headers: { "content-type": "application/json; charset=utf-8" },
+    body,
+  };
+}
+
+function mapDomainError(error: unknown): unknown {
+  if (error instanceof ImportFileError || error instanceof ImportReviewError) {
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
+  }
+  if (error instanceof TenantError) {
+    return {
+      code: error.code,
+      statusCode: error.code === "TENANT_PROFILE_REQUIRED" ? 404 : 403,
+      message: error.message,
+    };
+  }
+  if (error instanceof TenantAuthorizationError) {
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
+  }
+  return error;
+}
