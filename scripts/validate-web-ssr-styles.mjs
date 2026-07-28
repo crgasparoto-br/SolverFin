@@ -182,13 +182,69 @@ function fixtureApiResponse(input) {
         recentItems: [],
       },
     ],
-    ["/api/transactions", { transactions: [] }],
+    [
+      "/api/transactions",
+      {
+        transactions: [
+          {
+            id: "ssr-style-remuneration-transaction",
+            description: "Remuneração CDI fictícia",
+            kind: "income",
+            status: "posted",
+            source: "account_remuneration",
+            amountMinor: 123,
+            currency: "BRL",
+            occurredOn: "2026-07-16",
+            plannedOn: "2026-07-16",
+            effectiveOn: "2026-07-16",
+            accountId: "ssr-style-account",
+            categoryId: "ssr-style-income-category",
+            accountRemuneration: {
+              indexKind: "cdi",
+              competenceOn: "2026-07-15",
+              processedOn: "2026-07-16T00:00:00.000Z",
+              balanceBaseMinor: 100000,
+              dailyRatePercent: 0.05,
+              remunerationPercent: 100,
+              appliedDailyRatePercent: 0.05,
+              originalAmountMinor: 123,
+              manuallyAdjusted: false,
+            },
+          },
+        ],
+      },
+    ],
     ["/api/transaction-groups", { groups: [] }],
     ["/api/bank-message-inbox", { messages: [] }],
     ["/api/ai-review-queue", { suggestions: [] }],
     ["/api/invoices", { invoices: [] }],
-    ["/api/accounts", { accounts: [] }],
-    ["/api/categories", { categories: [] }],
+    [
+      "/api/accounts",
+      {
+        accounts: [
+          {
+            id: "ssr-style-account",
+            name: "Conta fictícia do contrato SSR",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 100000,
+          },
+        ],
+      },
+    ],
+    [
+      "/api/categories",
+      {
+        categories: [
+          {
+            id: "ssr-style-income-category",
+            name: "Rendimentos fictícios",
+            kind: "income",
+            status: "active",
+          },
+        ],
+      },
+    ],
     ["/api/budgets", { budgets: [] }],
     ["/api/cards", { cards: [] }],
     ["/api/credit-card-accounts", { creditCardAccounts: [] }],
