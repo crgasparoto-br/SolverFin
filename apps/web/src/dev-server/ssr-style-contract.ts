@@ -242,7 +242,7 @@ export const solverFinSsrStyleContracts = [
     pageCssFragments: [".reports-heading {"],
   }),
   authenticated("settings", "/configuracoes", "settings-page.js", {
-    representativeHtmlFragments: ['class="secondary-heading"'],
+    representativeHtmlFragments: ['class="page-heading secondary-heading"'],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
     pageCssFragments: [".secondary-heading {"],
   }),
@@ -446,7 +446,7 @@ export function replaceHeadStyleCss(html: string, css: string): string {
 }
 
 export function removeStyleProviderFromDocument(html: string, providerCss: string): string {
-  return providerCss.length === 0 ? html : html.replace(providerCss, "");
+  return providerCss.length === 0 ? html : html.split(providerCss).join("");
 }
 
 export function removeStyleBlockByMarker(html: string, marker: string): string {

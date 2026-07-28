@@ -189,6 +189,7 @@ function fixtureApiResponse(input) {
     ["/api/invoices", { invoices: [] }],
     ["/api/accounts", { accounts: [] }],
     ["/api/categories", { categories: [] }],
+    ["/api/budgets", { budgets: [] }],
     ["/api/cards", { cards: [] }],
     ["/api/credit-card-accounts", { creditCardAccounts: [] }],
     ["/api/recurrences", { recurrences: [] }],
@@ -262,7 +263,7 @@ function runNegativeControls({
       expectViolation(
         validateDocument({
           contract,
-          html: html.replace(fragment, ""),
+          html: removeAllOccurrences(html, fragment),
           providers: providerCss,
         }),
         "provider=representative-html",
@@ -412,7 +413,7 @@ function runNegativeControls({
       expectViolation(
         validateDocument({
           contract,
-          html: html.replace(conditional.triggerHtmlFragment, ""),
+          html: removeAllOccurrences(html, conditional.triggerHtmlFragment),
           providers: providerCss,
         }),
         "representative renderer did not activate conditional provider trigger",
@@ -441,6 +442,10 @@ function runNegativeControls({
     "canonical route without contract",
     target,
   );
+}
+
+function removeAllOccurrences(value, fragment) {
+  return fragment.length === 0 ? value : value.split(fragment).join("");
 }
 
 function emptyStyleBlockByMarker(html, marker) {
