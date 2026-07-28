@@ -1,9 +1,9 @@
 name: Temporary format issue 546
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/546-category-evolution-controls-account-filter
+      - main
 
 permissions:
   contents: write
