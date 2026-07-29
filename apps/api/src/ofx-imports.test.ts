@@ -41,8 +41,7 @@ function transaction(fields: string): string {
 function assertInvalidOfx(content: string): void {
   assert.throws(
     () => preview(content),
-    (error: unknown) =>
-      error instanceof ImportReviewError && error.code === "IMPORT_OFX_INVALID",
+    (error: unknown) => error instanceof ImportReviewError && error.code === "IMPORT_OFX_INVALID",
   );
 }
 
@@ -209,30 +208,27 @@ describe("OFX import parser", () => {
     assertInvalidOfx(`<OFX><STMTRS>${transactionText}</STMTTRN></STMTRS></OFX>`);
   });
 
-  it(
-    "rejects missing transactions, unsupported extensions, invalid encoding and oversized files",
-    () => {
-      assertInvalidOfx(
-        "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST></BANKTRANLIST></STMTRS></OFX>",
-      );
-      assert.throws(
-        () =>
-          preview(ofx(transaction("<DTPOSTED>20260717<TRNAMT>-1<FITID>x")), {
-            originalFileName: "x.csv",
-          }),
-        (error: unknown) =>
-          error instanceof ImportReviewError && error.code === "IMPORT_FILE_KIND_UNSUPPORTED",
-      );
-      assert.throws(
-        () => preview("<OFX>\u0000</OFX>"),
-        (error: unknown) =>
-          error instanceof ImportReviewError && error.code === "IMPORT_FILE_ENCODING_INVALID",
-      );
-      assert.throws(
-        () => preview("<OFX>" + "x".repeat(5 * 1024 * 1024) + "</OFX>"),
-        (error: unknown) =>
-          error instanceof ImportReviewError && error.code === "IMPORT_FILE_TOO_LARGE",
-      );
-    },
-  );
+  it("rejects missing transactions, unsupported extensions, invalid encoding and oversized files", () => {
+    assertInvalidOfx(
+      "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST></BANKTRANLIST></STMTRS></OFX>",
+    );
+    assert.throws(
+      () =>
+        preview(ofx(transaction("<DTPOSTED>20260717<TRNAMT>-1<FITID>x")), {
+          originalFileName: "x.csv",
+        }),
+      (error: unknown) =>
+        error instanceof ImportReviewError && error.code === "IMPORT_FILE_KIND_UNSUPPORTED",
+    );
+    assert.throws(
+      () => preview("<OFX>\u0000</OFX>"),
+      (error: unknown) =>
+        error instanceof ImportReviewError && error.code === "IMPORT_FILE_ENCODING_INVALID",
+    );
+    assert.throws(
+      () => preview("<OFX>" + "x".repeat(5 * 1024 * 1024) + "</OFX>"),
+      (error: unknown) =>
+        error instanceof ImportReviewError && error.code === "IMPORT_FILE_TOO_LARGE",
+    );
+  });
 });
