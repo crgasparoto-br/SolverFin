@@ -15,7 +15,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for HTTP integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for HTTP integration tests.",
+  );
   const port = await reservePort();
   const serverPath = fileURLToPath(new URL("./server.js", import.meta.url));
   const child = spawn(process.execPath, [serverPath], {
@@ -34,34 +37,56 @@ async function main(): Promise<void> {
 
     const acceptedOfxContent = ofxWithPadding(1_100_000);
     assert.ok(
-      Buffer.byteLength(JSON.stringify(ofxPayload(accountId, acceptedOfxContent))) > 1_000_000,
+      Buffer.byteLength(
+        JSON.stringify(ofxPayload(accountId, acceptedOfxContent)),
+      ) > 1_000_000,
     );
     assert.ok(Buffer.byteLength(acceptedOfxContent, "utf8") < 5 * 1024 * 1024);
-    const acceptedOfx = await requestJson(baseUrl, "/api/import-batches/ofx/preview", {
-      token,
-      body: ofxPayload(accountId, acceptedOfxContent),
-    });
+    const acceptedOfx = await requestJson(
+      baseUrl,
+      "/api/import-batches/ofx/preview",
+      {
+        token,
+        body: ofxPayload(accountId, acceptedOfxContent),
+      },
+    );
     assert.equal(acceptedOfx.status, 200);
-    assert.equal(readBody<{ persisted: boolean }>(acceptedOfx).persisted, false);
+    assert.equal(
+      readBody<{ persisted: boolean }>(acceptedOfx).persisted,
+      false,
+    );
 
     const acceptedCsvContent = csvWithPadding(1_100_000);
     assert.ok(
-      Buffer.byteLength(JSON.stringify(csvPayload(accountId, acceptedCsvContent))) > 1_000_000,
+      Buffer.byteLength(
+        JSON.stringify(csvPayload(accountId, acceptedCsvContent)),
+      ) > 1_000_000,
     );
     assert.ok(Buffer.byteLength(acceptedCsvContent, "utf8") < 5 * 1024 * 1024);
-    const acceptedCsv = await requestJson(baseUrl, "/api/import-batches/csv/preview", {
-      token,
-      body: csvPayload(accountId, acceptedCsvContent),
-    });
+    const acceptedCsv = await requestJson(
+      baseUrl,
+      "/api/import-batches/csv/preview",
+      {
+        token,
+        body: csvPayload(accountId, acceptedCsvContent),
+      },
+    );
     assert.equal(acceptedCsv.status, 200);
-    assert.equal(readBody<{ persisted: boolean }>(acceptedCsv).persisted, false);
+    assert.equal(
+      readBody<{ persisted: boolean }>(acceptedCsv).persisted,
+      false,
+    );
 
     const oversizedContent = ofxWithPadding(5 * 1024 * 1024);
     assert.ok(Buffer.byteLength(oversizedContent, "utf8") > 5 * 1024 * 1024);
-    const oversized = await requestJson(baseUrl, "/api/import-batches/ofx/preview", {
-      token,
-      body: ofxPayload(accountId, oversizedContent),
-    });
+    const oversized = await requestJson(
+      baseUrl,
+      "/api/import-batches/ofx/preview",
+      {
+        token,
+        body: ofxPayload(accountId, oversizedContent),
+      },
+    );
     assert.equal(oversized.status, 400);
     assert.equal(readErrorCode(oversized), "IMPORT_FILE_TOO_LARGE");
 
@@ -85,7 +110,10 @@ async function main(): Promise<void> {
 
 async function login(baseUrl: string): Promise<string> {
   const response = await requestJson(baseUrl, "/api/session", {
-    body: { email: "demo@solverfin.example.invalid", password: "SolverFinDemo!2026" },
+    body: {
+      email: "demo@solverfin.example.invalid",
+      password: "SolverFinDemo!2026",
+    },
   });
   assert.equal(response.status, 201);
   return readBody<{ session: { token: string } }>(response).session.token;
@@ -104,7 +132,10 @@ async function createAccount(baseUrl: string, token: string): Promise<string> {
   return readBody<{ account: { id: string } }>(response).account.id;
 }
 
-function ofxPayload(accountId: string, content: string): Record<string, unknown> {
+function ofxPayload(
+  accountId: string,
+  content: string,
+): Record<string, unknown> {
   return {
     originalFileName: "limite-http.ofx",
     content,
@@ -113,7 +144,10 @@ function ofxPayload(accountId: string, content: string): Record<string, unknown>
   };
 }
 
-function csvPayload(accountId: string, content: string): Record<string, unknown> {
+function csvPayload(
+  accountId: string,
+  content: string,
+): Record<string, unknown> {
   return {
     originalFileName: "limite-http.csv",
     content,
@@ -148,7 +182,9 @@ async function requestJson(
     method: "POST",
     headers: {
       "content-type": "application/json",
-      ...(input.token === undefined ? {} : { authorization: `Bearer ${input.token}` }),
+      ...(input.token === undefined
+        ? {}
+        : { authorization: `Bearer ${input.token}` }),
     },
     body: JSON.stringify(input.body),
   });
