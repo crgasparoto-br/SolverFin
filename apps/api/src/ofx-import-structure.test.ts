@@ -94,6 +94,12 @@ describe("OFX structural scope", () => {
     assertInvalidOfx(
       `<OFX><CURDEF>USD<STMTRS><BANKTRANLIST>${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
     );
+    assertInvalidOfx(
+      `<OFX><STMTRS><CURDEF ISO="4217">USD<BANKTRANLIST>${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
+    );
+    assertInvalidOfx(
+      `<OFX><STMTRS><ns:CURDEF>USD<BANKTRANLIST>${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
+    );
 
     const result = preview(
       `<OFX><STMTRS><!-- <CURDEF>USD --> <![CDATA[<CURDEF>USD]]><CURDEF>BRL<BANKTRANLIST>${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
