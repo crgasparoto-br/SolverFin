@@ -81,15 +81,25 @@ describe("OFX structural scope", () => {
     assert.equal(result.suggestions[0]?.externalId, "unicode-active");
   });
 
-  it("reads CURDEF only from statement metadata, never from the transaction list", () => {
-    const result = preview(
-      "<OFX><STMTRS><BANKTRANLIST><CURDEF>USD" +
-        validTransaction +
-        "</BANKTRANLIST></STMTRS></OFX>",
-      "BRL",
+  it("rejects CURDEF outside canonical statement metadata", () => {
+    assertInvalidOfx(
+      `<OFX><STMTRS><BANKTRANLIST><CURDEF>USD${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
+    );
+    assertInvalidOfx(
+      `<OFX><STMTRS><BANKTRANLIST><STMTTRN><CURDEF>USD<DTPOSTED>20260729<TRNAMT>-10.25<FITID>nested-currency<NAME>Compra</BANKTRANLIST></STMTRS></OFX>`,
+    );
+    assertInvalidOfx(
+      `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><CURDEF>USD${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
+    );
+    assertInvalidOfx(
+      `<OFX><CURDEF>USD<STMTRS><BANKTRANLIST>${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
     );
 
+    const result = preview(
+      `<OFX><STMTRS><!-- <CURDEF>USD --> <![CDATA[<CURDEF>USD]]><CURDEF>BRL<BANKTRANLIST>${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
+    );
     assert.equal(result.suggestions[0]?.currency, "BRL");
+
     assertInvalidOfx(
       `<OFX><STMTRS><CURDEF>BRL<CURDEF>USD<BANKTRANLIST>${validTransaction}</BANKTRANLIST></STMTRS></OFX>`,
     );
