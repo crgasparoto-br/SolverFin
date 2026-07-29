@@ -69,6 +69,34 @@ async function main(): Promise<void> {
   });
   assert.equal(valid.statusCode, 200);
   assert.equal(readBody<{ preview?: never; state?: string }>(valid).state, "ready");
+
+  const sampleTransactions = Array.from({ length: 11 }, (_, index) => {
+    const rowNumber = index + 1;
+    return `<STMTTRN><DTPOSTED>202607${String(rowNumber).padStart(2, "0")}<TRNAMT>-${rowNumber}<FITID>${suffix}-sample-${rowNumber}<NAME>Amostra ${rowNumber}`;
+  }).join("");
+  const sampledPreview = await apiRequest(token, "POST", "/api/import-batches/ofx/preview", {
+    originalFileName: `sample-${suffix}.ofx`,
+    content: `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>${sampleTransactions}</BANKTRANLIST></STMTRS></OFX>`,
+    accountId,
+    consentAccepted: true,
+  });
+  assert.equal(sampledPreview.statusCode, 200);
+  const sampledBody = readBody<{
+    state: string;
+    persisted: boolean;
+    batch: { totalRows: number; validRows: number };
+    suggestions: Array<{ sourceRowNumber: number }>;
+  }>(sampledPreview);
+  assert.equal(sampledBody.state, "ready");
+  assert.equal(sampledBody.persisted, false);
+  assert.equal(sampledBody.batch.totalRows, 11);
+  assert.equal(sampledBody.batch.validRows, 11);
+  assert.equal(sampledBody.suggestions.length, 10);
+  assert.deepEqual(
+    sampledBody.suggestions.map((suggestion) => suggestion.sourceRowNumber),
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  );
+  assert.equal(await countOfxBatches(), beforeInvalidPreviews);
 }
 
 async function assertInvalidPreview(
