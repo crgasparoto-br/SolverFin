@@ -73,6 +73,32 @@ async function main(): Promise<void> {
   await assertInvalidPreview(token, accountId, duplicateDate);
   await assertInvalidCreation(token, accountId, duplicateDate);
 
+  const processingInstructionAmount = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST><STMTTRN>",
+    "<?ignored <TRNAMT>-999.99 ?>",
+    "<DTPOSTED>20260729</DTPOSTED><FITID>pi-amount</FITID><NAME>Escopo</NAME>",
+    "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+  ].join("");
+  const processingInstructionTransaction = [
+    '<?xml version="1.0"?>',
+    "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST>",
+    "<?ignored <STMTTRN><DTPOSTED>20260729</DTPOSTED><TRNAMT>-1</TRNAMT>",
+    "<FITID>pi-transaction</FITID><NAME>Registro inativo</NAME></STMTTRN> ?>",
+    "</BANKTRANLIST></STMTRS></OFX>",
+  ].join("");
+  const incompleteProcessingInstruction =
+    "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN><?ignored <TRNAMT>-1</STMTTRN></BANKTRANLIST></STMTRS></OFX>";
+
+  for (const content of [
+    processingInstructionAmount,
+    processingInstructionTransaction,
+    incompleteProcessingInstruction,
+  ]) {
+    await assertInvalidPreview(token, accountId, content);
+    await assertInvalidCreation(token, accountId, content);
+  }
+
   await assertInvalidAccountId(token, "/api/import-batches/ofx/preview", validContent);
   await assertInvalidAccountId(token, "/api/import-batches/ofx", validContent);
 
