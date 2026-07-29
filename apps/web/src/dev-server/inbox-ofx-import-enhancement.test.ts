@@ -41,18 +41,34 @@ describe("Inbox OFX import enhancement", () => {
   it("renders a mixed history with source labels and uses OFX suggestions as preview rows", () => {
     const html = enhanceInboxOfxImport(canonicalFixture());
 
-    assert.match(html, /sourceKind === "ofx" \? "OFX" : "CSV"/);
+    assert.match(
+      html,
+      /const labels = \{ csv: "CSV", ofx: "OFX", bank_message: "Mensagem bancária", manual: "Manual" \}/,
+    );
+    assert.match(html, /return labels\[sourceKind\] \|\| "Outra origem"/);
     assert.match(html, /formatSourceKind\(batch\.sourceKind\)/);
     assert.match(html, /preview\.suggestions/);
     assert.match(html, /Extratos importados/);
     assert.match(html, /Importe CSV ou OFX/);
   });
 
+  it("reloads the persisted source of truth before enabling retry after an ambiguous creation failure", () => {
+    const html = enhanceInboxOfxImport(canonicalFixture());
+
+    assert.match(
+      html,
+      /catch \(error\) \{\s*setStatus\(previewStatus, error\.message, "error"\);\s*await loadBatches\(\);\s*createButton\.disabled = false;/,
+    );
+  });
+
   it("preserves the query-string detail restoration and remains idempotent", () => {
     const enhanced = enhanceInboxOfxImport(canonicalFixture());
 
     assert.match(enhanced, /url\.searchParams\.set\("importBatchId", importBatchId\)/);
-    assert.match(enhanced, /new URL\(window\.location\.href\)\.searchParams\.get\("importBatchId"\)/);
+    assert.match(
+      enhanced,
+      /new URL\(window\.location\.href\)\.searchParams\.get\("importBatchId"\)/,
+    );
     assert.equal(enhanceInboxOfxImport(enhanced), enhanced);
     assert.equal(enhanceInboxOfxImport("<main>Dashboard</main>"), "<main>Dashboard</main>");
   });

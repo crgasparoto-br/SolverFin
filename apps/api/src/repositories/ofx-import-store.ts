@@ -13,10 +13,7 @@ import {
 import { query, withSharedTransaction, type QueryExecutor } from "../db.js";
 import { buildInsertAiSuggestionSql } from "./ai-suggestion-sql.js";
 import { insertAuditLogEntry } from "./audit.js";
-import {
-  getImportBatchDetailForContext,
-  type CreateImportBatchResult,
-} from "./imports.js";
+import { getImportBatchDetailForContext, type CreateImportBatchResult } from "./imports.js";
 import {
   buildOfxBatchAuditEntry,
   buildOfxConsentAuditEntry,
@@ -41,11 +38,7 @@ export async function persistOfxImportBatchForContext(
   payload: OfxImportPayload,
   preview: ImportPreview,
 ): Promise<CreateImportBatchResult> {
-  const duplicateId = await findImportBatchIdBySourceHash(
-    context,
-    preview.batch.sourceHash,
-    query,
-  );
+  const duplicateId = await findImportBatchIdBySourceHash(context, preview.batch.sourceHash, query);
   if (duplicateId !== undefined) return duplicateResult(context, duplicateId);
 
   const sameContentId = await findImportBatchIdByContentHash(

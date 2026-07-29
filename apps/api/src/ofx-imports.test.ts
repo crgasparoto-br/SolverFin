@@ -15,7 +15,10 @@ const context: TenantContext = {
 const now = "2026-07-28T12:00:00.000Z";
 const accountId = "44444444-4444-4444-8444-444444444444";
 
-function preview(content: string, overrides: Partial<Parameters<typeof parseOfxImportPreview>[0]> = {}) {
+function preview(
+  content: string,
+  overrides: Partial<Parameters<typeof parseOfxImportPreview>[0]> = {},
+) {
   return parseOfxImportPreview({
     context,
     now,
@@ -101,7 +104,9 @@ describe("OFX import parser", () => {
     const result = preview(
       ofx(
         [
-          transaction(`<DTPOSTED>20260717<TRNAMT>-1<FITID>one<NAME>Name preferred<MEMO>Memo ignored<REFNUM>${secret}`),
+          transaction(
+            `<DTPOSTED>20260717<TRNAMT>-1<FITID>one<NAME>Name preferred<MEMO>Memo ignored<REFNUM>${secret}`,
+          ),
           transaction("<DTPOSTED>20260718<TRNAMT>-2<FITID>two<MEMO>Memo fallback"),
           transaction("<DTPOSTED>20260719<TRNAMT>-3<FITID>three"),
         ].join(""),
@@ -126,8 +131,7 @@ describe("OFX import parser", () => {
 
   it("rejects a declared currency that differs from the selected account", () => {
     assert.throws(
-      () =>
-        preview(ofx(transaction("<DTPOSTED>20260717<TRNAMT>-1<FITID>eur-1"), "EUR")),
+      () => preview(ofx(transaction("<DTPOSTED>20260717<TRNAMT>-1<FITID>eur-1"), "EUR")),
       (error: unknown) =>
         error instanceof ImportReviewError && error.code === "IMPORT_ACCOUNT_CURRENCY_MISMATCH",
     );
@@ -180,7 +184,10 @@ describe("OFX import parser", () => {
       (error: unknown) => error instanceof ImportReviewError && error.code === "IMPORT_OFX_INVALID",
     );
     assert.throws(
-      () => preview(ofx(transaction("<DTPOSTED>20260717<TRNAMT>-1<FITID>x")), { originalFileName: "x.csv" }),
+      () =>
+        preview(ofx(transaction("<DTPOSTED>20260717<TRNAMT>-1<FITID>x")), {
+          originalFileName: "x.csv",
+        }),
       (error: unknown) =>
         error instanceof ImportReviewError && error.code === "IMPORT_FILE_KIND_UNSUPPORTED",
     );

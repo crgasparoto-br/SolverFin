@@ -124,7 +124,8 @@ function parseOfxDocument(input: {
         : parsedAmount.signedAmountMinor < 0
           ? "outflow"
           : "inflow";
-    const kind = direction === undefined ? undefined : direction === "outflow" ? "expense" : "income";
+    const kind =
+      direction === undefined ? undefined : direction === "outflow" ? "expense" : "income";
 
     if (occurredOn === undefined) {
       problems.push(rowError(rowNumber, "IMPORT_ROW_DATE_INVALID", "Informe uma data valida."));
@@ -139,7 +140,11 @@ function parseOfxDocument(input: {
 
     const trnType = normalizeText(readOfxTag(block, "TRNTYPE"))?.toUpperCase();
     const trnTypeDirection = inferTrnTypeDirection(trnType);
-    if (direction !== undefined && trnTypeDirection !== undefined && direction !== trnTypeDirection) {
+    if (
+      direction !== undefined &&
+      trnTypeDirection !== undefined &&
+      direction !== trnTypeDirection
+    ) {
       problems.push({
         rowNumber,
         severity: "warning",
@@ -248,11 +253,7 @@ function buildAmountProblem(
     return rowError(rowNumber, "IMPORT_ROW_AMOUNT_REQUIRED", "Informe um valor nesta linha.");
   }
   if (state === "zero") {
-    return rowError(
-      rowNumber,
-      "IMPORT_ROW_AMOUNT_ZERO",
-      "O valor precisa ser diferente de zero.",
-    );
+    return rowError(rowNumber, "IMPORT_ROW_AMOUNT_ZERO", "O valor precisa ser diferente de zero.");
   }
   return rowError(
     rowNumber,
@@ -282,9 +283,7 @@ function normalizeOfxDate(value: string | undefined): string | undefined {
 function inferTrnTypeDirection(value: string | undefined): "inflow" | "outflow" | undefined {
   if (value === undefined) return undefined;
   if (["CREDIT", "DEP", "DIRECTDEP", "INT", "DIV"].includes(value)) return "inflow";
-  if (
-    ["DEBIT", "PAYMENT", "ATM", "CHECK", "DIRECTDEBIT", "FEE", "SRVCHG"].includes(value)
-  ) {
+  if (["DEBIT", "PAYMENT", "ATM", "CHECK", "DIRECTDEBIT", "FEE", "SRVCHG"].includes(value)) {
     return "outflow";
   }
   return undefined;
@@ -299,11 +298,7 @@ function normalizeCurrency(value: string | undefined): string | undefined {
   const normalized = normalizeText(value)?.toUpperCase();
   if (normalized === undefined) return undefined;
   if (!/^[A-Z]{3}$/.test(normalized)) {
-    throw new ImportReviewError(
-      "IMPORT_OFX_INVALID",
-      "A moeda declarada no OFX e invalida.",
-      422,
-    );
+    throw new ImportReviewError("IMPORT_OFX_INVALID", "A moeda declarada no OFX e invalida.", 422);
   }
   return normalized;
 }
@@ -320,4 +315,3 @@ function stripUtf8Bom(value: string): string {
 function rowError(rowNumber: number, code: string, message: string): ImportProblem {
   return { rowNumber, severity: "error", code, message };
 }
-

@@ -115,7 +115,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Schema/migration: Feito sem nova migration; o schema existente ja suporta origem, hashes, conta padrao e vinculos revisaveis.
 - Repository/API: Feito para CSV e OFX persistidos e revisaveis.
 - UI: Feito para preview, criacao, historico misto e revisao compartilhada na Inbox.
-- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao e privacidade.
+- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao, privacidade e ausência de sentinelas em logs; validacao Chrome mobile para upload, preview, criacao, histórico misto, restauração por URL e recuperação após falha ambígua.
 - Documentacao: Feito em `docs/IMPORTS.md`.
 - Nota: CSV e OFX possuem preview sem persistencia, historico, correcao por linha, aprovacao individual/em conjunto, rejeicao, descarte logico e criacao atomica de lancamentos. Controles de separador e mapeamento aparecem apenas para CSV. OFX normaliza `STMTTRN`, usa o sinal de `TRNAMT` como fonte canonica, valida `CURDEF` contra a conta selecionada e persiste sugestoes com provider/model dedicados. O arquivo bruto nunca e persistido, logado ou auditado.
 

@@ -20,6 +20,8 @@ Em `/inbox`, a ação **Importar extrato** permite:
 
 O histórico combina CSV e OFX e identifica a origem de cada lote. O lote aberto permanece em `?importBatchId=...`, inclusive após recarregar a página. Os controles de separador e mapeamento são exclusivos do CSV.
 
+Após timeout ou falha ambígua na criação, a Inbox recarrega o histórico persistido antes de reabilitar a tentativa. Assim, um lote criado pelo servidor apesar da perda da resposta reaparece como fonte de verdade e pode ser aberto sem depender do conteúdo bruto mantido em memória. Origens conhecidas recebem rótulos explícitos; uma origem desconhecida nunca é apresentada silenciosamente como CSV.
+
 ## Contratos de preview
 
 ```http

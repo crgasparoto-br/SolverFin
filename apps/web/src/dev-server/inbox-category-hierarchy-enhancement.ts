@@ -195,7 +195,7 @@ export function enhanceInboxCategoryHierarchy(
   if (withKindListener === enhanced) return ofxEnhanced;
   enhanced = withKindListener;
 
-  enhanced = enhanced.replace("<main", '<main data-inbox-category-hierarchy-enhanced');
+  enhanced = enhanced.replace("<main", "<main data-inbox-category-hierarchy-enhanced");
   enhanced = enhanced.replace(
     "</style>",
     `

@@ -9,12 +9,18 @@ export function enhanceInboxOfxImport(html: string): string {
       'data-open-dialog="csv-import-dialog" title="Importar extrato CSV"',
       'data-open-dialog="csv-import-dialog" title="Importar extrato CSV ou OFX"',
     ],
-    ['<h2 id="csv-import-title">Extratos CSV</h2>', '<h2 id="csv-import-title">Extratos importados</h2>'],
+    [
+      '<h2 id="csv-import-title">Extratos CSV</h2>',
+      '<h2 id="csv-import-title">Extratos importados</h2>',
+    ],
     [
       "Pré-visualize, corrija e confirme somente as linhas desejadas.",
       "Importe CSV ou OFX, revise os diagnósticos e confirme somente as linhas desejadas.",
     ],
-    ['<h2 id="csv-import-dialog-title">Importar CSV</h2>', '<h2 id="csv-import-dialog-title">Importar CSV ou OFX</h2>'],
+    [
+      '<h2 id="csv-import-dialog-title">Importar CSV</h2>',
+      '<h2 id="csv-import-dialog-title">Importar CSV ou OFX</h2>',
+    ],
     [
       `<label class="full-span">Arquivo CSV
           <input id="csv-import-file" name="file" type="file" accept=".csv,text/csv,text/plain" required />`,
@@ -37,7 +43,8 @@ export function enhanceInboxOfxImport(html: string): string {
           return labels[status] || status;
         }
         function formatSourceKind(sourceKind) {
-          return sourceKind === "ofx" ? "OFX" : "CSV";
+          const labels = { csv: "CSV", ofx: "OFX", bank_message: "Mensagem bancária", manual: "Manual" };
+          return labels[sourceKind] || "Outra origem";
         }`,
     ],
     [
@@ -113,6 +120,14 @@ export function enhanceInboxOfxImport(html: string): string {
     [
       `            form.reset(); state.preview = null; state.fileName = ""; previewResult.innerHTML = ""; mappingFields.hidden = true;`,
       `            form.reset(); state.preview = null; state.fileName = ""; previewResult.innerHTML = ""; mappingFields.hidden = true; refreshImportKindControls();`,
+    ],
+    [
+      `          } catch (error) { setStatus(previewStatus, error.message, "error"); createButton.disabled = false; }`,
+      `          } catch (error) {
+            setStatus(previewStatus, error.message, "error");
+            await loadBatches();
+            createButton.disabled = false;
+          }`,
     ],
   ];
 

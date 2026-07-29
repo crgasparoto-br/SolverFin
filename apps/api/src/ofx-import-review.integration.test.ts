@@ -23,11 +23,22 @@ async function main(): Promise<void> {
   const suffix = Date.now().toString(36);
   const accountId = await createAccount(token, suffix);
 
-  await assertPreviewDoesNotPersist(token, accountId, suffix);
-  const created = await assertConcurrentCreationConverges(token, accountId, suffix);
-  await assertReviewLifecycle(token, created);
-  await assertTenantIsolationAndMixedListing(token, created.importBatch.id);
-  await assertRawContentWasNotPersisted(suffix);
+  const capturedLogs: string[] = [];
+  await captureConsole(capturedLogs, async () => {
+    await assertPreviewDoesNotPersist(token, accountId, suffix);
+    const created = await assertConcurrentCreationConverges(token, accountId, suffix);
+    await assertReviewLifecycle(token, created);
+    await assertTenantIsolationAndMixedListing(token, created.importBatch.id);
+    await assertRawContentWasNotPersisted(suffix);
+  });
+  assert.equal(
+    capturedLogs.some((line) => line.includes(`preview-secret-${suffix}`)),
+    false,
+  );
+  assert.equal(
+    capturedLogs.some((line) => line.includes(`raw-persistence-secret-${suffix}`)),
+    false,
+  );
 }
 
 async function createAccount(token: string, suffix: string): Promise<string> {
@@ -198,6 +209,32 @@ async function assertRawContentWasNotPersisted(suffix: string): Promise<void> {
     [`%${secret}%`],
   );
   assert.equal(rows[0]?.total, 0);
+}
+
+async function captureConsole(lines: string[], action: () => Promise<void>): Promise<void> {
+  const methods = ["log", "info", "warn", "error"] as const;
+  const originals = Object.fromEntries(
+    methods.map((method) => [method, console[method]]),
+  ) as Record<(typeof methods)[number], typeof console.log>;
+  for (const method of methods) {
+    console[method] = (...values: unknown[]) => {
+      lines.push(values.map(formatConsoleValue).join(" "));
+    };
+  }
+  try {
+    await action();
+  } finally {
+    for (const method of methods) console[method] = originals[method];
+  }
+}
+
+function formatConsoleValue(value: unknown): string {
+  if (typeof value === "string") return value;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
 }
 
 function ofx(transactions: string): string {

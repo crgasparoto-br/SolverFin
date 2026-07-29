@@ -342,10 +342,7 @@ function assertConsent(body: Record<string, unknown>): void {
 function readImportSourceKind(value: string | null): ImportSourceKind | undefined {
   if (value === null || value.length === 0) return undefined;
   if (value !== "csv" && value !== "ofx") {
-    throw new ImportReviewError(
-      "IMPORT_SOURCE_KIND_INVALID",
-      "Origem deve ser csv ou ofx.",
-    );
+    throw new ImportReviewError("IMPORT_SOURCE_KIND_INVALID", "Origem deve ser csv ou ofx.");
   }
   return value;
 }
@@ -379,8 +376,7 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
   else if (body.otherAccountId !== undefined)
     payload.otherAccountId = requireString(body, "otherAccountId");
   if (body.categoryId === null) payload.categoryId = null;
-  else if (body.categoryId !== undefined)
-    payload.categoryId = requireString(body, "categoryId");
+  else if (body.categoryId !== undefined) payload.categoryId = requireString(body, "categoryId");
   if (Object.keys(payload).length === 0) {
     throw new ImportReviewError(
       "IMPORT_UPDATE_REQUIRED",
