@@ -38,6 +38,13 @@ function transaction(fields: string): string {
   return `<STMTTRN>${fields}</STMTTRN>`;
 }
 
+function assertInvalidOfx(content: string): void {
+  assert.throws(
+    () => preview(content),
+    (error: unknown) => error instanceof ImportReviewError && error.code === "IMPORT_OFX_INVALID",
+  );
+}
+
 describe("OFX import parser", () => {
   it("normalizes XML and SGML records using the amount sign as canonical direction", () => {
     const content = [
@@ -120,6 +127,21 @@ describe("OFX import parser", () => {
     assert.equal(JSON.stringify(result).includes(secret), false);
   });
 
+  it("decodes XML entities in normalized descriptions and identifiers", () => {
+    const result = preview(
+      [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST>",
+        "<STMTTRN><DTPOSTED>20260717</DTPOSTED><TRNAMT>-12.34</TRNAMT>",
+        "<FITID>fit-&#x31;</FITID><NAME>Mercado &amp; Farmácia</NAME></STMTTRN>",
+        "</BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    );
+
+    assert.equal(result.suggestions[0]?.description, "Mercado & Farmácia");
+    assert.equal(result.suggestions[0]?.externalId, "fit-1");
+  });
+
   it("uses the selected account currency when CURDEF is absent", () => {
     const result = preview(
       "<OFX><STMTRS><BANKTRANLIST><STMTTRN><DTPOSTED>20260717<TRNAMT>-1<FITID>usd-1</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
@@ -178,11 +200,16 @@ describe("OFX import parser", () => {
     assert.notEqual(first.suggestions[0]?.sourceHash, otherProfile.suggestions[0]?.sourceHash);
   });
 
+  it("rejects arbitrary or truncated content even when it contains STMTTRN", () => {
+    const transactionText = "<STMTTRN><DTPOSTED>20260717<TRNAMT>-10<FITID>x";
+    assertInvalidOfx(`ARQUIVO-NAO-OFX${transactionText}`);
+    assertInvalidOfx(`<OFX><STMTRS><BANKTRANLIST>${transactionText}`);
+    assertInvalidOfx(`<OFX>${transactionText}</STMTTRN></OFX>`);
+    assertInvalidOfx(`<OFX><STMTRS>${transactionText}</STMTTRN></STMTRS></OFX>`);
+  });
+
   it("rejects missing transactions, unsupported extensions, invalid encoding and oversized files", () => {
-    assert.throws(
-      () => preview("<OFX><STMTRS><CURDEF>BRL</CURDEF></STMTRS></OFX>"),
-      (error: unknown) => error instanceof ImportReviewError && error.code === "IMPORT_OFX_INVALID",
-    );
+    assertInvalidOfx("<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST></BANKTRANLIST></STMTRS></OFX>");
     assert.throws(
       () =>
         preview(ofx(transaction("<DTPOSTED>20260717<TRNAMT>-1<FITID>x")), {
