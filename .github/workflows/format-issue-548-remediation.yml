@@ -26,8 +26,15 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Reconstruct remediation package
+        run: |
+          cat .audit/parts/part-* > /tmp/issue-548-remediation.b64
+          echo "7064ffe964dc3b2725e724c0809db1ba97d42021d02c4d4daba450f0682d75ba  /tmp/issue-548-remediation.b64" | sha256sum -c -
+          base64 -d /tmp/issue-548-remediation.b64 > /tmp/issue-548-remediation.tar.gz
+          tar -tzf /tmp/issue-548-remediation.tar.gz > /tmp/issue-548-remediation-files.txt
+
       - name: Apply remediation package
-        run: tar -xzf .audit/issue-548-remediation.tar.gz
+        run: tar -xzf /tmp/issue-548-remediation.tar.gz
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
