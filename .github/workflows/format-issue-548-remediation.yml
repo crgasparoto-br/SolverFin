@@ -1,0 +1,72 @@
+name: Format issue 548 remediation
+
+on:
+  push:
+    branches:
+      - feat/548-ofx-inbox-import
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Apply remediation package
+        run: tar -xzf .audit/issue-548-remediation.tar.gz
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format repository
+        run: npm run format
+
+      - name: Package formatted remediation files
+        run: |
+          tar -czf issue-548-remediation-formatted.tar.gz \
+            .github/workflows/ci.yml \
+            apps/api/src/import-batches-router.ts \
+            apps/api/src/ofx-import-review.integration.test.ts \
+            apps/api/src/ofx-imports.test.ts \
+            apps/api/src/repositories/ofx-import-parser.ts \
+            apps/api/src/repositories/ofx-import-store.ts \
+            apps/api/src/repositories/ofx-imports.ts \
+            apps/web/src/dev-server/inbox-category-hierarchy-enhancement.ts \
+            apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts \
+            apps/web/src/dev-server/inbox-list-layout-enhancement.ts \
+            apps/web/src/dev-server/inbox-ofx-import-enhancement.test.ts \
+            apps/web/src/dev-server/inbox-ofx-import-enhancement.ts \
+            docs/IMPORTS.md \
+            docs/STATUS_MATRIX.md \
+            scripts/run-statement-visual-validation.mjs \
+            scripts/statement-visual/issue-548-inbox-ofx-review.mjs
+
+      - name: Upload formatted remediation files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-548-remediation-formatted-${{ github.sha }}
+          path: issue-548-remediation-formatted.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Package dependencies
+        run: tar -czf issue-548-node-modules.tar.gz node_modules
+
+      - name: Upload dependencies
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-548-node-modules-${{ github.sha }}
+          path: issue-548-node-modules.tar.gz
+          if-no-files-found: error
+          retention-days: 1

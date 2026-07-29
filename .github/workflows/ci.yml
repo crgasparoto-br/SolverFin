@@ -42,17 +42,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Package remediation checkout
-        run: tar --exclude=.git -czf /tmp/solverfin-remediation-source.tar.gz .
-
-      - name: Upload remediation checkout
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-548-remediation-source-${{ github.sha }}
-          path: /tmp/solverfin-remediation-source.tar.gz
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
