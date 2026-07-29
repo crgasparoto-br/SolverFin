@@ -39,7 +39,7 @@ export function enhanceInboxOfxImport(html: string): string {
           return labels[status] || status;
         }`,
       `        function formatStatus(status) {
-          const labels = { reviewing: "Em revisão", completed: "Concluído", failed: "Com falha", discarded: "Descartado", pending_review: "Pendente", approved: "Aprovada", rejected: "Rejeitada", expired: "Expirada" };
+          const labels = { ready: "Pronto para revisão", blocked: "Importação bloqueada", reviewing: "Em revisão", completed: "Concluído", failed: "Com falha", discarded: "Descartado", pending_review: "Pendente", approved: "Aprovada", rejected: "Rejeitada", expired: "Expirada" };
           return labels[status] || status;
         }
         function formatSourceKind(sourceKind) {
