@@ -225,9 +225,7 @@ function assertCanonicalOfxTransactionFields(content: string): void {
     transactionList.contentEnd,
   );
   const transactionOpenPattern = /<\s*STMTTRN(?:\s[^>]*)?>/gi;
-  const transactionOpens = [
-    ...transactionListBody.matchAll(transactionOpenPattern),
-  ];
+  const transactionOpens = [...transactionListBody.matchAll(transactionOpenPattern)];
 
   transactionOpens.forEach((open, index) => {
     const openEnd = (open.index ?? 0) + open[0].length;
