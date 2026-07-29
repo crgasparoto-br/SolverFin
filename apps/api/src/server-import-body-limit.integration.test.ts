@@ -33,7 +33,9 @@ async function main(): Promise<void> {
     const accountId = await createAccount(baseUrl, token);
 
     const acceptedContent = ofxWithPadding(1_100_000);
-    assert.ok(Buffer.byteLength(JSON.stringify(importPayload(accountId, acceptedContent))) > 1_000_000);
+    assert.ok(
+      Buffer.byteLength(JSON.stringify(importPayload(accountId, acceptedContent))) > 1_000_000,
+    );
     assert.ok(Buffer.byteLength(acceptedContent, "utf8") < 5 * 1024 * 1024);
     const accepted = await requestJson(baseUrl, "/api/import-batches/ofx/preview", {
       token,
@@ -103,8 +105,8 @@ function ofxWithPadding(paddingBytes: number): string {
   return [
     "OFXHEADER:100\nDATA:OFXSGML\n",
     "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>",
-    "<STMTTRN><DTPOSTED>20260720<TRNAMT>-1.23<FITID>http-limit<NAME>Limite HTTP",
-    "x".repeat(paddingBytes),
+    "<STMTTRN><DTPOSTED>20260720<TRNAMT>-1.23<FITID>http-limit<NAME>Limite HTTP</STMTTRN>",
+    `<IGNORED>${"x".repeat(paddingBytes)}</IGNORED>`,
     "</BANKTRANLIST></STMTRS></OFX>",
   ].join("");
 }
@@ -144,7 +146,9 @@ async function reservePort(): Promise<number> {
   const address = server.address();
   assert.ok(address && typeof address !== "string");
   const port = address.port;
-  await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  await new Promise<void>((resolve, reject) => {
+    server.close((error) => (error ? reject(error) : resolve()));
+  });
   return port;
 }
 
