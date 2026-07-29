@@ -5,10 +5,7 @@ import type { EntityId, ImportPreview, TenantContext } from "@solverfin/domain";
 import { query, type QueryExecutor } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { ImportReviewError, type CreateImportBatchResult } from "./imports.js";
-import {
-  buildOfxFailureAuditEntry,
-  buildOfxPreviewAuditEntry,
-} from "./ofx-import-audit.js";
+import { buildOfxFailureAuditEntry, buildOfxPreviewAuditEntry } from "./ofx-import-audit.js";
 import { parseOfxImportPreview } from "./ofx-import-parser.js";
 import { persistOfxImportBatchForContext } from "./ofx-import-store.js";
 import type { OfxAccountRow, OfxImportPayload } from "./ofx-import-types.js";
@@ -23,15 +20,8 @@ export async function previewOfxImportForContext(
   const attemptId = randomUUID();
   const occurredAt = new Date().toISOString();
   try {
-    const preview = await buildOfxImportPreviewForContext(
-      context,
-      payload,
-      occurredAt,
-    );
-    await insertAuditLogEntry(
-      query,
-      buildOfxPreviewAuditEntry(context, attemptId, preview),
-    );
+    const preview = await buildOfxImportPreviewForContext(context, payload, occurredAt);
+    await insertAuditLogEntry(query, buildOfxPreviewAuditEntry(context, attemptId, preview));
     return { ...preview, suggestions: preview.suggestions.slice(0, 10) };
   } catch (error) {
     await recordOfxFailure(context, attemptId, occurredAt, "preview", error);
@@ -46,11 +36,7 @@ export async function createOfxImportBatchForContext(
   const attemptId = randomUUID();
   const occurredAt = new Date().toISOString();
   try {
-    const preview = await buildOfxImportPreviewForContext(
-      context,
-      payload,
-      occurredAt,
-    );
+    const preview = await buildOfxImportPreviewForContext(context, payload, occurredAt);
     if (preview.state === "blocked") {
       throw new ImportReviewError(
         "IMPORT_OFX_NO_VALID_ROWS",
@@ -76,11 +62,7 @@ async function buildOfxImportPreviewForContext(
       "Confirme que o arquivo pode ser processado neste perfil financeiro.",
     );
   }
-  const account = await assertActiveOfxAccount(
-    context,
-    payload.accountId,
-    query,
-  );
+  const account = await assertActiveOfxAccount(context, payload.accountId, query);
   return parseOfxImportPreview({
     context,
     now,
@@ -98,8 +80,7 @@ async function recordOfxFailure(
   phase: "preview" | "creation",
   error: unknown,
 ): Promise<void> {
-  const errorCode =
-    error instanceof ImportReviewError ? error.code : "API_UNEXPECTED_ERROR";
+  const errorCode = error instanceof ImportReviewError ? error.code : "API_UNEXPECTED_ERROR";
   try {
     await insertAuditLogEntry(
       query,
