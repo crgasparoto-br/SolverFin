@@ -246,7 +246,10 @@ function isRecognizedOfxPrefix(prefix: string): boolean {
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
-  if (lines.length === 0 || !lines.every((line) => /^[A-Z0-9_]+\s*:[^\r\n]*$/i.test(line))) {
+  if (
+    lines.length === 0 ||
+    !lines.every((line) => /^[A-Z0-9_]+\s*:[^\r\n]*$/i.test(line))
+  ) {
     return false;
   }
   return (
