@@ -10,13 +10,13 @@ Em `/inbox`, a ação **Importar extrato** permite:
 
 1. selecionar um arquivo `.csv` ou `.ofx` e uma conta ativa;
 2. confirmar o consentimento de processamento;
-3. pré-visualizar contadores, propostas e problemas sem persistência;
+3. pré-visualizar contadores, propostas e problemas sem persistência do arquivo bruto;
 4. no CSV, detectar ou escolher o separador e mapear colunas quando necessário;
 5. criar o lote para revisão;
 6. corrigir, aprovar ou rejeitar cada linha;
 7. aprovar somente linhas selecionadas;
 8. buscar possíveis duplicidades e conciliações;
-9. descartar logicamente o lote sem efeitos financeiros.
+9. descartar logicamente o lote quando ainda não houver efeito financeiro.
 
 O histórico combina CSV e OFX e identifica a origem de cada lote. O lote aberto permanece em `?importBatchId=...`, inclusive após recarregar a página. Os controles de separador e mapeamento são exclusivos do CSV.
 
@@ -40,7 +40,26 @@ Payload comum:
 }
 ```
 
-O CSV também aceita `csvDelimiter` e `csvMapping`. O preview sempre informa `persisted: false`.
+O CSV também aceita `csvDelimiter` e `csvMapping`:
+
+```json
+{
+  "originalFileName": "extrato-julho.csv",
+  "content": "Data;Descrição;Valor\n17/07/2026;Mercado;-123,45",
+  "accountId": "ACCOUNT_ID",
+  "consentAccepted": true,
+  "csvDelimiter": ";",
+  "csvMapping": {
+    "version": 2,
+    "valueStrategy": "signed",
+    "date": "Data",
+    "description": "Descrição",
+    "amount": "Valor"
+  }
+}
+```
+
+O preview sempre informa `persisted: false`.
 
 Estados:
 
@@ -48,7 +67,7 @@ Estados:
 - `mapping_required`: somente CSV; o usuário deve escolher separador ou mapear colunas;
 - `blocked`: nenhuma linha válida pode seguir.
 
-O preview exige conta ativa e consentimento explícito. Ele retorna no máximo 10 propostas normalizadas e diagnósticos por linha. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado; somente um evento de auditoria redigido registra o resultado da tentativa.
+O preview exige conta ativa e consentimento explícito. Ele retorna no máximo 10 propostas normalizadas e diagnósticos por linha. No CSV, também retorna cabeçalhos, estratégia detectada e interpretação aplicada. Nenhum `ImportBatch`, `AiSuggestion`, candidato determinístico ou `Transaction` é criado; somente um evento de auditoria redigido registra o resultado da tentativa.
 
 ## Criação do lote
 
@@ -64,7 +83,15 @@ Campos obrigatórios:
 - `accountId` de uma conta ativa do perfil;
 - `consentAccepted: true`.
 
-Uma criação nova retorna `201`. Repetir o mesmo arquivo no mesmo contexto retorna `200`, o lote existente e `duplicateBatch: true`, sem duplicar sugestões. A identidade contextual considera origem, organização, perfil, conta e hash do conteúdo. Requisições concorrentes convergem para um único lote pela restrição única e por nova leitura do lote vencedor.
+Uma criação nova retorna `201`. Repetir a mesma identidade retorna `200`, o lote existente e `duplicateBatch: true`, sem duplicar sugestões. Requisições concorrentes convergem para um único lote pela restrição única e por nova leitura do lote vencedor.
+
+### Identidade por formato
+
+A identidade OFX usa SHA-256 e considera origem, organização, perfil financeiro, conta selecionada e hash seguro do conteúdo.
+
+A identidade CSV usa SHA-256 e considera origem, organização, perfil financeiro, conta, conteúdo, separador e mapeamento canônico. Lotes CSV legados continuam reconhecidos pela identidade anterior. O hash separado do conteúdo permite emitir `IMPORT_BATCH_CONFIGURATION_CHANGED` quando o mesmo arquivo é enviado com outra conta, separador ou mapeamento.
+
+No OFX, o mesmo conteúdo associado a outra conta também forma uma identidade diferente e recebe o diagnóstico de configuração alterada.
 
 O banco persiste:
 
@@ -80,7 +107,7 @@ O conteúdo bruto do arquivo não possui coluna de persistência e não aparece 
 
 ## CSV
 
-O CSV aceita até 5 MB, UTF-8 com ou sem BOM, quebras `LF` ou `CRLF`, delimitadores `,` e `;`, campos entre aspas, delimitadores dentro de aspas e aspas escapadas com `""`.
+O CSV aceita até 5 MB, UTF-8 com ou sem BOM, quebras `LF` ou `CRLF`, delimitadores `,` e `;`, campos entre aspas, delimitadores dentro de aspas e aspas escapadas com `""`. A detecção testa os dois separadores pelo resultado estrutural e pelo cabeçalho reconhecível; ela não decide pela contagem bruta de caracteres.
 
 Colunas obrigatórias:
 
@@ -88,16 +115,35 @@ Colunas obrigatórias:
 - descrição;
 - uma estratégia de valor.
 
-Estratégias:
+As estratégias aceitas são discriminadas e mutuamente exclusivas:
 
-- `version: 2`, `valueStrategy: signed` e `amount`: positivo gera receita e negativo gera despesa;
-- `version: 2`, `valueStrategy: split`, `incomeAmount` e `expenseAmount`: colunas separadas de entrada e saída, usando o módulo do número.
+- `version: 2`, `valueStrategy: signed` e `amount`: valor positivo gera receita e valor negativo gera despesa;
+- `version: 2`, `valueStrategy: split`, `incomeAmount` e `expenseAmount`: uma coluna representa entradas e a outra saídas, usando o módulo do número.
 
-Datas aceitas: `AAAA-MM-DD` e `DD/MM/AAAA`. Valores aceitam `1234.56`, `1,234.56`, `1234,56` e `1.234,56`. Tipo e direção derivam exclusivamente da estratégia de valor; uma coluna textual de tipo não sobrepõe o sinal.
+`Data Lançamento`, data do movimento ou data da transação têm prioridade sobre `Data Contábil`. `Descrição`, histórico ou memo têm prioridade sobre título/name. Cabeçalhos de saldo são reconhecidos como não transacionais e não podem ser usados como valor.
+
+Tipo e ID externo não aparecem no novo mapeamento genérico. O tipo vem somente do sinal ou da coluna de entrada/saída; `externalId` permanece apenas para leitura de lotes legados. A conta é escolhida no fluxo e não precisa existir como coluna. A categoria é definida durante a revisão. Cabeçalhos ambíguos exigem escolha explícita, o mesmo cabeçalho não pode atender dois campos e linhas com quantidade diferente de colunas recebem diagnóstico seguro sem exposição do conteúdo bruto.
+
+Datas aceitas:
+
+- `AAAA-MM-DD`;
+- `DD/MM/AAAA`.
+
+Valores aceitam sinais e padrões `1234.56`, `1,234.56`, `1234,56` e `1.234,56`. Na estratégia assinada, o sinal positivo indica receita e o negativo gera despesa, mesmo que exista uma coluna textual de tipo. Na estratégia separada, somente uma entre entrada e saída pode estar preenchida e diferente de zero; o valor persistido é sempre inteiro positivo em centavos.
 
 ## OFX
 
-O OFX aceita até 5 MB, texto UTF-8 com ou sem BOM e variações XML ou SGML usuais. O documento deve conter ao menos um bloco `STMTTRN`. As quatro rotas de importação reservam até 32 MiB para o envelope JSON, permitindo transportar com segurança o arquivo de 5 MB mesmo quando caracteres precisam ser escapados; as demais rotas da API mantêm o limite padrão de 1.000.000 bytes.
+O OFX aceita até 5 MB e texto UTF-8 com ou sem BOM. O subconjunto operacional reconhece:
+
+- XML com declaração opcional e envelope raiz `<OFX>...</OFX>`;
+- SGML com cabeçalho `OFXHEADER`/`DATA:OFXSGML` ou envelope iniciado diretamente em `<OFX>`;
+- seção de extrato `STMTRS` ou `CCSTMTRS`;
+- lista completa `<BANKTRANLIST>...</BANKTRANLIST>`;
+- ao menos um bloco `STMTTRN`.
+
+Conteúdo arbitrário que apenas contenha `STMTTRN`, envelope truncado, seção de extrato ausente, lista incompleta ou dados após o fechamento de `OFX` falham com `IMPORT_OFX_INVALID`. Entidades XML conhecidas e referências numéricas são decodificadas nos campos normalizados.
+
+As quatro rotas de importação reservam até 32 MiB para o envelope JSON, permitindo transportar com segurança o arquivo de 5 MB mesmo quando caracteres precisam ser escapados. As demais rotas da API mantêm o limite padrão de 1.000.000 bytes.
 
 Regras de normalização:
 
@@ -126,18 +172,49 @@ PATCH /api/import-batches/:importBatchId/suggestions/:suggestionId
 POST /api/import-batches/:importBatchId/suggestions/:suggestionId/approve
 POST /api/import-batches/:importBatchId/suggestions/:suggestionId/reject
 POST /api/import-batches/:importBatchId/approve-selected
+POST /api/import-batches/:importBatchId/detect-duplicates
 POST /api/import-batches/:importBatchId/discard
 ```
 
 Sem `sourceKind`, a listagem retorna CSV e OFX. O filtro aceita somente `csv` ou `ofx`.
 
-A edição mantém a linha em `pending_review` e invalida candidaturas determinísticas antigas. Data, descrição, valor, tipo, conta, outra conta e categoria podem ser revisados; moeda, ID externo, hash e origem permanecem imutáveis.
+A edição mantém a linha em `pending_review` e invalida candidaturas determinísticas antigas. Data, descrição, valor, tipo, conta de referência, outra conta e categoria podem ser revisados; moeda, ID externo, hash e origem permanecem imutáveis. Novas linhas usam `TransactionExtractionPayloadV2`, que preserva `direction: inflow|outflow`. Sugestões V1 pendentes derivam a direção por `income → inflow` e `expense → outflow` e só migram para V2 quando a edição exige transferência; linhas históricas resolvidas não são reinterpretadas.
 
-Antes de criar um lançamento, a aprovação executa novamente a detecção determinística. Possíveis duplicidades ou conciliações mantêm o lote em `reviewing` e retornam `409 IMPORT_REVIEW_CANDIDATE_PENDING`. A aprovação valida os dados na mesma transção que cria ou concilia o lançamento.
+Antes de criar um lançamento, a própria aprovação executa novamente a detecção determinística com o payload atual. Se houver possível duplicidade ou conciliação, a API persiste os candidatos, mantém o lote em `reviewing` e responde `409 IMPORT_REVIEW_CANDIDATE_PENDING`. A aprovação valida conta, categoria, tipo, data, moeda, valor e descrição dentro da mesma transação que cria o lançamento e finaliza a sugestão.
 
-O lançamento aprovado recebe `source: import`, `importBatchId`, `aiSuggestionId` e `status: posted`. Reenvios e concorrência são idempotentes. A aprovação em conjunto processa cada linha em transação independente e retorna resultados individualizados.
+O lançamento aprovado recebe:
 
-Transferências continuam sendo uma decisão de revisão: a inferência inicial de CSV e OFX fica limitada ao sinal/estratégia de valor. A outra conta deve ser ativa, distinta, do mesmo perfil e moeda.
+- `source: import`;
+- `importBatchId`;
+- `aiSuggestionId`;
+- `status: posted`.
+
+### Transferências na revisão
+
+O campo **Tipo** oferece Receita, Despesa e Transferência. A inferência inicial continua limitada ao sinal ou às colunas Entrada/Saída; textos como PIX ou TED não classificam uma linha automaticamente.
+
+Ao selecionar transferência, o usuário informa uma **Outra conta** ativa, distinta, do mesmo perfil e moeda. A conta da linha permanece como conta de referência do extrato:
+
+- `outflow`: referência é origem e a outra conta é destino;
+- `inflow`: outra conta é origem e a referência é destino.
+
+A aprovação cria uma única `Transaction kind=transfer`, com `transferGroupId` igual ao próprio identificador e dois movimentos derivados pelo domínio: débito na origem e crédito no destino. Categoria é opcional e, quando informada, deve ser ativa e do tipo `transfer`.
+
+A outra ponta importada é detectada pelo par de contas, valor, moeda, data e tipo. A conciliação vincula a nova sugestão à transferência existente sem sobrescrever `aiSuggestionId` ou `importBatchId` originais. Um lock transacional por identidade canônica faz aprovações concorrentes convergirem para uma criação e uma conciliação/idempotência.
+
+A chave única por sugestão torna repetições e concorrência idempotentes. Rejeições repetidas também retornam o estado já resolvido sem novo efeito.
+
+Em reenvios da mesma decisão, inclusive chamadas concorrentes que chegam depois da primeira confirmação, a API devolve o recurso já resolvido; não cria segundo lançamento, não altera contadores novamente e não duplica eventos de auditoria.
+
+A aprovação em conjunto rejeita IDs repetidos e processa cada linha em transação independente. A resposta contém `summary` (`requested`, `approved`, `failed`, `created`, `reconciled`, `idempotent`, `blocked`, `transferCount`, `transferTotalMinor`), `results` com o desfecho de cada item e `failures` para compatibilidade. Uma linha inválida, bloqueada por candidato ou já resolvida não desfaz nem oculta o resultado das demais linhas selecionadas.
+
+Na Inbox, a seleção é preservada ao trocar filtros e inclui apenas linhas elegíveis. Os filtros cobrem linhas elegíveis, candidatas pendentes, lançamentos criados, conciliações, duplicidades ignoradas, rejeições e problemas. O resumo do lote separa linhas válidas, pendentes, bloqueadas, aprovadas, conciliadas, ignoradas como duplicadas, rejeitadas, lançamentos vinculados e problemas. Antes da confirmação, a interface mostra quantidade, total de receitas, total de despesas e quantidade/total absoluto de transferências. Transferências não entram em receitas, despesas nem resultado. Em falha ou timeout, o detalhe é recarregado antes de uma nova tentativa. Lotes finalizados ficam somente para consulta e oferecem acesso ao Extrato.
+
+No modal **Corrigir linha**, a Inbox carrega a taxonomia canônica com `status=all` em uma única requisição para a página. O seletor nativo mostra caminhos completos, preserva o `categoryId` selecionado e oferece somente categorias ativas compatíveis com o tipo da linha. Categorias arquivadas podem aparecer apenas como ancestrais do caminho; pais ausentes e ciclos legados usam rótulos de fallback sem bloquear a revisão. Ao mudar entre receita, despesa e transferência, uma categoria incompatível ou indisponível é removida com aviso, mantendo os demais campos e o foco no modal.
+
+Quando uma conciliação é confirmada, o detalhe recarregado recupera o lançamento existente vinculado, sem criar uma segunda transação, e mantém a ação **Ver no Extrato** disponível com conta e competência corretas. Após rejeitar todos os candidatos de duplicidade e conciliação, a linha volta a poder seguir pela aprovação normal.
+
+Linhas legadas sem payload estruturado continuam listáveis para preservar o histórico. Elas são exibidas como somente leitura, recebem orientação para nova importação e qualquer tentativa de operação é recusada com erro controlado `IMPORT_SUGGESTION_PAYLOAD_INVALID`.
 
 ## Estados do lote
 
@@ -146,13 +223,13 @@ Transferências continuam sendo uma decisão de revisão: a inferência inicial 
 - `discarded`: encerrado logicamente pelo usuário;
 - `failed`: preview sem linha válida; não é persistido pela criação normal.
 
-Lotes descartados não aceitam novas operações. O descarte só é permitido enquanto não houver efeito financeiro.
+Lotes descartados não aceitam novas edições, aprovações nem novas varreduras determinísticas. O descarte só é permitido enquanto não houver efeito financeiro: extrações pendentes passam a `rejected`, candidatos determinísticos pendentes passam a `expired` e qualquer lote com efeito financeiro retorna `IMPORT_BATCH_HAS_FINANCIAL_EFFECTS`. Confirmar uma duplicidade apenas encerra a linha sem criar ou alterar lançamento, portanto o lote continua elegível para descarte; uma conciliação efetiva bloqueia o descarte porque altera o lançamento existente.
 
 ## Privacidade, isolamento e auditoria
 
-Todas as operações filtram por `organizationId` e `financialProfileId`. Recursos inexistentes ou pertencentes a outro perfil retornam `TENANT_RESOURCE_NOT_FOUND` sem revelar sua existência.
+Todas as operações filtram por `organizationId` e `financialProfileId`. Recursos inexistentes ou pertencentes a outro perfil retornam `TENANT_RESOURCE_NOT_FOUND`, sem revelar o tipo nem a existência do recurso protegido.
 
-A auditoria registra consentimento redigido, preview bem-sucedido, falhas controladas de preview ou criação, criação do lote e das sugestões, correções, decisões e efeitos financeiros apenas com mudanças redigidas. Conteúdo bruto CSV/OFX, campos bancários completos e segredos não são registrados. Quando a própria persistência de auditoria estiver indisponível, o erro funcional original é preservado para não substituir uma falha controlada por mensagem interna sem relação com a tentativa.
+A auditoria registra consentimento redigido, preview bem-sucedido, falhas controladas de preview ou criação, criação do lote e das sugestões, correções, decisões, criação ou conciliação de lançamento, descarte e expiração de candidaturas, sempre com mudanças redigidas. Conteúdo bruto CSV/OFX, campos bancários completos e segredos não são registrados. Quando a própria persistência de auditoria estiver indisponível, o erro funcional original é preservado para não substituir uma falha controlada por mensagem interna sem relação com a tentativa.
 
 ## Erros controlados principais
 
@@ -170,11 +247,20 @@ Comuns:
 - `IMPORT_ROW_AMOUNT_REQUIRED`;
 - `IMPORT_ROW_AMOUNT_ZERO`;
 - `IMPORT_ROW_NUMBER_INVALID`;
+- `IMPORT_TRANSFER_DIRECTION_INVALID`;
+- `IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED`;
+- `IMPORT_TRANSFER_OTHER_ACCOUNT_INVALID`;
+- `IMPORT_TRANSFER_SAME_ACCOUNT`;
+- `IMPORT_TRANSFER_CURRENCY_MISMATCH`;
+- `IMPORT_CATEGORY_INVALID`;
+- `IMPORT_CATEGORY_KIND_MISMATCH`;
 - `IMPORT_REVIEW_INVALID_TRANSITION`;
 - `IMPORT_REVIEW_CANDIDATE_PENDING`;
+- `IMPORT_REVIEW_DUPLICATE_SELECTION`;
 - `IMPORT_SUGGESTION_PAYLOAD_INVALID`;
 - `IMPORT_BATCH_DISCARDED`;
 - `IMPORT_BATCH_HAS_FINANCIAL_EFFECTS`;
+- `IMPORT_BATCH_READ_ONLY`;
 - `TENANT_RESOURCE_NOT_FOUND`.
 
 CSV:
@@ -184,6 +270,8 @@ CSV:
 - `IMPORT_CSV_NO_DATA_ROWS`;
 - `IMPORT_CSV_MAPPING_REQUIRED`;
 - `IMPORT_CSV_MAPPING_INVALID`;
+- `IMPORT_ROW_SPLIT_AMOUNT_CONFLICT`;
+- `IMPORT_ROW_SPLIT_AMOUNT_REQUIRED`;
 - `IMPORT_CSV_COLUMN_COUNT_MISMATCH`;
 - `IMPORT_CSV_NO_VALID_ROWS`.
 
