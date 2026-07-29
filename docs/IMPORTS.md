@@ -80,8 +80,10 @@ Campos obrigatórios:
 
 - `originalFileName`;
 - `content`;
-- `accountId` de uma conta ativa do perfil;
+- `accountId` como UUID canônico de uma conta ativa do perfil;
 - `consentAccepted: true`.
+
+Um `accountId` sintaticamente inválido é recusado com `IMPORT_ACCOUNT_INVALID` antes de qualquer consulta ao PostgreSQL.
 
 Uma criação nova retorna `201`. Repetir a mesma identidade retorna `200`, o lote existente e `duplicateBatch: true`, sem duplicar sugestões. Requisições concorrentes convergem para um único lote pela restrição única e por nova leitura do lote vencedor.
 
@@ -156,6 +158,8 @@ Regras de normalização:
 - `CURDEF` define a moeda do arquivo; se ausente, usa-se a moeda da conta selecionada;
 - `CURDEF` diferente da moeda da conta bloqueia o arquivo com `IMPORT_ACCOUNT_CURRENCY_MISMATCH`;
 - a conta escolhida pelo usuário é sempre a conta canônica das propostas.
+
+Cada um dos campos consumidos em uma movimentação — `DTPOSTED`, `TRNAMT`, `FITID`, `NAME`, `MEMO` e `TRNTYPE` — pode ocorrer no máximo uma vez dentro do mesmo `STMTTRN`. Uma repetição, ainda que os valores coincidam, torna a estrutura ambígua e retorna `IMPORT_OFX_INVALID`; ocorrências em comentários ou CDATA permanecem inativas e não entram na cardinalidade.
 
 Linhas inválidas geram diagnósticos por posição e não criam propostas. Se nenhuma linha for válida, o preview fica `blocked` e a criação retorna `IMPORT_OFX_NO_VALID_ROWS`. O parser não devolve campos bancários não utilizados nem valores brutos em problemas.
 
@@ -260,23 +264,3 @@ Comuns:
 - `IMPORT_SUGGESTION_PAYLOAD_INVALID`;
 - `IMPORT_BATCH_DISCARDED`;
 - `IMPORT_BATCH_HAS_FINANCIAL_EFFECTS`;
-- `IMPORT_BATCH_READ_ONLY`;
-- `TENANT_RESOURCE_NOT_FOUND`.
-
-CSV:
-
-- `IMPORT_CSV_STRUCTURE_INVALID`;
-- `IMPORT_CSV_HEADER_INVALID`;
-- `IMPORT_CSV_NO_DATA_ROWS`;
-- `IMPORT_CSV_MAPPING_REQUIRED`;
-- `IMPORT_CSV_MAPPING_INVALID`;
-- `IMPORT_ROW_SPLIT_AMOUNT_CONFLICT`;
-- `IMPORT_ROW_SPLIT_AMOUNT_REQUIRED`;
-- `IMPORT_CSV_COLUMN_COUNT_MISMATCH`;
-- `IMPORT_CSV_NO_VALID_ROWS`.
-
-OFX:
-
-- `IMPORT_OFX_INVALID`;
-- `IMPORT_OFX_NO_VALID_ROWS`;
-- `IMPORT_OFX_TRNTYPE_CONFLICT`.
