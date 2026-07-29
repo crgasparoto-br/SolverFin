@@ -67,6 +67,20 @@ describe("OFX structural scope", () => {
     );
   });
 
+  it("preserves structural offsets when inactive content follows astral Unicode", () => {
+    const result = preview(
+      [
+        "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>😀",
+        `<!-- ${validTransaction} -->`,
+        "<STMTTRN><DTPOSTED>20260730<TRNAMT>-2<FITID>unicode-active<NAME>Ativa",
+        "</BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    );
+
+    assert.equal(result.batch.totalRows, 1);
+    assert.equal(result.suggestions[0]?.externalId, "unicode-active");
+  });
+
   it("reads CURDEF only from statement metadata, never from the transaction list", () => {
     const result = preview(
       "<OFX><STMTRS><BANKTRANLIST><CURDEF>USD" +
