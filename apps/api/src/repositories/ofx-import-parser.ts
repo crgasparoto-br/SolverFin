@@ -91,6 +91,7 @@ function parseOfxDocument(input: {
   accountId: EntityId;
 }): ParsedOfxDocument {
   const normalizedContent = stripUtf8Bom(input.content);
+  assertRecognizedOfxEnvelope(normalizedContent);
   const currency = normalizeCurrency(readOfxTag(normalizedContent, "CURDEF"));
   const blocks = [
     ...normalizedContent.matchAll(
@@ -98,11 +99,7 @@ function parseOfxDocument(input: {
     ),
   ];
   if (blocks.length === 0) {
-    throw new ImportReviewError(
-      "IMPORT_OFX_INVALID",
-      "OFX precisa conter ao menos uma transacao STMTTRN.",
-      422,
-    );
+    throw invalidOfx("OFX precisa conter ao menos uma transacao STMTTRN.");
   }
 
   const suggestions: ImportTransactionSuggestion[] = [];
@@ -203,6 +200,61 @@ function parseOfxDocument(input: {
   };
 }
 
+function assertRecognizedOfxEnvelope(content: string): void {
+  const trimmed = content.trim();
+  const rootOpen = /<\s*OFX(?:\s[^>]*)?>/i.exec(trimmed);
+  if (rootOpen === null) {
+    throw invalidOfx("OFX precisa conter o envelope raiz OFX.");
+  }
+
+  const prefix = trimmed.slice(0, rootOpen.index).trim();
+  if (prefix.length > 0 && !isRecognizedOfxPrefix(prefix)) {
+    throw invalidOfx("Cabecalho OFX nao reconhecido.");
+  }
+
+  const afterRootOpen = rootOpen.index + rootOpen[0].length;
+  const rootCloseExpression = /<\s*\/\s*OFX\s*>/gi;
+  rootCloseExpression.lastIndex = afterRootOpen;
+  const rootClose = rootCloseExpression.exec(trimmed);
+  if (rootClose === null) {
+    throw invalidOfx("Envelope OFX incompleto.");
+  }
+
+  if (trimmed.slice(rootClose.index + rootClose[0].length).trim().length > 0) {
+    throw invalidOfx("OFX possui conteudo inesperado apos o envelope raiz.");
+  }
+
+  const body = trimmed.slice(afterRootOpen, rootClose.index);
+  if (!/<\s*(?:STMTRS|CCSTMTRS)\s*>/i.test(body)) {
+    throw invalidOfx("OFX precisa conter uma secao de extrato reconhecida.");
+  }
+  if (
+    !/<\s*BANKTRANLIST\s*>/i.test(body) ||
+    !/<\s*\/\s*BANKTRANLIST\s*>/i.test(body)
+  ) {
+    throw invalidOfx("OFX precisa conter uma lista BANKTRANLIST completa.");
+  }
+}
+
+function isRecognizedOfxPrefix(prefix: string): boolean {
+  const normalized = prefix.replace(/\r\n?/g, "\n").trim();
+  if (/^<\?xml[\s\S]*?\?>\s*(?:<!DOCTYPE[\s\S]*?>\s*)?$/i.test(normalized)) {
+    return true;
+  }
+
+  const lines = normalized
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  if (lines.length === 0 || !lines.every((line) => /^[A-Z0-9_]+\s*:[^\r\n]*$/i.test(line))) {
+    return false;
+  }
+  return (
+    lines.some((line) => /^OFXHEADER\s*:/i.test(line)) &&
+    lines.some((line) => /^DATA\s*:\s*OFXSGML\s*$/i.test(line))
+  );
+}
+
 function assertOfxInput(originalFileName: string, content: string): void {
   if (!originalFileName.trim().toLowerCase().endsWith(".ofx")) {
     throw new ImportReviewError(
@@ -298,18 +350,49 @@ function normalizeCurrency(value: string | undefined): string | undefined {
   const normalized = normalizeText(value)?.toUpperCase();
   if (normalized === undefined) return undefined;
   if (!/^[A-Z]{3}$/.test(normalized)) {
-    throw new ImportReviewError("IMPORT_OFX_INVALID", "A moeda declarada no OFX e invalida.", 422);
+    throw invalidOfx("A moeda declarada no OFX e invalida.");
   }
   return normalized;
 }
 
 function normalizeText(value: string | undefined): string | undefined {
-  const normalized = value?.trim();
+  const normalized = value === undefined ? undefined : decodeXmlEntities(value).trim();
   return normalized === undefined || normalized.length === 0 ? undefined : normalized;
+}
+
+function decodeXmlEntities(value: string): string {
+  return value.replace(
+    /&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-f]+);/gi,
+    (entity, token: string) => {
+      const normalized = token.toLowerCase();
+      if (normalized === "amp") return "&";
+      if (normalized === "lt") return "<";
+      if (normalized === "gt") return ">";
+      if (normalized === "quot") return '"';
+      if (normalized === "apos") return "'";
+
+      const codePoint = normalized.startsWith("#x")
+        ? Number.parseInt(normalized.slice(2), 16)
+        : Number.parseInt(normalized.slice(1), 10);
+      if (
+        !Number.isInteger(codePoint) ||
+        codePoint < 0 ||
+        codePoint > 0x10ffff ||
+        (codePoint >= 0xd800 && codePoint <= 0xdfff)
+      ) {
+        return entity;
+      }
+      return String.fromCodePoint(codePoint);
+    },
+  );
 }
 
 function stripUtf8Bom(value: string): string {
   return value.charCodeAt(0) === 0xfeff ? value.slice(1) : value;
+}
+
+function invalidOfx(message: string): ImportReviewError {
+  return new ImportReviewError("IMPORT_OFX_INVALID", message, 422);
 }
 
 function rowError(rowNumber: number, code: string, message: string): ImportProblem {
