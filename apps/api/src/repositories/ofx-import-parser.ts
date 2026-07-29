@@ -397,7 +397,7 @@ function assertNoTag(value: string, tagName: string): void {
 }
 
 function maskInactiveContent(value: string): string {
-  const characters = [...value];
+  const characters = value.split("");
   let index = 0;
 
   while (index < value.length) {
