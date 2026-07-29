@@ -6,12 +6,24 @@ import { query, type QueryExecutor } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { ImportReviewError, type CreateImportBatchResult } from "./imports.js";
 import { buildOfxFailureAuditEntry, buildOfxPreviewAuditEntry } from "./ofx-import-audit.js";
-import { parseOfxImportPreview } from "./ofx-import-parser.js";
+import { parseOfxImportPreview as parseOfxImportPreviewBase } from "./ofx-import-parser.js";
 import { persistOfxImportBatchForContext } from "./ofx-import-store.js";
 import type { OfxAccountRow, OfxImportPayload } from "./ofx-import-types.js";
 
 export type { OfxImportPayload } from "./ofx-import-types.js";
-export { parseOfxImportPreview } from "./ofx-import-parser.js";
+
+export function parseOfxImportPreview(input: {
+  context: TenantContext;
+  now: string;
+  originalFileName: string;
+  content: string;
+  accountId: EntityId;
+  accountCurrency: string;
+}): ImportPreview {
+  const preview = parseOfxImportPreviewBase(input);
+  assertCanonicalOfxCurrencyScope(input.content);
+  return preview;
+}
 
 export async function previewOfxImportForContext(
   context: TenantContext,
@@ -121,4 +133,71 @@ async function assertActiveOfxAccount(
     );
   }
   return account;
+}
+
+function assertCanonicalOfxCurrencyScope(content: string): void {
+  const masked = maskInactiveOfxContent(content);
+  const statement = findContainer(masked, ["STMTRS", "CCSTMTRS"]);
+  if (statement === undefined) return;
+
+  const transactionList = findContainer(
+    masked.slice(statement.contentStart, statement.contentEnd),
+    ["BANKTRANLIST"],
+    statement.contentStart,
+  );
+  if (transactionList === undefined) return;
+
+  const currencyTags = [...masked.matchAll(/<\s*CURDEF\b[^>]*>/gi)];
+  const hasNonCanonicalCurrency = currencyTags.some((match) => {
+    const position = match.index ?? -1;
+    const insideStatement =
+      position >= statement.contentStart && position < statement.contentEnd;
+    const insideTransactionList =
+      position >= transactionList.openStart && position < transactionList.closeEnd;
+    return !insideStatement || insideTransactionList;
+  });
+
+  if (hasNonCanonicalCurrency) {
+    throw new ImportReviewError(
+      "IMPORT_OFX_INVALID",
+      "CURDEF precisa pertencer aos metadados da secao de extrato, fora de BANKTRANLIST.",
+      422,
+    );
+  }
+}
+
+function maskInactiveOfxContent(value: string): string {
+  return value
+    .replace(/<!--[\s\S]*?-->/g, (match) => " ".repeat(match.length))
+    .replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, (match) => " ".repeat(match.length));
+}
+
+function findContainer(
+  value: string,
+  names: readonly string[],
+  offset = 0,
+):
+  | {
+      openStart: number;
+      contentStart: number;
+      contentEnd: number;
+      closeEnd: number;
+    }
+  | undefined {
+  const alternatives = names.join("|");
+  const openExpression = new RegExp(`<\\s*(${alternatives})(?:\\s[^>]*)?>`, "i");
+  const open = openExpression.exec(value);
+  if (open === null || open[1] === undefined) return undefined;
+
+  const contentStart = open.index + open[0].length;
+  const closeExpression = new RegExp(`<\\s*\\/\\s*${open[1]}\\s*>`, "i");
+  const close = closeExpression.exec(value.slice(contentStart));
+  if (close === null) return undefined;
+
+  return {
+    openStart: offset + open.index,
+    contentStart: offset + contentStart,
+    contentEnd: offset + contentStart + close.index,
+    closeEnd: offset + contentStart + close.index + close[0].length,
+  };
 }
