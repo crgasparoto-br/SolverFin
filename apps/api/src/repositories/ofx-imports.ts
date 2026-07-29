@@ -147,14 +147,17 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
   );
   if (transactionList === undefined) return;
 
-  const currencyTags = [...masked.matchAll(/<\s*CURDEF\b[^>]*>/gi)];
+  const currencyTags = [
+    ...masked.matchAll(/<\s*(?:[A-Za-z_][\w.-]*:)?CURDEF\b[^>]*>/gi),
+  ];
   const hasNonCanonicalCurrency = currencyTags.some((match) => {
     const position = match.index ?? -1;
+    const canonicalTag = /^<\s*CURDEF\s*>$/i.test(match[0]);
     const insideStatement =
       position >= statement.contentStart && position < statement.contentEnd;
     const insideTransactionList =
       position >= transactionList.openStart && position < transactionList.closeEnd;
-    return !insideStatement || insideTransactionList;
+    return !canonicalTag || !insideStatement || insideTransactionList;
   });
 
   if (hasNonCanonicalCurrency) {
