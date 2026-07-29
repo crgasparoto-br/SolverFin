@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
@@ -23,6 +23,7 @@ async function main(): Promise<void> {
   const suffix = Date.now().toString(36);
   const accountId = await createAccount(token, suffix);
   const transaction = `<STMTTRN><DTPOSTED>20260729<TRNAMT>-1<FITID>${suffix}-scope<NAME>Escopo`;
+  const beforeInvalidPreviews = await countOfxBatches();
 
   await assertInvalidPreview(
     token,
@@ -42,6 +43,23 @@ async function main(): Promise<void> {
       `<CCSTMTRS><CURDEF>BRL<BANKTRANLIST>${transaction}</BANKTRANLIST></CCSTMTRS></OFX>`,
     ].join(""),
   );
+  await assertInvalidPreview(
+    token,
+    accountId,
+    `<OFX><STMTRS><BANKTRANLIST><CURDEF>USD${transaction}</BANKTRANLIST></STMTRS></OFX>`,
+  );
+  await assertInvalidPreview(
+    token,
+    accountId,
+    `<OFX><STMTRS><BANKTRANLIST><STMTTRN><CURDEF>USD<DTPOSTED>20260729<TRNAMT>-1<FITID>${suffix}-nested<NAME>Escopo</BANKTRANLIST></STMTRS></OFX>`,
+  );
+  await assertInvalidPreview(
+    token,
+    accountId,
+    `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><CURDEF>USD${transaction}</BANKTRANLIST></STMTRS></OFX>`,
+  );
+
+  assert.equal(await countOfxBatches(), beforeInvalidPreviews);
 
   const valid = await apiRequest(token, "POST", "/api/import-batches/ofx/preview", {
     originalFileName: `valid-${suffix}.ofx`,
@@ -66,6 +84,13 @@ async function assertInvalidPreview(
   });
   assert.equal(response.statusCode, 422);
   assert.equal(readBody<{ error?: { code?: string } }>(response).error?.code, "IMPORT_OFX_INVALID");
+}
+
+async function countOfxBatches(): Promise<number> {
+  const rows = await query<{ total: number }>(
+    `select count(*)::int as total from "ImportBatch" where "sourceKind" = 'OFX'`,
+  );
+  return rows[0]?.total ?? 0;
 }
 
 async function createAccount(token: string, suffix: string): Promise<string> {
