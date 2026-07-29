@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -41,6 +41,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Package remediation checkout
+        run: tar --exclude=.git -czf /tmp/solverfin-remediation-source.tar.gz .
+
+      - name: Upload remediation checkout
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-548-remediation-source-${{ github.sha }}
+          path: /tmp/solverfin-remediation-source.tar.gz
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -89,34 +100,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Commit exact Prettier output
-        if: github.event_name == 'pull_request' && github.head_ref == 'feat/548-ofx-inbox-import'
-        env:
-          BRANCH_NAME: ${{ github.head_ref }}
-        run: |
-          files=(
-            apps/api/src/import-batches-router.ts
-            apps/api/src/ofx-import-review.integration.test.ts
-            apps/api/src/ofx-imports.test.ts
-            apps/api/src/repositories/ofx-import-parser.ts
-            apps/api/src/repositories/ofx-import-store.ts
-            apps/web/src/dev-server/inbox-ofx-import-enhancement.test.ts
-            apps/web/src/dev-server/inbox-ofx-import-enhancement.ts
-            docs/STATUS_MATRIX.md
-          )
-          git diff -- "${files[@]}" > /tmp/issue-548-format.patch
-          if [ ! -s /tmp/issue-548-format.patch ]; then
-            exit 0
-          fi
-          git fetch origin "$BRANCH_NAME"
-          git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
-          git apply /tmp/issue-548-format.patch
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- "${files[@]}"
-          git commit -m "style(imports): aplicar Prettier na issue 548"
-          git push origin "$BRANCH_NAME"
 
   integration-api-postgres:
     name: Integration API + PostgreSQL
