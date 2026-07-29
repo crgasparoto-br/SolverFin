@@ -34,12 +34,13 @@ async function main(): Promise<void> {
 
   const invalidPreview = await apiRequest(token, "POST", "/api/import-batches/ofx/preview", {
     originalFileName: `invalid-${suffix}.ofx`,
-    content: `<OFX><MEMO>${failureSecret}</MEMO></OFX>`,
+    content: `ARQUIVO-NAO-OFX<STMTTRN><DTPOSTED>20260720<TRNAMT>-1<FITID>${suffix}-invalid<REFNUM>${failureSecret}`,
     accountId,
     consentAccepted: true,
   });
   assert.equal(invalidPreview.statusCode, 422);
   assert.equal(readErrorCode(invalidPreview), "IMPORT_OFX_INVALID");
+  assert.equal(JSON.stringify(invalidPreview.body).includes(failureSecret), false);
 
   const blockedCreation = await apiRequest(token, "POST", "/api/import-batches/ofx", {
     originalFileName: `blocked-${suffix}.ofx`,
