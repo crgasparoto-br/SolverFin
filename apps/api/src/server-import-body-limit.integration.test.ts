@@ -32,23 +32,35 @@ async function main(): Promise<void> {
     const token = await login(baseUrl);
     const accountId = await createAccount(baseUrl, token);
 
-    const acceptedContent = ofxWithPadding(1_100_000);
+    const acceptedOfxContent = ofxWithPadding(1_100_000);
     assert.ok(
-      Buffer.byteLength(JSON.stringify(importPayload(accountId, acceptedContent))) > 1_000_000,
+      Buffer.byteLength(JSON.stringify(ofxPayload(accountId, acceptedOfxContent))) > 1_000_000,
     );
-    assert.ok(Buffer.byteLength(acceptedContent, "utf8") < 5 * 1024 * 1024);
-    const accepted = await requestJson(baseUrl, "/api/import-batches/ofx/preview", {
+    assert.ok(Buffer.byteLength(acceptedOfxContent, "utf8") < 5 * 1024 * 1024);
+    const acceptedOfx = await requestJson(baseUrl, "/api/import-batches/ofx/preview", {
       token,
-      body: importPayload(accountId, acceptedContent),
+      body: ofxPayload(accountId, acceptedOfxContent),
     });
-    assert.equal(accepted.status, 200);
-    assert.equal(readBody<{ persisted: boolean }>(accepted).persisted, false);
+    assert.equal(acceptedOfx.status, 200);
+    assert.equal(readBody<{ persisted: boolean }>(acceptedOfx).persisted, false);
+
+    const acceptedCsvContent = csvWithPadding(1_100_000);
+    assert.ok(
+      Buffer.byteLength(JSON.stringify(csvPayload(accountId, acceptedCsvContent))) > 1_000_000,
+    );
+    assert.ok(Buffer.byteLength(acceptedCsvContent, "utf8") < 5 * 1024 * 1024);
+    const acceptedCsv = await requestJson(baseUrl, "/api/import-batches/csv/preview", {
+      token,
+      body: csvPayload(accountId, acceptedCsvContent),
+    });
+    assert.equal(acceptedCsv.status, 200);
+    assert.equal(readBody<{ persisted: boolean }>(acceptedCsv).persisted, false);
 
     const oversizedContent = ofxWithPadding(5 * 1024 * 1024);
     assert.ok(Buffer.byteLength(oversizedContent, "utf8") > 5 * 1024 * 1024);
     const oversized = await requestJson(baseUrl, "/api/import-batches/ofx/preview", {
       token,
-      body: importPayload(accountId, oversizedContent),
+      body: ofxPayload(accountId, oversizedContent),
     });
     assert.equal(oversized.status, 400);
     assert.equal(readErrorCode(oversized), "IMPORT_FILE_TOO_LARGE");
@@ -92,9 +104,18 @@ async function createAccount(baseUrl: string, token: string): Promise<string> {
   return readBody<{ account: { id: string } }>(response).account.id;
 }
 
-function importPayload(accountId: string, content: string): Record<string, unknown> {
+function ofxPayload(accountId: string, content: string): Record<string, unknown> {
   return {
     originalFileName: "limite-http.ofx",
+    content,
+    accountId,
+    consentAccepted: true,
+  };
+}
+
+function csvPayload(accountId: string, content: string): Record<string, unknown> {
+  return {
+    originalFileName: "limite-http.csv",
     content,
     accountId,
     consentAccepted: true,
@@ -109,6 +130,13 @@ function ofxWithPadding(paddingBytes: number): string {
     `<IGNORED>${"x".repeat(paddingBytes)}</IGNORED>`,
     "</BANKTRANLIST></STMTRS></OFX>",
   ].join("");
+}
+
+function csvWithPadding(paddingBytes: number): string {
+  return [
+    "data,descricao,valor,observacao",
+    `20/07/2026,Compra limite HTTP,-1.23,"${"x".repeat(paddingBytes)}"`,
+  ].join("\n");
 }
 
 async function requestJson(
