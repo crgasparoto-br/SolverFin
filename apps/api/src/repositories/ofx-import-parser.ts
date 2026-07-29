@@ -23,6 +23,28 @@ interface ParsedOfxDocument {
   problems: ImportProblem[];
 }
 
+interface OfxEnvelope {
+  body: string;
+  maskedBody: string;
+  strictXml: boolean;
+}
+
+interface TagToken {
+  name: string;
+  closing: boolean;
+  selfClosing: boolean;
+  start: number;
+  end: number;
+}
+
+interface ContainerSlice {
+  name: string;
+  body: string;
+  maskedBody: string;
+  open: TagToken;
+  close: TagToken;
+}
+
 const MAX_OFX_BYTES = 5 * 1024 * 1024;
 
 export function parseOfxImportPreview(input: {
@@ -91,22 +113,13 @@ function parseOfxDocument(input: {
   accountId: EntityId;
 }): ParsedOfxDocument {
   const normalizedContent = stripUtf8Bom(input.content);
-  assertRecognizedOfxEnvelope(normalizedContent);
-  const currency = normalizeCurrency(readOfxTag(normalizedContent, "CURDEF"));
-  const blocks = [
-    ...normalizedContent.matchAll(
-      /<\s*STMTTRN\s*>([\s\S]*?)(?=<\s*\/\s*STMTTRN\s*>|<\s*STMTTRN\s*>|<\s*\/\s*BANKTRANLIST\s*>|$)/gi,
-    ),
-  ];
-  if (blocks.length === 0) {
-    throw invalidOfx("OFX precisa conter ao menos uma transacao STMTTRN.");
-  }
-
+  const structure = parseRecognizedOfxStructure(normalizedContent);
+  const currency = normalizeCurrency(structure.currency);
   const suggestions: ImportTransactionSuggestion[] = [];
   const problems: ImportProblem[] = [];
-  blocks.forEach((match, index) => {
+
+  structure.transactionBlocks.forEach((block, index) => {
     const rowNumber = index + 1;
-    const block = match[1] ?? "";
     const dateText = readOfxTag(block, "DTPOSTED");
     const amountText = readOfxTag(block, "TRNAMT");
     const parsedAmount = parseAmountMinor(amountText);
@@ -194,15 +207,63 @@ function parseOfxDocument(input: {
 
   return {
     ...(currency === undefined ? {} : { currency }),
-    totalRows: blocks.length,
+    totalRows: structure.transactionBlocks.length,
     suggestions,
     problems,
   };
 }
 
-function assertRecognizedOfxEnvelope(content: string): void {
+function parseRecognizedOfxStructure(content: string): {
+  currency?: string;
+  transactionBlocks: string[];
+} {
+  const envelope = readOfxEnvelope(content);
+  const statement = readSingleContainer(
+    envelope.body,
+    envelope.maskedBody,
+    ["STMTRS", "CCSTMTRS"],
+    "OFX precisa conter exatamente uma secao de extrato reconhecida.",
+  );
+
+  assertNoTag(envelope.maskedBody.slice(0, statement.open.start), "STMTTRN");
+  assertNoTag(envelope.maskedBody.slice(statement.close.end), "STMTTRN");
+
+  const transactionList = readSingleContainer(
+    statement.body,
+    statement.maskedBody,
+    ["BANKTRANLIST"],
+    "OFX precisa conter uma unica lista BANKTRANLIST completa.",
+  );
+
+  assertNoTag(statement.maskedBody.slice(0, transactionList.open.start), "STMTTRN");
+  assertNoTag(statement.maskedBody.slice(transactionList.close.end), "STMTTRN");
+
+  const metadata = [
+    statement.maskedBody.slice(0, transactionList.open.start),
+    statement.maskedBody.slice(transactionList.close.end),
+  ].join("\n");
+  const currencyValues = readOfxTagValues(metadata, "CURDEF");
+  if (currencyValues.length > 1) {
+    throw invalidOfx("OFX possui mais de uma moeda CURDEF na secao de extrato.");
+  }
+
+  const transactionBlocks = envelope.strictXml
+    ? readXmlTransactionBlocks(transactionList.maskedBody)
+    : readSgmlTransactionBlocks(transactionList.maskedBody);
+  if (transactionBlocks.length === 0) {
+    throw invalidOfx("OFX precisa conter ao menos uma transacao STMTTRN na lista BANKTRANLIST.");
+  }
+
+  return {
+    ...(currencyValues[0] === undefined ? {} : { currency: currencyValues[0] }),
+    transactionBlocks,
+  };
+}
+
+function readOfxEnvelope(content: string): OfxEnvelope {
   const trimmed = content.trim();
-  const rootOpen = /<\s*OFX(?:\s[^>]*)?>/i.exec(trimmed);
+  const masked = maskInactiveContent(trimmed);
+  const rootOpen = /<\s*OFX(?:\s[^>]*)?>/i.exec(masked);
   if (rootOpen === null) {
     throw invalidOfx("OFX precisa conter o envelope raiz OFX.");
   }
@@ -215,22 +276,155 @@ function assertRecognizedOfxEnvelope(content: string): void {
   const afterRootOpen = rootOpen.index + rootOpen[0].length;
   const rootCloseExpression = /<\s*\/\s*OFX\s*>/gi;
   rootCloseExpression.lastIndex = afterRootOpen;
-  const rootClose = rootCloseExpression.exec(trimmed);
+  const rootClose = rootCloseExpression.exec(masked);
   if (rootClose === null) {
     throw invalidOfx("Envelope OFX incompleto.");
   }
 
-  if (trimmed.slice(rootClose.index + rootClose[0].length).trim().length > 0) {
+  if (masked.slice(rootClose.index + rootClose[0].length).trim().length > 0) {
     throw invalidOfx("OFX possui conteudo inesperado apos o envelope raiz.");
   }
 
-  const body = trimmed.slice(afterRootOpen, rootClose.index);
-  if (!/<\s*(?:STMTRS|CCSTMTRS)\s*>/i.test(body)) {
-    throw invalidOfx("OFX precisa conter uma secao de extrato reconhecida.");
+  const nestedRoot = /<\s*OFX(?:\s[^>]*)?>/i.exec(masked.slice(afterRootOpen, rootClose.index));
+  if (nestedRoot !== null) {
+    throw invalidOfx("OFX possui envelope raiz aninhado ou duplicado.");
   }
-  if (!/<\s*BANKTRANLIST\s*>/i.test(body) || !/<\s*\/\s*BANKTRANLIST\s*>/i.test(body)) {
-    throw invalidOfx("OFX precisa conter uma lista BANKTRANLIST completa.");
+
+  return {
+    body: trimmed.slice(afterRootOpen, rootClose.index),
+    maskedBody: masked.slice(afterRootOpen, rootClose.index),
+    strictXml: /^<\?xml\b/i.test(prefix),
+  };
+}
+
+function readSingleContainer(
+  original: string,
+  masked: string,
+  names: string[],
+  errorMessage: string,
+): ContainerSlice {
+  const tokens = readTagTokens(masked, names);
+  const [open, close] = tokens;
+  if (
+    tokens.length !== 2 ||
+    open === undefined ||
+    close === undefined ||
+    open.closing ||
+    !close.closing ||
+    open.selfClosing ||
+    open.name !== close.name
+  ) {
+    throw invalidOfx(errorMessage);
   }
+
+  return {
+    name: open.name,
+    body: original.slice(open.end, close.start),
+    maskedBody: masked.slice(open.end, close.start),
+    open,
+    close,
+  };
+}
+
+function readTagTokens(value: string, names: string[]): TagToken[] {
+  const alternatives = names.map(escapeRegularExpression).join("|");
+  const expression = new RegExp(`<\\s*(\\/?)\\s*(${alternatives})(?:\\s[^>]*)?>`, "gi");
+  return [...value.matchAll(expression)].map((match) => ({
+    name: (match[2] ?? "").toUpperCase(),
+    closing: match[1] === "/",
+    selfClosing: /\/\s*>$/.test(match[0]),
+    start: match.index ?? 0,
+    end: (match.index ?? 0) + match[0].length,
+  }));
+}
+
+function readXmlTransactionBlocks(value: string): string[] {
+  const tokens = readTagTokens(value, ["STMTTRN"]);
+  const blocks: string[] = [];
+  let open: TagToken | undefined;
+
+  for (const token of tokens) {
+    if (token.selfClosing) {
+      throw invalidOfx("Bloco STMTTRN XML nao pode ser autocontido.");
+    }
+    if (!token.closing) {
+      if (open !== undefined) {
+        throw invalidOfx("Blocos STMTTRN XML nao podem ser aninhados.");
+      }
+      open = token;
+      continue;
+    }
+    if (open === undefined) {
+      throw invalidOfx("Fechamento STMTTRN XML sem abertura correspondente.");
+    }
+    blocks.push(value.slice(open.end, token.start));
+    open = undefined;
+  }
+
+  if (open !== undefined) {
+    throw invalidOfx("Bloco STMTTRN XML incompleto.");
+  }
+  return blocks;
+}
+
+function readSgmlTransactionBlocks(value: string): string[] {
+  const tokens = readTagTokens(value, ["STMTTRN"]);
+  const opens = tokens.filter((token) => !token.closing && !token.selfClosing);
+  const blocks: string[] = [];
+
+  opens.forEach((open, index) => {
+    const nextOpen = opens[index + 1];
+    const segmentEnd = nextOpen?.start ?? value.length;
+    const segment = value.slice(open.end, segmentEnd);
+    const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
+    blocks.push(segment.slice(0, close?.index ?? segment.length));
+  });
+
+  return blocks;
+}
+
+function readOfxTagValues(block: string, tagName: string): string[] {
+  const expression = new RegExp(`<\\s*${tagName}\\s*>\\s*([^<\\r\\n]+)`, "gi");
+  return [...block.matchAll(expression)]
+    .map((match) => normalizeText(match[1]))
+    .filter((value): value is string => value !== undefined);
+}
+
+function assertNoTag(value: string, tagName: string): void {
+  if (readTagTokens(value, [tagName]).length > 0) {
+    throw invalidOfx(`Bloco ${tagName} precisa pertencer a lista BANKTRANLIST suportada.`);
+  }
+}
+
+function maskInactiveContent(value: string): string {
+  const characters = [...value];
+  let index = 0;
+
+  while (index < value.length) {
+    const isComment = value.startsWith("<!--", index);
+    const isCdata = value.startsWith("<![CDATA[", index);
+    if (!isComment && !isCdata) {
+      index += 1;
+      continue;
+    }
+
+    const terminator = isComment ? "-->" : "]]>";
+    const end = value.indexOf(terminator, index + (isComment ? 4 : 9));
+    if (end < 0) {
+      throw invalidOfx(isComment ? "Comentario XML incompleto." : "Bloco CDATA incompleto.");
+    }
+    const maskedEnd = end + terminator.length;
+    for (let cursor = index; cursor < maskedEnd; cursor += 1) {
+      characters[cursor] = " ";
+    }
+    index = maskedEnd;
+  }
+
+  return characters.join("");
+}
+
+function escapeRegularExpression(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function isRecognizedOfxPrefix(prefix: string): boolean {
@@ -339,8 +533,7 @@ function inferTrnTypeDirection(value: string | undefined): "inflow" | "outflow" 
 }
 
 function readOfxTag(block: string, tagName: string): string | undefined {
-  const expression = new RegExp(`<\\s*${tagName}\\s*>\\s*([^<\\r\\n]+)`, "i");
-  return normalizeText(expression.exec(block)?.[1]);
+  return readOfxTagValues(block, tagName)[0];
 }
 
 function normalizeCurrency(value: string | undefined): string | undefined {
