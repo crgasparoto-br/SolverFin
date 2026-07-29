@@ -29,6 +29,7 @@ export function parseOfxImportPreview(input: {
   accountId: EntityId;
   accountCurrency: string;
 }): ImportPreview {
+  assertCanonicalOfxProcessingInstructions(input.content);
   const preview = parseOfxImportPreviewBase(input);
   assertCanonicalOfxCurrencyScope(input.content);
   assertCanonicalOfxTransactionFields(input.content);
@@ -151,6 +152,35 @@ async function assertActiveOfxAccount(
     );
   }
   return account;
+}
+
+function assertCanonicalOfxProcessingInstructions(content: string): void {
+  const masked = maskInactiveOfxContent(content);
+  const starts = [...masked.matchAll(/<\?/g)];
+  const instructions = [...masked.matchAll(/<\?[\s\S]*?\?>/g)];
+
+  if (starts.length !== instructions.length) {
+    throw new ImportReviewError(
+      "IMPORT_OFX_INVALID",
+      "Instrucao de processamento XML incompleta.",
+      422,
+    );
+  }
+
+  for (const instruction of instructions) {
+    const position = instruction.index ?? -1;
+    const isXmlDeclaration =
+      /^<\?xml(?:\s+[\s\S]*?)?\?>$/i.test(instruction[0]) &&
+      masked.slice(0, position).trim().length === 0;
+
+    if (!isXmlDeclaration) {
+      throw new ImportReviewError(
+        "IMPORT_OFX_INVALID",
+        "OFX aceita somente a declaracao XML antes do envelope raiz.",
+        422,
+      );
+    }
+  }
 }
 
 function assertCanonicalOfxCurrencyScope(content: string): void {
