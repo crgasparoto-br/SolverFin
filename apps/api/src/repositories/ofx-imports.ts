@@ -229,8 +229,7 @@ function assertCanonicalOfxTransactionFields(content: string): void {
 
   transactionOpens.forEach((open, index) => {
     const openEnd = (open.index ?? 0) + open[0].length;
-    const nextOpenStart =
-      transactionOpens[index + 1]?.index ?? transactionListBody.length;
+    const nextOpenStart = transactionOpens[index + 1]?.index ?? transactionListBody.length;
     const segment = transactionListBody.slice(openEnd, nextOpenStart);
     const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
     const block = segment.slice(0, close?.index ?? segment.length);
@@ -285,7 +284,5 @@ function findContainer(
 }
 
 function isUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value,
-  );
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
