@@ -66,11 +66,6 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
-      - name: Show canonical formatting diff
-        run: |
-          npx prettier apps/api/src/repositories/ofx-imports.ts apps/api/src/server-import-body-limit.integration.test.ts --write
-          git diff -- apps/api/src/repositories/ofx-imports.ts apps/api/src/server-import-body-limit.integration.test.ts
-
       - name: Check formatting
         run: npm run format:check
 
