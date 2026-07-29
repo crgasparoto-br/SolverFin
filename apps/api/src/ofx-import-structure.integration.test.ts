@@ -15,7 +15,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for OFX structure integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for OFX structure integration tests.",
+  );
   const token = await loginAndReadToken();
   const suffix = Date.now().toString(36);
   const accountId = await createAccount(token, suffix);
@@ -62,7 +65,10 @@ async function assertInvalidPreview(
     consentAccepted: true,
   });
   assert.equal(response.statusCode, 422);
-  assert.equal(readBody<{ error?: { code?: string } }>(response).error?.code, "IMPORT_OFX_INVALID");
+  assert.equal(
+    readBody<{ error?: { code?: string } }>(response).error?.code,
+    "IMPORT_OFX_INVALID",
+  );
 }
 
 async function createAccount(token: string, suffix: string): Promise<string> {
