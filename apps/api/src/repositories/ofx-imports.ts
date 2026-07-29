@@ -12,6 +12,15 @@ import type { OfxAccountRow, OfxImportPayload } from "./ofx-import-types.js";
 
 export type { OfxImportPayload } from "./ofx-import-types.js";
 
+const OFX_SINGLE_VALUE_TRANSACTION_TAGS = [
+  "DTPOSTED",
+  "TRNAMT",
+  "FITID",
+  "NAME",
+  "MEMO",
+  "TRNTYPE",
+] as const;
+
 export function parseOfxImportPreview(input: {
   context: TenantContext;
   now: string;
@@ -22,6 +31,7 @@ export function parseOfxImportPreview(input: {
 }): ImportPreview {
   const preview = parseOfxImportPreviewBase(input);
   assertCanonicalOfxCurrencyScope(input.content);
+  assertCanonicalOfxTransactionFields(input.content);
   return preview;
 }
 
@@ -113,6 +123,14 @@ async function assertActiveOfxAccount(
   accountId: EntityId,
   executeQuery: QueryExecutor,
 ): Promise<OfxAccountRow> {
+  if (!isUuid(accountId)) {
+    throw new ImportReviewError(
+      "IMPORT_ACCOUNT_INVALID",
+      "Conta selecionada possui identificador invalido.",
+      400,
+    );
+  }
+
   const rows = await executeQuery<OfxAccountRow>(
     `select "id", "status", "currency" from "Account"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
@@ -190,6 +208,48 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
   }
 }
 
+function assertCanonicalOfxTransactionFields(content: string): void {
+  const masked = maskInactiveOfxContent(content);
+  const statement = findContainer(masked, ["STMTRS", "CCSTMTRS"]);
+  if (statement === undefined) return;
+
+  const transactionList = findContainer(
+    masked.slice(statement.contentStart, statement.contentEnd),
+    ["BANKTRANLIST"],
+    statement.contentStart,
+  );
+  if (transactionList === undefined) return;
+
+  const transactionListBody = masked.slice(
+    transactionList.contentStart,
+    transactionList.contentEnd,
+  );
+  const transactionOpenPattern = /<\s*STMTTRN(?:\s[^>]*)?>/gi;
+  const transactionOpens = [
+    ...transactionListBody.matchAll(transactionOpenPattern),
+  ];
+
+  transactionOpens.forEach((open, index) => {
+    const openEnd = (open.index ?? 0) + open[0].length;
+    const nextOpenStart =
+      transactionOpens[index + 1]?.index ?? transactionListBody.length;
+    const segment = transactionListBody.slice(openEnd, nextOpenStart);
+    const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
+    const block = segment.slice(0, close?.index ?? segment.length);
+
+    for (const tagName of OFX_SINGLE_VALUE_TRANSACTION_TAGS) {
+      const tagPattern = new RegExp(`<\\s*${tagName}(?:\\s[^>]*)?>`, "gi");
+      if ([...block.matchAll(tagPattern)].length > 1) {
+        throw new ImportReviewError(
+          "IMPORT_OFX_INVALID",
+          `Transacao STMTTRN ${index + 1} possui mais de um campo ${tagName}.`,
+          422,
+        );
+      }
+    }
+  });
+}
+
 function maskInactiveOfxContent(value: string): string {
   return value
     .replace(/<!--[\s\S]*?-->/g, (match) => " ".repeat(match.length))
@@ -224,4 +284,10 @@ function findContainer(
     contentEnd: offset + contentStart + close.index,
     closeEnd: offset + contentStart + close.index + close[0].length,
   };
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
 }
