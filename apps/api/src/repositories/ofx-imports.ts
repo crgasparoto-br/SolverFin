@@ -149,6 +149,8 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
 
   const currencyTagPattern = /<\s*(?:[A-Za-z_][\w.-]*:)?CURDEF\b[^>]*>/gi;
   const currencyTags = [...masked.matchAll(currencyTagPattern)];
+  if (currencyTags.length === 0) return;
+
   const hasNonCanonicalCurrency = currencyTags.some((match) => {
     const position = match.index ?? -1;
     const canonicalTag = /^<\s*CURDEF\s*>$/i.test(match[0]);
@@ -162,6 +164,25 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
     throw new ImportReviewError(
       "IMPORT_OFX_INVALID",
       "CURDEF precisa pertencer aos metadados da secao de extrato, fora de BANKTRANLIST.",
+      422,
+    );
+  }
+
+  if (currencyTags.length !== 1) {
+    throw new ImportReviewError(
+      "IMPORT_OFX_INVALID",
+      "CURDEF deve ocorrer no maximo uma vez na secao de extrato.",
+      422,
+    );
+  }
+
+  const currencyTag = currencyTags[0];
+  const valueStart = (currencyTag.index ?? 0) + currencyTag[0].length;
+  const currencyValue = /^\s*([^<\r\n]*)/.exec(masked.slice(valueStart))?.[1]?.trim();
+  if (!currencyValue) {
+    throw new ImportReviewError(
+      "IMPORT_OFX_INVALID",
+      "CURDEF precisa declarar uma moeda quando estiver presente.",
       422,
     );
   }
