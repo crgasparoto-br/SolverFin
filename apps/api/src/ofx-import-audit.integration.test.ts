@@ -57,10 +57,12 @@ async function main(): Promise<void> {
   }>(
     `select "action", "reason", "redactedChanges"
      from "AuditLogEntry"
-     where "reason" like '%OFX%'
-       and "organizationId" = '22222222-2222-4222-8222-222222222222'
-       and "financialProfileId" = '33333333-3333-4333-8333-333333333333'
-       and "occurredAt" >= now() - interval '5 minutes'
+     where "occurredAt" >= now() - interval '5 minutes'
+       and (
+         "reason" = 'Preview OFX processado com consentimento explicito e sem persistir o arquivo bruto.'
+         or "reason" like '%IMPORT_OFX_INVALID%'
+         or "reason" like '%IMPORT_OFX_NO_VALID_ROWS%'
+       )
      order by "occurredAt" asc`,
   );
 
