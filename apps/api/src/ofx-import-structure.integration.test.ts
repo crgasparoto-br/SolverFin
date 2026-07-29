@@ -29,7 +29,8 @@ async function main(): Promise<void> {
   const suffix = Date.now().toString(36);
   const accountId = await createAccount(token, suffix);
   const transaction = `<STMTTRN><DTPOSTED>20260729<TRNAMT>-1<FITID>${suffix}-scope<NAME>Escopo`;
-  const validContent = `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>${transaction}</BANKTRANLIST></STMTRS></OFX>`;
+  const validContent =
+    `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>${transaction}</BANKTRANLIST></STMTRS></OFX>`;
   const beforeInvalidRequests = await readOfxPersistedState();
 
   await assertInvalidPreview(
@@ -75,7 +76,11 @@ async function main(): Promise<void> {
   await assertInvalidPreview(token, accountId, duplicateDate);
   await assertInvalidCreation(token, accountId, duplicateDate);
 
-  await assertInvalidAccountId(token, "/api/import-batches/ofx/preview", validContent);
+  await assertInvalidAccountId(
+    token,
+    "/api/import-batches/ofx/preview",
+    validContent,
+  );
   await assertInvalidAccountId(token, "/api/import-batches/ofx", validContent);
 
   assert.deepEqual(await readOfxPersistedState(), beforeInvalidRequests);
