@@ -48,7 +48,7 @@ Estados:
 - `mapping_required`: somente CSV; o usuário deve escolher separador ou mapear colunas;
 - `blocked`: nenhuma linha válida pode seguir.
 
-O preview exige conta ativa e consentimento explícito. Ele retorna no máximo 10 propostas normalizadas e diagnósticos por linha. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado.
+O preview exige conta ativa e consentimento explícito. Ele retorna no máximo 10 propostas normalizadas e diagnósticos por linha. Nenhum `ImportBatch`, `AiSuggestion` ou `Transaction` é criado; somente um evento de auditoria redigido registra o resultado da tentativa.
 
 ## Criação do lote
 
@@ -97,7 +97,7 @@ Datas aceitas: `AAAA-MM-DD` e `DD/MM/AAAA`. Valores aceitam `1234.56`, `1,234.56
 
 ## OFX
 
-O OFX aceita até 5 MB, texto UTF-8 com ou sem BOM e variações XML ou SGML usuais. O documento deve conter ao menos um bloco `STMTTRN`.
+O OFX aceita até 5 MB, texto UTF-8 com ou sem BOM e variações XML ou SGML usuais. O documento deve conter ao menos um bloco `STMTTRN`. As quatro rotas de importação reservam até 32 MiB para o envelope JSON, permitindo transportar com segurança o arquivo de 5 MB mesmo quando caracteres precisam ser escapados; as demais rotas da API mantêm o limite padrão de 1.000.000 bytes.
 
 Regras de normalização:
 
@@ -152,7 +152,7 @@ Lotes descartados não aceitam novas operações. O descarte só é permitido en
 
 Todas as operações filtram por `organizationId` e `financialProfileId`. Recursos inexistentes ou pertencentes a outro perfil retornam `TENANT_RESOURCE_NOT_FOUND` sem revelar sua existência.
 
-A auditoria registra consentimento redigido, criação do lote e das sugestões, correções, decisões e efeitos financeiros apenas com mudanças redigidas. Conteúdo bruto CSV/OFX, campos bancários completos e segredos não são registrados.
+A auditoria registra consentimento redigido, preview bem-sucedido, falhas controladas de preview ou criação, criação do lote e das sugestões, correções, decisões e efeitos financeiros apenas com mudanças redigidas. Conteúdo bruto CSV/OFX, campos bancários completos e segredos não são registrados. Quando a própria persistência de auditoria estiver indisponível, o erro funcional original é preservado para não substituir uma falha controlada por mensagem interna sem relação com a tentativa.
 
 ## Erros controlados principais
 
