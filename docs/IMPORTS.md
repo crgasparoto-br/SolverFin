@@ -83,7 +83,7 @@ Campos obrigatórios:
 - `accountId` como UUID canônico de uma conta ativa do perfil;
 - `consentAccepted: true`.
 
-Um `accountId` sintaticamente inválido é recusado com `IMPORT_ACCOUNT_INVALID` antes de qualquer consulta ao PostgreSQL.
+Um `accountId` sintaticamente inválido é recusado com `IMPORT_ACCOUNT_INVALID` antes da consulta da conta no PostgreSQL. A tentativa ainda pode registrar uma auditoria redigida da falha, sem consultar nem revelar o recurso informado.
 
 Uma criação nova retorna `201`. Repetir a mesma identidade retorna `200`, o lote existente e `duplicateBatch: true`, sem duplicar sugestões. Requisições concorrentes convergem para um único lote pela restrição única e por nova leitura do lote vencedor.
 
@@ -143,7 +143,7 @@ O OFX aceita até 5 MB e texto UTF-8 com ou sem BOM. O subconjunto operacional r
 - lista completa `<BANKTRANLIST>...</BANKTRANLIST>`;
 - ao menos um bloco `STMTTRN`.
 
-Conteúdo arbitrário que apenas contenha `STMTTRN`, envelope truncado, seção de extrato ausente, lista incompleta ou dados após o fechamento de `OFX` falham com `IMPORT_OFX_INVALID`. Entidades XML conhecidas e referências numéricas são decodificadas nos campos normalizados.
+Conteúdo arbitrário que apenas contenha `STMTTRN`, envelope truncado, seção de extrato ausente, lista incompleta ou dados após o fechamento de `OFX` falham com `IMPORT_OFX_INVALID`. Entidades XML conhecidas e referências numéricas são decodificadas nos campos normalizados. A única instrução de processamento aceita é a declaração XML opcional antes do envelope raiz; qualquer outra construção `<?...?>`, inclusive incompleta ou contendo tags financeiras aparentes, é recusada com `IMPORT_OFX_INVALID` antes da extração dos campos.
 
 As quatro rotas de importação reservam até 32 MiB para o envelope JSON, permitindo transportar com segurança o arquivo de 5 MB mesmo quando caracteres precisam ser escapados. As demais rotas da API mantêm o limite padrão de 1.000.000 bytes.
 
@@ -159,7 +159,7 @@ Regras de normalização:
 - `CURDEF` diferente da moeda da conta bloqueia o arquivo com `IMPORT_ACCOUNT_CURRENCY_MISMATCH`;
 - a conta escolhida pelo usuário é sempre a conta canônica das propostas.
 
-Cada um dos campos consumidos em uma movimentação — `DTPOSTED`, `TRNAMT`, `FITID`, `NAME`, `MEMO` e `TRNTYPE` — pode ocorrer no máximo uma vez dentro do mesmo `STMTTRN`. Uma repetição, ainda que os valores coincidam, torna a estrutura ambígua e retorna `IMPORT_OFX_INVALID`; ocorrências em comentários ou CDATA permanecem inativas e não entram na cardinalidade.
+Cada um dos campos consumidos em uma movimentação — `DTPOSTED`, `TRNAMT`, `FITID`, `NAME`, `MEMO` e `TRNTYPE` — pode ocorrer no máximo uma vez dentro do mesmo `STMTTRN`. Uma repetição, ainda que os valores coincidam, torna a estrutura ambígua e retorna `IMPORT_OFX_INVALID`; ocorrências em comentários ou CDATA permanecem inativas e não entram na cardinalidade. Instruções de processamento diferentes da declaração XML não são tratadas como conteúdo inativo: o arquivo inteiro é recusado para impedir que tags aparentes sejam reinterpretadas como dados financeiros.
 
 Linhas inválidas geram diagnósticos por posição e não criam propostas. Se nenhuma linha for válida, o preview fica `blocked` e a criação retorna `IMPORT_OFX_NO_VALID_ROWS`. O parser não devolve campos bancários não utilizados nem valores brutos em problemas.
 
