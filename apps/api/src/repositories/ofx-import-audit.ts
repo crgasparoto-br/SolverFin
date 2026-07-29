@@ -2,8 +2,61 @@ import type {
   AiSuggestion,
   AuditLogEntryDraft,
   ImportBatch,
+  ImportPreview,
   TenantContext,
 } from "@solverfin/domain";
+
+export function buildOfxPreviewAuditEntry(
+  context: TenantContext,
+  attemptId: string,
+  preview: ImportPreview,
+): AuditLogEntryDraft {
+  return {
+    organizationId: context.organizationId,
+    financialProfileId: context.financialProfileId,
+    occurredAt: preview.batch.receivedAt,
+    actorKind: "user",
+    actorId: context.userId,
+    action: "create",
+    entityKind: "import_batch",
+    entityId: attemptId,
+    reason: "Preview OFX processado com consentimento explicito e sem persistir o arquivo bruto.",
+    redactedChanges: {
+      sourceKind: "added",
+      previewState: "added",
+      validRows: "added",
+      problemRows: "added",
+    },
+  };
+}
+
+export function buildOfxFailureAuditEntry(
+  context: TenantContext,
+  input: {
+    attemptId: string;
+    occurredAt: string;
+    phase: "preview" | "creation";
+    errorCode: string;
+  },
+): AuditLogEntryDraft {
+  return {
+    organizationId: context.organizationId,
+    financialProfileId: context.financialProfileId,
+    occurredAt: input.occurredAt,
+    actorKind: "user",
+    actorId: context.userId,
+    action: "reject",
+    entityKind: "import_batch",
+    entityId: input.attemptId,
+    reason: `Tentativa OFX na fase ${input.phase} encerrada com erro controlado ${input.errorCode}.`,
+    redactedChanges: {
+      sourceKind: "added",
+      phase: "added",
+      outcome: "changed",
+      errorCode: "added",
+    },
+  };
+}
 
 export function buildOfxBatchAuditEntry(batch: ImportBatch): AuditLogEntryDraft {
   return {
