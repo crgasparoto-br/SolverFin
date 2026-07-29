@@ -201,10 +201,38 @@ async function validateInboxOfxReview(cdp) {
     recovered,
   );
 
-  await screenshot(cdp, join(outputDir, "issue-548-inbox-ofx-mobile-390x844.png"));
+  const mobileScreenshot = "issue-548-inbox-ofx-mobile-390x844.png";
+  await screenshot(cdp, join(outputDir, mobileScreenshot));
+
+  await setViewport(cdp, 1440, 900);
+  await navigate(cdp, created.href);
+  await waitFor(
+    cdp,
+    `document.getElementById('import-batch-detail')?.textContent.includes('${escapeJs(normalFileName)}') === true`,
+  );
+  const desktop = await evaluate(
+    cdp,
+    `(() => ({
+      bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      listText: document.getElementById('import-batch-list')?.textContent || '',
+      detailText: document.getElementById('import-batch-detail')?.textContent || '',
+      headingVisible: Boolean(document.getElementById('import-detail-heading')?.offsetParent)
+    }))()`,
+  );
+  check(desktop.bodyFitsViewport, "OFX detail overflows the desktop viewport", desktop);
+  check(desktop.listText.includes("OFX"), "Desktop history did not label the OFX origin", desktop);
+  check(
+    desktop.detailText.includes(normalFileName) && desktop.detailText.includes(normalDescription),
+    "Desktop OFX detail did not preserve the selected batch",
+    desktop,
+  );
+  check(desktop.headingVisible, "Desktop OFX detail heading is not visible", desktop);
+  const desktopScreenshot = "issue-548-inbox-ofx-desktop-1440x900.png";
+  await screenshot(cdp, join(outputDir, desktopScreenshot));
 
   return {
     viewport: "390x844",
+    desktopViewport: "1440x900",
     normalFileName,
     ambiguousFileName,
     setup,
@@ -212,7 +240,9 @@ async function validateInboxOfxReview(cdp) {
     created,
     restored,
     recovered,
-    screenshot: "issue-548-inbox-ofx-mobile-390x844.png",
+    desktop,
+    screenshot: mobileScreenshot,
+    desktopScreenshot,
   };
 }
 
