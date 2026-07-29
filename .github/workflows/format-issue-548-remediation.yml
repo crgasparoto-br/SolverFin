@@ -1,6 +1,9 @@
 name: Format issue 548 remediation
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - feat/548-ofx-inbox-import
