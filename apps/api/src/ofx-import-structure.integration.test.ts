@@ -29,8 +29,7 @@ async function main(): Promise<void> {
   const suffix = Date.now().toString(36);
   const accountId = await createAccount(token, suffix);
   const transaction = `<STMTTRN><DTPOSTED>20260729<TRNAMT>-1<FITID>${suffix}-scope<NAME>Escopo`;
-  const validContent =
-    `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>${transaction}</BANKTRANLIST></STMTRS></OFX>`;
+  const validContent = `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>${transaction}</BANKTRANLIST></STMTRS></OFX>`;
   const beforeInvalidRequests = await readOfxPersistedState();
 
   await assertInvalidPreview(
@@ -67,20 +66,14 @@ async function main(): Promise<void> {
     `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><CURDEF>USD${transaction}</BANKTRANLIST></STMTRS></OFX>`,
   );
 
-  const duplicateAmount =
-    `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-1<TRNAMT>-999<FITID>${suffix}-duplicate-amount<NAME>Escopo</BANKTRANLIST></STMTRS></OFX>`;
-  const duplicateDate =
-    `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<DTPOSTED>20260730<TRNAMT>-1<FITID>${suffix}-duplicate-date<NAME>Escopo</BANKTRANLIST></STMTRS></OFX>`;
+  const duplicateAmount = `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-1<TRNAMT>-999<FITID>${suffix}-duplicate-amount<NAME>Escopo</BANKTRANLIST></STMTRS></OFX>`;
+  const duplicateDate = `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<DTPOSTED>20260730<TRNAMT>-1<FITID>${suffix}-duplicate-date<NAME>Escopo</BANKTRANLIST></STMTRS></OFX>`;
   await assertInvalidPreview(token, accountId, duplicateAmount);
   await assertInvalidCreation(token, accountId, duplicateAmount);
   await assertInvalidPreview(token, accountId, duplicateDate);
   await assertInvalidCreation(token, accountId, duplicateDate);
 
-  await assertInvalidAccountId(
-    token,
-    "/api/import-batches/ofx/preview",
-    validContent,
-  );
+  await assertInvalidAccountId(token, "/api/import-batches/ofx/preview", validContent);
   await assertInvalidAccountId(token, "/api/import-batches/ofx", validContent);
 
   assert.deepEqual(await readOfxPersistedState(), beforeInvalidRequests);
@@ -153,11 +146,7 @@ async function assertInvalidCreation(
   assert.equal(readErrorCode(response), "IMPORT_OFX_INVALID");
 }
 
-async function assertInvalidAccountId(
-  token: string,
-  path: string,
-  content: string,
-): Promise<void> {
+async function assertInvalidAccountId(token: string, path: string, content: string): Promise<void> {
   const response = await apiRequest(token, "POST", path, {
     originalFileName: "invalid-account.ofx",
     content,
