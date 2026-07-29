@@ -71,6 +71,53 @@ describe("OFX structural scope", () => {
     );
   });
 
+  it("rejects processing instructions that could inject canonical OFX fields", () => {
+    assertInvalidOfx(
+      [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST><STMTTRN>",
+        "<?ignored <TRNAMT>-999.99 ?>",
+        "<DTPOSTED>20260729</DTPOSTED><NAME>Compra segura</NAME>",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    );
+    assertInvalidOfx(
+      [
+        '<?xml version="1.0"?>',
+        "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST>",
+        "<?ignored <STMTTRN><DTPOSTED>20260729</DTPOSTED><TRNAMT>-1</TRNAMT>",
+        "<FITID>pi-row</FITID><NAME>Registro inativo</NAME></STMTTRN> ?>",
+        "</BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    );
+    assertInvalidOfx(
+      [
+        '<?xml version="1.0"?>',
+        "<OFX><STMTRS><?ignored <CURDEF>USD ?>",
+        "<BANKTRANLIST><STMTTRN><DTPOSTED>20260729</DTPOSTED>",
+        "<TRNAMT>-1</TRNAMT><NAME>Compra</NAME></STMTTRN>",
+        "</BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    );
+    assertInvalidOfx(
+      "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN><?ignored <TRNAMT>-1</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+    );
+
+    const result = preview(
+      [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        "<OFX><STMTRS><!-- <?ignored <CURDEF>USD ?> -->",
+        "<![CDATA[<?ignored <STMTTRN><TRNAMT>-999</TRNAMT></STMTTRN> ?>]]>",
+        "<CURDEF>BRL</CURDEF><BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729</DTPOSTED><TRNAMT>-10</TRNAMT>",
+        "<FITID>active-after-pi</FITID><NAME>Compra ativa</NAME>",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    );
+    assert.equal(result.suggestions[0]?.amountMinor, 1000);
+    assert.equal(result.suggestions[0]?.externalId, "active-after-pi");
+  });
+
   it("rejects duplicate canonical fields inside one STMTTRN", () => {
     const invalidTransactions = [
       "<DTPOSTED>20260729<DTPOSTED>20260730<TRNAMT>-10<FITID>duplicate-date<NAME>Compra",
