@@ -177,6 +177,8 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
   }
 
   const currencyTag = currencyTags[0];
+  if (currencyTag === undefined) return;
+
   const valueStart = (currencyTag.index ?? 0) + currencyTag[0].length;
   const currencyValue = /^\s*([^<\r\n]*)/.exec(masked.slice(valueStart))?.[1]?.trim();
   if (!currencyValue) {
