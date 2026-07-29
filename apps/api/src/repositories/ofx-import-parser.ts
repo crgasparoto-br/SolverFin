@@ -228,10 +228,7 @@ function assertRecognizedOfxEnvelope(content: string): void {
   if (!/<\s*(?:STMTRS|CCSTMTRS)\s*>/i.test(body)) {
     throw invalidOfx("OFX precisa conter uma secao de extrato reconhecida.");
   }
-  if (
-    !/<\s*BANKTRANLIST\s*>/i.test(body) ||
-    !/<\s*\/\s*BANKTRANLIST\s*>/i.test(body)
-  ) {
+  if (!/<\s*BANKTRANLIST\s*>/i.test(body) || !/<\s*\/\s*BANKTRANLIST\s*>/i.test(body)) {
     throw invalidOfx("OFX precisa conter uma lista BANKTRANLIST completa.");
   }
 }
@@ -246,10 +243,7 @@ function isRecognizedOfxPrefix(prefix: string): boolean {
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
-  if (
-    lines.length === 0 ||
-    !lines.every((line) => /^[A-Z0-9_]+\s*:[^\r\n]*$/i.test(line))
-  ) {
+  if (lines.length === 0 || !lines.every((line) => /^[A-Z0-9_]+\s*:[^\r\n]*$/i.test(line))) {
     return false;
   }
   return (
@@ -364,30 +358,27 @@ function normalizeText(value: string | undefined): string | undefined {
 }
 
 function decodeXmlEntities(value: string): string {
-  return value.replace(
-    /&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-f]+);/gi,
-    (entity, token: string) => {
-      const normalized = token.toLowerCase();
-      if (normalized === "amp") return "&";
-      if (normalized === "lt") return "<";
-      if (normalized === "gt") return ">";
-      if (normalized === "quot") return '"';
-      if (normalized === "apos") return "'";
+  return value.replace(/&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-f]+);/gi, (entity, token: string) => {
+    const normalized = token.toLowerCase();
+    if (normalized === "amp") return "&";
+    if (normalized === "lt") return "<";
+    if (normalized === "gt") return ">";
+    if (normalized === "quot") return '"';
+    if (normalized === "apos") return "'";
 
-      const codePoint = normalized.startsWith("#x")
-        ? Number.parseInt(normalized.slice(2), 16)
-        : Number.parseInt(normalized.slice(1), 10);
-      if (
-        !Number.isInteger(codePoint) ||
-        codePoint < 0 ||
-        codePoint > 0x10ffff ||
-        (codePoint >= 0xd800 && codePoint <= 0xdfff)
-      ) {
-        return entity;
-      }
-      return String.fromCodePoint(codePoint);
-    },
-  );
+    const codePoint = normalized.startsWith("#x")
+      ? Number.parseInt(normalized.slice(2), 16)
+      : Number.parseInt(normalized.slice(1), 10);
+    if (
+      !Number.isInteger(codePoint) ||
+      codePoint < 0 ||
+      codePoint > 0x10ffff ||
+      (codePoint >= 0xd800 && codePoint <= 0xdfff)
+    ) {
+      return entity;
+    }
+    return String.fromCodePoint(codePoint);
+  });
 }
 
 function stripUtf8Bom(value: string): string {
