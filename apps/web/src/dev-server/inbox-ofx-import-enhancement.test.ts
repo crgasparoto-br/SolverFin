@@ -38,13 +38,15 @@ describe("Inbox OFX import enhancement", () => {
     assert.match(html, /\/api\/import-batches\?status=all/);
   });
 
-  it("renders a mixed history with source labels and uses OFX suggestions as preview rows", () => {
+  it("renders a mixed history with source labels and localized preview states", () => {
     const html = enhanceInboxOfxImport(canonicalFixture());
 
     assert.match(
       html,
       /const labels = \{ csv: "CSV", ofx: "OFX", bank_message: "Mensagem bancária", manual: "Manual" \}/,
     );
+    assert.match(html, /ready: "Pronto para revisão"/);
+    assert.match(html, /blocked: "Importação bloqueada"/);
     assert.match(html, /return labels\[sourceKind\] \|\| "Outra origem"/);
     assert.match(html, /formatSourceKind\(batch\.sourceKind\)/);
     assert.match(html, /preview\.suggestions/);
