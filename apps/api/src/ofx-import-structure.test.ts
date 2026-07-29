@@ -34,6 +34,10 @@ function assertInvalidOfx(content: string): void {
 const validTransaction =
   "<STMTTRN><DTPOSTED>20260729<TRNAMT>-10.25<FITID>scope-valid<NAME>Compra valida";
 
+function wrapTransaction(fields: string): string {
+  return `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>${fields}</BANKTRANLIST></STMTRS></OFX>`;
+}
+
 describe("OFX structural scope", () => {
   it("rejects STMTTRN outside the canonical BANKTRANLIST", () => {
     assertInvalidOfx(
@@ -65,6 +69,28 @@ describe("OFX structural scope", () => {
     assertInvalidOfx(
       `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><![CDATA[${validTransaction}]]></BANKTRANLIST></STMTRS></OFX>`,
     );
+  });
+
+  it("rejects duplicate canonical fields inside one STMTTRN", () => {
+    const invalidTransactions = [
+      "<DTPOSTED>20260729<DTPOSTED>20260730<TRNAMT>-10<FITID>duplicate-date<NAME>Compra",
+      "<DTPOSTED>20260729<TRNAMT>-10<TRNAMT>-1000<FITID>duplicate-amount<NAME>Compra",
+      "<DTPOSTED>20260729<TRNAMT>-10<FITID>first<FITID>second<NAME>Compra",
+      "<DTPOSTED>20260729<TRNAMT>-10<FITID>duplicate-name<NAME>Compra<NAME>Outra",
+      "<DTPOSTED>20260729<TRNAMT>-10<FITID>duplicate-memo<MEMO>Compra<MEMO>Outra",
+      "<TRNTYPE>DEBIT<TRNTYPE>CREDIT<DTPOSTED>20260729<TRNAMT>-10<FITID>duplicate-type<NAME>Compra",
+    ];
+
+    for (const transaction of invalidTransactions) {
+      assertInvalidOfx(wrapTransaction(transaction));
+    }
+
+    const inactiveDuplicate = preview(
+      wrapTransaction(
+        "<DTPOSTED>20260729<TRNAMT>-10<!-- <TRNAMT>-1000 --><FITID>inactive-duplicate<NAME>Compra",
+      ),
+    );
+    assert.equal(inactiveDuplicate.suggestions[0]?.amountMinor, 1000);
   });
 
   it("preserves structural offsets when inactive content follows astral Unicode", () => {
