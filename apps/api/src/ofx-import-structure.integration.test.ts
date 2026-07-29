@@ -5,6 +5,12 @@ import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
+interface OfxPersistedState {
+  batches: number;
+  suggestions: number;
+  transactions: number;
+}
+
 void main()
   .catch((error: unknown) => {
     console.error(error);
@@ -23,7 +29,8 @@ async function main(): Promise<void> {
   const suffix = Date.now().toString(36);
   const accountId = await createAccount(token, suffix);
   const transaction = `<STMTTRN><DTPOSTED>20260729<TRNAMT>-1<FITID>${suffix}-scope<NAME>Escopo`;
-  const beforeInvalidPreviews = await countOfxBatches();
+  const validContent = `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>${transaction}</BANKTRANLIST></STMTRS></OFX>`;
+  const beforeInvalidRequests = await readOfxPersistedState();
 
   await assertInvalidPreview(
     token,
@@ -59,11 +66,23 @@ async function main(): Promise<void> {
     `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><CURDEF>USD${transaction}</BANKTRANLIST></STMTRS></OFX>`,
   );
 
-  assert.equal(await countOfxBatches(), beforeInvalidPreviews);
+  const duplicateAmount =
+    `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-1<TRNAMT>-999<FITID>${suffix}-duplicate-amount<NAME>Escopo</BANKTRANLIST></STMTRS></OFX>`;
+  const duplicateDate =
+    `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<DTPOSTED>20260730<TRNAMT>-1<FITID>${suffix}-duplicate-date<NAME>Escopo</BANKTRANLIST></STMTRS></OFX>`;
+  await assertInvalidPreview(token, accountId, duplicateAmount);
+  await assertInvalidCreation(token, accountId, duplicateAmount);
+  await assertInvalidPreview(token, accountId, duplicateDate);
+  await assertInvalidCreation(token, accountId, duplicateDate);
+
+  await assertInvalidAccountId(token, "/api/import-batches/ofx/preview", validContent);
+  await assertInvalidAccountId(token, "/api/import-batches/ofx", validContent);
+
+  assert.deepEqual(await readOfxPersistedState(), beforeInvalidRequests);
 
   const valid = await apiRequest(token, "POST", "/api/import-batches/ofx/preview", {
     originalFileName: `valid-${suffix}.ofx`,
-    content: `<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>${transaction}</BANKTRANLIST></STMTRS></OFX>`,
+    content: validContent,
     accountId,
     consentAccepted: true,
   });
@@ -96,7 +115,7 @@ async function main(): Promise<void> {
     sampledBody.suggestions.map((suggestion) => suggestion.sourceRowNumber),
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   );
-  assert.equal(await countOfxBatches(), beforeInvalidPreviews);
+  assert.deepEqual(await readOfxPersistedState(), beforeInvalidRequests);
 }
 
 async function assertInvalidPreview(
@@ -111,14 +130,52 @@ async function assertInvalidPreview(
     consentAccepted: true,
   });
   assert.equal(response.statusCode, 422);
-  assert.equal(readBody<{ error?: { code?: string } }>(response).error?.code, "IMPORT_OFX_INVALID");
+  assert.equal(readErrorCode(response), "IMPORT_OFX_INVALID");
 }
 
-async function countOfxBatches(): Promise<number> {
-  const rows = await query<{ total: number }>(
-    `select count(*)::int as total from "ImportBatch" where "sourceKind" = 'OFX'`,
+async function assertInvalidCreation(
+  token: string,
+  accountId: string,
+  content: string,
+): Promise<void> {
+  const response = await apiRequest(token, "POST", "/api/import-batches/ofx", {
+    originalFileName: "invalid-structure.ofx",
+    content,
+    accountId,
+    consentAccepted: true,
+  });
+  assert.equal(response.statusCode, 422);
+  assert.equal(readErrorCode(response), "IMPORT_OFX_INVALID");
+}
+
+async function assertInvalidAccountId(
+  token: string,
+  path: string,
+  content: string,
+): Promise<void> {
+  const response = await apiRequest(token, "POST", path, {
+    originalFileName: "invalid-account.ofx",
+    content,
+    accountId: "account-invalid",
+    consentAccepted: true,
+  });
+  assert.equal(response.statusCode, 400);
+  assert.equal(readErrorCode(response), "IMPORT_ACCOUNT_INVALID");
+}
+
+async function readOfxPersistedState(): Promise<OfxPersistedState> {
+  const rows = await query<OfxPersistedState>(
+    `select
+       (select count(*)::int from "ImportBatch" where "sourceKind" = 'OFX') as batches,
+       (select count(*)::int from "AiSuggestion" where "provider" = 'solverfin-import-ofx') as suggestions,
+       (select count(*)::int
+          from "Transaction" imported_transaction
+          join "ImportBatch" batch on batch."id" = imported_transaction."importBatchId"
+         where batch."sourceKind" = 'OFX') as transactions`,
   );
-  return rows[0]?.total ?? 0;
+  const state = rows[0];
+  assert.ok(state);
+  return state;
 }
 
 async function createAccount(token: string, suffix: string): Promise<string> {
@@ -159,6 +216,10 @@ async function apiRequest(
     (await handleImportBatchesApiRequest(request)) ?? (await handleApiRequest(request));
   assert.ok(response, `${method} ${path} should be handled`);
   return response;
+}
+
+function readErrorCode(response: Pick<ApiResponse, "body">): string | undefined {
+  return readBody<{ error?: { code?: string } }>(response).error?.code;
 }
 
 function readBody<T>(response: Pick<ApiResponse, "body">): T {
