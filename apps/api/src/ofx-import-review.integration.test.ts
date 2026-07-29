@@ -6,6 +6,7 @@ import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
+const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const MEI_PROFILE_ID = "33333333-3333-4333-8333-333333333332";
 
 void main()
@@ -20,30 +21,49 @@ void main()
 async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for OFX integration tests.");
   const token = await loginAndReadToken();
-  const suffix = Date.now().toString(36);
-  const accountId = await createAccount(token, suffix);
+  const fixtures = await createFixtures(token);
 
   const capturedLogs: string[] = [];
   await captureConsole(capturedLogs, async () => {
-    await assertPreviewDoesNotPersist(token, accountId, suffix);
-    const created = await assertConcurrentCreationConverges(token, accountId, suffix);
+    await assertPreviewDoesNotPersist(token, fixtures.accountId, fixtures.suffix);
+    const created = await assertConcurrentCreationConverges(
+      token,
+      fixtures.accountId,
+      fixtures.suffix,
+    );
     await assertReviewLifecycle(token, created);
+    await assertConfigurationChangeUsesDistinctBatch(token, fixtures);
+    await assertEditBulkConcurrencyAndDiscard(token, fixtures);
+    await assertDeterministicDeduplicationAndReconciliation(token, fixtures);
     await assertTenantIsolationAndMixedListing(token, created.importBatch.id);
-    await assertRawContentWasNotPersisted(suffix);
+    await assertRawContentWasNotPersisted(fixtures.suffix);
   });
   assert.equal(
-    capturedLogs.some((line) => line.includes(`preview-secret-${suffix}`)),
+    capturedLogs.some((line) => line.includes(`preview-secret-${fixtures.suffix}`)),
     false,
   );
   assert.equal(
-    capturedLogs.some((line) => line.includes(`raw-persistence-secret-${suffix}`)),
+    capturedLogs.some((line) => line.includes(`raw-persistence-secret-${fixtures.suffix}`)),
     false,
   );
 }
 
-async function createAccount(token: string, suffix: string): Promise<string> {
+async function createFixtures(token: string): Promise<Fixtures> {
+  const suffix = Date.now().toString(36);
+  const accountId = await createAccount(token, `Conta OFX ${suffix}`);
+  const otherAccountId = await createAccount(token, `Conta OFX alternativa ${suffix}`);
+  const categoryResponse = await apiRequest(token, "POST", "/api/categories", {
+    name: `Categoria OFX ${suffix}`,
+    kind: "expense",
+  });
+  assert.equal(categoryResponse.statusCode, 201);
+  const categoryId = readBody<{ category: { id: string } }>(categoryResponse).category.id;
+  return { suffix, accountId, otherAccountId, categoryId };
+}
+
+async function createAccount(token: string, name: string): Promise<string> {
   const response = await apiRequest(token, "POST", "/api/accounts", {
-    name: `Conta OFX ${suffix}`,
+    name,
     kind: "checking",
     openingBalanceMinor: 0,
   });
@@ -163,6 +183,306 @@ async function assertReviewLifecycle(token: string, detail: ImportDetail): Promi
   const completed = await apiRequest(token, "GET", `/api/import-batches/${detail.importBatch.id}`);
   assert.equal(completed.statusCode, 200);
   assert.equal(readBody<ImportDetail>(completed).importBatch.status, "completed");
+}
+
+async function assertConfigurationChangeUsesDistinctBatch(
+  token: string,
+  fixtures: Fixtures,
+): Promise<void> {
+  const content = ofx(
+    `<STMTTRN><DTPOSTED>20260720<TRNAMT>-14.25<FITID>${fixtures.suffix}-config<NAME>Configuração OFX ${fixtures.suffix}`,
+  );
+  const firstResponse = await apiRequest(token, "POST", "/api/import-batches/ofx", {
+    originalFileName: `config-a-${fixtures.suffix}.ofx`,
+    content,
+    accountId: fixtures.accountId,
+    consentAccepted: true,
+  });
+  const secondResponse = await apiRequest(token, "POST", "/api/import-batches/ofx", {
+    originalFileName: `config-b-${fixtures.suffix}.ofx`,
+    content,
+    accountId: fixtures.otherAccountId,
+    consentAccepted: true,
+  });
+  assert.equal(firstResponse.statusCode, 201);
+  assert.equal(secondResponse.statusCode, 201);
+  const first = readBody<ImportDetail>(firstResponse);
+  const second = readBody<ImportDetail>(secondResponse);
+  assert.notEqual(first.importBatch.id, second.importBatch.id);
+  assert.notEqual(first.importBatch.sourceHash, second.importBatch.sourceHash);
+  assert.ok(
+    second.problems.some((problem) => problem.code === "IMPORT_BATCH_CONFIGURATION_CHANGED"),
+  );
+}
+
+async function assertEditBulkConcurrencyAndDiscard(
+  token: string,
+  fixtures: Fixtures,
+): Promise<void> {
+  const createResponse = await apiRequest(token, "POST", "/api/import-batches/ofx", {
+    originalFileName: `review-operations-${fixtures.suffix}.ofx`,
+    content: ofx(
+      [
+        `<STMTTRN><DTPOSTED>20260721<TRNAMT>-10.00<FITID>${fixtures.suffix}-edit<NAME>Editar OFX ${fixtures.suffix}`,
+        `<STMTTRN><DTPOSTED>20260722<TRNAMT>-20.00<FITID>${fixtures.suffix}-bulk<NAME>Lote OFX ${fixtures.suffix}`,
+      ].join(""),
+    ),
+    accountId: fixtures.accountId,
+    consentAccepted: true,
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const created = readBody<ImportDetail>(createResponse);
+  const first = requireSuggestion(created, 0);
+  const second = requireSuggestion(created, 1);
+
+  const updateResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/import-batches/${created.importBatch.id}/suggestions/${first.id}`,
+    {
+      description: `Descrição OFX corrigida ${fixtures.suffix}`,
+      amountMinor: 1099,
+      categoryId: fixtures.categoryId,
+    },
+  );
+  assert.equal(updateResponse.statusCode, 200);
+  const updated = readBody<{ suggestion: ImportSuggestion }>(updateResponse).suggestion;
+  assert.equal(updated.status, "pending_review");
+  assert.equal(updated.payload.description, `Descrição OFX corrigida ${fixtures.suffix}`);
+  assert.equal(updated.payload.amountMinor, 1099);
+  assert.equal(updated.payload.categoryId, fixtures.categoryId);
+
+  const concurrent = await Promise.all([
+    apiRequest(
+      token,
+      "POST",
+      `/api/import-batches/${created.importBatch.id}/suggestions/${first.id}/approve`,
+    ),
+    apiRequest(
+      token,
+      "POST",
+      `/api/import-batches/${created.importBatch.id}/suggestions/${first.id}/approve`,
+    ),
+  ]);
+  assert.deepEqual(
+    concurrent.map((response) => response.statusCode),
+    [200, 200],
+  );
+  const transactionIds = concurrent.map(
+    (response) => readBody<{ transaction: { id: string } }>(response).transaction.id,
+  );
+  assert.equal(new Set(transactionIds).size, 1);
+
+  const bulkResponse = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${created.importBatch.id}/approve-selected`,
+    { suggestionIds: [second.id] },
+  );
+  assert.equal(bulkResponse.statusCode, 200);
+  const bulk = readBody<{
+    summary: {
+      requested: number;
+      approved: number;
+      failed: number;
+      created: number;
+      reconciled: number;
+      idempotent: number;
+      blocked: number;
+    };
+    importBatch: ImportBatch;
+  }>(bulkResponse);
+  assert.equal(bulk.summary.requested, 1);
+  assert.equal(bulk.summary.approved, 1);
+  assert.equal(bulk.summary.failed, 0);
+  assert.equal(bulk.summary.created, 1);
+  assert.equal(bulk.summary.reconciled, 0);
+  assert.equal(bulk.summary.idempotent, 0);
+  assert.equal(bulk.summary.blocked, 0);
+  assert.equal(bulk.importBatch.status, "completed");
+
+  const discardCreate = await apiRequest(token, "POST", "/api/import-batches/ofx", {
+    originalFileName: `discard-${fixtures.suffix}.ofx`,
+    content: ofx(
+      `<STMTTRN><DTPOSTED>20260723<TRNAMT>-3.00<FITID>${fixtures.suffix}-discard<NAME>Descartar OFX ${fixtures.suffix}`,
+    ),
+    accountId: fixtures.accountId,
+    consentAccepted: true,
+  });
+  assert.equal(discardCreate.statusCode, 201);
+  const discardBatch = readBody<ImportDetail>(discardCreate);
+  const discardSuggestion = requireSuggestion(discardBatch, 0);
+  const discarded = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${discardBatch.importBatch.id}/discard`,
+  );
+  assert.equal(discarded.statusCode, 200);
+  assert.equal(readBody<ImportDetail>(discarded).importBatch.status, "discarded");
+
+  const approvalAfterDiscard = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${discardBatch.importBatch.id}/suggestions/${discardSuggestion.id}/approve`,
+  );
+  assert.equal(approvalAfterDiscard.statusCode, 409);
+  assert.equal(readErrorCode(approvalAfterDiscard), "IMPORT_BATCH_DISCARDED");
+}
+
+async function assertDeterministicDeduplicationAndReconciliation(
+  token: string,
+  fixtures: Fixtures,
+): Promise<void> {
+  const duplicateDescription = `Duplicidade OFX ${fixtures.suffix}`;
+  const duplicateExisting = await createTransaction(token, {
+    accountId: fixtures.accountId,
+    categoryId: fixtures.categoryId,
+    amountMinor: 4567,
+    occurredOn: "2026-07-24",
+    description: duplicateDescription,
+  });
+  const duplicateImport = await apiRequest(token, "POST", "/api/import-batches/ofx", {
+    originalFileName: `dedup-${fixtures.suffix}.ofx`,
+    content: ofx(
+      `<STMTTRN><DTPOSTED>20260724<TRNAMT>-45.67<FITID>${fixtures.suffix}-dedup<NAME>${duplicateDescription}`,
+    ),
+    accountId: fixtures.accountId,
+    consentAccepted: true,
+  });
+  assert.equal(duplicateImport.statusCode, 201);
+  const duplicateBatch = readBody<ImportDetail>(duplicateImport);
+  const duplicateSource = requireSuggestion(duplicateBatch, 0);
+
+  const blockedApproval = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${duplicateBatch.importBatch.id}/suggestions/${duplicateSource.id}/approve`,
+  );
+  assert.equal(blockedApproval.statusCode, 409);
+  assert.equal(readErrorCode(blockedApproval), "IMPORT_REVIEW_CANDIDATE_PENDING");
+
+  const duplicateScan = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${duplicateBatch.importBatch.id}/detect-duplicates`,
+  );
+  assert.equal(duplicateScan.statusCode, 200);
+  const duplicateCandidate = readBody<{ deduplicationSuggestions: ImportSuggestion[] }>(
+    duplicateScan,
+  ).deduplicationSuggestions.find(
+    (item) => item.payload.targetTransactionId === duplicateExisting.id,
+  );
+  assert.ok(duplicateCandidate, "Expected OFX deduplication candidate");
+
+  const duplicateDecision = await apiRequest(
+    token,
+    "POST",
+    `/api/review-suggestions/${duplicateCandidate.id}/approve`,
+  );
+  assert.equal(duplicateDecision.statusCode, 200);
+  const duplicateResolved = readBody<{
+    suggestion: ImportSuggestion;
+    sourceSuggestion: ImportSuggestion;
+  }>(duplicateDecision);
+  assert.equal(duplicateResolved.suggestion.status, "approved");
+  assert.equal(duplicateResolved.sourceSuggestion.status, "rejected");
+
+  const duplicateDiscard = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${duplicateBatch.importBatch.id}/discard`,
+  );
+  assert.equal(duplicateDiscard.statusCode, 200);
+  assert.equal(readBody<ImportDetail>(duplicateDiscard).importBatch.status, "discarded");
+
+  const reconciliationDescription = `Conciliação OFX ${fixtures.suffix}`;
+  const reconciliationExisting = await createTransaction(token, {
+    accountId: fixtures.accountId,
+    categoryId: fixtures.categoryId,
+    amountMinor: 7654,
+    occurredOn: "2026-07-25",
+    description: reconciliationDescription,
+  });
+  const reconciliationImport = await apiRequest(token, "POST", "/api/import-batches/ofx", {
+    originalFileName: `reconciliation-${fixtures.suffix}.ofx`,
+    content: ofx(
+      `<STMTTRN><DTPOSTED>20260725<TRNAMT>-76.54<FITID>${fixtures.suffix}-reconciliation<NAME>${reconciliationDescription}`,
+    ),
+    accountId: fixtures.accountId,
+    consentAccepted: true,
+  });
+  assert.equal(reconciliationImport.statusCode, 201);
+  const reconciliationBatch = readBody<ImportDetail>(reconciliationImport);
+  const reconciliationSource = requireSuggestion(reconciliationBatch, 0);
+
+  const reconciliationScan = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${reconciliationBatch.importBatch.id}/detect-duplicates`,
+  );
+  assert.equal(reconciliationScan.statusCode, 200);
+  const reconciliationCandidate = readBody<{ reconciliationSuggestions: ImportSuggestion[] }>(
+    reconciliationScan,
+  ).reconciliationSuggestions.find(
+    (item) => item.payload.targetTransactionId === reconciliationExisting.id,
+  );
+  assert.ok(reconciliationCandidate, "Expected OFX reconciliation candidate");
+
+  const reconciliationDecision = await apiRequest(
+    token,
+    "POST",
+    `/api/review-suggestions/${reconciliationCandidate.id}/approve`,
+  );
+  assert.equal(reconciliationDecision.statusCode, 200);
+
+  const reconciliationDetailResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/import-batches/${reconciliationBatch.importBatch.id}`,
+  );
+  assert.equal(reconciliationDetailResponse.statusCode, 200);
+  const reconciliationDetail = readBody<ImportDetail>(reconciliationDetailResponse);
+  const reconciled = requireSuggestion(reconciliationDetail, 0);
+  assert.equal(reconciled.status, "approved");
+  assert.equal(reconciled.transaction?.id, reconciliationExisting.id);
+  assert.equal(reconciled.transaction?.status, "reconciled");
+  assert.equal(
+    reconciled.candidates?.find((item) => item.id === reconciliationCandidate.id)?.status,
+    "approved",
+  );
+
+  const createdRows = await query<{ id: string }>(
+    `select "id" from "Transaction"
+     where "organizationId" = $1 and "financialProfileId" = $2 and "aiSuggestionId" = $3`,
+    [reconciliationBatch.importBatch.organizationId, PERSONAL_PROFILE_ID, reconciliationSource.id],
+  );
+  assert.equal(createdRows.length, 0, "OFX reconciliation must not create a second transaction");
+
+  const reconciliationDiscard = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${reconciliationBatch.importBatch.id}/discard`,
+  );
+  assert.equal(reconciliationDiscard.statusCode, 409);
+  assert.equal(readErrorCode(reconciliationDiscard), "IMPORT_BATCH_HAS_FINANCIAL_EFFECTS");
+}
+
+async function createTransaction(
+  token: string,
+  input: {
+    accountId: string;
+    categoryId: string;
+    amountMinor: number;
+    occurredOn: string;
+    description: string;
+  },
+): Promise<{ id: string }> {
+  const response = await apiRequest(token, "POST", "/api/transactions", {
+    kind: "expense",
+    ...input,
+  });
+  assert.equal(response.statusCode, 201);
+  return readBody<{ transaction: { id: string } }>(response).transaction;
 }
 
 async function assertTenantIsolationAndMixedListing(
@@ -296,19 +616,41 @@ function requireSuggestion(detail: ImportDetail, index: number): ImportSuggestio
   return suggestion;
 }
 
+interface Fixtures {
+  suffix: string;
+  accountId: string;
+  otherAccountId: string;
+  categoryId: string;
+}
+
 interface ImportBatch {
   id: string;
+  organizationId: string;
   sourceKind: string;
+  sourceHash: string;
   status: string;
+}
+
+interface ImportProblem {
+  code: string;
 }
 
 interface ImportSuggestion {
   id: string;
   status: string;
+  payload: {
+    description?: string;
+    amountMinor?: number;
+    categoryId?: string;
+    targetTransactionId?: string;
+    sourceSuggestionId?: string;
+  };
+  candidates?: Array<{ id: string; status: string }>;
+  transaction?: { id: string; status: string };
 }
 
 interface ImportDetail {
   importBatch: ImportBatch;
   suggestions: ImportSuggestion[];
-  problems: unknown[];
+  problems: ImportProblem[];
 }
