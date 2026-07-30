@@ -20,6 +20,8 @@ const requiredKeys = [
   "OIDC_LOGOUT_URL",
   "OIDC_RECOVERY_URL",
   "OIDC_ATTEMPT_ENCRYPTION_KEY",
+  "OIDC_ATTEMPT_TTL_MINUTES",
+  "OIDC_ATTEMPT_CLEANUP_INTERVAL_MS",
 ];
 
 const sensitiveKeyPattern = /(PASSWORD|TOKEN|SECRET|KEY|DATABASE_URL)/i;
@@ -30,6 +32,7 @@ const unsafeValuePatterns = [
   /AKIA[0-9A-Z]{16}/,
   /-----BEGIN [A-Z ]+PRIVATE KEY-----/,
 ];
+const managedPlaceholderHost = "solverfin-auth.auth.sa-east-1.amazoncognito.com";
 
 function parseEnvFile(content) {
   const entries = new Map();
@@ -111,15 +114,54 @@ function validateEnvExample(entries) {
   }
 
   if (
-    authenticationUrls.some(
-      (value) => !value.includes("example.invalid") && !value.includes("sa-east-1_example"),
-    )
+    authenticationUrls.some((value) => {
+      const url = new URL(value);
+      return (
+        !value.includes("example.invalid") &&
+        !value.includes("sa-east-1_example") &&
+        url.hostname !== managedPlaceholderHost
+      );
+    })
   ) {
-    throw new Error("Authentication URL placeholders must use fictitious hosts or pool IDs.");
+    throw new Error("Authentication URL placeholders must use the approved fictitious values.");
+  }
+
+  const issuer = new URL(entries.get("OIDC_ISSUER_URL"));
+  const jwks = new URL(entries.get("OIDC_JWKS_URI"));
+  const authorization = new URL(entries.get("OIDC_AUTHORIZATION_URL"));
+  const token = new URL(entries.get("OIDC_TOKEN_URL"));
+  const logout = new URL(entries.get("OIDC_LOGOUT_URL"));
+  const recovery = new URL(entries.get("OIDC_RECOVERY_URL"));
+  const expectedJwks = `${issuer.origin}${issuer.pathname.replace(/\/$/, "")}/.well-known/jwks.json`;
+
+  if (jwks.toString() !== expectedJwks) {
+    throw new Error("OIDC_JWKS_URI placeholder must be derived from OIDC_ISSUER_URL.");
+  }
+
+  if (
+    authorization.hostname !== managedPlaceholderHost ||
+    token.origin !== authorization.origin ||
+    logout.origin !== authorization.origin ||
+    recovery.origin !== authorization.origin
+  ) {
+    throw new Error("Cognito login endpoint placeholders must share the managed domain.");
+  }
+
+  if (
+    authorization.pathname !== "/oauth2/authorize" ||
+    token.pathname !== "/oauth2/token" ||
+    logout.pathname !== "/logout" ||
+    recovery.pathname !== "/forgotPassword"
+  ) {
+    throw new Error("Cognito login endpoint placeholders must use canonical paths.");
   }
 
   if (Buffer.from(entries.get("OIDC_ATTEMPT_ENCRYPTION_KEY"), "base64").length !== 32) {
     throw new Error("OIDC_ATTEMPT_ENCRYPTION_KEY placeholder must decode to 32 bytes.");
+  }
+
+  if (Number(entries.get("OIDC_ATTEMPT_CLEANUP_INTERVAL_MS")) < 10_000) {
+    throw new Error("OIDC_ATTEMPT_CLEANUP_INTERVAL_MS placeholder must be at least 10000.");
   }
 
   for (const [key, value] of entries) {
