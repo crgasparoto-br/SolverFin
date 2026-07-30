@@ -1,5 +1,6 @@
 # Reexecuta a evidência final em Chrome para os principais fluxos visuais do SolverFin.
 # Alterações em autenticação, sessão ou origem exigem nova evidência no mesmo head auditado.
+# O fechamento documental do contrato também invalida evidências vinculadas a um SHA anterior.
 name: Statement visual validation
 
 on:
