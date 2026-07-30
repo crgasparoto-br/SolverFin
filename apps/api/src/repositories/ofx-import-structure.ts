@@ -100,7 +100,11 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
   );
   if (transactionList === undefined) return;
 
-  const currencyTags = [...masked.matchAll(/<\s*(?:[A-Za-z_][\w.-]*:)?CURDEF\b[^>]*>/gi)];
+  const currencyTags = [
+    ...masked.matchAll(
+      /<\s*(?:[\p{L}\p{Nl}_][\p{L}\p{Nl}\p{N}\p{M}\u00b7_.-]*:)?CURDEF\b[^>]*>/giu,
+    ),
+  ];
   if (currencyTags.length === 0) return;
 
   const statementContainers = readExplicitContainerRanges(
@@ -163,7 +167,10 @@ function assertCanonicalOfxTransactionFields(content: string): void {
     const explicitContainers = readExplicitContainerRanges(block, OFX_TRANSACTION_SCALAR_TAGS);
 
     for (const tagName of OFX_SINGLE_VALUE_TRANSACTION_TAGS) {
-      const tagPattern = new RegExp(`<\\s*(?:[A-Za-z_][\\w.-]*:)?${tagName}\\b[^>]*>`, "gi");
+      const tagPattern = new RegExp(
+        `<\\s*(?:[\\p{L}\\p{Nl}_][\\p{L}\\p{Nl}\\p{N}\\p{M}\\u00b7_.-]*:)?${tagName}\\b[^>]*>`,
+        "giu",
+      );
       const tags = [...block.matchAll(tagPattern)];
       if (tags.length > 1) {
         throw invalidOfx(`Transacao STMTTRN ${index + 1} possui mais de um campo ${tagName}.`);
