@@ -15,9 +15,8 @@ export function getSessionCredentialFromRequest(
 ): string | undefined {
   const cookieHeader = request.headers.cookie ?? "";
   const cookies = parseCookies(cookieHeader);
-  const demoAllowed = isDemoAuthenticationAllowed(env);
 
-  if (demoAllowed) {
+  if (isLegacyWebCredentialAllowed(env)) {
     if (cookies[productiveApiSessionCookieName] || cookies[localApiSessionCookieName]) {
       return cookieHeader;
     }
@@ -57,11 +56,15 @@ export function clearApiSessionCookies(): string[] {
 export function isDemoAuthenticationAllowed(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): boolean {
-  if (env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1") return true;
-
   const nodeEnv = env.NODE_ENV?.trim().toLowerCase();
   if (nodeEnv && localEnvironments.has(nodeEnv)) return true;
   return env.AUTH_ALLOW_DEMO?.trim().toLowerCase() === "true";
+}
+
+function isLegacyWebCredentialAllowed(env: Readonly<Record<string, string | undefined>>): boolean {
+  return (
+    isDemoAuthenticationAllowed(env) || env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1"
+  );
 }
 
 function serializeExpiredCookie(name: string, secure: boolean): string {
