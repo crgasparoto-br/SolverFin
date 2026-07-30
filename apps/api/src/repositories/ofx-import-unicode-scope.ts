@@ -86,7 +86,7 @@ function containsScopedOfxField(value: string): boolean {
 }
 
 function hasNonAsciiName(value: string): boolean {
-  return /[^\u0000-\u007f]/u.test(value);
+  return [...value].some((character) => (character.codePointAt(0) ?? 0) > 0x7f);
 }
 
 function maskInactiveOfxContent(value: string): string {
