@@ -28,7 +28,10 @@ import {
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
-import { enhanceWithRecurrenceMaterialization } from "./dev-server/recurrence-materialization.js";
+import {
+  renderRecurrenceMaterializationGate,
+  requiresRecurrenceMaterialization,
+} from "./dev-server/recurrence-materialization.js";
 import { resolveReportsCanonicalLocation } from "./dev-server/reports-canonical-location.js";
 import { renderReportsRoutePage } from "./dev-server/reports-route-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
@@ -56,9 +59,10 @@ export { enhanceInboxListLayout } from "./dev-server/inbox-list-layout-enhanceme
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
 export {
-  enhanceWithRecurrenceMaterialization,
   materializeAccountStatementRecurrences,
   materializeCardInvoiceRecurrences,
+  renderRecurrenceMaterializationGate,
+  requiresRecurrenceMaterialization,
 } from "./dev-server/recurrence-materialization.js";
 export { renderReportsPage } from "./dev-server/reports-page.js";
 export { renderReportsRoutePage } from "./dev-server/reports-route-page.js";
@@ -167,20 +171,28 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/cartoes" && token) {
+    if (requiresRecurrenceMaterialization(url)) {
+      sendHtml(response, 200, renderRecurrenceMaterializationGate("card", url));
+      return;
+    }
+
     const html = await renderCardsPageWithMonthNavigation(token, url);
     const sortedHtml = enhanceCardListSorting(html, url);
     const groupedHtml = enhanceCardInstrumentSubtotals(sortedHtml);
     const enhancedHtml = enhanceCardsInterface(groupedHtml);
-    const finalizedHtml = finalizeCardsInterface(enhancedHtml);
-    sendHtml(response, 200, enhanceWithRecurrenceMaterialization(finalizedHtml, "card", url));
+    sendHtml(response, 200, finalizeCardsInterface(enhancedHtml));
     return;
   }
 
   if (url.pathname === "/lancamentos" && token) {
+    if (requiresRecurrenceMaterialization(url)) {
+      sendHtml(response, 200, renderRecurrenceMaterializationGate("account", url));
+      return;
+    }
+
     const html = await renderTransactionsPage(token, url);
     const sortedHtml = enhanceStatementListSorting(html, url);
-    const enhancedHtml = enhanceAccountRemunerationDisclosure(sortedHtml);
-    sendHtml(response, 200, enhanceWithRecurrenceMaterialization(enhancedHtml, "account", url));
+    sendHtml(response, 200, enhanceAccountRemunerationDisclosure(sortedHtml));
     return;
   }
 
