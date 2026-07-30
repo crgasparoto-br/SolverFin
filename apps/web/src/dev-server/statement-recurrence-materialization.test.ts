@@ -6,6 +6,9 @@ import {
 } from "../dev-server.js";
 
 const originalFetch = globalThis.fetch;
+const origin = "https://app.example.invalid";
+const originalAppOrigin = process.env.APP_ORIGIN;
+process.env.APP_ORIGIN = origin;
 
 try {
   await materializesActiveAccountRecurrencesThroughSelectedMonth();
@@ -13,13 +16,20 @@ try {
   await materializesActiveCardRecurrencesThroughSelectedMonth();
   await serializesMultipleCardRecurrencesAndRetriesTransientFailure();
   await usesFirstActiveCardWhenInvoiceHasNoCardFilter();
+  await forwardsProductiveCookieAndBrowserOrigin();
 } finally {
   globalThis.fetch = originalFetch;
+  if (originalAppOrigin === undefined) delete process.env.APP_ORIGIN;
+  else process.env.APP_ORIGIN = originalAppOrigin;
 }
 
 async function materializesActiveAccountRecurrencesThroughSelectedMonth(): Promise<void> {
-  const generationRequests: Array<{ path: string; body: unknown; authorization: string | null }> =
-    [];
+  const generationRequests: Array<{
+    path: string;
+    body: unknown;
+    authorization: string | null;
+    origin: string | null;
+  }> = [];
 
   globalThis.fetch = async (
     input: string | URL | Request,
@@ -46,10 +56,12 @@ async function materializesActiveAccountRecurrencesThroughSelectedMonth(): Promi
     }
 
     if (url.pathname.endsWith("/generate-installments")) {
+      const headers = new Headers(init?.headers);
       generationRequests.push({
         path: url.pathname,
         body: JSON.parse(String(init?.body ?? "{}")),
-        authorization: new Headers(init?.headers).get("authorization"),
+        authorization: headers.get("authorization"),
+        origin: headers.get("origin"),
       });
 
       return jsonResponse({ installments: [], transactions: [] }, 201);
@@ -61,6 +73,7 @@ async function materializesActiveAccountRecurrencesThroughSelectedMonth(): Promi
   await materializeAccountStatementRecurrences(
     "session-token",
     new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-09"),
+    origin,
   );
 
   assert.deepEqual(generationRequests, [
@@ -68,6 +81,7 @@ async function materializesActiveAccountRecurrencesThroughSelectedMonth(): Promi
       path: "/api/recurrences/recurrence-active/generate-installments",
       body: { through: "2026-09-30" },
       authorization: "Bearer session-token",
+      origin,
     },
   ]);
 }
@@ -98,14 +112,19 @@ async function usesFirstActiveAccountWhenStatementHasNoAccountFilter(): Promise<
   await materializeAccountStatementRecurrences(
     "session-token",
     new URL("http://solverfin.test/lancamentos?month=2026-10"),
+    origin,
   );
 
   assert.equal(recurrenceAccountId, "active-account");
 }
 
 async function materializesActiveCardRecurrencesThroughSelectedMonth(): Promise<void> {
-  const generationRequests: Array<{ path: string; body: unknown; authorization: string | null }> =
-    [];
+  const generationRequests: Array<{
+    path: string;
+    body: unknown;
+    authorization: string | null;
+    origin: string | null;
+  }> = [];
 
   globalThis.fetch = async (
     input: string | URL | Request,
@@ -130,10 +149,12 @@ async function materializesActiveCardRecurrencesThroughSelectedMonth(): Promise<
     }
 
     if (url.pathname.endsWith("/generate-installments")) {
+      const headers = new Headers(init?.headers);
       generationRequests.push({
         path: url.pathname,
         body: JSON.parse(String(init?.body ?? "{}")),
-        authorization: new Headers(init?.headers).get("authorization"),
+        authorization: headers.get("authorization"),
+        origin: headers.get("origin"),
       });
       return jsonResponse({ installments: [], transactions: [] }, 201);
     }
@@ -144,6 +165,7 @@ async function materializesActiveCardRecurrencesThroughSelectedMonth(): Promise<
   await materializeCardInvoiceRecurrences(
     "session-token",
     new URL("http://solverfin.test/cartoes?cardId=card-1&month=2026-11"),
+    origin,
   );
 
   assert.deepEqual(generationRequests, [
@@ -151,6 +173,7 @@ async function materializesActiveCardRecurrencesThroughSelectedMonth(): Promise<
       path: "/api/recurrences/card-recurrence-active/generate-installments",
       body: { through: "2026-11-30" },
       authorization: "Bearer session-token",
+      origin,
     },
   ]);
 }
@@ -203,6 +226,7 @@ async function serializesMultipleCardRecurrencesAndRetriesTransientFailure(): Pr
   await materializeCardInvoiceRecurrences(
     "session-token",
     new URL("http://solverfin.test/cartoes?cardId=card-1&month=2026-12"),
+    origin,
   );
 
   assert.equal(maxInFlight, 1, "recurrences sharing an invoice must be materialized sequentially");
@@ -244,9 +268,55 @@ async function usesFirstActiveCardWhenInvoiceHasNoCardFilter(): Promise<void> {
   await materializeCardInvoiceRecurrences(
     "session-token",
     new URL("http://solverfin.test/cartoes?month=2026-12"),
+    origin,
   );
 
   assert.equal(recurrenceCardId, "active-card");
+}
+
+async function forwardsProductiveCookieAndBrowserOrigin(): Promise<void> {
+  const cookie = `__Host-solverfin_session=${"A".repeat(43)}`;
+  let observedGetCookie: string | null = null;
+  let observedPostCookie: string | null = null;
+  let observedPostAuthorization: string | null = null;
+  let observedOrigin: string | null = null;
+
+  globalThis.fetch = async (
+    input: string | URL | Request,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const url = resolveFetchUrl(input);
+    const headers = new Headers(init?.headers);
+
+    if (url.pathname === "/api/accounts") {
+      observedGetCookie = headers.get("cookie");
+      return jsonResponse({ accounts: [{ id: "account-1", status: "active" }] });
+    }
+
+    if (url.pathname === "/api/recurrences") {
+      return jsonResponse({ recurrences: [{ id: "recurrence-1", status: "active" }] });
+    }
+
+    if (url.pathname.endsWith("/generate-installments")) {
+      observedPostCookie = headers.get("cookie");
+      observedPostAuthorization = headers.get("authorization");
+      observedOrigin = headers.get("origin");
+      return jsonResponse({ installments: [], transactions: [] }, 201);
+    }
+
+    throw new Error(`Unexpected request: ${url.pathname}${url.search}`);
+  };
+
+  await materializeAccountStatementRecurrences(
+    cookie,
+    new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-12"),
+    origin,
+  );
+
+  assert.equal(observedGetCookie, cookie);
+  assert.equal(observedPostCookie, cookie);
+  assert.equal(observedPostAuthorization, null);
+  assert.equal(observedOrigin, origin);
 }
 
 function resolveFetchUrl(input: string | URL | Request): URL {
