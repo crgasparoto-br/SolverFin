@@ -21,6 +21,20 @@ const OFX_SINGLE_VALUE_TRANSACTION_TAGS = [
   "TRNTYPE",
 ] as const;
 
+interface StructuralTagToken {
+  name: string;
+  closing: boolean;
+  selfClosing: boolean;
+  start: number;
+  end: number;
+}
+
+interface ExplicitContainerRange {
+  name: string;
+  openStart: number;
+  closeStart: number;
+}
+
 export function parseOfxImportPreview(input: {
   context: TenantContext;
   now: string;
@@ -30,10 +44,9 @@ export function parseOfxImportPreview(input: {
   accountCurrency: string;
 }): ImportPreview {
   assertCanonicalOfxProcessingInstructions(input.content);
-  const preview = parseOfxImportPreviewBase(input);
   assertCanonicalOfxCurrencyScope(input.content);
   assertCanonicalOfxTransactionFields(input.content);
-  return preview;
+  return parseOfxImportPreviewBase(input);
 }
 
 export async function previewOfxImportForContext(
@@ -199,19 +212,24 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
   const currencyTags = [...masked.matchAll(currencyTagPattern)];
   if (currencyTags.length === 0) return;
 
+  const statementBody = masked.slice(statement.contentStart, statement.contentEnd);
+  const statementContainers = readExplicitContainerRanges(statementBody);
   const hasNonCanonicalCurrency = currencyTags.some((match) => {
     const position = match.index ?? -1;
+    const relativePosition = position - statement.contentStart;
     const canonicalTag = /^<\s*CURDEF\s*>$/i.test(match[0]);
     const insideStatement = position >= statement.contentStart && position < statement.contentEnd;
     const insideTransactionList =
       position >= transactionList.openStart && position < transactionList.closeEnd;
-    return !canonicalTag || !insideStatement || insideTransactionList;
+    const directStatementChild =
+      insideStatement && !isNestedInsideExplicitContainer(statementContainers, relativePosition);
+    return !canonicalTag || !directStatementChild || insideTransactionList;
   });
 
   if (hasNonCanonicalCurrency) {
     throw new ImportReviewError(
       "IMPORT_OFX_INVALID",
-      "CURDEF precisa pertencer aos metadados da secao de extrato, fora de BANKTRANLIST.",
+      "CURDEF precisa ser filho direto da secao de extrato, fora de BANKTRANLIST.",
       422,
     );
   }
@@ -263,18 +281,82 @@ function assertCanonicalOfxTransactionFields(content: string): void {
     const segment = transactionListBody.slice(openEnd, nextOpenStart);
     const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
     const block = segment.slice(0, close?.index ?? segment.length);
+    const explicitContainers = readExplicitContainerRanges(block);
 
     for (const tagName of OFX_SINGLE_VALUE_TRANSACTION_TAGS) {
-      const tagPattern = new RegExp(`<\\s*${tagName}(?:\\s[^>]*)?>`, "gi");
-      if ([...block.matchAll(tagPattern)].length > 1) {
+      const tagPattern = new RegExp(
+        `<\\s*(?:[A-Za-z_][\\w.-]*:)?${tagName}\\b[^>]*>`,
+        "gi",
+      );
+      const tags = [...block.matchAll(tagPattern)];
+      if (tags.length > 1) {
         throw new ImportReviewError(
           "IMPORT_OFX_INVALID",
           `Transacao STMTTRN ${index + 1} possui mais de um campo ${tagName}.`,
           422,
         );
       }
+
+      for (const tag of tags) {
+        const position = tag.index ?? -1;
+        const canonicalTag = new RegExp(`^<\\s*${tagName}\\s*>$`, "i").test(tag[0]);
+        const directTransactionChild = !isNestedInsideExplicitContainer(
+          explicitContainers,
+          position,
+        );
+        if (!canonicalTag || !directTransactionChild) {
+          throw new ImportReviewError(
+            "IMPORT_OFX_INVALID",
+            `Campo ${tagName} da transacao STMTTRN ${index + 1} precisa ser filho direto.`,
+            422,
+          );
+        }
+      }
     }
   });
+}
+
+function readExplicitContainerRanges(value: string): ExplicitContainerRange[] {
+  const tokens = readStructuralTagTokens(value);
+  const openByName = new Map<string, StructuralTagToken[]>();
+  const ranges: ExplicitContainerRange[] = [];
+
+  for (const token of tokens) {
+    if (token.selfClosing) continue;
+    const stack = openByName.get(token.name) ?? [];
+    if (!token.closing) {
+      stack.push(token);
+      openByName.set(token.name, stack);
+      continue;
+    }
+
+    const open = stack.pop();
+    if (open !== undefined) {
+      ranges.push({ name: token.name, openStart: open.start, closeStart: token.start });
+    }
+  }
+
+  return ranges;
+}
+
+function readStructuralTagTokens(value: string): StructuralTagToken[] {
+  const expression = /<\s*(\/?)\s*([A-Za-z_][\w.:-]*)(?:\s[^>]*)?>/g;
+  return [...value.matchAll(expression)].map((match) => ({
+    name: (match[2] ?? "").toUpperCase(),
+    closing: match[1] === "/",
+    selfClosing: /\/\s*>$/.test(match[0]),
+    start: match.index ?? 0,
+    end: (match.index ?? 0) + match[0].length,
+  }));
+}
+
+function isNestedInsideExplicitContainer(
+  containers: readonly ExplicitContainerRange[],
+  position: number,
+): boolean {
+  return containers.some(
+    (container) => container.openStart < position && position < container.closeStart,
+  );
 }
 
 function maskInactiveOfxContent(value: string): string {
