@@ -20,7 +20,7 @@ export function assertTrustedMutationOrigin(input: {
 
   if (!expected || !received || received !== expected) {
     throw new AuthError(
-      "AUTH_ORIGIN_NOT_ALLOWED",
+      "AUTH_REQUEST_ORIGIN_INVALID",
       "Não foi possível validar a origem desta solicitação.",
       403,
     );
