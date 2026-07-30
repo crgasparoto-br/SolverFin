@@ -68,6 +68,27 @@ describe("OFX Unicode container scope", () => {
     );
   });
 
+  it("rejects Unicode namespace prefixes on canonical currency and transaction fields", () => {
+    const invalidDocuments = [
+      [
+        '<?xml version="1.0"?>',
+        "<OFX><STMTRS><pré:CURDEF>USD</pré:CURDEF><BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729</DTPOSTED><TRNAMT>-10</TRNAMT>",
+        "<FITID>unicode-prefix-currency</FITID><NAME>Compra</NAME>",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+      [
+        '<?xml version="1.0"?>',
+        "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729</DTPOSTED><pré:TRNAMT>-10</pré:TRNAMT>",
+        "<FITID>unicode-prefix-amount</FITID><NAME>Compra</NAME>",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    ];
+
+    for (const content of invalidDocuments) assertInvalidOfx(content);
+  });
+
   it("keeps a closed Unicode extension compatible when canonical fields remain siblings", () => {
     const result = preview(
       [
