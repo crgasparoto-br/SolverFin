@@ -9,11 +9,28 @@ const OFX_SINGLE_VALUE_TRANSACTION_TAGS = [
   "TRNTYPE",
 ] as const;
 
+const OFX_TRANSACTION_SCALAR_TAGS = new Set([
+  ...OFX_SINGLE_VALUE_TRANSACTION_TAGS,
+  "DTUSER",
+  "DTAVAIL",
+  "CORRECTFITID",
+  "CORRECTACTION",
+  "SERVERID",
+  "CHECKNUM",
+  "REFNUM",
+  "SIC",
+  "PAYEEID",
+  "EXTDNAME",
+]);
+
+const OFX_STATEMENT_SCALAR_TAGS = new Set(["CURDEF", "DTASOF", "MKTGINFO"]);
+
 interface StructuralTagToken {
   name: string;
   closing: boolean;
   selfClosing: boolean;
   start: number;
+  end: number;
 }
 
 interface ExplicitContainerRange {
@@ -89,6 +106,7 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
 
   const statementContainers = readExplicitContainerRanges(
     masked.slice(statement.contentStart, statement.contentEnd),
+    OFX_STATEMENT_SCALAR_TAGS,
   );
   const hasNonCanonicalCurrency = currencyTags.some((match) => {
     const position = match.index ?? -1;
@@ -143,7 +161,7 @@ function assertCanonicalOfxTransactionFields(content: string): void {
     const segment = transactionListBody.slice(openEnd, nextOpenStart);
     const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
     const block = segment.slice(0, close?.index ?? segment.length);
-    const explicitContainers = readExplicitContainerRanges(block);
+    const explicitContainers = readExplicitContainerRanges(block, OFX_TRANSACTION_SCALAR_TAGS);
 
     for (const tagName of OFX_SINGLE_VALUE_TRANSACTION_TAGS) {
       const tagPattern = new RegExp(`<\\s*(?:[A-Za-z_][\\w.-]*:)?${tagName}\\b[^>]*>`, "gi");
@@ -169,22 +187,33 @@ function assertCanonicalOfxTransactionFields(content: string): void {
   });
 }
 
-function readExplicitContainerRanges(value: string): ExplicitContainerRange[] {
+function readExplicitContainerRanges(
+  value: string,
+  scalarTags: ReadonlySet<string>,
+): ExplicitContainerRange[] {
   const openByName = new Map<string, StructuralTagToken[]>();
   const ranges: ExplicitContainerRange[] = [];
 
   for (const token of readStructuralTagTokens(value)) {
     if (token.selfClosing) continue;
-    const stack = openByName.get(token.name) ?? [];
     if (!token.closing) {
+      if (scalarTags.has(token.name)) continue;
+      const stack = openByName.get(token.name) ?? [];
       stack.push(token);
       openByName.set(token.name, stack);
       continue;
     }
 
-    const open = stack.pop();
+    const stack = openByName.get(token.name);
+    const open = stack?.pop();
     if (open !== undefined) {
       ranges.push({ openStart: open.start, closeStart: token.start });
+    }
+  }
+
+  for (const stack of openByName.values()) {
+    for (const open of stack) {
+      ranges.push({ openStart: open.start, closeStart: value.length });
     }
   }
 
@@ -198,6 +227,7 @@ function readStructuralTagTokens(value: string): StructuralTagToken[] {
     closing: match[1] === "/",
     selfClosing: /\/\s*>$/.test(match[0]),
     start: match.index ?? 0,
+    end: (match.index ?? 0) + match[0].length,
   }));
 }
 
