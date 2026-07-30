@@ -215,7 +215,7 @@ async function previewOfxImportBatchHandler(
     200,
     await previewOfxImportForContext(context, {
       originalFileName: requireString(body, "originalFileName"),
-      content: requireString(body, "content"),
+      content: requireRawString(body, "content"),
       accountId: requireString(body, "accountId"),
       consentAccepted: true,
     }),
@@ -230,7 +230,7 @@ async function createOfxImportBatchHandler(
   assertConsent(body);
   const result = await createConsistentOfxImportBatchForContext(context, {
     originalFileName: requireString(body, "originalFileName"),
-    content: requireString(body, "content"),
+    content: requireRawString(body, "content"),
     accountId: requireString(body, "accountId"),
     consentAccepted: true,
   });
@@ -490,20 +490,24 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
 
 function requireString(body: Record<string, unknown>, key: string): string {
   const value = body[key];
-  if (typeof value !== "string") {
-    throw new ImportReviewError(
-      "IMPORT_FIELD_REQUIRED",
-      `Campo ${key} e obrigatorio para continuar.`,
-    );
-  }
-  if (key === "content") return value;
-  if (value.trim().length === 0) {
+  if (typeof value !== "string" || value.trim().length === 0) {
     throw new ImportReviewError(
       "IMPORT_FIELD_REQUIRED",
       `Campo ${key} e obrigatorio para continuar.`,
     );
   }
   return value.trim();
+}
+
+function requireRawString(body: Record<string, unknown>, key: string): string {
+  const value = body[key];
+  if (typeof value !== "string") {
+    throw new ImportReviewError(
+      "IMPORT_FIELD_REQUIRED",
+      `Campo ${key} e obrigatorio para continuar.`,
+    );
+  }
+  return value;
 }
 
 function requireParam(match: Readonly<Record<string, string>>, name: string): string {
