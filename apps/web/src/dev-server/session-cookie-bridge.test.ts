@@ -47,6 +47,13 @@ assert.equal(
   }),
   "legacy-token",
 );
+assert.equal(
+  getSessionCredentialFromRequest(requestWithCookie(legacyCookie), {
+    NODE_ENV: "production",
+    SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION: "1",
+  }),
+  "legacy-token",
+);
 
 assert.equal(isDemoAuthenticationAllowed({ NODE_ENV: "development" }), true);
 assert.equal(isDemoAuthenticationAllowed({ NODE_ENV: "local" }), true);
@@ -54,6 +61,13 @@ assert.equal(isDemoAuthenticationAllowed({ NODE_ENV: "test" }), true);
 assert.equal(isDemoAuthenticationAllowed({ NODE_ENV: "production" }), false);
 assert.equal(
   isDemoAuthenticationAllowed({ NODE_ENV: "production", AUTH_ALLOW_DEMO: "true" }),
+  true,
+);
+assert.equal(
+  isDemoAuthenticationAllowed({
+    NODE_ENV: "production",
+    SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION: "1",
+  }),
   true,
 );
 
