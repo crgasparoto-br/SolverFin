@@ -122,25 +122,51 @@ export function renderRecurrenceMaterializationGate(
     <style>
       :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
       body { align-items: center; background: #f8fafc; color: #0f172a; display: grid; margin: 0; min-height: 100vh; padding: 24px; }
-      main { background: #fff; border: 1px solid #dbe3ee; border-radius: 10px; display: grid; gap: 12px; margin: auto; max-width: 480px; padding: 24px; text-align: center; width: 100%; }
+      main, section { background: #fff; border: 1px solid #dbe3ee; border-radius: 10px; display: grid; gap: 12px; margin: auto; max-width: 480px; padding: 24px; text-align: center; width: 100%; }
       h1, p { margin: 0; }
       p { color: #64748b; line-height: 1.5; }
       [role="status"]::before { animation: spin 1s linear infinite; border: 3px solid #dbe3ee; border-top-color: #0f3d4c; border-radius: 50%; content: ""; display: block; height: 28px; margin: 0 auto 16px; width: 28px; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+      a, button { background: #0f3d4c; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font: inherit; font-weight: 700; padding: 11px 16px; text-decoration: none; }
+      a.secondary { background: #eef5f8; color: #0f3d4c; }
+      [hidden] { display: none !important; }
       @keyframes spin { to { transform: rotate(360deg); } }
     </style>
   </head>
   <body>
-    <main role="status" aria-live="polite">
+    <main role="status" aria-live="polite" data-materialization-progress>
       <h1>Atualizando lançamentos recorrentes</h1>
       <p>Aguarde enquanto o SolverFin prepara os dados do período selecionado.</p>
     </main>
+    <section role="alert" data-materialization-error hidden>
+      <h1>Não foi possível atualizar as recorrências</h1>
+      <p>Verifique sua conexão e tente novamente. Você também pode continuar sem a atualização deste período.</p>
+      <div class="actions">
+        <button type="button" data-materialization-retry>Tentar novamente</button>
+        <a class="secondary" href=${JSON.stringify(target)}>Continuar sem atualização</a>
+      </div>
+    </section>
     <script>
       (() => {
         const endpoint = ${JSON.stringify(endpoint)};
         const target = ${JSON.stringify(target)};
+        const progress = document.querySelector("[data-materialization-progress]");
+        const failure = document.querySelector("[data-materialization-error]");
+        const retry = document.querySelector("[data-materialization-retry]");
+        const showFailure = () => {
+          if (progress) progress.hidden = true;
+          if (failure) failure.hidden = false;
+        };
+        retry?.addEventListener("click", () => window.location.reload());
         fetch(endpoint, { method: "POST", credentials: "same-origin" })
-          .then(() => window.location.replace(target))
-          .catch(() => window.location.replace(target));
+          .then((response) => {
+            if (!response.ok) {
+              showFailure();
+              return;
+            }
+            window.location.replace(target);
+          })
+          .catch(showFailure);
       })();
     </script>
   </body>
