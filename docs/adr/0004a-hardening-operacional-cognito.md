@@ -49,3 +49,5 @@ Os gates da issue incluem:
 - migrations e seed em banco dedicado;
 - lint, typecheck, testes, build e validação visual em Chrome;
 - regressões concorrentes do monorepo permanecem obrigatórias, porque a autenticação e a sessão atravessam os mesmos roteadores e transações usados pelos fluxos financeiros.
+
+A validação final da issue #551 foi executada no head `5011041fbef3b4651d4b42b3af6c1af09f264dc9`. O CI agregado, a integração PostgreSQL e a validação visual em Chrome concluíram com sucesso antes da auditoria adversarial interna. Qualquer alteração posterior exige novo congelamento de identidade e nova execução dos gates.
