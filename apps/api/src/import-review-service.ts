@@ -12,12 +12,25 @@ import {
   type ImportBatchDetail,
   type ImportReviewDecisionResult,
 } from "./repositories/imports.js";
+import {
+  createOfxImportBatchForContext,
+  type OfxImportPayload,
+} from "./repositories/ofx-imports.js";
 
 export async function createConsistentCsvImportBatchForContext(
   context: TenantContext,
   payload: CreateCsvImportBatchPayload,
 ): Promise<CreateImportBatchResult> {
   const result = await createCsvImportBatchForContext(context, payload);
+  assertImportBatchConsistency(result);
+  return result;
+}
+
+export async function createConsistentOfxImportBatchForContext(
+  context: TenantContext,
+  payload: OfxImportPayload,
+): Promise<CreateImportBatchResult> {
+  const result = await createOfxImportBatchForContext(context, payload);
   assertImportBatchConsistency(result);
   return result;
 }

@@ -12,6 +12,7 @@ try {
   await import("./statement-visual/transaction-bulk-selection-keyboard.mjs");
   await import("./statement-visual/transaction-bulk-selection-clearance.mjs");
   await import("./statement-visual/inbox-category-hierarchy.mjs");
+  await import("./statement-visual/issue-548-inbox-ofx-review.mjs");
   await import("./statement-visual/inbox-status-control.mjs");
   await import("./statement-visual/inbox-date-filter.mjs");
   await import("./statement-visual/accounts-cards-interface.mjs");

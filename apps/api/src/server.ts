@@ -23,7 +23,14 @@ import { handleTransactionGroupActionsApiRequest } from "./transaction-group-act
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.API_PORT ?? 4000);
 const MVP_PATHS = new Set(["/api/session", "/api/session/oidc", "/api/users", "/api/me"]);
-const MAX_BODY_BYTES = 1_000_000;
+const DEFAULT_MAX_BODY_BYTES = 1_000_000;
+const IMPORT_MAX_BODY_BYTES = 32 * 1024 * 1024;
+const LARGE_IMPORT_BODY_PATHS = new Set([
+  "/api/import-batches/csv/preview",
+  "/api/import-batches/csv",
+  "/api/import-batches/ofx/preview",
+  "/api/import-batches/ofx",
+]);
 
 const server = createServer((request, response) => {
   void handleRequest(request, response);
@@ -40,7 +47,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   const correlationId = resolveCorrelationId(headers);
 
   try {
-    const body = await readJsonBody(request);
+    const body = await readJsonBody(request, resolveMaxBodyBytes(url.pathname));
     const method = request.method ?? "GET";
 
     if (MVP_PATHS.has(url.pathname)) {
@@ -224,7 +231,7 @@ function writeResponse(response: ServerResponse, apiResponse: ApiResponse): void
   response.end(JSON.stringify(apiResponse.body));
 }
 
-async function readJsonBody(request: IncomingMessage): Promise<unknown> {
+async function readJsonBody(request: IncomingMessage, maxBodyBytes: number): Promise<unknown> {
   if (request.method === "GET" || request.method === "DELETE") {
     return undefined;
   }
@@ -236,7 +243,7 @@ async function readJsonBody(request: IncomingMessage): Promise<unknown> {
     const bufferChunk = chunk as Buffer;
     totalBytes += bufferChunk.length;
 
-    if (totalBytes > MAX_BODY_BYTES) {
+    if (totalBytes > maxBodyBytes) {
       throw Object.assign(new Error("Request body too large."), {
         code: "API_REQUEST_BODY_TOO_LARGE",
         statusCode: 413,
@@ -264,6 +271,10 @@ async function readJsonBody(request: IncomingMessage): Promise<unknown> {
       statusCode: 400,
     });
   }
+}
+
+function resolveMaxBodyBytes(pathname: string): number {
+  return LARGE_IMPORT_BODY_PATHS.has(pathname) ? IMPORT_MAX_BODY_BYTES : DEFAULT_MAX_BODY_BYTES;
 }
 
 function normalizeHeaders(headers: IncomingMessage["headers"]): Record<string, string | undefined> {

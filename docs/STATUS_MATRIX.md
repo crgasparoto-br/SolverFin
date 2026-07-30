@@ -30,7 +30,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - `docs/API_REPORTS.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414 e #531.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531 e a entrega da issue #548.
 
 ## Decisao atual sobre pagar/receber
 
@@ -112,12 +112,12 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Importacao CSV/OFX
 
 - Dominio: Feito.
-- Schema/migration: Parcial.
-- Repository/API: Feito para CSV persistido e revisável.
-- UI: Pendente para preview e aceite/rejeicao amigavel.
-- Testes: Parcial.
-- Documentacao: Parcial/Atualizada em `docs/IMPORTS.md`.
-- Nota: CSV possui preview sem persistência, mapeamento, histórico, correção por linha, aprovação individual/em conjunto, rejeição, descarte lógico e criação atômica de lançamentos na Inbox. O arquivo bruto não é persistido. OFX segue somente no domínio/parser.
+- Schema/migration: Feito sem nova migration; o schema existente ja suporta origem, hashes, conta padrao e vinculos revisaveis.
+- Repository/API: Feito para CSV e OFX persistidos e revisaveis.
+- UI: Feito para preview, criacao, historico misto e revisao compartilhada na Inbox.
+- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao, privacidade e ausência de sentinelas em logs; validacao Chrome mobile para upload, preview, criacao, histórico misto, restauração por URL e recuperação após falha ambígua.
+- Documentacao: Feito em `docs/IMPORTS.md`.
+- Nota: CSV e OFX possuem preview sem persistencia, historico, correcao por linha, aprovacao individual/em conjunto, rejeicao, descarte logico e criacao atomica de lancamentos. Controles de separador e mapeamento aparecem apenas para CSV. OFX normaliza `STMTTRN`, usa o sinal de `TRNAMT` como fonte canonica, valida `CURDEF` contra a conta selecionada e persiste sugestoes com provider/model dedicados. O arquivo bruto nunca e persistido, logado ou auditado.
 
 ### Inbox de mensagens bancarias
 
@@ -130,7 +130,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Deduplicacao
 
 - Dominio: Feito.
-- Schema/repository/API: Feito para fluxo determinístico em lotes CSV.
+- Schema/repository/API: Feito para fluxo determinístico em lotes CSV e OFX.
 - UI: Parcial/Feito para revisao operacional via Inbox.
 - Testes: Parcial.
 - Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.

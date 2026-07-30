@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { enhanceInboxListLayout } from "./inbox-list-layout-enhancement.js";
 import { renderInboxPage } from "./inbox-page.js";
 
 describe("Inbox category hierarchy first render", () => {
@@ -41,6 +42,39 @@ describe("Inbox category hierarchy first render", () => {
       assert.match(html, /data-inbox-category-hierarchy-enhanced/);
       assert.match(html, /<option value="">Sem categoria<\/option>/);
       assert.match(html, /Alimentação › Mercado/);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("keeps the OFX workflow available when categories fail to load", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(
+        typeof input === "string" ? input : input instanceof URL ? input.href : input.url,
+      );
+      const path = `${url.pathname}${url.search}`;
+      if (path === "/api/categories?status=all") {
+        return new Response(JSON.stringify({ error: { message: "Categories unavailable" } }), {
+          status: 503,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify(responseFor(path)), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    try {
+      const rendered = await renderInboxPage("categories-unavailable-token");
+      const html = enhanceInboxListLayout(rendered, new URL("http://solverfin.test/inbox"));
+
+      assert.match(html, /data-inbox-ofx-import-enhanced/);
+      assert.match(html, /accept="\.csv,\.ofx,text\/csv,text\/plain,application\/x-ofx"/);
+      assert.match(html, /\/api\/import-batches\/" \+ fileData\.kind \+ "\/preview"/);
+      assert.doesNotMatch(html, /data-inbox-category-hierarchy-enhanced/);
     } finally {
       globalThis.fetch = originalFetch;
     }

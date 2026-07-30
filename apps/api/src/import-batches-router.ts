@@ -16,6 +16,7 @@ import {
   approveConsistentImportSuggestionForContext,
   approveConsistentSelectedImportSuggestionsForContext,
   createConsistentCsvImportBatchForContext,
+  createConsistentOfxImportBatchForContext,
   getConsistentImportBatchDetailForContext,
 } from "./import-review-service.js";
 import {
@@ -27,6 +28,7 @@ import {
   updateImportSuggestionForContext,
   type ImportSuggestionUpdatePayload,
 } from "./repositories/imports.js";
+import { previewOfxImportForContext } from "./repositories/ofx-imports.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
@@ -49,6 +51,8 @@ const routes: ImportBatchRoute[] = [];
 route("GET", BASE_PATH, listImportBatchesHandler);
 route("POST", `${BASE_PATH}/csv/preview`, previewCsvImportBatchHandler);
 route("POST", `${BASE_PATH}/csv`, createCsvImportBatchHandler);
+route("POST", `${BASE_PATH}/ofx/preview`, previewOfxImportBatchHandler);
+route("POST", `${BASE_PATH}/ofx`, createOfxImportBatchHandler);
 route("GET", `${BASE_PATH}/:importBatchId`, getImportBatchHandler);
 route(
   "PATCH",
@@ -143,12 +147,17 @@ async function listImportBatchesHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const status = request.query.get("status") as ImportStatus | "all" | null;
-  const sourceKind = request.query.get("sourceKind") as ImportSourceKind | null;
+  const sourceKind = readImportSourceKind(request.query.get("sourceKind"));
+  const importBatches = await listImportBatchesForContext(context, {
+    ...(status ? { status } : {}),
+    ...(sourceKind ? { sourceKind } : {}),
+  });
+
   return json(200, {
-    importBatches: await listImportBatchesForContext(context, {
-      ...(status ? { status } : {}),
-      ...(sourceKind ? { sourceKind } : {}),
-    }),
+    importBatches:
+      sourceKind === undefined
+        ? importBatches.filter((batch) => batch.sourceKind === "csv" || batch.sourceKind === "ofx")
+        : importBatches,
   });
 }
 
@@ -157,12 +166,7 @@ async function previewCsvImportBatchHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  if (body.consentAccepted !== true) {
-    throw new ImportReviewError(
-      "IMPORT_CONSENT_REQUIRED",
-      "Confirme que o arquivo pode ser processado neste perfil financeiro.",
-    );
-  }
+  assertConsent(body);
   return json(
     200,
     await previewCsvImportForContext(context, {
@@ -175,9 +179,7 @@ async function previewCsvImportBatchHandler(
         : { csvMapping: readCsvMapping(body.csvMapping) as CsvImportMapping }),
       ...(readCsvDelimiter(body.csvDelimiter) === undefined
         ? {}
-        : {
-            csvDelimiter: readCsvDelimiter(body.csvDelimiter) as CsvDelimiter,
-          }),
+        : { csvDelimiter: readCsvDelimiter(body.csvDelimiter) as CsvDelimiter }),
     }),
   );
 }
@@ -187,12 +189,7 @@ async function createCsvImportBatchHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  if (body.consentAccepted !== true) {
-    throw new ImportReviewError(
-      "IMPORT_CONSENT_REQUIRED",
-      "Confirme que o arquivo pode ser processado neste perfil financeiro.",
-    );
-  }
+  assertConsent(body);
   const result = await createConsistentCsvImportBatchForContext(context, {
     originalFileName: requireString(body, "originalFileName"),
     content: requireString(body, "content"),
@@ -204,6 +201,38 @@ async function createCsvImportBatchHandler(
     ...(readCsvDelimiter(body.csvDelimiter) === undefined
       ? {}
       : { csvDelimiter: readCsvDelimiter(body.csvDelimiter) as CsvDelimiter }),
+  });
+  return json(result.duplicateBatch ? 200 : 201, result);
+}
+
+async function previewOfxImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  assertConsent(body);
+  return json(
+    200,
+    await previewOfxImportForContext(context, {
+      originalFileName: requireString(body, "originalFileName"),
+      content: requireRawString(body, "content"),
+      accountId: requireString(body, "accountId"),
+      consentAccepted: true,
+    }),
+  );
+}
+
+async function createOfxImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  assertConsent(body);
+  const result = await createConsistentOfxImportBatchForContext(context, {
+    originalFileName: requireString(body, "originalFileName"),
+    content: requireRawString(body, "content"),
+    accountId: requireString(body, "accountId"),
+    consentAccepted: true,
   });
   return json(result.duplicateBatch ? 200 : 201, result);
 }
@@ -304,6 +333,23 @@ async function discardImportBatchHandler(
       body.reason === undefined ? undefined : String(body.reason),
     ),
   );
+}
+
+function assertConsent(body: Record<string, unknown>): void {
+  if (body.consentAccepted !== true) {
+    throw new ImportReviewError(
+      "IMPORT_CONSENT_REQUIRED",
+      "Confirme que o arquivo pode ser processado neste perfil financeiro.",
+    );
+  }
+}
+
+function readImportSourceKind(value: string | null): ImportSourceKind | undefined {
+  if (value === null || value.length === 0) return undefined;
+  if (value !== "csv" && value !== "ofx") {
+    throw new ImportReviewError("IMPORT_SOURCE_KIND_INVALID", "Origem deve ser csv ou ofx.");
+  }
+  return value;
 }
 
 function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUpdatePayload {
@@ -451,6 +497,17 @@ function requireString(body: Record<string, unknown>, key: string): string {
     );
   }
   return value.trim();
+}
+
+function requireRawString(body: Record<string, unknown>, key: string): string {
+  const value = body[key];
+  if (typeof value !== "string") {
+    throw new ImportReviewError(
+      "IMPORT_FIELD_REQUIRED",
+      `Campo ${key} e obrigatorio para continuar.`,
+    );
+  }
+  return value;
 }
 
 function requireParam(match: Readonly<Record<string, string>>, name: string): string {

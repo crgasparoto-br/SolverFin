@@ -1,4 +1,5 @@
 import { icon } from "./icons.js";
+import { enhanceInboxOfxImport } from "./inbox-ofx-import-enhancement.js";
 
 export type InboxDateSort = "date_asc" | "date_desc";
 
@@ -65,7 +66,10 @@ export function setInboxCheckboxSelection<T extends InboxSelectableCheckbox>(
 }
 
 export function enhanceInboxListLayout(html: string, url: URL): string {
-  if (!html.includes('id="import-line-filter"') || !html.includes("</body>")) return html;
+  const ofxEnhanced = enhanceInboxOfxImport(html);
+  if (!ofxEnhanced.includes('id="import-line-filter"') || !ofxEnhanced.includes("</body>")) {
+    return ofxEnhanced;
+  }
 
   const startsOn = normalizeInboxDate(url.searchParams.get("lineStart") ?? "") ?? "";
   const endsOn = normalizeInboxDate(url.searchParams.get("lineEnd") ?? "") ?? "";
@@ -361,5 +365,5 @@ export function enhanceInboxListLayout(html: string, url: URL): string {
       })();
     </script>`;
 
-  return html.replace("</head>", `${styles}</head>`).replace("</body>", `${script}</body>`);
+  return ofxEnhanced.replace("</head>", `${styles}</head>`).replace("</body>", `${script}</body>`);
 }
