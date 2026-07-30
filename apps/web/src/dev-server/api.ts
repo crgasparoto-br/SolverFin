@@ -37,15 +37,7 @@ export async function handleApiRequest(
   const correlationId = resolveCorrelationId(request);
 
   if (isLocalAuthenticationRoute(request.method, url.pathname) && !isDemoAuthenticationAllowed()) {
-    sendJson(
-      response,
-      403,
-      apiError(
-        "AUTH_LOCAL_AUTH_DISABLED",
-        "A autenticação local não está disponível neste ambiente.",
-        correlationId,
-      ),
-    );
+    await rejectLocalAuthenticationRequest(response, url.pathname, correlationId);
     return;
   }
 
@@ -163,6 +155,32 @@ export function resolveOidcCallbackLocation(input: {
 
 function isLocalAuthenticationRoute(method: string | undefined, pathname: string): boolean {
   return method === "POST" && (pathname === "/api/session" || pathname === "/api/users");
+}
+
+async function rejectLocalAuthenticationRequest(
+  response: ServerResponse,
+  pathname: string,
+  correlationId: string,
+): Promise<void> {
+  try {
+    await fetch(`${apiBaseUrl}${pathname}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{}",
+    });
+  } catch {
+    // The public boundary still fails closed when the API is unavailable.
+  }
+
+  sendJson(
+    response,
+    403,
+    apiError(
+      "AUTH_LOCAL_AUTH_DISABLED",
+      "A autenticação local não está disponível neste ambiente.",
+      correlationId,
+    ),
+  );
 }
 
 async function handleRecurrenceMaterialization(
