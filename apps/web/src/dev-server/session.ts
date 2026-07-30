@@ -63,7 +63,8 @@ export function isDemoAuthenticationAllowed(
 
 function isLegacyWebCredentialAllowed(env: Readonly<Record<string, string | undefined>>): boolean {
   return (
-    isDemoAuthenticationAllowed(env) || env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1"
+    isDemoAuthenticationAllowed(env) ||
+    env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1"
   );
 }
 
