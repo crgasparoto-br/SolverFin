@@ -30,6 +30,14 @@ Estados válidos:
 
 Somente uma chamada pode reivindicar uma tentativa pendente. Repetição, replay, expiração, estado desconhecido e concorrência são rejeitados sem criar sessão. Cancelamento do provider termina a tentativa sem revelar detalhes internos.
 
+A API executa uma limpeza no início do processo e depois periodicamente. Tentativas `PENDING` vencidas passam para `EXPIRED`; tentativas `PROCESSING` abandonadas após o prazo passam para `FAILED`. `OIDC_ATTEMPT_CLEANUP_INTERVAL_MS` permite ajustar a cadência, com mínimo efetivo de 10 segundos e padrão de 60 segundos.
+
+## Confiança do provider
+
+O issuer aceito deve ter o formato de User Pool do Cognito em `sa-east-1`. O JWKS é derivado exatamente do issuer e não pode apontar para outro host ou path. Authorization, token, logout e recuperação usam um único domínio gerenciado `*.auth.sa-east-1.amazoncognito.com`, com paths canônicos e sem query ou fragmento. O redirect usa exatamente a origem de `APP_ORIGIN`.
+
+Configuração que misture issuer, JWKS, região, domínio de login ou redirect falha antes do servidor produtivo começar a atender requisições e também é revalidada quando o fluxo OIDC é iniciado.
+
 ## Cookie da sessão
 
 Em produção, o cookie é:
@@ -48,11 +56,11 @@ Múltiplos cookies são enviados como headers `Set-Cookie` separados. A aplicaç
 
 A renovação substitui o hash por escrita condicional. Duas renovações concorrentes com o mesmo token antigo resultam em no máximo uma vencedora. A rotação mantém o mesmo `expiresAt` absoluto.
 
-Logout revoga somente uma sessão ainda ativa e sempre limpa o cookie. A migration de rollout marca sessões legadas ativas com `auth_transport_migration`, exigindo novo login.
+Logout revoga somente uma sessão ainda ativa e sempre limpa o cookie. A migration de rollout marca sessões legadas ativas com `auth_transport_migration`, exigindo novo login. Alterar um usuário para `DISABLED` revoga imediatamente todas as sessões ainda ativas com motivo `user_disabled`; a validação de identidade desabilitada também força essa revogação antes de negar o login.
 
 ## CSRF e origem
 
-Toda operação mutável autenticada por cookie exige `Origin` exatamente igual a `APP_ORIGIN`. Origem ausente ou diferente é rejeitada. A exceção `AUTH_ALLOW_MISSING_ORIGIN=true` existe apenas para adaptadores locais/testes deliberados.
+Toda operação mutável autenticada por cookie exige `Origin` exatamente igual a `APP_ORIGIN`. Origem ausente ou diferente é rejeitada com `AUTH_REQUEST_ORIGIN_INVALID`. A exceção `AUTH_ALLOW_MISSING_ORIGIN=true` existe apenas para adaptadores locais/testes deliberados.
 
 `SameSite=Lax` é defesa complementar e não substitui a validação de origem.
 
@@ -65,15 +73,30 @@ Os contratos abaixo existem somente em `development`, `local`, `test` ou demonst
 - `POST /api/session/oidc` com `idToken` fornecido pelo cliente;
 - autenticação `Authorization: Bearer`.
 
-Fora desses ambientes, eles falham de modo seguro. Produção nunca recorre à sessão em memória quando a sessão persistida estiver ausente ou indisponível.
+Fora desses ambientes, o servidor remove qualquer Bearer recebido externamente antes de chamar roteadores internos. Somente um cookie produtivo previamente validado pode ser convertido em credencial interna transitória para os roteadores legados. Produção nunca recorre à sessão em memória quando a sessão persistida estiver ausente ou indisponível.
 
 ## Identidade e tenant
 
-O vínculo canônico é `externalAuthProvider + externalAuthSubject`. A primeira autenticação válida pode vincular um usuário local sem provider ou criar `User`, `Organization` e `FinancialProfile` pessoal de forma idempotente. Credenciais, confirmação de email, recuperação e autenticação forte permanecem sob responsabilidade do Cognito.
+O vínculo canônico é `externalAuthProvider + externalAuthSubject`. A primeira autenticação válida pode vincular um usuário local sem provider ou criar `User`, `Organization` e `FinancialProfile` pessoal de forma idempotente.
+
+A vinculação usa lock da linha do usuário, compare-and-set dos campos ainda nulos e constraints únicas. Duas identidades diferentes concorrendo pelo mesmo email produzem no máximo uma vencedora. Duas tentativas da mesma identidade retornam o mesmo usuário e não duplicam organização ou perfil. Depois de criado, o vínculo externo é imutável no banco.
+
+Credenciais, confirmação de email, recuperação e autenticação forte permanecem sob responsabilidade do Cognito.
+
+## Erros públicos
+
+- `AUTH_RETURN_TO_INVALID`: destino pós-login externo, ambíguo ou malformado;
+- `AUTH_REQUEST_ORIGIN_INVALID`: operação mutável por cookie com origem ausente ou divergente;
+- `AUTH_OIDC_ATTEMPT_INVALID`: callback ausente, expirado, repetido, cancelado ou inválido;
+- `AUTH_OIDC_CONFIGURATION_INVALID`: configuração produtiva incompleta ou incoerente.
+
+Os corpos públicos permanecem genéricos e não revelam token, código, claim, email, provider ou existência de usuário.
 
 ## Auditoria
 
-`SecurityAuditEvent` registra eventos operacionais sem material sensível, incluindo criação/consumo/falha/cancelamento de tentativa OIDC, login, rotação, logout, revogação, sessão inválida/expirada, bloqueio de fluxo local e origem rejeitada.
+`SecurityAuditEvent` registra eventos operacionais sem material sensível, incluindo criação/consumo/falha/cancelamento de tentativa OIDC, criação de sessão, rotação, logout, revogação, sessão inválida/expirada, bloqueio de fluxo local e origem rejeitada.
+
+A criação da sessão e os eventos `session_created` e `oidc_callback_consumed` são persistidos na mesma transação que marca a tentativa como `CONSUMED`.
 
 ## Configuração
 
@@ -83,14 +106,15 @@ Variáveis produtivas:
 APP_ORIGIN=https://app.solverfin.example
 OIDC_ISSUER_URL=https://cognito-idp.sa-east-1.amazonaws.com/<user-pool-id>
 OIDC_CLIENT_ID=<app-client-id>
-OIDC_AUTHORIZATION_URL=https://<dominio-cognito>/oauth2/authorize
-OIDC_TOKEN_URL=https://<dominio-cognito>/oauth2/token
+OIDC_AUTHORIZATION_URL=https://<prefixo>.auth.sa-east-1.amazoncognito.com/oauth2/authorize
+OIDC_TOKEN_URL=https://<prefixo>.auth.sa-east-1.amazoncognito.com/oauth2/token
 OIDC_JWKS_URI=https://cognito-idp.sa-east-1.amazonaws.com/<user-pool-id>/.well-known/jwks.json
 OIDC_REDIRECT_URI=https://<app>/api/auth/oidc/callback
-OIDC_LOGOUT_URL=https://<dominio-cognito>/logout
-OIDC_RECOVERY_URL=https://<dominio-cognito>/forgotPassword
+OIDC_LOGOUT_URL=https://<prefixo>.auth.sa-east-1.amazoncognito.com/logout
+OIDC_RECOVERY_URL=https://<prefixo>.auth.sa-east-1.amazoncognito.com/forgotPassword
 OIDC_ATTEMPT_ENCRYPTION_KEY=<32-bytes-em-base64>
 OIDC_ATTEMPT_TTL_MINUTES=10
+OIDC_ATTEMPT_CLEANUP_INTERVAL_MS=60000
 AUTH_SESSION_TTL_MINUTES=60
 AUTH_SESSION_IDLE_TIMEOUT_MINUTES=30
 ```
@@ -105,4 +129,4 @@ Antes do rollout, confirme que o app client não possui client secret, que Autho
 
 ## Testes e validação
 
-A cobertura inclui cookie produtivo/local, ausência de `Domain`, origem exata, `returnTo` interno, PKCE, hashes de state/nonce, nonce do ID token, bloqueio dos contratos legados, rotação atômica, revogação idempotente, estados/replay da tentativa, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.
+A cobertura inclui cookie produtivo/local, ausência de `Domain`, origem exata, `returnTo` interno, PKCE, hashes de state/nonce, nonce do ID token, bloqueio dos contratos legados, bloqueio de Bearer externo, rotação atômica, revogação idempotente, revogação ao desabilitar usuário, estados/replay da tentativa, concorrência de vínculo externo, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.
