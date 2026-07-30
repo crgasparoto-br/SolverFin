@@ -1,5 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
+import { assertExplicitRuntimeEnvironment } from "@solverfin/shared";
+
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
 import { enhanceAccountRemunerationDisclosure } from "./dev-server/account-remuneration-disclosure-enhancement.js";
 import { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
@@ -26,10 +28,11 @@ import {
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
+import { enhanceWithRecurrenceMaterialization } from "./dev-server/recurrence-materialization.js";
 import { resolveReportsCanonicalLocation } from "./dev-server/reports-canonical-location.js";
 import { renderReportsRoutePage } from "./dev-server/reports-route-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
-import { getSessionCredentialFromRequest } from "./dev-server/session.js";
+import { clearSessionCookie, getSessionCredentialFromRequest } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
 import { tryServeStaticAsset } from "./dev-server/static-assets.js";
 import { renderTransactionsPage } from "./dev-server/transactions-page.js";
@@ -48,32 +51,20 @@ export { renderDashboardPage } from "./dev-server/dashboard-page.js";
 export { enhanceInboxListLayout } from "./dev-server/inbox-list-layout-enhancement.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
+export {
+  enhanceWithRecurrenceMaterialization,
+  materializeAccountStatementRecurrences,
+  materializeCardInvoiceRecurrences,
+} from "./dev-server/recurrence-materialization.js";
 export { renderReportsPage } from "./dev-server/reports-page.js";
 export { renderReportsRoutePage } from "./dev-server/reports-route-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
 export { renderSettingsPage } from "./dev-server/settings-page.js";
 export { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
-interface StatementAccountRecord {
-  id: string;
-  status: string;
-}
-
-interface CardMaterializationRecord {
-  id: string;
-  status: string;
-}
-
-interface RecurrenceMaterializationRecord {
-  id: string;
-  status: string;
-}
-
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.PORT ?? 5173);
-const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000";
 const passwordResetUrl = resolvePasswordResetUrl();
-const monthPattern = /^\d{4}-\d{2}$/;
 const manifest = buildSolverFinWebManifest();
 
 export function createSolverFinWebServer() {
@@ -85,6 +76,7 @@ export function createSolverFinWebServer() {
 const server = createSolverFinWebServer();
 
 if (process.argv[1]?.endsWith("dev-server.js") === true) {
+  assertExplicitRuntimeEnvironment(process.env);
   server.listen(port, host, () => {
     console.log(
       `SolverFin web dev server running at http://${host === "0.0.0.0" ? "localhost" : host}:${port}`,
@@ -112,6 +104,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname.startsWith("/api/")) {
     await handleApiRequest(request, response, url, token);
+    return;
+  }
+
+  if (url.pathname === "/login" && url.searchParams.get("auth") === "complete") {
+    await handleOidcCompletion(response, url, token);
     return;
   }
 
@@ -166,20 +163,20 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/cartoes" && token) {
-    await materializeCardInvoiceRecurrences(token, url);
     const html = await renderCardsPageWithMonthNavigation(token, url);
     const sortedHtml = enhanceCardListSorting(html, url);
     const groupedHtml = enhanceCardInstrumentSubtotals(sortedHtml);
     const enhancedHtml = enhanceCardsInterface(groupedHtml);
-    sendHtml(response, 200, finalizeCardsInterface(enhancedHtml));
+    const finalizedHtml = finalizeCardsInterface(enhancedHtml);
+    sendHtml(response, 200, enhanceWithRecurrenceMaterialization(finalizedHtml, "card", url));
     return;
   }
 
   if (url.pathname === "/lancamentos" && token) {
-    await materializeAccountStatementRecurrences(token, url);
     const html = await renderTransactionsPage(token, url);
     const sortedHtml = enhanceStatementListSorting(html, url);
-    sendHtml(response, 200, enhanceAccountRemunerationDisclosure(sortedHtml));
+    const enhancedHtml = enhanceAccountRemunerationDisclosure(sortedHtml);
+    sendHtml(response, 200, enhanceWithRecurrenceMaterialization(enhancedHtml, "account", url));
     return;
   }
 
@@ -214,9 +211,59 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   sendHtml(response, 404, renderNotFoundPage());
 }
 
+async function handleOidcCompletion(
+  response: ServerResponse,
+  url: URL,
+  credential: string | undefined,
+): Promise<void> {
+  const returnTo = validateInternalReturnTo(url.searchParams.get("returnTo"));
+
+  if (!returnTo || !credential) {
+    sendHtml(response, 200, renderLoginPage("cookie-unavailable", passwordResetUrl, {
+      productiveOidc: true,
+    }));
+    return;
+  }
+
+  const session = await apiGet<{ user: { id: string } }>(credential, "/api/me");
+  if (!session.ok) {
+    response.setHeader("set-cookie", clearSessionCookie());
+    sendHtml(response, 200, renderLoginPage("cookie-unavailable", passwordResetUrl, {
+      productiveOidc: true,
+    }));
+    return;
+  }
+
+  response.writeHead(303, { location: returnTo, "cache-control": "no-store" });
+  response.end();
+}
+
+function validateInternalReturnTo(value: string | null): string | undefined {
+  const normalized = value?.trim();
+  if (
+    !normalized ||
+    !normalized.startsWith("/") ||
+    normalized.startsWith("//") ||
+    normalized.includes("#") ||
+    normalized.includes("\\") ||
+    /^[a-z][a-z0-9+.-]*:/i.test(normalized)
+  ) {
+    return undefined;
+  }
+
+  const parsed = new URL(normalized, "https://solverfin.invalid");
+  if (parsed.origin !== "https://solverfin.invalid" || parsed.username || parsed.password) {
+    return undefined;
+  }
+
+  return `${parsed.pathname}${parsed.search}`;
+}
+
 function isProductiveWebAuthEnabled(): boolean {
-  const nodeEnv = (process.env.NODE_ENV ?? "development").toLowerCase();
-  if (nodeEnv === "development" || nodeEnv === "local" || nodeEnv === "test") return false;
+  const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
+  if (!nodeEnv || nodeEnv === "development" || nodeEnv === "local" || nodeEnv === "test") {
+    return false;
+  }
 
   return Boolean(
     process.env.OIDC_ISSUER_URL &&
@@ -225,153 +272,4 @@ function isProductiveWebAuthEnabled(): boolean {
     process.env.OIDC_TOKEN_URL &&
     process.env.OIDC_REDIRECT_URI,
   );
-}
-
-export async function materializeCardInvoiceRecurrences(token: string, url: URL): Promise<void> {
-  const month = resolveRequestedMonth(url);
-  const cardsResult = await apiGet<{ cards: CardMaterializationRecord[] }>(
-    token,
-    "/api/cards?status=all",
-  );
-
-  if (!cardsResult.ok) {
-    return;
-  }
-
-  const cards = cardsResult.data.cards;
-  const cardId =
-    url.searchParams.get("cardId") ??
-    cards.find((card) => card.status === "active")?.id ??
-    cards[0]?.id;
-
-  if (!cardId) {
-    return;
-  }
-
-  const recurrencesResult = await apiGet<{ recurrences: RecurrenceMaterializationRecord[] }>(
-    token,
-    `/api/recurrences?${new URLSearchParams({ cardId, status: "all" }).toString()}`,
-  );
-
-  if (!recurrencesResult.ok) {
-    return;
-  }
-
-  await materializeActiveRecurrences(token, recurrencesResult.data.recurrences, month);
-}
-
-export async function materializeAccountStatementRecurrences(
-  token: string,
-  url: URL,
-): Promise<void> {
-  const month = resolveRequestedMonth(url);
-  const accountsResult = await apiGet<{ accounts: StatementAccountRecord[] }>(
-    token,
-    "/api/accounts",
-  );
-
-  if (!accountsResult.ok) {
-    return;
-  }
-
-  const accountId =
-    url.searchParams.get("accountId") ??
-    accountsResult.data.accounts.find((account) => account.status === "active")?.id;
-
-  if (!accountId) {
-    return;
-  }
-
-  const recurrencesResult = await apiGet<{ recurrences: RecurrenceMaterializationRecord[] }>(
-    token,
-    `/api/recurrences?${new URLSearchParams({ accountId, status: "all" }).toString()}`,
-  );
-
-  if (!recurrencesResult.ok) {
-    return;
-  }
-
-  await materializeActiveRecurrences(token, recurrencesResult.data.recurrences, month);
-}
-
-async function materializeActiveRecurrences(
-  token: string,
-  recurrences: readonly RecurrenceMaterializationRecord[],
-  month: string,
-): Promise<void> {
-  const through = monthToLastDay(month);
-  const activeRecurrences = recurrences.filter((recurrence) => recurrence.status === "active");
-
-  for (const recurrence of activeRecurrences) {
-    await materializeRecurrenceWithRetry(token, recurrence.id, through);
-  }
-}
-
-async function materializeRecurrenceWithRetry(
-  token: string,
-  recurrenceId: string,
-  through: string,
-): Promise<void> {
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
-    try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/recurrences/${encodeURIComponent(recurrenceId)}/generate-installments`,
-        {
-          method: "POST",
-          headers: {
-            authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ through }),
-        },
-      );
-
-      if (response.ok) {
-        return;
-      }
-
-      const retryable = response.status === 409 || response.status >= 500;
-      if (attempt < 2 && retryable) {
-        continue;
-      }
-
-      console.error("Recurring materialization request failed", {
-        recurrenceId,
-        status: response.status,
-      });
-      return;
-    } catch {
-      if (attempt < 2) {
-        continue;
-      }
-
-      console.error("Recurring materialization request failed", {
-        recurrenceId,
-        status: "network_error",
-      });
-    }
-  }
-}
-
-function resolveRequestedMonth(url: URL): string {
-  const requestedMonth = url.searchParams.get("month");
-
-  if (monthPattern.test(requestedMonth ?? "")) {
-    return requestedMonth as string;
-  }
-
-  const startsOnMonth = url.searchParams.get("startsOn")?.slice(0, 7);
-
-  if (monthPattern.test(startsOnMonth ?? "")) {
-    return startsOnMonth as string;
-  }
-
-  return new Date().toISOString().slice(0, 7);
-}
-
-function monthToLastDay(month: string): string {
-  const year = Number(month.slice(0, 4));
-  const monthIndex = Number(month.slice(5, 7)) - 1;
-
-  return new Date(Date.UTC(year, monthIndex + 1, 0)).toISOString().slice(0, 10);
 }
