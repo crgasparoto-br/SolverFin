@@ -66,6 +66,11 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
+      - name: Emit formatting remediation diff
+        run: |
+          npx prettier apps/api/src/auth-cookie.test.ts apps/api/src/auth-identity-concurrency.integration.test.ts apps/api/src/cognito-config.ts apps/api/src/oidc-flow.ts --write
+          git diff --no-color -- apps/api/src/auth-cookie.test.ts apps/api/src/auth-identity-concurrency.integration.test.ts apps/api/src/cognito-config.ts apps/api/src/oidc-flow.ts
+
       - name: Check formatting
         run: npm run format:check
 
