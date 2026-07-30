@@ -143,7 +143,9 @@ async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
     exp: nowSeconds + 300,
     iat: nowSeconds,
     nonce,
+    token_use: "id",
     email: `issue-551-${Date.now()}@example.invalid`,
+    email_verified: true,
     name: "Issue 551 Teste",
   });
   let exchangedBody = "";
