@@ -49,3 +49,5 @@ Os gates da issue incluem:
 - migrations e seed em banco dedicado;
 - lint, typecheck, testes, build e validação visual em Chrome;
 - regressões concorrentes do monorepo permanecem obrigatórias, porque a autenticação e a sessão atravessam os mesmos roteadores e transações usados pelos fluxos financeiros.
+
+O encerramento da issue exige CI, integração PostgreSQL e validação visual aprovados no mesmo head, seguidos por auditoria adversarial somente leitura. A auditoria executada no mesmo ciclo produz apenas aprovação interna; a liberação operacional final permanece condicionada a revisão independente.
