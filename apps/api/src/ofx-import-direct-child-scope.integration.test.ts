@@ -1,7 +1,4 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-
-import { format } from "prettier";
 
 import { closePool, query } from "./db.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
@@ -28,13 +25,6 @@ async function main(): Promise<void> {
     process.env.DATABASE_URL,
     "DATABASE_URL is required for OFX direct-child scope integration tests.",
   );
-  const structurePath = "src/repositories/ofx-import-structure.ts";
-  const structureSource = await readFile(structurePath, "utf8");
-  const canonicalStructureSource = await format(structureSource, { filepath: structurePath });
-  console.log(
-    `OFX_PRETTIER_BASE64:${Buffer.from(canonicalStructureSource, "utf8").toString("base64")}`,
-  );
-
   const token = await loginAndReadToken();
   const suffix = Date.now().toString(36);
   const accountId = await createAccount(token, suffix);
