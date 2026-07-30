@@ -148,11 +148,16 @@ async function listImportBatchesHandler(
 ): Promise<ApiResponse> {
   const status = request.query.get("status") as ImportStatus | "all" | null;
   const sourceKind = readImportSourceKind(request.query.get("sourceKind"));
+  const importBatches = await listImportBatchesForContext(context, {
+    ...(status ? { status } : {}),
+    ...(sourceKind ? { sourceKind } : {}),
+  });
+
   return json(200, {
-    importBatches: await listImportBatchesForContext(context, {
-      ...(status ? { status } : {}),
-      ...(sourceKind ? { sourceKind } : {}),
-    }),
+    importBatches:
+      sourceKind === undefined
+        ? importBatches.filter((batch) => batch.sourceKind === "csv" || batch.sourceKind === "ofx")
+        : importBatches,
   });
 }
 
