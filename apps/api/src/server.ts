@@ -10,11 +10,7 @@ import { assertExplicitRuntimeEnvironment } from "@solverfin/shared";
 
 import { handleAccountRemunerationApiRequest } from "./account-remuneration-router.js";
 import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
-import {
-  assertLocalAuthAllowed,
-  auditSecurityEvent,
-  isDemoAuthAllowed,
-} from "./auth-service.js";
+import { assertLocalAuthAllowed, auditSecurityEvent, isDemoAuthAllowed } from "./auth-service.js";
 import { assertTrustedCognitoEnvironment } from "./cognito-config.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { startOidcLoginAttemptScheduler } from "./oidc-attempt-scheduler.js";

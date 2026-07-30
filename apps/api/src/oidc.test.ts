@@ -104,7 +104,10 @@ async function rejectsClaims(overrides: Record<string, unknown>): Promise<void> 
 }
 
 async function rejectsToken(token: string): Promise<void> {
-  await assert.rejects(() => validateOidcIdToken(token, config, validationOptions()), isInvalidCredentials);
+  await assert.rejects(
+    () => validateOidcIdToken(token, config, validationOptions()),
+    isInvalidCredentials,
+  );
 }
 
 function validClaims(overrides: Record<string, unknown> = {}): Record<string, unknown> {

@@ -41,11 +41,7 @@ export async function materializeCardInvoiceRecurrences(
   options: RecurrenceMaterializationOptions = {},
 ): Promise<void> {
   const runtime = resolveRuntime(origin, options);
-  const cards = await apiGet<{ cards: CardRecord[] }>(
-    runtime,
-    credential,
-    "/api/cards?status=all",
-  );
+  const cards = await apiGet<{ cards: CardRecord[] }>(runtime, credential, "/api/cards?status=all");
   const cardId =
     url.searchParams.get("cardId") ??
     cards.cards.find((card) => card.status === "active")?.id ??
@@ -124,7 +120,9 @@ export function enhanceWithRecurrenceMaterialization(
 })();
 </script>`;
 
-  return html.includes("</body>") ? html.replace("</body>", `${script}</body>`) : `${html}${script}`;
+  return html.includes("</body>")
+    ? html.replace("</body>", `${script}</body>`)
+    : `${html}${script}`;
 }
 
 function resolveRuntime(

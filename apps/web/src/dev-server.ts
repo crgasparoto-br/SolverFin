@@ -223,18 +223,26 @@ async function handleOidcCompletion(
   const returnTo = validateInternalReturnTo(url.searchParams.get("returnTo"));
 
   if (!returnTo || !credential) {
-    sendHtml(response, 200, renderLoginPage("cookie-unavailable", passwordResetUrl, {
-      productiveOidc: true,
-    }));
+    sendHtml(
+      response,
+      200,
+      renderLoginPage("cookie-unavailable", passwordResetUrl, {
+        productiveOidc: true,
+      }),
+    );
     return;
   }
 
   const session = await apiGet<{ user: { id: string } }>(credential, "/api/me");
   if (!session.ok) {
     response.setHeader("set-cookie", [...clearApiSessionCookies(), clearSessionCookie()]);
-    sendHtml(response, 200, renderLoginPage("cookie-unavailable", passwordResetUrl, {
-      productiveOidc: true,
-    }));
+    sendHtml(
+      response,
+      200,
+      renderLoginPage("cookie-unavailable", passwordResetUrl, {
+        productiveOidc: true,
+      }),
+    );
     return;
   }
 
