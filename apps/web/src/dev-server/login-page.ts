@@ -79,9 +79,7 @@ function renderAuthenticationPanel(
   errorMessage?: string,
   passwordResetUrl?: string,
 ): string {
-  const error = errorMessage
-    ? `<p class="error" role="alert">Não foi possível concluir o acesso. Tente novamente.</p>`
-    : "";
+  const error = renderProductiveError(errorMessage);
 
   if (productiveOidc) {
     return `<p class="muted">Use sua conta segura para acessar seus dados financeiros.</p>
@@ -109,6 +107,17 @@ function renderAuthenticationPanel(
           <label>Senha<input name="password" type="password" autocomplete="new-password" minlength="8" placeholder="No mínimo 8 caracteres" required /></label>
           <button type="submit">Criar usuário</button>
         </form>`;
+}
+
+function renderProductiveError(errorMessage?: string): string {
+  if (!errorMessage) return "";
+
+  const message =
+    errorMessage === "cookie-unavailable"
+      ? "O acesso foi concluído no provedor, mas o navegador não manteve a sessão. Habilite cookies para este site e reinicie o acesso seguro."
+      : "Não foi possível concluir o acesso. Tente novamente.";
+
+  return `<p class="error" role="alert">${message}</p>`;
 }
 
 function renderProductiveRecoveryAction(passwordResetUrl?: string): string {
