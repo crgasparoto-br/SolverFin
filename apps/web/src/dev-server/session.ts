@@ -1,7 +1,9 @@
 import type { IncomingMessage } from "node:http";
 
 export const sessionCookieName = "sf_session_token";
-const apiSessionCookieNames = ["__Host-solverfin_session", "solverfin_session"] as const;
+const productiveApiSessionCookieName = "__Host-solverfin_session";
+const localApiSessionCookieName = "solverfin_session";
+const apiSessionCookieNames = [productiveApiSessionCookieName, localApiSessionCookieName] as const;
 
 export function getSessionTokenFromRequest(request: IncomingMessage): string | undefined {
   return parseCookies(request.headers.cookie ?? "")[sessionCookieName];
@@ -34,7 +36,27 @@ export function serializeSessionCookie(session: { token: string; expiresAt: stri
 }
 
 export function clearSessionCookie(): string {
-  return `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
+  return serializeExpiredCookie(sessionCookieName, false);
+}
+
+export function clearApiSessionCookies(): string[] {
+  return [
+    serializeExpiredCookie(productiveApiSessionCookieName, true),
+    serializeExpiredCookie(localApiSessionCookieName, false),
+  ];
+}
+
+function serializeExpiredCookie(name: string, secure: boolean): string {
+  const attributes = [
+    `${name}=`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    "Max-Age=0",
+    "Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+  ];
+  if (secure) attributes.push("Secure");
+  return attributes.join("; ");
 }
 
 function parseCookies(cookieHeader: string): Record<string, string> {
