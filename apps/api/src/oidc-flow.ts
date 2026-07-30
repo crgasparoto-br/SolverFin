@@ -1,18 +1,28 @@
-import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+  randomUUID,
+} from "node:crypto";
 
 import { AuthError, type LoginResult } from "./auth.js";
-import {
-  auditSecurityEvent,
-  createPersistentApplicationSession,
-  resolveExternalIdentityUser,
-} from "./auth-service.js";
+import { auditSecurityEvent, createPersistentApplicationSession } from "./auth-service.js";
+import { assertTrustedCognitoEndpoints } from "./cognito-config.js";
 import { query, withTransaction, type QueryExecutor } from "./db.js";
+import { resolveProductiveExternalIdentityUser } from "./external-identity.js";
 import { validateOidcIdToken, type JsonWebKeySet, type OidcProviderConfig } from "./oidc.js";
 
 const DEFAULT_ATTEMPT_TTL_MINUTES = 10;
 const OIDC_SCOPES = "openid email profile";
 
-type OidcAttemptStatus = "PENDING" | "PROCESSING" | "CONSUMED" | "CANCELLED" | "EXPIRED" | "FAILED";
+type OidcAttemptStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "CONSUMED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | "FAILED";
 
 interface OidcAttemptRow {
   id: string;
@@ -125,11 +135,7 @@ export async function completeOidcCallback(
       result: "cancelled",
       metadata: { reason: normalizeProviderError(input.error) },
     });
-    throw new AuthError(
-      "AUTH_OIDC_ATTEMPT_INVALID",
-      "Não foi possível concluir a autenticação.",
-      401,
-    );
+    throw invalidAttemptError();
   }
 
   const code = requireOpaqueCallbackValue(input.code);
@@ -152,7 +158,7 @@ export async function completeOidcCallback(
     });
 
     const login = await withTransaction(async (executeQuery) => {
-      const user = await resolveExternalIdentityUser(identity, executeQuery);
+      const user = await resolveProductiveExternalIdentityUser(identity, executeQuery);
       const created = await createPersistentApplicationSession(user, executeQuery, now);
       const finalized = await executeQuery<{ id: string }>(
         `update "OidcLoginAttempt"
@@ -162,19 +168,24 @@ export async function completeOidcCallback(
         [attempt.id, now, attempt.version],
       );
 
-      if (finalized.length !== 1) {
-        throw invalidAttemptError();
-      }
+      if (finalized.length !== 1) throw invalidAttemptError();
+
+      await insertSecurityAuditEvent(executeQuery, {
+        action: "session_created",
+        result: "success",
+        userId: user.id,
+        sessionId: created.session.databaseId,
+        metadata: { transport: "cookie" },
+      });
+      await insertSecurityAuditEvent(executeQuery, {
+        action: "oidc_callback_consumed",
+        result: "success",
+        userId: user.id,
+        sessionId: created.session.databaseId,
+        metadata: { provider: "amazon_cognito" },
+      });
 
       return created;
-    });
-
-    await auditSecurityEvent({
-      action: "oidc_callback_consumed",
-      result: "success",
-      userId: login.user.id,
-      sessionId: login.session.databaseId,
-      metadata: { provider: "amazon_cognito" },
     });
 
     return { login, returnTo: attempt.returnTo };
@@ -197,8 +208,11 @@ export async function expireOidcLoginAttempts(
 ): Promise<number> {
   const rows = await executeQuery<{ id: string }>(
     `update "OidcLoginAttempt"
-     set "status" = 'EXPIRED', "terminalReason" = 'timeout', "version" = "version" + 1
-     where "status" = 'PENDING' and "expiresAt" <= $1
+     set "status" = case when "status" = 'PENDING' then 'EXPIRED'::"OidcLoginAttemptStatus" else 'FAILED'::"OidcLoginAttemptStatus" end,
+         "terminalReason" = 'timeout',
+         "consumedAt" = coalesce("consumedAt", $1),
+         "version" = "version" + 1
+     where "status" in ('PENDING', 'PROCESSING') and "expiresAt" <= $1
      returning "id"`,
     [now],
   );
@@ -216,16 +230,12 @@ export function validateInternalReturnTo(value: string): string {
     normalized.includes("\\") ||
     /^[a-z][a-z0-9+.-]*:/i.test(normalized)
   ) {
-    throw new AuthError(
-      "AUTH_OIDC_ATTEMPT_INVALID",
-      "O destino solicitado para o login não é permitido.",
-      400,
-    );
+    throw returnToError();
   }
 
   const parsed = new URL(normalized, "https://solverfin.invalid");
   if (parsed.origin !== "https://solverfin.invalid" || parsed.username || parsed.password) {
-    throw invalidAttemptError();
+    throw returnToError();
   }
 
   return `${parsed.pathname}${parsed.search}`;
@@ -246,6 +256,17 @@ export function resolveOidcRuntimeConfig(
   if (encryptionKey.length !== 32) {
     throw configurationError("OIDC_ATTEMPT_ENCRYPTION_KEY must decode to exactly 32 bytes.");
   }
+
+  assertTrustedCognitoEndpoints({
+    appOrigin: requireHttpsUrl(env, "APP_ORIGIN"),
+    issuer,
+    authorizationUrl,
+    tokenUrl,
+    jwksUri,
+    redirectUri,
+    logoutUrl: env.OIDC_LOGOUT_URL,
+    recoveryUrl: env.OIDC_RECOVERY_URL,
+  });
 
   return {
     issuer,
@@ -273,7 +294,7 @@ async function claimOidcAttempt(state: string, now: Date): Promise<OidcAttemptRo
   if (!attempt) {
     await query(
       `update "OidcLoginAttempt"
-       set "status" = 'EXPIRED', "terminalReason" = 'timeout', "version" = "version" + 1
+       set "status" = 'EXPIRED', "terminalReason" = 'timeout', "consumedAt" = $2, "version" = "version" + 1
        where "stateHash" = $1 and "status" = 'PENDING' and "expiresAt" <= $2`,
       [stateHash, now],
     );
@@ -333,6 +354,31 @@ async function exchangeAuthorizationCode(
   }
 
   return payload.id_token;
+}
+
+async function insertSecurityAuditEvent(
+  executeQuery: QueryExecutor,
+  input: {
+    action: string;
+    result: string;
+    userId?: string | undefined;
+    sessionId?: string | undefined;
+    metadata?: Readonly<Record<string, unknown>> | undefined;
+  },
+): Promise<void> {
+  await executeQuery(
+    `insert into "SecurityAuditEvent"
+     ("id", "userId", "sessionId", "occurredAt", "action", "result", "correlationId", "metadata")
+     values ($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, NULL, $6)`,
+    [
+      randomUUID(),
+      input.userId ?? null,
+      input.sessionId ?? null,
+      input.action,
+      input.result,
+      input.metadata ? JSON.stringify(input.metadata) : null,
+    ],
+  );
 }
 
 function encryptCodeVerifier(value: string, key: Buffer): string {
@@ -406,6 +452,14 @@ function requireEnv(
   const value = env[key]?.trim() || fallback?.trim();
   if (!value) throw configurationError(`Missing required environment variable: ${key}.`);
   return value;
+}
+
+function returnToError(): AuthError {
+  return new AuthError(
+    "AUTH_RETURN_TO_INVALID",
+    "O destino solicitado para o login não é permitido.",
+    400,
+  );
 }
 
 function invalidAttemptError(): AuthError {
