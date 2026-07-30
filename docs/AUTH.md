@@ -99,6 +99,10 @@ AUTH_SESSION_IDLE_TIMEOUT_MINUTES=30
 
 Todos os valores reais ficam em secrets por ambiente. Ausência ou incoerência de configuração produtiva impede a inicialização/autenticação produtiva.
 
+### Checklist do app client Cognito
+
+Antes do rollout, confirme que o app client não possui client secret, que Authorization Code Grant e PKCE `S256` estão habilitados e que as URLs exatas de callback e logout de cada ambiente foram cadastradas no Cognito. O domínio gerenciado e o User Pool devem permanecer em `sa-east-1`.
+
 ## Testes e validação
 
 A cobertura inclui cookie produtivo/local, ausência de `Domain`, origem exata, `returnTo` interno, PKCE, hashes de state/nonce, nonce do ID token, bloqueio dos contratos legados, rotação atômica, revogação idempotente, estados/replay da tentativa, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.
