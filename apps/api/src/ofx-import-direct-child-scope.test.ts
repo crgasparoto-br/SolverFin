@@ -66,6 +66,47 @@ describe("OFX canonical direct-child scope", () => {
     for (const content of invalidDocuments) assertInvalidOfx(content);
   });
 
+  it("rejects unclosed intermediate containers in SGML and XML without declarations", () => {
+    const invalidDocuments = [
+      [
+        "OFXHEADER:100\nDATA:OFXSGML\n",
+        "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729<NAME>Compra segura",
+        "<EXTENSION><TRNAMT>-999.99<FITID>nested-fitid",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+      [
+        "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729<TRNAMT>-10",
+        "<WRAPPER><NAME>Nome aninhado",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+      [
+        "OFXHEADER:100\nDATA:OFXSGML\n",
+        "<OFX><STMTRS><BANKACCTFROM><CURDEF>USD",
+        "<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-10<NAME>Compra",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    ];
+
+    for (const content of invalidDocuments) assertInvalidOfx(content);
+  });
+
+  it("keeps supported scalar siblings outside the container stack", () => {
+    const result = preview(
+      [
+        "OFXHEADER:100\nDATA:OFXSGML\n",
+        "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>",
+        "<CHECKNUM>12345<DTPOSTED>20260729<TRNAMT>-10",
+        "<FITID>scalar-sibling<NAME>Compra segura",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    );
+
+    assert.equal(result.suggestions[0]?.amountMinor, 1000);
+    assert.equal(result.suggestions[0]?.externalId, "scalar-sibling");
+  });
+
   it("rejects CURDEF nested in another statement metadata container", () => {
     assertInvalidOfx(
       [
