@@ -2,6 +2,11 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { apiError, readJsonBody, resolveCorrelationId, sendJson } from "./http.js";
 import {
+  materializeAccountStatementRecurrences,
+  materializeCardInvoiceRecurrences,
+  RecurrenceMaterializationError,
+} from "./recurrence-materialization.js";
+import {
   buildUpstreamAuthenticationHeaders,
   clearSessionCookie,
   serializeSessionCookie,
@@ -9,6 +14,7 @@ import {
 
 const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000";
 const publicOidcPaths = new Set(["/api/auth/oidc/start", "/api/auth/oidc/callback"]);
+const RECURRENCE_MATERIALIZATION_PATH = "/api/recurrence-materialization";
 
 export interface ApiSuccess<T> {
   ok: true;
@@ -55,6 +61,11 @@ export async function handleApiRequest(
     return;
   }
 
+  if (request.method === "POST" && url.pathname === RECURRENCE_MATERIALIZATION_PATH) {
+    await handleRecurrenceMaterialization(request, response, url, credential, correlationId);
+    return;
+  }
+
   await proxyToApi(request, response, url, credential);
 }
 
@@ -93,7 +104,7 @@ export async function proxyToApi(
   }
 
   const text = await upstreamResponse.text();
-  const headers = collectProxyResponseHeaders(upstreamResponse);
+  const headers = collectProxyResponseHeaders(upstreamResponse, url);
   response.writeHead(upstreamResponse.status, headers);
   response.end(text);
 }
@@ -121,6 +132,57 @@ export async function apiGet<T>(
     return { ok: true, data: (await upstreamResponse.json()) as T };
   } catch {
     return { ok: false, error: "Nao foi possivel conectar com a API." };
+  }
+}
+
+async function handleRecurrenceMaterialization(
+  request: IncomingMessage,
+  response: ServerResponse,
+  url: URL,
+  credential: string,
+  correlationId: string,
+): Promise<void> {
+  try {
+    const surface = url.searchParams.get("surface");
+
+    if (surface === "card") {
+      await materializeCardInvoiceRecurrences(
+        credential,
+        url,
+        request.headers.origin,
+      );
+    } else if (surface === "account") {
+      await materializeAccountStatementRecurrences(
+        credential,
+        url,
+        request.headers.origin,
+      );
+    } else {
+      sendJson(
+        response,
+        400,
+        apiError(
+          "RECURRENCE_MATERIALIZATION_INVALID",
+          "Informe a superfície de recorrência a atualizar.",
+          correlationId,
+        ),
+      );
+      return;
+    }
+
+    response.writeHead(204, { "cache-control": "no-store" });
+    response.end();
+  } catch (error) {
+    const known = error instanceof RecurrenceMaterializationError ? error : undefined;
+    sendJson(
+      response,
+      known?.statusCode ?? 502,
+      apiError(
+        known?.code ?? "RECURRENCE_MATERIALIZATION_FAILED",
+        known?.message ?? "Não foi possível atualizar os lançamentos recorrentes.",
+        correlationId,
+      ),
+    );
   }
 }
 
@@ -196,7 +258,10 @@ async function handleSessionCreatingRequest(
   sendJson(response, upstreamResult.status, resultBody);
 }
 
-function collectProxyResponseHeaders(upstream: Response): Record<string, string | string[]> {
+function collectProxyResponseHeaders(
+  upstream: Response,
+  requestUrl: URL,
+): Record<string, string | string[]> {
   const headers: Record<string, string | string[]> = {
     "content-type": upstream.headers.get("content-type") ?? "application/json; charset=utf-8",
   };
@@ -204,11 +269,26 @@ function collectProxyResponseHeaders(upstream: Response): Record<string, string 
   const cacheControl = upstream.headers.get("cache-control");
   const setCookies = readSetCookies(upstream);
 
-  if (location) headers.location = location;
+  if (location) {
+    headers.location =
+      requestUrl.pathname === "/api/auth/oidc/callback" && upstream.status === 303
+        ? buildOidcCompletionLocation(location)
+        : location;
+  }
   if (cacheControl) headers["cache-control"] = cacheControl;
   if (setCookies.length > 0) headers["set-cookie"] = setCookies;
 
   return headers;
+}
+
+function buildOidcCompletionLocation(returnTo: string): string {
+  if (!isInternalReturnTo(returnTo)) return "/login?erro=autenticacao";
+
+  return `/login?${new URLSearchParams({ auth: "complete", returnTo }).toString()}`;
+}
+
+function isInternalReturnTo(value: string): boolean {
+  return value.startsWith("/") && !value.startsWith("//") && !value.includes("\\");
 }
 
 function readSetCookies(response: Response): string[] {
