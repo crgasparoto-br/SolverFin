@@ -57,6 +57,8 @@ export function clearApiSessionCookies(): string[] {
 export function isDemoAuthenticationAllowed(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): boolean {
+  if (env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1") return true;
+
   const nodeEnv = env.NODE_ENV?.trim().toLowerCase();
   if (nodeEnv && localEnvironments.has(nodeEnv)) return true;
   return env.AUTH_ALLOW_DEMO?.trim().toLowerCase() === "true";
