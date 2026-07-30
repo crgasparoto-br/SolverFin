@@ -44,9 +44,7 @@ function assertCanonicalOfxProcessingInstructions(content: string): void {
       masked.slice(0, position).trim().length === 0;
 
     if (!isXmlDeclaration) {
-      throw invalidOfx(
-        "OFX aceita somente a declaracao XML antes do envelope raiz.",
-      );
+      throw invalidOfx("OFX aceita somente a declaracao XML antes do envelope raiz.");
     }
   }
 }
@@ -65,9 +63,7 @@ function assertCanonicalOfxXmlHierarchy(content: string): void {
 
     const expected = stack.pop();
     if (expected !== token.name) {
-      throw invalidOfx(
-        "Estrutura XML OFX possui tags aninhadas ou fechamentos invalidos.",
-      );
+      throw invalidOfx("Estrutura XML OFX possui tags aninhadas ou fechamentos invalidos.");
     }
   }
 
@@ -88,9 +84,7 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
   );
   if (transactionList === undefined) return;
 
-  const currencyTags = [
-    ...masked.matchAll(/<\s*(?:[A-Za-z_][\w.-]*:)?CURDEF\b[^>]*>/gi),
-  ];
+  const currencyTags = [...masked.matchAll(/<\s*(?:[A-Za-z_][\w.-]*:)?CURDEF\b[^>]*>/gi)];
   if (currencyTags.length === 0) return;
 
   const statementContainers = readExplicitContainerRanges(
@@ -100,39 +94,28 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
     const position = match.index ?? -1;
     const relativePosition = position - statement.contentStart;
     const canonicalTag = /^<\s*CURDEF\s*>$/i.test(match[0]);
-    const insideStatement =
-      position >= statement.contentStart && position < statement.contentEnd;
+    const insideStatement = position >= statement.contentStart && position < statement.contentEnd;
     const insideTransactionList =
-      position >= transactionList.openStart &&
-      position < transactionList.closeEnd;
+      position >= transactionList.openStart && position < transactionList.closeEnd;
     const directStatementChild =
-      insideStatement &&
-      !isNestedInsideExplicitContainer(statementContainers, relativePosition);
+      insideStatement && !isNestedInsideExplicitContainer(statementContainers, relativePosition);
     return !canonicalTag || !directStatementChild || insideTransactionList;
   });
 
   if (hasNonCanonicalCurrency) {
-    throw invalidOfx(
-      "CURDEF precisa ser filho direto da secao de extrato, fora de BANKTRANLIST.",
-    );
+    throw invalidOfx("CURDEF precisa ser filho direto da secao de extrato, fora de BANKTRANLIST.");
   }
 
   if (currencyTags.length !== 1) {
-    throw invalidOfx(
-      "CURDEF deve ocorrer no maximo uma vez na secao de extrato.",
-    );
+    throw invalidOfx("CURDEF deve ocorrer no maximo uma vez na secao de extrato.");
   }
 
   const currencyTag = currencyTags[0];
   if (currencyTag === undefined) return;
   const valueStart = (currencyTag.index ?? 0) + currencyTag[0].length;
-  const currencyValue = /^\s*([^<\r\n]*)/
-    .exec(masked.slice(valueStart))?.[1]
-    ?.trim();
+  const currencyValue = /^\s*([^<\r\n]*)/.exec(masked.slice(valueStart))?.[1]?.trim();
   if (!currencyValue) {
-    throw invalidOfx(
-      "CURDEF precisa declarar uma moeda quando estiver presente.",
-    );
+    throw invalidOfx("CURDEF precisa declarar uma moeda quando estiver presente.");
   }
 }
 
@@ -152,36 +135,26 @@ function assertCanonicalOfxTransactionFields(content: string): void {
     transactionList.contentStart,
     transactionList.contentEnd,
   );
-  const transactionOpens = [
-    ...transactionListBody.matchAll(/<\s*STMTTRN(?:\s[^>]*)?>/gi),
-  ];
+  const transactionOpens = [...transactionListBody.matchAll(/<\s*STMTTRN(?:\s[^>]*)?>/gi)];
 
   transactionOpens.forEach((open, index) => {
     const openEnd = (open.index ?? 0) + open[0].length;
-    const nextOpenStart =
-      transactionOpens[index + 1]?.index ?? transactionListBody.length;
+    const nextOpenStart = transactionOpens[index + 1]?.index ?? transactionListBody.length;
     const segment = transactionListBody.slice(openEnd, nextOpenStart);
     const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
     const block = segment.slice(0, close?.index ?? segment.length);
     const explicitContainers = readExplicitContainerRanges(block);
 
     for (const tagName of OFX_SINGLE_VALUE_TRANSACTION_TAGS) {
-      const tagPattern = new RegExp(
-        `<\\s*(?:[A-Za-z_][\\w.-]*:)?${tagName}\\b[^>]*>`,
-        "gi",
-      );
+      const tagPattern = new RegExp(`<\\s*(?:[A-Za-z_][\\w.-]*:)?${tagName}\\b[^>]*>`, "gi");
       const tags = [...block.matchAll(tagPattern)];
       if (tags.length > 1) {
-        throw invalidOfx(
-          `Transacao STMTTRN ${index + 1} possui mais de um campo ${tagName}.`,
-        );
+        throw invalidOfx(`Transacao STMTTRN ${index + 1} possui mais de um campo ${tagName}.`);
       }
 
       for (const tag of tags) {
         const position = tag.index ?? -1;
-        const canonicalTag = new RegExp(`^<\\s*${tagName}\\s*>$`, "i").test(
-          tag[0],
-        );
+        const canonicalTag = new RegExp(`^<\\s*${tagName}\\s*>$`, "i").test(tag[0]);
         const directTransactionChild = !isNestedInsideExplicitContainer(
           explicitContainers,
           position,
@@ -233,8 +206,7 @@ function isNestedInsideExplicitContainer(
   position: number,
 ): boolean {
   return containers.some(
-    (container) =>
-      container.openStart < position && position < container.closeStart,
+    (container) => container.openStart < position && position < container.closeStart,
   );
 }
 
@@ -257,10 +229,7 @@ function findContainer(
     }
   | undefined {
   const alternatives = names.join("|");
-  const openExpression = new RegExp(
-    `<\\s*(${alternatives})(?:\\s[^>]*)?>`,
-    "i",
-  );
+  const openExpression = new RegExp(`<\\s*(${alternatives})(?:\\s[^>]*)?>`, "i");
   const open = openExpression.exec(value);
   if (open === null || open[1] === undefined) return undefined;
 
