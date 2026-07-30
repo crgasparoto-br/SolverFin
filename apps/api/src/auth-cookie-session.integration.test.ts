@@ -48,16 +48,14 @@ async function main(): Promise<void> {
 }
 
 async function validatesSessionRotationAndRevocation(): Promise<void> {
-  const created = await createPersistentApplicationSession(
-    demoUser,
-    query,
-    new Date("2026-07-30T17:00:00.000Z"),
-  );
+  const sessionNow = new Date();
+  const rotationNow = new Date(sessionNow.getTime() + 60_000);
+  const created = await createPersistentApplicationSession(demoUser, query, sessionNow);
   const cookie = serializeSessionCookie(
     created.session.id,
     created.session.expiresAt,
     productiveEnv,
-    new Date("2026-07-30T17:00:00.000Z"),
+    sessionNow,
   );
   const persisted = await query<{ tokenHash: string; transport: string }>(
     `select "tokenHash", "transport" from "ApplicationSession" where "id" = $1`,
@@ -72,8 +70,8 @@ async function validatesSessionRotationAndRevocation(): Promise<void> {
   assert.equal(authenticated.id, demoUser.id);
 
   const attempts = await Promise.allSettled([
-    renewSession(created.session.id, new Date("2026-07-30T17:01:00.000Z")),
-    renewSession(created.session.id, new Date("2026-07-30T17:01:00.000Z")),
+    renewSession(created.session.id, rotationNow),
+    renewSession(created.session.id, rotationNow),
   ]);
   const fulfilled = attempts.filter(
     (attempt): attempt is PromiseFulfilledResult<{ token: string; expiresAt: Date }> =>
