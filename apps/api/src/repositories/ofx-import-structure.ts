@@ -223,7 +223,6 @@ function readExplicitContainerRanges(
   for (const token of readStructuralTagTokens(value)) {
     if (token.selfClosing) continue;
     if (!token.closing) {
-      if (scalarTags.has(token.name)) continue;
       const stack = openByName.get(token.name) ?? [];
       stack.push(token);
       openByName.set(token.name, stack);
@@ -237,7 +236,8 @@ function readExplicitContainerRanges(
     }
   }
 
-  for (const stack of openByName.values()) {
+  for (const [name, stack] of openByName) {
+    if (scalarTags.has(name)) continue;
     for (const open of stack) {
       ranges.push({ openStart: open.start, closeStart: value.length });
     }
@@ -286,7 +286,26 @@ function maskInactiveOfxContent(value: string): string {
 }
 
 function isStrictXml(value: string): boolean {
-  return /^\s*<\?xml\b/i.test(value);
+  if (/^\s*<\?xml\b/i.test(value)) return true;
+
+  const rootOpen = /<\s*OFX(?:\s[^>]*)?>/i.exec(value);
+  if (rootOpen === null || value.slice(0, rootOpen.index).trim().length > 0) return false;
+
+  const stack: string[] = [];
+  let sawExplicitClose = false;
+  for (const token of readStructuralTagTokens(value)) {
+    if (token.selfClosing) continue;
+    if (!token.closing) {
+      stack.push(token.name);
+      continue;
+    }
+
+    sawExplicitClose = true;
+    if (stack[stack.length - 1] !== token.name) return false;
+    stack.pop();
+  }
+
+  return sawExplicitClose && stack.length === 0;
 }
 
 function findContainer(
