@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 
 import { AuthError } from "./auth.js";
+import { assertTrustedCognitoEndpoints } from "./cognito-config.js";
 import { startOidcLogin, validateInternalReturnTo } from "./oidc-flow.js";
+import { prepareRequestAuthenticationHeaders } from "./request-authentication.js";
 import { assertTrustedMutationOrigin } from "./request-origin.js";
 import { clearSessionCookie, readSessionCookie, serializeSessionCookie } from "./session-cookie.js";
 
@@ -10,17 +12,23 @@ const productiveEnv = {
   APP_ORIGIN: "https://app.example.invalid",
   OIDC_ISSUER_URL: "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example",
   OIDC_CLIENT_ID: "client-123",
-  OIDC_AUTHORIZATION_URL: "https://solverfin-auth.example.invalid/oauth2/authorize",
-  OIDC_TOKEN_URL: "https://solverfin-auth.example.invalid/oauth2/token",
+  OIDC_AUTHORIZATION_URL:
+    "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/authorize",
+  OIDC_TOKEN_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/token",
   OIDC_JWKS_URI:
     "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example/.well-known/jwks.json",
   OIDC_REDIRECT_URI: "https://app.example.invalid/api/auth/oidc/callback",
+  OIDC_LOGOUT_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/logout",
+  OIDC_RECOVERY_URL:
+    "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/forgotPassword",
   OIDC_ATTEMPT_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
 };
 
 validatesProductiveCookieContract();
 validatesOriginContract();
 validatesReturnToContract();
+validatesTrustedCognitoConfiguration();
+await validatesBearerBoundary();
 await createsBackendControlledOidcAttempt();
 
 function validatesProductiveCookieContract(): void {
@@ -63,7 +71,7 @@ function validatesOriginContract(): void {
         headers: { cookie: `__Host-solverfin_session=${"B".repeat(43)}` },
         env: productiveEnv,
       }),
-    (error) => error instanceof AuthError && error.code === "AUTH_ORIGIN_NOT_ALLOWED",
+    (error) => error instanceof AuthError && error.code === "AUTH_REQUEST_ORIGIN_INVALID",
   );
 }
 
@@ -79,9 +87,94 @@ function validatesReturnToContract(): void {
   ]) {
     assert.throws(
       () => validateInternalReturnTo(invalid),
-      (error) => error instanceof AuthError && error.code === "AUTH_OIDC_ATTEMPT_INVALID",
+      (error) => error instanceof AuthError && error.code === "AUTH_RETURN_TO_INVALID",
     );
   }
+}
+
+function validatesTrustedCognitoConfiguration(): void {
+  assert.doesNotThrow(() =>
+    assertTrustedCognitoEndpoints({
+      appOrigin: productiveEnv.APP_ORIGIN,
+      issuer: productiveEnv.OIDC_ISSUER_URL,
+      authorizationUrl: productiveEnv.OIDC_AUTHORIZATION_URL,
+      tokenUrl: productiveEnv.OIDC_TOKEN_URL,
+      jwksUri: productiveEnv.OIDC_JWKS_URI,
+      redirectUri: productiveEnv.OIDC_REDIRECT_URI,
+      logoutUrl: productiveEnv.OIDC_LOGOUT_URL,
+      recoveryUrl: productiveEnv.OIDC_RECOVERY_URL,
+    }),
+  );
+
+  assert.throws(
+    () =>
+      assertTrustedCognitoEndpoints({
+        appOrigin: productiveEnv.APP_ORIGIN,
+        issuer: productiveEnv.OIDC_ISSUER_URL,
+        authorizationUrl: productiveEnv.OIDC_AUTHORIZATION_URL,
+        tokenUrl: productiveEnv.OIDC_TOKEN_URL,
+        jwksUri: "https://attacker.example.invalid/.well-known/jwks.json",
+        redirectUri: productiveEnv.OIDC_REDIRECT_URI,
+      }),
+    (error) => error instanceof AuthError && error.code === "AUTH_OIDC_CONFIGURATION_INVALID",
+  );
+
+  assert.throws(
+    () =>
+      assertTrustedCognitoEndpoints({
+        appOrigin: productiveEnv.APP_ORIGIN,
+        issuer: productiveEnv.OIDC_ISSUER_URL,
+        authorizationUrl: "https://login.example.invalid/oauth2/authorize",
+        tokenUrl: "https://login.example.invalid/oauth2/token",
+        jwksUri: productiveEnv.OIDC_JWKS_URI,
+        redirectUri: productiveEnv.OIDC_REDIRECT_URI,
+      }),
+    (error) => error instanceof AuthError && error.code === "AUTH_OIDC_CONFIGURATION_INVALID",
+  );
+}
+
+async function validatesBearerBoundary(): Promise<void> {
+  const token = "C".repeat(43);
+  const authHandlerPaths = new Set(["/api/me", "/api/session"]);
+  let validations = 0;
+  const validateCookieSession = async () => {
+    validations += 1;
+    return {
+      id: "11111111-1111-4111-8111-111111111111",
+      email: "demo@solverfin.example.invalid",
+      displayName: "Demo",
+      status: "active" as const,
+    };
+  };
+
+  const stripped = await prepareRequestAuthenticationHeaders({
+    headers: { authorization: `Bearer ${token}` },
+    pathname: "/api/accounts",
+    authHandlerPaths,
+    env: productiveEnv,
+    validateCookieSession,
+  });
+  assert.equal(stripped.authorization, undefined);
+  assert.equal(validations, 0);
+
+  const bridged = await prepareRequestAuthenticationHeaders({
+    headers: { cookie: `__Host-solverfin_session=${token}` },
+    pathname: "/api/accounts",
+    authHandlerPaths,
+    env: productiveEnv,
+    validateCookieSession,
+  });
+  assert.equal(bridged.authorization, `Bearer ${token}`);
+  assert.equal(validations, 1);
+
+  const local = await prepareRequestAuthenticationHeaders({
+    headers: { authorization: `Bearer ${token}` },
+    pathname: "/api/accounts",
+    authHandlerPaths,
+    env: { NODE_ENV: "test" },
+    validateCookieSession,
+  });
+  assert.equal(local.authorization, `Bearer ${token}`);
 }
 
 async function createsBackendControlledOidcAttempt(): Promise<void> {
