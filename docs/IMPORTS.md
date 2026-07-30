@@ -152,7 +152,7 @@ As quatro rotas de importação reservam até 32 MiB para o envelope JSON, permi
 Regras de normalização:
 
 - `DTPOSTED` fornece a data; o prefixo `AAAAMMDD` é usado mesmo quando há hora e timezone;
-- `TRNAMT` é obrigatório, diferente de zero e aceita somente sinal opcional, dígitos e ponto decimal opcional com no máximo duas casas. A conversão para centavos é decimal exata, sem arredondamento binário; vírgula, separador de milhar, precisão adicional e valores fora do intervalo inteiro seguro recebem `IMPORT_ROW_NUMBER_INVALID` e não geram proposta;
+- `TRNAMT` é obrigatório, diferente de zero e aceita somente sinal opcional, dígitos e ponto decimal opcional com no máximo duas casas. A conversão para centavos é decimal exata, sem arredondamento binário; vírgula, separador de milhar, precisão adicional e partes inteiras acima de 13 dígitos recebem `IMPORT_ROW_NUMBER_INVALID` e não geram proposta;
 - o sinal de `TRNAMT` é a fonte canônica: negativo gera `expense/outflow`, positivo gera `income/inflow`;
 - `TRNTYPE` é apenas diagnóstico; conflito com o sinal gera aviso e não altera a classificação;
 - descrição usa `NAME`, depois `MEMO`, depois `FITID`;
