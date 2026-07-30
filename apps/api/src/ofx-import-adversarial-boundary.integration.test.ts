@@ -82,6 +82,15 @@ async function main(): Promise<void> {
       );
     }
 
+    for (const pathname of ["/api/import-batches/ofx/preview", "/api/import-batches/ofx"]) {
+      const missing = await requestJson(baseUrl, pathname, {
+        token,
+        body: ofxPayloadWithoutContent(accountId),
+      });
+      assert.equal(missing.status, 400);
+      assert.equal(readErrorCode(missing), "IMPORT_FIELD_REQUIRED");
+    }
+
     for (const content of ["", "   \r\n\t  "]) {
       await assertControlledFailure(
         baseUrl,
@@ -144,15 +153,17 @@ async function main(): Promise<void> {
       400,
       "IMPORT_FILE_TOO_LARGE",
     );
-    await assertControlledFailure(
-      baseUrl,
-      token,
-      accountId,
-      "/api/import-batches/ofx/preview",
-      `${canonical}\u0000`,
-      400,
-      "IMPORT_FILE_ENCODING_INVALID",
-    );
+    for (const pathname of ["/api/import-batches/ofx/preview", "/api/import-batches/ofx"]) {
+      await assertControlledFailure(
+        baseUrl,
+        token,
+        accountId,
+        pathname,
+        `${canonical}\u0000`,
+        400,
+        "IMPORT_FILE_ENCODING_INVALID",
+      );
+    }
 
     assert.deepEqual(await readOfxPersistedState(), before);
     assert.doesNotMatch(logs.join(""), /nested-field|nested-transaction|nested-currency/);
@@ -206,6 +217,14 @@ function ofxPayload(accountId: string, content: string): Record<string, unknown>
   return {
     originalFileName: "adversarial-boundary.ofx",
     content,
+    accountId,
+    consentAccepted: true,
+  };
+}
+
+function ofxPayloadWithoutContent(accountId: string): Record<string, unknown> {
+  return {
+    originalFileName: "adversarial-boundary.ofx",
     accountId,
     consentAccepted: true,
   };
