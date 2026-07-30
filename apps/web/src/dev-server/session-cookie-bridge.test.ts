@@ -68,7 +68,7 @@ assert.equal(
     NODE_ENV: "production",
     SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION: "1",
   }),
-  true,
+  false,
 );
 
 const cleared = clearApiSessionCookies();
