@@ -13,6 +13,8 @@ import type { OfxAccountRow, OfxImportPayload } from "./ofx-import-types.js";
 
 export type { OfxImportPayload } from "./ofx-import-types.js";
 
+const MAX_OFX_BYTES = 5 * 1024 * 1024;
+
 export function parseOfxImportPreview(input: {
   context: TenantContext;
   now: string;
@@ -21,6 +23,7 @@ export function parseOfxImportPreview(input: {
   accountId: EntityId;
   accountCurrency: string;
 }): ImportPreview {
+  assertRawOfxInputBoundary(input.originalFileName, input.content);
   assertCanonicalOfxStructure(input.content);
   return parseOfxImportPreviewBase(input);
 }
@@ -141,6 +144,30 @@ async function assertActiveOfxAccount(
     );
   }
   return account;
+}
+
+function assertRawOfxInputBoundary(originalFileName: string, content: string): void {
+  if (!originalFileName.trim().toLowerCase().endsWith(".ofx")) {
+    throw new ImportReviewError(
+      "IMPORT_FILE_KIND_UNSUPPORTED",
+      "Selecione um arquivo com extensao .ofx.",
+    );
+  }
+  if (content.trim().length === 0) {
+    throw new ImportReviewError("IMPORT_FILE_EMPTY", "Arquivo de importacao vazio.");
+  }
+  if (Buffer.byteLength(content, "utf8") > MAX_OFX_BYTES) {
+    throw new ImportReviewError(
+      "IMPORT_FILE_TOO_LARGE",
+      "Arquivo excede o tamanho permitido de 5 MB.",
+    );
+  }
+  if (content.includes("\u0000") || content.includes("\uFFFD")) {
+    throw new ImportReviewError(
+      "IMPORT_FILE_ENCODING_INVALID",
+      "Nao foi possivel ler o OFX como texto UTF-8.",
+    );
+  }
 }
 
 function isUuid(value: string): boolean {
