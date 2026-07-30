@@ -32,6 +32,12 @@ interface ImportBatchIdRow {
 
 const OFX_PROVIDER = "solverfin-import-ofx";
 const OFX_MODEL = "ofx-parser-v1";
+const OFX_CONFIGURATION_WARNING: ImportProblem = {
+  rowNumber: 0,
+  severity: "warning",
+  code: "IMPORT_BATCH_CONFIGURATION_CHANGED",
+  message: "O mesmo conteudo OFX ja foi usado em outra importacao ou conta.",
+};
 
 export async function persistOfxImportBatchForContext(
   context: TenantContext,
@@ -40,23 +46,6 @@ export async function persistOfxImportBatchForContext(
 ): Promise<CreateImportBatchResult> {
   const duplicateId = await findImportBatchIdBySourceHash(context, preview.batch.sourceHash, query);
   if (duplicateId !== undefined) return duplicateResult(context, duplicateId);
-
-  const sameContentId = await findImportBatchIdByContentHash(
-    context,
-    preview.batch.contentHash,
-    query,
-  );
-  const configurationWarnings: ImportProblem[] =
-    sameContentId === undefined
-      ? []
-      : [
-          {
-            rowNumber: 0,
-            severity: "warning",
-            code: "IMPORT_BATCH_CONFIGURATION_CHANGED",
-            message: "O mesmo conteudo OFX ja foi usado em outra importacao ou conta.",
-          },
-        ];
 
   const now = preview.batch.receivedAt;
   const batch: ImportBatch = {
@@ -73,7 +62,7 @@ export async function persistOfxImportBatchForContext(
     validRows: preview.batch.validRows,
     duplicateRows: 0,
     problemRows: preview.batch.problemRows,
-    problems: [...preview.problems, ...configurationWarnings],
+    problems: [...preview.problems],
     receivedAt: now,
     createdAt: now,
     updatedAt: now,
@@ -99,23 +88,37 @@ export async function persistOfxImportBatchForContext(
     return aiSuggestion;
   });
 
-  const inserted = await withSharedTransaction(async (executeQuery) => {
+  const insertedBatch = await withSharedTransaction(async (executeQuery) => {
+    await lockOfxContentConfiguration(context, preview.batch.contentHash, executeQuery);
+    const sameContentId = await findImportBatchIdByContentHash(
+      context,
+      preview.batch.contentHash,
+      executeQuery,
+    );
+    const batchToPersist: ImportBatch =
+      sameContentId === undefined
+        ? batch
+        : {
+            ...batch,
+            problems: [...(batch.problems ?? []), OFX_CONFIGURATION_WARNING],
+          };
+
     const insertedRows = await executeQuery<ImportBatchIdRow>(
       buildInsertOfxImportBatchSql(),
-      buildOfxImportBatchParams(batch),
+      buildOfxImportBatchParams(batchToPersist),
     );
-    if (insertedRows.length === 0) return false;
+    if (insertedRows.length === 0) return undefined;
 
-    await insertAuditLogEntry(executeQuery, buildOfxBatchAuditEntry(batch));
-    await insertAuditLogEntry(executeQuery, buildOfxConsentAuditEntry(context, batch));
+    await insertAuditLogEntry(executeQuery, buildOfxBatchAuditEntry(batchToPersist));
+    await insertAuditLogEntry(executeQuery, buildOfxConsentAuditEntry(context, batchToPersist));
     for (const suggestion of suggestions) {
       await executeQuery(buildInsertAiSuggestionSql(), buildOfxAiSuggestionParams(suggestion));
       await insertAuditLogEntry(executeQuery, buildOfxSuggestionAuditEntry(suggestion));
     }
-    return true;
+    return batchToPersist;
   });
 
-  if (!inserted) {
+  if (insertedBatch === undefined) {
     const concurrentId = await findImportBatchIdBySourceHash(
       context,
       preview.batch.sourceHash,
@@ -128,15 +131,26 @@ export async function persistOfxImportBatchForContext(
   }
 
   return {
-    importBatch: batch,
+    importBatch: insertedBatch,
     suggestions: suggestions.map((suggestion) => ({
       ...suggestion,
       payload: suggestion.payload as TransactionExtractionPayload,
       candidates: [],
     })),
-    problems: batch.problems ?? [],
+    problems: insertedBatch.problems ?? [],
     duplicateBatch: false,
   };
+}
+
+async function lockOfxContentConfiguration(
+  context: TenantContext,
+  contentHash: string,
+  executeQuery: QueryExecutor,
+): Promise<void> {
+  await executeQuery(
+    "select pg_advisory_xact_lock(hashtextextended($1, 0))",
+    [`ofx:${context.organizationId}:${context.financialProfileId}:${contentHash}`],
+  );
 }
 
 async function findImportBatchIdBySourceHash(
