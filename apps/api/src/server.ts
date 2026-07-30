@@ -1,9 +1,17 @@
 import "./load-env.js";
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import {
+  createServer,
+  type IncomingMessage,
+  type OutgoingHttpHeaders,
+  type ServerResponse,
+} from "node:http";
 
 import { handleAccountRemunerationApiRequest } from "./account-remuneration-router.js";
 import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { auditSecurityEvent, requireAuthenticatedRequest } from "./auth-service.js";
+import { assertTrustedMutationOrigin } from "./request-origin.js";
+import { readSessionCookie } from "./session-cookie.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
 import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
@@ -22,7 +30,16 @@ import { handleTransactionGroupActionsApiRequest } from "./transaction-group-act
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.API_PORT ?? 4000);
-const MVP_PATHS = new Set(["/api/session", "/api/session/oidc", "/api/users", "/api/me"]);
+const MVP_PATHS = new Set([
+  "/api/session",
+  "/api/session/oidc",
+  "/api/session/renew",
+  "/api/auth/oidc/start",
+  "/api/auth/oidc/callback",
+  "/api/users",
+  "/api/me",
+]);
+const AUTH_HANDLER_PATHS = new Set(MVP_PATHS);
 const DEFAULT_MAX_BODY_BYTES = 1_000_000;
 const IMPORT_MAX_BODY_BYTES = 32 * 1024 * 1024;
 const LARGE_IMPORT_BODY_PATHS = new Set([
@@ -49,9 +66,23 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   try {
     const body = await readJsonBody(request, resolveMaxBodyBytes(url.pathname));
     const method = request.method ?? "GET";
+    assertTrustedMutationOrigin({ method, headers });
+
+    let effectiveHeaders = headers;
+    const cookieToken = readSessionCookie(headers.cookie);
+    if (cookieToken && !AUTH_HANDLER_PATHS.has(url.pathname)) {
+      await requireAuthenticatedRequest(headers);
+      effectiveHeaders = { ...headers, authorization: `Bearer ${cookieToken}` };
+    }
 
     if (MVP_PATHS.has(url.pathname)) {
-      const legacyResult = await dispatchLegacyRoute(method, url.pathname, headers, body);
+      const legacyResult = await dispatchLegacyRoute(
+        method,
+        url.pathname,
+        url.searchParams,
+        effectiveHeaders,
+        body,
+      );
 
       if (legacyResult) {
         writeResponse(response, legacyResult);
@@ -63,7 +94,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       method,
       pathname: url.pathname,
       query: url.searchParams,
-      headers,
+      headers: effectiveHeaders,
       body,
     };
 
@@ -185,6 +216,19 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       },
     });
   } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "AUTH_ORIGIN_NOT_ALLOWED"
+    ) {
+      await auditSecurityEvent({
+        action: "origin_rejected",
+        result: "denied",
+        correlationId,
+      }).catch(() => undefined);
+    }
+
     const errorResponse = buildApiErrorResponse({ error, correlationId });
 
     writeResponse(response, {
@@ -198,6 +242,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 async function dispatchLegacyRoute(
   method: string,
   pathname: string,
+  query: URLSearchParams,
   headers: Readonly<Record<string, string | undefined>>,
   body: unknown,
 ): Promise<ApiResponse | undefined> {
@@ -208,6 +253,7 @@ async function dispatchLegacyRoute(
   const mvpRequest = {
     method,
     path: pathname,
+    query,
     headers,
     body,
   } as MvpApiRequest;
@@ -221,7 +267,11 @@ async function dispatchLegacyRoute(
 }
 
 function writeResponse(response: ServerResponse, apiResponse: ApiResponse): void {
-  response.writeHead(apiResponse.statusCode, apiResponse.headers);
+  const headers: OutgoingHttpHeaders = {};
+  for (const [name, value] of Object.entries(apiResponse.headers)) {
+    headers[name] = typeof value === "string" ? value : [...value];
+  }
+  response.writeHead(apiResponse.statusCode, headers);
 
   if (apiResponse.body === undefined) {
     response.end();

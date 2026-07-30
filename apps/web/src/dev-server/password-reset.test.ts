@@ -8,6 +8,7 @@ missingConfigurationKeepsActionVisibleWithGuidance();
 passwordResetUrlRejectsUnsafeValues();
 passwordResetUrlRequiresHttpsOutsideLocalEnvironments();
 passwordResetUrlAllowsHttpDuringLocalDevelopment();
+oidcRecoveryUrlTakesPrecedence();
 
 function configuredPasswordResetRendersExternalLink(): void {
   const html = renderLoginPage(
@@ -79,5 +80,16 @@ function passwordResetUrlAllowsHttpDuringLocalDevelopment(): void {
       AUTH_PASSWORD_RESET_URL: "http://localhost:9090/reset-password",
     }),
     "http://localhost:9090/reset-password",
+  );
+}
+
+function oidcRecoveryUrlTakesPrecedence(): void {
+  assert.equal(
+    resolvePasswordResetUrl({
+      NODE_ENV: "production",
+      OIDC_RECOVERY_URL: "https://solverfin.auth.sa-east-1.amazoncognito.com/forgotPassword",
+      AUTH_PASSWORD_RESET_URL: "https://legacy.example.invalid/reset",
+    }),
+    "https://solverfin.auth.sa-east-1.amazoncognito.com/forgotPassword",
   );
 }

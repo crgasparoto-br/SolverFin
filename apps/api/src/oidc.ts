@@ -1,4 +1,4 @@
-import { createPublicKey, createVerify, timingSafeEqual } from "node:crypto";
+import { createHash, createPublicKey, createVerify, timingSafeEqual } from "node:crypto";
 
 import { AuthError } from "./auth.js";
 
@@ -18,6 +18,8 @@ export interface OidcIdentity {
 
 export interface OidcValidationOptions {
   now?: () => Date;
+  expectedNonce?: string;
+  expectedNonceHash?: string;
   fetchJwks?: (jwksUri: string) => Promise<JsonWebKeySet>;
 }
 
@@ -37,9 +39,10 @@ interface JwtClaims {
   email?: unknown;
   name?: unknown;
   preferred_username?: unknown;
+  nonce?: unknown;
 }
 
-interface JsonWebKeySet {
+export interface JsonWebKeySet {
   keys?: unknown;
 }
 
@@ -72,7 +75,13 @@ export async function validateOidcIdToken(
     throw invalidProviderTokenError();
   }
 
-  validateClaims(parsed.claims, config, options.now ?? (() => new Date()));
+  validateClaims(
+    parsed.claims,
+    config,
+    options.now ?? (() => new Date()),
+    options.expectedNonce,
+    options.expectedNonceHash,
+  );
 
   return mapClaimsToIdentity(parsed.claims, config.issuer);
 }
@@ -166,7 +175,13 @@ function signatureAlgorithm(alg: string): string {
   throw invalidProviderTokenError();
 }
 
-function validateClaims(claims: JwtClaims, config: OidcProviderConfig, now: () => Date): void {
+function validateClaims(
+  claims: JwtClaims,
+  config: OidcProviderConfig,
+  now: () => Date,
+  expectedNonce?: string,
+  expectedNonceHash?: string,
+): void {
   const skewSeconds = config.clockSkewSeconds ?? DEFAULT_CLOCK_SKEW_SECONDS;
   const currentSeconds = Math.floor(now().getTime() / 1000);
 
@@ -180,6 +195,24 @@ function validateClaims(claims: JwtClaims, config: OidcProviderConfig, now: () =
 
   if (!audienceIncludes(claims.aud, config.audience)) {
     throw invalidProviderTokenError();
+  }
+
+  if (expectedNonce !== undefined) {
+    if (typeof claims.nonce !== "string" || !constantTimeEquals(claims.nonce, expectedNonce)) {
+      throw invalidProviderTokenError();
+    }
+  }
+
+  if (expectedNonceHash !== undefined) {
+    if (
+      typeof claims.nonce !== "string" ||
+      !constantTimeEquals(
+        createHash("sha256").update(claims.nonce).digest("hex"),
+        expectedNonceHash,
+      )
+    ) {
+      throw invalidProviderTokenError();
+    }
   }
 
   if (!isNumericDate(claims.exp) || claims.exp <= currentSeconds - skewSeconds) {

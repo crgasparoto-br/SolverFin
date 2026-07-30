@@ -107,3 +107,35 @@ function signJwt(privateKeyObject: KeyObject, claims: Record<string, unknown>): 
 function encodeBase64UrlJson(value: unknown): string {
   return Buffer.from(JSON.stringify(value)).toString("base64url");
 }
+
+await validatesNonceHash();
+
+async function validatesNonceHash(): Promise<void> {
+  const nonce = "nonce-value-123";
+  const nonceHash = (await import("node:crypto")).createHash("sha256").update(nonce).digest("hex");
+  const token = signJwt(privateKey, {
+    iss: issuer,
+    sub: "provider-user-123",
+    aud: audience,
+    exp: nowSeconds + 300,
+    nonce,
+  });
+
+  await assert.doesNotReject(() =>
+    validateOidcIdToken(token, config, {
+      now: () => now,
+      expectedNonceHash: nonceHash,
+      fetchJwks: async () => ({ keys: [jwk] }),
+    }),
+  );
+
+  await assert.rejects(
+    () =>
+      validateOidcIdToken(token, config, {
+        now: () => now,
+        expectedNonceHash: "0".repeat(64),
+        fetchJwks: async () => ({ keys: [jwk] }),
+      }),
+    (error) => error instanceof AuthError && error.code === "AUTH_INVALID_CREDENTIALS",
+  );
+}

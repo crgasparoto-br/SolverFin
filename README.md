@@ -74,7 +74,7 @@ Login demo local:
 demo@solverfin.example.invalid / SolverFinDemo!2026
 ```
 
-Esse login pertence exclusivamente a autenticacao demo local. A API bloqueia essa autenticacao fora de `NODE_ENV=development`, `NODE_ENV=local` ou `NODE_ENV=test`, salvo `AUTH_ALLOW_DEMO=true` para uma demonstracao nao produtiva explicitamente autorizada. Nao use essa camada como autenticacao de producao.
+Esse login pertence exclusivamente à autenticação demo local. A API bloqueia cadastro, senha local, OIDC legado e Bearer fora de `development`, `local` ou `test`, salvo demonstração não produtiva explicitamente autorizada. Produção usa Amazon Cognito com Authorization Code + PKCE e sessão própria em cookie HttpOnly; consulte `docs/AUTH.md`.
 
 ## Banco local com PostgreSQL
 

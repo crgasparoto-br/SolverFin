@@ -172,8 +172,8 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Autenticacao produtiva
 
 - Decisao arquitetural: Feito; ADR 0004 aceita.
-- Implementacao de provider/sessao produtiva: Pendente.
-- Nota: a decisao define provider gerenciado OIDC/OAuth2, credenciais delegadas e sessao propria persistente/revogavel no SolverFin. A escolha concreta do fornecedor e a implementacao ficam para issues tecnicas derivadas.
+- Implementacao de provider/sessao produtiva: Feito no código e na migration; ativação operacional depende da criação do User Pool/app client e dos secrets de cada ambiente.
+- Nota: Amazon Cognito User Pools Essentials em `sa-east-1`, Authorization Code + PKCE iniciado no backend, correlação persistente de uso único, sessão local em cookie seguro, rotação, revogação, auditoria e proteção de origem. Contratos locais/Bearer permanecem apenas para ambientes autorizados.
 
 ### Relatorios
 

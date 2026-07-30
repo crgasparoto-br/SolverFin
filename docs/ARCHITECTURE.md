@@ -154,9 +154,11 @@ docker compose down -v
 ```text
 Usuario
   -> Web SSR/PWA
-    -> Provider gerenciado de identidade (direcao produtiva)
-    -> API backend
-      -> Sessao e tenant SolverFin
+    -> API backend inicia OIDC/PKCE
+      -> Amazon Cognito User Pools (`sa-east-1`)
+      -> Callback backend e correlação persistente
+      -> Sessão SolverFin em cookie HttpOnly
+      -> Tenant SolverFin
       -> Dominio financeiro
       -> Importacao e conciliacao
       -> IA explicavel

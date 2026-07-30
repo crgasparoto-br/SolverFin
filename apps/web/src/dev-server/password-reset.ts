@@ -5,7 +5,7 @@ type PasswordResetEnvironment = Readonly<Record<string, string | undefined>>;
 export function resolvePasswordResetUrl(
   env: PasswordResetEnvironment = process.env,
 ): string | undefined {
-  const candidate = env.AUTH_PASSWORD_RESET_URL?.trim();
+  const candidate = env.OIDC_RECOVERY_URL?.trim() ?? env.AUTH_PASSWORD_RESET_URL?.trim();
 
   if (!candidate) {
     return undefined;

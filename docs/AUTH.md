@@ -1,170 +1,104 @@
-# Autenticacao e sessoes
+# Autenticação e sessões
 
-## Objetivo
+## Contrato produtivo
 
-A autenticacao do SolverFin define o contrato de login, cadastro local, login OIDC/OAuth2 produtivo, logout, sessao autenticada e protecao de rotas privadas.
+Produção, staging com dados reais e preview público usam **Amazon Cognito User Pools**, plano Essentials, na região `sa-east-1`, conforme a ADR 0004. O SolverFin usa endpoints OIDC/OAuth2 padrão e não depende de SDK proprietário no domínio.
 
-A ADR `docs/adr/0004-autenticacao-produtiva.md` exige que producao use um provider gerenciado compativel com OIDC/OAuth2 para identidade e uma sessao propria do SolverFin que seja persistente, revogavel e auditavel.
+A jornada produtiva é:
 
-## Estrategia atual
+1. `GET /api/auth/oidc/start?returnTo=/dashboard` valida um destino interno, gera `state`, `nonce` e PKCE `S256`, persiste a tentativa antes do redirect e encaminha ao login gerenciado do Cognito.
+2. `GET /api/auth/oidc/callback` reivindica a tentativa com transição atômica `PENDING -> PROCESSING`, troca o código somente no backend, valida assinatura RS256, issuer, audience, expiração e nonce e vincula a identidade externa ao usuário local.
+3. O backend cria uma sessão opaca própria, persiste somente o hash SHA-256 e envia o token bruto apenas no cookie HttpOnly.
+4. `GET /api/me` e as rotas privadas validam a sessão persistida.
+5. `POST /api/session/renew` gira atomicamente o token sem ampliar `expiresAt`.
+6. `DELETE /api/session` revoga de forma idempotente e limpa o cookie.
 
-O modulo `apps/api/src/auth.ts` permanece como camada pura e testavel de autenticacao para desenvolvimento e testes. Ele valida credenciais injetadas, cria sessoes locais e oferece guard para rotas privadas.
+O callback nunca devolve código, tokens do Cognito, `code_verifier`, token local, segredo ou claims sensíveis ao frontend, à URL pós-callback, a logs ou a erros públicos.
 
-O modulo `apps/api/src/auth-service.ts` conecta essa camada ao PostgreSQL e adiciona o contrato produtivo:
+## Correlação OIDC
 
-- login local e login OIDC retornam um token de sessao local do SolverFin;
-- somente o hash SHA-256 desse token e persistido em `ApplicationSession`;
-- o token bruto nunca deve ser gravado em banco, logs, erros ou fixtures;
-- sessoes possuem `createdAt`, `lastSeenAt`, `expiresAt`, `revokedAt` e `revocationReason`;
-- rotas privadas validam sessao persistida quando o banco esta disponivel;
-- logout revoga a sessao persistida ativa;
-- revogacao em massa por usuario fica disponivel no servico de autenticacao;
-- eventos de seguranca sao registrados em `SecurityAuditEvent`.
+`OidcLoginAttempt` é a fonte de verdade compartilhada entre instâncias. Armazena hashes de `state` e `nonce`, `code_verifier` cifrado com AES-256-GCM, issuer, `returnTo`, versão, expiração e estado terminal.
 
-## Usuario master e Admin global
+Estados válidos:
 
-A area Admin global deve ser protegida por backend antes de listar, atualizar ou alterar recursos compartilhados entre todos os usuarios.
+- `PENDING`;
+- `PROCESSING`;
+- `CONSUMED`;
+- `CANCELLED`;
+- `EXPIRED`;
+- `FAILED`.
 
-A definicao inicial de usuario master fica em `SOLVERFIN_MASTER_EMAILS`, com uma lista separada por virgulas. A comparacao normaliza espacos e caixa alta/baixa, ignora valores que nao sejam emails validos e falha de modo seguro quando a variavel estiver ausente ou vazia.
+Somente uma chamada pode reivindicar uma tentativa pendente. Repetição, replay, expiração, estado desconhecido e concorrência são rejeitados sem criar sessão. Cancelamento do provider termina a tentativa sem revelar detalhes internos.
 
-O helper `apps/api/src/admin-auth.ts` expoe:
+## Cookie da sessão
 
-- `listConfiguredMasterEmails` para ler a configuracao normalizada;
-- `isMasterUser` para checagem booleana;
-- `requireMasterUser` para bloquear usuario comum ou desabilitado com `AUTH_ADMIN_REQUIRED` e status HTTP 403.
+Em produção, o cookie é:
 
-Usuario com status `disabled` nunca recebe acesso Admin mesmo que o email esteja configurado como master. Essa regra nao usa ownership de organizacao ou perfil financeiro, pois o Admin global nao pertence a um perfil financeiro especifico.
-
-## Provider produtivo
-
-A rota `POST /api/session/oidc` recebe a resposta validada do fluxo OIDC/OAuth2 do cliente, confere `state`, valida o `idToken` contra JWKS do provider e troca a identidade externa por uma sessao local do SolverFin.
-
-Esse fluxo nao recebe, armazena nem verifica senha produtiva. Usuarios produtivos podem ter `passwordHash` nulo porque credenciais reais ficam delegadas ao provider gerenciado.
-
-## Recuperacao de senha
-
-A tela de login exibe a acao **Esqueci minha senha**. O SolverFin nao cria token, endpoint, email ou armazenamento proprio para redefinicao de senha produtiva; a acao encaminha o usuario para o fluxo administrado pelo provider de identidade, conforme a ADR de autenticacao.
-
-A URL deve ser configurada em `AUTH_PASSWORD_RESET_URL`. Apenas URLs HTTP/HTTPS sem credenciais embutidas sao aceitas. Fora dos ambientes `development`, `local` e `test`, a URL precisa usar HTTPS. Se a configuracao estiver ausente ou invalida, a acao permanece visivel e informa ao usuario que deve procurar o responsavel pelo acesso.
-
-A URL pode incluir parametros exigidos pelo provider, como identificador do cliente ou destino de retorno, desde que o valor completo seja configurado no ambiente e nao contenha segredo.
-
-## Sessoes persistentes
-
-A sessao local e enviada nas rotas privadas com:
-
-```http
-Authorization: Bearer <session-token>
+```text
+__Host-solverfin_session=<opaque>; Path=/; HttpOnly; Secure; SameSite=Lax
 ```
 
-Ao criar a sessao, a API grava em `ApplicationSession`:
+Em ambiente local/teste, o nome é `solverfin_session` e `Secure` é omitido para permitir HTTP local. Não há atributo `Domain`. `Max-Age` e `Expires` nunca ultrapassam o timeout absoluto persistido.
 
-- `tokenHash`: hash SHA-256 do token, unico e sem o token bruto;
-- `userId`: usuario autenticado;
-- `createdAt`: criacao da sessao;
-- `lastSeenAt`: ultima validacao bem-sucedida;
-- `expiresAt`: timeout absoluto;
-- `revokedAt` e `revocationReason`: revogacao explicita, expirada ou por inatividade.
+Múltiplos cookies são enviados como headers `Set-Cookie` separados. A aplicação web encaminha o cookie ao backend; ela não grava token produtivo em `localStorage`, `sessionStorage`, IndexedDB, HTML ou JSON.
 
-A sessao e rejeitada com erro controlado quando estiver ausente, invalida, expirada, revogada ou inativa alem do limite configurado.
+## Persistência, rotação e revogação
 
-## Auditoria de seguranca
+`ApplicationSession` contém `tokenHash`, `transport`, `createdAt`, `lastSeenAt`, `expiresAt`, `revokedAt` e `revocationReason`. O token bruto existe somente no cookie e na memória da requisição.
 
-Eventos de seguranca sao gravados em `SecurityAuditEvent` sem tokens, respostas sensiveis de provider ou payloads privados. Os eventos cobertos incluem:
+A renovação substitui o hash por escrita condicional. Duas renovações concorrentes com o mesmo token antigo resultam em no máximo uma vencedora. A rotação mantém o mesmo `expiresAt` absoluto.
 
-- login bem-sucedido;
-- falha de login;
-- logout;
-- sessao ausente, invalida, expirada, revogada ou encerrada por inatividade;
-- usuario desabilitado;
-- revogacao de todas as sessoes de um usuario;
-- acesso negado a perfil financeiro quando chamado pelo servico de autenticacao.
+Logout revoga somente uma sessão ainda ativa e sempre limpa o cookie. A migration de rollout marca sessões legadas ativas com `auth_transport_migration`, exigindo novo login.
 
-Acoes administrativas globais devem reutilizar o guard master e registrar auditoria especifica quando a rota administrativa existir. Se a estrutura de auditoria nao estiver disponivel em um ambiente local, a operacao deve continuar sem expor segredos ou payloads sensiveis.
+## CSRF e origem
 
-## Variaveis locais
+Toda operação mutável autenticada por cookie exige `Origin` exatamente igual a `APP_ORIGIN`. Origem ausente ou diferente é rejeitada. A exceção `AUTH_ALLOW_MISSING_ORIGIN=true` existe apenas para adaptadores locais/testes deliberados.
 
-`.env.example` inclui:
+`SameSite=Lax` é defesa complementar e não substitui a validação de origem.
+
+## Contratos locais e legados
+
+Os contratos abaixo existem somente em `development`, `local`, `test` ou demonstração não produtiva explicitamente autorizada por `AUTH_ALLOW_DEMO=true`:
+
+- `POST /api/session`;
+- `POST /api/users`;
+- `POST /api/session/oidc` com `idToken` fornecido pelo cliente;
+- autenticação `Authorization: Bearer`.
+
+Fora desses ambientes, eles falham de modo seguro. Produção nunca recorre à sessão em memória quando a sessão persistida estiver ausente ou indisponível.
+
+## Identidade e tenant
+
+O vínculo canônico é `externalAuthProvider + externalAuthSubject`. A primeira autenticação válida pode vincular um usuário local sem provider ou criar `User`, `Organization` e `FinancialProfile` pessoal de forma idempotente. Credenciais, confirmação de email, recuperação e autenticação forte permanecem sob responsabilidade do Cognito.
+
+## Auditoria
+
+`SecurityAuditEvent` registra eventos operacionais sem material sensível, incluindo criação/consumo/falha/cancelamento de tentativa OIDC, login, rotação, logout, revogação, sessão inválida/expirada, bloqueio de fluxo local e origem rejeitada.
+
+## Configuração
+
+Variáveis produtivas:
 
 ```env
+APP_ORIGIN=https://app.solverfin.example
+OIDC_ISSUER_URL=https://cognito-idp.sa-east-1.amazonaws.com/<user-pool-id>
+OIDC_CLIENT_ID=<app-client-id>
+OIDC_AUTHORIZATION_URL=https://<dominio-cognito>/oauth2/authorize
+OIDC_TOKEN_URL=https://<dominio-cognito>/oauth2/token
+OIDC_JWKS_URI=https://cognito-idp.sa-east-1.amazonaws.com/<user-pool-id>/.well-known/jwks.json
+OIDC_REDIRECT_URI=https://<app>/api/auth/oidc/callback
+OIDC_LOGOUT_URL=https://<dominio-cognito>/logout
+OIDC_RECOVERY_URL=https://<dominio-cognito>/forgotPassword
+OIDC_ATTEMPT_ENCRYPTION_KEY=<32-bytes-em-base64>
+OIDC_ATTEMPT_TTL_MINUTES=10
 AUTH_SESSION_TTL_MINUTES=60
 AUTH_SESSION_IDLE_TIMEOUT_MINUTES=30
-AUTH_ALLOW_DEMO=false
-AUTH_PASSWORD_RESET_URL=https://identity.example.invalid/solverfin/reset-password
-SOLVERFIN_MASTER_EMAILS=master@solverfin.example.invalid
-OIDC_ISSUER_URL=https://identity.example.invalid/solverfin
-OIDC_AUDIENCE=solverfin-api
-OIDC_JWKS_URI=https://identity.example.invalid/solverfin/.well-known/jwks.json
 ```
 
-`AUTH_SESSION_TTL_MINUTES` controla o timeout absoluto da sessao. Quando ausente ou invalido, o padrao e 60 minutos.
+`OIDC_AUDIENCE` permanece apenas como alias de transição e deve coincidir com `OIDC_CLIENT_ID`. O app client usa Authorization Code Grant, PKCE `S256`, scopes mínimos `openid email profile` e não precisa de client secret para o cliente público usado pelo browser. SMS não é o mecanismo padrão; preferir email, passkeys ou aplicativo autenticador conforme a configuração disponível.
 
-`AUTH_SESSION_IDLE_TIMEOUT_MINUTES` controla o timeout por inatividade das sessoes persistidas. Quando ausente ou invalido, o padrao e 30 minutos.
+Todos os valores reais ficam em secrets por ambiente. Ausência ou incoerência de configuração produtiva impede a inicialização/autenticação produtiva.
 
-`AUTH_ALLOW_DEMO=true` deve ser usado apenas em demonstracoes nao produtivas e controladas. Ele nao torna a autenticacao demo adequada para producao.
+## Testes e validação
 
-`AUTH_PASSWORD_RESET_URL` define a pagina do provider gerenciado usada pela acao **Esqueci minha senha**. Use HTTPS em preview, staging e producao. A variavel nao e segredo, mas nao deve carregar tokens, senhas ou credenciais na URL.
-
-`SOLVERFIN_MASTER_EMAILS` controla quem pode acessar recursos Admin globais. Em producao, configure apenas emails reais de usuarios autorizados em ambiente protegido. Variavel ausente ou vazia nao libera acesso Admin para ninguem.
-
-## Erros controlados
-
-Credenciais invalidas retornam erro generico:
-
-```text
-AUTH_INVALID_CREDENTIALS
-```
-
-Usuario desabilitado retorna:
-
-```text
-AUTH_USER_DISABLED
-```
-
-Sessao ausente retorna:
-
-```text
-AUTH_SESSION_REQUIRED
-```
-
-Sessao invalida ou revogada retorna:
-
-```text
-AUTH_SESSION_INVALID
-```
-
-Sessao expirada por timeout absoluto ou inatividade retorna:
-
-```text
-AUTH_SESSION_EXPIRED
-```
-
-Usuario autenticado sem permissao master para Admin global retorna:
-
-```text
-AUTH_ADMIN_REQUIRED
-```
-
-## Testes
-
-O pacote `@solverfin/api` cobre:
-
-- rota publica sem usuario autenticado;
-- login com email normalizado;
-- rota privada autenticada;
-- inclusao de credenciais persistidas no servico de auth;
-- logout invalidando sessao;
-- credenciais invalidas;
-- usuario desabilitado;
-- sessao expirada;
-- parsing de header `Bearer`;
-- hash de token de sessao sem persistir token bruto;
-- timeout por inatividade;
-- bloqueio da autenticacao demo fora de ambiente local/teste sem opt-in explicito;
-- configuracao OIDC produtiva para ambientes nao locais;
-- validacao de JWT OIDC assinado, audience invalida, token expirado e `state` invalido;
-- configuracao e guard de usuario master para Admin global, incluindo falha segura quando `SOLVERFIN_MASTER_EMAILS` esta ausente, usuario comum e usuario desabilitado.
-
-O pacote `@solverfin/web` cobre a renderizacao da acao **Esqueci minha senha**, o escape da URL e a rejeicao de protocolo inseguro, credenciais embutidas e HTTP fora de ambiente local.
-
-Todos os testes usam usuarios ficticios e nao dependem de segredos reais.
+A cobertura inclui cookie produtivo/local, ausência de `Domain`, origem exata, `returnTo` interno, PKCE, hashes de state/nonce, nonce do ID token, bloqueio dos contratos legados, rotação atômica, revogação idempotente, estados/replay da tentativa, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.

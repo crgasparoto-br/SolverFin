@@ -1,9 +1,14 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { apiError, readJsonBody, resolveCorrelationId, sendJson } from "./http.js";
-import { clearSessionCookie, serializeSessionCookie } from "./session.js";
+import {
+  buildUpstreamAuthenticationHeaders,
+  clearSessionCookie,
+  serializeSessionCookie,
+} from "./session.js";
 
 const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000";
+const publicOidcPaths = new Set(["/api/auth/oidc/start", "/api/auth/oidc/callback"]);
 
 export interface ApiSuccess<T> {
   ok: true;
@@ -19,9 +24,14 @@ export async function handleApiRequest(
   request: IncomingMessage,
   response: ServerResponse,
   url: URL,
-  token: string | undefined,
+  credential: string | undefined,
 ): Promise<void> {
   const correlationId = resolveCorrelationId(request);
+
+  if (publicOidcPaths.has(url.pathname) && request.method === "GET") {
+    await proxyToApi(request, response, url, credential, true);
+    return;
+  }
 
   if (
     request.method === "POST" &&
@@ -32,19 +42,11 @@ export async function handleApiRequest(
   }
 
   if (request.method === "DELETE" && url.pathname === "/api/session") {
-    if (token) {
-      await fetch(`${apiBaseUrl}/api/session`, {
-        method: "DELETE",
-        headers: { authorization: `Bearer ${token}` },
-      }).catch(() => undefined);
-    }
-
-    response.writeHead(204, { "set-cookie": clearSessionCookie() });
-    response.end();
+    await handleLogout(request, response, credential);
     return;
   }
 
-  if (!token) {
+  if (!credential) {
     sendJson(
       response,
       401,
@@ -53,14 +55,15 @@ export async function handleApiRequest(
     return;
   }
 
-  await proxyToApi(request, response, url, token);
+  await proxyToApi(request, response, url, credential);
 }
 
 export async function proxyToApi(
   request: IncomingMessage,
   response: ServerResponse,
   url: URL,
-  token: string,
+  credential?: string,
+  preserveRedirect = false,
 ): Promise<void> {
   const body = await readJsonBody(request);
   let upstreamResponse: Response;
@@ -68,8 +71,10 @@ export async function proxyToApi(
   try {
     upstreamResponse = await fetch(`${apiBaseUrl}${url.pathname}${url.search}`, {
       method: request.method ?? "GET",
+      redirect: preserveRedirect ? "manual" : "follow",
       headers: {
-        authorization: `Bearer ${token}`,
+        ...(credential ? buildUpstreamAuthenticationHeaders(credential) : {}),
+        ...(request.headers.origin ? { origin: request.headers.origin } : {}),
         ...(body !== undefined ? { "content-type": "application/json" } : {}),
       },
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
@@ -88,18 +93,18 @@ export async function proxyToApi(
   }
 
   const text = await upstreamResponse.text();
-
-  response.writeHead(upstreamResponse.status, {
-    "content-type":
-      upstreamResponse.headers.get("content-type") ?? "application/json; charset=utf-8",
-  });
+  const headers = collectProxyResponseHeaders(upstreamResponse);
+  response.writeHead(upstreamResponse.status, headers);
   response.end(text);
 }
 
-export async function apiGet<T>(token: string, path: string): Promise<ApiSuccess<T> | ApiFailure> {
+export async function apiGet<T>(
+  credential: string,
+  path: string,
+): Promise<ApiSuccess<T> | ApiFailure> {
   try {
     const upstreamResponse = await fetch(`${apiBaseUrl}${path}`, {
-      headers: { authorization: `Bearer ${token}` },
+      headers: buildUpstreamAuthenticationHeaders(credential),
     });
 
     if (!upstreamResponse.ok) {
@@ -117,6 +122,37 @@ export async function apiGet<T>(token: string, path: string): Promise<ApiSuccess
   } catch {
     return { ok: false, error: "Nao foi possivel conectar com a API." };
   }
+}
+
+async function handleLogout(
+  request: IncomingMessage,
+  response: ServerResponse,
+  credential: string | undefined,
+): Promise<void> {
+  if (!credential) {
+    response.writeHead(204, { "set-cookie": clearSessionCookie() });
+    response.end();
+    return;
+  }
+
+  try {
+    const upstream = await fetch(`${apiBaseUrl}/api/session`, {
+      method: "DELETE",
+      redirect: "manual",
+      headers: {
+        ...buildUpstreamAuthenticationHeaders(credential),
+        ...(request.headers.origin ? { origin: request.headers.origin } : {}),
+      },
+    });
+    const setCookies = readSetCookies(upstream);
+    response.writeHead(204, {
+      "set-cookie": [...setCookies, clearSessionCookie()],
+    });
+  } catch {
+    response.writeHead(204, { "set-cookie": clearSessionCookie() });
+  }
+
+  response.end();
 }
 
 async function handleSessionCreatingRequest(
@@ -152,6 +188,34 @@ async function handleSessionCreatingRequest(
     return;
   }
 
-  response.setHeader("set-cookie", serializeSessionCookie(resultBody.session));
+  const upstreamCookies = readSetCookies(upstreamResult);
+  response.setHeader("set-cookie", [
+    ...upstreamCookies,
+    serializeSessionCookie(resultBody.session),
+  ]);
   sendJson(response, upstreamResult.status, resultBody);
+}
+
+function collectProxyResponseHeaders(upstream: Response): Record<string, string | string[]> {
+  const headers: Record<string, string | string[]> = {
+    "content-type": upstream.headers.get("content-type") ?? "application/json; charset=utf-8",
+  };
+  const location = upstream.headers.get("location");
+  const cacheControl = upstream.headers.get("cache-control");
+  const setCookies = readSetCookies(upstream);
+
+  if (location) headers.location = location;
+  if (cacheControl) headers["cache-control"] = cacheControl;
+  if (setCookies.length > 0) headers["set-cookie"] = setCookies;
+
+  return headers;
+}
+
+function readSetCookies(response: Response): string[] {
+  const headersWithCookies = response.headers as Headers & { getSetCookie?: () => string[] };
+  const values = headersWithCookies.getSetCookie?.();
+  if (values && values.length > 0) return values;
+
+  const single = response.headers.get("set-cookie");
+  return single ? [single] : [];
 }

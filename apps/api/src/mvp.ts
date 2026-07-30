@@ -1,24 +1,37 @@
-import { AuthError, type AuthenticatedUser } from "./auth.js";
+import { AuthError, getBearerSessionId, type AuthenticatedUser } from "./auth.js";
 import { isMasterUser } from "./admin-auth.js";
 import {
   authenticateProductiveUser,
   authenticateUser,
   logoutSession,
   registerUser,
+  renewSession,
   requireAuthenticatedRequest,
 } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import type { ApiHeaders } from "./http-headers.js";
+import { completeOidcCallback, startOidcLogin, type OidcCallbackInput } from "./oidc-flow.js";
+import { clearSessionCookie, readSessionCookie, serializeSessionCookie } from "./session-cookie.js";
 
 export interface MvpApiRequest {
   method: "GET" | "POST" | "DELETE";
-  path: "/api/session" | "/api/session/oidc" | "/api/users" | "/api/me" | "/api/financial-summary";
+  path:
+    | "/api/session"
+    | "/api/session/oidc"
+    | "/api/session/renew"
+    | "/api/auth/oidc/start"
+    | "/api/auth/oidc/callback"
+    | "/api/users"
+    | "/api/me"
+    | "/api/financial-summary";
+  query?: URLSearchParams;
   headers?: Readonly<Record<string, string | undefined>>;
   body?: unknown;
 }
 
 export interface MvpApiResponse {
   statusCode: number;
-  headers: Readonly<Record<string, string>>;
+  headers: ApiHeaders;
   body: unknown;
 }
 
@@ -48,9 +61,56 @@ export interface FinancialSummaryResponse {
 }
 
 export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpApiResponse> {
-  const correlationId = resolveCorrelationId(request.headers ?? {});
+  const headers = request.headers ?? {};
+  const correlationId = resolveCorrelationId(headers);
+
+  if (request.method === "GET" && request.path === "/api/auth/oidc/callback") {
+    try {
+      const callbackInput: OidcCallbackInput = {};
+      const state = request.query?.get("state");
+      const code = request.query?.get("code");
+      const error = request.query?.get("error");
+
+      if (state !== null && state !== undefined) callbackInput.state = state;
+      if (code !== null && code !== undefined) callbackInput.code = code;
+      if (error !== null && error !== undefined) callbackInput.error = error;
+
+      const result = await completeOidcCallback(callbackInput);
+
+      return {
+        statusCode: 303,
+        headers: {
+          location: result.returnTo,
+          "cache-control": "no-store",
+          "set-cookie": serializeSessionCookie(
+            result.login.session.id,
+            result.login.session.expiresAt,
+          ),
+        },
+        body: undefined,
+      };
+    } catch {
+      return {
+        statusCode: 303,
+        headers: {
+          location: "/login?erro=autenticacao",
+          "cache-control": "no-store",
+        },
+        body: undefined,
+      };
+    }
+  }
 
   try {
+    if (request.method === "GET" && request.path === "/api/auth/oidc/start") {
+      const result = await startOidcLogin(request.query?.get("returnTo"));
+      return {
+        statusCode: 302,
+        headers: { location: result.location, "cache-control": "no-store" },
+        body: undefined,
+      };
+    }
+
     if (request.method === "POST" && request.path === "/api/session") {
       return await createSession(request.body);
     }
@@ -63,24 +123,34 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
       return await createUser(request.body);
     }
 
-    if (request.method === "DELETE" && request.path === "/api/session") {
-      const sessionId = requireBearerSession(request.headers?.authorization);
-      await logoutSession(sessionId);
+    if (request.method === "POST" && request.path === "/api/session/renew") {
+      const token = requireCookieSession(headers.cookie);
+      const rotated = await renewSession(token);
+      return {
+        statusCode: 204,
+        headers: { "set-cookie": serializeSessionCookie(rotated.token, rotated.expiresAt) },
+        body: undefined,
+      };
+    }
 
-      return jsonResponse(204, undefined);
+    if (request.method === "DELETE" && request.path === "/api/session") {
+      const token = readSessionCookie(headers.cookie) ?? getBearerSessionId(headers.authorization);
+      if (token) await logoutSession(token);
+
+      return {
+        statusCode: 204,
+        headers: { "set-cookie": clearSessionCookie() },
+        body: undefined,
+      };
     }
 
     if (request.method === "GET" && request.path === "/api/me") {
-      const user = await requireAuthenticatedRequest(
-        buildAuthHeaders(request.headers?.authorization),
-      );
-
+      const user = await requireAuthenticatedRequest(headers);
       return jsonResponse(200, { user: serializeUser(user) });
     }
 
     if (request.method === "GET" && request.path === "/api/financial-summary") {
-      await requireAuthenticatedRequest(buildAuthHeaders(request.headers?.authorization));
-
+      await requireAuthenticatedRequest(headers);
       return jsonResponse(200, buildDemoFinancialSummary());
     }
 
@@ -93,7 +163,6 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
     });
   } catch (error) {
     const response = buildApiErrorResponse({ error, correlationId });
-
     return jsonResponse(response.statusCode, response.body);
   }
 }
@@ -150,8 +219,7 @@ async function createSession(body: unknown): Promise<MvpApiResponse> {
   }
 
   const result = await authenticateUser(body);
-
-  return jsonResponse(201, serializeLoginResult(result));
+  return localLoginResponse(result);
 }
 
 async function createOidcSession(body: unknown): Promise<MvpApiResponse> {
@@ -160,8 +228,7 @@ async function createOidcSession(body: unknown): Promise<MvpApiResponse> {
   }
 
   const result = await authenticateProductiveUser(body);
-
-  return jsonResponse(201, serializeLoginResult(result));
+  return localLoginResponse(result);
 }
 
 async function createUser(body: unknown): Promise<MvpApiResponse> {
@@ -174,22 +241,29 @@ async function createUser(body: unknown): Promise<MvpApiResponse> {
   }
 
   const result = await registerUser(body);
-
-  return jsonResponse(201, serializeLoginResult(result));
+  return localLoginResponse(result);
 }
 
-function requireBearerSession(authorization: string | undefined): string {
-  const [scheme, token, extra] = authorization?.trim().split(/\s+/) ?? [];
+function localLoginResponse(result: {
+  user: AuthenticatedUser;
+  session: { id: string; expiresAt: Date };
+}): MvpApiResponse {
+  return {
+    statusCode: 201,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "set-cookie": serializeSessionCookie(result.session.id, result.session.expiresAt),
+    },
+    body: serializeLoginResult(result),
+  };
+}
 
-  if (scheme?.toLowerCase() !== "bearer" || !token || extra) {
-    throw new AuthError("AUTH_SESSION_REQUIRED", "Authentication session is required.");
+function requireCookieSession(cookie: string | undefined): string {
+  const token = readSessionCookie(cookie);
+  if (!token) {
+    throw new AuthError("AUTH_SESSION_REQUIRED", "Authentication session is required.", 401);
   }
-
   return token;
-}
-
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
-  return authorization === undefined ? {} : { authorization };
 }
 
 function serializeLoginResult(result: {
@@ -253,9 +327,7 @@ function isRegisterBody(body: unknown): body is {
 function jsonResponse(statusCode: number, body: unknown): MvpApiResponse {
   return {
     statusCode,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-    },
+    headers: { "content-type": "application/json; charset=utf-8" },
     body,
   };
 }

@@ -1,6 +1,10 @@
 import { faviconLinks } from "./pages.js";
 
-export function renderLoginPage(errorMessage?: string, passwordResetUrl?: string): string {
+export function renderLoginPage(
+  errorMessage?: string,
+  passwordResetUrl?: string,
+  options: { productiveOidc?: boolean } = {},
+): string {
   return `<!doctype html>
 <html lang="pt-BR">
   <head>
@@ -17,24 +21,7 @@ export function renderLoginPage(errorMessage?: string, passwordResetUrl?: string
         <img class="login-logo" src="/images/solverfin-logo.png" width="120" height="120" alt="SolverFin" />
         <p class="eyebrow">Acesso SolverFin</p>
         <h1 id="login-title">Entrar no SolverFin</h1>
-        <p class="muted">Entre com uma conta cadastrada ou crie um usuário para salvar o acesso no banco local.</p>
-        ${errorMessage ? `<p class="error" role="alert">${escapeHtml(errorMessage)}</p>` : ""}
-        <div class="auth-tabs" role="tablist" aria-label="Opção de acesso">
-          <button type="button" class="tab active" data-auth-tab="login">Entrar</button>
-          <button type="button" class="tab" data-auth-tab="register">Criar usuário</button>
-        </div>
-        <form id="login-form" data-auth-panel="login" method="post" action="/api/session">
-          <label>Email<input name="email" type="email" autocomplete="username" placeholder="voce@email.com" required /></label>
-          <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha cadastrada" required /></label>
-          ${renderPasswordResetAction(passwordResetUrl)}
-          <button type="submit">Entrar</button>
-        </form>
-        <form id="register-form" data-auth-panel="register" method="post" action="/api/users" hidden>
-          <label>Nome<input name="displayName" autocomplete="name" placeholder="Seu nome" required /></label>
-          <label>Email<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" required /></label>
-          <label>Senha<input name="password" type="password" autocomplete="new-password" minlength="8" placeholder="No mínimo 8 caracteres" required /></label>
-          <button type="submit">Criar usuário</button>
-        </form>
+        ${renderAuthenticationPanel(options.productiveOidc === true, errorMessage, passwordResetUrl)}
       </section>
     </main>
     <script>
@@ -80,11 +67,56 @@ export function renderLoginPage(errorMessage?: string, passwordResetUrl?: string
         window.location.assign("/login?erro=" + message);
       }
 
-      document.querySelector("#login-form").addEventListener("submit", submitAuthForm);
-      document.querySelector("#register-form").addEventListener("submit", submitAuthForm);
+      document.querySelector("#login-form")?.addEventListener("submit", submitAuthForm);
+      document.querySelector("#register-form")?.addEventListener("submit", submitAuthForm);
     </script>
   </body>
 </html>`;
+}
+
+function renderAuthenticationPanel(
+  productiveOidc: boolean,
+  errorMessage?: string,
+  passwordResetUrl?: string,
+): string {
+  const error = errorMessage
+    ? `<p class="error" role="alert">Não foi possível concluir o acesso. Tente novamente.</p>`
+    : "";
+
+  if (productiveOidc) {
+    return `<p class="muted">Use sua conta segura para acessar seus dados financeiros.</p>
+        ${error}
+        <a class="primary-auth-action" href="/api/auth/oidc/start?returnTo=/dashboard">Continuar com acesso seguro</a>
+        ${renderProductiveRecoveryAction(passwordResetUrl)}
+        <p class="recovery-help">Credenciais, recuperação de conta e autenticação forte são gerenciadas pelo provedor de identidade.</p>`;
+  }
+
+  return `<p class="muted">Ambiente local: entre com uma conta de desenvolvimento ou crie um usuário de teste.</p>
+        ${errorMessage ? `<p class="error" role="alert">${escapeHtml(errorMessage)}</p>` : ""}
+        <div class="auth-tabs" role="tablist" aria-label="Opção de acesso">
+          <button type="button" class="tab active" data-auth-tab="login">Entrar</button>
+          <button type="button" class="tab" data-auth-tab="register">Criar usuário</button>
+        </div>
+        <form id="login-form" data-auth-panel="login" method="post" action="/api/session">
+          <label>Email<input name="email" type="email" autocomplete="username" placeholder="voce@email.com" required /></label>
+          <label>Senha<input name="password" type="password" autocomplete="current-password" placeholder="Senha cadastrada" required /></label>
+          ${renderPasswordResetAction(passwordResetUrl)}
+          <button type="submit">Entrar</button>
+        </form>
+        <form id="register-form" data-auth-panel="register" method="post" action="/api/users" hidden>
+          <label>Nome<input name="displayName" autocomplete="name" placeholder="Seu nome" required /></label>
+          <label>Email<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" required /></label>
+          <label>Senha<input name="password" type="password" autocomplete="new-password" minlength="8" placeholder="No mínimo 8 caracteres" required /></label>
+          <button type="submit">Criar usuário</button>
+        </form>`;
+}
+
+function renderProductiveRecoveryAction(passwordResetUrl?: string): string {
+  if (!passwordResetUrl) {
+    return "";
+  }
+
+  return `<a class="forgot-password productive-recovery" href="${escapeHtml(passwordResetUrl)}" rel="noreferrer">Recuperar acesso</a>`;
 }
 
 function renderPasswordResetAction(passwordResetUrl?: string): string {
@@ -126,6 +158,7 @@ function loginCss(): string {
     .password-recovery { align-items: flex-end; display: flex; flex-direction: column; gap: 8px; margin-top: -2px; }
     .forgot-password { color: var(--cyan); font-size: .92rem; font-weight: 800; text-decoration: none; }
     .forgot-password:hover, .forgot-password:focus-visible { text-decoration: underline; }
+    .productive-recovery { justify-self: center; }
     button.forgot-password { background: transparent; border-radius: 4px; min-height: auto; padding: 2px 0; }
     .recovery-help { color: var(--muted); font-size: .88rem; line-height: 1.45; max-width: 34rem; text-align: right; }
     .error { background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }

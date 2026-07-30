@@ -29,7 +29,7 @@ import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
 import { resolveReportsCanonicalLocation } from "./dev-server/reports-canonical-location.js";
 import { renderReportsRoutePage } from "./dev-server/reports-route-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
-import { getSessionTokenFromRequest } from "./dev-server/session.js";
+import { getSessionCredentialFromRequest } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
 import { tryServeStaticAsset } from "./dev-server/static-assets.js";
 import { renderTransactionsPage } from "./dev-server/transactions-page.js";
@@ -94,7 +94,7 @@ if (process.argv[1]?.endsWith("dev-server.js") === true) {
 
 async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
-  const token = getSessionTokenFromRequest(request);
+  const token = getSessionCredentialFromRequest(request);
 
   if (url.pathname === "/manifest.webmanifest") {
     sendJson(response, 200, manifest, "application/manifest+json; charset=utf-8");
@@ -127,7 +127,9 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     sendHtml(
       response,
       200,
-      renderLoginPage(url.searchParams.get("erro") ?? undefined, passwordResetUrl),
+      renderLoginPage(url.searchParams.get("erro") ?? undefined, passwordResetUrl, {
+        productiveOidc: isProductiveWebAuthEnabled(),
+      }),
     );
     return;
   }
@@ -210,6 +212,19 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   sendHtml(response, 404, renderNotFoundPage());
+}
+
+function isProductiveWebAuthEnabled(): boolean {
+  const nodeEnv = (process.env.NODE_ENV ?? "development").toLowerCase();
+  if (nodeEnv === "development" || nodeEnv === "local" || nodeEnv === "test") return false;
+
+  return Boolean(
+    process.env.OIDC_ISSUER_URL &&
+    process.env.OIDC_CLIENT_ID &&
+    process.env.OIDC_AUTHORIZATION_URL &&
+    process.env.OIDC_TOKEN_URL &&
+    process.env.OIDC_REDIRECT_URI,
+  );
 }
 
 export async function materializeCardInvoiceRecurrences(token: string, url: URL): Promise<void> {

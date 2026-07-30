@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const envExamplePath = ".env.example";
 const requiredKeys = [
   "NODE_ENV",
+  "APP_ORIGIN",
   "POSTGRES_DB",
   "POSTGRES_USER",
   "POSTGRES_PASSWORD",
@@ -10,8 +11,15 @@ const requiredKeys = [
   "DATABASE_URL",
   "AUTH_PASSWORD_RESET_URL",
   "OIDC_ISSUER_URL",
+  "OIDC_CLIENT_ID",
   "OIDC_AUDIENCE",
+  "OIDC_AUTHORIZATION_URL",
+  "OIDC_TOKEN_URL",
   "OIDC_JWKS_URI",
+  "OIDC_REDIRECT_URI",
+  "OIDC_LOGOUT_URL",
+  "OIDC_RECOVERY_URL",
+  "OIDC_ATTEMPT_ENCRYPTION_KEY",
 ];
 
 const sensitiveKeyPattern = /(PASSWORD|TOKEN|SECRET|KEY|DATABASE_URL)/i;
@@ -87,24 +95,31 @@ function validateEnvExample(entries) {
     throw new Error("DATABASE_URL in .env.example must use the postgresql:// scheme.");
   }
 
-  const passwordResetUrl = entries.get("AUTH_PASSWORD_RESET_URL");
-  const oidcIssuer = entries.get("OIDC_ISSUER_URL");
-  const oidcJwksUri = entries.get("OIDC_JWKS_URI");
+  const authenticationUrls = [
+    entries.get("AUTH_PASSWORD_RESET_URL"),
+    entries.get("OIDC_ISSUER_URL"),
+    entries.get("OIDC_AUTHORIZATION_URL"),
+    entries.get("OIDC_TOKEN_URL"),
+    entries.get("OIDC_JWKS_URI"),
+    entries.get("OIDC_REDIRECT_URI"),
+    entries.get("OIDC_LOGOUT_URL"),
+    entries.get("OIDC_RECOVERY_URL"),
+  ];
 
-  if (
-    !passwordResetUrl.startsWith("https://") ||
-    !oidcIssuer.startsWith("https://") ||
-    !oidcJwksUri.startsWith("https://")
-  ) {
+  if (authenticationUrls.some((value) => !value.startsWith("https://"))) {
     throw new Error("Authentication URL placeholders must use https:// URLs.");
   }
 
   if (
-    !passwordResetUrl.includes("example.invalid") ||
-    !oidcIssuer.includes("example.invalid") ||
-    !oidcJwksUri.includes("example.invalid")
+    authenticationUrls.some(
+      (value) => !value.includes("example.invalid") && !value.includes("sa-east-1_example"),
+    )
   ) {
-    throw new Error("Authentication URL placeholders must use example.invalid hosts.");
+    throw new Error("Authentication URL placeholders must use fictitious hosts or pool IDs.");
+  }
+
+  if (Buffer.from(entries.get("OIDC_ATTEMPT_ENCRYPTION_KEY"), "base64").length !== 32) {
+    throw new Error("OIDC_ATTEMPT_ENCRYPTION_KEY placeholder must decode to 32 bytes.");
   }
 
   for (const [key, value] of entries) {

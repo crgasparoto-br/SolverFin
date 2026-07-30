@@ -133,12 +133,9 @@ privacidade e retencao definida para o produto.
 - A tabela `User` local permanece como espelho operacional da identidade externa,
   nao como fonte primaria de credenciais produtivas.
 - O projeto passa a depender de um provider externo de identidade em producao.
-- A escolha concreta do fornecedor pode ocorrer na issue de implementacao, desde
-  que ele cumpra este contrato e seja documentado.
-- A API precisara de endpoints novos ou adaptados para callback/troca de token,
-  sessao, logout e sincronizacao de usuario.
-- Sessoes em memoria devem ser substituidas por sessoes persistentes antes de
-  uso produtivo.
+- O fornecedor concreto é Amazon Cognito User Pools Essentials em `sa-east-1`.
+- A API possui endpoints backend-first para início/callback OIDC, renovação, logout e sincronização de usuário.
+- Sessoes produtivas são persistentes; a memória permanece somente como adaptador local/teste.
 - O ambiente produtivo deve exigir variaveis de configuracao do provider e deve
   falhar cedo se elas estiverem ausentes.
 
@@ -185,3 +182,13 @@ no minimo:
 - OWASP Session Management Cheat Sheet.
 - NIST SP 800-63B Digital Identity Guidelines: Authentication and Lifecycle
   Management.
+
+## Adendo 2026-07-30 - provider e transporte definidos
+
+O provider gerenciado escolhido é **Amazon Cognito User Pools**, plano **Essentials**, na região primária **South America (São Paulo), `sa-east-1`**.
+
+O fluxo normativo é Authorization Code com PKCE `S256`, iniciado pelo backend, scopes `openid email profile`, callback controlado pelo servidor e sessão operacional própria em cookie `__Host-` seguro. `state`, `nonce` e `code_verifier` são correlacionados por tentativa persistente, expirada e de uso único; somente hashes de state/nonce e o verifier cifrado podem ser persistidos.
+
+Tokens do Cognito não são persistidos no navegador. Senhas, confirmação de email, recuperação e autenticação forte permanecem no Cognito. Endpoints OIDC padrão são preferidos a SDK proprietário. Email, passkeys ou aplicativo autenticador são priorizados; SMS não é padrão.
+
+A configuração concreta por ambiente inclui issuer, client ID, domínio de login, authorization/token endpoints, redirect URI, discovery/JWKS, logout e recuperação. Preview público, staging real e produção falham fechados quando o contrato estiver incompleto.
