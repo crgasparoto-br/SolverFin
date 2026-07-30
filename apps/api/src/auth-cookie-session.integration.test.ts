@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createSign, generateKeyPairSync, type KeyObject } from "node:crypto";
+import { createHash, createSign, generateKeyPairSync, type KeyObject } from "node:crypto";
 
 import { AuthError } from "./auth.js";
 import {
@@ -19,8 +19,9 @@ const productiveEnv = {
   APP_ORIGIN: "https://app.example.invalid",
   OIDC_ISSUER_URL: "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example",
   OIDC_CLIENT_ID: "client-123",
-  OIDC_AUTHORIZATION_URL: "https://solverfin-auth.example.invalid/oauth2/authorize",
-  OIDC_TOKEN_URL: "https://solverfin-auth.example.invalid/oauth2/token",
+  OIDC_AUTHORIZATION_URL:
+    "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/authorize",
+  OIDC_TOKEN_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/token",
   OIDC_JWKS_URI:
     "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example/.well-known/jwks.json",
   OIDC_REDIRECT_URI: "https://app.example.invalid/api/auth/oidc/callback",
@@ -170,6 +171,15 @@ async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
   assert.match(exchangedBody, /code_verifier=/);
   assert.doesNotMatch(JSON.stringify(callback), /authorization-code-do-not-log/);
 
+  const createdAudits = await query<{ action: string }>(
+    `select "action" from "SecurityAuditEvent" where "sessionId" = $1 order by "action"`,
+    [callback.login.session.databaseId],
+  );
+  assert.deepEqual(
+    createdAudits.map((row) => row.action),
+    ["oidc_callback_consumed", "session_created"],
+  );
+
   await assert.rejects(
     () =>
       completeOidcCallback(
@@ -193,25 +203,34 @@ function signJwt(privateKey: KeyObject, kid: string, claims: Record<string, unkn
 }
 
 async function validatesAttemptCancellationReplayAndExpiry(): Promise<void> {
+  const cancellationNow = new Date("2026-07-30T17:00:00.000Z");
   const start = await startOidcLogin("/dashboard", {
     env: productiveEnv,
-    now: new Date("2026-07-30T17:00:00.000Z"),
+    now: cancellationNow,
   });
   const state = new URL(start.location).searchParams.get("state");
   assert.ok(state);
 
   await assert.rejects(
-    () => completeOidcCallback({ state, error: "access_denied" }, { env: productiveEnv }),
+    () =>
+      completeOidcCallback(
+        { state, error: "access_denied" },
+        { env: productiveEnv, now: cancellationNow },
+      ),
     (error) => error instanceof AuthError && error.code === "AUTH_OIDC_ATTEMPT_INVALID",
   );
   await assert.rejects(
-    () => completeOidcCallback({ state, error: "access_denied" }, { env: productiveEnv }),
+    () =>
+      completeOidcCallback(
+        { state, error: "access_denied" },
+        { env: productiveEnv, now: cancellationNow },
+      ),
     (error) => error instanceof AuthError && error.code === "AUTH_OIDC_ATTEMPT_INVALID",
   );
 
   const cancelled = await query<{ status: string; terminalReason: string | null }>(
-    `select "status", "terminalReason" from "OidcLoginAttempt" where "issuer" = $1 order by "createdAt" desc limit 1`,
-    [productiveEnv.OIDC_ISSUER_URL],
+    `select "status", "terminalReason" from "OidcLoginAttempt" where "stateHash" = $1`,
+    [createHash("sha256").update(state).digest("hex")],
   );
   assert.equal(cancelled[0]?.status, "CANCELLED");
   assert.equal(cancelled[0]?.terminalReason, "access_denied");
