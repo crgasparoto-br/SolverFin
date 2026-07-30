@@ -19,8 +19,7 @@ const productiveEnv = {
     "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example/.well-known/jwks.json",
   OIDC_REDIRECT_URI: "https://app.example.invalid/api/auth/oidc/callback",
   OIDC_LOGOUT_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/logout",
-  OIDC_RECOVERY_URL:
-    "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/forgotPassword",
+  OIDC_RECOVERY_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/forgotPassword",
   OIDC_ATTEMPT_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
 };
 

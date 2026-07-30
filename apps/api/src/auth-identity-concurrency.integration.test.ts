@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
-import { AuthError } from "./auth.js";
+import { AuthError, type AuthenticatedUser } from "./auth.js";
 import { createPersistentApplicationSession } from "./auth-service.js";
 import { closePool, query, withTransaction } from "./db.js";
 import { resolveProductiveExternalIdentityUser } from "./external-identity.js";
@@ -95,7 +95,8 @@ async function validatesConflictingConcurrentLinkIsRejected(): Promise<void> {
     ),
   );
   const fulfilled = outcomes.filter(
-    (outcome): outcome is PromiseFulfilledResult<{ id: string }> => outcome.status === "fulfilled",
+    (outcome): outcome is PromiseFulfilledResult<AuthenticatedUser> =>
+      outcome.status === "fulfilled",
   );
   const rejected = outcomes.filter(
     (outcome): outcome is PromiseRejectedResult => outcome.status === "rejected",
@@ -111,10 +112,7 @@ async function validatesConflictingConcurrentLinkIsRejected(): Promise<void> {
   const linked = await query<{
     externalAuthProvider: string | null;
     externalAuthSubject: string | null;
-  }>(
-    `select "externalAuthProvider", "externalAuthSubject" from "User" where "id" = $1`,
-    [userId],
-  );
+  }>(`select "externalAuthProvider", "externalAuthSubject" from "User" where "id" = $1`, [userId]);
   assert.equal(linked[0]?.externalAuthProvider, provider);
   assert.ok(identities.some((identity) => identity.subject === linked[0]?.externalAuthSubject));
 

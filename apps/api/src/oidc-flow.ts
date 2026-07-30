@@ -1,10 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  createHash,
-  randomBytes,
-  randomUUID,
-} from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from "node:crypto";
 
 import { AuthError, type LoginResult } from "./auth.js";
 import { auditSecurityEvent, createPersistentApplicationSession } from "./auth-service.js";
@@ -16,13 +10,7 @@ import { validateOidcIdToken, type JsonWebKeySet, type OidcProviderConfig } from
 const DEFAULT_ATTEMPT_TTL_MINUTES = 10;
 const OIDC_SCOPES = "openid email profile";
 
-type OidcAttemptStatus =
-  | "PENDING"
-  | "PROCESSING"
-  | "CONSUMED"
-  | "CANCELLED"
-  | "EXPIRED"
-  | "FAILED";
+type OidcAttemptStatus = "PENDING" | "PROCESSING" | "CONSUMED" | "CANCELLED" | "EXPIRED" | "FAILED";
 
 interface OidcAttemptRow {
   id: string;
@@ -56,7 +44,9 @@ export interface OidcCallbackInput {
 }
 
 export interface OidcCallbackResult {
-  login: LoginResult;
+  login: LoginResult & {
+    session: LoginResult["session"] & { databaseId: string };
+  };
   returnTo: string;
 }
 

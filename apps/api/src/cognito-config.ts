@@ -47,7 +47,7 @@ export function assertTrustedCognitoEndpoints(input: TrustedCognitoEndpoints): v
     issuer.hostname !== COGNITO_ISSUER_HOST ||
     issuer.search ||
     issuer.hash ||
-    !new RegExp(`^${COGNITO_REGION.replace(/-/g, "\\-") }_[A-Za-z0-9]+$`).test(poolId)
+    !new RegExp(`^${COGNITO_REGION.replace(/-/g, "\\-")}_[A-Za-z0-9]+$`).test(poolId)
   ) {
     throw configurationError(
       `OIDC_ISSUER_URL must reference one Amazon Cognito User Pool in ${COGNITO_REGION}.`,
@@ -61,7 +61,9 @@ export function assertTrustedCognitoEndpoints(input: TrustedCognitoEndpoints): v
 
   const expectedJwks = `${issuer.origin}${expectedIssuerPath}/.well-known/jwks.json`;
   if (normalizeUrl(jwksUrl) !== expectedJwks) {
-    throw configurationError("OIDC_JWKS_URI must be the JWKS endpoint derived from OIDC_ISSUER_URL.");
+    throw configurationError(
+      "OIDC_JWKS_URI must be the JWKS endpoint derived from OIDC_ISSUER_URL.",
+    );
   }
 
   if (
@@ -100,7 +102,9 @@ export function assertTrustedCognitoEndpoints(input: TrustedCognitoEndpoints): v
 
 function assertEndpointPath(url: URL, expectedPath: string, key: string): void {
   if (url.pathname !== expectedPath || url.search || url.hash) {
-    throw configurationError(`${key} must use the exact path ${expectedPath} without query or fragment.`);
+    throw configurationError(
+      `${key} must use the exact path ${expectedPath} without query or fragment.`,
+    );
   }
 }
 
