@@ -14,11 +14,12 @@ const html = renderRecurrenceMaterializationGate("account", initial);
 assert.match(html, /Atualizando lançamentos recorrentes/);
 assert.match(html, /method: "POST"/);
 assert.match(html, /credentials: "same-origin"/);
-assert.match(
-  html,
-  /\/api\/recurrence-materialization\?surface=account&amp;|\/api\/recurrence-materialization\?surface=account/,
-);
+assert.match(html, /\/api\/recurrence-materialization\?surface=account/);
 assert.match(html, /materialized=1/);
+assert.match(html, /Não foi possível atualizar as recorrências/);
+assert.match(html, /Tentar novamente/);
+assert.match(html, /Continuar sem atualização/);
+assert.match(html, /if \(!response\.ok\)/);
 assert.doesNotMatch(html, /Authorization|Bearer/);
 
 const completed = new URL(
