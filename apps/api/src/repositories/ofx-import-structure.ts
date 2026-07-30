@@ -23,6 +23,7 @@ interface ExplicitContainerRange {
 
 export function assertCanonicalOfxStructure(content: string): void {
   assertCanonicalOfxProcessingInstructions(content);
+  assertCanonicalOfxXmlHierarchy(content);
   assertCanonicalOfxCurrencyScope(content);
   assertCanonicalOfxTransactionFields(content);
 }
@@ -47,6 +48,31 @@ function assertCanonicalOfxProcessingInstructions(content: string): void {
         "OFX aceita somente a declaracao XML antes do envelope raiz.",
       );
     }
+  }
+}
+
+function assertCanonicalOfxXmlHierarchy(content: string): void {
+  const masked = maskInactiveOfxContent(content);
+  if (!/^\s*<\?xml\b/i.test(masked)) return;
+
+  const stack: string[] = [];
+  for (const token of readStructuralTagTokens(masked)) {
+    if (token.selfClosing) continue;
+    if (!token.closing) {
+      stack.push(token.name);
+      continue;
+    }
+
+    const expected = stack.pop();
+    if (expected !== token.name) {
+      throw invalidOfx(
+        "Estrutura XML OFX possui tags aninhadas ou fechamentos invalidos.",
+      );
+    }
+  }
+
+  if (stack.length > 0) {
+    throw invalidOfx("Estrutura XML OFX possui tag incompleta.");
   }
 }
 
