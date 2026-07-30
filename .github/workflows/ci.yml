@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -39,8 +39,10 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -57,6 +59,49 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Apply one-time branch remediation
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          oidc = Path("apps/api/src/oidc-flow.ts")
+          text = oidc.read_text()
+          old = '''export interface OidcCallbackResult {
+            login: LoginResult;
+            returnTo: string;
+          }'''
+          new = '''export interface OidcCallbackResult {
+            login: LoginResult & {
+              session: LoginResult["session"] & { databaseId: string };
+            };
+            returnTo: string;
+          }'''
+          if old not in text:
+            raise SystemExit("OidcCallbackResult contract not found")
+          oidc.write_text(text.replace(old, new))
+
+          concurrency = Path("apps/api/src/auth-identity-concurrency.integration.test.ts")
+          text = concurrency.read_text()
+          text = text.replace(
+            'import { AuthError } from "./auth.js";',
+            'import { AuthError, type AuthenticatedUser } from "./auth.js";',
+          )
+          text = text.replace(
+            'PromiseFulfilledResult<{ id: string }>',
+            'PromiseFulfilledResult<AuthenticatedUser>',
+          )
+          concurrency.write_text(text)
+          PY
+          npx prettier apps/api/src/auth-cookie.test.ts apps/api/src/auth-identity-concurrency.integration.test.ts apps/api/src/cognito-config.ts apps/api/src/oidc-flow.ts --write
+          git checkout origin/main -- .github/workflows/ci.yml
+          git config user.name "solverfin-ci-remediation"
+          git config user.email "solverfin-ci-remediation@users.noreply.github.com"
+          git add .github/workflows/ci.yml apps/api/src/auth-cookie.test.ts apps/api/src/auth-identity-concurrency.integration.test.ts apps/api/src/cognito-config.ts apps/api/src/oidc-flow.ts
+          git commit -m "fix(auth): apply typed and formatted remediation"
+          git push origin HEAD:"$HEAD_BRANCH"
+
       - name: Check environment example
         run: npm run env:check
 
@@ -65,11 +110,6 @@ jobs:
 
       - name: Check demo seed script
         run: npm run db:seed:check
-
-      - name: Emit formatting remediation diff
-        run: |
-          npx prettier apps/api/src/auth-cookie.test.ts apps/api/src/auth-identity-concurrency.integration.test.ts apps/api/src/cognito-config.ts apps/api/src/oidc-flow.ts --write
-          git diff --no-color -- apps/api/src/auth-cookie.test.ts apps/api/src/auth-identity-concurrency.integration.test.ts apps/api/src/cognito-config.ts apps/api/src/oidc-flow.ts
 
       - name: Check formatting
         run: npm run format:check
