@@ -65,12 +65,7 @@ function scalarTag(name: string, value: string, xml: boolean): string {
   return xml ? `<${name}>${value}</${name}>` : `<${name}>${value}`;
 }
 
-function placeNode(
-  node: ConsumedNode,
-  value: string,
-  placement: Placement,
-  xml: boolean,
-): string {
+function placeNode(node: ConsumedNode, value: string, placement: Placement, xml: boolean): string {
   const target = scalarTag(node, value, xml);
   if (placement === "direct") return target;
   const wrapper = placement === "generic-container" ? "WRAPPER" : scalarWrapperFor(node);
@@ -102,7 +97,12 @@ function buildDocument(mode: Mode, target: ConsumedNode, placement: Placement): 
   const transaction = buildTransaction(mode, target, placement);
   const listBody =
     target === "STMTTRN" && placement !== "direct"
-      ? placeNode("STMTTRN", transaction.slice("<STMTTRN>".length, -"</STMTTRN>".length), placement, xml)
+      ? placeNode(
+          "STMTTRN",
+          transaction.slice("<STMTTRN>".length, -"</STMTTRN>".length),
+          placement,
+          xml,
+        )
       : transaction;
   const envelope = `<OFX><STMTRS>${currency}<BANKTRANLIST>${listBody}</BANKTRANLIST></STMTRS></OFX>`;
   if (mode === "xml-declaration") return `<?xml version="1.0" encoding="UTF-8"?>${envelope}`;
