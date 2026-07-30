@@ -9,6 +9,12 @@ const initial = new URL(
   "https://app.example.invalid/lancamentos?accountId=account-1&month=2026-12",
 );
 assert.equal(requiresRecurrenceMaterialization(initial), true);
+assert.equal(
+  requiresRecurrenceMaterialization(initial, {
+    SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION: "1",
+  }),
+  false,
+);
 
 const html = renderRecurrenceMaterializationGate("account", initial);
 assert.match(html, /Atualizando lançamentos recorrentes/);
