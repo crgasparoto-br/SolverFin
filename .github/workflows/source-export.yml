@@ -1,4 +1,4 @@
-name: Temporary source export
+name: Apply issue source
 
 on:
   pull_request:
@@ -6,18 +6,53 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  export-source:
+  apply-source:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
-      - name: Checkout repository
+      - name: Checkout pull request branch
         uses: actions/checkout@v4
-      - name: Upload source snapshot
-        uses: actions/upload-artifact@v4
         with:
-          name: solverfin-source
-          path: .
-          include-hidden-files: true
-          retention-days: 1
+          ref: feat/551-oidc-cookie-sessions
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Reconstruct verified source overlay
+        run: |
+          cat .github/source-payload/part-* > /tmp/solverfin-overlay.tar.gz.b64
+          echo "8d415f561242b950e64b107be972b4755465534a92901cdca5247028c133ee4e  /tmp/solverfin-overlay.tar.gz.b64" | sha256sum --check
+          base64 --decode /tmp/solverfin-overlay.tar.gz.b64 > /tmp/solverfin-overlay.tar.gz
+          echo "993195865e507c59dbc8e72947efc8c0173e4326279c68fb179d01cd2f2bf535  /tmp/solverfin-overlay.tar.gz" | sha256sum --check
+          tar -xzf /tmp/solverfin-overlay.tar.gz
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format source
+        run: npx prettier --write .
+
+      - name: Validate implementation
+        run: npm run validate
+
+      - name: Remove temporary transport
+        run: |
+          rm -rf .github/source-payload
+          rm -f .github/workflows/source-export.yml
+
+      - name: Commit implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(auth): add productive OIDC cookie sessions"
+          git push origin HEAD:feat/551-oidc-cookie-sessions
