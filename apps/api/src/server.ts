@@ -6,9 +6,15 @@ import {
   type ServerResponse,
 } from "node:http";
 
+import { assertExplicitRuntimeEnvironment } from "@solverfin/shared";
+
 import { handleAccountRemunerationApiRequest } from "./account-remuneration-router.js";
 import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
-import { auditSecurityEvent, isDemoAuthAllowed } from "./auth-service.js";
+import {
+  assertLocalAuthAllowed,
+  auditSecurityEvent,
+  isDemoAuthAllowed,
+} from "./auth-service.js";
 import { assertTrustedCognitoEnvironment } from "./cognito-config.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { startOidcLoginAttemptScheduler } from "./oidc-attempt-scheduler.js";
@@ -29,6 +35,8 @@ import { handlePayablesReceivablesApiRequest } from "./payables-receivables-rout
 import { handleReportsApiRequest } from "./reports-router.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 import { handleTransactionGroupActionsApiRequest } from "./transaction-group-actions-router.js";
+
+assertExplicitRuntimeEnvironment(process.env);
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.API_PORT ?? 4000);
@@ -69,10 +77,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
   const headers = normalizeHeaders(request.headers);
   const correlationId = resolveCorrelationId(headers);
+  const method = request.method ?? "GET";
 
   try {
+    assertLocalAuthenticationRouteAllowed(method, url.pathname);
     const body = await readJsonBody(request, resolveMaxBodyBytes(url.pathname));
-    const method = request.method ?? "GET";
     assertTrustedMutationOrigin({ method, headers });
 
     const effectiveHeaders = await prepareRequestAuthenticationHeaders({
@@ -243,6 +252,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       body: errorResponse.body,
     });
   }
+}
+
+function assertLocalAuthenticationRouteAllowed(method: string, pathname: string): void {
+  if (method !== "POST") return;
+  if (pathname !== "/api/session" && pathname !== "/api/users") return;
+
+  assertLocalAuthAllowed(process.env);
 }
 
 async function dispatchLegacyRoute(
