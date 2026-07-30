@@ -1,9 +1,9 @@
 name: Issue 548 format artifact
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/548-ofx-inbox-import
+      - main
     paths:
       - .github/workflows/issue-548-format.yml
 
