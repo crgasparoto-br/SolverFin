@@ -32,7 +32,11 @@ import { enhanceWithRecurrenceMaterialization } from "./dev-server/recurrence-ma
 import { resolveReportsCanonicalLocation } from "./dev-server/reports-canonical-location.js";
 import { renderReportsRoutePage } from "./dev-server/reports-route-page.js";
 import { resolveRoute } from "./dev-server/routes.js";
-import { clearSessionCookie, getSessionCredentialFromRequest } from "./dev-server/session.js";
+import {
+  clearApiSessionCookies,
+  clearSessionCookie,
+  getSessionCredentialFromRequest,
+} from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
 import { tryServeStaticAsset } from "./dev-server/static-assets.js";
 import { renderTransactionsPage } from "./dev-server/transactions-page.js";
@@ -227,7 +231,7 @@ async function handleOidcCompletion(
 
   const session = await apiGet<{ user: { id: string } }>(credential, "/api/me");
   if (!session.ok) {
-    response.setHeader("set-cookie", clearSessionCookie());
+    response.setHeader("set-cookie", [...clearApiSessionCookies(), clearSessionCookie()]);
     sendHtml(response, 200, renderLoginPage("cookie-unavailable", passwordResetUrl, {
       productiveOidc: true,
     }));
