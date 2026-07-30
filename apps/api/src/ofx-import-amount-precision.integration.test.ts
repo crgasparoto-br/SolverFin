@@ -110,9 +110,7 @@ async function main(): Promise<void> {
   }
 }
 
-function buildOfx(
-  rows: ReadonlyArray<{ amount: string; fitId: string; name: string }>,
-): string {
+function buildOfx(rows: ReadonlyArray<{ amount: string; fitId: string; name: string }>): string {
   const transactions = rows
     .map(
       (row) =>
