@@ -97,10 +97,7 @@ export function requiresRecurrenceMaterialization(url: URL): boolean {
   return url.searchParams.get("materialized") !== "1";
 }
 
-export function renderRecurrenceMaterializationGate(
-  surface: "account" | "card",
-  url: URL,
-): string {
+export function renderRecurrenceMaterializationGate(surface: "account" | "card", url: URL): string {
   const query = new URLSearchParams({ surface });
   for (const key of ["month", "startsOn", "accountId", "cardId"] as const) {
     const value = url.searchParams.get(key);
