@@ -4,24 +4,43 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  remediate:
-    name: Apply import concurrency remediation
+  validate:
+    name: Validate monorepo
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 45
+    env:
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - name: Checkout repository branch
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -30,126 +49,103 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Apply and push remediation
+      - name: Check environment example
+        run: npm run env:check
+
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Check demo seed script
+        run: npm run db:seed:check
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed demo data
+        run: npm run db:seed
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  integration-api-postgres:
+    name: Integration API + PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
         env:
-          HEAD_BRANCH: ${{ github.head_ref }}
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Show tool versions
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          node --version
+          npm --version
 
-          path = Path("apps/api/src/repositories/imports.ts")
-          text = path.read_text()
-          old = '''export async function approveImportSuggestionForContext(
-            context: TenantContext,
-            importBatchId: EntityId,
-            suggestionId: EntityId,
-          ): Promise<ImportReviewDecisionResult> {
-            const outcome = await withSharedTransaction(async (executeQuery) => {
-              const pendingCandidates = await ensureCurrentDeterministicCandidates(
-                context,
-                importBatchId,
-                suggestionId,
-                executeQuery,
-              );
-              if (pendingCandidates.length > 0) {
-                return { blockedCandidates: pendingCandidates.map((candidate) => candidate.detail) } as const;
-              }
-              return approveImportSuggestionInTransaction(context, importBatchId, suggestionId, executeQuery);
-            });
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
 
-            if ("blockedCandidates" in outcome) {
-              throw new ImportReviewError(
-                "IMPORT_REVIEW_CANDIDATE_PENDING",
-                "Resolva as possíveis duplicidades ou conciliações antes de confirmar esta linha.",
-                409,
-                { candidates: outcome.blockedCandidates },
-              );
-            }
-            return outcome;
-          }'''
-          new = '''export async function approveImportSuggestionForContext(
-            context: TenantContext,
-            importBatchId: EntityId,
-            suggestionId: EntityId,
-          ): Promise<ImportReviewDecisionResult> {
-            const outcome = await withSharedTransaction(async (executeQuery) => {
-              await requireMutableBatch(context, importBatchId, executeQuery);
-              const suggestion = await requireImportSuggestion(
-                context,
-                importBatchId,
-                suggestionId,
-                executeQuery,
-                false,
-              );
+      - name: Generate Prisma client
+        run: npm run prisma:generate
 
-              if (suggestion.status === "pending_review") {
-                const payload = requireExtractionPayload(suggestion);
-                if (payload.kind === "transfer") {
-                  const existingCandidates = await executeQuery<{ id: string }>(
-                    `select "id" from "AiSuggestion"
-                     where "organizationId" = $1 and "financialProfileId" = $2
-                       and "sourceSuggestionId" = $3 and "payloadFingerprint" = $4
-                       and "kind" in ('DEDUPLICATION', 'RECONCILIATION')
-                       and "status" = 'PENDING_REVIEW'
-                     limit 1`,
-                    [
-                      context.organizationId,
-                      context.financialProfileId,
-                      suggestion.id,
-                      buildImportPayloadFingerprint(payload),
-                    ],
-                  );
+      - name: Build packages
+        run: npm run build:packages
 
-                  if (existingCandidates.length === 0) {
-                    return approveImportSuggestionInTransaction(
-                      context,
-                      importBatchId,
-                      suggestionId,
-                      executeQuery,
-                    );
-                  }
-                }
-              }
+      - name: Apply migrations
+        run: npm run db:deploy
 
-              const pendingCandidates = await ensureCurrentDeterministicCandidates(
-                context,
-                importBatchId,
-                suggestionId,
-                executeQuery,
-              );
-              if (pendingCandidates.length > 0) {
-                return { blockedCandidates: pendingCandidates.map((candidate) => candidate.detail) } as const;
-              }
-              return approveImportSuggestionInTransaction(
-                context,
-                importBatchId,
-                suggestionId,
-                executeQuery,
-              );
-            });
+      - name: Seed demo data
+        run: npm run db:seed
 
-            if ("blockedCandidates" in outcome) {
-              throw new ImportReviewError(
-                "IMPORT_REVIEW_CANDIDATE_PENDING",
-                "Resolva as possíveis duplicidades ou conciliações antes de confirmar esta linha.",
-                409,
-                { candidates: outcome.blockedCandidates },
-              );
-            }
-            return outcome;
-          }'''
-          if old not in text:
-            raise SystemExit("approval function anchor not found")
-          path.write_text(text.replace(old, new, 1))
-          PY
-          npx prettier apps/api/src/repositories/imports.ts --write
-          git fetch origin main:refs/remotes/origin/main
-          git checkout origin/main -- .github/workflows/ci.yml
-          git config user.name "solverfin-ci-remediation"
-          git config user.email "solverfin-ci-remediation@users.noreply.github.com"
-          git add .github/workflows/ci.yml apps/api/src/repositories/imports.ts
-          git commit -m "fix(import): preserve concurrent transfer convergence"
-          git push origin HEAD:"$HEAD_BRANCH"
+      - name: Run API integration tests
+        run: npm run test:integration --workspace @solverfin/api
+
+      - name: Verify import statement consistency
+        run: npm run diagnose:import-statement-consistency -- --expect-zero
