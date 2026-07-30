@@ -43,7 +43,9 @@ function assertCanonicalOfxProcessingInstructions(content: string): void {
       masked.slice(0, position).trim().length === 0;
 
     if (!isXmlDeclaration) {
-      throw invalidOfx("OFX aceita somente a declaracao XML antes do envelope raiz.");
+      throw invalidOfx(
+        "OFX aceita somente a declaracao XML antes do envelope raiz.",
+      );
     }
   }
 }
@@ -89,15 +91,21 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
   }
 
   if (currencyTags.length !== 1) {
-    throw invalidOfx("CURDEF deve ocorrer no maximo uma vez na secao de extrato.");
+    throw invalidOfx(
+      "CURDEF deve ocorrer no maximo uma vez na secao de extrato.",
+    );
   }
 
   const currencyTag = currencyTags[0];
   if (currencyTag === undefined) return;
   const valueStart = (currencyTag.index ?? 0) + currencyTag[0].length;
-  const currencyValue = /^\s*([^<\r\n]*)/.exec(masked.slice(valueStart))?.[1]?.trim();
+  const currencyValue = /^\s*([^<\r\n]*)/
+    .exec(masked.slice(valueStart))?.[1]
+    ?.trim();
   if (!currencyValue) {
-    throw invalidOfx("CURDEF precisa declarar uma moeda quando estiver presente.");
+    throw invalidOfx(
+      "CURDEF precisa declarar uma moeda quando estiver presente.",
+    );
   }
 }
 
@@ -123,7 +131,8 @@ function assertCanonicalOfxTransactionFields(content: string): void {
 
   transactionOpens.forEach((open, index) => {
     const openEnd = (open.index ?? 0) + open[0].length;
-    const nextOpenStart = transactionOpens[index + 1]?.index ?? transactionListBody.length;
+    const nextOpenStart =
+      transactionOpens[index + 1]?.index ?? transactionListBody.length;
     const segment = transactionListBody.slice(openEnd, nextOpenStart);
     const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
     const block = segment.slice(0, close?.index ?? segment.length);
@@ -143,7 +152,10 @@ function assertCanonicalOfxTransactionFields(content: string): void {
 
       for (const tag of tags) {
         const position = tag.index ?? -1;
-        const canonicalTag = new RegExp(`^<\\s*${tagName}\\s*>$`, "i").test(tag[0]);
+        const canonicalTag = new RegExp(
+          `^<\\s*${tagName}\\s*>$`,
+          "i",
+        ).test(tag[0]);
         const directTransactionChild = !isNestedInsideExplicitContainer(
           explicitContainers,
           position,
@@ -158,7 +170,9 @@ function assertCanonicalOfxTransactionFields(content: string): void {
   });
 }
 
-function readExplicitContainerRanges(value: string): ExplicitContainerRange[] {
+function readExplicitContainerRanges(
+  value: string,
+): ExplicitContainerRange[] {
   const openByName = new Map<string, StructuralTagToken[]>();
   const ranges: ExplicitContainerRange[] = [];
 
@@ -218,12 +232,18 @@ function findContainer(
     }
   | undefined {
   const alternatives = names.join("|");
-  const openExpression = new RegExp(`<\\s*(${alternatives})(?:\\s[^>]*)?>`, "i");
+  const openExpression = new RegExp(
+    `<\\s*(${alternatives})(?:\\s[^>]*)?>`,
+    "i",
+  );
   const open = openExpression.exec(value);
   if (open === null || open[1] === undefined) return undefined;
 
   const contentStart = open.index + open[0].length;
-  const closeExpression = new RegExp(`<\\s*\\/\\s*${open[1]}\\s*>`, "i");
+  const closeExpression = new RegExp(
+    `<\\s*\\/\\s*${open[1]}\\s*>`,
+    "i",
+  );
   const close = closeExpression.exec(value.slice(contentStart));
   if (close === null) return undefined;
 
