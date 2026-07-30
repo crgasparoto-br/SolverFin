@@ -53,17 +53,24 @@ describe("OFX TRNAMT cent precision", () => {
   });
 
   it("rejects unsupported precision and punctuation without rounding or reinterpretation", () => {
-    const result = preview(["0.005", "-0.005", "1.999", "1,234", "12.340"]);
+    const result = preview([
+      "0.005",
+      "-0.005",
+      "1.999",
+      "1,234",
+      "12.340",
+      "10000000000000.00",
+    ]);
 
     assert.equal(result.state, "blocked");
     assert.equal(result.batch.validRows, 0);
-    assert.equal(result.batch.problemRows, 5);
+    assert.equal(result.batch.problemRows, 6);
     assert.equal(result.suggestions.length, 0);
     assert.deepEqual(
       result.problems
         .filter((problem) => problem.code === "IMPORT_ROW_NUMBER_INVALID")
         .map((problem) => problem.rowNumber),
-      [1, 2, 3, 4, 5],
+      [1, 2, 3, 4, 5, 6],
     );
   });
 
