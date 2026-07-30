@@ -15,6 +15,7 @@ import {
 const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000";
 const publicOidcPaths = new Set(["/api/auth/oidc/start", "/api/auth/oidc/callback"]);
 const RECURRENCE_MATERIALIZATION_PATH = "/api/recurrence-materialization";
+const API_SESSION_COOKIE_PREFIXES = ["__Host-solverfin_session=", "solverfin_session="];
 
 export interface ApiSuccess<T> {
   ok: true;
@@ -146,17 +147,9 @@ async function handleRecurrenceMaterialization(
     const surface = url.searchParams.get("surface");
 
     if (surface === "card") {
-      await materializeCardInvoiceRecurrences(
-        credential,
-        url,
-        request.headers.origin,
-      );
+      await materializeCardInvoiceRecurrences(credential, url, request.headers.origin);
     } else if (surface === "account") {
-      await materializeAccountStatementRecurrences(
-        credential,
-        url,
-        request.headers.origin,
-      );
+      await materializeAccountStatementRecurrences(credential, url, request.headers.origin);
     } else {
       sendJson(
         response,
@@ -268,17 +261,24 @@ function collectProxyResponseHeaders(
   const location = upstream.headers.get("location");
   const cacheControl = upstream.headers.get("cache-control");
   const setCookies = readSetCookies(upstream);
+  const completedOidcSession =
+    requestUrl.pathname === "/api/auth/oidc/callback" &&
+    upstream.status === 303 &&
+    containsApiSessionCookie(setCookies);
 
   if (location) {
-    headers.location =
-      requestUrl.pathname === "/api/auth/oidc/callback" && upstream.status === 303
-        ? buildOidcCompletionLocation(location)
-        : location;
+    headers.location = completedOidcSession ? buildOidcCompletionLocation(location) : location;
   }
   if (cacheControl) headers["cache-control"] = cacheControl;
   if (setCookies.length > 0) headers["set-cookie"] = setCookies;
 
   return headers;
+}
+
+function containsApiSessionCookie(setCookies: readonly string[]): boolean {
+  return setCookies.some((cookie) =>
+    API_SESSION_COOKIE_PREFIXES.some((prefix) => cookie.startsWith(prefix)),
+  );
 }
 
 function buildOidcCompletionLocation(returnTo: string): string {
@@ -288,7 +288,13 @@ function buildOidcCompletionLocation(returnTo: string): string {
 }
 
 function isInternalReturnTo(value: string): boolean {
-  return value.startsWith("/") && !value.startsWith("//") && !value.includes("\\");
+  return (
+    value.startsWith("/") &&
+    !value.startsWith("//") &&
+    !value.includes("#") &&
+    !value.includes("\\") &&
+    !/^[a-z][a-z0-9+.-]*:/i.test(value)
+  );
 }
 
 function readSetCookies(response: Response): string[] {
