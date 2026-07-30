@@ -93,7 +93,11 @@ export async function materializeAccountStatementRecurrences(
   );
 }
 
-export function requiresRecurrenceMaterialization(url: URL): boolean {
+export function requiresRecurrenceMaterialization(
+  url: URL,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): boolean {
+  if (env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1") return false;
   return url.searchParams.get("materialized") !== "1";
 }
 
