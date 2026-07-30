@@ -10,6 +10,7 @@ const productiveEnv = {
   APP_ORIGIN: "https://app.example.invalid",
   OIDC_ISSUER_URL: "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example",
   OIDC_CLIENT_ID: "client-123",
+  OIDC_AUDIENCE: "client-123",
   OIDC_AUTHORIZATION_URL:
     "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/authorize",
   OIDC_TOKEN_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/token",
