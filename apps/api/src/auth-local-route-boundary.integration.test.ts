@@ -88,8 +88,8 @@ function spawnServer(overrides: Record<string, string>): ReturnType<typeof spawn
 
 function collectLogs(child: ReturnType<typeof spawn>): string[] {
   const logs: string[] = [];
-  child.stdout.on("data", (chunk: Buffer) => logs.push(chunk.toString("utf8")));
-  child.stderr.on("data", (chunk: Buffer) => logs.push(chunk.toString("utf8")));
+  child.stdout?.on("data", (chunk: Buffer) => logs.push(chunk.toString("utf8")));
+  child.stderr?.on("data", (chunk: Buffer) => logs.push(chunk.toString("utf8")));
   return logs;
 }
 
