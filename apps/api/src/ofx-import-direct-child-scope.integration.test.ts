@@ -28,7 +28,7 @@ async function main(): Promise<void> {
     process.env.DATABASE_URL,
     "DATABASE_URL is required for OFX direct-child scope integration tests.",
   );
-  const structurePath = "apps/api/src/repositories/ofx-import-structure.ts";
+  const structurePath = "src/repositories/ofx-import-structure.ts";
   const structureSource = await readFile(structurePath, "utf8");
   const canonicalStructureSource = await format(structureSource, { filepath: structurePath });
   console.log(
