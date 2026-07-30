@@ -42,79 +42,62 @@ jobs:
 
           auth = Path("apps/api/src/auth.ts")
           text = auth.read_text()
-          anchor = '''  function upsertUserCredentials(credentials: AuthUserCredentials): void {
-            usersByEmail.set(normalizeEmail(credentials.user.email), credentials);
-            usersById.set(credentials.user.id, credentials.user);
-          }
+          marker = "\n  function rememberSession(session: AuthSession): void {"
+          if marker not in text:
+            raise SystemExit("rememberSession marker not found")
+          remember_user = '''
+  function rememberUser(user: AuthenticatedUser): void {
+    usersById.set(user.id, user);
+    const email = normalizeEmail(user.email);
+    const existingCredentials = usersByEmail.get(email);
 
-          function rememberSession(session: AuthSession): void {'''
-          replacement = '''  function upsertUserCredentials(credentials: AuthUserCredentials): void {
-            usersByEmail.set(normalizeEmail(credentials.user.email), credentials);
-            usersById.set(credentials.user.id, credentials.user);
-          }
-
-          function rememberUser(user: AuthenticatedUser): void {
-            usersById.set(user.id, user);
-            const email = normalizeEmail(user.email);
-            const existingCredentials = usersByEmail.get(email);
-
-            if (existingCredentials?.user.id === user.id) {
-              usersByEmail.set(email, { ...existingCredentials, user });
-            }
-          }
-
-          function rememberSession(session: AuthSession): void {'''
-          if anchor not in text:
-            raise SystemExit("auth user cache anchor not found")
-          text = text.replace(anchor, replacement)
+    if (existingCredentials?.user.id === user.id) {
+      usersByEmail.set(email, { ...existingCredentials, user });
+    }
+  }
+'''
+          text = text.replace(marker, remember_user + marker, 1)
+          return_marker = "    upsertUserCredentials,\n    rememberSession,"
+          if return_marker not in text:
+            raise SystemExit("auth return marker not found")
           text = text.replace(
-            '''  return {
-            upsertUserCredentials,
-            rememberSession,''',
-            '''  return {
-            upsertUserCredentials,
-            rememberUser,
-            rememberSession,''',
+            return_marker,
+            "    upsertUserCredentials,\n    rememberUser,\n    rememberSession,",
+            1,
           )
           auth.write_text(text)
 
           service = Path("apps/api/src/auth-service.ts")
           text = service.read_text()
-          old = '''  auth.upsertUserCredentials({ user, passwordHash: hashPassword(`persisted:${user.id}`) });
-          auth.rememberSession({'''
-          new = '''  auth.rememberUser(user);
-          auth.rememberSession({'''
+          old = '  auth.upsertUserCredentials({ user, passwordHash: hashPassword(`persisted:${user.id}`) });'
           if old not in text:
             raise SystemExit("persisted user cache update not found")
-          service.write_text(text.replace(old, new))
+          service.write_text(text.replace(old, "  auth.rememberUser(user);", 1))
 
           integration = Path("apps/api/src/auth-cookie-session.integration.test.ts")
           text = integration.read_text()
+          import_marker = "  createPersistentApplicationSession,\n  demoUser,"
+          if import_marker not in text:
+            raise SystemExit("integration import marker not found")
           text = text.replace(
-            '''  createPersistentApplicationSession,
-            demoUser,''',
-            '''  auth,
-            createPersistentApplicationSession,
-            demoUser,''',
+            import_marker,
+            "  auth,\n  createPersistentApplicationSession,\n  demoUser,",
+            1,
           )
-          anchor = '''  const authenticated = await requireAuthenticatedRequest({ cookie }, productiveEnv);
-          assert.equal(authenticated.id, demoUser.id);
-
-          const attempts = await Promise.allSettled(['''
-          replacement = '''  const authenticated = await requireAuthenticatedRequest({ cookie }, productiveEnv);
-          assert.equal(authenticated.id, demoUser.id);
-
-          const repeatedLogin = auth.login({
-            email: demoUser.email,
-            password: "SolverFinDemo!2026",
-          });
-          assert.equal(repeatedLogin.user.id, demoUser.id);
-          auth.logout(repeatedLogin.session.id);
-
-          const attempts = await Promise.allSettled(['''
-          if anchor not in text:
-            raise SystemExit("persistent session regression anchor not found")
-          integration.write_text(text.replace(anchor, replacement))
+          assertion_marker = '''  const authenticated = await requireAuthenticatedRequest({ cookie }, productiveEnv);
+  assert.equal(authenticated.id, demoUser.id);
+'''
+          if assertion_marker not in text:
+            raise SystemExit("persistent session regression marker not found")
+          regression = assertion_marker + '''
+  const repeatedLogin = auth.login({
+    email: demoUser.email,
+    password: "SolverFinDemo!2026",
+  });
+  assert.equal(repeatedLogin.user.id, demoUser.id);
+  auth.logout(repeatedLogin.session.id);
+'''
+          integration.write_text(text.replace(assertion_marker, regression, 1))
           PY
           npx prettier apps/api/src/auth.ts apps/api/src/auth-service.ts apps/api/src/auth-cookie-session.integration.test.ts --write
           git fetch origin main:refs/remotes/origin/main
