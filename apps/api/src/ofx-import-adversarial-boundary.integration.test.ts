@@ -62,13 +62,45 @@ async function main(): Promise<void> {
     ];
 
     for (const content of structurallyInvalid) {
-      await assertControlledFailure(baseUrl, token, accountId, "/api/import-batches/ofx/preview", content, 422, "IMPORT_OFX_INVALID");
-      await assertControlledFailure(baseUrl, token, accountId, "/api/import-batches/ofx", content, 422, "IMPORT_OFX_INVALID");
+      await assertControlledFailure(
+        baseUrl,
+        token,
+        accountId,
+        "/api/import-batches/ofx/preview",
+        content,
+        422,
+        "IMPORT_OFX_INVALID",
+      );
+      await assertControlledFailure(
+        baseUrl,
+        token,
+        accountId,
+        "/api/import-batches/ofx",
+        content,
+        422,
+        "IMPORT_OFX_INVALID",
+      );
     }
 
     for (const content of ["", "   \r\n\t  "]) {
-      await assertControlledFailure(baseUrl, token, accountId, "/api/import-batches/ofx/preview", content, 400, "IMPORT_FILE_EMPTY");
-      await assertControlledFailure(baseUrl, token, accountId, "/api/import-batches/ofx", content, 400, "IMPORT_FILE_EMPTY");
+      await assertControlledFailure(
+        baseUrl,
+        token,
+        accountId,
+        "/api/import-batches/ofx/preview",
+        content,
+        400,
+        "IMPORT_FILE_EMPTY",
+      );
+      await assertControlledFailure(
+        baseUrl,
+        token,
+        accountId,
+        "/api/import-batches/ofx",
+        content,
+        400,
+        "IMPORT_FILE_EMPTY",
+      );
     }
 
     const canonical = validOfx("raw-boundary");
@@ -94,8 +126,24 @@ async function main(): Promise<void> {
       readBody<{ batch: { contentHash: string } }>(canonicalPreview).batch.contentHash,
     );
 
-    await assertControlledFailure(baseUrl, token, accountId, "/api/import-batches/ofx/preview", overLimit, 400, "IMPORT_FILE_TOO_LARGE");
-    await assertControlledFailure(baseUrl, token, accountId, "/api/import-batches/ofx", overLimit, 400, "IMPORT_FILE_TOO_LARGE");
+    await assertControlledFailure(
+      baseUrl,
+      token,
+      accountId,
+      "/api/import-batches/ofx/preview",
+      overLimit,
+      400,
+      "IMPORT_FILE_TOO_LARGE",
+    );
+    await assertControlledFailure(
+      baseUrl,
+      token,
+      accountId,
+      "/api/import-batches/ofx",
+      overLimit,
+      400,
+      "IMPORT_FILE_TOO_LARGE",
+    );
     await assertControlledFailure(
       baseUrl,
       token,
@@ -133,7 +181,10 @@ async function assertControlledFailure(
   });
   assert.equal(response.status, expectedStatus);
   assert.equal(readErrorCode(response), expectedCode);
-  assert.doesNotMatch(JSON.stringify(response.body), /nested-field|nested-transaction|nested-currency/);
+  assert.doesNotMatch(
+    JSON.stringify(response.body),
+    /nested-field|nested-transaction|nested-currency/,
+  );
 }
 
 function validOfx(fitId: string): string {
