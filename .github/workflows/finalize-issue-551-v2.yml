@@ -85,8 +85,8 @@ jobs:
           )
           replace_once(
               "apps/api/src/auth-service.ts",
-              "  if (!process.env.DATABASE_URL) {",
-              "  if (!env.DATABASE_URL) {",
+              "  if (!process.env.DATABASE_URL) {\n    if (isDemoAuthAllowed(env) && bearerToken && !cookieToken) {",
+              "  if (!env.DATABASE_URL) {\n    if (isDemoAuthAllowed(env) && bearerToken && !cookieToken) {",
           )
           replace_once(
               "apps/api/src/mvp.ts",
