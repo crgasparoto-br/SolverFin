@@ -95,7 +95,7 @@ function readCanonicalOfxAmounts(content: string): Map<number, ParsedRowAmount> 
     const amountTag = /<\s*TRNAMT\s*>\s*([^<\r\n]*)/i.exec(block);
     if (amountTag === null) return;
 
-    const raw = (amountTag[1] ?? "").trim();
+    const raw = decodeXmlEntities(amountTag[1] ?? "").trim();
     if (raw.length === 0) return;
     amountByRow.set(index + 1, parseExactMinor(raw));
   });
@@ -107,13 +107,40 @@ function parseExactMinor(value: string): ParsedRowAmount {
   const match = /^([+-]?)(\d+)(?:\.(\d{1,2}))?$/.exec(value);
   if (match === null) return { state: "invalid" };
 
-  const whole = BigInt(match[2] ?? "0");
+  const wholeText = (match[2] ?? "0").replace(/^0+(?=\d)/, "");
+  if (wholeText.length > 14) return { state: "invalid" };
+
+  const whole = BigInt(wholeText);
   const fraction = BigInt((match[3] ?? "").padEnd(2, "0") || "0");
   const unsignedMinor = whole * 100n + fraction;
   if (unsignedMinor > MAX_SAFE_MINOR) return { state: "invalid" };
 
   const sign = match[1] === "-" ? -1 : 1;
   return { state: "valid", signedAmountMinor: sign * Number(unsignedMinor) };
+}
+
+function decodeXmlEntities(value: string): string {
+  return value.replace(/&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-f]+);/gi, (entity, token: string) => {
+    const normalized = token.toLowerCase();
+    if (normalized === "amp") return "&";
+    if (normalized === "lt") return "<";
+    if (normalized === "gt") return ">";
+    if (normalized === "quot") return '"';
+    if (normalized === "apos") return "'";
+
+    const codePoint = normalized.startsWith("#x")
+      ? Number.parseInt(normalized.slice(2), 16)
+      : Number.parseInt(normalized.slice(1), 10);
+    if (
+      !Number.isInteger(codePoint) ||
+      codePoint < 0 ||
+      codePoint > 0x10ffff ||
+      (codePoint >= 0xd800 && codePoint <= 0xdfff)
+    ) {
+      return entity;
+    }
+    return String.fromCodePoint(codePoint);
+  });
 }
 
 function maskInactiveContent(value: string): string {
