@@ -8,10 +8,12 @@ import {
 
 import { handleAccountRemunerationApiRequest } from "./account-remuneration-router.js";
 import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
+import { auditSecurityEvent, isDemoAuthAllowed } from "./auth-service.js";
+import { assertTrustedCognitoEnvironment } from "./cognito-config.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { auditSecurityEvent, requireAuthenticatedRequest } from "./auth-service.js";
+import { startOidcLoginAttemptScheduler } from "./oidc-attempt-scheduler.js";
 import { assertTrustedMutationOrigin } from "./request-origin.js";
-import { readSessionCookie } from "./session-cookie.js";
+import { prepareRequestAuthenticationHeaders } from "./request-authentication.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
 import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
@@ -49,6 +51,10 @@ const LARGE_IMPORT_BODY_PATHS = new Set([
   "/api/import-batches/ofx",
 ]);
 
+if (!isDemoAuthAllowed(process.env)) {
+  assertTrustedCognitoEnvironment(process.env);
+}
+
 const server = createServer((request, response) => {
   void handleRequest(request, response);
 });
@@ -56,6 +62,7 @@ const server = createServer((request, response) => {
 server.listen(port, host, () => {
   console.log(`@solverfin/api listening on http://${host}:${port}`);
   startAccountRemunerationScheduler();
+  startOidcLoginAttemptScheduler();
 });
 
 async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -68,12 +75,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     const method = request.method ?? "GET";
     assertTrustedMutationOrigin({ method, headers });
 
-    let effectiveHeaders = headers;
-    const cookieToken = readSessionCookie(headers.cookie);
-    if (cookieToken && !AUTH_HANDLER_PATHS.has(url.pathname)) {
-      await requireAuthenticatedRequest(headers);
-      effectiveHeaders = { ...headers, authorization: `Bearer ${cookieToken}` };
-    }
+    const effectiveHeaders = await prepareRequestAuthenticationHeaders({
+      headers,
+      pathname: url.pathname,
+      authHandlerPaths: AUTH_HANDLER_PATHS,
+    });
 
     if (MVP_PATHS.has(url.pathname)) {
       const legacyResult = await dispatchLegacyRoute(
@@ -220,7 +226,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       typeof error === "object" &&
       error !== null &&
       "code" in error &&
-      error.code === "AUTH_ORIGIN_NOT_ALLOWED"
+      error.code === "AUTH_REQUEST_ORIGIN_INVALID"
     ) {
       await auditSecurityEvent({
         action: "origin_rejected",
