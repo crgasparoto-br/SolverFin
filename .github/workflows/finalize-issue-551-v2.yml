@@ -54,6 +54,7 @@ jobs:
       - name: Apply exact final remediations
         run: |
           python3 - <<'PY'
+          import re
           from pathlib import Path
 
           def replace_once(path: str, old: str, new: str) -> None:
@@ -64,16 +65,18 @@ jobs:
                   raise SystemExit(f"{path}: expected one match, found {count}")
               target.write_text(text.replace(old, new, 1))
 
-          replace_once(
+          def replace_pattern(path: str, pattern: str, replacement: str) -> None:
+              target = Path(path)
+              text = target.read_text()
+              updated, count = re.subn(pattern, replacement, text, count=1)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one regex match, found {count}")
+              target.write_text(updated)
+
+          replace_pattern(
               "apps/api/src/auth-cookie-session.integration.test.ts",
-              '''  const jwk = publicKey.export({ format: "jwk" }) as JsonWebKey & { kid: string; alg: string };
-          jwk.kid = "issue-551-key";
-          jwk.alg = "RS256";''',
-              '''  const jwk = {
-            ...(publicKey.export({ format: "jwk" }) as unknown as Record<string, unknown>),
-            kid: "issue-551-key",
-            alg: "RS256",
-          };''',
+              r'  const jwk = publicKey\.export\(\{ format: "jwk" \}\) as JsonWebKey & \{ kid: string; alg: string \};\n  jwk\.kid = "issue-551-key";\n  jwk\.alg = "RS256";',
+              '  const jwk = {\n    ...(publicKey.export({ format: "jwk" }) as unknown as Record<string, unknown>),\n    kid: "issue-551-key",\n    alg: "RS256",\n  };',
           )
           replace_once(
               "apps/api/src/auth-cookie.test.ts",
@@ -88,29 +91,12 @@ jobs:
           replace_once(
               "apps/api/src/mvp.ts",
               'import { completeOidcCallback, startOidcLogin } from "./oidc-flow.js";',
-              '''import {
-            completeOidcCallback,
-            startOidcLogin,
-            type OidcCallbackInput,
-          } from "./oidc-flow.js";''',
+              'import {\n  completeOidcCallback,\n  startOidcLogin,\n  type OidcCallbackInput,\n} from "./oidc-flow.js";',
           )
-          replace_once(
+          replace_pattern(
               "apps/api/src/mvp.ts",
-              '''      const result = await completeOidcCallback({
-                state: request.query?.get("state") ?? undefined,
-                code: request.query?.get("code") ?? undefined,
-                error: request.query?.get("error") ?? undefined,
-              });''',
-              '''      const callbackInput: OidcCallbackInput = {};
-              const state = request.query?.get("state");
-              const code = request.query?.get("code");
-              const error = request.query?.get("error");
-
-              if (state !== null && state !== undefined) callbackInput.state = state;
-              if (code !== null && code !== undefined) callbackInput.code = code;
-              if (error !== null && error !== undefined) callbackInput.error = error;
-
-              const result = await completeOidcCallback(callbackInput);''',
+              r'      const result = await completeOidcCallback\(\{\n        state: request\.query\?\.get\("state"\) \?\? undefined,\n        code: request\.query\?\.get\("code"\) \?\? undefined,\n        error: request\.query\?\.get\("error"\) \?\? undefined,\n      \}\);',
+              '      const callbackInput: OidcCallbackInput = {};\n      const state = request.query?.get("state");\n      const code = request.query?.get("code");\n      const error = request.query?.get("error");\n\n      if (state !== null && state !== undefined) callbackInput.state = state;\n      if (code !== null && code !== undefined) callbackInput.code = code;\n      if (error !== null && error !== undefined) callbackInput.error = error;\n\n      const result = await completeOidcCallback(callbackInput);',
           )
           replace_once(
               "apps/api/src/oidc-flow.ts",
