@@ -1,5 +1,7 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+
+import { format } from "prettier";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 
@@ -24,6 +26,15 @@ try {
   await import("./statement-visual/issue-546-reports-category-controls.mjs");
   await import("./statement-visual/issue-546-selected-view-navigation.mjs");
   await import("./statement-visual/reports-installments-regression.mjs");
+
+  const structurePath = "apps/api/src/repositories/ofx-import-structure.ts";
+  const structureSource = await readFile(structurePath, "utf8");
+  const canonicalStructureSource = await format(structureSource, { filepath: structurePath });
+  await mkdir(outputDir, { recursive: true });
+  await writeFile(
+    join(outputDir, "ofx-import-structure.formatted.ts"),
+    canonicalStructureSource,
+  );
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
