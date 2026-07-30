@@ -5,6 +5,7 @@ import type { EntityId, ImportPreview, TenantContext } from "@solverfin/domain";
 import { query, type QueryExecutor } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { ImportReviewError, type CreateImportBatchResult } from "./imports.js";
+import { applyCanonicalOfxAmountSemantics } from "./ofx-import-amount.js";
 import { buildOfxFailureAuditEntry, buildOfxPreviewAuditEntry } from "./ofx-import-audit.js";
 import { parseOfxImportPreview as parseOfxImportPreviewBase } from "./ofx-import-parser.js";
 import { assertCanonicalOfxStructure } from "./ofx-import-structure.js";
@@ -25,7 +26,8 @@ export function parseOfxImportPreview(input: {
 }): ImportPreview {
   assertRawOfxInputBoundary(input.originalFileName, input.content);
   assertCanonicalOfxStructure(input.content);
-  return parseOfxImportPreviewBase(input);
+  const preview = parseOfxImportPreviewBase(input);
+  return applyCanonicalOfxAmountSemantics(input.content, preview);
 }
 
 export async function previewOfxImportForContext(
