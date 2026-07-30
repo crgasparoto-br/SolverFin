@@ -54,10 +54,9 @@ async function main(): Promise<void> {
     assert.equal(await countCsvBatches(), beforeInvalid);
 
     const suffix = Date.now().toString(36);
-    const canonicalCsv = [
-      "data,descricao,valor",
-      `30/07/2026,Compra CSV ${suffix},-10.25`,
-    ].join("\n");
+    const canonicalCsv = ["data,descricao,valor", `30/07/2026,Compra CSV ${suffix},-10.25`].join(
+      "\n",
+    );
     const paddedCsv = `  \r\n${canonicalCsv}\r\n\t  `;
 
     const canonicalPreview = await requestJson(baseUrl, "/api/import-batches/csv/preview", {
