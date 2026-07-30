@@ -4,24 +4,43 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  remediate:
-    name: Apply auth cache remediation
+  validate:
+    name: Validate monorepo
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 45
+    env:
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - name: Checkout repository branch
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -30,80 +49,103 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Apply and push remediation
+      - name: Check environment example
+        run: npm run env:check
+
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Check demo seed script
+        run: npm run db:seed:check
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed demo data
+        run: npm run db:seed
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  integration-api-postgres:
+    name: Integration API + PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
         env:
-          HEAD_BRANCH: ${{ github.head_ref }}
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Show tool versions
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          node --version
+          npm --version
 
-          auth = Path("apps/api/src/auth.ts")
-          text = auth.read_text()
-          marker = "\n  function rememberSession(session: AuthSession): void {"
-          if marker not in text:
-            raise SystemExit("rememberSession marker not found")
-          remember_user = '''
-  function rememberUser(user: AuthenticatedUser): void {
-    usersById.set(user.id, user);
-    const email = normalizeEmail(user.email);
-    const existingCredentials = usersByEmail.get(email);
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
 
-    if (existingCredentials?.user.id === user.id) {
-      usersByEmail.set(email, { ...existingCredentials, user });
-    }
-  }
-'''
-          text = text.replace(marker, remember_user + marker, 1)
-          return_marker = "    upsertUserCredentials,\n    rememberSession,"
-          if return_marker not in text:
-            raise SystemExit("auth return marker not found")
-          text = text.replace(
-            return_marker,
-            "    upsertUserCredentials,\n    rememberUser,\n    rememberSession,",
-            1,
-          )
-          auth.write_text(text)
+      - name: Generate Prisma client
+        run: npm run prisma:generate
 
-          service = Path("apps/api/src/auth-service.ts")
-          text = service.read_text()
-          old = '  auth.upsertUserCredentials({ user, passwordHash: hashPassword(`persisted:${user.id}`) });'
-          if old not in text:
-            raise SystemExit("persisted user cache update not found")
-          service.write_text(text.replace(old, "  auth.rememberUser(user);", 1))
+      - name: Build packages
+        run: npm run build:packages
 
-          integration = Path("apps/api/src/auth-cookie-session.integration.test.ts")
-          text = integration.read_text()
-          import_marker = "  createPersistentApplicationSession,\n  demoUser,"
-          if import_marker not in text:
-            raise SystemExit("integration import marker not found")
-          text = text.replace(
-            import_marker,
-            "  auth,\n  createPersistentApplicationSession,\n  demoUser,",
-            1,
-          )
-          assertion_marker = '''  const authenticated = await requireAuthenticatedRequest({ cookie }, productiveEnv);
-  assert.equal(authenticated.id, demoUser.id);
-'''
-          if assertion_marker not in text:
-            raise SystemExit("persistent session regression marker not found")
-          regression = assertion_marker + '''
-  const repeatedLogin = auth.login({
-    email: demoUser.email,
-    password: "SolverFinDemo!2026",
-  });
-  assert.equal(repeatedLogin.user.id, demoUser.id);
-  auth.logout(repeatedLogin.session.id);
-'''
-          integration.write_text(text.replace(assertion_marker, regression, 1))
-          PY
-          npx prettier apps/api/src/auth.ts apps/api/src/auth-service.ts apps/api/src/auth-cookie-session.integration.test.ts --write
-          git fetch origin main:refs/remotes/origin/main
-          git checkout origin/main -- .github/workflows/ci.yml
-          git config user.name "solverfin-ci-remediation"
-          git config user.email "solverfin-ci-remediation@users.noreply.github.com"
-          git add .github/workflows/ci.yml apps/api/src/auth.ts apps/api/src/auth-service.ts apps/api/src/auth-cookie-session.integration.test.ts
-          git commit -m "fix(auth): preserve local credentials across cookie validation"
-          git push origin HEAD:"$HEAD_BRANCH"
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed demo data
+        run: npm run db:seed
+
+      - name: Run API integration tests
+        run: npm run test:integration --workspace @solverfin/api
+
+      - name: Verify import statement consistency
+        run: npm run diagnose:import-statement-consistency -- --expect-zero
