@@ -77,7 +77,8 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
     const insideStatement =
       position >= statement.contentStart && position < statement.contentEnd;
     const insideTransactionList =
-      position >= transactionList.openStart && position < transactionList.closeEnd;
+      position >= transactionList.openStart &&
+      position < transactionList.closeEnd;
     const directStatementChild =
       insideStatement &&
       !isNestedInsideExplicitContainer(statementContainers, relativePosition);
@@ -152,10 +153,9 @@ function assertCanonicalOfxTransactionFields(content: string): void {
 
       for (const tag of tags) {
         const position = tag.index ?? -1;
-        const canonicalTag = new RegExp(
-          `^<\\s*${tagName}\\s*>$`,
-          "i",
-        ).test(tag[0]);
+        const canonicalTag = new RegExp(`^<\\s*${tagName}\\s*>$`, "i").test(
+          tag[0],
+        );
         const directTransactionChild = !isNestedInsideExplicitContainer(
           explicitContainers,
           position,
@@ -170,9 +170,7 @@ function assertCanonicalOfxTransactionFields(content: string): void {
   });
 }
 
-function readExplicitContainerRanges(
-  value: string,
-): ExplicitContainerRange[] {
+function readExplicitContainerRanges(value: string): ExplicitContainerRange[] {
   const openByName = new Map<string, StructuralTagToken[]>();
   const ranges: ExplicitContainerRange[] = [];
 
@@ -209,7 +207,8 @@ function isNestedInsideExplicitContainer(
   position: number,
 ): boolean {
   return containers.some(
-    (container) => container.openStart < position && position < container.closeStart,
+    (container) =>
+      container.openStart < position && position < container.closeStart,
   );
 }
 
@@ -240,10 +239,7 @@ function findContainer(
   if (open === null || open[1] === undefined) return undefined;
 
   const contentStart = open.index + open[0].length;
-  const closeExpression = new RegExp(
-    `<\\s*\\/\\s*${open[1]}\\s*>`,
-    "i",
-  );
+  const closeExpression = new RegExp(`<\\s*\\/\\s*${open[1]}\\s*>`, "i");
   const close = closeExpression.exec(value.slice(contentStart));
   if (close === null) return undefined;
 
