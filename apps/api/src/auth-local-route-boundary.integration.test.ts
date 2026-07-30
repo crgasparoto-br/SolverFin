@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { fileURLToPath } from "node:url";
 
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 
 const productiveEnv = {
   NODE_ENV: "production",
@@ -35,6 +35,7 @@ async function main(): Promise<void> {
 }
 
 async function rejectsLocalRoutesBeforeParsingBody(): Promise<void> {
+  const initialAuditCount = await countLocalAuthBlockedAudits();
   const port = await reservePort();
   const child = spawnServer({ ...productiveEnv, API_PORT: String(port) });
   const logs = collectLogs(child);
@@ -60,6 +61,8 @@ async function rejectsLocalRoutesBeforeParsingBody(): Promise<void> {
       assert.equal(validJson.status, 403);
       assert.equal(await readErrorCode(validJson), "AUTH_LOCAL_AUTH_DISABLED");
     }
+
+    await waitForBlockedAuditCount(initialAuditCount + 4);
   } finally {
     await stopChild(child);
   }
@@ -97,6 +100,23 @@ function collectLogs(child: ReturnType<typeof spawn>): string[] {
 async function readErrorCode(response: Response): Promise<string | undefined> {
   const body = (await response.json()) as { error?: { code?: string } };
   return body.error?.code;
+}
+
+async function countLocalAuthBlockedAudits(): Promise<number> {
+  const rows = await query<{ count: string }>(
+    `select count(*)::text as count from "SecurityAuditEvent" where "action" = 'local_auth_blocked'`,
+  );
+  return Number(rows[0]?.count ?? 0);
+}
+
+async function waitForBlockedAuditCount(expectedMinimum: number): Promise<void> {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < 5_000) {
+    if ((await countLocalAuthBlockedAudits()) >= expectedMinimum) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  assert.fail(`Expected at least ${expectedMinimum} local_auth_blocked audit events.`);
 }
 
 async function reservePort(): Promise<number> {
