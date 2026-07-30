@@ -1,0 +1,36 @@
+name: Issue 548 format remediation
+
+on:
+  push:
+    branches:
+      - feat/548-ofx-inbox-import
+
+permissions:
+  contents: write
+
+jobs:
+  format-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/548-ofx-inbox-import
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Format regression test
+        run: npx --yes prettier@3.6.2 apps/api/src/csv-import-public-boundary-regression.integration.test.ts --write
+
+      - name: Commit formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/api/src/csv-import-public-boundary-regression.integration.test.ts
+          git diff --cached --check
+          git commit -m "style(imports): format CSV boundary regression"
+          git push origin HEAD:feat/548-ofx-inbox-import
