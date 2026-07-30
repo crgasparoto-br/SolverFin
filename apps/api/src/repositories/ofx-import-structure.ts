@@ -67,7 +67,7 @@ function assertCanonicalOfxProcessingInstructions(content: string): void {
 
 function assertCanonicalOfxXmlHierarchy(content: string): void {
   const masked = maskInactiveOfxContent(content);
-  if (!/^\s*<\?xml\b/i.test(masked)) return;
+  if (!isStrictXml(masked)) return;
 
   const stack: string[] = [];
   for (const token of readStructuralTagTokens(masked)) {
@@ -90,6 +90,7 @@ function assertCanonicalOfxXmlHierarchy(content: string): void {
 
 function assertCanonicalOfxCurrencyScope(content: string): void {
   const masked = maskInactiveOfxContent(content);
+  const strictXml = isStrictXml(masked);
   const statement = findContainer(masked, ["STMTRS", "CCSTMTRS"]);
   if (statement === undefined) return;
 
@@ -118,9 +119,10 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
     const insideStatement = position >= statement.contentStart && position < statement.contentEnd;
     const insideTransactionList =
       position >= transactionList.openStart && position < transactionList.closeEnd;
-    const directStatementChild =
-      insideStatement && !isNestedInsideExplicitContainer(statementContainers, relativePosition);
-    return !canonicalTag || !directStatementChild || insideTransactionList;
+    const directStatementChild = strictXml
+      ? ["STMTRS", "CCSTMTRS"].includes(readImmediateParentName(masked, position) ?? "")
+      : insideStatement && !isNestedInsideExplicitContainer(statementContainers, relativePosition);
+    return !canonicalTag || !insideStatement || !directStatementChild || insideTransactionList;
   });
 
   if (hasNonCanonicalCurrency) {
@@ -142,6 +144,7 @@ function assertCanonicalOfxCurrencyScope(content: string): void {
 
 function assertCanonicalOfxTransactionFields(content: string): void {
   const masked = maskInactiveOfxContent(content);
+  const strictXml = isStrictXml(masked);
   const statement = findContainer(masked, ["STMTRS", "CCSTMTRS"]);
   if (statement === undefined) return;
 
@@ -164,6 +167,7 @@ function assertCanonicalOfxTransactionFields(content: string): void {
     const segment = transactionListBody.slice(openEnd, nextOpenStart);
     const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
     const block = segment.slice(0, close?.index ?? segment.length);
+    const blockStart = transactionList.contentStart + openEnd;
     const explicitContainers = readExplicitContainerRanges(block, OFX_TRANSACTION_SCALAR_TAGS);
 
     for (const tagName of OFX_SINGLE_VALUE_TRANSACTION_TAGS) {
@@ -179,10 +183,9 @@ function assertCanonicalOfxTransactionFields(content: string): void {
       for (const tag of tags) {
         const position = tag.index ?? -1;
         const canonicalTag = new RegExp(`^<\\s*${tagName}\\s*>$`, "i").test(tag[0]);
-        const directTransactionChild = !isNestedInsideExplicitContainer(
-          explicitContainers,
-          position,
-        );
+        const directTransactionChild = strictXml
+          ? readImmediateParentName(masked, blockStart + position) === "STMTTRN"
+          : !isNestedInsideExplicitContainer(explicitContainers, position);
         if (!canonicalTag || !directTransactionChild) {
           throw invalidOfx(
             `Campo ${tagName} da transacao STMTTRN ${index + 1} precisa ser filho direto.`,
@@ -226,6 +229,19 @@ function readExplicitContainerRanges(
   return ranges;
 }
 
+function readImmediateParentName(value: string, position: number): string | undefined {
+  const stack: string[] = [];
+  for (const token of readStructuralTagTokens(value.slice(0, position))) {
+    if (token.selfClosing) continue;
+    if (!token.closing) {
+      stack.push(token.name);
+      continue;
+    }
+    if (stack[stack.length - 1] === token.name) stack.pop();
+  }
+  return stack[stack.length - 1];
+}
+
 function readStructuralTagTokens(value: string): StructuralTagToken[] {
   const expression =
     /<\s*(\/?)\s*([\p{L}\p{Nl}_:][\p{L}\p{Nl}\p{N}\p{M}\u00b7_.:-]*)(?:\s[^>]*)?>/gu;
@@ -250,6 +266,10 @@ function maskInactiveOfxContent(value: string): string {
   return value
     .replace(/<!--[\s\S]*?-->/g, (match) => " ".repeat(match.length))
     .replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, (match) => " ".repeat(match.length));
+}
+
+function isStrictXml(value: string): boolean {
+  return /^\s*<\?xml\b/i.test(value);
 }
 
 function findContainer(
