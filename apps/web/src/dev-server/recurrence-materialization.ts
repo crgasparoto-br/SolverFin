@@ -101,6 +101,25 @@ export function requiresRecurrenceMaterialization(
   return url.searchParams.get("materialized") !== "1";
 }
 
+export function withoutRecurrenceMaterializationMarker(url: URL): URL {
+  const next = new URL(url.toString());
+  next.searchParams.delete("materialized");
+  return next;
+}
+
+export function enhanceWithRecurrenceMaterializationMarkerCleanup(html: string): string {
+  const script = `<script data-recurrence-marker-cleanup>
+(() => {
+  const current = new URL(window.location.href);
+  if (!current.searchParams.has("materialized")) return;
+  current.searchParams.delete("materialized");
+  window.history.replaceState(null, "", current.pathname + current.search + current.hash);
+})();
+</script>`;
+
+  return html.includes("</body>") ? html.replace("</body>", `${script}</body>`) : `${html}${script}`;
+}
+
 export function renderRecurrenceMaterializationGate(surface: "account" | "card", url: URL): string {
   const query = new URLSearchParams({ surface });
   for (const key of ["month", "startsOn", "accountId", "cardId"] as const) {
