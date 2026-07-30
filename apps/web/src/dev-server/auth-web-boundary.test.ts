@@ -36,6 +36,16 @@ async function main(): Promise<void> {
       { path: "/api/users", body: "{}" },
     ]);
 
+    const invalidProductiveCookie = `__Host-solverfin_session=${"A".repeat(43)}`;
+    const invalidSession = await fetch(`${baseUrl}/dashboard`, {
+      headers: { cookie: invalidProductiveCookie },
+      redirect: "manual",
+    });
+    assert.equal(invalidSession.status, 302);
+    assert.equal(invalidSession.headers.get("location"), "/login?erro=sessao");
+    assert.match(invalidSession.headers.get("set-cookie") ?? "", /__Host-solverfin_session=;/);
+    assert.deepEqual(delegatedRequests.at(-1), { path: "/api/me", body: "" });
+
     await closeServer(fakeApi.server);
 
     const fallback = await fetch(`${baseUrl}/api/session`, {
