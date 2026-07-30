@@ -28,12 +28,13 @@ Regras praticas para ambientes:
 - `.env.example`: contrato publico de variaveis esperadas, com valores ficticios.
 - `.env`: arquivo local ignorado pelo Git. Deve ser criado a partir de `.env.example`.
 - `.gitignore`: bloqueia `.env`, `.env.*`, `.envrc`, certificados e chaves locais.
-- `packages/config`: centraliza o contrato TypeScript de validacao de ambiente para apps e pacotes.
+- `packages/config`: centraliza contratos tipados de ambiente que validam conjuntos completos de variaveis consumidas por apps e pacotes.
+- `packages/shared/src/runtime-environment.ts`: aplica o guard minimo de `NODE_ENV` nos entrypoints sem introduzir dependencia circular entre apps.
 - `scripts/validate-env-example.mjs`: valida se `.env.example` contem placeholders obrigatorios, nao parece conter secrets reais e preserva as relacoes confiaveis entre issuer, JWKS e dominio de login.
 
 ## Variaveis obrigatorias atuais
 
-- `NODE_ENV`: obrigatoria. Exemplo seguro: `development`. Define ambiente de execucao local, teste ou producao.
+- `NODE_ENV`: obrigatoria e explicita. Valores aceitos: `development`, `local`, `test` ou `production`; ausencia ou valor desconhecido impede a inicializacao dos entrypoints.
 - `APP_ORIGIN`: obrigatoria para autenticação por cookie. Em ambientes web deve conter somente a origem exata, sem path, query ou fragmento.
 - `POSTGRES_DB`: obrigatoria. Exemplo seguro: `solverfin`. Nome do banco local usado pelo Docker Compose.
 - `POSTGRES_USER`: obrigatoria. Exemplo seguro: `solverfin`. Usuario local ficticio do PostgreSQL.
@@ -92,9 +93,9 @@ Quando uma issue futura precisar de secrets no GitHub Actions:
 
 ## Validacao em codigo
 
-Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` quando passarem a consumir variaveis obrigatorias.
+Entry points executaveis usam `assertExplicitRuntimeEnvironment` de `@solverfin/shared` para impedir que `NODE_ENV` ausente ou desconhecido seja interpretado como ambiente local. Esse guard valida somente a identidade basica do ambiente e falha antes de o servidor começar a atender requisicoes.
 
-A validacao retorna apenas variaveis aprovadas e lanca `EnvironmentValidationError` quando algo estiver ausente ou invalido. As mensagens citam nomes de variaveis, mas nao valores sensiveis.
+Apps e pacotes que consomem conjuntos tipados de variaveis continuam usando `validateRuntimeEnvironment` de `@solverfin/config`. Essa validacao retorna apenas variaveis aprovadas e lanca `EnvironmentValidationError` quando algo estiver ausente ou invalido. As mensagens citam nomes de variaveis, mas nao valores sensiveis.
 
 A API executa ainda uma validação específica do Cognito na inicialização produtiva e em cada início do fluxo OIDC. A validação específica da URL de recuperação no web server continua responsável pela renderização segura do link externo.
 
