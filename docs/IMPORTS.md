@@ -161,6 +161,8 @@ Regras de normalização:
 - `CURDEF` diferente da moeda da conta bloqueia o arquivo com `IMPORT_ACCOUNT_CURRENCY_MISMATCH`;
 - a conta escolhida pelo usuário é sempre a conta canônica das propostas.
 
+Cada `STMTTRN` reconhecido deve ser filho direto do `BANKTRANLIST` canônico; uma transação dentro de `EXTENSION`, `WRAPPER` ou qualquer outro contêiner intermediário torna o arquivo inválido.
+
 Cada um dos campos consumidos em uma movimentação — `DTPOSTED`, `TRNAMT`, `FITID`, `NAME`, `MEMO` e `TRNTYPE` — deve ser um filho direto do respectivo `STMTTRN` e pode ocorrer no máximo uma vez. Uma ocorrência aninhada em `EXTENSION`, `WRAPPER` ou outro contêiner não é reinterpretada como dado financeiro e torna o arquivo inválido. Uma repetição, ainda que os valores coincidam, também torna a estrutura ambígua e retorna `IMPORT_OFX_INVALID`; ocorrências em comentários ou CDATA permanecem inativas e não entram na cardinalidade. Instruções de processamento diferentes da declaração XML não são tratadas como conteúdo inativo: o arquivo inteiro é recusado para impedir que tags aparentes sejam reinterpretadas como dados financeiros.
 
 Linhas inválidas geram diagnósticos por posição e não criam propostas. Se nenhuma linha for válida, o preview fica `blocked` e a criação retorna `IMPORT_OFX_NO_VALID_ROWS`. O parser não devolve campos bancários não utilizados nem valores brutos em problemas.
