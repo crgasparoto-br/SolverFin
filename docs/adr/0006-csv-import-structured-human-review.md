@@ -21,16 +21,18 @@ A issue #548 estendeu o mesmo contrato operacional ao subconjunto OFX documentad
 7. Descarte é lógico, rejeita extrações pendentes, expira candidatos determinísticos e é bloqueado depois de qualquer efeito financeiro.
 8. Identidade de conteúdo e de lote usa SHA-256; a leitura da identidade CSV legada permanece apenas para compatibilidade.
 9. No CSV, delimitador e cabeçalhos são resolvidos por estrutura, com ambiguidades explícitas, cabeçalhos originais e validação de colunas.
-10. No OFX, somente o subconjunto estrutural documentado é aceito; `STMTTRN` deve pertencer ao `BANKTRANLIST` da única seção de extrato reconhecida, e `CURDEF` só é aceito nos metadados dessa seção, fora da lista de transações.
+10. No OFX, somente o subconjunto estrutural documentado é aceito; cada `STMTTRN` deve ser filho direto do `BANKTRANLIST` da única seção de extrato reconhecida, e `CURDEF` só é aceito nos metadados dessa seção, fora da lista de transações.
 11. A Inbox é a interface operacional compartilhada, com edição em modal acessível e devolução de foco.
 12. Novas importações CSV persistem mapeamento versão 2, discriminando valor assinado de entrada/saída; tipo e ID externo permanecem somente para leitura legada.
 13. Importações OFX persistem lote e sugestões revisáveis com provider/model específicos, sem persistir o conteúdo bruto.
+14. Criações OFX com o mesmo hash de conteúdo são serializadas no escopo da organização e do perfil, para que o diagnóstico de configuração alterada permaneça determinístico mesmo quando contas diferentes são processadas concorrentemente.
+15. A listagem compartilhada sem filtro de origem representa somente extratos importados (`csv` e `ofx`); mensagens bancárias e origens manuais permanecem em seus fluxos próprios.
 
 ## Consequências
 
 - dados financeiros não dependem de parsing de texto explicativo;
-- concorrência e repetição não criam múltiplos lançamentos;
-- o histórico CSV/OFX permanece auditável sem reter o arquivo;
+- concorrência e repetição não criam múltiplos lançamentos nem omitem diagnósticos de configuração;
+- o histórico CSV/OFX permanece auditável sem reter o arquivo e sem misturar outras origens da Inbox;
 - mudanças futuras no payload exigem nova versão e migração compatível;
 - variantes OFX fora do subconjunto documentado falham de forma controlada, sem reinterpretação silenciosa.
 
