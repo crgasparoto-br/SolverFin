@@ -93,36 +93,58 @@ export async function materializeAccountStatementRecurrences(
   );
 }
 
-export function enhanceWithRecurrenceMaterialization(
-  html: string,
+export function requiresRecurrenceMaterialization(url: URL): boolean {
+  return url.searchParams.get("materialized") !== "1";
+}
+
+export function renderRecurrenceMaterializationGate(
   surface: "account" | "card",
   url: URL,
 ): string {
-  if (url.searchParams.get("materialized") === "1") return html;
-
   const query = new URLSearchParams({ surface });
   for (const key of ["month", "startsOn", "accountId", "cardId"] as const) {
     const value = url.searchParams.get(key);
     if (value) query.set(key, value);
   }
 
-  const script = `<script data-recurrence-materialization>
-(() => {
-  const endpoint = ${JSON.stringify(`/api/recurrence-materialization?${query.toString()}`)};
-  fetch(endpoint, { method: "POST", credentials: "same-origin" })
-    .then((response) => {
-      if (!response.ok) return;
-      const next = new URL(window.location.href);
-      next.searchParams.set("materialized", "1");
-      window.location.replace(next.toString());
-    })
-    .catch(() => undefined);
-})();
-</script>`;
+  const next = new URL(url.toString());
+  next.searchParams.set("materialized", "1");
+  const endpoint = `/api/recurrence-materialization?${query.toString()}`;
+  const target = `${next.pathname}${next.search}`;
 
-  return html.includes("</body>")
-    ? html.replace("</body>", `${script}</body>`)
-    : `${html}${script}`;
+  return `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Atualizando lançamentos recorrentes</title>
+    <style>
+      :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+      body { align-items: center; background: #f8fafc; color: #0f172a; display: grid; margin: 0; min-height: 100vh; padding: 24px; }
+      main { background: #fff; border: 1px solid #dbe3ee; border-radius: 10px; display: grid; gap: 12px; margin: auto; max-width: 480px; padding: 24px; text-align: center; width: 100%; }
+      h1, p { margin: 0; }
+      p { color: #64748b; line-height: 1.5; }
+      [role="status"]::before { animation: spin 1s linear infinite; border: 3px solid #dbe3ee; border-top-color: #0f3d4c; border-radius: 50%; content: ""; display: block; height: 28px; margin: 0 auto 16px; width: 28px; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <main role="status" aria-live="polite">
+      <h1>Atualizando lançamentos recorrentes</h1>
+      <p>Aguarde enquanto o SolverFin prepara os dados do período selecionado.</p>
+    </main>
+    <script>
+      (() => {
+        const endpoint = ${JSON.stringify(endpoint)};
+        const target = ${JSON.stringify(target)};
+        fetch(endpoint, { method: "POST", credentials: "same-origin" })
+          .then(() => window.location.replace(target))
+          .catch(() => window.location.replace(target));
+      })();
+    </script>
+  </body>
+</html>`;
 }
 
 function resolveRuntime(
