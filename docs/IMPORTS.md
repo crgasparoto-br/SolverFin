@@ -145,6 +145,8 @@ O OFX aceita até 5 MB e texto UTF-8 com ou sem BOM. O subconjunto operacional r
 
 Conteúdo arbitrário que apenas contenha `STMTTRN`, envelope truncado, seção de extrato ausente, lista incompleta ou dados após o fechamento de `OFX` falham com `IMPORT_OFX_INVALID`. Entidades XML conhecidas e referências numéricas são decodificadas nos campos normalizados. A única instrução de processamento aceita é a declaração XML opcional antes do envelope raiz; qualquer outra construção `<?...?>`, inclusive incompleta ou contendo tags financeiras aparentes, é recusada com `IMPORT_OFX_INVALID` antes da extração dos campos.
 
+Quando a declaração XML estiver presente, todas as tags precisam estar corretamente aninhadas e fechadas. Um contêiner intermediário incompleto ou com fechamento incompatível retorna `IMPORT_OFX_INVALID` antes da extração de qualquer campo financeiro.
+
 As quatro rotas de importação reservam até 32 MiB para o envelope JSON, permitindo transportar com segurança o arquivo de 5 MB mesmo quando caracteres precisam ser escapados. As demais rotas da API mantêm o limite padrão de 1.000.000 bytes.
 
 Regras de normalização:
@@ -155,11 +157,11 @@ Regras de normalização:
 - `TRNTYPE` é apenas diagnóstico; conflito com o sinal gera aviso e não altera a classificação;
 - descrição usa `NAME`, depois `MEMO`, depois `FITID`;
 - `FITID`, quando presente, é preservado como `externalId`;
-- `CURDEF` define a moeda do arquivo; se ausente, usa-se a moeda da conta selecionada;
+- `CURDEF`, quando presente, deve ser filho direto de `STMTRS` ou `CCSTMTRS`, fora de `BANKTRANLIST`, e define a moeda do arquivo; se ausente, usa-se a moeda da conta selecionada;
 - `CURDEF` diferente da moeda da conta bloqueia o arquivo com `IMPORT_ACCOUNT_CURRENCY_MISMATCH`;
 - a conta escolhida pelo usuário é sempre a conta canônica das propostas.
 
-Cada um dos campos consumidos em uma movimentação — `DTPOSTED`, `TRNAMT`, `FITID`, `NAME`, `MEMO` e `TRNTYPE` — pode ocorrer no máximo uma vez dentro do mesmo `STMTTRN`. Uma repetição, ainda que os valores coincidam, torna a estrutura ambígua e retorna `IMPORT_OFX_INVALID`; ocorrências em comentários ou CDATA permanecem inativas e não entram na cardinalidade. Instruções de processamento diferentes da declaração XML não são tratadas como conteúdo inativo: o arquivo inteiro é recusado para impedir que tags aparentes sejam reinterpretadas como dados financeiros.
+Cada um dos campos consumidos em uma movimentação — `DTPOSTED`, `TRNAMT`, `FITID`, `NAME`, `MEMO` e `TRNTYPE` — deve ser um filho direto do respectivo `STMTTRN` e pode ocorrer no máximo uma vez. Uma ocorrência aninhada em `EXTENSION`, `WRAPPER` ou outro contêiner não é reinterpretada como dado financeiro e torna o arquivo inválido. Uma repetição, ainda que os valores coincidam, também torna a estrutura ambígua e retorna `IMPORT_OFX_INVALID`; ocorrências em comentários ou CDATA permanecem inativas e não entram na cardinalidade. Instruções de processamento diferentes da declaração XML não são tratadas como conteúdo inativo: o arquivo inteiro é recusado para impedir que tags aparentes sejam reinterpretadas como dados financeiros.
 
 Linhas inválidas geram diagnósticos por posição e não criam propostas. Se nenhuma linha for válida, o preview fica `blocked` e a criação retorna `IMPORT_OFX_NO_VALID_ROWS`. O parser não devolve campos bancários não utilizados nem valores brutos em problemas.
 
