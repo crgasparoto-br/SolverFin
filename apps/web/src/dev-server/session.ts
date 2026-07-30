@@ -3,21 +3,29 @@ import type { IncomingMessage } from "node:http";
 export const sessionCookieName = "sf_session_token";
 const productiveApiSessionCookieName = "__Host-solverfin_session";
 const localApiSessionCookieName = "solverfin_session";
-const apiSessionCookieNames = [productiveApiSessionCookieName, localApiSessionCookieName] as const;
+const localEnvironments = new Set(["development", "local", "test"]);
 
 export function getSessionTokenFromRequest(request: IncomingMessage): string | undefined {
   return parseCookies(request.headers.cookie ?? "")[sessionCookieName];
 }
 
-export function getSessionCredentialFromRequest(request: IncomingMessage): string | undefined {
+export function getSessionCredentialFromRequest(
+  request: IncomingMessage,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): string | undefined {
   const cookieHeader = request.headers.cookie ?? "";
   const cookies = parseCookies(cookieHeader);
+  const demoAllowed = isDemoAuthenticationAllowed(env);
 
-  if (apiSessionCookieNames.some((name) => Boolean(cookies[name]))) {
-    return cookieHeader;
+  if (demoAllowed) {
+    if (cookies[productiveApiSessionCookieName] || cookies[localApiSessionCookieName]) {
+      return cookieHeader;
+    }
+
+    return cookies[sessionCookieName];
   }
 
-  return cookies[sessionCookieName];
+  return cookies[productiveApiSessionCookieName] ? cookieHeader : undefined;
 }
 
 export function buildUpstreamAuthenticationHeaders(credential: string): Record<string, string> {
@@ -44,6 +52,14 @@ export function clearApiSessionCookies(): string[] {
     serializeExpiredCookie(productiveApiSessionCookieName, true),
     serializeExpiredCookie(localApiSessionCookieName, false),
   ];
+}
+
+export function isDemoAuthenticationAllowed(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): boolean {
+  const nodeEnv = env.NODE_ENV?.trim().toLowerCase();
+  if (nodeEnv && localEnvironments.has(nodeEnv)) return true;
+  return env.AUTH_ALLOW_DEMO?.trim().toLowerCase() === "true";
 }
 
 function serializeExpiredCookie(name: string, secure: boolean): string {
