@@ -7,11 +7,12 @@ Produção, staging com dados reais e preview público usam **Amazon Cognito Use
 A jornada produtiva é:
 
 1. `GET /api/auth/oidc/start?returnTo=/dashboard` valida um destino interno, gera `state`, `nonce` e PKCE `S256`, persiste a tentativa antes do redirect e encaminha ao login gerenciado do Cognito.
-2. `GET /api/auth/oidc/callback` reivindica a tentativa com transição atômica `PENDING -> PROCESSING`, troca o código somente no backend, valida assinatura RS256, issuer, audience, expiração e nonce e vincula a identidade externa ao usuário local.
+2. `GET /api/auth/oidc/callback` reivindica a tentativa com transição atômica `PENDING -> PROCESSING`, troca o código somente no backend e valida assinatura RS256, issuer, audience, expiração, nonce, `token_use=id`, email presente e `email_verified=true` antes de vincular a identidade externa.
 3. O backend cria uma sessão opaca própria, persiste somente o hash SHA-256 e envia o token bruto apenas no cookie HttpOnly.
-4. `GET /api/me` e as rotas privadas validam a sessão persistida.
-5. `POST /api/session/renew` gira atomicamente o token sem ampliar `expiresAt`.
-6. `DELETE /api/session` revoga de forma idempotente e limpa o cookie.
+4. A aplicação web confirma a sessão por `GET /api/me` antes de seguir ao `returnTo`; quando o navegador não mantém o cookie, mostra um estado controlado com instrução para habilitar cookies e reiniciar o acesso seguro.
+5. `GET /api/me` e as rotas privadas validam a sessão persistida.
+6. `POST /api/session/renew` gira atomicamente o token sem ampliar `expiresAt`.
+7. `DELETE /api/session` revoga de forma idempotente e limpa o cookie.
 
 O callback nunca devolve código, tokens do Cognito, `code_verifier`, token local, segredo ou claims sensíveis ao frontend, à URL pós-callback, a logs ou a erros públicos.
 
@@ -50,6 +51,8 @@ Em ambiente local/teste, o nome é `solverfin_session` e `Secure` é omitido par
 
 Múltiplos cookies são enviados como headers `Set-Cookie` separados. A aplicação web encaminha o cookie ao backend; ela não grava token produtivo em `localStorage`, `sessionStorage`, IndexedDB, HTML ou JSON.
 
+Após o callback, a aplicação usa uma etapa intermediária na própria tela de login. Se o cookie estiver válido, redireciona com `303` ao `returnTo` previamente validado. Se o cookie estiver ausente ou inválido, não presume autenticação e oferece reinício explícito da jornada.
+
 ## Persistência, rotação e revogação
 
 `ApplicationSession` contém `tokenHash`, `transport`, `createdAt`, `lastSeenAt`, `expiresAt`, `revokedAt` e `revocationReason`. O token bruto existe somente no cookie e na memória da requisição.
@@ -61,6 +64,8 @@ Logout revoga somente uma sessão ainda ativa e sempre limpa o cookie. A migrati
 ## CSRF e origem
 
 Toda operação mutável autenticada por cookie exige `Origin` exatamente igual a `APP_ORIGIN`. Origem ausente ou diferente é rejeitada com `AUTH_REQUEST_ORIGIN_INVALID`. A exceção `AUTH_ALLOW_MISSING_ORIGIN=true` existe apenas para adaptadores locais/testes deliberados.
+
+A materialização automática de recorrências em `/cartoes` e `/lancamentos` é iniciada por um `POST` same-origin do navegador. O adaptador web encaminha o cookie e o `Origin` recebido; não transforma o cookie produtivo em Bearer externo nem executa a mutação durante o `GET` da página.
 
 `SameSite=Lax` é defesa complementar e não substitui a validação de origem.
 
@@ -75,11 +80,17 @@ Os contratos abaixo existem somente em `development`, `local`, `test` ou demonst
 
 Fora desses ambientes, o servidor remove qualquer Bearer recebido externamente antes de chamar roteadores internos. Somente um cookie produtivo previamente validado pode ser convertido em credencial interna transitória para os roteadores legados. Produção nunca recorre à sessão em memória quando a sessão persistida estiver ausente ou indisponível.
 
+`NODE_ENV` deve existir explicitamente e usar apenas `development`, `local`, `test` ou `production`. Ausência ou valor desconhecido interrompe a inicialização; os comandos `start` das aplicações definem `NODE_ENV=production`.
+
+As rotas locais de login e cadastro verificam a elegibilidade do ambiente antes de ler ou validar o corpo, garantindo `AUTH_LOCAL_AUTH_DISABLED` mesmo para payload malformado fora dos ambientes autorizados.
+
 ## Identidade e tenant
 
 O vínculo canônico é `externalAuthProvider + externalAuthSubject`. A primeira autenticação válida pode vincular um usuário local sem provider ou criar `User`, `Organization` e `FinancialProfile` pessoal de forma idempotente.
 
 A vinculação usa lock da linha do usuário, compare-and-set dos campos ainda nulos e constraints únicas. Duas identidades diferentes concorrendo pelo mesmo email produzem no máximo uma vencedora. Duas tentativas da mesma identidade retornam o mesmo usuário e não duplicam organização ou perfil. Depois de criado, o vínculo externo é imutável no banco.
+
+O email do ID token somente participa da criação ou vinculação quando a claim `email_verified` é booleana e verdadeira. Tokens de acesso, tokens sem `token_use` e emails não verificados são rejeitados antes de qualquer mutação local.
 
 Credenciais, confirmação de email, recuperação e autenticação forte permanecem sob responsabilidade do Cognito.
 
@@ -103,6 +114,7 @@ A criação da sessão e os eventos `session_created` e `oidc_callback_consumed`
 Variáveis produtivas:
 
 ```env
+NODE_ENV=production
 APP_ORIGIN=https://app.solverfin.example
 OIDC_ISSUER_URL=https://cognito-idp.sa-east-1.amazonaws.com/<user-pool-id>
 OIDC_CLIENT_ID=<app-client-id>
@@ -129,4 +141,4 @@ Antes do rollout, confirme que o app client não possui client secret, que Autho
 
 ## Testes e validação
 
-A cobertura inclui cookie produtivo/local, ausência de `Domain`, origem exata, `returnTo` interno, PKCE, hashes de state/nonce, nonce do ID token, bloqueio dos contratos legados, bloqueio de Bearer externo, rotação atômica, revogação idempotente, revogação ao desabilitar usuário, estados/replay da tentativa, concorrência de vínculo externo, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.
+A cobertura inclui cookie produtivo/local, ausência de `Domain`, origem exata, transporte de recorrência por cookie, `returnTo` interno, estado de cookie bloqueado, PKCE, hashes de state/nonce, nonce do ID token, `token_use=id`, email verificado, bloqueio dos contratos legados, ambiente de runtime explícito, bloqueio de Bearer externo, rotação atômica, revogação idempotente, revogação ao desabilitar usuário, estados/replay da tentativa, concorrência de vínculo externo, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.
