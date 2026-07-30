@@ -220,7 +220,8 @@ function readExplicitContainerRanges(
 }
 
 function readStructuralTagTokens(value: string): StructuralTagToken[] {
-  const expression = /<\s*(\/?)\s*([A-Za-z_][\w.:-]*)(?:\s[^>]*)?>/g;
+  const expression =
+    /<\s*(\/?)\s*([\p{L}\p{Nl}_:][\p{L}\p{Nl}\p{N}\p{M}\u00b7_.:-]*)(?:\s[^>]*)?>/gu;
   return [...value.matchAll(expression)].map((match) => ({
     name: (match[2] ?? "").toUpperCase(),
     closing: match[1] === "/",
