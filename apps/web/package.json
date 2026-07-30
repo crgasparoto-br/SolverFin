@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node ../../scripts/dev-web.mjs",
     "prestart": "npm --prefix ../.. run db:deploy",
-    "start": "node dist/dev-server.js",
+    "start": "NODE_ENV=production node dist/dev-server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
