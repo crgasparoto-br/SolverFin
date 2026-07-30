@@ -72,7 +72,7 @@ describe("OFX Unicode container scope", () => {
     const result = preview(
       [
         "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>",
-        "<EXTENSÃO><CAMPO>valor</CAMPO></EXTENSÃO>",
+        "<EXTENSÃO><CAMPO>valor</CAMPO></extensão>",
         "<DTPOSTED>20260729<TRNAMT>-10<FITID>unicode-sibling<NAME>Compra válida",
         "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
       ].join(""),
