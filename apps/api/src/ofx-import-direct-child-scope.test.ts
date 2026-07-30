@@ -54,6 +54,13 @@ describe("OFX canonical direct-child scope", () => {
         "<WRAPPER><NAME>Nome aninhado</NAME></WRAPPER>",
         "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
       ].join(""),
+      [
+        '<?xml version="1.0"?>',
+        "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729</DTPOSTED><NAME>Compra segura</NAME>",
+        "<EXTENSION><TRNAMT>-999.99</TRNAMT>",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
     ];
 
     for (const content of invalidDocuments) assertInvalidOfx(content);
