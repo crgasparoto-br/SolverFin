@@ -2,6 +2,7 @@ import type { ImportPreview, ImportProblem, ImportTransactionSuggestion } from "
 
 type ParsedRowAmount = { state: "valid"; signedAmountMinor: number } | { state: "invalid" };
 
+const MAX_EXACT_WHOLE_DIGITS = 13;
 const MAX_SAFE_MINOR = BigInt(Number.MAX_SAFE_INTEGER);
 
 export function applyCanonicalOfxAmountSemantics(
@@ -97,7 +98,7 @@ function parseExactMinor(value: string): ParsedRowAmount {
   if (match === null) return { state: "invalid" };
 
   const wholeText = (match[2] ?? "0").replace(/^0+(?=\d)/, "");
-  if (wholeText.length > 14) return { state: "invalid" };
+  if (wholeText.length > MAX_EXACT_WHOLE_DIGITS) return { state: "invalid" };
 
   const whole = BigInt(wholeText);
   const fraction = BigInt((match[3] ?? "").padEnd(2, "0") || "0");
