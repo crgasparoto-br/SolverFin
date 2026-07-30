@@ -61,13 +61,8 @@ export function isDemoAuthenticationAllowed(
   return env.AUTH_ALLOW_DEMO?.trim().toLowerCase() === "true";
 }
 
-function isLegacyWebCredentialAllowed(
-  env: Readonly<Record<string, string | undefined>>,
-): boolean {
-  return (
-    isDemoAuthenticationAllowed(env) ||
-    env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1"
-  );
+function isLegacyWebCredentialAllowed(env: Readonly<Record<string, string | undefined>>): boolean {
+  return isDemoAuthenticationAllowed(env) || env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1";
 }
 
 function serializeExpiredCookie(name: string, secure: boolean): string {
