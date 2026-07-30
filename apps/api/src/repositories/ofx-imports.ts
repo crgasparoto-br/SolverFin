@@ -7,8 +7,8 @@ import { insertAuditLogEntry } from "./audit.js";
 import { ImportReviewError, type CreateImportBatchResult } from "./imports.js";
 import { buildOfxFailureAuditEntry, buildOfxPreviewAuditEntry } from "./ofx-import-audit.js";
 import { parseOfxImportPreview as parseOfxImportPreviewBase } from "./ofx-import-parser.js";
-import { persistOfxImportBatchForContext } from "./ofx-import-store.js";
 import { assertCanonicalOfxStructure } from "./ofx-import-structure.js";
+import { persistOfxImportBatchForContext } from "./ofx-import-store.js";
 import type { OfxAccountRow, OfxImportPayload } from "./ofx-import-types.js";
 
 export type { OfxImportPayload } from "./ofx-import-types.js";
