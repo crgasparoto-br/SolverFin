@@ -29,11 +29,12 @@ Regras praticas para ambientes:
 - `.env`: arquivo local ignorado pelo Git. Deve ser criado a partir de `.env.example`.
 - `.gitignore`: bloqueia `.env`, `.env.*`, `.envrc`, certificados e chaves locais.
 - `packages/config`: centraliza o contrato TypeScript de validacao de ambiente para apps e pacotes.
-- `scripts/validate-env-example.mjs`: valida se `.env.example` contem placeholders obrigatorios e nao parece conter secrets reais.
+- `scripts/validate-env-example.mjs`: valida se `.env.example` contem placeholders obrigatorios, nao parece conter secrets reais e preserva as relacoes confiaveis entre issuer, JWKS e dominio de login.
 
 ## Variaveis obrigatorias atuais
 
 - `NODE_ENV`: obrigatoria. Exemplo seguro: `development`. Define ambiente de execucao local, teste ou producao.
+- `APP_ORIGIN`: obrigatoria para autenticação por cookie. Em ambientes web deve conter somente a origem exata, sem path, query ou fragmento.
 - `POSTGRES_DB`: obrigatoria. Exemplo seguro: `solverfin`. Nome do banco local usado pelo Docker Compose.
 - `POSTGRES_USER`: obrigatoria. Exemplo seguro: `solverfin`. Usuario local ficticio do PostgreSQL.
 - `POSTGRES_PASSWORD`: obrigatoria. Exemplo seguro: `solverfin_dev_password`. Senha local ficticia do PostgreSQL.
@@ -45,7 +46,11 @@ Regras praticas para ambientes:
 
 Produção usa Amazon Cognito User Pools Essentials em `sa-east-1`. O contrato completo está em `docs/AUTH.md` e exige `APP_ORIGIN`, issuer, client ID, endpoints de autorização/token, JWKS, redirect URI e chave base64 de 32 bytes para cifrar o `code_verifier`. URLs públicas de logout e recuperação também são versionadas por ambiente.
 
+`OIDC_ISSUER_URL` deve apontar diretamente para um User Pool em `cognito-idp.sa-east-1.amazonaws.com`. `OIDC_JWKS_URI` deve ser derivado exatamente desse issuer. Os endpoints de autorização, token, logout e recuperação usam o mesmo domínio gerenciado `*.auth.sa-east-1.amazoncognito.com` e os paths canônicos documentados. Misturar hosts, regiões, paths ou um JWKS externo impede a inicialização produtiva.
+
 `OIDC_ATTEMPT_ENCRYPTION_KEY` é secret e não pode aparecer em logs. `OIDC_CLIENT_ID` é público; `OIDC_AUDIENCE` é apenas alias transitório. `AUTH_ALLOW_DEMO` e `AUTH_ALLOW_MISSING_ORIGIN` devem permanecer falsos em produção.
+
+`OIDC_ATTEMPT_TTL_MINUTES` define a validade da correlação. `OIDC_ATTEMPT_CLEANUP_INTERVAL_MS` define a frequência do job interno que encerra tentativas vencidas; o padrão é 60000 ms e valores menores que 10000 ms não são aceitos como cadência efetiva.
 
 O User Pool/app client deve habilitar Authorization Code Grant, PKCE `S256`, scopes `openid email profile` e exatamente o callback de `OIDC_REDIRECT_URI`. Recursos do pool ficam em `sa-east-1`. Não usar SMS como mecanismo padrão de MFA/recuperação.
 
@@ -91,7 +96,7 @@ Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` qu
 
 A validacao retorna apenas variaveis aprovadas e lanca `EnvironmentValidationError` quando algo estiver ausente ou invalido. As mensagens citam nomes de variaveis, mas nao valores sensiveis.
 
-A validacao especifica da URL de recuperacao fica no web server porque ela controla a renderizacao de um link externo e precisa manter um fallback seguro quando a configuracao estiver ausente ou invalida.
+A API executa ainda uma validação específica do Cognito na inicialização produtiva e em cada início do fluxo OIDC. A validação específica da URL de recuperação no web server continua responsável pela renderização segura do link externo.
 
 ## Fora do escopo atual
 
