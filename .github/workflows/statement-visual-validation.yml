@@ -30,6 +30,7 @@ jobs:
       AUTH_ALLOW_DEMO: "true"
       DATABASE_URL: postgresql://solverfin:solverfin_visual_password@localhost:5432/solverfin_visual?schema=public
       API_BASE_URL: http://127.0.0.1:4000
+      APP_ORIGIN: http://127.0.0.1:5173
       HOST: 127.0.0.1
       SOLVERFIN_MASTER_EMAILS: demo@solverfin.example.invalid
 
