@@ -15,6 +15,7 @@ import { serializeSessionCookie } from "./session-cookie.js";
 
 const productiveEnv = {
   NODE_ENV: "production",
+  DATABASE_URL: process.env.DATABASE_URL,
   APP_ORIGIN: "https://app.example.invalid",
   OIDC_ISSUER_URL: "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example",
   OIDC_CLIENT_ID: "client-123",
