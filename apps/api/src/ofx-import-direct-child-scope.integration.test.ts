@@ -84,6 +84,19 @@ async function main(): Promise<void> {
       "<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-10<NAME>Compra",
       "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
     ].join(""),
+    [
+      "OFXHEADER:100\nDATA:OFXSGML\n",
+      "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>",
+      "<DTPOSTED>20260729<CHECKNUM><TRNAMT>-999.99",
+      `<FITID>${suffix}-empty-scalar-container<NAME>Compra`,
+      "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+    ].join(""),
+    [
+      "OFXHEADER:100\nDATA:OFXSGML\n",
+      "<OFX><STMTRS><MKTGINFO><CURDEF>USD",
+      "<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-10<NAME>Compra",
+      "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+    ].join(""),
   ];
 
   for (const content of invalidDocuments) {
