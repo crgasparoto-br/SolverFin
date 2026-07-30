@@ -36,7 +36,9 @@ interface JwtClaims {
   exp?: unknown;
   nbf?: unknown;
   iat?: unknown;
+  token_use?: unknown;
   email?: unknown;
+  email_verified?: unknown;
   name?: unknown;
   preferred_username?: unknown;
   nonce?: unknown;
@@ -194,6 +196,18 @@ function validateClaims(
   }
 
   if (!audienceIncludes(claims.aud, config.audience)) {
+    throw invalidProviderTokenError();
+  }
+
+  if (claims.token_use !== "id") {
+    throw invalidProviderTokenError();
+  }
+
+  if (
+    typeof claims.email !== "string" ||
+    normalizeOptional(claims.email) === undefined ||
+    claims.email_verified !== true
+  ) {
     throw invalidProviderTokenError();
   }
 
