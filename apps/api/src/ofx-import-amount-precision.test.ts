@@ -32,7 +32,14 @@ function preview(amounts: readonly string[]) {
 
 describe("OFX TRNAMT cent precision", () => {
   it("keeps exact positive and negative cent values symmetric", () => {
-    const result = preview(["10.25", "-10.25", "+12", "12.3", "-0.01", "&#49;0.25"]);
+    const result = preview([
+      "10.25",
+      "-10.25",
+      "+12",
+      "12.3",
+      "-0.01",
+      "&#49;0.25",
+    ]);
 
     assert.equal(result.state, "ready");
     assert.deepEqual(
