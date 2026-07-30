@@ -490,7 +490,14 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
 
 function requireString(body: Record<string, unknown>, key: string): string {
   const value = body[key];
-  if (typeof value !== "string" || value.trim().length === 0) {
+  if (typeof value !== "string") {
+    throw new ImportReviewError(
+      "IMPORT_FIELD_REQUIRED",
+      `Campo ${key} e obrigatorio para continuar.`,
+    );
+  }
+  if (key === "content") return value;
+  if (value.trim().length === 0) {
     throw new ImportReviewError(
       "IMPORT_FIELD_REQUIRED",
       `Campo ${key} e obrigatorio para continuar.`,
