@@ -124,6 +124,19 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   const route = resolveRoute(url.pathname, token !== undefined);
 
+  if (token && route.kind !== "not-found" && shouldValidateProductivePageSession()) {
+    const session = await apiGet<{ user: { id: string } }>(token, "/api/me");
+    if (!session.ok) {
+      response.writeHead(302, {
+        location: "/login?erro=sessao",
+        "cache-control": "no-store",
+        "set-cookie": [...clearApiSessionCookies(), clearSessionCookie()],
+      });
+      response.end();
+      return;
+    }
+  }
+
   if (route.statusCode === 302 && route.location) {
     response.writeHead(302, { location: route.location });
     response.end();
@@ -292,6 +305,14 @@ async function materializeLocally(
           : "unknown",
     });
   }
+}
+
+function shouldValidateProductivePageSession(): boolean {
+  return (
+    process.env.NODE_ENV?.trim().toLowerCase() === "production" &&
+    process.env.AUTH_ALLOW_DEMO?.trim().toLowerCase() !== "true" &&
+    process.env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION !== "1"
+  );
 }
 
 function shouldUseProductiveRecurrenceGate(): boolean {
