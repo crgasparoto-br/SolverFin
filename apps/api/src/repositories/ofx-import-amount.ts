@@ -1,12 +1,6 @@
-import type {
-  ImportPreview,
-  ImportProblem,
-  ImportTransactionSuggestion,
-} from "@solverfin/domain";
+import type { ImportPreview, ImportProblem, ImportTransactionSuggestion } from "@solverfin/domain";
 
-type ParsedRowAmount =
-  | { state: "valid"; signedAmountMinor: number }
-  | { state: "invalid" };
+type ParsedRowAmount = { state: "valid"; signedAmountMinor: number } | { state: "invalid" };
 
 const MAX_SAFE_MINOR = BigInt(Number.MAX_SAFE_INTEGER);
 
@@ -23,10 +17,7 @@ export function applyCanonicalOfxAmountSemantics(
 
   const problems = preview.problems.filter(
     (problem) =>
-      !(
-        invalidRows.has(problem.rowNumber) &&
-        problem.code === "IMPORT_OFX_TRNTYPE_CONFLICT"
-      ),
+      !(invalidRows.has(problem.rowNumber) && problem.code === "IMPORT_OFX_TRNTYPE_CONFLICT"),
   );
 
   for (const rowNumber of invalidRows) {
@@ -61,9 +52,7 @@ export function applyCanonicalOfxAmountSemantics(
   }
 
   const errorRows = new Set(
-    problems
-      .filter((problem) => problem.severity === "error")
-      .map((problem) => problem.rowNumber),
+    problems.filter((problem) => problem.severity === "error").map((problem) => problem.rowNumber),
   );
   const ready = suggestions.length > 0;
 
