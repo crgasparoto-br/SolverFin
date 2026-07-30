@@ -42,6 +42,18 @@ async function main(): Promise<void> {
       "<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-10<NAME>Compra",
       "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
     ].join(""),
+    [
+      '<?xml version="1.0"?>',
+      "<OFX><STMTRS><pré:CURDEF>USD</pré:CURDEF><BANKTRANLIST><STMTTRN>",
+      `<DTPOSTED>20260729</DTPOSTED><TRNAMT>-10</TRNAMT><FITID>${suffix}-prefix-currency</FITID>`,
+      "<NAME>Compra</NAME></STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+    ].join(""),
+    [
+      '<?xml version="1.0"?>',
+      "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST><STMTTRN>",
+      `<DTPOSTED>20260729</DTPOSTED><pré:TRNAMT>-10</pré:TRNAMT><FITID>${suffix}-prefix-amount</FITID>`,
+      "<NAME>Compra</NAME></STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+    ].join(""),
   ];
 
   for (const content of invalidDocuments) {
