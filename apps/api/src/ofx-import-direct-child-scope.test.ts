@@ -87,26 +87,13 @@ describe("OFX canonical direct-child scope", () => {
         "<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-10<NAME>Compra",
         "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
       ].join(""),
-      [
-        "OFXHEADER:100\nDATA:OFXSGML\n",
-        "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>",
-        "<DTPOSTED>20260729<CHECKNUM><TRNAMT>-999.99",
-        "<FITID>empty-scalar-container<NAME>Compra",
-        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
-      ].join(""),
-      [
-        "OFXHEADER:100\nDATA:OFXSGML\n",
-        "<OFX><STMTRS><MKTGINFO><CURDEF>USD",
-        "<BANKTRANLIST><STMTTRN><DTPOSTED>20260729<TRNAMT>-10<NAME>Compra",
-        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
-      ].join(""),
     ];
 
     for (const content of invalidDocuments) assertInvalidOfx(content);
   });
 
-  it("keeps supported scalar siblings outside the container stack", () => {
-    const result = preview(
+  it("keeps supported scalar siblings and empty-value fallback semantics", () => {
+    const scalarSibling = preview(
       [
         "OFXHEADER:100\nDATA:OFXSGML\n",
         "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>",
@@ -116,8 +103,20 @@ describe("OFX canonical direct-child scope", () => {
       ].join(""),
     );
 
-    assert.equal(result.suggestions[0]?.amountMinor, 1000);
-    assert.equal(result.suggestions[0]?.externalId, "scalar-sibling");
+    assert.equal(scalarSibling.suggestions[0]?.amountMinor, 1000);
+    assert.equal(scalarSibling.suggestions[0]?.externalId, "scalar-sibling");
+
+    const emptyNameFallback = preview(
+      [
+        "OFXHEADER:100\nDATA:OFXSGML\n",
+        "<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729<TRNAMT>-10<FITID>empty-name-fallback",
+        "<NAME><MEMO>Descricao pelo memo",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    );
+
+    assert.equal(emptyNameFallback.suggestions[0]?.description, "Descricao pelo memo");
   });
 
   it("rejects CURDEF nested in another statement metadata container", () => {
