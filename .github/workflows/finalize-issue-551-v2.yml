@@ -51,11 +51,78 @@ jobs:
           echo "993195865e507c59dbc8e72947efc8c0173e4326279c68fb179d01cd2f2bf535  /tmp/solverfin-overlay.tar.gz" | sha256sum --check
           tar -xzf /tmp/solverfin-overlay.tar.gz
 
-      - name: Apply verified final fixes overlay
+      - name: Apply exact final remediations
         run: |
-          cat .github/final-fixes/part-* | base64 --decode > /tmp/issue551-final-fixes.tar.gz
-          echo "71c382d917496e543d469cc35590acd593c9e6f628ac8e24579428b32fc397bc  /tmp/issue551-final-fixes.tar.gz" | sha256sum --check
-          tar -xzf /tmp/issue551-final-fixes.tar.gz
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              target = Path(path)
+              text = target.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one match, found {count}")
+              target.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "apps/api/src/auth-cookie-session.integration.test.ts",
+              '''  const jwk = publicKey.export({ format: "jwk" }) as JsonWebKey & { kid: string; alg: string };
+          jwk.kid = "issue-551-key";
+          jwk.alg = "RS256";''',
+              '''  const jwk = {
+            ...(publicKey.export({ format: "jwk" }) as unknown as Record<string, unknown>),
+            kid: "issue-551-key",
+            alg: "RS256",
+          };''',
+          )
+          replace_once(
+              "apps/api/src/auth-cookie.test.ts",
+              "        captured.params = params;",
+              "        if (params !== undefined) captured.params = params;",
+          )
+          replace_once(
+              "apps/api/src/auth-service.ts",
+              "  if (!process.env.DATABASE_URL) {",
+              "  if (!env.DATABASE_URL) {",
+          )
+          replace_once(
+              "apps/api/src/mvp.ts",
+              'import { completeOidcCallback, startOidcLogin } from "./oidc-flow.js";',
+              '''import {
+            completeOidcCallback,
+            startOidcLogin,
+            type OidcCallbackInput,
+          } from "./oidc-flow.js";''',
+          )
+          replace_once(
+              "apps/api/src/mvp.ts",
+              '''      const result = await completeOidcCallback({
+                state: request.query?.get("state") ?? undefined,
+                code: request.query?.get("code") ?? undefined,
+                error: request.query?.get("error") ?? undefined,
+              });''',
+              '''      const callbackInput: OidcCallbackInput = {};
+              const state = request.query?.get("state");
+              const code = request.query?.get("code");
+              const error = request.query?.get("error");
+
+              if (state !== null && state !== undefined) callbackInput.state = state;
+              if (code !== null && code !== undefined) callbackInput.code = code;
+              if (error !== null && error !== undefined) callbackInput.error = error;
+
+              const result = await completeOidcCallback(callbackInput);''',
+          )
+          replace_once(
+              "apps/api/src/oidc-flow.ts",
+              "      fetchJwks: options.fetchJwks,",
+              "      ...(options.fetchJwks ? { fetchJwks: options.fetchJwks } : {}),",
+          )
+          replace_once(
+              "apps/api/src/server.ts",
+              "    headers[name] = Array.isArray(value) ? [...value] : value;",
+              '    headers[name] = typeof value === "string" ? value : [...value];',
+          )
+          PY
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
