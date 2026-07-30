@@ -95,7 +95,14 @@ export function createAuthService(options: AuthServiceOptions) {
   }
 
   function upsertUserCredentials(credentials: AuthUserCredentials): void {
-    usersByEmail.set(normalizeEmail(credentials.user.email), credentials);
+    const normalizedEmail = normalizeEmail(credentials.user.email);
+    const existingCredentials = usersByEmail.get(normalizedEmail);
+    const nextCredentials =
+      existingCredentials?.user.id === credentials.user.id
+        ? { user: credentials.user, passwordHash: existingCredentials.passwordHash }
+        : credentials;
+
+    usersByEmail.set(normalizedEmail, nextCredentials);
     usersById.set(credentials.user.id, credentials.user);
   }
 
