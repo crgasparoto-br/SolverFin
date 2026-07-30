@@ -80,7 +80,7 @@ Os contratos abaixo existem somente em `development`, `local`, `test` ou demonst
 
 Fora desses ambientes, o servidor remove qualquer Bearer recebido externamente antes de chamar roteadores internos. Somente um cookie produtivo previamente validado pode ser convertido em credencial interna transitória para os roteadores legados. Produção nunca recorre à sessão em memória quando a sessão persistida estiver ausente ou indisponível.
 
-`NODE_ENV` deve existir explicitamente e usar apenas `development`, `local`, `test` ou `production`. Ausência ou valor desconhecido interrompe a inicialização; os comandos `start` das aplicações definem `NODE_ENV=production`.
+`NODE_ENV` deve existir explicitamente e usar apenas `development`, `local`, `test` ou `production`. Ausência ou valor desconhecido interrompe a inicialização. O lifecycle `start` permanece canônico (`node dist/...`), portanto o ambiente de deploy deve fornecer `NODE_ENV=production` explicitamente.
 
 As rotas locais de login e cadastro verificam a elegibilidade do ambiente antes de ler ou validar o corpo, garantindo `AUTH_LOCAL_AUTH_DISABLED` mesmo para payload malformado fora dos ambientes autorizados.
 
