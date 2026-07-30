@@ -31,8 +31,7 @@ function assertInvalidOfx(content: string): void {
   );
 }
 
-const sgmlTransaction =
-  "<STMTTRN><DTPOSTED>20260730<TRNAMT>-10.25<FITID>nested-sgml<NAME>Compra";
+const sgmlTransaction = "<STMTTRN><DTPOSTED>20260730<TRNAMT>-10.25<FITID>nested-sgml<NAME>Compra";
 
 const xmlTransaction =
   "<STMTTRN><DTPOSTED>20260730</DTPOSTED><TRNAMT>-10.25</TRNAMT><FITID>nested-xml</FITID><NAME>Compra</NAME></STMTTRN>";

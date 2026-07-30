@@ -176,9 +176,7 @@ function assertCanonicalOfxTransactionFields(content: string): void {
       ? readImmediateParentName(masked, transactionList.contentStart + openStart) === "BANKTRANLIST"
       : !isNestedInsideExplicitContainer(transactionContainers, openStart);
     if (!directTransactionListChild) {
-      throw invalidOfx(
-        `Transacao STMTTRN ${index + 1} precisa ser filha direta de BANKTRANLIST.`,
-      );
+      throw invalidOfx(`Transacao STMTTRN ${index + 1} precisa ser filha direta de BANKTRANLIST.`);
     }
 
     const openEnd = openStart + open[0].length;

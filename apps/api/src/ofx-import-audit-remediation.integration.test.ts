@@ -45,7 +45,9 @@ async function main(): Promise<void> {
   assert.equal(persistedDetails[0].statusCode, 200);
   assert.equal(persistedDetails[1].statusCode, 200);
   assert.equal(
-    countConfigurationWarnings(persistedDetails.map((response) => readBody<ImportDetail>(response))),
+    countConfigurationWarnings(
+      persistedDetails.map((response) => readBody<ImportDetail>(response)),
+    ),
     1,
   );
 
@@ -56,13 +58,22 @@ async function main(): Promise<void> {
 
   const defaultListingResponse = await apiRequest(token, "GET", "/api/import-batches?status=all");
   assert.equal(defaultListingResponse.statusCode, 200);
-  const defaultListing = readBody<{ importBatches: ImportBatchRecord[] }>(defaultListingResponse)
-    .importBatches;
+  const defaultListing = readBody<{ importBatches: ImportBatchRecord[] }>(
+    defaultListingResponse,
+  ).importBatches;
   assert.ok(defaultListing.some((batch) => batch.id === first.importBatch.id));
   assert.ok(defaultListing.some((batch) => batch.id === second.importBatch.id));
-  assert.equal(defaultListing.some((batch) => batch.id === bankMessageId), false);
-  assert.equal(defaultListing.some((batch) => batch.id === manualId), false);
-  assert.ok(defaultListing.every((batch) => batch.sourceKind === "csv" || batch.sourceKind === "ofx"));
+  assert.equal(
+    defaultListing.some((batch) => batch.id === bankMessageId),
+    false,
+  );
+  assert.equal(
+    defaultListing.some((batch) => batch.id === manualId),
+    false,
+  );
+  assert.ok(
+    defaultListing.every((batch) => batch.sourceKind === "csv" || batch.sourceKind === "ofx"),
+  );
 
   const ofxListingResponse = await apiRequest(
     token,

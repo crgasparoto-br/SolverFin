@@ -147,10 +147,9 @@ async function lockOfxContentConfiguration(
   contentHash: string,
   executeQuery: QueryExecutor,
 ): Promise<void> {
-  await executeQuery(
-    "select pg_advisory_xact_lock(hashtextextended($1, 0))",
-    [`ofx:${context.organizationId}:${context.financialProfileId}:${contentHash}`],
-  );
+  await executeQuery("select pg_advisory_xact_lock(hashtextextended($1, 0))", [
+    `ofx:${context.organizationId}:${context.financialProfileId}:${contentHash}`,
+  ]);
 }
 
 async function findImportBatchIdBySourceHash(
