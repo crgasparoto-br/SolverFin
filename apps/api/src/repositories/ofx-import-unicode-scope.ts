@@ -62,7 +62,7 @@ function readOfxTagTokens(value: string): OfxTagToken[] {
   const expression =
     /<\s*(\/?)\s*([\p{L}\p{Nl}_:][\p{L}\p{Nl}\p{N}\p{M}\u00b7_.:-]*)(?:\s[^>]*)?>/gu;
   return [...value.matchAll(expression)].map((match) => ({
-    name: match[2] ?? "",
+    name: (match[2] ?? "").toUpperCase(),
     closing: match[1] === "/",
     selfClosing: /\/\s*>$/.test(match[0]),
     start: match.index ?? 0,
@@ -80,7 +80,7 @@ function findLastMatchingOpen(tokens: readonly OfxTagToken[], name: string): num
 function containsScopedOfxField(value: string): boolean {
   return readOfxTagTokens(value).some((token) => {
     if (token.closing) return false;
-    const localName = token.name.split(":").at(-1)?.toUpperCase();
+    const localName = token.name.split(":").at(-1);
     return localName !== undefined && OFX_SCOPED_FIELD_NAMES.has(localName);
   });
 }
