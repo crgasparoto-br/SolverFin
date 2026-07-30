@@ -9,6 +9,7 @@ import {
 import {
   buildUpstreamAuthenticationHeaders,
   clearSessionCookie,
+  isDemoAuthenticationAllowed,
   serializeSessionCookie,
 } from "./session.js";
 
@@ -35,15 +36,25 @@ export async function handleApiRequest(
 ): Promise<void> {
   const correlationId = resolveCorrelationId(request);
 
+  if (isLocalAuthenticationRoute(request.method, url.pathname) && !isDemoAuthenticationAllowed()) {
+    sendJson(
+      response,
+      403,
+      apiError(
+        "AUTH_LOCAL_AUTH_DISABLED",
+        "A autenticação local não está disponível neste ambiente.",
+        correlationId,
+      ),
+    );
+    return;
+  }
+
   if (publicOidcPaths.has(url.pathname) && request.method === "GET") {
     await proxyToApi(request, response, url, credential, true);
     return;
   }
 
-  if (
-    request.method === "POST" &&
-    (url.pathname === "/api/session" || url.pathname === "/api/users")
-  ) {
+  if (isLocalAuthenticationRoute(request.method, url.pathname)) {
     await handleSessionCreatingRequest(request, response, url.pathname, correlationId);
     return;
   }
@@ -148,6 +159,10 @@ export function resolveOidcCallbackLocation(input: {
     containsApiSessionCookie(input.setCookies);
 
   return completedOidcSession ? buildOidcCompletionLocation(input.location) : input.location;
+}
+
+function isLocalAuthenticationRoute(method: string | undefined, pathname: string): boolean {
+  return method === "POST" && (pathname === "/api/session" || pathname === "/api/users");
 }
 
 async function handleRecurrenceMaterialization(
