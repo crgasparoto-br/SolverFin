@@ -117,9 +117,10 @@ async function validatesSessionRotationAndRevocation(): Promise<void> {
 }
 
 async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
+  const oidcNow = new Date();
   const start = await startOidcLogin("/dashboard", {
     env: productiveEnv,
-    now: new Date("2026-07-30T17:10:00.000Z"),
+    now: oidcNow,
   });
   const authorizationUrl = new URL(start.location);
   const state = authorizationUrl.searchParams.get("state");
@@ -133,7 +134,7 @@ async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
     kid: "issue-551-key",
     alg: "RS256",
   };
-  const nowSeconds = Math.floor(new Date("2026-07-30T17:10:00.000Z").getTime() / 1000);
+  const nowSeconds = Math.floor(oidcNow.getTime() / 1000);
   const idToken = signJwt(privateKey, jwk.kid, {
     iss: productiveEnv.OIDC_ISSUER_URL,
     sub: `issue-551-${Date.now()}`,
@@ -157,7 +158,7 @@ async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
     { state, code: "authorization-code-do-not-log" },
     {
       env: productiveEnv,
-      now: new Date("2026-07-30T17:10:00.000Z"),
+      now: oidcNow,
       fetchImpl,
       fetchJwks: async () => ({ keys: [jwk] }),
     },
