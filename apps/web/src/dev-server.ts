@@ -29,6 +29,8 @@ import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
 import {
+  materializeAccountStatementRecurrences,
+  materializeCardInvoiceRecurrences,
   renderRecurrenceMaterializationGate,
   requiresRecurrenceMaterialization,
 } from "./dev-server/recurrence-materialization.js";
@@ -171,9 +173,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/cartoes" && token) {
-    if (requiresRecurrenceMaterialization(url)) {
+    if (shouldUseProductiveRecurrenceGate() && requiresRecurrenceMaterialization(url)) {
       sendHtml(response, 200, renderRecurrenceMaterializationGate("card", url));
       return;
+    }
+
+    if (shouldUseLocalRecurrenceAdapter()) {
+      await materializeLocally("card", token, url);
     }
 
     const html = await renderCardsPageWithMonthNavigation(token, url);
@@ -185,9 +191,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/lancamentos" && token) {
-    if (requiresRecurrenceMaterialization(url)) {
+    if (shouldUseProductiveRecurrenceGate() && requiresRecurrenceMaterialization(url)) {
       sendHtml(response, 200, renderRecurrenceMaterializationGate("account", url));
       return;
+    }
+
+    if (shouldUseLocalRecurrenceAdapter()) {
+      await materializeLocally("account", token, url);
     }
 
     const html = await renderTransactionsPage(token, url);
@@ -260,6 +270,40 @@ async function handleOidcCompletion(
 
   response.writeHead(303, { location: returnTo, "cache-control": "no-store" });
   response.end();
+}
+
+async function materializeLocally(
+  surface: "account" | "card",
+  credential: string,
+  url: URL,
+): Promise<void> {
+  try {
+    if (surface === "card") {
+      await materializeCardInvoiceRecurrences(credential, url, process.env.APP_ORIGIN);
+    } else {
+      await materializeAccountStatementRecurrences(credential, url, process.env.APP_ORIGIN);
+    }
+  } catch (error) {
+    console.error("Local recurrence materialization failed", {
+      surface,
+      code:
+        typeof error === "object" && error !== null && "code" in error
+          ? String(error.code)
+          : "unknown",
+    });
+  }
+}
+
+function shouldUseProductiveRecurrenceGate(): boolean {
+  return process.env.NODE_ENV?.trim().toLowerCase() === "production";
+}
+
+function shouldUseLocalRecurrenceAdapter(): boolean {
+  const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
+  return (
+    process.env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION !== "1" &&
+    (nodeEnv === "development" || nodeEnv === "local" || nodeEnv === "test")
+  );
 }
 
 function validateInternalReturnTo(value: string | null): string | undefined {
