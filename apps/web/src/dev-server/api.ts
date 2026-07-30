@@ -136,6 +136,20 @@ export async function apiGet<T>(
   }
 }
 
+export function resolveOidcCallbackLocation(input: {
+  requestPath: string;
+  status: number;
+  location: string;
+  setCookies: readonly string[];
+}): string {
+  const completedOidcSession =
+    input.requestPath === "/api/auth/oidc/callback" &&
+    input.status === 303 &&
+    containsApiSessionCookie(input.setCookies);
+
+  return completedOidcSession ? buildOidcCompletionLocation(input.location) : input.location;
+}
+
 async function handleRecurrenceMaterialization(
   request: IncomingMessage,
   response: ServerResponse,
@@ -261,13 +275,14 @@ function collectProxyResponseHeaders(
   const location = upstream.headers.get("location");
   const cacheControl = upstream.headers.get("cache-control");
   const setCookies = readSetCookies(upstream);
-  const completedOidcSession =
-    requestUrl.pathname === "/api/auth/oidc/callback" &&
-    upstream.status === 303 &&
-    containsApiSessionCookie(setCookies);
 
   if (location) {
-    headers.location = completedOidcSession ? buildOidcCompletionLocation(location) : location;
+    headers.location = resolveOidcCallbackLocation({
+      requestPath: requestUrl.pathname,
+      status: upstream.status,
+      location,
+      setCookies,
+    });
   }
   if (cacheControl) headers["cache-control"] = cacheControl;
   if (setCookies.length > 0) headers["set-cookie"] = setCookies;
