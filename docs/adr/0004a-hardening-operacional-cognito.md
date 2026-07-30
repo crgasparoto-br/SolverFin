@@ -47,4 +47,5 @@ Os gates da issue incluem:
 - testes unitários dos códigos públicos, cookie, origem, `returnTo`, provider confiável e bloqueio de Bearer;
 - testes PostgreSQL de rotação concorrente, replay, cancelamento, criação idempotente, vínculo conflitante, imutabilidade e revogação por desabilitação;
 - migrations e seed em banco dedicado;
-- lint, typecheck, testes, build e validação visual em Chrome.
+- lint, typecheck, testes, build e validação visual em Chrome;
+- regressões concorrentes do monorepo permanecem obrigatórias, porque a autenticação e a sessão atravessam os mesmos roteadores e transações usados pelos fluxos financeiros.
