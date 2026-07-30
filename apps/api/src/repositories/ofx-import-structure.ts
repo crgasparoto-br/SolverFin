@@ -191,17 +191,22 @@ function readExplicitContainerRanges(
   value: string,
   scalarTags: ReadonlySet<string>,
 ): ExplicitContainerRange[] {
+  const tokens = readStructuralTagTokens(value);
   const openByName = new Map<string, StructuralTagToken[]>();
   const ranges: ExplicitContainerRange[] = [];
 
-  for (const token of readStructuralTagTokens(value)) {
-    if (token.selfClosing) continue;
+  tokens.forEach((token, index) => {
+    if (token.selfClosing) return;
     if (!token.closing) {
-      if (scalarTags.has(token.name)) continue;
+      const nextToken = tokens[index + 1];
+      const scalarValue = value.slice(token.end, nextToken?.start ?? value.length).trim();
+      const closesImmediately = nextToken?.closing === true && nextToken.name === token.name;
+      if (scalarTags.has(token.name) && (scalarValue.length > 0 || closesImmediately)) return;
+
       const stack = openByName.get(token.name) ?? [];
       stack.push(token);
       openByName.set(token.name, stack);
-      continue;
+      return;
     }
 
     const stack = openByName.get(token.name);
@@ -209,7 +214,7 @@ function readExplicitContainerRanges(
     if (open !== undefined) {
       ranges.push({ openStart: open.start, closeStart: token.start });
     }
-  }
+  });
 
   for (const stack of openByName.values()) {
     for (const open of stack) {
