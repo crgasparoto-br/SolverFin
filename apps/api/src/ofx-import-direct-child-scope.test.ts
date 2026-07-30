@@ -66,6 +66,34 @@ describe("OFX canonical direct-child scope", () => {
     for (const content of invalidDocuments) assertInvalidOfx(content);
   });
 
+  it("rejects canonical XML fields nested inside scalar elements", () => {
+    const invalidDocuments = [
+      [
+        '<?xml version="1.0"?>',
+        "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729</DTPOSTED><NAME><TRNAMT>-10</TRNAMT></NAME>",
+        "<FITID>nested-amount</FITID>",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+      [
+        '<?xml version="1.0"?>',
+        "<OFX><STMTRS><CURDEF>BRL</CURDEF><BANKTRANLIST><STMTTRN>",
+        "<DTPOSTED>20260729</DTPOSTED><TRNAMT>-10</TRNAMT>",
+        "<MEMO><FITID>nested-fitid-scalar</FITID></MEMO>",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+      [
+        '<?xml version="1.0"?>',
+        "<OFX><STMTRS><MKTGINFO><CURDEF>BRL</CURDEF></MKTGINFO>",
+        "<BANKTRANLIST><STMTTRN><DTPOSTED>20260729</DTPOSTED>",
+        "<TRNAMT>-10</TRNAMT><FITID>nested-currency</FITID>",
+        "</STMTTRN></BANKTRANLIST></STMTRS></OFX>",
+      ].join(""),
+    ];
+
+    for (const content of invalidDocuments) assertInvalidOfx(content);
+  });
+
   it("rejects unclosed intermediate containers in SGML and XML without declarations", () => {
     const invalidDocuments = [
       [
