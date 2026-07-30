@@ -24,6 +24,11 @@ const OFX_TRANSACTION_SCALAR_TAGS = new Set([
 ]);
 
 const OFX_STATEMENT_SCALAR_TAGS = new Set(["CURDEF", "DTASOF", "MKTGINFO"]);
+const OFX_TRANSACTION_LIST_SCALAR_TAGS = new Set([
+  ...OFX_TRANSACTION_SCALAR_TAGS,
+  ...OFX_STATEMENT_SCALAR_TAGS,
+  "STMTTRN",
+]);
 
 interface StructuralTagToken {
   name: string;
@@ -159,10 +164,24 @@ function assertCanonicalOfxTransactionFields(content: string): void {
     transactionList.contentStart,
     transactionList.contentEnd,
   );
+  const transactionContainers = readExplicitContainerRanges(
+    transactionListBody,
+    OFX_TRANSACTION_LIST_SCALAR_TAGS,
+  );
   const transactionOpens = [...transactionListBody.matchAll(/<\s*STMTTRN(?:\s[^>]*)?>/gi)];
 
   transactionOpens.forEach((open, index) => {
-    const openEnd = (open.index ?? 0) + open[0].length;
+    const openStart = open.index ?? 0;
+    const directTransactionListChild = strictXml
+      ? readImmediateParentName(masked, transactionList.contentStart + openStart) === "BANKTRANLIST"
+      : !isNestedInsideExplicitContainer(transactionContainers, openStart);
+    if (!directTransactionListChild) {
+      throw invalidOfx(
+        `Transacao STMTTRN ${index + 1} precisa ser filha direta de BANKTRANLIST.`,
+      );
+    }
+
+    const openEnd = openStart + open[0].length;
     const nextOpenStart = transactionOpens[index + 1]?.index ?? transactionListBody.length;
     const segment = transactionListBody.slice(openEnd, nextOpenStart);
     const close = /<\s*\/\s*STMTTRN\s*>/i.exec(segment);
