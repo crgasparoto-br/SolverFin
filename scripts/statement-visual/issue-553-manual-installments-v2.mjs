@@ -55,7 +55,7 @@ try {
     },
   });
   assertCanonicalPost(ambiguous);
-  const ambiguousStatus = await waitForFormStatus("operação pode ter sido concluída");
+  const ambiguousStatus = await waitForFormStatus("A resposta foi inconclusiva");
   const preserved = await readFormState();
   check(preserved.modalOpen, "Modal closed after ambiguous response", preserved);
   check(!preserved.submitDisabled, "Submit remained disabled after ambiguous response", preserved);
