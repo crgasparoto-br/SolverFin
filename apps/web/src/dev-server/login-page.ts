@@ -154,7 +154,7 @@ function loginCss(): string {
     * { box-sizing: border-box; min-width: 0; }
     html, body { margin: 0; max-width: 100%; min-height: 100%; overflow-x: clip; }
     body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    h1, p { margin: 0; overflow-wrap: anywhere; } h1 { font-size: 2rem; letter-spacing: 0; }
+    p { margin: 0; overflow-wrap: anywhere; } h1 { font-size: clamp(1.75rem, 8vw, 2rem); letter-spacing: 0; margin: 0; overflow-wrap: normal; word-break: keep-all; }
     .login-shell { align-items: center; display: grid; min-height: 100vh; padding: clamp(12px, 4vw, 24px); width: 100%; }
     .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 18px; margin: 0 auto; max-width: min(480px, 100%); padding: clamp(14px, 4vw, 20px); width: 100%; }
     .login-logo { display: block; height: auto; margin: 0 auto; max-width: min(120px, 100%); }
