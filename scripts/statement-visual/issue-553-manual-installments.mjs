@@ -287,7 +287,7 @@ async function interceptInstallmentRequests({ action, failFirst = false, observe
   const unsubscribe = browser.cdp.on("Fetch.requestPaused", (paused) => {
     const operation = (async () => {
       const record = readPausedRequest(paused);
-      if (record.method !== "POST" || record.pathname !== "/api/installments") {
+      if (record.method !== "POST" || !record.pathname.startsWith("/api/")) {
         await browser.cdp.send("Fetch.continueRequest", { requestId: paused.requestId });
         return;
       }
@@ -306,16 +306,14 @@ async function interceptInstallmentRequests({ action, failFirst = false, observe
   });
 
   await browser.cdp.send("Fetch.enable", {
-    patterns: [{ urlPattern: "*api/installments*", requestStage: "Request" }],
+    patterns: [{ urlPattern: "*api/*", requestStage: "Request" }],
   });
   try {
     await action();
     const first = await Promise.race([
       firstRequest,
       sleep(10_000).then(() => {
-        throw new Error(
-          "Timed out waiting for POST /api/installments at the Chrome transport boundary",
-        );
+        throw new Error("Timed out waiting for a form POST at the Chrome transport boundary");
       }),
     ]);
     if (observeAfterFirst > 0) await sleep(observeAfterFirst);
