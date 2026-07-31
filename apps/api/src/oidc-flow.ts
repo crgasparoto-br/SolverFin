@@ -9,6 +9,7 @@ import { validateOidcIdToken, type JsonWebKeySet, type OidcProviderConfig } from
 
 const DEFAULT_ATTEMPT_TTL_MINUTES = 10;
 const OIDC_SCOPES = "openid email profile";
+const CODE_VERIFIER_ENVELOPE_VERSION = "v1";
 
 type OidcAttemptStatus = "PENDING" | "PROCESSING" | "CONSUMED" | "CANCELLED" | "EXPIRED" | "FAILED";
 
@@ -35,12 +36,15 @@ export interface OidcRuntimeConfig extends OidcProviderConfig {
 export interface OidcStartResult {
   location: string;
   expiresAt: Date;
+  state: string;
+  browserBinding: string;
 }
 
 export interface OidcCallbackInput {
   state?: string;
   code?: string;
   error?: string;
+  browserBinding?: string;
 }
 
 export interface OidcCallbackResult {
@@ -66,6 +70,7 @@ export async function startOidcLogin(
   const returnTo = validateInternalReturnTo(returnToInput ?? "/");
   const state = randomBytes(32).toString("base64url");
   const nonce = randomBytes(32).toString("base64url");
+  const browserBinding = randomBytes(32).toString("base64url");
   const codeVerifier = randomBytes(48).toString("base64url");
   const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
 
@@ -77,7 +82,11 @@ export async function startOidcLogin(
       randomUUID(),
       hashTransientValue(state),
       hashTransientValue(nonce),
-      encryptCodeVerifier(codeVerifier, config.encryptionKey),
+      encryptCodeVerifier(
+        codeVerifier,
+        config.encryptionKey,
+        hashTransientValue(browserBinding),
+      ),
       config.issuer,
       returnTo,
       now,
@@ -101,7 +110,12 @@ export async function startOidcLogin(
     metadata: { provider: "amazon_cognito", expiresAt: expiresAt.toISOString() },
   });
 
-  return { location: location.toString(), expiresAt };
+  return {
+    location: location.toString(),
+    expiresAt,
+    state,
+    browserBinding,
+  };
 }
 
 export async function completeOidcCallback(
@@ -117,9 +131,15 @@ export async function completeOidcCallback(
   const config = resolveOidcRuntimeConfig(env);
   const now = options.now ?? new Date();
   const state = requireOpaqueCallbackValue(input.state);
+  const browserBinding = requireOpaqueCallbackValue(input.browserBinding);
 
   if (input.error) {
-    await cancelOidcAttempt(state, normalizeProviderError(input.error), now);
+    await cancelOidcAttempt(
+      state,
+      browserBinding,
+      normalizeProviderError(input.error),
+      now,
+    );
     await auditSecurityEvent({
       action: "oidc_callback_cancelled",
       result: "cancelled",
@@ -129,14 +149,15 @@ export async function completeOidcCallback(
   }
 
   const code = requireOpaqueCallbackValue(input.code);
-  const attempt = await claimOidcAttempt(state, now);
-  if (attempt.issuer !== config.issuer) {
-    await markOidcAttemptFailed(attempt.id, "issuer_mismatch", now);
-    throw invalidAttemptError();
-  }
-  const codeVerifier = decryptCodeVerifier(attempt.encryptedCodeVerifier, config.encryptionKey);
+  const attempt = await claimOidcAttempt(state, browserBinding, now);
 
   try {
+    if (attempt.issuer !== config.issuer) throw invalidAttemptError();
+
+    const codeVerifier = decryptCodeVerifier(
+      attempt.encryptedCodeVerifier,
+      config.encryptionKey,
+    );
     const idToken = await exchangeAuthorizationCode(
       { code, codeVerifier },
       config,
@@ -270,14 +291,22 @@ export function resolveOidcRuntimeConfig(
   };
 }
 
-async function claimOidcAttempt(state: string, now: Date): Promise<OidcAttemptRow> {
+async function claimOidcAttempt(
+  state: string,
+  browserBinding: string,
+  now: Date,
+): Promise<OidcAttemptRow> {
   const stateHash = hashTransientValue(state);
+  const browserBindingHash = hashTransientValue(browserBinding);
   const rows = await query<OidcAttemptRow>(
     `update "OidcLoginAttempt"
      set "status" = 'PROCESSING', "version" = "version" + 1
-     where "stateHash" = $1 and "status" = 'PENDING' and "expiresAt" > $2
+     where "stateHash" = $1
+       and "status" = 'PENDING'
+       and "expiresAt" > $2
+       and split_part("encryptedCodeVerifier", '.', 2) = $3
      returning "id", "stateHash", "nonceHash", "encryptedCodeVerifier", "issuer", "returnTo", "status", "version", "expiresAt"`,
-    [stateHash, now],
+    [stateHash, now, browserBindingHash],
   );
   const attempt = rows[0];
 
@@ -285,8 +314,11 @@ async function claimOidcAttempt(state: string, now: Date): Promise<OidcAttemptRo
     await query(
       `update "OidcLoginAttempt"
        set "status" = 'EXPIRED', "terminalReason" = 'timeout', "consumedAt" = $2, "version" = "version" + 1
-       where "stateHash" = $1 and "status" = 'PENDING' and "expiresAt" <= $2`,
-      [stateHash, now],
+       where "stateHash" = $1
+         and "status" = 'PENDING'
+         and "expiresAt" <= $2
+         and split_part("encryptedCodeVerifier", '.', 2) = $3`,
+      [stateHash, now, browserBindingHash],
     );
     throw invalidAttemptError();
   }
@@ -294,13 +326,21 @@ async function claimOidcAttempt(state: string, now: Date): Promise<OidcAttemptRo
   return attempt;
 }
 
-async function cancelOidcAttempt(state: string, reason: string, now: Date): Promise<void> {
+async function cancelOidcAttempt(
+  state: string,
+  browserBinding: string,
+  reason: string,
+  now: Date,
+): Promise<void> {
   const rows = await query<{ id: string }>(
     `update "OidcLoginAttempt"
-     set "status" = 'CANCELLED', "terminalReason" = $2, "consumedAt" = $3, "version" = "version" + 1
-     where "stateHash" = $1 and "status" = 'PENDING' and "expiresAt" > $3
+     set "status" = 'CANCELLED', "terminalReason" = $3, "consumedAt" = $4, "version" = "version" + 1
+     where "stateHash" = $1
+       and "status" = 'PENDING'
+       and "expiresAt" > $4
+       and split_part("encryptedCodeVerifier", '.', 2) = $2
      returning "id"`,
-    [hashTransientValue(state), reason, now],
+    [hashTransientValue(state), hashTransientValue(browserBinding), reason, now],
   );
 
   if (rows.length !== 1) throw invalidAttemptError();
@@ -371,18 +411,39 @@ async function insertSecurityAuditEvent(
   );
 }
 
-function encryptCodeVerifier(value: string, key: Buffer): string {
+function encryptCodeVerifier(
+  value: string,
+  key: Buffer,
+  browserBindingHash: string,
+): string {
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, iv);
   const ciphertext = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
 
-  return [iv, tag, ciphertext].map((part) => part.toString("base64url")).join(".");
+  return [
+    CODE_VERIFIER_ENVELOPE_VERSION,
+    browserBindingHash,
+    iv.toString("base64url"),
+    tag.toString("base64url"),
+    ciphertext.toString("base64url"),
+  ].join(".");
 }
 
 function decryptCodeVerifier(value: string, key: Buffer): string {
-  const [ivValue, tagValue, ciphertextValue, extra] = value.split(".");
-  if (!ivValue || !tagValue || !ciphertextValue || extra) throw invalidAttemptError();
+  const [version, browserBindingHash, ivValue, tagValue, ciphertextValue, extra] =
+    value.split(".");
+  if (
+    version !== CODE_VERIFIER_ENVELOPE_VERSION ||
+    !browserBindingHash ||
+    !/^[a-f0-9]{64}$/.test(browserBindingHash) ||
+    !ivValue ||
+    !tagValue ||
+    !ciphertextValue ||
+    extra
+  ) {
+    throw invalidAttemptError();
+  }
 
   try {
     const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(ivValue, "base64url"));
