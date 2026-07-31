@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { AuthError } from "./auth.js";
+import { AuthError, type AuthErrorCode } from "./auth.js";
 
 const PRODUCTIVE_COOKIE_NAME = "__Host-solverfin_session";
 const LOCAL_COOKIE_NAME = "solverfin_session";
@@ -152,7 +152,7 @@ function clearCookie(name: string, env: Readonly<Record<string, string | undefin
   return attributes.join("; ");
 }
 
-function assertOpaqueCookieValue(value: string, code: string): void {
+function assertOpaqueCookieValue(value: string, code: AuthErrorCode): void {
   if (!/^[A-Za-z0-9_-]{32,}$/.test(value)) {
     throw new AuthError(code, "Authentication session is invalid.", 401);
   }
