@@ -1,3 +1,6 @@
+ALTER TABLE "Transaction"
+ADD COLUMN "note" TEXT;
+
 CREATE TABLE "InstallmentCreationRequest" (
     "id" UUID NOT NULL,
     "organizationId" UUID NOT NULL,
