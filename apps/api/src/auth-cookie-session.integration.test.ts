@@ -44,7 +44,8 @@ async function main(): Promise<void> {
   ]);
 
   await validatesSessionRotationAndRevocation();
-  await validatesSuccessfulCallbackAndSingleUse();
+  await validatesBrowserBindingSuccessfulCallbackAndSingleUse();
+  await validatesAttemptPayloadFailuresBecomeTerminal();
   await validatesAttemptCancellationReplayAndExpiry();
 }
 
@@ -117,7 +118,7 @@ async function validatesSessionRotationAndRevocation(): Promise<void> {
   assert.equal(logoutAudits[0]?.count, "1");
 }
 
-async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
+async function validatesBrowserBindingSuccessfulCallbackAndSingleUse(): Promise<void> {
   const oidcNow = new Date();
   const start = await startOidcLogin("/dashboard", {
     env: productiveEnv,
@@ -129,22 +130,51 @@ async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
   assert.ok(state);
   assert.ok(nonce);
 
+  let exchangeCalls = 0;
+  await assert.rejects(
+    () =>
+      completeOidcCallback(
+        {
+          state,
+          browserBinding: "B".repeat(43),
+          code: "code-presented-by-another-browser",
+        },
+        {
+          env: productiveEnv,
+          now: oidcNow,
+          fetchImpl: async () => {
+            exchangeCalls += 1;
+            return new Response(null, { status: 500 });
+          },
+        },
+      ),
+    isInvalidAttempt,
+  );
+  assert.equal(exchangeCalls, 0);
+
+  const afterForeignBrowser = await query<{ status: string }>(
+    `select "status" from "OidcLoginAttempt" where "stateHash" = $1`,
+    [hash(state)],
+  );
+  assert.equal(afterForeignBrowser[0]?.status, "PENDING");
+
   const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
   const jwk = {
     ...(publicKey.export({ format: "jwk" }) as unknown as Record<string, unknown>),
     kid: "issue-551-key",
     alg: "RS256",
   };
+  const suffix = `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
   const nowSeconds = Math.floor(oidcNow.getTime() / 1000);
   const idToken = signJwt(privateKey, jwk.kid, {
     iss: productiveEnv.OIDC_ISSUER_URL,
-    sub: `issue-551-${Date.now()}`,
+    sub: `issue-551-${suffix}`,
     aud: productiveEnv.OIDC_CLIENT_ID,
     exp: nowSeconds + 300,
     iat: nowSeconds,
     nonce,
     token_use: "id",
-    email: `issue-551-${Date.now()}@example.invalid`,
+    email: `issue-551-${suffix}@example.invalid`,
     email_verified: true,
     name: "Issue 551 Teste",
   });
@@ -158,7 +188,11 @@ async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
   };
 
   const callback = await completeOidcCallback(
-    { state, code: "authorization-code-do-not-log" },
+    {
+      state,
+      browserBinding: start.browserBinding,
+      code: "authorization-code-do-not-log",
+    },
     {
       env: productiveEnv,
       now: oidcNow,
@@ -185,23 +219,83 @@ async function validatesSuccessfulCallbackAndSingleUse(): Promise<void> {
   await assert.rejects(
     () =>
       completeOidcCallback(
-        { state, code: "replayed-code" },
+        { state, browserBinding: start.browserBinding, code: "replayed-code" },
         { env: productiveEnv, fetchImpl, fetchJwks: async () => ({ keys: [jwk] }) },
       ),
-    (error) => error instanceof AuthError && error.code === "AUTH_OIDC_ATTEMPT_INVALID",
+    isInvalidAttempt,
   );
 }
 
-function signJwt(privateKey: KeyObject, kid: string, claims: Record<string, unknown>): string {
-  const encodedHeader = Buffer.from(JSON.stringify({ alg: "RS256", kid, typ: "JWT" })).toString(
-    "base64url",
+async function validatesAttemptPayloadFailuresBecomeTerminal(): Promise<void> {
+  const auditCountBefore = await countCallbackFailureAudits();
+
+  const wrongKeyNow = new Date();
+  const wrongKeyStart = await startOidcLogin("/", {
+    env: productiveEnv,
+    now: wrongKeyNow,
+  });
+  const wrongKeyState = new URL(wrongKeyStart.location).searchParams.get("state");
+  assert.ok(wrongKeyState);
+
+  await assert.rejects(
+    () =>
+      completeOidcCallback(
+        {
+          state: wrongKeyState,
+          browserBinding: wrongKeyStart.browserBinding,
+          code: "code-not-exchanged-after-key-rotation",
+        },
+        {
+          env: {
+            ...productiveEnv,
+            OIDC_ATTEMPT_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString("base64"),
+          },
+          now: wrongKeyNow,
+          fetchImpl: async () => {
+            throw new Error("token endpoint must not be called");
+          },
+        },
+      ),
+    isInvalidAttempt,
   );
-  const encodedClaims = Buffer.from(JSON.stringify(claims)).toString("base64url");
-  const signingInput = `${encodedHeader}.${encodedClaims}`;
-  const signer = createSign("RSA-SHA256");
-  signer.update(signingInput);
-  signer.end();
-  return `${signingInput}.${signer.sign(privateKey).toString("base64url")}`;
+  await assertTerminalFailure(wrongKeyState);
+
+  const corruptNow = new Date();
+  const corruptStart = await startOidcLogin("/", {
+    env: productiveEnv,
+    now: corruptNow,
+  });
+  const corruptState = new URL(corruptStart.location).searchParams.get("state");
+  assert.ok(corruptState);
+  await query(
+    `update "OidcLoginAttempt" set "encryptedCodeVerifier" = $2 where "stateHash" = $1`,
+    [
+      hash(corruptState),
+      `v1.${hash(corruptStart.browserBinding)}.invalid.invalid.invalid`,
+    ],
+  );
+
+  await assert.rejects(
+    () =>
+      completeOidcCallback(
+        {
+          state: corruptState,
+          browserBinding: corruptStart.browserBinding,
+          code: "code-not-exchanged-for-corrupt-envelope",
+        },
+        {
+          env: productiveEnv,
+          now: corruptNow,
+          fetchImpl: async () => {
+            throw new Error("token endpoint must not be called");
+          },
+        },
+      ),
+    isInvalidAttempt,
+  );
+  await assertTerminalFailure(corruptState);
+
+  assert.equal((await countCallbackFailureAudits()) - auditCountBefore, 2);
 }
 
 async function validatesAttemptCancellationReplayAndExpiry(): Promise<void> {
@@ -216,23 +310,23 @@ async function validatesAttemptCancellationReplayAndExpiry(): Promise<void> {
   await assert.rejects(
     () =>
       completeOidcCallback(
-        { state, error: "access_denied" },
+        { state, browserBinding: start.browserBinding, error: "access_denied" },
         { env: productiveEnv, now: cancellationNow },
       ),
-    (error) => error instanceof AuthError && error.code === "AUTH_OIDC_ATTEMPT_INVALID",
+    isInvalidAttempt,
   );
   await assert.rejects(
     () =>
       completeOidcCallback(
-        { state, error: "access_denied" },
+        { state, browserBinding: start.browserBinding, error: "access_denied" },
         { env: productiveEnv, now: cancellationNow },
       ),
-    (error) => error instanceof AuthError && error.code === "AUTH_OIDC_ATTEMPT_INVALID",
+    isInvalidAttempt,
   );
 
   const cancelled = await query<{ status: string; terminalReason: string | null }>(
     `select "status", "terminalReason" from "OidcLoginAttempt" where "stateHash" = $1`,
-    [createHash("sha256").update(state).digest("hex")],
+    [hash(state)],
   );
   assert.equal(cancelled[0]?.status, "CANCELLED");
   assert.equal(cancelled[0]?.terminalReason, "access_denied");
@@ -242,4 +336,40 @@ async function validatesAttemptCancellationReplayAndExpiry(): Promise<void> {
     now: new Date("2026-07-30T16:00:00.000Z"),
   });
   assert.ok((await expireOidcLoginAttempts(new Date("2026-07-30T18:00:00.000Z"))) >= 1);
+}
+
+function signJwt(privateKey: KeyObject, kid: string, claims: Record<string, unknown>): string {
+  const encodedHeader = Buffer.from(JSON.stringify({ alg: "RS256", kid, typ: "JWT" })).toString(
+    "base64url",
+  );
+  const encodedClaims = Buffer.from(JSON.stringify(claims)).toString("base64url");
+  const signingInput = `${encodedHeader}.${encodedClaims}`;
+  const signer = createSign("RSA-SHA256");
+  signer.update(signingInput);
+  signer.end();
+  return `${signingInput}.${signer.sign(privateKey).toString("base64url")}`;
+}
+
+async function assertTerminalFailure(state: string): Promise<void> {
+  const rows = await query<{ status: string; terminalReason: string | null }>(
+    `select "status", "terminalReason" from "OidcLoginAttempt" where "stateHash" = $1`,
+    [hash(state)],
+  );
+  assert.equal(rows[0]?.status, "FAILED");
+  assert.equal(rows[0]?.terminalReason, "callback_failed");
+}
+
+async function countCallbackFailureAudits(): Promise<number> {
+  const rows = await query<{ count: string }>(
+    `select count(*)::text as count from "SecurityAuditEvent" where "action" = 'oidc_callback_failed'`,
+  );
+  return Number(rows[0]?.count ?? 0);
+}
+
+function hash(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function isInvalidAttempt(error: unknown): boolean {
+  return error instanceof AuthError && error.code === "AUTH_OIDC_ATTEMPT_INVALID";
 }
