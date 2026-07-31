@@ -18,11 +18,25 @@ test("keeps canonical installments selectable for bulk actions and blocks only g
   assert.match(script, /continuam disponíveis para conciliar, desconciliar ou excluir/);
   assert.match(script, /function disableLegacyGroupSelection\(input\)/);
   assert.match(script, /input\.disabled = true/);
-  assert.match(script, /url\.pathname === "\/api\/installments"/);
+  assert.match(script, /descriptor\.pathname === "\/api\/installments"/);
   assert.match(script, /response\.clone\(\)\.json/);
-  assert.match(script, /url\.searchParams\.has\("accountId"\)/);
+  assert.match(script, /searchParams\.has\("accountId"\)/);
   assert.match(script, /script\[data-group\]/);
   assert.match(script, /data-installment-badge/);
   assert.match(script, /Parcelas devem permanecer fora de agrupamentos/);
   assert.doesNotMatch(script, /nativeFetch\("\/api\/installments/);
+});
+
+test("preserves the exact installment request after an ambiguous response", () => {
+  const script = transactionGroupInstallmentGuardScript();
+
+  assert.match(script, /let ambiguousInstallmentAttempt/);
+  assert.match(script, /response\.status === 504|response\.status >= 500/);
+  assert.match(script, /ambiguousInstallmentAttempt = descriptor/);
+  assert.match(script, /descriptor = ambiguousInstallmentAttempt/);
+  assert.match(script, /body: descriptor\.body/);
+  assert.match(script, /data\.installmentRecovery = "ambiguous"/);
+  assert.match(script, /data-installment-recovery-disabled/);
+  assert.match(script, /antes de alterar os dados/);
+  assert.match(script, /addEventListener\("close", clearAmbiguousAttempt\)/);
 });

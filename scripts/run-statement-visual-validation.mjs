@@ -20,8 +20,10 @@ try {
   await import("./statement-visual/issue-539-operational-installments.mjs");
   await import("./statement-visual/issue-539-operational-installments-keyboard.mjs");
   await import("./statement-visual/issue-539-installment-grouping-guard.mjs");
-  // The issue 553 scenario asserts the canonical POST at the Chrome transport boundary.
+  // The first issue 553 scenario validates ordinary retry and form behavior.
   await import("./statement-visual/issue-553-manual-installments-v2.mjs");
+  // This scenario lets the backend commit, masks the response as 504, and proves exact recovery.
+  await import("./statement-visual/issue-553-ambiguous-recovery.mjs");
   await import("./statement-visual/reports-category-evolution.mjs");
   await import("./statement-visual/issue-546-reports-category-controls.mjs");
   await import("./statement-visual/issue-546-selected-view-navigation.mjs");

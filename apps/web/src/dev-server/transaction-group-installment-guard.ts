@@ -7,6 +7,8 @@ export function transactionGroupInstallmentGuardScript(): string {
       const groupingMessage = "Parcelas devem permanecer fora de agrupamentos. Desagrupe para manter a parcela.";
       const canonicalSelectionTitle = "Disponível para ações em massa; indisponível para unificação.";
       const canonicalGroupingHelp = "Unificar lançamentos indisponível: desmarque as parcelas canônicas. Elas continuam disponíveis para conciliar, desconciliar ou excluir.";
+      const ambiguousRecoveryMessage = "A resposta foi inconclusiva. Tente novamente para confirmar o parcelamento antes de alterar os dados, ou feche o formulário para cancelar esta tentativa.";
+      let ambiguousInstallmentAttempt;
 
       function readJsonNode(node) {
         try {
@@ -135,21 +137,119 @@ export function transactionGroupInstallmentGuardScript(): string {
         });
       }
 
+      function readFetchDescriptor(args) {
+        const input = args[0];
+        const init = args[1] || {};
+        const url = new URL(
+          input instanceof Request ? input.url : String(input || ""),
+          window.location.origin,
+        );
+        const method = String(
+          init.method || (input instanceof Request ? input.method : "GET"),
+        ).toUpperCase();
+        const body = typeof init.body === "string" ? init.body : undefined;
+        const { signal: _signal, ...retryableInit } = init;
+
+        return {
+          url: url.toString(),
+          pathname: url.pathname,
+          method,
+          body,
+          init: retryableInit,
+        };
+      }
+
+      function isManualInstallmentPost(descriptor) {
+        return descriptor.method === "POST" && descriptor.pathname === "/api/installments";
+      }
+
+      function isAmbiguousInstallmentResponse(response) {
+        return (
+          response.status === 0 ||
+          response.status === 408 ||
+          response.status === 425 ||
+          response.status === 429 ||
+          response.status >= 500
+        );
+      }
+
+      function lockInstallmentFormForRecovery() {
+        const form = document.querySelector("[data-form]");
+        if (!form) return;
+        form.dataset.installmentRecovery = "ambiguous";
+        form.querySelectorAll("input, select, textarea, button").forEach((control) => {
+          if (control.matches('button[type="submit"]')) return;
+          if (control.disabled) return;
+          control.disabled = true;
+          control.dataset.installmentRecoveryDisabled = "true";
+        });
+      }
+
+      function unlockInstallmentFormAfterRecovery() {
+        const form = document.querySelector("[data-form]");
+        if (!form) return;
+        delete form.dataset.installmentRecovery;
+        form.querySelectorAll('[data-installment-recovery-disabled="true"]').forEach((control) => {
+          control.disabled = false;
+          delete control.dataset.installmentRecoveryDisabled;
+        });
+      }
+
+      function announceAmbiguousRecovery() {
+        window.setTimeout(() => {
+          const statusNode = document.querySelector("[data-form] .form-status");
+          if (!statusNode) return;
+          statusNode.className = "form-status error full";
+          statusNode.textContent = ambiguousRecoveryMessage;
+        }, 0);
+      }
+
+      function preserveAmbiguousAttempt(descriptor) {
+        ambiguousInstallmentAttempt = descriptor;
+        lockInstallmentFormForRecovery();
+        announceAmbiguousRecovery();
+      }
+
+      function clearAmbiguousAttempt() {
+        ambiguousInstallmentAttempt = undefined;
+        unlockInstallmentFormAfterRecovery();
+      }
+
       window.fetch = async (...args) => {
-        const response = await nativeFetch(...args);
+        let descriptor = readFetchDescriptor(args);
+        let requestArgs = args;
+        const manualInstallmentPost = isManualInstallmentPost(descriptor);
+
+        if (manualInstallmentPost && ambiguousInstallmentAttempt) {
+          descriptor = ambiguousInstallmentAttempt;
+          requestArgs = [
+            descriptor.url,
+            {
+              ...descriptor.init,
+              method: descriptor.method,
+              body: descriptor.body,
+            },
+          ];
+        }
+
+        let response;
         try {
-          const input = args[0];
-          const url = new URL(
-            input instanceof Request ? input.url : String(input || ""),
-            window.location.origin,
-          );
-          const method = String(
-            (args[1] && args[1].method) || (input instanceof Request ? input.method : "GET"),
-          ).toUpperCase();
+          response = await nativeFetch(...requestArgs);
+        } catch (error) {
+          if (manualInstallmentPost) preserveAmbiguousAttempt(descriptor);
+          throw error;
+        }
+
+        if (manualInstallmentPost) {
+          if (isAmbiguousInstallmentResponse(response)) preserveAmbiguousAttempt(descriptor);
+          else clearAmbiguousAttempt();
+        }
+
+        try {
           if (
-            method === "GET" &&
-            url.pathname === "/api/installments" &&
-            url.searchParams.has("accountId") &&
+            descriptor.method === "GET" &&
+            descriptor.pathname === "/api/installments" &&
+            new URL(descriptor.url).searchParams.has("accountId") &&
             response.ok
           ) {
             const body = await response.clone().json().catch(() => ({}));
@@ -157,7 +257,7 @@ export function transactionGroupInstallmentGuardScript(): string {
             window.queueMicrotask(() => decorateLegacyGroups(installments));
           }
         } catch (_error) {
-          // The grouping guard must not break the statement when optional metadata is unavailable.
+          // Optional decoration and recovery guards must not break the statement.
         }
         return response;
       };
@@ -181,6 +281,7 @@ export function transactionGroupInstallmentGuardScript(): string {
         true,
       );
 
+      document.querySelector("[data-modal]")?.addEventListener("close", clearAmbiguousAttempt);
       guardCanonicalTransactionSelection();
     })();
   `;
