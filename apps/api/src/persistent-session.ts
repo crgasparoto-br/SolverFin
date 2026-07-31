@@ -60,7 +60,7 @@ export async function authenticatePersistentSession(
   const session = rows[0];
 
   if (!session) {
-    await rejectInactiveSession(token, now, idleBoundary, options.correlationId);
+    return rejectInactiveSession(token, now, idleBoundary, options.correlationId);
   }
 
   return {
