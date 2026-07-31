@@ -1,0 +1,97 @@
+name: Remediate issue 553 visual guard
+
+on:
+  push:
+    branches:
+      - feat/553-canonical-manual-installments
+    paths:
+      - ".issue-553/ui-remediate.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: issue-553-ui-remediate
+  cancel-in-progress: true
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/553-canonical-manual-installments
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Restore bulk actions and retain grouping guard
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          page = Path('apps/web/src/dev-server/transactions-page.ts')
+          page_source = page.read_text()
+          old_page = '''    !transaction.cardId &&
+              !transaction.invoiceId &&
+              !transaction.installmentId &&
+              !transaction.transactionGroupId;'''
+          new_page = '''    !transaction.cardId &&
+              !transaction.invoiceId &&
+              !transaction.transactionGroupId;'''
+          if page_source.count(old_page) != 1:
+              raise SystemExit(f'page marker count: {page_source.count(old_page)}')
+          page.write_text(page_source.replace(old_page, new_page))
+
+          test = Path('apps/web/src/dev-server/manual-installments-web.test.ts')
+          test_source = test.read_text()
+          old_read = '''  const source = await readFile(new URL("./transactions-page.ts", import.meta.url), "utf8");
+          '''
+          new_read = '''  const source = await readFile(new URL("./transactions-page.ts", import.meta.url), "utf8");
+            const guardSource = await readFile(
+              new URL("./transaction-group-installment-guard.ts", import.meta.url),
+              "utf8",
+            );
+          '''
+          if test_source.count(old_read) != 1:
+              raise SystemExit(f'test read marker count: {test_source.count(old_read)}')
+          test_source = test_source.replace(old_read, new_read)
+          old_assert = '''  assert.match(source, /!transaction\\.installmentId/);
+          '''
+          new_assert = '''  assert.match(guardSource, /data-canonical-installment/);
+            assert.match(guardSource, /groupOpen\\.disabled = true/);
+            assert.match(guardSource, /conciliar, desconciliar ou excluir/);
+          '''
+          if test_source.count(old_assert) != 1:
+              raise SystemExit(f'test assertion marker count: {test_source.count(old_assert)}')
+          test.write_text(test_source.replace(old_assert, new_assert))
+          PY
+
+      - name: Install and format
+        run: |
+          npm ci --no-audit --no-fund
+          npx prettier --write \
+            apps/web/src/dev-server/transactions-page.ts \
+            apps/web/src/dev-server/manual-installments-web.test.ts
+
+      - name: Remove temporary delivery files
+        shell: bash
+        run: |
+          rm -f .issue-553/ui-remediate.trigger
+          rmdir .issue-553 2>/dev/null || true
+          rm -f .github/workflows/issue-553-ui-remediate.yml
+
+      - name: Commit remediation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(statement): keep installment bulk actions available"
+          git push origin HEAD:feat/553-canonical-manual-installments
