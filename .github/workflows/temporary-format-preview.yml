@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/553-canonical-manual-installments
+  pull_request:
 
 permissions:
   contents: read
