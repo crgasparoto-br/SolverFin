@@ -699,8 +699,18 @@ function clientScript(): string {
           } else {
             response = await send(form.dataset.path || "/api/transactions", method, payload(0, 1));
           }
+          const ambiguousInstallmentResponse =
+            mode === "installment" &&
+            method === "POST" &&
+            (response.status === 0 ||
+              response.status === 408 ||
+              response.status === 425 ||
+              response.status === 429 ||
+              response.status >= 500);
           statusNode.className = response.ok ? "form-status success full" : "form-status error full";
-          statusNode.textContent = await message(response);
+          statusNode.textContent = ambiguousInstallmentResponse
+            ? "A resposta foi inconclusiva. Tente novamente para confirmar o parcelamento antes de alterar os dados, ou feche o formulário para cancelar esta tentativa."
+            : await message(response);
           if (response.ok) {
             resetInstallmentAttempt();
             window.setTimeout(() => window.location.reload(), 450);
