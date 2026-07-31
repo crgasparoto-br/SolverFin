@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: statement-visual-${{ github.workflow }}-${{ github.ref }}
@@ -55,8 +55,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: feat/551-oidc-cookie-sessions
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -67,69 +65,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
-      - name: Prepare issue 551 auth-service remediation
-        run: |
-          node --input-type=module <<'NODE'
-          import { readFile, writeFile } from "node:fs/promises";
-
-          const path = "apps/api/src/auth-service.ts";
-          let source = await readFile(path, "utf8");
-          const importNeedle = 'import { readSessionCookie } from "./session-cookie.js";';
-          const importReplacement = `${importNeedle}\nimport { authenticatePersistentSession } from "./persistent-session.js";`;
-          if (!source.includes('from "./persistent-session.js"')) {
-            if (!source.includes(importNeedle)) throw new Error("auth-service import anchor missing");
-            source = source.replace(importNeedle, importReplacement);
-          }
-
-          const start = source.indexOf("export async function requireAuthenticatedRequest(");
-          const end = source.indexOf("\nexport async function renewSession(", start);
-          if (start < 0 || end < 0) throw new Error("auth-service function anchors missing");
-
-          const replacement = `export async function requireAuthenticatedRequest(
-            headers: Readonly<Record<string, string | undefined>>,
-            env: Readonly<Record<string, string | undefined>> = process.env,
-          ): Promise<AuthenticatedUser> {
-            const cookieToken = readSessionCookie(headers.cookie, env);
-            const bearerToken = getBearerSessionId(headers.authorization);
-
-            if (cookieToken) {
-              return authenticatePersistentSession(headers, { env });
-            }
-
-            if (!bearerToken || !isDemoAuthAllowed(env)) {
-              await auditSecurityEvent({ action: "session_missing", result: "denied" });
-              throw new AuthError("AUTH_SESSION_REQUIRED", "Authentication session is required.", 401);
-            }
-
-            if (!env.DATABASE_URL) {
-              return auth.requireAuthenticatedRequest(headers);
-            }
-
-            const persisted = await findPersistedSession(bearerToken);
-            if (!persisted) {
-              return auth.requireAuthenticatedRequest(headers);
-            }
-
-            return validatePersistedSession(bearerToken, persisted);
-          }
-          `;
-          source = `${source.slice(0, start)}${replacement}${source.slice(end + 1)}`;
-          await writeFile(path, source);
-          NODE
-          npx prettier apps/api/src/auth-service.ts --write
-
-      - name: Commit issue 551 auth-service remediation
-        run: |
-          if git diff --quiet -- apps/api/src/auth-service.ts; then
-            echo "auth-service remediation already present"
-            exit 0
-          fi
-          git config user.name "solverfin-automation"
-          git config user.email "solverfin-automation@users.noreply.github.com"
-          git add apps/api/src/auth-service.ts
-          git commit -m "fix(auth): linearize public cookie validation"
-          git push origin HEAD:feat/551-oidc-cookie-sessions
 
       - name: Prepare database and production web build
         run: |
