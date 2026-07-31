@@ -37,7 +37,7 @@ try {
   });
 
   const keyboardSubmitActivated = await proveKeyboardSubmitActivation();
-  check(keyboardSubmitActivated, "Enter did not activate the installment form submit control", {
+  check(keyboardSubmitActivated, "Keyboard did not activate the installment form submit control", {
     keyboardSubmitActivated,
   });
   await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
@@ -377,7 +377,7 @@ async function proveKeyboardSubmitActivation() {
     })()`,
   );
   if (!focused) return false;
-  await pressKey("Enter");
+  await pressKey("Space");
   return evaluate(
     browser.cdp,
     `(() => {
@@ -460,12 +460,15 @@ async function readInstallments(accountId, from, to) {
 }
 
 async function pressKey(key) {
-  const keyCode = key === "Enter" ? 13 : 0;
+  const isSpace = key === "Space";
+  const keyCode = key === "Enter" ? 13 : isSpace ? 32 : 0;
+  const keyValue = isSpace ? " " : key;
+  const code = isSpace ? "Space" : key;
   const text = key === "Enter" ? "\r" : "";
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
-    key,
-    code: key,
+    type: isSpace ? "rawKeyDown" : "keyDown",
+    key: keyValue,
+    code,
     text,
     unmodifiedText: text,
     windowsVirtualKeyCode: keyCode,
@@ -473,8 +476,8 @@ async function pressKey(key) {
   });
   await browser.cdp.send("Input.dispatchKeyEvent", {
     type: "keyUp",
-    key,
-    code: key,
+    key: keyValue,
+    code,
     windowsVirtualKeyCode: keyCode,
     nativeVirtualKeyCode: keyCode,
   });
