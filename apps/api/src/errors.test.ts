@@ -50,7 +50,10 @@ function redactsUnexpectedPersistenceErrors(): void {
     message: "Não foi possível concluir a ação. Tente novamente.",
     correlationId: "corr-persistence-redaction",
   });
-  assert.doesNotMatch(JSON.stringify(response.body), /fingerprint|idempotencyKey|amountMinor|P0001/);
+  assert.doesNotMatch(
+    JSON.stringify(response.body),
+    /fingerprint|idempotencyKey|amountMinor|P0001/,
+  );
 }
 
 function usesControlledMessagesForKnownDatabaseErrors(): void {
