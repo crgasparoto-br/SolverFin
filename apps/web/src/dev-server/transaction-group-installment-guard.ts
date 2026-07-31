@@ -224,7 +224,7 @@ export function transactionGroupInstallmentGuardScript(): string {
 
       function preserveAmbiguousAttempt(descriptor) {
         ambiguousInstallmentAttempt = descriptor;
-        lockInstallmentForRecovery();
+        lockInstallmentFormForRecovery();
         observeAmbiguousRecoveryMessage();
       }
 
