@@ -1,0 +1,278 @@
+from pathlib import Path
+
+cdp_path = Path("scripts/statement-visual/cdp.mjs")
+cdp = cdp_path.read_text()
+if "this.listeners = new Map();" not in cdp:
+    cdp = cdp.replace(
+        "    this.events = new Map();\n",
+        "    this.events = new Map();\n    this.listeners = new Map();\n",
+        1,
+    )
+    close_marker = '''  close() {
+    this.socket.close();
+  }
+'''
+    on_method = '''  on(method, listener) {
+    const listeners = this.listeners.get(method) ?? new Set();
+    listeners.add(listener);
+    this.listeners.set(method, listeners);
+    return () => {
+      listeners.delete(listener);
+      if (listeners.size === 0) this.listeners.delete(method);
+    };
+  }
+
+  close() {
+    this.socket.close();
+  }
+'''
+    if close_marker not in cdp:
+        raise SystemExit("CDP close marker not found")
+    cdp = cdp.replace(close_marker, on_method, 1)
+    event_marker = '''    const listener = this.events.get(message.method);
+    if (!listener) return;
+    clearTimeout(listener.timer);
+    this.events.delete(message.method);
+    listener.resolve(message.params ?? {});
+  }
+'''
+    event_replacement = '''    const params = message.params ?? {};
+    const persistentListeners = this.listeners.get(message.method);
+    if (persistentListeners) {
+      for (const persistentListener of persistentListeners) {
+        persistentListener(params);
+      }
+    }
+    const listener = this.events.get(message.method);
+    if (!listener) return;
+    clearTimeout(listener.timer);
+    this.events.delete(message.method);
+    listener.resolve(params);
+  }
+'''
+    if event_marker not in cdp:
+        raise SystemExit("CDP event marker not found")
+    cdp = cdp.replace(event_marker, event_replacement, 1)
+    cdp_path.write_text(cdp)
+
+path = Path("scripts/statement-visual/issue-553-manual-installments.mjs")
+source = path.read_text()
+source = source.replace("await installRequestProbe();", "await installReloadGuard();")
+
+if "const ambiguousTransport = await interceptInstallmentRequests" not in source:
+    desktop_start = source.index("  const keyboardSubmitActivated =")
+    desktop_end = source.index("  const persisted =", desktop_start)
+    desktop = '''  const keyboardSubmitActivated = await proveKeyboardSubmitActivation();
+  check(keyboardSubmitActivated, "Keyboard did not activate the installment form submit control", {
+    keyboardSubmitActivated,
+  });
+
+  const ambiguousTransport = await interceptInstallmentRequests({
+    action: submitForm,
+    failFirst: true,
+  });
+  const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");
+  const preserved = await readFormState();
+  check(
+    ambiguousTransport.requests.length === 1,
+    "A single confirmation issued more than one installment request",
+    ambiguousTransport,
+  );
+  check(
+    ambiguousTransport.first.method === "POST" &&
+      ambiguousTransport.first.pathname === "/api/installments",
+    "The installment form did not call the canonical endpoint",
+    ambiguousTransport,
+  );
+  check(preserved.repeatMode === "installment", "Installment mode was not preserved", preserved);
+  check(preserved.modalOpen, "Modal closed after an ambiguous network failure", preserved);
+  check(
+    preserved.submitDisabled === false,
+    "Submit remained disabled after network failure",
+    preserved,
+  );
+  check(
+    preserved.description === "QA parcelamento manual canonico",
+    "Description was lost",
+    preserved,
+  );
+  check(preserved.note === "Observacao preservada no retry", "Note was lost", preserved);
+
+  const retryTransport = await interceptInstallmentRequests({ action: submitForm });
+  await waitForFormStatus("Ação concluída");
+  const retry = await readFormState();
+  check(
+    retryTransport.requests.length === 1,
+    "Retry issued more than one installment request",
+    retryTransport,
+  );
+  check(
+    ambiguousTransport.first.idempotencyKey === retryTransport.first.idempotencyKey,
+    "Ambiguous retry generated a different idempotency key",
+    { ambiguousTransport, retryTransport },
+  );
+  check(
+    ambiguousTransport.first.fingerprint === retryTransport.first.fingerprint,
+    "Ambiguous retry changed the logical payload",
+    { ambiguousTransport, retryTransport },
+  );
+
+'''
+    source = source[:desktop_start] + desktop + source[desktop_end:]
+
+    mobile_anchor = source.index("  await setViewport(browser.cdp, 390, 844);")
+    mobile_start = source.index(
+        '  await evaluate(\n    browser.cdp,\n    `(() => {', mobile_anchor
+    )
+    mobile_end = source.index("  const correctedRows =", mobile_start)
+    mobile = '''  const validationTransport = await interceptInstallmentRequests({
+    action: async () => {
+      await evaluate(
+        browser.cdp,
+        `(() => {
+          const form = document.querySelector("[data-form]");
+          form.requestSubmit();
+          form.requestSubmit();
+        })()`,
+      );
+    },
+    observeAfterFirst: 500,
+  });
+  await waitForFormStatus("ao menos um centavo por parcela");
+  const validationFailure = await readFormState();
+  check(
+    validationTransport.requests.length === 1,
+    "Double submission issued duplicate installment requests",
+    validationTransport,
+  );
+  check(
+    validationFailure.modalOpen,
+    "Modal closed after a definitive validation error",
+    validationFailure,
+  );
+  check(
+    validationFailure.submitDisabled === false,
+    "Submit was not restored after validation",
+    validationFailure,
+  );
+
+  await fillMoney("1,00");
+  const correctedTransport = await interceptInstallmentRequests({ action: submitForm });
+  await waitForFormStatus("Ação concluída");
+  const corrected = await readFormState();
+  check(
+    correctedTransport.requests.length === 1,
+    "Corrected submission issued more than one request",
+    correctedTransport,
+  );
+  check(
+    validationTransport.first.idempotencyKey !== correctedTransport.first.idempotencyKey,
+    "Material correction reused the rejected idempotency key",
+    { validationTransport, correctedTransport },
+  );
+  check(
+    !corrected.globalOverflow,
+    "Installment modal caused horizontal overflow on mobile",
+    corrected,
+  );
+
+'''
+    source = source[:mobile_start] + mobile + source[mobile_end:]
+
+    helper_start = source.index("async function installRequestProbe()")
+    helper_end = source.index("\nasync function openExpenseModalByKeyboard", helper_start)
+    helpers = '''async function installReloadGuard() {
+  await evaluate(
+    browser.cdp,
+    `(() => {
+      const nativeSetTimeout = window.setTimeout.bind(window);
+      window.setTimeout = function (callback, delay, ...args) {
+        if (typeof callback === "function" && String(callback).includes("window.location.reload")) return 0;
+        return nativeSetTimeout(callback, delay, ...args);
+      };
+    })()`,
+  );
+}
+
+async function interceptInstallmentRequests({
+  action,
+  failFirst = false,
+  observeAfterFirst = 0,
+}) {
+  const requests = [];
+  const pendingOperations = [];
+  let resolveFirst;
+  let rejectFirst;
+  const firstRequest = new Promise((resolve, reject) => {
+    resolveFirst = resolve;
+    rejectFirst = reject;
+  });
+  const unsubscribe = browser.cdp.on("Fetch.requestPaused", (paused) => {
+    const operation = (async () => {
+      const record = readPausedRequest(paused);
+      if (record.method !== "POST" || record.pathname !== "/api/installments") {
+        await browser.cdp.send("Fetch.continueRequest", { requestId: paused.requestId });
+        return;
+      }
+      requests.push(record);
+      if (requests.length === 1 && failFirst) {
+        await browser.cdp.send("Fetch.failRequest", {
+          requestId: paused.requestId,
+          errorReason: "Failed",
+        });
+      } else {
+        await browser.cdp.send("Fetch.continueRequest", { requestId: paused.requestId });
+      }
+      if (requests.length === 1) resolveFirst(record);
+    })().catch(rejectFirst);
+    pendingOperations.push(operation);
+  });
+
+  await browser.cdp.send("Fetch.enable", {
+    patterns: [{ urlPattern: "*api/installments*", requestStage: "Request" }],
+  });
+  try {
+    await action();
+    const first = await Promise.race([
+      firstRequest,
+      sleep(10_000).then(() => {
+        throw new Error("Timed out waiting for POST /api/installments at the Chrome transport boundary");
+      }),
+    ]);
+    if (observeAfterFirst > 0) await sleep(observeAfterFirst);
+    await Promise.all(pendingOperations);
+    return { first, requests };
+  } finally {
+    unsubscribe();
+    await browser.cdp.send("Fetch.disable");
+  }
+}
+
+function readPausedRequest(paused) {
+  const url = new URL(paused.request.url);
+  const payload = paused.request.postData ? JSON.parse(paused.request.postData) : {};
+  const { idempotencyKey, ...businessPayload } = payload;
+  return {
+    requestId: paused.requestId,
+    method: paused.request.method,
+    pathname: url.pathname,
+    search: url.search,
+    idempotencyKey,
+    fingerprint: JSON.stringify(businessPayload),
+    payload,
+  };
+}
+'''
+    source = source[:helper_start] + helpers + source[helper_end:]
+
+source = source.replace(
+    '            calls: window.__issue553Probe?.calls || [],\n            keyboardSubmit:',
+    '            repeatMode: form?.elements.namedItem("repeatMode")?.value || "",\n            keyboardSubmit:',
+    1,
+)
+source = source.replace(
+    '        calls: window.__issue553Probe?.calls || [],\n        globalOverflow:',
+    '        repeatMode: form.elements.namedItem("repeatMode")?.value || "",\n        globalOverflow:',
+    1,
+)
+path.write_text(source)
