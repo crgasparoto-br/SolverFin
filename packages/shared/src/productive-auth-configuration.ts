@@ -117,12 +117,7 @@ export function validateTrustedCognitoEndpoints(
   }
 
   const logoutUrl = input.logoutUrl
-    ? parseManagedEndpoint(
-        input.logoutUrl,
-        authorizationUrl.origin,
-        "/logout",
-        "OIDC_LOGOUT_URL",
-      )
+    ? parseManagedEndpoint(input.logoutUrl, authorizationUrl.origin, "/logout", "OIDC_LOGOUT_URL")
     : undefined;
   const recoveryUrl = input.recoveryUrl
     ? parseManagedEndpoint(
