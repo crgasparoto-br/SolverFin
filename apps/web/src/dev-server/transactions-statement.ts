@@ -24,6 +24,7 @@ export interface TransactionRecord {
   cardId?: string;
   invoiceId?: string;
   recurrenceId?: string;
+  installmentId?: string;
   transactionGroupId?: string;
   group?: TransactionGroupRecord;
   accountRemuneration?: {

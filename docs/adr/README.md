@@ -38,3 +38,5 @@ Cada ADR deve ter:
 - `0005-financial-indexes-shared-domain.md` - Indices financeiros compartilhados entre extrato e investimentos.
 
 - `0006-csv-import-structured-human-review.md` - Importação CSV/OFX estruturada, idempotente e revisada na Inbox.
+
+- [0007 - Idempotência durável para criação de conjuntos financeiros](./0007-durable-financial-set-idempotency.md)

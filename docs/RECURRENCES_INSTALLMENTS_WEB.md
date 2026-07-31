@@ -63,3 +63,7 @@ As telas `/lancamentos` e `/cartoes` enriquecem as linhas já existentes com `Pa
 No Extrato, a ação da própria linha abre o modal existente em modo restrito. Apenas descrição, observação e categoria podem ser alteradas quando `editable=true`; número, total, vencimento, valor, situação, conta, tipo e repetição permanecem somente leitura. Quando bloqueada, a mesma ação abre detalhes compactos com o motivo traduzido.
 
 Em Cartões, a parcela apenas identifica a compra. A manutenção continua usando o contrato da compra, respeitando o bloqueio da fatura. `invoice_linked` não cria bloqueio adicional sobre uma compra que já seja editável.
+
+## Criação manual parcelada no Extrato (#553)
+
+`Repetição = Parcelado` representa um conjunto finito canônico, não uma recorrência. O modal envia uma única tentativa com UUID idempotente; mantém a chave em timeout ou falha ambígua, gera nova chave quando os dados materiais mudam depois de rejeição e a descarta após sucesso, cancelamento ou novo fluxo. O botão permanece bloqueado durante o envio e o modal preserva os valores em falhas.

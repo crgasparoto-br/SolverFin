@@ -268,3 +268,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Filtrar parcelas por cartao, categoria e status: Sim, conforme filtros aceitos pela API de parcelas.
 - Ver moedas separadas, totais, medias, percentuais e hierarquia atual: Sim.
 - Ver indicadores consolidados de parcelas: Sim, para abertas/planejadas, postadas/fechadas e total mensal.
+
+## Issue #553 - parcelamento manual canônico
+
+Status: implementado no Extrato e na API. A criação manual parcelada persiste `Installment` + `Transaction.installmentId`, usa transação única, idempotência durável escopada por tenant/perfil, auditoria redigida e reutiliza a manutenção operacional de parcelas da issue #539.

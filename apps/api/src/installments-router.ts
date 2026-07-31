@@ -8,6 +8,11 @@ import {
   type ListInstallmentsFilters,
   type UpdateInstallmentPayload,
 } from "./repositories/installments.js";
+import {
+  createManualInstallmentsForContext,
+  type CreateManualInstallmentsPayload,
+} from "./repositories/manual-installments.js";
+
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
@@ -25,9 +30,26 @@ type InstallmentsHandler = (
 
 const BASE_PATH = "/api/installments";
 const ALLOWED_PATCH_FIELDS = new Set(["description", "note", "categoryId"]);
+const ALLOWED_CREATE_FIELDS = new Set([
+  "accountId",
+  "destinationAccountId",
+  "categoryId",
+  "kind",
+  "status",
+  "description",
+  "note",
+  "plannedOn",
+  "effectiveOn",
+  "amountMinor",
+  "amountMode",
+  "totalInstallments",
+  "initialSequenceNumber",
+  "idempotencyKey",
+]);
 const routes: InstallmentsRoute[] = [];
 
 route("GET", BASE_PATH, listInstallmentsHandler);
+route("POST", BASE_PATH, createInstallmentsHandler);
 route("PATCH", `${BASE_PATH}/:installmentId`, updateInstallmentHandler);
 
 export async function handleInstallmentsApiRequest(
@@ -102,6 +124,16 @@ function findRoute(
   return undefined;
 }
 
+async function createInstallmentsHandler(request: ApiRequest): Promise<ApiResponse> {
+  const context = await resolveContext(request);
+  const result = await createManualInstallmentsForContext(
+    context,
+    readManualInstallmentCreatePayload(request.body),
+  );
+
+  return json(result.idempotentReplay ? 200 : 201, result);
+}
+
 async function listInstallmentsHandler(request: ApiRequest): Promise<ApiResponse> {
   const context = await resolveContext(request);
   const filters = readInstallmentFilters(request);
@@ -130,6 +162,134 @@ async function resolveContext(request: ApiRequest) {
   const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
 
   return resolveRequestTenantContext(user, request.query.get("profileId") ?? undefined);
+}
+
+export function readManualInstallmentCreatePayload(body: unknown): CreateManualInstallmentsPayload {
+  const payload = requireObjectBody(body);
+  const idempotencyKey = payload.idempotencyKey;
+
+  if (typeof idempotencyKey !== "string" || !isUuid(idempotencyKey)) {
+    throw Object.assign(new Error("Informe uma chave de idempotencia UUID valida."), {
+      code: "INSTALLMENT_IDEMPOTENCY_REQUIRED",
+      statusCode: 400,
+    });
+  }
+
+  const unknownFields = Object.keys(payload).filter((key) => !ALLOWED_CREATE_FIELDS.has(key));
+  if (unknownFields.length > 0) {
+    throwInstallmentPayloadInvalid("Campo nao permitido para criacao de parcelamento.");
+  }
+
+  const accountId = readRequiredText(payload, "accountId", "Conta de origem invalida.");
+  const destinationAccountId = readNullableText(payload, "destinationAccountId");
+  const categoryId = readNullableText(payload, "categoryId");
+  const kind = payload.kind;
+  const status = payload.status;
+  const description = readRequiredText(
+    payload,
+    "description",
+    "Descricao do parcelamento invalida.",
+  ).trim();
+  const plannedOn = payload.plannedOn;
+  const effectiveOn = payload.effectiveOn;
+  const amountMinor = payload.amountMinor;
+  const amountMode = payload.amountMode;
+  const totalInstallments = payload.totalInstallments;
+  const initialSequenceNumber = payload.initialSequenceNumber;
+
+  if (kind !== "income" && kind !== "expense" && kind !== "transfer") {
+    throwInstallmentPayloadInvalid("Tipo de lancamento invalido.");
+  }
+  if (status !== "planned" && status !== "posted" && status !== "reconciled") {
+    throwInstallmentPayloadInvalid("Situacao do parcelamento invalida.");
+  }
+  if (kind === "transfer" && !destinationAccountId) {
+    throwInstallmentPayloadInvalid("Transferencias exigem uma conta de destino.");
+  }
+  if (kind !== "transfer" && destinationAccountId) {
+    throwInstallmentPayloadInvalid("A conta de destino so pode ser usada em transferencias.");
+  }
+  if (description.length > 240) {
+    throwInstallmentPayloadInvalid("A descricao deve ter no maximo 240 caracteres.");
+  }
+  if (typeof plannedOn !== "string" || !isValidDateOnly(plannedOn)) {
+    throwInstallmentPayloadInvalid("Data prevista invalida.");
+  }
+  if (
+    effectiveOn !== undefined &&
+    effectiveOn !== null &&
+    (typeof effectiveOn !== "string" || !isValidDateOnly(effectiveOn))
+  ) {
+    throwInstallmentPayloadInvalid("Data efetiva invalida.");
+  }
+  if (!Number.isInteger(amountMinor) || Number(amountMinor) <= 0) {
+    throwInstallmentPayloadInvalid("Valor do parcelamento invalido.");
+  }
+  if (amountMode !== "per_installment" && amountMode !== "total") {
+    throwInstallmentPayloadInvalid("Modo de valor do parcelamento invalido.");
+  }
+  if (
+    !Number.isInteger(totalInstallments) ||
+    Number(totalInstallments) < 2 ||
+    Number(totalInstallments) > 60
+  ) {
+    throwInstallmentPayloadInvalid("Total de parcelas deve estar entre 2 e 60.");
+  }
+  if (
+    !Number.isInteger(initialSequenceNumber) ||
+    Number(initialSequenceNumber) < 1 ||
+    Number(initialSequenceNumber) > Number(totalInstallments)
+  ) {
+    throwInstallmentPayloadInvalid("Parcela inicial invalida.");
+  }
+  if (amountMode === "total" && Number(amountMinor) < Number(totalInstallments)) {
+    throwInstallmentPayloadInvalid("O valor total deve permitir ao menos um centavo por parcela.");
+  }
+  if (payload.note !== undefined && payload.note !== null && typeof payload.note !== "string") {
+    throwInstallmentPayloadInvalid("Observacao do parcelamento invalida.");
+  }
+
+  return {
+    accountId,
+    destinationAccountId,
+    categoryId,
+    kind,
+    status,
+    description,
+    note: typeof payload.note === "string" ? payload.note.trim() || null : null,
+    plannedOn,
+    effectiveOn: typeof effectiveOn === "string" ? effectiveOn : null,
+    amountMinor: Number(amountMinor),
+    amountMode,
+    totalInstallments: Number(totalInstallments),
+    initialSequenceNumber: Number(initialSequenceNumber),
+    idempotencyKey: idempotencyKey.toLowerCase(),
+  };
+}
+
+function readRequiredText(
+  payload: Record<string, unknown>,
+  field: string,
+  message: string,
+): string {
+  const value = payload[field];
+  if (typeof value !== "string" || !value.trim()) {
+    throwInstallmentPayloadInvalid(message);
+  }
+  return value.trim();
+}
+
+function readNullableText(payload: Record<string, unknown>, field: string): string | null {
+  const value = payload[field];
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string" || !value.trim()) {
+    throwInstallmentPayloadInvalid(`${field} invalido.`);
+  }
+  return value.trim();
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
 export function readInstallmentFilters(request: ApiRequest): ListInstallmentsFilters {

@@ -233,8 +233,8 @@ model User {
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
 
-  ownedOrganizations Organization[]       @relation("OrganizationOwner")
-  ownedProfiles      FinancialProfile[]   @relation("FinancialProfileOwner")
+  ownedOrganizations  Organization[]       @relation("OrganizationOwner")
+  ownedProfiles       FinancialProfile[]   @relation("FinancialProfileOwner")
   applicationSessions ApplicationSession[]
   securityAuditEvents SecurityAuditEvent[]
 
@@ -321,23 +321,24 @@ model FinancialProfile {
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
-  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  owner               User                @relation("FinancialProfileOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
-  accounts            Account[]
-  cards               Card[]
-  cardInstruments     CardInstrument[]
-  categories          Category[]
-  transactions        Transaction[]
-  recurrences         Recurrence[]
-  installments        Installment[]
-  invoices            Invoice[]
-  budgets             Budget[]
-  payablesReceivables PayableReceivable[]
-  importBatches       ImportBatch[]
-  aiSuggestions       AiSuggestion[]
-  attachments         Attachment[]
-  auditLogs           AuditLogEntry[]
-  transactionGroups   TransactionGroup[]
+  organization                Organization                 @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  owner                       User                         @relation("FinancialProfileOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  accounts                    Account[]
+  cards                       Card[]
+  cardInstruments             CardInstrument[]
+  categories                  Category[]
+  transactions                Transaction[]
+  recurrences                 Recurrence[]
+  installments                Installment[]
+  invoices                    Invoice[]
+  budgets                     Budget[]
+  payablesReceivables         PayableReceivable[]
+  importBatches               ImportBatch[]
+  aiSuggestions               AiSuggestion[]
+  attachments                 Attachment[]
+  auditLogs                   AuditLogEntry[]
+  transactionGroups           TransactionGroup[]
+  installmentCreationRequests InstallmentCreationRequest[]
 
   @@unique([id, organizationId])
   @@index([organizationId, ownerUserId])
@@ -486,6 +487,7 @@ model Transaction {
   plannedOn            DateTime          @db.Date
   effectiveOn          DateTime?         @db.Date
   description          String            @db.VarChar(240)
+  note                 String?           @db.Text
   reconciledAt         DateTime?
   voidedAt             DateTime?
   createdByUserId      String?           @db.Uuid
@@ -610,6 +612,22 @@ model Installment {
   @@index([organizationId, financialProfileId, dueOn])
   @@index([organizationId, financialProfileId, status])
   @@index([organizationId, financialProfileId, cardInstrumentId])
+}
+
+model InstallmentCreationRequest {
+  id                 String   @id @default(uuid()) @db.Uuid
+  organizationId     String   @db.Uuid
+  financialProfileId String   @db.Uuid
+  idempotencyKey     String   @db.Uuid
+  requestFingerprint String   @db.Char(64)
+  response           Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  @@unique([organizationId, financialProfileId, idempotencyKey])
+  @@index([organizationId, financialProfileId, createdAt])
 }
 
 model Invoice {
