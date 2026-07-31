@@ -15,6 +15,7 @@ Quando `POST /api/installments` termina com falha de transporte, `408`, `425`, `
 - preserva a URL, o corpo e a chave da requisicao original;
 - bloqueia alteracoes nos campos do formulario;
 - mantem somente a acao de confirmar novamente disponivel;
+- mantem a mensagem de recuperacao autoritativa no live region enquanto a tentativa estiver ambigua;
 - no retry, reenvia exatamente a requisicao preservada, mesmo que o DOM seja alterado por script;
 - encerra o estado de recuperacao apenas com resposta definitiva ou fechamento do modal.
 
