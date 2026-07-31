@@ -1,3 +1,5 @@
+import { resolveApplicationOrigin } from "@solverfin/shared";
+
 import { AuthError } from "./auth.js";
 import { isLocalEnvironment, readSessionCookie } from "./session-cookie.js";
 
@@ -15,8 +17,8 @@ export function assertTrustedMutationOrigin(input: {
     return;
   }
 
-  const expected = env.APP_ORIGIN?.trim();
-  const received = input.headers.origin?.trim();
+  const expected = normalizeOrigin(env.APP_ORIGIN, env);
+  const received = normalizeOrigin(input.headers.origin, env);
 
   if (!expected || !received || received !== expected) {
     throw new AuthError(
@@ -24,5 +26,21 @@ export function assertTrustedMutationOrigin(input: {
       "Não foi possível validar a origem desta solicitação.",
       403,
     );
+  }
+}
+
+function normalizeOrigin(
+  value: string | undefined,
+  env: Readonly<Record<string, string | undefined>>,
+): string | undefined {
+  if (!value?.trim()) return undefined;
+
+  try {
+    return resolveApplicationOrigin(value.trim(), {
+      key: "Origin",
+      allowHttp: isLocalEnvironment(env),
+    });
+  } catch {
+    return undefined;
   }
 }
