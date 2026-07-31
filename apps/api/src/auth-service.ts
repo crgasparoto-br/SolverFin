@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import {
   AuthError,
@@ -9,7 +9,7 @@ import {
   type LoginInput,
   type LoginResult,
 } from "./auth.js";
-import { query, withTransaction } from "./db.js";
+import { query, withTransaction, type QueryExecutor } from "./db.js";
 import {
   validateOidcIdToken,
   validateOidcState,
@@ -17,6 +17,12 @@ import {
   type OidcProviderConfig,
   type OidcValidationOptions,
 } from "./oidc.js";
+import { readSessionCookie } from "./session-cookie.js";
+import {
+  authenticatePersistentSession,
+  logoutPersistentSession,
+  renewPersistentSession,
+} from "./persistent-session.js";
 
 const DEMO_PASSWORD_HASH = "c3fe12298b006ad7e54d9dac3006a98f406506a78e3100ca831c0f96c43f5b60";
 const LOCAL_DEMO_ENVIRONMENTS = new Set(["development", "local", "test"]);
@@ -98,7 +104,11 @@ export const auth = createAuthService({
   sessionTtlMs: resolveSessionTtlMs(),
 });
 
-export async function authenticateUser(input: LoginInput): Promise<LoginResult> {
+export async function authenticateUser(
+  input: LoginInput,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): Promise<LoginResult> {
+  assertLocalAuthAllowed(env);
   try {
     return await persistLoginSession(auth.login(input), "login_success");
   } catch (error) {
@@ -138,9 +148,17 @@ export async function authenticateProductiveUser(
   input: ProductiveAuthInput,
   options: ProductiveAuthOptions = {},
 ): Promise<LoginResult> {
-  validateOidcState(input.state, input.expectedState);
-
   const env = options.env ?? process.env;
+  if (!isDemoAuthAllowed(env)) {
+    await auditSecurityEvent({ action: "legacy_oidc_blocked", result: "denied" });
+    throw new AuthError(
+      "AUTH_LEGACY_OIDC_DISABLED",
+      "Este método de autenticação não está disponível neste ambiente.",
+      403,
+    );
+  }
+
+  validateOidcState(input.state, input.expectedState);
   const config = resolveOidcProviderConfig(env);
   const validateIdToken = options.validateIdToken ?? validateOidcIdToken;
   const validationOptions: OidcValidationOptions = {};
@@ -153,7 +171,11 @@ export async function authenticateProductiveUser(
   return signInExternalIdentity(identity);
 }
 
-export async function registerUser(input: RegisterUserInput): Promise<LoginResult> {
+export async function registerUser(
+  input: RegisterUserInput,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): Promise<LoginResult> {
+  assertLocalAuthAllowed(env);
   const email = normalizeEmail(input.email);
   const displayName = normalizeDisplayName(input.displayName);
   const password = input.password.trim();
@@ -215,52 +237,42 @@ export async function registerUser(input: RegisterUserInput): Promise<LoginResul
 
 export async function requireAuthenticatedRequest(
   headers: Readonly<Record<string, string | undefined>>,
+  env: Readonly<Record<string, string | undefined>> = process.env,
 ): Promise<AuthenticatedUser> {
-  const token = getBearerSessionId(headers.authorization);
+  const cookieToken = readSessionCookie(headers.cookie, env);
+  const bearerToken = getBearerSessionId(headers.authorization);
 
-  if (!token) {
+  if (cookieToken) {
+    return authenticatePersistentSession(headers, { env });
+  }
+
+  if (!bearerToken || !isDemoAuthAllowed(env)) {
     await auditSecurityEvent({ action: "session_missing", result: "denied" });
     throw new AuthError("AUTH_SESSION_REQUIRED", "Authentication session is required.", 401);
   }
 
-  const persisted = await findPersistedSession(token);
+  if (!env.DATABASE_URL) {
+    return auth.requireAuthenticatedRequest(headers);
+  }
 
+  const persisted = await findPersistedSession(bearerToken);
   if (!persisted) {
     return auth.requireAuthenticatedRequest(headers);
   }
 
-  return validatePersistedSession(token, persisted);
+  return validatePersistedSession(bearerToken, persisted);
+}
+export async function renewSession(
+  sessionToken: string,
+  now = new Date(),
+): Promise<{ token: string; expiresAt: Date }> {
+  return renewPersistentSession(sessionToken, { now });
 }
 
 export async function logoutSession(sessionToken: string): Promise<void> {
   auth.logout(sessionToken);
-
-  if (!process.env.DATABASE_URL) return;
-
-  try {
-    const rows = await query<{ id: string; userId: string }>(
-      `update "ApplicationSession"
-       set "revokedAt" = coalesce("revokedAt", $2),
-           "revocationReason" = coalesce("revocationReason", 'logout')
-       where "tokenHash" = $1
-       returning "id", "userId"`,
-      [hashSessionToken(sessionToken), new Date()],
-    );
-    const row = rows[0];
-
-    if (row) {
-      await auditSecurityEvent({
-        action: "logout",
-        result: "success",
-        userId: row.userId,
-        sessionId: row.id,
-      });
-    }
-  } catch (error) {
-    if (!isMissingPersistentSessionStorage(error)) throw error;
-  }
+  await logoutPersistentSession(sessionToken);
 }
-
 export async function revokeAllUserSessions(
   userId: string,
   reason = "user_revocation",
@@ -305,6 +317,21 @@ export async function auditProfileAccessDenied(options: {
   });
 }
 
+export function assertLocalAuthAllowed(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): void {
+  if (isDemoAuthAllowed(env)) return;
+
+  void auditSecurityEvent({ action: "local_auth_blocked", result: "denied" }).catch(
+    () => undefined,
+  );
+  throw new AuthError(
+    "AUTH_LOCAL_AUTH_DISABLED",
+    "A autenticação local não está disponível neste ambiente.",
+    403,
+  );
+}
+
 export function assertDemoAuthAllowed(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): void {
@@ -318,11 +345,15 @@ export function assertDemoAuthAllowed(
 export function assertAuthenticationModeConfigured(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): void {
-  if (isDemoAuthAllowed(env) || isProductiveOidcAuthConfigured(env)) return;
+  if (isDemoAuthAllowed(env)) return;
 
-  throw new Error(
-    "Authentication is not configured for this environment. Configure OIDC_ISSUER_URL, OIDC_AUDIENCE and OIDC_JWKS_URI, or set AUTH_ALLOW_DEMO=true only for an explicit non-production demo.",
-  );
+  if (!isProductiveOidcAuthConfigured(env)) {
+    throw new Error(
+      "Authentication is not configured for this environment. Configure the complete OIDC Authorization Code environment contract, or set AUTH_ALLOW_DEMO=true only for an explicit non-production demo.",
+    );
+  }
+
+  assertProductiveOidcConfigurationIsCoherent(env);
 }
 
 export function isDemoAuthAllowed(
@@ -339,10 +370,56 @@ export function isProductiveOidcAuthConfigured(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): boolean {
   return Boolean(
+    readEnv(env, "APP_ORIGIN") &&
     readEnv(env, "OIDC_ISSUER_URL") &&
-    readEnv(env, "OIDC_AUDIENCE") &&
-    readEnv(env, "OIDC_JWKS_URI"),
+    (readEnv(env, "OIDC_CLIENT_ID") || readEnv(env, "OIDC_AUDIENCE")) &&
+    readEnv(env, "OIDC_AUTHORIZATION_URL") &&
+    readEnv(env, "OIDC_TOKEN_URL") &&
+    readEnv(env, "OIDC_JWKS_URI") &&
+    readEnv(env, "OIDC_REDIRECT_URI") &&
+    readEnv(env, "OIDC_ATTEMPT_ENCRYPTION_KEY"),
   );
+}
+
+function assertProductiveOidcConfigurationIsCoherent(
+  env: Readonly<Record<string, string | undefined>>,
+): void {
+  const appOrigin = new URL(readEnv(env, "APP_ORIGIN") as string);
+  const issuer = new URL(readEnv(env, "OIDC_ISSUER_URL") as string);
+  const authorizationUrl = new URL(readEnv(env, "OIDC_AUTHORIZATION_URL") as string);
+  const tokenUrl = new URL(readEnv(env, "OIDC_TOKEN_URL") as string);
+  const jwksUrl = new URL(readEnv(env, "OIDC_JWKS_URI") as string);
+  const redirectUrl = new URL(readEnv(env, "OIDC_REDIRECT_URI") as string);
+  const clientId = readEnv(env, "OIDC_CLIENT_ID") ?? readEnv(env, "OIDC_AUDIENCE");
+  const audience = readEnv(env, "OIDC_AUDIENCE");
+  const key = Buffer.from(readEnv(env, "OIDC_ATTEMPT_ENCRYPTION_KEY") as string, "base64");
+
+  const urls = [appOrigin, issuer, authorizationUrl, tokenUrl, jwksUrl, redirectUrl];
+  if (urls.some((url) => url.protocol !== "https:" || url.username || url.password)) {
+    throw new Error("Productive authentication URLs must use HTTPS without embedded credentials.");
+  }
+
+  if (issuer.hostname !== "cognito-idp.sa-east-1.amazonaws.com") {
+    throw new Error("OIDC_ISSUER_URL must reference the configured Cognito region sa-east-1.");
+  }
+
+  if (redirectUrl.origin !== appOrigin.origin) {
+    throw new Error("OIDC_REDIRECT_URI must use the same origin configured in APP_ORIGIN.");
+  }
+
+  if (authorizationUrl.origin !== tokenUrl.origin) {
+    throw new Error("OIDC authorization and token endpoints must use the same login domain.");
+  }
+
+  if (!clientId || (audience && audience !== clientId)) {
+    throw new Error(
+      "OIDC_AUDIENCE must match OIDC_CLIENT_ID while the compatibility alias exists.",
+    );
+  }
+
+  if (key.length !== 32) {
+    throw new Error("OIDC_ATTEMPT_ENCRYPTION_KEY must decode to exactly 32 bytes.");
+  }
 }
 
 export function hashSessionToken(token: string): string {
@@ -365,8 +442,8 @@ async function persistLoginSession(
   try {
     await query(
       `insert into "ApplicationSession"
-       ("id", "userId", "tokenHash", "createdAt", "lastSeenAt", "expiresAt")
-       values ($1, $2, $3, $4, $4, $5)`,
+       ("id", "userId", "tokenHash", "transport", "createdAt", "lastSeenAt", "expiresAt")
+       values ($1, $2, $3, 'legacy_bearer', $4, $4, $5)`,
       [
         sessionId,
         result.user.id,
@@ -488,7 +565,7 @@ async function revokeSession(token: string, reason: string): Promise<void> {
   );
 }
 
-async function auditSecurityEvent(options: SecurityAuditEventInput): Promise<void> {
+export async function auditSecurityEvent(options: SecurityAuditEventInput): Promise<void> {
   if (!process.env.DATABASE_URL) return;
 
   try {
@@ -511,76 +588,98 @@ async function auditSecurityEvent(options: SecurityAuditEventInput): Promise<voi
   }
 }
 
-async function signInExternalIdentity(identity: OidcIdentity): Promise<LoginResult> {
+export async function resolveExternalIdentityUser(
+  identity: OidcIdentity,
+  executeQuery: QueryExecutor = query,
+): Promise<AuthenticatedUser> {
   const email = identity.email ? normalizeEmail(identity.email) : "";
   const displayName = normalizeDisplayName(identity.displayName ?? email);
 
   if (!isValidEmail(email) || displayName.length === 0) throw invalidCredentialsError();
 
-  const user = await withTransaction(async (executeQuery) => {
-    const userByExternalIdentity = await executeQuery<ExternalUserRow>(
-      `select "id", "email", "displayName", "status", "externalAuthProvider", "externalAuthSubject"
-       from "User"
-       where "externalAuthProvider" = $1 and "externalAuthSubject" = $2
-       limit 1`,
-      [identity.provider, identity.subject],
-    );
-    const existingExternalUser = userByExternalIdentity[0];
+  const userByExternalIdentity = await executeQuery<ExternalUserRow>(
+    `select "id", "email", "displayName", "status", "externalAuthProvider", "externalAuthSubject"
+     from "User"
+     where "externalAuthProvider" = $1 and "externalAuthSubject" = $2
+     limit 1`,
+    [identity.provider, identity.subject],
+  );
+  const existingExternalUser = userByExternalIdentity[0];
 
-    if (existingExternalUser) {
-      assertExternalUserIsActive(existingExternalUser);
-      await updateExternalUserSnapshot(executeQuery, existingExternalUser.id, email, displayName);
-      await ensureInitialFinancialProfile(executeQuery, existingExternalUser.id, displayName);
+  if (existingExternalUser) {
+    assertExternalUserIsActive(existingExternalUser);
+    await updateExternalUserSnapshot(executeQuery, existingExternalUser.id, email, displayName);
+    await ensureInitialFinancialProfile(executeQuery, existingExternalUser.id, displayName);
+    return mapExternalUserRow({ ...existingExternalUser, email, displayName });
+  }
 
-      return mapExternalUserRow({ ...existingExternalUser, email, displayName });
+  const userByEmail = await executeQuery<ExternalUserRow>(
+    `select "id", "email", "displayName", "status", "externalAuthProvider", "externalAuthSubject"
+     from "User"
+     where lower("email") = lower($1)
+     limit 1`,
+    [email],
+  );
+  const existingEmailUser = userByEmail[0];
+
+  if (existingEmailUser) {
+    assertExternalUserIsActive(existingEmailUser);
+    if (existingEmailUser.externalAuthProvider || existingEmailUser.externalAuthSubject) {
+      throw invalidCredentialsError();
     }
-
-    const userByEmail = await executeQuery<ExternalUserRow>(
-      `select "id", "email", "displayName", "status", "externalAuthProvider", "externalAuthSubject"
-       from "User"
-       where lower("email") = lower($1)
-       limit 1`,
-      [email],
-    );
-    const existingEmailUser = userByEmail[0];
-
-    if (existingEmailUser) {
-      assertExternalUserIsActive(existingEmailUser);
-
-      if (existingEmailUser.externalAuthProvider || existingEmailUser.externalAuthSubject) {
-        throw invalidCredentialsError();
-      }
-
-      await executeQuery(
-        `update "User"
-         set "externalAuthProvider" = $2,
-             "externalAuthSubject" = $3,
-             "displayName" = $4,
-             "updatedAt" = CURRENT_TIMESTAMP
-         where "id" = $1`,
-        [existingEmailUser.id, identity.provider, identity.subject, displayName],
-      );
-      await ensureInitialFinancialProfile(executeQuery, existingEmailUser.id, displayName);
-
-      return mapExternalUserRow({ ...existingEmailUser, displayName });
-    }
-
-    const userId = randomUUID();
 
     await executeQuery(
-      `insert into "User"
-       ("id", "email", "displayName", "status", "passwordHash", "externalAuthProvider", "externalAuthSubject", "createdAt", "updatedAt")
-       values ($1, $2, $3, 'ACTIVE', NULL, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-      [userId, email, displayName, identity.provider, identity.subject],
+      `update "User"
+       set "externalAuthProvider" = $2,
+           "externalAuthSubject" = $3,
+           "displayName" = $4,
+           "updatedAt" = CURRENT_TIMESTAMP
+       where "id" = $1`,
+      [existingEmailUser.id, identity.provider, identity.subject, displayName],
     );
-    await createInitialFinancialProfile(executeQuery, userId, displayName);
+    await ensureInitialFinancialProfile(executeQuery, existingEmailUser.id, displayName);
+    return mapExternalUserRow({ ...existingEmailUser, displayName });
+  }
 
-    return { id: userId, email, displayName, status: "active" as const };
-  });
+  const userId = randomUUID();
+  await executeQuery(
+    `insert into "User"
+     ("id", "email", "displayName", "status", "passwordHash", "externalAuthProvider", "externalAuthSubject", "createdAt", "updatedAt")
+     values ($1, $2, $3, 'ACTIVE', NULL, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+    [userId, email, displayName, identity.provider, identity.subject],
+  );
+  await createInitialFinancialProfile(executeQuery, userId, displayName);
+  return { id: userId, email, displayName, status: "active" };
+}
 
+export async function createPersistentApplicationSession(
+  user: AuthenticatedUser,
+  executeQuery: QueryExecutor = query,
+  now = new Date(),
+): Promise<LoginResult & { session: LoginResult["session"] & { databaseId: string } }> {
+  const databaseId = randomUUID();
+  const token = randomBytes(32).toString("base64url");
+  const expiresAt = new Date(now.getTime() + resolveSessionTtlMs());
+
+  await executeQuery(
+    `insert into "ApplicationSession"
+     ("id", "userId", "tokenHash", "transport", "createdAt", "lastSeenAt", "expiresAt")
+     values ($1, $2, $3, 'cookie', $4, $4, $5)`,
+    [databaseId, user.id, hashSessionToken(token), now, expiresAt],
+  );
+
+  return {
+    user,
+    session: { id: token, userId: user.id, createdAt: now, expiresAt, databaseId },
+  };
+}
+
+async function signInExternalIdentity(identity: OidcIdentity): Promise<LoginResult> {
+  const user = await withTransaction((executeQuery) =>
+    resolveExternalIdentityUser(identity, executeQuery),
+  );
   const externalPassword = createExternalPasswordSentinel(user.id);
   auth.upsertUserCredentials({ user, passwordHash: hashPassword(externalPassword) });
-
   return persistLoginSession(
     auth.login({ email: user.email, password: externalPassword }),
     "login_success",
@@ -588,7 +687,7 @@ async function signInExternalIdentity(identity: OidcIdentity): Promise<LoginResu
 }
 
 async function updateExternalUserSnapshot(
-  executeQuery: typeof query,
+  executeQuery: QueryExecutor,
   userId: string,
   email: string,
   displayName: string,
@@ -604,7 +703,7 @@ async function updateExternalUserSnapshot(
 }
 
 async function ensureInitialFinancialProfile(
-  executeQuery: typeof query,
+  executeQuery: QueryExecutor,
   userId: string,
   displayName: string,
 ): Promise<void> {
@@ -621,7 +720,7 @@ async function ensureInitialFinancialProfile(
 }
 
 async function createInitialFinancialProfile(
-  executeQuery: typeof query,
+  executeQuery: QueryExecutor,
   userId: string,
   displayName: string,
 ): Promise<void> {
@@ -697,12 +796,12 @@ function resolveOidcProviderConfig(
   env: Readonly<Record<string, string | undefined>>,
 ): OidcProviderConfig {
   const issuer = readEnv(env, "OIDC_ISSUER_URL");
-  const audience = readEnv(env, "OIDC_AUDIENCE");
+  const audience = readEnv(env, "OIDC_CLIENT_ID") ?? readEnv(env, "OIDC_AUDIENCE");
   const jwksUri = readEnv(env, "OIDC_JWKS_URI");
 
   if (!issuer || !audience || !jwksUri) {
     throw new Error(
-      "OIDC_ISSUER_URL, OIDC_AUDIENCE and OIDC_JWKS_URI are required for productive authentication.",
+      "OIDC_ISSUER_URL, OIDC_CLIENT_ID and OIDC_JWKS_URI are required for productive authentication.",
     );
   }
 

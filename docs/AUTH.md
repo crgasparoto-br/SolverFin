@@ -1,170 +1,154 @@
-# Autenticacao e sessoes
+# Autenticação e sessões
 
-## Objetivo
+## Contrato produtivo
 
-A autenticacao do SolverFin define o contrato de login, cadastro local, login OIDC/OAuth2 produtivo, logout, sessao autenticada e protecao de rotas privadas.
+Produção, staging com dados reais e preview público usam **Amazon Cognito User Pools**, plano Essentials, na região `sa-east-1`, conforme a ADR 0004. O SolverFin usa endpoints OIDC/OAuth2 padrão e não depende de SDK proprietário no domínio.
 
-A ADR `docs/adr/0004-autenticacao-produtiva.md` exige que producao use um provider gerenciado compativel com OIDC/OAuth2 para identidade e uma sessao propria do SolverFin que seja persistente, revogavel e auditavel.
+A jornada produtiva é:
 
-## Estrategia atual
+1. `GET /api/auth/oidc/start?returnTo=/dashboard` valida um destino interno, gera `state`, `nonce`, PKCE `S256` e um vínculo opaco exclusivo do navegador, persiste a tentativa antes do redirect e encaminha ao login gerenciado do Cognito. O vínculo bruto existe somente em cookie HttpOnly transitório.
+2. `GET /api/auth/oidc/callback` exige simultaneamente o `state` e o vínculo do navegador que iniciou a tentativa, reivindica a tentativa com transição atômica `PENDING -> PROCESSING`, troca o código somente no backend e valida assinatura RS256, issuer, audience, expiração, nonce, `token_use=id`, email presente e `email_verified=true` antes de vincular a identidade externa.
+3. O backend cria uma sessão opaca própria, persiste somente o hash SHA-256 e envia o token bruto apenas no cookie HttpOnly.
+4. A aplicação web confirma a sessão por `GET /api/me` antes de seguir ao `returnTo`; quando o navegador não mantém o cookie, mostra um estado controlado com instrução para habilitar cookies e reiniciar o acesso seguro.
+5. `GET /api/me` e as rotas privadas validam a sessão persistida.
+6. `POST /api/session/renew` gira atomicamente o token sem ampliar `expiresAt`.
+7. `DELETE /api/session` revoga de forma idempotente e limpa os cookies da sessão mesmo quando a API ou a persistência não conseguem concluir a revogação naquele momento.
 
-O modulo `apps/api/src/auth.ts` permanece como camada pura e testavel de autenticacao para desenvolvimento e testes. Ele valida credenciais injetadas, cria sessoes locais e oferece guard para rotas privadas.
+O callback nunca devolve código, tokens do Cognito, `code_verifier`, vínculo bruto do navegador, token local, segredo ou claims sensíveis ao frontend, à URL pós-callback, a logs ou a erros públicos.
 
-O modulo `apps/api/src/auth-service.ts` conecta essa camada ao PostgreSQL e adiciona o contrato produtivo:
+## Correlação OIDC
 
-- login local e login OIDC retornam um token de sessao local do SolverFin;
-- somente o hash SHA-256 desse token e persistido em `ApplicationSession`;
-- o token bruto nunca deve ser gravado em banco, logs, erros ou fixtures;
-- sessoes possuem `createdAt`, `lastSeenAt`, `expiresAt`, `revokedAt` e `revocationReason`;
-- rotas privadas validam sessao persistida quando o banco esta disponivel;
-- logout revoga a sessao persistida ativa;
-- revogacao em massa por usuario fica disponivel no servico de autenticacao;
-- eventos de seguranca sao registrados em `SecurityAuditEvent`.
+`OidcLoginAttempt` é a fonte de verdade compartilhada entre instâncias. Armazena hashes de `state` e `nonce`, issuer, `returnTo`, versão, expiração e estado terminal. O campo `encryptedCodeVerifier` contém um envelope versionado: somente o hash SHA-256 do vínculo do navegador e o `code_verifier` cifrado com AES-256-GCM.
 
-## Usuario master e Admin global
+O cookie de vínculo possui nome derivado do hash do `state`, permitindo tentativas simultâneas sem compartilhar correlação. O callback calcula o hash do valor recebido nesse cookie e a transição atômica exige correspondência com o envelope persistido. Uma URL de callback copiada do navegador A para o navegador B é rejeitada antes da troca do código e não consome a tentativa válida do navegador A.
 
-A area Admin global deve ser protegida por backend antes de listar, atualizar ou alterar recursos compartilhados entre todos os usuarios.
+Estados válidos:
 
-A definicao inicial de usuario master fica em `SOLVERFIN_MASTER_EMAILS`, com uma lista separada por virgulas. A comparacao normaliza espacos e caixa alta/baixa, ignora valores que nao sejam emails validos e falha de modo seguro quando a variavel estiver ausente ou vazia.
+- `PENDING`;
+- `PROCESSING`;
+- `CONSUMED`;
+- `CANCELLED`;
+- `EXPIRED`;
+- `FAILED`.
 
-O helper `apps/api/src/admin-auth.ts` expoe:
+Somente uma chamada com `state` e vínculo de navegador corretos pode reivindicar uma tentativa pendente. Repetição, replay, outro navegador, expiração, estado desconhecido e concorrência são rejeitados sem criar sessão. Cancelamento do provider termina a tentativa sem revelar detalhes internos.
 
-- `listConfiguredMasterEmails` para ler a configuracao normalizada;
-- `isMasterUser` para checagem booleana;
-- `requireMasterUser` para bloquear usuario comum ou desabilitado com `AUTH_ADMIN_REQUIRED` e status HTTP 403.
+Depois de `PENDING -> PROCESSING`, divergência de issuer, chave de cifragem trocada, envelope corrompido, falha de token ou identidade inválida terminam imediatamente a tentativa como `FAILED` e produzem auditoria redigida. A tentativa não permanece presa em `PROCESSING` aguardando o scheduler.
 
-Usuario com status `disabled` nunca recebe acesso Admin mesmo que o email esteja configurado como master. Essa regra nao usa ownership de organizacao ou perfil financeiro, pois o Admin global nao pertence a um perfil financeiro especifico.
+A API executa uma limpeza no início do processo e depois periodicamente. Tentativas `PENDING` vencidas passam para `EXPIRED`; tentativas `PROCESSING` abandonadas após o prazo passam para `FAILED`. `OIDC_ATTEMPT_CLEANUP_INTERVAL_MS` permite ajustar a cadência, com mínimo efetivo de 10 segundos e padrão de 60 segundos.
 
-## Provider produtivo
+## Confiança do provider
 
-A rota `POST /api/session/oidc` recebe a resposta validada do fluxo OIDC/OAuth2 do cliente, confere `state`, valida o `idToken` contra JWKS do provider e troca a identidade externa por uma sessao local do SolverFin.
+O issuer aceito deve ter o formato de User Pool do Cognito em `sa-east-1`. O JWKS é derivado exatamente do issuer e não pode apontar para outro host ou path. Authorization, token, logout e recuperação usam um único domínio gerenciado `*.auth.sa-east-1.amazoncognito.com`, com paths canônicos e sem query ou fragmento. O redirect usa exatamente a origem de `APP_ORIGIN`.
 
-Esse fluxo nao recebe, armazena nem verifica senha produtiva. Usuarios produtivos podem ter `passwordHash` nulo porque credenciais reais ficam delegadas ao provider gerenciado.
+Configuração que misture issuer, JWKS, região, domínio de login ou redirect falha antes do servidor produtivo começar a atender requisições e também é revalidada quando o fluxo OIDC é iniciado.
 
-## Recuperacao de senha
+## Cookies de autenticação
 
-A tela de login exibe a acao **Esqueci minha senha**. O SolverFin nao cria token, endpoint, email ou armazenamento proprio para redefinicao de senha produtiva; a acao encaminha o usuario para o fluxo administrado pelo provider de identidade, conforme a ADR de autenticacao.
+Em produção, o cookie da sessão é:
 
-A URL deve ser configurada em `AUTH_PASSWORD_RESET_URL`. Apenas URLs HTTP/HTTPS sem credenciais embutidas sao aceitas. Fora dos ambientes `development`, `local` e `test`, a URL precisa usar HTTPS. Se a configuracao estiver ausente ou invalida, a acao permanece visivel e informa ao usuario que deve procurar o responsavel pelo acesso.
-
-A URL pode incluir parametros exigidos pelo provider, como identificador do cliente ou destino de retorno, desde que o valor completo seja configurado no ambiente e nao contenha segredo.
-
-## Sessoes persistentes
-
-A sessao local e enviada nas rotas privadas com:
-
-```http
-Authorization: Bearer <session-token>
+```text
+__Host-solverfin_session=<opaque>; Path=/; HttpOnly; Secure; SameSite=Lax
 ```
 
-Ao criar a sessao, a API grava em `ApplicationSession`:
+A correlação transitória de cada tentativa usa:
 
-- `tokenHash`: hash SHA-256 do token, unico e sem o token bruto;
-- `userId`: usuario autenticado;
-- `createdAt`: criacao da sessao;
-- `lastSeenAt`: ultima validacao bem-sucedida;
-- `expiresAt`: timeout absoluto;
-- `revokedAt` e `revocationReason`: revogacao explicita, expirada ou por inatividade.
+```text
+__Host-solverfin_oidc_<state-hash-prefix>=<browser-binding>; Path=/; HttpOnly; Secure; SameSite=Lax
+```
 
-A sessao e rejeitada com erro controlado quando estiver ausente, invalida, expirada, revogada ou inativa alem do limite configurado.
+Em ambiente local/teste, os nomes são `solverfin_session` e `solverfin_oidc_<state-hash-prefix>`, e `Secure` é omitido para permitir HTTP local. Não há atributo `Domain`. `Max-Age` e `Expires` do cookie de sessão nunca ultrapassam o timeout absoluto persistido; o cookie de correlação nunca ultrapassa a expiração da tentativa.
 
-## Auditoria de seguranca
+Múltiplos cookies são enviados como headers `Set-Cookie` separados. A aplicação web encaminha os cookies ao backend; ela não grava token produtivo nem vínculo de navegador em `localStorage`, `sessionStorage`, IndexedDB, HTML ou JSON. O cookie transitório é removido no sucesso, cancelamento ou falha do callback e expira sozinho quando o navegador não retorna.
 
-Eventos de seguranca sao gravados em `SecurityAuditEvent` sem tokens, respostas sensiveis de provider ou payloads privados. Os eventos cobertos incluem:
+Após o callback, a aplicação usa uma etapa intermediária na própria tela de login. Se o cookie de sessão estiver válido, redireciona com `303` ao `returnTo` previamente validado. Se o cookie estiver ausente ou inválido, não presume autenticação e oferece reinício explícito da jornada. Se a API estiver indisponível ou devolver uma resposta inesperada durante o callback, a fronteira web responde com `303 /login?erro=autenticacao`, `Cache-Control: no-store` e remove o cookie de correlação, sem expor JSON ou detalhes do provider.
 
-- login bem-sucedido;
-- falha de login;
-- logout;
-- sessao ausente, invalida, expirada, revogada ou encerrada por inatividade;
-- usuario desabilitado;
-- revogacao de todas as sessoes de um usuario;
-- acesso negado a perfil financeiro quando chamado pelo servico de autenticacao.
+## Persistência, rotação e revogação
 
-Acoes administrativas globais devem reutilizar o guard master e registrar auditoria especifica quando a rota administrativa existir. Se a estrutura de auditoria nao estiver disponivel em um ambiente local, a operacao deve continuar sem expor segredos ou payloads sensiveis.
+`ApplicationSession` contém `tokenHash`, `transport`, `createdAt`, `lastSeenAt`, `expiresAt`, `revokedAt` e `revocationReason`. O token bruto existe somente no cookie e na memória da requisição.
 
-## Variaveis locais
+A renovação substitui o hash por escrita condicional. Duas renovações concorrentes com o mesmo token antigo resultam em no máximo uma vencedora. A rotação mantém o mesmo `expiresAt` absoluto.
 
-`.env.example` inclui:
+Logout revoga somente uma sessão ainda ativa e sempre remove, na resposta ao navegador, os cookies produtivo, local e legado. Essa limpeza ocorre mesmo quando a API está indisponível, responde com erro ou a revogação/auditoria no banco falha; a falha operacional não preserva credenciais no navegador. A migration de rollout marca sessões legadas ativas com `auth_transport_migration`, exigindo novo login. Alterar um usuário para `DISABLED` revoga imediatamente todas as sessões ainda ativas com motivo `user_disabled`; a validação de identidade desabilitada também força essa revogação antes de negar o login.
+
+## CSRF e origem
+
+Toda operação mutável autenticada por cookie exige `Origin` exatamente igual a `APP_ORIGIN`. Origem ausente ou diferente é rejeitada com `AUTH_REQUEST_ORIGIN_INVALID`. A exceção `AUTH_ALLOW_MISSING_ORIGIN=true` existe apenas para adaptadores locais/testes deliberados.
+
+A materialização automática de recorrências em `/cartoes` e `/lancamentos` é iniciada por um `POST` same-origin do navegador. O adaptador web encaminha o cookie e o `Origin` recebido; não transforma o cookie produtivo em Bearer externo nem executa a mutação durante o `GET` da página.
+
+`SameSite=Lax` é defesa complementar e não substitui a validação de origem nem o vínculo da tentativa OIDC ao navegador.
+
+## Contratos locais e legados
+
+Os contratos abaixo existem somente em `development`, `local`, `test` ou demonstração não produtiva explicitamente autorizada por `AUTH_ALLOW_DEMO=true`:
+
+- `POST /api/session`;
+- `POST /api/users`;
+- `POST /api/session/oidc` com `idToken` fornecido pelo cliente;
+- autenticação `Authorization: Bearer`.
+
+Fora desses ambientes, o servidor remove qualquer Bearer recebido externamente antes de chamar roteadores internos. Somente um cookie produtivo previamente validado pode ser convertido em credencial interna transitória para os roteadores legados. Produção nunca recorre à sessão em memória quando a sessão persistida estiver ausente ou indisponível.
+
+`NODE_ENV` deve existir explicitamente e usar apenas `development`, `local`, `test` ou `production`. Ausência ou valor desconhecido interrompe a inicialização. O lifecycle `start` permanece canônico (`node dist/...`), portanto o ambiente de deploy deve fornecer `NODE_ENV=production` explicitamente.
+
+As rotas locais de login e cadastro verificam a elegibilidade do ambiente antes de ler ou validar o corpo, garantindo `AUTH_LOCAL_AUTH_DISABLED` mesmo para payload malformado fora dos ambientes autorizados.
+
+## Identidade e tenant
+
+O vínculo canônico é `externalAuthProvider + externalAuthSubject`. A primeira autenticação válida pode vincular um usuário local sem provider ou criar `User`, `Organization` e `FinancialProfile` pessoal de forma idempotente.
+
+A vinculação usa lock da linha do usuário, compare-and-set dos campos ainda nulos e constraints únicas. Duas identidades diferentes concorrendo pelo mesmo email produzem no máximo uma vencedora. Duas tentativas da mesma identidade retornam o mesmo usuário e não duplicam organização ou perfil. Depois de criado, o vínculo externo é imutável no banco.
+
+O email do ID token somente participa da criação ou vinculação quando a claim `email_verified` é booleana e verdadeira. Tokens de acesso, tokens sem `token_use` e emails não verificados são rejeitados antes de qualquer mutação local.
+
+Credenciais, confirmação de email, recuperação e autenticação forte permanecem sob responsabilidade do Cognito.
+
+## Erros públicos
+
+- `AUTH_RETURN_TO_INVALID`: destino pós-login externo, ambíguo ou malformado;
+- `AUTH_REQUEST_ORIGIN_INVALID`: operação mutável por cookie com origem ausente ou divergente;
+- `AUTH_OIDC_ATTEMPT_INVALID`: callback ausente, apresentado por outro navegador, expirado, repetido, cancelado ou inválido;
+- `AUTH_OIDC_CONFIGURATION_INVALID`: configuração produtiva incompleta ou incoerente.
+
+Os corpos públicos permanecem genéricos e não revelam token, código, claim, email, provider, vínculo de navegador ou existência de usuário.
+
+## Auditoria
+
+`SecurityAuditEvent` registra eventos operacionais sem material sensível, incluindo criação/consumo/falha/cancelamento de tentativa OIDC, criação de sessão, rotação, logout, revogação, sessão inválida/expirada, bloqueio de fluxo local e origem rejeitada.
+
+A criação da sessão e os eventos `session_created` e `oidc_callback_consumed` são persistidos na mesma transação que marca a tentativa como `CONSUMED`. Falhas terminais depois da reivindicação registram `oidc_callback_failed` com motivo genérico e sem material transitório.
+
+## Configuração
+
+Variáveis produtivas:
 
 ```env
+NODE_ENV=production
+APP_ORIGIN=https://app.solverfin.example
+OIDC_ISSUER_URL=https://cognito-idp.sa-east-1.amazonaws.com/<user-pool-id>
+OIDC_CLIENT_ID=<app-client-id>
+OIDC_AUTHORIZATION_URL=https://<prefixo>.auth.sa-east-1.amazoncognito.com/oauth2/authorize
+OIDC_TOKEN_URL=https://<prefixo>.auth.sa-east-1.amazoncognito.com/oauth2/token
+OIDC_JWKS_URI=https://cognito-idp.sa-east-1.amazonaws.com/<user-pool-id>/.well-known/jwks.json
+OIDC_REDIRECT_URI=https://<app>/api/auth/oidc/callback
+OIDC_LOGOUT_URL=https://<prefixo>.auth.sa-east-1.amazoncognito.com/logout
+OIDC_RECOVERY_URL=https://<prefixo>.auth.sa-east-1.amazoncognito.com/forgotPassword
+OIDC_ATTEMPT_ENCRYPTION_KEY=<32-bytes-em-base64>
+OIDC_ATTEMPT_TTL_MINUTES=10
+OIDC_ATTEMPT_CLEANUP_INTERVAL_MS=60000
 AUTH_SESSION_TTL_MINUTES=60
 AUTH_SESSION_IDLE_TIMEOUT_MINUTES=30
-AUTH_ALLOW_DEMO=false
-AUTH_PASSWORD_RESET_URL=https://identity.example.invalid/solverfin/reset-password
-SOLVERFIN_MASTER_EMAILS=master@solverfin.example.invalid
-OIDC_ISSUER_URL=https://identity.example.invalid/solverfin
-OIDC_AUDIENCE=solverfin-api
-OIDC_JWKS_URI=https://identity.example.invalid/solverfin/.well-known/jwks.json
 ```
 
-`AUTH_SESSION_TTL_MINUTES` controla o timeout absoluto da sessao. Quando ausente ou invalido, o padrao e 60 minutos.
+`OIDC_AUDIENCE` permanece apenas como alias de transição e deve coincidir com `OIDC_CLIENT_ID`. O app client usa Authorization Code Grant, PKCE `S256`, scopes mínimos `openid email profile` e não precisa de client secret para o cliente público usado pelo browser. SMS não é o mecanismo padrão; preferir email, passkeys ou aplicativo autenticador conforme a configuração disponível.
 
-`AUTH_SESSION_IDLE_TIMEOUT_MINUTES` controla o timeout por inatividade das sessoes persistidas. Quando ausente ou invalido, o padrao e 30 minutos.
+Todos os valores reais ficam em secrets por ambiente. Ausência ou incoerência de configuração produtiva impede a inicialização/autenticação produtiva.
 
-`AUTH_ALLOW_DEMO=true` deve ser usado apenas em demonstracoes nao produtivas e controladas. Ele nao torna a autenticacao demo adequada para producao.
+### Checklist do app client Cognito
 
-`AUTH_PASSWORD_RESET_URL` define a pagina do provider gerenciado usada pela acao **Esqueci minha senha**. Use HTTPS em preview, staging e producao. A variavel nao e segredo, mas nao deve carregar tokens, senhas ou credenciais na URL.
+Antes do rollout, confirme que o app client não possui client secret, que Authorization Code Grant e PKCE `S256` estão habilitados e que as URLs exatas de callback e logout de cada ambiente foram cadastradas no Cognito. O domínio gerenciado e o User Pool devem permanecer em `sa-east-1`.
 
-`SOLVERFIN_MASTER_EMAILS` controla quem pode acessar recursos Admin globais. Em producao, configure apenas emails reais de usuarios autorizados em ambiente protegido. Variavel ausente ou vazia nao libera acesso Admin para ninguem.
+## Testes e validação
 
-## Erros controlados
-
-Credenciais invalidas retornam erro generico:
-
-```text
-AUTH_INVALID_CREDENTIALS
-```
-
-Usuario desabilitado retorna:
-
-```text
-AUTH_USER_DISABLED
-```
-
-Sessao ausente retorna:
-
-```text
-AUTH_SESSION_REQUIRED
-```
-
-Sessao invalida ou revogada retorna:
-
-```text
-AUTH_SESSION_INVALID
-```
-
-Sessao expirada por timeout absoluto ou inatividade retorna:
-
-```text
-AUTH_SESSION_EXPIRED
-```
-
-Usuario autenticado sem permissao master para Admin global retorna:
-
-```text
-AUTH_ADMIN_REQUIRED
-```
-
-## Testes
-
-O pacote `@solverfin/api` cobre:
-
-- rota publica sem usuario autenticado;
-- login com email normalizado;
-- rota privada autenticada;
-- inclusao de credenciais persistidas no servico de auth;
-- logout invalidando sessao;
-- credenciais invalidas;
-- usuario desabilitado;
-- sessao expirada;
-- parsing de header `Bearer`;
-- hash de token de sessao sem persistir token bruto;
-- timeout por inatividade;
-- bloqueio da autenticacao demo fora de ambiente local/teste sem opt-in explicito;
-- configuracao OIDC produtiva para ambientes nao locais;
-- validacao de JWT OIDC assinado, audience invalida, token expirado e `state` invalido;
-- configuracao e guard de usuario master para Admin global, incluindo falha segura quando `SOLVERFIN_MASTER_EMAILS` esta ausente, usuario comum e usuario desabilitado.
-
-O pacote `@solverfin/web` cobre a renderizacao da acao **Esqueci minha senha**, o escape da URL e a rejeicao de protocolo inseguro, credenciais embutidas e HTTP fora de ambiente local.
-
-Todos os testes usam usuarios ficticios e nao dependem de segredos reais.
+A cobertura inclui cookie produtivo/local, cookie transitório por tentativa, ausência de `Domain`, origem exata, transporte de recorrência por cookie, `returnTo` interno, estado de cookie bloqueado, PKCE, hashes de state/nonce/vínculo do navegador, rejeição de callback entre navegadores sem consumir a tentativa válida, nonce do ID token, `token_use=id`, email verificado, envelope cifrado corrompido, rotação incorreta da chave, bloqueio dos contratos legados, ambiente de runtime explícito, bloqueio de Bearer externo, rotação atômica, logout com API ausente ou resposta de erro, revogação idempotente, revogação ao desabilitar usuário, estados/replay da tentativa, callback indisponível com redirect genérico, concorrência de vínculo externo, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.

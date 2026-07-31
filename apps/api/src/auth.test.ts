@@ -258,9 +258,16 @@ function testDemoAuthRequiresExplicitOptInValue(): void {
 function testProductiveOidcConfigurationAllowsNonLocalEnvironment(): void {
   const env = {
     NODE_ENV: "production",
-    OIDC_ISSUER_URL: "https://identity.example.invalid/solverfin",
+    APP_ORIGIN: "https://app.example.invalid",
+    OIDC_ISSUER_URL: "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example",
+    OIDC_CLIENT_ID: "solverfin-api",
     OIDC_AUDIENCE: "solverfin-api",
-    OIDC_JWKS_URI: "https://identity.example.invalid/solverfin/.well-known/jwks.json",
+    OIDC_AUTHORIZATION_URL: "https://solverfin-auth.example.invalid/oauth2/authorize",
+    OIDC_TOKEN_URL: "https://solverfin-auth.example.invalid/oauth2/token",
+    OIDC_JWKS_URI:
+      "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example/.well-known/jwks.json",
+    OIDC_REDIRECT_URI: "https://app.example.invalid/api/auth/oidc/callback",
+    OIDC_ATTEMPT_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
   };
 
   assertEqual(

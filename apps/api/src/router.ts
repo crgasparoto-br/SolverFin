@@ -14,6 +14,7 @@ import {
 } from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
+import type { ApiHeaders } from "./http-headers.js";
 import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
@@ -89,7 +90,7 @@ export interface ApiRequest {
 
 export interface ApiResponse {
   statusCode: number;
-  headers: Readonly<Record<string, string>>;
+  headers: ApiHeaders;
   body: unknown;
 }
 

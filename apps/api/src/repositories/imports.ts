@@ -673,6 +673,44 @@ export async function approveImportSuggestionForContext(
   suggestionId: EntityId,
 ): Promise<ImportReviewDecisionResult> {
   const outcome = await withSharedTransaction(async (executeQuery) => {
+    await requireMutableBatch(context, importBatchId, executeQuery);
+    const suggestion = await requireImportSuggestion(
+      context,
+      importBatchId,
+      suggestionId,
+      executeQuery,
+      false,
+    );
+
+    if (suggestion.status === "pending_review") {
+      const payload = requireExtractionPayload(suggestion);
+      if (payload.kind === "transfer") {
+        const existingCandidates = await executeQuery<{ id: string }>(
+          `select "id" from "AiSuggestion"
+           where "organizationId" = $1 and "financialProfileId" = $2
+             and "sourceSuggestionId" = $3 and "payloadFingerprint" = $4
+             and "kind" in ('DEDUPLICATION', 'RECONCILIATION')
+             and "status" = 'PENDING_REVIEW'
+           limit 1`,
+          [
+            context.organizationId,
+            context.financialProfileId,
+            suggestion.id,
+            buildImportPayloadFingerprint(payload),
+          ],
+        );
+
+        if (existingCandidates.length === 0) {
+          return approveImportSuggestionInTransaction(
+            context,
+            importBatchId,
+            suggestionId,
+            executeQuery,
+          );
+        }
+      }
+    }
+
     const pendingCandidates = await ensureCurrentDeterministicCandidates(
       context,
       importBatchId,

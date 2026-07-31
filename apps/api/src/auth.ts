@@ -60,7 +60,14 @@ export type AuthErrorCode =
   | "AUTH_SESSION_EXPIRED"
   | "AUTH_USER_ALREADY_EXISTS"
   | "AUTH_USER_DISABLED"
-  | "AUTH_ADMIN_REQUIRED";
+  | "AUTH_ADMIN_REQUIRED"
+  | "AUTH_LOCAL_AUTH_DISABLED"
+  | "AUTH_LEGACY_OIDC_DISABLED"
+  | "AUTH_ORIGIN_NOT_ALLOWED"
+  | "AUTH_REQUEST_ORIGIN_INVALID"
+  | "AUTH_RETURN_TO_INVALID"
+  | "AUTH_OIDC_ATTEMPT_INVALID"
+  | "AUTH_OIDC_CONFIGURATION_INVALID";
 
 export class AuthError extends Error {
   readonly code: AuthErrorCode;
@@ -88,7 +95,14 @@ export function createAuthService(options: AuthServiceOptions) {
   }
 
   function upsertUserCredentials(credentials: AuthUserCredentials): void {
-    usersByEmail.set(normalizeEmail(credentials.user.email), credentials);
+    const normalizedEmail = normalizeEmail(credentials.user.email);
+    const existingCredentials = usersByEmail.get(normalizedEmail);
+    const nextCredentials =
+      existingCredentials?.user.id === credentials.user.id
+        ? { user: credentials.user, passwordHash: existingCredentials.passwordHash }
+        : credentials;
+
+    usersByEmail.set(normalizedEmail, nextCredentials);
     usersById.set(credentials.user.id, credentials.user);
   }
 

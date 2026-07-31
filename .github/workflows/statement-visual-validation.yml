@@ -1,4 +1,6 @@
 # Reexecuta a evidência final em Chrome para os principais fluxos visuais do SolverFin.
+# Alterações em autenticação, sessão ou origem exigem nova evidência no mesmo head auditado.
+# O fechamento documental do contrato também invalida evidências vinculadas a um SHA anterior.
 name: Statement visual validation
 
 on:
@@ -7,6 +9,7 @@ on:
       - main
     paths:
       - "apps/web/**"
+      - "packages/shared/**"
       - "scripts/run-statement-visual-validation.mjs"
       - "scripts/statement-visual/**"
       - ".github/workflows/statement-visual-validation.yml"
@@ -30,6 +33,7 @@ jobs:
       AUTH_ALLOW_DEMO: "true"
       DATABASE_URL: postgresql://solverfin:solverfin_visual_password@localhost:5432/solverfin_visual?schema=public
       API_BASE_URL: http://127.0.0.1:4000
+      APP_ORIGIN: http://127.0.0.1:5173
       HOST: 127.0.0.1
       SOLVERFIN_MASTER_EMAILS: demo@solverfin.example.invalid
 
@@ -62,27 +66,53 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Prepare database
+      - name: Prepare database and production web build
         run: |
           npm run prisma:generate
           npm run build:packages
           npm run db:deploy
           npm run db:seed
+          npm run build --workspace @solverfin/web
 
       - name: Start SolverFin
         run: |
           npm run dev:all > /tmp/solverfin-dev.log 2>&1 &
           echo $! > /tmp/solverfin-dev.pid
+
+          env \
+            NODE_ENV=production \
+            AUTH_ALLOW_DEMO=false \
+            HOST=127.0.0.1 \
+            PORT=5174 \
+            API_BASE_URL=http://127.0.0.1:4000 \
+            APP_ORIGIN=https://app.example.invalid \
+            OIDC_ISSUER_URL=https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example \
+            OIDC_CLIENT_ID=client-123 \
+            OIDC_AUDIENCE=client-123 \
+            OIDC_AUTHORIZATION_URL=https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/authorize \
+            OIDC_TOKEN_URL=https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/token \
+            OIDC_JWKS_URI=https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example/.well-known/jwks.json \
+            OIDC_REDIRECT_URI=https://app.example.invalid/api/auth/oidc/callback \
+            OIDC_LOGOUT_URL=https://solverfin-auth.auth.sa-east-1.amazoncognito.com/logout \
+            OIDC_RECOVERY_URL=https://solverfin-auth.auth.sa-east-1.amazoncognito.com/forgotPassword \
+            node apps/web/dist/dev-server.js > /tmp/solverfin-productive-auth-web.log 2>&1 &
+          echo $! > /tmp/solverfin-productive-auth-web.pid
+
           for attempt in $(seq 1 90); do
-            if curl -sS -o /dev/null http://127.0.0.1:4000/api/me && curl -fsS http://127.0.0.1:5173/health >/dev/null; then
+            if curl -sS -o /dev/null http://127.0.0.1:4000/api/me \
+              && curl -fsS http://127.0.0.1:5173/health >/dev/null \
+              && curl -fsS http://127.0.0.1:5174/health >/dev/null; then
               sleep 8
-              if curl -sS -o /dev/null http://127.0.0.1:4000/api/me && curl -fsS http://127.0.0.1:5173/health >/dev/null; then
+              if curl -sS -o /dev/null http://127.0.0.1:4000/api/me \
+                && curl -fsS http://127.0.0.1:5173/health >/dev/null \
+                && curl -fsS http://127.0.0.1:5174/health >/dev/null; then
                 exit 0
               fi
             fi
             sleep 1
           done
           cat /tmp/solverfin-dev.log
+          cat /tmp/solverfin-productive-auth-web.log
           exit 1
 
       - name: Locate Chrome
@@ -98,9 +128,11 @@ jobs:
         env:
           CHROME_BIN: ${{ steps.chrome.outputs.path }}
           SOLVERFIN_WEB_URL: http://127.0.0.1:5173
+          SOLVERFIN_PRODUCTIVE_AUTH_URL: http://127.0.0.1:5174
           STATEMENT_VISUAL_OUTPUT: artifacts/statement-visual
         run: |
           npm run qa:statement-visual
+          node scripts/statement-visual/productive-auth-login.mjs
           node scripts/statement-visual/account-remuneration.mjs
           node scripts/statement-visual/account-remuneration-mobile-evidence.mjs
           node scripts/statement-visual/account-edit.mjs
@@ -118,6 +150,7 @@ jobs:
         run: |
           mkdir -p artifacts/statement-visual
           cp /tmp/solverfin-dev.log artifacts/statement-visual/server.log || true
+          cp /tmp/solverfin-productive-auth-web.log artifacts/statement-visual/productive-auth-web.log || true
 
       - name: Upload visual evidence
         if: always()
@@ -145,4 +178,7 @@ jobs:
         run: |
           if test -f /tmp/solverfin-dev.pid; then
             kill "$(cat /tmp/solverfin-dev.pid)" || true
+          fi
+          if test -f /tmp/solverfin-productive-auth-web.pid; then
+            kill "$(cat /tmp/solverfin-productive-auth-web.pid)" || true
           fi

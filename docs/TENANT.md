@@ -12,9 +12,9 @@ arquivar e selecionar perfis financeiros.
 
 A autenticacao produtiva definitiva esta definida na ADR
 `docs/adr/0004-autenticacao-produtiva.md`: a identidade primaria de usuarios
-reais deve vir de provider gerenciado compativel com OIDC/OAuth2, enquanto
-organizacoes, perfis financeiros e permissoes operacionais continuam sob
-controle do SolverFin.
+reais vem do Amazon Cognito User Pools por OIDC Authorization Code + PKCE, enquanto
+organizacoes, perfis financeiros, sessão operacional e permissoes continuam sob
+controle do SolverFin. O callback vincula a identidade externa antes de resolver qualquer tenant.
 
 ## Conceitos
 

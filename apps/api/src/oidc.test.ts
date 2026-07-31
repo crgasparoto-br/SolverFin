@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createSign, generateKeyPairSync, type KeyObject } from "node:crypto";
+import { createHash, createSign, generateKeyPairSync, type KeyObject } from "node:crypto";
 
 import { AuthError } from "./auth.js";
 import { validateOidcIdToken, validateOidcState, type OidcProviderConfig } from "./oidc.js";
@@ -24,23 +24,17 @@ jwk.alg = "RS256";
 await validatesSignedOidcIdToken();
 await rejectsInvalidAudience();
 await rejectsExpiredToken();
+await rejectsMissingTokenUse();
+await rejectsAccessTokenUse();
+await rejectsMissingEmailVerification();
+await rejectsUnverifiedEmail();
+await validatesNonceHash();
 rejectsInvalidState();
 
 async function validatesSignedOidcIdToken(): Promise<void> {
-  const token = signJwt(privateKey, {
-    iss: issuer,
-    sub: "provider-user-123",
-    aud: audience,
-    exp: nowSeconds + 300,
-    iat: nowSeconds,
-    email: "Pessoa@SolverFin.Example.Invalid",
-    name: "Pessoa SolverFin",
-  });
+  const token = signJwt(privateKey, validClaims());
 
-  const identity = await validateOidcIdToken(token, config, {
-    now: () => now,
-    fetchJwks: async () => ({ keys: [jwk] }),
-  });
+  const identity = await validateOidcIdToken(token, config, validationOptions());
 
   assert.equal(identity.provider, issuer);
   assert.equal(identity.subject, "provider-user-123");
@@ -49,39 +43,31 @@ async function validatesSignedOidcIdToken(): Promise<void> {
 }
 
 async function rejectsInvalidAudience(): Promise<void> {
-  const token = signJwt(privateKey, {
-    iss: issuer,
-    sub: "provider-user-123",
-    aud: "wrong-api",
-    exp: nowSeconds + 300,
-  });
-
-  await assert.rejects(
-    () =>
-      validateOidcIdToken(token, config, {
-        now: () => now,
-        fetchJwks: async () => ({ keys: [jwk] }),
-      }),
-    (error) => error instanceof AuthError && error.code === "AUTH_INVALID_CREDENTIALS",
-  );
+  await rejectsClaims({ aud: "wrong-api" });
 }
 
 async function rejectsExpiredToken(): Promise<void> {
-  const token = signJwt(privateKey, {
-    iss: issuer,
-    sub: "provider-user-123",
-    aud: audience,
-    exp: nowSeconds - 120,
-  });
+  await rejectsClaims({ exp: nowSeconds - 120 });
+}
 
-  await assert.rejects(
-    () =>
-      validateOidcIdToken(token, config, {
-        now: () => now,
-        fetchJwks: async () => ({ keys: [jwk] }),
-      }),
-    (error) => error instanceof AuthError && error.code === "AUTH_INVALID_CREDENTIALS",
-  );
+async function rejectsMissingTokenUse(): Promise<void> {
+  const claims = validClaims();
+  delete claims.token_use;
+  await rejectsToken(signJwt(privateKey, claims));
+}
+
+async function rejectsAccessTokenUse(): Promise<void> {
+  await rejectsClaims({ token_use: "access" });
+}
+
+async function rejectsMissingEmailVerification(): Promise<void> {
+  const claims = validClaims();
+  delete claims.email_verified;
+  await rejectsToken(signJwt(privateKey, claims));
+}
+
+async function rejectsUnverifiedEmail(): Promise<void> {
+  await rejectsClaims({ email_verified: false });
 }
 
 function rejectsInvalidState(): void {
@@ -89,6 +75,65 @@ function rejectsInvalidState(): void {
     () => validateOidcState("received-state", "expected-state"),
     (error) => error instanceof AuthError && error.code === "AUTH_INVALID_CREDENTIALS",
   );
+}
+
+async function validatesNonceHash(): Promise<void> {
+  const nonce = "nonce-value-123";
+  const nonceHash = createHash("sha256").update(nonce).digest("hex");
+  const token = signJwt(privateKey, validClaims({ nonce }));
+
+  await assert.doesNotReject(() =>
+    validateOidcIdToken(token, config, {
+      ...validationOptions(),
+      expectedNonceHash: nonceHash,
+    }),
+  );
+
+  await assert.rejects(
+    () =>
+      validateOidcIdToken(token, config, {
+        ...validationOptions(),
+        expectedNonceHash: "0".repeat(64),
+      }),
+    isInvalidCredentials,
+  );
+}
+
+async function rejectsClaims(overrides: Record<string, unknown>): Promise<void> {
+  await rejectsToken(signJwt(privateKey, validClaims(overrides)));
+}
+
+async function rejectsToken(token: string): Promise<void> {
+  await assert.rejects(
+    () => validateOidcIdToken(token, config, validationOptions()),
+    isInvalidCredentials,
+  );
+}
+
+function validClaims(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    iss: issuer,
+    sub: "provider-user-123",
+    aud: audience,
+    exp: nowSeconds + 300,
+    iat: nowSeconds,
+    token_use: "id",
+    email: "Pessoa@SolverFin.Example.Invalid",
+    email_verified: true,
+    name: "Pessoa SolverFin",
+    ...overrides,
+  };
+}
+
+function validationOptions() {
+  return {
+    now: () => now,
+    fetchJwks: async () => ({ keys: [jwk] }),
+  };
+}
+
+function isInvalidCredentials(error: unknown): boolean {
+  return error instanceof AuthError && error.code === "AUTH_INVALID_CREDENTIALS";
 }
 
 function signJwt(privateKeyObject: KeyObject, claims: Record<string, unknown>): string {
