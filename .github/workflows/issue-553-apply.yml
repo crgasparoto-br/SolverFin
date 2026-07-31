@@ -58,16 +58,15 @@ jobs:
       - name: Format candidate
         shell: bash
         run: |
+          npx prisma format --schema prisma/schema.prisma
           npx prettier --write \
-            prisma/schema.prisma \
-            prisma/migrations/20260731123000_manual_installment_creation/migration.sql \
             apps/api/src/installments-router.ts \
             apps/api/src/repositories/manual-installments.ts \
             apps/api/src/manual-installments.test.ts \
             apps/api/src/manual-installments.integration.test.ts \
             apps/web/src/dev-server/transactions-page.ts \
             apps/web/src/dev-server/transactions-statement.ts \
-            apps/web/src/dev-server/manual-installments-source.test.ts \
+            apps/web/src/dev-server/manual-installments-web.test.ts \
             docs/API_INSTALLMENTS.md \
             docs/API_TRANSACTIONS.md \
             docs/RECURRENCES_INSTALLMENTS_WEB.md \
