@@ -11,6 +11,21 @@ interface DelegatedRequest {
   cookie?: string;
 }
 
+const productiveAuthEnv = {
+  APP_ORIGIN: "https://app.example.invalid",
+  OIDC_ISSUER_URL: "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example",
+  OIDC_CLIENT_ID: "client-123",
+  OIDC_AUDIENCE: "client-123",
+  OIDC_AUTHORIZATION_URL:
+    "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/authorize",
+  OIDC_TOKEN_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/token",
+  OIDC_JWKS_URI:
+    "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example/.well-known/jwks.json",
+  OIDC_REDIRECT_URI: "https://app.example.invalid/api/auth/oidc/callback",
+  OIDC_LOGOUT_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/logout",
+  OIDC_RECOVERY_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/forgotPassword",
+};
+
 void main().catch((error: unknown) => {
   console.error(error);
   process.exitCode = 1;
@@ -133,6 +148,7 @@ function spawnWebServer(port: number, apiBaseUrl: string): ReturnType<typeof spa
   return spawn(process.execPath, [serverPath], {
     env: {
       ...process.env,
+      ...productiveAuthEnv,
       NODE_ENV: "production",
       AUTH_ALLOW_DEMO: "false",
       HOST: "127.0.0.1",
