@@ -267,13 +267,10 @@ async function validatesAttemptPayloadFailuresBecomeTerminal(): Promise<void> {
   });
   const corruptState = new URL(corruptStart.location).searchParams.get("state");
   assert.ok(corruptState);
-  await query(
-    `update "OidcLoginAttempt" set "encryptedCodeVerifier" = $2 where "stateHash" = $1`,
-    [
-      hash(corruptState),
-      `v1.${hash(corruptStart.browserBinding)}.invalid.invalid.invalid`,
-    ],
-  );
+  await query(`update "OidcLoginAttempt" set "encryptedCodeVerifier" = $2 where "stateHash" = $1`, [
+    hash(corruptState),
+    `v1.${hash(corruptStart.browserBinding)}.invalid.invalid.invalid`,
+  ]);
 
   await assert.rejects(
     () =>

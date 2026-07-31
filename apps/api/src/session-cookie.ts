@@ -137,10 +137,7 @@ function serializeCookie(
   return attributes.join("; ");
 }
 
-function clearCookie(
-  name: string,
-  env: Readonly<Record<string, string | undefined>>,
-): string {
+function clearCookie(name: string, env: Readonly<Record<string, string | undefined>>): string {
   const attributes = [
     `${name}=`,
     "Path=/",

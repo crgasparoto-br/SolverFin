@@ -44,13 +44,7 @@ export async function handleApiRequest(
   }
 
   if (publicOidcPaths.has(url.pathname) && request.method === "GET") {
-    await proxyToApi(
-      request,
-      response,
-      url,
-      credential ?? request.headers.cookie,
-      true,
-    );
+    await proxyToApi(request, response, url, credential ?? request.headers.cookie, true);
     return;
   }
 

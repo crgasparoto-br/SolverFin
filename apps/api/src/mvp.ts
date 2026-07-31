@@ -348,11 +348,7 @@ function isRegisterBody(body: unknown): body is {
   return isLoginBody(body) && "displayName" in body && typeof body.displayName === "string";
 }
 
-function jsonResponse(
-  statusCode: number,
-  body: unknown,
-  headers: ApiHeaders = {},
-): MvpApiResponse {
+function jsonResponse(statusCode: number, body: unknown, headers: ApiHeaders = {}): MvpApiResponse {
   return {
     statusCode,
     headers: { "content-type": "application/json; charset=utf-8", ...headers },

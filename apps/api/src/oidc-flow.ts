@@ -82,11 +82,7 @@ export async function startOidcLogin(
       randomUUID(),
       hashTransientValue(state),
       hashTransientValue(nonce),
-      encryptCodeVerifier(
-        codeVerifier,
-        config.encryptionKey,
-        hashTransientValue(browserBinding),
-      ),
+      encryptCodeVerifier(codeVerifier, config.encryptionKey, hashTransientValue(browserBinding)),
       config.issuer,
       returnTo,
       now,
@@ -134,12 +130,7 @@ export async function completeOidcCallback(
   const browserBinding = requireOpaqueCallbackValue(input.browserBinding);
 
   if (input.error) {
-    await cancelOidcAttempt(
-      state,
-      browserBinding,
-      normalizeProviderError(input.error),
-      now,
-    );
+    await cancelOidcAttempt(state, browserBinding, normalizeProviderError(input.error), now);
     await auditSecurityEvent({
       action: "oidc_callback_cancelled",
       result: "cancelled",
@@ -154,10 +145,7 @@ export async function completeOidcCallback(
   try {
     if (attempt.issuer !== config.issuer) throw invalidAttemptError();
 
-    const codeVerifier = decryptCodeVerifier(
-      attempt.encryptedCodeVerifier,
-      config.encryptionKey,
-    );
+    const codeVerifier = decryptCodeVerifier(attempt.encryptedCodeVerifier, config.encryptionKey);
     const idToken = await exchangeAuthorizationCode(
       { code, codeVerifier },
       config,
@@ -411,11 +399,7 @@ async function insertSecurityAuditEvent(
   );
 }
 
-function encryptCodeVerifier(
-  value: string,
-  key: Buffer,
-  browserBindingHash: string,
-): string {
+function encryptCodeVerifier(value: string, key: Buffer, browserBindingHash: string): string {
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, iv);
   const ciphertext = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
@@ -431,8 +415,7 @@ function encryptCodeVerifier(
 }
 
 function decryptCodeVerifier(value: string, key: Buffer): string {
-  const [version, browserBindingHash, ivValue, tagValue, ciphertextValue, extra] =
-    value.split(".");
+  const [version, browserBindingHash, ivValue, tagValue, ciphertextValue, extra] = value.split(".");
   if (
     version !== CODE_VERIFIER_ENVELOPE_VERSION ||
     !browserBindingHash ||

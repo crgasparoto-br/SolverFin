@@ -241,9 +241,7 @@ async function createsBackendControlledOidcAttempt(): Promise<void> {
     const state = location.searchParams.get("state") ?? "";
     const nonce = location.searchParams.get("nonce") ?? "";
     const encryptedEnvelope = String(params[3] ?? "");
-    const browserBindingHash = createHash("sha256")
-      .update(result.browserBinding)
-      .digest("hex");
+    const browserBindingHash = createHash("sha256").update(result.browserBinding).digest("hex");
 
     assert.equal(params.includes(state), false);
     assert.equal(params.includes(nonce), false);
