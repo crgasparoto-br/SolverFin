@@ -278,12 +278,11 @@ function hashSessionToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function resolveSessionIdleTimeoutMs(
-  env: Readonly<Record<string, string | undefined>>,
-): number {
+function resolveSessionIdleTimeoutMs(env: Readonly<Record<string, string | undefined>>): number {
   const value = Number(
     env.AUTH_SESSION_IDLE_TIMEOUT_MINUTES ?? DEFAULT_SESSION_IDLE_TIMEOUT_MINUTES,
   );
-  const minutes = Number.isFinite(value) && value > 0 ? value : DEFAULT_SESSION_IDLE_TIMEOUT_MINUTES;
+  const minutes =
+    Number.isFinite(value) && value > 0 ? value : DEFAULT_SESSION_IDLE_TIMEOUT_MINUTES;
   return minutes * 60 * 1000;
 }
