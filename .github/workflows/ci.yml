@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -150,14 +150,17 @@ jobs:
       - name: Verify import statement consistency
         run: npm run diagnose:import-statement-consistency -- --expect-zero
 
-  format-remediation-artifact:
-    name: Capture Prettier remediation
+  format-remediation:
+    name: Apply Prettier remediation
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - name: Checkout repository
+      - name: Checkout pull request branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -180,16 +183,20 @@ jobs:
           apps/web/src/dev-server/api.ts
           --write
 
-      - name: Upload formatted files
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-551-prettier-${{ github.run_id }}
-          if-no-files-found: error
-          retention-days: 1
-          path: |
-            apps/api/src/auth-cookie-session.integration.test.ts
-            apps/api/src/auth-cookie.test.ts
-            apps/api/src/mvp.ts
-            apps/api/src/oidc-flow.ts
-            apps/api/src/session-cookie.ts
+      - name: Commit formatted files
+        run: |
+          git config user.name "solverfin-ci"
+          git config user.email "solverfin-ci@users.noreply.github.com"
+          git add \
+            apps/api/src/auth-cookie-session.integration.test.ts \
+            apps/api/src/auth-cookie.test.ts \
+            apps/api/src/mvp.ts \
+            apps/api/src/oidc-flow.ts \
+            apps/api/src/session-cookie.ts \
             apps/web/src/dev-server/api.ts
+          if git diff --cached --quiet; then
+            echo "Formatting already clean."
+            exit 0
+          fi
+          git commit -m "style: format auth remediation"
+          git push origin HEAD:${{ github.head_ref }}
