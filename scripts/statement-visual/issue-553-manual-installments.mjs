@@ -41,10 +41,22 @@ try {
   const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");
   const preserved = await readFormState();
   check(preserved.modalOpen, "Modal closed after an ambiguous network failure", preserved);
-  check(preserved.submitDisabled === false, "Submit remained disabled after network failure", preserved);
-  check(preserved.description === "QA parcelamento manual canonico", "Description was lost", preserved);
+  check(
+    preserved.submitDisabled === false,
+    "Submit remained disabled after network failure",
+    preserved,
+  );
+  check(
+    preserved.description === "QA parcelamento manual canonico",
+    "Description was lost",
+    preserved,
+  );
   check(preserved.note === "Observacao preservada no retry", "Note was lost", preserved);
-  check(preserved.calls.length === 1, "A single confirmation issued more than one request", preserved);
+  check(
+    preserved.calls.length === 1,
+    "A single confirmation issued more than one request",
+    preserved,
+  );
 
   await submitByKeyboard();
   await waitForFormStatus("Ação concluída");
@@ -62,7 +74,11 @@ try {
   );
 
   const persisted = await readInstallments(fixture.accountId, "2026-08-01", "2026-10-31");
-  check(persisted.length === 3, "Retry created a duplicate or incomplete installment set", persisted);
+  check(
+    persisted.length === 3,
+    "Retry created a duplicate or incomplete installment set",
+    persisted,
+  );
   check(
     persisted.map((item) => item.sequenceNumber).join(",") === "1,2,3",
     "Canonical sequence is incomplete",
@@ -116,9 +132,21 @@ try {
   );
   await waitForFormStatus("ao menos um centavo por parcela");
   const validationFailure = await readFormState();
-  check(validationFailure.calls.length === 1, "Double submission issued duplicate requests", validationFailure);
-  check(validationFailure.modalOpen, "Modal closed after a definitive validation error", validationFailure);
-  check(validationFailure.submitDisabled === false, "Submit was not restored after validation", validationFailure);
+  check(
+    validationFailure.calls.length === 1,
+    "Double submission issued duplicate requests",
+    validationFailure,
+  );
+  check(
+    validationFailure.modalOpen,
+    "Modal closed after a definitive validation error",
+    validationFailure,
+  );
+  check(
+    validationFailure.submitDisabled === false,
+    "Submit was not restored after validation",
+    validationFailure,
+  );
 
   await fillMoney("1,00");
   await evaluate(browser.cdp, `document.querySelector("[data-form]").requestSubmit()`);
@@ -130,10 +158,18 @@ try {
     "Material correction reused the rejected idempotency key",
     corrected,
   );
-  check(!corrected.globalOverflow, "Installment modal caused horizontal overflow on mobile", corrected);
+  check(
+    !corrected.globalOverflow,
+    "Installment modal caused horizontal overflow on mobile",
+    corrected,
+  );
 
   const correctedRows = await readInstallments(fixture.accountId, "2026-11-01", "2026-12-31");
-  check(correctedRows.length === 2, "Corrected mobile submission did not persist two installments", correctedRows);
+  check(
+    correctedRows.length === 2,
+    "Corrected mobile submission did not persist two installments",
+    correctedRows,
+  );
 
   const mobileScreenshot = "issue-553-manual-installments-mobile-390x844.png";
   await screenshot(browser.cdp, join(outputDir, mobileScreenshot));
@@ -160,7 +196,11 @@ try {
     }))()`,
   );
   check(tablet.modalOpen, "Tablet modal did not open", tablet);
-  check(tablet.dialogLabel.includes("Novo lançamento"), "Tablet modal has no usable heading", tablet);
+  check(
+    tablet.dialogLabel.includes("Novo lançamento"),
+    "Tablet modal has no usable heading",
+    tablet,
+  );
   check(tablet.liveRegion === "polite", "Form feedback is not announced", tablet);
   check(!tablet.globalOverflow, "Installment modal caused horizontal overflow on tablet", tablet);
   const tabletScreenshot = "issue-553-manual-installments-tablet-768x1024.png";
@@ -229,10 +269,15 @@ async function installRequestProbe() {
 }
 
 async function openExpenseModalByKeyboard() {
-  await evaluate(
+  const focusState = await evaluate(
     browser.cdp,
-    `document.querySelector('[data-open-modal][data-quick-kind="expense"]').focus()`,
+    `(() => {
+      const button = document.querySelector('[data-open-modal][data-quick-kind="expense"]');
+      button?.focus();
+      return { focused: document.activeElement === button, disabled: button?.disabled === true };
+    })()`,
   );
+  check(focusState.focused && !focusState.disabled, "Expense shortcut is not keyboard ready", focusState);
   await pressKey("Enter");
   await waitForModal();
 }
@@ -358,10 +403,13 @@ async function readInstallments(accountId, from, to) {
 
 async function pressKey(key) {
   const keyCode = key === "Enter" ? 13 : 0;
+  const text = key === "Enter" ? "\r" : "";
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+    type: "keyDown",
     key,
     code: key,
+    text,
+    unmodifiedText: text,
     windowsVirtualKeyCode: keyCode,
     nativeVirtualKeyCode: keyCode,
   });
