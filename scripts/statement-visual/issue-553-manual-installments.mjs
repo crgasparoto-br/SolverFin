@@ -245,7 +245,7 @@ async function installRequestProbe() {
     `(() => {
       const nativeFetch = window.fetch.bind(window);
       const nativeSetTimeout = window.setTimeout.bind(window);
-      window.__issue553Probe = { calls: [], failNext: false };
+      window.__issue553Probe = { calls: [], observed: [], failNext: false };
       window.setTimeout = function (callback, delay, ...args) {
         if (typeof callback === "function" && String(callback).includes("window.location.reload")) return 0;
         return nativeSetTimeout(callback, delay, ...args);
@@ -253,6 +253,9 @@ async function installRequestProbe() {
       window.fetch = async function (input, init = {}) {
         const url = new URL(input instanceof Request ? input.url : String(input || ""), window.location.origin);
         const method = String(init.method || (input instanceof Request ? input.method : "GET")).toUpperCase();
+        if (method !== "GET") {
+          window.__issue553Probe.observed.push({ pathname: url.pathname, method });
+        }
         if (url.pathname === "/api/installments" && method === "POST") {
           const payload = JSON.parse(String(init.body || "{}"));
           const { idempotencyKey, ...businessPayload } = payload;
@@ -324,19 +327,24 @@ async function fillInstallmentForm({
     browser.cdp,
     `(() => {
       const form = document.querySelector("[data-form]");
-      form.kind.value = "expense";
-      form.repeatMode.value = "installment";
-      form.repeatMode.dispatchEvent(new Event("change", { bubbles: true }));
-      form.amountMinor.value = ${JSON.stringify(amount)};
-      form.plannedOn.value = ${JSON.stringify(plannedOn)};
-      form.effectiveOn.value = "";
-      form.installments.value = ${JSON.stringify(String(installments))};
-      form.installments.dispatchEvent(new Event("input", { bubbles: true }));
-      form.installmentStart.value = ${JSON.stringify(String(installmentStart))};
-      form.installmentValueMode.value = ${JSON.stringify(amountMode)};
-      form.description.value = ${JSON.stringify(description)};
-      form.note.value = ${JSON.stringify(note)};
-      form.status.value = "planned";
+      const control = (name) => form.elements.namedItem(name);
+      control("kind").value = "expense";
+      control("repeatMode").value = "installment";
+      control("repeatMode").dispatchEvent(new Event("change", { bubbles: true }));
+      control("amountMinor").value = ${JSON.stringify(amount)};
+      control("plannedOn").value = ${JSON.stringify(plannedOn)};
+      control("effectiveOn").value = "";
+      control("installments").value = ${JSON.stringify(String(installments))};
+      control("installments").dispatchEvent(new Event("input", { bubbles: true }));
+      control("installmentStart").value = ${JSON.stringify(String(installmentStart))};
+      control("installmentValueMode").value = ${JSON.stringify(amountMode)};
+      control("description").value = ${JSON.stringify(description)};
+      control("note").value = ${JSON.stringify(note)};
+      control("status").value = "planned";
+      return {
+        repeatMode: control("repeatMode").value,
+        hidden: control("repeatMode").closest("label")?.hidden === true,
+      };
     })()`,
   );
 }
