@@ -27,9 +27,10 @@ Fechar o modal cancela apenas a tentativa local. Isso nao desfaz um conjunto que
 
 ## Evidencia obrigatoria
 
-O teste de navegador deve permitir que o backend retorne `201`, substituir somente a resposta observada pelo navegador por `504`, executar o retry e comprovar:
+O teste de navegador deve confirmar a mesma requisicao diretamente no backend, responder `504` apenas para a requisicao original pausada no navegador, executar o retry e comprovar:
 
-- mesma URL, payload e chave;
+- o backend confirmou a primeira tentativa com `201` antes de o navegador observar o `504`;
+- mesma URL, payload e chave no retry;
 - campos bloqueados durante a ambiguidade;
 - um unico conjunto persistido;
 - nenhum efeito do payload adulterado entre as duas requisicoes.
