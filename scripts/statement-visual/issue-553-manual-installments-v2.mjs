@@ -35,7 +35,11 @@ try {
     description: "QA parcelamento manual canonico",
     note: "Observacao preservada no retry",
   });
-  check(desktopForm.repeatMode === "installment", "Desktop form did not retain installment mode", desktopForm);
+  check(
+    desktopForm.repeatMode === "installment",
+    "Desktop form did not retain installment mode",
+    desktopForm,
+  );
   check(await submitControlIsKeyboardReady(), "Submit control is not keyboard ready", desktopForm);
 
   const ambiguous = await interceptFormPost({
@@ -55,7 +59,11 @@ try {
   const preserved = await readFormState();
   check(preserved.modalOpen, "Modal closed after ambiguous response", preserved);
   check(!preserved.submitDisabled, "Submit remained disabled after ambiguous response", preserved);
-  check(preserved.description === desktopForm.description, "Description was lost after timeout", preserved);
+  check(
+    preserved.description === desktopForm.description,
+    "Description was lost after timeout",
+    preserved,
+  );
   check(preserved.note === desktopForm.note, "Note was lost after timeout", preserved);
 
   const retry = await interceptFormPost({ action: submitForm });
@@ -73,7 +81,11 @@ try {
   );
 
   const desktopRows = await readInstallments(fixture.accountId, "2026-08-01", "2026-10-31");
-  check(desktopRows.length === 3, "Desktop retry created an incomplete or duplicate set", desktopRows);
+  check(
+    desktopRows.length === 3,
+    "Desktop retry created an incomplete or duplicate set",
+    desktopRows,
+  );
   check(
     desktopRows.map((item) => item.sequenceNumber).join(",") === "1,2,3",
     "Desktop canonical sequence is incomplete",
@@ -87,9 +99,7 @@ try {
     desktopRows,
   );
   check(
-    desktopRows.every(
-      (item) => item.transaction?.note === "Observacao preservada no retry",
-    ),
+    desktopRows.every((item) => item.transaction?.note === "Observacao preservada no retry"),
     "Note was not persisted separately",
     desktopRows,
   );
@@ -119,7 +129,11 @@ try {
     description: "QA correcao material mobile",
     note: "Chave deve mudar apos validacao",
   });
-  check(mobileForm.repeatMode === "installment", "Mobile form did not retain installment mode", mobileForm);
+  check(
+    mobileForm.repeatMode === "installment",
+    "Mobile form did not retain installment mode",
+    mobileForm,
+  );
 
   const validation = await interceptFormPost({
     action: async () => {
@@ -151,9 +165,17 @@ try {
     { validation, corrected },
   );
   const correctedState = await readFormState();
-  check(!correctedState.globalOverflow, "Installment modal overflowed horizontally on mobile", correctedState);
+  check(
+    !correctedState.globalOverflow,
+    "Installment modal overflowed horizontally on mobile",
+    correctedState,
+  );
   const mobileRows = await readInstallments(fixture.accountId, "2026-11-01", "2026-12-31");
-  check(mobileRows.length === 2, "Corrected mobile submission did not persist two installments", mobileRows);
+  check(
+    mobileRows.length === 2,
+    "Corrected mobile submission did not persist two installments",
+    mobileRows,
+  );
   const mobileScreenshot = "issue-553-manual-installments-mobile-390x844.png";
   await screenshot(browser.cdp, join(outputDir, mobileScreenshot));
   scenarios.push({
@@ -179,7 +201,11 @@ try {
     }))()`,
   );
   check(tablet.modalOpen, "Tablet modal did not open", tablet);
-  check(tablet.dialogLabel.includes("Novo lançamento"), "Tablet modal has no usable heading", tablet);
+  check(
+    tablet.dialogLabel.includes("Novo lançamento"),
+    "Tablet modal has no usable heading",
+    tablet,
+  );
   check(tablet.liveRegion === "polite", "Form feedback is not announced", tablet);
   check(!tablet.globalOverflow, "Installment modal overflowed horizontally on tablet", tablet);
   const tabletScreenshot = "issue-553-manual-installments-tablet-768x1024.png";
@@ -248,9 +274,7 @@ async function interceptFormPost({ action, fulfill, observeAfterFirst = 0 }) {
         await browser.cdp.send("Fetch.fulfillRequest", {
           requestId: paused.requestId,
           responseCode: fulfill.statusCode,
-          responseHeaders: [
-            { name: "content-type", value: "application/json; charset=utf-8" },
-          ],
+          responseHeaders: [{ name: "content-type", value: "application/json; charset=utf-8" }],
           body: Buffer.from(JSON.stringify(fulfill.body)).toString("base64"),
         });
       } else {
