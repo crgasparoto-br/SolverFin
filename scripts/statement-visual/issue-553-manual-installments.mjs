@@ -344,12 +344,33 @@ async function fillMoney(amount) {
   );
 }
 
-async function submitByKeyboard() {
-  await evaluate(
+async function proveKeyboardSubmitActivation() {
+  const focused = await evaluate(
     browser.cdp,
-    `document.querySelector('[data-form] button[type="submit"]').focus()`,
+    `(() => {
+      const form = document.querySelector("[data-form]");
+      const submit = form.querySelector('button[type="submit"]');
+      window.__issue553KeyboardSubmit = false;
+      form.addEventListener(
+        "submit",
+        (event) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          window.__issue553KeyboardSubmit = true;
+        },
+        { capture: true, once: true },
+      );
+      submit.focus();
+      return document.activeElement === submit;
+    })()`,
   );
+  if (!focused) return false;
   await pressKey("Enter");
+  return evaluate(browser.cdp, `window.__issue553KeyboardSubmit === true`);
+}
+
+async function submitForm() {
+  await evaluate(browser.cdp, `document.querySelector("[data-form]").requestSubmit()`);
 }
 
 async function waitForFormStatus(expectedText) {
