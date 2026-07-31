@@ -277,7 +277,11 @@ async function openExpenseModalByKeyboard() {
       return { focused: document.activeElement === button, disabled: button?.disabled === true };
     })()`,
   );
-  check(focusState.focused && !focusState.disabled, "Expense shortcut is not keyboard ready", focusState);
+  check(
+    focusState.focused && !focusState.disabled,
+    "Expense shortcut is not keyboard ready",
+    focusState,
+  );
   await pressKey("Enter");
   await waitForModal();
 }
