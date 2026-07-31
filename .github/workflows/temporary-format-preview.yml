@@ -1,0 +1,41 @@
+name: Temporary format preview
+
+on:
+  push:
+    branches:
+      - feat/553-canonical-manual-installments
+
+permissions:
+  contents: read
+
+jobs:
+  format-preview:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Format remediation files
+        run: >-
+          npx prettier --write
+          apps/api/src/errors.test.ts
+          apps/api/src/manual-installments-public-boundary.integration.test.ts
+          scripts/statement-visual/issue-553-manual-installments.mjs
+      - name: Collect formatted files
+        run: |
+          mkdir -p formatted/apps/api/src formatted/scripts/statement-visual
+          cp apps/api/src/errors.test.ts formatted/apps/api/src/errors.test.ts
+          cp apps/api/src/manual-installments-public-boundary.integration.test.ts formatted/apps/api/src/manual-installments-public-boundary.integration.test.ts
+          cp scripts/statement-visual/issue-553-manual-installments.mjs formatted/scripts/statement-visual/issue-553-manual-installments.mjs
+          git diff --check
+          git diff > formatted/prettier.patch
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-553-prettier-output
+          path: formatted
+          if-no-files-found: error
+          retention-days: 1
