@@ -7,6 +7,10 @@ on:
     paths:
       - ".issue-553/**"
       - ".github/workflows/issue-553-apply.yml"
+  pull_request:
+    branches:
+      - main
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: write
@@ -19,6 +23,7 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v4
         with:
+          ref: feat/553-canonical-manual-installments
           fetch-depth: 0
 
       - name: Set up Node.js
