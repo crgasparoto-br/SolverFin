@@ -5,12 +5,16 @@ import {
   authenticateUser,
   logoutSession,
   registerUser,
-  renewSession,
   requireAuthenticatedRequest,
 } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import type { ApiHeaders } from "./http-headers.js";
 import { completeOidcCallback, startOidcLogin, type OidcCallbackInput } from "./oidc-flow.js";
+import {
+  authenticatePersistentSession,
+  logoutPersistentSession,
+  renewPersistentSession,
+} from "./persistent-session.js";
 import {
   clearOidcBindingCookie,
   clearSessionCookie,
@@ -86,7 +90,7 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
     if (error !== undefined) callbackInput.error = error;
 
     try {
-      const result = await completeOidcCallback(callbackInput);
+      const result = await completeOidcCallback(callbackInput, { correlationId });
       const responseCookies = [
         serializeSessionCookie(result.login.session.id, result.login.session.expiresAt),
         ...(state ? [clearOidcBindingCookie(state)] : []),
@@ -116,7 +120,7 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
 
   try {
     if (request.method === "GET" && request.path === "/api/auth/oidc/start") {
-      const result = await startOidcLogin(request.query?.get("returnTo"));
+      const result = await startOidcLogin(request.query?.get("returnTo"), { correlationId });
       return {
         statusCode: 302,
         headers: {
@@ -146,7 +150,7 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
 
     if (request.method === "POST" && request.path === "/api/session/renew") {
       const token = requireCookieSession(headers.cookie);
-      const rotated = await renewSession(token);
+      const rotated = await renewPersistentSession(token, { correlationId });
       return {
         statusCode: 204,
         headers: { "set-cookie": serializeSessionCookie(rotated.token, rotated.expiresAt) },
@@ -155,8 +159,14 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
     }
 
     if (request.method === "DELETE" && request.path === "/api/session") {
-      const token = readSessionCookie(headers.cookie) ?? getBearerSessionId(headers.authorization);
-      if (token) await logoutSession(token);
+      const cookieToken = readSessionCookie(headers.cookie);
+      const bearerToken = getBearerSessionId(headers.authorization);
+
+      if (cookieToken) {
+        await logoutPersistentSession(cookieToken, { correlationId });
+      } else if (bearerToken) {
+        await logoutSession(bearerToken);
+      }
 
       return {
         statusCode: 204,
@@ -166,12 +176,12 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
     }
 
     if (request.method === "GET" && request.path === "/api/me") {
-      const user = await requireAuthenticatedRequest(headers);
+      const user = await requireApplicationSession(headers, correlationId);
       return jsonResponse(200, { user: serializeUser(user) });
     }
 
     if (request.method === "GET" && request.path === "/api/financial-summary") {
-      await requireAuthenticatedRequest(headers);
+      await requireApplicationSession(headers, correlationId);
       return jsonResponse(200, buildDemoFinancialSummary());
     }
 
@@ -267,6 +277,17 @@ async function createUser(body: unknown): Promise<MvpApiResponse> {
 
   const result = await registerUser(body);
   return localLoginResponse(result);
+}
+
+async function requireApplicationSession(
+  headers: Readonly<Record<string, string | undefined>>,
+  correlationId: string,
+): Promise<AuthenticatedUser> {
+  if (readSessionCookie(headers.cookie)) {
+    return authenticatePersistentSession(headers, { correlationId });
+  }
+
+  return requireAuthenticatedRequest(headers);
 }
 
 function localLoginResponse(result: {
