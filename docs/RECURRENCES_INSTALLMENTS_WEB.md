@@ -67,3 +67,5 @@ Em Cartões, a parcela apenas identifica a compra. A manutenção continua usand
 ## Criação manual parcelada no Extrato (#553)
 
 `Repetição = Parcelado` representa um conjunto finito canônico, não uma recorrência. O modal envia uma única tentativa com UUID idempotente; mantém a chave em timeout ou falha ambígua, gera nova chave quando os dados materiais mudam depois de rejeição e a descarta após sucesso, cancelamento ou novo fluxo. O botão permanece bloqueado durante o envio e o modal preserva os valores em falhas.
+
+As parcelas canônicas continuam selecionáveis para conciliar, desconciliar e excluir logicamente em massa. A restrição específica é a unificação: quando uma parcela canônica está selecionada, a ação **Unificar lançamentos** fica indisponível e explica que as demais ações em massa permanecem disponíveis.
