@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 
 import { AuthError, type AuthenticatedUser } from "./auth.js";
-import { auditSecurityEvent } from "./auth-service.js";
 import { query, type QueryExecutor } from "./db.js";
 import type { OidcIdentity } from "./oidc.js";
 
@@ -14,15 +13,30 @@ interface ExternalUserRow {
   externalAuthSubject: string | null;
 }
 
-interface ResolveExternalIdentityOptions {
-  correlationId?: string | undefined;
+const DISABLED_EXTERNAL_USER_CONTEXT = Symbol("disabled-external-user-context");
+
+export interface DisabledExternalUserContext {
+  userId: string;
+  revokedSessions: number;
+}
+
+type DisabledExternalUserError = AuthError & {
+  [DISABLED_EXTERNAL_USER_CONTEXT]: DisabledExternalUserContext;
+};
+
+export function readDisabledExternalUserContext(
+  error: unknown,
+): DisabledExternalUserContext | undefined {
+  if (!(error instanceof AuthError)) return undefined;
+  return (error as Partial<DisabledExternalUserError>)[DISABLED_EXTERNAL_USER_CONTEXT];
 }
 
 export async function resolveProductiveExternalIdentityUser(
   identity: OidcIdentity,
   executeQuery: QueryExecutor = query,
-  options: ResolveExternalIdentityOptions = {},
+  options: { correlationId?: string | undefined } = {},
 ): Promise<AuthenticatedUser> {
+  void options;
   const email = normalizeEmail(identity.email ?? "");
   const displayName = normalizeDisplayName(identity.displayName ?? email);
 
@@ -35,7 +49,7 @@ export async function resolveProductiveExternalIdentityUser(
     true,
   );
   if (byIdentity) {
-    await assertExternalUserIsActive(byIdentity, executeQuery, options);
+    await assertExternalUserIsActive(byIdentity);
     await updateExternalUserSnapshot(executeQuery, byIdentity.id, email, displayName);
     await ensureInitialFinancialProfile(executeQuery, byIdentity.id, displayName);
     return mapExternalUserRow({ ...byIdentity, email, displayName });
@@ -43,7 +57,7 @@ export async function resolveProductiveExternalIdentityUser(
 
   const byEmail = await findByEmail(executeQuery, email, true);
   if (byEmail) {
-    await assertExternalUserIsActive(byEmail, executeQuery, options);
+    await assertExternalUserIsActive(byEmail);
 
     if (hasExternalIdentity(byEmail)) {
       if (!matchesIdentity(byEmail, identity)) throw invalidCredentialsError();
@@ -69,7 +83,7 @@ export async function resolveProductiveExternalIdentityUser(
     if (!linkedUser) {
       const current = await findByEmail(executeQuery, email, true);
       if (!current || !matchesIdentity(current, identity)) throw invalidCredentialsError();
-      await assertExternalUserIsActive(current, executeQuery, options);
+      await assertExternalUserIsActive(current);
       await ensureInitialFinancialProfile(executeQuery, current.id, displayName);
       return mapExternalUserRow({ ...current, email, displayName });
     }
@@ -101,7 +115,7 @@ export async function resolveProductiveExternalIdentityUser(
     true,
   );
   if (concurrentIdentity) {
-    await assertExternalUserIsActive(concurrentIdentity, executeQuery, options);
+    await assertExternalUserIsActive(concurrentIdentity);
     await ensureInitialFinancialProfile(executeQuery, concurrentIdentity.id, displayName);
     return mapExternalUserRow(concurrentIdentity);
   }
@@ -111,7 +125,7 @@ export async function resolveProductiveExternalIdentityUser(
     throw invalidCredentialsError();
   }
 
-  await assertExternalUserIsActive(concurrentEmail, executeQuery, options);
+  await assertExternalUserIsActive(concurrentEmail);
   await ensureInitialFinancialProfile(executeQuery, concurrentEmail.id, displayName);
   return mapExternalUserRow(concurrentEmail);
 }
@@ -202,14 +216,10 @@ async function createInitialFinancialProfile(
   );
 }
 
-async function assertExternalUserIsActive(
-  row: ExternalUserRow,
-  executeQuery: QueryExecutor,
-  options: ResolveExternalIdentityOptions,
-): Promise<void> {
+async function assertExternalUserIsActive(row: ExternalUserRow): Promise<void> {
   if (row.status.toLowerCase() !== "disabled") return;
 
-  const revoked = await executeQuery<{ id: string }>(
+  const revoked = await query<{ id: string }>(
     `update "ApplicationSession"
      set "revokedAt" = coalesce("revokedAt", CURRENT_TIMESTAMP),
          "revocationReason" = coalesce("revocationReason", 'user_disabled')
@@ -218,15 +228,14 @@ async function assertExternalUserIsActive(
     [row.id],
   );
 
-  await auditSecurityEvent({
-    action: "user_disabled",
-    result: "denied",
-    userId: row.id,
-    correlationId: options.correlationId,
-    metadata: { revokedSessions: revoked.length },
-  }).catch(() => undefined);
-
-  throw new AuthError("AUTH_USER_DISABLED", "User is not active.", 403);
+  const error = new AuthError("AUTH_USER_DISABLED", "User is not active.", 403);
+  Object.assign(error, {
+    [DISABLED_EXTERNAL_USER_CONTEXT]: {
+      userId: row.id,
+      revokedSessions: revoked.length,
+    },
+  });
+  throw error;
 }
 
 function hasExternalIdentity(row: ExternalUserRow): boolean {
