@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 
 import { AuthError } from "./auth.js";
 import { assertTrustedCognitoEndpoints } from "./cognito-config.js";
+import { handleMvpApiRequest } from "./mvp.js";
 import { startOidcLogin, validateInternalReturnTo } from "./oidc-flow.js";
 import { prepareRequestAuthenticationHeaders } from "./request-authentication.js";
 import { assertTrustedMutationOrigin } from "./request-origin.js";
@@ -37,6 +38,7 @@ validatesReturnToContract();
 validatesTrustedCognitoConfiguration();
 await validatesBearerBoundary();
 await createsBackendControlledOidcAttempt();
+await redirectsMalformedCallbackToGenericLogin();
 
 function validatesProductiveCookieContract(): void {
   const expiresAt = new Date("2026-07-30T18:00:00.000Z");
@@ -252,5 +254,30 @@ async function createsBackendControlledOidcAttempt(): Promise<void> {
   } finally {
     if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
     else process.env.DATABASE_URL = previousDatabaseUrl;
+  }
+}
+
+async function redirectsMalformedCallbackToGenericLogin(): Promise<void> {
+  const previous = new Map<string, string | undefined>();
+  for (const [key, value] of Object.entries(productiveEnv)) {
+    previous.set(key, process.env[key]);
+    process.env[key] = value;
+  }
+
+  try {
+    const response = await handleMvpApiRequest({
+      method: "GET",
+      path: "/api/auth/oidc/callback",
+      query: new URLSearchParams({ state: "x".repeat(4097), code: "provider-code" }),
+    });
+
+    assert.equal(response.statusCode, 303);
+    assert.equal(response.headers.location, "/login?erro=autenticacao");
+    assert.equal(response.headers["cache-control"], "no-store");
+  } finally {
+    for (const [key, value] of previous) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
   }
 }
