@@ -1,0 +1,29 @@
+name: Temporary format assist
+
+on:
+  push:
+    branches:
+      - feat/553-canonical-manual-installments
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Emit formatted issue 553 scenario
+        run: |
+          npx prettier --write scripts/statement-visual/issue-553-ambiguous-recovery.mjs
+          echo FORMATTED_BASE64_BEGIN
+          base64 -w 0 scripts/statement-visual/issue-553-ambiguous-recovery.mjs
+          echo
+          echo FORMATTED_BASE64_END
