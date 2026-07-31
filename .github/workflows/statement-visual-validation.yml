@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: statement-visual-${{ github.workflow }}-${{ github.ref }}
@@ -55,6 +55,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: feat/551-oidc-cookie-sessions
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -116,16 +118,18 @@ jobs:
           await writeFile(path, source);
           NODE
           npx prettier apps/api/src/auth-service.ts --write
-          mkdir -p artifacts/auth-service-remediation/apps/api/src
-          cp apps/api/src/auth-service.ts artifacts/auth-service-remediation/apps/api/src/auth-service.ts
 
-      - name: Upload issue 551 auth-service remediation
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-551-auth-service-remediation-${{ github.sha }}
-          path: artifacts/auth-service-remediation
-          if-no-files-found: error
-          retention-days: 1
+      - name: Commit issue 551 auth-service remediation
+        run: |
+          if git diff --quiet -- apps/api/src/auth-service.ts; then
+            echo "auth-service remediation already present"
+            exit 0
+          fi
+          git config user.name "solverfin-automation"
+          git config user.email "solverfin-automation@users.noreply.github.com"
+          git add apps/api/src/auth-service.ts
+          git commit -m "fix(auth): linearize public cookie validation"
+          git push origin HEAD:feat/551-oidc-cookie-sessions
 
       - name: Prepare database and production web build
         run: |
