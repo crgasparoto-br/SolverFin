@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { createHash, createSign, generateKeyPairSync, randomUUID, type KeyObject } from "node:crypto";
+import {
+  createHash,
+  createSign,
+  generateKeyPairSync,
+  randomUUID,
+  type KeyObject,
+} from "node:crypto";
 
 import { AuthError } from "./auth.js";
 import { closePool, query } from "./db.js";
