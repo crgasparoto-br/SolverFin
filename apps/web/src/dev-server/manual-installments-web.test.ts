@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import test from "node:test";
 
 test("parcelamento do Extrato usa uma requisicao canonica idempotente", async () => {
-  const source = await readFile(new URL("./transactions-page.ts", import.meta.url), "utf8");
+  const source = await readFile(resolve(process.cwd(), "src/dev-server/transactions-page.ts"), "utf8");
   const guardSource = await readFile(
-    new URL("./transaction-group-installment-guard.ts", import.meta.url),
+    resolve(process.cwd(), "src/dev-server/transaction-group-installment-guard.ts"),
     "utf8",
   );
 
