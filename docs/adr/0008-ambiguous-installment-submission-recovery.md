@@ -27,7 +27,7 @@ Fechar o modal cancela apenas a tentativa local. Isso nao desfaz um conjunto que
 
 ## Evidencia obrigatoria
 
-O teste de navegador deve confirmar a mesma requisicao diretamente no backend, responder `504` apenas para a requisicao original pausada no navegador, executar o retry e comprovar:
+O teste de navegador deve confirmar a mesma requisicao diretamente no backend, incluindo cookie de sessao e origem confiavel, responder `504` apenas para a requisicao original pausada no navegador, executar o retry e comprovar:
 
 - o backend confirmou a primeira tentativa com `201` antes de o navegador observar o `504`;
 - mesma URL, payload e chave no retry;
