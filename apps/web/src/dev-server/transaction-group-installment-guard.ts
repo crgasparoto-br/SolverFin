@@ -9,6 +9,7 @@ export function transactionGroupInstallmentGuardScript(): string {
       const canonicalGroupingHelp = "Unificar lançamentos indisponível: desmarque as parcelas canônicas. Elas continuam disponíveis para conciliar, desconciliar ou excluir.";
       const ambiguousRecoveryMessage = "A resposta foi inconclusiva. Tente novamente para confirmar o parcelamento antes de alterar os dados, ou feche o formulário para cancelar esta tentativa.";
       let ambiguousInstallmentAttempt;
+      let ambiguousStatusObserver;
 
       function readJsonNode(node) {
         try {
@@ -195,23 +196,42 @@ export function transactionGroupInstallmentGuardScript(): string {
         });
       }
 
-      function announceAmbiguousRecovery() {
-        window.setTimeout(() => {
-          const statusNode = document.querySelector("[data-form] .form-status");
-          if (!statusNode) return;
+      function enforceAmbiguousRecoveryMessage() {
+        const statusNode = document.querySelector("[data-form] .form-status");
+        if (!statusNode || !ambiguousInstallmentAttempt) return;
+        if (statusNode.className !== "form-status error full") {
           statusNode.className = "form-status error full";
+        }
+        if (statusNode.textContent !== ambiguousRecoveryMessage) {
           statusNode.textContent = ambiguousRecoveryMessage;
-        }, 0);
+        }
+      }
+
+      function observeAmbiguousRecoveryMessage() {
+        ambiguousStatusObserver?.disconnect();
+        const statusNode = document.querySelector("[data-form] .form-status");
+        if (!statusNode) return;
+        ambiguousStatusObserver = new MutationObserver(enforceAmbiguousRecoveryMessage);
+        ambiguousStatusObserver.observe(statusNode, {
+          attributes: true,
+          attributeFilter: ["class"],
+          characterData: true,
+          childList: true,
+          subtree: true,
+        });
+        enforceAmbiguousRecoveryMessage();
       }
 
       function preserveAmbiguousAttempt(descriptor) {
         ambiguousInstallmentAttempt = descriptor;
-        lockInstallmentFormForRecovery();
-        announceAmbiguousRecovery();
+        lockInstallmentForRecovery();
+        observeAmbiguousRecoveryMessage();
       }
 
       function clearAmbiguousAttempt() {
         ambiguousInstallmentAttempt = undefined;
+        ambiguousStatusObserver?.disconnect();
+        ambiguousStatusObserver = undefined;
         unlockInstallmentFormAfterRecovery();
       }
 
