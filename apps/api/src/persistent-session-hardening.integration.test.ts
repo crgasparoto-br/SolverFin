@@ -40,10 +40,10 @@ async function validationLosesToConcurrentRotation(): Promise<void> {
   await assertValidationRejectedAfterLockedChange(
     fixture,
     async (client) => {
-      await client.query(
-        `update "ApplicationSession" set "tokenHash" = $2 where "id" = $1`,
-        [fixture.sessionId, hashToken("rotated-by-concurrent-request")],
-      );
+      await client.query(`update "ApplicationSession" set "tokenHash" = $2 where "id" = $1`, [
+        fixture.sessionId,
+        hashToken("rotated-by-concurrent-request"),
+      ]);
     },
     "AUTH_SESSION_INVALID",
   );
