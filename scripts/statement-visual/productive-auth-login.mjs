@@ -70,7 +70,11 @@ try {
     `(() => { document.documentElement.style.fontSize = '200%'; return true; })()`,
   );
   const zoomed = await readMeasurements(browser.cdp);
-  check(zoomed.horizontalOverflow === false, "Productive login overflows at 200% text size", zoomed);
+  check(
+    zoomed.horizontalOverflow === false,
+    "Productive login overflows at 200% text size",
+    zoomed,
+  );
   await screenshot(browser.cdp, join(outputDir, "issue-551-productive-login-zoom-200.png"));
 
   await navigate(browser.cdp, `${baseUrl}/login`);
@@ -89,7 +93,11 @@ try {
       };
     })()`,
   );
-  check(cookieUnavailable.exists, "Cookie-unavailable state does not expose an alert", cookieUnavailable);
+  check(
+    cookieUnavailable.exists,
+    "Cookie-unavailable state does not expose an alert",
+    cookieUnavailable,
+  );
   check(
     cookieUnavailable.text.includes("Habilite cookies"),
     "Cookie-unavailable state does not explain how to recover",
@@ -210,10 +218,16 @@ async function readAccessibility(cdp) {
     .filter((node) => node.role?.value === "link")
     .map((node) => String(node.name?.value ?? ""));
 
-  check(links.includes("Continuar com acesso seguro"), "Primary action is absent from the AX tree", {
+  check(
+    links.includes("Continuar com acesso seguro"),
+    "Primary action is absent from the AX tree",
+    {
+      links,
+    },
+  );
+  check(links.includes("Recuperar acesso"), "Recovery action is absent from the AX tree", {
     links,
   });
-  check(links.includes("Recuperar acesso"), "Recovery action is absent from the AX tree", { links });
 
   return { linkNames: links };
 }
