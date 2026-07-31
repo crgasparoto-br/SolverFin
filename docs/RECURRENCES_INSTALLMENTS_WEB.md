@@ -27,9 +27,9 @@ Nao ha secao, painel ou bloco dedicado a recorrencias em nenhuma tela. A unica p
 
 A web continua usando o proxy autenticado do servidor SSR. As chamadas seguem a sessao atual e preservam isolamento por organizacao e perfil financeiro no backend.
 
-## Limite conhecido
+## Distincao entre recorrencia e parcelamento manual
 
-A rota `GET /api/installments` permite consultar parcelas historicas, atuais e futuras por recorrencia e pelos escopos operacionais. O limite atual esta na criacao parcelada manual do Extrato: `Repeticao = Parcelado` ainda cria `Transaction` independentes, sem `Installment`, e por isso esses registros nao recebem o indicador nem a manutencao conservadora desta funcionalidade.
+`Repeticao = Fixo` cria uma recorrencia que pode materializar novas ocorrencias. `Repeticao = Parcelado` cria um conjunto finito canonico de `Installment` por uma unica operacao idempotente. Os dois fluxos aparecem nas mesmas listas, mas parcelamento manual nao cria `Recurrence`.
 
 ## Modal de escopo da edição
 
