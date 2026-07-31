@@ -149,3 +149,47 @@ jobs:
 
       - name: Verify import statement consistency
         run: npm run diagnose:import-statement-consistency -- --expect-zero
+
+  format-remediation-artifact:
+    name: Capture Prettier remediation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format remediation files
+        run: >-
+          npx prettier
+          apps/api/src/auth-cookie-session.integration.test.ts
+          apps/api/src/auth-cookie.test.ts
+          apps/api/src/mvp.ts
+          apps/api/src/oidc-flow.ts
+          apps/api/src/session-cookie.ts
+          apps/web/src/dev-server/api.ts
+          --write
+
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-551-prettier-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 1
+          path: |
+            apps/api/src/auth-cookie-session.integration.test.ts
+            apps/api/src/auth-cookie.test.ts
+            apps/api/src/mvp.ts
+            apps/api/src/oidc-flow.ts
+            apps/api/src/session-cookie.ts
+            apps/web/src/dev-server/api.ts
