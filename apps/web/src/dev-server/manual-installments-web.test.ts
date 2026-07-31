@@ -8,6 +8,10 @@ test("parcelamento do Extrato usa uma requisicao canonica idempotente", async ()
     resolve(process.cwd(), "src/dev-server/transactions-page.ts"),
     "utf8",
   );
+  const recurrenceOverrideSource = await readFile(
+    resolve(process.cwd(), "src/dev-server/recurrences-section.ts"),
+    "utf8",
+  );
   const guardSource = await readFile(
     resolve(process.cwd(), "src/dev-server/transaction-group-installment-guard.ts"),
     "utf8",
@@ -17,6 +21,14 @@ test("parcelamento do Extrato usa uma requisicao canonica idempotente", async ()
   assert.match(source, /idempotencyKey/);
   assert.match(source, /installmentAttemptFingerprint/);
   assert.doesNotMatch(source, /responses\.push\(await send\("\/api\/transactions"/);
+
+  assert.match(recurrenceOverrideSource, /if \(method !== "PATCH"\) return;/);
+  assert.doesNotMatch(recurrenceOverrideSource, /function installmentPayload/);
+  assert.doesNotMatch(
+    recurrenceOverrideSource,
+    /responses\.push\(await send\("\/api\/transactions"/,
+  );
+
   assert.match(guardSource, /data-canonical-installment/);
   assert.match(guardSource, /groupOpen\.disabled = true/);
   assert.match(guardSource, /conciliar, desconciliar ou excluir/);
