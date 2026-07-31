@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 import test from "node:test";
 
 test("parcelamento do Extrato usa uma requisicao canonica idempotente", async () => {
-  const source = await readFile(resolve(process.cwd(), "src/dev-server/transactions-page.ts"), "utf8");
+  const source = await readFile(
+    resolve(process.cwd(), "src/dev-server/transactions-page.ts"),
+    "utf8",
+  );
   const guardSource = await readFile(
     resolve(process.cwd(), "src/dev-server/transaction-group-installment-guard.ts"),
     "utf8",
