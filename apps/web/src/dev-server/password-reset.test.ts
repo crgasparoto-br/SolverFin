@@ -48,8 +48,7 @@ function missingProductiveConfigurationFailsClosed(): void {
         OIDC_TOKEN_URL: undefined,
       }),
     (error) =>
-      error instanceof ProductiveAuthConfigurationError &&
-      error.message.includes("OIDC_TOKEN_URL"),
+      error instanceof ProductiveAuthConfigurationError && error.message.includes("OIDC_TOKEN_URL"),
   );
 }
 
