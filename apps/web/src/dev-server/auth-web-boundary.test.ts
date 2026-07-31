@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { createServer as createHttpServer, type Server } from "node:http";
 import { createServer as createNetServer } from "node:net";
 import { fileURLToPath } from "node:url";
+
+interface DelegatedRequest {
+  path: string;
+  body: string;
+  cookie?: string;
+}
 
 void main().catch((error: unknown) => {
   console.error(error);
@@ -10,7 +17,7 @@ void main().catch((error: unknown) => {
 });
 
 async function main(): Promise<void> {
-  const delegatedRequests: Array<{ path: string; body: string }> = [];
+  const delegatedRequests: DelegatedRequest[] = [];
   const fakeApi = await startFakeApi(delegatedRequests);
   const port = await reservePort();
   const child = spawnWebServer(port, fakeApi.url);
@@ -31,20 +38,53 @@ async function main(): Promise<void> {
       assert.equal(await readErrorCode(response), "AUTH_LOCAL_AUTH_DISABLED");
     }
 
-    assert.deepEqual(delegatedRequests, [
-      { path: "/api/session", body: "{}" },
-      { path: "/api/users", body: "{}" },
-    ]);
+    assert.deepEqual(
+      delegatedRequests.map(({ path, body }) => ({ path, body })),
+      [
+        { path: "/api/session", body: "{}" },
+        { path: "/api/users", body: "{}" },
+      ],
+    );
 
-    const invalidProductiveCookie = `__Host-solverfin_session=${"A".repeat(43)}`;
+    const upstreamFailureState = "oidc-state-upstream-failure";
+    const upstreamFailureBinding = oidcBindingCookie(upstreamFailureState, "C".repeat(43));
+    const upstreamCallback = await fetch(
+      `${baseUrl}/api/auth/oidc/callback?state=${encodeURIComponent(upstreamFailureState)}&code=provider-code`,
+      {
+        headers: { cookie: upstreamFailureBinding },
+        redirect: "manual",
+      },
+    );
+    assertOidcCallbackFailure(upstreamCallback, upstreamFailureState);
+    assert.equal(delegatedRequests.at(-1)?.path.startsWith("/api/auth/oidc/callback?"), true);
+    assert.equal(delegatedRequests.at(-1)?.cookie, upstreamFailureBinding);
+
+    const productiveCookie = `__Host-solverfin_session=${"A".repeat(43)}`;
+    const upstreamLogout = await fetch(`${baseUrl}/api/session`, {
+      method: "DELETE",
+      headers: {
+        cookie: productiveCookie,
+        origin: baseUrl,
+      },
+    });
+    assert.equal(upstreamLogout.status, 204);
+    assertSessionCookieClears(upstreamLogout);
+
+    const anonymousLogout = await fetch(`${baseUrl}/api/session`, { method: "DELETE" });
+    assert.equal(anonymousLogout.status, 204);
+    assertSessionCookieClears(anonymousLogout);
+
     const invalidSession = await fetch(`${baseUrl}/dashboard`, {
-      headers: { cookie: invalidProductiveCookie },
+      headers: { cookie: productiveCookie },
       redirect: "manual",
     });
     assert.equal(invalidSession.status, 302);
     assert.equal(invalidSession.headers.get("location"), "/login?erro=sessao");
     assert.match(invalidSession.headers.get("set-cookie") ?? "", /__Host-solverfin_session=;/);
-    assert.deepEqual(delegatedRequests.at(-1), { path: "/api/me", body: "" });
+    assert.deepEqual(
+      { path: delegatedRequests.at(-1)?.path, body: delegatedRequests.at(-1)?.body },
+      { path: "/api/me", body: "" },
+    );
 
     await closeServer(fakeApi.server);
 
@@ -55,6 +95,23 @@ async function main(): Promise<void> {
     });
     assert.equal(fallback.status, 403);
     assert.equal(await readErrorCode(fallback), "AUTH_LOCAL_AUTH_DISABLED");
+
+    const unavailableState = "oidc-state-api-unavailable";
+    const unavailableCallback = await fetch(
+      `${baseUrl}/api/auth/oidc/callback?state=${encodeURIComponent(unavailableState)}&code=provider-code`,
+      {
+        headers: { cookie: oidcBindingCookie(unavailableState, "D".repeat(43)) },
+        redirect: "manual",
+      },
+    );
+    assertOidcCallbackFailure(unavailableCallback, unavailableState);
+
+    const unavailableLogout = await fetch(`${baseUrl}/api/session`, {
+      method: "DELETE",
+      headers: { cookie: productiveCookie, origin: baseUrl },
+    });
+    assert.equal(unavailableLogout.status, 204);
+    assertSessionCookieClears(unavailableLogout);
 
     for (const cookie of ["sf_session_token=legacy-token", "solverfin_session=local-token"]) {
       const response = await fetch(`${baseUrl}/dashboard`, {
@@ -87,7 +144,7 @@ function spawnWebServer(port: number, apiBaseUrl: string): ReturnType<typeof spa
 }
 
 async function startFakeApi(
-  requests: Array<{ path: string; body: string }>,
+  requests: DelegatedRequest[],
 ): Promise<{ server: Server; url: string }> {
   const server = createHttpServer(async (request, response) => {
     const chunks: Buffer[] = [];
@@ -95,6 +152,7 @@ async function startFakeApi(
     requests.push({
       path: request.url ?? "",
       body: Buffer.concat(chunks).toString("utf8"),
+      ...(request.headers.cookie ? { cookie: request.headers.cookie } : {}),
     });
     response.writeHead(403, { "content-type": "application/json; charset=utf-8" });
     response.end(
@@ -115,6 +173,40 @@ async function startFakeApi(
   const address = server.address();
   assert.ok(address && typeof address !== "string");
   return { server, url: `http://127.0.0.1:${address.port}` };
+}
+
+function assertSessionCookieClears(response: Response): void {
+  const cookies = readSetCookies(response).join("\n");
+  assert.match(cookies, /__Host-solverfin_session=;/);
+  assert.match(cookies, /solverfin_session=;/);
+  assert.match(cookies, /sf_session_token=;/);
+  assert.match(cookies, /Max-Age=0/);
+}
+
+function assertOidcCallbackFailure(response: Response, state: string): void {
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get("location"), "/login?erro=autenticacao");
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  const cookies = readSetCookies(response).join("\n");
+  const key = hash(state).slice(0, 24);
+  assert.match(cookies, new RegExp(`__Host-solverfin_oidc_${key}=;`));
+  assert.match(cookies, new RegExp(`solverfin_oidc_${key}=;`));
+}
+
+function oidcBindingCookie(state: string, value: string): string {
+  return `__Host-solverfin_oidc_${hash(state).slice(0, 24)}=${value}`;
+}
+
+function hash(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function readSetCookies(response: Response): string[] {
+  const headersWithCookies = response.headers as Headers & { getSetCookie?: () => string[] };
+  const values = headersWithCookies.getSetCookie?.();
+  if (values && values.length > 0) return values;
+  const single = response.headers.get("set-cookie");
+  return single ? [single] : [];
 }
 
 function collectLogs(child: ReturnType<typeof spawn>): string[] {
