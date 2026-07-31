@@ -13,6 +13,7 @@ A criacao manual de parcelas usa uma chave de idempotencia duravel. Uma falha de
 Quando `POST /api/installments` termina com falha de transporte, `408`, `425`, `429` ou `5xx`, o navegador trata o resultado como ambiguo:
 
 - preserva a URL, o corpo e a chave da requisicao original;
+- aplica o bloqueio do formulario antes de oferecer a confirmacao novamente;
 - bloqueia alteracoes nos campos do formulario;
 - mantem somente a acao de confirmar novamente disponivel;
 - mantem a mensagem de recuperacao autoritativa no live region enquanto a tentativa estiver ambigua;
