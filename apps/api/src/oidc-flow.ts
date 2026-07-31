@@ -60,6 +60,7 @@ export async function startOidcLogin(
     env?: Readonly<Record<string, string | undefined>>;
     now?: Date;
     executeQuery?: QueryExecutor;
+    correlationId?: string | undefined;
   } = {},
 ): Promise<OidcStartResult> {
   const env = options.env ?? process.env;
@@ -103,6 +104,7 @@ export async function startOidcLogin(
   await auditSecurityEvent({
     action: "oidc_attempt_created",
     result: "success",
+    correlationId: options.correlationId,
     metadata: { provider: "amazon_cognito", expiresAt: expiresAt.toISOString() },
   });
 
@@ -121,6 +123,7 @@ export async function completeOidcCallback(
     now?: Date;
     fetchImpl?: typeof fetch;
     fetchJwks?: (jwksUri: string) => Promise<JsonWebKeySet>;
+    correlationId?: string | undefined;
   } = {},
 ): Promise<OidcCallbackResult> {
   const env = options.env ?? process.env;
@@ -134,6 +137,7 @@ export async function completeOidcCallback(
     await auditSecurityEvent({
       action: "oidc_callback_cancelled",
       result: "cancelled",
+      correlationId: options.correlationId,
       metadata: { reason: normalizeProviderError(input.error) },
     });
     throw invalidAttemptError();
@@ -157,7 +161,9 @@ export async function completeOidcCallback(
     });
 
     const login = await withTransaction(async (executeQuery) => {
-      const user = await resolveProductiveExternalIdentityUser(identity, executeQuery);
+      const user = await resolveProductiveExternalIdentityUser(identity, executeQuery, {
+        correlationId: options.correlationId,
+      });
       const created = await createPersistentApplicationSession(user, executeQuery, now);
       const finalized = await executeQuery<{ id: string }>(
         `update "OidcLoginAttempt"
@@ -174,6 +180,7 @@ export async function completeOidcCallback(
         result: "success",
         userId: user.id,
         sessionId: created.session.databaseId,
+        correlationId: options.correlationId,
         metadata: { transport: "cookie" },
       });
       await insertSecurityAuditEvent(executeQuery, {
@@ -181,6 +188,7 @@ export async function completeOidcCallback(
         result: "success",
         userId: user.id,
         sessionId: created.session.databaseId,
+        correlationId: options.correlationId,
         metadata: { provider: "amazon_cognito" },
       });
 
@@ -193,6 +201,7 @@ export async function completeOidcCallback(
     await auditSecurityEvent({
       action: "oidc_callback_failed",
       result: "denied",
+      correlationId: options.correlationId,
       metadata: { reason: "callback_failed" },
     });
 
@@ -381,19 +390,21 @@ async function insertSecurityAuditEvent(
     result: string;
     userId?: string | undefined;
     sessionId?: string | undefined;
+    correlationId?: string | undefined;
     metadata?: Readonly<Record<string, unknown>> | undefined;
   },
 ): Promise<void> {
   await executeQuery(
     `insert into "SecurityAuditEvent"
      ("id", "userId", "sessionId", "occurredAt", "action", "result", "correlationId", "metadata")
-     values ($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, NULL, $6)`,
+     values ($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7)`,
     [
       randomUUID(),
       input.userId ?? null,
       input.sessionId ?? null,
       input.action,
       input.result,
+      input.correlationId ?? null,
       input.metadata ? JSON.stringify(input.metadata) : null,
     ],
   );

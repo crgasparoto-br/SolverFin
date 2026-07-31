@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { AuthError, type AuthenticatedUser } from "./auth.js";
+import { auditSecurityEvent } from "./auth-service.js";
 import { query, type QueryExecutor } from "./db.js";
 import type { OidcIdentity } from "./oidc.js";
 
@@ -13,9 +14,14 @@ interface ExternalUserRow {
   externalAuthSubject: string | null;
 }
 
+interface ResolveExternalIdentityOptions {
+  correlationId?: string | undefined;
+}
+
 export async function resolveProductiveExternalIdentityUser(
   identity: OidcIdentity,
   executeQuery: QueryExecutor = query,
+  options: ResolveExternalIdentityOptions = {},
 ): Promise<AuthenticatedUser> {
   const email = normalizeEmail(identity.email ?? "");
   const displayName = normalizeDisplayName(identity.displayName ?? email);
@@ -29,7 +35,7 @@ export async function resolveProductiveExternalIdentityUser(
     true,
   );
   if (byIdentity) {
-    await assertExternalUserIsActive(byIdentity);
+    await assertExternalUserIsActive(byIdentity, executeQuery, options);
     await updateExternalUserSnapshot(executeQuery, byIdentity.id, email, displayName);
     await ensureInitialFinancialProfile(executeQuery, byIdentity.id, displayName);
     return mapExternalUserRow({ ...byIdentity, email, displayName });
@@ -37,7 +43,7 @@ export async function resolveProductiveExternalIdentityUser(
 
   const byEmail = await findByEmail(executeQuery, email, true);
   if (byEmail) {
-    await assertExternalUserIsActive(byEmail);
+    await assertExternalUserIsActive(byEmail, executeQuery, options);
 
     if (hasExternalIdentity(byEmail)) {
       if (!matchesIdentity(byEmail, identity)) throw invalidCredentialsError();
@@ -63,7 +69,7 @@ export async function resolveProductiveExternalIdentityUser(
     if (!linkedUser) {
       const current = await findByEmail(executeQuery, email, true);
       if (!current || !matchesIdentity(current, identity)) throw invalidCredentialsError();
-      await assertExternalUserIsActive(current);
+      await assertExternalUserIsActive(current, executeQuery, options);
       await ensureInitialFinancialProfile(executeQuery, current.id, displayName);
       return mapExternalUserRow({ ...current, email, displayName });
     }
@@ -95,7 +101,7 @@ export async function resolveProductiveExternalIdentityUser(
     true,
   );
   if (concurrentIdentity) {
-    await assertExternalUserIsActive(concurrentIdentity);
+    await assertExternalUserIsActive(concurrentIdentity, executeQuery, options);
     await ensureInitialFinancialProfile(executeQuery, concurrentIdentity.id, displayName);
     return mapExternalUserRow(concurrentIdentity);
   }
@@ -105,7 +111,7 @@ export async function resolveProductiveExternalIdentityUser(
     throw invalidCredentialsError();
   }
 
-  await assertExternalUserIsActive(concurrentEmail);
+  await assertExternalUserIsActive(concurrentEmail, executeQuery, options);
   await ensureInitialFinancialProfile(executeQuery, concurrentEmail.id, displayName);
   return mapExternalUserRow(concurrentEmail);
 }
@@ -196,16 +202,29 @@ async function createInitialFinancialProfile(
   );
 }
 
-async function assertExternalUserIsActive(row: ExternalUserRow): Promise<void> {
+async function assertExternalUserIsActive(
+  row: ExternalUserRow,
+  executeQuery: QueryExecutor,
+  options: ResolveExternalIdentityOptions,
+): Promise<void> {
   if (row.status.toLowerCase() !== "disabled") return;
 
-  await query(
+  const revoked = await executeQuery<{ id: string }>(
     `update "ApplicationSession"
      set "revokedAt" = coalesce("revokedAt", CURRENT_TIMESTAMP),
          "revocationReason" = coalesce("revocationReason", 'user_disabled')
-     where "userId" = $1 and "revokedAt" is null`,
+     where "userId" = $1 and "revokedAt" is null
+     returning "id"`,
     [row.id],
   );
+
+  await auditSecurityEvent({
+    action: "user_disabled",
+    result: "denied",
+    userId: row.id,
+    correlationId: options.correlationId,
+    metadata: { revokedSessions: revoked.length },
+  }).catch(() => undefined);
 
   throw new AuthError("AUTH_USER_DISABLED", "User is not active.", 403);
 }
