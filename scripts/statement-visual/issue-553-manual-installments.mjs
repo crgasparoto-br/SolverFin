@@ -457,6 +457,25 @@ async function fillInstallmentCount(count) {
   );
 }
 
+async function proveKeyboardSubmitReadiness() {
+  return evaluate(
+    browser.cdp,
+    `(() => {
+      const form = document.querySelector("[data-form]");
+      const submit = form.querySelector('button[type="submit"]');
+      submit.focus();
+      return (
+        document.activeElement === submit &&
+        submit.tagName === "BUTTON" &&
+        submit.type === "submit" &&
+        submit.disabled === false &&
+        submit.tabIndex >= 0 &&
+        submit.form === form
+      );
+    })()`,
+  );
+}
+
 async function submitForm() {
   await evaluate(browser.cdp, `document.querySelector("[data-form]").requestSubmit()`);
 }
