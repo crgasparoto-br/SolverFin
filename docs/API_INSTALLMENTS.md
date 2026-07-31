@@ -74,11 +74,9 @@ A moeda e derivada da conta de origem persistida. `Installment.currency` e `Tran
 
 A situacao selecionada aplica-se a todas as ocorrencias criadas. `Installment.dueOn` sempre acompanha `Transaction.plannedOn`.
 
-| Situacao | `effectiveOn` persistida | `occurredOn` | `reconciledAt` |
-|---|---|---|---|
-| `planned` | sempre `null`, mesmo quando o cliente envia uma data | igual a `plannedOn` | ausente |
-| `posted` | data informada; quando ausente, usa `plannedOn` | igual a data efetiva derivada | ausente |
-| `reconciled` | data informada; quando ausente, usa `plannedOn` | igual a data efetiva derivada | definido pelo servidor na criacao |
+- `planned`: `effectiveOn` e sempre `null`, mesmo quando o cliente envia uma data; `occurredOn` e igual a `plannedOn`; `reconciledAt` permanece ausente;
+- `posted`: `effectiveOn` usa a data informada ou, quando ausente, `plannedOn`; `occurredOn` e igual a data efetiva derivada; `reconciledAt` permanece ausente;
+- `reconciled`: `effectiveOn` usa a data informada ou, quando ausente, `plannedOn`; `occurredOn` e igual a data efetiva derivada; `reconciledAt` e definido pelo servidor na criacao.
 
 A primeira parcela criada usa as datas-base informadas ou derivadas. Cada parcela posterior e calculada a partir da data-base original mais o deslocamento mensal, preservando o dia original quando ele existir no mes de destino e usando o ultimo dia valido caso contrario. Exemplo em ano nao bissexto: `2026-01-31`, `2026-02-28`, `2026-03-31`.
 
