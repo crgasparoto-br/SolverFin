@@ -8,6 +8,7 @@ import {
 } from "./errors.js";
 
 returnsControlledErrorContract();
+preservesExplicitSafeServerErrorContracts();
 redactsUnexpectedPersistenceErrors();
 usesControlledMessagesForKnownDatabaseErrors();
 propagatesOrCreatesCorrelationId();
@@ -34,6 +35,28 @@ function returnsControlledErrorContract(): void {
 
   assert.equal(unexpected.statusCode, 500);
   assert.equal(unexpected.body.error.message.includes("token"), false);
+}
+
+function preservesExplicitSafeServerErrorContracts(): void {
+  const response = buildApiErrorResponse({
+    error: {
+      code: "INSTITUTION_LOGO_STORAGE_UNAVAILABLE",
+      statusCode: 502,
+      message: "Não foi possível salvar a logomarca no storage R2. Tente novamente.",
+    },
+    correlationId: "corr-controlled-server-error",
+  });
+
+  assert.deepEqual(response, {
+    statusCode: 502,
+    body: {
+      error: {
+        code: "INSTITUTION_LOGO_STORAGE_UNAVAILABLE",
+        message: "Não foi possível salvar a logomarca no storage R2. Tente novamente.",
+        correlationId: "corr-controlled-server-error",
+      },
+    },
+  });
 }
 
 function redactsUnexpectedPersistenceErrors(): void {
