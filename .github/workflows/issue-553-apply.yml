@@ -58,7 +58,7 @@ jobs:
       - name: Format candidate
         shell: bash
         run: |
-          npx prisma format --schema prisma/schema.prisma
+          DATABASE_URL=postgresql://solverfin:solverfin@localhost:5432/solverfin npx prisma format --schema prisma/schema.prisma
           npx prettier --write \
             apps/api/src/installments-router.ts \
             apps/api/src/repositories/manual-installments.ts \
