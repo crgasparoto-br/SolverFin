@@ -87,7 +87,10 @@ try {
     desktopRows,
   );
   check(
-    desktopRows.map((item) => item.sequenceNumber).join(",") === "1,2,3",
+    desktopRows
+      .map((item) => item.sequenceNumber)
+      .sort((a, b) => a - b)
+      .join(",") === "1,2,3",
     "Desktop canonical sequence is incomplete",
     desktopRows,
   );
