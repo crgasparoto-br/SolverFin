@@ -1,0 +1,48 @@
+name: Temporary fix installment recovery call
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-clean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/553-canonical-manual-installments
+          fetch-depth: 0
+      - name: Fix recovery call and remove helper
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source = Path('apps/web/src/dev-server/transaction-group-installment-guard.ts')
+          text = source.read_text()
+          old = '        lockInstallmentForRecovery();'
+          new = '        lockInstallmentFormForRecovery();'
+          if old not in text:
+              raise SystemExit('broken recovery call not found')
+          source.write_text(text.replace(old, new, 1))
+
+          test = Path('apps/web/src/dev-server/transaction-group-installment-guard.test.ts')
+          test_text = test.read_text()
+          anchor = '  assert.match(script, /data-installment-recovery-disabled/);\n'
+          assertion = '  assert.match(script, /lockInstallmentFormForRecovery\\(\\);/);\n'
+          if assertion not in test_text:
+              if anchor not in test_text:
+                  raise SystemExit('test insertion anchor not found')
+              test_text = test_text.replace(anchor, anchor + assertion, 1)
+          test.write_text(test_text)
+
+          Path('.github/workflows/temporary-fix-installment-recovery-call.yml').unlink()
+          PY
+          npx prettier --write apps/web/src/dev-server/transaction-group-installment-guard.ts apps/web/src/dev-server/transaction-group-installment-guard.test.ts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/transaction-group-installment-guard.ts apps/web/src/dev-server/transaction-group-installment-guard.test.ts .github/workflows/temporary-fix-installment-recovery-call.yml
+          git commit -m "fix: invoke installment recovery lock"
+          git push origin HEAD:feat/553-canonical-manual-installments
