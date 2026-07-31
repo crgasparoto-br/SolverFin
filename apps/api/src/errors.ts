@@ -95,17 +95,29 @@ function normalizeApiError(
   }
 
   if (isApiErrorLike(error)) {
+    const statusCode = normalizeStatusCode(error.statusCode);
+
+    if (statusCode >= 500) {
+      return unexpectedError(fallbackMessage);
+    }
+
     return {
-      code: error.code ?? UNEXPECTED_ERROR_CODE,
-      statusCode: normalizeStatusCode(error.statusCode),
+      code: error.code ?? "API_REQUEST_FAILED",
+      statusCode,
       message: sanitizeMessage(error.message ?? fallbackMessage),
     };
   }
 
+  return unexpectedError(fallbackMessage);
+}
+
+function unexpectedError(
+  fallbackMessage: string,
+): Required<Pick<ApiErrorLike, "code" | "statusCode" | "message">> {
   return {
     code: UNEXPECTED_ERROR_CODE,
     statusCode: 500,
-    message: fallbackMessage,
+    message: sanitizeMessage(fallbackMessage),
   };
 }
 
@@ -153,7 +165,7 @@ function normalizeKnownDatabaseError(
   return {
     code: mapping.code,
     statusCode: mapping.statusCode,
-    message: sanitizeMessage(candidate.message ?? mapping.fallbackMessage),
+    message: mapping.fallbackMessage,
   };
 }
 
