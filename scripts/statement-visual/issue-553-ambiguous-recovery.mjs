@@ -61,7 +61,10 @@ try {
     rows.every((item) => item.transaction?.description === "QA recuperação ambígua"),
     true,
   );
-  assert.equal(rows.every((item) => item.amountMinor === 4000), true);
+  assert.equal(
+    rows.every((item) => item.amountMinor === 4000),
+    true,
+  );
 
   evidence.route = route;
   evidence.viewport = "1366x768";
@@ -232,7 +235,7 @@ async function fillInstallmentForm() {
     browser.cdp,
     `(() => {
       const form = document.querySelector("[data-form]");
-      control = (name) => form.elements.namedItem(name);
+      const control = (name) => form.elements.namedItem(name);
       control("kind").value = "expense";
       control("repeatMode").value = "installment";
       control("repeatMode").dispatchEvent(new Event("change", { bubbles: true }));
