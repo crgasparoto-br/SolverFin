@@ -8,6 +8,8 @@ import {
 } from "./errors.js";
 
 returnsControlledErrorContract();
+redactsUnexpectedPersistenceErrors();
+usesControlledMessagesForKnownDatabaseErrors();
 propagatesOrCreatesCorrelationId();
 logsWithoutSensitivePayload();
 
@@ -32,6 +34,42 @@ function returnsControlledErrorContract(): void {
 
   assert.equal(unexpected.statusCode, 500);
   assert.equal(unexpected.body.error.message.includes("token"), false);
+}
+
+function redactsUnexpectedPersistenceErrors(): void {
+  const sensitiveMessage =
+    "fingerprint=0123456789abcdef idempotencyKey=550e8400-e29b-41d4-a716-446655440000 amountMinor=120000";
+  const response = buildApiErrorResponse({
+    error: Object.assign(new Error(sensitiveMessage), { code: "P0001" }),
+    correlationId: "corr-persistence-redaction",
+  });
+
+  assert.equal(response.statusCode, 500);
+  assert.deepEqual(response.body.error, {
+    code: "API_UNEXPECTED_ERROR",
+    message: "Não foi possível concluir a ação. Tente novamente.",
+    correlationId: "corr-persistence-redaction",
+  });
+  assert.doesNotMatch(JSON.stringify(response.body), /fingerprint|idempotencyKey|amountMinor|P0001/);
+}
+
+function usesControlledMessagesForKnownDatabaseErrors(): void {
+  const response = buildApiErrorResponse({
+    error: {
+      constraint: "Transaction_group_member_update_blocked",
+      code: "23514",
+      message: "SQL interno com payload financeiro reservado",
+    },
+    correlationId: "corr-known-database-error",
+  });
+
+  assert.equal(response.statusCode, 409);
+  assert.equal(response.body.error.code, "TRANSACTION_GROUP_MEMBER_UPDATE_BLOCKED");
+  assert.equal(
+    response.body.error.message,
+    "Desagrupe os lançamentos antes de alterar conta, tipo, moeda ou situação.",
+  );
+  assert.doesNotMatch(JSON.stringify(response.body), /SQL interno|payload financeiro|23514/);
 }
 
 function propagatesOrCreatesCorrelationId(): void {
