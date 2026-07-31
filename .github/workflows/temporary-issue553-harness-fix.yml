@@ -26,68 +26,34 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+
           path = Path('scripts/statement-visual/issue-553-manual-installments.mjs')
           source = path.read_text()
-          source = source.replace(
-              '''  await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
-          await submitByKeyboard();
-          const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");''',
-              '''  const keyboardSubmitActivated = await proveKeyboardSubmitActivation();
-          check(
-            keyboardSubmitActivated,
-            "Enter did not activate the installment form submit control",
-            { keyboardSubmitActivated },
-          );
-          await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
-          await submitForm();
-          const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");''',
-          )
-          source = source.replace(
-              '''  await submitByKeyboard();
-          await waitForFormStatus("Ação concluída");''',
-              '''  await submitForm();
-          await waitForFormStatus("Ação concluída");''',
-              1,
-          )
-          source = source.replace(
-              '''async function submitByKeyboard() {
-            await evaluate(
-              browser.cdp,
-              `document.querySelector('[data-form] button[type="submit"]').focus()`,
+          old_first = '''  await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
+            await submitByKeyboard();
+            const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");'''
+          new_first = '''  const keyboardSubmitActivated = await proveKeyboardSubmitActivation();
+            check(
+              keyboardSubmitActivated,
+              "Enter did not activate the installment form submit control",
+              { keyboardSubmitActivated },
             );
-            await pressKey("Enter");
-          }
-          ''',
-              '''async function proveKeyboardSubmitActivation() {
-            const focused = await evaluate(
-              browser.cdp,
-              `(() => {
-                const form = document.querySelector("[data-form]");
-                const submit = form.querySelector('button[type="submit"]');
-                window.__issue553KeyboardSubmit = false;
-                form.addEventListener(
-                  "submit",
-                  (event) => {
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                    window.__issue553KeyboardSubmit = true;
-                  },
-                  { capture: true, once: true },
-                );
-                submit.focus();
-                return document.activeElement === submit;
-              })()`,
-            );
-            if (!focused) return false;
-            await pressKey("Enter");
-            return evaluate(browser.cdp, `window.__issue553KeyboardSubmit === true`);
-          }
+            await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
+            await submitForm();
+            const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");'''
+          old_retry = '''  await submitByKeyboard();
+            await waitForFormStatus("Ação concluída");'''
+          new_retry = '''  await submitForm();
+            await waitForFormStatus("Ação concluída");'''
 
-          async function submitForm() {
-            await evaluate(browser.cdp, `document.querySelector("[data-form]").requestSubmit()`);
-          }
-          ''',
-          )
+          if old_first not in source:
+              raise SystemExit('desktop submit sequence not found')
+          if old_retry not in source:
+              raise SystemExit('retry submit sequence not found')
+          source = source.replace(old_first, new_first, 1)
+          source = source.replace(old_retry, new_retry, 1)
+          if 'submitByKeyboard()' in source:
+              raise SystemExit('stale submitByKeyboard reference remains')
           path.write_text(source)
           PY
           npx prettier --write scripts/statement-visual/issue-553-manual-installments.mjs
@@ -97,5 +63,5 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add scripts/statement-visual/issue-553-manual-installments.mjs
           git diff --cached --quiet && exit 0
-          git commit -m "test(web): separate keyboard activation from retry transport"
+          git commit -m "test(web): complete keyboard and retry harness separation"
           git push origin HEAD:feat/553-canonical-manual-installments
