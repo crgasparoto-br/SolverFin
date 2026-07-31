@@ -1,8 +1,11 @@
+import { createHash } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 
 export const sessionCookieName = "sf_session_token";
 const productiveApiSessionCookieName = "__Host-solverfin_session";
 const localApiSessionCookieName = "solverfin_session";
+const productiveOidcBindingCookiePrefix = "__Host-solverfin_oidc_";
+const localOidcBindingCookiePrefix = "solverfin_oidc_";
 const localEnvironments = new Set(["development", "local", "test"]);
 
 export function getSessionTokenFromRequest(request: IncomingMessage): string | undefined {
@@ -53,6 +56,16 @@ export function clearApiSessionCookies(): string[] {
   ];
 }
 
+export function clearOidcBindingCookies(state: string | null | undefined): string[] {
+  const key = deriveOidcBindingCookieKey(state);
+  if (!key) return [];
+
+  return [
+    serializeExpiredCookie(`${productiveOidcBindingCookiePrefix}${key}`, true),
+    serializeExpiredCookie(`${localOidcBindingCookiePrefix}${key}`, false),
+  ];
+}
+
 export function isDemoAuthenticationAllowed(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): boolean {
@@ -63,6 +76,12 @@ export function isDemoAuthenticationAllowed(
 
 function isLegacyWebCredentialAllowed(env: Readonly<Record<string, string | undefined>>): boolean {
   return isDemoAuthenticationAllowed(env) || env.SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION === "1";
+}
+
+function deriveOidcBindingCookieKey(state: string | null | undefined): string | undefined {
+  const normalized = state?.trim();
+  if (!normalized || normalized.length > 4096) return undefined;
+  return createHash("sha256").update(normalized).digest("hex").slice(0, 24);
 }
 
 function serializeExpiredCookie(name: string, secure: boolean): string {
