@@ -45,7 +45,7 @@ try {
     action: submitForm,
     failFirst: true,
   });
-  const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");
+  const ambiguousFailure = await waitForFormStatus("operação pode ter sido concluída");
   const preserved = await readFormState();
   check(
     ambiguousTransport.requests.length === 1,
@@ -293,9 +293,19 @@ async function interceptInstallmentRequests({ action, failFirst = false, observe
       }
       requests.push(record);
       if (requests.length === 1 && failFirst) {
-        await browser.cdp.send("Fetch.failRequest", {
+        const body = Buffer.from(
+          JSON.stringify({
+            error: {
+              code: "GATEWAY_TIMEOUT",
+              message: "Tempo limite no gateway; a operação pode ter sido concluída.",
+            },
+          }),
+        ).toString("base64");
+        await browser.cdp.send("Fetch.fulfillRequest", {
           requestId: paused.requestId,
-          errorReason: "Failed",
+          responseCode: 504,
+          responseHeaders: [{ name: "content-type", value: "application/json; charset=utf-8" }],
+          body,
         });
       } else {
         await browser.cdp.send("Fetch.continueRequest", { requestId: paused.requestId });
