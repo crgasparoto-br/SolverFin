@@ -180,9 +180,13 @@ export function readManualInstallmentCreatePayload(body: unknown): CreateManualI
     throwInstallmentPayloadInvalid("Campo nao permitido para criacao de parcelamento.");
   }
 
-  const accountId = readRequiredText(payload, "accountId", "Conta de origem invalida.");
-  const destinationAccountId = readNullableText(payload, "destinationAccountId");
-  const categoryId = readNullableText(payload, "categoryId");
+  const accountId = readRequiredUuid(payload, "accountId", "Conta de origem invalida.");
+  const destinationAccountId = readNullableUuid(
+    payload,
+    "destinationAccountId",
+    "Conta de destino invalida.",
+  );
+  const categoryId = readNullableUuid(payload, "categoryId", "Categoria invalida.");
   const kind = payload.kind;
   const status = payload.status;
   const description = readRequiredText(
@@ -279,13 +283,27 @@ function readRequiredText(
   return value.trim();
 }
 
-function readNullableText(payload: Record<string, unknown>, field: string): string | null {
+function readRequiredUuid(
+  payload: Record<string, unknown>,
+  field: string,
+  message: string,
+): string {
+  const value = readRequiredText(payload, field, message);
+  if (!isUuid(value)) throwInstallmentPayloadInvalid(message);
+  return value.toLowerCase();
+}
+
+function readNullableUuid(
+  payload: Record<string, unknown>,
+  field: string,
+  message: string,
+): string | null {
   const value = payload[field];
   if (value === undefined || value === null) return null;
-  if (typeof value !== "string" || !value.trim()) {
-    throwInstallmentPayloadInvalid(`${field} invalido.`);
+  if (typeof value !== "string" || !isUuid(value.trim())) {
+    throwInstallmentPayloadInvalid(message);
   }
-  return value.trim();
+  return value.trim().toLowerCase();
 }
 
 function isUuid(value: string): boolean {
