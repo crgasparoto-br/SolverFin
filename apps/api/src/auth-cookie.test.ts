@@ -1,11 +1,19 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 
 import { AuthError } from "./auth.js";
 import { assertTrustedCognitoEndpoints } from "./cognito-config.js";
 import { startOidcLogin, validateInternalReturnTo } from "./oidc-flow.js";
 import { prepareRequestAuthenticationHeaders } from "./request-authentication.js";
 import { assertTrustedMutationOrigin } from "./request-origin.js";
-import { clearSessionCookie, readSessionCookie, serializeSessionCookie } from "./session-cookie.js";
+import {
+  clearOidcBindingCookie,
+  clearSessionCookie,
+  readOidcBindingCookie,
+  readSessionCookie,
+  serializeOidcBindingCookie,
+  serializeSessionCookie,
+} from "./session-cookie.js";
 
 const productiveEnv = {
   NODE_ENV: "production",
@@ -49,6 +57,32 @@ function validatesProductiveCookieContract(): void {
   const localCookie = serializeSessionCookie(token, expiresAt, { NODE_ENV: "test" }, now);
   assert.match(localCookie, /^solverfin_session=/);
   assert.doesNotMatch(localCookie, /Secure/);
+
+  const state = "state-for-browser-binding";
+  const browserBinding = "B".repeat(43);
+  const bindingCookie = serializeOidcBindingCookie(
+    state,
+    browserBinding,
+    expiresAt,
+    productiveEnv,
+    now,
+  );
+  assert.match(bindingCookie, /^__Host-solverfin_oidc_[a-f0-9]{24}=/);
+  assert.match(bindingCookie, /HttpOnly/);
+  assert.match(bindingCookie, /Secure/);
+  assert.match(bindingCookie, /SameSite=Lax/);
+  assert.equal(readOidcBindingCookie(bindingCookie, state, productiveEnv), browserBinding);
+  assert.match(clearOidcBindingCookie(state, productiveEnv), /Max-Age=0/);
+
+  const localBindingCookie = serializeOidcBindingCookie(
+    state,
+    browserBinding,
+    expiresAt,
+    { NODE_ENV: "test" },
+    now,
+  );
+  assert.match(localBindingCookie, /^solverfin_oidc_[a-f0-9]{24}=/);
+  assert.doesNotMatch(localBindingCookie, /Secure/);
 }
 
 function validatesOriginContract(): void {
@@ -199,14 +233,24 @@ async function createsBackendControlledOidcAttempt(): Promise<void> {
     assert.ok(location.searchParams.get("state"));
     assert.ok(location.searchParams.get("nonce"));
     assert.ok(location.searchParams.get("code_challenge"));
+    assert.equal(result.state, location.searchParams.get("state"));
+    assert.match(result.browserBinding, /^[A-Za-z0-9_-]{32,}$/);
     assert.match(captured.text ?? "", /insert into "OidcLoginAttempt"/);
 
     const params = captured.params ?? [];
     const state = location.searchParams.get("state") ?? "";
     const nonce = location.searchParams.get("nonce") ?? "";
+    const encryptedEnvelope = String(params[3] ?? "");
+    const browserBindingHash = createHash("sha256")
+      .update(result.browserBinding)
+      .digest("hex");
+
     assert.equal(params.includes(state), false);
     assert.equal(params.includes(nonce), false);
-    assert.notEqual(params[3], state);
+    assert.equal(params.includes(result.browserBinding), false);
+    assert.equal(encryptedEnvelope.includes(result.browserBinding), false);
+    assert.match(encryptedEnvelope, /^v1\.[a-f0-9]{64}\./);
+    assert.equal(encryptedEnvelope.split(".")[1], browserBindingHash);
   } finally {
     if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
     else process.env.DATABASE_URL = previousDatabaseUrl;
