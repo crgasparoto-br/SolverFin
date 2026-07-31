@@ -79,7 +79,8 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
 
     if (state !== undefined) {
       callbackInput.state = state;
-      callbackInput.browserBinding = readOidcBindingCookie(headers.cookie, state);
+      const browserBinding = readOidcBindingCookie(headers.cookie, state);
+      if (browserBinding !== undefined) callbackInput.browserBinding = browserBinding;
     }
     if (code !== undefined) callbackInput.code = code;
     if (error !== undefined) callbackInput.error = error;
