@@ -86,16 +86,7 @@ export function isLocalEnvironment(
 }
 
 function deriveOidcBindingCookieKey(state: string): string {
-  const normalized = state.trim();
-  if (!normalized || normalized.length > 4096) {
-    throw new AuthError(
-      "AUTH_OIDC_ATTEMPT_INVALID",
-      "Não foi possível concluir a autenticação.",
-      401,
-    );
-  }
-
-  return createHash("sha256").update(normalized).digest("hex").slice(0, 24);
+  return createHash("sha256").update(state.trim()).digest("hex").slice(0, 24);
 }
 
 function readCookie(cookieHeader: string | undefined, expectedName: string): string | undefined {
