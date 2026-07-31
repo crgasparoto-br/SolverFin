@@ -18,6 +18,7 @@ import {
   type OidcValidationOptions,
 } from "./oidc.js";
 import { readSessionCookie } from "./session-cookie.js";
+import { authenticatePersistentSession } from "./persistent-session.js";
 
 const DEMO_PASSWORD_HASH = "c3fe12298b006ad7e54d9dac3006a98f406506a78e3100ca831c0f96c43f5b60";
 const LOCAL_DEMO_ENVIRONMENTS = new Set(["development", "local", "test"]);
@@ -236,34 +237,27 @@ export async function requireAuthenticatedRequest(
 ): Promise<AuthenticatedUser> {
   const cookieToken = readSessionCookie(headers.cookie, env);
   const bearerToken = getBearerSessionId(headers.authorization);
-  const token = cookieToken ?? (isDemoAuthAllowed(env) ? bearerToken : undefined);
 
-  if (!token) {
+  if (cookieToken) {
+    return authenticatePersistentSession(headers, { env });
+  }
+
+  if (!bearerToken || !isDemoAuthAllowed(env)) {
     await auditSecurityEvent({ action: "session_missing", result: "denied" });
     throw new AuthError("AUTH_SESSION_REQUIRED", "Authentication session is required.", 401);
   }
 
   if (!env.DATABASE_URL) {
-    if (isDemoAuthAllowed(env) && bearerToken && !cookieToken) {
-      return auth.requireAuthenticatedRequest(headers);
-    }
-
-    throw new AuthError("AUTH_SESSION_INVALID", "Authentication session is unavailable.", 503);
+    return auth.requireAuthenticatedRequest(headers);
   }
 
-  const persisted = await findPersistedSession(token);
-
+  const persisted = await findPersistedSession(bearerToken);
   if (!persisted) {
-    if (isDemoAuthAllowed(env) && bearerToken && !cookieToken) {
-      return auth.requireAuthenticatedRequest(headers);
-    }
-
-    throw new AuthError("AUTH_SESSION_INVALID", "Authentication session is invalid.", 401);
+    return auth.requireAuthenticatedRequest(headers);
   }
 
-  return validatePersistedSession(token, persisted);
+  return validatePersistedSession(bearerToken, persisted);
 }
-
 export async function renewSession(
   sessionToken: string,
   now = new Date(),
