@@ -5,13 +5,6 @@ import { ProductiveAuthConfigurationError } from "@solverfin/shared";
 import { renderLoginPage } from "./login-page.js";
 import { resolvePasswordResetUrl } from "./password-reset.js";
 
-productiveRecoveryUsesBackendControlledOidcStart();
-missingProductiveConfigurationFailsClosed();
-configuredLocalPasswordResetRendersExternalLink();
-missingLocalConfigurationKeepsActionVisibleWithGuidance();
-passwordResetUrlRejectsUnsafeLocalValues();
-passwordResetUrlAllowsHttpDuringLocalDevelopment();
-
 const productiveEnv = {
   NODE_ENV: "production",
   APP_ORIGIN: "https://app.example.invalid/",
@@ -27,6 +20,13 @@ const productiveEnv = {
   OIDC_LOGOUT_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/logout",
   OIDC_RECOVERY_URL: "https://solverfin-auth.auth.sa-east-1.amazoncognito.com/forgotPassword",
 };
+
+productiveRecoveryUsesBackendControlledOidcStart();
+missingProductiveConfigurationFailsClosed();
+configuredLocalPasswordResetRendersExternalLink();
+missingLocalConfigurationKeepsActionVisibleWithGuidance();
+passwordResetUrlRejectsUnsafeLocalValues();
+passwordResetUrlAllowsHttpDuringLocalDevelopment();
 
 function productiveRecoveryUsesBackendControlledOidcStart(): void {
   const recoveryUrl = resolvePasswordResetUrl(productiveEnv);
