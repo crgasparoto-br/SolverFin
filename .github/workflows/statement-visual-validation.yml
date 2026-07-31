@@ -66,6 +66,67 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Prepare issue 551 auth-service remediation
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile, writeFile } from "node:fs/promises";
+
+          const path = "apps/api/src/auth-service.ts";
+          let source = await readFile(path, "utf8");
+          const importNeedle = 'import { readSessionCookie } from "./session-cookie.js";';
+          const importReplacement = `${importNeedle}\nimport { authenticatePersistentSession } from "./persistent-session.js";`;
+          if (!source.includes('from "./persistent-session.js"')) {
+            if (!source.includes(importNeedle)) throw new Error("auth-service import anchor missing");
+            source = source.replace(importNeedle, importReplacement);
+          }
+
+          const start = source.indexOf("export async function requireAuthenticatedRequest(");
+          const end = source.indexOf("\nexport async function renewSession(", start);
+          if (start < 0 || end < 0) throw new Error("auth-service function anchors missing");
+
+          const replacement = `export async function requireAuthenticatedRequest(
+            headers: Readonly<Record<string, string | undefined>>,
+            env: Readonly<Record<string, string | undefined>> = process.env,
+          ): Promise<AuthenticatedUser> {
+            const cookieToken = readSessionCookie(headers.cookie, env);
+            const bearerToken = getBearerSessionId(headers.authorization);
+
+            if (cookieToken) {
+              return authenticatePersistentSession(headers, { env });
+            }
+
+            if (!bearerToken || !isDemoAuthAllowed(env)) {
+              await auditSecurityEvent({ action: "session_missing", result: "denied" });
+              throw new AuthError("AUTH_SESSION_REQUIRED", "Authentication session is required.", 401);
+            }
+
+            if (!env.DATABASE_URL) {
+              return auth.requireAuthenticatedRequest(headers);
+            }
+
+            const persisted = await findPersistedSession(bearerToken);
+            if (!persisted) {
+              return auth.requireAuthenticatedRequest(headers);
+            }
+
+            return validatePersistedSession(bearerToken, persisted);
+          }
+          `;
+          source = `${source.slice(0, start)}${replacement}${source.slice(end + 1)}`;
+          await writeFile(path, source);
+          NODE
+          npx prettier apps/api/src/auth-service.ts --write
+          mkdir -p artifacts/auth-service-remediation/apps/api/src
+          cp apps/api/src/auth-service.ts artifacts/auth-service-remediation/apps/api/src/auth-service.ts
+
+      - name: Upload issue 551 auth-service remediation
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-551-auth-service-remediation-${{ github.sha }}
+          path: artifacts/auth-service-remediation
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Prepare database and production web build
         run: |
           npm run prisma:generate
