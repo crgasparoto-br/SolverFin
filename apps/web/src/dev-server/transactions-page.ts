@@ -213,7 +213,6 @@ function renderRow(
     transaction.status !== "voided" &&
     !transaction.cardId &&
     !transaction.invoiceId &&
-    !transaction.installmentId &&
     !transaction.transactionGroupId;
 
   return `

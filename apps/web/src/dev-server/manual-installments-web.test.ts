@@ -4,10 +4,16 @@ import test from "node:test";
 
 test("parcelamento do Extrato usa uma requisicao canonica idempotente", async () => {
   const source = await readFile(new URL("./transactions-page.ts", import.meta.url), "utf8");
+  const guardSource = await readFile(
+    new URL("./transaction-group-installment-guard.ts", import.meta.url),
+    "utf8",
+  );
 
   assert.match(source, /send\("\/api\/installments", "POST", installmentRequest\)/);
   assert.match(source, /idempotencyKey/);
   assert.match(source, /installmentAttemptFingerprint/);
   assert.doesNotMatch(source, /responses\.push\(await send\("\/api\/transactions"/);
-  assert.match(source, /!transaction\.installmentId/);
+  assert.match(guardSource, /data-canonical-installment/);
+  assert.match(guardSource, /groupOpen\.disabled = true/);
+  assert.match(guardSource, /conciliar, desconciliar ou excluir/);
 });
