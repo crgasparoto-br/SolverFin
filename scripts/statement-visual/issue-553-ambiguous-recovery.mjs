@@ -177,10 +177,11 @@ async function readBrowserCookieHeader() {
 
 function buildBackendReplayHeaders(requestHeaders, cookieHeader) {
   const headers = new Headers();
-  for (const name of ["accept", "authorization", "content-type", "x-correlation-id"]) {
+  for (const name of ["accept", "authorization", "content-type", "referer", "x-correlation-id"]) {
     const value = requestHeaders[name] ?? requestHeaders[name.toUpperCase()];
     if (typeof value === "string" && value) headers.set(name, value);
   }
+  headers.set("origin", new URL(baseUrl).origin);
   if (cookieHeader) headers.set("cookie", cookieHeader);
   return headers;
 }
