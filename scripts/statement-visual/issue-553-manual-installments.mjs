@@ -24,7 +24,7 @@ try {
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-08`;
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
-  await installRequestProbe();
+  await installReloadGuard();
   await openExpenseModalByKeyboard();
   await fillInstallmentForm({
     amount: "120,00",
@@ -40,10 +40,25 @@ try {
   check(keyboardSubmitActivated, "Keyboard did not activate the installment form submit control", {
     keyboardSubmitActivated,
   });
-  await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
-  await submitForm();
+
+  const ambiguousTransport = await interceptInstallmentRequests({
+    action: submitForm,
+    failFirst: true,
+  });
   const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");
   const preserved = await readFormState();
+  check(
+    ambiguousTransport.requests.length === 1,
+    "A single confirmation issued more than one installment request",
+    ambiguousTransport,
+  );
+  check(
+    ambiguousTransport.first.method === "POST" &&
+      ambiguousTransport.first.pathname === "/api/installments",
+    "The installment form did not call the canonical endpoint",
+    ambiguousTransport,
+  );
+  check(preserved.repeatMode === "installment", "Installment mode was not preserved", preserved);
   check(preserved.modalOpen, "Modal closed after an ambiguous network failure", preserved);
   check(
     preserved.submitDisabled === false,
@@ -56,25 +71,24 @@ try {
     preserved,
   );
   check(preserved.note === "Observacao preservada no retry", "Note was lost", preserved);
-  check(
-    preserved.calls.length === 1,
-    "A single confirmation issued more than one request",
-    preserved,
-  );
 
-  await submitForm();
+  const retryTransport = await interceptInstallmentRequests({ action: submitForm });
   await waitForFormStatus("Ação concluída");
   const retry = await readFormState();
-  check(retry.calls.length === 2, "Retry did not issue exactly one additional request", retry);
   check(
-    retry.calls[0]?.idempotencyKey === retry.calls[1]?.idempotencyKey,
-    "Ambiguous retry generated a different idempotency key",
-    retry,
+    retryTransport.requests.length === 1,
+    "Retry issued more than one installment request",
+    retryTransport,
   );
   check(
-    retry.calls[0]?.fingerprint === retry.calls[1]?.fingerprint,
+    ambiguousTransport.first.idempotencyKey === retryTransport.first.idempotencyKey,
+    "Ambiguous retry generated a different idempotency key",
+    { ambiguousTransport, retryTransport },
+  );
+  check(
+    ambiguousTransport.first.fingerprint === retryTransport.first.fingerprint,
     "Ambiguous retry changed the logical payload",
-    retry,
+    { ambiguousTransport, retryTransport },
   );
 
   const persisted = await readInstallments(fixture.accountId, "2026-08-01", "2026-10-31");
@@ -114,7 +128,7 @@ try {
 
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}${route}`);
-  await installRequestProbe();
+  await installReloadGuard();
   await openExpenseModal();
   await fillInstallmentForm({
     amount: "0,01",
@@ -126,20 +140,25 @@ try {
     note: "Chave deve mudar apos validacao",
   });
 
-  await evaluate(
-    browser.cdp,
-    `(() => {
-      const form = document.querySelector("[data-form]");
-      form.requestSubmit();
-      form.requestSubmit();
-    })()`,
-  );
+  const validationTransport = await interceptInstallmentRequests({
+    action: async () => {
+      await evaluate(
+        browser.cdp,
+        `(() => {
+          const form = document.querySelector("[data-form]");
+          form.requestSubmit();
+          form.requestSubmit();
+        })()`,
+      );
+    },
+    observeAfterFirst: 500,
+  });
   await waitForFormStatus("ao menos um centavo por parcela");
   const validationFailure = await readFormState();
   check(
-    validationFailure.calls.length === 1,
-    "Double submission issued duplicate requests",
-    validationFailure,
+    validationTransport.requests.length === 1,
+    "Double submission issued duplicate installment requests",
+    validationTransport,
   );
   check(
     validationFailure.modalOpen,
@@ -153,14 +172,18 @@ try {
   );
 
   await fillMoney("1,00");
-  await evaluate(browser.cdp, `document.querySelector("[data-form]").requestSubmit()`);
+  const correctedTransport = await interceptInstallmentRequests({ action: submitForm });
   await waitForFormStatus("Ação concluída");
   const corrected = await readFormState();
-  check(corrected.calls.length === 2, "Corrected submission did not issue one request", corrected);
   check(
-    corrected.calls[0]?.idempotencyKey !== corrected.calls[1]?.idempotencyKey,
+    correctedTransport.requests.length === 1,
+    "Corrected submission issued more than one request",
+    correctedTransport,
+  );
+  check(
+    validationTransport.first.idempotencyKey !== correctedTransport.first.idempotencyKey,
     "Material correction reused the rejected idempotency key",
-    corrected,
+    { validationTransport, correctedTransport },
   );
   check(
     !corrected.globalOverflow,
@@ -239,40 +262,84 @@ if (failures.length > 0) {
   console.log("Issue 553 manual installments visual validation passed.");
 }
 
-async function installRequestProbe() {
+async function installReloadGuard() {
   await evaluate(
     browser.cdp,
     `(() => {
-      const nativeFetch = window.fetch.bind(window);
       const nativeSetTimeout = window.setTimeout.bind(window);
-      window.__issue553Probe = { calls: [], observed: [], failNext: false };
       window.setTimeout = function (callback, delay, ...args) {
         if (typeof callback === "function" && String(callback).includes("window.location.reload")) return 0;
         return nativeSetTimeout(callback, delay, ...args);
       };
-      window.fetch = async function (input, init = {}) {
-        const url = new URL(input instanceof Request ? input.url : String(input || ""), window.location.origin);
-        const method = String(init.method || (input instanceof Request ? input.method : "GET")).toUpperCase();
-        if (method !== "GET") {
-          window.__issue553Probe.observed.push({ pathname: url.pathname, method });
-        }
-        if (url.pathname === "/api/installments" && method === "POST") {
-          const payload = JSON.parse(String(init.body || "{}"));
-          const { idempotencyKey, ...businessPayload } = payload;
-          window.__issue553Probe.calls.push({
-            idempotencyKey,
-            fingerprint: JSON.stringify(businessPayload),
-            payload
-          });
-          if (window.__issue553Probe.failNext) {
-            window.__issue553Probe.failNext = false;
-            throw new TypeError("issue-553 simulated ambiguous network failure");
-          }
-        }
-        return nativeFetch(input, init);
-      };
     })()`,
   );
+}
+
+async function interceptInstallmentRequests({ action, failFirst = false, observeAfterFirst = 0 }) {
+  const requests = [];
+  const pendingOperations = [];
+  let resolveFirst;
+  let rejectFirst;
+  const firstRequest = new Promise((resolve, reject) => {
+    resolveFirst = resolve;
+    rejectFirst = reject;
+  });
+  const unsubscribe = browser.cdp.on("Fetch.requestPaused", (paused) => {
+    const operation = (async () => {
+      const record = readPausedRequest(paused);
+      if (record.method !== "POST" || record.pathname !== "/api/installments") {
+        await browser.cdp.send("Fetch.continueRequest", { requestId: paused.requestId });
+        return;
+      }
+      requests.push(record);
+      if (requests.length === 1 && failFirst) {
+        await browser.cdp.send("Fetch.failRequest", {
+          requestId: paused.requestId,
+          errorReason: "Failed",
+        });
+      } else {
+        await browser.cdp.send("Fetch.continueRequest", { requestId: paused.requestId });
+      }
+      if (requests.length === 1) resolveFirst(record);
+    })().catch(rejectFirst);
+    pendingOperations.push(operation);
+  });
+
+  await browser.cdp.send("Fetch.enable", {
+    patterns: [{ urlPattern: "*api/installments*", requestStage: "Request" }],
+  });
+  try {
+    await action();
+    const first = await Promise.race([
+      firstRequest,
+      sleep(10_000).then(() => {
+        throw new Error(
+          "Timed out waiting for POST /api/installments at the Chrome transport boundary",
+        );
+      }),
+    ]);
+    if (observeAfterFirst > 0) await sleep(observeAfterFirst);
+    await Promise.all(pendingOperations);
+    return { first, requests };
+  } finally {
+    unsubscribe();
+    await browser.cdp.send("Fetch.disable");
+  }
+}
+
+function readPausedRequest(paused) {
+  const url = new URL(paused.request.url);
+  const payload = paused.request.postData ? JSON.parse(paused.request.postData) : {};
+  const { idempotencyKey, ...businessPayload } = payload;
+  return {
+    requestId: paused.requestId,
+    method: paused.request.method,
+    pathname: url.pathname,
+    search: url.search,
+    idempotencyKey,
+    fingerprint: JSON.stringify(businessPayload),
+    payload,
+  };
 }
 
 async function openExpenseModalByKeyboard() {
@@ -415,7 +482,7 @@ async function waitForFormStatus(expectedText) {
             actualText: document.querySelector("[data-form] .form-status")?.textContent || "",
             submitting: form?.dataset.submitting || "",
             submitDisabled: form?.querySelector('button[type="submit"]')?.disabled === true,
-            calls: window.__issue553Probe?.calls || [],
+            repeatMode: form?.elements.namedItem("repeatMode")?.value || "",
             keyboardSubmit: window.__issue553KeyboardSubmit === true,
           }),
       );
@@ -435,7 +502,7 @@ async function readFormState() {
         amount: form.amountMinor.value,
         submitDisabled: form.querySelector('button[type="submit"]')?.disabled === true,
         submitting: form.dataset.submitting || "",
-        calls: window.__issue553Probe?.calls || [],
+        repeatMode: form.elements.namedItem("repeatMode")?.value || "",
         globalOverflow: document.documentElement.scrollWidth > window.innerWidth
       };
     })()`,
