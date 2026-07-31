@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
 
 import { AuthError } from "./auth.js";
+import { requireAuthenticatedRequest } from "./auth-service.js";
 import { closePool, getPool, query } from "./db.js";
 import {
   authenticatePersistentSession,
@@ -93,12 +94,9 @@ async function assertValidationRejectedAfterLockedChange(
       fixture.sessionId,
     ]);
 
-    const validation = authenticatePersistentSession(
+    const validation = requireAuthenticatedRequest(
       { cookie: cookieHeader(fixture.token) },
-      {
-        env: productiveEnv,
-        correlationId: `corr-${fixture.label}`,
-      },
+      productiveEnv,
     ).then(
       (value) => {
         settled = true;
