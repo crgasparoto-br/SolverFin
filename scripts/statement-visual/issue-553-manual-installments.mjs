@@ -355,22 +355,33 @@ async function proveKeyboardSubmitActivation() {
       const form = document.querySelector("[data-form]");
       const submit = form.querySelector('button[type="submit"]');
       window.__issue553KeyboardSubmit = false;
-      form.addEventListener(
-        "submit",
-        (event) => {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          window.__issue553KeyboardSubmit = true;
-        },
-        { capture: true, once: true },
-      );
+      window.__issue553KeyboardSubmitHandler = (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        window.__issue553KeyboardSubmit = true;
+      };
+      form.addEventListener("submit", window.__issue553KeyboardSubmitHandler, {
+        capture: true,
+        once: true,
+      });
       submit.focus();
       return document.activeElement === submit;
     })()`,
   );
   if (!focused) return false;
   await pressKey("Enter");
-  return evaluate(browser.cdp, `window.__issue553KeyboardSubmit === true`);
+  return evaluate(
+    browser.cdp,
+    `(() => {
+      const form = document.querySelector("[data-form]");
+      const activated = window.__issue553KeyboardSubmit === true;
+      if (window.__issue553KeyboardSubmitHandler) {
+        form.removeEventListener("submit", window.__issue553KeyboardSubmitHandler, true);
+        delete window.__issue553KeyboardSubmitHandler;
+      }
+      return activated;
+    })()`,
+  );
 }
 
 async function submitForm() {
@@ -389,7 +400,17 @@ async function waitForFormStatus(expectedText) {
         }
         await new Promise((resolve) => setTimeout(resolve, 75));
       }
-      throw new Error("Timed out waiting for form status: " + ${JSON.stringify(expectedText)});
+      const form = document.querySelector("[data-form]");
+      throw new Error(
+        "Timed out waiting for form status: " + ${JSON.stringify(expectedText)}
+          + " diagnostic=" + JSON.stringify({
+            actualText: document.querySelector("[data-form] .form-status")?.textContent || "",
+            submitting: form?.dataset.submitting || "",
+            submitDisabled: form?.querySelector('button[type="submit"]')?.disabled === true,
+            calls: window.__issue553Probe?.calls || [],
+            keyboardSubmit: window.__issue553KeyboardSubmit === true,
+          }),
+      );
     })()`,
   );
 }
