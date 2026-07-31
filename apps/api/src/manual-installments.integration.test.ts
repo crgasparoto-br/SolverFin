@@ -21,7 +21,7 @@ async function main(): Promise<void> {
   const category = await createCategory(token, `Categoria parcelada ${suffix}`);
 
   await validatesCanonicalAtomicCreation(token, account.id, category.id);
-  await validatesConcurrentReplay(token, account.id, category.id);
+  await validatesConcurrentReplay(token, account.id);
   await validatesInitialSequenceAndPlannedDates(token, account.id);
   await validatesCurrencyAndPayloadErrors(token, account.id, suffix);
   await validatesRollbackDoesNotConsumeKey(token, account.id, category.id);
@@ -98,14 +98,9 @@ async function validatesCanonicalAtomicCreation(
   assert.equal(readErrorCode(conflict), "INSTALLMENT_IDEMPOTENCY_CONFLICT");
 }
 
-async function validatesConcurrentReplay(
-  token: string,
-  accountId: string,
-  categoryId: string,
-): Promise<void> {
+async function validatesConcurrentReplay(token: string, accountId: string): Promise<void> {
   const payload = {
     accountId,
-    categoryId,
     kind: "income",
     status: "reconciled",
     description: "Recebimento parcelado ficticio",
