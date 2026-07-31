@@ -36,6 +36,20 @@ jobs:
         shell: bash
         run: |
           cat .issue-553/apply.part.* | base64 -d | gzip -d > /tmp/issue-553-apply.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('/tmp/issue-553-apply.mjs')
+          source = path.read_text()
+          old = '''    "  transactionGroups   TransactionGroup[]\\n",
+              "  transactionGroups            TransactionGroup[]\\n  installmentCreationRequests InstallmentCreationRequest[]\\n",
+          '''
+          new = '''    "  auditLogs           AuditLogEntry[]\\n  transactionGroups   TransactionGroup[]\\n",
+              "  auditLogs                    AuditLogEntry[]\\n  transactionGroups            TransactionGroup[]\\n  installmentCreationRequests  InstallmentCreationRequest[]\\n",
+          '''
+          if source.count(old) != 1:
+              raise SystemExit(f'expected one schema marker, found {source.count(old)}')
+          path.write_text(source.replace(old, new))
+          PY
           node /tmp/issue-553-apply.mjs
 
       - name: Install dependencies
