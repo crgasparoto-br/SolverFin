@@ -140,7 +140,10 @@ function assertControlledPayloadError(response: ApiResponse): void {
   const body = readBody<{ error?: { code?: string; message?: string } }>(response);
   assert.equal(body.error?.code, "INSTALLMENT_PAYLOAD_INVALID");
   assert.equal(JSON.stringify(body).includes("22P02"), false);
-  assert.equal(JSON.stringify(body).toLowerCase().includes("invalid input syntax for type uuid"), false);
+  assert.equal(
+    JSON.stringify(body).toLowerCase().includes("invalid input syntax for type uuid"),
+    false,
+  );
 }
 
 async function createAccount(token: string, name: string): Promise<{ id: string }> {
