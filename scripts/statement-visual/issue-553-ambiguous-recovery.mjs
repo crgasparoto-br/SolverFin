@@ -106,7 +106,7 @@ async function installReloadGuard() {
 }
 
 async function maskCommittedResponseAsTimeout(action) {
-  let requestRecord;
+  const cookieHeader = await readBrowserCookieHeader();
   let resolveMasked;
   let rejectMasked;
   const masked = new Promise((resolve, reject) => {
@@ -116,16 +116,26 @@ async function maskCommittedResponseAsTimeout(action) {
   const operations = [];
   const unsubscribe = browser.cdp.on("Fetch.requestPaused", (paused) => {
     const operation = (async () => {
-      if (paused.responseStatusCode === undefined) {
-        requestRecord = readPausedRequest(paused);
-        await browser.cdp.send("Fetch.continueRequest", { requestId: paused.requestId });
-        return;
-      }
+      const request = readPausedRequest(paused);
+      const headers = buildBackendReplayHeaders(paused.request.headers, cookieHeader);
+      const backendResponse = await fetch(paused.request.url, {
+        method: paused.request.method,
+        headers,
+        body: paused.request.postData,
+        redirect: "manual",
+      });
+      const backendStatus = backendResponse.status;
+      const backendBody = await backendResponse.text();
+      assert.equal(
+        backendStatus,
+        201,
+        `Expected committed backend response, received ${backendStatus}: ${backendBody}`,
+      );
 
-      const backendStatus = paused.responseStatusCode;
       await browser.cdp.send("Fetch.fulfillRequest", {
         requestId: paused.requestId,
         responseCode: 504,
+        responsePhrase: "Gateway Timeout",
         responseHeaders: [{ name: "content-type", value: "application/json; charset=utf-8" }],
         body: Buffer.from(
           JSON.stringify({
@@ -136,16 +146,13 @@ async function maskCommittedResponseAsTimeout(action) {
           }),
         ).toString("base64"),
       });
-      resolveMasked({ request: requestRecord, backendStatus });
+      resolveMasked({ request, backendStatus });
     })().catch(rejectMasked);
     operations.push(operation);
   });
 
   await browser.cdp.send("Fetch.enable", {
-    patterns: [
-      { urlPattern: "*api/installments*", requestStage: "Request" },
-      { urlPattern: "*api/installments*", requestStage: "Response" },
-    ],
+    patterns: [{ urlPattern: "*api/installments*", requestStage: "Request" }],
   });
   try {
     await action();
@@ -161,6 +168,21 @@ async function maskCommittedResponseAsTimeout(action) {
     unsubscribe();
     await browser.cdp.send("Fetch.disable");
   }
+}
+
+async function readBrowserCookieHeader() {
+  const result = await browser.cdp.send("Network.getCookies", { urls: [baseUrl] });
+  return result.cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
+}
+
+function buildBackendReplayHeaders(requestHeaders, cookieHeader) {
+  const headers = new Headers();
+  for (const name of ["accept", "authorization", "content-type", "x-correlation-id"]) {
+    const value = requestHeaders[name] ?? requestHeaders[name.toUpperCase()];
+    if (typeof value === "string" && value) headers.set(name, value);
+  }
+  if (cookieHeader) headers.set("cookie", cookieHeader);
+  return headers;
 }
 
 async function observeInstallmentRequest(action) {
