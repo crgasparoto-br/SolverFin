@@ -22,13 +22,10 @@ jobs:
 
           path = Path('scripts/statement-visual/issue-553-ambiguous-recovery.mjs')
           text = path.read_text()
-          old = '''  for (const name of ["accept", "authorization", "content-type", "x-correlation-id"]) {
-            const value = requestHeaders[name] ?? requestHeaders[name.toUpperCase()];
-            if (typeof value === "string" && value) headers.set(name, value);
-          }
-          if (cookieHeader) headers.set("cookie", cookieHeader);
-          return headers;'''
-          new = '''  for (const name of [
+          function_start = text.index('function buildBackendReplayHeaders(requestHeaders, cookieHeader) {')
+          block_start = text.index('  for (const name of [', function_start)
+          block_end = text.index('  return headers;', block_start) + len('  return headers;')
+          replacement = '''  for (const name of [
             "accept",
             "authorization",
             "content-type",
@@ -41,9 +38,7 @@ jobs:
           headers.set("origin", new URL(baseUrl).origin);
           if (cookieHeader) headers.set("cookie", cookieHeader);
           return headers;'''
-          if old not in text:
-              raise SystemExit('backend replay header block not found')
-          path.write_text(text.replace(old, new, 1))
+          path.write_text(text[:block_start] + replacement + text[block_end:])
           Path('.github/workflows/temporary-fix-ambiguous-replay-origin.yml').unlink()
           PY
           npx prettier --write scripts/statement-visual/issue-553-ambiguous-recovery.mjs
