@@ -8,6 +8,8 @@ import {
 } from "./recurrence-materialization.js";
 import {
   buildUpstreamAuthenticationHeaders,
+  clearApiSessionCookies,
+  clearOidcBindingCookies,
   clearSessionCookie,
   isDemoAuthenticationAllowed,
   serializeSessionCookie,
@@ -42,7 +44,13 @@ export async function handleApiRequest(
   }
 
   if (publicOidcPaths.has(url.pathname) && request.method === "GET") {
-    await proxyToApi(request, response, url, credential, true);
+    await proxyToApi(
+      request,
+      response,
+      url,
+      credential ?? request.headers.cookie,
+      true,
+    );
     return;
   }
 
@@ -95,6 +103,11 @@ export async function proxyToApi(
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
   } catch {
+    if (isOidcCallback(url)) {
+      sendOidcCallbackFailure(response, url);
+      return;
+    }
+
     sendJson(
       response,
       502,
@@ -104,6 +117,11 @@ export async function proxyToApi(
         resolveCorrelationId(request),
       ),
     );
+    return;
+  }
+
+  if (isOidcCallback(url) && !isExpectedOidcCallbackResponse(upstreamResponse)) {
+    sendOidcCallbackFailure(response, url);
     return;
   }
 
@@ -231,8 +249,10 @@ async function handleLogout(
   response: ServerResponse,
   credential: string | undefined,
 ): Promise<void> {
+  const browserCookieClears = [...clearApiSessionCookies(), clearSessionCookie()];
+
   if (!credential) {
-    response.writeHead(204, { "set-cookie": clearSessionCookie() });
+    response.writeHead(204, { "set-cookie": browserCookieClears });
     response.end();
     return;
   }
@@ -246,12 +266,11 @@ async function handleLogout(
         ...(request.headers.origin ? { origin: request.headers.origin } : {}),
       },
     });
-    const setCookies = readSetCookies(upstream);
     response.writeHead(204, {
-      "set-cookie": [...setCookies, clearSessionCookie()],
+      "set-cookie": mergeSetCookies(readSetCookies(upstream), browserCookieClears),
     });
   } catch {
-    response.writeHead(204, { "set-cookie": clearSessionCookie() });
+    response.writeHead(204, { "set-cookie": browserCookieClears });
   }
 
   response.end();
@@ -317,10 +336,29 @@ function collectProxyResponseHeaders(
       setCookies,
     });
   }
-  if (cacheControl) headers["cache-control"] = cacheControl;
+  if (isOidcCallback(requestUrl)) headers["cache-control"] = "no-store";
+  else if (cacheControl) headers["cache-control"] = cacheControl;
   if (setCookies.length > 0) headers["set-cookie"] = setCookies;
 
   return headers;
+}
+
+function isOidcCallback(url: URL): boolean {
+  return url.pathname === "/api/auth/oidc/callback";
+}
+
+function isExpectedOidcCallbackResponse(response: Response): boolean {
+  return response.status === 303 && Boolean(response.headers.get("location"));
+}
+
+function sendOidcCallbackFailure(response: ServerResponse, url: URL): void {
+  const cookies = clearOidcBindingCookies(url.searchParams.get("state"));
+  response.writeHead(303, {
+    location: "/login?erro=autenticacao",
+    "cache-control": "no-store",
+    ...(cookies.length > 0 ? { "set-cookie": cookies } : {}),
+  });
+  response.end();
 }
 
 function containsApiSessionCookie(setCookies: readonly string[]): boolean {
@@ -343,6 +381,17 @@ function isInternalReturnTo(value: string): boolean {
     !value.includes("\\") &&
     !/^[a-z][a-z0-9+.-]*:/i.test(value)
   );
+}
+
+function mergeSetCookies(...groups: readonly string[][]): string[] {
+  const cookiesByName = new Map<string, string>();
+
+  for (const cookie of groups.flat()) {
+    const name = cookie.slice(0, cookie.indexOf("=")).trim();
+    if (name) cookiesByName.set(name, cookie);
+  }
+
+  return [...cookiesByName.values()];
 }
 
 function readSetCookies(response: Response): string[] {
