@@ -20,6 +20,7 @@ try {
   await import("./statement-visual/issue-539-operational-installments.mjs");
   await import("./statement-visual/issue-539-operational-installments-keyboard.mjs");
   await import("./statement-visual/issue-539-installment-grouping-guard.mjs");
+  // The issue 553 scenario asserts the canonical POST at the Chrome transport boundary.
   await import("./statement-visual/issue-553-manual-installments.mjs");
   await import("./statement-visual/reports-category-evolution.mjs");
   await import("./statement-visual/issue-546-reports-category-controls.mjs");
