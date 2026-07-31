@@ -117,7 +117,9 @@ export function enhanceWithRecurrenceMaterializationMarkerCleanup(html: string):
 })();
 </script>`;
 
-  return html.includes("</body>") ? html.replace("</body>", `${script}</body>`) : `${html}${script}`;
+  return html.includes("</body>")
+    ? html.replace("</body>", `${script}</body>`)
+    : `${html}${script}`;
 }
 
 export function renderRecurrenceMaterializationGate(surface: "account" | "card", url: URL): string {
