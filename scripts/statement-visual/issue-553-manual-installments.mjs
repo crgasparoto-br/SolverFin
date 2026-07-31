@@ -36,8 +36,12 @@ try {
     note: "Observacao preservada no retry",
   });
 
+  const keyboardSubmitActivated = await proveKeyboardSubmitActivation();
+  check(keyboardSubmitActivated, "Enter did not activate the installment form submit control", {
+    keyboardSubmitActivated,
+  });
   await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
-  await submitByKeyboard();
+  await submitForm();
   const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");
   const preserved = await readFormState();
   check(preserved.modalOpen, "Modal closed after an ambiguous network failure", preserved);
@@ -58,7 +62,7 @@ try {
     preserved,
   );
 
-  await submitByKeyboard();
+  await submitForm();
   await waitForFormStatus("Ação concluída");
   const retry = await readFormState();
   check(retry.calls.length === 2, "Retry did not issue exactly one additional request", retry);
