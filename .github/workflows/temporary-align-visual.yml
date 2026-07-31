@@ -1,0 +1,31 @@
+name: Temporary align visual expectation
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  align:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Align stale message expectation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/statement-visual/issue-553-manual-installments-v2.mjs')
+          text = path.read_text()
+          old = 'waitForFormStatus("operação pode ter sido concluída")'
+          new = 'waitForFormStatus("A resposta foi inconclusiva")'
+          if old not in text:
+              raise SystemExit('stale expectation not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-553-aligned-visual
+          path: scripts/statement-visual/issue-553-manual-installments-v2.mjs
+          retention-days: 1
