@@ -35,7 +35,7 @@ test("preserves the exact installment request after an ambiguous response", () =
   assert.match(script, /ambiguousInstallmentAttempt = descriptor/);
   assert.match(script, /descriptor = ambiguousInstallmentAttempt/);
   assert.match(script, /body: descriptor\.body/);
-  assert.match(script, /data\.installmentRecovery = "ambiguous"/);
+  assert.match(script, /form\.dataset\.installmentRecovery = "ambiguous"/);
   assert.match(script, /data-installment-recovery-disabled/);
   assert.match(script, /lockInstallmentFormForRecovery\(\);/);
   assert.match(script, /new MutationObserver\(enforceAmbiguousRecoveryMessage\)/);
