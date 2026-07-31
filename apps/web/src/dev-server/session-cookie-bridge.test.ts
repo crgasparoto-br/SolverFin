@@ -4,6 +4,7 @@ import type { IncomingMessage } from "node:http";
 import {
   buildUpstreamAuthenticationHeaders,
   clearApiSessionCookies,
+  clearOidcBindingCookies,
   clearSessionCookie,
   getSessionCredentialFromRequest,
   isDemoAuthenticationAllowed,
@@ -79,6 +80,14 @@ assert.match(cleared[0] ?? "", /Max-Age=0/);
 assert.match(cleared[1] ?? "", /^solverfin_session=;/);
 assert.doesNotMatch(cleared[1] ?? "", /Secure/);
 assert.match(clearSessionCookie(), /^sf_session_token=;/);
+
+const oidcBindingClears = clearOidcBindingCookies("state-123");
+assert.equal(oidcBindingClears.length, 2);
+assert.match(oidcBindingClears[0] ?? "", /^__Host-solverfin_oidc_[a-f0-9]{24}=;/);
+assert.match(oidcBindingClears[0] ?? "", /Secure/);
+assert.match(oidcBindingClears[1] ?? "", /^solverfin_oidc_[a-f0-9]{24}=;/);
+assert.doesNotMatch(oidcBindingClears[1] ?? "", /Secure/);
+assert.deepEqual(clearOidcBindingCookies(undefined), []);
 
 function requestWithCookie(cookie: string): IncomingMessage {
   return { headers: { cookie } } as IncomingMessage;
