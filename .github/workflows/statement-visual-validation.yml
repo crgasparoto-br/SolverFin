@@ -66,34 +66,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Prepare issue 551 formatting remediation
-        run: |
-          npx prettier \
-            apps/api/src/oidc-correlation.integration.test.ts \
-            apps/api/src/persistent-session-hardening.integration.test.ts \
-            apps/api/src/persistent-session.ts \
-            apps/web/src/dev-server/password-reset.test.ts \
-            packages/shared/src/productive-auth-configuration.ts \
-            scripts/statement-visual/productive-auth-login.mjs \
-            --write
-          mkdir -p artifacts/format-remediation
-          cp --parents \
-            apps/api/src/oidc-correlation.integration.test.ts \
-            apps/api/src/persistent-session-hardening.integration.test.ts \
-            apps/api/src/persistent-session.ts \
-            apps/web/src/dev-server/password-reset.test.ts \
-            packages/shared/src/productive-auth-configuration.ts \
-            scripts/statement-visual/productive-auth-login.mjs \
-            artifacts/format-remediation
-
-      - name: Upload issue 551 formatting remediation
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-551-format-remediation-${{ github.sha }}
-          path: artifacts/format-remediation
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Prepare database and production web build
         run: |
           npm run prisma:generate
