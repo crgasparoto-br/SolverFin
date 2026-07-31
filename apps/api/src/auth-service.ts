@@ -18,7 +18,11 @@ import {
   type OidcValidationOptions,
 } from "./oidc.js";
 import { readSessionCookie } from "./session-cookie.js";
-import { authenticatePersistentSession } from "./persistent-session.js";
+import {
+  authenticatePersistentSession,
+  logoutPersistentSession,
+  renewPersistentSession,
+} from "./persistent-session.js";
 
 const DEMO_PASSWORD_HASH = "c3fe12298b006ad7e54d9dac3006a98f406506a78e3100ca831c0f96c43f5b60";
 const LOCAL_DEMO_ENVIRONMENTS = new Set(["development", "local", "test"]);
@@ -262,68 +266,13 @@ export async function renewSession(
   sessionToken: string,
   now = new Date(),
 ): Promise<{ token: string; expiresAt: Date }> {
-  if (!process.env.DATABASE_URL) {
-    throw new AuthError("AUTH_SESSION_INVALID", "Authentication session is unavailable.", 503);
-  }
-
-  const nextToken = randomBytes(32).toString("base64url");
-  const idleBoundary = new Date(now.getTime() - resolveSessionIdleTimeoutMs());
-  const rows = await query<{ id: string; userId: string; expiresAt: Date }>(
-    `update "ApplicationSession"
-     set "tokenHash" = $2, "lastSeenAt" = $3
-     where "tokenHash" = $1
-       and "revokedAt" is null
-       and "expiresAt" > $3
-       and "lastSeenAt" > $4
-     returning "id", "userId", "expiresAt"`,
-    [hashSessionToken(sessionToken), hashSessionToken(nextToken), now, idleBoundary],
-  );
-  const session = rows[0];
-
-  if (!session) {
-    throw new AuthError("AUTH_SESSION_INVALID", "Authentication session is invalid.", 401);
-  }
-
-  auth.logout(sessionToken);
-  await auditSecurityEvent({
-    action: "session_rotated",
-    result: "success",
-    userId: session.userId,
-    sessionId: session.id,
-  });
-
-  return { token: nextToken, expiresAt: session.expiresAt };
+  return renewPersistentSession(sessionToken, { now });
 }
 
 export async function logoutSession(sessionToken: string): Promise<void> {
   auth.logout(sessionToken);
-
-  if (!process.env.DATABASE_URL) return;
-
-  try {
-    const rows = await query<{ id: string; userId: string }>(
-      `update "ApplicationSession"
-       set "revokedAt" = coalesce("revokedAt", $2),
-           "revocationReason" = coalesce("revocationReason", 'logout')
-       where "tokenHash" = $1 and "revokedAt" is null
-       returning "id", "userId"`,
-      [hashSessionToken(sessionToken), new Date()],
-    );
-    const row = rows[0];
-
-    if (row) {
-      await auditSecurityEvent({
-        action: "logout",
-        result: "success",
-        userId: row.userId,
-        sessionId: row.id,
-      });
-    }
-  } catch (error) {
-    if (!isMissingPersistentSessionStorage(error)) throw error;
-  }
+  await logoutPersistentSession(sessionToken);
 }
-
 export async function revokeAllUserSessions(
   userId: string,
   reason = "user_revocation",
