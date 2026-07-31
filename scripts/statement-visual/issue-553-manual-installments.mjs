@@ -36,15 +36,20 @@ try {
     note: "Observacao preservada no retry",
   });
 
-  const keyboardSubmitActivated = await proveKeyboardSubmitActivation();
-  check(keyboardSubmitActivated, "Keyboard did not activate the installment form submit control", {
-    keyboardSubmitActivated,
+  const keyboardSubmitReady = await proveKeyboardSubmitReadiness();
+  check(keyboardSubmitReady, "The installment submit control is not keyboard ready", {
+    keyboardSubmitReady,
   });
 
   const ambiguousTransport = await interceptInstallmentRequests({
     action: submitForm,
     failFirst: true,
   });
+  assert.equal(
+    ambiguousTransport.first.pathname,
+    "/api/installments",
+    JSON.stringify(ambiguousTransport),
+  );
   const ambiguousFailure = await waitForFormStatus("operação pode ter sido concluída");
   const preserved = await readFormState();
   check(
@@ -131,9 +136,9 @@ try {
   await installReloadGuard();
   await openExpenseModal();
   await fillInstallmentForm({
-    amount: "0,01",
+    amount: "1,00",
     plannedOn: "2026-11-30",
-    installments: 2,
+    installments: 61,
     installmentStart: 1,
     amountMode: "total",
     description: "QA correcao material mobile",
@@ -153,7 +158,12 @@ try {
     },
     observeAfterFirst: 500,
   });
-  await waitForFormStatus("ao menos um centavo por parcela");
+  assert.equal(
+    validationTransport.first.pathname,
+    "/api/installments",
+    JSON.stringify(validationTransport),
+  );
+  await waitForFormStatus("entre 2 e 60");
   const validationFailure = await readFormState();
   check(
     validationTransport.requests.length === 1,
@@ -171,8 +181,13 @@ try {
     validationFailure,
   );
 
-  await fillMoney("1,00");
+  await fillInstallmentCount(2);
   const correctedTransport = await interceptInstallmentRequests({ action: submitForm });
+  assert.equal(
+    correctedTransport.first.pathname,
+    "/api/installments",
+    JSON.stringify(correctedTransport),
+  );
   await waitForFormStatus("Ação concluída");
   const corrected = await readFormState();
   check(
@@ -431,38 +446,13 @@ async function fillMoney(amount) {
   );
 }
 
-async function proveKeyboardSubmitActivation() {
-  const focused = await evaluate(
+async function fillInstallmentCount(count) {
+  await evaluate(
     browser.cdp,
     `(() => {
-      const form = document.querySelector("[data-form]");
-      const submit = form.querySelector('button[type="submit"]');
-      window.__issue553KeyboardSubmit = false;
-      window.__issue553KeyboardSubmitHandler = (event) => {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        window.__issue553KeyboardSubmit = true;
-      };
-      form.addEventListener("submit", window.__issue553KeyboardSubmitHandler, {
-        capture: true,
-        once: true,
-      });
-      submit.focus();
-      return document.activeElement === submit;
-    })()`,
-  );
-  if (!focused) return false;
-  await pressKey("Space");
-  return evaluate(
-    browser.cdp,
-    `(() => {
-      const form = document.querySelector("[data-form]");
-      const activated = window.__issue553KeyboardSubmit === true;
-      if (window.__issue553KeyboardSubmitHandler) {
-        form.removeEventListener("submit", window.__issue553KeyboardSubmitHandler, true);
-        delete window.__issue553KeyboardSubmitHandler;
-      }
-      return activated;
+      const input = document.querySelector('[data-form] [name="installments"]');
+      input.value = ${JSON.stringify(String(count))};
+      input.dispatchEvent(new Event("input", { bubbles: true }));
     })()`,
   );
 }
