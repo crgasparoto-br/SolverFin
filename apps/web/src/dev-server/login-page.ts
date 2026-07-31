@@ -151,25 +151,27 @@ function escapeHtml(value: string): string {
 function loginCss(): string {
   return `
     :root { color-scheme: light; --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --muted: #64748b; --line: #dbe3ee; --primary: #0f3d4c; --cyan: #0891b2; --danger: #dc2626; }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    h1, p { margin: 0; } h1 { font-size: 2rem; letter-spacing: 0; }
-    .login-shell { align-items: center; display: grid; min-height: 100vh; padding: 24px; }
-    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 18px; margin: 0 auto; max-width: 480px; padding: 20px; width: 100%; }
-    .login-logo { display: block; margin: 0 auto; }
+    * { box-sizing: border-box; min-width: 0; }
+    html, body { margin: 0; max-width: 100%; min-height: 100%; overflow-x: clip; }
+    body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    h1, p { margin: 0; overflow-wrap: anywhere; } h1 { font-size: 2rem; letter-spacing: 0; }
+    .login-shell { align-items: center; display: grid; min-height: 100vh; padding: clamp(12px, 4vw, 24px); width: 100%; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 18px; margin: 0 auto; max-width: min(480px, 100%); padding: clamp(14px, 4vw, 20px); width: 100%; }
+    .login-logo { display: block; height: auto; margin: 0 auto; max-width: min(120px, 100%); }
     .eyebrow { color: var(--cyan); font-size: .78rem; font-weight: 800; text-transform: uppercase; } .muted { color: var(--muted); line-height: 1.5; }
     .auth-tabs { background: #eef5f8; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 4px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; }
     .tab { background: transparent; color: var(--text); min-height: 38px; }
     .tab.active { background: var(--surface); box-shadow: 0 1px 3px rgba(15, 23, 42, .12); }
     form, label { display: grid; gap: 10px; } label { font-weight: 700; }
     input { border: 1px solid var(--line); border-radius: 8px; font: inherit; min-height: 44px; padding: 0 12px; width: 100%; }
-    button { align-items: center; background: var(--primary); border: 0; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; }
+    button { align-items: center; background: var(--primary); border: 0; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; font: inherit; font-weight: 800; justify-content: center; min-height: 44px; padding: 0 16px; white-space: normal; }
+    .primary-auth-action { align-items: center; background: var(--primary); border-radius: 8px; color: white; display: flex; font-weight: 800; justify-content: center; min-height: 44px; overflow-wrap: anywhere; padding: 10px 16px; text-align: center; text-decoration: none; width: 100%; }
     .password-recovery { align-items: flex-end; display: flex; flex-direction: column; gap: 8px; margin-top: -2px; }
-    .forgot-password { color: var(--cyan); font-size: .92rem; font-weight: 800; text-decoration: none; }
+    .forgot-password { color: var(--cyan); font-size: .92rem; font-weight: 800; max-width: 100%; overflow-wrap: anywhere; text-decoration: none; }
     .forgot-password:hover, .forgot-password:focus-visible { text-decoration: underline; }
-    .productive-recovery { justify-self: center; }
+    .productive-recovery { justify-self: center; text-align: center; }
     button.forgot-password { background: transparent; border-radius: 4px; min-height: auto; padding: 2px 0; }
-    .recovery-help { color: var(--muted); font-size: .88rem; line-height: 1.45; max-width: 34rem; text-align: right; }
+    .recovery-help { color: var(--muted); font-size: .88rem; line-height: 1.45; max-width: 34rem; overflow-wrap: anywhere; text-align: right; }
     .error { background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: var(--danger); padding: 10px 12px; }
     [hidden] { display: none !important; }
   `;
