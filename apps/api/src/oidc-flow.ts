@@ -4,7 +4,10 @@ import { AuthError, type LoginResult } from "./auth.js";
 import { auditSecurityEvent, createPersistentApplicationSession } from "./auth-service.js";
 import { assertTrustedCognitoEndpoints } from "./cognito-config.js";
 import { query, withTransaction, type QueryExecutor } from "./db.js";
-import { resolveProductiveExternalIdentityUser } from "./external-identity.js";
+import {
+  readDisabledExternalUserContext,
+  resolveProductiveExternalIdentityUser,
+} from "./external-identity.js";
 import { validateOidcIdToken, type JsonWebKeySet, type OidcProviderConfig } from "./oidc.js";
 
 const DEFAULT_ATTEMPT_TTL_MINUTES = 10;
@@ -198,6 +201,16 @@ export async function completeOidcCallback(
     return { login, returnTo: attempt.returnTo };
   } catch (error) {
     await markOidcAttemptFailed(attempt.id, "callback_failed", now);
+    const disabledUser = readDisabledExternalUserContext(error);
+    if (disabledUser) {
+      await auditSecurityEvent({
+        action: "user_disabled",
+        result: "denied",
+        userId: disabledUser.userId,
+        correlationId: options.correlationId,
+        metadata: { revokedSessions: disabledUser.revokedSessions },
+      }).catch(() => undefined);
+    }
     await auditSecurityEvent({
       action: "oidc_callback_failed",
       result: "denied",
