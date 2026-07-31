@@ -95,15 +95,15 @@ function normalizeApiError(
   }
 
   if (isApiErrorLike(error)) {
-    const statusCode = normalizeStatusCode(error.statusCode);
+    const explicitStatusCode = readExplicitStatusCode(error.statusCode);
 
-    if (statusCode >= 500) {
+    if (explicitStatusCode === undefined) {
       return unexpectedError(fallbackMessage);
     }
 
     return {
       code: error.code ?? "API_REQUEST_FAILED",
-      statusCode,
+      statusCode: explicitStatusCode,
       message: sanitizeMessage(error.message ?? fallbackMessage),
     };
   }
@@ -173,14 +173,14 @@ function isApiErrorLike(error: unknown): error is ApiErrorLike {
   return typeof error === "object" && error !== null;
 }
 
-function normalizeStatusCode(statusCode: number | undefined): number {
+function readExplicitStatusCode(statusCode: number | undefined): number | undefined {
   if (
     statusCode === undefined ||
     !Number.isInteger(statusCode) ||
     statusCode < 400 ||
     statusCode > 599
   ) {
-    return 500;
+    return undefined;
   }
 
   return statusCode;
