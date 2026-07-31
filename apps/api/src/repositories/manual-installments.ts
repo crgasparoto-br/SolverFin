@@ -205,9 +205,9 @@ export async function createManualInstallmentsForContext(
             : {}),
           ...(normalized.categoryId ? { categoryId: normalized.categoryId } : {}),
         },
-        account,
-        destinationAccount,
-        category,
+        ...(account ? { account } : {}),
+        ...(destinationAccount ? { destinationAccount } : {}),
+        ...(category ? { category } : {}),
       });
 
       await insertInstallment(executeQuery, {
@@ -515,10 +515,10 @@ function buildInstallmentAuditEntry(input: {
     entityKind: "installment",
     entityId: input.installmentId,
     redactedChanges: {
-      sequenceNumber: input.sequenceNumber,
-      totalInstallments: input.totalInstallments,
-      amountMode: input.amountMode,
-      origin: "manual_statement",
+      sequenceNumber: "added",
+      totalInstallments: "added",
+      amountMode: "added",
+      origin: "added",
     },
   };
 }
