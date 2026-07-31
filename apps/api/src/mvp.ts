@@ -1,5 +1,5 @@
-import { AuthError, getBearerSessionId, type AuthenticatedUser } from "./auth.js";
 import { isMasterUser } from "./admin-auth.js";
+import { AuthError, getBearerSessionId, type AuthenticatedUser } from "./auth.js";
 import {
   authenticateProductiveUser,
   authenticateUser,
@@ -11,7 +11,14 @@ import {
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import type { ApiHeaders } from "./http-headers.js";
 import { completeOidcCallback, startOidcLogin, type OidcCallbackInput } from "./oidc-flow.js";
-import { clearSessionCookie, readSessionCookie, serializeSessionCookie } from "./session-cookie.js";
+import {
+  clearOidcBindingCookie,
+  clearSessionCookie,
+  readOidcBindingCookie,
+  readSessionCookie,
+  serializeOidcBindingCookie,
+  serializeSessionCookie,
+} from "./session-cookie.js";
 
 export interface MvpApiRequest {
   method: "GET" | "POST" | "DELETE";
@@ -65,27 +72,31 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
   const correlationId = resolveCorrelationId(headers);
 
   if (request.method === "GET" && request.path === "/api/auth/oidc/callback") {
+    const callbackInput: OidcCallbackInput = {};
+    const state = request.query?.get("state") ?? undefined;
+    const code = request.query?.get("code") ?? undefined;
+    const error = request.query?.get("error") ?? undefined;
+
+    if (state !== undefined) {
+      callbackInput.state = state;
+      callbackInput.browserBinding = readOidcBindingCookie(headers.cookie, state);
+    }
+    if (code !== undefined) callbackInput.code = code;
+    if (error !== undefined) callbackInput.error = error;
+
     try {
-      const callbackInput: OidcCallbackInput = {};
-      const state = request.query?.get("state");
-      const code = request.query?.get("code");
-      const error = request.query?.get("error");
-
-      if (state !== null && state !== undefined) callbackInput.state = state;
-      if (code !== null && code !== undefined) callbackInput.code = code;
-      if (error !== null && error !== undefined) callbackInput.error = error;
-
       const result = await completeOidcCallback(callbackInput);
+      const responseCookies = [
+        serializeSessionCookie(result.login.session.id, result.login.session.expiresAt),
+        ...(state ? [clearOidcBindingCookie(state)] : []),
+      ];
 
       return {
         statusCode: 303,
         headers: {
           location: result.returnTo,
           "cache-control": "no-store",
-          "set-cookie": serializeSessionCookie(
-            result.login.session.id,
-            result.login.session.expiresAt,
-          ),
+          "set-cookie": responseCookies,
         },
         body: undefined,
       };
@@ -95,6 +106,7 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
         headers: {
           location: "/login?erro=autenticacao",
           "cache-control": "no-store",
+          ...(state ? { "set-cookie": clearOidcBindingCookie(state) } : {}),
         },
         body: undefined,
       };
@@ -106,7 +118,15 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
       const result = await startOidcLogin(request.query?.get("returnTo"));
       return {
         statusCode: 302,
-        headers: { location: result.location, "cache-control": "no-store" },
+        headers: {
+          location: result.location,
+          "cache-control": "no-store",
+          "set-cookie": serializeOidcBindingCookie(
+            result.state,
+            result.browserBinding,
+            result.expiresAt,
+          ),
+        },
         body: undefined,
       };
     }
@@ -162,8 +182,12 @@ export async function handleMvpApiRequest(request: MvpApiRequest): Promise<MvpAp
       },
     });
   } catch (error) {
-    const response = buildApiErrorResponse({ error, correlationId });
-    return jsonResponse(response.statusCode, response.body);
+    const errorResponse = buildApiErrorResponse({ error, correlationId });
+    const responseHeaders: ApiHeaders =
+      request.method === "DELETE" && request.path === "/api/session"
+        ? { "set-cookie": clearSessionCookie() }
+        : {};
+    return jsonResponse(errorResponse.statusCode, errorResponse.body, responseHeaders);
   }
 }
 
@@ -324,10 +348,14 @@ function isRegisterBody(body: unknown): body is {
   return isLoginBody(body) && "displayName" in body && typeof body.displayName === "string";
 }
 
-function jsonResponse(statusCode: number, body: unknown): MvpApiResponse {
+function jsonResponse(
+  statusCode: number,
+  body: unknown,
+  headers: ApiHeaders = {},
+): MvpApiResponse {
   return {
     statusCode,
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: { "content-type": "application/json; charset=utf-8", ...headers },
     body,
   };
 }
