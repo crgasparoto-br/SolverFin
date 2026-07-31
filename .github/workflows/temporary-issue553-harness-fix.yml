@@ -1,0 +1,101 @@
+name: Temporary issue 553 harness fix
+
+on:
+  push:
+    branches:
+      - feat/553-canonical-manual-installments
+
+permissions:
+  contents: write
+
+jobs:
+  patch-harness:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/553-canonical-manual-installments
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Patch browser harness
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/statement-visual/issue-553-manual-installments.mjs')
+          source = path.read_text()
+          source = source.replace(
+              '''  await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
+          await submitByKeyboard();
+          const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");''',
+              '''  const keyboardSubmitActivated = await proveKeyboardSubmitActivation();
+          check(
+            keyboardSubmitActivated,
+            "Enter did not activate the installment form submit control",
+            { keyboardSubmitActivated },
+          );
+          await evaluate(browser.cdp, `window.__issue553Probe.failNext = true`);
+          await submitForm();
+          const ambiguousFailure = await waitForFormStatus("Seus dados foram preservados");''',
+          )
+          source = source.replace(
+              '''  await submitByKeyboard();
+          await waitForFormStatus("Ação concluída");''',
+              '''  await submitForm();
+          await waitForFormStatus("Ação concluída");''',
+              1,
+          )
+          source = source.replace(
+              '''async function submitByKeyboard() {
+            await evaluate(
+              browser.cdp,
+              `document.querySelector('[data-form] button[type="submit"]').focus()`,
+            );
+            await pressKey("Enter");
+          }
+          ''',
+              '''async function proveKeyboardSubmitActivation() {
+            const focused = await evaluate(
+              browser.cdp,
+              `(() => {
+                const form = document.querySelector("[data-form]");
+                const submit = form.querySelector('button[type="submit"]');
+                window.__issue553KeyboardSubmit = false;
+                form.addEventListener(
+                  "submit",
+                  (event) => {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    window.__issue553KeyboardSubmit = true;
+                  },
+                  { capture: true, once: true },
+                );
+                submit.focus();
+                return document.activeElement === submit;
+              })()`,
+            );
+            if (!focused) return false;
+            await pressKey("Enter");
+            return evaluate(browser.cdp, `window.__issue553KeyboardSubmit === true`);
+          }
+
+          async function submitForm() {
+            await evaluate(browser.cdp, `document.querySelector("[data-form]").requestSubmit()`);
+          }
+          ''',
+          )
+          path.write_text(source)
+          PY
+          npx prettier --write scripts/statement-visual/issue-553-manual-installments.mjs
+      - name: Commit harness correction
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/statement-visual/issue-553-manual-installments.mjs
+          git diff --cached --quiet && exit 0
+          git commit -m "test(web): separate keyboard activation from retry transport"
+          git push origin HEAD:feat/553-canonical-manual-installments
