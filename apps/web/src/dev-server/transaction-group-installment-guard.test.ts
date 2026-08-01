@@ -56,8 +56,5 @@ test("blocks blind retry for non-idempotent transaction and recurrence posts", (
   assert.match(script, /event\.stopImmediatePropagation\(\)/);
   assert.match(script, /submitButton\.disabled = true/);
   assert.match(script, /clearNonIdempotentAmbiguity/);
-  assert.doesNotMatch(
-    script,
-    /nonIdempotentAmbiguousRequest\s*=\s*ambiguousInstallmentAttempt/,
-  );
+  assert.doesNotMatch(script, /nonIdempotentAmbiguousRequest\s*=\s*ambiguousInstallmentAttempt/);
 });
