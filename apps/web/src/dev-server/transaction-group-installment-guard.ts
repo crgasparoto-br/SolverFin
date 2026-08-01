@@ -8,8 +8,11 @@ export function transactionGroupInstallmentGuardScript(): string {
       const canonicalSelectionTitle = "Disponível para ações em massa; indisponível para unificação.";
       const canonicalGroupingHelp = "Unificar lançamentos indisponível: desmarque as parcelas canônicas. Elas continuam disponíveis para conciliar, desconciliar ou excluir.";
       const ambiguousRecoveryMessage = "A resposta foi inconclusiva. Tente novamente para confirmar o parcelamento antes de alterar os dados, ou feche o formulário para cancelar esta tentativa.";
+      const nonIdempotentAmbiguousMessage = "Não foi possível confirmar se a operação foi concluída. Confira o Extrato antes de tentar novamente para evitar duplicidade. Feche este formulário após a conferência.";
       let ambiguousInstallmentAttempt;
       let ambiguousStatusObserver;
+      let nonIdempotentAmbiguousRequest;
+      let nonIdempotentStatusObserver;
 
       function readJsonNode(node) {
         try {
@@ -164,7 +167,15 @@ export function transactionGroupInstallmentGuardScript(): string {
         return descriptor.method === "POST" && descriptor.pathname === "/api/installments";
       }
 
-      function isAmbiguousInstallmentResponse(response) {
+      function isNonIdempotentFinancialPost(descriptor) {
+        return (
+          descriptor.method === "POST" &&
+          (descriptor.pathname === "/api/transactions" ||
+            descriptor.pathname === "/api/recurrences")
+        );
+      }
+
+      function isAmbiguousFinancialResponse(response) {
         return (
           response.status === 0 ||
           response.status === 408 ||
@@ -235,10 +246,83 @@ export function transactionGroupInstallmentGuardScript(): string {
         unlockInstallmentFormAfterRecovery();
       }
 
+      function lockNonIdempotentFormAfterAmbiguity() {
+        const form = document.querySelector("[data-form]");
+        if (!form) return;
+        form.dataset.nonIdempotentRecovery = "ambiguous";
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.dataset.nonIdempotentRecoveryDisabled = "true";
+        }
+      }
+
+      function unlockNonIdempotentFormAfterAmbiguity() {
+        const form = document.querySelector("[data-form]");
+        if (!form) return;
+        delete form.dataset.nonIdempotentRecovery;
+        const submitButton = form.querySelector(
+          '[data-non-idempotent-recovery-disabled="true"]',
+        );
+        if (submitButton) {
+          submitButton.disabled = false;
+          delete submitButton.dataset.nonIdempotentRecoveryDisabled;
+        }
+      }
+
+      function enforceNonIdempotentAmbiguousMessage() {
+        const form = document.querySelector("[data-form]");
+        const statusNode = form && form.querySelector(".form-status");
+        if (!form || !statusNode || !nonIdempotentAmbiguousRequest) return;
+        form.dataset.nonIdempotentRecovery = "ambiguous";
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.dataset.nonIdempotentRecoveryDisabled = "true";
+        }
+        if (statusNode.className !== "form-status error full") {
+          statusNode.className = "form-status error full";
+        }
+        if (statusNode.textContent !== nonIdempotentAmbiguousMessage) {
+          statusNode.textContent = nonIdempotentAmbiguousMessage;
+        }
+      }
+
+      function observeNonIdempotentAmbiguousMessage() {
+        nonIdempotentStatusObserver?.disconnect();
+        const statusNode = document.querySelector("[data-form] .form-status");
+        if (!statusNode) return;
+        nonIdempotentStatusObserver = new MutationObserver(
+          enforceNonIdempotentAmbiguousMessage,
+        );
+        nonIdempotentStatusObserver.observe(statusNode, {
+          attributes: true,
+          attributeFilter: ["class"],
+          characterData: true,
+          childList: true,
+          subtree: true,
+        });
+        enforceNonIdempotentAmbiguousMessage();
+      }
+
+      function preserveNonIdempotentAmbiguity(descriptor) {
+        nonIdempotentAmbiguousRequest = descriptor;
+        lockNonIdempotentFormAfterAmbiguity();
+        observeNonIdempotentAmbiguousMessage();
+      }
+
+      function clearNonIdempotentAmbiguity() {
+        nonIdempotentAmbiguousRequest = undefined;
+        nonIdempotentStatusObserver?.disconnect();
+        nonIdempotentStatusObserver = undefined;
+        unlockNonIdempotentFormAfterAmbiguity();
+      }
+
       window.fetch = async (...args) => {
         let descriptor = readFetchDescriptor(args);
         let requestArgs = args;
         const manualInstallmentPost = isManualInstallmentPost(descriptor);
+        const nonIdempotentFinancialPost = isNonIdempotentFinancialPost(descriptor);
 
         if (manualInstallmentPost && ambiguousInstallmentAttempt) {
           descriptor = ambiguousInstallmentAttempt;
@@ -256,13 +340,37 @@ export function transactionGroupInstallmentGuardScript(): string {
         try {
           response = await nativeFetch(...requestArgs);
         } catch (error) {
-          if (manualInstallmentPost) preserveAmbiguousAttempt(descriptor);
+          if (manualInstallmentPost) {
+            preserveAmbiguousAttempt(descriptor);
+            throw error;
+          }
+          if (nonIdempotentFinancialPost) {
+            preserveNonIdempotentAmbiguity(descriptor);
+            return new Response(
+              JSON.stringify({
+                error: {
+                  code: "FINANCIAL_OPERATION_RESULT_UNKNOWN",
+                  message: nonIdempotentAmbiguousMessage,
+                },
+              }),
+              {
+                status: 599,
+                headers: { "content-type": "application/json; charset=utf-8" },
+              },
+            );
+          }
           throw error;
         }
 
         if (manualInstallmentPost) {
-          if (isAmbiguousInstallmentResponse(response)) preserveAmbiguousAttempt(descriptor);
+          if (isAmbiguousFinancialResponse(response)) preserveAmbiguousAttempt(descriptor);
           else clearAmbiguousAttempt();
+        } else if (nonIdempotentFinancialPost) {
+          if (isAmbiguousFinancialResponse(response)) {
+            preserveNonIdempotentAmbiguity(descriptor);
+          } else {
+            clearNonIdempotentAmbiguity();
+          }
         }
 
         try {
@@ -290,6 +398,25 @@ export function transactionGroupInstallmentGuardScript(): string {
       });
 
       document.addEventListener(
+        "submit",
+        (event) => {
+          const target = event.target;
+          if (
+            !target ||
+            !target.matches ||
+            !target.matches("[data-form]") ||
+            target.dataset.nonIdempotentRecovery !== "ambiguous"
+          ) {
+            return;
+          }
+          enforceNonIdempotentAmbiguousMessage();
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        },
+        true,
+      );
+
+      document.addEventListener(
         "click",
         (event) => {
           const target = event.target && event.target.closest ? event.target.closest("[data-group-open]") : null;
@@ -302,6 +429,10 @@ export function transactionGroupInstallmentGuardScript(): string {
       );
 
       document.querySelector("[data-modal]")?.addEventListener("close", clearAmbiguousAttempt);
+      document.querySelector("[data-modal]")?.addEventListener(
+        "close",
+        clearNonIdempotentAmbiguity,
+      );
       guardCanonicalTransactionSelection();
     })();
   `;
