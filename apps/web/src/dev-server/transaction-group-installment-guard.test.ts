@@ -43,3 +43,21 @@ test("preserves the exact installment request after an ambiguous response", () =
   assert.match(script, /antes de alterar os dados/);
   assert.match(script, /addEventListener\("close", clearAmbiguousAttempt\)/);
 });
+
+test("blocks blind retry for non-idempotent transaction and recurrence posts", () => {
+  const script = transactionGroupInstallmentGuardScript();
+
+  assert.match(script, /descriptor\.pathname === "\/api\/transactions"/);
+  assert.match(script, /descriptor\.pathname === "\/api\/recurrences"/);
+  assert.match(script, /form\.dataset\.nonIdempotentRecovery = "ambiguous"/);
+  assert.match(script, /FINANCIAL_OPERATION_RESULT_UNKNOWN/);
+  assert.match(script, /Confira o Extrato antes de tentar novamente para evitar duplicidade/);
+  assert.match(script, /target\.dataset\.nonIdempotentRecovery !== "ambiguous"/);
+  assert.match(script, /event\.stopImmediatePropagation\(\)/);
+  assert.match(script, /submitButton\.disabled = true/);
+  assert.match(script, /clearNonIdempotentAmbiguity/);
+  assert.doesNotMatch(
+    script,
+    /nonIdempotentAmbiguousRequest\s*=\s*ambiguousInstallmentAttempt/,
+  );
+});
