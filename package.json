@@ -34,7 +34,7 @@
     "db:seed:check": "node --check scripts/seed-demo.mjs && node --check scripts/seed-default-categories.mjs && node --check scripts/seed-default-categories-for-user.mjs",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
-    "format:check": "prettier apps/api/src/manual-installments-profile-isolation.integration.test.ts scripts/statement-visual/issue-553-non-idempotent-ambiguity.mjs --write && echo FORMAT_TS_BEGIN && base64 -w0 apps/api/src/manual-installments-profile-isolation.integration.test.ts && echo && echo FORMAT_TS_END && echo FORMAT_VISUAL_BEGIN && base64 -w0 scripts/statement-visual/issue-553-non-idempotent-ambiguity.mjs && echo && echo FORMAT_VISUAL_END && exit 1",
+    "format:check": "prettier . --check",
     "lint": "npm run build:packages && npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
