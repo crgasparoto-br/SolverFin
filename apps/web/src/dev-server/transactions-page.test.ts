@@ -84,7 +84,10 @@ async function transactionsPageShowsRecurringTransactionInsideMovimentacoes(): P
     return jsonResponse({});
   };
 
-  const html = await renderTransactionsPage("session-token");
+  const html = await renderTransactionsPage(
+    "session-token",
+    new URL("http://solverfin.test/lancamentos?accountId=account-1&month=2026-07"),
+  );
 
   assert.match(html, /Movimentações/);
   assert.doesNotMatch(html, /Compromissos previsíveis/);
