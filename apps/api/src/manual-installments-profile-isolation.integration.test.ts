@@ -2,10 +2,16 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
 import { closePool, getPool } from "./db.js";
-import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
+import {
+  handleFinancialProfilesApiRequest,
+} from "./financial-profiles-router.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
+import {
+  handleApiRequest,
+  type ApiRequest,
+  type ApiResponse,
+} from "./router.js";
 
 void main()
   .catch((error: unknown) => {
@@ -75,20 +81,46 @@ async function main(): Promise<void> {
 
   assert.equal(replayA.statusCode, 200);
   assert.equal(replayB.statusCode, 200);
-  assert.equal(readBody<ManualCreationResponse>(replayA).idempotentReplay, true);
-  assert.equal(readBody<ManualCreationResponse>(replayB).idempotentReplay, true);
+  assert.equal(
+    readBody<ManualCreationResponse>(replayA).idempotentReplay,
+    true,
+  );
+  assert.equal(
+    readBody<ManualCreationResponse>(replayB).idempotentReplay,
+    true,
+  );
   assert.deepEqual(
-    readBody<ManualCreationResponse>(replayA).installments.map((item) => item.id),
+    readBody<ManualCreationResponse>(replayA).installments.map(
+      (item) => item.id,
+    ),
     bodyA.installments.map((item) => item.id),
   );
   assert.deepEqual(
-    readBody<ManualCreationResponse>(replayB).installments.map((item) => item.id),
+    readBody<ManualCreationResponse>(replayB).installments.map(
+      (item) => item.id,
+    ),
     bodyB.installments.map((item) => item.id),
   );
 
-  await assertProfileListIsolation(token, profileA.id, accountA.id, bodyA, bodyB);
-  await assertProfileListIsolation(token, profileB.id, accountB.id, bodyB, bodyA);
-  await assertDurableKeyIsScopedToBothProfiles(idempotencyKey, profileA.id, profileB.id);
+  await assertProfileListIsolation(
+    token,
+    profileA.id,
+    accountA.id,
+    bodyA,
+    bodyB,
+  );
+  await assertProfileListIsolation(
+    token,
+    profileB.id,
+    accountB.id,
+    bodyB,
+    bodyA,
+  );
+  await assertDurableKeyIsScopedToBothProfiles(
+    idempotencyKey,
+    profileA.id,
+    profileB.id,
+  );
 }
 
 function buildPayload(accountId: string, idempotencyKey: string) {
@@ -120,7 +152,9 @@ async function assertProfileListIsolation(
   );
 
   assert.equal(response.statusCode, 200);
-  const listed = readBody<{ installments: ManualCreationItem[] }>(response).installments;
+  const listed = readBody<{ installments: ManualCreationItem[] }>(
+    response,
+  ).installments;
   const expectedIds = expected.installments.map((item) => item.id).sort();
   const otherIds = new Set(other.installments.map((item) => item.id));
 
@@ -128,7 +162,10 @@ async function assertProfileListIsolation(
     listed.map((item) => item.id).sort(),
     expectedIds,
   );
-  assert.equal(listed.every((item) => item.financialProfileId === profileId), true);
+  assert.equal(
+    listed.every((item) => item.financialProfileId === profileId),
+    true,
+  );
   assert.equal(listed.some((item) => otherIds.has(item.id)), false);
 }
 
@@ -151,7 +188,10 @@ async function assertDurableKeyIsScopedToBothProfiles(
   );
 }
 
-async function createProfile(token: string, label: string): Promise<{ id: string }> {
+async function createProfile(
+  token: string,
+  label: string,
+): Promise<{ id: string }> {
   const response = await apiRequest(token, "POST", "/api/financial-profiles", {
     name: `${label} ${Date.now().toString(36)} ${randomUUID().slice(0, 8)}`,
     kind: "family",
