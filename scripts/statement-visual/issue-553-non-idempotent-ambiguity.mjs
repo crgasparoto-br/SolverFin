@@ -69,7 +69,8 @@ try {
     screenshot: transactionScreenshot,
   });
 
-  const recurrenceRoute = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=${recurrenceMonth}`;
+  const recurrenceRoute =
+    `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=${recurrenceMonth}`;
   await navigate(browser.cdp, `${baseUrl}${recurrenceRoute}`);
   await openExpenseModal();
   await fillForm({
