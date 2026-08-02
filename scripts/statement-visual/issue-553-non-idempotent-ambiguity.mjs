@@ -9,6 +9,10 @@ const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const warningText = "Confira o Extrato antes de tentar novamente para evitar duplicidade";
+const recurrenceStartDate = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  .toISOString()
+  .slice(0, 10);
+const recurrenceMonth = recurrenceStartDate.slice(0, 7);
 
 if (!chromePath) {
   throw new Error("CHROME_BIN is required for issue 553 non-idempotent ambiguity validation.");
@@ -65,13 +69,13 @@ try {
     screenshot: transactionScreenshot,
   });
 
-  const recurrenceRoute = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-10`;
+  const recurrenceRoute = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=${recurrenceMonth}`;
   await navigate(browser.cdp, `${baseUrl}${recurrenceRoute}`);
   await openExpenseModal();
   await fillForm({
     repeatMode: "fixed",
     amount: "55,00",
-    plannedOn: "2026-10-15",
+    plannedOn: recurrenceStartDate,
     description: "QA recorrência resposta ambígua",
   });
 
