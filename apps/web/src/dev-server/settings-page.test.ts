@@ -12,6 +12,8 @@ await profilesSectionRendersAsTheDefault();
 await rulesSectionRendersReadableDetails();
 await rulesFailureDoesNotRenderAnEmptyState();
 await accountFailureDoesNotDisableCategories();
+await categoryFailureDoesNotDisableAccounts();
+await bothDependenciesFailIndependently();
 
 function sectionResolutionIsServerSide(): void {
   assert.equal(resolveSettingsSection(new URL("https://example.test/configuracoes")), "profiles");
@@ -82,10 +84,19 @@ async function rulesSectionRendersReadableDetails(): Promise<void> {
             priority: 120,
             conditions: {
               descriptionIncludes: "mercado",
+              merchantIncludes: "supermercado",
               kind: "expense",
+              accountId: "account-1",
+              cardId: "card-1",
               amount: { minMinor: 1050, maxMinor: 5000 },
             },
-            actions: { categoryId: "category-food", status: "posted" },
+            actions: {
+              categoryId: "category-food",
+              accountId: "account-1",
+              cardId: "card-1",
+              tagIds: ["tag-1", "tag-2"],
+              status: "reconciled",
+            },
             explanation: "Compras recorrentes de mercado.",
           },
           {
@@ -94,7 +105,31 @@ async function rulesSectionRendersReadableDetails(): Promise<void> {
             status: "future-status",
             priority: 10,
             conditions: { kind: "future-kind" },
-            actions: { status: "future-action" },
+            actions: { categoryId: "category-missing", status: "future-action" },
+          },
+          {
+            id: "rule-3",
+            name: "Status adicionais",
+            status: "inactive",
+            priority: 5,
+            conditions: { merchantIncludes: "loja" },
+            actions: { status: "pending_review" },
+          },
+          {
+            id: "rule-4",
+            name: "Cancelamento",
+            status: "active",
+            priority: 4,
+            conditions: { descriptionIncludes: "cancelar" },
+            actions: { status: "voided" },
+          },
+          {
+            id: "rule-5",
+            name: "Duplicidade",
+            status: "active",
+            priority: 3,
+            conditions: { descriptionIncludes: "duplicado" },
+            actions: { status: "duplicate" },
           },
         ],
       },
@@ -118,11 +153,27 @@ async function rulesSectionRendersReadableDetails(): Promise<void> {
       assert.match(html, /Valor mínimo: 10,50/);
       assert.match(html, /Valor máximo: 50,00/);
       assert.match(html, /Tipo: Despesa/);
-      assert.match(html, /Status: Realizado/);
+      assert.match(html, /Estabelecimento contém “supermercado”/);
+      assert.match(html, /Conta: Conta principal/);
+      assert.match(html, /Cartão específico/);
+      assert.match(html, /Sugerir categoria: Alimentação/);
+      assert.match(html, /Sugerir conta: Conta principal/);
+      assert.match(html, /Sugerir cartão/);
+      assert.match(html, /Adicionar 2 etiquetas/);
+      assert.match(html, /Status: Conciliado/);
+      assert.match(html, /Status: Pendente de revisão/);
+      assert.match(html, /Status: Cancelado/);
+      assert.match(html, /Status: Duplicado/);
+      assert.match(html, /Sugerir categoria: Não reconhecido/);
       assert.match(html, /Não reconhecido/);
       assert.doesNotMatch(html, /future-kind/);
       assert.doesNotMatch(html, /future-action/);
       assert.doesNotMatch(html, /future-status/);
+      assert.doesNotMatch(html, /category-missing/);
+      assert.doesNotMatch(html, /<li>Conta: account-1<\/li>/);
+      assert.doesNotMatch(html, /<li>Sugerir conta: account-1<\/li>/);
+      assert.doesNotMatch(html, /card-1/);
+      assert.doesNotMatch(html, /tag-1/);
       assert.match(html, /name="amountMinMinor" type="text" inputmode="decimal"/);
       assert.match(html, /name="amountMaxMinor" type="text" inputmode="decimal"/);
       assert.doesNotMatch(html, /em centavos/);
@@ -175,6 +226,54 @@ async function accountFailureDoesNotDisableCategories(): Promise<void> {
       assert.match(html, /Não foi possível carregar as contas/);
       assert.match(html, /<select name="actionCategoryId">[\s\S]*Alimentação/);
       assert.doesNotMatch(html, /<select name="actionCategoryId" disabled/);
+    },
+  );
+}
+
+async function categoryFailureDoesNotDisableAccounts(): Promise<void> {
+  await withFetch(
+    {
+      "/api/automation-rules?status=all": { rules: [] },
+      "/api/accounts": { accounts: [{ id: "account-1", name: "Conta principal" }] },
+      "/api/categories": failure("Falha nas categorias"),
+    },
+    async () => {
+      const html = await renderSettingsPage(
+        "token",
+        new URL("https://example.test/configuracoes?section=rules"),
+      );
+
+      assert.match(html, /<select name="actionAccountId">[\s\S]*Conta principal/);
+      assert.doesNotMatch(html, /<select name="actionAccountId" disabled/);
+      assert.match(
+        html,
+        /<select name="actionCategoryId" disabled aria-describedby="categories-dependency-warning"><\/select>/,
+      );
+      assert.match(html, /Não foi possível carregar as categorias/);
+    },
+  );
+}
+
+async function bothDependenciesFailIndependently(): Promise<void> {
+  await withFetch(
+    {
+      "/api/automation-rules?status=all": { rules: [] },
+      "/api/accounts": failure("Falha nas contas"),
+      "/api/categories": failure("Falha nas categorias"),
+    },
+    async () => {
+      const html = await renderSettingsPage(
+        "token",
+        new URL("https://example.test/configuracoes?section=rules"),
+      );
+
+      assert.match(html, /name="actionAccountId" disabled/);
+      assert.match(html, /name="actionCategoryId" disabled/);
+      assert.match(html, /Não foi possível carregar as contas/);
+      assert.match(html, /Não foi possível carregar as categorias/);
+      assert.match(html, /<input name="name" required/);
+      assert.match(html, /name="amountMinMinor" type="text"/);
+      assert.match(html, /name="amountMaxMinor" type="text"/);
     },
   );
 }

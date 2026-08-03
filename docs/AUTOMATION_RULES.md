@@ -23,7 +23,7 @@ Textos sao comparados de forma case-insensitive e sem acentos para tolerar varia
 
 Regras sem nenhuma condicao nao sao aplicadas. Isso evita automacoes amplas demais por engano.
 
-Valores permanecem persistidos e transportados pela API em unidades minoritarias inteiras. Na interface, eles sao exibidos e digitados como valores decimais com duas casas, sem simbolo de moeda. Por exemplo, `1050` na API e apresentado como `10,50`.
+Valores permanecem persistidos e transportados pela API em unidades minoritarias inteiras. Na interface, eles sao exibidos e digitados como valores decimais com duas casas, sem simbolo de moeda. Por exemplo, `1050` na API é apresentado como `10,50`.
 
 ## Acoes suportadas
 
@@ -93,7 +93,7 @@ A rota `Configurações` possui duas secoes SSR acessiveis por links GET reais:
 
 Ausencia de `section` ou valor desconhecido abre perfis financeiros. A URL da secao atual permanece apos criar, editar, arquivar, inativar ou aplicar regras porque a tela recarrega o endereco corrente.
 
-Na secao de regras, a lista apresenta nome, status, prioridade, condicoes, acoes sugeridas e explicacao em blocos legiveis. Codigos conhecidos sao traduzidos para portugues; valores desconhecidos aparecem como `Nao reconhecido`, sem expor o codigo bruto.
+Na secao de regras, a lista apresenta nome, status, prioridade, condicoes, acoes sugeridas e explicacao em blocos legiveis. Descricao, estabelecimento, tipo, valores, conta, cartao, categoria, etiquetas e status suportados aparecem com rotulos orientados ao usuario. Quando contas e categorias estao disponiveis, a lista mostra seus nomes em vez de identificadores internos. Codigos e referencias desconhecidos usam `Nao reconhecido`, sem expor o valor tecnico bruto.
 
 Os campos `Valor minimo` e `Valor maximo` aceitam inteiros ou decimais com ponto ou virgula, com no maximo duas casas. Antes do envio, a interface converte o valor para `amountMinMinor` ou `amountMaxMinor`. Entrada invalida bloqueia o envio, preserva o texto digitado e mostra erro junto ao campo.
 
@@ -123,7 +123,7 @@ A suite de dominio cobre:
 - regra desativada;
 - isolamento por tenant.
 
-A suite web cobre a resolucao SSR das secoes, conversao decimal para unidade minoritaria, leitura estruturada das regras, fallback para codigos desconhecidos e falhas independentes de listagem, contas e categorias.
+A suite web cobre a resolucao SSR das secoes, conversao decimal para unidade minoritaria, leitura estruturada de todos os campos suportados, fallback sem identificadores tecnicos e falhas de listagem, somente contas, somente categorias e ambas as dependencias. A validacao Chrome percorre a navegacao e os dialogos com `Tab`, `Shift+Tab`, `Enter` e `Escape`, incluindo foco visivel e retorno de foco.
 
 ## Limites conhecidos
 

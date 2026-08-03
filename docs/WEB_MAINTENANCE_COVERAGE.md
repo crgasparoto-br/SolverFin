@@ -31,9 +31,11 @@ A rota `/configuracoes` usa uma unica pagina com o titulo principal `Configuraco
 
 Os links possuem `aria-current` na secao ativa e funcionam sem JavaScript. Perfis mostram separadamente os estados `Em uso`, `Ativo` e `Arquivado`, preservando os atalhos para Dashboard, Contas e Extrato.
 
-Regras mostram prioridade, condicoes, acoes sugeridas e explicacao em blocos de leitura. Valores sao exibidos com duas casas decimais, sem simbolo de moeda. O formulario converte valores decimais para os campos minoritarios da API e impede envio quando a entrada possui formato invalido ou mais de duas casas decimais.
+Regras mostram prioridade, condicoes, acoes sugeridas e explicacao em blocos de leitura. Contas e categorias vinculadas aparecem pelo nome quando disponiveis; campos suportados como estabelecimento, cartao, etiquetas e estados adicionais nao sao omitidos nem exibem identificadores internos. Valores sao exibidos com duas casas decimais, sem simbolo de moeda. O formulario converte valores decimais para os campos minoritarios da API e impede envio quando a entrada possui formato invalido ou mais de duas casas decimais.
 
-Falhas de contas e categorias degradam apenas o seletor correspondente. Falha da listagem de regras mostra erro com tentativa novamente, nao mostra estado vazio e deixa `Aplicar regras` desabilitado.
+Falhas de contas e categorias degradam apenas o seletor correspondente. Falha da listagem de regras mostra um erro com acao para tentar novamente, nao mostra estado vazio e deixa `Aplicar regras` desabilitado.
+
+A validacao em Chrome percorre a navegacao entre secoes com `Tab`, `Shift+Tab` e `Enter`, verifica foco visivel e abre e fecha os dialogos com `Enter` e `Escape`, confirmando o retorno do foco ao acionador.
 
 ## Pendencias intencionais
 

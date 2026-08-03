@@ -62,15 +62,12 @@ async function runScenario(name, width, height, section, zoom = false) {
       await sleep(120);
     }
 
+    const keyboardNavigation = await validateKeyboardNavigation(browser.cdp, section);
     const dialogSelector =
       section === "profiles"
         ? '[data-open-dialog="new-profile-dialog"]'
         : '[data-open-dialog="new-automation-rule-dialog"]';
-    await evaluate(
-      browser.cdp,
-      `document.querySelector(${JSON.stringify(dialogSelector)})?.click()`,
-    );
-    await waitForDialog(browser.cdp);
+    const dialogKeyboard = await openDialogWithKeyboard(browser.cdp, dialogSelector);
 
     const measurements = await evaluate(browser.cdp, measurementExpression(section));
     const filename = `issue-558-${name}.png`;
@@ -86,6 +83,29 @@ async function runScenario(name, width, height, section, zoom = false) {
     check(measurements.dialogOpen, `${name}: diálogo não abriu`, measurements);
     check(measurements.dialogInsideViewport, `${name}: diálogo excede o viewport`, measurements);
     check(measurements.focusableNavigation, `${name}: navegação não recebe foco`, measurements);
+    check(
+      keyboardNavigation.focusMoved,
+      `${name}: Tab não moveu o foco entre seções`,
+      keyboardNavigation,
+    );
+    check(
+      keyboardNavigation.focusVisible,
+      `${name}: foco de teclado não ficou visível`,
+      keyboardNavigation,
+    );
+    check(
+      keyboardNavigation.enterNavigated,
+      `${name}: Enter não alternou a seção`,
+      keyboardNavigation,
+    );
+    check(
+      keyboardNavigation.returnedToOriginal,
+      `${name}: teclado não retornou à seção original`,
+      keyboardNavigation,
+    );
+    check(dialogKeyboard.openedWithEnter, `${name}: Enter não abriu o diálogo`, dialogKeyboard);
+    check(dialogKeyboard.closedWithEscape, `${name}: Escape não fechou o diálogo`, dialogKeyboard);
+    check(dialogKeyboard.focusRestored, `${name}: foco não retornou ao acionador`, dialogKeyboard);
     check(!measurements.hasTenantOperational, `${name}: texto técnico ainda visível`, measurements);
     check(
       !measurements.hasCentavosLabel,
@@ -117,7 +137,17 @@ async function runScenario(name, width, height, section, zoom = false) {
       check(measurements.hasReviewMessage, `${name}: mensagem de revisão ausente`, measurements);
     }
 
-    return { name, width, height, section, zoom, measurements, screenshot: filename };
+    return {
+      name,
+      width,
+      height,
+      section,
+      zoom,
+      keyboardNavigation,
+      dialogKeyboard,
+      measurements,
+      screenshot: filename,
+    };
   } catch (error) {
     const details = serializeError(error);
     failures.push({ message: `${name}: validação interrompida`, details });
@@ -156,6 +186,102 @@ async function waitForSettings(cdp, section) {
     await sleep(100);
   }
   throw new Error(`Settings section ${section} did not render.`);
+}
+
+async function validateKeyboardNavigation(cdp, section) {
+  const targetSection = section === "profiles" ? "rules" : "profiles";
+  const forward = section === "profiles";
+  await evaluate(
+    cdp,
+    `document.querySelector('.settings-section-link[aria-current="page"]')?.focus()`,
+  );
+  await pressKey(cdp, "Tab", forward ? 0 : 8);
+  const focused = await evaluate(
+    cdp,
+    `(() => {
+      const active = document.activeElement;
+      const style = active ? getComputedStyle(active) : null;
+      return {
+        href: active?.getAttribute?.("href") || "",
+        focusVisible:
+          Boolean(active?.matches?.(":focus-visible")) ||
+          Boolean(style && style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0),
+      };
+    })()`,
+  );
+  await pressKey(cdp, "Enter");
+  await waitForSettings(cdp, targetSection);
+  const enterNavigated = await evaluate(
+    cdp,
+    `window.location.search === "?section=${targetSection}"`,
+  );
+
+  await evaluate(
+    cdp,
+    `document.querySelector('.settings-section-link[aria-current="page"]')?.focus()`,
+  );
+  await pressKey(cdp, "Tab", forward ? 8 : 0);
+  await pressKey(cdp, "Enter");
+  await waitForSettings(cdp, section);
+  const returnedToOriginal = await evaluate(
+    cdp,
+    `window.location.search === "?section=${section}"`,
+  );
+
+  return {
+    focusMoved: focused.href.endsWith(`section=${targetSection}`),
+    focusVisible: focused.focusVisible,
+    enterNavigated,
+    returnedToOriginal,
+  };
+}
+
+async function openDialogWithKeyboard(cdp, selector) {
+  await evaluate(cdp, `document.querySelector(${JSON.stringify(selector)})?.focus()`);
+  await pressKey(cdp, "Enter");
+  await waitForDialog(cdp);
+  const openedWithEnter = await evaluate(cdp, `Boolean(document.querySelector("dialog[open]"))`);
+  await pressKey(cdp, "Escape");
+  await waitForDialogClosed(cdp);
+  const closedWithEscape = await evaluate(cdp, `!document.querySelector("dialog[open]")`);
+  const focusRestored = await evaluate(
+    cdp,
+    `document.activeElement === document.querySelector(${JSON.stringify(selector)})`,
+  );
+  await pressKey(cdp, "Enter");
+  await waitForDialog(cdp);
+  return { openedWithEnter, closedWithEscape, focusRestored };
+}
+
+async function pressKey(cdp, key, modifiers = 0) {
+  const code = key === "Enter" ? "Enter" : key === "Escape" ? "Escape" : "Tab";
+  const windowsVirtualKeyCode = key === "Enter" ? 13 : key === "Escape" ? 27 : 9;
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key,
+    code,
+    modifiers,
+    windowsVirtualKeyCode,
+    nativeVirtualKeyCode: windowsVirtualKeyCode,
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key,
+    code,
+    modifiers,
+    windowsVirtualKeyCode,
+    nativeVirtualKeyCode: windowsVirtualKeyCode,
+  });
+  await sleep(100);
+}
+
+async function waitForDialogClosed(cdp) {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const closed = await evaluate(cdp, `!document.querySelector("dialog[open]")`);
+    if (closed) return;
+    await sleep(50);
+  }
+  throw new Error("Settings dialog did not close.");
 }
 
 async function waitForDialog(cdp) {

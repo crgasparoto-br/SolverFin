@@ -33,13 +33,17 @@ interface AutomationRuleRecord {
   priority: number;
   conditions: {
     descriptionIncludes?: string;
+    merchantIncludes?: string;
     kind?: string;
     accountId?: string;
+    cardId?: string;
     amount?: { equalsMinor?: number; minMinor?: number; maxMinor?: number };
   };
   actions: {
     categoryId?: string;
     accountId?: string;
+    cardId?: string;
+    tagIds?: readonly string[];
     status?: string;
   };
   explanation?: string;
@@ -210,7 +214,9 @@ function renderRulesSection(
         rules.ok
           ? `<div class="rows maintenance-rows">
               ${
-                automationRules.map(renderAutomationRuleRow).join("") ||
+                automationRules
+                  .map((rule) => renderAutomationRuleRow(rule, accounts, categories))
+                  .join("") ||
                 renderEmptyState(
                   "Nenhuma regra automática.",
                   "Crie uma regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
@@ -403,7 +409,11 @@ function renderProfileRow(
   `;
 }
 
-function renderAutomationRuleRow(rule: AutomationRuleRecord): string {
+function renderAutomationRuleRow(
+  rule: AutomationRuleRecord,
+  accounts: DependencyState<AccountRecord>,
+  categories: DependencyState<CategoryRecord>,
+): string {
   const isActive = rule.status === "active";
 
   return `
@@ -418,11 +428,11 @@ function renderAutomationRuleRow(rule: AutomationRuleRecord): string {
       <div class="rule-detail-grid">
         <section class="rule-detail" aria-label="Condições da regra ${escapeHtml(rule.name)}">
           <h3>Condições</h3>
-          ${renderRuleList(describeConditions(rule.conditions))}
+          ${renderRuleList(describeConditions(rule.conditions, accounts))}
         </section>
         <section class="rule-detail" aria-label="Ações sugeridas pela regra ${escapeHtml(rule.name)}">
           <h3>Ações sugeridas</h3>
-          ${renderRuleList(describeActions(rule.actions))}
+          ${renderRuleList(describeActions(rule.actions, accounts, categories))}
         </section>
       </div>
       ${rule.explanation ? `<p class="rule-explanation"><strong>Explicação:</strong> ${escapeHtml(rule.explanation)}</p>` : ""}
@@ -658,22 +668,35 @@ function formatActionStatus(status: string): string {
   if (status === "suggested") return "Sugerido";
   if (status === "planned") return "Planejado";
   if (status === "posted") return "Realizado";
+  if (status === "reconciled") return "Conciliado";
+  if (status === "voided") return "Cancelado";
+  if (status === "pending_review") return "Pendente de revisão";
+  if (status === "duplicate") return "Duplicado";
   return "Não reconhecido";
 }
 
+const MINOR_VALUE_FORMATTER = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 function formatMinorValue(value: number): string {
-  return new Intl.NumberFormat("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value / 100);
+  return MINOR_VALUE_FORMATTER.format(value / 100);
 }
 
-function describeConditions(conditions: AutomationRuleRecord["conditions"]): string[] {
+function describeConditions(
+  conditions: AutomationRuleRecord["conditions"],
+  accounts: DependencyState<AccountRecord>,
+): string[] {
   const items: string[] = [];
   if (conditions.descriptionIncludes)
     items.push(`Descrição contém “${conditions.descriptionIncludes}”`);
+  if (conditions.merchantIncludes)
+    items.push(`Estabelecimento contém “${conditions.merchantIncludes}”`);
   if (conditions.kind) items.push(`Tipo: ${formatRuleKind(conditions.kind)}`);
-  if (conditions.accountId) items.push("Conta específica");
+  if (conditions.accountId)
+    items.push(describeEntityReference("Conta", conditions.accountId, accounts));
+  if (conditions.cardId) items.push("Cartão específico");
   if (conditions.amount?.equalsMinor !== undefined)
     items.push(`Valor igual: ${formatMinorValue(conditions.amount.equalsMinor)}`);
   if (conditions.amount?.minMinor !== undefined)
@@ -683,12 +706,33 @@ function describeConditions(conditions: AutomationRuleRecord["conditions"]): str
   return items.length > 0 ? items : ["Nenhuma condição reconhecida"];
 }
 
-function describeActions(actions: AutomationRuleRecord["actions"]): string[] {
+function describeActions(
+  actions: AutomationRuleRecord["actions"],
+  accounts: DependencyState<AccountRecord>,
+  categories: DependencyState<CategoryRecord>,
+): string[] {
   const items: string[] = [];
-  if (actions.categoryId) items.push("Sugerir categoria");
-  if (actions.accountId) items.push("Sugerir conta");
+  if (actions.categoryId)
+    items.push(describeEntityReference("Sugerir categoria", actions.categoryId, categories));
+  if (actions.accountId)
+    items.push(describeEntityReference("Sugerir conta", actions.accountId, accounts));
+  if (actions.cardId) items.push("Sugerir cartão");
+  if (actions.tagIds && actions.tagIds.length > 0)
+    items.push(
+      `Adicionar ${actions.tagIds.length} ${actions.tagIds.length === 1 ? "etiqueta" : "etiquetas"}`,
+    );
   if (actions.status) items.push(`Status: ${formatActionStatus(actions.status)}`);
   return items.length > 0 ? items : ["Nenhuma ação reconhecida"];
+}
+
+function describeEntityReference<T extends { id: string; name: string }>(
+  label: string,
+  id: string,
+  dependency: DependencyState<T>,
+): string {
+  if (!dependency.ok) return `${label}: nome indisponível`;
+  const entity = dependency.items.find((item) => item.id === id);
+  return `${label}: ${entity?.name ?? "Não reconhecido"}`;
 }
 
 function escapeHtml(value: string): string {
