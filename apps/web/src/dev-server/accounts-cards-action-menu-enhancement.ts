@@ -77,9 +77,18 @@ function actionMenuScript(): string {
         }
 
         function focusTrigger(state) {
-          const focusCurrentTrigger = () => {
+          const focusCurrentTrigger = (onlyIfFocusWasLost = false) => {
             const trigger = resolveTrigger(state);
             if (!trigger || typeof trigger.focus !== 'function') return;
+            const activeElement = document.activeElement;
+            if (
+              onlyIfFocusWasLost &&
+              activeElement &&
+              activeElement !== document.body &&
+              !state.menu.contains(activeElement)
+            ) {
+              return;
+            }
             trigger.focus({ preventScroll: true });
           };
           focusCurrentTrigger();
@@ -87,6 +96,8 @@ function actionMenuScript(): string {
             focusCurrentTrigger();
             window.requestAnimationFrame(focusCurrentTrigger);
           });
+          window.setTimeout(() => focusCurrentTrigger(true), 50);
+          window.setTimeout(() => focusCurrentTrigger(true), 150);
         }
 
         function closeMenu(state, options) {
