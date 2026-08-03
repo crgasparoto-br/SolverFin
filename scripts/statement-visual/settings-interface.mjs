@@ -256,22 +256,20 @@ async function openDialogWithKeyboard(cdp, selector) {
 async function pressKey(cdp, key, modifiers = 0) {
   const code = key === "Enter" ? "Enter" : key === "Escape" ? "Escape" : "Tab";
   const windowsVirtualKeyCode = key === "Enter" ? 13 : key === "Escape" ? 27 : 9;
+  const keyboardEvent = {
+    key,
+    code,
+    modifiers,
+    windowsVirtualKeyCode,
+    nativeVirtualKeyCode: windowsVirtualKeyCode,
+  };
+  await cdp.send("Page.bringToFront");
   await cdp.send("Input.dispatchKeyEvent", {
     type: "keyDown",
-    key,
-    code,
-    modifiers,
-    windowsVirtualKeyCode,
-    nativeVirtualKeyCode: windowsVirtualKeyCode,
+    ...(key === "Enter" ? { text: "\r", unmodifiedText: "\r" } : {}),
+    ...keyboardEvent,
   });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key,
-    code,
-    modifiers,
-    windowsVirtualKeyCode,
-    nativeVirtualKeyCode: windowsVirtualKeyCode,
-  });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...keyboardEvent });
   await sleep(100);
 }
 
@@ -290,7 +288,7 @@ async function waitForDialog(cdp) {
     if (open) return;
     await sleep(50);
   }
-  throw new Error("Settings dialog did not open.");
+  throw new Error(`Settings dialog did not open.");
 }
 
 function measurementExpression(section) {
