@@ -15,7 +15,7 @@ Quando `POST /api/installments` termina com falha de transporte, `408`, `425`, `
 - preserva a URL, o corpo e a chave da requisicao original;
 - aplica o bloqueio do formulario antes de oferecer a confirmacao novamente;
 - bloqueia alteracoes nos campos do formulario;
-- mantem somente a acao de confirmar novamente disponivel;
+- mantem no formulario somente a acao de confirmar novamente, enquanto o fechamento do modal permanece explicitamente disponivel;
 - mantem a mensagem de recuperacao autoritativa no live region enquanto a tentativa estiver ambigua;
 - classifica a resposta tanto no fluxo do formulario quanto no guard da fronteira de transporte;
 - no retry, reenvia exatamente a requisicao preservada, mesmo que o DOM seja alterado por script;
@@ -32,6 +32,7 @@ O teste de navegador deve confirmar a mesma requisicao diretamente no backend, i
 - o backend confirmou a primeira tentativa com `201` antes de o navegador observar o `504`;
 - mesma URL, payload e chave no retry;
 - campos bloqueados durante a ambiguidade;
+- fechamento do modal habilitado durante a recuperacao;
 - um unico conjunto persistido;
 - nenhum efeito do payload adulterado entre as duas requisicoes.
 
@@ -39,4 +40,4 @@ O teste de navegador deve confirmar a mesma requisicao diretamente no backend, i
 
 - Evita duplicidade financeira causada por edicao depois de resposta inconclusiva.
 - O usuario precisa confirmar a tentativa pendente ou fechar o modal antes de informar outros dados.
-- O comportamento fica centralizado no guard do Extrato, que intercepta a fronteira real de transporte.
+- O comportamento fica centralizado no modulo dedicado `financial-operation-recovery.ts`, separado da protecao de agrupamento de parcelas e carregado no Extrato pela composicao existente do shell.
