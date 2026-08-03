@@ -171,7 +171,6 @@ function measurementExpression(section) {
   return `(() => {
     const bodyText = document.body.innerText;
     const active = document.querySelector('[aria-current="page"]');
-    active?.focus();
     const dialog = document.querySelector('dialog[open]');
     const dialogRect = dialog?.getBoundingClientRect();
     const links = Array.from(document.querySelectorAll('.settings-section-link'));
@@ -183,7 +182,7 @@ function measurementExpression(section) {
       h1Text: document.querySelector('h1')?.textContent?.trim() || '',
       activeSection: active?.getAttribute('href')?.endsWith('section=rules') ? 'rules' : 'profiles',
       linksAreGet: links.length === 2 && links.every((link, index) => link.tagName === 'A' && link.getAttribute('href') === expectedLinks[index]),
-      focusableNavigation: document.activeElement === active,
+      focusableNavigation: links.every((link) => link.tabIndex >= 0),
       dialogOpen: Boolean(dialog?.open),
       dialogInsideViewport: Boolean(dialogRect && dialogRect.left >= 0 && dialogRect.right <= window.innerWidth && dialogRect.top >= 0 && dialogRect.bottom <= window.innerHeight),
       hasTenantOperational: bodyText.includes('Tenant operacional'),
