@@ -33,6 +33,7 @@ try {
     await setViewport(browser.cdp, viewport.width, viewport.height);
     await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
     await sleep(500);
+
     await captureState(
       browser.cdp,
       "accounts",
@@ -40,6 +41,8 @@ try {
       viewport.height,
       `issue-535-accounts-${viewport.suffix}.png`,
     );
+    await verifyRowActionMenu(browser.cdp, "accounts", viewport.width, viewport.height);
+
     await activateCards(browser.cdp);
     await captureState(
       browser.cdp,
@@ -48,6 +51,7 @@ try {
       viewport.height,
       `issue-535-cards-${viewport.suffix}.png`,
     );
+    await verifyRowActionMenu(browser.cdp, "cards", viewport.width, viewport.height);
     await captureInstrumentModal(
       browser.cdp,
       viewport.width,
@@ -87,11 +91,7 @@ if (failures.length > 0) {
 }
 
 async function captureState(cdp, expectedTab, width, height, filename) {
-  if (expectedTab === "accounts") {
-    await navigate(cdp, `${baseUrl}/contas-cartoes`);
-    await sleep(500);
-  }
-  const measurements = await evaluate(cdp, pageStateExpression());
+  const measurements = await evaluate(cdp, pageStateExpression(expectedTab));
   const accessibility = await accessibilitySummary(cdp);
   await screenshot(cdp, join(outputDir, filename));
   scenarios.push({
@@ -143,18 +143,23 @@ async function captureState(cdp, expectedTab, width, height, filename) {
     measurements,
   );
   check(
-    measurements.minimumActionTarget >= 40,
-    "Issue 535 has visible row actions smaller than 40px",
+    measurements.minimumTriggerTarget >= 40,
+    "Issue 535 has action-menu triggers smaller than 40px",
+    measurements,
+  );
+  check(
+    measurements.actionMenuTriggerCount === measurements.actionContainerCount,
+    "Issue 556 must expose exactly one three-dot trigger per row action container",
+    measurements,
+  );
+  check(
+    measurements.visibleLegacyActionCount === 0,
+    "Issue 556 still exposes legacy row action icons outside the three-dot menu",
     measurements,
   );
   check(
     measurements.itemFooterCount === measurements.itemCount,
     "Issue 535 rows were not normalized into a comparable footer",
-    measurements,
-  );
-  check(
-    measurements.tooltipVisibleOnFocus,
-    "Issue 535 tooltip is not exposed when an icon action receives focus",
     measurements,
   );
   check(
@@ -165,7 +170,6 @@ async function captureState(cdp, expectedTab, width, height, filename) {
 
   if (expectedTab === "accounts") {
     check(measurements.cdiActionCount > 0, "Issue 535 exposes no CDI actions", measurements);
-    check(measurements.cdiActionsIconOnly, "Issue 535 CDI actions still render text", measurements);
     check(
       measurements.enabledCdiLabelsValid,
       "Issue 535 enabled CDI actions lack Ativar/Configurar accessible labels",
@@ -197,42 +201,108 @@ async function captureState(cdp, expectedTab, width, height, filename) {
   }
 }
 
+async function verifyRowActionMenu(cdp, expectedTab, width, height) {
+  const opened = await evaluate(
+    cdp,
+    `(() => {
+      const panel = document.querySelector('[data-tab-panel="${expectedTab}"]:not([hidden])');
+      const trigger = panel?.querySelector('.item-actions .action-menu-trigger');
+      if (!trigger) return { opened: false };
+      trigger.scrollIntoView({ block: 'center' });
+      trigger.click();
+      const menu = trigger.parentElement?.querySelector('.action-menu-popover');
+      const items = menu ? Array.from(menu.querySelectorAll('[role="menuitem"]')) : [];
+      return {
+        opened: trigger.getAttribute('aria-expanded') === 'true' && Boolean(menu && !menu.hidden),
+        triggerLabel: trigger.getAttribute('aria-label') || '',
+        menuRole: menu?.getAttribute('role') || '',
+        labels: items.map((item) => item.getAttribute('aria-label') || item.dataset.actionMenuLabel || ''),
+        enabledCount: items.filter((item) => !item.disabled).length,
+      };
+    })()`,
+  );
+  await sleep(100);
+  scenarios.push({ kind: "row-action-menu", expectedTab, viewport: `${width}x${height}`, opened });
+
+  check(opened.opened, `Issue 556 did not open the ${expectedTab} action menu`, opened);
+  check(
+    opened.triggerLabel.startsWith("Ações de "),
+    "Issue 556 trigger lacks an item-specific label",
+    opened,
+  );
+  check(opened.menuRole === "menu", "Issue 556 popover lacks menu semantics", opened);
+  check(opened.labels.length > 0, "Issue 556 action menu has no actions", opened);
+  check(opened.labels.every(Boolean), "Issue 556 action menu contains an unlabeled action", opened);
+  check(opened.enabledCount > 0, "Issue 556 action menu has no enabled action", opened);
+
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
+  await sleep(80);
+  const closed = await evaluate(
+    cdp,
+    `(() => {
+      const panel = document.querySelector('[data-tab-panel="${expectedTab}"]:not([hidden])');
+      const activeElement = document.activeElement;
+      const trigger = Array.from(panel?.querySelectorAll('.item-actions .action-menu-trigger') || []).find(
+        (candidate) => candidate.getAttribute('aria-label') === ${JSON.stringify(opened.triggerLabel)},
+      );
+      return {
+        expanded: trigger?.getAttribute('aria-expanded') || '',
+        focusRestored:
+          activeElement?.matches?.('.action-menu-trigger') === true &&
+          activeElement.getAttribute('aria-label') === ${JSON.stringify(opened.triggerLabel)},
+        activeTag: activeElement?.tagName || '',
+        activeClass: activeElement?.className || '',
+        activeLabel: activeElement?.getAttribute?.('aria-label') || '',
+        triggerConnected: Boolean(trigger?.isConnected),
+      };
+    })()`,
+  );
+  check(
+    closed.expanded === "false",
+    `Issue 556 ${expectedTab} menu did not close with Escape`,
+    closed,
+  );
+  check(
+    closed.focusRestored,
+    `Issue 556 ${expectedTab} menu did not restore trigger focus`,
+    closed,
+  );
+}
+
 async function activateCards(cdp) {
   await evaluate(cdp, `document.querySelector('#cards-tab')?.click()`);
   await sleep(180);
 }
 
-async function captureInstrumentModal(cdp, width, height, filename) {
-  const opened = await evaluate(
+async function openFirstInstrumentDialog(cdp) {
+  return evaluate(
     cdp,
     `(() => {
-      const trigger = document.querySelector('[data-tab-panel="cards"] .card-account-item [data-view-instruments]');
+      const panel = document.querySelector('[data-tab-panel="cards"]:not([hidden])');
+      const triggers = Array.from(panel?.querySelectorAll('.card-account-item .action-menu-trigger') || []);
+      const trigger = triggers.find((candidate) =>
+        candidate.parentElement?.querySelector('[data-view-instruments]:not([disabled])')
+      );
       if (!trigger) return false;
       trigger.click();
+      const action = trigger.parentElement?.querySelector('[data-view-instruments]:not([disabled])');
+      if (!action) return false;
+      action.click();
       return true;
     })()`,
   );
-  check(opened, "Issue 535 has no Ver instrumentos trigger", { width, height });
+}
+
+async function captureInstrumentModal(cdp, width, height, filename) {
+  const opened = await openFirstInstrumentDialog(cdp);
+  check(opened, "Issue 535 has no Ver instrumentos action in the three-dot menu", {
+    width,
+    height,
+  });
   if (!opened) return;
   await sleep(180);
 
-  const createFormState = await evaluate(
-    cdp,
-    `(() => {
-      const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
-      const button = dialog?.querySelector('[data-toggle-instrument-create]:not([disabled])');
-      if (!button) return { available: false };
-      button.click();
-      const formId = button.dataset.toggleInstrumentCreate;
-      const form = formId ? document.getElementById(formId) : null;
-      return {
-        available: true,
-        visible: Boolean(form && !form.hidden),
-        focusedInsideForm: Boolean(form && form.contains(document.activeElement)),
-      };
-    })()`,
-  );
-  await sleep(80);
   const measurements = await evaluate(cdp, instrumentModalStateExpression());
   const accessibility = await accessibilitySummary(cdp);
   await screenshot(cdp, join(outputDir, filename));
@@ -241,7 +311,6 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     viewport: `${width}x${height}`,
     filename,
     measurements,
-    createFormState,
     accessibility,
   });
 
@@ -272,8 +341,18 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     measurements,
   );
   check(
+    measurements.instrumentActionContainerCount === measurements.instrumentActionMenuTriggerCount,
+    "Issue 556 instrument actions are not consolidated into one three-dot menu per instrument",
+    measurements,
+  );
+  check(
+    measurements.visibleLegacyInstrumentActionCount === 0,
+    "Issue 556 still exposes legacy instrument action icons",
+    measurements,
+  );
+  check(
     measurements.minimumInstrumentActionTarget >= 40,
-    "Issue 535 instrument actions are smaller than 40px",
+    "Issue 535 instrument action triggers are smaller than 40px",
     measurements,
   );
   check(
@@ -286,18 +365,6 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     "Issue 535 instrument modal is absent from the accessibility tree",
     accessibility,
   );
-  if (createFormState.available) {
-    check(
-      createFormState.visible,
-      "Issue 535 Add instrument action did not reveal the form",
-      createFormState,
-    );
-    check(
-      createFormState.focusedInsideForm,
-      "Issue 535 Add instrument action did not move focus into the form",
-      createFormState,
-    );
-  }
 
   await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
@@ -306,13 +373,13 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     cdp,
     `(() => ({
       open: Boolean(document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]')),
-      focusRestored: document.activeElement?.matches?.('[data-view-instruments]') === true,
+      focusRestored: document.activeElement?.matches?.('.card-account-item .action-menu-trigger') === true,
     }))()`,
   );
   check(!closeState.open, "Issue 535 instrument modal did not close with Escape", closeState);
   check(
     closeState.focusRestored,
-    "Issue 535 did not restore focus after closing instruments",
+    "Issue 556 did not restore focus to the card action-menu trigger",
     closeState,
   );
 }
@@ -406,36 +473,46 @@ async function verifyKeyboardTabsAndFilterPersistence(cdp) {
 
 async function verifyConfirmationCancellation(cdp) {
   await activateCards(cdp);
+  const instrumentDialogOpened = await openFirstInstrumentDialog(cdp);
+  if (!instrumentDialogOpened) {
+    check(false, "Issue 556 has no instrument dialog available for confirmation validation", {});
+    return;
+  }
+  await sleep(160);
+
   const opened = await evaluate(
     cdp,
     `(() => {
-      const instrumentsTrigger = document.querySelector('[data-tab-panel="cards"]:not([hidden]) [data-view-instruments]');
-      if (!instrumentsTrigger) return false;
-      instrumentsTrigger.click();
-      const instrumentsDialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
-      const forms = instrumentsDialog ? Array.from(instrumentsDialog.querySelectorAll('form[data-confirm]')) : [];
-      const form = forms.find((candidate) => {
-        const candidateTrigger = candidate.querySelector('button[type="submit"]:not([disabled])');
-        const rect = candidateTrigger?.getBoundingClientRect();
-        return Boolean(rect && rect.width > 0 && rect.height > 0);
-      });
-      const trigger = form?.querySelector('button[type="submit"]:not([disabled])');
-      if (!form || !trigger) return false;
+      const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
+      const triggers = Array.from(dialog?.querySelectorAll('.instrument-actions .action-menu-trigger') || []);
+      const trigger = triggers.find((candidate) =>
+        candidate.parentElement?.querySelector('form[data-confirm] .action-menu-item:not([disabled])')
+      );
+      if (!trigger) return false;
+      trigger.click();
+      const form = trigger.parentElement?.querySelector('form[data-confirm]');
+      const action = form?.querySelector('.action-menu-item:not([disabled])');
+      if (!form || !action) return false;
       window.__issue535OriginalFetch = window.fetch;
       window.__issue535FetchCount = 0;
       window.fetch = (...args) => {
         window.__issue535FetchCount += 1;
         return window.__issue535OriginalFetch(...args);
       };
-      form.requestSubmit(trigger);
+      action.click();
       return true;
     })()`,
   );
   if (!opened) {
-    check(false, "Issue 535 has no destructive action available for confirmation validation", {});
+    check(
+      false,
+      "Issue 556 has no destructive instrument action available in a three-dot menu",
+      {},
+    );
     return;
   }
   await sleep(120);
+
   const openState = await evaluate(
     cdp,
     `(() => {
@@ -458,11 +535,12 @@ async function verifyConfirmationCancellation(cdp) {
       const result = {
         requestCount: window.__issue535FetchCount,
         open: Boolean(document.querySelector('dialog.confirm-dialog[open]')),
-        focusRestored: document.activeElement?.closest?.('form[data-confirm]') !== null,
+        focusRestored: document.activeElement?.matches?.('.instrument-actions .action-menu-trigger') === true,
       };
       if (window.__issue535OriginalFetch) window.fetch = window.__issue535OriginalFetch;
       delete window.__issue535OriginalFetch;
       delete window.__issue535FetchCount;
+      document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]')?.close();
       return result;
     })()`,
   );
@@ -480,7 +558,11 @@ async function verifyConfirmationCancellation(cdp) {
   );
   check(cancelState.requestCount === 0, "Issue 535 Cancel sent an API request", cancelState);
   check(!cancelState.open, "Issue 535 confirmation stayed open after Cancel", cancelState);
-  check(cancelState.focusRestored, "Issue 535 confirmation did not restore focus", cancelState);
+  check(
+    cancelState.focusRestored,
+    "Issue 556 confirmation did not restore focus to the three-dot trigger",
+    cancelState,
+  );
 }
 
 async function accessibilitySummary(cdp) {
@@ -491,28 +573,33 @@ async function accessibilitySummary(cdp) {
     tabCount: nodes.filter((node) => node.role?.value === "tab").length,
     dialogCount: nodes.filter((node) => node.role?.value === "dialog").length,
     buttonCount: nodes.filter((node) => node.role?.value === "button").length,
+    menuCount: nodes.filter((node) => node.role?.value === "menu").length,
+    menuItemCount: nodes.filter((node) => node.role?.value === "menuitem").length,
   };
 }
 
-function pageStateExpression() {
+function pageStateExpression(expectedTab) {
   return `(() => {
     const root = document.documentElement;
+    const panel = document.querySelector('[data-tab-panel="${expectedTab}"]:not([hidden])');
     const action = document.querySelector('[data-context-action]');
-    const visibleActionButtons = Array.from(document.querySelectorAll('.item-actions button')).filter((button) => {
-      const rect = button.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
-    });
-    const actionSizes = visibleActionButtons.map((button) => {
+    const actionContainers = Array.from(panel?.querySelectorAll('.item-actions') || []);
+    const triggers = actionContainers.map((container) => container.querySelector(':scope > .action-menu > .action-menu-trigger')).filter(Boolean);
+    const triggerSizes = triggers.map((button) => {
       const rect = button.getBoundingClientRect();
       return Math.min(rect.width, rect.height);
     });
+    const visibleLegacyActions = actionContainers.flatMap((container) =>
+      Array.from(container.querySelectorAll(':scope > button, :scope > form button'))
+    ).filter((button) => {
+      const rect = button.getBoundingClientRect();
+      const style = getComputedStyle(button);
+      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+    });
     const status = document.querySelector('[data-master-status]');
-    const cardRows = Array.from(document.querySelectorAll('[data-tab-panel="cards"] > .master-list > .card-account-item, [data-tab-panel="cards"] .master-list > .card-account-item'));
+    const cardRows = Array.from(document.querySelectorAll('[data-tab-panel="cards"] .card-account-item'));
     const cdiActions = Array.from(document.querySelectorAll('[data-account-remuneration-action]'));
     const enabledCdiActions = cdiActions.filter((button) => !button.disabled);
-    const tooltipTarget = visibleActionButtons.find((button) => button.dataset.tooltip);
-    if (tooltipTarget) tooltipTarget.focus();
-    const tooltipVisibleOnFocus = !tooltipTarget || document.querySelector('.accounts-cards-tooltip')?.dataset.visible === 'true';
     return {
       selectedTab: document.querySelector('[data-tab][aria-selected="true"]')?.dataset.tab || '',
       contextActionCount: document.querySelectorAll('[data-context-action]').length,
@@ -521,18 +608,19 @@ function pageStateExpression() {
       hasConnectionsTab: Boolean(document.querySelector('#connections-tab')),
       statusOptions: status ? Array.from(status.options).map((option) => option.value) : [],
       globalOverflow: root.scrollWidth > root.clientWidth + 1,
-      minimumActionTarget: actionSizes.length > 0 ? Math.min(...actionSizes) : 0,
+      minimumTriggerTarget: triggerSizes.length > 0 ? Math.min(...triggerSizes) : 0,
+      actionContainerCount: actionContainers.length,
+      actionMenuTriggerCount: triggers.length,
+      visibleLegacyActionCount: visibleLegacyActions.length,
       itemCount: document.querySelectorAll('[data-master-item]').length,
       itemFooterCount: document.querySelectorAll('[data-master-item] > .item-footer').length,
       cardRowCount: cardRows.length,
       inlineInstrumentListCount: document.querySelectorAll('.card-account-item > .item-main .instrument-list').length,
       instrumentDisclosureCount: document.querySelectorAll('.instrument-disclosure').length,
-      viewInstrumentActionCount: document.querySelectorAll('.card-account-item > .item-footer [data-view-instruments], .card-account-item > .item-actions [data-view-instruments]').length,
+      viewInstrumentActionCount: document.querySelectorAll('.card-account-item [data-view-instruments]').length,
       dedicatedInstrumentDialogCount: document.querySelectorAll('dialog[data-card-instruments-dedicated-dialog]').length,
       cdiActionCount: cdiActions.length,
-      cdiActionsIconOnly: cdiActions.every((button) => button.textContent.trim() === '' && Boolean(button.querySelector('svg'))),
       enabledCdiLabelsValid: enabledCdiActions.every((button) => ['Ativar CDI', 'Configurar CDI'].includes(button.getAttribute('aria-label'))),
-      tooltipVisibleOnFocus,
       visiblePanel: document.querySelector('[data-tab-panel]:not([hidden])')?.dataset.tabPanel || '',
     };
   })()`;
@@ -541,15 +629,20 @@ function pageStateExpression() {
 function instrumentModalStateExpression() {
   return `(() => {
     const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
-    if (!dialog) return { open: false, insideViewport: false, title: '', identifiesCard: false, hasInstrumentListOrEmptyState: false, hasAddInstrumentAction: false, minimumInstrumentActionTarget: 0, hasUnmaskedLongNumber: false };
+    if (!dialog) return { open: false };
     const rect = dialog.getBoundingClientRect();
-    const actionButtons = Array.from(dialog.querySelectorAll('.instrument-actions button')).filter((button) => {
-      const buttonRect = button.getBoundingClientRect();
-      return buttonRect.width > 0 && buttonRect.height > 0;
-    });
-    const actionSizes = actionButtons.map((button) => {
+    const actionContainers = Array.from(dialog.querySelectorAll('.instrument-actions'));
+    const triggers = actionContainers.map((container) => container.querySelector(':scope > .action-menu > .action-menu-trigger')).filter(Boolean);
+    const triggerSizes = triggers.map((button) => {
       const buttonRect = button.getBoundingClientRect();
       return Math.min(buttonRect.width, buttonRect.height);
+    });
+    const visibleLegacyActions = actionContainers.flatMap((container) =>
+      Array.from(container.querySelectorAll(':scope > button, :scope > form button'))
+    ).filter((button) => {
+      const buttonRect = button.getBoundingClientRect();
+      const style = getComputedStyle(button);
+      return buttonRect.width > 0 && buttonRect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
     });
     const text = dialog.textContent || '';
     return {
@@ -559,7 +652,10 @@ function instrumentModalStateExpression() {
       identifiesCard: Boolean(dialog.querySelector('.card-instruments-dialog-heading .muted')?.textContent?.trim()),
       hasInstrumentListOrEmptyState: Boolean(dialog.querySelector('.instrument-list, [data-instrument-empty-state]')),
       hasAddInstrumentAction: Boolean(dialog.querySelector('[data-toggle-instrument-create]')),
-      minimumInstrumentActionTarget: actionSizes.length > 0 ? Math.min(...actionSizes) : 40,
+      instrumentActionContainerCount: actionContainers.length,
+      instrumentActionMenuTriggerCount: triggers.length,
+      visibleLegacyInstrumentActionCount: visibleLegacyActions.length,
+      minimumInstrumentActionTarget: triggerSizes.length > 0 ? Math.min(...triggerSizes) : 40,
       hasUnmaskedLongNumber: /(?:\\d[ -]?){12,19}/.test(text.replace(/\\*+/g, '')),
       width: rect.width,
       height: rect.height,
@@ -571,7 +667,7 @@ function instrumentModalStateExpression() {
 function cardCreateModalStateExpression() {
   return `(() => {
     const dialog = document.querySelector('#new-card-dialog[open]');
-    if (!dialog) return { open: false, insideViewport: false, hasCloseButton: false, hasCancelButton: false, hasSinglePrimaryAction: false, groupLabels: [] };
+    if (!dialog) return { open: false };
     const rect = dialog.getBoundingClientRect();
     const submitButtons = dialog.querySelectorAll('button[type="submit"]');
     return {

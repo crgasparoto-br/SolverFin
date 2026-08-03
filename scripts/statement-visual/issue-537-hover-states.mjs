@@ -13,7 +13,7 @@ const scenarios = [];
 const accountsCardsSelectors = {
   primary: "[data-context-action]",
   neutral: "#cards-tab",
-  destructive: ".danger-icon-button:not(:disabled)",
+  destructive: ".action-menu-popover:not([hidden]) .action-menu-item.is-danger:not(:disabled)",
 };
 const statementNeutralSelectors = {
   accountPicker: ".account-select-trigger",
@@ -61,10 +61,20 @@ if (failures.length > 0) {
 async function validateAccountsCardsStates() {
   await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
   await sleep(500);
-  await evaluate(
+  const menuOpened = await evaluate(
     browser.cdp,
-    `document.querySelector(${JSON.stringify(accountsCardsSelectors.destructive)})?.scrollIntoView({ block: "center" })`,
+    `(() => {
+      const triggers = Array.from(document.querySelectorAll('.item-actions .action-menu-trigger'));
+      const trigger = triggers.find((candidate) =>
+        candidate.parentElement?.querySelector('.action-menu-item.is-danger:not(:disabled)')
+      );
+      if (!trigger) return false;
+      trigger.scrollIntoView({ block: "center" });
+      trigger.click();
+      return trigger.getAttribute('aria-expanded') === 'true';
+    })()`,
   );
+  assert.equal(menuOpened, true, "Unable to open an accounts/cards destructive action menu.");
   await sleep(120);
   await enablePseudoStateDomains();
 
@@ -112,8 +122,10 @@ async function validateAccountsCardsStates() {
 
   checkDestructive("focus-visible", focusStyles.destructive);
   check(
-    focusStyles.destructive.boxShadow !== "none",
-    "Issue 537 destructive icon control has no visible keyboard focus ring",
+    focusStyles.destructive.boxShadow !== "none" ||
+      (focusStyles.destructive.outlineStyle !== "none" &&
+        focusStyles.destructive.outlineWidth !== "0px"),
+    "Issue 537 destructive menu action has no visible keyboard focus indicator",
     focusStyles.destructive,
   );
 }
@@ -224,6 +236,8 @@ async function readStyles(selectors) {
           borderColor: style.borderColor,
           boxShadow: style.boxShadow,
           color: style.color,
+          outlineStyle: style.outlineStyle,
+          outlineWidth: style.outlineWidth,
         };
       };
       return Object.fromEntries(
@@ -258,18 +272,13 @@ function isLightNeutral(value) {
 
 function checkDestructive(state, styles) {
   check(
-    styles.backgroundColor === "rgb(254, 226, 226)",
-    `Issue 537 destructive icon control lost its red ${state} surface`,
+    styles.backgroundColor === "rgb(255, 241, 240)",
+    `Issue 537 destructive menu action lost its red ${state} surface`,
     styles,
   );
   check(
-    styles.borderColor === "rgb(254, 202, 202)",
-    `Issue 537 destructive icon control lost its red ${state} border`,
-    styles,
-  );
-  check(
-    styles.color === "rgb(220, 38, 38)",
-    `Issue 537 destructive icon control lost its red ${state} text/icon color`,
+    styles.color === "rgb(143, 29, 21)",
+    `Issue 537 destructive menu action lost its red ${state} text/icon color`,
     styles,
   );
 }

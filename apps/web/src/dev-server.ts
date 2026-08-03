@@ -7,6 +7,7 @@ import { enhanceAccountRemunerationDisclosure } from "./dev-server/account-remun
 import { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
 import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
+import { enhanceAccountsCardsActionMenus } from "./dev-server/accounts-cards-action-menu-enhancement.js";
 import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
@@ -49,6 +50,7 @@ import { renderTransactionsPage } from "./dev-server/transactions-page.js";
 export { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
 export { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 export { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
+export { enhanceAccountsCardsActionMenus } from "./dev-server/accounts-cards-action-menu-enhancement.js";
 export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 export { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
@@ -171,7 +173,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/contas-cartoes" && token) {
     const html = enhanceAccountsCardsTabs(await renderAccountsCardsPage(token));
-    sendHtml(response, 200, standardizeAccountsCardsPage(html));
+    const standardizedHtml = standardizeAccountsCardsPage(html);
+    sendHtml(response, 200, enhanceAccountsCardsActionMenus(standardizedHtml));
     return;
   }
 

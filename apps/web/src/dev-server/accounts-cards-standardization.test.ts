@@ -1,3 +1,4 @@
+// Issue 556: contratos de interface para o menu de três pontos.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -68,8 +69,12 @@ test("preserva contratos do gate visual", () => {
   assert.ok(visualGateSource.includes(expectedRuntimeRegex));
   assert.ok(
     visualGateSource.includes(
-      "const instrumentsDialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');",
+      "const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');",
     ),
   );
-  assert.ok(visualGateSource.includes("rect && rect.width > 0 && rect.height > 0"));
+  assert.ok(visualGateSource.includes(".card-account-item .action-menu-trigger"));
+  assert.ok(
+    visualGateSource.includes("actionMenuTriggerCount === measurements.actionContainerCount"),
+  );
+  assert.ok(visualGateSource.includes("visibleLegacyInstrumentActionCount === 0"));
 });
