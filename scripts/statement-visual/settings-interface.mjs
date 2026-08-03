@@ -288,7 +288,7 @@ async function waitForDialog(cdp) {
     if (open) return;
     await sleep(50);
   }
-  throw new Error(`Settings dialog did not open.");
+  throw new Error("Settings dialog did not open.");
 }
 
 function measurementExpression(section) {
