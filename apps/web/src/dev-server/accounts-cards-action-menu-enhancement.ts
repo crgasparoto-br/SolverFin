@@ -97,6 +97,7 @@ function actionMenuScript(): string {
             window.requestAnimationFrame(focusCurrentTrigger);
           });
           window.setTimeout(() => focusCurrentTrigger(true), 50);
+          window.setTimeout(() => focusCurrentTrigger(true), 75);
           window.setTimeout(() => focusCurrentTrigger(true), 150);
         }
 
