@@ -22,7 +22,7 @@ function accountsCardsPageReceivesAccessibleActionMenus(): void {
 
   assert.match(enhanced, /data-accounts-cards-action-menu-styles/);
   assert.match(enhanced, /data-accounts-cards-action-menu-script/);
-  assert.match(enhanced, /more-vertical/);
+  assert.match(enhanced, /action-menu-trigger/);
   assert.match(enhanced, /aria-haspopup', 'menu'/);
   assert.match(enhanced, /document\.querySelectorAll\('\.item-actions, \.instrument-actions'\)/);
   assert.match(enhanced, /Definir como padrão/);
@@ -30,6 +30,13 @@ function accountsCardsPageReceivesAccessibleActionMenus(): void {
   assert.match(enhanced, /event\.key === 'Escape'/);
   assert.match(enhanced, /event\.key !== 'ArrowDown' && event\.key !== 'ArrowUp'/);
   assert.match(enhanced, /data-action-menu-ready/);
+  assert.match(enhanced, /position: fixed/);
+  assert.match(enhanced, /function positionMenu\(state\)/);
+  assert.match(enhanced, /new MutationObserver\(scheduleActionMenuRefresh\)/);
+  assert.match(enhanced, /document\.addEventListener\('DOMContentLoaded', startActionMenus/);
+  assert.match(enhanced, /dialog\.addEventListener\('close'/);
+  assert.match(enhanced, /form\.setAttribute\('role', 'none'\)/);
+  assert.match(enhanced, /window\.addEventListener\('scroll'/);
   assert.equal(
     enhancedAgain.match(/data-accounts-cards-action-menu-styles/g)?.length,
     1,
