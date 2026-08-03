@@ -5,11 +5,7 @@ import { closePool, getPool } from "./db.js";
 import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import {
-  handleApiRequest,
-  type ApiRequest,
-  type ApiResponse,
-} from "./router.js";
+import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 void main()
   .catch((error: unknown) => {
@@ -24,21 +20,9 @@ async function main(): Promise<void> {
   const suffix = `${Date.now().toString(36)}_${randomUUID().replaceAll("-", "").slice(0, 8)}`;
   const profileA = await createProfile(token, `Auditoria parcelas A ${suffix}`);
   const profileB = await createProfile(token, `Auditoria parcelas B ${suffix}`);
-  const accountA = await createAccount(
-    token,
-    profileA.id,
-    `Conta auditoria A ${suffix}`,
-  );
-  const accountB = await createAccount(
-    token,
-    profileB.id,
-    `Conta auditoria B ${suffix}`,
-  );
-  const categoryB = await createCategory(
-    token,
-    profileB.id,
-    `Categoria auditoria B ${suffix}`,
-  );
+  const accountA = await createAccount(token, profileA.id, `Conta auditoria A ${suffix}`);
+  const accountB = await createAccount(token, profileB.id, `Conta auditoria B ${suffix}`);
+  const categoryB = await createCategory(token, profileB.id, `Categoria auditoria B ${suffix}`);
 
   await validatesCrossProfileReferencesAreNonEnumerating(token, {
     profileAId: profileA.id,
@@ -175,39 +159,29 @@ async function validatesRedactedFailureRollsBackEveryPersistenceSurface(
 
   try {
     const before = await readPersistenceCounts();
-    const failed = await apiRequest(
-      token,
-      "POST",
-      `/api/installments?profileId=${profileId}`,
-      {
-        accountId,
-        kind: "expense",
-        status: "planned",
-        description,
-        plannedOn: "2026-08-31",
-        amountMinor: markerAmount,
-        amountMode: "per_installment",
-        totalInstallments: 2,
-        initialSequenceNumber: 1,
-        idempotencyKey: key,
-      },
-    );
+    const failed = await apiRequest(token, "POST", `/api/installments?profileId=${profileId}`, {
+      accountId,
+      kind: "expense",
+      status: "planned",
+      description,
+      plannedOn: "2026-08-31",
+      amountMinor: markerAmount,
+      amountMode: "per_installment",
+      totalInstallments: 2,
+      initialSequenceNumber: 1,
+      idempotencyKey: key,
+    });
 
     assert.equal(failed.statusCode, 500);
     const body = readBody<{
       error?: { code?: string; message?: string; correlationId?: string };
     }>(failed);
     assert.equal(body.error?.code, "API_UNEXPECTED_ERROR");
-    assert.equal(
-      body.error?.message,
-      "Não foi possível concluir a ação. Tente novamente.",
-    );
+    assert.equal(body.error?.message, "Não foi possível concluir a ação. Tente novamente.");
     assert.match(body.error?.correlationId ?? "", /^corr-/);
 
     const publicResponse = JSON.stringify(body);
-    sensitiveMarkers.forEach((marker) =>
-      assert.equal(publicResponse.includes(marker), false),
-    );
+    sensitiveMarkers.forEach((marker) => assert.equal(publicResponse.includes(marker), false));
 
     const after = await readPersistenceCounts();
     assert.deepEqual(
@@ -278,9 +252,7 @@ async function readPersistenceCounts(): Promise<PersistenceCounts> {
 }
 
 function readPublicErrorContract(response: ApiResponse): PublicErrorContract {
-  const body = readBody<{ error?: { code?: string; message?: string } }>(
-    response,
-  );
+  const body = readBody<{ error?: { code?: string; message?: string } }>(response);
 
   return {
     statusCode: response.statusCode,
@@ -289,10 +261,7 @@ function readPublicErrorContract(response: ApiResponse): PublicErrorContract {
   };
 }
 
-async function createProfile(
-  token: string,
-  name: string,
-): Promise<{ id: string }> {
+async function createProfile(token: string, name: string): Promise<{ id: string }> {
   const response = await apiRequest(token, "POST", "/api/financial-profiles", {
     name,
     kind: "family",
@@ -307,17 +276,12 @@ async function createAccount(
   profileId: string,
   name: string,
 ): Promise<{ id: string }> {
-  const response = await apiRequest(
-    token,
-    "POST",
-    `/api/accounts?profileId=${profileId}`,
-    {
-      name,
-      kind: "checking",
-      currency: "BRL",
-      openingBalanceMinor: 0,
-    },
-  );
+  const response = await apiRequest(token, "POST", `/api/accounts?profileId=${profileId}`, {
+    name,
+    kind: "checking",
+    currency: "BRL",
+    openingBalanceMinor: 0,
+  });
 
   assert.equal(response.statusCode, 201);
   return readBody<{ account: { id: string } }>(response).account;
@@ -328,15 +292,10 @@ async function createCategory(
   profileId: string,
   name: string,
 ): Promise<{ id: string }> {
-  const response = await apiRequest(
-    token,
-    "POST",
-    `/api/categories?profileId=${profileId}`,
-    {
-      name,
-      kind: "expense",
-    },
-  );
+  const response = await apiRequest(token, "POST", `/api/categories?profileId=${profileId}`, {
+    name,
+    kind: "expense",
+  });
 
   assert.equal(response.statusCode, 201);
   return readBody<{ category: { id: string } }>(response).category;
