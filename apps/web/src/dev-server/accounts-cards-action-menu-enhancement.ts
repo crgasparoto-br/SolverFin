@@ -71,7 +71,11 @@ function actionMenuScript(): string {
           if (!state?.trigger?.isConnected || typeof state.trigger.focus !== 'function') return;
           state.trigger.focus({ preventScroll: true });
           window.requestAnimationFrame(() => {
-            if (state.trigger.isConnected) state.trigger.focus({ preventScroll: true });
+            if (!state.trigger.isConnected) return;
+            state.trigger.focus({ preventScroll: true });
+            window.requestAnimationFrame(() => {
+              if (state.trigger.isConnected) state.trigger.focus({ preventScroll: true });
+            });
           });
         }
 
@@ -262,6 +266,7 @@ function actionMenuScript(): string {
             const currentIndex = items.indexOf(document.activeElement);
             if (event.key === 'Escape') {
               event.preventDefault();
+              event.stopPropagation();
               closeMenu(state, { restoreFocus: true });
               return;
             }
