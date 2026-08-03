@@ -101,6 +101,10 @@ function actionMenuScript(): string {
           window.setTimeout(() => focusCurrentTrigger(true), 150);
         }
 
+        function menuOwnsFocus(state) {
+          return Boolean(state?.menu?.contains(document.activeElement));
+        }
+
         function closeMenu(state, options) {
           if (!state) return;
           state.menu.hidden = true;
@@ -181,6 +185,8 @@ function actionMenuScript(): string {
             : '';
           button.setAttribute('aria-label', label);
           button.dataset.actionMenuLabel = label;
+          button.removeAttribute('title');
+          delete button.dataset.tooltip;
           if (button.innerHTML !== iconHtml) button.innerHTML = iconHtml;
         }
 
@@ -370,10 +376,12 @@ function actionMenuScript(): string {
         });
 
         window.addEventListener('resize', () => {
-          if (openMenuState) closeMenu(openMenuState, { restoreFocus: false });
+          const state = openMenuState;
+          if (state) closeMenu(state, { restoreFocus: menuOwnsFocus(state) });
         });
         window.addEventListener('scroll', () => {
-          if (openMenuState) closeMenu(openMenuState, { restoreFocus: false });
+          const state = openMenuState;
+          if (state) closeMenu(state, { restoreFocus: menuOwnsFocus(state) });
         }, true);
       })();
     </script>`;
