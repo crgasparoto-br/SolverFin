@@ -67,15 +67,21 @@ function actionMenuScript(): string {
           return Array.from(menu.querySelectorAll('[role="menuitem"]')).filter((item) => !item.disabled);
         }
 
+        function focusTrigger(state) {
+          if (!state?.trigger?.isConnected || typeof state.trigger.focus !== 'function') return;
+          state.trigger.focus({ preventScroll: true });
+          window.requestAnimationFrame(() => {
+            if (state.trigger.isConnected) state.trigger.focus({ preventScroll: true });
+          });
+        }
+
         function closeMenu(state, options) {
           if (!state) return;
           state.menu.hidden = true;
           state.menu.style.visibility = '';
           state.trigger.setAttribute('aria-expanded', 'false');
           if (openMenuState === state) openMenuState = null;
-          if (options && options.restoreFocus && typeof state.trigger.focus === 'function') {
-            state.trigger.focus();
-          }
+          if (options && options.restoreFocus) focusTrigger(state);
         }
 
         function positionMenu(state) {
@@ -187,7 +193,7 @@ function actionMenuScript(): string {
           button.dataset.actionMenuNormalized = 'true';
           button.classList.remove('icon-button', 'danger-icon-button', 'cdi-action-button');
           button.classList.add('action-menu-item');
-          if (destructive) button.classList.add('is-danger');
+          if (destructive) button.classList.add('is-danger', 'danger-menu-item');
           button.setAttribute('role', 'menuitem');
           renderMenuItem(button, form);
           observeDynamicActionLabel(button, form);
@@ -196,7 +202,7 @@ function actionMenuScript(): string {
             const dialog = dialogForAction(button, form);
             if (dialog) {
               dialog.addEventListener('close', () => {
-                window.setTimeout(() => state.trigger.focus(), 0);
+                window.setTimeout(() => focusTrigger(state), 0);
               }, { once: true });
             }
             if (openMenuState) closeMenu(openMenuState, { restoreFocus: !dialog });
