@@ -35,16 +35,14 @@ jobs:
 
           path = Path("apps/web/src/dev-server/settings-page.ts")
           source = path.read_text()
-          old = '''          input.toggleAttribute("aria-invalid", invalid);
-          if (error) error.hidden = !invalid;'''
-          new = '''          if (invalid) input.setAttribute("aria-invalid", "true");
-          else input.removeAttribute("aria-invalid");
-          if (error) error.hidden = !invalid;'''
+          old = 'input.toggleAttribute("aria-invalid", invalid);'
+          new = '''if (invalid) input.setAttribute("aria-invalid", "true");
+          else input.removeAttribute("aria-invalid");'''
           if old not in source:
-              if new in source:
+              if 'input.setAttribute("aria-invalid", "true")' in source:
                   print("ARIA invalid state already repaired.")
               else:
-                  raise SystemExit("Expected decimal validation block was not found.")
+                  raise SystemExit("Expected decimal validation call was not found.")
           else:
               source = source.replace(old, new, 1)
           path.write_text(source)
