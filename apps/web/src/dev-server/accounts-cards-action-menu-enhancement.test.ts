@@ -31,6 +31,8 @@ function accountsCardsPageReceivesAccessibleActionMenus(): void {
   assert.match(enhanced, /event\.key !== 'ArrowDown' && event\.key !== 'ArrowUp'/);
   assert.match(enhanced, /data-action-menu-ready/);
   assert.match(enhanced, /position: fixed/);
+  assert.match(enhanced, /\.action-menu-popover \.action-menu-item/);
+  assert.match(enhanced, /const actionIcons = new WeakMap\(\)/);
   assert.match(enhanced, /function positionMenu\(state\)/);
   assert.match(enhanced, /new MutationObserver\(scheduleActionMenuRefresh\)/);
   assert.match(enhanced, /document\.addEventListener\('DOMContentLoaded', startActionMenus/);
