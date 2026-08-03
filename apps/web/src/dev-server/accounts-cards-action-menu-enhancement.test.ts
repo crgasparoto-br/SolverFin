@@ -35,12 +35,16 @@ function accountsCardsPageReceivesAccessibleActionMenus(): void {
   assert.match(enhanced, /const actionIcons = new WeakMap\(\)/);
   assert.match(enhanced, /content: attr\(data-action-menu-label\)/);
   assert.match(enhanced, /button\.dataset\.actionMenuLabel = label/);
+  assert.match(enhanced, /function focusTrigger\(state\)/);
+  assert.match(enhanced, /focus\(\{ preventScroll: true \}\)/);
   assert.match(enhanced, /function positionMenu\(state\)/);
   assert.match(enhanced, /new MutationObserver\(scheduleActionMenuRefresh\)/);
   assert.match(enhanced, /document\.addEventListener\('DOMContentLoaded', startActionMenus/);
   assert.match(enhanced, /dialog\.addEventListener\('close'/);
+  assert.match(enhanced, /window\.setTimeout\(\(\) => focusTrigger\(state\), 0\)/);
   assert.match(enhanced, /form && form\.dataset\.confirm/);
   assert.match(enhanced, /restoreFocus: !dialog/);
+  assert.match(enhanced, /classList\.add\('is-danger', 'danger-menu-item'\)/);
   assert.match(enhanced, /form\.setAttribute\('role', 'none'\)/);
   assert.match(enhanced, /window\.addEventListener\('scroll'/);
   assert.equal(
