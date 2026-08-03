@@ -35,7 +35,7 @@ Regras mostram prioridade, condicoes, acoes sugeridas e explicacao em blocos de 
 
 Falhas de contas e categorias degradam apenas o seletor correspondente. Falha da listagem de regras mostra um erro com acao para tentar novamente, nao mostra estado vazio e deixa `Aplicar regras` desabilitado.
 
-A validacao em Chrome percorre a navegacao entre secoes com `Tab`, `Shift+Tab` e `Enter`, verifica foco visivel e abre e fecha os dialogos com `Enter` e `Escape`, confirmando o retorno do foco ao acionador.
+A validacao em Chrome percorre a navegacao entre secoes com `Tab`, `Shift+Tab` e `Enter`, verifica foco visivel e abre e fecha os dialogos com `Enter` e `Escape`, confirmando o retorno do foco ao acionador. O cenario de regras cria dados ativos e inativos representativos, incluindo conteudo longo, referencias conhecidas e desconhecidas, e valida a composicao preenchida em desktop, tablet e mobile. O controle de texto a 200% aplica a escala depois da ultima navegacao, confirma o tamanho computado no instante da captura e rejeita evidencia identica ao cenario sem ampliacao. O formulario decimal tambem e exercitado no navegador, comprovando `10,50` como `1050` no payload e bloqueando `10,501` sem perder o valor digitado.
 
 ## Pendencias intencionais
 
