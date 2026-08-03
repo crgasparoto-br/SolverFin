@@ -8,6 +8,7 @@ Este documento registra quais acoes de manutencao ficam visiveis nas telas naveg
 - Acoes destrutivas ou financeiras relevantes exigem confirmacao simples.
 - A tela de lancamentos permanece como **Extrato da conta**, com resumo, agrupamento por data e formulario de novo lancamento preservados.
 - Apos edicao ou acao de dominio bem-sucedida, a tela recarrega para refletir o estado retornado pela API.
+- Em telas divididas por query string, o recarregamento preserva a secao selecionada no endereco atual.
 - Erros exibem mensagem amigavel retornada pela API, sem expor detalhes internos.
 
 ## Cobertura por tela
@@ -19,6 +20,20 @@ Este documento registra quais acoes de manutencao ficam visiveis nas telas naveg
 | Extrato da conta   | Listar movimentacoes agrupadas por data, criar novo lancamento, abrir detalhe, editar descricao/status/conta/categoria e cancelar/estornar lancamento nao cancelado.                                                                                                                                |
 | Cartoes de Credito | Selecionar cartao e fatura (navegacao por periodo), registrar/editar compra em modal, filtrar compras por busca e conciliacao, fechar fatura aberta e lancar pagamento de fatura nao paga/cancelada com confirmacao. Cadastro, edicao, bloqueio e arquivamento de cartao ficam em Contas e Cartoes. |
 | Orcamentos         | Listar, criar, abrir detalhe, editar categoria/periodo/valor, consultar uso e arquivar orcamento ativo.                                                                                                                                                                                             |
+| Configuracoes      | Alternar por links GET entre perfis financeiros e regras automaticas; criar, editar e arquivar perfis; abrir Dashboard, Contas e Extrato no perfil; criar, inativar e aplicar regras; manter a secao atual apos as acoes.                                                                             |
+
+## Configuracoes por secao
+
+A rota `/configuracoes` usa uma unica pagina com o titulo principal `Configuracoes` e duas secoes renderizadas no servidor:
+
+- `/configuracoes?section=profiles`: perfis financeiros, padrao quando o parametro estiver ausente ou invalido;
+- `/configuracoes?section=rules`: regras automaticas.
+
+Os links possuem `aria-current` na secao ativa e funcionam sem JavaScript. Perfis mostram separadamente os estados `Em uso`, `Ativo` e `Arquivado`, preservando os atalhos para Dashboard, Contas e Extrato.
+
+Regras mostram prioridade, condicoes, acoes sugeridas e explicacao em blocos de leitura. Valores sao exibidos com duas casas decimais, sem simbolo de moeda. O formulario converte valores decimais para os campos minoritarios da API e impede envio quando a entrada possui formato invalido ou mais de duas casas decimais.
+
+Falhas de contas e categorias degradam apenas o seletor correspondente. Falha da listagem de regras mostra erro com tentativa novamente, nao mostra estado vazio e deixa `Aplicar regras` desabilitado.
 
 ## Pendencias intencionais
 
