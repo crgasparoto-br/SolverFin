@@ -242,10 +242,19 @@ async function verifyRowActionMenu(cdp, expectedTab, width, height) {
     cdp,
     `(() => {
       const panel = document.querySelector('[data-tab-panel="${expectedTab}"]:not([hidden])');
-      const trigger = panel?.querySelector('.item-actions .action-menu-trigger');
+      const activeElement = document.activeElement;
+      const trigger = Array.from(panel?.querySelectorAll('.item-actions .action-menu-trigger') || []).find(
+        (candidate) => candidate.getAttribute('aria-label') === ${JSON.stringify(opened.triggerLabel)},
+      );
       return {
         expanded: trigger?.getAttribute('aria-expanded') || '',
-        focusRestored: document.activeElement === trigger,
+        focusRestored:
+          activeElement?.matches?.('.action-menu-trigger') === true &&
+          activeElement.getAttribute('aria-label') === ${JSON.stringify(opened.triggerLabel)},
+        activeTag: activeElement?.tagName || '',
+        activeClass: activeElement?.className || '',
+        activeLabel: activeElement?.getAttribute?.('aria-label') || '',
+        triggerConnected: Boolean(trigger?.isConnected),
       };
     })()`,
   );
