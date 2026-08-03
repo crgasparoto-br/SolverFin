@@ -282,7 +282,8 @@ function actionMenuScript(): string {
                 (keyupEvent) => {
                   if (keyupEvent.key !== 'Escape') return;
                   keyupEvent.preventDefault();
-                  focusTrigger(state);
+                  keyupEvent.stopPropagation();
+                  window.setTimeout(() => focusTrigger(state), 0);
                 },
                 { capture: true, once: true },
               );
