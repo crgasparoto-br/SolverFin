@@ -6,6 +6,7 @@ on:
       - feat/558-configuracoes-secoes-regras-legiveis
     paths:
       - .github/workflows/remediate-issue-558.yml
+      - scripts/remediate-issue-558.py
 
 permissions:
   contents: write
@@ -28,7 +29,7 @@ jobs:
           git diff --check
           test ! -e scripts/remediate-issue-558.py
           test ! -e .github/workflows/remediate-issue-558.yml
-          git diff -- apps/web/src/dev-server/settings-page.ts apps/web/src/dev-server/settings-page.test.ts scripts/statement-visual/settings-interface.mjs
+          git diff -- apps/web/src/dev-server/settings-page.ts apps/web/src/dev-server/settings-page.test.ts scripts/statement-visual/settings-interface.mjs docs/AUTOMATION_RULES.md docs/WEB_MAINTENANCE_COVERAGE.md
 
       - name: Commit remediation
         run: |
