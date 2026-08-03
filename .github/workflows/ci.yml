@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -41,8 +41,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -51,61 +49,13 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
-      - name: Align focus assertion with the opened trigger and restore workflow
-        env:
-          HEAD_BRANCH: ${{ github.head_ref }}
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const file = 'scripts/statement-visual/accounts-cards-interface.mjs';
-          const source = fs.readFileSync(file, 'utf8');
-          const before = `  const closed = await evaluate(
-    cdp,
-    \`(() => {
-      const panel = document.querySelector('[data-tab-panel="\${expectedTab}"]:not([hidden])');
-      const trigger = panel?.querySelector('.item-actions .action-menu-trigger');
-      return {
-        expanded: trigger?.getAttribute('aria-expanded') || '',
-        focusRestored: document.activeElement === trigger,
-      };
-    })()\`,
-  );`;
-          const after = `  const closed = await evaluate(
-    cdp,
-    \`(() => {
-      const panel = document.querySelector('[data-tab-panel="\${expectedTab}"]:not([hidden])');
-      const activeElement = document.activeElement;
-      const trigger = Array.from(panel?.querySelectorAll('.item-actions .action-menu-trigger') || []).find(
-        (candidate) => candidate.getAttribute('aria-label') === \${JSON.stringify(opened.triggerLabel)},
-      );
-      return {
-        expanded: trigger?.getAttribute('aria-expanded') || '',
-        focusRestored:
-          activeElement?.matches?.('.action-menu-trigger') === true &&
-          activeElement.getAttribute('aria-label') === \${JSON.stringify(opened.triggerLabel)},
-        activeTag: activeElement?.tagName || '',
-        activeClass: activeElement?.className || '',
-        activeLabel: activeElement?.getAttribute?.('aria-label') || '',
-        triggerConnected: Boolean(trigger?.isConnected),
-      };
-    })()\`,
-  );`;
-          if (!source.includes(before)) throw new Error('focus assertion block not found');
-          fs.writeFileSync(file, source.replace(before, after));
-          NODE
-          npx prettier scripts/statement-visual/accounts-cards-interface.mjs --write
-          git fetch origin main --depth=1
-          git show origin/main:.github/workflows/ci.yml > .github/workflows/ci.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/ci.yml scripts/statement-visual/accounts-cards-interface.mjs
-          if ! git diff --cached --quiet; then
-            git commit -m "test: validar foco pelo acionador realmente aberto"
-            git push origin HEAD:"${HEAD_BRANCH}"
-          fi
 
       - name: Check environment example
         run: npm run env:check
@@ -173,6 +123,11 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
+
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
