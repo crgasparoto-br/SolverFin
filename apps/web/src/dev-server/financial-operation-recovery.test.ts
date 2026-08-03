@@ -27,7 +27,7 @@ test("keeps the modal close action usable during ambiguous recovery", () => {
   )?.[1];
 
   assert.ok(closeGuard, "missing focused modal-close recovery guard");
-  assert.match(script, /\.close-form button\[type=\"submit\"\]/);
+  assert.match(script, /\.close-form button\[type="submit"\]/);
   assert.match(closeGuard, /closeButton\.disabled = false/);
   assert.match(closeGuard, /dataset\.financialRecoveryCloseAvailable = "true"/);
   assert.match(script, /lockInstallmentFormForRecovery[\s\S]*keepModalCloseAvailable\(\)/);
