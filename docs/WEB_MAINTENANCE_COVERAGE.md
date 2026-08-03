@@ -20,7 +20,7 @@ Este documento registra quais acoes de manutencao ficam visiveis nas telas naveg
 | Extrato da conta   | Listar movimentacoes agrupadas por data, criar novo lancamento, abrir detalhe, editar descricao/status/conta/categoria e cancelar/estornar lancamento nao cancelado.                                                                                                                                |
 | Cartoes de Credito | Selecionar cartao e fatura (navegacao por periodo), registrar/editar compra em modal, filtrar compras por busca e conciliacao, fechar fatura aberta e lancar pagamento de fatura nao paga/cancelada com confirmacao. Cadastro, edicao, bloqueio e arquivamento de cartao ficam em Contas e Cartoes. |
 | Orcamentos         | Listar, criar, abrir detalhe, editar categoria/periodo/valor, consultar uso e arquivar orcamento ativo.                                                                                                                                                                                             |
-| Configuracoes      | Alternar por links GET entre perfis financeiros e regras automaticas; criar, editar e arquivar perfis; abrir Dashboard, Contas e Extrato no perfil; criar, inativar e aplicar regras; manter a secao atual apos as acoes.                                                                             |
+| Configuracoes      | Alternar por links GET entre perfis financeiros e regras automaticas; criar, editar e arquivar perfis; abrir Dashboard, Contas e Extrato no perfil; criar, inativar e aplicar regras; manter a secao atual apos as acoes.                                                                           |
 
 ## Configuracoes por secao
 
