@@ -26,7 +26,7 @@ function actionMenuStyles(): string {
       .action-menu-trigger:hover:not(:disabled),
       .action-menu-trigger:focus-visible,
       .action-menu-trigger[aria-expanded="true"] { background: #f1f5f9; border-color: #94a3b8; color: #0f172a; }
-      .action-menu-popover { background: #fff; border: 1px solid #d8e2e8; border-radius: 10px; box-shadow: 0 14px 32px rgba(15, 23, 42, .16); display: grid; gap: 2px; min-width: 220px; padding: 6px; position: absolute; right: 0; top: calc(100% + 6px); z-index: 1200; }
+      .action-menu-popover { background: #fff; border: 1px solid #d8e2e8; border-radius: 10px; box-shadow: 0 14px 32px rgba(15, 23, 42, .16); display: grid; gap: 2px; left: 0; min-width: 220px; padding: 6px; position: fixed; top: 0; z-index: 1200; }
       .action-menu-popover[hidden] { display: none !important; }
       .action-menu-popover form { display: block; margin: 0; width: 100%; }
       .action-menu-item { align-items: center; background: transparent; border: 0; border-radius: 7px; color: #334155; display: flex; font: inherit; font-size: .8125rem; font-weight: 650; gap: 10px; height: auto !important; justify-content: flex-start; line-height: 1.25; min-height: 40px !important; min-width: 0 !important; padding: 8px 10px !important; text-align: left; white-space: nowrap; width: 100% !important; }
@@ -56,8 +56,10 @@ function actionMenuScript(): string {
         window.__solverFinAccountsCardsActionMenus = true;
 
         const moreIcon = ${moreIcon};
+        const menuStates = new WeakMap();
         let menuSequence = 0;
         let openMenuState = null;
+        let refreshScheduled = false;
 
         function enabledItems(menu) {
           return Array.from(menu.querySelectorAll('[role="menuitem"]')).filter((item) => !item.disabled);
@@ -66,6 +68,7 @@ function actionMenuScript(): string {
         function closeMenu(state, options) {
           if (!state) return;
           state.menu.hidden = true;
+          state.menu.style.visibility = '';
           state.trigger.setAttribute('aria-expanded', 'false');
           if (openMenuState === state) openMenuState = null;
           if (options && options.restoreFocus && typeof state.trigger.focus === 'function') {
@@ -73,9 +76,29 @@ function actionMenuScript(): string {
           }
         }
 
+        function positionMenu(state) {
+          const gutter = 8;
+          const offset = 6;
+          const triggerRect = state.trigger.getBoundingClientRect();
+          const menuWidth = state.menu.offsetWidth;
+          const menuHeight = state.menu.offsetHeight;
+          const maxLeft = Math.max(gutter, window.innerWidth - menuWidth - gutter);
+          const preferredLeft = triggerRect.right - menuWidth;
+          const left = Math.min(Math.max(gutter, preferredLeft), maxLeft);
+          const below = triggerRect.bottom + offset;
+          const above = triggerRect.top - menuHeight - offset;
+          const top = below + menuHeight <= window.innerHeight - gutter || above < gutter ? below : above;
+
+          state.menu.style.left = Math.round(left) + 'px';
+          state.menu.style.top = Math.round(Math.max(gutter, top)) + 'px';
+          state.menu.style.visibility = '';
+        }
+
         function openMenu(state, focusTarget) {
           if (openMenuState && openMenuState !== state) closeMenu(openMenuState, { restoreFocus: false });
+          state.menu.style.visibility = 'hidden';
           state.menu.hidden = false;
+          positionMenu(state);
           state.trigger.setAttribute('aria-expanded', 'true');
           openMenuState = state;
           const items = enabledItems(state.menu);
@@ -98,7 +121,7 @@ function actionMenuScript(): string {
           if (dialogId.startsWith('new-card-instrument-dialog-')) return 'Adicionar instrumento';
           if (button.hasAttribute('data-view-instruments')) return 'Ver instrumentos';
           if (button.hasAttribute('data-account-remuneration-action')) {
-            return button.getAttribute('aria-label') || button.title || 'Configurar remuneração pelo CDI';
+            return button.title || button.getAttribute('aria-label') || 'Configurar remuneração pelo CDI';
           }
           if (apiPath.endsWith('/default-instrument')) return 'Definir como padrão';
           if (apiPath.endsWith('/archive')) return 'Arquivar';
@@ -112,49 +135,77 @@ function actionMenuScript(): string {
           if (status) container.appendChild(status);
         }
 
-        function normalizeAction(action, menu, container) {
+        function renderMenuItem(button, form) {
+          const label = inferActionLabel(button, form);
+          const iconMarkup = button.dataset.actionMenuIcon ||
+            (button.querySelector('svg') ? button.querySelector('svg').outerHTML : '');
+          button.dataset.actionMenuIcon = iconMarkup;
+          button.setAttribute('aria-label', label);
+          button.innerHTML =
+            (iconMarkup ? '<span class="action-menu-item-icon" aria-hidden="true">' + iconMarkup + '</span>' : '') +
+            '<span>' + label + '</span>';
+        }
+
+        function observeDynamicActionLabel(button, form) {
+          if (!button.hasAttribute('data-account-remuneration-action') || button.dataset.actionMenuLabelObserved === 'true') return;
+          button.dataset.actionMenuLabelObserved = 'true';
+          let rendering = false;
+          const observer = new MutationObserver(() => {
+            if (rendering) return;
+            rendering = true;
+            renderMenuItem(button, form);
+            queueMicrotask(() => { rendering = false; });
+          });
+          observer.observe(button, { attributes: true, attributeFilter: ['title'], childList: true, subtree: true });
+        }
+
+        function dialogForAction(button) {
+          const dialogId = String(button.dataset.openDialog || '');
+          if (dialogId) return document.getElementById(dialogId);
+          if (button.hasAttribute('data-account-remuneration-action')) {
+            return button.closest('[data-master-item]')?.querySelector('[data-account-remuneration-dialog]') || null;
+          }
+          return null;
+        }
+
+        function normalizeAction(action, state, container) {
           const form = action.matches && action.matches('form') ? action : null;
           const button = form ? form.querySelector('button') : action;
-          if (!button || !button.matches('button')) return false;
+          if (!button || !button.matches('button') || button.dataset.actionMenuNormalized === 'true') return false;
 
-          const label = inferActionLabel(button, form);
-          const iconMarkup = button.querySelector('svg') ? button.querySelector('svg').outerHTML : '';
           const destructive = button.classList.contains('danger-icon-button') ||
             String(form && form.dataset.apiMethod || '').toUpperCase() === 'DELETE' ||
             String(form && form.dataset.apiPath || '').endsWith('/archive');
 
+          button.dataset.actionMenuNormalized = 'true';
           button.classList.remove('icon-button', 'danger-icon-button', 'cdi-action-button');
           button.classList.add('action-menu-item');
           if (destructive) button.classList.add('is-danger');
           button.setAttribute('role', 'menuitem');
-          button.setAttribute('aria-label', label);
-          button.removeAttribute('title');
-          button.innerHTML =
-            (iconMarkup ? '<span class="action-menu-item-icon" aria-hidden="true">' + iconMarkup + '</span>' : '') +
-            '<span>' + label + '</span>';
+          renderMenuItem(button, form);
+          observeDynamicActionLabel(button, form);
 
           button.addEventListener('click', () => {
+            const dialog = dialogForAction(button);
+            if (dialog) {
+              dialog.addEventListener('close', () => {
+                window.setTimeout(() => state.trigger.focus(), 0);
+              }, { once: true });
+            }
             if (openMenuState) closeMenu(openMenuState, { restoreFocus: false });
           }, { capture: true });
 
           if (form) {
             extractStatus(form, container);
-            menu.appendChild(form);
+            form.setAttribute('role', 'none');
+            state.menu.appendChild(form);
           } else {
-            menu.appendChild(button);
+            state.menu.appendChild(button);
           }
           return true;
         }
 
-        function buildActionMenu(container) {
-          if (container.dataset.actionMenuReady === 'true') return;
-
-          const actions = Array.from(container.children).filter((child) => {
-            if (child.matches && child.matches('[data-form-status]')) return false;
-            return child.matches && (child.matches('button') || child.matches('form'));
-          });
-          if (actions.length === 0) return;
-
+        function createMenuState(container) {
           menuSequence += 1;
           const menuId = 'accounts-cards-action-menu-' + menuSequence;
           const wrapper = document.createElement('div');
@@ -177,12 +228,10 @@ function actionMenuScript(): string {
           menu.hidden = true;
 
           const state = { wrapper, trigger, menu };
-          actions.forEach((action) => normalizeAction(action, menu, container));
-          if (menu.querySelectorAll('[role="menuitem"]').length === 0) return;
-
           wrapper.append(trigger, menu);
           container.prepend(wrapper);
           container.dataset.actionMenuReady = 'true';
+          menuStates.set(container, state);
 
           trigger.addEventListener('click', () => {
             if (menu.hidden) openMenu(state, 'first');
@@ -218,9 +267,45 @@ function actionMenuScript(): string {
                   : (currentIndex - 1 + items.length) % items.length;
             items[nextIndex].focus();
           });
+
+          return state;
         }
 
-        document.querySelectorAll('.item-actions, .instrument-actions').forEach(buildActionMenu);
+        function buildActionMenu(container) {
+          const actions = Array.from(container.children).filter((child) => {
+            if (!child.matches || child.matches('[data-form-status], .action-menu')) return false;
+            return child.matches('button') || child.matches('form');
+          });
+          if (actions.length === 0 && !menuStates.has(container)) return;
+
+          const state = menuStates.get(container) || createMenuState(container);
+          actions.forEach((action) => normalizeAction(action, state, container));
+        }
+
+        function wireActionMenus() {
+          document.querySelectorAll('.item-actions, .instrument-actions').forEach(buildActionMenu);
+        }
+
+        function scheduleActionMenuRefresh() {
+          if (refreshScheduled) return;
+          refreshScheduled = true;
+          queueMicrotask(() => {
+            refreshScheduled = false;
+            wireActionMenus();
+          });
+        }
+
+        function startActionMenus() {
+          wireActionMenus();
+          const actionObserver = new MutationObserver(scheduleActionMenuRefresh);
+          actionObserver.observe(document.body, { childList: true, subtree: true });
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', startActionMenus, { once: true });
+        } else {
+          startActionMenus();
+        }
 
         document.addEventListener('click', (event) => {
           if (!openMenuState || openMenuState.wrapper.contains(event.target)) return;
@@ -233,6 +318,13 @@ function actionMenuScript(): string {
             closeMenu(openMenuState, { restoreFocus: true });
           }
         });
+
+        window.addEventListener('resize', () => {
+          if (openMenuState) closeMenu(openMenuState, { restoreFocus: false });
+        });
+        window.addEventListener('scroll', () => {
+          if (openMenuState) closeMenu(openMenuState, { restoreFocus: false });
+        }, true);
       })();
     </script>`;
 }
