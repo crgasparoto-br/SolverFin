@@ -198,7 +198,7 @@ function renderRulesSection(
         </div>
         <div class="heading-actions">
           <button type="button" data-open-dialog="new-automation-rule-dialog" title="Criar nova regra automática">${icon("plus", 14)} Nova regra</button>
-          <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-confirm="Executar regras sobre sugestões pendentes?" title="Aplicar regras sobre sugestões pendentes"${rules.ok ? "" : " disabled aria-disabled=\"true\""}>${icon("play", 14)} Aplicar regras</button>
+          <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-confirm="Executar regras sobre sugestões pendentes?" title="Aplicar regras sobre sugestões pendentes"${rules.ok ? "" : ' disabled aria-disabled="true"'}>${icon("play", 14)} Aplicar regras</button>
         </div>
       </div>
       <p class="priority-help">Números maiores são aplicados primeiro; em empate, vence a regra criada antes.</p>
