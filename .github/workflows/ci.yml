@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -41,8 +41,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -67,22 +65,6 @@ jobs:
 
       - name: Check demo seed script
         run: npm run db:seed:check
-
-      - name: Apply issue 556 formatting and restore workflow
-        env:
-          HEAD_BRANCH: ${{ github.head_ref }}
-        run: |
-          npx prettier scripts/statement-visual/accounts-cards-interface.mjs scripts/statement-visual/issue-537-hover-states.mjs --write
-          sed -i 's/form\.requestSubmit(action);/action.click();/' scripts/statement-visual/accounts-cards-interface.mjs
-          git fetch origin main --depth=1
-          git show origin/main:.github/workflows/ci.yml > .github/workflows/ci.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/ci.yml scripts/statement-visual/accounts-cards-interface.mjs scripts/statement-visual/issue-537-hover-states.mjs
-          if ! git diff --cached --quiet; then
-            git commit -m "test: formatar validacoes visuais da issue 556"
-            git push origin HEAD:"${HEAD_BRANCH}"
-          fi
 
       - name: Check formatting
         run: npm run format:check

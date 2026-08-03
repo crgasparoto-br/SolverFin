@@ -103,8 +103,16 @@ async function captureState(cdp, expectedTab, width, height, filename) {
     accessibility,
   });
 
-  check(measurements.selectedTab === expectedTab, `Issue 535 did not select ${expectedTab}`, measurements);
-  check(measurements.contextActionCount === 1, "Issue 535 must expose one primary action", measurements);
+  check(
+    measurements.selectedTab === expectedTab,
+    `Issue 535 did not select ${expectedTab}`,
+    measurements,
+  );
+  check(
+    measurements.contextActionCount === 1,
+    "Issue 535 must expose one primary action",
+    measurements,
+  );
   check(
     measurements.contextActionLabel ===
       (expectedTab === "cards" ? "Adicionar cartão" : "Adicionar conta"),
@@ -119,13 +127,21 @@ async function captureState(cdp, expectedTab, width, height, filename) {
     `Issue 535 search placeholder does not match ${expectedTab}`,
     measurements,
   );
-  check(!measurements.hasConnectionsTab, "Issue 535 still exposes the Connections tab", measurements);
+  check(
+    !measurements.hasConnectionsTab,
+    "Issue 535 still exposes the Connections tab",
+    measurements,
+  );
   check(
     JSON.stringify(measurements.statusOptions) === JSON.stringify(["all", "active", "inactive"]),
     "Issue 535 status filter is incomplete",
     measurements,
   );
-  check(!measurements.globalOverflow, `Issue 535 overflows horizontally at ${width}px`, measurements);
+  check(
+    !measurements.globalOverflow,
+    `Issue 535 overflows horizontally at ${width}px`,
+    measurements,
+  );
   check(
     measurements.minimumTriggerTarget >= 40,
     "Issue 535 has action-menu triggers smaller than 40px",
@@ -146,7 +162,11 @@ async function captureState(cdp, expectedTab, width, height, filename) {
     "Issue 535 rows were not normalized into a comparable footer",
     measurements,
   );
-  check(accessibility.tabCount >= 2, "Issue 535 accessibility tree has no tab semantics", accessibility);
+  check(
+    accessibility.tabCount >= 2,
+    "Issue 535 accessibility tree has no tab semantics",
+    accessibility,
+  );
 
   if (expectedTab === "accounts") {
     check(measurements.cdiActionCount > 0, "Issue 535 exposes no CDI actions", measurements);
@@ -205,7 +225,11 @@ async function verifyRowActionMenu(cdp, expectedTab, width, height) {
   scenarios.push({ kind: "row-action-menu", expectedTab, viewport: `${width}x${height}`, opened });
 
   check(opened.opened, `Issue 556 did not open the ${expectedTab} action menu`, opened);
-  check(opened.triggerLabel.startsWith("Ações de "), "Issue 556 trigger lacks an item-specific label", opened);
+  check(
+    opened.triggerLabel.startsWith("Ações de "),
+    "Issue 556 trigger lacks an item-specific label",
+    opened,
+  );
   check(opened.menuRole === "menu", "Issue 556 popover lacks menu semantics", opened);
   check(opened.labels.length > 0, "Issue 556 action menu has no actions", opened);
   check(opened.labels.every(Boolean), "Issue 556 action menu contains an unlabeled action", opened);
@@ -225,8 +249,16 @@ async function verifyRowActionMenu(cdp, expectedTab, width, height) {
       };
     })()`,
   );
-  check(closed.expanded === "false", `Issue 556 ${expectedTab} menu did not close with Escape`, closed);
-  check(closed.focusRestored, `Issue 556 ${expectedTab} menu did not restore trigger focus`, closed);
+  check(
+    closed.expanded === "false",
+    `Issue 556 ${expectedTab} menu did not close with Escape`,
+    closed,
+  );
+  check(
+    closed.focusRestored,
+    `Issue 556 ${expectedTab} menu did not restore trigger focus`,
+    closed,
+  );
 }
 
 async function activateCards(cdp) {
@@ -255,7 +287,10 @@ async function openFirstInstrumentDialog(cdp) {
 
 async function captureInstrumentModal(cdp, width, height, filename) {
   const opened = await openFirstInstrumentDialog(cdp);
-  check(opened, "Issue 535 has no Ver instrumentos action in the three-dot menu", { width, height });
+  check(opened, "Issue 535 has no Ver instrumentos action in the three-dot menu", {
+    width,
+    height,
+  });
   if (!opened) return;
   await sleep(180);
 
@@ -271,15 +306,31 @@ async function captureInstrumentModal(cdp, width, height, filename) {
   });
 
   check(measurements.open, "Issue 535 instrument modal did not open", measurements);
-  check(measurements.insideViewport, `Issue 535 instrument modal exceeds ${width}x${height}`, measurements);
-  check(measurements.title === "Instrumentos do cartão", "Issue 535 instrument modal has an unexpected title", measurements);
-  check(measurements.identifiesCard, "Issue 535 instrument modal does not identify the card", measurements);
+  check(
+    measurements.insideViewport,
+    `Issue 535 instrument modal exceeds ${width}x${height}`,
+    measurements,
+  );
+  check(
+    measurements.title === "Instrumentos do cartão",
+    "Issue 535 instrument modal has an unexpected title",
+    measurements,
+  );
+  check(
+    measurements.identifiesCard,
+    "Issue 535 instrument modal does not identify the card",
+    measurements,
+  );
   check(
     measurements.hasInstrumentListOrEmptyState,
     "Issue 535 instrument modal has neither a list nor an empty state",
     measurements,
   );
-  check(measurements.hasAddInstrumentAction, "Issue 535 instrument modal has no Add instrument action", measurements);
+  check(
+    measurements.hasAddInstrumentAction,
+    "Issue 535 instrument modal has no Add instrument action",
+    measurements,
+  );
   check(
     measurements.instrumentActionContainerCount === measurements.instrumentActionMenuTriggerCount,
     "Issue 556 instrument actions are not consolidated into one three-dot menu per instrument",
@@ -295,8 +346,16 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     "Issue 535 instrument action triggers are smaller than 40px",
     measurements,
   );
-  check(!measurements.hasUnmaskedLongNumber, "Issue 535 instrument modal exposes an unmasked long number", measurements);
-  check(accessibility.dialogCount >= 1, "Issue 535 instrument modal is absent from the accessibility tree", accessibility);
+  check(
+    !measurements.hasUnmaskedLongNumber,
+    "Issue 535 instrument modal exposes an unmasked long number",
+    measurements,
+  );
+  check(
+    accessibility.dialogCount >= 1,
+    "Issue 535 instrument modal is absent from the accessibility tree",
+    accessibility,
+  );
 
   await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
@@ -309,7 +368,11 @@ async function captureInstrumentModal(cdp, width, height, filename) {
     }))()`,
   );
   check(!closeState.open, "Issue 535 instrument modal did not close with Escape", closeState);
-  check(closeState.focusRestored, "Issue 556 did not restore focus to the card action-menu trigger", closeState);
+  check(
+    closeState.focusRestored,
+    "Issue 556 did not restore focus to the card action-menu trigger",
+    closeState,
+  );
 }
 
 async function captureCardCreateModal(cdp, width, height, filename) {
@@ -317,16 +380,38 @@ async function captureCardCreateModal(cdp, width, height, filename) {
   await sleep(180);
   const measurements = await evaluate(cdp, cardCreateModalStateExpression());
   await screenshot(cdp, join(outputDir, filename));
-  scenarios.push({ kind: "card-create-modal", viewport: `${width}x${height}`, filename, measurements });
+  scenarios.push({
+    kind: "card-create-modal",
+    viewport: `${width}x${height}`,
+    filename,
+    measurements,
+  });
 
   check(measurements.open, "Issue 535 card creation modal did not open", measurements);
-  check(measurements.insideViewport, `Issue 535 card creation modal exceeds ${width}x${height}`, measurements);
-  check(measurements.hasCloseButton, "Issue 535 card modal has no accessible close action", measurements);
+  check(
+    measurements.insideViewport,
+    `Issue 535 card creation modal exceeds ${width}x${height}`,
+    measurements,
+  );
+  check(
+    measurements.hasCloseButton,
+    "Issue 535 card modal has no accessible close action",
+    measurements,
+  );
   check(measurements.hasCancelButton, "Issue 535 card modal has no Cancel action", measurements);
-  check(measurements.hasSinglePrimaryAction, "Issue 535 card modal primary action is ambiguous", measurements);
+  check(
+    measurements.hasSinglePrimaryAction,
+    "Issue 535 card modal primary action is ambiguous",
+    measurements,
+  );
   check(
     JSON.stringify(measurements.groupLabels) ===
-      JSON.stringify(["Identificação do cartão", "Datas e limite", "Conta de pagamento", "Instrumento inicial"]),
+      JSON.stringify([
+        "Identificação do cartão",
+        "Datas e limite",
+        "Conta de pagamento",
+        "Instrumento inicial",
+      ]),
     "Issue 535 card creation form is not grouped as specified",
     measurements,
   );
@@ -338,7 +423,10 @@ async function captureCardCreateModal(cdp, width, height, filename) {
     cdp,
     `document.activeElement?.matches?.('[data-context-action]') === true`,
   );
-  check(focusRestored, "Issue 535 did not restore focus after closing card creation", { width, height });
+  check(focusRestored, "Issue 535 did not restore focus after closing card creation", {
+    width,
+    height,
+  });
 }
 
 async function verifyKeyboardTabsAndFilterPersistence(cdp) {
@@ -402,12 +490,16 @@ async function verifyConfirmationCancellation(cdp) {
         window.__issue535FetchCount += 1;
         return window.__issue535OriginalFetch(...args);
       };
-      form.requestSubmit(action);
+      action.click();
       return true;
     })()`,
   );
   if (!opened) {
-    check(false, "Issue 556 has no destructive instrument action available in a three-dot menu", {});
+    check(
+      false,
+      "Issue 556 has no destructive instrument action available in a three-dot menu",
+      {},
+    );
     return;
   }
   await sleep(120);
@@ -423,7 +515,10 @@ async function verifyConfirmationCancellation(cdp) {
       };
     })()`,
   );
-  await evaluate(cdp, `document.querySelector('dialog.confirm-dialog[open] [data-confirm-cancel]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('dialog.confirm-dialog[open] [data-confirm-cancel]')?.click()`,
+  );
   await sleep(100);
   const cancelState = await evaluate(
     cdp,
@@ -454,7 +549,11 @@ async function verifyConfirmationCancellation(cdp) {
   );
   check(cancelState.requestCount === 0, "Issue 535 Cancel sent an API request", cancelState);
   check(!cancelState.open, "Issue 535 confirmation stayed open after Cancel", cancelState);
-  check(cancelState.focusRestored, "Issue 556 confirmation did not restore focus to the three-dot trigger", cancelState);
+  check(
+    cancelState.focusRestored,
+    "Issue 556 confirmation did not restore focus to the three-dot trigger",
+    cancelState,
+  );
 }
 
 async function accessibilitySummary(cdp) {

@@ -13,8 +13,7 @@ const scenarios = [];
 const accountsCardsSelectors = {
   primary: "[data-context-action]",
   neutral: "#cards-tab",
-  destructive:
-    '.action-menu-popover:not([hidden]) .action-menu-item.is-danger:not(:disabled)',
+  destructive: ".action-menu-popover:not([hidden]) .action-menu-item.is-danger:not(:disabled)",
 };
 const statementNeutralSelectors = {
   accountPicker: ".account-select-trigger",
@@ -124,7 +123,8 @@ async function validateAccountsCardsStates() {
   checkDestructive("focus-visible", focusStyles.destructive);
   check(
     focusStyles.destructive.boxShadow !== "none" ||
-      (focusStyles.destructive.outlineStyle !== "none" && focusStyles.destructive.outlineWidth !== "0px"),
+      (focusStyles.destructive.outlineStyle !== "none" &&
+        focusStyles.destructive.outlineWidth !== "0px"),
     "Issue 537 destructive menu action has no visible keyboard focus indicator",
     focusStyles.destructive,
   );
