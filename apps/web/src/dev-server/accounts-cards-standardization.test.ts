@@ -72,6 +72,8 @@ test("preserva contratos do gate visual", () => {
     ),
   );
   assert.ok(visualGateSource.includes(".card-account-item .action-menu-trigger"));
-  assert.ok(visualGateSource.includes("actionMenuTriggerCount === measurements.actionContainerCount"));
+  assert.ok(
+    visualGateSource.includes("actionMenuTriggerCount === measurements.actionContainerCount"),
+  );
   assert.ok(visualGateSource.includes("visibleLegacyInstrumentActionCount === 0"));
 });
