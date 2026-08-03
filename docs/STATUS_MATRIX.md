@@ -79,10 +79,10 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Parcelas
 
 - Dominio/schema: Feito.
-- Repository/API/UI: Feito para criacao manual canonica, identificacao nas listas operacionais e manutencao conservadora de parcelas de conta.
-- Testes: contrato web, fronteira publica, concorrencia com PostgreSQL e validacao visual dedicada fazem parte do fluxo atual.
+- Repository/API/UI: Feito para criação manual canônica, identificação nas listas operacionais e manutenção conservadora de parcelas de conta.
+- Testes: contrato web, fronteira pública, concorrência com PostgreSQL e validação visual dedicada fazem parte do fluxo atual.
 - Documentacao: Feito para o fluxo atual.
-- Nota: parcelas canonicas aparecem incorporadas as linhas de `/lancamentos` e `/cartoes` como `Parcela X de Y`, sem painel ou rota proprios. O modo manual `Repeticao = Parcelado` do Extrato envia uma unica criacao para `POST /api/installments`, persiste `Installment` e `Transaction.installmentId` de forma atomica e idempotente, preserva descricao e observacao separadas e aplica imediatamente o indicador e a manutencao conservadora entregue pela #539. O Extrato permite alterar somente descricao, observacao e categoria quando a parcela esta elegivel e preserva as acoes operacionais de conciliar, desconciliar e excluir logicamente; Cartoes mantem a compra como unico ponto de manutencao operacional. O enriquecimento do Extrato acompanha a data operacional exibida, inclusive quando ela diverge de `dueOn`. `/relatorios` continua somente leitura.
+- Nota: parcelas canônicas aparecem incorporadas às linhas de `/lancamentos` e `/cartoes` como `Parcela X de Y`, sem painel ou rota próprios. O modo manual `Repeticao = Parcelado` do Extrato envia uma única criação para `POST /api/installments`, persiste `Installment` e `Transaction.installmentId` de forma atômica e idempotente, preserva descrição e observação separadas e aplica imediatamente o indicador e a manutenção conservadora entregue pela #539. O Extrato permite alterar somente descrição, observação e categoria quando a parcela está elegível e preserva as ações operacionais de conciliar, desconciliar e excluir logicamente; Cartões mantém a compra como único ponto de manutenção operacional. O enriquecimento do Extrato acompanha a data operacional exibida, inclusive quando ela diverge de `dueOn`. `/relatorios` continua somente leitura.
 
 ### Cartoes / Faturas
 
@@ -115,7 +115,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Schema/migration: Feito sem nova migration; o schema existente ja suporta origem, hashes, conta padrao e vinculos revisaveis.
 - Repository/API: Feito para CSV e OFX persistidos e revisaveis.
 - UI: Feito para preview, criacao, historico misto e revisao compartilhada na Inbox.
-- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao, privacidade e ausencia de sentinelas em logs; validacao Chrome mobile para upload, preview, criacao, historico misto, restauracao por URL e recuperacao apos falha ambigua.
+- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao, privacidade e ausência de sentinelas em logs; validacao Chrome mobile para upload, preview, criacao, histórico misto, restauração por URL e recuperação após falha ambígua.
 - Documentacao: Feito em `docs/IMPORTS.md`.
 - Nota: CSV e OFX possuem preview sem persistencia, historico, correcao por linha, aprovacao individual/em conjunto, rejeicao, descarte logico e criacao atomica de lancamentos. Controles de separador e mapeamento aparecem apenas para CSV. OFX normaliza `STMTTRN`, usa o sinal de `TRNAMT` como fonte canonica, valida `CURDEF` contra a conta selecionada e persiste sugestoes com provider/model dedicados. O arquivo bruto nunca e persistido, logado ou auditado.
 
@@ -130,11 +130,11 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Deduplicacao
 
 - Dominio: Feito.
-- Schema/repository/API: Feito para fluxo deterministico em lotes CSV e OFX.
+- Schema/repository/API: Feito para fluxo determinístico em lotes CSV e OFX.
 - UI: Parcial/Feito para revisao operacional via Inbox.
 - Testes: Parcial.
 - Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
-- Nota: a varredura cria candidaturas idempotentes com vinculo estruturado. A Inbox permite aprovar/rejeitar; duplicidade rejeita a linha de origem e conciliacao atualiza o lancamento alvo e resolve a origem atomicamente.
+- Nota: a varredura cria candidaturas idempotentes com vínculo estruturado. A Inbox permite aprovar/rejeitar; duplicidade rejeita a linha de origem e conciliação atualiza o lancamento alvo e resolve a origem atomicamente.
 
 ### Conciliacao
 
@@ -151,7 +151,7 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Schema/repository/API/UI: Parcial/Feito para primeiro fluxo operacional revisavel.
 - Testes: Parcial.
 - Documentacao: Parcial/Atualizada em `docs/AUTOMATION_RULES.md`.
-- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configuracoes` permite criar, listar, inativar e executar regras. A aplicacao gera sugestoes `categorization` revisaveis com `provider: solverfin-automation`, sem efeito financeiro irreversivel automatico.
+- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configurações` permite criar, listar, inativar e executar regras. A aplicacao gera sugestoes `categorization` revisaveis com `provider: solverfin-automation`, sem efeito financeiro irreversivel automatico.
 
 ### IA / sugestoes revisaveis
 
@@ -172,8 +172,8 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Autenticacao produtiva
 
 - Decisao arquitetural: Feito; ADR 0004 aceita.
-- Implementacao de provider/sessao produtiva: Feito no codigo e na migration; ativacao operacional depende da criacao do User Pool/app client e dos secrets de cada ambiente.
-- Nota: Amazon Cognito User Pools Essentials em `sa-east-1`, Authorization Code + PKCE iniciado no backend, correlacao persistente de uso unico, sessao local em cookie seguro, rotacao, revogacao, auditoria e protecao de origem. Contratos locais/Bearer permanecem apenas para ambientes autorizados.
+- Implementacao de provider/sessao produtiva: Feito no código e na migration; ativação operacional depende da criação do User Pool/app client e dos secrets de cada ambiente.
+- Nota: Amazon Cognito User Pools Essentials em `sa-east-1`, Authorization Code + PKCE iniciado no backend, correlação persistente de uso único, sessão local em cookie seguro, rotação, revogação, auditoria e proteção de origem. Contratos locais/Bearer permanecem apenas para ambientes autorizados.
 
 ### Relatorios
 
