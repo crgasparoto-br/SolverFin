@@ -508,7 +508,8 @@ function settingsScript(): string {
           const result = parseMinorDecimal(input.value);
           const error = input.parentElement.querySelector("[data-decimal-error]");
           const invalid = !result.ok;
-          input.toggleAttribute("aria-invalid", invalid);
+          if (invalid) input.setAttribute("aria-invalid", "true");
+else input.removeAttribute("aria-invalid");
           if (error) error.hidden = !invalid;
           if (invalid && !firstInvalid) firstInvalid = input;
         });
