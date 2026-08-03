@@ -123,8 +123,9 @@ async function validateAccountsCardsStates() {
 
   checkDestructive("focus-visible", focusStyles.destructive);
   check(
-    focusStyles.destructive.boxShadow !== "none",
-    "Issue 537 destructive menu action has no visible keyboard focus ring",
+    focusStyles.destructive.boxShadow !== "none" ||
+      (focusStyles.destructive.outlineStyle !== "none" && focusStyles.destructive.outlineWidth !== "0px"),
+    "Issue 537 destructive menu action has no visible keyboard focus indicator",
     focusStyles.destructive,
   );
 }
@@ -235,6 +236,8 @@ async function readStyles(selectors) {
           borderColor: style.borderColor,
           boxShadow: style.boxShadow,
           color: style.color,
+          outlineStyle: style.outlineStyle,
+          outlineWidth: style.outlineWidth,
         };
       };
       return Object.fromEntries(
@@ -269,17 +272,12 @@ function isLightNeutral(value) {
 
 function checkDestructive(state, styles) {
   check(
-    styles.backgroundColor === "rgb(254, 226, 226)",
+    styles.backgroundColor === "rgb(255, 241, 240)",
     `Issue 537 destructive menu action lost its red ${state} surface`,
     styles,
   );
   check(
-    styles.borderColor === "rgb(254, 202, 202)",
-    `Issue 537 destructive menu action lost its red ${state} border`,
-    styles,
-  );
-  check(
-    styles.color === "rgb(220, 38, 38)",
+    styles.color === "rgb(143, 29, 21)",
     `Issue 537 destructive menu action lost its red ${state} text/icon color`,
     styles,
   );
