@@ -298,7 +298,9 @@ function addAccountFilter(
 
   params.push(accountId);
   const parameter = `$${params.length}`;
-  where.push(`(t."accountId" = ${parameter} or t."destinationAccountId" = ${parameter})`);
+  const sourceMatches = `t."accountId" = ${parameter}`;
+  const destinationMatches = `t."destinationAccountId" = ${parameter}`;
+  where.push(`(${sourceMatches} or ${destinationMatches})`);
 }
 
 function validateFilters(filters: ListInstallmentsFilters): void {
