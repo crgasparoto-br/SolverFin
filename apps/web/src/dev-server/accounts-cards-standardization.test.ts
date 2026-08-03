@@ -1,3 +1,4 @@
+// Issue 556: contratos de interface para o menu de três pontos.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
