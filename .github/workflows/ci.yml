@@ -66,13 +66,9 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const file = 'apps/web/src/dev-server/accounts-cards-action-menu-enhancement.ts';
-          const before = `            if (event.key === 'Escape') {
-              event.preventDefault();
-              event.stopPropagation();
-              closeMenu(state, { restoreFocus: true });
-              return;
-            }`;
-          const after = `            if (event.key === 'Escape') {
+          const source = fs.readFileSync(file, 'utf8');
+          const pattern = /if \(event\.key === 'Escape'\) \{\n\s+event\.preventDefault\(\);\n\s+event\.stopPropagation\(\);\n\s+closeMenu\(state, \{ restoreFocus: true \}\);\n\s+return;\n\s+\}/;
+          const replacement = `if (event.key === 'Escape') {
               event.preventDefault();
               event.stopPropagation();
               document.addEventListener(
@@ -87,9 +83,8 @@ jobs:
               closeMenu(state, { restoreFocus: true });
               return;
             }`;
-          const source = fs.readFileSync(file, 'utf8');
-          if (!source.includes(before)) throw new Error('Escape menu block not found');
-          fs.writeFileSync(file, source.replace(before, after));
+          if (!pattern.test(source)) throw new Error('Escape menu block not found');
+          fs.writeFileSync(file, source.replace(pattern, replacement));
           NODE
           npx prettier apps/web/src/dev-server/accounts-cards-action-menu-enhancement.ts --write
           git fetch origin main --depth=1
