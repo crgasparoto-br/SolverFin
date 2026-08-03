@@ -24,6 +24,8 @@ try {
   await import("./statement-visual/issue-553-manual-installments-v2.mjs");
   // This scenario lets the backend commit, masks the response as 504, and proves exact recovery.
   await import("./statement-visual/issue-553-ambiguous-recovery.mjs");
+  // The close action must remain focusable and usable while the form is locked for recovery.
+  await import("./statement-visual/issue-553-ambiguous-close.mjs");
   // Non-idempotent producers must not present a blind retry after a committed-but-masked response.
   await import("./statement-visual/issue-553-non-idempotent-ambiguity.mjs");
   await import("./statement-visual/reports-category-evolution.mjs");
