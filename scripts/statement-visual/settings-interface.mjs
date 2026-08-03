@@ -36,10 +36,7 @@ const report = {
   rulesZoom,
 };
 
-await writeFile(
-  join(outputDir, "settings-interface.json"),
-  `${JSON.stringify(report, null, 2)}\n`,
-);
+await writeFile(join(outputDir, "settings-interface.json"), `${JSON.stringify(report, null, 2)}\n`);
 
 if (failures.length > 0) {
   for (const failure of failures) console.error(`- ${failure.message}`);
@@ -57,11 +54,7 @@ async function runScenario(name, width, height, section, zoom = false) {
     await navigateWithRetry(browser.cdp, `${baseUrl}/login`, `${name}-login`);
     const login = await evaluate(browser.cdp, loginExpression());
     assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
-    await navigateWithRetry(
-      browser.cdp,
-      `${baseUrl}/configuracoes?section=${section}`,
-      name,
-    );
+    await navigateWithRetry(browser.cdp, `${baseUrl}/configuracoes?section=${section}`, name);
     await waitForSettings(browser.cdp, section);
 
     if (zoom) {
@@ -73,7 +66,10 @@ async function runScenario(name, width, height, section, zoom = false) {
       section === "profiles"
         ? '[data-open-dialog="new-profile-dialog"]'
         : '[data-open-dialog="new-automation-rule-dialog"]';
-    await evaluate(browser.cdp, `document.querySelector(${JSON.stringify(dialogSelector)})?.click()`);
+    await evaluate(
+      browser.cdp,
+      `document.querySelector(${JSON.stringify(dialogSelector)})?.click()`,
+    );
     await waitForDialog(browser.cdp);
 
     const measurements = await evaluate(browser.cdp, measurementExpression(section));
@@ -91,16 +87,32 @@ async function runScenario(name, width, height, section, zoom = false) {
     check(measurements.dialogInsideViewport, `${name}: diálogo excede o viewport`, measurements);
     check(measurements.focusableNavigation, `${name}: navegação não recebe foco`, measurements);
     check(!measurements.hasTenantOperational, `${name}: texto técnico ainda visível`, measurements);
-    check(!measurements.hasCentavosLabel, `${name}: rótulo em centavos ainda visível`, measurements);
+    check(
+      !measurements.hasCentavosLabel,
+      `${name}: rótulo em centavos ainda visível`,
+      measurements,
+    );
 
     if (section === "profiles") {
       check(measurements.hasProfileHeading, `${name}: seção de perfis ausente`, measurements);
-      check(!measurements.hasRulesHeading, `${name}: regras renderizadas junto dos perfis`, measurements);
+      check(
+        !measurements.hasRulesHeading,
+        `${name}: regras renderizadas junto dos perfis`,
+        measurements,
+      );
       check(measurements.hasProfileAction, `${name}: ação de novo perfil ausente`, measurements);
     } else {
       check(measurements.hasRulesHeading, `${name}: seção de regras ausente`, measurements);
-      check(!measurements.hasProfileListHeading, `${name}: lista de perfis renderizada junto das regras`, measurements);
-      check(measurements.hasPriorityHelp, `${name}: explicação de prioridade ausente`, measurements);
+      check(
+        !measurements.hasProfileListHeading,
+        `${name}: lista de perfis renderizada junto das regras`,
+        measurements,
+      );
+      check(
+        measurements.hasPriorityHelp,
+        `${name}: explicação de prioridade ausente`,
+        measurements,
+      );
       check(measurements.hasDecimalInputs, `${name}: campos decimais ausentes`, measurements);
       check(measurements.hasReviewMessage, `${name}: mensagem de revisão ausente`, measurements);
     }
