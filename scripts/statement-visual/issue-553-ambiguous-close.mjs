@@ -232,10 +232,17 @@ async function waitForModalClosed() {
     browser.cdp,
     `(async () => {
       for (let attempt = 0; attempt < 50; attempt += 1) {
-        if (document.querySelector("[data-modal]")?.open !== true) return true;
+        const modal = document.querySelector("[data-modal]");
+        const form = document.querySelector("[data-form]");
+        const closeButton = modal?.querySelector('.close-form button[type="submit"]');
+        const closed = modal?.open !== true;
+        const recoveryCleared = !form?.dataset.installmentRecovery;
+        const closeMarkerCleared =
+          closeButton?.dataset.financialRecoveryCloseAvailable !== "true";
+        if (closed && recoveryCleared && closeMarkerCleared) return true;
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
-      throw new Error("Timed out waiting for the transaction modal to close");
+      throw new Error("Timed out waiting for the transaction modal recovery cleanup");
     })()`,
   );
 }
