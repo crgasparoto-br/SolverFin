@@ -28,6 +28,7 @@ function accountsCardsPageReceivesAccessibleActionMenus(): void {
   assert.match(enhanced, /Definir como padrão/);
   assert.match(enhanced, /Adicionar instrumento/);
   assert.match(enhanced, /event\.key === 'Escape'/);
+  assert.match(enhanced, /event\.stopPropagation\(\)/);
   assert.match(enhanced, /event\.key !== 'ArrowDown' && event\.key !== 'ArrowUp'/);
   assert.match(enhanced, /data-action-menu-ready/);
   assert.match(enhanced, /position: fixed/);
@@ -37,6 +38,7 @@ function accountsCardsPageReceivesAccessibleActionMenus(): void {
   assert.match(enhanced, /button\.dataset\.actionMenuLabel = label/);
   assert.match(enhanced, /function focusTrigger\(state\)/);
   assert.match(enhanced, /focus\(\{ preventScroll: true \}\)/);
+  assert.match(enhanced, /window\.requestAnimationFrame\(\(\) =>/);
   assert.match(enhanced, /function positionMenu\(state\)/);
   assert.match(enhanced, /new MutationObserver\(scheduleActionMenuRefresh\)/);
   assert.match(enhanced, /document\.addEventListener\('DOMContentLoaded', startActionMenus/);
