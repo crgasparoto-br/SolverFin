@@ -123,7 +123,7 @@ A suite de dominio cobre:
 - regra desativada;
 - isolamento por tenant.
 
-A suite web cobre a resolucao SSR das secoes, conversao decimal para unidade minoritaria, leitura estruturada de todos os campos suportados, fallback sem identificadores tecnicos e falhas de listagem, somente contas, somente categorias e ambas as dependencias. A validacao Chrome percorre a navegacao e os dialogos com `Tab`, `Shift+Tab`, `Enter` e `Escape`, incluindo foco visivel e retorno de foco.
+A suite web cobre a resolucao SSR das secoes, conversao decimal para unidade minoritaria, leitura estruturada de todos os campos suportados, fallback sem identificadores tecnicos e falhas de listagem, somente contas, somente categorias e ambas as dependencias. A validacao Chrome percorre a navegacao e os dialogos com `Tab`, `Shift+Tab`, `Enter` e `Escape`, incluindo foco visivel e retorno de foco. Para regras, ela cria itens ativos e inativos com conteudo longo, referencias conhecidas e desconhecidas, valida a composicao preenchida nas viewports suportadas, comprova a conversao real de `10,50` para `1050` no payload e rejeita `10,501`. No cenario de texto a 200%, a escala e aplicada depois da ultima navegacao, o tamanho computado e confirmado no instante da captura e a screenshot deve diferir da baseline sem ampliacao.
 
 ## Limites conhecidos
 
