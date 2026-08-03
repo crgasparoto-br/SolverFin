@@ -66,18 +66,18 @@ jobs:
       - name: Check demo seed script
         run: npm run db:seed:check
 
-      - name: Prepare issue 556 formatting diagnostic
-        run: |
-          npx prettier scripts/statement-visual/accounts-cards-interface.mjs scripts/statement-visual/issue-537-hover-states.mjs --write
-          echo "ISSUE556_ACCOUNTS_CARDS_BEGIN"
-          base64 -w0 scripts/statement-visual/accounts-cards-interface.mjs
-          echo
-          echo "ISSUE556_ACCOUNTS_CARDS_END"
-          echo "ISSUE556_HOVER_STATES_BEGIN"
-          base64 -w0 scripts/statement-visual/issue-537-hover-states.mjs
-          echo
-          echo "ISSUE556_HOVER_STATES_END"
-          exit 1
+      - name: Format issue 556 files for artifact
+        run: npx prettier scripts/statement-visual/accounts-cards-interface.mjs scripts/statement-visual/issue-537-hover-states.mjs --write
+
+      - name: Upload issue 556 formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-556-formatted-files
+          path: |
+            scripts/statement-visual/accounts-cards-interface.mjs
+            scripts/statement-visual/issue-537-hover-states.mjs
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Check formatting
         run: npm run format:check
