@@ -34,6 +34,7 @@ function actionMenuStyles(): string {
       .action-menu-popover .action-menu-item:disabled { cursor: not-allowed; opacity: .5; }
       .action-menu-popover .action-menu-item.is-danger { color: #b42318; }
       .action-menu-popover .action-menu-item.is-danger:hover:not(:disabled), .action-menu-popover .action-menu-item.is-danger:focus-visible { background: #fff1f0; color: #8f1d15; }
+      .action-menu-popover .action-menu-item::after { content: attr(data-action-menu-label); }
       .action-menu-item-icon { align-items: center; display: inline-flex; flex: 0 0 auto; height: 18px; justify-content: center; width: 18px; }
       .action-menu-item-icon svg { height: 16px; width: 16px; }
       .item-actions[data-action-menu-ready] > .form-status,
@@ -140,13 +141,15 @@ function actionMenuScript(): string {
 
         function renderMenuItem(button, form) {
           const label = inferActionLabel(button, form);
-          const iconMarkup = actionIcons.get(button) ||
-            (button.querySelector('svg') ? button.querySelector('svg').outerHTML : '');
-          actionIcons.set(button, iconMarkup);
+          const currentIcon = button.querySelector('svg')?.outerHTML || '';
+          if (currentIcon) actionIcons.set(button, currentIcon);
+          const iconMarkup = currentIcon || actionIcons.get(button) || '';
+          const iconHtml = iconMarkup
+            ? '<span class="action-menu-item-icon" aria-hidden="true">' + iconMarkup + '</span>'
+            : '';
           button.setAttribute('aria-label', label);
-          button.innerHTML =
-            (iconMarkup ? '<span class="action-menu-item-icon" aria-hidden="true">' + iconMarkup + '</span>' : '') +
-            '<span>' + label + '</span>';
+          button.dataset.actionMenuLabel = label;
+          if (button.innerHTML !== iconHtml) button.innerHTML = iconHtml;
         }
 
         function observeDynamicActionLabel(button, form) {
@@ -162,9 +165,10 @@ function actionMenuScript(): string {
           observer.observe(button, { attributes: true, attributeFilter: ['title'], childList: true, subtree: true });
         }
 
-        function dialogForAction(button) {
+        function dialogForAction(button, form) {
           const dialogId = String(button.dataset.openDialog || '');
           if (dialogId) return document.getElementById(dialogId);
+          if (form && form.dataset.confirm) return document.querySelector('.confirm-dialog');
           if (button.hasAttribute('data-account-remuneration-action')) {
             return button.closest('[data-master-item]')?.querySelector('[data-account-remuneration-dialog]') || null;
           }
@@ -189,13 +193,13 @@ function actionMenuScript(): string {
           observeDynamicActionLabel(button, form);
 
           button.addEventListener('click', () => {
-            const dialog = dialogForAction(button);
+            const dialog = dialogForAction(button, form);
             if (dialog) {
               dialog.addEventListener('close', () => {
                 window.setTimeout(() => state.trigger.focus(), 0);
               }, { once: true });
             }
-            if (openMenuState) closeMenu(openMenuState, { restoreFocus: false });
+            if (openMenuState) closeMenu(openMenuState, { restoreFocus: !dialog });
           }, { capture: true });
 
           if (form) {
