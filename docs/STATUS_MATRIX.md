@@ -79,10 +79,10 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Parcelas
 
 - Dominio/schema: Feito.
-- Repository/API/UI: Feito para identificação nas listas operacionais e manutenção conservadora de parcelas de conta.
+- Repository/API/UI: Feito para criação manual canônica, identificação nas listas operacionais e manutenção conservadora de parcelas de conta.
 - Testes: contrato web, fronteira pública, concorrência com PostgreSQL e validação visual dedicada fazem parte do fluxo atual.
 - Documentacao: Feito para o fluxo atual.
-- Nota: parcelas canônicas aparecem incorporadas às linhas de `/lancamentos` e `/cartoes` como `Parcela X de Y`, sem painel ou rota próprios. O Extrato permite alterar somente descrição, observação e categoria quando a parcela está elegível e preserva a ação operacional de conciliar ou desconciliar por payload exclusivo de situação; Cartões mantém a compra como único ponto de manutenção operacional. O enriquecimento do Extrato acompanha a data operacional exibida, inclusive quando ela diverge de `dueOn`. `/relatorios` continua somente leitura. O modo manual `Repeticao = Parcelado` do Extrato ainda cria várias `Transaction` independentes e não cria `Installment`; essa lacuna permanece explícita e esses registros não são tratados como parcelas canônicas.
+- Nota: parcelas canônicas aparecem incorporadas às linhas de `/lancamentos` e `/cartoes` como `Parcela X de Y`, sem painel ou rota próprios. O modo manual `Repeticao = Parcelado` do Extrato envia uma única criação para `POST /api/installments`, persiste `Installment` e `Transaction.installmentId` de forma atômica e idempotente, preserva descrição e observação separadas e aplica imediatamente o indicador e a manutenção conservadora entregue pela #539. O Extrato permite alterar somente descrição, observação e categoria quando a parcela está elegível e preserva as ações operacionais de conciliar, desconciliar e excluir logicamente; Cartões mantém a compra como único ponto de manutenção operacional. O enriquecimento do Extrato acompanha a data operacional exibida, inclusive quando ela diverge de `dueOn`. `/relatorios` continua somente leitura.
 
 ### Cartoes / Faturas
 
@@ -230,11 +230,11 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Recorrencias: aparecem nas listas normais de `/lancamentos` e `/cartoes`, sem rota propria.
 - Criar recorrencia: Sim, pela repeticao "Fixo" no modal de novo lancamento ou nova compra.
 - Editar/pausar/retomar/cancelar: Sim, pelo menu do lancamento/compra recorrente.
-- Gerar parcelas: Sim, automaticamente no catch-up e manualmente pelo modal de edicao.
+- Gerar parcelas: Sim, automaticamente no catch-up de recorrencias e manualmente por `Repeticao = Parcelado` no modal de novo lancamento.
 - Consultar parcelas na fatura: Sim, em `/cartoes`, no recorte do cartao/fatura selecionados.
 - Consultar parcelas consolidadas: Sim, em `/relatorios`, com filtros por mes, cartao, categoria e status.
-- Manutencao direta de parcelas geradas: Nao.
-- Lacuna restante: manutencao direta controlada de parcelas ja geradas, quando o contrato permitir.
+- Manutencao direta de parcelas geradas: Sim, de forma conservadora no Extrato para descricao, observacao e categoria quando `editable=true`.
+- Limite: quantidade, sequencia, vencimento, valor e redistribuicao nao podem ser alterados pelo `PATCH` conservador.
 
 ### Cartoes de Credito (`/cartoes`)
 

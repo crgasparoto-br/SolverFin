@@ -358,25 +358,16 @@ export function recurrencesSectionScript(): string {
             const effectiveOn = monthOffset ? addMonths(effectiveBase, monthOffset) : effectiveBase;
             return { plannedOn, effectiveOn };
           }
-          function payload(index, total, applyToFuturePlanned) {
+          function payload(applyToFuturePlanned) {
             const data = new FormData(form);
-            const dates = plannedAndEffectiveOn(index);
-            const description = String(data.get("description") || "") + (total > 1 ? " " + (index + 1) + "/" + total : "");
-            return basePayload(dates.plannedOn, dates.effectiveOn, moneyToMinor(data.get("amountMinor")), description, applyToFuturePlanned);
-          }
-          function installmentAmountMinor(totalMinor, totalCount, parcelNumber) {
-            const base = Math.floor(totalMinor / totalCount);
-            const remainder = totalMinor - base * totalCount;
-            return parcelNumber > totalCount - remainder ? base + 1 : base;
-          }
-          function installmentPayload(parcelNumber, totalCount, monthOffset) {
-            const data = new FormData(form);
-            const dates = plannedAndEffectiveOn(monthOffset);
-            const enteredAmountMinor = moneyToMinor(data.get("amountMinor"));
-            const valueMode = String(data.get("installmentValueMode") || "per_installment");
-            const amountMinor = valueMode === "total" ? installmentAmountMinor(enteredAmountMinor, totalCount, parcelNumber) : enteredAmountMinor;
-            const description = String(data.get("description") || "") + " " + parcelNumber + "/" + totalCount;
-            return basePayload(dates.plannedOn, dates.effectiveOn, amountMinor, description, false);
+            const dates = plannedAndEffectiveOn(0);
+            return basePayload(
+              dates.plannedOn,
+              dates.effectiveOn,
+              moneyToMinor(data.get("amountMinor")),
+              String(data.get("description") || ""),
+              applyToFuturePlanned,
+            );
           }
           function clearCurrentTransaction() {
             delete form.dataset.currentTransactionId;
@@ -391,35 +382,30 @@ export function recurrencesSectionScript(): string {
             if (cloneButton) cloneButton.addEventListener("click", () => { clearCurrentTransaction(); if (form.note) form.note.value = ""; });
           });
           form.addEventListener("submit", async (event) => {
+            const method = form.dataset.method || "POST";
+            if (method !== "PATCH") return;
             event.preventDefault();
             event.stopImmediatePropagation();
             if (!form.checkValidity()) {
               form.reportValidity();
               return;
             }
-            const mode = form.repeatMode.value;
-            const method = form.dataset.method || "POST";
             const path = form.dataset.path || "/api/transactions";
             const execute = async (scope) => {
-              let response;
-              if (mode === "fixed" && method === "POST") {
-                const item = payload(0, 1, false);
-                response = await send("/api/recurrences", "POST", { frequency: form.frequency.value, interval: Math.max(1, Number(form.interval.value || 1)), startOn: form.plannedOn.value, endOn: form.endOn.value || undefined, amountMinor: item.amountMinor, description: String(new FormData(form).get("description") || ""), kind: item.kind, accountId: item.accountId, categoryId: item.categoryId });
-              } else if (mode === "installment" && method === "POST") {
-                const totalCount = Math.max(2, Number(form.installments.value || 2));
-                const startParcel = Math.min(Math.max(1, Number(form.installmentStart.value || 1)), totalCount);
-                const responses = [];
-                let monthOffset = 0;
-                for (let parcelNumber = startParcel; parcelNumber <= totalCount; parcelNumber += 1, monthOffset += 1) responses.push(await send("/api/transactions", "POST", installmentPayload(parcelNumber, totalCount, monthOffset)));
-                response = responses.find((item) => !item.ok) || responses[responses.length - 1];
-              } else {
-                response = await send(path, method, payload(0, 1, scope === "current_and_future"));
-              }
+              const response = await send(
+                path,
+                "PATCH",
+                payload(scope === "current_and_future"),
+              );
               const result = await readResponse(response);
-              return { ok: response.ok, message: result.message, skippedCount: Number(result.body.skippedCount || 0) };
+              return {
+                ok: response.ok,
+                message: result.message,
+                skippedCount: Number(result.body.skippedCount || 0),
+              };
             };
 
-            if (method === "PATCH" && Boolean(form.dataset.recurrenceId)) {
+            if (form.dataset.recurrenceId) {
               openScopeModal(form.querySelector('button[type="submit"]'), execute);
               return;
             }

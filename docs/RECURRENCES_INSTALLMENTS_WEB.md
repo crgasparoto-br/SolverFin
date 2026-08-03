@@ -27,9 +27,9 @@ Nao ha secao, painel ou bloco dedicado a recorrencias em nenhuma tela. A unica p
 
 A web continua usando o proxy autenticado do servidor SSR. As chamadas seguem a sessao atual e preservam isolamento por organizacao e perfil financeiro no backend.
 
-## Limite conhecido
+## Distincao entre recorrencia e parcelamento manual
 
-A rota `GET /api/installments` permite consultar parcelas historicas, atuais e futuras por recorrencia e pelos escopos operacionais. O limite atual esta na criacao parcelada manual do Extrato: `Repeticao = Parcelado` ainda cria `Transaction` independentes, sem `Installment`, e por isso esses registros nao recebem o indicador nem a manutencao conservadora desta funcionalidade.
+`Repeticao = Fixo` cria uma recorrencia que pode materializar novas ocorrencias. `Repeticao = Parcelado` cria um conjunto finito canonico de `Installment` por uma unica operacao idempotente. Os dois fluxos aparecem nas mesmas listas, mas parcelamento manual nao cria `Recurrence`.
 
 ## Modal de escopo da edição
 
@@ -63,3 +63,9 @@ As telas `/lancamentos` e `/cartoes` enriquecem as linhas já existentes com `Pa
 No Extrato, a ação da própria linha abre o modal existente em modo restrito. Apenas descrição, observação e categoria podem ser alteradas quando `editable=true`; número, total, vencimento, valor, situação, conta, tipo e repetição permanecem somente leitura. Quando bloqueada, a mesma ação abre detalhes compactos com o motivo traduzido.
 
 Em Cartões, a parcela apenas identifica a compra. A manutenção continua usando o contrato da compra, respeitando o bloqueio da fatura. `invoice_linked` não cria bloqueio adicional sobre uma compra que já seja editável.
+
+## Criação manual parcelada no Extrato (#553)
+
+`Repetição = Parcelado` representa um conjunto finito canônico, não uma recorrência. O modal envia uma única tentativa com UUID idempotente; mantém a chave em timeout ou falha ambígua, gera nova chave quando os dados materiais mudam depois de rejeição e a descarta após sucesso, cancelamento ou novo fluxo. O botão permanece bloqueado durante o envio e o modal preserva os valores em falhas.
+
+As parcelas canônicas continuam selecionáveis para conciliar, desconciliar e excluir logicamente em massa. A restrição específica é a unificação: quando uma parcela canônica está selecionada, a ação **Unificar lançamentos** fica indisponível e explica que as demais ações em massa permanecem disponíveis.

@@ -268,3 +268,7 @@ prisma/
 - Quais operacoes exigirao revisao humana obrigatoria antes de persistir efeitos financeiros?
 
 Essas respostas devem ser resolvidas por issues especificas e ADRs.
+
+## Idempotência de conjuntos financeiros
+
+A criação de conjuntos financeiros com múltiplos efeitos usa identidade durável no PostgreSQL, escopo explícito de organização/perfil, fingerprint do payload de negócio e serialização concorrente antes das mutações. O primeiro contrato é o parcelamento manual descrito na ADR 0007; rollback não persiste efeitos nem consome a tentativa.

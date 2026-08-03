@@ -20,6 +20,16 @@ try {
   await import("./statement-visual/issue-539-operational-installments.mjs");
   await import("./statement-visual/issue-539-operational-installments-keyboard.mjs");
   await import("./statement-visual/issue-539-installment-grouping-guard.mjs");
+  // The first issue 553 scenario validates ordinary retry and form behavior.
+  await import("./statement-visual/issue-553-manual-installments-v2.mjs");
+  // A canonical transfer must expose installment metadata in both account statements.
+  await import("./statement-visual/issue-553-transfer-destination-visibility.mjs");
+  // This scenario lets the backend commit, masks the response as 504, and proves exact recovery.
+  await import("./statement-visual/issue-553-ambiguous-recovery.mjs");
+  // The close action must remain focusable and usable while the form is locked for recovery.
+  await import("./statement-visual/issue-553-ambiguous-close.mjs");
+  // Non-idempotent producers must not present a blind retry after a committed-but-masked response.
+  await import("./statement-visual/issue-553-non-idempotent-ambiguity.mjs");
   await import("./statement-visual/reports-category-evolution.mjs");
   await import("./statement-visual/issue-546-reports-category-controls.mjs");
   await import("./statement-visual/issue-546-selected-view-navigation.mjs");

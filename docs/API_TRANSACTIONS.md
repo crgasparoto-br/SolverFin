@@ -255,3 +255,7 @@ O pacote `@solverfin/domain` cobre:
 - exclusao logica com auditoria.
 
 Todos os exemplos usam dados ficticios.
+
+## Parcelamento manual canônico
+
+A criação parcelada do Extrato não usa múltiplos `POST /api/transactions`. O cliente chama `POST /api/installments`, e cada transação resultante recebe `source=installment` e `installmentId`. A descrição base não recebe sufixo `N/M`; a sequência pertence ao registro `Installment`, e a observação permanece em `Transaction.note`.

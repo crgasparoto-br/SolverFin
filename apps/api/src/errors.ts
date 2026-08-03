@@ -95,17 +95,29 @@ function normalizeApiError(
   }
 
   if (isApiErrorLike(error)) {
+    const explicitStatusCode = readExplicitStatusCode(error.statusCode);
+
+    if (explicitStatusCode === undefined) {
+      return unexpectedError(fallbackMessage);
+    }
+
     return {
-      code: error.code ?? UNEXPECTED_ERROR_CODE,
-      statusCode: normalizeStatusCode(error.statusCode),
+      code: error.code ?? "API_REQUEST_FAILED",
+      statusCode: explicitStatusCode,
       message: sanitizeMessage(error.message ?? fallbackMessage),
     };
   }
 
+  return unexpectedError(fallbackMessage);
+}
+
+function unexpectedError(
+  fallbackMessage: string,
+): Required<Pick<ApiErrorLike, "code" | "statusCode" | "message">> {
   return {
     code: UNEXPECTED_ERROR_CODE,
     statusCode: 500,
-    message: fallbackMessage,
+    message: sanitizeMessage(fallbackMessage),
   };
 }
 
@@ -153,7 +165,7 @@ function normalizeKnownDatabaseError(
   return {
     code: mapping.code,
     statusCode: mapping.statusCode,
-    message: sanitizeMessage(candidate.message ?? mapping.fallbackMessage),
+    message: mapping.fallbackMessage,
   };
 }
 
@@ -161,14 +173,14 @@ function isApiErrorLike(error: unknown): error is ApiErrorLike {
   return typeof error === "object" && error !== null;
 }
 
-function normalizeStatusCode(statusCode: number | undefined): number {
+function readExplicitStatusCode(statusCode: number | undefined): number | undefined {
   if (
     statusCode === undefined ||
     !Number.isInteger(statusCode) ||
     statusCode < 400 ||
     statusCode > 599
   ) {
-    return 500;
+    return undefined;
   }
 
   return statusCode;

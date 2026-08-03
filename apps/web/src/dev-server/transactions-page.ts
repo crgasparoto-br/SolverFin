@@ -538,7 +538,7 @@ function clientScript(): string {
         const note = String(data.get("note") || "").trim();
         if (destinationAccountId) result.destinationAccountId = destinationAccountId;
         if (categoryId) result.categoryId = categoryId;
-        if (note) result.description += " - " + note;
+        if (note) result.note = note;
         return result;
       }
 
@@ -558,26 +558,69 @@ function clientScript(): string {
         return basePayload(plannedOn, effectiveOn, moneyToMinor(data.get("amountMinor")), description);
       }
 
-      function installmentAmountMinor(totalMinor, totalCount, parcelNumber) {
-        const base = Math.floor(totalMinor / totalCount);
-        const remainder = totalMinor - base * totalCount;
-        return parcelNumber > totalCount - remainder ? base + 1 : base;
+      let installmentAttemptKey = "";
+      let installmentAttemptFingerprint = "";
+
+      function newIdempotencyKey() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+        const bytes = new Uint8Array(16);
+        window.crypto.getRandomValues(bytes);
+        bytes[6] = (bytes[6] & 15) | 64;
+        bytes[8] = (bytes[8] & 63) | 128;
+        const hex = Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+        return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
       }
 
-      function installmentPayload(parcelNumber, totalCount, monthOffset) {
+      function buildManualInstallmentPayload() {
         const data = new FormData(form);
-        const { plannedOn, effectiveOn } = plannedAndEffectiveOn(monthOffset);
-        const enteredAmountMinor = moneyToMinor(data.get("amountMinor"));
-        const valueMode = String(data.get("installmentValueMode") || "per_installment");
-        const amountMinor = valueMode === "total"
-          ? installmentAmountMinor(enteredAmountMinor, totalCount, parcelNumber)
-          : enteredAmountMinor;
-        const description = String(data.get("description") || "") + " " + parcelNumber + "/" + totalCount;
-        return basePayload(plannedOn, effectiveOn, amountMinor, description);
+        const destinationAccountId = String(data.get("destinationAccountId") || "");
+        const categoryId = String(data.get("categoryId") || "");
+        const note = String(data.get("note") || "").trim();
+        return {
+          accountId: String(data.get("accountId")),
+          destinationAccountId: destinationAccountId || null,
+          categoryId: categoryId || null,
+          kind: String(data.get("kind")),
+          status: String(data.get("status")),
+          description: String(data.get("description") || "").trim(),
+          note: note || null,
+          plannedOn: String(data.get("plannedOn")),
+          effectiveOn: String(data.get("effectiveOn") || "") || null,
+          amountMinor: moneyToMinor(data.get("amountMinor")),
+          amountMode: String(data.get("installmentValueMode") || "per_installment"),
+          totalInstallments: Math.max(2, Number(data.get("installments") || 2)),
+          initialSequenceNumber: Math.max(1, Number(data.get("installmentStart") || 1))
+        };
+      }
+
+      function buildInstallmentRequest() {
+        const payload = buildManualInstallmentPayload();
+        const fingerprint = JSON.stringify(payload);
+        if (!installmentAttemptKey || installmentAttemptFingerprint !== fingerprint) {
+          installmentAttemptKey = newIdempotencyKey();
+          installmentAttemptFingerprint = fingerprint;
+        }
+        return { ...payload, idempotencyKey: installmentAttemptKey };
+      }
+
+      function resetInstallmentAttempt() {
+        installmentAttemptKey = "";
+        installmentAttemptFingerprint = "";
+      }
+
+      function withActiveProfile(path) {
+        const profileId = new URL(window.location.href).searchParams.get("profileId");
+        if (!profileId) return path;
+        const separator = path.includes("?") ? "&" : "?";
+        return path + separator + "profileId=" + encodeURIComponent(profileId);
       }
 
       async function send(path, method, body) {
-        return fetch(path, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+        return fetch(withActiveProfile(path), {
+          method,
+          headers: { "content-type": "application/json", accept: "application/json" },
+          body: JSON.stringify(body)
+        });
       }
 
       async function message(response) {
@@ -588,6 +631,7 @@ function clientScript(): string {
       document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => {
         if (button.disabled) return;
         form.reset();
+        resetInstallmentAttempt();
         form.dataset.path = "/api/transactions";
         form.dataset.method = "POST";
         if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind;
@@ -625,40 +669,63 @@ function clientScript(): string {
 
       form && form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (form.dataset.submitting === "true") return;
         const mode = form.repeatMode.value;
         const method = form.dataset.method || "POST";
+        const submitButton = form.querySelector('button[type="submit"]');
         let response;
+        form.dataset.submitting = "true";
+        form.setAttribute("aria-busy", "true");
+        if (submitButton) submitButton.disabled = true;
         statusNode.className = "form-status muted full";
         statusNode.textContent = "Salvando...";
-        if (mode === "fixed" && method === "POST") {
-          const item = payload(0, 1);
-          response = await send("/api/recurrences", "POST", {
-            frequency: form.frequency.value,
-            interval: Math.max(1, Number(form.interval.value || 1)),
-            startOn: form.plannedOn.value,
-            endOn: form.endOn.value || undefined,
-            amountMinor: item.amountMinor,
-            description: item.description,
-            kind: item.kind,
-            accountId: item.accountId,
-            categoryId: item.categoryId
-          });
-        } else if (mode === "installment" && method === "POST") {
-          const totalCount = Math.max(2, Number(form.installments.value || 2));
-          const startParcel = Math.min(Math.max(1, Number(form.installmentStart.value || 1)), totalCount);
-          const responses = [];
-          let monthOffset = 0;
-          for (let parcelNumber = startParcel; parcelNumber <= totalCount; parcelNumber += 1, monthOffset += 1) {
-            responses.push(await send("/api/transactions", "POST", installmentPayload(parcelNumber, totalCount, monthOffset)));
+        try {
+          if (mode === "fixed" && method === "POST") {
+            const item = payload(0, 1);
+            response = await send("/api/recurrences", "POST", {
+              frequency: form.frequency.value,
+              interval: Math.max(1, Number(form.interval.value || 1)),
+              startOn: form.plannedOn.value,
+              endOn: form.endOn.value || undefined,
+              amountMinor: item.amountMinor,
+              description: item.description,
+              kind: item.kind,
+              accountId: item.accountId,
+              categoryId: item.categoryId
+            });
+          } else if (mode === "installment" && method === "POST") {
+            const installmentRequest = buildInstallmentRequest();
+            response = await send("/api/installments", "POST", installmentRequest);
+          } else {
+            response = await send(form.dataset.path || "/api/transactions", method, payload(0, 1));
           }
-          response = responses.find((item) => !item.ok) || responses[responses.length - 1];
-        } else {
-          response = await send(form.dataset.path || "/api/transactions", method, payload(0, 1));
+          const ambiguousInstallmentResponse =
+            mode === "installment" &&
+            method === "POST" &&
+            (response.status === 0 ||
+              response.status === 408 ||
+              response.status === 425 ||
+              response.status === 429 ||
+              response.status >= 500);
+          statusNode.className = response.ok ? "form-status success full" : "form-status error full";
+          statusNode.textContent = ambiguousInstallmentResponse
+            ? "A resposta foi inconclusiva. Tente novamente para confirmar o parcelamento antes de alterar os dados, ou feche o formulário para cancelar esta tentativa."
+            : await message(response);
+          if (response.ok) {
+            resetInstallmentAttempt();
+            window.setTimeout(() => window.location.reload(), 450);
+          }
+        } catch (_error) {
+          statusNode.className = "form-status error full";
+          statusNode.textContent = "Não foi possível confirmar o parcelamento. Seus dados foram preservados; tente novamente.";
+        } finally {
+          delete form.dataset.submitting;
+          form.removeAttribute("aria-busy");
+          if (submitButton && (!response || !response.ok)) submitButton.disabled = false;
         }
-        statusNode.className = response.ok ? "form-status success full" : "form-status error full";
-        statusNode.textContent = await message(response);
-        if (response.ok) window.setTimeout(() => window.location.reload(), 450);
       });
+
+      modal && modal.addEventListener("close", resetInstallmentAttempt);
 
       document.querySelectorAll(".actions").forEach((details) => {
         const menu = details.querySelector(":scope > div");

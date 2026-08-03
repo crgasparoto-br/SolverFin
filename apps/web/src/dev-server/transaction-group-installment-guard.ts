@@ -1,4 +1,10 @@
+import { financialOperationRecoveryScript } from "./financial-operation-recovery.js";
+
 export function transactionGroupInstallmentGuardScript(): string {
+  return `${financialOperationRecoveryScript()}\n${transactionGroupingScript()}`;
+}
+
+export function transactionGroupingScript(): string {
   return `
     (function () {
       if (window.location.pathname !== "/lancamentos") return;
@@ -135,21 +141,33 @@ export function transactionGroupInstallmentGuardScript(): string {
         });
       }
 
+      function readFetchDescriptor(args) {
+        const input = args[0];
+        const init = args[1] || {};
+        const url = new URL(
+          input instanceof Request ? input.url : String(input || ""),
+          window.location.origin,
+        );
+        const method = String(
+          init.method || (input instanceof Request ? input.method : "GET"),
+        ).toUpperCase();
+
+        return {
+          url: url.toString(),
+          pathname: url.pathname,
+          method,
+        };
+      }
+
       window.fetch = async (...args) => {
+        const descriptor = readFetchDescriptor(args);
         const response = await nativeFetch(...args);
+
         try {
-          const input = args[0];
-          const url = new URL(
-            input instanceof Request ? input.url : String(input || ""),
-            window.location.origin,
-          );
-          const method = String(
-            (args[1] && args[1].method) || (input instanceof Request ? input.method : "GET"),
-          ).toUpperCase();
           if (
-            method === "GET" &&
-            url.pathname === "/api/installments" &&
-            url.searchParams.has("accountId") &&
+            descriptor.method === "GET" &&
+            descriptor.pathname === "/api/installments" &&
+            new URL(descriptor.url).searchParams.has("accountId") &&
             response.ok
           ) {
             const body = await response.clone().json().catch(() => ({}));
@@ -157,8 +175,9 @@ export function transactionGroupInstallmentGuardScript(): string {
             window.queueMicrotask(() => decorateLegacyGroups(installments));
           }
         } catch (_error) {
-          // The grouping guard must not break the statement when optional metadata is unavailable.
+          // Optional legacy-group decoration must not break the statement.
         }
+
         return response;
       };
 

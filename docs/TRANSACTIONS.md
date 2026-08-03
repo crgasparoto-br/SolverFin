@@ -143,9 +143,10 @@ transforma o `PATCH` de parcela em rota de mudança de situação.
 O contrato de agrupamento também não pode ser usado como caminho alternativo: parcelas não entram em
 novos grupos, e grupos legados precisam ser desagrupados antes da manutenção.
 
-O modo manual **Repetição = Parcelado** ainda cria transações independentes e não cria registros
-`Installment`; por isso esses lançamentos não recebem o indicador nem a manutenção conservadora de
-parcelas canônicas.
+O modo manual **Repetição = Parcelado** envia uma única criação canônica para a API. O backend cria
+as `Installment` e as `Transaction` vinculadas de forma atômica, preserva descrição e observação
+separadas, aplica a âncora mensal da data original e devolve os mesmos identificadores em replay
+idempotente. As linhas passam imediatamente a usar o indicador e a manutenção conservadora de parcelas.
 
 ## Estados, responsividade e acessibilidade
 

@@ -2,18 +2,146 @@
 
 ## Objetivo
 
-Este contrato adiciona uma leitura historica, atual e futura de parcelas para as telas existentes do SolverFin. Ele nao cria uma rota web dedicada de Parcelas; a web deve consumir esses dados dentro de `/lancamentos`, `/cartoes` e `/relatorios`.
+Este contrato adiciona leitura historica, atual e futura de parcelas e a criacao manual canonica de conjuntos parcelados para as telas existentes do SolverFin. Ele nao cria uma rota web dedicada de Parcelas; a web deve consumir esses dados dentro de `/lancamentos`, `/cartoes` e `/relatorios`.
 
-A manutencao direta continua controlada pelo backend e limitada a campos seguros da transacao vinculada. O cliente nao pode alterar fatura, cartao agrupador, instrumento, valor, vencimento, tenant ou perfil financeiro por esta rota.
+A manutencao direta continua controlada pelo backend e limitada a campos seguros da transacao vinculada. O cliente nao pode alterar fatura, cartao agrupador, instrumento, valor, vencimento, tenant ou perfil financeiro pela rota de manutencao.
 
 ## Endpoints
 
 ```http
+POST /api/installments?profileId=<uuid-opcional-conforme-contrato-de-tenant>
 GET /api/installments
 PATCH /api/installments/:installmentId
 ```
 
-As rotas usam a sessao autenticada e resolvem `organizationId` e `financialProfileId` no servidor. O cliente nao deve enviar esses campos como autoridade de escopo. Quando houver mais de um perfil ativo, o filtro `profileId` segue o contrato atual de tenant.
+As rotas usam a sessao autenticada e resolvem `organizationId` e `financialProfileId` no servidor. O cliente nao deve enviar esses campos como autoridade de escopo. Quando o usuario possui mais de um perfil ativo, `profileId` segue `docs/TENANT.md` e deve identificar o perfil ativo tambem na criacao manual; ele nunca substitui a resolucao de tenant no servidor.
+
+## POST /api/installments - parcelamento manual canonico
+
+O Extrato usa esta operacao para **Repeticao = Parcelado**. Uma unica confirmacao do formulario envia uma unica requisicao autenticada; o cliente nao coordena varios `POST /api/transactions`.
+
+### Requisicao
+
+```http
+POST /api/installments?profileId=33333333-3333-4333-8333-333333333331
+Content-Type: application/json
+```
+
+```json
+{
+  "accountId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "destinationAccountId": null,
+  "categoryId": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  "kind": "expense",
+  "status": "planned",
+  "description": "Acordo financeiro",
+  "note": null,
+  "plannedOn": "2026-08-10",
+  "effectiveOn": null,
+  "amountMinor": 120000,
+  "amountMode": "per_installment",
+  "totalInstallments": 6,
+  "initialSequenceNumber": 1,
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+A allowlist aceita exatamente `accountId`, `destinationAccountId`, `categoryId`, `kind`, `status`, `description`, `note`, `plannedOn`, `effectiveOn`, `amountMinor`, `amountMode`, `totalInstallments`, `initialSequenceNumber` e `idempotencyKey`.
+
+Regras do payload:
+
+- `accountId` deve ser UUID valido de uma conta ativa do perfil resolvido;
+- `kind` aceita somente `income`, `expense` ou `transfer`;
+- `status` aceita somente `planned`, `posted` ou `reconciled`;
+- `destinationAccountId` e obrigatoria para `transfer` e deve ser `null` ou omitida para os demais tipos;
+- transferencias exigem contas ativas, distintas, do mesmo perfil e da mesma moeda;
+- `categoryId` pode ser UUID valido, `null` ou omitida;
+- `description` e obrigatoria, aparada e deve possuir de 1 a 240 caracteres;
+- `note` pode ser string, `null` ou omitida e e persistida separadamente da descricao;
+- `plannedOn` e obrigatoria e deve ser uma data real em `YYYY-MM-DD`;
+- `effectiveOn` pode ser uma data real, `null` ou omitida; seu uso depende da situacao;
+- `amountMinor` deve ser inteiro positivo;
+- `amountMode` aceita somente `per_installment` ou `total`;
+- `totalInstallments` deve ser inteiro entre `2` e `60`;
+- `initialSequenceNumber` deve ser inteiro entre `1` e `totalInstallments`;
+- em `amountMode=total`, `amountMinor` deve ser pelo menos igual a `totalInstallments`, evitando parcela de valor zero;
+- `idempotencyKey` e obrigatoria e deve ser UUID valido;
+- `organizationId`, `financialProfileId`, `source`, `currency`, `recurrenceId`, `installmentId`, `cardId`, `cardInstrumentId` e `invoiceId` nao sao aceitos como autoridade do cliente.
+
+A moeda e derivada da conta de origem persistida. `Installment.currency` e `Transaction.currency` usam essa moeda.
+
+### Situacao e datas
+
+A situacao selecionada aplica-se a todas as ocorrencias criadas. `Installment.dueOn` sempre acompanha `Transaction.plannedOn`.
+
+- `planned`: `effectiveOn` e sempre `null`, mesmo quando o cliente envia uma data; `occurredOn` e igual a `plannedOn`; `reconciledAt` permanece ausente;
+- `posted`: `effectiveOn` usa a data informada ou, quando ausente, `plannedOn`; `occurredOn` e igual a data efetiva derivada; `reconciledAt` permanece ausente;
+- `reconciled`: `effectiveOn` usa a data informada ou, quando ausente, `plannedOn`; `occurredOn` e igual a data efetiva derivada; `reconciledAt` e definido pelo servidor na criacao.
+
+A primeira parcela criada usa as datas-base informadas ou derivadas. Cada parcela posterior e calculada a partir da data-base original mais o deslocamento mensal, preservando o dia original quando ele existir no mes de destino e usando o ultimo dia valido caso contrario. Exemplo em ano nao bissexto: `2026-01-31`, `2026-02-28`, `2026-03-31`.
+
+Quando `initialSequenceNumber` for maior que `1`, a primeira parcela materializada continua usando a data informada. Por exemplo, `totalInstallments=6` e `initialSequenceNumber=3` criam somente as sequencias `3`, `4`, `5` e `6`, mantendo `totalInstallments=6` em todas as linhas.
+
+### Valores, descricao e origem
+
+Em `amountMode=per_installment`, cada parcela recebe exatamente `amountMinor`.
+
+Em `amountMode=total`, o valor e dividido pelo `totalInstallments` original, nao apenas pela quantidade restante. O resto e distribuido deterministicamente nas ultimas sequencias. Exemplo: `10000` centavos em tres parcelas produz `3333`, `3333` e `3334`.
+
+Todas as transacoes recebem a mesma descricao base aparada, sem sufixo textual `N/M`. A sequencia vem exclusivamente de `Installment.sequenceNumber` e `Installment.totalInstallments`. A observacao permanece em `Transaction.note`, e as transacoes usam `source=installment`. O parcelamento manual nao cria `Recurrence`.
+
+### Resposta de criacao
+
+Uma criacao nova retorna `201 Created`:
+
+```json
+{
+  "installments": [
+    {
+      "id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "organizationId": "22222222-2222-4222-8222-222222222222",
+      "financialProfileId": "33333333-3333-4333-8333-333333333331",
+      "status": "planned",
+      "sequenceNumber": 1,
+      "totalInstallments": 6,
+      "dueOn": "2026-08-10",
+      "amountMinor": 120000,
+      "currency": "BRL",
+      "transaction": {
+        "id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        "installmentId": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "accountId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "categoryId": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "kind": "expense",
+        "status": "planned",
+        "source": "installment",
+        "amountMinor": 120000,
+        "currency": "BRL",
+        "occurredOn": "2026-08-10",
+        "plannedOn": "2026-08-10",
+        "description": "Acordo financeiro"
+      }
+    }
+  ],
+  "idempotentReplay": false
+}
+```
+
+A lista vem em ordem crescente de `sequenceNumber`. Vinculos opcionais ausentes podem ser omitidos. Em especial, `effectiveOn` e `note` podem aparecer como `null` ou ser omitidos quando nao houver valor persistido.
+
+Replay da mesma `idempotencyKey` com o mesmo payload normalizado retorna `200 OK`, os mesmos identificadores e `idempotentReplay: true`, sem nova parcela, transacao ou auditoria de criacao.
+
+Reutilizar a mesma chave com payload normalizado diferente retorna `409 INSTALLMENT_IDEMPOTENCY_CONFLICT`. Chave ausente ou invalida retorna `400 INSTALLMENT_IDEMPOTENCY_REQUIRED`. Corpo, campo, enum, data, limite ou combinacao invalida retorna `400 INSTALLMENT_PAYLOAD_INVALID`. Validacoes de conta, conta de destino e categoria preservam os erros publicos existentes sem revelar recursos de outro tenant.
+
+### Atomicidade, concorrencia e recuperacao
+
+Todas as `Installment`, `Transaction`, auditorias e a identidade idempotente sao persistidas na mesma transacao PostgreSQL. Qualquer falha antes do commit reverte o conjunto inteiro e nao consome definitivamente a chave.
+
+A identidade e duravel, escopada por organizacao e perfil financeiro e serializada antes das mutacoes. Duas requisicoes concorrentes com a mesma chave e payload convergem para um unico conjunto; a perdedora relê e retorna o resultado persistido.
+
+Quando ocorre timeout, falha de rede, `408`, `425`, `429` ou `5xx`, o navegador preserva exatamente URL, corpo e chave da tentativa original, bloqueia alteracoes materiais e permite confirmar novamente. Uma resposta definitiva de validacao libera o formulario; uma correcao material inicia nova tentativa logica com nova chave. Sucesso, fechamento do modal, reset ou abertura de novo lancamento descartam a chave local anterior.
+
+Erro inesperado de persistencia retorna mensagem controlada e nao expoe SQL, stack, fingerprint, chave completa nem payload financeiro.
 
 ## Filtros de consulta
 

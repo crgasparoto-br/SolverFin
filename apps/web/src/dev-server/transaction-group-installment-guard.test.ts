@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { transactionGroupInstallmentGuardScript } from "./transaction-group-installment-guard.js";
+import { transactionGroupingScript } from "./transaction-group-installment-guard.js";
 
 test("keeps canonical installments selectable for bulk actions and blocks only grouping", () => {
-  const script = transactionGroupInstallmentGuardScript();
+  const script = transactionGroupingScript();
   const directSelectionGuard = script.match(
     /function markCanonicalSelection\(input\) \{([\s\S]*?)\n {6}}/,
   )?.[1];
@@ -18,11 +18,13 @@ test("keeps canonical installments selectable for bulk actions and blocks only g
   assert.match(script, /continuam disponíveis para conciliar, desconciliar ou excluir/);
   assert.match(script, /function disableLegacyGroupSelection\(input\)/);
   assert.match(script, /input\.disabled = true/);
-  assert.match(script, /url\.pathname === "\/api\/installments"/);
+  assert.match(script, /descriptor\.pathname === "\/api\/installments"/);
   assert.match(script, /response\.clone\(\)\.json/);
-  assert.match(script, /url\.searchParams\.has\("accountId"\)/);
+  assert.match(script, /searchParams\.has\("accountId"\)/);
   assert.match(script, /script\[data-group\]/);
   assert.match(script, /data-installment-badge/);
   assert.match(script, /Parcelas devem permanecer fora de agrupamentos/);
-  assert.doesNotMatch(script, /nativeFetch\("\/api\/installments/);
+  assert.doesNotMatch(script, /FINANCIAL_OPERATION_RESULT_UNKNOWN/);
+  assert.doesNotMatch(script, /installmentRecovery/);
+  assert.doesNotMatch(script, /nonIdempotentRecovery/);
 });

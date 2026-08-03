@@ -76,7 +76,12 @@ export async function listInstallmentsForContext(
 
   addEqualsFilter(where, params, `i."id"`, filters.installmentId);
   addEqualsFilter(where, params, `t."id"`, filters.transactionId);
-  addEqualsFilter(where, params, `t."accountId"`, filters.accountId);
+  if (filters.accountId !== undefined) {
+    params.push(filters.accountId);
+    where.push(
+      `(t."accountId" = $${params.length} or t."destinationAccountId" = $${params.length})`,
+    );
+  }
   addEqualsFilter(where, params, `i."recurrenceId"`, filters.recurrenceId);
   addEqualsFilter(where, params, `i."cardId"`, filters.cardId);
   addEqualsFilter(where, params, `i."cardInstrumentId"`, filters.cardInstrumentId);
