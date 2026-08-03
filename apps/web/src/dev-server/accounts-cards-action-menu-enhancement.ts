@@ -265,11 +265,20 @@ function actionMenuScript(): string {
             const items = enabledItems(menu);
             const currentIndex = items.indexOf(document.activeElement);
             if (event.key === 'Escape') {
-              event.preventDefault();
-              event.stopPropagation();
-              closeMenu(state, { restoreFocus: true });
-              return;
-            }
+    event.preventDefault();
+    event.stopPropagation();
+    document.addEventListener(
+      'keyup',
+      (keyupEvent) => {
+        if (keyupEvent.key !== 'Escape') return;
+        keyupEvent.preventDefault();
+        focusTrigger(state);
+      },
+      { capture: true, once: true },
+    );
+    closeMenu(state, { restoreFocus: true });
+    return;
+  }
             if (event.key === 'Tab') {
               closeMenu(state, { restoreFocus: false });
               return;

@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -41,8 +41,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -58,44 +56,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
-      - name: Apply Escape key lifecycle fix and restore workflow
-        env:
-          HEAD_BRANCH: ${{ github.head_ref }}
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const file = 'apps/web/src/dev-server/accounts-cards-action-menu-enhancement.ts';
-          const source = fs.readFileSync(file, 'utf8');
-          const pattern = /if \(event\.key === 'Escape'\) \{\n\s+event\.preventDefault\(\);\n\s+event\.stopPropagation\(\);\n\s+closeMenu\(state, \{ restoreFocus: true \}\);\n\s+return;\n\s+\}/;
-          const replacement = `if (event.key === 'Escape') {
-              event.preventDefault();
-              event.stopPropagation();
-              document.addEventListener(
-                'keyup',
-                (keyupEvent) => {
-                  if (keyupEvent.key !== 'Escape') return;
-                  keyupEvent.preventDefault();
-                  focusTrigger(state);
-                },
-                { capture: true, once: true },
-              );
-              closeMenu(state, { restoreFocus: true });
-              return;
-            }`;
-          if (!pattern.test(source)) throw new Error('Escape menu block not found');
-          fs.writeFileSync(file, source.replace(pattern, replacement));
-          NODE
-          npx prettier apps/web/src/dev-server/accounts-cards-action-menu-enhancement.ts --write
-          git fetch origin main --depth=1
-          git show origin/main:.github/workflows/ci.yml > .github/workflows/ci.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/ci.yml apps/web/src/dev-server/accounts-cards-action-menu-enhancement.ts
-          if ! git diff --cached --quiet; then
-            git commit -m "fix: manter foco após liberar Escape no menu"
-            git push origin HEAD:"${HEAD_BRANCH}"
-          fi
 
       - name: Check environment example
         run: npm run env:check
