@@ -29,6 +29,8 @@ function accountsCardsPageReceivesAccessibleActionMenus(): void {
   assert.match(enhanced, /Adicionar instrumento/);
   assert.match(enhanced, /event\.key === 'Escape'/);
   assert.match(enhanced, /event\.stopPropagation\(\)/);
+  assert.match(enhanced, /document\.addEventListener\(\s*'keyup'/);
+  assert.match(enhanced, /capture: true, once: true/);
   assert.match(enhanced, /event\.key !== 'ArrowDown' && event\.key !== 'ArrowUp'/);
   assert.match(enhanced, /data-action-menu-ready/);
   assert.match(enhanced, /position: fixed/);
