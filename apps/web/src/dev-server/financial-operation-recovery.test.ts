@@ -22,9 +22,7 @@ test("preserves the exact installment request after an ambiguous response", () =
 
 test("keeps the modal close action usable during ambiguous recovery", () => {
   const script = financialOperationRecoveryScript();
-  const closeGuard = script.match(
-    /function keepModalCloseAvailable\(\) \{([\s\S]*?)\n {6}}/,
-  )?.[1];
+  const closeGuard = script.match(/function keepModalCloseAvailable\(\) \{([\s\S]*?)\n {6}}/)?.[1];
 
   assert.ok(closeGuard, "missing focused modal-close recovery guard");
   assert.match(script, /\.close-form button\[type="submit"\]/);
