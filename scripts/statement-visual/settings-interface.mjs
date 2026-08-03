@@ -150,7 +150,7 @@ async function waitForSettings(cdp, section) {
   for (let attempt = 0; attempt < 50; attempt += 1) {
     const ready = await evaluate(
       cdp,
-      `document.querySelector('[aria-current="page"]')?.getAttribute('href') === '/configuracoes?section=${section}'`,
+      `document.querySelector('.settings-section-link[aria-current="page"]')?.getAttribute('href') === '/configuracoes?section=${section}'`,
     );
     if (ready) return;
     await sleep(100);
@@ -170,7 +170,7 @@ async function waitForDialog(cdp) {
 function measurementExpression(section) {
   return `(() => {
     const bodyText = document.body.innerText;
-    const active = document.querySelector('[aria-current="page"]');
+    const active = document.querySelector('.settings-section-link[aria-current="page"]');
     const dialog = document.querySelector('dialog[open]');
     const dialogRect = dialog?.getBoundingClientRect();
     const links = Array.from(document.querySelectorAll('.settings-section-link'));
