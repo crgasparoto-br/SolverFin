@@ -24,7 +24,11 @@ const rulesMobile = await runScenario("rules-mobile", 390, 844, "rules");
 const rulesZoom = await runScenario("rules-mobile-zoom-200", 390, 844, "rules", true);
 const zoomEvidence = await compareZoomEvidence(rulesMobile, rulesZoom);
 
-check(zoomEvidence.available, "rules-mobile-zoom-200: screenshots comparáveis ausentes", zoomEvidence);
+check(
+  zoomEvidence.available,
+  "rules-mobile-zoom-200: screenshots comparáveis ausentes",
+  zoomEvidence,
+);
 check(
   !zoomEvidence.available || zoomEvidence.different,
   "rules-mobile-zoom-200: evidência ampliada é idêntica ao cenário sem ampliação",
@@ -81,8 +85,7 @@ async function runScenario(name, width, height, section, zoom = false) {
         ? '[data-open-dialog="new-profile-dialog"]'
         : '[data-open-dialog="new-automation-rule-dialog"]';
     const dialogKeyboard = await openDialogWithKeyboard(browser.cdp, dialogSelector);
-    const decimalForm =
-      section === "rules" ? await validateDecimalFormBehavior(browser.cdp) : null;
+    const decimalForm = section === "rules" ? await validateDecimalFormBehavior(browser.cdp) : null;
 
     const measurements = await evaluate(browser.cdp, measurementExpression(section));
     const filename = `issue-558-${name}.png`;
@@ -163,16 +166,36 @@ async function runScenario(name, width, height, section, zoom = false) {
       );
       check(measurements.hasDecimalInputs, `${name}: campos decimais ausentes`, measurements);
       check(measurements.hasReviewMessage, `${name}: mensagem de revisão ausente`, measurements);
-      check(measurements.ruleItemCount >= 2, `${name}: regras representativas ausentes`, measurements);
-      check(renderedRules?.passed === true, `${name}: regras preenchidas incompletas`, renderedRules);
-      check(decimalForm?.validPayloadMinor === 1050, `${name}: payload decimal incorreto`, decimalForm);
-      check(decimalForm?.invalidBlocked === true, `${name}: valor inválido foi enviado`, decimalForm);
+      check(
+        measurements.ruleItemCount >= 2,
+        `${name}: regras representativas ausentes`,
+        measurements,
+      );
+      check(
+        renderedRules?.passed === true,
+        `${name}: regras preenchidas incompletas`,
+        renderedRules,
+      );
+      check(
+        decimalForm?.validPayloadMinor === 1050,
+        `${name}: payload decimal incorreto`,
+        decimalForm,
+      );
+      check(
+        decimalForm?.invalidBlocked === true,
+        `${name}: valor inválido foi enviado`,
+        decimalForm,
+      );
       check(
         decimalForm?.invalidValuePreserved === true,
         `${name}: valor inválido não foi preservado`,
         decimalForm,
       );
-      check(decimalForm?.errorAssociated === true, `${name}: erro não associado ao campo`, decimalForm);
+      check(
+        decimalForm?.errorAssociated === true,
+        `${name}: erro não associado ao campo`,
+        decimalForm,
+      );
     }
 
     return {
@@ -300,8 +323,16 @@ async function ensureSettingsRuleFixtures(cdp) {
     })()`,
   );
 
-  assert.equal(typeof fixtures.activeRuleId, "string", "Active settings rule fixture was not created.");
-  assert.equal(typeof fixtures.inactiveRuleId, "string", "Inactive settings rule fixture was not created.");
+  assert.equal(
+    typeof fixtures.activeRuleId,
+    "string",
+    "Active settings rule fixture was not created.",
+  );
+  assert.equal(
+    typeof fixtures.inactiveRuleId,
+    "string",
+    "Inactive settings rule fixture was not created.",
+  );
   return fixtures;
 }
 
@@ -443,7 +474,13 @@ async function compareZoomEvidence(normalScenario, zoomScenario) {
       zoomSha256,
     };
   } catch (error) {
-    return { available: false, different: false, normalFile, zoomFile, error: serializeError(error) };
+    return {
+      available: false,
+      different: false,
+      normalFile,
+      zoomFile,
+      error: serializeError(error),
+    };
   }
 }
 
