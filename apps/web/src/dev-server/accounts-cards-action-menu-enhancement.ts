@@ -20,7 +20,7 @@ function actionMenuStyles(): string {
   return `
     <style data-accounts-cards-action-menu-styles>
       .item-actions[data-action-menu-ready],
-      .instrument-actions[data-action-menu-ready] { align-items: center; display: flex; justify-content: flex-end; position: relative; }
+      .instrument-actions[data-action-menu-ready] { align-items: center; display: flex; flex-wrap: wrap; justify-content: flex-end; position: relative; }
       .action-menu { display: inline-flex; position: relative; }
       .action-menu-trigger { align-items: center; background: #fff; border: 1px solid #d8e2e8; border-radius: 8px; color: #475569; display: inline-flex; height: 40px; justify-content: center; min-height: 40px; min-width: 40px; padding: 0; width: 40px; }
       .action-menu-trigger:hover:not(:disabled),
@@ -29,11 +29,11 @@ function actionMenuStyles(): string {
       .action-menu-popover { background: #fff; border: 1px solid #d8e2e8; border-radius: 10px; box-shadow: 0 14px 32px rgba(15, 23, 42, .16); display: grid; gap: 2px; left: 0; min-width: 220px; padding: 6px; position: fixed; top: 0; z-index: 1200; }
       .action-menu-popover[hidden] { display: none !important; }
       .action-menu-popover form { display: block; margin: 0; width: 100%; }
-      .action-menu-item { align-items: center; background: transparent; border: 0; border-radius: 7px; color: #334155; display: flex; font: inherit; font-size: .8125rem; font-weight: 650; gap: 10px; height: auto !important; justify-content: flex-start; line-height: 1.25; min-height: 40px !important; min-width: 0 !important; padding: 8px 10px !important; text-align: left; white-space: nowrap; width: 100% !important; }
-      .action-menu-item:hover:not(:disabled), .action-menu-item:focus-visible { background: #f1f5f9; color: #0f172a; }
-      .action-menu-item:disabled { cursor: not-allowed; opacity: .5; }
-      .action-menu-item.is-danger { color: #b42318; }
-      .action-menu-item.is-danger:hover:not(:disabled), .action-menu-item.is-danger:focus-visible { background: #fff1f0; color: #8f1d15; }
+      .action-menu-popover .action-menu-item { align-items: center; background: transparent; border: 0; border-radius: 7px; color: #334155; display: flex; font: inherit; font-size: .8125rem; font-weight: 650; gap: 10px; height: auto !important; justify-content: flex-start; line-height: 1.25; min-height: 40px !important; min-width: 0 !important; padding: 8px 10px !important; text-align: left; white-space: nowrap; width: 100% !important; }
+      .action-menu-popover .action-menu-item:hover:not(:disabled), .action-menu-popover .action-menu-item:focus-visible { background: #f1f5f9; color: #0f172a; }
+      .action-menu-popover .action-menu-item:disabled { cursor: not-allowed; opacity: .5; }
+      .action-menu-popover .action-menu-item.is-danger { color: #b42318; }
+      .action-menu-popover .action-menu-item.is-danger:hover:not(:disabled), .action-menu-popover .action-menu-item.is-danger:focus-visible { background: #fff1f0; color: #8f1d15; }
       .action-menu-item-icon { align-items: center; display: inline-flex; flex: 0 0 auto; height: 18px; justify-content: center; width: 18px; }
       .action-menu-item-icon svg { height: 16px; width: 16px; }
       .item-actions[data-action-menu-ready] > .form-status,
@@ -56,6 +56,7 @@ function actionMenuScript(): string {
         window.__solverFinAccountsCardsActionMenus = true;
 
         const moreIcon = ${moreIcon};
+        const actionIcons = new WeakMap();
         const menuStates = new WeakMap();
         let menuSequence = 0;
         let openMenuState = null;
@@ -121,7 +122,9 @@ function actionMenuScript(): string {
           if (dialogId.startsWith('new-card-instrument-dialog-')) return 'Adicionar instrumento';
           if (button.hasAttribute('data-view-instruments')) return 'Ver instrumentos';
           if (button.hasAttribute('data-account-remuneration-action')) {
-            return button.title || button.getAttribute('aria-label') || 'Configurar remuneração pelo CDI';
+            return String(button.textContent || '').trim() ||
+              button.getAttribute('aria-label') ||
+              'Configurar remuneração pelo CDI';
           }
           if (apiPath.endsWith('/default-instrument')) return 'Definir como padrão';
           if (apiPath.endsWith('/archive')) return 'Arquivar';
@@ -137,9 +140,9 @@ function actionMenuScript(): string {
 
         function renderMenuItem(button, form) {
           const label = inferActionLabel(button, form);
-          const iconMarkup = button.dataset.actionMenuIcon ||
+          const iconMarkup = actionIcons.get(button) ||
             (button.querySelector('svg') ? button.querySelector('svg').outerHTML : '');
-          button.dataset.actionMenuIcon = iconMarkup;
+          actionIcons.set(button, iconMarkup);
           button.setAttribute('aria-label', label);
           button.innerHTML =
             (iconMarkup ? '<span class="action-menu-item-icon" aria-hidden="true">' + iconMarkup + '</span>' : '') +
