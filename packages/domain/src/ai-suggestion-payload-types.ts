@@ -142,7 +142,8 @@ export interface DeduplicationSuggestionPayloadV1
 export interface ReconciliationSuggestionPayloadV1
   extends DeterministicSuggestionPayloadV1Base<"reconciliation"> {}
 
-export interface InsightSuggestionPayloadV1 extends AiSuggestionPayloadBase<"insight"> {
+export interface InsightSuggestionPayloadV1
+  extends AiSuggestionPayloadBase<"insight"> {
   payloadVersion: 1;
   insightType: "anomaly" | "trend" | "summary" | "opportunity";
   title: string;
@@ -239,13 +240,16 @@ const ERROR_STATUS: Readonly<Record<AiSuggestionPayloadErrorCode, number>> = {
 
 const ERROR_MESSAGE: Readonly<Record<AiSuggestionPayloadErrorCode, string>> = {
   AI_SUGGESTION_PAYLOAD_MISSING: "A sugestao nao possui payload estruturado.",
-  AI_SUGGESTION_PAYLOAD_INVALID: "O payload estruturado da sugestao e invalido.",
-  AI_SUGGESTION_PAYLOAD_KIND_MISMATCH: "O payload nao e compativel com o tipo da sugestao.",
+  AI_SUGGESTION_PAYLOAD_INVALID:
+    "O payload estruturado da sugestao e invalido.",
+  AI_SUGGESTION_PAYLOAD_KIND_MISMATCH:
+    "O payload nao e compativel com o tipo da sugestao.",
   AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED:
     "A versao do payload da sugestao nao e suportada.",
   AI_SUGGESTION_PAYLOAD_OBSOLETE:
     "A sugestao ficou obsoleta porque sua origem ou proposta foi alterada.",
-  AI_SUGGESTION_PAYLOAD_IMMUTABLE: "Sugestoes resolvidas nao podem ter o payload alterado.",
+  AI_SUGGESTION_PAYLOAD_IMMUTABLE:
+    "Sugestoes resolvidas nao podem ter o payload alterado.",
   AI_SUGGESTION_PAYLOAD_CONFLICT:
     "A sugestao foi alterada por outra operacao. Recarregue os dados e tente novamente.",
 };
