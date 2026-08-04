@@ -14,20 +14,32 @@ import {
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 let browserVersion = "unknown";
 
 if (!chromePath) {
-  throw new Error("CHROME_BIN is required for settings reservation validation.");
+  throw new Error(
+    "CHROME_BIN is required for settings reservation validation.",
+  );
 }
 await mkdir(outputDir, { recursive: true });
 
 const mutationCoverage = await validateMutationSectionPreservation();
-const profilesNormal = await captureProfilesTextScale("profiles-mobile-baseline", false);
-const profilesZoom = await captureProfilesTextScale("profiles-mobile-zoom-200", true);
-const profilesZoomEvidence = await compareScreenshots(profilesNormal, profilesZoom);
+const profilesNormal = await captureProfilesTextScale(
+  "profiles-mobile-baseline",
+  false,
+);
+const profilesZoom = await captureProfilesTextScale(
+  "profiles-mobile-zoom-200",
+  true,
+);
+const profilesZoomEvidence = await compareScreenshots(
+  profilesNormal,
+  profilesZoom,
+);
 
 check(
   profilesZoomEvidence.available,
@@ -270,7 +282,10 @@ async function captureProfilesTextScale(name, zoom) {
       "parseFloat(getComputedStyle(document.documentElement).fontSize)",
     );
     if (zoom) {
-      await evaluate(browser.cdp, `document.documentElement.style.fontSize = "200%"`);
+      await evaluate(
+        browser.cdp,
+        `document.documentElement.style.fontSize = "200%"`,
+      );
       await sleep(150);
     }
     const afterPx = await evaluate(
@@ -411,7 +426,9 @@ async function navigateWithRetry(cdp, url, label) {
       ).catch(() => ({ href: "", readyState: "" }));
       if (state.href.startsWith(url) && state.readyState !== "loading") return;
       if (attempt === 3) throw error;
-      console.warn(`Navigation to ${label} failed on attempt ${attempt}; retrying.`);
+      console.warn(
+        `Navigation to ${label} failed on attempt ${attempt}; retrying.`,
+      );
       await sleep(350 * attempt);
     }
   }
@@ -450,7 +467,9 @@ async function waitForReload(cdp, previousTimeOrigin, section) {
     }
     await sleep(100);
   }
-  throw new Error(`Timed out waiting for settings reload in section ${section}.`);
+  throw new Error(
+    `Timed out waiting for settings reload in section ${section}.`,
+  );
 }
 
 async function waitForExpression(cdp, expression, timeout = 10_000) {
@@ -472,7 +491,11 @@ function check(condition, message, details) {
 
 function serializeError(error) {
   if (error instanceof Error) {
-    return { name: error.name, message: error.message, stack: error.stack ?? "" };
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack ?? "",
+    };
   }
   return { name: "UnknownError", message: String(error), stack: "" };
 }
