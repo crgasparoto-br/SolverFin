@@ -11,13 +11,13 @@ import {
 
 import { query, withTransaction, type QueryExecutor } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { createAiSuggestionTransaction } from "./ai-suggestion-transactions.js";
 import {
   approveImportSuggestionForContext,
   rejectImportSuggestionForContext,
   updateImportSuggestionForContext,
   type ImportSuggestionUpdatePayload,
 } from "./imports.js";
-import { createAiSuggestionTransaction } from "./ai-suggestion-transactions.js";
 
 export interface AiReviewQueueListFilters {
   kind?: AiSuggestion["kind"];
@@ -114,7 +114,8 @@ export async function listAiReviewQueueForContext(
     .filter((suggestion) => matchesFilters(suggestion, filters))
     .filter(
       (suggestion) =>
-        filters.includeLowConfidence === true || suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD,
+        filters.includeLowConfidence === true ||
+        suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD,
     )
     .map(buildQueueItem);
 }
@@ -138,7 +139,11 @@ export async function approveAiReviewSuggestionForContext(
   }
 
   return withTransaction(async (executeQuery) => {
-    const suggestion = await lockSuggestionForContext(executeQuery, context, suggestionId);
+    const suggestion = await lockSuggestionForContext(
+      executeQuery,
+      context,
+      suggestionId,
+    );
     assertPending(suggestion);
     const now = new Date().toISOString();
     let transaction: Transaction | undefined;
@@ -164,7 +169,10 @@ export async function approveAiReviewSuggestionForContext(
       now,
       targetEntityId,
     );
-    await executeQuery(buildUpdateAiSuggestionSql(), buildAiSuggestionParams(approvedSuggestion));
+    await executeQuery(
+      buildUpdateAiSuggestionSql(),
+      buildAiSuggestionParams(approvedSuggestion),
+    );
     await insertAuditLogEntry(
       executeQuery,
       buildSuggestionAuditEntry(
@@ -203,7 +211,11 @@ export async function editAiReviewSuggestionForContext(
   }
 
   return withTransaction(async (executeQuery) => {
-    const suggestion = await lockSuggestionForContext(executeQuery, context, suggestionId);
+    const suggestion = await lockSuggestionForContext(
+      executeQuery,
+      context,
+      suggestionId,
+    );
     assertPending(suggestion);
     const now = new Date().toISOString();
 
@@ -212,8 +224,16 @@ export async function editAiReviewSuggestionForContext(
       mergeTransactionDraft(draft, payload);
     }
 
-    const editedSuggestion = markSuggestionReviewed(context, suggestion, "edited", now);
-    await executeQuery(buildUpdateAiSuggestionSql(), buildAiSuggestionParams(editedSuggestion));
+    const editedSuggestion = markSuggestionReviewed(
+      context,
+      suggestion,
+      "edited",
+      now,
+    );
+    await executeQuery(
+      buildUpdateAiSuggestionSql(),
+      buildAiSuggestionParams(editedSuggestion),
+    );
     await insertAuditLogEntry(
       executeQuery,
       buildSuggestionAuditEntry(
@@ -247,11 +267,23 @@ export async function rejectAiReviewSuggestionForContext(
   }
 
   return withTransaction(async (executeQuery) => {
-    const suggestion = await lockSuggestionForContext(executeQuery, context, suggestionId);
+    const suggestion = await lockSuggestionForContext(
+      executeQuery,
+      context,
+      suggestionId,
+    );
     assertPending(suggestion);
     const now = new Date().toISOString();
-    const rejectedSuggestion = markSuggestionReviewed(context, suggestion, "rejected", now);
-    await executeQuery(buildUpdateAiSuggestionSql(), buildAiSuggestionParams(rejectedSuggestion));
+    const rejectedSuggestion = markSuggestionReviewed(
+      context,
+      suggestion,
+      "rejected",
+      now,
+    );
+    await executeQuery(
+      buildUpdateAiSuggestionSql(),
+      buildAiSuggestionParams(rejectedSuggestion),
+    );
     await insertAuditLogEntry(
       executeQuery,
       buildSuggestionAuditEntry(
@@ -310,7 +342,10 @@ async function lockSuggestionForContext(
   return suggestion;
 }
 
-function matchesFilters(suggestion: AiSuggestion, filters: AiReviewQueueListFilters): boolean {
+function matchesFilters(
+  suggestion: AiSuggestion,
+  filters: AiReviewQueueListFilters,
+): boolean {
   const status = filters.status ?? "pending_review";
   if (status !== "all" && suggestion.status !== status) return false;
   if (filters.kind !== undefined && suggestion.kind !== filters.kind) return false;
@@ -328,25 +363,42 @@ function buildQueueItem(suggestion: AiSuggestion): AiReviewQueueItem {
     status: suggestion.status,
     origin: resolveOrigin(suggestion),
     confidence: suggestion.confidence,
-    risk: suggestion.confidence < LOW_CONFIDENCE_THRESHOLD ? "low_confidence" : "normal",
+    risk:
+      suggestion.confidence < LOW_CONFIDENCE_THRESHOLD
+        ? "low_confidence"
+        : "normal",
     explanation: suggestion.explanation,
     maskedSummary: buildMaskedSummary(suggestion, proposedTransaction),
     createdAt: suggestion.createdAt,
   };
-  if (proposedTransaction !== undefined) item.proposedTransaction = proposedTransaction;
-  if (suggestion.sourceEntityId !== undefined) item.sourceEntityId = suggestion.sourceEntityId;
-  if (suggestion.targetEntityId !== undefined) item.targetEntityId = suggestion.targetEntityId;
+  if (proposedTransaction !== undefined) {
+    item.proposedTransaction = proposedTransaction;
+  }
+  if (suggestion.sourceEntityId !== undefined) {
+    item.sourceEntityId = suggestion.sourceEntityId;
+  }
+  if (suggestion.targetEntityId !== undefined) {
+    item.targetEntityId = suggestion.targetEntityId;
+  }
   if (suggestion.provider !== undefined) item.provider = suggestion.provider;
   if (suggestion.model !== undefined) item.model = suggestion.model;
-  if (suggestion.reviewedByUserId !== undefined) item.reviewedByUserId = suggestion.reviewedByUserId;
+  if (suggestion.reviewedByUserId !== undefined) {
+    item.reviewedByUserId = suggestion.reviewedByUserId;
+  }
   if (suggestion.reviewedAt !== undefined) item.reviewedAt = suggestion.reviewedAt;
   return item;
 }
 
 function resolveOrigin(suggestion: AiSuggestion): AiReviewQueueItem["origin"] {
-  if (suggestion.provider?.startsWith("solverfin-import") === true) return "import";
-  if (suggestion.provider?.startsWith("solverfin-rule") === true) return "rule";
-  if (suggestion.provider?.startsWith("solverfin-automation") === true) return "automation";
+  if (suggestion.provider?.startsWith("solverfin-import") === true) {
+    return "import";
+  }
+  if (suggestion.provider?.startsWith("solverfin-rule") === true) {
+    return "rule";
+  }
+  if (suggestion.provider?.startsWith("solverfin-automation") === true) {
+    return "automation";
+  }
   return "ai";
 }
 
@@ -355,12 +407,17 @@ function buildMaskedSummary(
   proposedTransaction: AiSuggestedTransactionDraft | undefined,
 ): string {
   if (proposedTransaction !== undefined) {
-    return `${proposedTransaction.occurredOn} - ${proposedTransaction.description}`.slice(0, 160);
+    return `${proposedTransaction.occurredOn} - ${proposedTransaction.description}`.slice(
+      0,
+      160,
+    );
   }
   return suggestion.explanation.slice(0, 160);
 }
 
-function parseProposedTransaction(suggestion: AiSuggestion): AiSuggestedTransactionDraft {
+function parseProposedTransaction(
+  suggestion: AiSuggestion,
+): AiSuggestedTransactionDraft {
   const parsed = tryParseProposedTransaction(suggestion);
   if (parsed === undefined) {
     throw new AiReviewQueueError(
@@ -376,7 +433,9 @@ function tryParseProposedTransaction(
   suggestion: AiSuggestion,
 ): AiSuggestedTransactionDraft | undefined {
   const structured = parseTransactionExtractionPayload(suggestion.payload);
-  if (structured === undefined || structured.accountId === undefined) return undefined;
+  if (structured === undefined || structured.accountId === undefined) {
+    return undefined;
+  }
   return {
     kind: structured.kind,
     amountMinor: structured.amountMinor,
@@ -384,9 +443,14 @@ function tryParseProposedTransaction(
     accountId: structured.accountId,
     description: structured.description,
     currency: structured.currency,
-    ...(structured.categoryId === undefined ? {} : { categoryId: structured.categoryId }),
-    ...(structured.payloadVersion === 2 ? { direction: structured.direction } : {}),
-    ...(structured.payloadVersion === 2 && structured.otherAccountId !== undefined
+    ...(structured.categoryId === undefined
+      ? {}
+      : { categoryId: structured.categoryId }),
+    ...(structured.payloadVersion === 2
+      ? { direction: structured.direction }
+      : {}),
+    ...(structured.payloadVersion === 2 &&
+    structured.otherAccountId !== undefined
       ? { otherAccountId: structured.otherAccountId }
       : {}),
   };
@@ -419,10 +483,16 @@ function mergeTransactionDraft(
 ): AiSuggestedTransactionDraft {
   const payload = { ...draft, ...(override ?? {}) };
   if (!payload.accountId) {
-    throw new AiReviewQueueError("AI_REVIEW_ACCOUNT_REQUIRED", "Sugestao precisa de uma conta valida antes da aprovacao.");
+    throw new AiReviewQueueError(
+      "AI_REVIEW_ACCOUNT_REQUIRED",
+      "Sugestao precisa de uma conta valida antes da aprovacao.",
+    );
   }
   if (!payload.description.trim()) {
-    throw new AiReviewQueueError("AI_REVIEW_DESCRIPTION_REQUIRED", "Sugestao precisa de uma descricao antes da aprovacao.");
+    throw new AiReviewQueueError(
+      "AI_REVIEW_DESCRIPTION_REQUIRED",
+      "Sugestao precisa de uma descricao antes da aprovacao.",
+    );
   }
   return {
     kind: payload.kind,
@@ -431,16 +501,26 @@ function mergeTransactionDraft(
     accountId: payload.accountId,
     description: payload.description.trim(),
     ...(payload.currency !== undefined ? { currency: payload.currency } : {}),
-    ...(payload.categoryId !== undefined ? { categoryId: payload.categoryId } : {}),
+    ...(payload.categoryId !== undefined
+      ? { categoryId: payload.categoryId }
+      : {}),
     ...(payload.direction !== undefined ? { direction: payload.direction } : {}),
-    ...(payload.otherAccountId !== undefined ? { otherAccountId: payload.otherAccountId } : {}),
-    ...(payload.destinationAccountId !== undefined ? { destinationAccountId: payload.destinationAccountId } : {}),
+    ...(payload.otherAccountId !== undefined
+      ? { otherAccountId: payload.otherAccountId }
+      : {}),
+    ...(payload.destinationAccountId !== undefined
+      ? { destinationAccountId: payload.destinationAccountId }
+      : {}),
   };
 }
 
 function assertPending(suggestion: AiSuggestion): void {
   if (suggestion.status !== "pending_review") {
-    throw new AiReviewQueueError("AI_REVIEW_INVALID_TRANSITION", "Apenas sugestoes pendentes podem ser revisadas.", 409);
+    throw new AiReviewQueueError(
+      "AI_REVIEW_INVALID_TRANSITION",
+      "Apenas sugestoes pendentes podem ser revisadas.",
+      409,
+    );
   }
 }
 
@@ -471,11 +551,23 @@ function buildUpdateAiSuggestionSql(): string {
 }
 
 function buildAiSuggestionParams(suggestion: AiSuggestion): unknown[] {
-  return [suggestion.id, suggestion.organizationId, suggestion.financialProfileId,
-    suggestion.kind.toUpperCase(), suggestion.status.toUpperCase(), suggestion.sourceEntityId ?? null,
-    suggestion.targetEntityId ?? null, suggestion.confidence, suggestion.explanation,
-    suggestion.provider ?? null, suggestion.model ?? null, suggestion.reviewedByUserId ?? null,
-    suggestion.reviewedAt ?? null, suggestion.createdAt, suggestion.updatedAt];
+  return [
+    suggestion.id,
+    suggestion.organizationId,
+    suggestion.financialProfileId,
+    suggestion.kind.toUpperCase(),
+    suggestion.status.toUpperCase(),
+    suggestion.sourceEntityId ?? null,
+    suggestion.targetEntityId ?? null,
+    suggestion.confidence,
+    suggestion.explanation,
+    suggestion.provider ?? null,
+    suggestion.model ?? null,
+    suggestion.reviewedByUserId ?? null,
+    suggestion.reviewedAt ?? null,
+    suggestion.createdAt,
+    suggestion.updatedAt,
+  ];
 }
 
 function buildSuggestionAuditEntry(
@@ -496,7 +588,11 @@ function buildSuggestionAuditEntry(
     entityKind: "ai_suggestion",
     entityId: suggestion.id,
     reason,
-    redactedChanges: redactedChanges ?? { status: "changed", reviewedAt: "added", reviewedByUserId: "added" },
+    redactedChanges: redactedChanges ?? {
+      status: "changed",
+      reviewedAt: "added",
+      reviewedByUserId: "added",
+    },
   };
 }
 
@@ -504,7 +600,9 @@ function buildRedactedProposalChanges(
   payload: Partial<AiSuggestedTransactionDraft>,
 ): AuditLogEntryDraft["redactedChanges"] {
   const changes: NonNullable<AuditLogEntryDraft["redactedChanges"]> = {
-    status: "changed", reviewedAt: "added", reviewedByUserId: "added",
+    status: "changed",
+    reviewedAt: "added",
+    reviewedByUserId: "added",
   };
   for (const key of Object.keys(payload)) changes[key] = "changed";
   return changes;
@@ -512,11 +610,15 @@ function buildRedactedProposalChanges(
 
 function mapAiSuggestionRow(row: AiSuggestionRow): AiSuggestion {
   const suggestion: AiSuggestion = {
-    id: row.id, organizationId: row.organizationId, financialProfileId: row.financialProfileId,
+    id: row.id,
+    organizationId: row.organizationId,
+    financialProfileId: row.financialProfileId,
     kind: row.kind.toLowerCase() as AiSuggestion["kind"],
     status: row.status.toLowerCase() as AiSuggestion["status"],
-    confidence: Number(row.confidence), explanation: row.explanation,
-    createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString(),
+    confidence: Number(row.confidence),
+    explanation: row.explanation,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
   if (row.sourceEntityId !== null) suggestion.sourceEntityId = row.sourceEntityId;
   const payload = parseTransactionExtractionPayload(row.payload);
@@ -524,14 +626,20 @@ function mapAiSuggestionRow(row: AiSuggestionRow): AiSuggestion {
   if (row.targetEntityId !== null) suggestion.targetEntityId = row.targetEntityId;
   if (row.provider !== null) suggestion.provider = row.provider;
   if (row.model !== null) suggestion.model = row.model;
-  if (row.reviewedByUserId !== null) suggestion.reviewedByUserId = row.reviewedByUserId;
-  if (row.reviewedAt !== null) suggestion.reviewedAt = row.reviewedAt.toISOString();
+  if (row.reviewedByUserId !== null) {
+    suggestion.reviewedByUserId = row.reviewedByUserId;
+  }
+  if (row.reviewedAt !== null) {
+    suggestion.reviewedAt = row.reviewedAt.toISOString();
+  }
   return suggestion;
 }
 
 function isImportExtractionSuggestion(suggestion: AiSuggestion): boolean {
-  return suggestion.kind === "transaction_extraction" &&
+  return (
+    suggestion.kind === "transaction_extraction" &&
     suggestion.sourceEntityId !== undefined &&
     suggestion.provider?.startsWith("solverfin-import") === true &&
-    parseTransactionExtractionPayload(suggestion.payload) !== undefined;
+    parseTransactionExtractionPayload(suggestion.payload) !== undefined
+  );
 }
