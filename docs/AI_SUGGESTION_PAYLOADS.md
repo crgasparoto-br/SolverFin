@@ -30,13 +30,13 @@ O contrato comum está em `@solverfin/domain/ai-suggestion-payloads` e usa um en
 
 ## Tipos suportados
 
-| `suggestionKind`         | Versão atual | Conteúdo canônico                                                                                                                           |
-| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `transaction_extraction` | V1/V2        | linha e hash de origem, data, tipo, direção na V2, valor, moeda, descrição, contas, categoria e identificador externo opcionais              |
-| `categorization`         | V1           | alvo explícito e campos propostos de categoria, conta, cartão ou status                                                                      |
-| `deduplication`          | V1           | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos                                                                       |
-| `reconciliation`         | V1           | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos                                                                       |
-| `insight`                | V1           | tipo, título, resumo, período, métrica estruturada e entidades relacionadas opcionais                                                        |
+| `suggestionKind`         | Versão atual | Conteúdo canônico                                                                                                              |
+| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `transaction_extraction` | V1/V2        | linha e hash de origem, data, tipo, direção na V2, valor, moeda, descrição, contas, categoria e identificador externo opcionais |
+| `categorization`         | V1           | alvo explícito e campos propostos de categoria, conta, cartão ou status                                                         |
+| `deduplication`          | V1           | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos                                                          |
+| `reconciliation`         | V1           | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos                                                          |
+| `insight`                | V1           | tipo, título, resumo, período, métrica estruturada e entidades relacionadas opcionais                                           |
 
 `origin`, `target`, `confidence`, `reasons`, `audit` e `fingerprint` pertencem ao envelope comum. IDs permanecem sujeitos ao isolamento por organização e perfil financeiro.
 
@@ -46,9 +46,25 @@ O domínio produz fingerprints `sha256-<64 hex>` sobre JSON canônico, excluindo
 
 Uma alteração de proposta precisa gerar novo fingerprint. Uma mutação com fingerprint esperado divergente retorna `AI_SUGGESTION_PAYLOAD_CONFLICT`. Sugestões resolvidas são imutáveis; duas decisões concorrentes não podem produzir dois estados terminais válidos.
 
+### Dependências entre sugestões
+
+`categorization`, `deduplication` e `reconciliation` podem depender de outra sugestão. Quando `sourceSuggestionId` está presente, o payload também registra o fingerprint da origem em `audit.sourceFingerprint`; o contrato determinístico mantém ainda `sourcePayloadFingerprint` como compatibilidade explícita.
+
+A transição de uma dependente para `approved` ou `edited` revalida a origem no PostgreSQL antes do commit:
+
+1. a origem precisa existir na mesma organização e no mesmo perfil financeiro;
+2. a linha da origem é lida com lock compartilhado;
+3. o fingerprint persistido da origem precisa coincidir com o observado pela dependente;
+4. ausência ou divergência retorna `AI_SUGGESTION_PAYLOAD_OBSOLETE`;
+5. a sugestão permanece pendente e nenhuma transação, auditoria terminal ou timestamp de revisão é persistido.
+
+Uma categorização sem `sourceSuggestionId` pode representar proposta direta sobre uma transação e não é tratada como candidatura dependente. A rejeição não exige origem vigente, permitindo descartar uma dependente obsoleta.
+
 ## Compatibilidade e migração
 
 A migração `20260804130000_versioned_ai_suggestion_payloads` não executa backfill amplo e não altera registros históricos durante o deploy. A migração complementar `20260804143000_harden_ai_suggestion_payload_nested_objects` torna a validação do PostgreSQL estrita também dentro de `origin`, `target`, `audit` e `metric`, além de validar os arrays estruturados.
+
+A migração `20260804220500_validate_ai_suggestion_dependency_freshness` protege decisões dependentes contra alterações concorrentes ou posteriores da origem. Ela não reescreve dados existentes e atua somente em transições terminais de registros pendentes.
 
 - gravações novas precisam ter payload estruturado;
 - V1/V2 legados de extração e V1 determinístico podem ser encapsulados pelo trigger, porque já contêm campos estruturados verificáveis;
