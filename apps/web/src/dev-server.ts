@@ -22,6 +22,7 @@ import { renderDashboardPage } from "./dev-server/dashboard-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { enhanceInboxListLayout } from "./dev-server/inbox-list-layout-enhancement.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
+import { enhanceInboxWithStructuredPayloads } from "./dev-server/inbox-structured-payload-enhancement.js";
 import {
   enhanceCardListSorting,
   enhanceStatementListSorting,
@@ -223,7 +224,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/inbox" && token) {
-    const html = await renderInboxPage(token);
+    const html = await enhanceInboxWithStructuredPayloads(await renderInboxPage(token), token);
     sendHtml(response, 200, enhanceInboxListLayout(html, url));
     return;
   }
