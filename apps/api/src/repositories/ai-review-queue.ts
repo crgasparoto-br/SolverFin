@@ -8,6 +8,14 @@ import {
   type Transaction,
   type TransactionKind,
 } from "@solverfin/domain";
+import {
+  buildAiSuggestionPayload,
+  migrateLegacyAiSuggestionPayload,
+  readAiSuggestionPayload,
+  type AiSuggestionPayloadOrigin,
+  type AiSuggestionPayloadTarget,
+  type TransactionExtractionSuggestionPayload,
+} from "@solverfin/domain/ai-suggestion-payloads";
 
 import { query, withTransaction, type QueryExecutor } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
@@ -18,6 +26,10 @@ import {
   updateImportSuggestionForContext,
   type ImportSuggestionUpdatePayload,
 } from "./imports.js";
+
+export type PersistedAiSuggestion = Omit<AiSuggestion, "payload"> & {
+  payload?: unknown;
+};
 
 export interface AiReviewQueueListFilters {
   kind?: AiSuggestion["kind"];
@@ -58,7 +70,7 @@ export interface AiReviewQueueItem {
 }
 
 export interface ReviewMutationResult {
-  suggestion: AiSuggestion;
+  suggestion: PersistedAiSuggestion;
   transaction?: Transaction;
 }
 
@@ -148,10 +160,12 @@ export async function approveAiReviewSuggestionForContext(
     const now = new Date().toISOString();
     let transaction: Transaction | undefined;
     let targetEntityId: string | undefined;
+    let reviewedPayload = suggestion.payload;
 
     if (suggestion.kind === "transaction_extraction") {
       const draft = parseProposedTransaction(suggestion);
       const payload = mergeTransactionDraft(draft, payloadOverride);
+      reviewedPayload = buildReviewedTransactionPayload(suggestion, payload);
       transaction = await createAiSuggestionTransaction(
         executeQuery,
         context,
@@ -164,7 +178,7 @@ export async function approveAiReviewSuggestionForContext(
 
     const approvedSuggestion = markSuggestionReviewed(
       context,
-      suggestion,
+      { ...suggestion, payload: reviewedPayload },
       "approved",
       now,
       targetEntityId,
@@ -183,6 +197,9 @@ export async function approveAiReviewSuggestionForContext(
         transaction === undefined
           ? "Sugestao aprovada sem efeito financeiro automatico."
           : "Sugestao aprovada e convertida em lancamento.",
+        payloadOverride === undefined
+          ? undefined
+          : buildRedactedProposalChanges(payloadOverride),
       ),
     );
 
@@ -218,15 +235,17 @@ export async function editAiReviewSuggestionForContext(
     );
     assertPending(suggestion);
     const now = new Date().toISOString();
+    let reviewedPayload = suggestion.payload;
 
     if (suggestion.kind === "transaction_extraction") {
       const draft = parseProposedTransaction(suggestion);
-      mergeTransactionDraft(draft, payload);
+      const merged = mergeTransactionDraft(draft, payload);
+      reviewedPayload = buildReviewedTransactionPayload(suggestion, merged);
     }
 
     const editedSuggestion = markSuggestionReviewed(
       context,
-      suggestion,
+      { ...suggestion, payload: reviewedPayload },
       "edited",
       now,
     );
@@ -301,7 +320,7 @@ export async function rejectAiReviewSuggestionForContext(
 async function findSuggestionForContext(
   context: TenantContext,
   suggestionId: EntityId,
-): Promise<AiSuggestion> {
+): Promise<PersistedAiSuggestion> {
   const rows = await query<AiSuggestionRow>(
     `select ${AI_SUGGESTION_SELECT_COLUMNS} from "AiSuggestion"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
@@ -324,7 +343,7 @@ async function lockSuggestionForContext(
   executeQuery: QueryExecutor,
   context: TenantContext,
   suggestionId: EntityId,
-): Promise<AiSuggestion> {
+): Promise<PersistedAiSuggestion> {
   const rows = await executeQuery<AiSuggestionRow>(
     `select ${AI_SUGGESTION_SELECT_COLUMNS} from "AiSuggestion"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
@@ -343,7 +362,7 @@ async function lockSuggestionForContext(
 }
 
 function matchesFilters(
-  suggestion: AiSuggestion,
+  suggestion: PersistedAiSuggestion,
   filters: AiReviewQueueListFilters,
 ): boolean {
   const status = filters.status ?? "pending_review";
@@ -352,7 +371,7 @@ function matchesFilters(
   return true;
 }
 
-function buildQueueItem(suggestion: AiSuggestion): AiReviewQueueItem {
+function buildQueueItem(suggestion: PersistedAiSuggestion): AiReviewQueueItem {
   const proposedTransaction =
     suggestion.kind === "transaction_extraction"
       ? tryParseProposedTransaction(suggestion)
@@ -389,7 +408,7 @@ function buildQueueItem(suggestion: AiSuggestion): AiReviewQueueItem {
   return item;
 }
 
-function resolveOrigin(suggestion: AiSuggestion): AiReviewQueueItem["origin"] {
+function resolveOrigin(suggestion: PersistedAiSuggestion): AiReviewQueueItem["origin"] {
   if (suggestion.provider?.startsWith("solverfin-import") === true) {
     return "import";
   }
@@ -403,7 +422,7 @@ function resolveOrigin(suggestion: AiSuggestion): AiReviewQueueItem["origin"] {
 }
 
 function buildMaskedSummary(
-  suggestion: AiSuggestion,
+  suggestion: PersistedAiSuggestion,
   proposedTransaction: AiSuggestedTransactionDraft | undefined,
 ): string {
   if (proposedTransaction !== undefined) {
@@ -416,7 +435,7 @@ function buildMaskedSummary(
 }
 
 function parseProposedTransaction(
-  suggestion: AiSuggestion,
+  suggestion: PersistedAiSuggestion,
 ): AiSuggestedTransactionDraft {
   const parsed = tryParseProposedTransaction(suggestion);
   if (parsed === undefined) {
@@ -430,7 +449,7 @@ function parseProposedTransaction(
 }
 
 function tryParseProposedTransaction(
-  suggestion: AiSuggestion,
+  suggestion: PersistedAiSuggestion,
 ): AiSuggestedTransactionDraft | undefined {
   const structured = parseTransactionExtractionPayload(suggestion.payload);
   if (structured === undefined || structured.accountId === undefined) {
@@ -514,7 +533,140 @@ function mergeTransactionDraft(
   };
 }
 
-function assertPending(suggestion: AiSuggestion): void {
+function buildReviewedTransactionPayload(
+  suggestion: PersistedAiSuggestion,
+  draft: AiSuggestedTransactionDraft,
+): TransactionExtractionSuggestionPayload {
+  const current = readCurrentTransactionPayload(suggestion);
+  const otherAccountId = draft.otherAccountId ?? draft.destinationAccountId;
+  const common = {
+    contractVersion: 1 as const,
+    suggestionKind: "transaction_extraction" as const,
+    origin: current.origin,
+    target: current.target,
+    ...(current.confidence === undefined
+      ? {}
+      : { confidence: current.confidence }),
+    reasons: current.reasons,
+    audit: current.audit,
+    sourceRowNumber: current.sourceRowNumber,
+    sourceHash: current.sourceHash,
+    occurredOn: draft.occurredOn,
+    amountMinor: draft.amountMinor,
+    currency: draft.currency ?? current.currency,
+    description: draft.description,
+    accountId: draft.accountId,
+    ...(draft.categoryId === undefined ? {} : { categoryId: draft.categoryId }),
+    ...(current.externalId === undefined ? {} : { externalId: current.externalId }),
+  };
+
+  if (
+    current.payloadVersion === 1 &&
+    draft.kind !== "transfer" &&
+    draft.direction === undefined &&
+    otherAccountId === undefined
+  ) {
+    return buildAiSuggestionPayload({
+      payload: {
+        ...common,
+        payloadVersion: 1,
+        kind: draft.kind,
+      },
+    });
+  }
+
+  const direction =
+    draft.direction ??
+    (current.payloadVersion === 2
+      ? current.direction
+      : current.kind === "income"
+        ? "inflow"
+        : "outflow");
+  return buildAiSuggestionPayload({
+    payload: {
+      ...common,
+      payloadVersion: 2,
+      kind: draft.kind,
+      direction,
+      ...(otherAccountId === undefined ? {} : { otherAccountId }),
+    },
+  });
+}
+
+function readCurrentTransactionPayload(
+  suggestion: PersistedAiSuggestion,
+): TransactionExtractionSuggestionPayload {
+  const read = readAiSuggestionPayload(
+    suggestion.payload,
+    "transaction_extraction",
+  );
+  if (
+    read.state === "current" &&
+    read.payload.suggestionKind === "transaction_extraction"
+  ) {
+    return read.payload;
+  }
+  if (read.state === "legacy") {
+    const migrated = migrateLegacyAiSuggestionPayload({
+      expectedKind: "transaction_extraction",
+      status: suggestion.status,
+      legacyPayload: read.payload,
+      origin: inferPayloadOrigin(suggestion),
+      target: inferPayloadTarget(suggestion),
+      confidence: suggestion.confidence,
+      audit: { createdAt: suggestion.createdAt },
+    });
+    if (migrated.suggestionKind === "transaction_extraction") {
+      return migrated;
+    }
+  }
+  throw new AiReviewQueueError(
+    "AI_REVIEW_SUGGESTION_PAYLOAD_UNSUPPORTED",
+    "Esta sugestao nao possui payload estruturado compativel para revisao.",
+    422,
+  );
+}
+
+function inferPayloadOrigin(
+  suggestion: PersistedAiSuggestion,
+): AiSuggestionPayloadOrigin {
+  if (suggestion.provider?.startsWith("solverfin-import") === true) {
+    return {
+      kind: "import",
+      sourceKind: suggestion.provider.includes("ofx") ? "ofx" : "csv",
+      ...(suggestion.sourceEntityId === undefined
+        ? {}
+        : { sourceEntityId: suggestion.sourceEntityId }),
+    };
+  }
+  if (suggestion.provider?.startsWith("solverfin-rule") === true) {
+    return { kind: "rule" };
+  }
+  if (suggestion.provider?.startsWith("solverfin-automation") === true) {
+    return { kind: "automation" };
+  }
+  if (suggestion.provider !== undefined) {
+    return {
+      kind: "provider",
+      provider: suggestion.provider,
+      ...(suggestion.model === undefined ? {} : { model: suggestion.model }),
+    };
+  }
+  return { kind: "system", component: "ai-review-queue" };
+}
+
+function inferPayloadTarget(
+  suggestion: PersistedAiSuggestion,
+): AiSuggestionPayloadTarget {
+  return suggestion.sourceEntityId === undefined
+    ? { entityKind: "transaction" }
+    : {
+        entityKind: "import_suggestion",
+        entityId: suggestion.sourceEntityId,
+      };
+}
+
+function assertPending(suggestion: PersistedAiSuggestion): void {
   if (suggestion.status !== "pending_review") {
     throw new AiReviewQueueError(
       "AI_REVIEW_INVALID_TRANSITION",
@@ -526,11 +678,11 @@ function assertPending(suggestion: AiSuggestion): void {
 
 function markSuggestionReviewed(
   context: TenantContext,
-  suggestion: AiSuggestion,
+  suggestion: PersistedAiSuggestion,
   status: Extract<AiSuggestion["status"], "approved" | "edited" | "rejected">,
   now: string,
   targetEntityId?: string,
-): AiSuggestion {
+): PersistedAiSuggestion {
   return {
     ...suggestion,
     status,
@@ -545,12 +697,12 @@ function markSuggestionReviewed(
 function buildUpdateAiSuggestionSql(): string {
   return `update "AiSuggestion" set
       "kind" = $4, "status" = $5, "sourceEntityId" = $6, "targetEntityId" = $7, "confidence" = $8,
-      "explanation" = $9, "provider" = $10, "model" = $11, "reviewedByUserId" = $12,
-      "reviewedAt" = $13, "createdAt" = $14, "updatedAt" = $15
+      "explanation" = $9, "payload" = $10::jsonb, "provider" = $11, "model" = $12,
+      "reviewedByUserId" = $13, "reviewedAt" = $14, "createdAt" = $15, "updatedAt" = $16
     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
-function buildAiSuggestionParams(suggestion: AiSuggestion): unknown[] {
+function buildAiSuggestionParams(suggestion: PersistedAiSuggestion): unknown[] {
   return [
     suggestion.id,
     suggestion.organizationId,
@@ -561,6 +713,7 @@ function buildAiSuggestionParams(suggestion: AiSuggestion): unknown[] {
     suggestion.targetEntityId ?? null,
     suggestion.confidence,
     suggestion.explanation,
+    suggestion.payload === undefined ? null : JSON.stringify(suggestion.payload),
     suggestion.provider ?? null,
     suggestion.model ?? null,
     suggestion.reviewedByUserId ?? null,
@@ -572,7 +725,7 @@ function buildAiSuggestionParams(suggestion: AiSuggestion): unknown[] {
 
 function buildSuggestionAuditEntry(
   context: TenantContext,
-  suggestion: AiSuggestion,
+  suggestion: PersistedAiSuggestion,
   action: Extract<AuditLogEntryDraft["action"], "approve" | "reject" | "update">,
   occurredAt: string,
   reason: string,
@@ -608,8 +761,8 @@ function buildRedactedProposalChanges(
   return changes;
 }
 
-function mapAiSuggestionRow(row: AiSuggestionRow): AiSuggestion {
-  const suggestion: AiSuggestion = {
+function mapAiSuggestionRow(row: AiSuggestionRow): PersistedAiSuggestion {
+  return {
     id: row.id,
     organizationId: row.organizationId,
     financialProfileId: row.financialProfileId,
@@ -617,25 +770,25 @@ function mapAiSuggestionRow(row: AiSuggestionRow): AiSuggestion {
     status: row.status.toLowerCase() as AiSuggestion["status"],
     confidence: Number(row.confidence),
     explanation: row.explanation,
+    ...(row.payload === null ? {} : { payload: row.payload }),
+    ...(row.sourceEntityId === null ? {} : { sourceEntityId: row.sourceEntityId }),
+    ...(row.targetEntityId === null ? {} : { targetEntityId: row.targetEntityId }),
+    ...(row.provider === null ? {} : { provider: row.provider }),
+    ...(row.model === null ? {} : { model: row.model }),
+    ...(row.reviewedByUserId === null
+      ? {}
+      : { reviewedByUserId: row.reviewedByUserId }),
+    ...(row.reviewedAt === null
+      ? {}
+      : { reviewedAt: row.reviewedAt.toISOString() }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
-  if (row.sourceEntityId !== null) suggestion.sourceEntityId = row.sourceEntityId;
-  const payload = parseTransactionExtractionPayload(row.payload);
-  if (payload !== undefined) suggestion.payload = payload;
-  if (row.targetEntityId !== null) suggestion.targetEntityId = row.targetEntityId;
-  if (row.provider !== null) suggestion.provider = row.provider;
-  if (row.model !== null) suggestion.model = row.model;
-  if (row.reviewedByUserId !== null) {
-    suggestion.reviewedByUserId = row.reviewedByUserId;
-  }
-  if (row.reviewedAt !== null) {
-    suggestion.reviewedAt = row.reviewedAt.toISOString();
-  }
-  return suggestion;
 }
 
-function isImportExtractionSuggestion(suggestion: AiSuggestion): boolean {
+function isImportExtractionSuggestion(
+  suggestion: PersistedAiSuggestion,
+): boolean {
   return (
     suggestion.kind === "transaction_extraction" &&
     suggestion.sourceEntityId !== undefined &&
