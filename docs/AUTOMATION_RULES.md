@@ -1,61 +1,34 @@
-# Regras automaticas configuraveis
-
-Este documento descreve o motor deterministico de regras automaticas e o primeiro fluxo operacional persistido do SolverFin.
+# Regras automáticas configuráveis
 
 ## Objetivo
 
-Regras automaticas classificam ou enriquecem sugestoes, importacoes e lancamentos pendentes antes de acionar IA. Elas sao previsiveis, configuraveis por contexto financeiro e retornam uma explicacao do motivo da aplicacao.
+Regras automáticas classificam ou enriquecem sugestões pendentes antes de acionar IA. Elas são determinísticas, configuráveis por perfil financeiro e produzem explicação para revisão humana, sem confirmar efeito financeiro irreversível.
 
-No fluxo operacional atual, regras aplicadas geram **sugestoes revisaveis**. Elas nao confirmam lancamentos finais nem executam efeitos financeiros irreversiveis sem revisao humana.
+## Condições e ações
 
-## Condicoes suportadas
+Condições suportadas: descrição, estabelecimento, valor igual/mínimo/máximo, conta, cartão e tipo da movimentação. Textos são comparados sem diferenciar caixa e acentos. Regras sem condição não são aplicadas.
 
-Uma regra pode combinar uma ou mais condicoes:
+Ações suportadas: categoria, conta, cartão, etiquetas e status compatível. Maior `priority` vence; em empate, vence a regra criada antes. Regras posteriores ainda podem preencher campos não definidos pelas anteriores.
 
-- descricao contem um trecho de texto;
-- merchant contem um trecho de texto;
-- valor igual, minimo ou maximo;
-- conta financeira;
-- cartao;
-- tipo da movimentacao, como receita, despesa ou transferencia.
+## Fonte dos dados
 
-Textos sao comparados de forma case-insensitive e sem acentos para tolerar variacoes simples, por exemplo `mercado`, `Mercado` e `mercadó`.
+A aplicação percorre sugestões `transaction_extraction` pendentes e lê exclusivamente o payload estruturado. Valor, data, descrição, conta e categoria nunca são reconstruídos de `explanation`. Sugestão sem payload compatível é ignorada e não gera nova proposta.
 
-Regras sem nenhuma condicao nao sao aplicadas. Isso evita automacoes amplas demais por engano.
+Cada aplicação cria uma sugestão `categorization` com payload V1 conforme `docs/AI_SUGGESTION_PAYLOADS.md`, incluindo:
 
-Valores permanecem persistidos e transportados pela API em unidades minoritarias inteiras. Na interface, eles sao exibidos e digitados como valores decimais com duas casas, sem simbolo de moeda. Por exemplo, `1050` na API é apresentado como `10,50`.
+- alvo e sugestão de origem explícitos;
+- fingerprint da origem;
+- categoria, conta, cartão ou status propostos;
+- categoria anterior quando disponível;
+- IDs das regras aplicadas na origem/auditoria;
+- motivos estruturados;
+- `provider: solverfin-automation` e `model: automation-rules-v1`.
 
-## Acoes suportadas
+A explicação permanece apenas apresentacional.
 
-Uma regra pode preencher campos do alvo:
+## Persistência e API
 
-- categoria;
-- conta financeira;
-- cartao;
-- tags;
-- status compatível com o alvo.
-
-A regra nao confirma uma automacao irreversivel sozinha. O resultado continua retornando o alvo enriquecido e as explicacoes para revisao ou fluxo superior.
-
-## Prioridade e conflitos
-
-Quando mais de uma regra combina com o mesmo alvo, regras com maior `priority` sao aplicadas primeiro. Se duas regras tentam preencher o mesmo campo, vence a primeira regra pela ordem de prioridade.
-
-Em caso de empate, a regra criada primeiro vence. Regras de menor prioridade ainda podem preencher outros campos que nao foram preenchidos por regras anteriores.
-
-A interface explica esse contrato como: **numeros maiores sao aplicados primeiro; em empate, vence a regra criada antes**.
-
-## Ativacao e isolamento
-
-Somente regras com status `active` sao consideradas. Regras `inactive` permanecem cadastradas, mas nao alteram o alvo.
-
-Todas as regras e alvos passam pelo mesmo isolamento de tenant usado no restante do dominio. Uma regra de outro contexto financeiro e ignorada, e um alvo de outro contexto e tratado como recurso inexistente.
-
-## Persistencia e API
-
-A tabela `AutomationRule` persiste regras por `organizationId` e `financialProfileId`.
-
-Endpoints operacionais:
+A tabela `AutomationRule` isola regras por `organizationId` e `financialProfileId`.
 
 ```http
 GET /api/automation-rules?status=all
@@ -65,68 +38,25 @@ POST /api/automation-rules/:ruleId/archive
 POST /api/automation-rules/apply
 ```
 
-Exemplo minimo de criacao:
+Exemplo de criação:
 
 ```json
 {
-  "name": "Mercado vira Alimentacao",
+  "name": "Mercado vira Alimentação",
   "priority": 100,
   "descriptionIncludes": "mercado",
   "kind": "expense",
   "actionCategoryId": "CATEGORY_ID",
-  "explanation": "Compras com mercado costumam ser alimentacao."
+  "explanation": "Compras com mercado costumam ser alimentação."
 }
 ```
 
-A aplicacao das regras percorre sugestoes pendentes de `transaction_extraction` com dados suficientes, aplica as regras ativas do perfil e cria uma sugestao `categorization` com:
+## UI e falhas
 
-- `provider: solverfin-automation`;
-- `model: automation-rules-v1`;
-- `status: pending_review`.
+`Configurações` mantém as seções `/configuracoes?section=profiles` e `/configuracoes?section=rules`. A lista mostra nome, status, prioridade, condições, ações e explicação. Referências desconhecidas usam `Não reconhecido`, sem expor ID técnico.
 
-## UI
+Falha ao listar regras mostra estado de erro. Contas e categorias são dependências independentes do formulário. Valores aceitam ponto ou vírgula com no máximo duas casas e são enviados em unidades minoritárias.
 
-A rota `Configurações` possui duas secoes SSR acessiveis por links GET reais:
+## Testes
 
-- `/configuracoes?section=profiles` para perfis financeiros;
-- `/configuracoes?section=rules` para regras automaticas.
-
-Ausencia de `section` ou valor desconhecido abre perfis financeiros. A URL da secao atual permanece apos criar, editar, arquivar, inativar ou aplicar regras porque a tela recarrega o endereco corrente.
-
-Na secao de regras, a lista apresenta nome, status, prioridade, condicoes, acoes sugeridas e explicacao em blocos legiveis. Descricao, estabelecimento, tipo, valores, conta, cartao, categoria, etiquetas e status suportados aparecem com rotulos orientados ao usuario. Quando contas e categorias estao disponiveis, a lista mostra seus nomes em vez de identificadores internos. Codigos e referencias desconhecidos usam `Nao reconhecido`, sem expor o valor tecnico bruto.
-
-Os campos `Valor minimo` e `Valor maximo` aceitam inteiros ou decimais com ponto ou virgula, com no maximo duas casas. Antes do envio, a interface converte o valor para `amountMinMinor` ou `amountMaxMinor`. Entrada invalida bloqueia o envio, preserva o texto digitado e mostra erro junto ao campo.
-
-Contas e categorias sao dependencias independentes do formulario. Se apenas uma consulta falhar, somente o seletor correspondente fica desabilitado, com aviso e acao para tentar novamente; o outro seletor continua disponivel. Falha ao listar regras mostra estado de erro, nao estado vazio, e desabilita `Aplicar regras` ate uma nova carga bem-sucedida.
-
-`Inbox` mostra a fila de revisao, incluindo extracao, deduplicacao, conciliacao e sugestoes geradas por regras automaticas.
-
-## Explicabilidade
-
-Cada regra aplicada retorna:
-
-- id da regra;
-- nome;
-- prioridade;
-- campos preenchidos;
-- motivo da aplicacao.
-
-Quando a regra possui `explanation`, esse texto e retornado. Caso contrario, o dominio gera uma explicacao padrao com o nome da regra, descricao do alvo e campos preenchidos.
-
-## Cobertura de testes existente
-
-A suite de dominio cobre:
-
-- match com explicacao;
-- nao-match sem alteracao;
-- conflito resolvido por prioridade;
-- regra desativada;
-- isolamento por tenant.
-
-A suite web cobre a resolucao SSR das secoes, conversao decimal para unidade minoritaria, leitura estruturada de todos os campos suportados, fallback sem identificadores tecnicos e falhas de listagem, somente contas, somente categorias e ambas as dependencias. A validacao Chrome percorre a navegacao e os dialogos com `Tab`, `Shift+Tab`, `Enter` e `Escape`, incluindo foco visivel e retorno de foco. Para regras, ela cria itens ativos e inativos com conteudo longo, referencias conhecidas e desconhecidas, valida a composicao preenchida nas viewports suportadas, comprova a conversao real de `10,50` para `1050` no payload e rejeita `10,501`. No cenario de texto a 200%, a escala e aplicada depois da ultima navegacao, o tamanho computado e confirmado no instante da captura e a screenshot deve diferir da baseline sem ampliacao.
-
-## Limites conhecidos
-
-- A aplicacao persistida inicial cobre sugestoes pendentes de extracao de transacao derivadas de CSV com dados suficientes na explicacao segura.
-- Sugestoes `categorization` geradas por regras ainda registram revisao sem efeito financeiro especifico ate existir payload estruturado dedicado.
-- OFX, aprendizado por historico e provider real de IA continuam fora deste fluxo inicial.
+A cobertura deve provar match, não-match, prioridade, regra inativa, isolamento por tenant, produção de payload categorizado e ausência de parsing da explicação. Testes de contrato validam fingerprint, campos permitidos e privacidade da projeção pública.
