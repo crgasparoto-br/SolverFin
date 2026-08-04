@@ -241,7 +241,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/configuracoes" && token) {
-    sendHtml(response, 200, await renderSettingsPage(token));
+    sendHtml(response, 200, await renderSettingsPage(token, url));
     return;
   }
 

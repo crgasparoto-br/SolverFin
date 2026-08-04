@@ -14,7 +14,7 @@ Uma regra pode combinar uma ou mais condicoes:
 
 - descricao contem um trecho de texto;
 - merchant contem um trecho de texto;
-- valor em centavos igual, minimo ou maximo;
+- valor igual, minimo ou maximo;
 - conta financeira;
 - cartao;
 - tipo da movimentacao, como receita, despesa ou transferencia.
@@ -22,6 +22,8 @@ Uma regra pode combinar uma ou mais condicoes:
 Textos sao comparados de forma case-insensitive e sem acentos para tolerar variacoes simples, por exemplo `mercado`, `Mercado` e `mercadó`.
 
 Regras sem nenhuma condicao nao sao aplicadas. Isso evita automacoes amplas demais por engano.
+
+Valores permanecem persistidos e transportados pela API em unidades minoritarias inteiras. Na interface, eles sao exibidos e digitados como valores decimais com duas casas, sem simbolo de moeda. Por exemplo, `1050` na API é apresentado como `10,50`.
 
 ## Acoes suportadas
 
@@ -40,6 +42,8 @@ A regra nao confirma uma automacao irreversivel sozinha. O resultado continua re
 Quando mais de uma regra combina com o mesmo alvo, regras com maior `priority` sao aplicadas primeiro. Se duas regras tentam preencher o mesmo campo, vence a primeira regra pela ordem de prioridade.
 
 Em caso de empate, a regra criada primeiro vence. Regras de menor prioridade ainda podem preencher outros campos que nao foram preenchidos por regras anteriores.
+
+A interface explica esse contrato como: **numeros maiores sao aplicados primeiro; em empate, vence a regra criada antes**.
 
 ## Ativacao e isolamento
 
@@ -82,8 +86,20 @@ A aplicacao das regras percorre sugestoes pendentes de `transaction_extraction` 
 
 ## UI
 
-- `Configurações` permite listar, criar, inativar e executar regras automaticas.
-- `Inbox` mostra a fila de revisao, incluindo extracao, deduplicacao, conciliacao e sugestoes geradas por regras automaticas.
+A rota `Configurações` possui duas secoes SSR acessiveis por links GET reais:
+
+- `/configuracoes?section=profiles` para perfis financeiros;
+- `/configuracoes?section=rules` para regras automaticas.
+
+Ausencia de `section` ou valor desconhecido abre perfis financeiros. A URL da secao atual permanece apos criar, editar, arquivar, inativar ou aplicar regras porque a tela recarrega o endereco corrente.
+
+Na secao de regras, a lista apresenta nome, status, prioridade, condicoes, acoes sugeridas e explicacao em blocos legiveis. Descricao, estabelecimento, tipo, valores, conta, cartao, categoria, etiquetas e status suportados aparecem com rotulos orientados ao usuario. Quando contas e categorias estao disponiveis, a lista mostra seus nomes em vez de identificadores internos. Codigos e referencias desconhecidos usam `Nao reconhecido`, sem expor o valor tecnico bruto.
+
+Os campos `Valor minimo` e `Valor maximo` aceitam inteiros ou decimais com ponto ou virgula, com no maximo duas casas. Antes do envio, a interface converte o valor para `amountMinMinor` ou `amountMaxMinor`. Entrada invalida bloqueia o envio, preserva o texto digitado e mostra erro junto ao campo.
+
+Contas e categorias sao dependencias independentes do formulario. Se apenas uma consulta falhar, somente o seletor correspondente fica desabilitado, com aviso e acao para tentar novamente; o outro seletor continua disponivel. Falha ao listar regras mostra estado de erro, nao estado vazio, e desabilita `Aplicar regras` ate uma nova carga bem-sucedida.
+
+`Inbox` mostra a fila de revisao, incluindo extracao, deduplicacao, conciliacao e sugestoes geradas por regras automaticas.
 
 ## Explicabilidade
 
@@ -106,6 +122,8 @@ A suite de dominio cobre:
 - conflito resolvido por prioridade;
 - regra desativada;
 - isolamento por tenant.
+
+A suite web cobre a resolucao SSR das secoes, conversao decimal para unidade minoritaria, leitura estruturada de todos os campos suportados, fallback sem identificadores tecnicos e falhas de listagem, somente contas, somente categorias e ambas as dependencias. A validacao Chrome percorre a navegacao e os dialogos com `Tab`, `Shift+Tab`, `Enter` e `Escape`, incluindo foco visivel e retorno de foco. Para regras, ela cria itens ativos e inativos com conteudo longo, referencias conhecidas e desconhecidas, valida a composicao preenchida nas viewports suportadas, comprova a conversao real de `10,50` para `1050` no payload e rejeita `10,501`. No cenario de texto a 200%, a escala e aplicada depois da ultima navegacao, o tamanho computado e confirmado no instante da captura e a screenshot deve diferir da baseline sem ampliacao.
 
 ## Limites conhecidos
 

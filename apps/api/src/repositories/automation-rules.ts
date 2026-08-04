@@ -168,9 +168,9 @@ export async function updateAutomationRuleForContext(
   await query(
     `update "AutomationRule" set
        "name" = $4, "status" = $5, "priority" = $6, "conditions" = $7::jsonb, "actions" = $8::jsonb,
-       "explanation" = $9, "updatedByUserId" = $11, "updatedAt" = $13
+       "explanation" = $9, "updatedByUserId" = $10, "updatedAt" = $11
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    buildAutomationRuleParams(updated),
+    buildAutomationRuleUpdateParams(updated),
   );
 
   return updated;
@@ -477,6 +477,22 @@ function buildAutomationRuleParams(rule: AutomationRule): unknown[] {
     rule.createdByUserId ?? null,
     rule.updatedByUserId ?? null,
     rule.createdAt,
+    rule.updatedAt,
+  ];
+}
+
+function buildAutomationRuleUpdateParams(rule: AutomationRule): unknown[] {
+  return [
+    rule.id,
+    rule.organizationId,
+    rule.financialProfileId,
+    rule.name,
+    rule.status.toUpperCase(),
+    rule.priority,
+    JSON.stringify(rule.conditions),
+    JSON.stringify(rule.actions),
+    rule.explanation ?? null,
+    rule.updatedByUserId ?? null,
     rule.updatedAt,
   ];
 }
