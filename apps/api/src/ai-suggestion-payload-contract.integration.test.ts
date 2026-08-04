@@ -118,6 +118,7 @@ async function assertPayloadEndpointIsTenantScoped(
     {
       organizationId,
       financialProfileId: PERSONAL_PROFILE_ID,
+      financialProfileKind: "personal",
       userId: USER_ID,
     },
     id,
@@ -131,6 +132,7 @@ async function assertPayloadEndpointIsTenantScoped(
         {
           organizationId,
           financialProfileId: MEI_PROFILE_ID,
+          financialProfileKind: "mei",
           userId: USER_ID,
         },
         id,
