@@ -10,6 +10,23 @@ POST /api/import-batches/:importBatchId/detect-duplicates
 
 A operação cria ou reutiliza sugestões `deduplication` e `reconciliation` vinculadas por payload estruturado à sugestão de origem e ao lançamento alvo. A unicidade inclui contexto, tipo, origem, fingerprint e alvo, tornando varreduras repetidas idempotentes.
 
+## Contrato versionado do payload
+
+Novas candidaturas persistem o envelope canônico descrito em `docs/AI_SUGGESTION_PAYLOADS.md`, com `contractVersion: 1`, `payloadVersion: 1` e `suggestionKind` igual a `deduplication` ou `reconciliation`.
+
+Os campos específicos permanecem no nível raiz do envelope:
+
+- `sourceSuggestionId`: sugestão de extração que originou a candidatura;
+- `sourcePayloadFingerprint`: fingerprint do payload de origem no momento da detecção;
+- `targetTransactionId`: lançamento candidato do mesmo perfil financeiro;
+- `conflicts`: conflitos estruturados encontrados na comparação.
+
+`origin`, `target`, `reasons` e `audit` registram proveniência e contexto mínimo sem depender de `explanation`. O fingerprint canônico muda quando alvo, proposta ou fonte revisada muda. Antes de produzir efeito, a aprovação compara `sourcePayloadFingerprint` com a fonte atual e recusa candidatura obsoleta.
+
+Payloads legados `DeterministicReviewPayloadV1` continuam legíveis. Eles não sofrem backfill amplo; uma mutação compatível de sugestão pendente os encapsula no contrato atual. Sugestões já resolvidas permanecem legíveis e imutáveis.
+
+A projeção pública omite auditoria interna, provedor/modelo e identificadores escopados quando a rota não autoriza explicitamente sua inclusão.
+
 ## Regras
 
 A pontuação usa valor, proximidade de data, conta, identificador externo e similaridade de descrição. A conciliação também explicita conflitos de tipo, valor, data, conta e categoria.
@@ -46,7 +63,8 @@ Rejeitar candidatura mantém a linha importada pendente para correção, aprova�
 - transação compartilhada para decisão, origem, lançamento, expirações e auditoria;
 - repetição segura da mesma varredura ou decisão;
 - lote descartado não pode ser analisado novamente;
-- nenhum CSV bruto é necessário ou persistido.
+- nenhum CSV bruto é necessário ou persistido;
+- payloads aninhados rejeitam chaves desconhecidas na camada de domínio e no PostgreSQL.
 
 ## Transferências importadas
 
