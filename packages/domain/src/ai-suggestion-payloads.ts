@@ -5,12 +5,12 @@ import {
   AiSuggestionPayloadError,
   type AiSuggestionPayload,
   type AiSuggestionPayloadAudit,
+  type AiSuggestionPayloadDraft,
   type AiSuggestionPayloadKind,
   type AiSuggestionPayloadOrigin,
   type AiSuggestionPayloadReadResult,
   type AiSuggestionPayloadStatus,
   type AiSuggestionPayloadTarget,
-  type BuildAiSuggestionPayloadInput,
   type LegacyAiSuggestionPayload,
 } from "./ai-suggestion-payload-types.js";
 import {
@@ -28,15 +28,29 @@ import {
 export * from "./ai-suggestion-payload-types.js";
 export * from "./ai-suggestion-payload-public.js";
 
-export function buildAiSuggestionPayload(
-  input: BuildAiSuggestionPayloadInput,
-): AiSuggestionPayload {
+type BuiltAiSuggestionPayload<TDraft extends AiSuggestionPayloadDraft> =
+  TDraft extends {
+    suggestionKind: infer TKind;
+    payloadVersion: infer TVersion;
+  }
+    ? Extract<
+        AiSuggestionPayload,
+        { suggestionKind: TKind; payloadVersion: TVersion }
+      >
+    : never;
+
+export function buildAiSuggestionPayload<
+  TDraft extends AiSuggestionPayloadDraft,
+>(input: { payload: TDraft }): BuiltAiSuggestionPayload<TDraft> {
   const payload = {
     ...input.payload,
     fingerprint: input.payload.fingerprint ?? "pending",
   } as AiSuggestionPayload;
   payload.fingerprint = buildAiSuggestionPayloadFingerprint(payload);
-  return validateAiSuggestionPayload(payload, payload.suggestionKind);
+  return validateAiSuggestionPayload(
+    payload,
+    payload.suggestionKind,
+  ) as BuiltAiSuggestionPayload<TDraft>;
 }
 
 export function readAiSuggestionPayload(
