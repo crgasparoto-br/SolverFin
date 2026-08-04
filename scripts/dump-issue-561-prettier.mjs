@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
@@ -24,79 +25,41 @@ const paths = [
   "packages/domain/src/ai-suggestion-payloads.ts",
 ];
 
-const formatted = {};
 for (const path of paths) {
   let source = await readFile(path, "utf8");
   if (path === "apps/api/src/repositories/ai-review-queue.ts") {
+    source = source
+      .replace(
+        "    });\n  }\n\n  const direction =",
+        "    }) as TransactionExtractionSuggestionPayload;\n  }\n\n  const direction =",
+      )
+      .replace(
+        "    },\n  });\n}\n\nfunction readCurrentTransactionPayload",
+        "    },\n  }) as TransactionExtractionSuggestionPayload;\n}\n\nfunction readCurrentTransactionPayload",
+      );
+  }
+  if (path === "packages/domain/src/ai-suggestion-payload-public.ts") {
+    source = source.replace(/^import \{/, "import type {");
+  }
+  if (path === "packages/domain/src/ai-suggestion-payload-types.ts") {
     source = source.replace(
-      "): TransactionExtractionSuggestionPayload {\n  const current =",
-      "): ReturnType<typeof buildAiSuggestionPayload> {\n  const current =",
+      /export interface DeduplicationSuggestionPayloadV1\s+extends DeterministicSuggestionPayloadV1Base<"deduplication"> \{\}\s+\s+export interface ReconciliationSuggestionPayloadV1\s+extends DeterministicSuggestionPayloadV1Base<"reconciliation"> \{\}/,
+      'export type DeduplicationSuggestionPayloadV1 =\n  DeterministicSuggestionPayloadV1Base<"deduplication">;\n\nexport type ReconciliationSuggestionPayloadV1 =\n  DeterministicSuggestionPayloadV1Base<"reconciliation">;',
     );
   }
   const output = await prettier.format(source, { filepath: path });
-  formatted[path] = output;
   await writeFile(path, output, "utf8");
 }
 
-const archive = gzipSync(Buffer.from(JSON.stringify(formatted), "utf8"));
-await uploadLegacyArtifact(archive);
-console.log(`Issue #561: ${paths.length} arquivos formatados no checkout de validacao.`);
-
-async function uploadLegacyArtifact(content) {
-  const runtimeUrl = process.env.ACTIONS_RUNTIME_URL;
-  const runtimeToken = process.env.ACTIONS_RUNTIME_TOKEN;
-  const runId = process.env.GITHUB_RUN_ID;
-  if (!runtimeUrl || !runtimeToken || !runId) {
-    console.log("Artifact runtime indisponivel; validacao local do checkout continua.");
-    return;
-  }
-
-  const artifactName = `issue-561-formatted-${process.env.GITHUB_RUN_ATTEMPT ?? "1"}`;
-  const headers = {
-    authorization: `Bearer ${runtimeToken}`,
-    "content-type": "application/json",
-  };
-  const createUrl = new URL(
-    `_apis/pipelines/workflows/${runId}/artifacts?api-version=6.0-preview`,
-    runtimeUrl,
-  );
-  const created = await fetch(createUrl, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ Type: "actions_storage", Name: artifactName }),
-  });
-  if (!created.ok) {
-    console.log(`Artifact create indisponivel: ${created.status} ${await created.text()}`);
-    return;
-  }
-
-  const metadata = await created.json();
-  const containerUrl = metadata.fileContainerResourceUrl;
-  if (typeof containerUrl !== "string") {
-    console.log("Artifact create nao retornou fileContainerResourceUrl.");
-    return;
-  }
-
-  const uploadUrl = new URL(containerUrl);
-  uploadUrl.searchParams.set("itemPath", `${artifactName}/formatted.json.gz`);
-  const uploaded = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "content-type": "application/octet-stream" },
-    body: content,
-  });
-  if (!uploaded.ok) {
-    console.log(`Artifact upload indisponivel: ${uploaded.status} ${await uploaded.text()}`);
-    return;
-  }
-
-  const finalizeUrl = new URL(
-    `_apis/pipelines/workflows/${runId}/artifacts?artifactName=${encodeURIComponent(artifactName)}&api-version=6.0-preview`,
-    runtimeUrl,
-  );
-  const finalized = await fetch(finalizeUrl, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify({ Size: content.length }),
-  });
-  console.log(`Artifact finalize: ${finalized.status}`);
+const patch = execFileSync(
+  "git",
+  ["diff", "--no-ext-diff", "--binary", "--", ...paths],
+  { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 },
+);
+const payload = gzipSync(Buffer.from(patch, "utf8")).toString("base64");
+console.log("ISSUE561_PATCH_BEGIN");
+for (let index = 0; index < payload.length; index += 5000) {
+  console.log(payload.slice(index, index + 5000));
 }
+console.log("ISSUE561_PATCH_END");
+console.log(`Issue #561: ${paths.length} arquivos formatados e corrigidos no checkout.`);
