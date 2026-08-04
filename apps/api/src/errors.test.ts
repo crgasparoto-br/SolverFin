@@ -11,6 +11,7 @@ returnsControlledErrorContract();
 preservesExplicitSafeServerErrorContracts();
 redactsUnexpectedPersistenceErrors();
 usesControlledMessagesForKnownDatabaseErrors();
+usesControlledMessagesForAiSuggestionPayloadErrors();
 propagatesOrCreatesCorrelationId();
 logsWithoutSensitivePayload();
 
@@ -96,6 +97,26 @@ function usesControlledMessagesForKnownDatabaseErrors(): void {
     "Desagrupe os lançamentos antes de alterar conta, tipo, moeda ou situação.",
   );
   assert.doesNotMatch(JSON.stringify(response.body), /SQL interno|payload financeiro|23514/);
+}
+
+function usesControlledMessagesForAiSuggestionPayloadErrors(): void {
+  const response = buildApiErrorResponse({
+    error: Object.assign(
+      new Error(
+        "AI_SUGGESTION_PAYLOAD_OBSOLETE fingerprint=secret amountMinor=999999",
+      ),
+      { code: "P0001" },
+    ),
+    correlationId: "corr-ai-payload-obsolete",
+  });
+
+  assert.equal(response.statusCode, 409);
+  assert.deepEqual(response.body.error, {
+    code: "AI_SUGGESTION_PAYLOAD_OBSOLETE",
+    message: "A sugestão ficou obsoleta porque sua origem ou proposta foi alterada.",
+    correlationId: "corr-ai-payload-obsolete",
+  });
+  assert.doesNotMatch(JSON.stringify(response.body), /secret|999999|P0001/);
 }
 
 function propagatesOrCreatesCorrelationId(): void {
