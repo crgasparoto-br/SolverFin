@@ -1,23 +1,7 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import * as prettier from "prettier";
-
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
-const reservationsPath = new URL(
-  "./statement-visual/settings-interface-reservations.mjs",
-  import.meta.url,
-);
-const reservationsConfig = await prettier.resolveConfig(reservationsPath);
-
-await mkdir(outputDir, { recursive: true });
-await writeFile(
-  join(outputDir, "settings-interface-reservations.formatted.mjs"),
-  await prettier.format(await readFile(reservationsPath, "utf8"), {
-    ...reservationsConfig,
-    filepath: reservationsPath.pathname,
-  }),
-);
 
 try {
   await import("./statement-visual/main.mjs");
