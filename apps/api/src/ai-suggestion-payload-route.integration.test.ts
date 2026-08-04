@@ -62,10 +62,7 @@ async function main(): Promise<void> {
       [suggestionId, organizationId, PERSONAL_PROFILE_ID, JSON.stringify(payload), now],
     );
 
-    const response = await apiRequest(
-      token,
-      `/api/ai-review-queue/${suggestionId}/payload`,
-    );
+    const response = await apiRequest(token, `/api/ai-review-queue/${suggestionId}/payload`);
     assert.equal(response.statusCode, 200);
     const serialized = JSON.stringify(response.body);
     assert.match(serialized, /"suggestionKind":"insight"/);
@@ -157,7 +154,10 @@ async function assertConcurrentApprovalCreatesOneTransaction(
     [200, 409],
   );
   const conflict = responses.find((response) => response.statusCode === 409);
-  assert.equal(conflict === undefined ? undefined : readErrorCode(conflict), "AI_REVIEW_INVALID_TRANSITION");
+  assert.equal(
+    conflict === undefined ? undefined : readErrorCode(conflict),
+    "AI_REVIEW_INVALID_TRANSITION",
+  );
 
   const transactionRows = await query<{ total: number }>(
     `select count(*)::int as total from "Transaction" where "aiSuggestionId" = $1`,
@@ -240,6 +240,7 @@ async function apiRequest(
     pathname: url.pathname,
     query: url.searchParams,
     headers: { authorization: `Bearer ${token}` },
+    body: undefined,
   };
   const response = await handleAiReviewQueueApiRequest(request);
   assert.ok(response);
