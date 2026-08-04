@@ -174,6 +174,7 @@ async function validateMutationSectionPreservation() {
       form.elements.namedItem('priority').value = '321';
       form.elements.namedItem('descriptionIncludes').value = 'preservar seção';
       form.elements.namedItem('amountMinMinor').value = '10,50';
+      form.elements.namedItem('actionStatus').value = 'suggested';
       form.requestSubmit();
     })()`,
       "",
