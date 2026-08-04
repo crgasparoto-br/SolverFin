@@ -20,7 +20,11 @@ function returnsTypedPublicContractWithoutInternalFields(): void {
       contractVersion: 1,
       suggestionKind: "categorization",
       payloadVersion: 1,
-      origin: { kind: "provider", provider: "private-provider", model: "private-model" },
+      origin: {
+        kind: "provider",
+        provider: "private-provider",
+        model: "private-model",
+      },
       target: { entityKind: "transaction", entityId: "transaction-1" },
       confidence: 0.91,
       reasons: ["Correspondencia estruturada."],
@@ -62,8 +66,15 @@ function migratesLegacyOnlyOnExplicitCompatibleMutation(): void {
       description: "Compra ficticia",
       accountId: "account-1",
     },
-    origin: { kind: "import" as const, sourceKind: "csv" as const, sourceEntityId: "batch-1" },
-    target: { entityKind: "import_suggestion" as const, entityId: "suggestion-1" },
+    origin: {
+      kind: "import" as const,
+      sourceKind: "csv" as const,
+      sourceEntityId: "batch-1",
+    },
+    target: {
+      entityKind: "import_suggestion" as const,
+      entityId: "suggestion-1",
+    },
     confidence: 1,
     audit: { createdAt: now },
   };
@@ -116,5 +127,6 @@ function returnsControlledErrorsForMissingMismatchedAndUnexpectedPayloads(): voi
 }
 
 function hasCode(code: string): (error: unknown) => boolean {
-  return (error: unknown) => error instanceof AiSuggestionPayloadApiError && error.code === code;
+  return (error: unknown) =>
+    error instanceof AiSuggestionPayloadApiError && error.code === code;
 }
