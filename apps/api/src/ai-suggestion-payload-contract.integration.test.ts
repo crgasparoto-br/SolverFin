@@ -148,8 +148,9 @@ async function assertResolvedPayloadIsImmutable(
   createdIds: string[],
 ): Promise<void> {
   const id = randomUUID();
+  const sourceSuggestionId = randomUUID();
   createdIds.push(id);
-  const payload = buildCategorizationPayload("category-one");
+  const payload = buildCategorizationPayload("category-one", sourceSuggestionId);
   await insertSuggestion({
     id,
     organizationId,
@@ -162,7 +163,7 @@ async function assertResolvedPayloadIsImmutable(
   });
   await query(`update "AiSuggestion" set "status" = 'APPROVED' where "id" = $1`, [id]);
 
-  const changed = buildCategorizationPayload("category-two");
+  const changed = buildCategorizationPayload("category-two", sourceSuggestionId);
   await assert.rejects(
     () =>
       query(`update "AiSuggestion" set "payload" = $2::jsonb where "id" = $1`, [
@@ -218,7 +219,7 @@ async function assertConcurrentReviewFailsClosed(
     profileId: PERSONAL_PROFILE_ID,
     kind: "CATEGORIZATION",
     status: "PENDING_REVIEW",
-    payload: buildCategorizationPayload("category-one"),
+    payload: buildCategorizationPayload("category-one", randomUUID()),
     provider: "solverfin-automation",
     targetEntityId: null,
   });
@@ -278,7 +279,7 @@ async function assertInvalidPayloadErrorIsControlled(organizationId: string): Pr
   );
 }
 
-function buildCategorizationPayload(categoryId: string) {
+function buildCategorizationPayload(categoryId: string, sourceSuggestionId: string) {
   return buildAiSuggestionPayload({
     payload: {
       contractVersion: 1,
@@ -289,9 +290,9 @@ function buildCategorizationPayload(categoryId: string) {
       confidence: 0.9,
       reasons: ["Regra ficticia."],
       audit: { createdAt: new Date().toISOString() },
-      targetEntityId: "integration-source",
+      targetEntityId: sourceSuggestionId,
       proposedCategoryId: categoryId,
-      sourceSuggestionId: "integration-source",
+      sourceSuggestionId,
     },
   });
 }
