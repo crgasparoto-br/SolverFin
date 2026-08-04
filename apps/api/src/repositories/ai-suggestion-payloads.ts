@@ -135,11 +135,17 @@ function resolveOrigin(row: AiSuggestionPayloadRow): AiSuggestionPayloadOrigin {
     return {
       kind: "import",
       sourceKind: row.provider.includes("ofx") ? "ofx" : "csv",
-      ...(row.sourceEntityId === null ? {} : { sourceEntityId: row.sourceEntityId }),
+      ...(row.sourceEntityId === null
+        ? {}
+        : { sourceEntityId: row.sourceEntityId }),
     };
   }
-  if (row.provider?.startsWith("solverfin-rule") === true) return { kind: "rule" };
-  if (row.provider?.startsWith("solverfin-automation") === true) return { kind: "automation" };
+  if (row.provider?.startsWith("solverfin-rule") === true) {
+    return { kind: "rule" };
+  }
+  if (row.provider?.startsWith("solverfin-automation") === true) {
+    return { kind: "automation" };
+  }
   if (row.provider !== null) {
     return {
       kind: "provider",
