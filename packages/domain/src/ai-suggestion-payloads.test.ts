@@ -30,8 +30,15 @@ function validatesEverySupportedKind(): void {
         contractVersion: 1,
         suggestionKind: "transaction_extraction",
         payloadVersion: 2,
-        origin: { kind: "import", sourceKind: "csv", sourceEntityId: "batch-1" },
-        target: { entityKind: "import_suggestion", entityId: "suggestion-1" },
+        origin: {
+          kind: "import",
+          sourceKind: "csv",
+          sourceEntityId: "batch-1",
+        },
+        target: {
+          entityKind: "import_suggestion",
+          entityId: "suggestion-1",
+        },
         confidence: 0.95,
         reasons: ["Linha estruturada validada."],
         audit: { createdAt: now, sourceFingerprint: "source-v1" },
@@ -99,7 +106,11 @@ function validatesEverySupportedKind(): void {
         contractVersion: 1,
         suggestionKind: "insight",
         payloadVersion: 1,
-        origin: { kind: "provider", provider: "fake-provider", model: "fake-model" },
+        origin: {
+          kind: "provider",
+          provider: "fake-provider",
+          model: "fake-model",
+        },
         target: { entityKind: "period" },
         confidence: 0.72,
         reasons: ["Variacao calculada sobre dados autorizados."],
@@ -109,14 +120,28 @@ function validatesEverySupportedKind(): void {
         summary: "A soma ficticia aumentou no periodo analisado.",
         periodStartOn: "2026-07-01",
         periodEndOn: "2026-07-31",
-        metric: { name: "expense_change", value: 12.5, unit: "percentage" },
+        metric: {
+          name: "expense_change",
+          value: 12.5,
+          unit: "percentage",
+        },
       },
     }),
   ];
 
   assert.deepEqual(
-    payloads.map((payload) => requireCurrentAiSuggestionPayload(payload, payload.suggestionKind).suggestionKind),
-    ["transaction_extraction", "categorization", "deduplication", "reconciliation", "insight"],
+    payloads.map(
+      (payload) =>
+        requireCurrentAiSuggestionPayload(payload, payload.suggestionKind)
+          .suggestionKind,
+    ),
+    [
+      "transaction_extraction",
+      "categorization",
+      "deduplication",
+      "reconciliation",
+      "insight",
+    ],
   );
 }
 
@@ -142,10 +167,22 @@ function readsLegacyPayloadsWithoutReinterpretation(): void {
     conflicts: [],
   };
 
-  assert.equal(readAiSuggestionPayload(transaction, "transaction_extraction").state, "legacy");
-  assert.equal(readAiSuggestionPayload(deterministic, "deduplication").state, "legacy");
-  assert.equal(readAiSuggestionPayload(deterministic, "reconciliation").state, "legacy");
-  assert.equal(readAiSuggestionPayload(transaction, "categorization").state, "invalid");
+  assert.equal(
+    readAiSuggestionPayload(transaction, "transaction_extraction").state,
+    "legacy",
+  );
+  assert.equal(
+    readAiSuggestionPayload(deterministic, "deduplication").state,
+    "legacy",
+  );
+  assert.equal(
+    readAiSuggestionPayload(deterministic, "reconciliation").state,
+    "legacy",
+  );
+  assert.equal(
+    readAiSuggestionPayload(transaction, "categorization").state,
+    "invalid",
+  );
 }
 
 function migratesLegacyOnlyWhilePending(): void {
@@ -163,8 +200,15 @@ function migratesLegacyOnlyWhilePending(): void {
       description: "Receita ficticia",
       accountId: "account-1",
     },
-    origin: { kind: "import", sourceKind: "ofx", sourceEntityId: "batch-1" },
-    target: { entityKind: "import_suggestion", entityId: "suggestion-1" },
+    origin: {
+      kind: "import",
+      sourceKind: "ofx",
+      sourceEntityId: "batch-1",
+    },
+    target: {
+      entityKind: "import_suggestion",
+      entityId: "suggestion-1",
+    },
     confidence: 1,
     audit: { createdAt: now },
   });
@@ -190,7 +234,10 @@ function rejectsMissingInvalidMismatchedAndObsoletePayloads(): void {
     () => requireCurrentAiSuggestionPayload(undefined, "insight"),
     hasCode("AI_SUGGESTION_PAYLOAD_MISSING"),
   );
-  assert.equal(readAiSuggestionPayload({ payloadVersion: 999 }, "insight").state, "invalid");
+  assert.equal(
+    readAiSuggestionPayload({ payloadVersion: 999 }, "insight").state,
+    "invalid",
+  );
   assert.throws(
     () =>
       buildAiSuggestionPayload({
@@ -302,7 +349,10 @@ function rejectsStaleSourceAndResolvedMutation(): void {
   assert.throws(
     () =>
       requireCurrentAiSuggestionPayload(
-        { ...payload, audit: { ...payload.audit, sourceFingerprint: "source-v2" } },
+        {
+          ...payload,
+          audit: { ...payload.audit, sourceFingerprint: "source-v2" },
+        },
         "deduplication",
       ),
     hasCode("AI_SUGGESTION_PAYLOAD_OBSOLETE"),
@@ -326,7 +376,11 @@ function publicProjectionDoesNotLeakInternalIdentifiersByDefault(): void {
       contractVersion: 1,
       suggestionKind: "transaction_extraction",
       payloadVersion: 2,
-      origin: { kind: "provider", provider: "internal-provider", model: "internal-model" },
+      origin: {
+        kind: "provider",
+        provider: "internal-provider",
+        model: "internal-model",
+      },
       target: { entityKind: "transaction", entityId: "transaction-secret" },
       confidence: 0.9,
       reasons: ["Extracao estruturada."],
@@ -345,8 +399,14 @@ function publicProjectionDoesNotLeakInternalIdentifiersByDefault(): void {
   });
 
   const publicPayload = JSON.stringify(toPublicAiSuggestionPayload(payload));
-  assert.doesNotMatch(publicPayload, /internal-provider|internal-model|secret-correlation/);
-  assert.doesNotMatch(publicPayload, /transaction-secret|account-secret|category-secret|secret-source-hash/);
+  assert.doesNotMatch(
+    publicPayload,
+    /internal-provider|internal-model|secret-correlation/,
+  );
+  assert.doesNotMatch(
+    publicPayload,
+    /transaction-secret|account-secret|category-secret|secret-source-hash/,
+  );
   assert.match(publicPayload, /transaction_extraction/);
 }
 
@@ -367,7 +427,11 @@ function rejectsRawAndUnknownSensitiveFields(): void {
       periodEndOn: "2026-07-31",
     },
   });
-  const injected = { ...payload, rawPrompt: "segredo", bankMessage: "texto bruto" };
+  const injected = {
+    ...payload,
+    rawPrompt: "segredo",
+    bankMessage: "texto bruto",
+  };
   injected.fingerprint = payload.fingerprint;
   assert.throws(
     () => requireCurrentAiSuggestionPayload(injected, "insight"),
@@ -376,5 +440,6 @@ function rejectsRawAndUnknownSensitiveFields(): void {
 }
 
 function hasCode(code: string): (error: unknown) => boolean {
-  return (error: unknown) => error instanceof AiSuggestionPayloadError && error.code === code;
+  return (error: unknown) =>
+    error instanceof AiSuggestionPayloadError && error.code === code;
 }
