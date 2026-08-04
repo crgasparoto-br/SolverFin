@@ -1,0 +1,3 @@
+- [standalone](https://unpkg.com/prettier@3.6.2/standalone.mjs)
+- [typescript](https://unpkg.com/prettier@3.6.2/plugins/typescript.mjs)
+- [estree](https://unpkg.com/prettier@3.6.2/plugins/estree.mjs)
