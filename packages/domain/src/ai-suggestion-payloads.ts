@@ -28,7 +28,9 @@ import {
 export * from "./ai-suggestion-payload-types.js";
 export * from "./ai-suggestion-payload-public.js";
 
-export function buildAiSuggestionPayload(input: BuildAiSuggestionPayloadInput): AiSuggestionPayload {
+export function buildAiSuggestionPayload(
+  input: BuildAiSuggestionPayloadInput,
+): AiSuggestionPayload {
   const payload = {
     ...input.payload,
     fingerprint: input.payload.fingerprint ?? "pending",
@@ -45,7 +47,10 @@ export function readAiSuggestionPayload(
 
   try {
     if (isRecord(value) && "contractVersion" in value) {
-      return { state: "current", payload: validateAiSuggestionPayload(value, expectedKind) };
+      return {
+        state: "current",
+        payload: validateAiSuggestionPayload(value, expectedKind),
+      };
     }
 
     const legacy = parseLegacyAiSuggestionPayload(value, expectedKind);
@@ -76,7 +81,9 @@ export function requireCurrentAiSuggestionPayload(
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_MISSING");
   }
   if (result.state === "legacy") {
-    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED");
+    throw new AiSuggestionPayloadError(
+      "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
+    );
   }
   throw result.error;
 }
@@ -87,7 +94,9 @@ export function validateAiSuggestionPayload(
 ): AiSuggestionPayload {
   const record = expectRecord(value);
   if (record.contractVersion !== AI_SUGGESTION_PAYLOAD_CONTRACT_VERSION) {
-    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED");
+    throw new AiSuggestionPayloadError(
+      "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
+    );
   }
   const suggestionKind = parseSuggestionKind(record.suggestionKind);
   if (expectedKind !== undefined && suggestionKind !== expectedKind) {
@@ -97,7 +106,10 @@ export function validateAiSuggestionPayload(
   validateCommonFields(record);
   const payload = parseCurrentByKind(record, suggestionKind);
   const expectedFingerprint = buildAiSuggestionPayloadFingerprint(payload);
-  if (payload.fingerprint.startsWith("sha256-") && payload.fingerprint !== expectedFingerprint) {
+  if (
+    payload.fingerprint.startsWith("sha256-") &&
+    payload.fingerprint !== expectedFingerprint
+  ) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_OBSOLETE");
   }
   if (!/^(?:sha256|db-fp-v1)-[a-f0-9]{64}$/.test(payload.fingerprint)) {
@@ -118,7 +130,9 @@ export function buildAiSuggestionPayloadFingerprint(
   } else {
     delete withoutMutableAudit.audit;
   }
-  return `sha256-${createHash("sha256").update(canonicalJson(withoutMutableAudit)).digest("hex")}`;
+  return `sha256-${createHash("sha256")
+    .update(canonicalJson(withoutMutableAudit))
+    .digest("hex")}`;
 }
 
 export interface ProjectLegacyAiSuggestionPayloadInput {
@@ -133,7 +147,10 @@ export interface ProjectLegacyAiSuggestionPayloadInput {
 export function projectLegacyAiSuggestionPayloadForRead(
   input: ProjectLegacyAiSuggestionPayloadInput,
 ): AiSuggestionPayload {
-  const legacy = parseLegacyAiSuggestionPayload(input.legacyPayload, input.expectedKind);
+  const legacy = parseLegacyAiSuggestionPayload(
+    input.legacyPayload,
+    input.expectedKind,
+  );
   if (legacy === undefined) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_INVALID");
   }
@@ -142,7 +159,9 @@ export function projectLegacyAiSuggestionPayloadForRead(
     legacy,
     origin: input.origin,
     target: input.target,
-    ...(input.confidence === undefined ? {} : { confidence: input.confidence }),
+    ...(input.confidence === undefined
+      ? {}
+      : { confidence: input.confidence }),
     audit: input.audit,
   });
 }
@@ -163,7 +182,10 @@ export function migrateLegacyAiSuggestionPayload(
   if (input.status !== "pending_review") {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_IMMUTABLE");
   }
-  const legacy = parseLegacyAiSuggestionPayload(input.legacyPayload, input.expectedKind);
+  const legacy = parseLegacyAiSuggestionPayload(
+    input.legacyPayload,
+    input.expectedKind,
+  );
   if (legacy === undefined) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_INVALID");
   }
@@ -172,7 +194,9 @@ export function migrateLegacyAiSuggestionPayload(
     legacy,
     origin: input.origin,
     target: input.target,
-    ...(input.confidence === undefined ? {} : { confidence: input.confidence }),
+    ...(input.confidence === undefined
+      ? {}
+      : { confidence: input.confidence }),
     audit: input.audit,
   });
 }
@@ -187,7 +211,9 @@ function buildCurrentPayloadFromLegacy(input: {
 }): AiSuggestionPayload {
   if (input.expectedKind === "transaction_extraction") {
     if (!isLegacyTransactionExtractionPayload(input.legacy)) {
-      throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_KIND_MISMATCH");
+      throw new AiSuggestionPayloadError(
+        "AI_SUGGESTION_PAYLOAD_KIND_MISMATCH",
+      );
     }
     return buildAiSuggestionPayload({
       payload: {
@@ -196,15 +222,22 @@ function buildCurrentPayloadFromLegacy(input: {
         suggestionKind: "transaction_extraction",
         origin: input.origin,
         target: input.target,
-        ...(input.confidence === undefined ? {} : { confidence: input.confidence }),
+        ...(input.confidence === undefined
+          ? {}
+          : { confidence: input.confidence }),
         reasons: [],
         audit: input.audit,
       },
     });
   }
-  if (input.expectedKind === "deduplication" || input.expectedKind === "reconciliation") {
+  if (
+    input.expectedKind === "deduplication" ||
+    input.expectedKind === "reconciliation"
+  ) {
     if (!isLegacyDeterministicReviewPayload(input.legacy)) {
-      throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_KIND_MISMATCH");
+      throw new AiSuggestionPayloadError(
+        "AI_SUGGESTION_PAYLOAD_KIND_MISMATCH",
+      );
     }
     return buildAiSuggestionPayload({
       payload: {
@@ -213,32 +246,48 @@ function buildCurrentPayloadFromLegacy(input: {
         suggestionKind: input.expectedKind,
         origin: input.origin,
         target: input.target,
-        ...(input.confidence === undefined ? {} : { confidence: input.confidence }),
+        ...(input.confidence === undefined
+          ? {}
+          : { confidence: input.confidence }),
         audit: input.audit,
       },
     });
   }
-  throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED");
+  throw new AiSuggestionPayloadError(
+    "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
+  );
 }
 
-export function mutateAiSuggestionPayload<TPayload extends AiSuggestionPayload>(input: {
-  payload: TPayload;
-  status: AiSuggestionPayloadStatus;
-  expectedFingerprint: string;
-  mutation: (draft: TPayload) => TPayload;
-  audit: AiSuggestionPayloadAudit;
-}): TPayload {
+export function mutateAiSuggestionPayload<TPayload extends AiSuggestionPayload>(
+  input: {
+    payload: TPayload;
+    status: AiSuggestionPayloadStatus;
+    expectedFingerprint: string;
+    mutation: (draft: TPayload) => TPayload;
+    audit: AiSuggestionPayloadAudit;
+  },
+): TPayload {
   if (input.status !== "pending_review") {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_IMMUTABLE");
   }
-  const current = validateAiSuggestionPayload(input.payload, input.payload.suggestionKind) as TPayload;
+  const current = validateAiSuggestionPayload(
+    input.payload,
+    input.payload.suggestionKind,
+  ) as TPayload;
   if (current.fingerprint !== input.expectedFingerprint) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_CONFLICT");
   }
   const next = input.mutation(structuredClone(current));
-  const withAudit = { ...next, audit: input.audit, fingerprint: "pending" } as TPayload;
+  const withAudit = {
+    ...next,
+    audit: input.audit,
+    fingerprint: "pending",
+  } as TPayload;
   withAudit.fingerprint = buildAiSuggestionPayloadFingerprint(withAudit);
-  return validateAiSuggestionPayload(withAudit, withAudit.suggestionKind) as TPayload;
+  return validateAiSuggestionPayload(
+    withAudit,
+    withAudit.suggestionKind,
+  ) as TPayload;
 }
 
 export function assertAiSuggestionPayloadSourceCurrent(
@@ -247,7 +296,8 @@ export function assertAiSuggestionPayloadSourceCurrent(
 ): void {
   const expectedSourceFingerprint =
     payload.audit.sourceFingerprint ??
-    (payload.suggestionKind === "deduplication" || payload.suggestionKind === "reconciliation"
+    (payload.suggestionKind === "deduplication" ||
+    payload.suggestionKind === "reconciliation"
       ? payload.sourcePayloadFingerprint
       : undefined);
   if (
