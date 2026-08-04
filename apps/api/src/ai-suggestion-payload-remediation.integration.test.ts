@@ -4,7 +4,10 @@ import { randomUUID } from "node:crypto";
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { closePool, query } from "./db.js";
-import { approveAiReviewSuggestionForContext } from "./repositories/ai-review-queue.js";
+import {
+  approveAiReviewSuggestionForContext,
+  editAiReviewSuggestionForContext,
+} from "./repositories/ai-review-queue.js";
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const USER_ID = "22222222-2222-4222-8222-222222222222";
@@ -31,8 +34,13 @@ async function main(): Promise<void> {
     await assertCanonicalDependencyIsMaterialized(organizationId, createdIds);
     await assertMalformedDependencyFailsClosed(organizationId);
     await assertRemovedTargetFailsClosed(organizationId, createdIds);
+    await assertApprovalOverridePersistsCanonicalPayload(organizationId, createdIds);
+    await assertEditPersistsCanonicalPayload(organizationId, createdIds);
   } finally {
     if (createdIds.length > 0) {
+      await query(`delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`, [
+        createdIds,
+      ]);
       await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [createdIds]);
     }
   }
@@ -269,4 +277,145 @@ async function assertRemovedTargetFailsClosed(
     [suggestionId],
   );
   assert.equal(transactionRows[0]?.total, 0);
+}
+
+async function assertApprovalOverridePersistsCanonicalPayload(
+  organizationId: string,
+  createdIds: string[],
+): Promise<void> {
+  const accountId = await readActiveAccountId(organizationId);
+  const suggestionId = randomUUID();
+  createdIds.push(suggestionId);
+  const before = await insertReviewSuggestion({
+    id: suggestionId,
+    organizationId,
+    accountId,
+    amountMinor: 1000,
+    description: "Compra fictícia antes da revisão",
+  });
+
+  const result = await approveAiReviewSuggestionForContext(
+    buildContext(organizationId),
+    suggestionId,
+    {
+      amountMinor: 2450,
+      description: "Compra fictícia revisada",
+    },
+  );
+  assert.equal(result.transaction?.amountMinor, 2450);
+  assert.equal(result.transaction?.description, "Compra fictícia revisada");
+
+  const rows = await query<{
+    status: string;
+    targetEntityId: string | null;
+    payload: Record<string, unknown>;
+  }>(
+    `select "status", "targetEntityId", "payload" from "AiSuggestion" where "id" = $1`,
+    [suggestionId],
+  );
+  const row = rows[0];
+  assert.equal(row?.status, "APPROVED");
+  assert.equal(row?.targetEntityId, result.transaction?.id);
+  assert.equal(row?.payload.amountMinor, 2450);
+  assert.equal(row?.payload.description, "Compra fictícia revisada");
+  assert.notEqual(row?.payload.fingerprint, before.fingerprint);
+}
+
+async function assertEditPersistsCanonicalPayload(
+  organizationId: string,
+  createdIds: string[],
+): Promise<void> {
+  const accountId = await readActiveAccountId(organizationId);
+  const suggestionId = randomUUID();
+  createdIds.push(suggestionId);
+  const before = await insertReviewSuggestion({
+    id: suggestionId,
+    organizationId,
+    accountId,
+    amountMinor: 3100,
+    description: "Compra fictícia editável",
+  });
+
+  await editAiReviewSuggestionForContext(buildContext(organizationId), suggestionId, {
+    amountMinor: 3750,
+    description: "Compra fictícia editada",
+  });
+
+  const rows = await query<{
+    status: string;
+    payload: Record<string, unknown>;
+  }>(`select "status", "payload" from "AiSuggestion" where "id" = $1`, [suggestionId]);
+  const row = rows[0];
+  assert.equal(row?.status, "EDITED");
+  assert.equal(row?.payload.amountMinor, 3750);
+  assert.equal(row?.payload.description, "Compra fictícia editada");
+  assert.notEqual(row?.payload.fingerprint, before.fingerprint);
+
+  const transactionRows = await query<{ total: number }>(
+    `select count(*)::int as total from "Transaction" where "aiSuggestionId" = $1`,
+    [suggestionId],
+  );
+  assert.equal(transactionRows[0]?.total, 0);
+}
+
+async function insertReviewSuggestion(input: {
+  id: string;
+  organizationId: string;
+  accountId: string;
+  amountMinor: number;
+  description: string;
+}): Promise<Record<string, unknown>> {
+  const now = new Date().toISOString();
+  const payload = buildAiSuggestionPayload({
+    payload: {
+      contractVersion: 1,
+      suggestionKind: "transaction_extraction",
+      payloadVersion: 2,
+      origin: { kind: "provider", provider: "integration-test" },
+      target: { entityKind: "transaction" },
+      confidence: 0.93,
+      reasons: ["Proposta fictícia para revisão."],
+      audit: { createdAt: now },
+      sourceRowNumber: 1,
+      sourceHash: `review-${input.id}`,
+      occurredOn: "2026-08-04",
+      kind: "expense",
+      direction: "outflow",
+      amountMinor: input.amountMinor,
+      currency: "BRL",
+      description: input.description,
+      accountId: input.accountId,
+    },
+  });
+  await query(
+    `insert into "AiSuggestion"
+      ("id", "organizationId", "financialProfileId", "kind", "status", "confidence",
+       "explanation", "payload", "provider", "model", "createdAt", "updatedAt")
+     values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', 0.93,
+             'Explicação sem autoridade financeira.', $4::jsonb,
+             'integration-test', 'review-v1', $5, $5)`,
+    [input.id, input.organizationId, PERSONAL_PROFILE_ID, JSON.stringify(payload), now],
+  );
+  return payload as unknown as Record<string, unknown>;
+}
+
+async function readActiveAccountId(organizationId: string): Promise<string> {
+  const rows = await query<{ id: string }>(
+    `select "id" from "Account"
+      where "organizationId" = $1 and "financialProfileId" = $2 and "status" = 'ACTIVE'
+      order by "createdAt" asc limit 1`,
+    [organizationId, PERSONAL_PROFILE_ID],
+  );
+  const accountId = rows[0]?.id;
+  assert.ok(accountId, "An active account seed is required.");
+  return accountId;
+}
+
+function buildContext(organizationId: string) {
+  return {
+    organizationId,
+    financialProfileId: PERSONAL_PROFILE_ID,
+    financialProfileKind: "personal" as const,
+    userId: USER_ID,
+  };
 }
