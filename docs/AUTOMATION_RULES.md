@@ -20,9 +20,11 @@ Cada aplicação cria uma sugestão `categorization` com payload V1 conforme `do
 - fingerprint da origem;
 - categoria, conta, cartão ou status propostos;
 - categoria anterior quando disponível;
-- IDs das regras aplicadas na origem/auditoria;
-- motivos estruturados;
+- ID da regra prioritária vencedora em `origin.ruleId`, quando disponível;
+- motivos de todas as regras aplicadas em `reasons`;
 - `provider: solverfin-automation` e `model: automation-rules-v1`.
+
+O contrato V1 registra um único `ruleId` de origem. As demais regras que contribuíram para campos ainda vazios permanecem auditáveis pelos motivos estruturados, sem alegar persistência de vários IDs no mesmo payload.
 
 A explicação permanece apenas apresentacional.
 
