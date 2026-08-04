@@ -240,7 +240,9 @@ export async function applyAutomationRulesForContext(
         now,
       );
       await executeQuery(buildInsertAiSuggestionSql(), buildAiSuggestionParams(suggestion));
-      createdSuggestions.push(suggestion as AiSuggestion);
+      const { payload, ...createdSuggestion } = suggestion;
+      void payload;
+      createdSuggestions.push(createdSuggestion);
     }
   });
 
