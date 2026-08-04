@@ -36,6 +36,7 @@ async function main(): Promise<void> {
   const context = {
     organizationId,
     financialProfileId: PERSONAL_PROFILE_ID,
+    financialProfileKind: "personal" as const,
     userId: USER_ID,
   };
   const importBatchIds: string[] = [];
