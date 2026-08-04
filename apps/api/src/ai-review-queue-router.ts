@@ -43,7 +43,8 @@ interface AiReviewQueueRoute {
 
 const BASE_PATH = "/api/ai-review-queue";
 const ALLOWED_TRANSACTION_KINDS = new Set(["income", "expense", "transfer"]);
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const routes: AiReviewQueueRoute[] = [];
 
 route("GET", BASE_PATH, listAiReviewQueueHandler);
@@ -62,7 +63,9 @@ export async function handleAiReviewQueueApiRequest(
   if (!match) return undefined;
 
   try {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(
+      buildAuthHeaders(request.headers.authorization),
+    );
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -124,7 +127,10 @@ async function listAiReviewQueueHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const kind = request.query.get("kind") as AiSuggestion["kind"] | null;
-  const status = request.query.get("status") as AiSuggestion["status"] | "all" | null;
+  const status = request.query.get("status") as
+    | AiSuggestion["status"]
+    | "all"
+    | null;
   const includeLowConfidence = request.query.get("includeLowConfidence") === "true";
 
   return json(200, {
@@ -210,12 +216,18 @@ function optionalObjectBody(body: unknown): Record<string, unknown> {
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null) {
-    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
+    throw new AuthError(
+      "AUTH_INVALID_CREDENTIALS",
+      "Request body must be a JSON object.",
+      400,
+    );
   }
   return body as Record<string, unknown>;
 }
 
-function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | undefined {
+function readPayload(
+  value: unknown,
+): Partial<AiSuggestedTransactionDraft> | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "object" || value === null) {
     throw new AiReviewQueueError(
@@ -226,15 +238,20 @@ function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | und
   const input = value as Record<string, unknown>;
   const payload: Partial<AiSuggestedTransactionDraft> = {};
   if (input.kind !== undefined) payload.kind = readTransactionKind(input.kind);
-  if (input.amountMinor !== undefined) payload.amountMinor = readAmountMinor(input.amountMinor);
+  if (input.amountMinor !== undefined) {
+    payload.amountMinor = readAmountMinor(input.amountMinor);
+  }
   if (input.occurredOn !== undefined) payload.occurredOn = String(input.occurredOn);
   if (input.accountId !== undefined) payload.accountId = String(input.accountId);
   if (input.description !== undefined) payload.description = String(input.description);
   if (input.currency !== undefined) payload.currency = String(input.currency);
   if (input.categoryId !== undefined) payload.categoryId = String(input.categoryId);
-  if (input.otherAccountId !== undefined) payload.otherAccountId = String(input.otherAccountId);
-  if (input.destinationAccountId !== undefined)
+  if (input.otherAccountId !== undefined) {
+    payload.otherAccountId = String(input.otherAccountId);
+  }
+  if (input.destinationAccountId !== undefined) {
     payload.destinationAccountId = String(input.destinationAccountId);
+  }
   return payload;
 }
 
@@ -272,7 +289,9 @@ function requireSuggestionId(match: Readonly<Record<string, string>>): string {
   return value;
 }
 
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
+function buildAuthHeaders(
+  authorization: string | undefined,
+): { authorization?: string } {
   return authorization === undefined ? {} : { authorization };
 }
 
@@ -287,26 +306,50 @@ function json(statusCode: number, body: unknown): ApiResponse {
 function mapDomainError(error: unknown): unknown {
   if (isDatabasePayloadContractError(error)) {
     const mapped = mapAiSuggestionPayloadPersistenceError(error);
-    return { code: mapped.code, statusCode: mapped.statusCode, message: mapped.message };
+    return {
+      code: mapped.code,
+      statusCode: mapped.statusCode,
+      message: mapped.message,
+    };
   }
   if (error instanceof AiSuggestionPayloadApiError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
   if (error instanceof AiSuggestionPayloadRepositoryError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
   if (error instanceof AiReviewQueueError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
   if (error instanceof TransactionError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
   if (error instanceof TenantError) {
     const statusCode = error.code === "TENANT_PROFILE_REQUIRED" ? 404 : 403;
     return { code: error.code, statusCode, message: error.message };
   }
   if (error instanceof TenantAuthorizationError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
   return error;
 }
