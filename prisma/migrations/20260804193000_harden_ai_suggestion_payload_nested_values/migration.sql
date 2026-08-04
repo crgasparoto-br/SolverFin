@@ -27,6 +27,16 @@ declare
   origin_kind text;
   created_at_text text;
 begin
+  if tg_op = 'UPDATE'
+    and old."status"::text = 'PENDING_REVIEW'
+    and new."status"::text = 'EDITED'
+    and new."payload" is not distinct from old."payload"
+  then
+    raise exception using
+      errcode = 'P0001',
+      message = 'AI_SUGGESTION_PAYLOAD_KIND_MISMATCH';
+  end if;
+
   if payload is null
     or jsonb_typeof(payload) <> 'object'
     or not (payload ? 'contractVersion')
@@ -50,7 +60,7 @@ begin
       or (origin ? 'sourceEntityId'
         and not "isValidAiSuggestionPayloadString"(origin->'sourceEntityId'))
     then
-      raise exception using errcode = 'P0001', message = 'AI_SUGGGESTION_PAYLOAD_INVALID';
+      raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
     end if;
   elsif origin_kind in ('rule', 'automation') then
     if origin ? 'ruleId' and not "isValidAiSuggestionPayloadString"(origin->'ruleId') then
@@ -83,7 +93,7 @@ begin
   end if;
 
   created_at_text := audit->>'createdAt';
-  if created_at_text !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]{1,6})?(Z|3+-][0-9]{2}:[0-9]{2})$' then
+  if created_at_text !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$' then
     raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
   end if;
   perform created_at_text::timestamptz;

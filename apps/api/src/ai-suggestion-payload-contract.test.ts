@@ -46,7 +46,10 @@ function returnsTypedPublicContractWithoutInternalFields(): void {
   assert.equal(result.migratedFromLegacy, false);
   assert.equal(result.publicPayload.suggestionKind, "categorization");
   const serialized = JSON.stringify(result.publicPayload);
-  assert.doesNotMatch(serialized, /private-provider|private-model|private-correlation/);
+  assert.doesNotMatch(
+    serialized,
+    /private-provider|private-model|private-correlation/,
+  );
   assert.doesNotMatch(serialized, /transaction-1|category-1/);
 }
 

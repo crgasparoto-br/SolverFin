@@ -130,7 +130,9 @@ function parseStatus(value: string): AiSuggestionPayloadStatus {
   return status;
 }
 
-function resolveOrigin(row: AiSuggestionPayloadRow): AiSuggestionPayloadOrigin {
+function resolveOrigin(
+  row: AiSuggestionPayloadRow,
+): AiSuggestionPayloadOrigin {
   if (row.provider?.startsWith("solverfin-import") === true) {
     return {
       kind: "import",

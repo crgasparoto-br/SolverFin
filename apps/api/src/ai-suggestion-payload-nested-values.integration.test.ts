@@ -15,7 +15,10 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   const profileRows = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -67,6 +70,44 @@ async function main(): Promise<void> {
       [id],
     );
     assert.equal(rows[0]?.total, 0);
+  }
+
+  const offsetPayload = buildAiSuggestionPayload({
+    payload: {
+      ...validPayload,
+      audit: { createdAt: "2026-08-04T16:30:00-03:00" },
+    },
+  });
+  const offsetSuggestionId = randomUUID();
+
+  try {
+    await insertSuggestion(offsetSuggestionId, organizationId, offsetPayload);
+
+    const rows = await query<{ total: number }>(
+      `select count(*)::int as total from "AiSuggestion" where "id" = $1`,
+      [offsetSuggestionId],
+    );
+    assert.equal(rows[0]?.total, 1);
+
+    await assert.rejects(
+      () =>
+        query(
+          `update "AiSuggestion"
+              set "status" = 'EDITED', "payload" = "payload", "updatedAt" = now()
+            where "id" = $1`,
+          [offsetSuggestionId],
+        ),
+      (error: unknown) => {
+        const record = error as { code?: string; message?: string };
+        assert.equal(record.code, "P0001");
+        assert.equal(record.message, "AI_SUGGESTION_PAYLOAD_KIND_MISMATCH");
+        return true;
+      },
+    );
+  } finally {
+    await query(`delete from "AiSuggestion" where "id" = $1`, [
+      offsetSuggestionId,
+    ]);
   }
 }
 
