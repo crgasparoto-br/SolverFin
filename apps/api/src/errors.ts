@@ -129,6 +129,11 @@ function normalizeKnownDatabaseError(
   }
 
   const candidate = error as ApiErrorLike;
+  const payloadContractError = normalizeAiSuggestionPayloadDatabaseError(candidate);
+  if (payloadContractError !== undefined) {
+    return payloadContractError;
+  }
+
   const mappings: Record<string, { code: string; statusCode: number; fallbackMessage: string }> = {
     Account_remuneration_must_be_disabled: {
       code: "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
@@ -166,6 +171,57 @@ function normalizeKnownDatabaseError(
     code: mapping.code,
     statusCode: mapping.statusCode,
     message: mapping.fallbackMessage,
+  };
+}
+
+function normalizeAiSuggestionPayloadDatabaseError(
+  error: ApiErrorLike,
+): Required<Pick<ApiErrorLike, "code" | "statusCode" | "message">> | undefined {
+  if (error.code !== "P0001" || typeof error.message !== "string") {
+    return undefined;
+  }
+
+  const mappings = {
+    AI_SUGGESTION_PAYLOAD_MISSING: {
+      statusCode: 422,
+      message: "A sugestão não possui payload estruturado.",
+    },
+    AI_SUGGESTION_PAYLOAD_INVALID: {
+      statusCode: 422,
+      message: "O payload estruturado da sugestão é inválido.",
+    },
+    AI_SUGGESTION_PAYLOAD_KIND_MISMATCH: {
+      statusCode: 409,
+      message: "O payload não é compatível com o tipo da sugestão.",
+    },
+    AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED: {
+      statusCode: 409,
+      message: "A versão do payload da sugestão não é suportada.",
+    },
+    AI_SUGGESTION_PAYLOAD_OBSOLETE: {
+      statusCode: 409,
+      message: "A sugestão ficou obsoleta porque sua origem ou proposta foi alterada.",
+    },
+    AI_SUGGESTION_PAYLOAD_IMMUTABLE: {
+      statusCode: 409,
+      message: "Sugestões resolvidas não podem ter o payload alterado.",
+    },
+    AI_SUGGESTION_PAYLOAD_CONFLICT: {
+      statusCode: 409,
+      message: "A sugestão foi alterada por outra operação. Recarregue os dados e tente novamente.",
+    },
+  } as const;
+  const code = (Object.keys(mappings) as Array<keyof typeof mappings>).find((candidate) =>
+    error.message?.includes(candidate),
+  );
+  if (code === undefined) {
+    return undefined;
+  }
+
+  return {
+    code,
+    statusCode: mappings[code].statusCode,
+    message: mappings[code].message,
   };
 }
 
