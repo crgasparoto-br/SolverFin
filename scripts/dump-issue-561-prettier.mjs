@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
@@ -25,6 +24,7 @@ const paths = [
   "packages/domain/src/ai-suggestion-payloads.ts",
 ];
 
+const formatted = {};
 for (const path of paths) {
   let source = await readFile(path, "utf8");
   if (path === "apps/api/src/repositories/ai-review-queue.ts") {
@@ -39,7 +39,7 @@ for (const path of paths) {
       );
   }
   if (path === "packages/domain/src/ai-suggestion-payload-public.ts") {
-    source = source.replace(/^import \{/, "import type {");
+    source = source.replace(/^import \{/, "import type {").replace(/^  type /gm, "  ");
   }
   if (path === "packages/domain/src/ai-suggestion-payload-types.ts") {
     source = source.replace(
@@ -48,18 +48,14 @@ for (const path of paths) {
     );
   }
   const output = await prettier.format(source, { filepath: path });
+  formatted[path] = output;
   await writeFile(path, output, "utf8");
 }
 
-const patch = execFileSync(
-  "git",
-  ["diff", "--no-ext-diff", "--binary", "--", ...paths],
-  { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 },
-);
-const payload = gzipSync(Buffer.from(patch, "utf8")).toString("base64");
-console.log("ISSUE561_PATCH_BEGIN");
+const payload = gzipSync(Buffer.from(JSON.stringify(formatted), "utf8")).toString("base64");
+console.log("ISSUE561_FILES_BEGIN");
 for (let index = 0; index < payload.length; index += 5000) {
   console.log(payload.slice(index, index + 5000));
 }
-console.log("ISSUE561_PATCH_END");
-console.log(`Issue #561: ${paths.length} arquivos formatados e corrigidos no checkout.`);
+console.log("ISSUE561_FILES_END");
+console.log(`Issue #561: ${paths.length} arquivos completos formatados e corrigidos.`);
