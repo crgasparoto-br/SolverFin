@@ -98,14 +98,20 @@ export function resolveAiSuggestionPayloadForApi(
   };
 }
 
-export function mapAiSuggestionPayloadPersistenceError(error: unknown): AiSuggestionPayloadApiError {
+export function mapAiSuggestionPayloadPersistenceError(
+  error: unknown,
+): AiSuggestionPayloadApiError {
   if (error instanceof AiSuggestionPayloadApiError) return error;
   if (error instanceof AiSuggestionPayloadError) return mapPayloadError(error);
 
   const record = isRecord(error) ? error : undefined;
-  const databaseCode = typeof record?.code === "string" ? record.code : undefined;
-  const databaseMessage = typeof record?.message === "string" ? record.message : "";
-  const knownCode = KNOWN_DATABASE_CODES.find((code) => databaseMessage.includes(code));
+  const databaseCode =
+    typeof record?.code === "string" ? record.code : undefined;
+  const databaseMessage =
+    typeof record?.message === "string" ? record.message : "";
+  const knownCode = KNOWN_DATABASE_CODES.find((code) =>
+    databaseMessage.includes(code),
+  );
   if (databaseCode === "P0001" && knownCode !== undefined) {
     return mapPayloadError(new AiSuggestionPayloadError(knownCode));
   }
