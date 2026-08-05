@@ -12,6 +12,17 @@ executor comum e pelo adapter OpenAI após a auditoria da integração inicial.
 Valores negativos, fracionários ou acima do limite retornam `AI_POLICY_INVALID` antes da
 sanitização e sem chamada ao provider. O total máximo é de seis tentativas por operação.
 
+## Revalidacao obrigatoria de consentimento
+
+Todo consumidor capaz de alcancar um provider deve receber um resolvedor autoritativo de
+consentimento e repassa-lo a `runAiTask`. Um snapshot estatico em `AiUsagePolicy.consent` nao e
+suficiente para autorizar o outbound.
+
+A ausencia do resolvedor bloqueia o consumidor antes da chamada. Quando o consentimento e
+revogado entre o preparo e a tentativa, `runAiTask` observa o estado atual imediatamente antes
+do provider e retorna `AI_CONSENT_REQUIRED`, com zero chamadas externas. Os testes dos
+consumidores reais de extracao bancaria e assistente comprovam ambos os controles negativos.
+
 ## Contratos estruturados
 
 Toda resposta precisa conter texto não vazio e confiança entre `0` e `1`, quando informada.
@@ -56,6 +67,8 @@ perfil financeiro.
 A suíte do pacote deve permanecer hermética e cobrir:
 
 - política de retry inválida sem chamada ao provider;
+- ausência de resolvedor autoritativo nos consumidores sem chamada ao provider;
+- revogacao entre preparo e outbound nos consumidores reais sem chamada ao provider;
 - texto livre rejeitado em tarefas estruturadas;
 - payload de extração validado pelo schema;
 - categorização aceita somente com validador explícito;

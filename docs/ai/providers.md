@@ -73,7 +73,7 @@ Cada chamada informa uma `AiUsagePolicy`:
 
 | Campo                      | Uso                                                                                |
 | -------------------------- | ---------------------------------------------------------------------------------- |
-| `consent`                  | Deve ser `granted`; `missing` ou `revoked` bloqueiam a chamada.                    |
+| `consent`                  | Snapshot inicial; `missing` ou `revoked` bloqueiam antes do preparo.               |
 | `purpose`                  | Declara a finalidade específica da operação.                                       |
 | `maxPromptChars`           | Limita o prompt já sanitizado.                                                     |
 | `maxRetries`               | Define novas tentativas após falhas temporárias.                                   |
@@ -82,9 +82,12 @@ Cada chamada informa uma `AiUsagePolicy`:
 | `allowedFieldNames`        | Lista positiva recomendada para cada finalidade.                                   |
 | `blockedFieldNamePatterns` | Lista de padrões bloqueados quando não houver lista positiva.                      |
 
-Quando `resolveConsent` é fornecido a `runAiTask`, o consentimento é consultado
-novamente imediatamente antes de cada tentativa. Uma revogação impede a chamada
-seguinte ao provider.
+Todo consumidor capaz de alcançar um provider deve receber um resolvedor
+autoritativo de consentimento e repassá-lo a `runAiTask`. A ausência desse
+resolvedor bloqueia o consumidor antes de qualquer chamada externa. O executor
+consulta o estado atual imediatamente antes de cada tentativa; uma revogação
+posterior ao preparo retorna `AI_CONSENT_REQUIRED` e produz zero chamadas ao
+provider. `AiUsagePolicy.consent` sozinho não autoriza o outbound.
 
 ## Minimização e mascaramento
 
@@ -162,7 +165,8 @@ não depende de credenciais e cobre:
 - sucesso com uma chamada por tentativa;
 - timeout, rate limit, indisponibilidade e erro permanente;
 - resposta vazia ou inválida;
-- revogação de consentimento antes da chamada;
+- ausência de resolvedor autoritativo nos consumidores sem outbound;
+- revogação de consentimento entre preparo e chamada nos consumidores reais;
 - ausência de dados sensíveis em logs e erros.
 
 Validações esperadas:

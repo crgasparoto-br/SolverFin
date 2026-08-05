@@ -2,6 +2,7 @@ import {
   defaultAiUsagePolicy,
   FakeAiProvider,
   parseBankMessage,
+  type AiProvider,
   type AiUsageContext,
   type SafeAiLogEvent,
 } from "./index.js";
@@ -28,6 +29,8 @@ await testPixReceivedRuleFixture();
 await testAmbiguousRuleNeedsReview();
 await testAiProviderValidStructuredOutput();
 await testAiBlockedWithoutConsent();
+await testAiBlockedWithoutConsentResolver();
+await testAiConsentRevokedBeforeProviderCall();
 await testAiInvalidOutputNeedsReview();
 
 type ParserResult = Awaited<ReturnType<typeof parseBankMessage>>;
@@ -100,6 +103,7 @@ async function testAiProviderValidStructuredOutput(): Promise<void> {
     provider,
     context,
     policy: grantedPolicy,
+    resolveConsent: () => "granted",
     logger: (event) => events.push(event),
   });
 
@@ -123,11 +127,59 @@ async function testAiBlockedWithoutConsent(): Promise<void> {
     provider,
     context,
     policy: { ...grantedPolicy, consent: "revoked" },
+    resolveConsent: () => "revoked",
   });
 
   assertEqual(result.status, "needs_review", "blocked status");
   assertEqual(result.code, "BANK_MESSAGE_AI_BLOCKED", "blocked code");
   assertEqual(result.maskedText.includes("12345678909"), false, "blocked masked document");
+}
+
+async function testAiBlockedWithoutConsentResolver(): Promise<void> {
+  let calls = 0;
+  const provider: AiProvider = {
+    id: "counting",
+    model: "counting-model",
+    async complete() {
+      calls += 1;
+      return { text: "must not be called" };
+    },
+  };
+  const result = await parseBankMessage({
+    text: "Mensagem bancaria fora dos padroes conhecidos",
+    provider,
+    context,
+    policy: grantedPolicy,
+  });
+
+  assertEqual(result.status, "needs_review", "missing resolver status");
+  assertEqual(result.code, "BANK_MESSAGE_AI_BLOCKED", "missing resolver code");
+  assertEqual(calls, 0, "missing resolver does not call provider");
+}
+
+async function testAiConsentRevokedBeforeProviderCall(): Promise<void> {
+  let calls = 0;
+  const provider: AiProvider = {
+    id: "counting",
+    model: "counting-model",
+    async complete() {
+      calls += 1;
+      return { text: "must not be called" };
+    },
+  };
+  const states = ["granted", "revoked"] as const;
+  let consentIndex = 0;
+  const result = await parseBankMessage({
+    text: "Mensagem bancaria fora dos padroes conhecidos",
+    provider,
+    context,
+    policy: grantedPolicy,
+    resolveConsent: () => states[consentIndex++] ?? "revoked",
+  });
+
+  assertEqual(result.status, "needs_review", "revoked before call status");
+  assertEqual(result.code, "BANK_MESSAGE_AI_BLOCKED", "revoked before call code");
+  assertEqual(calls, 0, "revoked before call does not call provider");
 }
 
 async function testAiInvalidOutputNeedsReview(): Promise<void> {
@@ -137,6 +189,7 @@ async function testAiInvalidOutputNeedsReview(): Promise<void> {
     provider,
     context,
     policy: grantedPolicy,
+    resolveConsent: () => "granted",
   });
 
   assertEqual(result.status, "needs_review", "invalid ai status");

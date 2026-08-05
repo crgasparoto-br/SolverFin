@@ -32,7 +32,7 @@ A resposta inclui:
 
 Para perguntas sobre categorias, saldo projetado, assinaturas ou resumo mensal, o assistente pode usar um provider via `runAiTask`, sempre com payload minimizado e mascarado.
 
-`OpenAiProvider` e o primeiro adapter real disponivel, mas permanece inativo enquanto `AI_PROVIDER=disabled`. Um fluxo de produto so deve seleciona-lo depois de definir consentimento, proposito, lista positiva de campos, limites e fallback. Quando provider, consentimento ou dados suficientes nao existem, o retorno e um fallback claro com `safeLogCode` e limitacoes.
+`OpenAiProvider` e o primeiro adapter real disponivel, mas permanece inativo enquanto `AI_PROVIDER=disabled`. Um fluxo de produto so deve seleciona-lo depois de definir consentimento, proposito, lista positiva de campos, limites e fallback. Todo caminho que alcance o provider tambem deve fornecer um resolvedor autoritativo de consentimento; sem esse resolvedor, o consumidor bloqueia a operacao antes de qualquer chamada externa. Quando provider, consentimento atual ou dados suficientes nao existem, o retorno e um fallback claro com `safeLogCode` e limitacoes.
 
 O contrato operacional do provider fica em `docs/ai/providers.md`; a decisao arquitetural fica na ADR 0010.
 
@@ -57,7 +57,8 @@ Cada insight inclui evidencia numerica, periodo, fontes e confianca. Quando nao 
 - As funcoes filtram dados por `organizationId` e `financialProfileId`.
 - Fixtures e testes usam dados ficticios.
 - O assistente nao deve receber texto financeiro bruto quando a politica exigir minimizacao.
-- `runAiTask` revalida consentimento imediatamente antes de cada tentativa quando recebe um resolvedor dinamico.
+- Todo consumidor capaz de chamar provider exige um resolvedor autoritativo e `runAiTask` revalida o consentimento imediatamente antes de cada tentativa.
+- A ausencia do resolvedor ou a revogacao posterior ao preparo bloqueia a chamada e produz zero invocacoes ao provider.
 - Logs de provider nao incluem prompt, campos, resposta bruta, credencial ou identificadores de tenant.
 - Respostas nao substituem aconselhamento financeiro, juridico ou fiscal.
 
