@@ -28,17 +28,6 @@ const request: SafeAiProviderRequest = {
   timeoutMs: 50,
 };
 
-await testDisabledByDefault();
-await testEnabledConfigurationIsValidatedWithoutSecretExposure();
-await testHealthIsConfigurationOnly();
-await testSuccessfulCallUsesOneOutboundRequest();
-await testRateLimitRetriesThenSucceeds();
-await testRateLimitAndUnavailableMapping();
-await testTimeoutMapping();
-await testInvalidCredentialIsPermanent();
-await testInvalidEmptyAndPermanentResponses();
-await testRequestByteLimitBlocksBeforeNetwork();
-
 async function testDisabledByDefault(): Promise<void> {
   assertEqual(loadOpenAiProviderConfig({}), undefined, "provider defaults to disabled");
   const selection = createAiProviderFromEnvironment({});
@@ -299,3 +288,20 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
     throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
   }
 }
+
+async function runTests(): Promise<void> {
+  await testDisabledByDefault();
+  await testEnabledConfigurationIsValidatedWithoutSecretExposure();
+  await testHealthIsConfigurationOnly();
+  await testSuccessfulCallUsesOneOutboundRequest();
+  await testRateLimitRetriesThenSucceeds();
+  await testRateLimitAndUnavailableMapping();
+  await testTimeoutMapping();
+  await testInvalidCredentialIsPermanent();
+  await testInvalidEmptyAndPermanentResponses();
+  await testRequestByteLimitBlocksBeforeNetwork();
+}
+
+void runTests().catch((error: unknown) => {
+  throw error;
+});
