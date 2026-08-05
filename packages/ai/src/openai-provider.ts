@@ -310,7 +310,7 @@ function buildSystemPrompt(task: AiTaskKind): string {
     return `${base} Return a JSON object with non-empty text, mandatory structured output, and optional confidence from 0 to 1. Plain text without structured output is invalid for this task.`;
   }
 
-  return `${base} Return either plain text or a JSON object with non-empty text, optional structured output, and optional confidence from 0 to 1.`;
+  return `${base} Return either plain text or a JSON object with non-empty text and optional confidence from 0 to 1. Structured output is invalid for this task.`;
 }
 
 function parseOpenAiResponse(rawBody: string): AiProviderResult {
