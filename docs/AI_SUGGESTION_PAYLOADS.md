@@ -30,8 +30,8 @@ O contrato comum está em `@solverfin/domain/ai-suggestion-payloads` e usa um en
 
 ## Tipos suportados
 
-| `suggestionKind`         | Versão atual | Conteúdo canônico                                                                                                              |
-| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `suggestionKind`         | Versão atual | Conteúdo canônico                                                                                                               |
+| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | `transaction_extraction` | V1/V2        | linha e hash de origem, data, tipo, direção na V2, valor, moeda, descrição, contas, categoria e identificador externo opcionais |
 | `categorization`         | V1           | alvo explícito e campos propostos de categoria, conta, cartão ou status                                                         |
 | `deduplication`          | V1           | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos                                                          |
@@ -66,13 +66,15 @@ A migração `20260804130000_versioned_ai_suggestion_payloads` não executa back
 
 A migração `20260804220500_validate_ai_suggestion_dependency_freshness` protege decisões dependentes contra alterações concorrentes ou posteriores da origem. Ela não reescreve dados existentes e atua somente em transições terminais de registros pendentes.
 
+A migração `20260805011500_harden_ai_suggestion_payload_root_values` alinha os escalares de nível raiz ao parser do domínio. Ela valida tipos JSON, versões numéricas, inteiros positivos seguros, datas ISO reais, moedas, enums e strings obrigatórias por `suggestionKind`. Em `categorization`, a presença de `sourceSuggestionId` torna `audit.sourceFingerprint` obrigatório já na gravação, enquanto propostas diretas continuam válidas sem dependência.
+
 - gravações novas precisam ter payload estruturado;
 - V1/V2 legados de extração e V1 determinístico podem ser encapsulados pelo trigger, porque já contêm campos estruturados verificáveis;
 - leitura pode projetar payload legado compatível sem persistir a projeção;
 - migração explícita só é permitida para `pending_review`;
 - payload ausente, livre, incompatível ou com versão desconhecida falha de forma controlada;
 - sugestões resolvidas não são reinterpretadas nem regravadas;
-- chaves aninhadas desconhecidas são rejeitadas antes da persistência.
+- chaves aninhadas desconhecidas e valores raiz malformados são rejeitados antes da persistência.
 
 ## API e frontend
 
