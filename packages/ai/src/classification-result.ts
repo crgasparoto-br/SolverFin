@@ -48,7 +48,11 @@ export function validateAiClassificationResult(
     return false;
   }
 
-  if (Object.keys(value).some((field) => !CLASSIFICATION_RESULT_FIELDS.has(field))) {
+  if (
+    Object.keys(value).some(
+      (field) => !CLASSIFICATION_RESULT_FIELDS.has(field),
+    )
+  ) {
     return false;
   }
 
@@ -84,7 +88,9 @@ export function validateAiClassificationResult(
 
   if (
     value.proposedStatus !== undefined &&
-    !PROPOSED_STATUSES.has(value.proposedStatus as AiClassificationProposedStatus)
+    !PROPOSED_STATUSES.has(
+      value.proposedStatus as AiClassificationProposedStatus,
+    )
   ) {
     return false;
   }
@@ -97,9 +103,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0 && value.length <= 2048;
+  return (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    value.length <= 2048
+  );
 }
 
 function isNonEmptyStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.length > 0 && value.every(isNonEmptyString);
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every(isNonEmptyString)
+  );
 }
