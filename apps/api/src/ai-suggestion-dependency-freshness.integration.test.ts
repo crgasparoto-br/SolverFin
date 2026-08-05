@@ -76,22 +76,21 @@ async function main(): Promise<void> {
       createdIds,
     );
   } finally {
-    await query(
-      `update "Account" set "status" = 'ACTIVE' where "id" = $1`,
-      [accountId],
-    );
-    await query(
-      `update "Category" set "status" = 'ACTIVE' where "id" = $1`,
-      [categoryId],
-    );
+    await query(`update "Account" set "status" = 'ACTIVE' where "id" = $1`, [
+      accountId,
+    ]);
+    await query(`update "Category" set "status" = 'ACTIVE' where "id" = $1`, [
+      categoryId,
+    ]);
     if (createdIds.length > 0) {
       await query(
         `delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
         [createdIds],
       );
-      await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [
-        createdIds,
-      ]);
+      await query(
+        `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
+        [createdIds],
+      );
     }
   }
 }
@@ -311,7 +310,10 @@ function buildTransactionPayload(input: {
   sourceId: string;
   accountId: string;
   description: string;
-}): Extract<AiSuggestionPayload, { suggestionKind: "transaction_extraction" }> {
+}): Extract<
+  AiSuggestionPayload,
+  { suggestionKind: "transaction_extraction" }
+> {
   return buildAiSuggestionPayload({
     payload: {
       contractVersion: 1,
