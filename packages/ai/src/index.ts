@@ -333,7 +333,7 @@ async function hasActiveConsent(input: {
   policy: AiUsagePolicy;
   resolveConsent?: () => AiConsentState | Promise<AiConsentState>;
 }): Promise<boolean> {
-  if (!input.resolveConsent) {
+  if (input.policy.consent !== "granted" || !input.resolveConsent) {
     return false;
   }
 
