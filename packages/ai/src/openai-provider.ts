@@ -1,9 +1,4 @@
-import type {
-  AiProvider,
-  AiProviderResult,
-  AiTaskKind,
-  SafeAiProviderRequest,
-} from "./index.js";
+import type { AiProvider, AiProviderResult, AiTaskKind, SafeAiProviderRequest } from "./index.js";
 import { AiProviderError } from "./provider-errors.js";
 
 const PROVIDER_ENV = "AI_PROVIDER";
@@ -20,9 +15,7 @@ const SUPPORTED_TASKS: readonly AiTaskKind[] = [
   "assistant",
 ];
 
-export type RawAiProviderEnvironment = Readonly<
-  Record<string, string | undefined>
->;
+export type RawAiProviderEnvironment = Readonly<Record<string, string | undefined>>;
 
 export interface OpenAiProviderConfig {
   endpoint: string;
@@ -98,10 +91,7 @@ export class OpenAiProvider implements AiProvider {
   private readonly config: OpenAiProviderConfig;
   private readonly httpClient: AiHttpClient;
 
-  constructor(
-    config: OpenAiProviderConfig,
-    httpClient: AiHttpClient = defaultHttpClient,
-  ) {
+  constructor(config: OpenAiProviderConfig, httpClient: AiHttpClient = defaultHttpClient) {
     this.config = { ...config };
     this.model = config.model;
     this.httpClient = httpClient;
@@ -116,23 +106,14 @@ export class OpenAiProvider implements AiProvider {
 
     const body = JSON.stringify(buildOpenAiRequest(this.config, request));
 
-    if (
-      new TextEncoder().encode(body).byteLength > this.config.maxRequestBytes
-    ) {
-      throw new AiProviderError(
-        "permanent",
-        "AI provider request exceeds the configured limit.",
-        {
-          retryable: false,
-        },
-      );
+    if (new TextEncoder().encode(body).byteLength > this.config.maxRequestBytes) {
+      throw new AiProviderError("permanent", "AI provider request exceeds the configured limit.", {
+        retryable: false,
+      });
     }
 
     const controller = new AbortController();
-    const timeoutMs = Math.max(
-      1,
-      Math.min(request.timeoutMs, this.config.requestTimeoutMs),
-    );
+    const timeoutMs = Math.max(1, Math.min(request.timeoutMs, this.config.requestTimeoutMs));
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const headers: Record<string, string> = {
       authorization: `Bearer ${this.config.apiKey}`,
@@ -195,13 +176,7 @@ export function loadOpenAiProviderConfig(
   const endpoint = readRequired(rawEnv, ENDPOINT_ENV, invalidVariables);
   const apiKey = readRequired(rawEnv, API_KEY_ENV, invalidVariables);
   const model = readRequired(rawEnv, MODEL_ENV, invalidVariables);
-  const maxOutputTokens = readInteger(
-    rawEnv,
-    MAX_OUTPUT_TOKENS_ENV,
-    1,
-    32_768,
-    invalidVariables,
-  );
+  const maxOutputTokens = readInteger(rawEnv, MAX_OUTPUT_TOKENS_ENV, 1, 32_768, invalidVariables);
   const maxRequestBytes = readInteger(
     rawEnv,
     MAX_REQUEST_BYTES_ENV,
@@ -209,13 +184,7 @@ export function loadOpenAiProviderConfig(
     262_144,
     invalidVariables,
   );
-  const requestTimeoutMs = readInteger(
-    rawEnv,
-    REQUEST_TIMEOUT_ENV,
-    100,
-    120_000,
-    invalidVariables,
-  );
+  const requestTimeoutMs = readInteger(rawEnv, REQUEST_TIMEOUT_ENV, 100, 120_000, invalidVariables);
 
   if (endpoint !== undefined && !isSafeProviderEndpoint(endpoint)) {
     invalidVariables.push(ENDPOINT_ENV);
@@ -225,10 +194,7 @@ export function loadOpenAiProviderConfig(
     invalidVariables.push(API_KEY_ENV);
   }
 
-  if (
-    model !== undefined &&
-    !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(model)
-  ) {
+  if (model !== undefined && !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(model)) {
     invalidVariables.push(MODEL_ENV);
   }
 
@@ -267,10 +233,7 @@ export function inspectAiProviderConfiguration(
     if (error instanceof AiProviderConfigurationError) {
       return {
         status: "invalid",
-        providerId:
-          rawEnv[PROVIDER_ENV]?.trim().toLowerCase() === "openai"
-            ? "openai"
-            : "unknown",
+        providerId: rawEnv[PROVIDER_ENV]?.trim().toLowerCase() === "openai" ? "openai" : "unknown",
         issues: error.variableNames,
       };
     }
@@ -340,26 +303,18 @@ function parseOpenAiResponse(rawBody: string): AiProviderResult {
   try {
     body = JSON.parse(rawBody);
   } catch (error) {
-    throw new AiProviderError(
-      "invalid_response",
-      "AI provider returned invalid JSON.",
-      {
-        retryable: false,
-        cause: error,
-      },
-    );
+    throw new AiProviderError("invalid_response", "AI provider returned invalid JSON.", {
+      retryable: false,
+      cause: error,
+    });
   }
 
   const content = readAssistantContent(body).trim();
 
   if (content.length === 0) {
-    throw new AiProviderError(
-      "invalid_response",
-      "AI provider returned an empty response.",
-      {
-        retryable: false,
-      },
-    );
+    throw new AiProviderError("invalid_response", "AI provider returned an empty response.", {
+      retryable: false,
+    });
   }
 
   if (!content.startsWith("{")) {
@@ -371,14 +326,10 @@ function parseOpenAiResponse(rawBody: string): AiProviderResult {
   try {
     envelope = JSON.parse(content);
   } catch (error) {
-    throw new AiProviderError(
-      "invalid_response",
-      "AI provider returned an invalid envelope.",
-      {
-        retryable: false,
-        cause: error,
-      },
-    );
+    throw new AiProviderError("invalid_response", "AI provider returned an invalid envelope.", {
+      retryable: false,
+      cause: error,
+    });
   }
 
   if (
@@ -386,13 +337,9 @@ function parseOpenAiResponse(rawBody: string): AiProviderResult {
     typeof envelope.text !== "string" ||
     envelope.text.trim().length === 0
   ) {
-    throw new AiProviderError(
-      "invalid_response",
-      "AI provider envelope is invalid.",
-      {
-        retryable: false,
-      },
-    );
+    throw new AiProviderError("invalid_response", "AI provider envelope is invalid.", {
+      retryable: false,
+    });
   }
 
   if (
@@ -402,13 +349,9 @@ function parseOpenAiResponse(rawBody: string): AiProviderResult {
       envelope.confidence < 0 ||
       envelope.confidence > 1)
   ) {
-    throw new AiProviderError(
-      "invalid_response",
-      "AI provider confidence is invalid.",
-      {
-        retryable: false,
-      },
-    );
+    throw new AiProviderError("invalid_response", "AI provider confidence is invalid.", {
+      retryable: false,
+    });
   }
 
   const result: AiProviderResult = { text: envelope.text.trim() };
@@ -446,9 +389,7 @@ function readAssistantContent(body: unknown): string {
   }
 
   return content
-    .map((part) =>
-      isRecord(part) && typeof part.text === "string" ? part.text : "",
-    )
+    .map((part) => (isRecord(part) && typeof part.text === "string" ? part.text : ""))
     .join("");
 }
 
@@ -461,14 +402,10 @@ function mapHttpFailure(statusCode: number): AiProviderError {
   }
 
   if (statusCode === 429) {
-    return new AiProviderError(
-      "rate_limited",
-      "AI provider rate limit reached.",
-      {
-        retryable: true,
-        statusCode,
-      },
-    );
+    return new AiProviderError("rate_limited", "AI provider rate limit reached.", {
+      retryable: true,
+      statusCode,
+    });
   }
 
   if (statusCode >= 500) {
@@ -507,8 +444,7 @@ function readInteger(
   invalidVariables: string[],
 ): number | undefined {
   const value = rawEnv[name]?.trim();
-  const parsed =
-    value === undefined || value === "" ? Number.NaN : Number(value);
+  const parsed = value === undefined || value === "" ? Number.NaN : Number(value);
 
   if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) {
     invalidVariables.push(name);
