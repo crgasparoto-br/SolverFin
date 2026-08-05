@@ -306,8 +306,12 @@ function buildSystemPrompt(task: AiTaskKind): string {
   const base =
     "You are a constrained SolverFin financial assistant. Do not infer or request data beyond the supplied purpose and fields.";
 
-  if (task === "extraction" || task === "classification") {
+  if (task === "extraction") {
     return `${base} Return a JSON object with non-empty text, mandatory structured output, and optional confidence from 0 to 1. Plain text without structured output is invalid for this task.`;
+  }
+
+  if (task === "classification") {
+    return `${base} Return a JSON object with non-empty text, optional confidence from 0 to 1, and mandatory structured output using contractVersion 1, suggestionKind categorization, payloadVersion 1, a non-empty reasons array, and at least one of proposedCategoryId, proposedAccountId, proposedCardId, or proposedStatus. Do not return targetEntityId, origin, fingerprint, audit, or any other structured field.`;
   }
 
   return `${base} Return either plain text or a JSON object with non-empty text and optional confidence from 0 to 1. Structured output is invalid for this task.`;
