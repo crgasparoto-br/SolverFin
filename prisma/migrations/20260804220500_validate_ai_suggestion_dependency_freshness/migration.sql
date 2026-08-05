@@ -73,7 +73,12 @@ begin
       message = 'AI_SUGGESTION_PAYLOAD_INVALID';
   end if;
 
-  select source."payload"->>'fingerprint', true
+  select case
+           when payload_kind = 'categorization'
+             then source."payload"->>'fingerprint'
+           else coalesce(source."payloadFingerprint", source."payload"->>'fingerprint')
+         end,
+         true
     into actual_source_fingerprint, source_found
     from "AiSuggestion" as source
    where source."id" = source_suggestion_id_text::uuid

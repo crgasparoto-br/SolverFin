@@ -39,13 +39,7 @@ type BankMessageInboxSuggestion = Omit<AiSuggestion, "payload"> & {
 export interface BankMessageInboxItem {
   id: string;
   origin: BankMessageInboxOrigin;
-  status:
-    | "pending_review"
-    | "approved"
-    | "edited"
-    | "rejected"
-    | "discarded"
-    | "error";
+  status: "pending_review" | "approved" | "edited" | "rejected" | "discarded" | "error";
   sourceHash: string;
   maskedText: string;
   receivedAt: string;
@@ -80,7 +74,10 @@ interface BankMessageInboxRow {
   suggestionUpdatedAt: Date | null;
 }
 
-type StructuredBankMessageSuggestion = Omit<BankMessageInboxSuggestion, "payload"> & {
+type StructuredBankMessageSuggestion = Omit<
+  BankMessageInboxSuggestion,
+  "payload"
+> & {
   payload: TransactionExtractionSuggestionPayloadV2;
 };
 
@@ -127,9 +124,7 @@ export async function listBankMessageInboxForContext(
     .map(mapRow)
     .filter(
       (item) =>
-        filters.status === undefined ||
-        filters.status === "all" ||
-        item.status === filters.status,
+        filters.status === undefined || filters.status === "all" || item.status === filters.status,
     );
 }
 
@@ -481,11 +476,7 @@ function mapRow(row: BankMessageInboxRow): BankMessageInboxItem {
 function mapSuggestion(
   row: BankMessageInboxRow,
 ): BankMessageInboxSuggestion | undefined {
-  if (
-    row.suggestionId === null ||
-    row.suggestionKind === null ||
-    row.suggestionStatus === null
-  ) {
+  if (row.suggestionId === null || row.suggestionKind === null || row.suggestionStatus === null) {
     return undefined;
   }
 
@@ -497,10 +488,8 @@ function mapSuggestion(
     status: row.suggestionStatus.toLowerCase() as AiSuggestion["status"],
     confidence: Number(row.confidence ?? 0),
     explanation: row.explanation ?? "Sugestao revisavel criada a partir da inbox.",
-    createdAt:
-      row.suggestionCreatedAt?.toISOString() ?? row.importCreatedAt.toISOString(),
-    updatedAt:
-      row.suggestionUpdatedAt?.toISOString() ?? row.importUpdatedAt.toISOString(),
+    createdAt: row.suggestionCreatedAt?.toISOString() ?? row.importCreatedAt.toISOString(),
+    updatedAt: row.suggestionUpdatedAt?.toISOString() ?? row.importUpdatedAt.toISOString(),
   };
 
   if (row.targetEntityId !== null) suggestion.targetEntityId = row.targetEntityId;
