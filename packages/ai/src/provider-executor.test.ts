@@ -35,16 +35,8 @@ async function testConsentRecheckedImmediatelyBeforeCall(): Promise<void> {
     resolveConsent: () => states.shift() ?? "revoked",
   });
 
-  assertEqual(
-    result.status,
-    "blocked",
-    "revoked consent blocks immediately before call",
-  );
-  assertEqual(
-    provider.calls,
-    0,
-    "provider is not called after consent revocation",
-  );
+  assertEqual(result.status, "blocked", "revoked consent blocks immediately before call");
+  assertEqual(provider.calls, 0, "provider is not called after consent revocation");
 }
 
 async function testSanitizedEmptyPayloadBlocksBeforeCall(): Promise<void> {
@@ -60,11 +52,7 @@ async function testSanitizedEmptyPayloadBlocksBeforeCall(): Promise<void> {
   assertEqual(result.status, "blocked", "empty sanitized payload is blocked");
 
   if (result.status === "blocked") {
-    assertEqual(
-      result.code,
-      "AI_PAYLOAD_EMPTY",
-      "empty payload has controlled code",
-    );
+    assertEqual(result.code, "AI_PAYLOAD_EMPTY", "empty payload has controlled code");
   }
 
   assertEqual(provider.calls, 0, "empty payload does not call provider");
@@ -85,11 +73,7 @@ async function testTypedTimeoutRetriesAndMapsResult(): Promise<void> {
   assertEqual(result.status, "failed", "timeout fails after retries");
 
   if (result.status === "failed") {
-    assertEqual(
-      result.code,
-      "AI_PROVIDER_TIMEOUT",
-      "timeout maps to controlled code",
-    );
+    assertEqual(result.code, "AI_PROVIDER_TIMEOUT", "timeout maps to controlled code");
     assertEqual(result.attempts, 2, "timeout respects maxRetries");
   }
 
@@ -119,11 +103,7 @@ async function testTypedTimeoutRetriesThenSucceeds(): Promise<void> {
 
   if (result.status === "completed") {
     assertEqual(result.attempts, 2, "success reports both attempts");
-    assertEqual(
-      result.result.text,
-      "recovered",
-      "retry returns recovered result",
-    );
+    assertEqual(result.result.text, "recovered", "retry returns recovered result");
   }
 
   assertEqual(provider.calls, 2, "recovery performs one call per attempt");
@@ -148,11 +128,7 @@ async function testPermanentFailureDoesNotRetry(): Promise<void> {
     assertEqual(result.attempts, 1, "permanent failure is not retried");
   }
 
-  assertEqual(
-    provider.calls,
-    1,
-    "permanent failure performs one outbound attempt",
-  );
+  assertEqual(provider.calls, 1, "permanent failure performs one outbound attempt");
 }
 
 async function testSafeLogsOnlyExposeSafeMetadata(): Promise<void> {
@@ -168,9 +144,7 @@ async function testSafeLogsOnlyExposeSafeMetadata(): Promise<void> {
   });
 
   assertEqual(result.status, "completed", "safe task completes");
-  const completed = events.find(
-    (event) => event.code === "AI_PROVIDER_CALL_COMPLETED",
-  );
+  const completed = events.find((event) => event.code === "AI_PROVIDER_CALL_COMPLETED");
   assertEqual(typeof completed?.durationMs, "number", "duration is logged");
   assertEqual(completed?.result, "completed", "safe result is logged");
   assertEqual(
@@ -184,9 +158,7 @@ async function testSafeLogsOnlyExposeSafeMetadata(): Promise<void> {
     "fields are absent from logs",
   );
   assertEqual(
-    events.some(
-      (event) => "organizationId" in event || "financialProfileId" in event,
-    ),
+    events.some((event) => "organizationId" in event || "financialProfileId" in event),
     false,
     "tenant identifiers are absent from provider logs",
   );
@@ -207,9 +179,7 @@ class CountingProvider implements AiProvider {
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {
   if (actual !== expected) {
-    throw new Error(
-      `${label}: expected ${String(expected)}, got ${String(actual)}`,
-    );
+    throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
   }
 }
 
