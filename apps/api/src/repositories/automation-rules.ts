@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import {
   applyAutomationRules,
+  parseTransactionExtractionPayload,
   type AiSuggestion,
   type AutomationRule,
   type AutomationRuleActions,
@@ -9,11 +10,14 @@ import {
   type AutomationRuleTarget,
   type EntityId,
   type TenantContext,
-  type TransactionKind,
 } from "@solverfin/domain";
+import {
+  buildAiSuggestionPayload,
+  readAiSuggestionPayload,
+  type CategorizationSuggestionPayloadV1,
+} from "@solverfin/domain/ai-suggestion-payloads";
 
-import { query, withTransaction } from "../db.js";
-import type { query as QueryFn } from "../db.js";
+import { query, withTransaction, type QueryExecutor } from "../db.js";
 
 export interface AutomationRuleDraft {
   name: string;
@@ -54,6 +58,7 @@ interface AiSuggestionRow {
   targetEntityId: string | null;
   confidence: string | number;
   explanation: string;
+  payload: unknown;
   provider: string | null;
   model: string | null;
   reviewedByUserId: string | null;
@@ -76,6 +81,11 @@ interface AutomationRuleInput {
   updatedByUserId?: EntityId | undefined;
 }
 
+type PersistedAiSuggestion = Omit<AiSuggestion, "payload"> & { payload: unknown };
+type StructuredAiSuggestion = Omit<AiSuggestion, "payload"> & {
+  payload: CategorizationSuggestionPayloadV1;
+};
+
 export class AutomationRuleRepositoryError extends Error {
   readonly code: string;
   readonly statusCode: number;
@@ -91,7 +101,7 @@ export class AutomationRuleRepositoryError extends Error {
 const AUTOMATION_RULE_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "name", "status",
   "priority", "conditions", "actions", "explanation", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 const AI_SUGGESTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
-  "sourceEntityId", "targetEntityId", "confidence", "explanation", "provider", "model", "reviewedByUserId",
+  "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload", "provider", "model", "reviewedByUserId",
   "reviewedAt", "createdAt", "updatedAt"`;
 
 export async function listAutomationRulesForContext(
@@ -198,7 +208,6 @@ export async function applyAutomationRulesForContext(
   await withTransaction(async (executeQuery) => {
     for (const sourceSuggestion of pendingSuggestions) {
       const target = buildAutomationTargetFromSuggestion(context, sourceSuggestion);
-
       if (target === undefined) {
         skipped += 1;
         continue;
@@ -210,7 +219,6 @@ export async function applyAutomationRulesForContext(
         rules,
         now: new Date().toISOString(),
       });
-
       if (application.appliedRules.length === 0) {
         skipped += 1;
         continue;
@@ -225,11 +233,14 @@ export async function applyAutomationRulesForContext(
       const suggestion = buildAutomationSuggestion(
         context,
         sourceSuggestion,
-        application.appliedRules.map((rule) => rule.reason),
+        application.target,
+        application.appliedRules,
         now,
       );
       await executeQuery(buildInsertAiSuggestionSql(), buildAiSuggestionParams(suggestion));
-      createdSuggestions.push(suggestion);
+      const { payload, ...createdSuggestion } = suggestion;
+      void payload;
+      createdSuggestions.push(createdSuggestion);
     }
   });
 
@@ -260,7 +271,7 @@ async function findAutomationRuleForContext(
 
 async function listPendingTransactionExtractionSuggestions(
   context: TenantContext,
-): Promise<AiSuggestion[]> {
+): Promise<PersistedAiSuggestion[]> {
   const rows = await query<AiSuggestionRow>(
     `select ${AI_SUGGESTION_SELECT_COLUMNS} from "AiSuggestion"
      where "organizationId" = $1 and "financialProfileId" = $2
@@ -275,7 +286,7 @@ async function listPendingTransactionExtractionSuggestions(
 async function hasAutomationSuggestionForSource(
   context: TenantContext,
   sourceSuggestionId: EntityId,
-  executeQuery: typeof QueryFn,
+  executeQuery: QueryExecutor,
 ): Promise<boolean> {
   const rows = await executeQuery<{ id: string }>(
     `select "id" from "AiSuggestion"
@@ -293,21 +304,18 @@ function normalizeAutomationRule(
   input: AutomationRuleInput,
 ): AutomationRule {
   const name = input.name.trim();
-
   if (!name) {
     throw new AutomationRuleRepositoryError(
       "AUTOMATION_RULE_NAME_REQUIRED",
       "Informe um nome para a regra automatica.",
     );
   }
-
   if (!hasAnyCondition(input.conditions)) {
     throw new AutomationRuleRepositoryError(
       "AUTOMATION_RULE_CONDITION_REQUIRED",
       "Configure pelo menos uma condicao para a regra automatica.",
     );
   }
-
   if (!hasAnyAction(input.actions)) {
     throw new AutomationRuleRepositoryError(
       "AUTOMATION_RULE_ACTION_REQUIRED",
@@ -366,55 +374,73 @@ function sanitizeActions(actions: AutomationRuleActions): AutomationRuleActions 
 
 function buildAutomationTargetFromSuggestion(
   context: TenantContext,
-  suggestion: AiSuggestion,
+  suggestion: PersistedAiSuggestion,
 ): AutomationRuleTarget | undefined {
-  const match =
-    /^CSV linha (\d+): ([0-9-]+); ([a-z_]+); (\d+) centavos; (.*)\. Revise antes de criar o lancamento final\.$/.exec(
-      suggestion.explanation,
-    );
-
-  if (match === null) {
-    return undefined;
-  }
-
-  const details = parseDescriptionDetails(match[5] ?? "");
+  const structured = parseTransactionExtractionPayload(suggestion.payload);
+  if (structured === undefined) return undefined;
 
   return {
     id: suggestion.id,
     organizationId: context.organizationId,
     financialProfileId: context.financialProfileId,
-    description: details.description,
-    amountMinor: Number(match[4]),
-    kind: (match[3] ?? "expense") as TransactionKind,
-    ...(details.accountId !== undefined ? { accountId: details.accountId } : {}),
-    ...(details.categoryId !== undefined ? { categoryId: details.categoryId } : {}),
+    description: structured.description,
+    amountMinor: structured.amountMinor,
+    kind: structured.kind,
+    ...(structured.accountId !== undefined ? { accountId: structured.accountId } : {}),
+    ...(structured.categoryId !== undefined ? { categoryId: structured.categoryId } : {}),
     status: "pending_review",
-  };
-}
-
-function parseDescriptionDetails(value: string): {
-  description: string;
-  accountId?: string;
-  categoryId?: string;
-} {
-  const parts = value.split("; ");
-  const description = parts[0]?.trim() ?? "";
-  const accountPart = parts.find((part) => part.startsWith("conta "));
-  const categoryPart = parts.find((part) => part.startsWith("categoria "));
-
-  return {
-    description,
-    ...(accountPart !== undefined ? { accountId: accountPart.slice("conta ".length) } : {}),
-    ...(categoryPart !== undefined ? { categoryId: categoryPart.slice("categoria ".length) } : {}),
   };
 }
 
 function buildAutomationSuggestion(
   context: TenantContext,
-  sourceSuggestion: AiSuggestion,
-  reasons: readonly string[],
+  sourceSuggestion: PersistedAiSuggestion,
+  proposedTarget: AutomationRuleTarget,
+  appliedRules: readonly { ruleId: string; reason: string }[],
   now: string,
-): AiSuggestion {
+): StructuredAiSuggestion {
+  const sourcePayload = parseTransactionExtractionPayload(sourceSuggestion.payload);
+  if (sourcePayload === undefined) {
+    throw new AutomationRuleRepositoryError(
+      "AUTOMATION_SOURCE_PAYLOAD_INVALID",
+      "A sugestao de origem nao possui payload estruturado compativel.",
+      409,
+    );
+  }
+
+  const read = readAiSuggestionPayload(sourceSuggestion.payload, "transaction_extraction");
+  const sourceFingerprint =
+    read.state === "current" ? read.payload.fingerprint : sourcePayload.sourceHash;
+  const reasons = appliedRules.map((rule) => rule.reason);
+  const payload = buildAiSuggestionPayload({
+    payload: {
+      contractVersion: 1,
+      suggestionKind: "categorization",
+      payloadVersion: 1,
+      origin: {
+        kind: "automation",
+        ...(appliedRules[0]?.ruleId === undefined ? {} : { ruleId: appliedRules[0].ruleId }),
+      },
+      target: { entityKind: "import_suggestion", entityId: sourceSuggestion.id },
+      confidence: 0.9,
+      reasons,
+      audit: { createdAt: now, sourceFingerprint },
+      targetEntityId: sourceSuggestion.id,
+      sourceSuggestionId: sourceSuggestion.id,
+      ...(proposedTarget.categoryId === undefined
+        ? {}
+        : { proposedCategoryId: proposedTarget.categoryId }),
+      ...(proposedTarget.accountId === undefined
+        ? {}
+        : { proposedAccountId: proposedTarget.accountId }),
+      ...(proposedTarget.cardId === undefined ? {} : { proposedCardId: proposedTarget.cardId }),
+      ...(proposedTarget.status === undefined ? {} : { proposedStatus: proposedTarget.status }),
+      ...(sourcePayload.categoryId === undefined
+        ? {}
+        : { previousCategoryId: sourcePayload.categoryId }),
+    },
+  }) as CategorizationSuggestionPayloadV1;
+
   return {
     id: randomUUID(),
     organizationId: context.organizationId,
@@ -424,11 +450,11 @@ function buildAutomationSuggestion(
     sourceEntityId: sourceSuggestion.id,
     targetEntityId: sourceSuggestion.id,
     confidence: 0.9,
-    explanation:
-      `Regra automatica sugeriu ajustes para a sugestao ${sourceSuggestion.id}. ${reasons.join(" ")}`.slice(
-        0,
-        500,
-      ),
+    explanation: `Regras automaticas sugeriram ajustes estruturados. ${reasons.join(" ")}`.slice(
+      0,
+      500,
+    ),
+    payload,
     provider: "solverfin-automation",
     model: "automation-rules-v1",
     createdAt: now,
@@ -439,11 +465,11 @@ function buildAutomationSuggestion(
 function buildInsertAiSuggestionSql(): string {
   return `insert into "AiSuggestion"
     ("id", "organizationId", "financialProfileId", "kind", "status", "sourceEntityId", "targetEntityId",
-     "confidence", "explanation", "provider", "model", "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
+     "confidence", "explanation", "payload", "provider", "model", "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt")
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13, $14, $15, $16)`;
 }
 
-function buildAiSuggestionParams(suggestion: AiSuggestion): unknown[] {
+function buildAiSuggestionParams(suggestion: StructuredAiSuggestion): unknown[] {
   return [
     suggestion.id,
     suggestion.organizationId,
@@ -454,6 +480,7 @@ function buildAiSuggestionParams(suggestion: AiSuggestion): unknown[] {
     suggestion.targetEntityId ?? null,
     suggestion.confidence,
     suggestion.explanation,
+    JSON.stringify(suggestion.payload),
     suggestion.provider ?? null,
     suggestion.model ?? null,
     suggestion.reviewedByUserId ?? null,
@@ -515,8 +542,8 @@ function mapAutomationRuleRow(row: AutomationRuleRow): AutomationRule {
   };
 }
 
-function mapAiSuggestionRow(row: AiSuggestionRow): AiSuggestion {
-  const suggestion: AiSuggestion = {
+function mapAiSuggestionRow(row: AiSuggestionRow): PersistedAiSuggestion {
+  return {
     id: row.id,
     organizationId: row.organizationId,
     financialProfileId: row.financialProfileId,
@@ -524,16 +551,14 @@ function mapAiSuggestionRow(row: AiSuggestionRow): AiSuggestion {
     status: row.status.toLowerCase() as AiSuggestion["status"],
     confidence: Number(row.confidence),
     explanation: row.explanation,
+    payload: row.payload,
+    ...(row.sourceEntityId === null ? {} : { sourceEntityId: row.sourceEntityId }),
+    ...(row.targetEntityId === null ? {} : { targetEntityId: row.targetEntityId }),
+    ...(row.provider === null ? {} : { provider: row.provider }),
+    ...(row.model === null ? {} : { model: row.model }),
+    ...(row.reviewedByUserId === null ? {} : { reviewedByUserId: row.reviewedByUserId }),
+    ...(row.reviewedAt === null ? {} : { reviewedAt: row.reviewedAt.toISOString() }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
-
-  if (row.sourceEntityId !== null) suggestion.sourceEntityId = row.sourceEntityId;
-  if (row.targetEntityId !== null) suggestion.targetEntityId = row.targetEntityId;
-  if (row.provider !== null) suggestion.provider = row.provider;
-  if (row.model !== null) suggestion.model = row.model;
-  if (row.reviewedByUserId !== null) suggestion.reviewedByUserId = row.reviewedByUserId;
-  if (row.reviewedAt !== null) suggestion.reviewedAt = row.reviewedAt.toISOString();
-
-  return suggestion;
 }

@@ -1,41 +1,24 @@
 # ADRs - Architecture Decision Records
 
-ADRs registram decisoes arquiteturais relevantes do SolverFin.
+ADRs registram decisões arquiteturais relevantes do SolverFin.
 
-Use ADR quando uma decisao:
+Use ADR quando uma decisão muda stack, boundary, privacidade, tenant, auditoria, dados financeiros, contrato público, schema, integração externa ou estratégia de IA.
 
-- muda stack, framework, banco, provedor ou padrao duradouro;
-- cria boundary arquitetural;
-- afeta privacidade, LGPD, tenant, auditoria ou dados financeiros;
-- define contrato publico, schema, integracao externa ou estrategia de IA;
-- pode gerar retrabalho se ficar implicita.
-
-## Formato
-
-Cada ADR deve ter:
-
-- titulo;
-- status;
-- data;
-- contexto;
-- decisao;
-- consequencias;
-- alternativas consideradas quando fizer sentido.
-
-## Status possiveis
+## Status possíveis
 
 - `Proposto`
 - `Aceito`
-- `Substituido`
+- `Substituído`
 - `Depreciado`
 
 ## Lista
 
-- `0001-stack-inicial.md` - Stack inicial e arquitetura de alto nivel.
-- `0002-mvp-web-runtime-and-session.md` - Runtime web e sessao local do MVP.
-- `0003-epic-133-mvp-consolidation.md` - Consolidacao do MVP navegavel da epica #133.
-- `0004-autenticacao-produtiva.md` - Autenticacao produtiva definitiva.
-- `0005-financial-indexes-shared-domain.md` - Indices financeiros compartilhados entre extrato e investimentos.
-- `0006-csv-import-structured-human-review.md` - Importacao CSV/OFX estruturada, idempotente e revisada na Inbox.
-- [0007 - Idempotencia duravel para criacao de conjuntos financeiros](./0007-durable-financial-set-idempotency.md)
-- [0008 - Recuperacao de envio ambiguo de parcelamento manual](./0008-ambiguous-installment-submission-recovery.md)
+- `0001-stack-inicial.md` - Stack inicial e arquitetura de alto nível.
+- `0002-mvp-web-runtime-and-session.md` - Runtime web e sessão local do MVP.
+- `0003-epic-133-mvp-consolidation.md` - Consolidação do MVP navegável da épica #133.
+- `0004-autenticacao-produtiva.md` - Autenticação produtiva definitiva.
+- `0005-financial-indexes-shared-domain.md` - Índices financeiros compartilhados entre extrato e investimentos.
+- `0006-csv-import-structured-human-review.md` - Importação CSV/OFX estruturada, idempotente e revisada na Inbox.
+- [0007 - Idempotência durável para criação de conjuntos financeiros](./0007-durable-financial-set-idempotency.md)
+- [0008 - Recuperação de envio ambíguo de parcelamento manual](./0008-ambiguous-installment-submission-recovery.md)
+- [0009 - Payloads versionados de sugestões](./0009-versioned-ai-suggestion-payloads.md)

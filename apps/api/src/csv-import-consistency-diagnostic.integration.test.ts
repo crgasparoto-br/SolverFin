@@ -10,6 +10,8 @@ import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
+const PAYLOAD_CONTRACT_UPDATE_TRIGGER = "AiSuggestionPayloadContractUpdate";
+
 void main()
   .catch((error: unknown) => {
     console.error(error);
@@ -63,10 +65,7 @@ async function assertNullTargetIsDetected(
   baseline: number,
 ): Promise<void> {
   try {
-    await query(
-      `update "AiSuggestion" set "targetEntityId" = null, "updatedAt" = now() where "id" = $1`,
-      [suggestionId],
-    );
+    await updateTargetForDiagnostic(suggestionId, null);
     assert.equal(
       runDiagnostic(),
       baseline + 1,
@@ -84,10 +83,7 @@ async function assertConflictingTargetIsDetected(
   baseline: number,
 ): Promise<void> {
   try {
-    await query(
-      `update "AiSuggestion" set "targetEntityId" = $2, "updatedAt" = now() where "id" = $1`,
-      [suggestionId, unrelatedTransactionId],
-    );
+    await updateTargetForDiagnostic(suggestionId, unrelatedTransactionId);
     assert.equal(
       runDiagnostic(),
       baseline + 1,
@@ -147,10 +143,7 @@ async function assertReconciliationTargetConflictIsDetected(
   assert.equal(runDiagnostic(), baseline, "A valid reconciliation must not be reported");
 
   try {
-    await query(
-      `update "AiSuggestion" set "targetEntityId" = $2, "updatedAt" = now() where "id" = $1`,
-      [source.id, conflictingTransactionId],
-    );
+    await updateTargetForDiagnostic(source.id, conflictingTransactionId);
     assert.equal(
       runDiagnostic(),
       baseline + 1,
@@ -162,10 +155,26 @@ async function assertReconciliationTargetConflictIsDetected(
 }
 
 async function restoreTarget(suggestionId: string, transactionId: string): Promise<void> {
-  await query(
-    `update "AiSuggestion" set "targetEntityId" = $2, "updatedAt" = now() where "id" = $1`,
-    [suggestionId, transactionId],
-  );
+  await updateTargetForDiagnostic(suggestionId, transactionId);
+}
+
+async function updateTargetForDiagnostic(
+  suggestionId: string,
+  transactionId: string | null,
+): Promise<void> {
+  // This test must fabricate an impossible persisted state so the diagnostic
+  // can prove it detects legacy corruption. Production mutations retain the
+  // immutable-payload trigger at all times.
+  await query(`alter table "AiSuggestion" disable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`);
+  try {
+    await query(
+      `update "AiSuggestion" set "targetEntityId" = $2, "updatedAt" = now()
+        where "id" = $1`,
+      [suggestionId, transactionId],
+    );
+  } finally {
+    await query(`alter table "AiSuggestion" enable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`);
+  }
 }
 
 function runDiagnostic(): number {

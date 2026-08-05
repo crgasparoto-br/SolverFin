@@ -23,6 +23,8 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/IMPORTS.md`
 - `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`
 - `docs/AI_REVIEW_QUEUE.md`
+- `docs/AI_SUGGESTION_PAYLOADS.md`
+- `docs/ai/extraction-schema.md`
 - `docs/BANK_MESSAGE_INBOX.md`
 - `docs/AUTOMATION_RULES.md`
 - `docs/PAYABLES_RECEIVABLES.md`
@@ -30,7 +32,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - `docs/API_REPORTS.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531 e a entrega da issue #548.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548 e a PR #570 para a issue #561.
 
 ## Decisao atual sobre pagar/receber
 
@@ -130,38 +132,38 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Deduplicacao
 
 - Dominio: Feito.
-- Schema/repository/API: Feito para fluxo determinístico em lotes CSV e OFX.
+- Schema/repository/API: Feito para fluxo deterministico em lotes CSV e OFX e payload `deduplication` V1 no envelope canonico.
 - UI: Parcial/Feito para revisao operacional via Inbox.
-- Testes: Parcial.
+- Testes: unitarios e integracao PostgreSQL para fingerprint, legado, obsolescencia e decisao atomica.
 - Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
-- Nota: a varredura cria candidaturas idempotentes com vínculo estruturado. A Inbox permite aprovar/rejeitar; duplicidade rejeita a linha de origem e conciliação atualiza o lancamento alvo e resolve a origem atomicamente.
+- Nota: a varredura cria candidaturas idempotentes com vinculo estruturado. A Inbox permite aprovar/rejeitar; duplicidade rejeita a linha de origem e conciliação atualiza o lancamento alvo e resolve a origem atomicamente.
 
 ### Conciliacao
 
 - Dominio: Feito.
-- Schema/repository/API: Parcial/Feito para conciliacao deterministica inicial via sugestoes revisaveis.
+- Schema/repository/API: Feito para conciliacao deterministica inicial e payload `reconciliation` V1 no envelope canonico.
 - UI: Parcial/Feito para revisao operacional via Inbox; indicadores existem no extrato.
-- Testes: Parcial.
+- Testes: unitarios e integracao PostgreSQL para fingerprint, legado, obsolescencia e concorrencia.
 - Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
 - Nota: aprovacao de sugestao `reconciliation` pela Inbox usa o endpoint deterministico, marca o lancamento alvo como `reconciled`, preenche `reconciledAt`/`aiSuggestionId` e registra auditoria minima.
 
 ### Regras automaticas
 
 - Dominio: Feito.
-- Schema/repository/API/UI: Parcial/Feito para primeiro fluxo operacional revisavel.
-- Testes: Parcial.
-- Documentacao: Parcial/Atualizada em `docs/AUTOMATION_RULES.md`.
-- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configurações` permite criar, listar, inativar e executar regras. A aplicacao gera sugestoes `categorization` revisaveis com `provider: solverfin-automation`, sem efeito financeiro irreversivel automatico.
+- Schema/repository/API/UI: Feito para o primeiro fluxo operacional revisavel, com sugestao `categorization` V1 tipada.
+- Testes: unitarios e integracao do produtor estruturado; efeito financeiro especifico continua fora deste recorte.
+- Documentacao: Feito em `docs/AUTOMATION_RULES.md`.
+- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configuracoes` permite criar, listar, inativar e executar regras. A aplicacao gera sugestoes `categorization` revisaveis com `provider: solverfin-automation`, sem efeito financeiro irreversivel automatico.
 
 ### IA / sugestoes revisaveis
 
-- Dominio: Feito.
-- Schema/migration: Parcial.
-- Repository/API: Parcial/Feito para fila de revisao.
-- UI: Parcial/Feito para revisao operacional na Inbox.
-- Testes: Parcial.
-- Documentacao: Feito em `docs/AI_REVIEW_QUEUE.md`.
-- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. A Inbox permite aprovar/rejeitar sugestoes pendentes. Aprovacao com efeito financeiro automatico existe apenas para `transaction_extraction` com dados suficientes. Ainda nao ha chamada a provedor real de IA, payload estruturado completo em coluna propria nem assistente financeiro conversacional.
+- Dominio: Feito para a uniao discriminada e versionada de `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`.
+- Schema/migration: Feito com payload JSON canonico, validacao estrita no dominio e PostgreSQL, fingerprint e migracao conservadora de variantes legadas compativeis.
+- Repository/API: Feito para leitura tipada, projecao publica redigida, erros controlados e isolamento por organizacao/perfil; efeitos financeiros de todos os `kind` permanecem em subissues proprias.
+- UI: Parcial/Feito para revisao operacional na Inbox e contrato publico tipado no frontend.
+- Testes: unitarios dos schemas e normalizadores; integracao PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento e rejeicao de dados aninhados desconhecidos.
+- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md` e `docs/ai/extraction-schema.md`.
+- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. `GET /api/ai-review-queue/:suggestionId/payload` expoe somente a projecao publica autorizada. `explanation` nao e fonte de valor, conta, categoria, tipo ou vinculo. Ainda nao ha chamada a provedor real de IA nem assistente financeiro conversacional; esses itens continuam fora do contrato da issue #561.
 
 ### Perfis financeiros / tenant operacional
 

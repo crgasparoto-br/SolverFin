@@ -32,6 +32,28 @@ Qualquer campo fora da lista e tratado como inesperado. Isso evita que respostas
 - Tipos e fontes sao normalizados para minusculas antes da validacao.
 - Textos opcionais vazios sao ignorados.
 
+## Persistencia da sugestao revisavel
+
+A saida normalizada do provedor nao e persistida diretamente como objeto livre. Quando o fluxo cria uma `AiSuggestion`, ele a converte para o envelope canonico de `docs/AI_SUGGESTION_PAYLOADS.md`.
+
+Para `transaction_extraction`, o payload persistido e uma uniao versionada:
+
+- `contractVersion: 1` identifica o contrato comum;
+- `suggestionKind: transaction_extraction` discrimina a especie;
+- `payloadVersion: 1` representa receita ou despesa;
+- `payloadVersion: 2` inclui transferencia e `direction`;
+- `origin`, `target`, `fingerprint`, `reasons` e `audit` registram proveniencia e controle de obsolescencia;
+- `sourceRowNumber`, `sourceHash`, `occurredOn`, `kind`, `amountMinor`, `currency` e `description` permanecem no nivel raiz do envelope;
+- conta, outra conta, categoria e identificador externo sao opcionais e tipados.
+
+O formato plano dos campos especificos preserva compatibilidade com os leitores V1/V2 existentes, enquanto `contractVersion` e `suggestionKind` permitem distinguir o contrato atual de registros legados. Leitores novos devem usar `readAiSuggestionPayload`; adaptadores legados podem ler os campos transacionais somente depois que o tipo esperado foi conhecido.
+
+Registros legados estruturados continuam legiveis. Eles nao sofrem backfill em massa: uma mutacao compativel de sugestao pendente os encapsula no envelope atual. Sugestoes resolvidas permanecem imutaveis.
+
+`explanation` e apenas apresentacional. Valor, data, conta, categoria, tipo, transferencia e vinculos nunca podem ser reconstruidos desse texto para produzir efeito financeiro.
+
+A persistencia e a API rejeitam payload ausente, invalido, com tipo divergente, versao nao suportada ou fingerprint obsoleto. Objetos aninhados aceitam somente as chaves documentadas, impedindo que prompt bruto, mensagem bancaria ou resposta de provedor sejam armazenados dentro do contrato.
+
 ## Exemplo valido
 
 ```json
@@ -119,5 +141,6 @@ Uma saida estruturalmente valida com `confidence` abaixo de `0.7` retorna `needs
 
 1. Envie ao provedor somente dados minimizados e consentidos, conforme `docs/ai/providers.md`.
 2. Valide a resposta com `validateTransactionExtraction`.
-3. Aplique automaticamente apenas resultados `valid` quando o fluxo de produto permitir.
-4. Envie resultados `needs_review` e `invalid` para uma experiencia de revisao, exibindo os problemas relevantes em linguagem clara.
+3. Converta a saida valida para `buildAiSuggestionPayload` antes da persistencia.
+4. Aplique automaticamente apenas resultados `valid` quando o fluxo de produto permitir.
+5. Envie resultados `needs_review` e `invalid` para uma experiencia de revisao, exibindo os problemas relevantes em linguagem clara.
