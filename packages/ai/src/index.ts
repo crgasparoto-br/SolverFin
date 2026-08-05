@@ -96,7 +96,7 @@ export interface SafeAiLogEvent {
   failureCode?: AiProviderFailureCode;
 }
 
-export type SafeAiLogger = (event: SafeAiLogEvent) => void;
+export type SafeAiLogger = (event: SafeAiLogEvent) => void | Promise<void>;
 
 export type AiTaskResult =
   | {
@@ -520,5 +520,9 @@ function logSafe(
     event.failureCode = details.failureCode;
   }
 
-  input.logger(event);
+  try {
+    void Promise.resolve(input.logger(event)).catch(() => undefined);
+  } catch {
+    return;
+  }
 }
