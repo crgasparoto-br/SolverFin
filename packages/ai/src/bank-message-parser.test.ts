@@ -29,6 +29,7 @@ await testPixReceivedRuleFixture();
 await testAmbiguousRuleNeedsReview();
 await testAiProviderValidStructuredOutput();
 await testAiBlockedWithoutConsent();
+await testAiPolicySnapshotBlocksContradictoryResolver();
 await testAiBlockedWithoutConsentResolver();
 await testAiConsentRevokedBeforeProviderCall();
 await testAiInvalidOutputNeedsReview();
@@ -133,6 +134,37 @@ async function testAiBlockedWithoutConsent(): Promise<void> {
   assertEqual(result.status, "needs_review", "blocked status");
   assertEqual(result.code, "BANK_MESSAGE_AI_BLOCKED", "blocked code");
   assertEqual(result.maskedText.includes("12345678909"), false, "blocked masked document");
+}
+
+async function testAiPolicySnapshotBlocksContradictoryResolver(): Promise<void> {
+  for (const consent of ["revoked", "missing"] as const) {
+    let providerCalls = 0;
+    let resolverCalls = 0;
+    const provider: AiProvider = {
+      id: "counting",
+      model: "counting-model",
+      async complete() {
+        providerCalls += 1;
+        return { text: "must not be called" };
+      },
+    };
+
+    const result = await parseBankMessage({
+      text: "Mensagem bancaria fora dos padroes conhecidos",
+      provider,
+      context,
+      policy: { ...grantedPolicy, consent },
+      resolveConsent: () => {
+        resolverCalls += 1;
+        return "granted";
+      },
+    });
+
+    assertEqual(result.status, "needs_review", `${consent} snapshot status`);
+    assertEqual(result.code, "BANK_MESSAGE_AI_BLOCKED", `${consent} snapshot code`);
+    assertEqual(providerCalls, 0, `${consent} snapshot provider calls`);
+    assertEqual(resolverCalls, 0, `${consent} snapshot resolver calls`);
+  }
 }
 
 async function testAiBlockedWithoutConsentResolver(): Promise<void> {
