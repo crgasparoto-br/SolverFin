@@ -41,9 +41,7 @@ const PROPOSED_STATUSES = new Set<AiClassificationProposedStatus>([
   "voided",
 ]);
 
-export function validateAiClassificationResult(
-  value: unknown,
-): value is AiClassificationResultV1 {
+export function validateAiClassificationResult(value: unknown): value is AiClassificationResultV1 {
   if (!isRecord(value)) {
     return false;
   }
