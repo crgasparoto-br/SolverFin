@@ -46,10 +46,7 @@ function returnsTypedPublicContractWithoutInternalFields(): void {
   assert.equal(result.migratedFromLegacy, false);
   assert.equal(result.publicPayload.suggestionKind, "categorization");
   const serialized = JSON.stringify(result.publicPayload);
-  assert.doesNotMatch(
-    serialized,
-    /private-provider|private-model|private-correlation/,
-  );
+  assert.doesNotMatch(serialized, /private-provider|private-model|private-correlation/);
   assert.doesNotMatch(serialized, /transaction-1|category-1/);
 }
 
@@ -123,13 +120,9 @@ function returnsControlledErrorsForMissingMismatchedAndUnexpectedPayloads(): voi
   });
   assert.equal(unexpected.code, "API_UNEXPECTED_ERROR");
   assert.equal(unexpected.statusCode, 500);
-  assert.doesNotMatch(
-    unexpected.message,
-    /fingerprint|idempotencyKey|999999|SQL|private/,
-  );
+  assert.doesNotMatch(unexpected.message, /fingerprint|idempotencyKey|999999|SQL|private/);
 }
 
 function hasCode(code: string): (error: unknown) => boolean {
-  return (error: unknown) =>
-    error instanceof AiSuggestionPayloadApiError && error.code === code;
+  return (error: unknown) => error instanceof AiSuggestionPayloadApiError && error.code === code;
 }

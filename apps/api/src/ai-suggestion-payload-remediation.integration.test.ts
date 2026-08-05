@@ -73,14 +73,7 @@ async function assertLegacyProjectionCanApproveCanonicalSuggestion(
      values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', 0.91,
              'Explicação sem autoridade financeira.', $4::jsonb, $5,
              'solverfin-import-csv', 'csv-parser-v3', $6, $6)`,
-    [
-      id,
-      organizationId,
-      PERSONAL_PROFILE_ID,
-      JSON.stringify(legacyPayload),
-      `legacy-${id}`,
-      now,
-    ],
+    [id, organizationId, PERSONAL_PROFILE_ID, JSON.stringify(legacyPayload), `legacy-${id}`, now],
   );
 
   const beforeRows = await query<{ payload: Record<string, unknown> }>(
@@ -102,10 +95,7 @@ async function assertLegacyProjectionCanApproveCanonicalSuggestion(
     status: string;
     targetEntityId: string | null;
     payload: Record<string, unknown>;
-  }>(
-    `select "status", "targetEntityId", "payload" from "AiSuggestion" where "id" = $1`,
-    [id],
-  );
+  }>(`select "status", "targetEntityId", "payload" from "AiSuggestion" where "id" = $1`, [id]);
   assert.equal(afterRows[0]?.status, "APPROVED");
   assert.equal(afterRows[0]?.targetEntityId, targetEntityId);
   assert.equal(afterRows[0]?.payload.contractVersion, 1);
@@ -309,10 +299,9 @@ async function assertApprovalOverridePersistsCanonicalPayload(
     status: string;
     targetEntityId: string | null;
     payload: Record<string, unknown>;
-  }>(
-    `select "status", "targetEntityId", "payload" from "AiSuggestion" where "id" = $1`,
-    [suggestionId],
-  );
+  }>(`select "status", "targetEntityId", "payload" from "AiSuggestion" where "id" = $1`, [
+    suggestionId,
+  ]);
   const row = rows[0];
   assert.equal(row?.status, "APPROVED");
   assert.equal(row?.targetEntityId, result.transaction?.id);

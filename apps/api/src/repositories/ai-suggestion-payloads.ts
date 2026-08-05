@@ -79,9 +79,7 @@ export async function getAiSuggestionPayloadForContext(
       confidence: Number(row.confidence),
       audit: {
         createdAt: row.createdAt.toISOString(),
-        ...(row.payloadFingerprint === null
-          ? {}
-          : { sourceFingerprint: row.payloadFingerprint }),
+        ...(row.payloadFingerprint === null ? {} : { sourceFingerprint: row.payloadFingerprint }),
       },
     },
     { projectLegacyForRead: true },
@@ -130,16 +128,12 @@ function parseStatus(value: string): AiSuggestionPayloadStatus {
   return status;
 }
 
-function resolveOrigin(
-  row: AiSuggestionPayloadRow,
-): AiSuggestionPayloadOrigin {
+function resolveOrigin(row: AiSuggestionPayloadRow): AiSuggestionPayloadOrigin {
   if (row.provider?.startsWith("solverfin-import") === true) {
     return {
       kind: "import",
       sourceKind: row.provider.includes("ofx") ? "ofx" : "csv",
-      ...(row.sourceEntityId === null
-        ? {}
-        : { sourceEntityId: row.sourceEntityId }),
+      ...(row.sourceEntityId === null ? {} : { sourceEntityId: row.sourceEntityId }),
     };
   }
   if (row.provider?.startsWith("solverfin-rule") === true) {

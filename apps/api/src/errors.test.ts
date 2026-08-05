@@ -102,9 +102,7 @@ function usesControlledMessagesForKnownDatabaseErrors(): void {
 function usesControlledMessagesForAiSuggestionPayloadErrors(): void {
   const response = buildApiErrorResponse({
     error: Object.assign(
-      new Error(
-        "AI_SUGGESTION_PAYLOAD_OBSOLETE fingerprint=secret amountMinor=999999",
-      ),
+      new Error("AI_SUGGESTION_PAYLOAD_OBSOLETE fingerprint=secret amountMinor=999999"),
       { code: "P0001" },
     ),
     correlationId: "corr-ai-payload-obsolete",

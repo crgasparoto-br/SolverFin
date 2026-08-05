@@ -132,16 +132,9 @@ function validatesEverySupportedKind(): void {
   assert.deepEqual(
     payloads.map(
       (payload) =>
-        requireCurrentAiSuggestionPayload(payload, payload.suggestionKind)
-          .suggestionKind,
+        requireCurrentAiSuggestionPayload(payload, payload.suggestionKind).suggestionKind,
     ),
-    [
-      "transaction_extraction",
-      "categorization",
-      "deduplication",
-      "reconciliation",
-      "insight",
-    ],
+    ["transaction_extraction", "categorization", "deduplication", "reconciliation", "insight"],
   );
 }
 
@@ -167,22 +160,10 @@ function readsLegacyPayloadsWithoutReinterpretation(): void {
     conflicts: [],
   };
 
-  assert.equal(
-    readAiSuggestionPayload(transaction, "transaction_extraction").state,
-    "legacy",
-  );
-  assert.equal(
-    readAiSuggestionPayload(deterministic, "deduplication").state,
-    "legacy",
-  );
-  assert.equal(
-    readAiSuggestionPayload(deterministic, "reconciliation").state,
-    "legacy",
-  );
-  assert.equal(
-    readAiSuggestionPayload(transaction, "categorization").state,
-    "invalid",
-  );
+  assert.equal(readAiSuggestionPayload(transaction, "transaction_extraction").state, "legacy");
+  assert.equal(readAiSuggestionPayload(deterministic, "deduplication").state, "legacy");
+  assert.equal(readAiSuggestionPayload(deterministic, "reconciliation").state, "legacy");
+  assert.equal(readAiSuggestionPayload(transaction, "categorization").state, "invalid");
 }
 
 function migratesLegacyOnlyWhilePending(): void {
@@ -234,10 +215,7 @@ function rejectsMissingInvalidMismatchedAndObsoletePayloads(): void {
     () => requireCurrentAiSuggestionPayload(undefined, "insight"),
     hasCode("AI_SUGGESTION_PAYLOAD_MISSING"),
   );
-  assert.equal(
-    readAiSuggestionPayload({ payloadVersion: 999 }, "insight").state,
-    "invalid",
-  );
+  assert.equal(readAiSuggestionPayload({ payloadVersion: 999 }, "insight").state, "invalid");
   assert.throws(
     () =>
       buildAiSuggestionPayload({
@@ -399,10 +377,7 @@ function publicProjectionDoesNotLeakInternalIdentifiersByDefault(): void {
   });
 
   const publicPayload = JSON.stringify(toPublicAiSuggestionPayload(payload));
-  assert.doesNotMatch(
-    publicPayload,
-    /internal-provider|internal-model|secret-correlation/,
-  );
+  assert.doesNotMatch(publicPayload, /internal-provider|internal-model|secret-correlation/);
   assert.doesNotMatch(
     publicPayload,
     /transaction-secret|account-secret|category-secret|secret-source-hash/,
@@ -440,6 +415,5 @@ function rejectsRawAndUnknownSensitiveFields(): void {
 }
 
 function hasCode(code: string): (error: unknown) => boolean {
-  return (error: unknown) =>
-    error instanceof AiSuggestionPayloadError && error.code === code;
+  return (error: unknown) => error instanceof AiSuggestionPayloadError && error.code === code;
 }

@@ -15,10 +15,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const profileRows = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -105,9 +102,7 @@ async function main(): Promise<void> {
       },
     );
   } finally {
-    await query(`delete from "AiSuggestion" where "id" = $1`, [
-      offsetSuggestionId,
-    ]);
+    await query(`delete from "AiSuggestion" where "id" = $1`, [offsetSuggestionId]);
   }
 }
 

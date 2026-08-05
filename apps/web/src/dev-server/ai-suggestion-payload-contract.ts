@@ -7,21 +7,20 @@ import type {
   PublicTransactionExtractionProposal,
 } from "@solverfin/domain/ai-suggestion-payloads";
 
-export type AiSuggestionPayloadViewModel =
-  PublicAiSuggestionPayload extends infer TPayload
-    ? TPayload extends PublicAiSuggestionPayload
-      ? {
-          suggestionId: string;
-          legacyProjection: boolean;
-          kind: TPayload["suggestionKind"];
-          versionLabel: string;
-          confidence?: number;
-          reasons: readonly string[];
-          proposal: TPayload["proposal"];
-          fingerprint: string;
-        }
-      : never
-    : never;
+export type AiSuggestionPayloadViewModel = PublicAiSuggestionPayload extends infer TPayload
+  ? TPayload extends PublicAiSuggestionPayload
+    ? {
+        suggestionId: string;
+        legacyProjection: boolean;
+        kind: TPayload["suggestionKind"];
+        versionLabel: string;
+        confidence?: number;
+        reasons: readonly string[];
+        proposal: TPayload["proposal"];
+        fingerprint: string;
+      }
+    : never
+  : never;
 
 export class AiSuggestionPayloadViewError extends Error {
   readonly code = "AI_SUGGESTION_PAYLOAD_RESPONSE_INVALID";
@@ -32,9 +31,7 @@ export class AiSuggestionPayloadViewError extends Error {
   }
 }
 
-export function parseAiSuggestionPayloadResponse(
-  value: unknown,
-): AiSuggestionPayloadViewModel {
+export function parseAiSuggestionPayloadResponse(value: unknown): AiSuggestionPayloadViewModel {
   const response = expectRecord(value);
   assertAllowedKeys(response, ["suggestionId", "legacyProjection", "payload"]);
   const suggestionId = expectString(response.suggestionId);
@@ -45,9 +42,7 @@ export function parseAiSuggestionPayloadResponse(
     legacyProjection: response.legacyProjection,
     kind: payload.suggestionKind,
     versionLabel: `v${payload.contractVersion}.${payload.payloadVersion}`,
-    ...(payload.confidence === undefined
-      ? {}
-      : { confidence: payload.confidence }),
+    ...(payload.confidence === undefined ? {} : { confidence: payload.confidence }),
     reasons: payload.reasons,
     proposal: payload.proposal,
     fingerprint: payload.fingerprint,
@@ -69,10 +64,7 @@ function parsePublicPayload(value: unknown): PublicAiSuggestionPayload {
   ]);
   if (record.contractVersion !== 1) fail();
   const suggestionKind = expectKind(record.suggestionKind);
-  const payloadVersion = expectPayloadVersion(
-    record.payloadVersion,
-    suggestionKind,
-  );
+  const payloadVersion = expectPayloadVersion(record.payloadVersion, suggestionKind);
   const origin = parseOrigin(record.origin);
   const target = parseTarget(record.target);
   const reasons = expectStringArray(record.reasons);
@@ -146,20 +138,14 @@ function parseTransactionProposal(
     "otherAccountId",
     "categoryId",
   ]);
-  const kind = expectOneOf(record.kind, [
-    "income",
-    "expense",
-    "transfer",
-  ] as const);
+  const kind = expectOneOf(record.kind, ["income", "expense", "transfer"] as const);
   const direction =
     payloadVersion === 2
       ? expectOneOf(record.direction, ["inflow", "outflow"] as const)
       : undefined;
   if (
     payloadVersion === 1 &&
-    (kind === "transfer" ||
-      record.direction !== undefined ||
-      record.otherAccountId !== undefined)
+    (kind === "transfer" || record.direction !== undefined || record.otherAccountId !== undefined)
   ) {
     fail();
   }
@@ -176,9 +162,7 @@ function parseTransactionProposal(
   };
 }
 
-function parseCategorizationProposal(
-  value: unknown,
-): PublicCategorizationProposal {
+function parseCategorizationProposal(value: unknown): PublicCategorizationProposal {
   const record = expectRecord(value);
   assertAllowedKeys(record, [
     "targetEntityId",
@@ -212,9 +196,7 @@ function parseCategorizationProposal(
   };
 }
 
-function parseDeterministicProposal(
-  value: unknown,
-): PublicDeterministicReviewProposal {
+function parseDeterministicProposal(value: unknown): PublicDeterministicReviewProposal {
   const record = expectRecord(value);
   assertAllowedKeys(record, ["targetTransactionId", "conflicts"]);
   return {
@@ -252,9 +234,7 @@ function parseInsightProposal(value: unknown): PublicInsightProposal {
   };
 }
 
-function parseMetric(
-  value: unknown,
-): NonNullable<PublicInsightProposal["metric"]> {
+function parseMetric(value: unknown): NonNullable<PublicInsightProposal["metric"]> {
   const record = expectRecord(value);
   assertAllowedKeys(record, ["name", "value", "unit", "currency"]);
   if (typeof record.value !== "number" || !Number.isFinite(record.value)) {
@@ -263,14 +243,8 @@ function parseMetric(
   return {
     name: expectString(record.name),
     value: record.value,
-    unit: expectOneOf(record.unit, [
-      "minor_currency",
-      "count",
-      "percentage",
-    ] as const),
-    ...(record.currency === undefined
-      ? {}
-      : { currency: expectCurrency(record.currency) }),
+    unit: expectOneOf(record.unit, ["minor_currency", "count", "percentage"] as const),
+    ...(record.currency === undefined ? {} : { currency: expectCurrency(record.currency) }),
   };
 }
 
@@ -278,13 +252,7 @@ function parseOrigin(value: unknown): PublicAiSuggestionPayload["origin"] {
   const record = expectRecord(value);
   assertAllowedKeys(record, ["kind"]);
   return {
-    kind: expectOneOf(record.kind, [
-      "provider",
-      "import",
-      "rule",
-      "automation",
-      "system",
-    ] as const),
+    kind: expectOneOf(record.kind, ["provider", "import", "rule", "automation", "system"] as const),
   };
 }
 
@@ -305,10 +273,7 @@ function parseTarget(value: unknown): PublicAiSuggestionPayload["target"] {
   };
 }
 
-function expectPayloadVersion(
-  value: unknown,
-  kind: AiSuggestionPayloadKind,
-): 1 | 2 {
+function expectPayloadVersion(value: unknown, kind: AiSuggestionPayloadKind): 1 | 2 {
   if (!Number.isInteger(value)) fail();
   if (kind === "transaction_extraction") {
     if (value !== 1 && value !== 2) fail();
@@ -339,11 +304,7 @@ function expectString(value: unknown): string {
 }
 
 function expectStringArray(value: unknown): readonly string[] {
-  if (
-    !Array.isArray(value) ||
-    value.length > 100 ||
-    value.some((item) => !isString(item))
-  ) {
+  if (!Array.isArray(value) || value.length > 100 || value.some((item) => !isString(item))) {
     fail();
   }
   return value as string[];
@@ -364,10 +325,7 @@ function expectIsoDate(value: unknown): string {
   const date = expectString(value);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) fail();
   const parsed = new Date(`${date}T00:00:00.000Z`);
-  if (
-    Number.isNaN(parsed.getTime()) ||
-    parsed.toISOString().slice(0, 10) !== date
-  ) {
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
     fail();
   }
   return date;
@@ -386,19 +344,14 @@ function optionalString<TKey extends string>(
   key: TKey,
 ): Partial<Record<TKey, string>> {
   const value = record[key];
-  return value === undefined
-    ? {}
-    : ({ [key]: expectString(value) } as Record<TKey, string>);
+  return value === undefined ? {} : ({ [key]: expectString(value) } as Record<TKey, string>);
 }
 
 function isString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0 && value.length <= 2048;
 }
 
-function assertAllowedKeys(
-  record: Record<string, unknown>,
-  allowed: readonly string[],
-): void {
+function assertAllowedKeys(record: Record<string, unknown>, allowed: readonly string[]): void {
   const allowedSet = new Set(allowed);
   if (Object.keys(record).some((key) => !allowedSet.has(key))) fail();
 }

@@ -11,8 +11,7 @@ import {
 } from "./ai-suggestion-payload-contract.js";
 import { apiGet } from "./api.js";
 
-const AI_REVIEW_APPROVAL_PATH =
-  /data-api-path="\/api\/ai-review-queue\/([0-9a-f-]+)\/approve"/gi;
+const AI_REVIEW_APPROVAL_PATH = /data-api-path="\/api\/ai-review-queue\/([0-9a-f-]+)\/approve"/gi;
 
 export async function enhanceInboxWithStructuredPayloads(
   html: string,
@@ -37,10 +36,7 @@ export async function enhanceInboxWithStructuredPayloads(
     }),
   );
 
-  return enhanceInboxHtmlWithStructuredPayloads(
-    html,
-    payloads.filter(isStructuredPayload),
-  );
+  return enhanceInboxHtmlWithStructuredPayloads(html, payloads.filter(isStructuredPayload));
 }
 
 export function enhanceInboxHtmlWithStructuredPayloads(
@@ -62,10 +58,7 @@ function collectAiReviewSuggestionIds(html: string): string[] {
   return [...suggestionIds];
 }
 
-function injectStructuredPayload(
-  html: string,
-  payload: AiSuggestionPayloadViewModel,
-): string {
+function injectStructuredPayload(html: string, payload: AiSuggestionPayloadViewModel): string {
   const label = `aria-label="Ações da sugestão ${escapeHtml(payload.suggestionId)}"`;
   const labelIndex = html.indexOf(label);
   if (labelIndex < 0) return html;

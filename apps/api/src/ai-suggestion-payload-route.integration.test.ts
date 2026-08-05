@@ -80,11 +80,7 @@ async function main(): Promise<void> {
     assert.equal(malformed.statusCode, 400);
     assert.equal(readErrorCode(malformed), "AI_REVIEW_SUGGESTION_ID_INVALID");
 
-    await assertExplanationCannotAuthorizeTransaction(
-      token,
-      organizationId,
-      legacySuggestionId,
-    );
+    await assertExplanationCannotAuthorizeTransaction(token, organizationId, legacySuggestionId);
     await assertConcurrentApprovalCreatesOneTransaction(
       token,
       organizationId,
@@ -201,11 +197,7 @@ async function assertExplanationCannotAuthorizeTransaction(
     await query(`alter table "AiSuggestion" enable trigger "AiSuggestionPayloadContractInsert"`);
   }
 
-  const response = await apiRequest(
-    token,
-    `/api/ai-review-queue/${suggestionId}/approve`,
-    "POST",
-  );
+  const response = await apiRequest(token, `/api/ai-review-queue/${suggestionId}/approve`, "POST");
   assert.equal(response.statusCode, 422);
   assert.equal(readErrorCode(response), "AI_REVIEW_SUGGESTION_PAYLOAD_UNSUPPORTED");
 
@@ -229,11 +221,7 @@ async function loginAndReadToken(): Promise<string> {
   return readBody<{ session: { token: string } }>(response).session.token;
 }
 
-async function apiRequest(
-  token: string,
-  path: string,
-  method = "GET",
-): Promise<ApiResponse> {
+async function apiRequest(token: string, path: string, method = "GET"): Promise<ApiResponse> {
   const url = new URL(path, "http://solverfin.integration.test");
   const request: ApiRequest = {
     method,

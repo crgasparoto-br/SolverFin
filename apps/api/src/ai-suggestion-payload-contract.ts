@@ -51,9 +51,7 @@ export function resolveAiSuggestionPayloadForApi(
 ): AiSuggestionPayloadApiResult {
   const read = readAiSuggestionPayload(context.payload, context.kind);
   if (read.state === "missing") {
-    throw mapPayloadError(
-      new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_MISSING"),
-    );
+    throw mapPayloadError(new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_MISSING"));
   }
   if (read.state === "invalid") throw mapPayloadError(read.error);
 
@@ -67,9 +65,7 @@ export function resolveAiSuggestionPayloadForApi(
         legacyPayload: read.payload,
         origin: context.origin,
         target: context.target,
-        ...(context.confidence === undefined
-          ? {}
-          : { confidence: context.confidence }),
+        ...(context.confidence === undefined ? {} : { confidence: context.confidence }),
         audit: context.audit,
       });
       migratedFromLegacy = true;
@@ -79,16 +75,12 @@ export function resolveAiSuggestionPayloadForApi(
         legacyPayload: read.payload,
         origin: context.origin,
         target: context.target,
-        ...(context.confidence === undefined
-          ? {}
-          : { confidence: context.confidence }),
+        ...(context.confidence === undefined ? {} : { confidence: context.confidence }),
         audit: context.audit,
       });
     } else {
       throw mapPayloadError(
-        new AiSuggestionPayloadError(
-          "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
-        ),
+        new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED"),
       );
     }
   } else {
@@ -111,13 +103,9 @@ export function mapAiSuggestionPayloadPersistenceError(
   if (error instanceof AiSuggestionPayloadError) return mapPayloadError(error);
 
   const record = isRecord(error) ? error : undefined;
-  const databaseCode =
-    typeof record?.code === "string" ? record.code : undefined;
-  const databaseMessage =
-    typeof record?.message === "string" ? record.message : "";
-  const knownCode = KNOWN_DATABASE_CODES.find((code) =>
-    databaseMessage.includes(code),
-  );
+  const databaseCode = typeof record?.code === "string" ? record.code : undefined;
+  const databaseMessage = typeof record?.message === "string" ? record.message : "";
+  const knownCode = KNOWN_DATABASE_CODES.find((code) => databaseMessage.includes(code));
   if (databaseCode === "P0001" && knownCode !== undefined) {
     return mapPayloadError(new AiSuggestionPayloadError(knownCode));
   }
@@ -129,14 +117,8 @@ export function mapAiSuggestionPayloadPersistenceError(
   );
 }
 
-function mapPayloadError(
-  error: AiSuggestionPayloadError,
-): AiSuggestionPayloadApiError {
-  return new AiSuggestionPayloadApiError(
-    error.code,
-    error.message,
-    error.statusCode,
-  );
+function mapPayloadError(error: AiSuggestionPayloadError): AiSuggestionPayloadApiError {
+  return new AiSuggestionPayloadApiError(error.code, error.message, error.statusCode);
 }
 
 const KNOWN_DATABASE_CODES = [

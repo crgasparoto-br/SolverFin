@@ -49,9 +49,7 @@ function parseCurrentTransactionExtraction(
 ): TransactionExtractionSuggestionPayload {
   const payloadVersion = record.payloadVersion;
   if (payloadVersion !== 1 && payloadVersion !== 2) {
-    throw new AiSuggestionPayloadError(
-      "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
-    );
+    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED");
   }
   const common = parseBase(record, "transaction_extraction");
   const sourceRowNumber = expectPositiveInteger(record.sourceRowNumber);
@@ -92,15 +90,8 @@ function parseCurrentTransactionExtraction(
     };
   }
 
-  const kind = expectOneOf(record.kind, [
-    "income",
-    "expense",
-    "transfer",
-  ] as const);
-  const direction = expectOneOf(record.direction, [
-    "inflow",
-    "outflow",
-  ] as const);
+  const kind = expectOneOf(record.kind, ["income", "expense", "transfer"] as const);
+  const direction = expectOneOf(record.direction, ["inflow", "outflow"] as const);
   assertAllowedKeys(record, [
     ...COMMON_KEYS,
     "payloadVersion",
@@ -136,9 +127,7 @@ function parseCurrentCategorization(
   record: Record<string, unknown>,
 ): CategorizationSuggestionPayloadV1 {
   if (record.payloadVersion !== 1) {
-    throw new AiSuggestionPayloadError(
-      "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
-    );
+    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED");
   }
   assertAllowedKeys(record, [
     ...COMMON_KEYS,
@@ -184,18 +173,14 @@ function parseCurrentCategorization(
   };
 }
 
-function parseCurrentDeterministic<
-  TKind extends "deduplication" | "reconciliation",
->(
+function parseCurrentDeterministic<TKind extends "deduplication" | "reconciliation">(
   record: Record<string, unknown>,
   kind: TKind,
 ): TKind extends "deduplication"
   ? DeduplicationSuggestionPayloadV1
   : ReconciliationSuggestionPayloadV1 {
   if (record.payloadVersion !== 1) {
-    throw new AiSuggestionPayloadError(
-      "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
-    );
+    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED");
   }
   assertAllowedKeys(record, [
     ...COMMON_KEYS,
@@ -217,13 +202,9 @@ function parseCurrentDeterministic<
     : ReconciliationSuggestionPayloadV1;
 }
 
-function parseCurrentInsight(
-  record: Record<string, unknown>,
-): InsightSuggestionPayloadV1 {
+function parseCurrentInsight(record: Record<string, unknown>): InsightSuggestionPayloadV1 {
   if (record.payloadVersion !== 1) {
-    throw new AiSuggestionPayloadError(
-      "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
-    );
+    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED");
   }
   assertAllowedKeys(record, [
     ...COMMON_KEYS,
@@ -236,12 +217,9 @@ function parseCurrentInsight(
     "metric",
     "relatedEntityIds",
   ]);
-  const metric =
-    record.metric === undefined ? undefined : parseMetric(record.metric);
+  const metric = record.metric === undefined ? undefined : parseMetric(record.metric);
   const relatedEntityIds =
-    record.relatedEntityIds === undefined
-      ? undefined
-      : expectStringArray(record.relatedEntityIds);
+    record.relatedEntityIds === undefined ? undefined : expectStringArray(record.relatedEntityIds);
   return {
     ...parseBase(record, "insight"),
     payloadVersion: 1,
@@ -270,9 +248,7 @@ function parseBase<TKind extends AiSuggestionPayloadKind>(
     origin: parseOrigin(record.origin),
     fingerprint: expectString(record.fingerprint),
     target: parseTarget(record.target),
-    ...(record.confidence === undefined
-      ? {}
-      : { confidence: expectConfidence(record.confidence) }),
+    ...(record.confidence === undefined ? {} : { confidence: expectConfidence(record.confidence) }),
     reasons: expectStringArray(record.reasons),
     audit: parseAudit(record.audit),
   };
@@ -288,10 +264,7 @@ export function parseLegacyAiSuggestionPayload(
   if (expectedKind === "transaction_extraction") {
     return parseLegacyTransactionExtractionPayload(record);
   }
-  if (
-    expectedKind === "deduplication" ||
-    expectedKind === "reconciliation"
-  ) {
+  if (expectedKind === "deduplication" || expectedKind === "reconciliation") {
     return parseLegacyDeterministicReviewPayload(record);
   }
   return undefined;
@@ -307,10 +280,7 @@ function parseLegacyTransactionExtractionPayload(
     const amountMinor = expectPositiveInteger(record.amountMinor);
     const currency = expectCurrency(record.currency);
     const description = expectString(record.description);
-    const optional = parseTransactionOptionalFields(
-      record,
-      record.payloadVersion === 2 ? 2 : 1,
-    );
+    const optional = parseTransactionOptionalFields(record, record.payloadVersion === 2 ? 2 : 1);
     if (record.payloadVersion === 1) {
       return {
         payloadVersion: 1,
@@ -330,15 +300,8 @@ function parseLegacyTransactionExtractionPayload(
         sourceRowNumber,
         sourceHash,
         occurredOn,
-        kind: expectOneOf(record.kind, [
-          "income",
-          "expense",
-          "transfer",
-        ] as const),
-        direction: expectOneOf(record.direction, [
-          "inflow",
-          "outflow",
-        ] as const),
+        kind: expectOneOf(record.kind, ["income", "expense", "transfer"] as const),
+        direction: expectOneOf(record.direction, ["inflow", "outflow"] as const),
         amountMinor,
         currency,
         description,
@@ -444,11 +407,7 @@ function parseTarget(value: unknown): AiSuggestionPayloadTarget {
 
 function parseAudit(value: unknown): AiSuggestionPayloadAudit {
   const record = expectRecord(value);
-  assertAllowedKeys(record, [
-    "createdAt",
-    "correlationId",
-    "sourceFingerprint",
-  ]);
+  assertAllowedKeys(record, ["createdAt", "correlationId", "sourceFingerprint"]);
   return {
     createdAt: expectIsoDateTime(record.createdAt),
     ...optionalString(record, "correlationId"),
@@ -456,22 +415,14 @@ function parseAudit(value: unknown): AiSuggestionPayloadAudit {
   };
 }
 
-function parseMetric(
-  value: unknown,
-): NonNullable<InsightSuggestionPayloadV1["metric"]> {
+function parseMetric(value: unknown): NonNullable<InsightSuggestionPayloadV1["metric"]> {
   const record = expectRecord(value);
   assertAllowedKeys(record, ["name", "value", "unit", "currency"]);
   return {
     name: expectString(record.name),
     value: expectFiniteNumber(record.value),
-    unit: expectOneOf(record.unit, [
-      "minor_currency",
-      "count",
-      "percentage",
-    ] as const),
-    ...(record.currency === undefined
-      ? {}
-      : { currency: expectCurrency(record.currency) }),
+    unit: expectOneOf(record.unit, ["minor_currency", "count", "percentage"] as const),
+    ...(record.currency === undefined ? {} : { currency: expectCurrency(record.currency) }),
   };
 }
 
@@ -557,10 +508,7 @@ function expectIsoDate(value: unknown): string {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_INVALID");
   }
   const parsed = new Date(`${date}T00:00:00.000Z`);
-  if (
-    Number.isNaN(parsed.getTime()) ||
-    parsed.toISOString().slice(0, 10) !== date
-  ) {
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_INVALID");
   }
   return date;
@@ -589,15 +537,10 @@ function optionalString<TKey extends string>(
   key: TKey,
 ): Partial<Record<TKey, string>> {
   const value = record[key];
-  return value === undefined
-    ? {}
-    : ({ [key]: expectString(value) } as Record<TKey, string>);
+  return value === undefined ? {} : ({ [key]: expectString(value) } as Record<TKey, string>);
 }
 
-function assertAllowedKeys(
-  record: Record<string, unknown>,
-  allowed: readonly string[],
-): void {
+function assertAllowedKeys(record: Record<string, unknown>, allowed: readonly string[]): void {
   const allowedSet = new Set(allowed);
   for (const key of Object.keys(record)) {
     if (!allowedSet.has(key)) {

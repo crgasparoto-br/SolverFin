@@ -30,8 +30,8 @@ O contrato comum está em `@solverfin/domain/ai-suggestion-payloads` e usa um en
 
 ## Tipos suportados
 
-| `suggestionKind`         | Versão atual | Conteúdo canônico                                                                                                              |
-| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `suggestionKind`         | Versão atual | Conteúdo canônico                                                                                                               |
+| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | `transaction_extraction` | V1/V2        | linha e hash de origem, data, tipo, direção na V2, valor, moeda, descrição, contas, categoria e identificador externo opcionais |
 | `categorization`         | V1           | alvo explícito e campos propostos de categoria, conta, cartão ou status                                                         |
 | `deduplication`          | V1           | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos                                                          |
@@ -48,9 +48,9 @@ Uma alteração de proposta precisa gerar novo fingerprint. Uma mutação com fi
 
 ### Dependências entre sugestões
 
-`categorization`, `deduplication` e `reconciliation` podem depender de outra sugestão. Quando `sourceSuggestionId` está presente, o payload também registra o fingerprint da origem em `audit.sourceFingerprint`; o contrato determinístico mantém ainda `sourcePayloadFingerprint` como compatibilidade explícita.
+`categorization`, `deduplication` e `reconciliation` podem depender de outra sugestão. Em `deduplication` e `reconciliation`, `sourceSuggestionId` sempre representa dependência e o contrato determinístico exige `sourcePayloadFingerprint`. Em `categorization`, `sourceSuggestionId` pode ser mantido apenas para rastreabilidade; a proposta passa a ser dependente quando também registra o fingerprint observado em `audit.sourceFingerprint`.
 
-A transição de uma dependente para `approved` ou `edited` revalida a origem no PostgreSQL antes do commit:
+A transição de uma sugestão dependente para `approved` ou `edited` revalida a origem no PostgreSQL antes do commit:
 
 1. a origem precisa existir na mesma organização e no mesmo perfil financeiro;
 2. a linha da origem é lida com lock compartilhado;
@@ -58,7 +58,7 @@ A transição de uma dependente para `approved` ou `edited` revalida a origem no
 4. ausência ou divergência retorna `AI_SUGGESTION_PAYLOAD_OBSOLETE`;
 5. a sugestão permanece pendente e nenhuma transação, auditoria terminal ou timestamp de revisão é persistido.
 
-Uma categorização sem `sourceSuggestionId` pode representar proposta direta sobre uma transação e não é tratada como candidatura dependente. A rejeição não exige origem vigente, permitindo descartar uma dependente obsoleta.
+Uma categorização sem `audit.sourceFingerprint` não é tratada como candidatura dependente, mesmo quando conserva `sourceSuggestionId` apenas para rastreabilidade. Produtores que exigem proteção contra obsolescência, como regras automáticas, devem persistir ambos. A rejeição não exige origem vigente, permitindo descartar uma dependente obsoleta.
 
 ## Compatibilidade e migração
 

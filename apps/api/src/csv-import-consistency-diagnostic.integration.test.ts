@@ -22,10 +22,7 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for consistency diagnostic tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for consistency diagnostic tests.");
 
   const token = await loginAndReadToken();
   const suffix = `${Date.now().toString(36)}-diagnostic`;
@@ -40,21 +37,11 @@ async function main(): Promise<void> {
     `/api/import-batches/${batch.importBatch.id}/suggestions/${suggestion.id}/approve`,
   );
   assert.equal(approval.statusCode, 200);
-  const canonicalTransactionId = readBody<{ transaction: { id: string } }>(
-    approval,
-  ).transaction.id;
-  const unrelatedTransactionId = await createManualTransaction(
-    token,
-    accountId,
-    suffix,
-  );
+  const canonicalTransactionId = readBody<{ transaction: { id: string } }>(approval).transaction.id;
+  const unrelatedTransactionId = await createManualTransaction(token, accountId, suffix);
   const baseline = runDiagnostic();
 
-  await assertNullTargetIsDetected(
-    suggestion.id,
-    canonicalTransactionId,
-    baseline,
-  );
+  await assertNullTargetIsDetected(suggestion.id, canonicalTransactionId, baseline);
   await assertConflictingTargetIsDetected(
     suggestion.id,
     canonicalTransactionId,
@@ -69,11 +56,7 @@ async function main(): Promise<void> {
     suffix,
   );
 
-  assert.equal(
-    runDiagnostic(),
-    baseline,
-    "Diagnostic fixtures must be fully restored",
-  );
+  assert.equal(runDiagnostic(), baseline, "Diagnostic fixtures must be fully restored");
 }
 
 async function assertNullTargetIsDetected(
@@ -157,11 +140,7 @@ async function assertReconciliationTargetConflictIsDetected(
     `/api/review-suggestions/${candidate.id}/approve`,
   );
   assert.equal(decision.statusCode, 200);
-  assert.equal(
-    runDiagnostic(),
-    baseline,
-    "A valid reconciliation must not be reported",
-  );
+  assert.equal(runDiagnostic(), baseline, "A valid reconciliation must not be reported");
 
   try {
     await updateTargetForDiagnostic(source.id, conflictingTransactionId);
@@ -175,10 +154,7 @@ async function assertReconciliationTargetConflictIsDetected(
   }
 }
 
-async function restoreTarget(
-  suggestionId: string,
-  transactionId: string,
-): Promise<void> {
+async function restoreTarget(suggestionId: string, transactionId: string): Promise<void> {
   await updateTargetForDiagnostic(suggestionId, transactionId);
 }
 
@@ -189,9 +165,7 @@ async function updateTargetForDiagnostic(
   // This test must fabricate an impossible persisted state so the diagnostic
   // can prove it detects legacy corruption. Production mutations retain the
   // immutable-payload trigger at all times.
-  await query(
-    `alter table "AiSuggestion" disable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`,
-  );
+  await query(`alter table "AiSuggestion" disable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`);
   try {
     await query(
       `update "AiSuggestion" set "targetEntityId" = $2, "updatedAt" = now()
@@ -199,9 +173,7 @@ async function updateTargetForDiagnostic(
       [suggestionId, transactionId],
     );
   } finally {
-    await query(
-      `alter table "AiSuggestion" enable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`,
-    );
+    await query(`alter table "AiSuggestion" enable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`);
   }
 }
 
@@ -238,15 +210,8 @@ function diagnosticScriptPath(): string {
   );
   if (existsSync(fromWorkspace)) return fromWorkspace;
 
-  const fromRoot = resolve(
-    process.cwd(),
-    "scripts/diagnose-import-statement-consistency.mjs",
-  );
-  assert.equal(
-    existsSync(fromRoot),
-    true,
-    "Import consistency diagnostic script must exist",
-  );
+  const fromRoot = resolve(process.cwd(), "scripts/diagnose-import-statement-consistency.mjs");
+  assert.equal(existsSync(fromRoot), true, "Import consistency diagnostic script must exist");
   return fromRoot;
 }
 

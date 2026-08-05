@@ -126,8 +126,7 @@ export async function listAiReviewQueueForContext(
     .filter((suggestion) => matchesFilters(suggestion, filters))
     .filter(
       (suggestion) =>
-        filters.includeLowConfidence === true ||
-        suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD,
+        filters.includeLowConfidence === true || suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD,
     )
     .map(buildQueueItem);
 }
@@ -151,11 +150,7 @@ export async function approveAiReviewSuggestionForContext(
   }
 
   return withTransaction(async (executeQuery) => {
-    const suggestion = await lockSuggestionForContext(
-      executeQuery,
-      context,
-      suggestionId,
-    );
+    const suggestion = await lockSuggestionForContext(executeQuery, context, suggestionId);
     assertPending(suggestion);
     const now = new Date().toISOString();
     let transaction: Transaction | undefined;
@@ -183,10 +178,7 @@ export async function approveAiReviewSuggestionForContext(
       now,
       targetEntityId,
     );
-    await executeQuery(
-      buildUpdateAiSuggestionSql(),
-      buildAiSuggestionParams(approvedSuggestion),
-    );
+    await executeQuery(buildUpdateAiSuggestionSql(), buildAiSuggestionParams(approvedSuggestion));
     await insertAuditLogEntry(
       executeQuery,
       buildSuggestionAuditEntry(
@@ -197,9 +189,7 @@ export async function approveAiReviewSuggestionForContext(
         transaction === undefined
           ? "Sugestao aprovada sem efeito financeiro automatico."
           : "Sugestao aprovada e convertida em lancamento.",
-        payloadOverride === undefined
-          ? undefined
-          : buildRedactedProposalChanges(payloadOverride),
+        payloadOverride === undefined ? undefined : buildRedactedProposalChanges(payloadOverride),
       ),
     );
 
@@ -228,11 +218,7 @@ export async function editAiReviewSuggestionForContext(
   }
 
   return withTransaction(async (executeQuery) => {
-    const suggestion = await lockSuggestionForContext(
-      executeQuery,
-      context,
-      suggestionId,
-    );
+    const suggestion = await lockSuggestionForContext(executeQuery, context, suggestionId);
     assertPending(suggestion);
     const now = new Date().toISOString();
     let reviewedPayload = suggestion.payload;
@@ -249,10 +235,7 @@ export async function editAiReviewSuggestionForContext(
       "edited",
       now,
     );
-    await executeQuery(
-      buildUpdateAiSuggestionSql(),
-      buildAiSuggestionParams(editedSuggestion),
-    );
+    await executeQuery(buildUpdateAiSuggestionSql(), buildAiSuggestionParams(editedSuggestion));
     await insertAuditLogEntry(
       executeQuery,
       buildSuggestionAuditEntry(
@@ -286,23 +269,11 @@ export async function rejectAiReviewSuggestionForContext(
   }
 
   return withTransaction(async (executeQuery) => {
-    const suggestion = await lockSuggestionForContext(
-      executeQuery,
-      context,
-      suggestionId,
-    );
+    const suggestion = await lockSuggestionForContext(executeQuery, context, suggestionId);
     assertPending(suggestion);
     const now = new Date().toISOString();
-    const rejectedSuggestion = markSuggestionReviewed(
-      context,
-      suggestion,
-      "rejected",
-      now,
-    );
-    await executeQuery(
-      buildUpdateAiSuggestionSql(),
-      buildAiSuggestionParams(rejectedSuggestion),
-    );
+    const rejectedSuggestion = markSuggestionReviewed(context, suggestion, "rejected", now);
+    await executeQuery(buildUpdateAiSuggestionSql(), buildAiSuggestionParams(rejectedSuggestion));
     await insertAuditLogEntry(
       executeQuery,
       buildSuggestionAuditEntry(
@@ -382,10 +353,7 @@ function buildQueueItem(suggestion: PersistedAiSuggestion): AiReviewQueueItem {
     status: suggestion.status,
     origin: resolveOrigin(suggestion),
     confidence: suggestion.confidence,
-    risk:
-      suggestion.confidence < LOW_CONFIDENCE_THRESHOLD
-        ? "low_confidence"
-        : "normal",
+    risk: suggestion.confidence < LOW_CONFIDENCE_THRESHOLD ? "low_confidence" : "normal",
     explanation: suggestion.explanation,
     maskedSummary: buildMaskedSummary(suggestion, proposedTransaction),
     createdAt: suggestion.createdAt,
@@ -426,17 +394,12 @@ function buildMaskedSummary(
   proposedTransaction: AiSuggestedTransactionDraft | undefined,
 ): string {
   if (proposedTransaction !== undefined) {
-    return `${proposedTransaction.occurredOn} - ${proposedTransaction.description}`.slice(
-      0,
-      160,
-    );
+    return `${proposedTransaction.occurredOn} - ${proposedTransaction.description}`.slice(0, 160);
   }
   return suggestion.explanation.slice(0, 160);
 }
 
-function parseProposedTransaction(
-  suggestion: PersistedAiSuggestion,
-): AiSuggestedTransactionDraft {
+function parseProposedTransaction(suggestion: PersistedAiSuggestion): AiSuggestedTransactionDraft {
   const parsed = tryParseProposedTransaction(suggestion);
   if (parsed === undefined) {
     throw new AiReviewQueueError(
@@ -462,14 +425,9 @@ function tryParseProposedTransaction(
     accountId: structured.accountId,
     description: structured.description,
     currency: structured.currency,
-    ...(structured.categoryId === undefined
-      ? {}
-      : { categoryId: structured.categoryId }),
-    ...(structured.payloadVersion === 2
-      ? { direction: structured.direction }
-      : {}),
-    ...(structured.payloadVersion === 2 &&
-    structured.otherAccountId !== undefined
+    ...(structured.categoryId === undefined ? {} : { categoryId: structured.categoryId }),
+    ...(structured.payloadVersion === 2 ? { direction: structured.direction } : {}),
+    ...(structured.payloadVersion === 2 && structured.otherAccountId !== undefined
       ? { otherAccountId: structured.otherAccountId }
       : {}),
   };
@@ -520,13 +478,9 @@ function mergeTransactionDraft(
     accountId: payload.accountId,
     description: payload.description.trim(),
     ...(payload.currency !== undefined ? { currency: payload.currency } : {}),
-    ...(payload.categoryId !== undefined
-      ? { categoryId: payload.categoryId }
-      : {}),
+    ...(payload.categoryId !== undefined ? { categoryId: payload.categoryId } : {}),
     ...(payload.direction !== undefined ? { direction: payload.direction } : {}),
-    ...(payload.otherAccountId !== undefined
-      ? { otherAccountId: payload.otherAccountId }
-      : {}),
+    ...(payload.otherAccountId !== undefined ? { otherAccountId: payload.otherAccountId } : {}),
     ...(payload.destinationAccountId !== undefined
       ? { destinationAccountId: payload.destinationAccountId }
       : {}),
@@ -544,9 +498,7 @@ function buildReviewedTransactionPayload(
     suggestionKind: "transaction_extraction" as const,
     origin: current.origin,
     target: current.target,
-    ...(current.confidence === undefined
-      ? {}
-      : { confidence: current.confidence }),
+    ...(current.confidence === undefined ? {} : { confidence: current.confidence }),
     reasons: current.reasons,
     audit: current.audit,
     sourceRowNumber: current.sourceRowNumber,
@@ -596,14 +548,8 @@ function buildReviewedTransactionPayload(
 function readCurrentTransactionPayload(
   suggestion: PersistedAiSuggestion,
 ): TransactionExtractionSuggestionPayload {
-  const read = readAiSuggestionPayload(
-    suggestion.payload,
-    "transaction_extraction",
-  );
-  if (
-    read.state === "current" &&
-    read.payload.suggestionKind === "transaction_extraction"
-  ) {
+  const read = readAiSuggestionPayload(suggestion.payload, "transaction_extraction");
+  if (read.state === "current" && read.payload.suggestionKind === "transaction_extraction") {
     return read.payload;
   }
   if (read.state === "legacy") {
@@ -627,9 +573,7 @@ function readCurrentTransactionPayload(
   );
 }
 
-function inferPayloadOrigin(
-  suggestion: PersistedAiSuggestion,
-): AiSuggestionPayloadOrigin {
+function inferPayloadOrigin(suggestion: PersistedAiSuggestion): AiSuggestionPayloadOrigin {
   if (suggestion.provider?.startsWith("solverfin-import") === true) {
     return {
       kind: "import",
@@ -655,9 +599,7 @@ function inferPayloadOrigin(
   return { kind: "system", component: "ai-review-queue" };
 }
 
-function inferPayloadTarget(
-  suggestion: PersistedAiSuggestion,
-): AiSuggestionPayloadTarget {
+function inferPayloadTarget(suggestion: PersistedAiSuggestion): AiSuggestionPayloadTarget {
   return suggestion.sourceEntityId === undefined
     ? { entityKind: "transaction" }
     : {
@@ -775,20 +717,14 @@ function mapAiSuggestionRow(row: AiSuggestionRow): PersistedAiSuggestion {
     ...(row.targetEntityId === null ? {} : { targetEntityId: row.targetEntityId }),
     ...(row.provider === null ? {} : { provider: row.provider }),
     ...(row.model === null ? {} : { model: row.model }),
-    ...(row.reviewedByUserId === null
-      ? {}
-      : { reviewedByUserId: row.reviewedByUserId }),
-    ...(row.reviewedAt === null
-      ? {}
-      : { reviewedAt: row.reviewedAt.toISOString() }),
+    ...(row.reviewedByUserId === null ? {} : { reviewedByUserId: row.reviewedByUserId }),
+    ...(row.reviewedAt === null ? {} : { reviewedAt: row.reviewedAt.toISOString() }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
 }
 
-function isImportExtractionSuggestion(
-  suggestion: PersistedAiSuggestion,
-): boolean {
+function isImportExtractionSuggestion(suggestion: PersistedAiSuggestion): boolean {
   return (
     suggestion.kind === "transaction_extraction" &&
     suggestion.sourceEntityId !== undefined &&

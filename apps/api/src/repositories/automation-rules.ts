@@ -171,9 +171,7 @@ export async function updateAutomationRuleForContext(
         : {}),
     createdAt: current.createdAt,
     updatedAt: now,
-    ...(current.createdByUserId !== undefined
-      ? { createdByUserId: current.createdByUserId }
-      : {}),
+    ...(current.createdByUserId !== undefined ? { createdByUserId: current.createdByUserId } : {}),
     updatedByUserId: context.userId,
   });
 
@@ -435,12 +433,8 @@ function buildAutomationSuggestion(
       ...(proposedTarget.accountId === undefined
         ? {}
         : { proposedAccountId: proposedTarget.accountId }),
-      ...(proposedTarget.cardId === undefined
-        ? {}
-        : { proposedCardId: proposedTarget.cardId }),
-      ...(proposedTarget.status === undefined
-        ? {}
-        : { proposedStatus: proposedTarget.status }),
+      ...(proposedTarget.cardId === undefined ? {} : { proposedCardId: proposedTarget.cardId }),
+      ...(proposedTarget.status === undefined ? {} : { proposedStatus: proposedTarget.status }),
       ...(sourcePayload.categoryId === undefined
         ? {}
         : { previousCategoryId: sourcePayload.categoryId }),

@@ -1,53 +1,7 @@
-import { execFileSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
-const issue561Files = [
-  "apps/api/src/ai-review-queue-router.ts",
-  "apps/api/src/ai-suggestion-dependency-freshness.integration.test.ts",
-  "apps/api/src/ai-suggestion-payload-contract.test.ts",
-  "apps/api/src/ai-suggestion-payload-contract.ts",
-  "apps/api/src/ai-suggestion-payload-nested-values.integration.test.ts",
-  "apps/api/src/ai-suggestion-payload-remediation.integration.test.ts",
-  "apps/api/src/ai-suggestion-payload-route.integration.test.ts",
-  "apps/api/src/csv-import-consistency-diagnostic.integration.test.ts",
-  "apps/api/src/errors.test.ts",
-  "apps/api/src/repositories/ai-review-queue.ts",
-  "apps/api/src/repositories/ai-suggestion-payloads.ts",
-  "apps/api/src/repositories/automation-rules.ts",
-  "apps/api/src/repositories/bank-message-inbox.ts",
-  "apps/web/src/dev-server/ai-suggestion-payload-contract.ts",
-  "apps/web/src/dev-server/inbox-structured-payload-enhancement.ts",
-  "docs/AI_REVIEW_QUEUE.md",
-  "docs/AI_SUGGESTION_PAYLOADS.md",
-  "packages/domain/src/ai-suggestion-payload-internals.ts",
-  "packages/domain/src/ai-suggestion-payload-public.ts",
-  "packages/domain/src/ai-suggestion-payload-types.ts",
-  "packages/domain/src/ai-suggestion-payloads.test.ts",
-  "packages/domain/src/ai-suggestion-payloads.ts",
-];
-
-await mkdir(outputDir, { recursive: true });
-try {
-  execFileSync(
-    process.execPath,
-    ["node_modules/prettier/bin/prettier.cjs", "--write", ...issue561Files],
-    { stdio: "inherit" },
-  );
-  const archivePath = join(outputDir, "issue-561-formatted.tar.gz");
-  execFileSync("tar", ["-czf", archivePath, ...issue561Files], {
-    stdio: "inherit",
-  });
-  await writeFile(
-    join(outputDir, "issue-561-formatted-manifest.txt"),
-    `${issue561Files.join("\n")}\n`,
-  );
-} catch (error) {
-  const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
-  await writeFile(join(outputDir, "issue-561-format-error.log"), `${message}\n`);
-  throw error;
-}
 
 try {
   await import("./statement-visual/main.mjs");

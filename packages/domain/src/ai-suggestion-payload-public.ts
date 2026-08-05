@@ -72,21 +72,9 @@ export type PublicAiSuggestionPayload =
       1 | 2,
       PublicTransactionExtractionProposal
     >
-  | PublicAiSuggestionPayloadBase<
-      "categorization",
-      1,
-      PublicCategorizationProposal
-    >
-  | PublicAiSuggestionPayloadBase<
-      "deduplication",
-      1,
-      PublicDeterministicReviewProposal
-    >
-  | PublicAiSuggestionPayloadBase<
-      "reconciliation",
-      1,
-      PublicDeterministicReviewProposal
-    >
+  | PublicAiSuggestionPayloadBase<"categorization", 1, PublicCategorizationProposal>
+  | PublicAiSuggestionPayloadBase<"deduplication", 1, PublicDeterministicReviewProposal>
+  | PublicAiSuggestionPayloadBase<"reconciliation", 1, PublicDeterministicReviewProposal>
   | PublicAiSuggestionPayloadBase<"insight", 1, PublicInsightProposal>;
 
 export function toPublicAiSuggestionPayload(
@@ -98,9 +86,7 @@ export function toPublicAiSuggestionPayload(
     contractVersion: payload.contractVersion,
     origin: { kind: payload.origin.kind },
     fingerprint: payload.fingerprint,
-    ...(payload.confidence === undefined
-      ? {}
-      : { confidence: payload.confidence }),
+    ...(payload.confidence === undefined ? {} : { confidence: payload.confidence }),
     reasons: payload.reasons,
     target: {
       entityKind: payload.target.entityKind,
@@ -122,15 +108,11 @@ export function toPublicAiSuggestionPayload(
           amountMinor: payload.amountMinor,
           currency: payload.currency,
           description: payload.description,
-          ...(payload.payloadVersion === 2
-            ? { direction: payload.direction }
-            : {}),
+          ...(payload.payloadVersion === 2 ? { direction: payload.direction } : {}),
           ...(includeIds && payload.accountId !== undefined
             ? { accountId: payload.accountId }
             : {}),
-          ...(includeIds &&
-          payload.payloadVersion === 2 &&
-          payload.otherAccountId !== undefined
+          ...(includeIds && payload.payloadVersion === 2 && payload.otherAccountId !== undefined
             ? { otherAccountId: payload.otherAccountId }
             : {}),
           ...(includeIds && payload.categoryId !== undefined
@@ -172,9 +154,7 @@ export function toPublicAiSuggestionPayload(
         suggestionKind: payload.suggestionKind,
         payloadVersion: payload.payloadVersion,
         proposal: {
-          ...(includeIds
-            ? { targetTransactionId: payload.targetTransactionId }
-            : {}),
+          ...(includeIds ? { targetTransactionId: payload.targetTransactionId } : {}),
           conflicts: payload.conflicts,
         },
       };

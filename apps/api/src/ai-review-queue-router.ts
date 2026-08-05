@@ -43,8 +43,7 @@ interface AiReviewQueueRoute {
 
 const BASE_PATH = "/api/ai-review-queue";
 const ALLOWED_TRANSACTION_KINDS = new Set(["income", "expense", "transfer"]);
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const routes: AiReviewQueueRoute[] = [];
 
 route("GET", BASE_PATH, listAiReviewQueueHandler);
@@ -63,9 +62,7 @@ export async function handleAiReviewQueueApiRequest(
   if (!match) return undefined;
 
   try {
-    const user = await requireAuthenticatedRequest(
-      buildAuthHeaders(request.headers.authorization),
-    );
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -127,10 +124,7 @@ async function listAiReviewQueueHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const kind = request.query.get("kind") as AiSuggestion["kind"] | null;
-  const status = request.query.get("status") as
-    | AiSuggestion["status"]
-    | "all"
-    | null;
+  const status = request.query.get("status") as AiSuggestion["status"] | "all" | null;
   const includeLowConfidence = request.query.get("includeLowConfidence") === "true";
 
   return json(200, {
@@ -147,10 +141,7 @@ async function getAiSuggestionPayloadHandler(
   context: TenantContext,
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
-  return json(
-    200,
-    await getAiSuggestionPayloadForContext(context, requireSuggestionId(match)),
-  );
+  return json(200, await getAiSuggestionPayloadForContext(context, requireSuggestionId(match)));
 }
 
 async function approveAiReviewSuggestionHandler(
@@ -162,11 +153,7 @@ async function approveAiReviewSuggestionHandler(
   const payloadOverride = readPayload(body.payloadOverride);
   return json(
     200,
-    await approveAiReviewSuggestionForContext(
-      context,
-      requireSuggestionId(match),
-      payloadOverride,
-    ),
+    await approveAiReviewSuggestionForContext(context, requireSuggestionId(match), payloadOverride),
   );
 }
 
@@ -216,18 +203,12 @@ function optionalObjectBody(body: unknown): Record<string, unknown> {
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null) {
-    throw new AuthError(
-      "AUTH_INVALID_CREDENTIALS",
-      "Request body must be a JSON object.",
-      400,
-    );
+    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
   }
   return body as Record<string, unknown>;
 }
 
-function readPayload(
-  value: unknown,
-): Partial<AiSuggestedTransactionDraft> | undefined {
+function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "object" || value === null) {
     throw new AiReviewQueueError(
@@ -289,9 +270,7 @@ function requireSuggestionId(match: Readonly<Record<string, string>>): string {
   return value;
 }
 
-function buildAuthHeaders(
-  authorization: string | undefined,
-): { authorization?: string } {
+function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
   return authorization === undefined ? {} : { authorization };
 }
 

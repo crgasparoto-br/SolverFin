@@ -38,7 +38,7 @@ Para sugestões de importação, `proposedTransaction` expõe `direction` e `oth
 
 A decisão e a persistência são protegidas por transação e pelo contrato do banco. Uma segunda decisão concorrente recebe conflito determinístico. Payload de sugestão resolvida é imutável.
 
-Sugestões dependentes de outra sugestão armazenam `sourceSuggestionId` e o fingerprint observado em `audit.sourceFingerprint`. Antes de concluir uma aprovação ou edição, o PostgreSQL consulta a origem sob lock compartilhado no mesmo `organizationId` e `financialProfileId`. Origem ausente ou fingerprint divergente retorna `AI_SUGGESTION_PAYLOAD_OBSOLETE`, preserva a sugestão como pendente e não produz efeito parcial. A rejeição permanece permitida para descartar a candidatura obsoleta.
+Sugestões dependentes de outra sugestão armazenam `sourceSuggestionId` e o fingerprint observado em `audit.sourceFingerprint`. Em categorização, um `sourceSuggestionId` sem fingerprint é apenas rastreabilidade e não ativa a validação de vigência. Antes de concluir uma aprovação ou edição dependente, o PostgreSQL consulta a origem sob lock compartilhado no mesmo `organizationId` e `financialProfileId`. Origem ausente ou fingerprint divergente retorna `AI_SUGGESTION_PAYLOAD_OBSOLETE`, preserva a sugestão como pendente e não produz efeito parcial. A rejeição permanece permitida para descartar a candidatura obsoleta.
 
 Contas e categorias são carregadas novamente dentro da transação de aprovação. Referência ausente, de outro perfil ou arquivada retorna erro controlado e mantém a sugestão pendente.
 

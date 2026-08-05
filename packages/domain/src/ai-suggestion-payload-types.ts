@@ -70,8 +70,7 @@ export interface AiSuggestionPayloadBase<TKind extends AiSuggestionPayloadKind> 
 export type ImportLineDirection = "inflow" | "outflow";
 export type TransactionKind = "income" | "expense" | "transfer";
 
-export interface TransactionExtractionSuggestionPayloadV1
-  extends AiSuggestionPayloadBase<"transaction_extraction"> {
+export interface TransactionExtractionSuggestionPayloadV1 extends AiSuggestionPayloadBase<"transaction_extraction"> {
   payloadVersion: 1;
   sourceRowNumber: number;
   sourceHash: string;
@@ -85,8 +84,7 @@ export interface TransactionExtractionSuggestionPayloadV1
   externalId?: string;
 }
 
-export interface TransactionExtractionSuggestionPayloadV2
-  extends AiSuggestionPayloadBase<"transaction_extraction"> {
+export interface TransactionExtractionSuggestionPayloadV2 extends AiSuggestionPayloadBase<"transaction_extraction"> {
   payloadVersion: 2;
   sourceRowNumber: number;
   sourceHash: string;
@@ -106,8 +104,7 @@ export type TransactionExtractionSuggestionPayload =
   | TransactionExtractionSuggestionPayloadV1
   | TransactionExtractionSuggestionPayloadV2;
 
-export interface CategorizationSuggestionPayloadV1
-  extends AiSuggestionPayloadBase<"categorization"> {
+export interface CategorizationSuggestionPayloadV1 extends AiSuggestionPayloadBase<"categorization"> {
   payloadVersion: 1;
   targetEntityId: string;
   targetTransactionId?: string;
@@ -136,14 +133,11 @@ interface DeterministicSuggestionPayloadV1Base<
   conflicts: readonly string[];
 }
 
-export interface DeduplicationSuggestionPayloadV1
-  extends DeterministicSuggestionPayloadV1Base<"deduplication"> {}
+export interface DeduplicationSuggestionPayloadV1 extends DeterministicSuggestionPayloadV1Base<"deduplication"> {}
 
-export interface ReconciliationSuggestionPayloadV1
-  extends DeterministicSuggestionPayloadV1Base<"reconciliation"> {}
+export interface ReconciliationSuggestionPayloadV1 extends DeterministicSuggestionPayloadV1Base<"reconciliation"> {}
 
-export interface InsightSuggestionPayloadV1
-  extends AiSuggestionPayloadBase<"insight"> {
+export interface InsightSuggestionPayloadV1 extends AiSuggestionPayloadBase<"insight"> {
   payloadVersion: 1;
   insightType: "anomaly" | "trend" | "summary" | "opportunity";
   title: string;
@@ -240,16 +234,12 @@ const ERROR_STATUS: Readonly<Record<AiSuggestionPayloadErrorCode, number>> = {
 
 const ERROR_MESSAGE: Readonly<Record<AiSuggestionPayloadErrorCode, string>> = {
   AI_SUGGESTION_PAYLOAD_MISSING: "A sugestao nao possui payload estruturado.",
-  AI_SUGGESTION_PAYLOAD_INVALID:
-    "O payload estruturado da sugestao e invalido.",
-  AI_SUGGESTION_PAYLOAD_KIND_MISMATCH:
-    "O payload nao e compativel com o tipo da sugestao.",
-  AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED:
-    "A versao do payload da sugestao nao e suportada.",
+  AI_SUGGESTION_PAYLOAD_INVALID: "O payload estruturado da sugestao e invalido.",
+  AI_SUGGESTION_PAYLOAD_KIND_MISMATCH: "O payload nao e compativel com o tipo da sugestao.",
+  AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED: "A versao do payload da sugestao nao e suportada.",
   AI_SUGGESTION_PAYLOAD_OBSOLETE:
     "A sugestao ficou obsoleta porque sua origem ou proposta foi alterada.",
-  AI_SUGGESTION_PAYLOAD_IMMUTABLE:
-    "Sugestoes resolvidas nao podem ter o payload alterado.",
+  AI_SUGGESTION_PAYLOAD_IMMUTABLE: "Sugestoes resolvidas nao podem ter o payload alterado.",
   AI_SUGGESTION_PAYLOAD_CONFLICT:
     "A sugestao foi alterada por outra operacao. Recarregue os dados e tente novamente.",
 };

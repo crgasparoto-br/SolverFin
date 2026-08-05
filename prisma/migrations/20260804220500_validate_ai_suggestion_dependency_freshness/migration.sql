@@ -29,7 +29,7 @@ begin
   source_suggestion_id_text := nullif(new."payload"->>'sourceSuggestionId', '');
   if source_suggestion_id_text is null then
     -- Categorization can target a transaction directly. Only proposals with an
-    -- explicit source suggestion are dependency candidates.
+    -- explicit source suggestion and source fingerprint are freshness-bound.
     if payload_kind = 'categorization' then
       return new;
     end if;
@@ -61,6 +61,13 @@ begin
   end if;
 
   if expected_source_fingerprint is null then
+    -- Categorization may retain a sourceSuggestionId only for traceability. It
+    -- becomes freshness-bound only when the observed source fingerprint is
+    -- present. Deterministic deduplication/reconciliation always require it.
+    if payload_kind = 'categorization' then
+      return new;
+    end if;
+
     raise exception using
       errcode = 'P0001',
       message = 'AI_SUGGESTION_PAYLOAD_INVALID';
