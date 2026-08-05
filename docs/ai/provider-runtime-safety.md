@@ -38,7 +38,8 @@ Toda resposta precisa conter texto não vazio e confiança entre `0` e `1`, quan
 
 - `extraction` exige `structured` compatível com `validateTransactionExtraction`.
 - `classification` exige `structured` e um `validateStructuredResult` do fluxo consumidor.
-- `summary` e `assistant` podem devolver somente texto.
+- `summary` e `assistant` aceitam texto simples ou envelope com `text` e `confidence`, mas
+  rejeitam qualquer campo `structured`.
 - Qualquer tarefa que devolva `structured` precisa de um validador aplicável.
 - Payload estruturado ausente, inválido ou sem validador retorna
   `AI_PROVIDER_INVALID_RESPONSE`.
@@ -71,6 +72,10 @@ Falhas mantêm o evento estável `AI_PROVIDER_CALL_FAILED`. O motivo controlado 
 O evento não inclui prompt, campos, resposta, credencial nem identificadores de organização ou
 perfil financeiro.
 
+O logger é observabilidade best-effort. Exceções síncronas e rejeições assíncronas do logger são
+contidas e não podem mudar o resultado funcional, iniciar retry, aumentar a contagem de chamadas
+outbound ou escapar para o consumidor.
+
 ## Cobertura obrigatória
 
 A suíte do pacote deve permanecer hermética e cobrir:
@@ -82,6 +87,11 @@ A suíte do pacote deve permanecer hermética e cobrir:
 - texto livre rejeitado em tarefas estruturadas;
 - payload de extração validado pelo schema;
 - categorização aceita somente com validador explícito;
+- `summary` e `assistant` rejeitando `structured` e solicitando somente texto com confiança
+  opcional;
+- falha do logger em `started`, `completed`, `invalid_response` e `failed` sem alterar resultado,
+  retry ou contagem outbound;
+- rejeição assíncrona do logger sem `unhandled rejection` nem mudança funcional;
 - redirect automático bloqueado;
 - placeholder recusado quando o provider está habilitado;
 - compatibilidade do evento de falha e ausência de dados sensíveis;
