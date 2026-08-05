@@ -115,7 +115,14 @@ async function testProviderCanBeFaked(): Promise<void> {
   const provider = new FakeAiProvider([
     {
       text: "Sugestao criada",
-      structured: { categoryId: "category-demo" },
+      structured: {
+        contractVersion: 1,
+        suggestionKind: "categorization",
+        payloadVersion: 1,
+        targetEntityId: "transaction-demo",
+        proposedCategoryId: "category-demo",
+        reasons: ["fictitious merchant match"],
+      },
       confidence: 0.91,
     },
   ]);
@@ -209,7 +216,7 @@ function isClassificationSuggestion(value: unknown): boolean {
     typeof value === "object" &&
     value !== null &&
     !Array.isArray(value) &&
-    typeof (value as Record<string, unknown>).categoryId === "string"
+    typeof (value as Record<string, unknown>).proposedCategoryId === "string"
   );
 }
 
