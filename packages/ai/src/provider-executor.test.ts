@@ -1,5 +1,6 @@
 import {
   AiProviderError,
+  MAX_AI_PROVIDER_RETRIES,
   defaultAiUsagePolicy,
   runAiTask,
   type AiConsentState,
@@ -56,6 +57,27 @@ async function testSanitizedEmptyPayloadBlocksBeforeCall(): Promise<void> {
   }
 
   assertEqual(provider.calls, 0, "empty payload does not call provider");
+}
+
+async function testInvalidRetryPolicyBlocksBeforeCall(): Promise<void> {
+  for (const maxRetries of [-1, MAX_AI_PROVIDER_RETRIES + 1, 1.5]) {
+    const provider = new CountingProvider(() => ({ text: "not called" }));
+    const result = await runAiTask({
+      provider,
+      task: "assistant",
+      context,
+      policy: { ...policy, maxRetries },
+      payload: { prompt: "safe prompt" },
+    });
+
+    assertEqual(result.status, "blocked", `invalid maxRetries ${maxRetries} is blocked`);
+
+    if (result.status === "blocked") {
+      assertEqual(result.code, "AI_POLICY_INVALID", "invalid retry policy has controlled code");
+    }
+
+    assertEqual(provider.calls, 0, "invalid retry policy does not call provider");
+  }
 }
 
 async function testTypedTimeoutRetriesAndMapsResult(): Promise<void> {
@@ -131,15 +153,88 @@ async function testPermanentFailureDoesNotRetry(): Promise<void> {
   assertEqual(provider.calls, 1, "permanent failure performs one outbound attempt");
 }
 
+async function testStructuredTasksFailClosed(): Promise<void> {
+  const textOnlyExtraction = new CountingProvider(() => ({ text: "plain extraction" }));
+  const extractionResult = await runAiTask({
+    provider: textOnlyExtraction,
+    task: "extraction",
+    context,
+    policy,
+    payload: { prompt: "extract" },
+  });
+  assertFailedInvalidResponse(extractionResult, "text-only extraction is rejected");
+
+  const unvalidatedClassification = new CountingProvider(() => ({
+    text: "category",
+    structured: { categoryId: "category-demo" },
+  }));
+  const classificationResult = await runAiTask({
+    provider: unvalidatedClassification,
+    task: "classification",
+    context,
+    policy,
+    payload: { prompt: "classify" },
+  });
+  assertFailedInvalidResponse(
+    classificationResult,
+    "classification without a task validator is rejected",
+  );
+}
+
+async function testStructuredTasksAcceptValidatedContracts(): Promise<void> {
+  const extractionProvider = new CountingProvider(() => ({
+    text: "extracted",
+    structured: {
+      amountMinor: 1500,
+      currency: "BRL",
+      occurredOn: "2026-08-05",
+      type: "expense",
+      merchant: "Demo Market",
+      confidence: 0.9,
+      source: "manual_note",
+      reasons: ["fictitious fixture"],
+    },
+    confidence: 0.9,
+  }));
+  const extractionResult = await runAiTask({
+    provider: extractionProvider,
+    task: "extraction",
+    context,
+    policy,
+    payload: { prompt: "extract" },
+  });
+  assertEqual(extractionResult.status, "completed", "valid extraction schema is accepted");
+
+  const classificationProvider = new CountingProvider(() => ({
+    text: "classified",
+    structured: { categoryId: "category-demo" },
+    confidence: 0.88,
+  }));
+  const classificationResult = await runAiTask({
+    provider: classificationProvider,
+    task: "classification",
+    context,
+    policy,
+    payload: { prompt: "classify" },
+    validateStructuredResult: (value) =>
+      isRecord(value) && typeof value.categoryId === "string" && value.categoryId.length > 0,
+  });
+  assertEqual(
+    classificationResult.status,
+    "completed",
+    "classification with a task validator is accepted",
+  );
+}
+
 async function testSafeLogsOnlyExposeSafeMetadata(): Promise<void> {
   const events: SafeAiLogEvent[] = [];
   const provider = new CountingProvider(() => ({ text: "ok" }));
   const result = await runAiTask({
     provider,
-    task: "extraction",
+    task: "assistant",
     context,
     policy,
-    payload: { prompt: "card 4111111111111111", fields: { merchant: "Demo" } },
+    payload: { prompt: "card [masked-fixture]", fields: { merchant: "Demo" } },
     logger: (event) => events.push(event),
   });
 
@@ -177,6 +272,21 @@ class CountingProvider implements AiProvider {
   }
 }
 
+function assertFailedInvalidResponse(
+  result: Awaited<ReturnType<typeof runAiTask>>,
+  label: string,
+): void {
+  assertEqual(result.status, "failed", label);
+
+  if (result.status === "failed") {
+    assertEqual(result.code, "AI_PROVIDER_INVALID_RESPONSE", `${label} code`);
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function assertEqual<T>(actual: T, expected: T, label: string): void {
   if (actual !== expected) {
     throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
@@ -186,9 +296,12 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
 async function runTests(): Promise<void> {
   await testConsentRecheckedImmediatelyBeforeCall();
   await testSanitizedEmptyPayloadBlocksBeforeCall();
+  await testInvalidRetryPolicyBlocksBeforeCall();
   await testTypedTimeoutRetriesAndMapsResult();
   await testTypedTimeoutRetriesThenSucceeds();
   await testPermanentFailureDoesNotRetry();
+  await testStructuredTasksFailClosed();
+  await testStructuredTasksAcceptValidatedContracts();
   await testSafeLogsOnlyExposeSafeMetadata();
 }
 

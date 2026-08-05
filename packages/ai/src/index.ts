@@ -5,12 +5,16 @@ export * from "./insights.js";
 export * from "./openai-provider.js";
 export * from "./provider-errors.js";
 
+import { validateTransactionExtraction } from "./extraction.js";
 import { AiProviderError, type AiProviderFailureKind } from "./provider-errors.js";
 
 export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
 export type AiConsentState = "granted" | "revoked" | "missing";
 export type AiLogLevel = "info" | "warn" | "error";
 export type AiSafeLogResult = "started" | "completed" | "blocked" | "retrying" | "failed";
+export type AiStructuredResultValidator = (value: unknown) => boolean;
+
+export const MAX_AI_PROVIDER_RETRIES = 5;
 
 export interface AiUsagePolicy {
   consent: AiConsentState;
@@ -56,6 +60,14 @@ export interface AiProvider {
   complete(request: SafeAiProviderRequest): Promise<AiProviderResult>;
 }
 
+export type AiProviderFailureCode =
+  | "AI_PROVIDER_ERROR"
+  | "AI_PROVIDER_TIMEOUT"
+  | "AI_PROVIDER_RATE_LIMITED"
+  | "AI_PROVIDER_UNAVAILABLE"
+  | "AI_PROVIDER_INVALID_RESPONSE"
+  | "AI_PROVIDER_CONFIGURATION_ERROR";
+
 export interface SafeAiLogEvent {
   level: AiLogLevel;
   code: string;
@@ -66,17 +78,10 @@ export interface SafeAiLogEvent {
   attempt?: number;
   durationMs?: number;
   result?: AiSafeLogResult;
+  failureCode?: AiProviderFailureCode;
 }
 
 export type SafeAiLogger = (event: SafeAiLogEvent) => void;
-
-export type AiProviderFailureCode =
-  | "AI_PROVIDER_ERROR"
-  | "AI_PROVIDER_TIMEOUT"
-  | "AI_PROVIDER_RATE_LIMITED"
-  | "AI_PROVIDER_UNAVAILABLE"
-  | "AI_PROVIDER_INVALID_RESPONSE"
-  | "AI_PROVIDER_CONFIGURATION_ERROR";
 
 export type AiTaskResult =
   | {
@@ -89,7 +94,11 @@ export type AiTaskResult =
     }
   | {
       status: "blocked";
-      code: "AI_CONSENT_REQUIRED" | "AI_PAYLOAD_TOO_LARGE" | "AI_PAYLOAD_EMPTY";
+      code:
+        | "AI_CONSENT_REQUIRED"
+        | "AI_PAYLOAD_TOO_LARGE"
+        | "AI_PAYLOAD_EMPTY"
+        | "AI_POLICY_INVALID";
       sanitized?: SanitizedAiPayload;
     }
   | {
@@ -157,10 +166,16 @@ export async function runAiTask(input: {
   payload: AiTaskPayload;
   logger?: SafeAiLogger;
   resolveConsent?: () => AiConsentState | Promise<AiConsentState>;
+  validateStructuredResult?: AiStructuredResultValidator;
 }): Promise<AiTaskResult> {
   if (!(await hasActiveConsent(input))) {
     logSafe(input, "warn", "AI_CONSENT_REQUIRED", { result: "blocked" });
     return { status: "blocked", code: "AI_CONSENT_REQUIRED" };
+  }
+
+  if (!isValidRetryPolicy(input.policy.maxRetries)) {
+    logSafe(input, "error", "AI_POLICY_INVALID", { result: "blocked" });
+    return { status: "blocked", code: "AI_POLICY_INVALID" };
   }
 
   const sanitized = sanitizeAiPayload(input.payload, input.policy);
@@ -175,7 +190,7 @@ export async function runAiTask(input: {
     return { status: "blocked", code: "AI_PAYLOAD_TOO_LARGE", sanitized };
   }
 
-  const maxAttempts = Math.max(1, input.policy.maxRetries + 1);
+  const maxAttempts = input.policy.maxRetries + 1;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     if (!(await hasActiveConsent(input))) {
@@ -191,7 +206,7 @@ export async function runAiTask(input: {
       const result = await input.provider.complete(request);
       const durationMs = Math.max(0, Date.now() - startedAt);
 
-      if (!isValidProviderResult(result)) {
+      if (!isValidProviderResult(input.task, result, input.validateStructuredResult)) {
         logSafe(input, "error", "AI_PROVIDER_INVALID_RESPONSE", {
           attempt,
           durationMs,
@@ -223,10 +238,11 @@ export async function runAiTask(input: {
       const failure = classifyProviderFailure(error);
       const canRetry = failure.retryable && attempt < maxAttempts;
 
-      logSafe(input, canRetry ? "warn" : "error", failure.code, {
+      logSafe(input, canRetry ? "warn" : "error", "AI_PROVIDER_CALL_FAILED", {
         attempt,
         durationMs,
         result: canRetry ? "retrying" : "failed",
+        failureCode: failure.code,
       });
 
       if (!canRetry) {
@@ -310,6 +326,10 @@ async function hasActiveConsent(input: {
   return consent === "granted";
 }
 
+function isValidRetryPolicy(maxRetries: number): boolean {
+  return Number.isInteger(maxRetries) && maxRetries >= 0 && maxRetries <= MAX_AI_PROVIDER_RETRIES;
+}
+
 function buildProviderRequest(
   task: AiTaskKind,
   context: AiUsageContext,
@@ -339,13 +359,43 @@ function isAllowedFieldName(name: string, policy: AiUsagePolicy): boolean {
   return !(policy.blockedFieldNamePatterns ?? []).some((pattern) => pattern.test(name));
 }
 
-function isValidProviderResult(result: AiProviderResult): boolean {
-  return (
+function isValidProviderResult(
+  task: AiTaskKind,
+  result: AiProviderResult,
+  validateStructuredResult: AiStructuredResultValidator | undefined,
+): boolean {
+  const commonResultIsValid =
     typeof result.text === "string" &&
     result.text.trim().length > 0 &&
     (result.confidence === undefined ||
-      (Number.isFinite(result.confidence) && result.confidence >= 0 && result.confidence <= 1))
-  );
+      (Number.isFinite(result.confidence) && result.confidence >= 0 && result.confidence <= 1));
+
+  if (!commonResultIsValid) {
+    return false;
+  }
+
+  const structuredResultIsRequired = task === "extraction" || task === "classification";
+
+  if (result.structured === undefined) {
+    return !structuredResultIsRequired;
+  }
+
+  const validator =
+    validateStructuredResult ?? (task === "extraction" ? validateExtractionResult : undefined);
+
+  if (validator === undefined) {
+    return false;
+  }
+
+  try {
+    return validator(result.structured);
+  } catch {
+    return false;
+  }
+}
+
+function validateExtractionResult(value: unknown): boolean {
+  return validateTransactionExtraction(value).status !== "invalid";
 }
 
 function classifyProviderFailure(error: unknown): {
@@ -392,6 +442,7 @@ function logSafe(
     attempt?: number;
     durationMs?: number;
     result?: AiSafeLogResult;
+    failureCode?: AiProviderFailureCode;
   } = {},
 ): void {
   if (!input.logger) {
@@ -420,6 +471,10 @@ function logSafe(
 
   if (details.result !== undefined) {
     event.result = details.result;
+  }
+
+  if (details.failureCode !== undefined) {
+    event.failureCode = details.failureCode;
   }
 
   input.logger(event);

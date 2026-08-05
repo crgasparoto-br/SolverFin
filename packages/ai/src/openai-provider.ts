@@ -8,6 +8,7 @@ const MODEL_ENV = "AI_OPENAI_MODEL";
 const MAX_OUTPUT_TOKENS_ENV = "AI_OPENAI_MAX_OUTPUT_TOKENS";
 const MAX_REQUEST_BYTES_ENV = "AI_OPENAI_MAX_REQUEST_BYTES";
 const REQUEST_TIMEOUT_ENV = "AI_OPENAI_REQUEST_TIMEOUT_MS";
+const DISABLED_API_KEY_PLACEHOLDER = "solverfin-ai-disabled-placeholder";
 const SUPPORTED_TASKS: readonly AiTaskKind[] = [
   "extraction",
   "classification",
@@ -39,6 +40,7 @@ export type AiHttpClient = (
     headers: Readonly<Record<string, string>>;
     body: string;
     signal: AbortSignal;
+    redirect: "error";
   },
 ) => Promise<AiHttpResponse>;
 
@@ -130,6 +132,7 @@ export class OpenAiProvider implements AiProvider {
         headers,
         body,
         signal: controller.signal,
+        redirect: "error",
       });
 
       if (!response.ok) {
@@ -190,7 +193,10 @@ export function loadOpenAiProviderConfig(
     invalidVariables.push(ENDPOINT_ENV);
   }
 
-  if (apiKey !== undefined && (apiKey.length < 20 || /\s/.test(apiKey))) {
+  if (
+    apiKey !== undefined &&
+    (apiKey === DISABLED_API_KEY_PLACEHOLDER || apiKey.length < 20 || /\s/.test(apiKey))
+  ) {
     invalidVariables.push(API_KEY_ENV);
   }
 
@@ -281,8 +287,7 @@ function buildOpenAiRequest(
     messages: [
       {
         role: "system",
-        content:
-          "You are a constrained SolverFin financial assistant. Return either plain text or a JSON object with text, optional structured, and optional confidence from 0 to 1. Do not infer or request data beyond the supplied purpose and fields.",
+        content: buildSystemPrompt(request.task),
       },
       {
         role: "user",
@@ -295,6 +300,17 @@ function buildOpenAiRequest(
       },
     ],
   };
+}
+
+function buildSystemPrompt(task: AiTaskKind): string {
+  const base =
+    "You are a constrained SolverFin financial assistant. Do not infer or request data beyond the supplied purpose and fields.";
+
+  if (task === "extraction" || task === "classification") {
+    return `${base} Return a JSON object with non-empty text, mandatory structured output, and optional confidence from 0 to 1. Plain text without structured output is invalid for this task.`;
+  }
+
+  return `${base} Return either plain text or a JSON object with non-empty text, optional structured output, and optional confidence from 0 to 1.`;
 }
 
 function parseOpenAiResponse(rawBody: string): AiProviderResult {

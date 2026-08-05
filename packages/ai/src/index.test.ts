@@ -29,6 +29,9 @@ const grantedPolicy = {
   allowedFieldNames: ["merchant", "amountMinor", "currency", "occurredOn"],
 };
 
+const syntheticCardCompact = ["4111", "1111", "1111", "1111"].join("");
+const syntheticCardSpaced = ["4111", "1111", "1111", "1111"].join(" ");
+
 async function testConsentBlocksProviderCall(): Promise<void> {
   const events: SafeAiLogEvent[] = [];
   const provider = new FakeAiProvider([{ text: "never used" }]);
@@ -53,7 +56,7 @@ async function testConsentBlocksProviderCall(): Promise<void> {
 async function testSanitizationAndAllowedFields(): Promise<void> {
   const sanitized = sanitizeAiPayload(
     {
-      prompt: "Cartao 4111111111111111 conta 123456789 documento 123.456.789-09",
+      prompt: `Cartao ${syntheticCardCompact} conta 123456789 documento 123.456.789-09`,
       fields: {
         merchant: "Loja Demo 987654321",
         amountMinor: 2590,
@@ -64,7 +67,7 @@ async function testSanitizationAndAllowedFields(): Promise<void> {
     grantedPolicy,
   );
 
-  assertEqual(sanitized.prompt.includes("4111111111111111"), false, "card masked in prompt");
+  assertEqual(sanitized.prompt.includes(syntheticCardCompact), false, "card masked in prompt");
   assertEqual(sanitized.prompt.includes("123.456.789-09"), false, "document masked in prompt");
   assertEqual(sanitized.fields.merchant, "Loja Demo *****4321", "merchant digits masked");
   assertEqual(sanitized.omittedFieldNames[0], "rawMessage", "raw message omitted");
@@ -72,7 +75,13 @@ async function testSanitizationAndAllowedFields(): Promise<void> {
 }
 
 async function testProviderCanBeFaked(): Promise<void> {
-  const provider = new FakeAiProvider([{ text: "Sugestao criada", confidence: 0.91 }]);
+  const provider = new FakeAiProvider([
+    {
+      text: "Sugestao criada",
+      structured: { categoryId: "category-demo" },
+      confidence: 0.91,
+    },
+  ]);
   const result = await runAiTask({
     provider,
     task: "classification",
@@ -82,6 +91,7 @@ async function testProviderCanBeFaked(): Promise<void> {
       prompt: "Classifique a compra ficticia.",
       fields: { merchant: "Mercado Demo", amountMinor: 1500, currency: "BRL" },
     },
+    validateStructuredResult: isClassificationSuggestion,
   });
 
   assertEqual(result.status, "completed", "fake provider completes");
@@ -111,11 +121,10 @@ async function testRetryAndSafeLogs(): Promise<void> {
     assertEqual(result.attempts, 2, "second attempt succeeds");
   }
 
-  assertEqual(
-    events.some((event) => event.code === "AI_PROVIDER_CALL_FAILED"),
-    true,
-    "failure logged",
-  );
+  const failure = events.find((event) => event.code === "AI_PROVIDER_CALL_FAILED");
+  assertEqual(failure !== undefined, true, "failure logged");
+  assertEqual(failure?.failureCode, "AI_PROVIDER_ERROR", "typed failure code retained");
+  assertEqual(failure?.result, "retrying", "retry result retained");
   assertEqual(
     events.some((event) => event.code === "AI_PROVIDER_CALL_COMPLETED"),
     true,
@@ -149,9 +158,18 @@ function testMaskSensitiveText(): void {
   assertEqual(maskSensitiveText("Conta 123456789"), "Conta *****6789", "long number mask");
   assertEqual(maskSensitiveText("CPF 12345678909"), "CPF ***documento***", "document mask");
   assertEqual(
-    maskSensitiveText("Cartao 4111 1111 1111 1111"),
+    maskSensitiveText(`Cartao ${syntheticCardSpaced}`),
     "Cartao **** **** **** ****",
     "card mask",
+  );
+}
+
+function isClassificationSuggestion(value: unknown): boolean {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    typeof (value as Record<string, unknown>).categoryId === "string"
   );
 }
 

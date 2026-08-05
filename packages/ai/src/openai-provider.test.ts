@@ -58,6 +58,39 @@ async function testEnabledConfigurationIsValidatedWithoutSecretExposure(): Promi
   }
 }
 
+async function testDisabledPlaceholderCannotBecomeReady(): Promise<void> {
+  const environment = {
+    ...validEnvironment(),
+    AI_OPENAI_API_KEY: "solverfin-ai-disabled-placeholder",
+  };
+  const health = inspectAiProviderConfiguration(environment);
+
+  assertEqual(health.status, "invalid", "disabled placeholder is invalid when provider is enabled");
+
+  if (health.status === "invalid") {
+    assertEqual(
+      health.issues.includes("AI_OPENAI_API_KEY"),
+      true,
+      "placeholder failure names only the affected variable",
+    );
+  }
+
+  try {
+    loadOpenAiProviderConfig(environment);
+    throw new Error("Expected placeholder rejection.");
+  } catch (error) {
+    if (!(error instanceof AiProviderConfigurationError)) {
+      throw error;
+    }
+
+    assertEqual(
+      error.variableNames.includes("AI_OPENAI_API_KEY"),
+      true,
+      "placeholder is rejected by the runtime loader",
+    );
+  }
+}
+
 async function testHealthIsConfigurationOnly(): Promise<void> {
   const health = inspectAiProviderConfiguration(validEnvironment());
   assertEqual(health.status, "ready", "valid configuration is ready");
@@ -72,10 +105,12 @@ async function testSuccessfulCallUsesOneOutboundRequest(): Promise<void> {
   let calls = 0;
   let capturedBody = "";
   let capturedAuthorization = "";
+  let capturedRedirect = "";
   const client: AiHttpClient = async (_url, init) => {
     calls += 1;
     capturedBody = init.body;
     capturedAuthorization = init.headers.authorization ?? "";
+    capturedRedirect = init.redirect;
 
     return response(
       200,
@@ -98,11 +133,17 @@ async function testSuccessfulCallUsesOneOutboundRequest(): Promise<void> {
   const result = await provider.complete(request);
 
   assertEqual(calls, 1, "OUTBOUND-COUNT-001 success uses one request");
+  assertEqual(capturedRedirect, "error", "automatic redirects are blocked");
   assertEqual(result.text, "Category suggested", "response text parsed");
   assertEqual(result.confidence, 0.92, "confidence parsed");
   assertEqual(capturedAuthorization, `Bearer ${config.apiKey}`, "credential sent only in header");
   assertEqual(capturedBody.includes(request.purpose), true, "purpose sent");
   assertEqual(capturedBody.includes("rawMessage"), false, "no undeclared field added");
+  assertEqual(
+    capturedBody.includes("mandatory structured output"),
+    true,
+    "structured task requirement is sent to the provider",
+  );
 }
 
 async function testRateLimitRetriesThenSucceeds(): Promise<void> {
@@ -114,7 +155,21 @@ async function testRateLimitRetriesThenSucceeds(): Promise<void> {
       return response(429, "{}");
     }
 
-    return response(200, JSON.stringify({ choices: [{ message: { content: "recovered" } }] }));
+    return response(
+      200,
+      JSON.stringify({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                text: "recovered",
+                structured: { categoryId: "category-demo" },
+              }),
+            },
+          },
+        ],
+      }),
+    );
   };
   const provider = new OpenAiProvider(config, client);
   const result = await runAiTask({
@@ -133,6 +188,8 @@ async function testRateLimitRetriesThenSucceeds(): Promise<void> {
       allowedFieldNames: ["merchant"],
     },
     payload: { prompt: "Classify.", fields: { merchant: "Demo Market" } },
+    validateStructuredResult: (value) =>
+      isRecord(value) && typeof value.categoryId === "string" && value.categoryId.length > 0,
   });
 
   assertEqual(result.status, "completed", "rate limit retry can recover");
@@ -283,6 +340,10 @@ function response(status: number, body: string): AiHttpResponse {
   };
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function assertEqual<T>(actual: T, expected: T, label: string): void {
   if (actual !== expected) {
     throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
@@ -292,6 +353,7 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
 async function runTests(): Promise<void> {
   await testDisabledByDefault();
   await testEnabledConfigurationIsValidatedWithoutSecretExposure();
+  await testDisabledPlaceholderCannotBecomeReady();
   await testHealthIsConfigurationOnly();
   await testSuccessfulCallUsesOneOutboundRequest();
   await testRateLimitRetriesThenSucceeds();
