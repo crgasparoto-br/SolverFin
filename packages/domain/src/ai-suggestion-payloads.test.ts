@@ -22,6 +22,7 @@ recomputesFingerprintAndDetectsConcurrentMutation();
 rejectsStaleSourceAndResolvedMutation();
 publicProjectionDoesNotLeakInternalIdentifiersByDefault();
 rejectsRawAndUnknownSensitiveFields();
+rejectsDependentCategorizationWithoutSourceFingerprint();
 
 function validatesEverySupportedKind(): void {
   const payloads: AiSuggestionPayload[] = [
@@ -436,6 +437,59 @@ function rejectsRawAndUnknownSensitiveFields(): void {
   assert.throws(
     () => requireCurrentAiSuggestionPayload(injected, "insight"),
     hasCode("AI_SUGGESTION_PAYLOAD_INVALID"),
+  );
+}
+
+function rejectsDependentCategorizationWithoutSourceFingerprint(): void {
+  const direct = buildAiSuggestionPayload({
+    payload: {
+      contractVersion: 1,
+      suggestionKind: "categorization",
+      payloadVersion: 1,
+      origin: { kind: "automation", ruleId: "rule-1" },
+      target: { entityKind: "transaction", entityId: "transaction-1" },
+      reasons: ["Proposta direta ficticia."],
+      audit: { createdAt: now },
+      targetEntityId: "transaction-1",
+      proposedCategoryId: "category-1",
+    },
+  });
+  const invalidDependent = {
+    ...direct,
+    sourceSuggestionId: "source-suggestion-1",
+  };
+  const invalidRead = readAiSuggestionPayload(
+    invalidDependent,
+    "categorization",
+  );
+  assert.equal(invalidRead.state, "invalid");
+  if (invalidRead.state === "invalid") {
+    assert.equal(invalidRead.error.code, "AI_SUGGESTION_PAYLOAD_INVALID");
+  }
+
+  const dependent = buildAiSuggestionPayload({
+    payload: {
+      contractVersion: 1,
+      suggestionKind: "categorization",
+      payloadVersion: 1,
+      origin: { kind: "automation", ruleId: "rule-1" },
+      target: {
+        entityKind: "import_suggestion",
+        entityId: "source-suggestion-1",
+      },
+      reasons: ["Proposta dependente ficticia."],
+      audit: {
+        createdAt: now,
+        sourceFingerprint: `sha256-${"a".repeat(64)}`,
+      },
+      targetEntityId: "source-suggestion-1",
+      sourceSuggestionId: "source-suggestion-1",
+      proposedCategoryId: "category-1",
+    },
+  });
+  assert.equal(
+    dependent.audit.sourceFingerprint,
+    `sha256-${"a".repeat(64)}`,
   );
 }
 
