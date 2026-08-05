@@ -39,7 +39,11 @@ async function blocksMissingAndEmptyAllowlist(): Promise<void> {
     if (result.status === "blocked") {
       assertEqual(result.code, "AI_POLICY_INVALID", "invalid allowlist code");
     }
-    assertEqual(provider.requests.length, 0, "invalid allowlist prevents outbound");
+    assertEqual(
+      provider.requests.length,
+      0,
+      "invalid allowlist prevents outbound",
+    );
   }
 }
 
@@ -63,7 +67,11 @@ async function blocksUnregisteredTaskPolicy(): Promise<void> {
   if (result.status === "blocked") {
     assertEqual(result.code, "AI_POLICY_INVALID", "unregistered task code");
   }
-  assertEqual(provider.requests.length, 0, "unregistered task prevents outbound");
+  assertEqual(
+    provider.requests.length,
+    0,
+    "unregistered task prevents outbound",
+  );
 }
 
 async function filtersUnauthorizedFieldsForEveryTask(): Promise<void> {
@@ -100,13 +108,23 @@ async function filtersUnauthorizedFieldsForEveryTask(): Promise<void> {
       ...(task === "classification"
         ? {
             validateStructuredResult: (value: unknown) =>
-              typeof value === "object" && value !== null && !Array.isArray(value),
+              typeof value === "object" &&
+              value !== null &&
+              !Array.isArray(value),
           }
         : {}),
     });
 
-    assertEqual(result.status, "completed", `${task} completes with registered field`);
-    assertEqual(provider.requests.length, 1, `${task} performs one outbound request`);
+    assertEqual(
+      result.status,
+      "completed",
+      `${task} completes with registered field`,
+    );
+    assertEqual(
+      provider.requests.length,
+      1,
+      `${task} performs one outbound request`,
+    );
 
     const request = provider.requests[0];
     assertTruthy(request, `${task} request exists`);
@@ -125,7 +143,11 @@ async function filtersUnauthorizedFieldsForEveryTask(): Promise<void> {
       false,
       `${task} omits numeric field`,
     );
-    assertEqual(Object.hasOwn(request.fields, "isVip"), false, `${task} omits boolean field`);
+    assertEqual(
+      Object.hasOwn(request.fields, "isVip"),
+      false,
+      `${task} omits boolean field`,
+    );
   }
 }
 
@@ -172,17 +194,26 @@ class RecordingProvider implements AiProvider {
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {
   if (actual !== expected) {
-    throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
+    throw new Error(
+      `${label}: expected ${String(expected)}, got ${String(actual)}`,
+    );
   }
 }
 
-function assertTruthy<T>(value: T, label: string): asserts value is NonNullable<T> {
+function assertTruthy<T>(
+  value: T,
+  label: string,
+): asserts value is NonNullable<T> {
   if (!value) {
     throw new Error(`${label}: expected truthy value`);
   }
 }
 
-function assertJsonEqual(actual: unknown, expected: unknown, label: string): void {
+function assertJsonEqual(
+  actual: unknown,
+  expected: unknown,
+  label: string,
+): void {
   const actualJson = JSON.stringify(actual);
   const expectedJson = JSON.stringify(expected);
   if (actualJson !== expectedJson) {

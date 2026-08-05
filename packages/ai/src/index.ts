@@ -16,7 +16,9 @@ export type AiStructuredResultValidator = (value: unknown) => boolean;
 
 export const MAX_AI_PROVIDER_RETRIES = 5;
 
-export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<Record<AiTaskKind, readonly string[]>> = {
+export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<
+  Record<AiTaskKind, readonly string[]>
+> = {
   extraction: ["message", "merchant", "amountMinor", "currency", "occurredOn"],
   classification: [
     "merchant",
@@ -280,7 +282,9 @@ export function sanitizeAiPayload(
   task?: AiTaskKind,
 ): SanitizedAiPayload {
   const originalPrompt = payload.prompt.trim();
-  const prompt = policy.allowRawFinancialText ? originalPrompt : maskSensitiveText(originalPrompt);
+  const prompt = policy.allowRawFinancialText
+    ? originalPrompt
+    : maskSensitiveText(originalPrompt);
   const fields: Record<string, string | number | boolean | null> = {};
   const redactedFieldNames: string[] = [];
   const omittedFieldNames: string[] = [];
@@ -377,8 +381,14 @@ function buildProviderRequest(
   return request;
 }
 
-function getRegisteredTaskAllowedFieldNames(task: AiTaskKind): readonly string[] | undefined {
-  return (AI_TASK_ALLOWED_FIELD_NAMES as Partial<Record<AiTaskKind, readonly string[]>>)[task];
+function getRegisteredTaskAllowedFieldNames(
+  task: AiTaskKind,
+): readonly string[] | undefined {
+  return (
+    AI_TASK_ALLOWED_FIELD_NAMES as Partial<
+      Record<AiTaskKind, readonly string[]>
+    >
+  )[task];
 }
 
 function isAllowedFieldName(
