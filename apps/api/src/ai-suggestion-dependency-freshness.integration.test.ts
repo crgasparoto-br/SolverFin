@@ -55,19 +55,9 @@ async function main(): Promise<void> {
 
   const createdIds: string[] = [];
   try {
-    await assertFreshAndObsoleteDependencies(
-      token,
-      organizationId,
-      accountId,
-      createdIds,
-    );
+    await assertFreshAndObsoleteDependencies(token, organizationId, accountId, createdIds);
     await assertMissingSourceIsObsolete(token, organizationId, createdIds);
-    await assertArchivedAccountBlocksApproval(
-      token,
-      organizationId,
-      accountId,
-      createdIds,
-    );
+    await assertArchivedAccountBlocksApproval(token, organizationId, accountId, createdIds);
     await assertArchivedCategoryBlocksApproval(
       token,
       organizationId,
@@ -76,21 +66,13 @@ async function main(): Promise<void> {
       createdIds,
     );
   } finally {
-    await query(`update "Account" set "status" = 'ACTIVE' where "id" = $1`, [
-      accountId,
-    ]);
-    await query(`update "Category" set "status" = 'ACTIVE' where "id" = $1`, [
-      categoryId,
-    ]);
+    await query(`update "Account" set "status" = 'ACTIVE' where "id" = $1`, [accountId]);
+    await query(`update "Category" set "status" = 'ACTIVE' where "id" = $1`, [categoryId]);
     if (createdIds.length > 0) {
-      await query(
-        `delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
-        [createdIds],
-      );
-      await query(
-        `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
-        [createdIds],
-      );
+      await query(`delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`, [
+        createdIds,
+      ]);
+      await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [createdIds]);
     }
   }
 }
@@ -173,10 +155,7 @@ async function assertFreshAndObsoleteDependencies(
     "POST",
   );
   assert.equal(staleResponse.statusCode, 409);
-  assert.equal(
-    readErrorCode(staleResponse),
-    "AI_SUGGESTION_PAYLOAD_OBSOLETE",
-  );
+  assert.equal(readErrorCode(staleResponse), "AI_SUGGESTION_PAYLOAD_OBSOLETE");
   await assertSuggestionRemainsPending(staleDependentId);
 }
 
@@ -203,11 +182,7 @@ async function assertMissingSourceIsObsolete(
     now,
   });
 
-  const response = await apiRequest(
-    token,
-    `/api/ai-review-queue/${suggestionId}/approve`,
-    "POST",
-  );
+  const response = await apiRequest(token, `/api/ai-review-queue/${suggestionId}/approve`, "POST");
   assert.equal(response.statusCode, 409);
   assert.equal(readErrorCode(response), "AI_SUGGESTION_PAYLOAD_OBSOLETE");
   await assertSuggestionRemainsPending(suggestionId);
@@ -236,9 +211,7 @@ async function assertArchivedAccountBlocksApproval(
     now,
   });
 
-  await query(`update "Account" set "status" = 'ARCHIVED' where "id" = $1`, [
-    accountId,
-  ]);
+  await query(`update "Account" set "status" = 'ARCHIVED' where "id" = $1`, [accountId]);
   try {
     const response = await apiRequest(
       token,
@@ -250,9 +223,7 @@ async function assertArchivedAccountBlocksApproval(
     await assertSuggestionRemainsPending(suggestionId);
     await assertNoTransaction(suggestionId);
   } finally {
-    await query(`update "Account" set "status" = 'ACTIVE' where "id" = $1`, [
-      accountId,
-    ]);
+    await query(`update "Account" set "status" = 'ACTIVE' where "id" = $1`, [accountId]);
   }
 }
 
@@ -285,9 +256,7 @@ async function assertArchivedCategoryBlocksApproval(
     now,
   });
 
-  await query(`update "Category" set "status" = 'ARCHIVED' where "id" = $1`, [
-    categoryId,
-  ]);
+  await query(`update "Category" set "status" = 'ARCHIVED' where "id" = $1`, [categoryId]);
   try {
     const response = await apiRequest(
       token,
@@ -299,9 +268,7 @@ async function assertArchivedCategoryBlocksApproval(
     await assertSuggestionRemainsPending(suggestionId);
     await assertNoTransaction(suggestionId);
   } finally {
-    await query(`update "Category" set "status" = 'ACTIVE' where "id" = $1`, [
-      categoryId,
-    ]);
+    await query(`update "Category" set "status" = 'ACTIVE' where "id" = $1`, [categoryId]);
   }
 }
 
@@ -310,10 +277,7 @@ function buildTransactionPayload(input: {
   sourceId: string;
   accountId: string;
   description: string;
-}): Extract<
-  AiSuggestionPayload,
-  { suggestionKind: "transaction_extraction" }
-> {
+}): Extract<AiSuggestionPayload, { suggestionKind: "transaction_extraction" }> {
   return buildAiSuggestionPayload({
     payload: {
       contractVersion: 1,
@@ -391,9 +355,7 @@ async function insertSuggestion(input: {
   );
 }
 
-async function assertSuggestionRemainsPending(
-  suggestionId: string,
-): Promise<void> {
+async function assertSuggestionRemainsPending(suggestionId: string): Promise<void> {
   const rows = await query<{
     status: string;
     reviewedAt: Date | null;
@@ -429,11 +391,7 @@ async function loginAndReadToken(): Promise<string> {
   return readBody<{ session: { token: string } }>(response).session.token;
 }
 
-async function apiRequest(
-  token: string,
-  path: string,
-  method = "GET",
-): Promise<ApiResponse> {
+async function apiRequest(token: string, path: string, method = "GET"): Promise<ApiResponse> {
   const url = new URL(path, "http://solverfin.integration.test");
   const request: ApiRequest = {
     method,
