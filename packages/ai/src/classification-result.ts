@@ -20,7 +20,7 @@ export interface AiClassificationResultV1 {
   reasons: readonly string[];
 }
 
-const RESULT_FIELDS = [
+const RESULT_FIELDS = new Set<string>([
   "contractVersion",
   "suggestionKind",
   "payloadVersion",
@@ -29,9 +29,9 @@ const RESULT_FIELDS = [
   "proposedCardId",
   "proposedStatus",
   "reasons",
-] as const;
+]);
 
-const PROPOSED_STATUSES: readonly AiClassificationProposedStatus[] = [
+const PROPOSED_STATUSES = new Set<AiClassificationProposedStatus>([
   "pending_review",
   "duplicate",
   "planned",
@@ -39,16 +39,14 @@ const PROPOSED_STATUSES: readonly AiClassificationProposedStatus[] = [
   "reconciled",
   "suggested",
   "voided",
-];
+]);
 
 export function validateAiClassificationResult(
   value: unknown,
 ): value is AiClassificationResultV1 {
   if (!isRecord(value)) return false;
   if (!hasOnlyKnownFields(value)) return false;
-  if (value.contractVersion !== AI_CLASSIFICATION_RESULT_CONTRACT_VERSION) return false;
-  if (value.suggestionKind !== "categorization") return false;
-  if (value.payloadVersion !== 1) return false;
+  if (!hasExpectedHeader(value)) return false;
   if (!isNonEmptyStringArray(value.reasons)) return false;
   if (!hasProposal(value)) return false;
   if (!isOptionalString(value.proposedCategoryId)) return false;
@@ -59,16 +57,23 @@ export function validateAiClassificationResult(
 }
 
 function hasOnlyKnownFields(value: Record<string, unknown>): boolean {
-  return Object.keys(value).every((field) => RESULT_FIELDS.includes(field as never));
+  return Object.keys(value).every((field) => RESULT_FIELDS.has(field));
+}
+
+function hasExpectedHeader(value: Record<string, unknown>): boolean {
+  if (value.contractVersion !== 1) return false;
+  if (value.suggestionKind !== "categorization") return false;
+  return value.payloadVersion === 1;
 }
 
 function hasProposal(value: Record<string, unknown>): boolean {
-  return [
+  const proposals = [
     value.proposedCategoryId,
     value.proposedAccountId,
     value.proposedCardId,
     value.proposedStatus,
-  ].some(isNonEmptyString);
+  ];
+  return proposals.some(isNonEmptyString);
 }
 
 function isOptionalString(value: unknown): boolean {
@@ -78,17 +83,23 @@ function isOptionalString(value: unknown): boolean {
 function isOptionalStatus(value: unknown): boolean {
   if (value === undefined) return true;
   if (!isNonEmptyString(value)) return false;
-  return PROPOSED_STATUSES.includes(value as AiClassificationProposedStatus);
+  return PROPOSED_STATUSES.has(value as AiClassificationProposedStatus);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  if (typeof value !== "object") return false;
+  if (value === null) return false;
+  return !Array.isArray(value);
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0 && value.length <= 2048;
+  if (typeof value !== "string") return false;
+  if (value.trim().length === 0) return false;
+  return value.length <= 2048;
 }
 
 function isNonEmptyStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.length > 0 && value.every(isNonEmptyString);
+  if (!Array.isArray(value)) return false;
+  if (value.length === 0) return false;
+  return value.every(isNonEmptyString);
 }
