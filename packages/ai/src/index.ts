@@ -30,12 +30,10 @@ export interface AiClassificationResultV1 {
   contractVersion: typeof AI_CLASSIFICATION_RESULT_CONTRACT_VERSION;
   suggestionKind: "categorization";
   payloadVersion: 1;
-  targetEntityId: string;
   proposedCategoryId?: string;
   proposedAccountId?: string;
   proposedCardId?: string;
   proposedStatus?: AiClassificationProposedStatus;
-  previousCategoryId?: string;
   reasons: readonly string[];
 }
 
@@ -499,12 +497,10 @@ function validateClassificationResult(value: unknown): value is AiClassification
     "contractVersion",
     "suggestionKind",
     "payloadVersion",
-    "targetEntityId",
     "proposedCategoryId",
     "proposedAccountId",
     "proposedCardId",
     "proposedStatus",
-    "previousCategoryId",
     "reasons",
   ]);
 
@@ -516,7 +512,6 @@ function validateClassificationResult(value: unknown): value is AiClassification
     value.contractVersion !== AI_CLASSIFICATION_RESULT_CONTRACT_VERSION ||
     value.suggestionKind !== "categorization" ||
     value.payloadVersion !== 1 ||
-    !isNonEmptyString(value.targetEntityId) ||
     !isNonEmptyStringArray(value.reasons)
   ) {
     return false;
@@ -537,7 +532,6 @@ function validateClassificationResult(value: unknown): value is AiClassification
     value.proposedCategoryId,
     value.proposedAccountId,
     value.proposedCardId,
-    value.previousCategoryId,
   ]) {
     if (field !== undefined && !isNonEmptyString(field)) {
       return false;
