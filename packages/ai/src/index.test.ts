@@ -54,6 +54,42 @@ async function testConsentBlocksProviderCall(): Promise<void> {
   assertEqual(events[0]?.correlationId, context.correlationId, "safe consent correlation id");
 }
 
+async function testPolicySnapshotBlocksContradictoryResolver(): Promise<void> {
+  for (const consent of ["revoked", "missing"] as const) {
+    let providerCalls = 0;
+    let resolverCalls = 0;
+    const provider: AiProvider = {
+      id: "counting",
+      model: "counting-model",
+      async complete() {
+        providerCalls += 1;
+        return { text: "must not be called" };
+      },
+    };
+
+    const result = await runAiTask({
+      provider,
+      task: "summary",
+      context,
+      policy: { ...grantedPolicy, consent },
+      payload: { prompt: "Resumo financeiro ficticio" },
+      resolveConsent: () => {
+        resolverCalls += 1;
+        return "granted";
+      },
+    });
+
+    assertEqual(result.status, "blocked", `${consent} snapshot status`);
+
+    if (result.status === "blocked") {
+      assertEqual(result.code, "AI_CONSENT_REQUIRED", `${consent} snapshot code`);
+    }
+
+    assertEqual(providerCalls, 0, `${consent} snapshot provider calls`);
+    assertEqual(resolverCalls, 0, `${consent} snapshot resolver calls`);
+  }
+}
+
 async function testSanitizationAndAllowedFields(): Promise<void> {
   const sanitized = sanitizeAiPayload(
     {
@@ -212,6 +248,7 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
 }
 
 await testConsentBlocksProviderCall();
+await testPolicySnapshotBlocksContradictoryResolver();
 await testSanitizationAndAllowedFields();
 await testProviderCanBeFaked();
 await testRetryAndSafeLogs();
