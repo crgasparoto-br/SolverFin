@@ -128,7 +128,6 @@ function responseFor(task: AiTaskKind): AiProviderResult {
         contractVersion: 1,
         suggestionKind: "categorization",
         payloadVersion: 1,
-        targetEntityId: "transaction-demo",
         proposedCategoryId: "category-demo",
         reasons: ["fictitious merchant match"],
       },
