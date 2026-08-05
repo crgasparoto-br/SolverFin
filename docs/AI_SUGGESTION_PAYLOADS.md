@@ -66,6 +66,8 @@ A migração `20260804130000_versioned_ai_suggestion_payloads` não executa back
 
 A migração `20260804220500_validate_ai_suggestion_dependency_freshness` protege decisões dependentes contra alterações concorrentes ou posteriores da origem. Ela não reescreve dados existentes e atua somente em transições terminais de registros pendentes.
 
+A migração `20260805110000_validate_ai_suggestion_payload_kind_values` completa a equivalência com o parser do domínio para valores específicos de cada `kind`: tipos escalares, inteiros positivos seguros, datas, moeda, enums e campos opcionais. Ela também impede campos exclusivos da V2 em payloads V1 e exige `direction` em extrações V2.
+
 - gravações novas precisam ter payload estruturado;
 - V1/V2 legados de extração e V1 determinístico podem ser encapsulados pelo trigger, porque já contêm campos estruturados verificáveis;
 - leitura pode projetar payload legado compatível sem persistir a projeção;

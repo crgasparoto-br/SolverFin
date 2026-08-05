@@ -20,10 +20,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const profileRows = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -62,35 +59,21 @@ async function main(): Promise<void> {
       status: "all",
     });
     const listed = listedItems.find((item) => item.id === created.id);
-    assert.ok(
-      listed?.suggestion,
-      "Created inbox suggestion must survive the list round-trip.",
-    );
+    assert.ok(listed?.suggestion, "Created inbox suggestion must survive the list round-trip.");
 
-    const read = readAiSuggestionPayload(
-      listed.suggestion.payload,
-      "transaction_extraction",
-    );
+    const read = readAiSuggestionPayload(listed.suggestion.payload, "transaction_extraction");
     assert.equal(read.state, "current");
-    if (
-      read.state !== "current" ||
-      read.payload.suggestionKind !== "transaction_extraction"
-    ) {
-      throw new Error(
-        "Expected the canonical transaction extraction payload after listing Inbox.",
-      );
+    if (read.state !== "current" || read.payload.suggestionKind !== "transaction_extraction") {
+      throw new Error("Expected the canonical transaction extraction payload after listing Inbox.");
     }
     assert.equal(read.payload.amountMinor, 1234);
     assert.equal(read.payload.accountId, accountId);
   } finally {
     if (importBatchIds.length > 0) {
-      await query(
-        `delete from "AiSuggestion" where "sourceEntityId" = any($1::uuid[])`,
-        [importBatchIds],
-      );
-      await query(`delete from "ImportBatch" where "id" = any($1::uuid[])`, [
+      await query(`delete from "AiSuggestion" where "sourceEntityId" = any($1::uuid[])`, [
         importBatchIds,
       ]);
+      await query(`delete from "ImportBatch" where "id" = any($1::uuid[])`, [importBatchIds]);
     }
   }
 }
