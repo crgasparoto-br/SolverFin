@@ -44,15 +44,42 @@ const PROPOSED_STATUSES = new Set<AiClassificationProposedStatus>([
 export function validateAiClassificationResult(
   value: unknown,
 ): value is AiClassificationResultV1 {
-  if (!isRecord(value)) return false;
-  if (!hasOnlyKnownFields(value)) return false;
-  if (!hasExpectedHeader(value)) return false;
-  if (!isNonEmptyStringArray(value.reasons)) return false;
-  if (!hasProposal(value)) return false;
-  if (!isOptionalString(value.proposedCategoryId)) return false;
-  if (!isOptionalString(value.proposedAccountId)) return false;
-  if (!isOptionalString(value.proposedCardId)) return false;
-  if (!isOptionalStatus(value.proposedStatus)) return false;
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (!hasOnlyKnownFields(value)) {
+    return false;
+  }
+
+  if (!hasExpectedHeader(value)) {
+    return false;
+  }
+
+  if (!isNonEmptyStringArray(value.reasons)) {
+    return false;
+  }
+
+  if (!hasProposal(value)) {
+    return false;
+  }
+
+  if (!isOptionalString(value.proposedCategoryId)) {
+    return false;
+  }
+
+  if (!isOptionalString(value.proposedAccountId)) {
+    return false;
+  }
+
+  if (!isOptionalString(value.proposedCardId)) {
+    return false;
+  }
+
+  if (!isOptionalStatus(value.proposedStatus)) {
+    return false;
+  }
+
   return true;
 }
 
@@ -61,8 +88,14 @@ function hasOnlyKnownFields(value: Record<string, unknown>): boolean {
 }
 
 function hasExpectedHeader(value: Record<string, unknown>): boolean {
-  if (value.contractVersion !== 1) return false;
-  if (value.suggestionKind !== "categorization") return false;
+  if (value.contractVersion !== 1) {
+    return false;
+  }
+
+  if (value.suggestionKind !== "categorization") {
+    return false;
+  }
+
   return value.payloadVersion === 1;
 }
 
@@ -73,6 +106,7 @@ function hasProposal(value: Record<string, unknown>): boolean {
     value.proposedCardId,
     value.proposedStatus,
   ];
+
   return proposals.some(isNonEmptyString);
 }
 
@@ -81,25 +115,49 @@ function isOptionalString(value: unknown): boolean {
 }
 
 function isOptionalStatus(value: unknown): boolean {
-  if (value === undefined) return true;
-  if (!isNonEmptyString(value)) return false;
+  if (value === undefined) {
+    return true;
+  }
+
+  if (!isNonEmptyString(value)) {
+    return false;
+  }
+
   return PROPOSED_STATUSES.has(value as AiClassificationProposedStatus);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== "object") return false;
-  if (value === null) return false;
+  if (typeof value !== "object") {
+    return false;
+  }
+
+  if (value === null) {
+    return false;
+  }
+
   return !Array.isArray(value);
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  if (typeof value !== "string") return false;
-  if (value.trim().length === 0) return false;
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  if (value.trim().length === 0) {
+    return false;
+  }
+
   return value.length <= 2048;
 }
 
 function isNonEmptyStringArray(value: unknown): value is readonly string[] {
-  if (!Array.isArray(value)) return false;
-  if (value.length === 0) return false;
+  if (!Array.isArray(value)) {
+    return false;
+  }
+
+  if (value.length === 0) {
+    return false;
+  }
+
   return value.every(isNonEmptyString);
 }
