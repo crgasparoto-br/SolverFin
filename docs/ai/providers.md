@@ -53,15 +53,15 @@ ambientes que não tenham ativação explícita.
 Para habilitar o adapter inicial, configure todas as variáveis em um ambiente
 protegido:
 
-| Variável | Contrato |
-| --- | --- |
-| `AI_PROVIDER` | `disabled` ou `openai`. |
-| `AI_OPENAI_ENDPOINT` | URL HTTPS sem credenciais, query ou fragmento. |
-| `AI_OPENAI_API_KEY` | Credencial secreta; nunca deve ser versionada ou logada. |
-| `AI_OPENAI_MODEL` | Modelo selecionado pelo ambiente, sem hardcode no adapter. |
-| `AI_OPENAI_MAX_OUTPUT_TOKENS` | Teto positivo de saída por chamada. |
-| `AI_OPENAI_MAX_REQUEST_BYTES` | Teto positivo do corpo JSON enviado. |
-| `AI_OPENAI_REQUEST_TIMEOUT_MS` | Teto operacional do adapter. |
+| Variável                       | Contrato                                                   |
+| ------------------------------ | ---------------------------------------------------------- |
+| `AI_PROVIDER`                  | `disabled` ou `openai`.                                    |
+| `AI_OPENAI_ENDPOINT`           | URL HTTPS sem credenciais, query ou fragmento.             |
+| `AI_OPENAI_API_KEY`            | Credencial secreta; nunca deve ser versionada ou logada.   |
+| `AI_OPENAI_MODEL`              | Modelo selecionado pelo ambiente, sem hardcode no adapter. |
+| `AI_OPENAI_MAX_OUTPUT_TOKENS`  | Teto positivo de saída por chamada.                        |
+| `AI_OPENAI_MAX_REQUEST_BYTES`  | Teto positivo do corpo JSON enviado.                       |
+| `AI_OPENAI_REQUEST_TIMEOUT_MS` | Teto operacional do adapter.                               |
 
 Configuração ausente ou inválida falha fechada e informa apenas os nomes das
 variáveis afetadas. O valor da credencial não aparece em mensagens de erro,
@@ -71,22 +71,22 @@ health check ou logs.
 
 Cada chamada informa uma `AiUsagePolicy`:
 
-| Campo | Uso |
-| --- | --- |
-| `consent` | Deve ser `granted`; `missing` ou `revoked` bloqueiam a chamada. |
-| `purpose` | Declara a finalidade específica da operação. |
-| `maxPromptChars` | Limita o prompt já sanitizado. |
-| `maxRetries` | Define novas tentativas após falhas temporárias. |
-| `timeoutMs` | Define o limite da chamada; o adapter usa o menor valor entre política e ambiente. |
-| `allowRawFinancialText` | Permanece `false` por padrão; `true` exige justificativa específica. |
-| `allowedFieldNames` | Lista positiva recomendada para cada finalidade. |
-| `blockedFieldNamePatterns` | Lista de padrões bloqueados quando não houver lista positiva. |
+| Campo                      | Uso                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------- |
+| `consent`                  | Deve ser `granted`; `missing` ou `revoked` bloqueiam a chamada.                    |
+| `purpose`                  | Declara a finalidade específica da operação.                                       |
+| `maxPromptChars`           | Limita o prompt já sanitizado.                                                     |
+| `maxRetries`               | Define novas tentativas após falhas temporárias.                                   |
+| `timeoutMs`                | Define o limite da chamada; o adapter usa o menor valor entre política e ambiente. |
+| `allowRawFinancialText`    | Permanece `false` por padrão; `true` exige justificativa específica.               |
+| `allowedFieldNames`        | Lista positiva recomendada para cada finalidade.                                   |
+| `blockedFieldNamePatterns` | Lista de padrões bloqueados quando não houver lista positiva.                      |
 
 Quando `resolveConsent` é fornecido a `runAiTask`, o consentimento é consultado
 novamente imediatamente antes de cada tentativa. Uma revogação impede a chamada
 seguinte ao provider.
 
-## Minimizacão e mascaramento
+## Minimização e mascaramento
 
 A chamada envia somente dados necessários para a finalidade:
 
@@ -108,17 +108,17 @@ campos permitidos, correlation id opcional e timeout.
 `runAiTask` é o único executor de retry. O adapter executa no máximo uma chamada
 HTTP por tentativa e não faz probe, diagnóstico ou recuperação oculta.
 
-| Situação | Código público | Retry |
-| --- | --- | --- |
-| Consentimento ausente ou revogado | `AI_CONSENT_REQUIRED` | Não chama provider |
-| Payload vazio | `AI_PAYLOAD_EMPTY` | Não chama provider |
-| Prompt acima do limite | `AI_PAYLOAD_TOO_LARGE` | Não chama provider |
-| Timeout HTTP ou abort | `AI_PROVIDER_TIMEOUT` | Sim, conforme política |
-| HTTP 429 | `AI_PROVIDER_RATE_LIMITED` | Sim, conforme política |
-| HTTP 5xx | `AI_PROVIDER_UNAVAILABLE` | Sim, conforme política |
-| HTTP 4xx restante | `AI_PROVIDER_ERROR` | Não |
-| JSON, envelope, texto ou confiança inválidos | `AI_PROVIDER_INVALID_RESPONSE` | Não |
-| Falha genérica esgotada | `AI_PROVIDER_ERROR` | Conforme política |
+| Situação                                     | Código público                 | Retry                  |
+| -------------------------------------------- | ------------------------------ | ---------------------- |
+| Consentimento ausente ou revogado            | `AI_CONSENT_REQUIRED`          | Não chama provider     |
+| Payload vazio                                | `AI_PAYLOAD_EMPTY`             | Não chama provider     |
+| Prompt acima do limite                       | `AI_PAYLOAD_TOO_LARGE`         | Não chama provider     |
+| Timeout HTTP ou abort                        | `AI_PROVIDER_TIMEOUT`          | Sim, conforme política |
+| HTTP 429                                     | `AI_PROVIDER_RATE_LIMITED`     | Sim, conforme política |
+| HTTP 5xx                                     | `AI_PROVIDER_UNAVAILABLE`      | Sim, conforme política |
+| HTTP 4xx restante                            | `AI_PROVIDER_ERROR`            | Não                    |
+| JSON, envelope, texto ou confiança inválidos | `AI_PROVIDER_INVALID_RESPONSE` | Não                    |
+| Falha genérica esgotada                      | `AI_PROVIDER_ERROR`            | Conforme política      |
 
 Uma resposta aceita deve conter texto não vazio. Quando o conteúdo usa o
 envelope JSON interno, ele pode conter `text`, `structured` e `confidence`; a
