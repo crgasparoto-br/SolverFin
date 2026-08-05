@@ -7,11 +7,13 @@ import {
 
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
+import {
+  createBankMessageInboxWithAiForContext,
+  listBankMessageInboxWithAiForContext,
+} from "./bank-message-ai-inbox.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
-  createBankMessageInboxForContext,
   discardBankMessageInboxForContext,
-  listBankMessageInboxForContext,
   mapBankMessageInboxError,
 } from "./repositories/bank-message-inbox.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
@@ -134,7 +136,7 @@ async function listBankMessageInboxHandler(
   const status = request.query.get("status");
 
   return json(200, {
-    messages: await listBankMessageInboxForContext(context, {
+    messages: await listBankMessageInboxWithAiForContext(context, {
       ...(status ? { status } : {}),
     }),
   });
@@ -152,13 +154,17 @@ async function createBankMessageInboxHandler(
     body.consentAccepted === "on";
 
   return json(201, {
-    message: await createBankMessageInboxForContext(context, {
-      origin,
-      text: typeof body.text === "string" ? body.text : "",
-      consentAccepted,
-      ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
-      ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-    }),
+    message: await createBankMessageInboxWithAiForContext(
+      context,
+      {
+        origin,
+        text: typeof body.text === "string" ? body.text : "",
+        consentAccepted,
+        ...(hasNonEmptyValue(body.accountId) ? { accountId: String(body.accountId) } : {}),
+        ...(hasNonEmptyValue(body.categoryId) ? { categoryId: String(body.categoryId) } : {}),
+      },
+      { correlationId: resolveCorrelationId(request.headers) },
+    ),
   });
 }
 
@@ -196,6 +202,10 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   }
 
   return value;
+}
+
+function hasNonEmptyValue(value: unknown): boolean {
+  return value !== undefined && value !== null && String(value).trim().length > 0;
 }
 
 function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
