@@ -124,7 +124,14 @@ function responseFor(task: AiTaskKind): AiProviderResult {
   if (task === "classification") {
     return {
       text: "classified",
-      structured: { categoryId: "category-demo" },
+      structured: {
+        contractVersion: 1,
+        suggestionKind: "categorization",
+        payloadVersion: 1,
+        targetEntityId: "transaction-demo",
+        proposedCategoryId: "category-demo",
+        reasons: ["fictitious merchant match"],
+      },
     };
   }
 
