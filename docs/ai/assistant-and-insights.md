@@ -2,12 +2,13 @@
 
 Este documento registra o primeiro contrato de dominio para o assistente financeiro e para os insights do SolverFin.
 
-A entrega cobre as issues #56 e #57 sem integrar provider real, API HTTP ou UI final. O repositorio ainda esta em bootstrap de aplicacao, entao a implementacao fica no pacote `@solverfin/ai`, com funcoes puras e testaveis.
+A entrega original das issues #56 e #57 criou contratos puros e testaveis sem provider real, API HTTP ou UI final. A issue #562 adicionou posteriormente a infraestrutura substituivel de provider em `@solverfin/ai`, mas nao ativou automaticamente o assistente em API ou interface. Os contratos deste documento continuam sendo a fonte funcional dos fluxos futuros.
 
 ## Escopo rastreado
 
 - #56: assistente financeiro de perguntas e respostas, incluindo disponibilidade de hoje.
 - #57: insights, anomalias e resumo mensal com evidencia numerica.
+- #562: infraestrutura segura e desativada por padrao para provider real substituivel.
 
 ## Assistente financeiro
 
@@ -31,7 +32,9 @@ A resposta inclui:
 
 Para perguntas sobre categorias, saldo projetado, assinaturas ou resumo mensal, o assistente pode usar um provider via `runAiTask`, sempre com payload minimizado e mascarado.
 
-Quando provider, consentimento ou dados suficientes nao existem, o retorno e um fallback claro com `safeLogCode` e limitacoes.
+`OpenAiProvider` e o primeiro adapter real disponivel, mas permanece inativo enquanto `AI_PROVIDER=disabled`. Um fluxo de produto so deve seleciona-lo depois de definir consentimento, proposito, lista positiva de campos, limites e fallback. Quando provider, consentimento ou dados suficientes nao existem, o retorno e um fallback claro com `safeLogCode` e limitacoes.
+
+O contrato operacional do provider fica em `docs/ai/providers.md`; a decisao arquitetural fica na ADR 0010.
 
 ## Insights financeiros
 
@@ -54,10 +57,12 @@ Cada insight inclui evidencia numerica, periodo, fontes e confianca. Quando nao 
 - As funcoes filtram dados por `organizationId` e `financialProfileId`.
 - Fixtures e testes usam dados ficticios.
 - O assistente nao deve receber texto financeiro bruto quando a politica exigir minimizacao.
+- `runAiTask` revalida consentimento imediatamente antes de cada tentativa quando recebe um resolvedor dinamico.
+- Logs de provider nao incluem prompt, campos, resposta bruta, credencial ou identificadores de tenant.
 - Respostas nao substituem aconselhamento financeiro, juridico ou fiscal.
 
 ## Dependencias futuras
 
 A pergunta de disponibilidade depende do epic #72 e suas subissues para fornecer o calculo estruturado usado por dashboard, assistente e experiencia de revisao.
 
-A UI final do assistente e dos insights deve reutilizar estes contratos para evitar respostas divergentes entre telas e provider de IA.
+A UI final do assistente e dos insights deve reutilizar estes contratos para evitar respostas divergentes entre telas e provider de IA. A ativacao de um fluxo real deve permanecer em issue propria, com criterios de consentimento, revisao, custo, observabilidade e fallback.
