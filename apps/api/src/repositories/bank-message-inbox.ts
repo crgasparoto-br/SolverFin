@@ -74,10 +74,7 @@ interface BankMessageInboxRow {
   suggestionUpdatedAt: Date | null;
 }
 
-type StructuredBankMessageSuggestion = Omit<
-  BankMessageInboxSuggestion,
-  "payload"
-> & {
+type StructuredBankMessageSuggestion = Omit<BankMessageInboxSuggestion, "payload"> & {
   payload: TransactionExtractionSuggestionPayloadV2;
 };
 
@@ -473,9 +470,7 @@ function mapRow(row: BankMessageInboxRow): BankMessageInboxItem {
   };
 }
 
-function mapSuggestion(
-  row: BankMessageInboxRow,
-): BankMessageInboxSuggestion | undefined {
+function mapSuggestion(row: BankMessageInboxRow): BankMessageInboxSuggestion | undefined {
   if (row.suggestionId === null || row.suggestionKind === null || row.suggestionStatus === null) {
     return undefined;
   }

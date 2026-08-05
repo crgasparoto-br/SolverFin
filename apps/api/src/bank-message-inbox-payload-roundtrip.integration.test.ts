@@ -59,23 +59,15 @@ async function main(): Promise<void> {
       status: "all",
     });
     const listed = listedItems.find((item) => item.id === created.id);
-    assert.ok(
-      listed?.suggestion,
-      "Created inbox suggestion must survive the list round-trip.",
-    );
+    assert.ok(listed?.suggestion, "Created inbox suggestion must survive the list round-trip.");
 
-    const read = readAiSuggestionPayload(
-      listed.suggestion.payload,
-      "transaction_extraction",
-    );
+    const read = readAiSuggestionPayload(listed.suggestion.payload, "transaction_extraction");
     assert.equal(read.state, "current");
     if (
       read.state !== "current" ||
       read.payload.suggestionKind !== "transaction_extraction"
     ) {
-      throw new Error(
-        "Expected the canonical transaction extraction payload after listing Inbox.",
-      );
+      throw new Error("Expected the canonical transaction extraction payload after listing Inbox.");
     }
     assert.equal(read.payload.amountMinor, 1234);
     assert.equal(read.payload.accountId, accountId);

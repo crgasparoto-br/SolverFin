@@ -5,6 +5,8 @@ import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
+const PAYLOAD_CONTRACT_UPDATE_TRIGGER = "AiSuggestionPayloadContractUpdate";
+
 void main()
   .catch((error: unknown) => {
     console.error(error);
@@ -232,11 +234,13 @@ async function assertBulkKeepsSuccessAndMapsInconsistency(
 
   // The invalid state is created directly only for this test. Remove it so the shared
   // integration database can be audited for residual inconsistencies after the suite.
-  await query(
-    `update "AiSuggestion"
-        set "status" = 'REJECTED', "targetEntityId" = null, "updatedAt" = now()
-      where "id" = $1 and "sourceEntityId" = $2`,
-    [inconsistentSuggestionId, importBatchId],
+  await withAiSuggestionPayloadContractUpdateBypass(() =>
+    query(
+      `update "AiSuggestion"
+          set "status" = 'REJECTED', "targetEntityId" = null, "updatedAt" = now()
+        where "id" = $1 and "sourceEntityId" = $2`,
+      [inconsistentSuggestionId, importBatchId],
+    ),
   );
   const residual = await query<{ count: number }>(
     `select count(*)::int as "count"
@@ -245,6 +249,17 @@ async function assertBulkKeepsSuccessAndMapsInconsistency(
     [inconsistentSuggestionId],
   );
   assert.equal(residual[0]?.count, 0);
+}
+
+async function withAiSuggestionPayloadContractUpdateBypass<T>(
+  action: () => Promise<T>,
+): Promise<T> {
+  await query(`alter table "AiSuggestion" disable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`);
+  try {
+    return await action();
+  } finally {
+    await query(`alter table "AiSuggestion" enable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`);
+  }
 }
 
 async function createAccount(token: string, name: string): Promise<string> {
