@@ -126,6 +126,22 @@ export async function parseBankMessage(
   }
 
   if (aiResult.status === "failed") {
+    if (aiResult.code === "AI_PROVIDER_INVALID_RESPONSE") {
+      const validation = validateTransactionExtraction(undefined, {
+        minConfidenceForSuggestion: input.minConfidenceForSuggestion ?? DEFAULT_MIN_CONFIDENCE,
+      });
+
+      return {
+        status: "needs_review",
+        sourceKind: "ai",
+        normalizedText,
+        maskedText,
+        reviewReasons: ["Resposta da IA nao seguiu o schema de extracao."],
+        problems: validation.problems,
+        code: "BANK_MESSAGE_AI_INVALID_OUTPUT",
+      };
+    }
+
     return {
       status: "needs_review",
       sourceKind: "ai",
