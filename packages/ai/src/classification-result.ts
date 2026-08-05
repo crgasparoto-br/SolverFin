@@ -49,9 +49,7 @@ export function validateAiClassificationResult(
   }
 
   if (
-    Object.keys(value).some(
-      (field) => !CLASSIFICATION_RESULT_FIELDS.has(field),
-    )
+    Object.keys(value).some((field) => !CLASSIFICATION_RESULT_FIELDS.has(field))
   ) {
     return false;
   }
