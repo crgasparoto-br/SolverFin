@@ -7,7 +7,8 @@ import {
   type AiHttpResponse,
   type AiProvider,
   type AiProviderResult,
-  type AiTaskKind,
+  type AiTaskPayload,
+  type AiUsagePolicy,
   type SafeAiLogEvent,
   type SafeAiProviderRequest,
 } from "./index.js";
@@ -162,10 +163,10 @@ async function testTextTasksRejectStructuredProviderResults(): Promise<void> {
   }
 }
 
-function policyFor(task: "summary" | "assistant") {
+function policyFor(task: "summary" | "assistant"): AiUsagePolicy {
   return {
     ...defaultAiUsagePolicy,
-    consent: "granted" as const,
+    consent: "granted",
     purpose: `provider runtime regression for ${task}`,
     maxRetries: 1,
     timeoutMs: 100,
@@ -173,18 +174,23 @@ function policyFor(task: "summary" | "assistant") {
   };
 }
 
-function payloadFor(task: "summary" | "assistant") {
-  return task === "summary"
-    ? { prompt: "summarize", fields: { periodStart: "2026-08-01" } }
-    : { prompt: "answer", fields: { question: "safe question" } };
+function payloadFor(task: "summary" | "assistant"): AiTaskPayload {
+  if (task === "summary") {
+    return { prompt: "summarize", fields: { periodStart: "2026-08-01" } };
+  }
+
+  return { prompt: "answer", fields: { question: "safe question" } };
 }
 
 function requestFor(task: "summary" | "assistant"): SafeAiProviderRequest {
+  const fields: SafeAiProviderRequest["fields"] =
+    task === "summary" ? { periodStart: "2026-08-01" } : { question: "safe" };
+
   return {
     task,
     purpose: `test ${task} output contract`,
     prompt: "safe prompt",
-    fields: task === "summary" ? { periodStart: "2026-08-01" } : { question: "safe" },
+    fields,
     timeoutMs: 100,
   };
 }
