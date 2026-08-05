@@ -14,14 +14,23 @@ sanitização e sem chamada ao provider. O total máximo é de seis tentativas p
 
 ## Revalidacao obrigatoria de consentimento
 
-Todo consumidor capaz de alcancar um provider deve receber um resolvedor autoritativo de
-consentimento e repassa-lo a `runAiTask`. Um snapshot estatico em `AiUsagePolicy.consent` nao e
-suficiente para autorizar o outbound.
+A autorizacao do outbound usa dois gates cumulativos e fail-closed:
 
-A ausencia do resolvedor bloqueia o consumidor antes da chamada. Quando o consentimento e
-revogado entre o preparo e a tentativa, `runAiTask` observa o estado atual imediatamente antes
-do provider e retorna `AI_CONSENT_REQUIRED`, com zero chamadas externas. Os testes dos
-consumidores reais de extracao bancaria e assistente comprovam ambos os controles negativos.
+1. o snapshot em `AiUsagePolicy.consent` precisa estar como `granted` antes de sanitizar ou
+   preparar o payload;
+2. todo consumidor capaz de alcancar um provider deve receber um resolvedor autoritativo de
+   consentimento, repassa-lo a `runAiTask` e obter `granted` imediatamente antes de cada
+   tentativa externa.
+
+Um snapshot estatico nao e suficiente para autorizar o outbound, mas estados `missing` ou
+`revoked` continuam bloqueantes. Nesses estados, `runAiTask` retorna `AI_CONSENT_REQUIRED`
+antes de consultar o resolvedor, sanitizar o payload ou chamar o provider.
+
+A ausencia do resolvedor tambem bloqueia o consumidor antes da chamada. Quando o consentimento
+e revogado entre o preparo e a tentativa, `runAiTask` observa o estado atual imediatamente
+antes do provider e retorna `AI_CONSENT_REQUIRED`, com zero chamadas externas. Os testes do
+executor e dos consumidores reais de extracao bancaria e assistente comprovam os gates do
+snapshot, a ausencia do resolvedor e a revogacao tardia.
 
 ## Contratos estruturados
 
@@ -67,6 +76,7 @@ perfil financeiro.
 A suíte do pacote deve permanecer hermética e cobrir:
 
 - política de retry inválida sem chamada ao provider;
+- snapshots `revoked` e `missing` bloqueando mesmo quando o resolvedor retorna `granted`;
 - ausência de resolvedor autoritativo nos consumidores sem chamada ao provider;
 - revogacao entre preparo e outbound nos consumidores reais sem chamada ao provider;
 - texto livre rejeitado em tarefas estruturadas;
