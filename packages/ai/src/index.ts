@@ -28,14 +28,7 @@ export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<AiTaskFieldRegistry> = {
     "description",
     "transactionType",
   ],
-  summary: [
-    "periodStart",
-    "periodEnd",
-    "currency",
-    "incomeMinor",
-    "expenseMinor",
-    "balanceMinor",
-  ],
+  summary: ["periodStart", "periodEnd", "currency", "incomeMinor", "expenseMinor", "balanceMinor"],
   assistant: ["question", "intent"],
 };
 
