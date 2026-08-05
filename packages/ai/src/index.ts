@@ -16,9 +16,9 @@ export type AiStructuredResultValidator = (value: unknown) => boolean;
 
 export const MAX_AI_PROVIDER_RETRIES = 5;
 
-export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<
-  Record<AiTaskKind, readonly string[]>
-> = {
+type AiTaskFieldRegistry = Record<AiTaskKind, readonly string[]>;
+
+export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<AiTaskFieldRegistry> = {
   extraction: ["message", "merchant", "amountMinor", "currency", "occurredOn"],
   classification: [
     "merchant",
@@ -282,9 +282,11 @@ export function sanitizeAiPayload(
   task?: AiTaskKind,
 ): SanitizedAiPayload {
   const originalPrompt = payload.prompt.trim();
-  const prompt = policy.allowRawFinancialText
-    ? originalPrompt
-    : maskSensitiveText(originalPrompt);
+  let prompt = originalPrompt;
+
+  if (!policy.allowRawFinancialText) {
+    prompt = maskSensitiveText(originalPrompt);
+  }
   const fields: Record<string, string | number | boolean | null> = {};
   const redactedFieldNames: string[] = [];
   const omittedFieldNames: string[] = [];
@@ -357,7 +359,8 @@ function isValidAiPolicy(task: AiTaskKind, policy: AiUsagePolicy): boolean {
 }
 
 function isValidRetryPolicy(maxRetries: number): boolean {
-  return Number.isInteger(maxRetries) && maxRetries >= 0 && maxRetries <= MAX_AI_PROVIDER_RETRIES;
+  const isInteger = Number.isInteger(maxRetries);
+  return isInteger && maxRetries >= 0 && maxRetries <= MAX_AI_PROVIDER_RETRIES;
 }
 
 function buildProviderRequest(
@@ -381,14 +384,9 @@ function buildProviderRequest(
   return request;
 }
 
-function getRegisteredTaskAllowedFieldNames(
-  task: AiTaskKind,
-): readonly string[] | undefined {
-  return (
-    AI_TASK_ALLOWED_FIELD_NAMES as Partial<
-      Record<AiTaskKind, readonly string[]>
-    >
-  )[task];
+function getRegisteredTaskAllowedFieldNames(task: AiTaskKind): readonly string[] | undefined {
+  const fields: unknown = Reflect.get(AI_TASK_ALLOWED_FIELD_NAMES, task);
+  return Array.isArray(fields) ? fields : undefined;
 }
 
 function isAllowedFieldName(
