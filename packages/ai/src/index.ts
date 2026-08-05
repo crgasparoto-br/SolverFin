@@ -16,6 +16,27 @@ export type AiStructuredResultValidator = (value: unknown) => boolean;
 
 export const MAX_AI_PROVIDER_RETRIES = 5;
 
+export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<Record<AiTaskKind, readonly string[]>> = {
+  extraction: ["message", "merchant", "amountMinor", "currency", "occurredOn"],
+  classification: [
+    "merchant",
+    "amountMinor",
+    "currency",
+    "occurredOn",
+    "description",
+    "transactionType",
+  ],
+  summary: [
+    "periodStart",
+    "periodEnd",
+    "currency",
+    "incomeMinor",
+    "expenseMinor",
+    "balanceMinor",
+  ],
+  assistant: ["question", "intent"],
+};
+
 export interface AiUsagePolicy {
   consent: AiConsentState;
   purpose: string;
@@ -23,8 +44,7 @@ export interface AiUsagePolicy {
   maxRetries: number;
   timeoutMs: number;
   allowRawFinancialText: boolean;
-  allowedFieldNames?: readonly string[];
-  blockedFieldNamePatterns?: readonly RegExp[];
+  allowedFieldNames: readonly string[];
 }
 
 export interface AiUsageContext {
@@ -145,17 +165,7 @@ export const defaultAiUsagePolicy: AiUsagePolicy = {
   maxRetries: 1,
   timeoutMs: 8000,
   allowRawFinancialText: false,
-  blockedFieldNamePatterns: [
-    /account/i,
-    /card/i,
-    /document/i,
-    /tax/i,
-    /raw/i,
-    /message/i,
-    /payload/i,
-    /secret/i,
-    /token/i,
-  ],
+  allowedFieldNames: ["message", "question", "intent"],
 };
 
 export async function runAiTask(input: {
@@ -173,12 +183,12 @@ export async function runAiTask(input: {
     return { status: "blocked", code: "AI_CONSENT_REQUIRED" };
   }
 
-  if (!isValidRetryPolicy(input.policy.maxRetries)) {
+  if (!isValidAiPolicy(input.task, input.policy)) {
     logSafe(input, "error", "AI_POLICY_INVALID", { result: "blocked" });
     return { status: "blocked", code: "AI_POLICY_INVALID" };
   }
 
-  const sanitized = sanitizeAiPayload(input.payload, input.policy);
+  const sanitized = sanitizeAiPayload(input.payload, input.policy, input.task);
 
   if (sanitized.prompt.length === 0 && Object.keys(sanitized.fields).length === 0) {
     logSafe(input, "warn", "AI_PAYLOAD_EMPTY", { result: "blocked" });
@@ -267,6 +277,7 @@ export async function runAiTask(input: {
 export function sanitizeAiPayload(
   payload: AiTaskPayload,
   policy: AiUsagePolicy,
+  task?: AiTaskKind,
 ): SanitizedAiPayload {
   const originalPrompt = payload.prompt.trim();
   const prompt = policy.allowRawFinancialText ? originalPrompt : maskSensitiveText(originalPrompt);
@@ -279,7 +290,7 @@ export function sanitizeAiPayload(
       continue;
     }
 
-    if (!isAllowedFieldName(name, policy)) {
+    if (!isAllowedFieldName(name, policy, task)) {
       omittedFieldNames.push(name);
       continue;
     }
@@ -326,6 +337,21 @@ async function hasActiveConsent(input: {
   return consent === "granted";
 }
 
+function isValidAiPolicy(task: AiTaskKind, policy: AiUsagePolicy): boolean {
+  return (
+    isValidRetryPolicy(policy.maxRetries) &&
+    Number.isInteger(policy.maxPromptChars) &&
+    policy.maxPromptChars > 0 &&
+    Number.isInteger(policy.timeoutMs) &&
+    policy.timeoutMs > 0 &&
+    policy.purpose.trim().length > 0 &&
+    policy.purpose !== "unspecified" &&
+    Array.isArray(policy.allowedFieldNames) &&
+    policy.allowedFieldNames.length > 0 &&
+    getRegisteredTaskAllowedFieldNames(task) !== undefined
+  );
+}
+
 function isValidRetryPolicy(maxRetries: number): boolean {
   return Number.isInteger(maxRetries) && maxRetries >= 0 && maxRetries <= MAX_AI_PROVIDER_RETRIES;
 }
@@ -351,12 +377,24 @@ function buildProviderRequest(
   return request;
 }
 
-function isAllowedFieldName(name: string, policy: AiUsagePolicy): boolean {
-  if (policy.allowedFieldNames !== undefined) {
-    return policy.allowedFieldNames.includes(name);
+function getRegisteredTaskAllowedFieldNames(task: AiTaskKind): readonly string[] | undefined {
+  return (AI_TASK_ALLOWED_FIELD_NAMES as Partial<Record<AiTaskKind, readonly string[]>>)[task];
+}
+
+function isAllowedFieldName(
+  name: string,
+  policy: AiUsagePolicy,
+  task: AiTaskKind | undefined,
+): boolean {
+  if (!policy.allowedFieldNames.includes(name)) {
+    return false;
   }
 
-  return !(policy.blockedFieldNamePatterns ?? []).some((pattern) => pattern.test(name));
+  if (task === undefined) {
+    return true;
+  }
+
+  return getRegisteredTaskAllowedFieldNames(task)?.includes(name) ?? false;
 }
 
 function isValidProviderResult(
