@@ -156,9 +156,13 @@ HTTP por tentativa e não faz probe, diagnóstico ou recuperação oculta.
 | JSON, envelope, texto ou confiança inválidos | `AI_PROVIDER_INVALID_RESPONSE` | Não                    |
 | Falha genérica esgotada                      | `AI_PROVIDER_ERROR`            | Conforme política      |
 
-Uma resposta aceita deve conter texto não vazio. Quando o conteúdo usa o
-envelope JSON interno, ele pode conter `text`, `structured` e `confidence`; a
-confiança, quando presente, deve estar entre `0` e `1`.
+Uma resposta aceita deve conter texto não vazio. O contrato do envelope é
+específico por tarefa:
+
+- `extraction` e `classification` exigem `structured` validado e aceitam
+  `confidence` opcional entre `0` e `1`;
+- `summary` e `assistant` aceitam texto simples ou envelope JSON com `text` e
+  `confidence` opcional, mas rejeitam qualquer `structured`.
 
 ## Logs e health check
 
@@ -173,6 +177,10 @@ Eventos seguros podem conter somente:
 
 Prompt, campos, credencial, corpo bruto, resposta bruta e identificadores de
 organização ou perfil financeiro não fazem parte de `SafeAiLogEvent`.
+
+O logger é observabilidade best-effort. Uma exceção síncrona ou rejeição
+assíncrona do logger é contida pelo executor e não pode alterar o resultado,
+disparar retry, aumentar a contagem outbound ou escapar para o consumidor.
 
 `inspectAiProviderConfiguration` verifica apenas seleção, formato das variáveis,
 modelo e origem do endpoint. Ele não chama o fornecedor, não envia dados
@@ -204,6 +212,10 @@ externa, não depende de credenciais e cobre:
   tarefas;
 - ausência de resolvedor autoritativo nos consumidores sem outbound;
 - revogação de consentimento entre preparo e chamada nos consumidores reais;
+- falhas síncronas e assíncronas do logger sem alterar resultado, retry ou
+  contagem outbound;
+- `summary` e `assistant` rejeitando `structured` e usando contrato textual com
+  confiança opcional;
 - ausência de dados sensíveis em logs e erros.
 
 Validações esperadas:
