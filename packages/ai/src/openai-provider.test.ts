@@ -9,7 +9,11 @@ import {
   type OpenAiProviderConfig,
 } from "./openai-provider.js";
 import { AiProviderError } from "./provider-errors.js";
-import type { SafeAiProviderRequest } from "./index.js";
+import {
+  defaultAiUsagePolicy,
+  runAiTask,
+  type SafeAiProviderRequest,
+} from "./index.js";
 
 const config: OpenAiProviderConfig = {
   endpoint: "https://api.example.invalid/v1/chat/completions",
@@ -32,13 +36,19 @@ await testDisabledByDefault();
 await testEnabledConfigurationIsValidatedWithoutSecretExposure();
 await testHealthIsConfigurationOnly();
 await testSuccessfulCallUsesOneOutboundRequest();
+await testRateLimitRetriesThenSucceeds();
 await testRateLimitAndUnavailableMapping();
 await testTimeoutMapping();
-await testInvalidAndPermanentResponses();
+await testInvalidCredentialIsPermanent();
+await testInvalidEmptyAndPermanentResponses();
 await testRequestByteLimitBlocksBeforeNetwork();
 
 async function testDisabledByDefault(): Promise<void> {
-  assertEqual(loadOpenAiProviderConfig({}), undefined, "provider defaults to disabled");
+  assertEqual(
+    loadOpenAiProviderConfig({}),
+    undefined,
+    "provider defaults to disabled",
+  );
   const selection = createAiProviderFromEnvironment({});
   assertEqual(selection.status, "disabled", "disabled selection");
 }
@@ -47,15 +57,26 @@ async function testEnabledConfigurationIsValidatedWithoutSecretExposure(): Promi
   const secret = "real-looking-secret-value-not-for-logs";
 
   try {
-    loadOpenAiProviderConfig({ AI_PROVIDER: "openai", AI_OPENAI_API_KEY: secret });
+    loadOpenAiProviderConfig({
+      AI_PROVIDER: "openai",
+      AI_OPENAI_API_KEY: secret,
+    });
     throw new Error("Expected invalid provider configuration.");
   } catch (error) {
     if (!(error instanceof AiProviderConfigurationError)) {
       throw error;
     }
 
-    assertEqual(error.message.includes(secret), false, "configuration error hides secret");
-    assertEqual(error.variableNames.includes("AI_OPENAI_MODEL"), true, "missing model is named");
+    assertEqual(
+      error.message.includes(secret),
+      false,
+      "configuration error hides secret",
+    );
+    assertEqual(
+      error.variableNames.includes("AI_OPENAI_MODEL"),
+      true,
+      "missing model is named",
+    );
     assertEqual(
       error.variableNames.includes("AI_OPENAI_ENDPOINT"),
       true,
@@ -106,9 +127,62 @@ async function testSuccessfulCallUsesOneOutboundRequest(): Promise<void> {
   assertEqual(calls, 1, "OUTBOUND-COUNT-001 success uses one request");
   assertEqual(result.text, "Category suggested", "response text parsed");
   assertEqual(result.confidence, 0.92, "confidence parsed");
-  assertEqual(capturedAuthorization, `Bearer ${config.apiKey}`, "credential sent only in header");
+  assertEqual(
+    capturedAuthorization,
+    `Bearer ${config.apiKey}`,
+    "credential sent only in header",
+  );
   assertEqual(capturedBody.includes(request.purpose), true, "purpose sent");
-  assertEqual(capturedBody.includes("rawMessage"), false, "no undeclared field added");
+  assertEqual(
+    capturedBody.includes("rawMessage"),
+    false,
+    "no undeclared field added",
+  );
+}
+
+async function testRateLimitRetriesThenSucceeds(): Promise<void> {
+  let calls = 0;
+  const client: AiHttpClient = async () => {
+    calls += 1;
+
+    if (calls === 1) {
+      return response(429, "{}");
+    }
+
+    return response(
+      200,
+      JSON.stringify({ choices: [{ message: { content: "recovered" } }] }),
+    );
+  };
+  const provider = new OpenAiProvider(config, client);
+  const result = await runAiTask({
+    provider,
+    task: "classification",
+    context: {
+      organizationId: "org-test",
+      financialProfileId: "profile-test",
+    },
+    policy: {
+      ...defaultAiUsagePolicy,
+      consent: "granted",
+      purpose: "retry rate limited request",
+      maxRetries: 1,
+      timeoutMs: 100,
+      allowedFieldNames: ["merchant"],
+    },
+    payload: { prompt: "Classify.", fields: { merchant: "Demo Market" } },
+  });
+
+  assertEqual(result.status, "completed", "rate limit retry can recover");
+  assertEqual(
+    calls,
+    2,
+    "OUTBOUND-COUNT-001 retry uses one request per attempt",
+  );
+
+  if (result.status === "completed") {
+    assertEqual(result.attempts, 2, "rate limit recovery reports two attempts");
+  }
 }
 
 async function testRateLimitAndUnavailableMapping(): Promise<void> {
@@ -124,12 +198,16 @@ async function testTimeoutMapping(): Promise<void> {
     return await new Promise<AiHttpResponse>((_resolve, reject) => {
       init.signal.addEventListener(
         "abort",
-        () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })),
+        () =>
+          reject(Object.assign(new Error("aborted"), { name: "AbortError" })),
         { once: true },
       );
     });
   };
-  const provider = new OpenAiProvider({ ...config, requestTimeoutMs: 5 }, client);
+  const provider = new OpenAiProvider(
+    { ...config, requestTimeoutMs: 5 },
+    client,
+  );
 
   try {
     await provider.complete({ ...request, timeoutMs: 5 });
@@ -141,8 +219,16 @@ async function testTimeoutMapping(): Promise<void> {
   assertEqual(calls, 1, "OUTBOUND-COUNT-001 timeout uses one request");
 }
 
-async function testInvalidAndPermanentResponses(): Promise<void> {
-  const invalidProvider = new OpenAiProvider(config, async () => response(200, "not-json"));
+async function testInvalidCredentialIsPermanent(): Promise<void> {
+  await assertProviderError(401, "permanent", false);
+}
+
+async function testInvalidEmptyAndPermanentResponses(): Promise<void> {
+  let invalidJsonCalls = 0;
+  const invalidProvider = new OpenAiProvider(config, async () => {
+    invalidJsonCalls += 1;
+    return response(200, "not-json");
+  });
 
   try {
     await invalidProvider.complete(request);
@@ -151,6 +237,33 @@ async function testInvalidAndPermanentResponses(): Promise<void> {
     assertAiProviderError(error, "invalid_response", false);
   }
 
+  assertEqual(
+    invalidJsonCalls,
+    1,
+    "OUTBOUND-COUNT-001 invalid JSON uses one request",
+  );
+
+  let emptyCalls = 0;
+  const emptyProvider = new OpenAiProvider(config, async () => {
+    emptyCalls += 1;
+    return response(
+      200,
+      JSON.stringify({ choices: [{ message: { content: "" } }] }),
+    );
+  });
+
+  try {
+    await emptyProvider.complete(request);
+    throw new Error("Expected empty response rejection.");
+  } catch (error) {
+    assertAiProviderError(error, "invalid_response", false);
+  }
+
+  assertEqual(
+    emptyCalls,
+    1,
+    "OUTBOUND-COUNT-001 empty response uses one request",
+  );
   await assertProviderError(400, "permanent", false);
 }
 
@@ -232,6 +345,8 @@ function response(status: number, body: string): AiHttpResponse {
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {
   if (actual !== expected) {
-    throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
+    throw new Error(
+      `${label}: expected ${String(expected)}, got ${String(actual)}`,
+    );
   }
 }
