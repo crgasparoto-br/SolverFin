@@ -40,6 +40,70 @@ async function testConsentRecheckedImmediatelyBeforeCall(): Promise<void> {
   assertEqual(provider.calls, 0, "provider is not called after consent revocation");
 }
 
+async function testConsentResolverFailureBlocksBeforeCall(): Promise<void> {
+  for (const resolver of [
+    () => {
+      throw new Error("consent repository unavailable");
+    },
+    async () => {
+      throw new Error("consent repository unavailable");
+    },
+  ]) {
+    const provider = new CountingProvider(() => ({ text: "not called" }));
+    const result = await runAiTask({
+      provider,
+      task: "assistant",
+      context,
+      policy,
+      payload: { prompt: "safe prompt" },
+      resolveConsent: resolver,
+    });
+
+    assertEqual(result.status, "blocked", "resolver failure is controlled");
+
+    if (result.status === "blocked") {
+      assertEqual(
+        result.code,
+        "AI_CONSENT_CHECK_FAILED",
+        "resolver failure has a dedicated controlled code",
+      );
+    }
+
+    assertEqual(provider.calls, 0, "resolver failure produces zero provider calls");
+  }
+}
+
+async function testConsentResolverFailureBeforeRetryBlocksFurtherOutbound(): Promise<void> {
+  const provider = new CountingProvider(() => {
+    throw new AiProviderError("timeout", "timeout", { retryable: true });
+  });
+  let consentChecks = 0;
+  const result = await runAiTask({
+    provider,
+    task: "assistant",
+    context,
+    policy: { ...policy, maxRetries: 1 },
+    payload: { prompt: "safe prompt" },
+    resolveConsent: () => {
+      consentChecks += 1;
+
+      if (consentChecks === 3) {
+        throw new Error("consent repository unavailable before retry");
+      }
+
+      return "granted";
+    },
+  });
+
+  assertEqual(result.status, "blocked", "resolver failure before retry is controlled");
+
+  if (result.status === "blocked") {
+    assertEqual(result.code, "AI_CONSENT_CHECK_FAILED", "retry consent failure code");
+  }
+
+  assertEqual(provider.calls, 1, "resolver failure prevents the second outbound attempt");
+}
+
 async function testMissingConsentResolverBlocksBeforeCall(): Promise<void> {
   const provider = new CountingProvider(() => ({ text: "not called" }));
   const result = await runAiTask({
@@ -189,21 +253,22 @@ async function testStructuredTasksFailClosed(): Promise<void> {
   });
   assertFailedInvalidResponse(extractionResult, "text-only extraction is rejected");
 
-  const unvalidatedClassification = new CountingProvider(() => ({
+  const unversionedClassification = new CountingProvider(() => ({
     text: "category",
     structured: { categoryId: "category-demo" },
   }));
   const classificationResult = await runAiTask({
-    provider: unvalidatedClassification,
+    provider: unversionedClassification,
     task: "classification",
     context,
     policy,
     payload: { prompt: "classify" },
     resolveConsent: () => "granted",
+    validateStructuredResult: () => true,
   });
   assertFailedInvalidResponse(
     classificationResult,
-    "classification without a task validator is rejected",
+    "a permissive validator cannot admit an unversioned classification",
   );
 }
 
@@ -234,7 +299,14 @@ async function testStructuredTasksAcceptValidatedContracts(): Promise<void> {
 
   const classificationProvider = new CountingProvider(() => ({
     text: "classified",
-    structured: { categoryId: "category-demo" },
+    structured: {
+      contractVersion: 1,
+      suggestionKind: "categorization",
+      payloadVersion: 1,
+      targetEntityId: "transaction-demo",
+      proposedCategoryId: "category-demo",
+      reasons: ["fictitious merchant match"],
+    },
     confidence: 0.88,
   }));
   const classificationResult = await runAiTask({
@@ -244,13 +316,12 @@ async function testStructuredTasksAcceptValidatedContracts(): Promise<void> {
     policy,
     payload: { prompt: "classify" },
     resolveConsent: () => "granted",
-    validateStructuredResult: (value) =>
-      isRecord(value) && typeof value.categoryId === "string" && value.categoryId.length > 0,
+    validateStructuredResult: isRecord,
   });
   assertEqual(
     classificationResult.status,
     "completed",
-    "classification with a task validator is accepted",
+    "canonical classification remains valid after an additional consumer validator",
   );
 }
 
@@ -324,6 +395,8 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
 
 async function runTests(): Promise<void> {
   await testConsentRecheckedImmediatelyBeforeCall();
+  await testConsentResolverFailureBlocksBeforeCall();
+  await testConsentResolverFailureBeforeRetryBlocksFurtherOutbound();
   await testMissingConsentResolverBlocksBeforeCall();
   await testSanitizedEmptyPayloadBlocksBeforeCall();
   await testInvalidRetryPolicyBlocksBeforeCall();
