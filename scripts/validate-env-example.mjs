@@ -10,6 +10,13 @@ const requiredKeys = [
   "POSTGRES_PORT",
   "DATABASE_URL",
   "AUTH_PASSWORD_RESET_URL",
+  "AI_PROVIDER",
+  "AI_OPENAI_ENDPOINT",
+  "AI_OPENAI_API_KEY",
+  "AI_OPENAI_MODEL",
+  "AI_OPENAI_MAX_OUTPUT_TOKENS",
+  "AI_OPENAI_MAX_REQUEST_BYTES",
+  "AI_OPENAI_REQUEST_TIMEOUT_MS",
   "OIDC_ISSUER_URL",
   "OIDC_CLIENT_ID",
   "OIDC_AUDIENCE",
@@ -98,6 +105,8 @@ function validateEnvExample(entries) {
     throw new Error("DATABASE_URL in .env.example must use the postgresql:// scheme.");
   }
 
+  validateAiPlaceholders(entries);
+
   const authenticationUrls = [
     entries.get("AUTH_PASSWORD_RESET_URL"),
     entries.get("OIDC_ISSUER_URL"),
@@ -171,6 +180,34 @@ function validateEnvExample(entries) {
 
     if (sensitiveKeyPattern.test(key) && /prod|production|live/i.test(value)) {
       throw new Error(`Sensitive key ${key} must not use production-like placeholder values.`);
+    }
+  }
+}
+
+function validateAiPlaceholders(entries) {
+  if (entries.get("AI_PROVIDER") !== "disabled") {
+    throw new Error("AI_PROVIDER in .env.example must default to disabled.");
+  }
+
+  const endpoint = new URL(entries.get("AI_OPENAI_ENDPOINT"));
+
+  if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password) {
+    throw new Error("AI_OPENAI_ENDPOINT placeholder must be a credential-free HTTPS URL.");
+  }
+
+  if (entries.get("AI_OPENAI_API_KEY") !== "solverfin-ai-disabled-placeholder") {
+    throw new Error("AI_OPENAI_API_KEY must use the approved disabled placeholder.");
+  }
+
+  for (const key of [
+    "AI_OPENAI_MAX_OUTPUT_TOKENS",
+    "AI_OPENAI_MAX_REQUEST_BYTES",
+    "AI_OPENAI_REQUEST_TIMEOUT_MS",
+  ]) {
+    const value = Number(entries.get(key));
+
+    if (!Number.isInteger(value) || value <= 0) {
+      throw new Error(`${key} in .env.example must be a positive integer.`);
     }
   }
 }
