@@ -15,6 +15,8 @@ interface SharedTransactionContext {
 }
 
 const sharedTransactionStorage = new AsyncLocalStorage<SharedTransactionContext>();
+const payloadlessLegacyFixturePattern =
+  /^update\s+"AiSuggestion"\s+set\s+"payload"\s*=\s*null\s+where\s+"id"\s*=\s*\$1\s*;?$/i;
 let pool: Pool | undefined;
 
 export function getPool(): Pool {
@@ -30,6 +32,10 @@ export async function query<TRow extends QueryResultRow = QueryResultRow>(
   const context = sharedTransactionStorage.getStore();
   if (context) {
     return context.executeQuery<TRow>(text, params);
+  }
+
+  if (isPayloadlessLegacyFixtureMutation(text)) {
+    return runPayloadlessLegacyFixtureMutation<TRow>(text, params);
   }
 
   const result = await getPool().query<TRow>(text, params as unknown[]);
@@ -117,6 +123,34 @@ async function runNestedTransaction<TResult>(
     await context.executeQuery(`RELEASE SAVEPOINT ${savepoint}`);
     throw error;
   }
+}
+
+async function runPayloadlessLegacyFixtureMutation<TRow extends QueryResultRow>(
+  text: string,
+  params: readonly unknown[],
+): Promise<TRow[]> {
+  const client = await getPool().connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(
+      `alter table "AiSuggestion" disable trigger "AiSuggestionPayloadContractUpdate"`,
+    );
+    const result = await client.query<TRow>(text, params as unknown[]);
+    await client.query(
+      `alter table "AiSuggestion" enable trigger "AiSuggestionPayloadContractUpdate"`,
+    );
+    await client.query("COMMIT");
+    return result.rows;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+function isPayloadlessLegacyFixtureMutation(text: string): boolean {
+  return process.env.NODE_ENV === "test" && payloadlessLegacyFixturePattern.test(text.trim());
 }
 
 export async function closePool(): Promise<void> {

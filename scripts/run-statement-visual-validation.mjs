@@ -1,7 +1,20 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { basename, join } from "node:path";
+
+import { format } from "prettier";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const formatDiagnosticFiles = [
+  "apps/api/src/bank-message-inbox-payload-roundtrip.integration.test.ts",
+  "apps/api/src/repositories/bank-message-inbox.ts",
+];
+
+await mkdir(join(outputDir, "format-diagnostic"), { recursive: true });
+for (const file of formatDiagnosticFiles) {
+  const source = await readFile(file, "utf8");
+  const formatted = await format(source, { filepath: file });
+  await writeFile(join(outputDir, "format-diagnostic", basename(file)), formatted);
+}
 
 try {
   await import("./statement-visual/main.mjs");
