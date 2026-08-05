@@ -17,7 +17,9 @@ A rotina operacional atual esta consolidada assim:
 - cartoes de credito usam o modelo de **cartao agrupador/fatura** com **instrumentos internos**, documentado em `docs/CARDS.md`;
 - `PayableReceivable` permanece como dominio/API legado de compatibilidade, documentado em `docs/PAYABLES_RECEIVABLES.md` e no plano de transicao `docs/PAYABLES_RECEIVABLES_TRANSITION.md`.
 
-Parcelas canonicas aparecem incorporadas ao Extrato e as compras da fatura. A manutencao direta de parcelas de conta e conservadora: somente descricao, observacao e categoria podem mudar quando o backend confirma elegibilidade; valor, vencimento, situacao e redistribuicao permanecem fora desse fluxo. O fluxo OFX operacional cobre o subconjunto documentado em `docs/IMPORTS.md`, sempre com preview e revisao humana. Conciliacao ampla, automacoes avancadas e provedor real de IA ainda evoluem por issues dedicadas.
+Parcelas canonicas aparecem incorporadas ao Extrato e as compras da fatura. A manutencao direta de parcelas de conta e conservadora: somente descricao, observacao e categoria podem mudar quando o backend confirma elegibilidade; valor, vencimento, situacao e redistribuicao permanecem fora desse fluxo. O fluxo OFX operacional cobre o subconjunto documentado em `docs/IMPORTS.md`, sempre com preview e revisao humana. Conciliacao ampla e automacoes avancadas ainda evoluem por issues dedicadas.
+
+`@solverfin/ai` possui um adapter real e substituivel para OpenAI, configurado por ambiente, desativado por padrao e testado sem rede externa. Essa infraestrutura nao ativa automaticamente assistente, insights ou efeitos financeiros; cada fluxo de produto continua dependendo de issue propria, consentimento, limites, fallback e revisao documentados. Consulte `docs/ai/providers.md` e a ADR 0010.
 
 ## Requisitos locais
 
@@ -167,6 +169,8 @@ npm run build
 
 `npm run build` executa o contrato de estilos SSR por meio do build de `@solverfin/web`. O YAML nao mantem uma lista paralela de rotas ou provedores.
 
+Os testes de `@solverfin/ai` usam providers e clientes HTTP fakes. A validacao do adapter real nao recebe credencial, nao acessa rede externa e nao altera o workflow.
+
 Para reproduzir localmente:
 
 ```bash
@@ -197,7 +201,8 @@ Regras principais:
 - use `.env.example` apenas com placeholders ficticios e seguros;
 - crie `.env` local a partir de `.env.example`;
 - configure secrets reais apenas no ambiente que precisa deles;
-- erros de ambiente devem citar o nome da variavel ausente ou invalida, nunca o valor recebido.
+- erros de ambiente devem citar o nome da variavel ausente ou invalida, nunca o valor recebido;
+- mantenha `AI_PROVIDER=disabled` em local/testes, salvo ativacao deliberada em ambiente protegido.
 
 Validar `.env.example`:
 
@@ -205,7 +210,7 @@ Validar `.env.example`:
 npm run env:check
 ```
 
-Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` quando passarem a consumir variaveis obrigatorias em runtime.
+Apps e pacotes devem usar `validateRuntimeEnvironment` de `@solverfin/config` quando passarem a consumir variaveis obrigatorias em runtime. O pacote `@solverfin/ai` valida separadamente sua configuracao opcional e falha fechada quando `AI_PROVIDER=openai` estiver incompleto ou invalido.
 
 ## Documentacao viva
 
@@ -220,7 +225,7 @@ Documentos obrigatorios antes de implementar issues:
 - `docs/STATUS_MATRIX.md`: estado observado do MVP por area.
 - `docs/adr/README.md`: processo de ADRs e indice de decisoes.
 
-Contratos especificos devem ser consultados quando a issue tocar o respectivo dominio, por exemplo shell e estilos SSR (`docs/APP_SHELL.md`), cartoes (`docs/CARDS.md`), autenticacao (`docs/AUTH.md`), tenant (`docs/TENANT.md`), privacidade (`docs/PRIVACY.md`), importacao (`docs/IMPORTS.md`), Inbox (`docs/BANK_MESSAGE_INBOX.md`), regras automaticas (`docs/AUTOMATION_RULES.md`), conciliacao (`docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`) e sugestoes revisaveis (`docs/AI_REVIEW_QUEUE.md`).
+Contratos especificos devem ser consultados quando a issue tocar o respectivo dominio, por exemplo shell e estilos SSR (`docs/APP_SHELL.md`), cartoes (`docs/CARDS.md`), autenticacao (`docs/AUTH.md`), tenant (`docs/TENANT.md`), privacidade (`docs/PRIVACY.md`), importacao (`docs/IMPORTS.md`), Inbox (`docs/BANK_MESSAGE_INBOX.md`), regras automaticas (`docs/AUTOMATION_RULES.md`), conciliacao (`docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`), sugestoes revisaveis (`docs/AI_REVIEW_QUEUE.md`) e providers de IA (`docs/ai/providers.md`).
 
 Arquivos historicos usados apenas para criar o backlog inicial nao fazem parte da documentacao viva. Issues abertas no GitHub sao a fonte de verdade para planejamento atual.
 
@@ -270,7 +275,7 @@ Arquivos historicos usados apenas para criar o backlog inicial nao fazem parte d
 - `apps/api`: API backend modular.
 - `packages/domain`: regras e entidades do dominio financeiro, sem acoplamento direto a UI, banco ou IA.
 - `packages/shared`: tipos, utilitarios e contratos compartilhados.
-- `packages/ai`: abstracoes de IA, schemas estruturados e politicas de uso seguro.
+- `packages/ai`: abstracoes de IA, schemas estruturados, providers substituiveis e politicas de uso seguro.
 - `packages/config`: configuracoes compartilhadas e contratos de ambiente.
 - `prisma`: schema, migrations e seeds da persistencia.
 - `scripts`: automacoes auxiliares seguras do repositorio.
