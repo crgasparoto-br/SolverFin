@@ -39,7 +39,13 @@ type BankMessageInboxSuggestion = Omit<AiSuggestion, "payload"> & {
 export interface BankMessageInboxItem {
   id: string;
   origin: BankMessageInboxOrigin;
-  status: "pending_review" | "approved" | "edited" | "rejected" | "discarded" | "error";
+  status:
+    | "pending_review"
+    | "approved"
+    | "edited"
+    | "rejected"
+    | "discarded"
+    | "error";
   sourceHash: string;
   maskedText: string;
   receivedAt: string;
@@ -74,7 +80,10 @@ interface BankMessageInboxRow {
   suggestionUpdatedAt: Date | null;
 }
 
-type StructuredBankMessageSuggestion = Omit<BankMessageInboxSuggestion, "payload"> & {
+type StructuredBankMessageSuggestion = Omit<
+  BankMessageInboxSuggestion,
+  "payload"
+> & {
   payload: TransactionExtractionSuggestionPayloadV2;
 };
 
@@ -121,7 +130,9 @@ export async function listBankMessageInboxForContext(
     .map(mapRow)
     .filter(
       (item) =>
-        filters.status === undefined || filters.status === "all" || item.status === filters.status,
+        filters.status === undefined ||
+        filters.status === "all" ||
+        item.status === filters.status,
     );
 }
 
@@ -146,7 +157,13 @@ export async function createBankMessageInboxForContext(
     existingSourceHashes,
   }).item;
   const importBatch = buildImportBatch(context, inboxItem, now);
-  const suggestion = buildSuggestion(context, importBatch, inboxItem.maskedText, payload, now);
+  const suggestion = buildSuggestion(
+    context,
+    importBatch,
+    inboxItem.maskedText,
+    payload,
+    now,
+  );
 
   await withTransaction(async (executeQuery) => {
     await executeQuery(
@@ -248,7 +265,12 @@ export async function discardBankMessageInboxForContext(
       await executeQuery(
         `update "AiSuggestion" set "status" = 'EXPIRED', "updatedAt" = $4
          where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-        [current.suggestion.id, context.organizationId, context.financialProfileId, now],
+        [
+          current.suggestion.id,
+          context.organizationId,
+          context.financialProfileId,
+          now,
+        ],
       );
     }
 
@@ -296,7 +318,9 @@ async function findBankMessageInboxItem(
   return mapRow(rows[0]);
 }
 
-async function listExistingBankMessageHashes(context: TenantContext): Promise<string[]> {
+async function listExistingBankMessageHashes(
+  context: TenantContext,
+): Promise<string[]> {
   const rows = await query<{ sourceHash: string }>(
     `select "sourceHash" from "ImportBatch"
      where "organizationId" = $1 and "financialProfileId" = $2 and "sourceKind" = 'BANK_MESSAGE'`,
@@ -356,7 +380,9 @@ function buildSuggestion(
       },
       target: { entityKind: "transaction" },
       confidence,
-      reasons: ["Campos extraidos de mensagem mascarada por regra deterministica."],
+      reasons: [
+        "Campos extraidos de mensagem mascarada por regra deterministica.",
+      ],
       audit: { createdAt: now, sourceFingerprint: importBatch.sourceHash },
       sourceRowNumber: 1,
       sourceHash: importBatch.sourceHash,
@@ -367,7 +393,9 @@ function buildSuggestion(
       currency: "BRL",
       description: parsed.description,
       ...(input.accountId === undefined ? {} : { accountId: input.accountId }),
-      ...(input.categoryId === undefined ? {} : { categoryId: input.categoryId }),
+      ...(input.categoryId === undefined
+        ? {}
+        : { categoryId: input.categoryId }),
     },
   }) as TransactionExtractionSuggestionPayloadV2;
 
@@ -407,33 +435,44 @@ function parseBankMessage(maskedText: string): {
 }
 
 function parseAmountMinor(text: string): number | undefined {
-  const match = /(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/.exec(text);
+  const match = /(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+[.,]\d{2})/.exec(
+    text,
+  );
   const raw = match?.[1];
   if (raw === undefined) return undefined;
 
   const value = Number.parseFloat(raw.replace(/\./g, "").replace(",", "."));
-  return Number.isFinite(value) && value > 0 ? Math.round(value * 100) : undefined;
+  return Number.isFinite(value) && value > 0
+    ? Math.round(value * 100)
+    : undefined;
 }
 
 function parseDate(text: string): string | undefined {
   const iso = /\b(\d{4}-\d{2}-\d{2})\b/.exec(text)?.[1];
   const br = /\b(\d{2})\/(\d{2})\/(\d{4})\b/.exec(text);
-  const candidate = iso ?? (br === null ? undefined : `${br[3]}-${br[2]}-${br[1]}`);
+  const candidate =
+    iso ?? (br === null ? undefined : `${br[3]}-${br[2]}-${br[1]}`);
   if (candidate === undefined) return undefined;
 
   const parsed = new Date(`${candidate}T00:00:00.000Z`);
-  return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== candidate
+  return Number.isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== candidate
     ? undefined
     : candidate;
 }
 
 function parseTransactionKind(text: string): TransactionKind {
   const normalized = text.toLocaleLowerCase("pt-BR");
-  return /receb|credito|crédito|deposito|depósito/.test(normalized) ? "income" : "expense";
+  return /receb|credito|crédito|deposito|depósito/.test(normalized)
+    ? "income"
+    : "expense";
 }
 
 function normalizeDescription(text: string): string {
-  return text.replace(/\s+/g, " ").trim().slice(0, 120) || "Mensagem bancaria mascarada";
+  return (
+    text.replace(/\s+/g, " ").trim().slice(0, 120) ||
+    "Mensagem bancaria mascarada"
+  );
 }
 
 function mapRow(row: BankMessageInboxRow): BankMessageInboxItem {
@@ -456,7 +495,8 @@ function mapRow(row: BankMessageInboxRow): BankMessageInboxItem {
   }
 
   const suggestion = row.suggestionId === null ? undefined : mapSuggestion(row);
-  const origin = row.originalFileName?.endsWith("shared") === true ? "shared" : "pasted";
+  const origin =
+    row.originalFileName?.endsWith("shared") === true ? "shared" : "pasted";
 
   return {
     id: row.importBatchId,
@@ -470,8 +510,14 @@ function mapRow(row: BankMessageInboxRow): BankMessageInboxItem {
   };
 }
 
-function mapSuggestion(row: BankMessageInboxRow): BankMessageInboxSuggestion | undefined {
-  if (row.suggestionId === null || row.suggestionKind === null || row.suggestionStatus === null) {
+function mapSuggestion(
+  row: BankMessageInboxRow,
+): BankMessageInboxSuggestion | undefined {
+  if (
+    row.suggestionId === null ||
+    row.suggestionKind === null ||
+    row.suggestionStatus === null
+  ) {
     return undefined;
   }
 
@@ -482,19 +528,31 @@ function mapSuggestion(row: BankMessageInboxRow): BankMessageInboxSuggestion | u
     kind: row.suggestionKind.toLowerCase() as AiSuggestion["kind"],
     status: row.suggestionStatus.toLowerCase() as AiSuggestion["status"],
     confidence: Number(row.confidence ?? 0),
-    explanation: row.explanation ?? "Sugestao revisavel criada a partir da inbox.",
-    createdAt: row.suggestionCreatedAt?.toISOString() ?? row.importCreatedAt.toISOString(),
-    updatedAt: row.suggestionUpdatedAt?.toISOString() ?? row.importUpdatedAt.toISOString(),
+    explanation:
+      row.explanation ?? "Sugestao revisavel criada a partir da inbox.",
+    createdAt:
+      row.suggestionCreatedAt?.toISOString() ??
+      row.importCreatedAt.toISOString(),
+    updatedAt:
+      row.suggestionUpdatedAt?.toISOString() ??
+      row.importUpdatedAt.toISOString(),
   };
 
-  if (row.targetEntityId !== null) suggestion.targetEntityId = row.targetEntityId;
-  const payload = readAiSuggestionPayload(row.payload, "transaction_extraction");
+  if (row.targetEntityId !== null)
+    suggestion.targetEntityId = row.targetEntityId;
+  const payload = readAiSuggestionPayload(
+    row.payload,
+    "transaction_extraction",
+  );
   if (
     payload.state === "current" &&
     payload.payload.suggestionKind === "transaction_extraction"
   ) {
     suggestion.payload = payload.payload;
-  } else if (payload.state === "legacy" && "sourceRowNumber" in payload.payload) {
+  } else if (
+    payload.state === "legacy" &&
+    "sourceRowNumber" in payload.payload
+  ) {
     suggestion.payload = payload.payload;
   }
   if (row.provider !== null) suggestion.provider = row.provider;

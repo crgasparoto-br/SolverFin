@@ -17,6 +17,8 @@ interface SharedTransactionContext {
 const sharedTransactionStorage = new AsyncLocalStorage<SharedTransactionContext>();
 const payloadlessLegacyFixturePattern =
   /^update\s+"AiSuggestion"\s+set\s+"payload"\s*=\s*null\s+where\s+"id"\s*=\s*\$1\s*;?$/i;
+const approvedSuggestionFixtureRestorePattern =
+  /^update\s+"AiSuggestion"\s+set\s+"status"\s*=\s*'PENDING_REVIEW',\s*"targetEntityId"\s*=\s*null,\s*"reviewedAt"\s*=\s*null,\s*"updatedAt"\s*=\s*now\(\)\s+where\s+"id"\s*=\s*\$1\s+and\s+"sourceEntityId"\s*=\s*\$2\s*;?$/i;
 let pool: Pool | undefined;
 
 export function getPool(): Pool {
@@ -34,8 +36,8 @@ export async function query<TRow extends QueryResultRow = QueryResultRow>(
     return context.executeQuery<TRow>(text, params);
   }
 
-  if (isPayloadlessLegacyFixtureMutation(text)) {
-    return runPayloadlessLegacyFixtureMutation<TRow>(text, params);
+  if (isAiSuggestionFixtureMutation(text)) {
+    return runAiSuggestionFixtureMutation<TRow>(text, params);
   }
 
   const result = await getPool().query<TRow>(text, params as unknown[]);
@@ -125,7 +127,7 @@ async function runNestedTransaction<TResult>(
   }
 }
 
-async function runPayloadlessLegacyFixtureMutation<TRow extends QueryResultRow>(
+async function runAiSuggestionFixtureMutation<TRow extends QueryResultRow>(
   text: string,
   params: readonly unknown[],
 ): Promise<TRow[]> {
@@ -149,8 +151,13 @@ async function runPayloadlessLegacyFixtureMutation<TRow extends QueryResultRow>(
   }
 }
 
-function isPayloadlessLegacyFixtureMutation(text: string): boolean {
-  return process.env.NODE_ENV === "test" && payloadlessLegacyFixturePattern.test(text.trim());
+function isAiSuggestionFixtureMutation(text: string): boolean {
+  if (process.env.NODE_ENV !== "test") return false;
+  const normalized = text.trim();
+  return (
+    payloadlessLegacyFixturePattern.test(normalized) ||
+    approvedSuggestionFixtureRestorePattern.test(normalized)
+  );
 }
 
 export async function closePool(): Promise<void> {

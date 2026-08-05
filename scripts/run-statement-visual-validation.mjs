@@ -1,60 +1,7 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { basename, join } from "node:path";
-
-import { format } from "prettier";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
-const formatDiagnosticFiles = [
-  "apps/api/src/bank-message-inbox-payload-roundtrip.integration.test.ts",
-  "apps/api/src/repositories/bank-message-inbox.ts",
-];
-const formatDiagnosticDir = join(outputDir, "format-diagnostic");
-
-await mkdir(formatDiagnosticDir, { recursive: true });
-for (const file of formatDiagnosticFiles) {
-  const source = await readFile(file, "utf8");
-  const formatted = await format(source, { filepath: file });
-  await writeFile(join(formatDiagnosticDir, basename(file)), formatted);
-}
-
-const csvReviewPath = "apps/api/src/csv-import-review.integration.test.ts";
-const csvReviewSource = await readFile(csvReviewPath, "utf8");
-const csvReviewWithTrigger = csvReviewSource.replace(
-  'const MEI_PROFILE_ID = "33333333-3333-4333-8333-333333333332";\n',
-  'const MEI_PROFILE_ID = "33333333-3333-4333-8333-333333333332";\n' +
-    'const PAYLOAD_CONTRACT_UPDATE_TRIGGER = "AiSuggestionPayloadContractUpdate";\n',
-);
-const csvReviewWithFixtureBypass = csvReviewWithTrigger.replace(
-  '  await query(`update "AiSuggestion" set "payload" = null where "id" = $1`, [source.id]);\n',
-  '  await withAiSuggestionPayloadContractUpdateBypass(() =>\n' +
-    '    query(`update "AiSuggestion" set "payload" = null where "id" = $1`, [source.id]),\n' +
-    '  );\n',
-);
-const csvReviewPatched = csvReviewWithFixtureBypass.replace(
-  'async function listCsvBatches(token: string): Promise<ImportBatch[]> {\n',
-  'async function withAiSuggestionPayloadContractUpdateBypass<T>(\n' +
-    '  action: () => Promise<T>,\n' +
-    '): Promise<T> {\n' +
-    '  await query(`alter table "AiSuggestion" disable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`);\n' +
-    '  try {\n' +
-    '    return await action();\n' +
-    '  } finally {\n' +
-    '    await query(`alter table "AiSuggestion" enable trigger "${PAYLOAD_CONTRACT_UPDATE_TRIGGER}"`);\n' +
-    '  }\n' +
-    '}\n\n' +
-    'async function listCsvBatches(token: string): Promise<ImportBatch[]> {\n',
-);
-if (
-  csvReviewWithTrigger === csvReviewSource ||
-  csvReviewWithFixtureBypass === csvReviewWithTrigger ||
-  csvReviewPatched === csvReviewWithFixtureBypass
-) {
-  throw new Error("CSV review diagnostic patch did not match the expected source.");
-}
-await writeFile(
-  join(formatDiagnosticDir, basename(csvReviewPath)),
-  await format(csvReviewPatched, { filepath: csvReviewPath }),
-);
 
 try {
   await import("./statement-visual/main.mjs");
