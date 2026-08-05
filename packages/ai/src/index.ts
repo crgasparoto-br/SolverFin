@@ -1,53 +1,23 @@
 export * from "./assistant.js";
 export * from "./bank-message-parser.js";
+export * from "./classification-result.js";
 export * from "./extraction.js";
 export * from "./insights.js";
 export * from "./openai-provider.js";
 export * from "./provider-errors.js";
 
+import { validateAiClassificationResult } from "./classification-result.js";
+import { checkActiveConsent } from "./consent-check.js";
 import { validateTransactionExtraction } from "./extraction.js";
-import {
-  AiProviderError,
-  type AiProviderFailureKind,
-} from "./provider-errors.js";
+import { AiProviderError, type AiProviderFailureKind } from "./provider-errors.js";
 
-export type AiTaskKind =
-  | "extraction"
-  | "classification"
-  | "summary"
-  | "assistant";
+export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
 export type AiConsentState = "granted" | "revoked" | "missing";
 export type AiLogLevel = "info" | "warn" | "error";
-export type AiSafeLogResult =
-  | "started"
-  | "completed"
-  | "blocked"
-  | "retrying"
-  | "failed";
+export type AiSafeLogResult = "started" | "completed" | "blocked" | "retrying" | "failed";
 export type AiStructuredResultValidator = (value: unknown) => boolean;
 
 export const MAX_AI_PROVIDER_RETRIES = 5;
-export const AI_CLASSIFICATION_RESULT_CONTRACT_VERSION = 1 as const;
-
-export type AiClassificationProposedStatus =
-  | "pending_review"
-  | "duplicate"
-  | "planned"
-  | "posted"
-  | "reconciled"
-  | "suggested"
-  | "voided";
-
-export interface AiClassificationResultV1 {
-  contractVersion: typeof AI_CLASSIFICATION_RESULT_CONTRACT_VERSION;
-  suggestionKind: "categorization";
-  payloadVersion: 1;
-  proposedCategoryId?: string;
-  proposedAccountId?: string;
-  proposedCardId?: string;
-  proposedStatus?: AiClassificationProposedStatus;
-  reasons: readonly string[];
-}
 
 type AiTaskFieldRegistry = Record<AiTaskKind, readonly string[]>;
 
@@ -61,14 +31,7 @@ export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<AiTaskFieldRegistry> = {
     "description",
     "transactionType",
   ],
-  summary: [
-    "periodStart",
-    "periodEnd",
-    "currency",
-    "incomeMinor",
-    "expenseMinor",
-    "balanceMinor",
-  ],
+  summary: ["periodStart", "periodEnd", "currency", "incomeMinor", "expenseMinor", "balanceMinor"],
   assistant: ["question", "intent"],
 };
 
@@ -91,9 +54,7 @@ export interface AiUsageContext {
 
 export interface AiTaskPayload {
   prompt: string;
-  fields?: Readonly<
-    Record<string, string | number | boolean | null | undefined>
-  >;
+  fields?: Readonly<Record<string, string | number | boolean | null | undefined>>;
 }
 
 export interface SafeAiProviderRequest {
@@ -125,13 +86,6 @@ export type AiProviderFailureCode =
   | "AI_PROVIDER_INVALID_RESPONSE"
   | "AI_PROVIDER_CONFIGURATION_ERROR";
 
-export type AiTaskBlockedCode =
-  | "AI_CONSENT_REQUIRED"
-  | "AI_CONSENT_CHECK_FAILED"
-  | "AI_PAYLOAD_TOO_LARGE"
-  | "AI_PAYLOAD_EMPTY"
-  | "AI_POLICY_INVALID";
-
 export interface SafeAiLogEvent {
   level: AiLogLevel;
   code: string;
@@ -158,7 +112,12 @@ export type AiTaskResult =
     }
   | {
       status: "blocked";
-      code: AiTaskBlockedCode;
+      code:
+        | "AI_CONSENT_REQUIRED"
+        | "AI_CONSENT_CHECK_FAILED"
+        | "AI_PAYLOAD_TOO_LARGE"
+        | "AI_PAYLOAD_EMPTY"
+        | "AI_POLICY_INVALID";
       sanitized?: SanitizedAiPayload;
     }
   | {
@@ -183,9 +142,7 @@ export class FakeAiProvider implements AiProvider {
 
   private readonly responses: AiProviderResult[];
 
-  constructor(
-    responses: readonly AiProviderResult[] = [{ text: "ok", confidence: 1 }],
-  ) {
+  constructor(responses: readonly AiProviderResult[] = [{ text: "ok", confidence: 1 }]) {
     this.responses = [...responses];
   }
 
@@ -234,10 +191,7 @@ export async function runAiTask(input: {
 
   const sanitized = sanitizeAiPayload(input.payload, input.policy, input.task);
 
-  if (
-    sanitized.prompt.length === 0 &&
-    Object.keys(sanitized.fields).length === 0
-  ) {
+  if (sanitized.prompt.length === 0 && Object.keys(sanitized.fields).length === 0) {
     logSafe(input, "warn", "AI_PAYLOAD_EMPTY", { result: "blocked" });
     return { status: "blocked", code: "AI_PAYLOAD_EMPTY", sanitized };
   }
@@ -253,36 +207,19 @@ export async function runAiTask(input: {
     const currentConsent = await checkActiveConsent(input);
 
     if (currentConsent.status === "blocked") {
-      logSafe(input, "warn", currentConsent.code, {
-        attempt,
-        result: "blocked",
-      });
+      logSafe(input, "warn", currentConsent.code, { attempt, result: "blocked" });
       return { status: "blocked", code: currentConsent.code, sanitized };
     }
 
-    const request = buildProviderRequest(
-      input.task,
-      input.context,
-      input.policy,
-      sanitized,
-    );
+    const request = buildProviderRequest(input.task, input.context, input.policy, sanitized);
     const startedAt = Date.now();
 
     try {
-      logSafe(input, "info", "AI_PROVIDER_CALL_STARTED", {
-        attempt,
-        result: "started",
-      });
+      logSafe(input, "info", "AI_PROVIDER_CALL_STARTED", { attempt, result: "started" });
       const result = await input.provider.complete(request);
       const durationMs = Math.max(0, Date.now() - startedAt);
 
-      if (
-        !isValidProviderResult(
-          input.task,
-          result,
-          input.validateStructuredResult,
-        )
-      ) {
+      if (!isValidProviderResult(input.task, result, input.validateStructuredResult)) {
         logSafe(input, "error", "AI_PROVIDER_INVALID_RESPONSE", {
           attempt,
           durationMs,
@@ -396,34 +333,8 @@ export function maskSensitiveText(value: string): string {
     .replace(/\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b/g, "**** **** **** ****")
     .replace(
       /\b\d{5,}\b/g,
-      (match) =>
-        `${"*".repeat(Math.max(0, match.length - 4))}${match.slice(-4)}`,
+      (match) => `${"*".repeat(Math.max(0, match.length - 4))}${match.slice(-4)}`,
     );
-}
-
-type ActiveConsentCheck =
-  | { status: "granted" }
-  | {
-      status: "blocked";
-      code: "AI_CONSENT_REQUIRED" | "AI_CONSENT_CHECK_FAILED";
-    };
-
-async function checkActiveConsent(input: {
-  policy: AiUsagePolicy;
-  resolveConsent?: () => AiConsentState | Promise<AiConsentState>;
-}): Promise<ActiveConsentCheck> {
-  if (input.policy.consent !== "granted" || !input.resolveConsent) {
-    return { status: "blocked", code: "AI_CONSENT_REQUIRED" };
-  }
-
-  try {
-    const currentConsent = await input.resolveConsent();
-    return currentConsent === "granted"
-      ? { status: "granted" }
-      : { status: "blocked", code: "AI_CONSENT_REQUIRED" };
-  } catch {
-    return { status: "blocked", code: "AI_CONSENT_CHECK_FAILED" };
-  }
 }
 
 function isValidAiPolicy(task: AiTaskKind, policy: AiUsagePolicy): boolean {
@@ -497,16 +408,13 @@ function isValidProviderResult(
     typeof result.text === "string" &&
     result.text.trim().length > 0 &&
     (result.confidence === undefined ||
-      (Number.isFinite(result.confidence) &&
-        result.confidence >= 0 &&
-        result.confidence <= 1));
+      (Number.isFinite(result.confidence) && result.confidence >= 0 && result.confidence <= 1));
 
   if (!commonResultIsValid) {
     return false;
   }
 
-  const structuredResultIsRequired =
-    task === "extraction" || task === "classification";
+  const structuredResultIsRequired = task === "extraction" || task === "classification";
 
   if (result.structured === undefined) {
     return !structuredResultIsRequired;
@@ -516,13 +424,10 @@ function isValidProviderResult(
     task === "extraction"
       ? validateExtractionResult
       : task === "classification"
-        ? validateClassificationResult
+        ? validateAiClassificationResult
         : undefined;
 
-  if (
-    canonicalValidator === undefined ||
-    !canonicalValidator(result.structured)
-  ) {
+  if (canonicalValidator === undefined || !canonicalValidator(result.structured)) {
     return false;
   }
 
@@ -541,96 +446,6 @@ function validateExtractionResult(value: unknown): boolean {
   return validateTransactionExtraction(value).status !== "invalid";
 }
 
-function validateClassificationResult(
-  value: unknown,
-): value is AiClassificationResultV1 {
-  if (!isRecord(value)) {
-    return false;
-  }
-
-  const allowedFields = new Set([
-    "contractVersion",
-    "suggestionKind",
-    "payloadVersion",
-    "proposedCategoryId",
-    "proposedAccountId",
-    "proposedCardId",
-    "proposedStatus",
-    "reasons",
-  ]);
-
-  if (Object.keys(value).some((field) => !allowedFields.has(field))) {
-    return false;
-  }
-
-  if (
-    value.contractVersion !== AI_CLASSIFICATION_RESULT_CONTRACT_VERSION ||
-    value.suggestionKind !== "categorization" ||
-    value.payloadVersion !== 1 ||
-    !isNonEmptyStringArray(value.reasons)
-  ) {
-    return false;
-  }
-
-  const proposedFields = [
-    value.proposedCategoryId,
-    value.proposedAccountId,
-    value.proposedCardId,
-    value.proposedStatus,
-  ];
-
-  if (!proposedFields.some((field) => isNonEmptyString(field))) {
-    return false;
-  }
-
-  for (const field of [
-    value.proposedCategoryId,
-    value.proposedAccountId,
-    value.proposedCardId,
-  ]) {
-    if (field !== undefined && !isNonEmptyString(field)) {
-      return false;
-    }
-  }
-
-  if (
-    value.proposedStatus !== undefined &&
-    ![
-      "pending_review",
-      "duplicate",
-      "planned",
-      "posted",
-      "reconciled",
-      "suggested",
-      "voided",
-    ].includes(String(value.proposedStatus))
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return (
-    typeof value === "string" &&
-    value.trim().length > 0 &&
-    value.length <= 2048
-  );
-}
-
-function isNonEmptyStringArray(value: unknown): value is readonly string[] {
-  return (
-    Array.isArray(value) &&
-    value.length > 0 &&
-    value.every(isNonEmptyString)
-  );
-}
-
 function classifyProviderFailure(error: unknown): {
   code: AiProviderFailureCode;
   retryable: boolean;
@@ -645,9 +460,7 @@ function classifyProviderFailure(error: unknown): {
   };
 }
 
-function mapProviderFailureKind(
-  kind: AiProviderFailureKind,
-): AiProviderFailureCode {
+function mapProviderFailureKind(kind: AiProviderFailureKind): AiProviderFailureCode {
   switch (kind) {
     case "timeout":
       return "AI_PROVIDER_TIMEOUT";
