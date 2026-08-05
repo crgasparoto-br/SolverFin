@@ -75,6 +75,28 @@ Correcao:
 
 Validacao esperada: `inspectAiProviderConfiguration` retorna `ready` sem fazer chamada remota e sem expor a credencial.
 
+## Falha ao revalidar consentimento
+
+Sintoma: `AI_CONSENT_CHECK_FAILED`.
+
+Causa provavel: o resolvedor autoritativo de consentimento lancou uma excecao ou rejeitou a promise durante a verificacao inicial ou antes de uma tentativa/retry.
+
+Comportamento esperado:
+
+- a operacao falha fechada;
+- nenhuma nova chamada ao provider e iniciada;
+- uma falha antes do retry impede a tentativa seguinte;
+- o erro bruto do repositorio, banco ou servico de consentimento nao e devolvido ao consumidor.
+
+Diagnostico seguro:
+
+1. use o `correlationId` para investigar a dependencia interna;
+2. nao substitua a falha por consentimento presumido;
+3. nao faca retry do provider sem uma nova verificacao autoritativa bem-sucedida;
+4. confirme os testes de excecao sincrona, rejeicao assincrona e falha entre retries.
+
+`AI_CONSENT_REQUIRED` continua reservado para consentimento ausente/revogado ou resolvedor nao fornecido.
+
 ## Timeout, rate limit ou indisponibilidade de IA
 
 Sintoma: `AI_PROVIDER_TIMEOUT`, `AI_PROVIDER_RATE_LIMITED` ou `AI_PROVIDER_UNAVAILABLE`.
@@ -94,9 +116,20 @@ Diagnostico seguro:
 
 Sintoma: `AI_PROVIDER_INVALID_RESPONSE`.
 
-Causa provavel: corpo vazio, JSON invalido, envelope sem texto ou confianca fora de `0..1`.
+Causa provavel: corpo vazio, JSON invalido, envelope sem texto, confianca fora de `0..1` ou `structured` incompatível com a tarefa.
 
-Correcao: mantenha a falha terminal, preserve o fallback e ajuste o contrato do adapter ou do modelo em issue propria. Nao copie a resposta bruta para logs ou fixtures.
+Para `classification`, confirme que o provider devolveu exatamente o contrato versionado documentado:
+
+- `contractVersion = 1`;
+- `suggestionKind = categorization`;
+- `payloadVersion = 1`;
+- `reasons` nao vazio;
+- pelo menos uma proposta permitida;
+- nenhum `targetEntityId`, `origin`, `fingerprint`, `audit` ou campo extra.
+
+Um `validateStructuredResult` local nao pode ampliar esse contrato. Ele somente pode aplicar restricoes adicionais.
+
+Correcao: mantenha a falha terminal, preserve o fallback e ajuste o prompt/modelo ou o contrato em issue propria. Nao copie a resposta bruta para logs ou fixtures.
 
 ## PostgreSQL local indisponivel
 
