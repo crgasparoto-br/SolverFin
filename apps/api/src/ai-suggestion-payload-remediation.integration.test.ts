@@ -20,7 +20,10 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   const profileRows = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -30,18 +33,31 @@ async function main(): Promise<void> {
 
   const createdIds: string[] = [];
   try {
-    await assertLegacyProjectionCanApproveCanonicalSuggestion(organizationId, createdIds);
-    await assertCanonicalDependencyIsMaterialized(organizationId, createdIds);
+    await assertLegacyProjectionCanApproveCanonicalSuggestion(
+      organizationId,
+      createdIds,
+    );
+    await assertCanonicalDependencyIsMaterialized(
+      organizationId,
+      createdIds,
+    );
     await assertMalformedDependencyFailsClosed(organizationId);
     await assertRemovedTargetFailsClosed(organizationId, createdIds);
-    await assertApprovalOverridePersistsCanonicalPayload(organizationId, createdIds);
+    await assertApprovalOverridePersistsCanonicalPayload(
+      organizationId,
+      createdIds,
+    );
     await assertEditPersistsCanonicalPayload(organizationId, createdIds);
   } finally {
     if (createdIds.length > 0) {
-      await query(`delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`, [
-        createdIds,
-      ]);
-      await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [createdIds]);
+      await query(
+        `delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
+        [createdIds],
+      );
+      await query(
+        `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
+        [createdIds],
+      );
     }
   }
 }
@@ -95,7 +111,12 @@ async function assertLegacyProjectionCanApproveCanonicalSuggestion(
         set "status" = 'APPROVED', "targetEntityId" = $2, "payload" = $3::jsonb,
             "reviewedAt" = $4, "updatedAt" = $4
       where "id" = $1`,
-    [id, targetEntityId, JSON.stringify(legacyPayload), new Date().toISOString()],
+    [
+      id,
+      targetEntityId,
+      JSON.stringify(legacyPayload),
+      new Date().toISOString(),
+    ],
   );
 
   const afterRows = await query<{
@@ -126,10 +147,16 @@ async function assertCanonicalDependencyIsMaterialized(
       suggestionKind: "categorization",
       payloadVersion: 1,
       origin: { kind: "automation", ruleId: randomUUID() },
-      target: { entityKind: "import_suggestion", entityId: sourceSuggestionId },
+      target: {
+        entityKind: "import_suggestion",
+        entityId: sourceSuggestionId,
+      },
       confidence: 0.9,
       reasons: ["Regra fictícia aplicada."],
-      audit: { createdAt: now, sourceFingerprint: `sha256-${"a".repeat(64)}` },
+      audit: {
+        createdAt: now,
+        sourceFingerprint: `sha256-${"a".repeat(64)}`,
+      },
       targetEntityId: sourceSuggestionId,
       sourceSuggestionId,
       proposedStatus: "posted",
@@ -172,7 +199,9 @@ async function assertCanonicalDependencyIsMaterialized(
   );
 }
 
-async function assertMalformedDependencyFailsClosed(organizationId: string): Promise<void> {
+async function assertMalformedDependencyFailsClosed(
+  organizationId: string,
+): Promise<void> {
   const id = randomUUID();
   const now = new Date().toISOString();
   const payload = buildAiSuggestionPayload({
@@ -183,7 +212,10 @@ async function assertMalformedDependencyFailsClosed(organizationId: string): Pro
       origin: { kind: "automation" },
       target: { entityKind: "import_suggestion" },
       reasons: ["Dependência fictícia inválida."],
-      audit: { createdAt: now },
+      audit: {
+        createdAt: now,
+        sourceFingerprint: `sha256-${"a".repeat(64)}`,
+      },
       targetEntityId: "not-a-uuid",
       sourceSuggestionId: "not-a-uuid",
       proposedStatus: "posted",
@@ -199,11 +231,20 @@ async function assertMalformedDependencyFailsClosed(organizationId: string): Pro
          values ($1, $2, $3, 'CATEGORIZATION', 'PENDING_REVIEW', 0.9,
                  'Explicação sem autoridade financeira.', $4::jsonb,
                  'solverfin-automation', 'automation-rules-v1', $5, $5)`,
-        [id, organizationId, PERSONAL_PROFILE_ID, JSON.stringify(payload), now],
+        [
+          id,
+          organizationId,
+          PERSONAL_PROFILE_ID,
+          JSON.stringify(payload),
+          now,
+        ],
       ),
     (error: unknown) => {
       const record = error as { code?: string; message?: string };
-      return record.code === "P0001" && record.message === "AI_SUGGESTION_PAYLOAD_INVALID";
+      return (
+        record.code === "P0001" &&
+        record.message === "AI_SUGGESTION_PAYLOAD_INVALID"
+      );
     },
   );
 }
@@ -245,7 +286,13 @@ async function assertRemovedTargetFailsClosed(
      values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', 0.92,
              'Explicação sem autoridade financeira.', $4::jsonb,
              'integration-test', 'removed-target-v1', $5, $5)`,
-    [suggestionId, organizationId, PERSONAL_PROFILE_ID, JSON.stringify(payload), now],
+    [
+      suggestionId,
+      organizationId,
+      PERSONAL_PROFILE_ID,
+      JSON.stringify(payload),
+      now,
+    ],
   );
 
   await assert.rejects(
@@ -261,11 +308,17 @@ async function assertRemovedTargetFailsClosed(
       ),
     (error: unknown) => {
       const record = error as { code?: string; statusCode?: number };
-      return record.code === "TENANT_RESOURCE_NOT_FOUND" && record.statusCode === 404;
+      return (
+        record.code === "TENANT_RESOURCE_NOT_FOUND" &&
+        record.statusCode === 404
+      );
     },
   );
 
-  const suggestionRows = await query<{ status: string; reviewedAt: Date | null }>(
+  const suggestionRows = await query<{
+    status: string;
+    reviewedAt: Date | null;
+  }>(
     `select "status", "reviewedAt" from "AiSuggestion" where "id" = $1`,
     [suggestionId],
   );
@@ -336,15 +389,22 @@ async function assertEditPersistsCanonicalPayload(
     description: "Compra fictícia editável",
   });
 
-  await editAiReviewSuggestionForContext(buildContext(organizationId), suggestionId, {
-    amountMinor: 3750,
-    description: "Compra fictícia editada",
-  });
+  await editAiReviewSuggestionForContext(
+    buildContext(organizationId),
+    suggestionId,
+    {
+      amountMinor: 3750,
+      description: "Compra fictícia editada",
+    },
+  );
 
   const rows = await query<{
     status: string;
     payload: Record<string, unknown>;
-  }>(`select "status", "payload" from "AiSuggestion" where "id" = $1`, [suggestionId]);
+  }>(
+    `select "status", "payload" from "AiSuggestion" where "id" = $1`,
+    [suggestionId],
+  );
   const row = rows[0];
   assert.equal(row?.status, "EDITED");
   assert.equal(row?.payload.amountMinor, 3750);
@@ -394,7 +454,13 @@ async function insertReviewSuggestion(input: {
      values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', 0.93,
              'Explicação sem autoridade financeira.', $4::jsonb,
              'integration-test', 'review-v1', $5, $5)`,
-    [input.id, input.organizationId, PERSONAL_PROFILE_ID, JSON.stringify(payload), now],
+    [
+      input.id,
+      input.organizationId,
+      PERSONAL_PROFILE_ID,
+      JSON.stringify(payload),
+      now,
+    ],
   );
   return payload as unknown as Record<string, unknown>;
 }
