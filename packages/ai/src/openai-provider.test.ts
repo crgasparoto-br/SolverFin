@@ -124,7 +124,6 @@ async function testSuccessfulCallUsesOneOutboundRequest(): Promise<void> {
                   contractVersion: 1,
                   suggestionKind: "categorization",
                   payloadVersion: 1,
-                  targetEntityId: "transaction-demo",
                   proposedCategoryId: "category-demo",
                   reasons: ["fictitious merchant match"],
                 },
@@ -151,6 +150,16 @@ async function testSuccessfulCallUsesOneOutboundRequest(): Promise<void> {
     true,
     "structured task requirement is sent to the provider",
   );
+  assertEqual(
+    capturedBody.includes("contractVersion 1"),
+    true,
+    "classification contract version is sent to the provider",
+  );
+  assertEqual(
+    capturedBody.includes("Do not return targetEntityId"),
+    true,
+    "trusted target fields are explicitly forbidden in provider output",
+  );
 }
 
 async function testRateLimitRetriesThenSucceeds(): Promise<void> {
@@ -174,7 +183,6 @@ async function testRateLimitRetriesThenSucceeds(): Promise<void> {
                   contractVersion: 1,
                   suggestionKind: "categorization",
                   payloadVersion: 1,
-                  targetEntityId: "transaction-demo",
                   proposedCategoryId: "category-demo",
                   reasons: ["fictitious merchant match"],
                 },
