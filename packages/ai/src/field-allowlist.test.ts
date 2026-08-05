@@ -53,12 +53,7 @@ async function filtersEveryTask(): Promise<void> {
       provider,
       task,
       context,
-      policy: validPolicy([
-        allowed,
-        "customerEmail",
-        "internalScore",
-        "isVip",
-      ]),
+      policy: validPolicy([allowed, "customerEmail", "internalScore", "isVip"]),
       payload: {
         prompt: `safe ${task} prompt`,
         fields: {
@@ -99,9 +94,7 @@ async function expectBlocked(policy: AiUsagePolicy): Promise<void> {
   assertEqual(provider.requests.length, 0, "invalid policy outbound count");
 }
 
-function validPolicy(
-  allowedFieldNames: readonly string[] = ["question"],
-): AiUsagePolicy {
+function validPolicy(allowedFieldNames: readonly string[] = ["question"]): AiUsagePolicy {
   return {
     ...defaultAiUsagePolicy,
     consent: "granted",
@@ -165,11 +158,7 @@ function assertBlocked(result: Awaited<ReturnType<typeof runAiTask>>): void {
   assertEqual(code, "AI_POLICY_INVALID", "invalid policy code");
 }
 
-function assertOmitted(
-  request: SafeAiProviderRequest,
-  field: string,
-  label: string,
-): void {
+function assertOmitted(request: SafeAiProviderRequest, field: string, label: string): void {
   assertEqual(Object.hasOwn(request.fields, field), false, `${label} omitted`);
 }
 
@@ -180,10 +169,7 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
   }
 }
 
-function assertTruthy<T>(
-  value: T,
-  label: string,
-): asserts value is NonNullable<T> {
+function assertTruthy<T>(value: T, label: string): asserts value is NonNullable<T> {
   if (!value) {
     throw new Error(`${label}: expected truthy value`);
   }

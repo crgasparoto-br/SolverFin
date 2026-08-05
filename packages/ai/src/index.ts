@@ -6,20 +6,12 @@ export * from "./openai-provider.js";
 export * from "./provider-errors.js";
 
 import { validateTransactionExtraction } from "./extraction.js";
-import {
-  AiProviderError,
-  type AiProviderFailureKind,
-} from "./provider-errors.js";
+import { AiProviderError, type AiProviderFailureKind } from "./provider-errors.js";
 
 export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
 export type AiConsentState = "granted" | "revoked" | "missing";
 export type AiLogLevel = "info" | "warn" | "error";
-export type AiSafeLogResult =
-  | "started"
-  | "completed"
-  | "blocked"
-  | "retrying"
-  | "failed";
+export type AiSafeLogResult = "started" | "completed" | "blocked" | "retrying" | "failed";
 export type AiStructuredResultValidator = (value: unknown) => boolean;
 
 export const MAX_AI_PROVIDER_RETRIES = 5;
@@ -222,10 +214,7 @@ export async function runAiTask(input: {
     const startedAt = Date.now();
 
     try {
-      logSafe(input, "info", "AI_PROVIDER_CALL_STARTED", {
-        attempt,
-        result: "started",
-      });
+      logSafe(input, "info", "AI_PROVIDER_CALL_STARTED", { attempt, result: "started" });
       const result = await input.provider.complete(request);
       const durationMs = Math.max(0, Date.now() - startedAt);
 
@@ -435,8 +424,7 @@ function isValidProviderResult(
     return false;
   }
 
-  const structuredResultIsRequired =
-    task === "extraction" || task === "classification";
+  const structuredResultIsRequired = task === "extraction" || task === "classification";
 
   if (result.structured === undefined) {
     return !structuredResultIsRequired;
