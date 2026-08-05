@@ -1,134 +1,204 @@
-# Politica de provedores de IA
+# Política de provedores de IA
 
-**Issue:** #51
-**Status:** base tecnica inicial para providers substituiveis, testes com fake provider e
-politicas de uso seguro.
+**Issues:** #51, #562  
+**Status:** provider real inicial disponível, substituível e desativado por padrão.
 
 ## Objetivo
 
-O pacote `@solverfin/ai` centraliza a chamada a provedores de IA para manter o
-dominio financeiro desacoplado de fornecedores, modelos e prompts especificos.
+O pacote `@solverfin/ai` centraliza chamadas a provedores de IA para manter o
+domínio financeiro desacoplado de fornecedores, modelos, endpoints e prompts
+específicos.
 
-A regra inicial e simples: nenhum fluxo deve chamar IA sem consentimento ativo,
-proposito declarado, payload minimizado e logs seguros.
+Nenhum fluxo pode chamar IA sem consentimento ativo, propósito declarado,
+payload minimizado, limites explícitos e logs seguros. Efeitos financeiros
+continuam dependentes de contratos estruturados e revisão humana quando exigida
+pelo fluxo de origem.
 
-## Superficie publica inicial
+A decisão arquitetural do primeiro provider real está na
+[ADR 0010](../adr/0010-openai-provider-inicial.md).
+
+## Superfície pública
 
 O pacote exporta:
 
-- `AiProvider`: contrato substituivel para providers reais ou fake.
-- `FakeAiProvider`: provider deterministico para testes.
-- `runAiTask`: orquestra consentimento, sanitizacao, retry e chamada ao provider.
-- `sanitizeAiPayload`: remove campos nao permitidos e mascara identificadores
-  sensiveis.
-- `maskSensitiveText`: mascara documentos, cartoes e numeros longos.
-- `defaultAiUsagePolicy`: politica-base que deve ser especializada por
+- `AiProvider`: contrato substituível para providers reais ou fake;
+- `FakeAiProvider`: provider determinístico para testes;
+- `OpenAiProvider`: adapter HTTP inicial para um endpoint OpenAI compatível com
+  Chat Completions;
+- `createAiProviderFromEnvironment`: seleciona `disabled` ou `openai` a partir
+  do ambiente validado;
+- `loadOpenAiProviderConfig`: valida a configuração sem expor valores sensíveis;
+- `inspectAiProviderConfiguration`: health check local de configuração, sem
+  chamada remota;
+- `runAiTask`: aplica consentimento, sanitização, retry e chamada ao provider;
+- `sanitizeAiPayload`: remove campos não permitidos e mascara identificadores
+  sensíveis;
+- `maskSensitiveText`: mascara documentos, cartões e números longos;
+- `defaultAiUsagePolicy`: política-base que deve ser especializada por
   finalidade.
 
-Tarefas suportadas no contrato inicial:
+Tarefas suportadas:
 
-- `extraction`: extrair sugestoes de lancamento.
-- `classification`: sugerir categorias ou classificacoes.
-- `summary`: resumir dados agregados.
+- `extraction`: extrair sugestões de lançamento;
+- `classification`: sugerir categorias ou classificações;
+- `summary`: resumir dados agregados;
 - `assistant`: responder perguntas financeiras autorizadas.
 
-## Politica obrigatoria por chamada
+## Configuração
 
-Cada chamada deve informar:
+O provider permanece desativado quando `AI_PROVIDER` está ausente ou definido
+como `disabled`. Esse é o valor obrigatório em `.env.example`, testes e
+ambientes que não tenham ativação explícita.
 
-| Campo                      | Uso                                                                            |
-| -------------------------- | ------------------------------------------------------------------------------ |
-| `consent`                  | Deve estar como `granted`; valores `missing` ou `revoked` bloqueiam a chamada. |
-| `purpose`                  | Explica a finalidade, como `transaction extraction review`.                    |
-| `maxPromptChars`           | Limita tamanho do prompt sanitizado.                                           |
-| `maxRetries`               | Define novas tentativas apos falha controlada do provider.                     |
-| `timeoutMs`                | Informa o limite operacional esperado para o provider concreto.                |
-| `allowRawFinancialText`    | Deve ficar `false` por padrao; `true` exige justificativa especifica.          |
-| `allowedFieldNames`        | Lista positiva recomendada para cada finalidade.                               |
-| `blockedFieldNamePatterns` | Lista de padroes bloqueados quando nao houver lista positiva.                  |
+Para habilitar o adapter inicial, configure todas as variáveis em um ambiente
+protegido:
 
-## Minimizacao e mascaramento
+| Variável | Contrato |
+| --- | --- |
+| `AI_PROVIDER` | `disabled` ou `openai`. |
+| `AI_OPENAI_ENDPOINT` | URL HTTPS sem credenciais, query ou fragmento. |
+| `AI_OPENAI_API_KEY` | Credencial secreta; nunca deve ser versionada ou logada. |
+| `AI_OPENAI_MODEL` | Modelo selecionado pelo ambiente, sem hardcode no adapter. |
+| `AI_OPENAI_MAX_OUTPUT_TOKENS` | Teto positivo de saída por chamada. |
+| `AI_OPENAI_MAX_REQUEST_BYTES` | Teto positivo do corpo JSON enviado. |
+| `AI_OPENAI_REQUEST_TIMEOUT_MS` | Teto operacional do adapter. |
 
-A chamada deve enviar apenas dados necessarios para a finalidade.
+Configuração ausente ou inválida falha fechada e informa apenas os nomes das
+variáveis afetadas. O valor da credencial não aparece em mensagens de erro,
+health check ou logs.
 
-Regras iniciais:
+## Política obrigatória por chamada
 
-- campos fora de `allowedFieldNames` sao omitidos;
-- campos com nomes de conta, cartao, documento, payload bruto, mensagem bruta,
-  token ou segredo sao bloqueados pela politica padrao;
-- documentos ficticios no formato CPF sao substituidos por `***documento***`;
-- cartoes de 16 digitos sao substituidos por `**** **** **** ****`;
-- numeros longos preservam apenas os ultimos 4 digitos;
-- logs recebem apenas metadados seguros, como provider, modelo, task, tenant e
-  correlation id.
+Cada chamada informa uma `AiUsagePolicy`:
 
-## Timeouts, retries e erros
+| Campo | Uso |
+| --- | --- |
+| `consent` | Deve ser `granted`; `missing` ou `revoked` bloqueiam a chamada. |
+| `purpose` | Declara a finalidade específica da operação. |
+| `maxPromptChars` | Limita o prompt já sanitizado. |
+| `maxRetries` | Define novas tentativas após falhas temporárias. |
+| `timeoutMs` | Define o limite da chamada; o adapter usa o menor valor entre política e ambiente. |
+| `allowRawFinancialText` | Permanece `false` por padrão; `true` exige justificativa específica. |
+| `allowedFieldNames` | Lista positiva recomendada para cada finalidade. |
+| `blockedFieldNamePatterns` | Lista de padrões bloqueados quando não houver lista positiva. |
 
-`runAiTask` trata:
+Quando `resolveConsent` é fornecido a `runAiTask`, o consentimento é consultado
+novamente imediatamente antes de cada tentativa. Uma revogação impede a chamada
+seguinte ao provider.
 
-- falta de consentimento: retorna `AI_CONSENT_REQUIRED` sem chamar provider;
-- payload vazio: retorna `AI_PAYLOAD_EMPTY`;
-- payload maior que o limite: retorna `AI_PAYLOAD_TOO_LARGE`;
-- erro temporario do provider: tenta novamente conforme `maxRetries`;
-- resposta sem texto utilizavel: retorna `AI_PROVIDER_INVALID_RESPONSE`;
-- falha final do provider: retorna `AI_PROVIDER_ERROR`.
+## Minimizacão e mascaramento
 
-O timeout real deve ser aplicado pelo provider concreto. A abstracao ja propaga
-`timeoutMs` em `SafeAiProviderRequest` para manter o contrato testavel sem
-acoplar o pacote a runtime, HTTP client ou SDK especifico.
+A chamada envia somente dados necessários para a finalidade:
 
-## Como adicionar um provider real
+- campos fora de `allowedFieldNames` são omitidos;
+- campos com nomes de conta, cartão, documento, payload bruto, mensagem bruta,
+  token ou segredo são bloqueados pela política padrão;
+- documentos no formato CPF são substituídos por `***documento***`;
+- cartões de 16 dígitos são substituídos por `**** **** **** ****`;
+- números longos preservam apenas os últimos quatro dígitos;
+- o adapter recebe exclusivamente `SafeAiProviderRequest`, depois da
+  sanitização.
 
-1. Criar uma classe que implemente `AiProvider`.
-2. Receber configuracao por ambiente seguro, sem hardcode de tokens.
-3. Converter `SafeAiProviderRequest` para o formato do SDK/API externo.
-4. Respeitar `timeoutMs` e retornar erro controlado quando o limite estourar.
-5. Nunca logar `prompt`, `fields` ou resposta bruta do provider.
-6. Cobrir o provider com testes usando payload ficticio e sem chamadas externas
-   reais.
-7. Registrar ADR se o provider criar dependencia duradoura, custo relevante ou
-   mudanca arquitetural.
+O adapter não conhece tenant, banco, entidade financeira, fila de revisão ou
+regra de negócio. Ele recebe somente tarefa, propósito, prompt sanitizado,
+campos permitidos, correlation id opcional e timeout.
 
-## Exemplo de uso em teste
+## Tentativas, timeout e erros controlados
 
-```ts
-const provider = new FakeAiProvider([{ text: "Sugestao criada", confidence: 0.9 }]);
-const result = await runAiTask({
-  provider,
-  task: "classification",
-  context,
-  policy: {
-    ...defaultAiUsagePolicy,
-    consent: "granted",
-    purpose: "category suggestion review",
-    allowedFieldNames: ["merchant", "amountMinor", "currency"],
-  },
-  payload: {
-    prompt: "Classifique a compra ficticia.",
-    fields: { merchant: "Mercado Demo", amountMinor: 1500, currency: "BRL" },
-  },
-});
-```
+`runAiTask` é o único executor de retry. O adapter executa no máximo uma chamada
+HTTP por tentativa e não faz probe, diagnóstico ou recuperação oculta.
 
-## Limitacoes conhecidas
+| Situação | Código público | Retry |
+| --- | --- | --- |
+| Consentimento ausente ou revogado | `AI_CONSENT_REQUIRED` | Não chama provider |
+| Payload vazio | `AI_PAYLOAD_EMPTY` | Não chama provider |
+| Prompt acima do limite | `AI_PAYLOAD_TOO_LARGE` | Não chama provider |
+| Timeout HTTP ou abort | `AI_PROVIDER_TIMEOUT` | Sim, conforme política |
+| HTTP 429 | `AI_PROVIDER_RATE_LIMITED` | Sim, conforme política |
+| HTTP 5xx | `AI_PROVIDER_UNAVAILABLE` | Sim, conforme política |
+| HTTP 4xx restante | `AI_PROVIDER_ERROR` | Não |
+| JSON, envelope, texto ou confiança inválidos | `AI_PROVIDER_INVALID_RESPONSE` | Não |
+| Falha genérica esgotada | `AI_PROVIDER_ERROR` | Conforme política |
 
-- O pacote ainda nao escolhe provider real.
-- Schemas finais de extracao ficam para a issue #52.
-- Parser de mensagens e fallback por regras ficam para a issue #53.
-- Modelo completo de consentimento fica para a issue #61; ate la, o fluxo recebe
-  o estado de consentimento como entrada.
-- Mascaramento amplo entre backend e frontend fica para a issue #62.
+Uma resposta aceita deve conter texto não vazio. Quando o conteúdo usa o
+envelope JSON interno, ele pode conter `text`, `structured` e `confidence`; a
+confiança, quando presente, deve estar entre `0` e `1`.
 
-## Validacao
+## Logs e health check
 
-Validacoes esperadas para mudancas neste pacote:
+Eventos seguros podem conter somente:
+
+- provider e modelo;
+- tarefa;
+- correlation id;
+- número da tentativa;
+- duração;
+- código e resultado controlado.
+
+Prompt, campos, credencial, corpo bruto, resposta bruta e identificadores de
+organização ou perfil financeiro não fazem parte de `SafeAiLogEvent`.
+
+`inspectAiProviderConfiguration` verifica apenas seleção, formato das variáveis,
+modelo e origem do endpoint. Ele não chama o fornecedor, não envia dados
+financeiros e não valida a credencial por rede.
+
+## Custos e limites
+
+Preços e capacidades do fornecedor variam com modelo e contrato do ambiente e
+não são congelados no código. Antes de habilitar um ambiente, revise o preço
+vigente e configure modelo, teto de saída, limite de corpo, timeout e retries por
+finalidade.
+
+Esses limites controlam exposição por chamada. Métricas agregadas de tokens,
+custo, orçamento e qualidade permanecem fora do recorte da issue #562.
+
+## Testes e desenvolvimento local
+
+A suíte usa `FakeAiProvider` e um cliente HTTP fake. Ela não acessa rede externa,
+não depende de credenciais e cobre:
+
+- provider desativado por padrão;
+- configuração válida e inválida;
+- sucesso com uma chamada por tentativa;
+- timeout, rate limit, indisponibilidade e erro permanente;
+- resposta vazia ou inválida;
+- revogação de consentimento antes da chamada;
+- ausência de dados sensíveis em logs e erros.
+
+Validações esperadas:
 
 ```bash
 npm run test --workspace @solverfin/ai
 npm run typecheck --workspace @solverfin/ai
 npm run lint --workspace @solverfin/ai
+npm run env:check
 npm run validate
 ```
 
-Use apenas fixtures ficticias. Nao inclua mensagens bancarias, cartoes,
-documentos, tokens ou payloads reais em testes, logs ou exemplos.
+Use apenas fixtures fictícias e minimizadas. Não inclua mensagens bancárias,
+cartões, documentos, tokens, prompts ou respostas reais em testes, logs ou
+exemplos.
+
+## Como adicionar ou substituir um provider
+
+1. Criar uma classe que implemente `AiProvider`.
+2. Receber configuração por ambiente seguro, sem hardcode de credenciais ou
+   modelo.
+3. Converter `SafeAiProviderRequest` para o contrato externo.
+4. Fazer no máximo uma chamada externa por `complete`.
+5. Aplicar timeout real e lançar `AiProviderError` com retry explícito.
+6. Validar e normalizar a resposta antes de devolvê-la ao executor.
+7. Nunca logar payload ou resposta bruta.
+8. Cobrir o adapter com cliente fake e sem chamadas externas reais.
+9. Registrar ADR quando a mudança criar dependência duradoura, custo relevante
+   ou novo contrato operacional.
+
+## Limitações conhecidas
+
+- O provider real está disponível como infraestrutura, mas nenhum fluxo de
+  produto é ativado automaticamente por esta entrega.
+- A ativação produtiva depende de configuração protegida e revisão operacional
+  de modelo, custo e limites.
+- Telemetria agregada de custo e orçamento ainda não foi implementada.
+- Fallbacks determinísticos dos fluxos existentes continuam independentes do
+  provider real.
