@@ -16,7 +16,9 @@ export type AiStructuredResultValidator = (value: unknown) => boolean;
 
 export const MAX_AI_PROVIDER_RETRIES = 5;
 
-const taskFieldRegistry = {
+type AiTaskFieldRegistry = Record<AiTaskKind, readonly string[]>;
+
+export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<AiTaskFieldRegistry> = {
   extraction: ["message", "merchant", "amountMinor", "currency", "occurredOn"],
   classification: [
     "merchant",
@@ -35,9 +37,7 @@ const taskFieldRegistry = {
     "balanceMinor",
   ],
   assistant: ["question", "intent"],
-} as const satisfies Readonly<Record<AiTaskKind, readonly string[]>>;
-
-export const AI_TASK_ALLOWED_FIELD_NAMES = taskFieldRegistry;
+};
 
 export interface AiUsagePolicy {
   consent: AiConsentState;
@@ -389,7 +389,7 @@ function buildProviderRequest(
 }
 
 function getTaskFieldNames(task: AiTaskKind): readonly string[] | undefined {
-  const fields: unknown = Reflect.get(taskFieldRegistry, task);
+  const fields: unknown = Reflect.get(AI_TASK_ALLOWED_FIELD_NAMES, task);
   return Array.isArray(fields) ? fields : undefined;
 }
 
