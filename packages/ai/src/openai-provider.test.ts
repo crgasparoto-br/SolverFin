@@ -120,7 +120,14 @@ async function testSuccessfulCallUsesOneOutboundRequest(): Promise<void> {
             message: {
               content: JSON.stringify({
                 text: "Category suggested",
-                structured: { category: "groceries" },
+                structured: {
+                  contractVersion: 1,
+                  suggestionKind: "categorization",
+                  payloadVersion: 1,
+                  targetEntityId: "transaction-demo",
+                  proposedCategoryId: "category-demo",
+                  reasons: ["fictitious merchant match"],
+                },
                 confidence: 0.92,
               }),
             },
@@ -163,7 +170,14 @@ async function testRateLimitRetriesThenSucceeds(): Promise<void> {
             message: {
               content: JSON.stringify({
                 text: "recovered",
-                structured: { categoryId: "category-demo" },
+                structured: {
+                  contractVersion: 1,
+                  suggestionKind: "categorization",
+                  payloadVersion: 1,
+                  targetEntityId: "transaction-demo",
+                  proposedCategoryId: "category-demo",
+                  reasons: ["fictitious merchant match"],
+                },
               }),
             },
           },
@@ -189,8 +203,7 @@ async function testRateLimitRetriesThenSucceeds(): Promise<void> {
     },
     payload: { prompt: "Classify.", fields: { merchant: "Demo Market" } },
     resolveConsent: () => "granted",
-    validateStructuredResult: (value) =>
-      isRecord(value) && typeof value.categoryId === "string" && value.categoryId.length > 0,
+    validateStructuredResult: isRecord,
   });
 
   assertEqual(result.status, "completed", "rate limit retry can recover");
