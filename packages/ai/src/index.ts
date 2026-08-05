@@ -6,12 +6,24 @@ export * from "./openai-provider.js";
 export * from "./provider-errors.js";
 
 import { validateTransactionExtraction } from "./extraction.js";
-import { AiProviderError, type AiProviderFailureKind } from "./provider-errors.js";
+import {
+  AiProviderError,
+  type AiProviderFailureKind,
+} from "./provider-errors.js";
 
-export type AiTaskKind = "extraction" | "classification" | "summary" | "assistant";
+export type AiTaskKind =
+  | "extraction"
+  | "classification"
+  | "summary"
+  | "assistant";
 export type AiConsentState = "granted" | "revoked" | "missing";
 export type AiLogLevel = "info" | "warn" | "error";
-export type AiSafeLogResult = "started" | "completed" | "blocked" | "retrying" | "failed";
+export type AiSafeLogResult =
+  | "started"
+  | "completed"
+  | "blocked"
+  | "retrying"
+  | "failed";
 export type AiStructuredResultValidator = (value: unknown) => boolean;
 
 export const MAX_AI_PROVIDER_RETRIES = 5;
@@ -49,7 +61,14 @@ export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<AiTaskFieldRegistry> = {
     "description",
     "transactionType",
   ],
-  summary: ["periodStart", "periodEnd", "currency", "incomeMinor", "expenseMinor", "balanceMinor"],
+  summary: [
+    "periodStart",
+    "periodEnd",
+    "currency",
+    "incomeMinor",
+    "expenseMinor",
+    "balanceMinor",
+  ],
   assistant: ["question", "intent"],
 };
 
@@ -72,7 +91,9 @@ export interface AiUsageContext {
 
 export interface AiTaskPayload {
   prompt: string;
-  fields?: Readonly<Record<string, string | number | boolean | null | undefined>>;
+  fields?: Readonly<
+    Record<string, string | number | boolean | null | undefined>
+  >;
 }
 
 export interface SafeAiProviderRequest {
@@ -162,7 +183,9 @@ export class FakeAiProvider implements AiProvider {
 
   private readonly responses: AiProviderResult[];
 
-  constructor(responses: readonly AiProviderResult[] = [{ text: "ok", confidence: 1 }]) {
+  constructor(
+    responses: readonly AiProviderResult[] = [{ text: "ok", confidence: 1 }],
+  ) {
     this.responses = [...responses];
   }
 
@@ -211,7 +234,10 @@ export async function runAiTask(input: {
 
   const sanitized = sanitizeAiPayload(input.payload, input.policy, input.task);
 
-  if (sanitized.prompt.length === 0 && Object.keys(sanitized.fields).length === 0) {
+  if (
+    sanitized.prompt.length === 0 &&
+    Object.keys(sanitized.fields).length === 0
+  ) {
     logSafe(input, "warn", "AI_PAYLOAD_EMPTY", { result: "blocked" });
     return { status: "blocked", code: "AI_PAYLOAD_EMPTY", sanitized };
   }
@@ -227,19 +253,36 @@ export async function runAiTask(input: {
     const currentConsent = await checkActiveConsent(input);
 
     if (currentConsent.status === "blocked") {
-      logSafe(input, "warn", currentConsent.code, { attempt, result: "blocked" });
+      logSafe(input, "warn", currentConsent.code, {
+        attempt,
+        result: "blocked",
+      });
       return { status: "blocked", code: currentConsent.code, sanitized };
     }
 
-    const request = buildProviderRequest(input.task, input.context, input.policy, sanitized);
+    const request = buildProviderRequest(
+      input.task,
+      input.context,
+      input.policy,
+      sanitized,
+    );
     const startedAt = Date.now();
 
     try {
-      logSafe(input, "info", "AI_PROVIDER_CALL_STARTED", { attempt, result: "started" });
+      logSafe(input, "info", "AI_PROVIDER_CALL_STARTED", {
+        attempt,
+        result: "started",
+      });
       const result = await input.provider.complete(request);
       const durationMs = Math.max(0, Date.now() - startedAt);
 
-      if (!isValidProviderResult(input.task, result, input.validateStructuredResult)) {
+      if (
+        !isValidProviderResult(
+          input.task,
+          result,
+          input.validateStructuredResult,
+        )
+      ) {
         logSafe(input, "error", "AI_PROVIDER_INVALID_RESPONSE", {
           attempt,
           durationMs,
@@ -353,13 +396,17 @@ export function maskSensitiveText(value: string): string {
     .replace(/\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b/g, "**** **** **** ****")
     .replace(
       /\b\d{5,}\b/g,
-      (match) => `${"*".repeat(Math.max(0, match.length - 4))}${match.slice(-4)}`,
+      (match) =>
+        `${"*".repeat(Math.max(0, match.length - 4))}${match.slice(-4)}`,
     );
 }
 
 type ActiveConsentCheck =
   | { status: "granted" }
-  | { status: "blocked"; code: "AI_CONSENT_REQUIRED" | "AI_CONSENT_CHECK_FAILED" };
+  | {
+      status: "blocked";
+      code: "AI_CONSENT_REQUIRED" | "AI_CONSENT_CHECK_FAILED";
+    };
 
 async function checkActiveConsent(input: {
   policy: AiUsagePolicy;
@@ -450,13 +497,16 @@ function isValidProviderResult(
     typeof result.text === "string" &&
     result.text.trim().length > 0 &&
     (result.confidence === undefined ||
-      (Number.isFinite(result.confidence) && result.confidence >= 0 && result.confidence <= 1));
+      (Number.isFinite(result.confidence) &&
+        result.confidence >= 0 &&
+        result.confidence <= 1));
 
   if (!commonResultIsValid) {
     return false;
   }
 
-  const structuredResultIsRequired = task === "extraction" || task === "classification";
+  const structuredResultIsRequired =
+    task === "extraction" || task === "classification";
 
   if (result.structured === undefined) {
     return !structuredResultIsRequired;
@@ -469,7 +519,10 @@ function isValidProviderResult(
         ? validateClassificationResult
         : undefined;
 
-  if (canonicalValidator === undefined || !canonicalValidator(result.structured)) {
+  if (
+    canonicalValidator === undefined ||
+    !canonicalValidator(result.structured)
+  ) {
     return false;
   }
 
@@ -488,7 +541,9 @@ function validateExtractionResult(value: unknown): boolean {
   return validateTransactionExtraction(value).status !== "invalid";
 }
 
-function validateClassificationResult(value: unknown): value is AiClassificationResultV1 {
+function validateClassificationResult(
+  value: unknown,
+): value is AiClassificationResultV1 {
   if (!isRecord(value)) {
     return false;
   }
@@ -561,11 +616,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0 && value.length <= 2048;
+  return (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    value.length <= 2048
+  );
 }
 
 function isNonEmptyStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.length > 0 && value.every(isNonEmptyString);
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every(isNonEmptyString)
+  );
 }
 
 function classifyProviderFailure(error: unknown): {
@@ -582,7 +645,9 @@ function classifyProviderFailure(error: unknown): {
   };
 }
 
-function mapProviderFailureKind(kind: AiProviderFailureKind): AiProviderFailureCode {
+function mapProviderFailureKind(
+  kind: AiProviderFailureKind,
+): AiProviderFailureCode {
   switch (kind) {
     case "timeout":
       return "AI_PROVIDER_TIMEOUT";
