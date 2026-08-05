@@ -1,4 +1,5 @@
 import {
+  type AiConsentState,
   type AiProvider,
   type AiUsageContext,
   type AiUsagePolicy,
@@ -20,6 +21,7 @@ export interface BankMessageParserInput {
   provider?: AiProvider;
   context?: AiUsageContext;
   policy?: AiUsagePolicy;
+  resolveConsent?: () => AiConsentState | Promise<AiConsentState>;
   logger?: SafeAiLogger;
   minConfidenceForSuggestion?: number;
 }
@@ -94,6 +96,20 @@ export async function parseBankMessage(
     };
   }
 
+  if (!input.resolveConsent) {
+    return {
+      status: "needs_review",
+      sourceKind: "ai",
+      normalizedText,
+      maskedText,
+      reviewReasons: [
+        "IA bloqueada porque o consentimento atual nao pode ser revalidado imediatamente antes da tentativa.",
+      ],
+      problems: [],
+      code: "BANK_MESSAGE_AI_BLOCKED",
+    };
+  }
+
   const aiTaskInput: Parameters<typeof runAiTask>[0] = {
     provider: input.provider,
     task: "extraction",
@@ -105,6 +121,7 @@ export async function parseBankMessage(
         message: normalizedText,
       },
     },
+    resolveConsent: input.resolveConsent,
   };
 
   if (input.logger !== undefined) {
@@ -126,6 +143,22 @@ export async function parseBankMessage(
   }
 
   if (aiResult.status === "failed") {
+    if (aiResult.code === "AI_PROVIDER_INVALID_RESPONSE") {
+      const validation = validateTransactionExtraction(undefined, {
+        minConfidenceForSuggestion: input.minConfidenceForSuggestion ?? DEFAULT_MIN_CONFIDENCE,
+      });
+
+      return {
+        status: "needs_review",
+        sourceKind: "ai",
+        normalizedText,
+        maskedText,
+        reviewReasons: ["Resposta da IA nao seguiu o schema de extracao."],
+        problems: validation.problems,
+        code: "BANK_MESSAGE_AI_INVALID_OUTPUT",
+      };
+    }
+
     return {
       status: "needs_review",
       sourceKind: "ai",

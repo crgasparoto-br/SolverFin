@@ -25,6 +25,9 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/AI_REVIEW_QUEUE.md`
 - `docs/AI_SUGGESTION_PAYLOADS.md`
 - `docs/ai/extraction-schema.md`
+- `docs/ai/providers.md`
+- `docs/adr/0010-openai-provider-inicial.md`
+- `docs/ENVIRONMENT.md`
 - `docs/BANK_MESSAGE_INBOX.md`
 - `docs/AUTOMATION_RULES.md`
 - `docs/PAYABLES_RECEIVABLES.md`
@@ -32,7 +35,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - `docs/API_REPORTS.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548 e a PR #570 para a issue #561.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561 e a entrega da issue #562.
 
 ## Decisao atual sobre pagar/receber
 
@@ -159,11 +162,13 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 - Dominio: Feito para a uniao discriminada e versionada de `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`.
 - Schema/migration: Feito com payload JSON canonico, validacao estrita no dominio e PostgreSQL, fingerprint e migracao conservadora de variantes legadas compativeis.
+- Provider real e executor seguro: Feito para infraestrutura substituivel em `@solverfin/ai`, com `OpenAiProvider`, configuracao ambiental, provider desativado por padrao, consentimento revalidado, timeout, retry tipado, health check local e logs redigidos.
 - Repository/API: Feito para leitura tipada, projecao publica redigida, erros controlados e isolamento por organizacao/perfil; efeitos financeiros de todos os `kind` permanecem em subissues proprias.
 - UI: Parcial/Feito para revisao operacional na Inbox e contrato publico tipado no frontend.
-- Testes: unitarios dos schemas e normalizadores; integracao PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento e rejeicao de dados aninhados desconhecidos.
-- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md` e `docs/ai/extraction-schema.md`.
-- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. `GET /api/ai-review-queue/:suggestionId/payload` expoe somente a projecao publica autorizada. `explanation` nao e fonte de valor, conta, categoria, tipo ou vinculo. Ainda nao ha chamada a provedor real de IA nem assistente financeiro conversacional; esses itens continuam fora do contrato da issue #561.
+- Fluxos de produto com provider real: Pendente; a issue #562 entrega a infraestrutura e nao altera automaticamente produtores, assistente conversacional ou efeitos financeiros.
+- Testes: unitarios dos schemas e normalizadores; integracao PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento e rejeicao de dados aninhados desconhecidos; testes hermeticos do provider para configuracao, consentimento, timeout, rate limit, indisponibilidade, resposta invalida e uma chamada outbound por tentativa.
+- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
+- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. `GET /api/ai-review-queue/:suggestionId/payload` expoe somente a projecao publica autorizada. `explanation` nao e fonte de valor, conta, categoria, tipo ou vinculo. O adapter real existe, mas permanece desligado enquanto `AI_PROVIDER=disabled`; nenhum fluxo financeiro passa a depender de rede externa por esta entrega.
 
 ### Perfis financeiros / tenant operacional
 

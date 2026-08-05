@@ -55,7 +55,11 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`DETERMINISTIC_DEDUP_RECONCILIATION.md`](./DETERMINISTIC_DEDUP_RECONCILIATION.md): deduplicacao e conciliacao deterministicas.
 - [`AUTOMATION_RULES.md`](./AUTOMATION_RULES.md): regras automaticas configuraveis.
 - [`AI_REVIEW_QUEUE.md`](./AI_REVIEW_QUEUE.md): fila de sugestoes revisaveis.
+- [`AI_SUGGESTION_PAYLOADS.md`](./AI_SUGGESTION_PAYLOADS.md): envelopes versionados e projecoes publicas das sugestoes.
 - [`ai/extraction-schema.md`](./ai/extraction-schema.md): schema de extracao de lancamentos por IA.
+- [`ai/providers.md`](./ai/providers.md): providers substituiveis, configuracao segura, consentimento, timeout, retry e logs.
+- [`ai/assistant-and-insights.md`](./ai/assistant-and-insights.md): contratos funcionais do assistente e dos insights.
+- [`ai/TROUBLESHOOTING.md`](./ai/TROUBLESHOOTING.md): diagnostico seguro de ambiente, CI e provider de IA.
 
 ## ADRs
 
@@ -64,6 +68,7 @@ ADRs registram decisoes duradouras. Crie ou atualize ADRs quando a mudanca alter
 - [`adr/0001-stack-inicial.md`](./adr/0001-stack-inicial.md)
 - [`adr/0004-autenticacao-produtiva.md`](./adr/0004-autenticacao-produtiva.md)
 - [`adr/0005-financial-indexes-shared-domain.md`](./adr/0005-financial-indexes-shared-domain.md)
+- [`adr/0010-openai-provider-inicial.md`](./adr/0010-openai-provider-inicial.md)
 
 ## Regras de manutencao documental
 

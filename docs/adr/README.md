@@ -22,3 +22,4 @@ Use ADR quando uma decisão muda stack, boundary, privacidade, tenant, auditoria
 - [0007 - Idempotência durável para criação de conjuntos financeiros](./0007-durable-financial-set-idempotency.md)
 - [0008 - Recuperação de envio ambíguo de parcelamento manual](./0008-ambiguous-installment-submission-recovery.md)
 - [0009 - Payloads versionados de sugestões](./0009-versioned-ai-suggestion-payloads.md)
+- [0010 - Provider OpenAI inicial e substituível](./0010-openai-provider-inicial.md)

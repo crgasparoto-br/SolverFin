@@ -29,6 +29,9 @@ const grantedPolicy = {
   allowedFieldNames: ["merchant", "amountMinor", "currency", "occurredOn"],
 };
 
+const syntheticCardCompact = ["4111", "1111", "1111", "1111"].join("");
+const syntheticCardSpaced = ["4111", "1111", "1111", "1111"].join(" ");
+
 async function testConsentBlocksProviderCall(): Promise<void> {
   const events: SafeAiLogEvent[] = [];
   const provider = new FakeAiProvider([{ text: "never used" }]);
@@ -39,6 +42,7 @@ async function testConsentBlocksProviderCall(): Promise<void> {
     policy: { ...grantedPolicy, consent: "revoked" },
     payload: { prompt: "Compra demo de 1234 reais" },
     logger: (event) => events.push(event),
+    resolveConsent: () => "revoked",
   });
 
   if (result.status !== "blocked") {
@@ -50,10 +54,46 @@ async function testConsentBlocksProviderCall(): Promise<void> {
   assertEqual(events[0]?.correlationId, context.correlationId, "safe consent correlation id");
 }
 
+async function testPolicySnapshotBlocksContradictoryResolver(): Promise<void> {
+  for (const consent of ["revoked", "missing"] as const) {
+    let providerCalls = 0;
+    let resolverCalls = 0;
+    const provider: AiProvider = {
+      id: "counting",
+      model: "counting-model",
+      async complete() {
+        providerCalls += 1;
+        return { text: "must not be called" };
+      },
+    };
+
+    const result = await runAiTask({
+      provider,
+      task: "summary",
+      context,
+      policy: { ...grantedPolicy, consent },
+      payload: { prompt: "Resumo financeiro ficticio" },
+      resolveConsent: () => {
+        resolverCalls += 1;
+        return "granted";
+      },
+    });
+
+    assertEqual(result.status, "blocked", `${consent} snapshot status`);
+
+    if (result.status === "blocked") {
+      assertEqual(result.code, "AI_CONSENT_REQUIRED", `${consent} snapshot code`);
+    }
+
+    assertEqual(providerCalls, 0, `${consent} snapshot provider calls`);
+    assertEqual(resolverCalls, 0, `${consent} snapshot resolver calls`);
+  }
+}
+
 async function testSanitizationAndAllowedFields(): Promise<void> {
   const sanitized = sanitizeAiPayload(
     {
-      prompt: "Cartao 4111111111111111 conta 123456789 documento 123.456.789-09",
+      prompt: `Cartao ${syntheticCardCompact} conta 123456789 documento 123.456.789-09`,
       fields: {
         merchant: "Loja Demo 987654321",
         amountMinor: 2590,
@@ -64,7 +104,7 @@ async function testSanitizationAndAllowedFields(): Promise<void> {
     grantedPolicy,
   );
 
-  assertEqual(sanitized.prompt.includes("4111111111111111"), false, "card masked in prompt");
+  assertEqual(sanitized.prompt.includes(syntheticCardCompact), false, "card masked in prompt");
   assertEqual(sanitized.prompt.includes("123.456.789-09"), false, "document masked in prompt");
   assertEqual(sanitized.fields.merchant, "Loja Demo *****4321", "merchant digits masked");
   assertEqual(sanitized.omittedFieldNames[0], "rawMessage", "raw message omitted");
@@ -72,7 +112,19 @@ async function testSanitizationAndAllowedFields(): Promise<void> {
 }
 
 async function testProviderCanBeFaked(): Promise<void> {
-  const provider = new FakeAiProvider([{ text: "Sugestao criada", confidence: 0.91 }]);
+  const provider = new FakeAiProvider([
+    {
+      text: "Sugestao criada",
+      structured: {
+        contractVersion: 1,
+        suggestionKind: "categorization",
+        payloadVersion: 1,
+        proposedCategoryId: "category-demo",
+        reasons: ["fictitious merchant match"],
+      },
+      confidence: 0.91,
+    },
+  ]);
   const result = await runAiTask({
     provider,
     task: "classification",
@@ -82,6 +134,8 @@ async function testProviderCanBeFaked(): Promise<void> {
       prompt: "Classifique a compra ficticia.",
       fields: { merchant: "Mercado Demo", amountMinor: 1500, currency: "BRL" },
     },
+    resolveConsent: () => "granted",
+    validateStructuredResult: isClassificationSuggestion,
   });
 
   assertEqual(result.status, "completed", "fake provider completes");
@@ -103,6 +157,7 @@ async function testRetryAndSafeLogs(): Promise<void> {
     policy: grantedPolicy,
     payload: { prompt: "Resumo financeiro ficticio" },
     logger: (event) => events.push(event),
+    resolveConsent: () => "granted",
   });
 
   assertEqual(result.status, "completed", "retry completes");
@@ -111,11 +166,10 @@ async function testRetryAndSafeLogs(): Promise<void> {
     assertEqual(result.attempts, 2, "second attempt succeeds");
   }
 
-  assertEqual(
-    events.some((event) => event.code === "AI_PROVIDER_CALL_FAILED"),
-    true,
-    "failure logged",
-  );
+  const failure = events.find((event) => event.code === "AI_PROVIDER_CALL_FAILED");
+  assertEqual(failure !== undefined, true, "failure logged");
+  assertEqual(failure?.failureCode, "AI_PROVIDER_ERROR", "typed failure code retained");
+  assertEqual(failure?.result, "retrying", "retry result retained");
   assertEqual(
     events.some((event) => event.code === "AI_PROVIDER_CALL_COMPLETED"),
     true,
@@ -136,6 +190,7 @@ async function testInvalidProviderResponse(): Promise<void> {
     context,
     policy: grantedPolicy,
     payload: { prompt: "Resuma dados ficticios" },
+    resolveConsent: () => "granted",
   });
 
   if (result.status !== "failed") {
@@ -149,9 +204,18 @@ function testMaskSensitiveText(): void {
   assertEqual(maskSensitiveText("Conta 123456789"), "Conta *****6789", "long number mask");
   assertEqual(maskSensitiveText("CPF 12345678909"), "CPF ***documento***", "document mask");
   assertEqual(
-    maskSensitiveText("Cartao 4111 1111 1111 1111"),
+    maskSensitiveText(`Cartao ${syntheticCardSpaced}`),
     "Cartao **** **** **** ****",
     "card mask",
+  );
+}
+
+function isClassificationSuggestion(value: unknown): boolean {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    typeof (value as Record<string, unknown>).proposedCategoryId === "string"
   );
 }
 
@@ -190,6 +254,7 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
 }
 
 await testConsentBlocksProviderCall();
+await testPolicySnapshotBlocksContradictoryResolver();
 await testSanitizationAndAllowedFields();
 await testProviderCanBeFaked();
 await testRetryAndSafeLogs();

@@ -1,6 +1,7 @@
 import { formatMinorCurrency } from "@solverfin/shared";
 
 import {
+  type AiConsentState,
   type AiProvider,
   type AiUsageContext,
   type AiUsagePolicy,
@@ -71,6 +72,7 @@ export interface FinancialAssistantInput {
   context: AiUsageContext;
   policy: AiUsagePolicy;
   provider?: AiProvider;
+  resolveConsent?: () => AiConsentState | Promise<AiConsentState>;
   logger?: SafeAiLogger;
   availability?: AvailabilityCalculationResult;
 }
@@ -125,6 +127,17 @@ export async function answerFinancialQuestion(
     });
   }
 
+  if (!input.resolveConsent) {
+    return buildFallbackAnswer({
+      status: "blocked",
+      intent,
+      safeLogCode: "ASSISTANT_CONSENT_REVALIDATION_REQUIRED",
+      answer:
+        "Nao posso chamar o provedor sem revalidar o consentimento atual imediatamente antes da tentativa.",
+      limitations: ["Resolvedor autoritativo de consentimento nao informado."],
+    });
+  }
+
   const aiResult = await runAiTask({
     provider: input.provider,
     task: "assistant",
@@ -140,6 +153,7 @@ export async function answerFinancialQuestion(
         intent,
       },
     },
+    resolveConsent: input.resolveConsent,
     ...(input.logger ? { logger: input.logger } : {}),
   });
 

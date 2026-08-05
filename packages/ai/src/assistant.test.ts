@@ -6,6 +6,7 @@ import {
   defaultAiUsagePolicy,
   FakeAiProvider,
   type AvailabilityCalculationResult,
+  type AiProvider,
   type AiUsageContext,
 } from "./index.js";
 
@@ -29,6 +30,8 @@ const grantedPolicy = {
 await dailyAvailabilityUsesStructuredCalculation();
 await dailyAvailabilityDoesNotInventWithoutService();
 await assistantBlocksWithoutConsent();
+await assistantBlocksWithoutConsentResolver();
+await assistantRechecksConsentBeforeProviderCall();
 await providerAnswersNonAvailabilityQuestionWithMock();
 intentClassifierRecognizesSupportedQuestions();
 
@@ -107,6 +110,53 @@ async function assistantBlocksWithoutConsent(): Promise<void> {
   assert.equal(answer.safeLogCode, "ASSISTANT_CONSENT_REQUIRED");
 }
 
+async function assistantBlocksWithoutConsentResolver(): Promise<void> {
+  let calls = 0;
+  const provider: AiProvider = {
+    id: "counting",
+    model: "counting-model",
+    async complete() {
+      calls += 1;
+      return { text: "must not be called" };
+    },
+  };
+  const answer = await answerFinancialQuestion({
+    question: "Resumo mensal dos meus gastos",
+    context,
+    policy: grantedPolicy,
+    provider,
+  });
+
+  assert.equal(answer.status, "blocked");
+  assert.equal(answer.safeLogCode, "ASSISTANT_CONSENT_REVALIDATION_REQUIRED");
+  assert.equal(calls, 0);
+}
+
+async function assistantRechecksConsentBeforeProviderCall(): Promise<void> {
+  let calls = 0;
+  const provider: AiProvider = {
+    id: "counting",
+    model: "counting-model",
+    async complete() {
+      calls += 1;
+      return { text: "must not be called" };
+    },
+  };
+  const states = ["granted", "revoked"] as const;
+  let consentIndex = 0;
+  const answer = await answerFinancialQuestion({
+    question: "Resumo mensal dos meus gastos",
+    context,
+    policy: grantedPolicy,
+    provider,
+    resolveConsent: () => states[consentIndex++] ?? "revoked",
+  });
+
+  assert.equal(answer.status, "needs_review");
+  assert.equal(answer.safeLogCode, "ASSISTANT_AI_CONSENT_REQUIRED");
+  assert.equal(calls, 0);
+}
+
 async function providerAnswersNonAvailabilityQuestionWithMock(): Promise<void> {
   const provider = new FakeAiProvider([
     {
@@ -119,6 +169,7 @@ async function providerAnswersNonAvailabilityQuestionWithMock(): Promise<void> {
     context,
     policy: grantedPolicy,
     provider,
+    resolveConsent: () => "granted",
   });
 
   assert.equal(answer.status, "answered");
