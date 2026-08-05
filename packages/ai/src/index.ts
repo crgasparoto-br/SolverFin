@@ -96,7 +96,7 @@ export interface SafeAiLogEvent {
   failureCode?: AiProviderFailureCode;
 }
 
-export type SafeAiLogger = (event: SafeAiLogEvent) => void | Promise<void>;
+export type SafeAiLogger = (event: SafeAiLogEvent) => unknown;
 
 export type AiTaskResult =
   | {
