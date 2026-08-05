@@ -40,6 +40,25 @@ async function testConsentRecheckedImmediatelyBeforeCall(): Promise<void> {
   assertEqual(provider.calls, 0, "provider is not called after consent revocation");
 }
 
+async function testMissingConsentResolverBlocksBeforeCall(): Promise<void> {
+  const provider = new CountingProvider(() => ({ text: "not called" }));
+  const result = await runAiTask({
+    provider,
+    task: "assistant",
+    context,
+    policy,
+    payload: { prompt: "safe prompt" },
+  });
+
+  assertEqual(result.status, "blocked", "missing resolver blocks the executor");
+
+  if (result.status === "blocked") {
+    assertEqual(result.code, "AI_CONSENT_REQUIRED", "missing resolver has controlled code");
+  }
+
+  assertEqual(provider.calls, 0, "missing resolver produces zero provider calls");
+}
+
 async function testSanitizedEmptyPayloadBlocksBeforeCall(): Promise<void> {
   const provider = new CountingProvider(() => ({ text: "not called" }));
   const result = await runAiTask({
@@ -48,6 +67,7 @@ async function testSanitizedEmptyPayloadBlocksBeforeCall(): Promise<void> {
     context,
     policy,
     payload: { prompt: "", fields: { rawMessage: "must be omitted" } },
+    resolveConsent: () => "granted",
   });
 
   assertEqual(result.status, "blocked", "empty sanitized payload is blocked");
@@ -68,6 +88,7 @@ async function testInvalidRetryPolicyBlocksBeforeCall(): Promise<void> {
       context,
       policy: { ...policy, maxRetries },
       payload: { prompt: "safe prompt" },
+      resolveConsent: () => "granted",
     });
 
     assertEqual(result.status, "blocked", `invalid maxRetries ${maxRetries} is blocked`);
@@ -90,6 +111,7 @@ async function testTypedTimeoutRetriesAndMapsResult(): Promise<void> {
     context,
     policy: { ...policy, maxRetries: 1 },
     payload: { prompt: "safe prompt" },
+    resolveConsent: () => "granted",
   });
 
   assertEqual(result.status, "failed", "timeout fails after retries");
@@ -119,6 +141,7 @@ async function testTypedTimeoutRetriesThenSucceeds(): Promise<void> {
     context,
     policy: { ...policy, maxRetries: 1 },
     payload: { prompt: "safe prompt" },
+    resolveConsent: () => "granted",
   });
 
   assertEqual(result.status, "completed", "retry can recover from timeout");
@@ -141,6 +164,7 @@ async function testPermanentFailureDoesNotRetry(): Promise<void> {
     context,
     policy,
     payload: { prompt: "safe prompt" },
+    resolveConsent: () => "granted",
   });
 
   assertEqual(result.status, "failed", "permanent failure is controlled");
@@ -161,6 +185,7 @@ async function testStructuredTasksFailClosed(): Promise<void> {
     context,
     policy,
     payload: { prompt: "extract" },
+    resolveConsent: () => "granted",
   });
   assertFailedInvalidResponse(extractionResult, "text-only extraction is rejected");
 
@@ -174,6 +199,7 @@ async function testStructuredTasksFailClosed(): Promise<void> {
     context,
     policy,
     payload: { prompt: "classify" },
+    resolveConsent: () => "granted",
   });
   assertFailedInvalidResponse(
     classificationResult,
@@ -202,6 +228,7 @@ async function testStructuredTasksAcceptValidatedContracts(): Promise<void> {
     context,
     policy,
     payload: { prompt: "extract" },
+    resolveConsent: () => "granted",
   });
   assertEqual(extractionResult.status, "completed", "valid extraction schema is accepted");
 
@@ -216,6 +243,7 @@ async function testStructuredTasksAcceptValidatedContracts(): Promise<void> {
     context,
     policy,
     payload: { prompt: "classify" },
+    resolveConsent: () => "granted",
     validateStructuredResult: (value) =>
       isRecord(value) && typeof value.categoryId === "string" && value.categoryId.length > 0,
   });
@@ -236,6 +264,7 @@ async function testSafeLogsOnlyExposeSafeMetadata(): Promise<void> {
     policy,
     payload: { prompt: "card [masked-fixture]", fields: { merchant: "Demo" } },
     logger: (event) => events.push(event),
+    resolveConsent: () => "granted",
   });
 
   assertEqual(result.status, "completed", "safe task completes");
@@ -295,6 +324,7 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
 
 async function runTests(): Promise<void> {
   await testConsentRecheckedImmediatelyBeforeCall();
+  await testMissingConsentResolverBlocksBeforeCall();
   await testSanitizedEmptyPayloadBlocksBeforeCall();
   await testInvalidRetryPolicyBlocksBeforeCall();
   await testTypedTimeoutRetriesAndMapsResult();

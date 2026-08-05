@@ -42,6 +42,7 @@ async function testConsentBlocksProviderCall(): Promise<void> {
     policy: { ...grantedPolicy, consent: "revoked" },
     payload: { prompt: "Compra demo de 1234 reais" },
     logger: (event) => events.push(event),
+    resolveConsent: () => "revoked",
   });
 
   if (result.status !== "blocked") {
@@ -91,6 +92,7 @@ async function testProviderCanBeFaked(): Promise<void> {
       prompt: "Classifique a compra ficticia.",
       fields: { merchant: "Mercado Demo", amountMinor: 1500, currency: "BRL" },
     },
+    resolveConsent: () => "granted",
     validateStructuredResult: isClassificationSuggestion,
   });
 
@@ -113,6 +115,7 @@ async function testRetryAndSafeLogs(): Promise<void> {
     policy: grantedPolicy,
     payload: { prompt: "Resumo financeiro ficticio" },
     logger: (event) => events.push(event),
+    resolveConsent: () => "granted",
   });
 
   assertEqual(result.status, "completed", "retry completes");
@@ -145,6 +148,7 @@ async function testInvalidProviderResponse(): Promise<void> {
     context,
     policy: grantedPolicy,
     payload: { prompt: "Resuma dados ficticios" },
+    resolveConsent: () => "granted",
   });
 
   if (result.status !== "failed") {

@@ -34,6 +34,7 @@ async function blocksUnknownTask(): Promise<void> {
       prompt: "safe prompt",
       fields: { question: "safe" },
     },
+    resolveConsent: () => "granted",
   });
 
   assertBlocked(result);
@@ -67,6 +68,7 @@ async function filtersEveryTask(): Promise<void> {
           isVip: true,
         },
       },
+      resolveConsent: () => "granted",
       validateStructuredResult: isRecord,
     });
 
@@ -90,6 +92,7 @@ async function expectBlocked(policy: AiUsagePolicy): Promise<void> {
     context,
     policy,
     payload: { prompt: "safe prompt" },
+    resolveConsent: () => "granted",
   });
 
   assertBlocked(result);
@@ -150,9 +153,7 @@ class RecordingProvider implements AiProvider {
 
   constructor(private readonly response: () => AiProviderResult) {}
 
-  async complete(
-    request: SafeAiProviderRequest,
-  ): Promise<AiProviderResult> {
+  async complete(request: SafeAiProviderRequest): Promise<AiProviderResult> {
     this.requests.push(request);
     return this.response();
   }
@@ -188,11 +189,7 @@ function assertTruthy<T>(
   }
 }
 
-function assertJsonEqual(
-  actual: unknown,
-  expected: unknown,
-  label: string,
-): void {
+function assertJsonEqual(actual: unknown, expected: unknown, label: string): void {
   const actualJson = JSON.stringify(actual);
   const expectedJson = JSON.stringify(expected);
 

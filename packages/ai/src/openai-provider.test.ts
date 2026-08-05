@@ -188,6 +188,7 @@ async function testRateLimitRetriesThenSucceeds(): Promise<void> {
       allowedFieldNames: ["merchant"],
     },
     payload: { prompt: "Classify.", fields: { merchant: "Demo Market" } },
+    resolveConsent: () => "granted",
     validateStructuredResult: (value) =>
       isRecord(value) && typeof value.categoryId === "string" && value.categoryId.length > 0,
   });
