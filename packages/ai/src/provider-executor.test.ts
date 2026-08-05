@@ -183,9 +183,15 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
   }
 }
 
-await testConsentRecheckedImmediatelyBeforeCall();
-await testSanitizedEmptyPayloadBlocksBeforeCall();
-await testTypedTimeoutRetriesAndMapsResult();
-await testTypedTimeoutRetriesThenSucceeds();
-await testPermanentFailureDoesNotRetry();
-await testSafeLogsOnlyExposeSafeMetadata();
+async function runTests(): Promise<void> {
+  await testConsentRecheckedImmediatelyBeforeCall();
+  await testSanitizedEmptyPayloadBlocksBeforeCall();
+  await testTypedTimeoutRetriesAndMapsResult();
+  await testTypedTimeoutRetriesThenSucceeds();
+  await testPermanentFailureDoesNotRetry();
+  await testSafeLogsOnlyExposeSafeMetadata();
+}
+
+void runTests().catch((error: unknown) => {
+  throw error;
+});
