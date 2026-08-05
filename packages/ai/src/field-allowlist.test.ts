@@ -15,42 +15,45 @@ const context = {
   correlationId: "corr-allowlist-test",
 };
 
-async function blocksMissingAndEmptyAllowlist(): Promise<void> {
-  const missingAllowlist = { ...validPolicy() } as Partial<AiUsagePolicy>;
-  delete missingAllowlist.allowedFieldNames;
+async function blocksInvalidAllowlists(): Promise<void> {
+  const missing = validPolicy() as Partial<AiUsagePolicy>;
+  delete missing.allowedFieldNames;
 
-  await expectPolicyBlocked(missingAllowlist as AiUsagePolicy);
-  await expectPolicyBlocked({ ...validPolicy(), allowedFieldNames: [] });
+  await expectBlocked(missing as AiUsagePolicy);
+  await expectBlocked(validPolicy([]));
 }
 
-async function blocksUnregisteredTaskPolicy(): Promise<void> {
-  const provider = new RecordingProvider(() => ({ text: "not called" }));
+async function blocksUnknownTask(): Promise<void> {
+  const provider = new RecordingProvider(() => ({ text: "unused" }));
   const result = await runAiTask({
     provider,
     task: "unsupported" as AiTaskKind,
     context,
     policy: validPolicy(),
-    payload: { prompt: "safe prompt", fields: { question: "safe" } },
+    payload: {
+      prompt: "safe prompt",
+      fields: { question: "safe" },
+    },
   });
 
-  assertBlocked(result.status, result.status === "blocked" ? result.code : undefined);
-  assertEqual(provider.requests.length, 0, "unregistered task prevents outbound");
+  assertBlocked(result);
+  assertEqual(provider.requests.length, 0, "unknown task outbound count");
 }
 
-async function filtersUnauthorizedFieldsForEveryTask(): Promise<void> {
+async function filtersEveryTask(): Promise<void> {
   const tasks = Object.keys(AI_TASK_ALLOWED_FIELD_NAMES) as AiTaskKind[];
 
   for (const task of tasks) {
     const provider = new RecordingProvider(() => responseFor(task));
-    const registeredField = AI_TASK_ALLOWED_FIELD_NAMES[task][0];
-    assertTruthy(registeredField, `${task} has a registered field policy`);
+    const allowed = AI_TASK_ALLOWED_FIELD_NAMES[task][0];
+    assertTruthy(allowed, `${task} registered field`);
 
     const result = await runAiTask({
       provider,
       task,
       context,
       policy: validPolicy([
-        registeredField,
+        allowed,
         "customerEmail",
         "internalScore",
         "isVip",
@@ -58,7 +61,7 @@ async function filtersUnauthorizedFieldsForEveryTask(): Promise<void> {
       payload: {
         prompt: `safe ${task} prompt`,
         fields: {
-          [registeredField]: safeValueFor(registeredField),
+          [allowed]: safeValueFor(allowed),
           customerEmail: "customer@example.test",
           internalScore: 87,
           isVip: true,
@@ -67,20 +70,20 @@ async function filtersUnauthorizedFieldsForEveryTask(): Promise<void> {
       validateStructuredResult: isRecord,
     });
 
-    assertEqual(result.status, "completed", `${task} completes`);
-    assertEqual(provider.requests.length, 1, `${task} calls provider once`);
+    assertEqual(result.status, "completed", `${task} status`);
+    assertEqual(provider.requests.length, 1, `${task} outbound count`);
 
     const request = provider.requests[0];
-    assertTruthy(request, `${task} request exists`);
-    assertJsonEqual(Object.keys(request.fields), [registeredField], `${task} safe fields`);
+    assertTruthy(request, `${task} request`);
+    assertJsonEqual(Object.keys(request.fields), [allowed], `${task} fields`);
     assertOmitted(request, "customerEmail", `${task} string field`);
     assertOmitted(request, "internalScore", `${task} numeric field`);
     assertOmitted(request, "isVip", `${task} boolean field`);
   }
 }
 
-async function expectPolicyBlocked(policy: AiUsagePolicy): Promise<void> {
-  const provider = new RecordingProvider(() => ({ text: "not called" }));
+async function expectBlocked(policy: AiUsagePolicy): Promise<void> {
+  const provider = new RecordingProvider(() => ({ text: "unused" }));
   const result = await runAiTask({
     provider,
     task: "assistant",
@@ -89,11 +92,13 @@ async function expectPolicyBlocked(policy: AiUsagePolicy): Promise<void> {
     payload: { prompt: "safe prompt" },
   });
 
-  assertBlocked(result.status, result.status === "blocked" ? result.code : undefined);
-  assertEqual(provider.requests.length, 0, "invalid allowlist prevents outbound");
+  assertBlocked(result);
+  assertEqual(provider.requests.length, 0, "invalid policy outbound count");
 }
 
-function validPolicy(allowedFieldNames: readonly string[] = ["question"]): AiUsagePolicy {
+function validPolicy(
+  allowedFieldNames: readonly string[] = ["question"],
+): AiUsagePolicy {
   return {
     ...defaultAiUsagePolicy,
     consent: "granted",
@@ -121,7 +126,10 @@ function responseFor(task: AiTaskKind): AiProviderResult {
   }
 
   if (task === "classification") {
-    return { text: "classified", structured: { categoryId: "category-demo" } };
+    return {
+      text: "classified",
+      structured: { categoryId: "category-demo" },
+    };
   }
 
   return { text: "safe result" };
@@ -142,42 +150,58 @@ class RecordingProvider implements AiProvider {
 
   constructor(private readonly response: () => AiProviderResult) {}
 
-  async complete(request: SafeAiProviderRequest): Promise<AiProviderResult> {
+  async complete(
+    request: SafeAiProviderRequest,
+  ): Promise<AiProviderResult> {
     this.requests.push(request);
     return this.response();
   }
 }
 
-function assertBlocked(status: string, code: string | undefined): void {
-  assertEqual(status, "blocked", "invalid policy blocks");
+function assertBlocked(result: Awaited<ReturnType<typeof runAiTask>>): void {
+  assertEqual(result.status, "blocked", "invalid policy status");
+  const code = result.status === "blocked" ? result.code : undefined;
   assertEqual(code, "AI_POLICY_INVALID", "invalid policy code");
 }
 
-function assertOmitted(request: SafeAiProviderRequest, field: string, label: string): void {
+function assertOmitted(
+  request: SafeAiProviderRequest,
+  field: string,
+  label: string,
+): void {
   assertEqual(Object.hasOwn(request.fields, field), false, `${label} omitted`);
 }
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {
   if (actual !== expected) {
-    throw new Error(`${label}: expected ${String(expected)}, got ${String(actual)}`);
+    const message = `${label}: expected ${String(expected)}, got ${String(actual)}`;
+    throw new Error(message);
   }
 }
 
-function assertTruthy<T>(value: T, label: string): asserts value is NonNullable<T> {
+function assertTruthy<T>(
+  value: T,
+  label: string,
+): asserts value is NonNullable<T> {
   if (!value) {
     throw new Error(`${label}: expected truthy value`);
   }
 }
 
-function assertJsonEqual(actual: unknown, expected: unknown, label: string): void {
+function assertJsonEqual(
+  actual: unknown,
+  expected: unknown,
+  label: string,
+): void {
   const actualJson = JSON.stringify(actual);
   const expectedJson = JSON.stringify(expected);
 
   if (actualJson !== expectedJson) {
-    throw new Error(`${label}: expected ${expectedJson}, got ${actualJson}`);
+    const message = `${label}: expected ${expectedJson}, got ${actualJson}`;
+    throw new Error(message);
   }
 }
 
-await blocksMissingAndEmptyAllowlist();
-await blocksUnregisteredTaskPolicy();
-await filtersUnauthorizedFieldsForEveryTask();
+await blocksInvalidAllowlists();
+await blocksUnknownTask();
+await filtersEveryTask();

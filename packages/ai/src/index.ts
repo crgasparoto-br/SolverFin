@@ -16,9 +16,7 @@ export type AiStructuredResultValidator = (value: unknown) => boolean;
 
 export const MAX_AI_PROVIDER_RETRIES = 5;
 
-type AiTaskFieldRegistry = Record<AiTaskKind, readonly string[]>;
-
-export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<AiTaskFieldRegistry> = {
+const taskFieldRegistry = {
   extraction: ["message", "merchant", "amountMinor", "currency", "occurredOn"],
   classification: [
     "merchant",
@@ -37,7 +35,9 @@ export const AI_TASK_ALLOWED_FIELD_NAMES: Readonly<AiTaskFieldRegistry> = {
     "balanceMinor",
   ],
   assistant: ["question", "intent"],
-};
+} as const satisfies Readonly<Record<AiTaskKind, readonly string[]>>;
+
+export const AI_TASK_ALLOWED_FIELD_NAMES = taskFieldRegistry;
 
 export interface AiUsagePolicy {
   consent: AiConsentState;
@@ -354,7 +354,7 @@ function isValidAiPolicy(task: AiTaskKind, policy: AiUsagePolicy): boolean {
     policy.purpose !== "unspecified" &&
     Array.isArray(policy.allowedFieldNames) &&
     policy.allowedFieldNames.length > 0 &&
-    getRegisteredTaskAllowedFieldNames(task) !== undefined
+    getTaskFieldNames(task) !== undefined
   );
 }
 
@@ -384,8 +384,8 @@ function buildProviderRequest(
   return request;
 }
 
-function getRegisteredTaskAllowedFieldNames(task: AiTaskKind): readonly string[] | undefined {
-  const fields: unknown = Reflect.get(AI_TASK_ALLOWED_FIELD_NAMES, task);
+function getTaskFieldNames(task: AiTaskKind): readonly string[] | undefined {
+  const fields: unknown = Reflect.get(taskFieldRegistry, task);
   return Array.isArray(fields) ? fields : undefined;
 }
 
@@ -402,7 +402,7 @@ function isAllowedFieldName(
     return true;
   }
 
-  return getRegisteredTaskAllowedFieldNames(task)?.includes(name) ?? false;
+  return getTaskFieldNames(task)?.includes(name) ?? false;
 }
 
 function isValidProviderResult(
