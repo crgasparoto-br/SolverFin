@@ -21,7 +21,10 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   const profileRows = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -34,12 +37,18 @@ async function main(): Promise<void> {
     await assertLegacyInsertBecomesCanonical(organizationId, createdIds);
     await assertPayloadEndpointIsTenantScoped(organizationId, createdIds);
     await assertResolvedPayloadIsImmutable(organizationId, createdIds);
-    await assertPayloadlessLegacyCanOnlyCloseSafely(organizationId, createdIds);
+    await assertPayloadlessLegacyCanOnlyCloseSafely(
+      organizationId,
+      createdIds,
+    );
     await assertConcurrentReviewFailsClosed(organizationId, createdIds);
     await assertInvalidPayloadErrorIsControlled(organizationId);
   } finally {
     if (createdIds.length > 0) {
-      await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [createdIds]);
+      await query(
+        `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
+        [createdIds],
+      );
     }
   }
 }
@@ -77,7 +86,10 @@ async function assertLegacyInsertBecomesCanonical(
   );
   assert.equal(rows[0]?.payload.contractVersion, 1);
   assert.equal(rows[0]?.payload.suggestionKind, "transaction_extraction");
-  assert.match(String(rows[0]?.payload.fingerprint), /^db-fp-v1-[a-f0-9]{64}$/);
+  assert.match(
+    String(rows[0]?.payload.fingerprint),
+    /^db-fp-v1-[a-f0-9]{64}$/,
+  );
 }
 
 async function assertPayloadEndpointIsTenantScoped(
@@ -92,7 +104,10 @@ async function assertPayloadEndpointIsTenantScoped(
       suggestionKind: "insight",
       payloadVersion: 1,
       origin: { kind: "system", component: "integration-test" },
-      target: { entityKind: "financial_profile", entityId: PERSONAL_PROFILE_ID },
+      target: {
+        entityKind: "financial_profile",
+        entityId: PERSONAL_PROFILE_ID,
+      },
       confidence: 0.8,
       reasons: ["Dados ficticios agregados."],
       audit: { createdAt: new Date().toISOString() },
@@ -124,7 +139,10 @@ async function assertPayloadEndpointIsTenantScoped(
     id,
   );
   assert.equal(personal.payload.suggestionKind, "insight");
-  assert.doesNotMatch(JSON.stringify(personal), new RegExp(PERSONAL_PROFILE_ID));
+  assert.doesNotMatch(
+    JSON.stringify(personal),
+    new RegExp(PERSONAL_PROFILE_ID),
+  );
 
   await assert.rejects(
     () =>
@@ -148,9 +166,12 @@ async function assertResolvedPayloadIsImmutable(
   createdIds: string[],
 ): Promise<void> {
   const id = randomUUID();
-  const sourceSuggestionId = randomUUID();
+  const targetEntityId = randomUUID();
   createdIds.push(id);
-  const payload = buildCategorizationPayload("category-one", sourceSuggestionId);
+  const payload = buildDirectCategorizationPayload(
+    "category-one",
+    targetEntityId,
+  );
   await insertSuggestion({
     id,
     organizationId,
@@ -159,17 +180,23 @@ async function assertResolvedPayloadIsImmutable(
     status: "PENDING_REVIEW",
     payload,
     provider: "solverfin-automation",
-    targetEntityId: null,
+    targetEntityId,
   });
-  await query(`update "AiSuggestion" set "status" = 'APPROVED' where "id" = $1`, [id]);
+  await query(
+    `update "AiSuggestion" set "status" = 'APPROVED' where "id" = $1`,
+    [id],
+  );
 
-  const changed = buildCategorizationPayload("category-two", sourceSuggestionId);
+  const changed = buildDirectCategorizationPayload(
+    "category-two",
+    targetEntityId,
+  );
   await assert.rejects(
     () =>
-      query(`update "AiSuggestion" set "payload" = $2::jsonb where "id" = $1`, [
-        id,
-        JSON.stringify(changed),
-      ]),
+      query(
+        `update "AiSuggestion" set "payload" = $2::jsonb where "id" = $1`,
+        [id, JSON.stringify(changed)],
+      ),
     hasDatabaseMessage("AI_SUGGESTION_PAYLOAD_IMMUTABLE"),
   );
 }
@@ -181,7 +208,9 @@ async function assertPayloadlessLegacyCanOnlyCloseSafely(
   const id = randomUUID();
   createdIds.push(id);
   const now = new Date().toISOString();
-  await query(`alter table "AiSuggestion" disable trigger "AiSuggestionPayloadContractInsert"`);
+  await query(
+    `alter table "AiSuggestion" disable trigger "AiSuggestionPayloadContractInsert"`,
+  );
   try {
     await query(
       `insert into "AiSuggestion"
@@ -192,13 +221,15 @@ async function assertPayloadlessLegacyCanOnlyCloseSafely(
       [id, organizationId, PERSONAL_PROFILE_ID, now],
     );
   } finally {
-    await query(`alter table "AiSuggestion" enable trigger "AiSuggestionPayloadContractInsert"`);
+    await query(
+      `alter table "AiSuggestion" enable trigger "AiSuggestionPayloadContractInsert"`,
+    );
   }
 
-  await query(`update "AiSuggestion" set "status" = 'EXPIRED', "updatedAt" = $2 where "id" = $1`, [
-    id,
-    new Date().toISOString(),
-  ]);
+  await query(
+    `update "AiSuggestion" set "status" = 'EXPIRED', "updatedAt" = $2 where "id" = $1`,
+    [id, new Date().toISOString()],
+  );
   const rows = await query<{ status: string; payload: unknown }>(
     `select "status", "payload" from "AiSuggestion" where "id" = $1`,
     [id],
@@ -212,6 +243,7 @@ async function assertConcurrentReviewFailsClosed(
   createdIds: string[],
 ): Promise<void> {
   const id = randomUUID();
+  const targetEntityId = randomUUID();
   createdIds.push(id);
   await insertSuggestion({
     id,
@@ -219,9 +251,12 @@ async function assertConcurrentReviewFailsClosed(
     profileId: PERSONAL_PROFILE_ID,
     kind: "CATEGORIZATION",
     status: "PENDING_REVIEW",
-    payload: buildCategorizationPayload("category-one", randomUUID()),
+    payload: buildDirectCategorizationPayload(
+      "category-one",
+      targetEntityId,
+    ),
     provider: "solverfin-automation",
-    targetEntityId: null,
+    targetEntityId,
   });
 
   const first = await getPool().connect();
@@ -235,11 +270,18 @@ async function assertConcurrentReviewFailsClosed(
     assert.equal(preflight.rows[0]?.status, "PENDING_REVIEW");
 
     await first.query("BEGIN");
-    await first.query(`update "AiSuggestion" set "status" = 'APPROVED' where "id" = $1`, [id]);
+    await first.query(
+      `update "AiSuggestion" set "status" = 'APPROVED' where "id" = $1`,
+      [id],
+    );
     await first.query("COMMIT");
 
     await assert.rejects(
-      () => second.query(`update "AiSuggestion" set "status" = 'REJECTED' where "id" = $1`, [id]),
+      () =>
+        second.query(
+          `update "AiSuggestion" set "status" = 'REJECTED' where "id" = $1`,
+          [id],
+        ),
       hasDatabaseMessage("AI_SUGGESTION_PAYLOAD_CONFLICT"),
     );
     await second.query("ROLLBACK");
@@ -255,7 +297,9 @@ async function assertConcurrentReviewFailsClosed(
   }
 }
 
-async function assertInvalidPayloadErrorIsControlled(organizationId: string): Promise<void> {
+async function assertInvalidPayloadErrorIsControlled(
+  organizationId: string,
+): Promise<void> {
   const secret = "fingerprint=secret idempotencyKey=secret amountMinor=999999";
   await assert.rejects(
     () =>
@@ -272,27 +316,35 @@ async function assertInvalidPayloadErrorIsControlled(organizationId: string): Pr
     (error: unknown) => {
       const record = error as { code?: string; message?: string };
       assert.equal(record.code, "P0001");
-      assert.equal(record.message, "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED");
-      assert.doesNotMatch(record.message ?? "", /secret|999999|idempotencyKey/);
+      assert.equal(
+        record.message,
+        "AI_SUGGESTION_PAYLOAD_VERSION_UNSUPPORTED",
+      );
+      assert.doesNotMatch(
+        record.message ?? "",
+        /secret|999999|idempotencyKey/,
+      );
       return true;
     },
   );
 }
 
-function buildCategorizationPayload(categoryId: string, sourceSuggestionId: string) {
+function buildDirectCategorizationPayload(
+  categoryId: string,
+  targetEntityId: string,
+) {
   return buildAiSuggestionPayload({
     payload: {
       contractVersion: 1,
       suggestionKind: "categorization",
       payloadVersion: 1,
       origin: { kind: "automation", ruleId: "integration-rule" },
-      target: { entityKind: "import_suggestion" },
+      target: { entityKind: "transaction", entityId: targetEntityId },
       confidence: 0.9,
       reasons: ["Regra ficticia."],
       audit: { createdAt: new Date().toISOString() },
-      targetEntityId: sourceSuggestionId,
+      targetEntityId,
       proposedCategoryId: categoryId,
-      sourceSuggestionId,
     },
   });
 }
