@@ -253,23 +253,41 @@ async function testStructuredTasksFailClosed(): Promise<void> {
   });
   assertFailedInvalidResponse(extractionResult, "text-only extraction is rejected");
 
-  const unversionedClassification = new CountingProvider(() => ({
-    text: "category",
-    structured: { categoryId: "category-demo" },
-  }));
-  const classificationResult = await runAiTask({
-    provider: unversionedClassification,
-    task: "classification",
-    context,
-    policy,
-    payload: { prompt: "classify" },
-    resolveConsent: () => "granted",
-    validateStructuredResult: () => true,
-  });
-  assertFailedInvalidResponse(
-    classificationResult,
-    "a permissive validator cannot admit an unversioned classification",
-  );
+  const invalidClassifications: readonly Record<string, unknown>[] = [
+    { categoryId: "category-demo" },
+    {
+      contractVersion: 1,
+      suggestionKind: "categorization",
+      payloadVersion: 2,
+      proposedCategoryId: "category-demo",
+      reasons: ["wrong version"],
+    },
+    {
+      contractVersion: 1,
+      suggestionKind: "categorization",
+      payloadVersion: 1,
+      targetEntityId: "provider-must-not-set-target",
+      proposedCategoryId: "category-demo",
+      reasons: ["untrusted target"],
+    },
+  ];
+
+  for (const structured of invalidClassifications) {
+    const provider = new CountingProvider(() => ({ text: "category", structured }));
+    const classificationResult = await runAiTask({
+      provider,
+      task: "classification",
+      context,
+      policy,
+      payload: { prompt: "classify" },
+      resolveConsent: () => "granted",
+      validateStructuredResult: () => true,
+    });
+    assertFailedInvalidResponse(
+      classificationResult,
+      "a permissive validator cannot widen the canonical classification contract",
+    );
+  }
 }
 
 async function testStructuredTasksAcceptValidatedContracts(): Promise<void> {
@@ -303,7 +321,6 @@ async function testStructuredTasksAcceptValidatedContracts(): Promise<void> {
       contractVersion: 1,
       suggestionKind: "categorization",
       payloadVersion: 1,
-      targetEntityId: "transaction-demo",
       proposedCategoryId: "category-demo",
       reasons: ["fictitious merchant match"],
     },
