@@ -1,13 +1,13 @@
-import {
+import type {
   AI_SUGGESTION_PAYLOAD_CONTRACT_VERSION,
-  type AiSuggestionPayload,
-  type AiSuggestionPayloadKind,
-  type AiSuggestionPayloadOrigin,
-  type AiSuggestionPayloadTarget,
-  type CategorizationSuggestionPayloadV1,
-  type ImportLineDirection,
-  type InsightSuggestionPayloadV1,
-  type TransactionKind,
+  AiSuggestionPayload,
+  AiSuggestionPayloadKind,
+  AiSuggestionPayloadOrigin,
+  AiSuggestionPayloadTarget,
+  CategorizationSuggestionPayloadV1,
+  ImportLineDirection,
+  InsightSuggestionPayloadV1,
+  TransactionKind,
 } from "./ai-suggestion-payload-types.js";
 
 export interface PublicTransactionExtractionProposal {

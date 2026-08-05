@@ -133,9 +133,11 @@ interface DeterministicSuggestionPayloadV1Base<
   conflicts: readonly string[];
 }
 
-export interface DeduplicationSuggestionPayloadV1 extends DeterministicSuggestionPayloadV1Base<"deduplication"> {}
+export type DeduplicationSuggestionPayloadV1 =
+  DeterministicSuggestionPayloadV1Base<"deduplication">;
 
-export interface ReconciliationSuggestionPayloadV1 extends DeterministicSuggestionPayloadV1Base<"reconciliation"> {}
+export type ReconciliationSuggestionPayloadV1 =
+  DeterministicSuggestionPayloadV1Base<"reconciliation">;
 
 export interface InsightSuggestionPayloadV1 extends AiSuggestionPayloadBase<"insight"> {
   payloadVersion: 1;
