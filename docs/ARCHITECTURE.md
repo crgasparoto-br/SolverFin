@@ -17,9 +17,10 @@ O nucleo financeiro do MVP esta ligado de ponta a ponta com persistencia real:
 - recorrencias aparecem incorporadas ao Extrato e as compras de cartao, sem rota web operacional separada;
 - a rotina ativa de compromissos usa `Transaction`, `Invoice`, recorrencias e parcelas materializadas; `PayableReceivable` permanece como compatibilidade tecnica documentada;
 - importacao, deduplicacao, conciliacao, automacao e IA possuem contratos de dominio e evoluem por issues dedicadas;
+- `packages/ai` possui um adapter HTTP real e substituivel para OpenAI, configurado exclusivamente por ambiente, desativado por padrao e governado pelo executor comum de consentimento, sanitizacao, timeout e retry;
 - autenticacao produtiva segue a decisao aceita em `docs/adr/0004-autenticacao-produtiva.md`.
 
-A decisao inicial de stack esta em `docs/adr/0001-stack-inicial.md`. Node `http` puro continua deliberadamente em API e Web para nao antecipar framework sem ADR.
+A decisao inicial de stack esta em `docs/adr/0001-stack-inicial.md`. Node `http` puro continua deliberadamente em API e Web para nao antecipar framework sem ADR. O provider real inicial de IA segue a decisao aceita em `docs/adr/0010-openai-provider-inicial.md`.
 
 ## Stack inicial
 
@@ -33,7 +34,7 @@ A decisao inicial de stack esta em `docs/adr/0001-stack-inicial.md`. Node `http`
 - testes automatizados por dominio, API, UI e integracao;
 - GitHub Actions para instalacao reprodutivel, lint, typecheck, testes e build;
 - camada de dominio desacoplada de UI, banco e provedores externos;
-- provedores de IA acessados por abstracoes proprias, schemas estruturados e logs seguros.
+- provedores de IA acessados por abstracoes proprias, schemas estruturados, logs seguros e adapters HTTP substituiveis; OpenAI e o primeiro adapter real, sem SDK de fornecedor no dominio.
 
 ## Web SSR e composicao de estilos
 
@@ -110,6 +111,8 @@ O comando explicito para o mesmo portao e:
 npm run validate:ssr-styles --workspace @solverfin/web
 ```
 
+Os testes de provider de IA usam `FakeAiProvider` e cliente HTTP fake. O CI nao recebe credencial real, nao chama rede externa e nao exige aprovacao manual para validar o adapter.
+
 ### Integration API + PostgreSQL
 
 O job de integracao sobe PostgreSQL 16 efemero e executa migrations, seed ficticio e testes da API com uma base dedicada.
@@ -127,16 +130,17 @@ Como o `package-lock.json` e versionado, os jobs usam `npm ci` e cache baseado n
 
 ## Ambientes e secrets
 
-A politica de ambientes fica em `docs/ENVIRONMENT.md`; privacidade, consentimento, retencao e mascaramento ficam em `docs/PRIVACY.md`.
+A politica de ambientes fica em `docs/ENVIRONMENT.md`; privacidade, consentimento, retencao e mascaramento ficam em `docs/PRIVACY.md`; o contrato operacional do provider fica em `docs/ai/providers.md`.
 
 Direcao atual:
 
-- `.env.example` usa apenas placeholders seguros;
+- `.env.example` usa apenas placeholders seguros e mantem `AI_PROVIDER=disabled`;
 - `.env`, certificados, chaves e arquivos locais ficam ignorados;
-- `npm run env:check` valida o exemplo versionado;
+- `npm run env:check` valida o exemplo versionado, inclusive endpoint e limites do provider de IA;
 - mensagens de erro citam nomes de variaveis, nunca valores sensiveis;
 - secrets reais ficam somente nos ambientes que precisam deles;
-- dados financeiros brutos e respostas de IA seguem minimizacao e retencao documentadas.
+- dados financeiros brutos e respostas de IA seguem minimizacao e retencao documentadas;
+- o health check de IA valida apenas configuracao e nunca envia payload ao fornecedor.
 
 ## Ambiente local de banco
 
@@ -162,6 +166,10 @@ Usuario
       -> Dominio financeiro
       -> Importacao e conciliacao
       -> IA explicavel
+        -> runAiTask: consentimento, minimizacao, timeout e retry
+          -> AiProvider substituivel
+            -> FakeAiProvider em testes/desenvolvimento
+            -> OpenAiProvider somente quando habilitado por ambiente
       -> Persistencia PostgreSQL
 
 Build Web
@@ -199,6 +207,8 @@ Responsavel por receber CSV, OFX, mensagens autorizadas e outras origens, normal
 
 Responsavel por extracao, classificacao, explicacao, sugestoes e insights. Saidas devem ser estruturadas, revisaveis e auditaveis; regras deterministicas sao preferidas quando suficientes.
 
+O boundary interno e `AiProvider`. `runAiTask` governa consentimento, minimizacao, retry e logs; adapters concretos apenas traduzem `SafeAiProviderRequest`, executam uma chamada externa por tentativa e validam a resposta. OpenAI e o primeiro adapter real, mas modelo, endpoint e credencial permanecem configuraveis por ambiente e nao fazem parte do dominio financeiro.
+
 ### Interface web/PWA
 
 Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes e shell SSR. A interface deve ser mobile-first, acessivel e coerente com `docs/BRAND.md` e `docs/DESIGN_SYSTEM.md`.
@@ -209,6 +219,10 @@ Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes 
 - Nao criar integracao externa sem ADR ou issue dedicada.
 - Nao acoplar regras de negocio a prompts de IA.
 - Modelar saidas de IA com schemas estruturados.
+- Executar no maximo uma chamada outbound ao provider por tentativa do executor comum.
+- Manter provider real desativado por padrao e testes hermeticos sem secrets ou rede externa.
+- Revalidar consentimento imediatamente antes de cada tentativa de IA quando houver resolvedor dinamico.
+- Nao registrar prompt, campos, credencial, resposta bruta ou identificadores de tenant em logs de provider.
 - Registrar auditoria para mudancas financeiras relevantes.
 - Nao armazenar senhas, tokens brutos ou respostas sensiveis em logs.
 - Preferir exclusao logica para dados financeiros.
@@ -240,7 +254,7 @@ Diretrizes:
 - APIs: contrato, autorizacao, tenant e integracao;
 - banco: schema, migrations e dados seguros;
 - frontend: renderizacao, acessibilidade, estados e contrato SSR quando estilos/rotas forem afetados;
-- IA/importacao: schemas, fallback e revisao humana;
+- IA/importacao: schemas, fallback, consentimento, contagem de chamadas outbound e revisao humana;
 - documentacao: consistencia, links e ADR quando houver decisao duradoura.
 
 ## Estrutura principal
@@ -263,9 +277,9 @@ prisma/
 ## Perguntas abertas
 
 - Qual framework web/backend sera escolhido quando houver beneficio suficiente para uma ADR?
-- Qual provider gerenciado cumprira a ADR 0004?
+- Quais fluxos de produto habilitarao o provider real e quais exigirao revisao humana obrigatoria?
 - Quais excecoes de retencao de dados brutos exigirao consentimento ou ADR?
-- Quais operacoes exigirao revisao humana obrigatoria antes de persistir efeitos financeiros?
+- Quais metricas, budgets e alertas governarao custo e qualidade de IA por ambiente?
 
 Essas respostas devem ser resolvidas por issues especificas e ADRs.
 
