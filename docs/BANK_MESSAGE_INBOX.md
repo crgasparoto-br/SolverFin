@@ -36,14 +36,15 @@ Estado ausente, revogado ou falha de revalidação bloqueia a chamada de forma f
 
 ## Ordem de extração
 
-1. Normalizar e mascarar o texto apenas em memória.
+1. Normalizar o texto apenas em memória e gerar a referência mascarada local.
 2. Executar regras determinísticas para compras com cartão e Pix.
 3. Encerrar sem IA somente quando a regra produzir uma sugestão estruturada; regra parcial continua para o provider.
 4. Quando a regra não for suficiente, selecionar o provider configurado.
 5. Revalidar autenticação, organização, perfil e consentimento persistido imediatamente antes de cada tentativa.
-6. Enviar somente o campo `message`, com mascaramento e allowlist da tarefa `extraction`.
-7. Validar a resposta pelo schema canônico de extração.
-8. Compor o payload persistente com dados confiáveis do produto.
+6. Produzir uma representação outbound minimizada que preserve apenas sinais financeiros necessários, como operação, valor e data. Nomes, contrapartes, finalidades, e-mails, links e palavras livres são substituídos por marcadores redigidos.
+7. Enviar a representação minimizada somente no campo allowlisted `message`. O prompt é constante e não contém nem repete o texto da mensagem.
+8. Validar a resposta pelo schema canônico de extração.
+9. Compor o payload persistente com dados confiáveis do produto.
 
 Uma tentativa do executor produz no máximo uma chamada outbound. Retry, timeout e classificação de falhas pertencem ao executor comum de `@solverfin/ai`.
 
@@ -154,7 +155,9 @@ npm run lint --workspace @solverfin/web
 npm run validate
 ```
 
-As suítes usam providers fake e fixtures fictícias; não acessam IA real nem dependem de segredo. O controle concorrente pausa deliberadamente o provider para comprovar que a segunda resposta usa `processing`, preserva `maskedText`, não cria outra sugestão e não executa uma segunda chamada outbound.
+As suítes usam providers fake e fixtures fictícias; não acessam IA real nem dependem de segredo. O controle `bank-message-provider-minimization.test.ts` usa o adaptador real com um cliente HTTP fake no último limite externo. Ele comprova que uma tentativa produz uma única chamada HTTP, que o corpo não contém nome, finalidade, e-mail ou mensagem integral e que valor/data aparecem uma única vez, somente no campo `message` minimizado.
+
+O controle concorrente pausa deliberadamente o provider para comprovar que a segunda resposta usa `processing`, preserva `maskedText`, não cria outra sugestão e não executa uma segunda chamada outbound.
 
 O controle de revogação tardia concede as duas finalidades, revoga durante a primeira chamada falha e comprova que o executor bloqueia o retry com uma única chamada outbound.
 
