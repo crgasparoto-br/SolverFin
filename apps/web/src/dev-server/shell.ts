@@ -4,6 +4,7 @@ import {
   type ShellRoute,
   type ShellRouteId,
 } from "../app-shell/routes.js";
+import { bankMessageAiInboxControllerScript } from "./bank-message-ai-inbox-controller.js";
 import { icon } from "./icons.js";
 import { operationalInstallmentsController } from "./operational-installments.js";
 import { recurringCardScopeControllerScript } from "./recurring-card-scope-controller.js";
@@ -88,6 +89,7 @@ export function renderAuthenticatedShell(
     ${cardPurchaseEditRouteScript()}
     ${hasStatementPresentation(input.content) ? statementPresentationScript() : ""}
     ${recurringCardScopeControllerScript()}
+    ${input.activePathname === "/inbox" ? bankMessageAiInboxControllerScript() : ""}
     ${renderOperationalInstallmentsScript(input.activePathname)}
   `;
 }
