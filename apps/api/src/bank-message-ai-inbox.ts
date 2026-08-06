@@ -202,7 +202,6 @@ export async function createBankMessageInboxWithAiForContext(
   const suggestion = buildPersistableSuggestion({
     importBatchId,
     sourceHash: transient.sourceHash,
-    maskedText: transient.maskedText,
     payload,
     context,
     now,
@@ -400,7 +399,6 @@ function buildDiagnostic(result: BankMessageParserResult): BankMessageExtraction
 function buildPersistableSuggestion(input: {
   importBatchId: string;
   sourceHash: string;
-  maskedText: string;
   payload: BankMessageInboxCreatePayload;
   context: TenantContext;
   now: string;
@@ -447,7 +445,7 @@ function buildPersistableSuggestion(input: {
       direction: parsed.type === "income" ? "inflow" : "outflow",
       amountMinor: parsed.amountMinor,
       currency: parsed.currency,
-      description: safeDescription(parsed.merchant ?? input.maskedText),
+      description: safeDescription(parsed.merchant),
       ...(input.payload.accountId === undefined ? {} : { accountId: input.payload.accountId }),
       ...(input.payload.categoryId === undefined ? {} : { categoryId: input.payload.categoryId }),
     },
@@ -771,9 +769,9 @@ function safeReason(value: string): string {
   return maskSensitiveText(value).replace(/\s+/g, " ").trim().slice(0, 160);
 }
 
-function safeDescription(value: string): string {
+function safeDescription(value?: string): string {
   return (
-    maskSensitiveText(value).replace(/\s+/g, " ").trim().slice(0, 120) ||
+    maskSensitiveText(value ?? "").replace(/\s+/g, " ").trim().slice(0, 120) ||
     "Mensagem bancária mascarada"
   );
 }
