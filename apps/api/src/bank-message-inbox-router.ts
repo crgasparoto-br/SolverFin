@@ -182,13 +182,24 @@ async function createBankMessageInboxHandler(
   });
 }
 
+export interface BankMessageConsentResolverDependencies {
+  authenticate: typeof requireAuthenticatedRequest;
+  resolveContext: typeof resolveRequestTenantContext;
+  resolveConsent: typeof resolveBankMessageAiConsentForContext;
+}
+
 export function buildAuthoritativeConsentResolver(
   request: ApiRequest,
   expectedContext: TenantContext,
+  dependencies: Partial<BankMessageConsentResolverDependencies> = {},
 ): () => Promise<AiConsentState> {
+  const authenticate = dependencies.authenticate ?? requireAuthenticatedRequest;
+  const resolveContext = dependencies.resolveContext ?? resolveRequestTenantContext;
+  const resolveConsent = dependencies.resolveConsent ?? resolveBankMessageAiConsentForContext;
+
   return async () => {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers));
-    const currentContext = await resolveRequestTenantContext(
+    const user = await authenticate(buildAuthHeaders(request.headers));
+    const currentContext = await resolveContext(
       user,
       request.query.get("profileId") ?? undefined,
     );
@@ -201,7 +212,7 @@ export function buildAuthoritativeConsentResolver(
       return "revoked";
     }
 
-    return resolveBankMessageAiConsentForContext(expectedContext);
+    return resolveConsent(expectedContext);
   };
 }
 
