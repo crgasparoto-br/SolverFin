@@ -25,10 +25,12 @@ A API exige sessão, organização e perfil financeiro resolvidos. `accountId` e
 1. Normalizar e mascarar o texto apenas em memória.
 2. Executar regras determinísticas para compras com cartão e Pix.
 3. Quando nenhuma regra for suficiente, selecionar o provider configurado.
-4. Revalidar o consentimento imediatamente antes de cada tentativa.
+4. Revalidar autenticação, organização, perfil e consentimento imediatamente antes de cada tentativa.
 5. Enviar somente o campo `message`, com mascaramento e allowlist da tarefa `extraction`.
 6. Validar a resposta pelo schema canônico de extração.
 7. Compor o payload persistente com dados confiáveis do produto.
+
+O router fornece ao executor um resolvedor de consentimento vinculado à requisição. Cada consulta revalida a sessão e o tenant esperados. Ausência do resolvedor, sessão revogada, troca de perfil ou falha da consulta bloqueia a chamada externa de forma fail-closed.
 
 Uma tentativa do executor produz no máximo uma chamada outbound. Retry, timeout e classificação de falhas pertencem ao executor comum de `@solverfin/ai`.
 
@@ -56,20 +58,18 @@ A resposta e a listagem da Inbox incluem:
 - `retryable`: informa se o mesmo texto pode ser reenviado para nova tentativa;
 - `reviewReasons`: motivos seguros para orientar a revisão.
 
-A tela existente exibe a mensagem contextual em `maskedText`, diferenciando extração determinística, extração assistida por IA, baixa confiança e indisponibilidade temporária.
+A tela diferencia regra determinística, extração assistida por IA, baixa confiança, extração incompleta e indisponibilidade temporária. Os motivos seguros ficam disponíveis em um controle expansível.
+
+Quando `retryable=true`, a ação **Tentar novamente** reabre o formulário de mensagem. Como o texto bruto não é armazenado, a interface nunca tenta recuperá-lo ou preencher o campo automaticamente: o usuário deve colar novamente a mesma mensagem e confirmar a autorização. O mesmo hash contextual reivindica novamente o lote `FAILED` existente.
 
 ## Fallbacks
 
-| Situação                                    | Resultado                                                                       |
-| ------------------------------------------- | ------------------------------------------------------------------------------- |
-| Provider desativado ou sem configuração     | Lote em revisão, sem chamada externa e sem sugestão inventada.                  |
-| Consentimento ausente ou revogado           | IA bloqueada, diagnóstico controlado e zero chamadas outbound.                  |
-| Timeout, rate limit ou indisponibilidade    | Lote `FAILED`, `retryable=true` e orientação para reenviar a mesma mensagem.    |
-| Resposta inválida ou incompleta             | Lote em revisão, sem efeito financeiro.                                         |
-| Baixa confiança com estrutura válida        | Sugestão persistida em `PENDING_REVIEW` e aviso para revisar todos os campos.   |
-| Tipo `unknown` ou transferência sem direção | Diagnóstico controlado, sem payload financeiro persistido.                      |
-
-Ao reenviar exatamente a mesma mensagem após falha temporária, o serviço reutiliza o mesmo `ImportBatch` e tenta processá-lo novamente.
+- **Provider desativado ou sem configuração:** lote em revisão, sem chamada externa e sem sugestão inventada.
+- **Consentimento ausente, revogado ou não revalidável:** IA bloqueada, diagnóstico controlado e zero chamadas outbound.
+- **Timeout, rate limit ou indisponibilidade:** lote `FAILED`, `retryable=true` e ação para reenviar a mesma mensagem.
+- **Resposta inválida ou incompleta:** lote em revisão, sem efeito financeiro.
+- **Baixa confiança com estrutura válida:** sugestão em `PENDING_REVIEW` e aviso para revisar todos os campos.
+- **Tipo `unknown` ou transferência sem direção:** diagnóstico controlado, sem payload financeiro persistido.
 
 ## Idempotência e concorrência
 
@@ -109,8 +109,11 @@ Cobertura esperada:
 ```bash
 npm run test --workspace @solverfin/api
 npm run test:integration --workspace @solverfin/api
+npm run test --workspace @solverfin/web
 npm run typecheck --workspace @solverfin/api
+npm run typecheck --workspace @solverfin/web
 npm run lint --workspace @solverfin/api
+npm run lint --workspace @solverfin/web
 npm run validate
 ```
 
