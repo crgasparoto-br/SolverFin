@@ -16,6 +16,8 @@ const context: TenantContext = {
 };
 
 await deterministicRuleDoesNotSelectProvider();
+await partialDeterministicRuleFallsBackToProvider();
+await partialDeterministicRuleReportsControlledFallbackWhenProviderIsDisabled();
 await providerProducesStructuredSuggestion();
 await missingConsentResolverBlocksOutbound();
 await revokedConsentBlocksOutbound();
@@ -41,6 +43,64 @@ async function deterministicRuleDoesNotSelectProvider(): Promise<void> {
   assertEqual(selections, 0, "deterministic provider selections");
   assertEqual(result.diagnostic.source, "deterministic", "deterministic source");
   assertEqual(result.parserResult.suggestion?.amountMinor, 4250, "deterministic amount");
+}
+
+async function partialDeterministicRuleFallsBackToProvider(): Promise<void> {
+  let calls = 0;
+  const provider: AiProvider = {
+    id: "partial-rule-provider",
+    model: "fixture-v1",
+    async complete() {
+      calls += 1;
+      return {
+        text: "structured",
+        structured: {
+          amountMinor: 4250,
+          currency: "BRL",
+          occurredOn: "2026-08-05",
+          type: "expense",
+          merchant: "Mercado Demo",
+          confidence: 0.91,
+          source: "bank_message",
+          reasons: ["Provider completou a data ausente na regra parcial."],
+        },
+      };
+    },
+  };
+  const result = await extractBankMessageForProduct(
+    {
+      text: "Compra no cartao final 1234 em Mercado Demo R$ 42,50",
+      context,
+      consentAccepted: true,
+    },
+    {
+      selectProvider: () => readySelection(provider),
+      resolveConsent: () => "granted",
+      policy: policyWithNoRetry(),
+    },
+  );
+
+  assertEqual(calls, 1, "partial rule outbound calls");
+  assertEqual(result.parserResult.sourceKind, "ai", "partial rule assisted source");
+  assertEqual(result.diagnostic.state, "ready_for_review", "partial rule assisted state");
+  assertEqual(result.parserResult.suggestion?.amountMinor, 4250, "partial rule assisted amount");
+}
+
+async function partialDeterministicRuleReportsControlledFallbackWhenProviderIsDisabled(): Promise<void> {
+  const result = await extractBankMessageForProduct(
+    {
+      text: "Compra no cartao final 1234 em Mercado Demo R$ 42,50",
+      context,
+      consentAccepted: true,
+    },
+    {
+      selectProvider: disabledSelection,
+    },
+  );
+
+  assertEqual(result.parserResult.suggestion, undefined, "partial rule suggestion absent");
+  assertEqual(result.diagnostic.source, "deterministic", "partial rule fallback source");
+  assertEqual(result.diagnostic.state, "incomplete", "partial rule fallback state");
 }
 
 async function providerProducesStructuredSuggestion(): Promise<void> {
