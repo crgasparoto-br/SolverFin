@@ -47,7 +47,7 @@ async function main(): Promise<void> {
   try {
     const provider = new FakeAiProvider([
       {
-        text: "structured",
+        text,
         structured: {
           amountMinor: 4250,
           currency: "BRL",
@@ -55,7 +55,7 @@ async function main(): Promise<void> {
           type: "expense",
           confidence: 0.91,
           source: "bank_message",
-          reasons: ["Fixture sem estabelecimento identificável."],
+          reasons: [text, sensitiveName, sensitivePurpose],
         },
       },
     ]);
@@ -95,11 +95,19 @@ async function main(): Promise<void> {
     assert.equal(suggestions.length, 1);
     const storedSuggestion = suggestions[0];
     assert.ok(storedSuggestion);
-    const payload = storedSuggestion.payload as { description?: unknown };
+    const payload = storedSuggestion.payload as {
+      description?: unknown;
+      reasons?: unknown;
+    };
     assert.equal(
       payload.description,
       "Mensagem bancária mascarada",
       "missing merchant must use a generic description instead of message-derived text",
+    );
+    assert.deepEqual(
+      payload.reasons,
+      ["Sugestao estruturada produzida pelo provider para revisao."],
+      "provider-authored reasons must be replaced by a controlled persistent reason",
     );
 
     const batches = await query<{ problems: unknown }>(
