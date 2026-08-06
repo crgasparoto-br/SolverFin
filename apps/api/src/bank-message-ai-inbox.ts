@@ -139,12 +139,10 @@ export async function createBankMessageInboxWithAiForContext(
         reason: "Mensagem bancária recebida com autorização explícita.",
       });
     }
-
     return rows;
   });
 
   let importBatchId = inserted[0]?.id;
-
   if (importBatchId === undefined) {
     const existing = await findInboxItemBySourceHash(context, transient.sourceHash);
 
@@ -176,7 +174,6 @@ export async function createBankMessageInboxWithAiForContext(
           reason: "Mensagem bancária reenviada com nova autorização explícita.",
         });
       }
-
       return rows;
     });
 
@@ -203,7 +200,6 @@ export async function createBankMessageInboxWithAiForContext(
     importBatchId,
     sourceHash: transient.sourceHash,
     payload,
-    context,
     now,
     parserResult: extraction.parserResult,
   });
@@ -319,10 +315,7 @@ export async function extractBankMessageForProduct(
     resolveConsent: () => resolveConsent(input.context),
   };
 
-  if (runtime.logger !== undefined) {
-    parserInput.logger = runtime.logger;
-  }
-
+  if (runtime.logger !== undefined) parserInput.logger = runtime.logger;
   const assisted = await parseBankMessage(parserInput);
   return {
     parserResult: assisted,
@@ -351,7 +344,10 @@ function buildProviderUnavailableDiagnostic(
 }
 
 function buildDiagnostic(result: BankMessageParserResult): BankMessageExtractionDiagnostic {
-  if (result.suggestion?.type === "transfer") {
+  const transferDirectionMissing = result.problems.some(
+    (problem) => problem.code === "EXTRACTION_DIRECTION_REQUIRED",
+  );
+  if (transferDirectionMissing) {
     return {
       code: "BANK_MESSAGE_TRANSFER_DIRECTION_REQUIRED",
       message:
@@ -361,7 +357,7 @@ function buildDiagnostic(result: BankMessageParserResult): BankMessageExtraction
       retryable: false,
       reviewReasons: [
         ...result.reviewReasons,
-        "Transferência sem direção e contas confirmadas não produz sugestão financeira.",
+        "Transferência sem direção confirmada não produz sugestão financeira.",
       ],
     };
   }
@@ -400,14 +396,16 @@ function buildPersistableSuggestion(input: {
   importBatchId: string;
   sourceHash: string;
   payload: BankMessageInboxCreatePayload;
-  context: TenantContext;
   now: string;
   parserResult: BankMessageParserResult;
 }): PersistableSuggestion | undefined {
   const parsed = input.parserResult.suggestion;
-  if (parsed === undefined || parsed.type === "unknown" || parsed.type === "transfer") {
-    return undefined;
-  }
+  if (parsed === undefined || parsed.type === "unknown") return undefined;
+
+  const direction =
+    parsed.direction ??
+    (parsed.type === "income" ? "inflow" : parsed.type === "expense" ? "outflow" : undefined);
+  if (direction === undefined) return undefined;
 
   const safeHints = [
     parsed.accountHint ? `Pista de conta: ${safeReason(parsed.accountHint)}` : undefined,
@@ -415,6 +413,7 @@ function buildPersistableSuggestion(input: {
     parsed.categorySuggestion
       ? `Categoria sugerida: ${safeReason(parsed.categorySuggestion)}`
       : undefined,
+    parsed.type === "transfer" ? `Direção confirmada: ${direction}` : undefined,
   ].filter((value): value is string => value !== undefined);
   const reasons = [...parsed.reasons.map(safeReason), ...safeHints];
   const origin =
@@ -442,7 +441,7 @@ function buildPersistableSuggestion(input: {
       sourceHash: input.sourceHash,
       occurredOn: parsed.occurredOn,
       kind: parsed.type,
-      direction: parsed.type === "income" ? "inflow" : "outflow",
+      direction,
       amountMinor: parsed.amountMinor,
       currency: parsed.currency,
       description: safeDescription(parsed.merchant),
@@ -639,9 +638,7 @@ async function findInboxItemBySourceHash(
   context: TenantContext,
   sourceHash: string,
 ): Promise<BankMessageInboxItem> {
-  const items = await listBankMessageInboxForContext(context, {
-    status: "all",
-  });
+  const items = await listBankMessageInboxForContext(context, { status: "all" });
   const item = items.find((candidate) => candidate.sourceHash === sourceHash);
   if (item === undefined) {
     throw new BankMessageInboxRepositoryError(
@@ -678,18 +675,18 @@ function parseStoredOutcome(value: unknown): StoredBankMessageOutcome | undefine
   ) {
     return undefined;
   }
-  const diagnostic: BankMessageExtractionDiagnostic = {
-    code: record.code,
-    message: record.message,
-    source: record.source,
-    state: record.state,
-    retryable: record.retryable,
-    reviewReasons: Array.isArray(record.reviewReasons)
-      ? record.reviewReasons.filter((reason): reason is string => typeof reason === "string")
-      : [],
-  };
+
   return {
-    diagnostic,
+    diagnostic: {
+      code: record.code,
+      message: record.message,
+      source: record.source,
+      state: record.state,
+      retryable: record.retryable,
+      reviewReasons: Array.isArray(record.reviewReasons)
+        ? record.reviewReasons.filter((reason): reason is string => typeof reason === "string")
+        : [],
+    },
     ...(typeof record.maskedText === "string" && record.maskedText.trim().length > 0
       ? { maskedText: record.maskedText }
       : {}),
@@ -761,8 +758,7 @@ function inferDiagnosticFromSuggestion(
 
 function isTemporaryProviderFailure(result: BankMessageParserResult): boolean {
   if (result.code !== "BANK_MESSAGE_AI_FAILED") return false;
-  const text = result.reviewReasons.join(" ");
-  return /AI_PROVIDER_(?:TIMEOUT|RATE_LIMITED|UNAVAILABLE)/.test(text);
+  return /AI_PROVIDER_(?:TIMEOUT|RATE_LIMITED|UNAVAILABLE)/.test(result.reviewReasons.join(" "));
 }
 
 function safeReason(value: string): string {
