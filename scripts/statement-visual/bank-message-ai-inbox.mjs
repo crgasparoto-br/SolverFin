@@ -4,14 +4,7 @@ import { join } from "node:path";
 
 import pg from "pg";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const { Client } = pg;
@@ -61,33 +54,21 @@ try {
 
   const desktop = await inspectInboxState(browser.cdp, 1366, 900);
   assertInboxState(desktop, "desktop");
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-563-bank-message-ai-inbox-desktop.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-563-bank-message-ai-inbox-desktop.png"));
 
   const openedDesktop = await openRetryDialog(browser.cdp);
   assertRetryDialog(openedDesktop, "desktop");
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-563-bank-message-ai-retry-desktop.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-563-bank-message-ai-retry-desktop.png"));
 
   await closeRetryDialog(browser.cdp);
   const mobile = await inspectInboxState(browser.cdp, 390, 844);
   assertInboxState(mobile, "mobile");
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-563-bank-message-ai-inbox-mobile.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-563-bank-message-ai-inbox-mobile.png"));
 
   const openedMobile = await openRetryDialog(browser.cdp);
   assertRetryDialog(openedMobile, "mobile");
   assert.equal(openedMobile.dialogFitsViewport, true, "Retry dialog must fit the mobile viewport.");
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-563-bank-message-ai-retry-mobile.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-563-bank-message-ai-retry-mobile.png"));
 
   await saveEvidence({
     stage: "passed",
@@ -164,9 +145,7 @@ async function persistTemporaryFailure(databaseClient, importBatchId) {
       source: "ai",
       state: "temporarily_unavailable",
       retryable: true,
-      reviewReasons: [
-        "AI_PROVIDER_TIMEOUT: indisponibilidade fictícia para validação visual.",
-      ],
+      reviewReasons: ["AI_PROVIDER_TIMEOUT: indisponibilidade fictícia para validação visual."],
     },
   ];
   const result = await databaseClient.query(
@@ -241,11 +220,7 @@ function assertInboxState(state, viewport) {
     true,
     `Deterministic extraction state must be visible on ${viewport}.`,
   );
-  assert.equal(
-    state.temporaryVisible,
-    true,
-    `Temporary AI state must be visible on ${viewport}.`,
-  );
+  assert.equal(state.temporaryVisible, true, `Temporary AI state must be visible on ${viewport}.`);
   assert.equal(state.reasonsVisible, true, `Review reasons must be available on ${viewport}.`);
   assert.equal(state.retryVisible, true, `Retry action must be visible on ${viewport}.`);
   assert.equal(state.retryFitsViewport, true, `Retry action must fit on ${viewport}.`);
@@ -255,10 +230,7 @@ function assertInboxState(state, viewport) {
     true,
     `Retry action must expose visible focus on ${viewport}.`,
   );
-  assert.equal(
-    state.retryLabel,
-    "Tentar novamente a extração desta mensagem bancária",
-  );
+  assert.equal(state.retryLabel, "Tentar novamente a extração desta mensagem bancária");
 }
 
 async function openRetryDialog(cdp) {
@@ -272,10 +244,7 @@ async function openRetryDialog(cdp) {
     })()`,
   );
   assert.equal(clicked, true, "Retry action must be clickable.");
-  await waitFor(
-    cdp,
-    `Boolean(document.querySelector("#new-inbox-message-dialog")?.open)`,
-  );
+  await waitFor(cdp, `Boolean(document.querySelector("#new-inbox-message-dialog")?.open)`);
 
   return evaluate(
     cdp,
@@ -306,17 +275,9 @@ async function openRetryDialog(cdp) {
 function assertRetryDialog(state, viewport) {
   assert.equal(state.open, true, `Retry dialog must open on ${viewport}.`);
   assert.equal(state.textareaEmpty, true, `Retry textarea must remain empty on ${viewport}.`);
-  assert.equal(
-    state.textareaFocused,
-    true,
-    `Retry textarea must receive focus on ${viewport}.`,
-  );
+  assert.equal(state.textareaFocused, true, `Retry textarea must receive focus on ${viewport}.`);
   assert.equal(state.origin, "shared", `Retry must preserve shared origin on ${viewport}.`);
-  assert.equal(
-    state.consentChecked,
-    false,
-    `Retry must require fresh consent on ${viewport}.`,
-  );
+  assert.equal(state.consentChecked, false, `Retry must require fresh consent on ${viewport}.`);
   assert.match(state.privacyNotice, /texto original não foi armazenado/i);
   assert.equal(state.statusRole, "status");
   assert.equal(state.statusLive, "polite");
