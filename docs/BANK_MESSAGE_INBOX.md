@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-A Inbox recebe textos de mensagens bancárias fictícias ou autorizadas e cria uma sugestão financeira revisável. O fluxo tenta regras determinísticas primeiro e só consulta o provider de IA quando nenhuma regra produz uma extração suficiente.
+A Inbox recebe textos de mensagens bancárias fictícias ou autorizadas e cria uma sugestão financeira revisável. O fluxo tenta regras determinísticas primeiro e só consulta o provider de IA quando nenhuma regra produz uma extração suficiente. Uma regra que reconhece apenas parte da mensagem, mas não produz sugestão estruturada, não encerra o fluxo: a IA ainda pode completar os campos quando estiver autorizada e configurada.
 
 Nenhuma mensagem recebida cria lançamento final. Toda sugestão permanece em `PENDING_REVIEW` até aprovação explícita na fila de revisão.
 
@@ -24,11 +24,12 @@ A API exige sessão, organização e perfil financeiro resolvidos. `accountId` e
 
 1. Normalizar e mascarar o texto apenas em memória.
 2. Executar regras determinísticas para compras com cartão e Pix.
-3. Quando nenhuma regra for suficiente, selecionar o provider configurado.
-4. Revalidar autenticação, organização, perfil e consentimento imediatamente antes de cada tentativa.
-5. Enviar somente o campo `message`, com mascaramento e allowlist da tarefa `extraction`.
-6. Validar a resposta pelo schema canônico de extração.
-7. Compor o payload persistente com dados confiáveis do produto.
+3. Encerrar sem IA somente quando a regra produzir uma sugestão estruturada; regra parcial continua para o provider.
+4. Quando a regra não for suficiente, selecionar o provider configurado.
+5. Revalidar autenticação, organização, perfil e consentimento imediatamente antes de cada tentativa.
+6. Enviar somente o campo `message`, com mascaramento e allowlist da tarefa `extraction`.
+7. Validar a resposta pelo schema canônico de extração.
+8. Compor o payload persistente com dados confiáveis do produto.
 
 O router fornece ao executor um resolvedor de consentimento vinculado à requisição. Cada consulta revalida a sessão e o tenant esperados. Ausência do resolvedor, sessão revogada, troca de perfil ou falha da consulta bloqueia a chamada externa de forma fail-closed.
 
@@ -49,22 +50,30 @@ Pistas de conta, cartão e categoria produzidas pelo parser são preservadas ape
 
 `origin=pasted|shared` continua registrado no lote da Inbox e é devolvido pela API.
 
+A resposta mantém campos distintos:
+
+- `maskedText`: prévia mascarada da mensagem, nunca substituída pelo diagnóstico;
+- `diagnosticMessage`: texto seguro que explica o estado da extração.
+
 ## Estados exibidos
 
 A resposta e a listagem da Inbox incluem:
 
 - `extractionSource`: `deterministic`, `ai` ou `none`;
-- `extractionState`: `ready_for_review`, `low_confidence`, `incomplete` ou `temporarily_unavailable`;
+- `extractionState`: `processing`, `ready_for_review`, `low_confidence`, `incomplete` ou `temporarily_unavailable`;
 - `retryable`: informa se o mesmo texto pode ser reenviado para nova tentativa;
 - `reviewReasons`: motivos seguros para orientar a revisão.
 
-A tela diferencia regra determinística, extração assistida por IA, baixa confiança, extração incompleta e indisponibilidade temporária. Os motivos seguros ficam disponíveis em um controle expansível.
+`processing` representa um lote já reivindicado por outra requisição que ainda não concluiu a extração. Esse estado nunca é apresentado como pronto para revisão sem sugestão.
+
+A tela diferencia processamento, regra determinística, extração assistida por IA, baixa confiança, extração incompleta e indisponibilidade temporária. Os motivos seguros ficam disponíveis em um controle expansível.
 
 Quando `retryable=true`, a ação **Tentar novamente** reabre o formulário de mensagem. Como o texto bruto não é armazenado, a interface nunca tenta recuperá-lo ou preencher o campo automaticamente: o usuário deve colar novamente a mesma mensagem e confirmar a autorização. O mesmo hash contextual reivindica novamente o lote `FAILED` existente.
 
 ## Fallbacks
 
 - **Provider desativado ou sem configuração:** lote em revisão, sem chamada externa e sem sugestão inventada.
+- **Regra parcial sem provider disponível:** diagnóstico determinístico incompleto, sem marcar o lote como pronto.
 - **Consentimento ausente, revogado ou não revalidável:** IA bloqueada, diagnóstico controlado e zero chamadas outbound.
 - **Timeout, rate limit ou indisponibilidade:** lote `FAILED`, `retryable=true` e ação para reenviar a mesma mensagem.
 - **Resposta inválida ou incompleta:** lote em revisão, sem efeito financeiro.
@@ -75,11 +84,15 @@ Quando `retryable=true`, a ação **Tentar novamente** reabre o formulário de m
 
 `sourceHash` inclui organização, perfil financeiro e texto normalizado. A constraint única de `ImportBatch` garante no máximo um lote por hash contextual.
 
-A criação usa `INSERT ... ON CONFLICT DO NOTHING`. Somente a requisição que cria ou reivindica um lote `FAILED` consulta o provider. Requisições concorrentes retornam o lote já existente e não criam sugestões duplicadas.
+A criação usa `INSERT ... ON CONFLICT DO NOTHING`. Somente a requisição que cria ou reivindica um lote `FAILED` consulta o provider. Uma requisição concorrente que encontra o lote ainda em `REVIEWING` retorna o mesmo identificador com `extractionState=processing`; depois da conclusão, novas leituras devolvem o diagnóstico e a sugestão persistidos. Nenhuma resposta usa `ready_for_review` sem sugestão estruturada.
+
+Requisições concorrentes não criam sugestões duplicadas e não multiplicam chamadas ao provider.
 
 ## Retenção, logs e auditoria
 
 O texto bruto existe apenas durante a requisição. Não é persistido em `ImportBatch`, `AiSuggestion`, auditoria ou logs.
+
+Uma prévia mascarada pode ser persistida junto ao diagnóstico seguro para manter o contrato visual da Inbox; números sensíveis cobertos pela política de mascaramento não são preservados integralmente. O diagnóstico permanece em campo separado.
 
 Também não são persistidos:
 
@@ -88,7 +101,7 @@ Também não são persistidos:
 - credencial ou configuração secreta;
 - identificadores de tenant nos eventos seguros do provider.
 
-Persistimos apenas hash contextual, diagnóstico seguro, payload estruturado validado e auditoria redigida.
+Persistimos apenas hash contextual, prévia mascarada, diagnóstico seguro, payload estruturado validado e auditoria redigida. A recepção ou o reenvio autorizado é atribuído ao usuário; o resultado da extração e a criação da sugestão são atribuídos ao sistema.
 
 ## Endpoints
 
@@ -117,4 +130,4 @@ npm run lint --workspace @solverfin/web
 npm run validate
 ```
 
-As suítes usam providers fake e fixtures fictícias; não acessam IA real nem dependem de segredo.
+As suítes usam providers fake e fixtures fictícias; não acessam IA real nem dependem de segredo. O controle concorrente pausa deliberadamente o provider para comprovar que a segunda resposta usa `processing`, preserva `maskedText`, não cria outra sugestão e não executa uma segunda chamada outbound.
