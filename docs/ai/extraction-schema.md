@@ -13,6 +13,7 @@ O schema fica em `@solverfin/ai` e deve ser usado antes de qualquer sugestao aut
 | `currency`             | Sim                                | Codigo de 3 letras. O valor e normalizado para maiusculas, como `BRL`.                        |
 | `occurredOn` ou `date` | Sim                                | Data em `YYYY-MM-DD`, data/hora ISO ou `DD/MM/YYYY`. O valor e normalizado para `YYYY-MM-DD`. |
 | `type`                 | Sim                                | `income`, `expense`, `transfer` ou `unknown`. O valor e normalizado para minusculas.          |
+| `direction`            | Sim para `transfer`                | `inflow` ou `outflow`. Receita infere `inflow`; despesa infere `outflow`.                     |
 | `merchant`             | Nao                                | Texto curto do estabelecimento ou contraparte.                                                |
 | `accountHint`          | Nao                                | Pista de conta, banco ou carteira.                                                            |
 | `cardHint`             | Nao                                | Pista de cartao, como final ou apelido.                                                       |
@@ -29,7 +30,10 @@ Qualquer campo fora da lista e tratado como inesperado. Isso evita que respostas
 - `currency` e convertida para maiusculas.
 - Datas validas sao convertidas para `YYYY-MM-DD`.
 - Datas impossiveis, como `2026-02-31`, sao rejeitadas.
-- Tipos e fontes sao normalizados para minusculas antes da validacao.
+- Tipos, fontes e direcao sao normalizados para minusculas antes da validacao.
+- Receita sem direcao explicita recebe `inflow`; despesa recebe `outflow`.
+- Transferencia sem direcao e rejeitada com `EXTRACTION_DIRECTION_REQUIRED`.
+- Direcao contraditoria ao tipo e rejeitada com `EXTRACTION_DIRECTION_CONFLICT`.
 - Textos opcionais vazios sao ignorados.
 
 ## Integracao com mensagens bancarias
@@ -40,7 +44,7 @@ Uma regra deterministica encerra o fluxo sem IA somente quando produz `suggestio
 
 Quando a regra reconhece a mensagem por completo, a origem persistida e `rule` com `ruleId`. Quando a IA completa a extracao, a origem e `provider` com provider e modelo. `accountHint`, `cardHint` e `categorySuggestion` permanecem apenas como motivos mascarados; eles nunca substituem `accountId`, `cardId` ou `categoryId` confiaveis do produto.
 
-O servico da Inbox aceita somente `income` e `expense` como sugestao financeira completa. `unknown`, transferencia sem direcao confiavel, resposta invalida ou estrutura incompleta geram diagnostico revisavel sem payload financeiro.
+O servico aceita `income`, `expense` e `transfer` como sugestao revisavel quando a estrutura e valida. Transferencia exige `direction=inflow|outflow`; sem direcao segura, permanece como diagnostico controlado sem payload financeiro. `unknown`, resposta invalida ou estrutura incompleta tambem nao produzem sugestao financeira.
 
 Conta e categoria opcionais recebidas da interface sao validadas por formato, organizacao, perfil financeiro e estado ativo antes da selecao do provider. A composicao adiciona esses IDs, o hash contextual, o fingerprint e a auditoria depois da validacao da resposta.
 
@@ -55,7 +59,7 @@ Para `transaction_extraction`, o payload persistido e uma uniao versionada:
 - `payloadVersion: 1` representa receita ou despesa;
 - `payloadVersion: 2` inclui transferencia e `direction`;
 - `origin`, `target`, `fingerprint`, `reasons` e `audit` registram proveniencia e controle de obsolescencia;
-- `sourceRowNumber`, `sourceHash`, `occurredOn`, `kind`, `amountMinor`, `currency` e `description` permanecem no nivel raiz do envelope;
+- `sourceRowNumber`, `sourceHash`, `occurredOn`, `kind`, `direction`, `amountMinor`, `currency` e `description` permanecem no nivel raiz do envelope;
 - conta, outra conta, categoria e identificador externo sao opcionais e tipados.
 
 O formato plano dos campos especificos preserva compatibilidade com os leitores V1/V2 existentes, enquanto `contractVersion` e `suggestionKind` permitem distinguir o contrato atual de registros legados. Leitores novos devem usar `readAiSuggestionPayload`; adaptadores legados podem ler os campos transacionais somente depois que o tipo esperado foi conhecido.
@@ -92,6 +96,7 @@ Resultado esperado:
     "currency": "BRL",
     "occurredOn": "2026-06-16",
     "type": "expense",
+    "direction": "outflow",
     "merchant": "Mercado Demo",
     "categorySuggestion": "Alimentacao",
     "confidence": 0.86,
@@ -101,6 +106,23 @@ Resultado esperado:
   "problems": []
 }
 ```
+
+## Exemplo de transferencia valida
+
+```json
+{
+  "amountMinor": 4200,
+  "currency": "BRL",
+  "occurredOn": "2026-08-05",
+  "type": "transfer",
+  "direction": "outflow",
+  "confidence": 0.91,
+  "source": "bank_message",
+  "reasons": ["A mensagem informa transferencia enviada."]
+}
+```
+
+Sem `direction`, o resultado e `invalid` e inclui `EXTRACTION_DIRECTION_REQUIRED`.
 
 ## Exemplo invalido
 
@@ -132,22 +154,6 @@ Resultado esperado:
 ## Baixa confianca
 
 Uma saida estruturalmente valida com `confidence` abaixo de `0.7` retorna `needs_review`. A sugestao normalizada fica disponivel para a tela ou fila de revisao, mas nao deve ser aplicada automaticamente.
-
-```json
-{
-  "status": "needs_review",
-  "suggestion": {
-    "amountMinor": 2500,
-    "currency": "BRL",
-    "occurredOn": "2026-06-16",
-    "type": "expense",
-    "confidence": 0.42,
-    "source": "shared_text",
-    "reasons": ["Texto incompleto, mas contem valor e data."]
-  },
-  "problems": [{ "code": "EXTRACTION_LOW_CONFIDENCE", "field": "confidence" }]
-}
-```
 
 ## Uso recomendado
 
