@@ -52,7 +52,7 @@ Pistas de conta, cartão e categoria produzidas pelo parser são preservadas ape
 
 A resposta mantém campos distintos:
 
-- `maskedText`: prévia mascarada da mensagem, nunca substituída pelo diagnóstico;
+- `maskedText`: referência mascarada estável do lote, sem conteúdo bruto da mensagem e nunca substituída pelo diagnóstico;
 - `diagnosticMessage`: texto seguro que explica o estado da extração.
 
 ## Estados exibidos
@@ -92,7 +92,7 @@ Requisições concorrentes não criam sugestões duplicadas e não multiplicam c
 
 O texto bruto existe apenas durante a requisição. Não é persistido em `ImportBatch`, `AiSuggestion`, auditoria ou logs.
 
-Uma prévia mascarada pode ser persistida junto ao diagnóstico seguro para manter o contrato visual da Inbox; números sensíveis cobertos pela política de mascaramento não são preservados integralmente. O diagnóstico permanece em campo separado.
+Uma referência mascarada derivada apenas do `sourceHash` pode ser persistida junto ao diagnóstico seguro para manter o contrato visual e associar a linha da Inbox. Ela não contém o texto original, estabelecimento, valor, documento ou outra parte da mensagem. O diagnóstico permanece em campo separado.
 
 Também não são persistidos:
 
@@ -101,7 +101,7 @@ Também não são persistidos:
 - credencial ou configuração secreta;
 - identificadores de tenant nos eventos seguros do provider.
 
-Persistimos apenas hash contextual, prévia mascarada, diagnóstico seguro, payload estruturado validado e auditoria redigida. A recepção ou o reenvio autorizado é atribuído ao usuário; o resultado da extração e a criação da sugestão são atribuídos ao sistema.
+Persistimos apenas hash contextual, referência mascarada não reversível, diagnóstico seguro, payload estruturado validado e auditoria redigida. A recepção ou o reenvio autorizado é atribuído ao usuário; o resultado da extração e a criação da sugestão são atribuídos ao sistema.
 
 ## Endpoints
 
