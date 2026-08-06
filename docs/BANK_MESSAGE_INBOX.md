@@ -60,14 +60,14 @@ A tela existente exibe a mensagem contextual em `maskedText`, diferenciando extr
 
 ## Fallbacks
 
-| Situação | Resultado |
-| --- | --- |
-| Provider desativado ou sem configuração | lote em revisão, sem chamada externa e sem sugestão inventada |
-| Consentimento ausente ou revogado | IA bloqueada, diagnóstico controlado e zero chamadas outbound |
-| Timeout, rate limit ou indisponibilidade | lote `FAILED`, `retryable=true` e orientação para reenviar a mesma mensagem |
-| Resposta inválida ou incompleta | lote em revisão, sem efeito financeiro |
-| Baixa confiança com estrutura válida | sugestão persistida em `PENDING_REVIEW` e aviso para revisar todos os campos |
-| Tipo `unknown` ou transferência sem direção confiável | diagnóstico controlado, sem payload financeiro persistido |
+| Situação                                    | Resultado                                                                       |
+| ------------------------------------------- | ------------------------------------------------------------------------------- |
+| Provider desativado ou sem configuração     | Lote em revisão, sem chamada externa e sem sugestão inventada.                  |
+| Consentimento ausente ou revogado           | IA bloqueada, diagnóstico controlado e zero chamadas outbound.                  |
+| Timeout, rate limit ou indisponibilidade    | Lote `FAILED`, `retryable=true` e orientação para reenviar a mesma mensagem.    |
+| Resposta inválida ou incompleta             | Lote em revisão, sem efeito financeiro.                                         |
+| Baixa confiança com estrutura válida        | Sugestão persistida em `PENDING_REVIEW` e aviso para revisar todos os campos.   |
+| Tipo `unknown` ou transferência sem direção | Diagnóstico controlado, sem payload financeiro persistido.                      |
 
 Ao reenviar exatamente a mesma mensagem após falha temporária, o serviço reutiliza o mesmo `ImportBatch` e tenta processá-lo novamente.
 
