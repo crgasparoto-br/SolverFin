@@ -367,10 +367,7 @@ function noRetryPolicy() {
   };
 }
 
-async function assertRejectsWithCode(
-  action: () => Promise<unknown>,
-  code: string,
-): Promise<void> {
+async function assertRejectsWithCode(action: () => Promise<unknown>, code: string): Promise<void> {
   await assert.rejects(action, (error: unknown) => {
     return error instanceof BankMessageInboxRepositoryError && error.code === code;
   });
