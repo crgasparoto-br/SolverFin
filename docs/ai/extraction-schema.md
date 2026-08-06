@@ -32,7 +32,7 @@ Qualquer campo fora da lista e tratado como inesperado. Isso evita que respostas
 - Datas impossiveis, como `2026-02-31`, sao rejeitadas.
 - Tipos, fontes e direcao sao normalizados para minusculas antes da validacao.
 - Receita sem direcao explicita recebe `inflow`; despesa recebe `outflow`.
-- Transferencia sem direcao e rejeitada com `EXTRACTION_DIRECTION_REQUIRED`.
+- Transferencia sem direcao retorna `needs_review` com `EXTRACTION_DIRECTION_REQUIRED` e nao pode ser persistida como sugestao financeira.
 - Direcao contraditoria ao tipo e rejeitada com `EXTRACTION_DIRECTION_CONFLICT`.
 - Textos opcionais vazios sao ignorados.
 
@@ -122,7 +122,7 @@ Resultado esperado:
 }
 ```
 
-Sem `direction`, o resultado e `invalid` e inclui `EXTRACTION_DIRECTION_REQUIRED`.
+Sem `direction`, o resultado e `needs_review`, inclui `EXTRACTION_DIRECTION_REQUIRED` e permanece sem payload financeiro persistivel.
 
 ## Exemplo invalido
 
