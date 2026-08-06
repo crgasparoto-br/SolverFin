@@ -137,8 +137,9 @@ function ambiguousTransferIsRejected(): void {
     reasons: ["Mensagem não informa se a transferência entrou ou saiu."],
   });
 
-  assert.equal(result.status, "invalid");
-  assert.equal(result.suggestion, undefined);
+  assert.equal(result.status, "needs_review");
+  assert.equal(result.suggestion?.type, "transfer");
+  assert.equal(result.suggestion?.direction, undefined);
   assertProblemCode(result.problems, "EXTRACTION_DIRECTION_REQUIRED");
 }
 
