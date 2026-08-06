@@ -14,9 +14,7 @@ import {
   listBankMessageInboxWithAiForContext,
 } from "./bank-message-ai-inbox.js";
 import { closePool, query } from "./db.js";
-import {
-  BankMessageInboxRepositoryError,
-} from "./repositories/bank-message-inbox.js";
+import { BankMessageInboxRepositoryError } from "./repositories/bank-message-inbox.js";
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const MEI_ACCOUNT_ID = "44444444-4444-4444-8444-444444444442";
@@ -31,10 +29,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const profileRows = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -69,12 +64,8 @@ async function main(): Promise<void> {
   try {
     const concurrentToken = randomUUID();
     const concurrentText =
-      `${concurrentToken} Compra no cartao final 1234 em Mercado Demo ` +
-      "R$ 42,50 em 05/08/2026";
-    const concurrentSourceHash = buildBankMessageSourceHash(
-      context,
-      concurrentText,
-    );
+      `${concurrentToken} Compra no cartao final 1234 em Mercado Demo ` + "R$ 42,50 em 05/08/2026";
+    const concurrentSourceHash = buildBankMessageSourceHash(context, concurrentText);
     createdSourceHashes.push(concurrentSourceHash);
     await Promise.all([
       createBankMessageInboxWithAiForContext(context, {
@@ -120,11 +111,7 @@ async function main(): Promise<void> {
        ) as exposed`,
       [organizationId, PERSONAL_PROFILE_ID, concurrentText],
     );
-    assert.equal(
-      storedRaw[0]?.exposed,
-      false,
-      "raw message must not be persisted",
-    );
+    assert.equal(storedRaw[0]?.exposed, false, "raw message must not be persisted");
 
     let providerSelections = 0;
     const selectionGuard = {
@@ -175,16 +162,11 @@ async function main(): Promise<void> {
         ),
       "BANK_MESSAGE_CATEGORY_INVALID",
     );
-    assert.equal(
-      providerSelections,
-      0,
-      "tenant validation must happen before provider selection",
-    );
+    assert.equal(providerSelections, 0, "tenant validation must happen before provider selection");
 
     const retryToken = randomUUID();
     const retryText =
-      `${retryToken} aviso bancario fora dos formatos conhecidos ` +
-      "em 05/08/2026";
+      `${retryToken} aviso bancario fora dos formatos conhecidos ` + "em 05/08/2026";
     const retrySourceHash = buildBankMessageSourceHash(context, retryText);
     createdSourceHashes.push(retrySourceHash);
     const timeoutProvider: AiProvider = {
@@ -295,10 +277,7 @@ function noRetryPolicy() {
   };
 }
 
-async function assertRejectsWithCode(
-  action: () => Promise<unknown>,
-  code: string,
-): Promise<void> {
+async function assertRejectsWithCode(action: () => Promise<unknown>, code: string): Promise<void> {
   await assert.rejects(action, (error: unknown) => {
     return error instanceof BankMessageInboxRepositoryError && error.code === code;
   });
