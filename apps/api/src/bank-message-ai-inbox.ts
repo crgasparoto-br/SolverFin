@@ -11,10 +11,7 @@ import {
   type BankMessageParserResult,
   type SafeAiLogger,
 } from "@solverfin/ai";
-import {
-  createBankMessageInboxItem,
-  type TenantContext,
-} from "@solverfin/domain";
+import { createBankMessageInboxItem, type TenantContext } from "@solverfin/domain";
 import {
   buildAiSuggestionPayload,
   type TransactionExtractionSuggestionPayloadV2,
@@ -129,16 +126,10 @@ export async function createBankMessageInboxWithAiForContext(
   let importBatchId = inserted[0]?.id;
 
   if (importBatchId === undefined) {
-    const existing = await findInboxItemBySourceHash(
-      context,
-      transient.sourceHash,
-    );
+    const existing = await findInboxItemBySourceHash(context, transient.sourceHash);
 
     if (existing.importBatch.status !== "failed") {
-      return enrichInboxItem(
-        existing,
-        await readDiagnostic(context, existing.id),
-      );
+      return enrichInboxItem(existing, await readDiagnostic(context, existing.id));
     }
 
     const claimed = await query<{ id: string }>(
@@ -152,14 +143,8 @@ export async function createBankMessageInboxWithAiForContext(
 
     importBatchId = claimed[0]?.id;
     if (importBatchId === undefined) {
-      const concurrent = await findInboxItemBySourceHash(
-        context,
-        transient.sourceHash,
-      );
-      return enrichInboxItem(
-        concurrent,
-        await readDiagnostic(context, concurrent.id),
-      );
+      const concurrent = await findInboxItemBySourceHash(context, transient.sourceHash);
+      return enrichInboxItem(concurrent, await readDiagnostic(context, concurrent.id));
     }
   }
 
@@ -204,9 +189,7 @@ export async function listBankMessageInboxWithAiForContext(
     [context.organizationId, context.financialProfileId],
   );
   const diagnostics = new Map(
-    diagnosticRows.map(
-      (row) => [row.id, parseDiagnostic(row.problems)] as const,
-    ),
+    diagnosticRows.map((row) => [row.id, parseDiagnostic(row.problems)] as const),
   );
 
   return items.map((item) => enrichInboxItem(item, diagnostics.get(item.id)));
@@ -232,8 +215,7 @@ export async function extractBankMessageForProduct(
   let selection: AiProviderSelection;
   try {
     selection =
-      runtime.selectProvider?.() ??
-      createAiProviderFromEnvironment(process.env);
+      runtime.selectProvider?.() ?? createAiProviderFromEnvironment(process.env);
   } catch {
     return {
       parserResult: deterministic,
@@ -264,6 +246,24 @@ export async function extractBankMessageForProduct(
     };
   }
 
+  const resolveConsent = runtime.resolveConsent;
+  if (resolveConsent === undefined) {
+    return {
+      parserResult: deterministic,
+      diagnostic: {
+        code: "BANK_MESSAGE_CONSENT_CHECK_REQUIRED",
+        message:
+          "Não foi possível confirmar o consentimento ativo. Revise a mensagem manualmente.",
+        source: "none",
+        state: "incomplete",
+        retryable: false,
+        reviewReasons: [
+          "Consentimento ativo não pôde ser revalidado antes da chamada externa.",
+        ],
+      },
+    };
+  }
+
   const policy: AiUsagePolicy = runtime.policy ?? {
     ...defaultAiUsagePolicy,
     consent: input.consentAccepted ? "granted" : "revoked",
@@ -274,10 +274,6 @@ export async function extractBankMessageForProduct(
     allowRawFinancialText: false,
     allowedFieldNames: ["message"],
   };
-  const resolveConsent =
-    runtime.resolveConsent ??
-    (() =>
-      input.consentAccepted ? ("granted" as const) : ("revoked" as const));
   const parserInput: Parameters<typeof parseBankMessage>[0] = {
     text: input.text,
     provider: selection.provider,
@@ -304,9 +300,7 @@ export async function extractBankMessageForProduct(
   };
 }
 
-function buildDiagnostic(
-  result: BankMessageParserResult,
-): BankMessageExtractionDiagnostic {
+function buildDiagnostic(result: BankMessageParserResult): BankMessageExtractionDiagnostic {
   if (result.suggestion !== undefined) {
     const lowConfidence = result.status === "needs_review";
     return {
@@ -604,9 +598,7 @@ async function readDiagnostic(
   return parseDiagnostic(rows[0]?.problems);
 }
 
-function parseDiagnostic(
-  value: unknown,
-): BankMessageExtractionDiagnostic | undefined {
+function parseDiagnostic(value: unknown): BankMessageExtractionDiagnostic | undefined {
   const candidate = Array.isArray(value) ? value[0] : undefined;
   if (typeof candidate !== "object" || candidate === null) return undefined;
   const record = candidate as Record<string, unknown>;
@@ -688,15 +680,11 @@ function safeDescription(value: string): string {
   );
 }
 
-function isExtractionSource(
-  value: unknown,
-): value is BankMessageExtractionSource {
+function isExtractionSource(value: unknown): value is BankMessageExtractionSource {
   return value === "deterministic" || value === "ai" || value === "none";
 }
 
-function isExtractionState(
-  value: unknown,
-): value is BankMessageExtractionState {
+function isExtractionState(value: unknown): value is BankMessageExtractionState {
   return (
     value === "ready_for_review" ||
     value === "low_confidence" ||
