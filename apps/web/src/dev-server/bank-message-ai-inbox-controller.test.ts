@@ -11,7 +11,10 @@ assertIncludes(script, "dataRetryBankMessage");
 assertIncludes(script, "Tentar novamente");
 assertIncludes(script, "o texto original não foi armazenado");
 assertIncludes(script, 'textarea[name="text"]');
+assertIncludes(script, "dataBankMessageRetryStatus");
 assertIncludes(script, 'status.setAttribute("role", "status")');
+assertIncludes(script, 'status.setAttribute("aria-live", "polite")');
+assertIncludes(script, 'form.insertAdjacentElement("afterend", status)');
 assertNotIncludes(script, "message.rawText");
 assertNotIncludes(script, "message.text");
 
