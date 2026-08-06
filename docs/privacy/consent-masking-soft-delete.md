@@ -26,21 +26,23 @@ Antes de cada tentativa externa, o fluxo revalida cumulativamente:
 
 Se qualquer finalidade estiver ausente ou revogada, a tentativa e bloqueada sem chamar o provider. Uma revogacao ocorrida depois da primeira tentativa e antes de um retry impede a nova chamada.
 
-## Mascaramento
+## Mascaramento e minimizacao
 
-O utilitario compartilhado cobre:
+O utilitario compartilhado de mascaramento cobre:
 
 - numero de cartao;
 - CPF/CNPJ ficticio ou documento em padrao comum;
-- identificadores longos de conta/agencia;
-- tokens e secrets em textos;
-- mensagens bancarias com termos de risco.
+- identificadores numericos longos de conta/agencia;
+- tokens e secrets reconhecidos pelos contratos compartilhados.
+
+A Inbox bancaria aplica uma camada adicional antes da fronteira do provider. Essa camada preserva somente sinais financeiros necessarios, como tipo de operacao, direcao, valor e data, e substitui palavras livres, nomes, contrapartes, finalidades, e-mails e links por marcadores redigidos. O prompt enviado ao provider e constante e nao repete a mensagem.
 
 Regras:
 
 - Logs e erros nao devem incluir payload financeiro bruto.
 - UI deve exibir identificadores completos apenas quando houver necessidade explicita e autorizada.
 - Fixtures e exemplos devem usar dados ficticios e, preferencialmente, ja mascarados.
+- Chamadas externas da Inbox devem usar somente a representacao minimizada produzida para a finalidade `extraction`.
 
 ## Exclusao logica
 
