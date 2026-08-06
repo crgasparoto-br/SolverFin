@@ -25,8 +25,10 @@ const grantedPolicy = {
 };
 
 await testCardPurchaseRuleFixture();
+await testCompleteRuleSkipsAiProvider();
 await testPixReceivedRuleFixture();
 await testAmbiguousRuleNeedsReview();
+await testPartialRuleFallsBackToAiProvider();
 await testAiProviderValidStructuredOutput();
 await testAiBlockedWithoutConsent();
 await testAiPolicySnapshotBlocksContradictoryResolver();
@@ -54,6 +56,29 @@ async function testCardPurchaseRuleFixture(): Promise<void> {
   assertEqual(result.maskedText.includes("1234"), true, "masked text keeps last card digits");
 }
 
+async function testCompleteRuleSkipsAiProvider(): Promise<void> {
+  let calls = 0;
+  const provider: AiProvider = {
+    id: "counting",
+    model: "counting-model",
+    async complete() {
+      calls += 1;
+      return { text: "must not be called" };
+    },
+  };
+  const result = await parseBankMessage({
+    text: "Compra no cartao final 1234 em Mercado Demo R$ 42,50 em 16/06/2026",
+    provider,
+    context,
+    policy: grantedPolicy,
+    resolveConsent: () => "granted",
+  });
+
+  assertEqual(calls, 0, "complete rule provider calls");
+  assertEqual(result.sourceKind, "rule", "complete rule source");
+  assertSuggestion(result);
+}
+
 async function testPixReceivedRuleFixture(): Promise<void> {
   const result = await parseBankMessage({
     text: "Banco Verde informa: Pix recebido de Cliente Demo em 2026-06-16 no valor de R$ 100,00",
@@ -77,6 +102,44 @@ async function testAmbiguousRuleNeedsReview(): Promise<void> {
   assertEqual(result.code, "BANK_MESSAGE_RULE_NEEDS_REVIEW", "ambiguous code");
   assertProblem(result, "EXTRACTION_DATE_REQUIRED");
   assertEqual(result.suggestion, undefined, "ambiguous suggestion absent");
+}
+
+async function testPartialRuleFallsBackToAiProvider(): Promise<void> {
+  let calls = 0;
+  const provider: AiProvider = {
+    id: "partial-rule-provider",
+    model: "fixture-v1",
+    async complete() {
+      calls += 1;
+      return {
+        text: "structured",
+        structured: {
+          amountMinor: 4250,
+          currency: "BRL",
+          occurredOn: "2026-06-16",
+          type: "expense",
+          merchant: "Mercado Demo",
+          confidence: 0.91,
+          source: "bank_message",
+          reasons: ["Provider completou a data ausente na regra parcial."],
+        },
+      };
+    },
+  };
+  const result = await parseBankMessage({
+    text: "Compra no cartao final 1234 em Mercado Demo R$ 42,50",
+    provider,
+    context,
+    policy: grantedPolicy,
+    resolveConsent: () => "granted",
+  });
+
+  assertEqual(calls, 1, "partial rule provider calls");
+  assertEqual(result.status, "suggested", "partial rule status");
+  assertEqual(result.sourceKind, "ai", "partial rule source");
+  assertSuggestion(result);
+  assertEqual(result.suggestion.amountMinor, 4250, "partial rule amount");
+  assertEqual(result.suggestion.occurredOn, "2026-06-16", "partial rule completed date");
 }
 
 async function testAiProviderValidStructuredOutput(): Promise<void> {
