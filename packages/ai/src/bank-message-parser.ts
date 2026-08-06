@@ -59,6 +59,8 @@ interface RuleMatch {
 }
 
 const DEFAULT_MIN_CONFIDENCE = 0.7;
+const SAFE_AI_EXTRACTION_REASON =
+  "Sugestao estruturada produzida pelo provider para revisao.";
 
 export async function parseBankMessage(
   input: BankMessageParserInput,
@@ -203,6 +205,7 @@ export async function parseBankMessage(
     };
   }
 
+  const safeProviderReasons = [SAFE_AI_EXTRACTION_REASON] as const;
   const result: BankMessageParserResult = {
     status: validation.status === "valid" ? "suggested" : "needs_review",
     sourceKind: "ai",
@@ -210,7 +213,8 @@ export async function parseBankMessage(
     maskedText,
     suggestion: {
       ...validation.suggestion,
-      explanation: validation.suggestion.reasons.join(" "),
+      reasons: safeProviderReasons,
+      explanation: SAFE_AI_EXTRACTION_REASON,
       sourceKind: "ai",
       providerId: aiResult.providerId,
       model: aiResult.model,
