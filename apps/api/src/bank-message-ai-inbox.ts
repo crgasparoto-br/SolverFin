@@ -11,7 +11,10 @@ import {
   type BankMessageParserResult,
   type SafeAiLogger,
 } from "@solverfin/ai";
-import { createBankMessageInboxItem, type TenantContext } from "@solverfin/domain";
+import {
+  createBankMessageInboxItem,
+  type TenantContext,
+} from "@solverfin/domain";
 import {
   buildAiSuggestionPayload,
   type TransactionExtractionSuggestionPayloadV2,
@@ -51,7 +54,9 @@ export interface BankMessageInboxViewItem extends BankMessageInboxItem {
 
 export interface BankMessageAiRuntime {
   selectProvider: () => AiProviderSelection;
-  resolveConsent: (context: TenantContext) => AiConsentState | Promise<AiConsentState>;
+  resolveConsent: (
+    context: TenantContext,
+  ) => AiConsentState | Promise<AiConsentState>;
   logger?: SafeAiLogger;
   policy?: AiUsagePolicy;
   now?: () => string;
@@ -124,10 +129,16 @@ export async function createBankMessageInboxWithAiForContext(
   let importBatchId = inserted[0]?.id;
 
   if (importBatchId === undefined) {
-    const existing = await findInboxItemBySourceHash(context, transient.sourceHash);
+    const existing = await findInboxItemBySourceHash(
+      context,
+      transient.sourceHash,
+    );
 
     if (existing.importBatch.status !== "failed") {
-      return enrichInboxItem(existing, await readDiagnostic(context, existing.id));
+      return enrichInboxItem(
+        existing,
+        await readDiagnostic(context, existing.id),
+      );
     }
 
     const claimed = await query<{ id: string }>(
@@ -141,8 +152,14 @@ export async function createBankMessageInboxWithAiForContext(
 
     importBatchId = claimed[0]?.id;
     if (importBatchId === undefined) {
-      const concurrent = await findInboxItemBySourceHash(context, transient.sourceHash);
-      return enrichInboxItem(concurrent, await readDiagnostic(context, concurrent.id));
+      const concurrent = await findInboxItemBySourceHash(
+        context,
+        transient.sourceHash,
+      );
+      return enrichInboxItem(
+        concurrent,
+        await readDiagnostic(context, concurrent.id),
+      );
     }
   }
 
@@ -187,7 +204,9 @@ export async function listBankMessageInboxWithAiForContext(
     [context.organizationId, context.financialProfileId],
   );
   const diagnostics = new Map(
-    diagnosticRows.map((row) => [row.id, parseDiagnostic(row.problems)] as const),
+    diagnosticRows.map(
+      (row) => [row.id, parseDiagnostic(row.problems)] as const,
+    ),
   );
 
   return items.map((item) => enrichInboxItem(item, diagnostics.get(item.id)));
@@ -212,13 +231,16 @@ export async function extractBankMessageForProduct(
 
   let selection: AiProviderSelection;
   try {
-    selection = runtime.selectProvider?.() ?? createAiProviderFromEnvironment(process.env);
+    selection =
+      runtime.selectProvider?.() ??
+      createAiProviderFromEnvironment(process.env);
   } catch {
     return {
       parserResult: deterministic,
       diagnostic: {
         code: "BANK_MESSAGE_AI_NOT_CONFIGURED",
-        message: "A extração por IA não está disponível. Revise a mensagem manualmente.",
+        message:
+          "A extração por IA não está disponível. Revise a mensagem manualmente.",
         source: "none",
         state: "incomplete",
         retryable: false,
@@ -232,7 +254,8 @@ export async function extractBankMessageForProduct(
       parserResult: deterministic,
       diagnostic: {
         code: "BANK_MESSAGE_AI_NOT_CONFIGURED",
-        message: "Nenhuma regra reconheceu a mensagem. Revise os dados manualmente.",
+        message:
+          "Nenhuma regra reconheceu a mensagem. Revise os dados manualmente.",
         source: "none",
         state: "incomplete",
         retryable: false,
@@ -253,7 +276,8 @@ export async function extractBankMessageForProduct(
   };
   const resolveConsent =
     runtime.resolveConsent ??
-    (() => (input.consentAccepted ? ("granted" as const) : ("revoked" as const)));
+    (() =>
+      input.consentAccepted ? ("granted" as const) : ("revoked" as const));
   const parserInput: Parameters<typeof parseBankMessage>[0] = {
     text: input.text,
     provider: selection.provider,
@@ -261,7 +285,9 @@ export async function extractBankMessageForProduct(
       organizationId: input.context.organizationId,
       financialProfileId: input.context.financialProfileId,
       userId: input.context.userId,
-      ...(runtime.correlationId === undefined ? {} : { correlationId: runtime.correlationId }),
+      ...(runtime.correlationId === undefined
+        ? {}
+        : { correlationId: runtime.correlationId }),
     },
     policy,
     resolveConsent: () => resolveConsent(input.context),
@@ -278,7 +304,9 @@ export async function extractBankMessageForProduct(
   };
 }
 
-function buildDiagnostic(result: BankMessageParserResult): BankMessageExtractionDiagnostic {
+function buildDiagnostic(
+  result: BankMessageParserResult,
+): BankMessageExtractionDiagnostic {
   if (result.suggestion !== undefined) {
     const lowConfidence = result.status === "needs_review";
     return {
@@ -323,13 +351,21 @@ function buildPersistableSuggestion(input: {
   parserResult: BankMessageParserResult;
 }): PersistableSuggestion | undefined {
   const parsed = input.parserResult.suggestion;
-  if (parsed === undefined || parsed.type === "unknown" || parsed.type === "transfer") {
+  if (
+    parsed === undefined ||
+    parsed.type === "unknown" ||
+    parsed.type === "transfer"
+  ) {
     return undefined;
   }
 
   const safeHints = [
-    parsed.accountHint ? `Pista de conta: ${safeReason(parsed.accountHint)}` : undefined,
-    parsed.cardHint ? `Pista de cartão: ${safeReason(parsed.cardHint)}` : undefined,
+    parsed.accountHint
+      ? `Pista de conta: ${safeReason(parsed.accountHint)}`
+      : undefined,
+    parsed.cardHint
+      ? `Pista de cartão: ${safeReason(parsed.cardHint)}`
+      : undefined,
     parsed.categorySuggestion
       ? `Categoria sugerida: ${safeReason(parsed.categorySuggestion)}`
       : undefined,
@@ -364,11 +400,16 @@ function buildPersistableSuggestion(input: {
       amountMinor: parsed.amountMinor,
       currency: parsed.currency,
       description: safeDescription(parsed.merchant ?? input.maskedText),
-      ...(input.payload.accountId === undefined ? {} : { accountId: input.payload.accountId }),
-      ...(input.payload.categoryId === undefined ? {} : { categoryId: input.payload.categoryId }),
+      ...(input.payload.accountId === undefined
+        ? {}
+        : { accountId: input.payload.accountId }),
+      ...(input.payload.categoryId === undefined
+        ? {}
+        : { categoryId: input.payload.categoryId }),
     },
   }) as TransactionExtractionSuggestionPayloadV2;
-  const sourceLabel = parsed.sourceKind === "ai" ? "assistida por IA" : "determinística";
+  const sourceLabel =
+    parsed.sourceKind === "ai" ? "assistida por IA" : "determinística";
 
   return {
     id: randomUUID(),
@@ -426,7 +467,11 @@ async function persistExtractionOutcome(input: {
     await executeQuery(
       `update "ImportBatch"
        set "status" = $4::"ImportStatus", "problems" = $5::jsonb,
-           "completedAt" = case when $4 = 'FAILED' then $6 else null end, "updatedAt" = $6
+           "completedAt" = case
+             when $4::"ImportStatus" = 'FAILED' then $6::timestamptz
+             else null::timestamptz
+           end,
+           "updatedAt" = $6::timestamptz
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
       [
         input.importBatchId,
@@ -508,7 +553,11 @@ async function assertScopedActiveEntity(
   code: string,
 ): Promise<void> {
   if (!UUID_PATTERN.test(id)) {
-    throw new BankMessageInboxRepositoryError(code, "Seleção inválida para este perfil.", 400);
+    throw new BankMessageInboxRepositoryError(
+      code,
+      "Seleção inválida para este perfil.",
+      400,
+    );
   }
 
   const rows = await query<{ id: string }>(
@@ -517,7 +566,11 @@ async function assertScopedActiveEntity(
     [id, context.organizationId, context.financialProfileId],
   );
   if (rows.length === 0) {
-    throw new BankMessageInboxRepositoryError(code, "Seleção inválida para este perfil.", 404);
+    throw new BankMessageInboxRepositoryError(
+      code,
+      "Seleção inválida para este perfil.",
+      404,
+    );
   }
 }
 
@@ -525,7 +578,9 @@ async function findInboxItemBySourceHash(
   context: TenantContext,
   sourceHash: string,
 ): Promise<BankMessageInboxItem> {
-  const items = await listBankMessageInboxForContext(context, { status: "all" });
+  const items = await listBankMessageInboxForContext(context, {
+    status: "all",
+  });
   const item = items.find((candidate) => candidate.sourceHash === sourceHash);
   if (item === undefined) {
     throw new BankMessageInboxRepositoryError(
@@ -549,7 +604,9 @@ async function readDiagnostic(
   return parseDiagnostic(rows[0]?.problems);
 }
 
-function parseDiagnostic(value: unknown): BankMessageExtractionDiagnostic | undefined {
+function parseDiagnostic(
+  value: unknown,
+): BankMessageExtractionDiagnostic | undefined {
   const candidate = Array.isArray(value) ? value[0] : undefined;
   if (typeof candidate !== "object" || candidate === null) return undefined;
   const record = candidate as Record<string, unknown>;
@@ -569,7 +626,9 @@ function parseDiagnostic(value: unknown): BankMessageExtractionDiagnostic | unde
     state: record.state,
     retryable: record.retryable,
     reviewReasons: Array.isArray(record.reviewReasons)
-      ? record.reviewReasons.filter((reason): reason is string => typeof reason === "string")
+      ? record.reviewReasons.filter(
+          (reason): reason is string => typeof reason === "string",
+        )
       : [],
   };
 }
@@ -593,11 +652,12 @@ function inferDiagnosticFromSuggestion(
   item: BankMessageInboxItem,
 ): BankMessageExtractionDiagnostic {
   const provider = item.suggestion?.provider ?? "";
-  const source: BankMessageExtractionSource = provider.startsWith("solverfin-rule-")
-    ? "deterministic"
-    : item.suggestion
-      ? "ai"
-      : "none";
+  const source: BankMessageExtractionSource =
+    provider.startsWith("solverfin-rule-")
+      ? "deterministic"
+      : item.suggestion
+        ? "ai"
+        : "none";
   return {
     code: "BANK_MESSAGE_EXTRACTION_STATUS",
     message: item.suggestion?.explanation ?? "Mensagem recebida para revisão.",
@@ -628,11 +688,15 @@ function safeDescription(value: string): string {
   );
 }
 
-function isExtractionSource(value: unknown): value is BankMessageExtractionSource {
+function isExtractionSource(
+  value: unknown,
+): value is BankMessageExtractionSource {
   return value === "deterministic" || value === "ai" || value === "none";
 }
 
-function isExtractionState(value: unknown): value is BankMessageExtractionState {
+function isExtractionState(
+  value: unknown,
+): value is BankMessageExtractionState {
   return (
     value === "ready_for_review" ||
     value === "low_confidence" ||
