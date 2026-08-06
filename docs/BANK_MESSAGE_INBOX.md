@@ -40,11 +40,13 @@ Uma tentativa do executor produz no máximo uma chamada outbound. Retry, timeout
 A saída válida é convertida para `AiSuggestion.payload` canônico V2:
 
 - valor em unidade minoritária, moeda, data, tipo e direção;
-- descrição derivada do estabelecimento ou do texto mascarado;
+- descrição derivada exclusivamente do estabelecimento estruturado; quando o provider não informa `merchant`, usa-se o texto fixo `Mensagem bancária mascarada`;
 - conta e categoria opcionais já validadas no tenant;
 - confiança e motivos seguros;
 - origem `rule` com `ruleId`, ou `provider` com provider e modelo;
 - `sourceHash`, fingerprint e auditoria.
+
+O texto mascarado da mensagem nunca é usado como fallback para `payload.description`. Essa separação impede que nomes, contrapartes, finalidades ou trechos não reconhecidos da mensagem sejam retidos quando o provider devolve uma estrutura válida sem estabelecimento.
 
 Pistas de conta, cartão e categoria produzidas pelo parser são preservadas apenas como motivos mascarados para revisão. Elas nunca são tratadas como IDs internos.
 
@@ -79,6 +81,7 @@ Quando `retryable=true`, a ação **Tentar novamente** reabre o formulário de m
 - **Resposta inválida ou incompleta:** lote em revisão, sem efeito financeiro.
 - **Baixa confiança com estrutura válida:** sugestão em `PENDING_REVIEW` e aviso para revisar todos os campos.
 - **Tipo `unknown` ou transferência sem direção:** diagnóstico controlado, sem payload financeiro persistido.
+- **Estrutura válida sem `merchant`:** sugestão revisável com descrição genérica fixa, sem reutilizar qualquer trecho da mensagem.
 
 ## Idempotência e concorrência
 
@@ -93,6 +96,8 @@ Requisições concorrentes não criam sugestões duplicadas e não multiplicam c
 O texto bruto existe apenas durante a requisição. Não é persistido em `ImportBatch`, `AiSuggestion`, auditoria ou logs.
 
 Uma referência mascarada derivada apenas do `sourceHash` pode ser persistida junto ao diagnóstico seguro para manter o contrato visual e associar a linha da Inbox. Ela não contém o texto original, estabelecimento, valor, documento ou outra parte da mensagem. O diagnóstico permanece em campo separado.
+
+A descrição da sugestão usa somente o `merchant` estruturado e sanitizado ou o fallback genérico fixo. Não existe fallback derivado do texto bruto ou mascarado da mensagem.
 
 Também não são persistidos:
 
@@ -131,3 +136,5 @@ npm run validate
 ```
 
 As suítes usam providers fake e fixtures fictícias; não acessam IA real nem dependem de segredo. O controle concorrente pausa deliberadamente o provider para comprovar que a segunda resposta usa `processing`, preserva `maskedText`, não cria outra sugestão e não executa uma segunda chamada outbound.
+
+O controle de privacidade `bank-message-ai-privacy.integration.test.ts` cobre uma resposta válida sem `merchant` e verifica que mensagem, nome, finalidade e marcador sensível não aparecem no payload, na explicação, nos problemas do lote nem na auditoria.
