@@ -20,6 +20,14 @@ export function bankMessageAiInboxControllerScript(): string {
           );
         }
 
+        function buildMessagesUrl() {
+          const url = new URL("/api/bank-message-inbox", window.location.origin);
+          url.searchParams.set("status", "all");
+          const profileId = new URLSearchParams(window.location.search).get("profileId");
+          if (profileId) url.searchParams.set("profileId", profileId);
+          return url;
+        }
+
         function addReviewReasons(row, reasons) {
           if (!Array.isArray(reasons) || reasons.length === 0) return;
           const preview = row.querySelector(".message-preview");
@@ -56,6 +64,12 @@ export function bankMessageAiInboxControllerScript(): string {
           return status;
         }
 
+        function clearRetryStatus() {
+          document
+            .querySelector("#new-inbox-message-dialog [data-bank-message-retry-status]")
+            ?.remove();
+        }
+
         function openRetryDialog(message) {
           const dialog = document.getElementById("new-inbox-message-dialog");
           const form = dialog?.querySelector("[data-api-form]");
@@ -77,7 +91,7 @@ export function bankMessageAiInboxControllerScript(): string {
           const section = findMessagesSection();
           if (!section) return;
 
-          const response = await fetch("/api/bank-message-inbox?status=all");
+          const response = await fetch(buildMessagesUrl());
           if (!response.ok) return;
           const body = await response.json().catch(() => ({}));
           const messages = Array.isArray(body.messages) ? body.messages : [];
@@ -116,6 +130,10 @@ export function bankMessageAiInboxControllerScript(): string {
             actions.prepend(button);
           });
         }
+
+        document
+          .querySelectorAll('[data-open-dialog="new-inbox-message-dialog"]')
+          .forEach((button) => button.addEventListener("click", clearRetryStatus, true));
 
         enhanceMessages().catch(() => {
           // A lista SSR continua utilizável se o enriquecimento progressivo falhar.
