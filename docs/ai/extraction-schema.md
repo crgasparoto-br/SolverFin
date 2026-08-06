@@ -32,6 +32,16 @@ Qualquer campo fora da lista e tratado como inesperado. Isso evita que respostas
 - Tipos e fontes sao normalizados para minusculas antes da validacao.
 - Textos opcionais vazios sao ignorados.
 
+## Integracao com mensagens bancarias
+
+A Inbox executa regras deterministicas antes do provider. Ambas as fontes produzem o mesmo `BankMessageParserResult` e passam pela mesma composicao persistente.
+
+Quando a regra reconhece a mensagem, a origem persistida e `rule` com `ruleId`. Quando a IA completa a extracao, a origem e `provider` com provider e modelo. `accountHint`, `cardHint` e `categorySuggestion` permanecem apenas como motivos mascarados; eles nunca substituem `accountId`, `cardId` ou `categoryId` confiaveis do produto.
+
+O servico da Inbox aceita somente `income` e `expense` como sugestao financeira completa. `unknown`, transferencia sem direcao confiavel, resposta invalida ou estrutura incompleta geram diagnostico revisavel sem payload financeiro.
+
+Conta e categoria opcionais recebidas da interface sao validadas por formato, organizacao, perfil financeiro e estado ativo antes da selecao do provider. A composicao adiciona esses IDs, o hash contextual, o fingerprint e a auditoria depois da validacao da resposta.
+
 ## Persistencia da sugestao revisavel
 
 A saida normalizada do provedor nao e persistida diretamente como objeto livre. Quando o fluxo cria uma `AiSuggestion`, ele a converte para o envelope canonico de `docs/AI_SUGGESTION_PAYLOADS.md`.
