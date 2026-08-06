@@ -15,6 +15,10 @@ import {
 } from "./bank-message-ai-inbox.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
+  grantBankMessageAiConsentForContext,
+  resolveBankMessageAiConsentForContext,
+} from "./repositories/ai-consent.js";
+import {
   discardBankMessageInboxForContext,
   mapBankMessageInboxError,
 } from "./repositories/bank-message-inbox.js";
@@ -154,6 +158,11 @@ async function createBankMessageInboxHandler(
     body.consentAccepted === true ||
     body.consentAccepted === "true" ||
     body.consentAccepted === "on";
+  const correlationId = resolveCorrelationId(request.headers);
+
+  if (consentAccepted) {
+    await grantBankMessageAiConsentForContext(context, { correlationId });
+  }
 
   return json(201, {
     message: await createBankMessageInboxWithAiForContext(
@@ -166,32 +175,33 @@ async function createBankMessageInboxHandler(
         ...(hasNonEmptyValue(body.categoryId) ? { categoryId: String(body.categoryId) } : {}),
       },
       {
-        correlationId: resolveCorrelationId(request.headers),
-        resolveConsent: buildAuthoritativeConsentResolver(request, context, consentAccepted),
+        correlationId,
+        resolveConsent: buildAuthoritativeConsentResolver(request, context),
       },
     ),
   });
 }
 
-function buildAuthoritativeConsentResolver(
+export function buildAuthoritativeConsentResolver(
   request: ApiRequest,
   expectedContext: TenantContext,
-  consentAccepted: boolean,
 ): () => Promise<AiConsentState> {
   return async () => {
-    if (!consentAccepted) return "revoked";
-
     const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers));
     const currentContext = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
     );
 
-    return currentContext.userId === expectedContext.userId &&
-      currentContext.organizationId === expectedContext.organizationId &&
-      currentContext.financialProfileId === expectedContext.financialProfileId
-      ? "granted"
-      : "revoked";
+    if (
+      currentContext.userId !== expectedContext.userId ||
+      currentContext.organizationId !== expectedContext.organizationId ||
+      currentContext.financialProfileId !== expectedContext.financialProfileId
+    ) {
+      return "revoked";
+    }
+
+    return resolveBankMessageAiConsentForContext(expectedContext);
   };
 }
 
