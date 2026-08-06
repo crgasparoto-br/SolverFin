@@ -20,18 +20,30 @@ Campos aceitos:
 
 A API exige sessão, organização e perfil financeiro resolvidos. `accountId` e `categoryId` são validados por formato, organização, perfil e estado ativo antes de qualquer chamada ao provider ou persistência da sugestão. IDs inválidos ou de outro tenant retornam erro controlado sem enumerar recursos.
 
+## Consentimento autoritativo
+
+O checkbox do formulário é a decisão explícita que inicia o fluxo, mas não é usado como snapshot permanente para autorizar retries. Ao receber o aceite, o backend registra transições tenant-scoped para as finalidades `bank_message_processing` e `ai_processing` na trilha append-only `SecurityAuditEvent`.
+
+O estado atual é derivado do evento mais recente de cada finalidade para o mesmo usuário, organização e perfil. Gravações usam lock transacional por contexto e não repetem uma transição já efetiva.
+
+Imediatamente antes de cada tentativa externa, o resolvedor produtivo revalida:
+
+1. sessão e usuário atuais;
+2. organização e perfil financeiro esperados;
+3. estado persistido mais recente das duas finalidades.
+
+Estado ausente, revogado ou falha de revalidação bloqueia a chamada de forma fail-closed. Se a revogação ocorrer depois da primeira tentativa e antes de um retry, a próxima tentativa é bloqueada e não alcança o provider.
+
 ## Ordem de extração
 
 1. Normalizar e mascarar o texto apenas em memória.
 2. Executar regras determinísticas para compras com cartão e Pix.
 3. Encerrar sem IA somente quando a regra produzir uma sugestão estruturada; regra parcial continua para o provider.
 4. Quando a regra não for suficiente, selecionar o provider configurado.
-5. Revalidar autenticação, organização, perfil e consentimento imediatamente antes de cada tentativa.
+5. Revalidar autenticação, organização, perfil e consentimento persistido imediatamente antes de cada tentativa.
 6. Enviar somente o campo `message`, com mascaramento e allowlist da tarefa `extraction`.
 7. Validar a resposta pelo schema canônico de extração.
 8. Compor o payload persistente com dados confiáveis do produto.
-
-O router fornece ao executor um resolvedor de consentimento vinculado à requisição. Cada consulta revalida a sessão e o tenant esperados. Ausência do resolvedor, sessão revogada, troca de perfil ou falha da consulta bloqueia a chamada externa de forma fail-closed.
 
 Uma tentativa do executor produz no máximo uma chamada outbound. Retry, timeout e classificação de falhas pertencem ao executor comum de `@solverfin/ai`.
 
@@ -45,6 +57,8 @@ A saída válida é convertida para `AiSuggestion.payload` canônico V2:
 - confiança e motivos seguros;
 - origem `rule` com `ruleId`, ou `provider` com provider e modelo;
 - `sourceHash`, fingerprint e auditoria.
+
+Receitas recebem direção `inflow` e despesas recebem `outflow` quando o provider não a informa. Transferências precisam declarar `direction=inflow|outflow`. Uma transferência dirigida pode gerar sugestão V2 revisável; uma transferência ambígua não gera payload financeiro.
 
 O texto mascarado da mensagem nunca é usado como fallback para `payload.description`. Essa separação impede que nomes, contrapartes, finalidades ou trechos não reconhecidos da mensagem sejam retidos quando o provider devolve uma estrutura válida sem estabelecimento.
 
@@ -77,10 +91,12 @@ Quando `retryable=true`, a ação **Tentar novamente** reabre o formulário de m
 - **Provider desativado ou sem configuração:** lote em revisão, sem chamada externa e sem sugestão inventada.
 - **Regra parcial sem provider disponível:** diagnóstico determinístico incompleto, sem marcar o lote como pronto.
 - **Consentimento ausente, revogado ou não revalidável:** IA bloqueada, diagnóstico controlado e zero chamadas outbound.
+- **Revogação entre tentativas:** o retry é interrompido antes do provider.
 - **Timeout, rate limit ou indisponibilidade:** lote `FAILED`, `retryable=true` e ação para reenviar a mesma mensagem.
 - **Resposta inválida ou incompleta:** lote em revisão, sem efeito financeiro.
 - **Baixa confiança com estrutura válida:** sugestão em `PENDING_REVIEW` e aviso para revisar todos os campos.
 - **Tipo `unknown` ou transferência sem direção:** diagnóstico controlado, sem payload financeiro persistido.
+- **Transferência com direção segura:** sugestão V2 em revisão, sem lançamento automático.
 - **Estrutura válida sem `merchant`:** sugestão revisável com descrição genérica fixa, sem reutilizar qualquer trecho da mensagem.
 
 ## Idempotência e concorrência
@@ -90,6 +106,8 @@ Quando `retryable=true`, a ação **Tentar novamente** reabre o formulário de m
 A criação usa `INSERT ... ON CONFLICT DO NOTHING`. Somente a requisição que cria ou reivindica um lote `FAILED` consulta o provider. Uma requisição concorrente que encontra o lote ainda em `REVIEWING` retorna o mesmo identificador com `extractionState=processing`; depois da conclusão, novas leituras devolvem o diagnóstico e a sugestão persistidos. Nenhuma resposta usa `ready_for_review` sem sugestão estruturada.
 
 Requisições concorrentes não criam sugestões duplicadas e não multiplicam chamadas ao provider.
+
+O registro de consentimento usa lock transacional separado por usuário e contexto. Aceites concorrentes convergem para o mesmo estado efetivo sem regravar proveniência quando as duas finalidades já estão concedidas.
 
 ## Retenção, logs e auditoria
 
@@ -106,12 +124,12 @@ Também não são persistidos:
 - credencial ou configuração secreta;
 - identificadores de tenant nos eventos seguros do provider.
 
-Persistimos apenas hash contextual, referência mascarada não reversível, diagnóstico seguro, payload estruturado validado e auditoria redigida. A recepção ou o reenvio autorizado é atribuído ao usuário; o resultado da extração e a criação da sugestão são atribuídos ao sistema.
+Persistimos apenas hash contextual, referência mascarada não reversível, diagnóstico seguro, payload estruturado validado, transições de consentimento sem dados financeiros e auditoria redigida. A recepção ou o reenvio autorizado é atribuído ao usuário; o resultado da extração e a criação da sugestão são atribuídos ao sistema.
 
 ## Endpoints
 
 - `GET /api/bank-message-inbox?status=all`: lista mensagens do perfil ativo com estado da extração;
-- `POST /api/bank-message-inbox`: registra e processa uma mensagem autorizada;
+- `POST /api/bank-message-inbox`: registra consentimento atual e processa uma mensagem autorizada;
 - `POST /api/bank-message-inbox/:messageId/discard`: descarta o lote e expira sugestão pendente quando aplicável.
 
 ## Configuração e rollout
@@ -125,6 +143,7 @@ Sem provider configurado, o fluxo determinístico e a revisão manual continuam 
 Cobertura esperada:
 
 ```bash
+npm run test --workspace @solverfin/ai
 npm run test --workspace @solverfin/api
 npm run test:integration --workspace @solverfin/api
 npm run test --workspace @solverfin/web
@@ -136,5 +155,9 @@ npm run validate
 ```
 
 As suítes usam providers fake e fixtures fictícias; não acessam IA real nem dependem de segredo. O controle concorrente pausa deliberadamente o provider para comprovar que a segunda resposta usa `processing`, preserva `maskedText`, não cria outra sugestão e não executa uma segunda chamada outbound.
+
+O controle de revogação tardia concede as duas finalidades, revoga durante a primeira chamada falha e comprova que o executor bloqueia o retry com uma única chamada outbound.
+
+Os controles de transferência cobrem duas famílias discriminantes: transferência sem direção não persiste `AiSuggestion`; transferência com `direction=outflow` persiste payload V2 com `kind=transfer` e permanece sob revisão.
 
 O controle de privacidade `bank-message-ai-privacy.integration.test.ts` cobre uma resposta válida sem `merchant` e verifica que mensagem, nome, finalidade e marcador sensível não aparecem no payload, na explicação, nos problemas do lote nem na auditoria.
