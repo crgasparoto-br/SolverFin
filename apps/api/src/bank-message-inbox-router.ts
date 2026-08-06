@@ -56,7 +56,7 @@ export async function handleBankMessageInboxApiRequest(
   }
 
   try {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers));
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -181,7 +181,7 @@ function buildAuthoritativeConsentResolver(
   return async () => {
     if (!consentAccepted) return "revoked";
 
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers));
     const currentContext = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -235,8 +235,13 @@ function hasNonEmptyValue(value: unknown): boolean {
   return value !== undefined && value !== null && String(value).trim().length > 0;
 }
 
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
-  return authorization === undefined ? {} : { authorization };
+export function buildAuthHeaders(
+  headers: Readonly<Record<string, string | undefined>>,
+): { authorization?: string; cookie?: string } {
+  return {
+    ...(headers.authorization === undefined ? {} : { authorization: headers.authorization }),
+    ...(headers.cookie === undefined ? {} : { cookie: headers.cookie }),
+  };
 }
 
 function json(statusCode: number, body: unknown): ApiResponse {

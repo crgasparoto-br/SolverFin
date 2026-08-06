@@ -352,6 +352,21 @@ function buildProviderUnavailableDiagnostic(
 }
 
 function buildDiagnostic(result: BankMessageParserResult): BankMessageExtractionDiagnostic {
+  if (result.suggestion?.type === "transfer") {
+    return {
+      code: "BANK_MESSAGE_TRANSFER_DIRECTION_REQUIRED",
+      message:
+        "A transferência não informa uma direção segura. Revise os dados manualmente antes de criar qualquer lançamento.",
+      source: result.sourceKind === "ai" ? "ai" : "deterministic",
+      state: "incomplete",
+      retryable: false,
+      reviewReasons: [
+        ...result.reviewReasons,
+        "Transferência sem direção e contas confirmadas não produz sugestão financeira.",
+      ],
+    };
+  }
+
   if (result.suggestion !== undefined) {
     const lowConfidence = result.status === "needs_review";
     return {
