@@ -40,11 +40,7 @@ async function deterministicRuleDoesNotSelectProvider(): Promise<void> {
 
   assertEqual(selections, 0, "deterministic provider selections");
   assertEqual(result.diagnostic.source, "deterministic", "deterministic source");
-  assertEqual(
-    result.parserResult.suggestion?.amountMinor,
-    4250,
-    "deterministic amount",
-  );
+  assertEqual(result.parserResult.suggestion?.amountMinor, 4250, "deterministic amount");
 }
 
 async function providerProducesStructuredSuggestion(): Promise<void> {
@@ -166,11 +162,7 @@ async function temporaryFailureIsRetryable(): Promise<void> {
 
   assertEqual(calls, 1, "one outbound call for one attempt");
   assertEqual(result.diagnostic.retryable, true, "timeout retryable");
-  assertEqual(
-    result.diagnostic.state,
-    "temporarily_unavailable",
-    "timeout state",
-  );
+  assertEqual(result.diagnostic.state, "temporarily_unavailable", "timeout state");
 }
 
 async function invalidOutputStaysUnderReview(): Promise<void> {
@@ -181,18 +173,13 @@ async function invalidOutputStaysUnderReview(): Promise<void> {
       consentAccepted: true,
     },
     {
-      selectProvider: () =>
-        readySelection(new FakeAiProvider([{ text: "invalid" }])),
+      selectProvider: () => readySelection(new FakeAiProvider([{ text: "invalid" }])),
       resolveConsent: () => "granted",
       policy: policyWithNoRetry(),
     },
   );
 
-  assertEqual(
-    result.parserResult.suggestion,
-    undefined,
-    "invalid suggestion absent",
-  );
+  assertEqual(result.parserResult.suggestion, undefined, "invalid suggestion absent");
   assertEqual(result.diagnostic.state, "incomplete", "invalid output state");
   assertEqual(result.diagnostic.retryable, false, "invalid output not retried");
 }
