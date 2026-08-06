@@ -136,7 +136,9 @@ export function validateTransactionExtraction(
   }
 
   const hasBlockingProblem = problems.some(
-    (problem) => problem.code !== "EXTRACTION_LOW_CONFIDENCE",
+    (problem) =>
+      problem.code !== "EXTRACTION_LOW_CONFIDENCE" &&
+      problem.code !== "EXTRACTION_DIRECTION_REQUIRED",
   );
 
   if (
