@@ -8,6 +8,7 @@ export function bankMessageAiInboxControllerScript(): string {
           none: "Revisão manual",
         };
         const stateLabels = {
+          processing: "Em processamento",
           ready_for_review: "Pronta para revisão",
           low_confidence: "Baixa confiança",
           incomplete: "Extração incompleta",
@@ -26,6 +27,25 @@ export function bankMessageAiInboxControllerScript(): string {
           const profileId = new URLSearchParams(window.location.search).get("profileId");
           if (profileId) url.searchParams.set("profileId", profileId);
           return url;
+        }
+
+        function buildRowsByMaskedText(rows) {
+          const indexed = new Map();
+          for (const row of rows) {
+            const key = row.querySelector(".message-preview > p")?.textContent?.trim();
+            if (!key) continue;
+            const matches = indexed.get(key) || [];
+            matches.push(row);
+            indexed.set(key, matches);
+          }
+          return indexed;
+        }
+
+        function findUnambiguousMessageRow(rowsByMaskedText, message) {
+          const key = typeof message.maskedText === "string" ? message.maskedText.trim() : "";
+          if (!key) return undefined;
+          const matches = rowsByMaskedText.get(key) || [];
+          return matches.length === 1 ? matches[0] : undefined;
         }
 
         function addReviewReasons(row, reasons) {
@@ -96,10 +116,12 @@ export function bankMessageAiInboxControllerScript(): string {
           const body = await response.json().catch(() => ({}));
           const messages = Array.isArray(body.messages) ? body.messages : [];
           const rows = Array.from(section.querySelectorAll("article.maintenance-item"));
+          const rowsByMaskedText = buildRowsByMaskedText(rows);
 
-          messages.forEach((message, index) => {
-            const row = rows[index];
-            if (!row || typeof message !== "object" || message === null) return;
+          messages.forEach((message) => {
+            if (typeof message !== "object" || message === null) return;
+            const row = findUnambiguousMessageRow(rowsByMaskedText, message);
+            if (!row) return;
 
             const summary = row.querySelector(".maintenance-summary > div");
             if (summary && !summary.querySelector("[data-extraction-status]")) {
@@ -109,6 +131,9 @@ export function bankMessageAiInboxControllerScript(): string {
               const source = sourceLabels[message.extractionSource] || "Origem não identificada";
               const state = stateLabels[message.extractionState] || "Estado não identificado";
               status.textContent = "Extração: " + source + " · " + state;
+              if (typeof message.diagnosticMessage === "string") {
+                status.title = message.diagnosticMessage;
+              }
               summary.appendChild(status);
             }
 
