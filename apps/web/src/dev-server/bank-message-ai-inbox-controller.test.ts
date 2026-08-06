@@ -2,7 +2,10 @@ import { bankMessageAiInboxControllerScript } from "./bank-message-ai-inbox-cont
 
 const script = bankMessageAiInboxControllerScript();
 
-assertIncludes(script, "/api/bank-message-inbox?status=all");
+assertIncludes(script, 'new URL("/api/bank-message-inbox", window.location.origin)');
+assertIncludes(script, 'url.searchParams.set("status", "all")');
+assertIncludes(script, 'new URLSearchParams(window.location.search).get("profileId")');
+assertIncludes(script, 'url.searchParams.set("profileId", profileId)');
 assertIncludes(script, "Regra determinística");
 assertIncludes(script, "Assistida por IA");
 assertIncludes(script, "Baixa confiança");
@@ -15,6 +18,8 @@ assertIncludes(script, "dataset.bankMessageRetryStatus");
 assertIncludes(script, 'status.setAttribute("role", "status")');
 assertIncludes(script, 'status.setAttribute("aria-live", "polite")');
 assertIncludes(script, 'form.insertAdjacentElement("afterend", status)');
+assertIncludes(script, "clearRetryStatus");
+assertIncludes(script, 'data-open-dialog="new-inbox-message-dialog"');
 assertNotIncludes(script, "message.rawText");
 assertNotIncludes(script, "message.text");
 
