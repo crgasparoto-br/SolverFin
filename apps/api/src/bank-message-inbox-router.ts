@@ -163,7 +163,10 @@ async function createBankMessageInboxHandler(
         ...(hasNonEmptyValue(body.accountId) ? { accountId: String(body.accountId) } : {}),
         ...(hasNonEmptyValue(body.categoryId) ? { categoryId: String(body.categoryId) } : {}),
       },
-      { correlationId: resolveCorrelationId(request.headers) },
+      {
+        correlationId: resolveCorrelationId(request.headers),
+        resolveConsent: () => (consentAccepted ? "granted" : "revoked"),
+      },
     ),
   });
 }
