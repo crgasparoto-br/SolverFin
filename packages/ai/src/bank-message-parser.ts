@@ -79,12 +79,28 @@ export async function parseBankMessage(
   }
 
   const ruleMatch = matchBankMessageRule(normalizedText);
+  let partialRuleResult: BankMessageParserResult | undefined;
 
   if (ruleMatch !== undefined) {
-    return buildRuleResult(ruleMatch, normalizedText, maskedText, input.minConfidenceForSuggestion);
+    const ruleResult = buildRuleResult(
+      ruleMatch,
+      normalizedText,
+      maskedText,
+      input.minConfidenceForSuggestion,
+    );
+
+    if (ruleResult.suggestion !== undefined) {
+      return ruleResult;
+    }
+
+    partialRuleResult = ruleResult;
   }
 
   if (!input.provider || !input.context || !input.policy) {
+    if (partialRuleResult !== undefined) {
+      return partialRuleResult;
+    }
+
     return {
       status: "needs_review",
       sourceKind: "none",
