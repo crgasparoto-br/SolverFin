@@ -12,6 +12,20 @@ Finalidades iniciais:
 
 Cada consentimento registra usuario, organizacao, perfil financeiro, finalidade, status, origem, data/hora e versao de termos quando disponivel. Revogacao bloqueia novos fluxos sensiveis daquela finalidade.
 
+### Estado autoritativo da Inbox bancaria
+
+O aceite no formulario da Inbox registra transicoes imutaveis para `bank_message_processing` e `ai_processing` em `SecurityAuditEvent`. O estado atual e derivado do evento mais recente de cada finalidade, filtrado por usuario, organizacao e perfil financeiro.
+
+A gravacao usa lock transacional por contexto. Um aceite semanticamente identico nao cria nova transicao nem reatribui proveniencia. Revogacao gera nova transicao e passa a ser observada imediatamente pelos consumidores.
+
+Antes de cada tentativa externa, o fluxo revalida cumulativamente:
+
+1. sessao e identidade atuais;
+2. organizacao e perfil financeiro esperados;
+3. estado persistido mais recente das duas finalidades.
+
+Se qualquer finalidade estiver ausente ou revogada, a tentativa e bloqueada sem chamar o provider. Uma revogacao ocorrida depois da primeira tentativa e antes de um retry impede a nova chamada.
+
 ## Mascaramento
 
 O utilitario compartilhado cobre:
@@ -38,6 +52,6 @@ Hard delete fica bloqueado por padrao no codigo de aplicacao e deve ser reservad
 
 ## Limitacoes atuais
 
-- Persistencia final dos campos de soft delete e consentimento deve acompanhar migrations futuras.
-- Tela completa de preferencias de privacidade ainda depende do bootstrap visual da aplicacao.
+- A tela completa de preferencias de privacidade ainda depende do bootstrap visual da aplicacao.
 - Textos juridicos finais e prazos de retencao dependem de validacao especializada.
+- As demais finalidades continuam usando os contratos de dominio existentes ate que seus consumidores exijam persistencia operacional equivalente.
