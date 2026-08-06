@@ -10,6 +10,9 @@ invalidOutputIsRejectedForReview();
 lowConfidenceOutputNeedsReview();
 amountMinorAndIsoDatetimeAreNormalized();
 emptyReasonsAreRejected();
+directedTransferIsAccepted();
+ambiguousTransferIsRejected();
+inconsistentDirectionIsRejected();
 
 function validOutputIsAcceptedAndNormalized(): void {
   const result = validateTransactionExtraction({
@@ -32,6 +35,7 @@ function validOutputIsAcceptedAndNormalized(): void {
   assert.equal(result.suggestion?.currency, "BRL");
   assert.equal(result.suggestion?.occurredOn, "2026-06-16");
   assert.equal(result.suggestion?.type, "expense");
+  assert.equal(result.suggestion?.direction, "outflow");
   assert.equal(result.suggestion?.merchant, "Mercado Demo");
   assert.equal(result.suggestion?.source, "bank_message");
   assert.deepEqual(result.suggestion?.reasons, ["Valor e data encontrados em mensagem ficticia."]);
@@ -86,6 +90,7 @@ function amountMinorAndIsoDatetimeAreNormalized(): void {
   assert.equal(result.suggestion?.amountMinor, 2500);
   assert.equal(result.suggestion?.currency, "USD");
   assert.equal(result.suggestion?.occurredOn, "2026-06-16");
+  assert.equal(result.suggestion?.direction, "inflow");
 }
 
 function emptyReasonsAreRejected(): void {
@@ -102,6 +107,55 @@ function emptyReasonsAreRejected(): void {
   assert.equal(result.status, "invalid");
   assertProblemCode(result.problems, "EXTRACTION_DATE_INVALID");
   assertProblemCode(result.problems, "EXTRACTION_REASONS_INVALID");
+}
+
+function directedTransferIsAccepted(): void {
+  const result = validateTransactionExtraction({
+    amountMinor: 4200,
+    currency: "BRL",
+    occurredOn: "2026-08-05",
+    type: "transfer",
+    direction: "outflow",
+    confidence: 0.91,
+    source: "bank_message",
+    reasons: ["Mensagem informa transferência enviada."],
+  });
+
+  assert.equal(result.status, "valid");
+  assert.equal(result.suggestion?.type, "transfer");
+  assert.equal(result.suggestion?.direction, "outflow");
+}
+
+function ambiguousTransferIsRejected(): void {
+  const result = validateTransactionExtraction({
+    amountMinor: 4200,
+    currency: "BRL",
+    occurredOn: "2026-08-05",
+    type: "transfer",
+    confidence: 0.91,
+    source: "bank_message",
+    reasons: ["Mensagem não informa se a transferência entrou ou saiu."],
+  });
+
+  assert.equal(result.status, "invalid");
+  assert.equal(result.suggestion, undefined);
+  assertProblemCode(result.problems, "EXTRACTION_DIRECTION_REQUIRED");
+}
+
+function inconsistentDirectionIsRejected(): void {
+  const result = validateTransactionExtraction({
+    amountMinor: 4200,
+    currency: "BRL",
+    occurredOn: "2026-08-05",
+    type: "income",
+    direction: "outflow",
+    confidence: 0.91,
+    source: "bank_message",
+    reasons: ["Fixture contraditória."],
+  });
+
+  assert.equal(result.status, "invalid");
+  assertProblemCode(result.problems, "EXTRACTION_DIRECTION_CONFLICT");
 }
 
 function assertProblemCode(
