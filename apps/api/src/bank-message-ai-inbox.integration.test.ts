@@ -17,6 +17,8 @@ import { closePool, query } from "./db.js";
 import { BankMessageInboxRepositoryError } from "./repositories/bank-message-inbox.js";
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
+const MEI_ACCOUNT_ID = "44444444-4444-4444-8444-444444444442";
+const MEI_CATEGORY_ID = "66666666-6666-4666-8666-666666666621";
 const USER_ID = "22222222-2222-4222-8222-222222222222";
 
 void main()
@@ -27,7 +29,10 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   const profileRows = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -61,8 +66,13 @@ async function main(): Promise<void> {
 
   try {
     const concurrentToken = randomUUID();
-    const concurrentText = `${concurrentToken} Compra no cartao final 1234 em Mercado Demo R$ 42,50 em 05/08/2026`;
-    const concurrentSourceHash = buildBankMessageSourceHash(context, concurrentText);
+    const concurrentText =
+      `${concurrentToken} Compra no cartao final 1234 em Mercado Demo ` +
+      "R$ 42,50 em 05/08/2026";
+    const concurrentSourceHash = buildBankMessageSourceHash(
+      context,
+      concurrentText,
+    );
     createdSourceHashes.push(concurrentSourceHash);
     await Promise.all([
       createBankMessageInboxWithAiForContext(context, {
@@ -81,7 +91,10 @@ async function main(): Promise<void> {
       }),
     ]);
 
-    const concurrentRows = await query<{ batches: number; suggestions: number }>(
+    const concurrentRows = await query<{
+      batches: number;
+      suggestions: number;
+    }>(
       `select
          count(distinct batch."id")::int as batches,
          count(distinct suggestion."id")::int as suggestions
@@ -107,36 +120,74 @@ async function main(): Promise<void> {
     );
     assert.equal(storedRaw[0]?.exposed, false, "raw message must not be persisted");
 
+    let providerSelections = 0;
+    const selectionGuard = {
+      selectProvider: () => {
+        providerSelections += 1;
+        return disabledSelection();
+      },
+    };
     await assertRejectsWithCode(
       () =>
-        createBankMessageInboxWithAiForContext(context, {
-          origin: "pasted",
-          text: `${randomUUID()} Compra R$ 10,00 em 05/08/2026`,
-          consentAccepted: true,
-          accountId: "not-a-uuid",
-        }),
+        createBankMessageInboxWithAiForContext(
+          context,
+          {
+            origin: "pasted",
+            text: `${randomUUID()} Compra R$ 10,00 em 05/08/2026`,
+            consentAccepted: true,
+            accountId: "not-a-uuid",
+          },
+          selectionGuard,
+        ),
       "BANK_MESSAGE_ACCOUNT_INVALID",
     );
     await assertRejectsWithCode(
       () =>
-        createBankMessageInboxWithAiForContext(context, {
-          origin: "pasted",
-          text: `${randomUUID()} Compra R$ 10,00 em 05/08/2026`,
-          consentAccepted: true,
-          categoryId: randomUUID(),
-        }),
+        createBankMessageInboxWithAiForContext(
+          context,
+          {
+            origin: "pasted",
+            text: `${randomUUID()} Compra R$ 10,00 em 05/08/2026`,
+            consentAccepted: true,
+            accountId: MEI_ACCOUNT_ID,
+          },
+          selectionGuard,
+        ),
+      "BANK_MESSAGE_ACCOUNT_INVALID",
+    );
+    await assertRejectsWithCode(
+      () =>
+        createBankMessageInboxWithAiForContext(
+          context,
+          {
+            origin: "pasted",
+            text: `${randomUUID()} Compra R$ 10,00 em 05/08/2026`,
+            consentAccepted: true,
+            categoryId: MEI_CATEGORY_ID,
+          },
+          selectionGuard,
+        ),
       "BANK_MESSAGE_CATEGORY_INVALID",
+    );
+    assert.equal(
+      providerSelections,
+      0,
+      "tenant validation must happen before provider selection",
     );
 
     const retryToken = randomUUID();
-    const retryText = `${retryToken} aviso bancario fora dos formatos conhecidos em 05/08/2026`;
+    const retryText =
+      `${retryToken} aviso bancario fora dos formatos conhecidos ` +
+      "em 05/08/2026";
     const retrySourceHash = buildBankMessageSourceHash(context, retryText);
     createdSourceHashes.push(retrySourceHash);
     const timeoutProvider: AiProvider = {
       id: "timeout-fixture",
       model: "fixture-v1",
       async complete() {
-        throw new AiProviderError("timeout", "fixture timeout", { retryable: true });
+        throw new AiProviderError("timeout", "fixture timeout", {
+          retryable: true,
+        });
       },
     };
     const failed = await createBankMessageInboxWithAiForContext(
@@ -178,7 +229,9 @@ async function main(): Promise<void> {
     assert.equal(retried.id, failed.id, "retry must reuse the same batch");
     assert.ok(retried.suggestion, "retry must create a reviewable suggestion");
 
-    const listed = await listBankMessageInboxWithAiForContext(context, { status: "all" });
+    const listed = await listBankMessageInboxWithAiForContext(context, {
+      status: "all",
+    });
     const listedRetry = listed.find((item) => item.id === retried.id);
     assert.equal(listedRetry?.extractionSource, "ai");
     assert.equal(listedRetry?.extractionState, "ready_for_review");
@@ -213,6 +266,14 @@ function readySelection(provider: AiProvider): AiProviderSelection {
       endpointOrigin: "https://example.invalid",
       issues: [],
     },
+  };
+}
+
+function disabledSelection(): AiProviderSelection {
+  return {
+    status: "disabled",
+    provider: undefined,
+    health: { status: "disabled", providerId: "disabled", issues: [] },
   };
 }
 
