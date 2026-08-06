@@ -1,9 +1,9 @@
 import {
   defaultAiUsagePolicy,
+  OpenAiProvider,
   parseBankMessage,
-  type AiProvider,
+  type AiHttpClient,
   type AiUsageContext,
-  type SafeAiProviderRequest,
 } from "./index.js";
 
 const context: AiUsageContext = {
@@ -22,28 +22,49 @@ async function testProviderReceivesOnlyMinimizedMessage(): Promise<void> {
   const text =
     `Pagamento de ${sensitivePurpose} para ${sensitiveName} ` +
     `email ${sensitiveEmail} no valor de R$ 42,50 em 05/08/2026`;
-  let calls = 0;
-  let captured: SafeAiProviderRequest | undefined;
-  const provider: AiProvider = {
-    id: "minimization-spy",
-    model: "fixture-v1",
-    async complete(request) {
-      calls += 1;
-      captured = request;
-      return {
-        text: "structured",
-        structured: {
-          amountMinor: 4250,
-          currency: "BRL",
-          occurredOn: "2026-08-05",
-          type: "expense",
-          confidence: 0.91,
-          source: "bank_message",
-          reasons: ["fixture"],
-        },
-      };
-    },
+  let outboundCalls = 0;
+  let outboundBody: string | undefined;
+  const httpClient: AiHttpClient = async (_url, init) => {
+    outboundCalls += 1;
+    outboundBody = init.body;
+    return {
+      ok: true,
+      status: 200,
+      async text() {
+        return JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  text: "structured",
+                  structured: {
+                    amountMinor: 4250,
+                    currency: "BRL",
+                    occurredOn: "2026-08-05",
+                    type: "expense",
+                    confidence: 0.91,
+                    source: "bank_message",
+                    reasons: ["fixture"],
+                  },
+                }),
+              },
+            },
+          ],
+        });
+      },
+    };
   };
+  const provider = new OpenAiProvider(
+    {
+      endpoint: "https://example.invalid/v1/chat/completions",
+      apiKey: "fixture-api-key-0000000000000000",
+      model: "fixture-v1",
+      maxOutputTokens: 256,
+      maxRequestBytes: 64_000,
+      requestTimeoutMs: 1_000,
+    },
+    httpClient,
+  );
 
   const result = await parseBankMessage({
     text,
@@ -60,31 +81,41 @@ async function testProviderReceivesOnlyMinimizedMessage(): Promise<void> {
     resolveConsent: () => "granted",
   });
 
-  assertEqual(calls, 1, "one executor attempt must create one outbound call");
-  assertDefined(captured, "provider request");
+  assertEqual(outboundCalls, 1, "one executor attempt must create one HTTP call");
+  assertDefined(outboundBody, "provider HTTP body");
   assertEqual(result.sourceKind, "ai", "result source");
   assertEqual(result.status, "suggested", "result status");
-  assertEqual(captured.prompt.includes(text), false, "prompt must not duplicate raw message");
-  assertEqual(captured.prompt.includes(sensitiveName), false, "prompt must omit sensitive name");
-  assertEqual(captured.prompt.includes(sensitivePurpose), false, "prompt must omit sensitive purpose");
-  assertEqual(captured.prompt.includes(sensitiveEmail), false, "prompt must omit sensitive email");
 
-  const minimized = String(captured.fields.message ?? "");
-  for (const forbidden of [sensitiveName, sensitivePurpose, sensitiveEmail, "Maria", "Silva", "almoco", "privado"]) {
+  const serialized = outboundBody.toLocaleLowerCase("pt-BR");
+  for (const forbidden of [
+    text,
+    sensitiveName,
+    sensitivePurpose,
+    sensitiveEmail,
+    "Maria",
+    "Silva",
+    "almoco",
+    "privado",
+  ]) {
     assertEqual(
-      minimized.toLocaleLowerCase("pt-BR").includes(forbidden.toLocaleLowerCase("pt-BR")),
+      serialized.includes(forbidden.toLocaleLowerCase("pt-BR")),
       false,
-      `minimized field must omit ${forbidden}`,
+      `HTTP body must omit ${forbidden}`,
     );
   }
-  assertEqual(minimized.includes("R$ 42,50"), true, "minimized field keeps amount");
-  assertEqual(minimized.includes("05/08/2026"), true, "minimized field keeps date");
+  assertEqual(serialized.includes("r$ 42,50"), true, "HTTP body keeps amount");
+  assertEqual(serialized.includes("05/08/2026"), true, "HTTP body keeps date");
+  assertEqual(serialized.includes("pagamento"), true, "HTTP body keeps financial signal");
+  assertEqual(serialized.includes("[texto]"), true, "HTTP body marks redacted spans");
   assertEqual(
-    minimized.toLocaleLowerCase("pt-BR").includes("pagamento"),
-    true,
-    "minimized field keeps financial signal",
+    countOccurrences(serialized, "r$ 42,50"),
+    1,
+    "message content must not be duplicated in prompt",
   );
-  assertEqual(minimized.includes("[texto]"), true, "minimized field marks redacted spans");
+}
+
+function countOccurrences(value: string, search: string): number {
+  return value.split(search).length - 1;
 }
 
 function assertDefined<T>(value: T | undefined, label: string): asserts value is T {
