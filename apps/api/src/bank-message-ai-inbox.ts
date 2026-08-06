@@ -11,10 +11,7 @@ import {
   type BankMessageParserResult,
   type SafeAiLogger,
 } from "@solverfin/ai";
-import {
-  createBankMessageInboxItem,
-  type TenantContext,
-} from "@solverfin/domain";
+import { createBankMessageInboxItem, type TenantContext } from "@solverfin/domain";
 import {
   buildAiSuggestionPayload,
   type TransactionExtractionSuggestionPayloadV2,
@@ -56,9 +53,7 @@ export interface BankMessageInboxViewItem extends BankMessageInboxItem {
 
 export interface BankMessageAiRuntime {
   selectProvider: () => AiProviderSelection;
-  resolveConsent: (
-    context: TenantContext,
-  ) => AiConsentState | Promise<AiConsentState>;
+  resolveConsent: (context: TenantContext) => AiConsentState | Promise<AiConsentState>;
   logger?: SafeAiLogger;
   policy?: AiUsagePolicy;
   now?: () => string;
@@ -152,10 +147,7 @@ export async function createBankMessageInboxWithAiForContext(
   let importBatchId = inserted[0]?.id;
 
   if (importBatchId === undefined) {
-    const existing = await findInboxItemBySourceHash(
-      context,
-      transient.sourceHash,
-    );
+    const existing = await findInboxItemBySourceHash(context, transient.sourceHash);
 
     if (existing.importBatch.status !== "failed") {
       return enrichInboxItem(
@@ -191,10 +183,7 @@ export async function createBankMessageInboxWithAiForContext(
 
     importBatchId = claimed[0]?.id;
     if (importBatchId === undefined) {
-      const concurrent = await findInboxItemBySourceHash(
-        context,
-        transient.sourceHash,
-      );
+      const concurrent = await findInboxItemBySourceHash(context, transient.sourceHash);
       return enrichInboxItem(
         concurrent,
         await readStoredOutcome(context, concurrent.id),
@@ -248,9 +237,7 @@ export async function listBankMessageInboxWithAiForContext(
     [context.organizationId, context.financialProfileId],
   );
   const outcomes = new Map(
-    diagnosticRows.map(
-      (row) => [row.id, parseStoredOutcome(row.problems)] as const,
-    ),
+    diagnosticRows.map((row) => [row.id, parseStoredOutcome(row.problems)] as const),
   );
 
   return items.map((item) => enrichInboxItem(item, outcomes.get(item.id)));
@@ -266,10 +253,7 @@ export async function extractBankMessageForProduct(
 ): Promise<ProductExtractionResult> {
   const deterministic = await parseBankMessage({ text: input.text });
 
-  if (
-    deterministic.sourceKind === "rule" &&
-    deterministic.suggestion !== undefined
-  ) {
+  if (deterministic.sourceKind === "rule" && deterministic.suggestion !== undefined) {
     return {
       parserResult: deterministic,
       diagnostic: buildDiagnostic(deterministic),
@@ -278,9 +262,7 @@ export async function extractBankMessageForProduct(
 
   let selection: AiProviderSelection;
   try {
-    selection =
-      runtime.selectProvider?.() ??
-      createAiProviderFromEnvironment(process.env);
+    selection = runtime.selectProvider?.() ?? createAiProviderFromEnvironment(process.env);
   } catch {
     return {
       parserResult: deterministic,
@@ -333,9 +315,7 @@ export async function extractBankMessageForProduct(
       organizationId: input.context.organizationId,
       financialProfileId: input.context.financialProfileId,
       userId: input.context.userId,
-      ...(runtime.correlationId === undefined
-        ? {}
-        : { correlationId: runtime.correlationId }),
+      ...(runtime.correlationId === undefined ? {} : { correlationId: runtime.correlationId }),
     },
     policy,
     resolveConsent: () => resolveConsent(input.context),
@@ -372,9 +352,7 @@ function buildProviderUnavailableDiagnostic(
   };
 }
 
-function buildDiagnostic(
-  result: BankMessageParserResult,
-): BankMessageExtractionDiagnostic {
+function buildDiagnostic(result: BankMessageParserResult): BankMessageExtractionDiagnostic {
   if (result.suggestion !== undefined) {
     const lowConfidence = result.status === "needs_review";
     return {
@@ -419,21 +397,13 @@ function buildPersistableSuggestion(input: {
   parserResult: BankMessageParserResult;
 }): PersistableSuggestion | undefined {
   const parsed = input.parserResult.suggestion;
-  if (
-    parsed === undefined ||
-    parsed.type === "unknown" ||
-    parsed.type === "transfer"
-  ) {
+  if (parsed === undefined || parsed.type === "unknown" || parsed.type === "transfer") {
     return undefined;
   }
 
   const safeHints = [
-    parsed.accountHint
-      ? `Pista de conta: ${safeReason(parsed.accountHint)}`
-      : undefined,
-    parsed.cardHint
-      ? `Pista de cartão: ${safeReason(parsed.cardHint)}`
-      : undefined,
+    parsed.accountHint ? `Pista de conta: ${safeReason(parsed.accountHint)}` : undefined,
+    parsed.cardHint ? `Pista de cartão: ${safeReason(parsed.cardHint)}` : undefined,
     parsed.categorySuggestion
       ? `Categoria sugerida: ${safeReason(parsed.categorySuggestion)}`
       : undefined,
@@ -468,16 +438,11 @@ function buildPersistableSuggestion(input: {
       amountMinor: parsed.amountMinor,
       currency: parsed.currency,
       description: safeDescription(parsed.merchant ?? input.maskedText),
-      ...(input.payload.accountId === undefined
-        ? {}
-        : { accountId: input.payload.accountId }),
-      ...(input.payload.categoryId === undefined
-        ? {}
-        : { categoryId: input.payload.categoryId }),
+      ...(input.payload.accountId === undefined ? {} : { accountId: input.payload.accountId }),
+      ...(input.payload.categoryId === undefined ? {} : { categoryId: input.payload.categoryId }),
     },
   }) as TransactionExtractionSuggestionPayloadV2;
-  const sourceLabel =
-    parsed.sourceKind === "ai" ? "assistida por IA" : "determinística";
+  const sourceLabel = parsed.sourceKind === "ai" ? "assistida por IA" : "determinística";
 
   return {
     id: randomUUID(),
@@ -649,11 +614,7 @@ async function assertScopedActiveEntity(
   code: string,
 ): Promise<void> {
   if (!UUID_PATTERN.test(id)) {
-    throw new BankMessageInboxRepositoryError(
-      code,
-      "Seleção inválida para este perfil.",
-      400,
-    );
+    throw new BankMessageInboxRepositoryError(code, "Seleção inválida para este perfil.", 400);
   }
 
   const rows = await query<{ id: string }>(
@@ -662,11 +623,7 @@ async function assertScopedActiveEntity(
     [id, context.organizationId, context.financialProfileId],
   );
   if (rows.length === 0) {
-    throw new BankMessageInboxRepositoryError(
-      code,
-      "Seleção inválida para este perfil.",
-      404,
-    );
+    throw new BankMessageInboxRepositoryError(code, "Seleção inválida para este perfil.", 404);
   }
 }
 
@@ -700,9 +657,7 @@ async function readStoredOutcome(
   return parseStoredOutcome(rows[0]?.problems);
 }
 
-function parseStoredOutcome(
-  value: unknown,
-): StoredBankMessageOutcome | undefined {
+function parseStoredOutcome(value: unknown): StoredBankMessageOutcome | undefined {
   const candidate = Array.isArray(value) ? value[0] : undefined;
   if (typeof candidate !== "object" || candidate === null) return undefined;
   const record = candidate as Record<string, unknown>;
@@ -722,15 +677,12 @@ function parseStoredOutcome(
     state: record.state,
     retryable: record.retryable,
     reviewReasons: Array.isArray(record.reviewReasons)
-      ? record.reviewReasons.filter(
-          (reason): reason is string => typeof reason === "string",
-        )
+      ? record.reviewReasons.filter((reason): reason is string => typeof reason === "string")
       : [],
   };
   return {
     diagnostic,
-    ...(typeof record.maskedText === "string" &&
-    record.maskedText.trim().length > 0
+    ...(typeof record.maskedText === "string" && record.maskedText.trim().length > 0
       ? { maskedText: record.maskedText }
       : {}),
   };
@@ -768,8 +720,7 @@ function inferDiagnosticFromSuggestion(
     if (item.importBatch.status === "reviewing") {
       return {
         code: "BANK_MESSAGE_EXTRACTION_PROCESSING",
-        message:
-          "A mensagem está sendo processada. Atualize a Inbox para acompanhar o resultado.",
+        message: "A mensagem está sendo processada. Atualize a Inbox para acompanhar o resultado.",
         source,
         state: "processing",
         retryable: false,
@@ -784,8 +735,7 @@ function inferDiagnosticFromSuggestion(
           ? "A extração está temporariamente indisponível."
           : "Mensagem recebida para revisão manual.",
       source,
-      state:
-        item.status === "error" ? "temporarily_unavailable" : "incomplete",
+      state: item.status === "error" ? "temporarily_unavailable" : "incomplete",
       retryable: item.status === "error",
       reviewReasons: [],
     };
@@ -795,10 +745,7 @@ function inferDiagnosticFromSuggestion(
     code: "BANK_MESSAGE_EXTRACTION_STATUS",
     message: item.suggestion.explanation,
     source,
-    state:
-      item.suggestion.confidence < 0.7
-        ? "low_confidence"
-        : "ready_for_review",
+    state: item.suggestion.confidence < 0.7 ? "low_confidence" : "ready_for_review",
     retryable: false,
     reviewReasons: [],
   };
@@ -825,15 +772,11 @@ function buildSafeMaskedPreview(sourceHash: string): string {
   return `Mensagem bancária mascarada · ${sourceHash.slice(0, 12)}`;
 }
 
-function isExtractionSource(
-  value: unknown,
-): value is BankMessageExtractionSource {
+function isExtractionSource(value: unknown): value is BankMessageExtractionSource {
   return value === "deterministic" || value === "ai" || value === "none";
 }
 
-function isExtractionState(
-  value: unknown,
-): value is BankMessageExtractionState {
+function isExtractionState(value: unknown): value is BankMessageExtractionState {
   return (
     value === "processing" ||
     value === "ready_for_review" ||
