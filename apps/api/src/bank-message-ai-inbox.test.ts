@@ -17,6 +17,7 @@ const context: TenantContext = {
 
 await deterministicRuleDoesNotSelectProvider();
 await providerProducesStructuredSuggestion();
+await missingConsentResolverBlocksOutbound();
 await revokedConsentBlocksOutbound();
 await temporaryFailureIsRetryable();
 await invalidOutputStaysUnderReview();
@@ -39,7 +40,11 @@ async function deterministicRuleDoesNotSelectProvider(): Promise<void> {
 
   assertEqual(selections, 0, "deterministic provider selections");
   assertEqual(result.diagnostic.source, "deterministic", "deterministic source");
-  assertEqual(result.parserResult.suggestion?.amountMinor, 4250, "deterministic amount");
+  assertEqual(
+    result.parserResult.suggestion?.amountMinor,
+    4250,
+    "deterministic amount",
+  );
 }
 
 async function providerProducesStructuredSuggestion(): Promise<void> {
@@ -74,6 +79,37 @@ async function providerProducesStructuredSuggestion(): Promise<void> {
   assertEqual(result.diagnostic.source, "ai", "AI source");
   assertEqual(result.diagnostic.state, "ready_for_review", "AI state");
   assertEqual(result.parserResult.suggestion?.amountMinor, 7710, "AI amount");
+}
+
+async function missingConsentResolverBlocksOutbound(): Promise<void> {
+  let calls = 0;
+  const provider: AiProvider = {
+    id: "counting",
+    model: "fixture",
+    async complete() {
+      calls += 1;
+      return { text: "must not run" };
+    },
+  };
+  const result = await extractBankMessageForProduct(
+    {
+      text: "Mensagem fora dos formatos determinísticos",
+      context,
+      consentAccepted: true,
+    },
+    {
+      selectProvider: () => readySelection(provider),
+      policy: policyWithNoRetry(),
+    },
+  );
+
+  assertEqual(calls, 0, "missing consent resolver outbound calls");
+  assertEqual(
+    result.diagnostic.code,
+    "BANK_MESSAGE_CONSENT_CHECK_REQUIRED",
+    "missing resolver code",
+  );
+  assertEqual(result.diagnostic.state, "incomplete", "missing resolver state");
 }
 
 async function revokedConsentBlocksOutbound(): Promise<void> {
@@ -130,7 +166,11 @@ async function temporaryFailureIsRetryable(): Promise<void> {
 
   assertEqual(calls, 1, "one outbound call for one attempt");
   assertEqual(result.diagnostic.retryable, true, "timeout retryable");
-  assertEqual(result.diagnostic.state, "temporarily_unavailable", "timeout state");
+  assertEqual(
+    result.diagnostic.state,
+    "temporarily_unavailable",
+    "timeout state",
+  );
 }
 
 async function invalidOutputStaysUnderReview(): Promise<void> {
@@ -141,13 +181,18 @@ async function invalidOutputStaysUnderReview(): Promise<void> {
       consentAccepted: true,
     },
     {
-      selectProvider: () => readySelection(new FakeAiProvider([{ text: "invalid" }])),
+      selectProvider: () =>
+        readySelection(new FakeAiProvider([{ text: "invalid" }])),
       resolveConsent: () => "granted",
       policy: policyWithNoRetry(),
     },
   );
 
-  assertEqual(result.parserResult.suggestion, undefined, "invalid suggestion absent");
+  assertEqual(
+    result.parserResult.suggestion,
+    undefined,
+    "invalid suggestion absent",
+  );
   assertEqual(result.diagnostic.state, "incomplete", "invalid output state");
   assertEqual(result.diagnostic.retryable, false, "invalid output not retried");
 }
