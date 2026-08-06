@@ -51,9 +51,7 @@ export interface BankMessageInboxViewItem extends BankMessageInboxItem {
 
 export interface BankMessageAiRuntime {
   selectProvider: () => AiProviderSelection;
-  resolveConsent: (
-    context: TenantContext,
-  ) => AiConsentState | Promise<AiConsentState>;
+  resolveConsent: (context: TenantContext) => AiConsentState | Promise<AiConsentState>;
   logger?: SafeAiLogger;
   policy?: AiUsagePolicy;
   now?: () => string;
@@ -80,8 +78,7 @@ interface ImportBatchProblemRow {
 }
 
 const BANK_MESSAGE_PURPOSE = "bank_message_transaction_extraction";
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function createBankMessageInboxWithAiForContext(
   context: TenantContext,
@@ -214,15 +211,13 @@ export async function extractBankMessageForProduct(
 
   let selection: AiProviderSelection;
   try {
-    selection =
-      runtime.selectProvider?.() ?? createAiProviderFromEnvironment(process.env);
+    selection = runtime.selectProvider?.() ?? createAiProviderFromEnvironment(process.env);
   } catch {
     return {
       parserResult: deterministic,
       diagnostic: {
         code: "BANK_MESSAGE_AI_NOT_CONFIGURED",
-        message:
-          "A extração por IA não está disponível. Revise a mensagem manualmente.",
+        message: "A extração por IA não está disponível. Revise a mensagem manualmente.",
         source: "none",
         state: "incomplete",
         retryable: false,
@@ -236,8 +231,7 @@ export async function extractBankMessageForProduct(
       parserResult: deterministic,
       diagnostic: {
         code: "BANK_MESSAGE_AI_NOT_CONFIGURED",
-        message:
-          "Nenhuma regra reconheceu a mensagem. Revise os dados manualmente.",
+        message: "Nenhuma regra reconheceu a mensagem. Revise os dados manualmente.",
         source: "none",
         state: "incomplete",
         retryable: false,
@@ -252,14 +246,11 @@ export async function extractBankMessageForProduct(
       parserResult: deterministic,
       diagnostic: {
         code: "BANK_MESSAGE_CONSENT_CHECK_REQUIRED",
-        message:
-          "Não foi possível confirmar o consentimento ativo. Revise a mensagem manualmente.",
+        message: "Não foi possível confirmar o consentimento ativo. Revise a mensagem manualmente.",
         source: "none",
         state: "incomplete",
         retryable: false,
-        reviewReasons: [
-          "Consentimento ativo não pôde ser revalidado antes da chamada externa.",
-        ],
+        reviewReasons: ["Consentimento ativo não pôde ser revalidado antes da chamada externa."],
       },
     };
   }
@@ -281,9 +272,7 @@ export async function extractBankMessageForProduct(
       organizationId: input.context.organizationId,
       financialProfileId: input.context.financialProfileId,
       userId: input.context.userId,
-      ...(runtime.correlationId === undefined
-        ? {}
-        : { correlationId: runtime.correlationId }),
+      ...(runtime.correlationId === undefined ? {} : { correlationId: runtime.correlationId }),
     },
     policy,
     resolveConsent: () => resolveConsent(input.context),
@@ -323,12 +312,7 @@ function buildDiagnostic(result: BankMessageParserResult): BankMessageExtraction
     message: temporary
       ? "A IA está temporariamente indisponível. Envie novamente a mesma mensagem para tentar de novo."
       : "Não foi possível completar a extração. Revise os dados manualmente.",
-    source:
-      result.sourceKind === "ai"
-        ? "ai"
-        : result.sourceKind === "rule"
-          ? "deterministic"
-          : "none",
+    source: result.sourceKind === "ai" ? "ai" : result.sourceKind === "rule" ? "deterministic" : "none",
     state: temporary ? "temporarily_unavailable" : "incomplete",
     retryable: temporary,
     reviewReasons: result.reviewReasons,
@@ -345,21 +329,13 @@ function buildPersistableSuggestion(input: {
   parserResult: BankMessageParserResult;
 }): PersistableSuggestion | undefined {
   const parsed = input.parserResult.suggestion;
-  if (
-    parsed === undefined ||
-    parsed.type === "unknown" ||
-    parsed.type === "transfer"
-  ) {
+  if (parsed === undefined || parsed.type === "unknown" || parsed.type === "transfer") {
     return undefined;
   }
 
   const safeHints = [
-    parsed.accountHint
-      ? `Pista de conta: ${safeReason(parsed.accountHint)}`
-      : undefined,
-    parsed.cardHint
-      ? `Pista de cartão: ${safeReason(parsed.cardHint)}`
-      : undefined,
+    parsed.accountHint ? `Pista de conta: ${safeReason(parsed.accountHint)}` : undefined,
+    parsed.cardHint ? `Pista de cartão: ${safeReason(parsed.cardHint)}` : undefined,
     parsed.categorySuggestion
       ? `Categoria sugerida: ${safeReason(parsed.categorySuggestion)}`
       : undefined,
@@ -394,16 +370,11 @@ function buildPersistableSuggestion(input: {
       amountMinor: parsed.amountMinor,
       currency: parsed.currency,
       description: safeDescription(parsed.merchant ?? input.maskedText),
-      ...(input.payload.accountId === undefined
-        ? {}
-        : { accountId: input.payload.accountId }),
-      ...(input.payload.categoryId === undefined
-        ? {}
-        : { categoryId: input.payload.categoryId }),
+      ...(input.payload.accountId === undefined ? {} : { accountId: input.payload.accountId }),
+      ...(input.payload.categoryId === undefined ? {} : { categoryId: input.payload.categoryId }),
     },
   }) as TransactionExtractionSuggestionPayloadV2;
-  const sourceLabel =
-    parsed.sourceKind === "ai" ? "assistida por IA" : "determinística";
+  const sourceLabel = parsed.sourceKind === "ai" ? "assistida por IA" : "determinística";
 
   return {
     id: randomUUID(),
@@ -547,11 +518,7 @@ async function assertScopedActiveEntity(
   code: string,
 ): Promise<void> {
   if (!UUID_PATTERN.test(id)) {
-    throw new BankMessageInboxRepositoryError(
-      code,
-      "Seleção inválida para este perfil.",
-      400,
-    );
+    throw new BankMessageInboxRepositoryError(code, "Seleção inválida para este perfil.", 400);
   }
 
   const rows = await query<{ id: string }>(
@@ -560,11 +527,7 @@ async function assertScopedActiveEntity(
     [id, context.organizationId, context.financialProfileId],
   );
   if (rows.length === 0) {
-    throw new BankMessageInboxRepositoryError(
-      code,
-      "Seleção inválida para este perfil.",
-      404,
-    );
+    throw new BankMessageInboxRepositoryError(code, "Seleção inválida para este perfil.", 404);
   }
 }
 
@@ -618,9 +581,7 @@ function parseDiagnostic(value: unknown): BankMessageExtractionDiagnostic | unde
     state: record.state,
     retryable: record.retryable,
     reviewReasons: Array.isArray(record.reviewReasons)
-      ? record.reviewReasons.filter(
-          (reason): reason is string => typeof reason === "string",
-        )
+      ? record.reviewReasons.filter((reason): reason is string => typeof reason === "string")
       : [],
   };
 }
@@ -644,20 +605,17 @@ function inferDiagnosticFromSuggestion(
   item: BankMessageInboxItem,
 ): BankMessageExtractionDiagnostic {
   const provider = item.suggestion?.provider ?? "";
-  const source: BankMessageExtractionSource =
-    provider.startsWith("solverfin-rule-")
-      ? "deterministic"
-      : item.suggestion
-        ? "ai"
-        : "none";
+  const source: BankMessageExtractionSource = provider.startsWith("solverfin-rule-")
+    ? "deterministic"
+    : item.suggestion
+      ? "ai"
+      : "none";
   return {
     code: "BANK_MESSAGE_EXTRACTION_STATUS",
     message: item.suggestion?.explanation ?? "Mensagem recebida para revisão.",
     source,
     state:
-      item.suggestion && item.suggestion.confidence < 0.7
-        ? "low_confidence"
-        : "ready_for_review",
+      item.suggestion && item.suggestion.confidence < 0.7 ? "low_confidence" : "ready_for_review",
     retryable: item.status === "error",
     reviewReasons: [],
   };
