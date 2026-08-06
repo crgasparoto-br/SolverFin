@@ -8,8 +8,15 @@ assertIncludes(script, 'new URLSearchParams(window.location.search).get("profile
 assertIncludes(script, 'url.searchParams.set("profileId", profileId)');
 assertIncludes(script, "Regra determinística");
 assertIncludes(script, "Assistida por IA");
+assertIncludes(script, "Em processamento");
 assertIncludes(script, "Baixa confiança");
 assertIncludes(script, "IA temporariamente indisponível");
+assertIncludes(script, "buildRowsByMaskedText");
+assertIncludes(script, "findUnambiguousMessageRow");
+assertIncludes(script, "matches.length === 1");
+assertIncludes(script, "message.maskedText");
+assertIncludes(script, "message.diagnosticMessage");
+assertNotIncludes(script, "rows[index]");
 assertIncludes(script, "dataset.retryBankMessage");
 assertIncludes(script, "Tentar novamente");
 assertIncludes(script, "o texto original não foi armazenado");
