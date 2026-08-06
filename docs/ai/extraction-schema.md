@@ -42,6 +42,8 @@ A Inbox executa regras deterministicas antes do provider. Ambas as fontes produz
 
 Uma regra deterministica encerra o fluxo sem IA somente quando produz `suggestion`. Se ela reconhecer parte da mensagem, mas faltar campo obrigatorio como data, o consumidor pode consultar o provider autorizado para completar a estrutura. Sem provider disponivel, o resultado permanece `incomplete`, com origem deterministica e sem sugestao inventada.
 
+Antes da chamada externa, a mensagem e convertida em uma representacao minimizada especifica da Inbox. Ela preserva somente sinais financeiros necessarios, como operacao, valor e data, e substitui nomes, contrapartes, finalidades, e-mails, links e palavras livres por marcadores redigidos. A mensagem minimizada e enviada uma unica vez no campo allowlisted `message`; o prompt e constante e nao copia o texto da mensagem.
+
 Quando a regra reconhece a mensagem por completo, a origem persistida e `rule` com `ruleId`. Quando a IA completa a extracao, a origem e `provider` com provider e modelo. `accountHint`, `cardHint` e `categorySuggestion` permanecem apenas como motivos mascarados; eles nunca substituem `accountId`, `cardId` ou `categoryId` confiaveis do produto.
 
 O servico aceita `income`, `expense` e `transfer` como sugestao revisavel quando a estrutura e valida. Transferencia exige `direction=inflow|outflow`; sem direcao segura, permanece como diagnostico controlado sem payload financeiro. `unknown`, resposta invalida ou estrutura incompleta tambem nao produzem sugestao financeira.
