@@ -12,6 +12,17 @@ A explicação é somente texto para o usuário. A fila não extrai data, valor,
 
 Extrações novas usam `TransactionExtractionSuggestionPayloadV2`; V1 permanece legível. Quando uma sugestão V1 pendente recebe edição de tipo, ela migra para V2 preservando a direção derivada do payload anterior. Deduplicação e conciliação mantêm vínculo explícito com a sugestão e fingerprint de origem.
 
+## Mensagens bancárias
+
+A Inbox de mensagens bancárias produz sugestões `transaction_extraction` V2 com origem explícita:
+
+- `rule`, quando uma regra determinística reconhece a mensagem;
+- `provider`, quando o provider configurado completa a extração.
+
+Conta e categoria opcionais são validadas por organização, perfil financeiro e estado ativo antes da persistência. Pistas textuais de conta, cartão ou categoria vindas do parser aparecem apenas como motivos mascarados para revisão e nunca são convertidas em IDs internos.
+
+Sugestões válidas, inclusive as de baixa confiança, permanecem em `PENDING_REVIEW`. Resposta inválida, extração incompleta, provider desativado ou falha temporária não criam lançamento. O texto bruto, o prompt e a resposta bruta do provider não são armazenados na fila.
+
 ## API
 
 ```http
