@@ -5,6 +5,8 @@ import {
   type TenantContext,
 } from "@solverfin/domain";
 
+import type { AiConsentState } from "@solverfin/ai";
+
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import {
@@ -54,7 +56,9 @@ export async function handleBankMessageInboxApiRequest(
   }
 
   try {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(
+      buildAuthHeaders(request.headers.authorization),
+    );
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -160,15 +164,47 @@ async function createBankMessageInboxHandler(
         origin,
         text: typeof body.text === "string" ? body.text : "",
         consentAccepted,
-        ...(hasNonEmptyValue(body.accountId) ? { accountId: String(body.accountId) } : {}),
-        ...(hasNonEmptyValue(body.categoryId) ? { categoryId: String(body.categoryId) } : {}),
+        ...(hasNonEmptyValue(body.accountId)
+          ? { accountId: String(body.accountId) }
+          : {}),
+        ...(hasNonEmptyValue(body.categoryId)
+          ? { categoryId: String(body.categoryId) }
+          : {}),
       },
       {
         correlationId: resolveCorrelationId(request.headers),
-        resolveConsent: () => (consentAccepted ? "granted" : "revoked"),
+        resolveConsent: buildAuthoritativeConsentResolver(
+          request,
+          context,
+          consentAccepted,
+        ),
       },
     ),
   });
+}
+
+function buildAuthoritativeConsentResolver(
+  request: ApiRequest,
+  expectedContext: TenantContext,
+  consentAccepted: boolean,
+): () => Promise<AiConsentState> {
+  return async () => {
+    if (!consentAccepted) return "revoked";
+
+    const user = await requireAuthenticatedRequest(
+      buildAuthHeaders(request.headers.authorization),
+    );
+    const currentContext = await resolveRequestTenantContext(
+      user,
+      request.query.get("profileId") ?? undefined,
+    );
+
+    return currentContext.userId === expectedContext.userId &&
+      currentContext.organizationId === expectedContext.organizationId &&
+      currentContext.financialProfileId === expectedContext.financialProfileId
+      ? "granted"
+      : "revoked";
+  };
 }
 
 async function discardBankMessageInboxHandler(
@@ -177,7 +213,10 @@ async function discardBankMessageInboxHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   return json(200, {
-    message: await discardBankMessageInboxForContext(context, requireParam(match, "messageId")),
+    message: await discardBankMessageInboxForContext(
+      context,
+      requireParam(match, "messageId"),
+    ),
   });
 }
 
@@ -191,7 +230,11 @@ function readOrigin(value: unknown): BankMessageInboxOrigin {
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null) {
-    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
+    throw new AuthError(
+      "AUTH_INVALID_CREDENTIALS",
+      "Request body must be a JSON object.",
+      400,
+    );
   }
 
   return body as Record<string, unknown>;
@@ -201,7 +244,11 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   const value = match[name];
 
   if (!value) {
-    throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
+    throw new AuthError(
+      "AUTH_SESSION_REQUIRED",
+      "Missing required path parameter.",
+      400,
+    );
   }
 
   return value;
@@ -211,7 +258,9 @@ function hasNonEmptyValue(value: unknown): boolean {
   return value !== undefined && value !== null && String(value).trim().length > 0;
 }
 
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
+function buildAuthHeaders(
+  authorization: string | undefined,
+): { authorization?: string } {
   return authorization === undefined ? {} : { authorization };
 }
 
@@ -237,7 +286,11 @@ function mapDomainError(error: unknown): unknown {
   }
 
   if (error instanceof TenantAuthorizationError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
   }
 
   return error;
