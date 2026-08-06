@@ -14,7 +14,9 @@ import {
   listBankMessageInboxWithAiForContext,
 } from "./bank-message-ai-inbox.js";
 import { closePool, query } from "./db.js";
-import { BankMessageInboxRepositoryError } from "./repositories/bank-message-inbox.js";
+import {
+  BankMessageInboxRepositoryError,
+} from "./repositories/bank-message-inbox.js";
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const MEI_ACCOUNT_ID = "44444444-4444-4444-8444-444444444442";
@@ -118,7 +120,11 @@ async function main(): Promise<void> {
        ) as exposed`,
       [organizationId, PERSONAL_PROFILE_ID, concurrentText],
     );
-    assert.equal(storedRaw[0]?.exposed, false, "raw message must not be persisted");
+    assert.equal(
+      storedRaw[0]?.exposed,
+      false,
+      "raw message must not be persisted",
+    );
 
     let providerSelections = 0;
     const selectionGuard = {
