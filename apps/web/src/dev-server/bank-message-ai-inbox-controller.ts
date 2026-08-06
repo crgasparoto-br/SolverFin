@@ -43,22 +43,32 @@ export function bankMessageAiInboxControllerScript(): string {
           }
         }
 
+        function ensureRetryStatus(dialog, form) {
+          const existing = dialog.querySelector("[data-bank-message-retry-status]");
+          if (existing) return existing;
+
+          const status = document.createElement("p");
+          status.dataset.bankMessageRetryStatus = "";
+          status.className = "form-status warning";
+          status.setAttribute("role", "status");
+          status.setAttribute("aria-live", "polite");
+          form.insertAdjacentElement("afterend", status);
+          return status;
+        }
+
         function openRetryDialog(message) {
           const dialog = document.getElementById("new-inbox-message-dialog");
           const form = dialog?.querySelector("[data-api-form]");
           const textarea = form?.querySelector('textarea[name="text"]');
           const origin = form?.querySelector('input[name="origin"]');
-          const status = form?.querySelector("[data-form-status]");
           if (!dialog || !form || !textarea || !origin || !dialog.showModal) return;
 
           form.reset();
           origin.value = message.origin === "shared" ? "shared" : "pasted";
           textarea.value = "";
-          if (status) {
-            status.className = "form-status warning";
-            status.textContent =
-              "Por privacidade, o texto original não foi armazenado. Cole novamente a mesma mensagem e confirme a autorização para tentar de novo.";
-          }
+          const status = ensureRetryStatus(dialog, form);
+          status.textContent =
+            "Por privacidade, o texto original não foi armazenado. Cole novamente a mesma mensagem e confirme a autorização para tentar de novo.";
           dialog.showModal();
           textarea.focus();
         }
