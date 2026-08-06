@@ -36,7 +36,9 @@ Qualquer campo fora da lista e tratado como inesperado. Isso evita que respostas
 
 A Inbox executa regras deterministicas antes do provider. Ambas as fontes produzem o mesmo `BankMessageParserResult` e passam pela mesma composicao persistente.
 
-Quando a regra reconhece a mensagem, a origem persistida e `rule` com `ruleId`. Quando a IA completa a extracao, a origem e `provider` com provider e modelo. `accountHint`, `cardHint` e `categorySuggestion` permanecem apenas como motivos mascarados; eles nunca substituem `accountId`, `cardId` ou `categoryId` confiaveis do produto.
+Uma regra deterministica encerra o fluxo sem IA somente quando produz `suggestion`. Se ela reconhecer parte da mensagem, mas faltar campo obrigatorio como data, o consumidor pode consultar o provider autorizado para completar a estrutura. Sem provider disponivel, o resultado permanece `incomplete`, com origem deterministica e sem sugestao inventada.
+
+Quando a regra reconhece a mensagem por completo, a origem persistida e `rule` com `ruleId`. Quando a IA completa a extracao, a origem e `provider` com provider e modelo. `accountHint`, `cardHint` e `categorySuggestion` permanecem apenas como motivos mascarados; eles nunca substituem `accountId`, `cardId` ou `categoryId` confiaveis do produto.
 
 O servico da Inbox aceita somente `income` e `expense` como sugestao financeira completa. `unknown`, transferencia sem direcao confiavel, resposta invalida ou estrutura incompleta geram diagnostico revisavel sem payload financeiro.
 
