@@ -312,7 +312,8 @@ function buildDiagnostic(result: BankMessageParserResult): BankMessageExtraction
     message: temporary
       ? "A IA está temporariamente indisponível. Envie novamente a mesma mensagem para tentar de novo."
       : "Não foi possível completar a extração. Revise os dados manualmente.",
-    source: result.sourceKind === "ai" ? "ai" : result.sourceKind === "rule" ? "deterministic" : "none",
+    source:
+      result.sourceKind === "ai" ? "ai" : result.sourceKind === "rule" ? "deterministic" : "none",
     state: temporary ? "temporarily_unavailable" : "incomplete",
     retryable: temporary,
     reviewReasons: result.reviewReasons,
