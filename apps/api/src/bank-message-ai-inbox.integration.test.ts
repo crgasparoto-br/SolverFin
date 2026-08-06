@@ -64,25 +64,92 @@ async function main(): Promise<void> {
   try {
     const concurrentToken = randomUUID();
     const concurrentText =
-      `${concurrentToken} Compra no cartao final 1234 em Mercado Demo ` + "R$ 42,50 em 05/08/2026";
+      `${concurrentToken} aviso bancario fora dos formatos conhecidos em 05/08/2026`;
     const concurrentSourceHash = buildBankMessageSourceHash(context, concurrentText);
     createdSourceHashes.push(concurrentSourceHash);
-    await Promise.all([
-      createBankMessageInboxWithAiForContext(context, {
+
+    let providerCalls = 0;
+    let signalProviderEntered: (() => void) | undefined;
+    let releaseProvider: (() => void) | undefined;
+    const providerEntered = new Promise<void>((resolve) => {
+      signalProviderEntered = resolve;
+    });
+    const providerRelease = new Promise<void>((resolve) => {
+      releaseProvider = resolve;
+    });
+    const delayedProvider: AiProvider = {
+      id: "delayed-fixture",
+      model: "fixture-v1",
+      async complete() {
+        providerCalls += 1;
+        signalProviderEntered?.();
+        await providerRelease;
+        return {
+          text: "structured",
+          structured: {
+            amountMinor: 4250,
+            currency: "BRL",
+            occurredOn: "2026-08-05",
+            type: "expense",
+            merchant: "Mercado Demo",
+            confidence: 0.9,
+            source: "bank_message",
+            reasons: ["Fixture concorrente reconhecida."],
+          },
+        };
+      },
+    };
+    const concurrentRuntime = {
+      selectProvider: () => readySelection(delayedProvider),
+      resolveConsent: () => "granted" as const,
+      policy: noRetryPolicy(),
+    };
+
+    const firstRequest = createBankMessageInboxWithAiForContext(
+      context,
+      {
         origin: "pasted",
         text: concurrentText,
         consentAccepted: true,
         accountId,
         categoryId,
-      }),
-      createBankMessageInboxWithAiForContext(context, {
-        origin: "pasted",
-        text: concurrentText,
-        consentAccepted: true,
-        accountId,
-        categoryId,
-      }),
-    ]);
+      },
+      concurrentRuntime,
+    );
+
+    await providerEntered;
+    let concurrentResponse: Awaited<
+      ReturnType<typeof createBankMessageInboxWithAiForContext>
+    > | undefined;
+    try {
+      concurrentResponse = await createBankMessageInboxWithAiForContext(
+        context,
+        {
+          origin: "shared",
+          text: concurrentText,
+          consentAccepted: true,
+          accountId,
+          categoryId,
+        },
+        concurrentRuntime,
+      );
+
+      assert.equal(concurrentResponse.extractionState, "processing");
+      assert.equal(concurrentResponse.suggestion, undefined);
+      assert.notEqual(
+        concurrentResponse.maskedText,
+        concurrentResponse.diagnosticMessage,
+        "maskedText must remain the masked source preview",
+      );
+    } finally {
+      releaseProvider?.();
+    }
+
+    const completedResponse = await firstRequest;
+    assert.equal(completedResponse.id, concurrentResponse?.id);
+    assert.equal(completedResponse.extractionState, "ready_for_review");
+    assert.ok(completedResponse.suggestion, "winning request must create a reviewable suggestion");
+    assert.equal(providerCalls, 1, "concurrent duplicate must not call provider twice");
 
     const concurrentRows = await query<{
       batches: number;
@@ -112,6 +179,26 @@ async function main(): Promise<void> {
       [organizationId, PERSONAL_PROFILE_ID, concurrentText],
     );
     assert.equal(storedRaw[0]?.exposed, false, "raw message must not be persisted");
+
+    const auditRows = await query<{
+      actorKind: string;
+      actorId: string | null;
+      action: string;
+    }>(
+      `select "actorKind", "actorId", "action" from "AuditLogEntry"
+       where "organizationId" = $1 and "financialProfileId" = $2 and "entityId" = $3`,
+      [organizationId, PERSONAL_PROFILE_ID, completedResponse.id],
+    );
+    assert.ok(
+      auditRows.some(
+        (row) => row.actorKind === "USER" && row.actorId === USER_ID && row.action === "CREATE",
+      ),
+      "authorized message receipt must preserve the user actor",
+    );
+    assert.ok(
+      auditRows.some((row) => row.actorKind === "SYSTEM" && row.action === "UPDATE"),
+      "extraction outcome must remain attributed to the system",
+    );
 
     let providerSelections = 0;
     const selectionGuard = {
