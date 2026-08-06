@@ -61,6 +61,61 @@ interface RuleMatch {
 const DEFAULT_MIN_CONFIDENCE = 0.7;
 const SAFE_AI_EXTRACTION_REASON =
   "Sugestao estruturada produzida pelo provider para revisao.";
+const PROVIDER_EXTRACTION_PROMPT = [
+  "Extraia uma sugestao de lancamento financeiro seguindo estritamente o schema configurado.",
+  "Responda com JSON estruturado e sem texto adicional.",
+  "O campo message foi minimizado: use apenas os sinais financeiros presentes e nao tente reconstruir trechos redigidos.",
+].join("\n");
+
+const PROVIDER_SAFE_WORDS = new Set([
+  "agencia",
+  "aprovada",
+  "aprovado",
+  "banco",
+  "boleto",
+  "cartao",
+  "chave",
+  "compra",
+  "conta",
+  "credito",
+  "da",
+  "data",
+  "de",
+  "debito",
+  "deposito",
+  "despesa",
+  "dia",
+  "doc",
+  "do",
+  "em",
+  "entrada",
+  "enviada",
+  "enviado",
+  "estorno",
+  "fatura",
+  "final",
+  "hora",
+  "moeda",
+  "na",
+  "no",
+  "pagamento",
+  "para",
+  "pix",
+  "por",
+  "realizada",
+  "realizado",
+  "recebida",
+  "recebido",
+  "receita",
+  "r",
+  "saldo",
+  "saida",
+  "saque",
+  "ted",
+  "transferencia",
+  "valor",
+  "via",
+]);
 
 export async function parseBankMessage(
   input: BankMessageParserInput,
@@ -128,15 +183,16 @@ export async function parseBankMessage(
     };
   }
 
+  const minimizedMessage = minimizeBankMessageForProvider(normalizedText);
   const aiTaskInput: Parameters<typeof runAiTask>[0] = {
     provider: input.provider,
     task: "extraction",
     context: input.context,
     policy: input.policy,
     payload: {
-      prompt: buildExtractionPrompt(normalizedText),
+      prompt: PROVIDER_EXTRACTION_PROMPT,
       fields: {
-        message: normalizedText,
+        message: minimizedMessage,
       },
     },
     resolveConsent: input.resolveConsent,
@@ -205,7 +261,6 @@ export async function parseBankMessage(
     };
   }
 
-  const safeProviderReasons = [SAFE_AI_EXTRACTION_REASON] as const;
   const result: BankMessageParserResult = {
     status: validation.status === "valid" ? "suggested" : "needs_review",
     sourceKind: "ai",
@@ -213,7 +268,7 @@ export async function parseBankMessage(
     maskedText,
     suggestion: {
       ...validation.suggestion,
-      reasons: safeProviderReasons,
+      reasons: [SAFE_AI_EXTRACTION_REASON],
       explanation: SAFE_AI_EXTRACTION_REASON,
       sourceKind: "ai",
       providerId: aiResult.providerId,
@@ -237,6 +292,48 @@ export function normalizeBankMessageText(text: string): string {
     .replace(/\r\n/g, "\n")
     .replace(/[ \t]+/g, " ")
     .replace(/\n{3,}/g, "\n\n");
+}
+
+export function minimizeBankMessageForProvider(text: string): string {
+  const masked = maskSensitiveText(normalizeBankMessageText(text))
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
+    .replace(/https?:\/\/\S+/gi, "[link]");
+  const tokens =
+    masked.match(
+      /R\$\s*[0-9.*]+,[0-9]{2}|\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4}|\[[a-z]+\]|\*+[0-9]{0,4}|[A-Za-zÀ-ÿ]+|\d+[.,]?\d*|[^\s]/g,
+    ) ?? [];
+  const output: string[] = [];
+
+  for (const token of tokens) {
+    const normalized = normalizeKeyword(token);
+    const safeToken =
+      isFinancialValueToken(token) || token.startsWith("[") || PROVIDER_SAFE_WORDS.has(normalized)
+        ? token
+        : "[texto]";
+
+    if (safeToken === "[texto]" && output.at(-1) === "[texto]") {
+      continue;
+    }
+    output.push(safeToken);
+  }
+
+  return output.join(" ").replace(/\s+([,.;:])/g, "$1").trim() || "[texto]";
+}
+
+function normalizeKeyword(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function isFinancialValueToken(value: string): boolean {
+  return (
+    /^R\$\s*[0-9.*]+,[0-9]{2}$/i.test(value) ||
+    /^\d{4}-\d{2}-\d{2}$/.test(value) ||
+    /^\d{2}\/\d{2}\/\d{4}$/.test(value) ||
+    /^\*+[0-9]{0,4}$/.test(value)
+  );
 }
 
 function buildRuleResult(
@@ -289,15 +386,9 @@ function matchBankMessageRule(text: string): RuleMatch | undefined {
 }
 
 function matchCardPurchase(text: string): RuleMatch | undefined {
-  if (!/\b(compra|cartao|cart[aã]o)\b/i.test(text)) {
-    return undefined;
-  }
-
+  if (!/\b(compra|cartao|cart[aã]o)\b/i.test(text)) return undefined;
   const amount = extractCurrencyAmount(text);
-
-  if (!amount) {
-    return undefined;
-  }
+  if (!amount) return undefined;
 
   const merchant = extractMerchant(text, /\bem\s+(.+?)\s+(?:no\s+valor\s+de\s+)?r\$/i);
   const cardHint = /(?:cartao|cart[aã]o)(?:\s+final)?\s*(\d{4})/i.exec(text)?.[1];
@@ -320,15 +411,9 @@ function matchCardPurchase(text: string): RuleMatch | undefined {
 }
 
 function matchPixReceived(text: string): RuleMatch | undefined {
-  if (!/\bpix\s+recebido\b/i.test(text)) {
-    return undefined;
-  }
-
+  if (!/\bpix\s+recebido\b/i.test(text)) return undefined;
   const amount = extractCurrencyAmount(text);
-
-  if (!amount) {
-    return undefined;
-  }
+  if (!amount) return undefined;
 
   const merchant = extractMerchant(
     text,
@@ -355,12 +440,8 @@ function matchPixSent(text: string): RuleMatch | undefined {
   if (!/\b(pix\s+enviado|transferencia\s+enviada|transferencia\s+realizada)\b/i.test(text)) {
     return undefined;
   }
-
   const amount = extractCurrencyAmount(text);
-
-  if (!amount) {
-    return undefined;
-  }
+  if (!amount) return undefined;
 
   const merchant = extractMerchant(
     text,
@@ -400,13 +481,9 @@ function compactExtraction(
   value: Readonly<Record<string, string | number | readonly string[] | undefined>>,
 ): Readonly<Record<string, string | number | readonly string[]>> {
   const output: Record<string, string | number | readonly string[]> = {};
-
   for (const [key, item] of Object.entries(value)) {
-    if (item !== undefined) {
-      output[key] = item;
-    }
+    if (item !== undefined) output[key] = item;
   }
-
   return output;
 }
 
@@ -416,12 +493,4 @@ function parseStructuredJson(text: string): unknown {
   } catch {
     return undefined;
   }
-}
-
-function buildExtractionPrompt(text: string): string {
-  return [
-    "Extraia uma sugestao de lancamento financeiro seguindo estritamente o schema configurado.",
-    "Responda com JSON estruturado e sem texto adicional.",
-    `Mensagem bancaria: ${text}`,
-  ].join("\n");
 }
