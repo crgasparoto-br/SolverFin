@@ -28,6 +28,7 @@ import {
 
 export type BankMessageExtractionSource = "deterministic" | "ai" | "none";
 export type BankMessageExtractionState =
+  | "processing"
   | "ready_for_review"
   | "low_confidence"
   | "incomplete"
@@ -43,6 +44,7 @@ export interface BankMessageExtractionDiagnostic {
 }
 
 export interface BankMessageInboxViewItem extends BankMessageInboxItem {
+  diagnosticMessage: string;
   extractionSource: BankMessageExtractionSource;
   extractionState: BankMessageExtractionState;
   retryable: boolean;
@@ -77,6 +79,11 @@ interface ImportBatchProblemRow {
   problems: unknown;
 }
 
+interface StoredBankMessageOutcome {
+  diagnostic: BankMessageExtractionDiagnostic;
+  maskedText?: string;
+}
+
 const BANK_MESSAGE_PURPOSE = "bank_message_transaction_extraction";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -102,23 +109,38 @@ export async function createBankMessageInboxWithAiForContext(
     payload: { origin: payload.origin, text: payload.text },
   }).item;
 
-  const inserted = await query<{ id: string }>(
-    `insert into "ImportBatch"
-      ("id", "organizationId", "financialProfileId", "sourceKind", "status", "originalFileName",
-       "sourceHash", "problems", "receivedAt", "completedAt", "createdAt", "updatedAt")
-     values ($1, $2, $3, 'BANK_MESSAGE', 'REVIEWING', $4, $5, '[]'::jsonb, $6, null, $7, $7)
-     on conflict ("organizationId", "financialProfileId", "sourceHash") do nothing
-     returning "id"`,
-    [
-      transient.id,
-      context.organizationId,
-      context.financialProfileId,
-      `bank-message-${payload.origin}`,
-      transient.sourceHash,
-      transient.receivedAt,
-      now,
-    ],
-  );
+  const inserted = await withTransaction(async (executeQuery) => {
+    const rows = await executeQuery<{ id: string }>(
+      `insert into "ImportBatch"
+        ("id", "organizationId", "financialProfileId", "sourceKind", "status", "originalFileName",
+         "sourceHash", "problems", "receivedAt", "completedAt", "createdAt", "updatedAt")
+       values ($1, $2, $3, 'BANK_MESSAGE', 'REVIEWING', $4, $5, '[]'::jsonb, $6, null, $7, $7)
+       on conflict ("organizationId", "financialProfileId", "sourceHash") do nothing
+       returning "id"`,
+      [
+        transient.id,
+        context.organizationId,
+        context.financialProfileId,
+        `bank-message-${payload.origin}`,
+        transient.sourceHash,
+        transient.receivedAt,
+        now,
+      ],
+    );
+
+    const createdId = rows[0]?.id;
+    if (createdId !== undefined) {
+      await recordUserSubmissionAudit(executeQuery, {
+        context,
+        importBatchId: createdId,
+        now,
+        action: "create",
+        reason: "Mensagem bancária recebida com autorização explícita.",
+      });
+    }
+
+    return rows;
+  });
 
   let importBatchId = inserted[0]?.id;
 
@@ -126,22 +148,45 @@ export async function createBankMessageInboxWithAiForContext(
     const existing = await findInboxItemBySourceHash(context, transient.sourceHash);
 
     if (existing.importBatch.status !== "failed") {
-      return enrichInboxItem(existing, await readDiagnostic(context, existing.id));
+      return enrichInboxItem(
+        existing,
+        await readStoredOutcome(context, existing.id),
+        transient.maskedText,
+      );
     }
 
-    const claimed = await query<{ id: string }>(
-      `update "ImportBatch"
-       set "status" = 'REVIEWING', "completedAt" = null, "problems" = '[]'::jsonb, "updatedAt" = $4
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-         and "status" = 'FAILED'
-       returning "id"`,
-      [existing.id, context.organizationId, context.financialProfileId, now],
-    );
+    const claimed = await withTransaction(async (executeQuery) => {
+      const rows = await executeQuery<{ id: string }>(
+        `update "ImportBatch"
+         set "status" = 'REVIEWING', "completedAt" = null, "problems" = '[]'::jsonb, "updatedAt" = $4
+         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+           and "status" = 'FAILED'
+         returning "id"`,
+        [existing.id, context.organizationId, context.financialProfileId, now],
+      );
+
+      const claimedId = rows[0]?.id;
+      if (claimedId !== undefined) {
+        await recordUserSubmissionAudit(executeQuery, {
+          context,
+          importBatchId: claimedId,
+          now,
+          action: "update",
+          reason: "Mensagem bancária reenviada com nova autorização explícita.",
+        });
+      }
+
+      return rows;
+    });
 
     importBatchId = claimed[0]?.id;
     if (importBatchId === undefined) {
       const concurrent = await findInboxItemBySourceHash(context, transient.sourceHash);
-      return enrichInboxItem(concurrent, await readDiagnostic(context, concurrent.id));
+      return enrichInboxItem(
+        concurrent,
+        await readStoredOutcome(context, concurrent.id),
+        transient.maskedText,
+      );
     }
   }
 
@@ -168,11 +213,15 @@ export async function createBankMessageInboxWithAiForContext(
     importBatchId,
     now,
     diagnostic: extraction.diagnostic,
+    maskedText: transient.maskedText,
     suggestion,
   });
 
   const stored = await findInboxItemBySourceHash(context, transient.sourceHash);
-  return enrichInboxItem(stored, extraction.diagnostic);
+  return enrichInboxItem(stored, {
+    diagnostic: extraction.diagnostic,
+    maskedText: transient.maskedText,
+  });
 }
 
 export async function listBankMessageInboxWithAiForContext(
@@ -185,11 +234,11 @@ export async function listBankMessageInboxWithAiForContext(
      where "organizationId" = $1 and "financialProfileId" = $2 and "sourceKind" = 'BANK_MESSAGE'`,
     [context.organizationId, context.financialProfileId],
   );
-  const diagnostics = new Map(
-    diagnosticRows.map((row) => [row.id, parseDiagnostic(row.problems)] as const),
+  const outcomes = new Map(
+    diagnosticRows.map((row) => [row.id, parseStoredOutcome(row.problems)] as const),
   );
 
-  return items.map((item) => enrichInboxItem(item, diagnostics.get(item.id)));
+  return items.map((item) => enrichInboxItem(item, outcomes.get(item.id)));
 }
 
 export async function extractBankMessageForProduct(
@@ -202,7 +251,7 @@ export async function extractBankMessageForProduct(
 ): Promise<ProductExtractionResult> {
   const deterministic = await parseBankMessage({ text: input.text });
 
-  if (deterministic.sourceKind === "rule") {
+  if (deterministic.sourceKind === "rule" && deterministic.suggestion !== undefined) {
     return {
       parserResult: deterministic,
       diagnostic: buildDiagnostic(deterministic),
@@ -215,28 +264,17 @@ export async function extractBankMessageForProduct(
   } catch {
     return {
       parserResult: deterministic,
-      diagnostic: {
-        code: "BANK_MESSAGE_AI_NOT_CONFIGURED",
-        message: "A extração por IA não está disponível. Revise a mensagem manualmente.",
-        source: "none",
-        state: "incomplete",
-        retryable: false,
-        reviewReasons: ["Configuração segura do provider indisponível."],
-      },
+      diagnostic: buildProviderUnavailableDiagnostic(
+        deterministic,
+        "Configuração segura do provider indisponível.",
+      ),
     };
   }
 
   if (selection.status === "disabled" || selection.provider === undefined) {
     return {
       parserResult: deterministic,
-      diagnostic: {
-        code: "BANK_MESSAGE_AI_NOT_CONFIGURED",
-        message: "Nenhuma regra reconheceu a mensagem. Revise os dados manualmente.",
-        source: "none",
-        state: "incomplete",
-        retryable: false,
-        reviewReasons: deterministic.reviewReasons,
-      },
+      diagnostic: buildProviderUnavailableDiagnostic(deterministic),
     };
   }
 
@@ -247,7 +285,7 @@ export async function extractBankMessageForProduct(
       diagnostic: {
         code: "BANK_MESSAGE_CONSENT_CHECK_REQUIRED",
         message: "Não foi possível confirmar o consentimento ativo. Revise a mensagem manualmente.",
-        source: "none",
+        source: deterministic.sourceKind === "rule" ? "deterministic" : "none",
         state: "incomplete",
         retryable: false,
         reviewReasons: ["Consentimento ativo não pôde ser revalidado antes da chamada externa."],
@@ -286,6 +324,26 @@ export async function extractBankMessageForProduct(
   return {
     parserResult: assisted,
     diagnostic: buildDiagnostic(assisted),
+  };
+}
+
+function buildProviderUnavailableDiagnostic(
+  deterministic: BankMessageParserResult,
+  extraReason?: string,
+): BankMessageExtractionDiagnostic {
+  const partialRule = deterministic.sourceKind === "rule";
+  return {
+    code: "BANK_MESSAGE_AI_NOT_CONFIGURED",
+    message: partialRule
+      ? "A regra determinística não completou a extração e a IA não está disponível. Revise os dados manualmente."
+      : "Nenhuma regra reconheceu a mensagem. Revise os dados manualmente.",
+    source: partialRule ? "deterministic" : "none",
+    state: "incomplete",
+    retryable: false,
+    reviewReasons: [
+      ...deterministic.reviewReasons,
+      ...(extraReason === undefined ? [] : [extraReason]),
+    ],
   };
 }
 
@@ -401,6 +459,7 @@ async function persistExtractionOutcome(input: {
   importBatchId: string;
   now: string;
   diagnostic: BankMessageExtractionDiagnostic;
+  maskedText: string;
   suggestion: PersistableSuggestion | undefined;
 }): Promise<void> {
   await withTransaction(async (executeQuery) => {
@@ -444,12 +503,39 @@ async function persistExtractionOutcome(input: {
         input.context.organizationId,
         input.context.financialProfileId,
         finalStatus,
-        JSON.stringify([input.diagnostic]),
+        JSON.stringify([{ ...input.diagnostic, maskedText: input.maskedText }]),
         input.now,
       ],
     );
 
     await recordSafeAudit(executeQuery, input);
+  });
+}
+
+async function recordUserSubmissionAudit(
+  executeQuery: QueryExecutor,
+  input: {
+    context: TenantContext;
+    importBatchId: string;
+    now: string;
+    action: "create" | "update";
+    reason: string;
+  },
+): Promise<void> {
+  await insertAuditLogEntry(executeQuery, {
+    organizationId: input.context.organizationId,
+    financialProfileId: input.context.financialProfileId,
+    occurredAt: input.now,
+    actorKind: "user",
+    actorId: input.context.userId,
+    action: input.action,
+    entityKind: "import_batch",
+    entityId: input.importBatchId,
+    reason: input.reason,
+    redactedChanges:
+      input.action === "create"
+        ? { sourceHash: "added", status: "added" }
+        : { status: "changed" },
   });
 }
 
@@ -550,19 +636,19 @@ async function findInboxItemBySourceHash(
   return item;
 }
 
-async function readDiagnostic(
+async function readStoredOutcome(
   context: TenantContext,
   importBatchId: string,
-): Promise<BankMessageExtractionDiagnostic | undefined> {
+): Promise<StoredBankMessageOutcome | undefined> {
   const rows = await query<ImportBatchProblemRow>(
     `select "id", "problems" from "ImportBatch"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
     [importBatchId, context.organizationId, context.financialProfileId],
   );
-  return parseDiagnostic(rows[0]?.problems);
+  return parseStoredOutcome(rows[0]?.problems);
 }
 
-function parseDiagnostic(value: unknown): BankMessageExtractionDiagnostic | undefined {
+function parseStoredOutcome(value: unknown): StoredBankMessageOutcome | undefined {
   const candidate = Array.isArray(value) ? value[0] : undefined;
   if (typeof candidate !== "object" || candidate === null) return undefined;
   const record = candidate as Record<string, unknown>;
@@ -575,7 +661,7 @@ function parseDiagnostic(value: unknown): BankMessageExtractionDiagnostic | unde
   ) {
     return undefined;
   }
-  return {
+  const diagnostic: BankMessageExtractionDiagnostic = {
     code: record.code,
     message: record.message,
     source: record.source,
@@ -585,16 +671,24 @@ function parseDiagnostic(value: unknown): BankMessageExtractionDiagnostic | unde
       ? record.reviewReasons.filter((reason): reason is string => typeof reason === "string")
       : [],
   };
+  return {
+    diagnostic,
+    ...(typeof record.maskedText === "string" && record.maskedText.trim().length > 0
+      ? { maskedText: record.maskedText }
+      : {}),
+  };
 }
 
 function enrichInboxItem(
   item: BankMessageInboxItem,
-  diagnostic: BankMessageExtractionDiagnostic | undefined,
+  outcome: StoredBankMessageOutcome | undefined,
+  transientMaskedText?: string,
 ): BankMessageInboxViewItem {
-  const resolved = diagnostic ?? inferDiagnosticFromSuggestion(item);
+  const resolved = outcome?.diagnostic ?? inferDiagnosticFromSuggestion(item);
   return {
     ...item,
-    maskedText: resolved.message,
+    maskedText: outcome?.maskedText ?? transientMaskedText ?? item.maskedText,
+    diagnosticMessage: resolved.message,
     extractionSource: resolved.source,
     extractionState: resolved.state,
     retryable: resolved.retryable,
@@ -611,13 +705,38 @@ function inferDiagnosticFromSuggestion(
     : item.suggestion
       ? "ai"
       : "none";
+
+  if (item.suggestion === undefined) {
+    if (item.importBatch.status === "reviewing") {
+      return {
+        code: "BANK_MESSAGE_EXTRACTION_PROCESSING",
+        message: "A mensagem está sendo processada. Atualize a Inbox para acompanhar o resultado.",
+        source,
+        state: "processing",
+        retryable: false,
+        reviewReasons: [],
+      };
+    }
+
+    return {
+      code: "BANK_MESSAGE_EXTRACTION_STATUS",
+      message:
+        item.status === "error"
+          ? "A extração está temporariamente indisponível."
+          : "Mensagem recebida para revisão manual.",
+      source,
+      state: item.status === "error" ? "temporarily_unavailable" : "incomplete",
+      retryable: item.status === "error",
+      reviewReasons: [],
+    };
+  }
+
   return {
     code: "BANK_MESSAGE_EXTRACTION_STATUS",
-    message: item.suggestion?.explanation ?? "Mensagem recebida para revisão.",
+    message: item.suggestion.explanation,
     source,
-    state:
-      item.suggestion && item.suggestion.confidence < 0.7 ? "low_confidence" : "ready_for_review",
-    retryable: item.status === "error",
+    state: item.suggestion.confidence < 0.7 ? "low_confidence" : "ready_for_review",
+    retryable: false,
     reviewReasons: [],
   };
 }
@@ -645,6 +764,7 @@ function isExtractionSource(value: unknown): value is BankMessageExtractionSourc
 
 function isExtractionState(value: unknown): value is BankMessageExtractionState {
   return (
+    value === "processing" ||
     value === "ready_for_review" ||
     value === "low_confidence" ||
     value === "incomplete" ||
