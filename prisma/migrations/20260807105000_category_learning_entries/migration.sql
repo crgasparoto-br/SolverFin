@@ -11,6 +11,8 @@ create table if not exists "CategoryLearningEntry" (
   "confidence" numeric(5,4) not null,
   "correctionCount" integer not null default 1,
   "lastCorrectedAt" timestamptz not null,
+  "lastSourceSuggestionId" uuid,
+  "lastSourceFingerprint" varchar(128),
   "ignoredAt" timestamptz,
   "revertedAt" timestamptz,
   "createdByUserId" uuid,
@@ -29,6 +31,10 @@ create table if not exists "CategoryLearningEntry" (
     foreign key ("categoryId", "organizationId", "financialProfileId")
     references "Category" ("id", "organizationId", "financialProfileId")
     on delete restrict,
+  constraint "CategoryLearningEntry_source_fk"
+    foreign key ("lastSourceSuggestionId", "organizationId", "financialProfileId")
+    references "AiSuggestion" ("id", "organizationId", "financialProfileId")
+    on delete restrict,
   constraint "CategoryLearningEntry_pattern_category_unique"
     unique ("organizationId", "financialProfileId", "merchantKey", "transactionKind", "categoryId")
 );
@@ -38,6 +44,9 @@ create index if not exists "CategoryLearningEntry_scope_status_idx"
 
 create index if not exists "CategoryLearningEntry_pattern_idx"
   on "CategoryLearningEntry" ("organizationId", "financialProfileId", "merchantKey", "transactionKind");
+
+create index if not exists "CategoryLearningEntry_source_idx"
+  on "CategoryLearningEntry" ("organizationId", "financialProfileId", "lastSourceSuggestionId");
 
 create unique index if not exists "AiSuggestion_intelligent_categorization_execution_unique"
   on "AiSuggestion" ("organizationId", "financialProfileId", "sourceSuggestionId", "kind", "model")
