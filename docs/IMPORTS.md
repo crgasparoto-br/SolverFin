@@ -197,6 +197,14 @@ O lançamento aprovado recebe:
 - `aiSuggestionId`;
 - `status: posted`.
 
+### Categorização e aprendizado por correção
+
+As linhas CSV e OFX pendentes usam o mesmo pipeline de categorização das demais `transaction_extraction`: regra explícita, correção confirmada, histórico do perfil, IA autorizada e revisão manual. O resultado é uma sugestão `categorization` V1 vinculada à linha e ao fingerprint observado.
+
+Quando o usuário corrige `categoryId` em `PATCH /api/import-batches/:importBatchId/suggestions/:suggestionId`, a correção e o sinal de aprendizado são persistidos na mesma transação. A categoria é revalidada no perfil e no tipo da linha; falha na correção não deixa aprendizado órfão. O sinal vale apenas para sugestões futuras e não altera linhas ou lançamentos históricos retroativamente.
+
+A mesma origem e a mesma versão de regras/aprendizado/histórico são idempotentes. Correções conflitantes, categorias arquivadas e provider indisponível degradam para revisão explícita, sem categoria inventada. Consulte `docs/ai/category-learning.md`.
+
 ### Transferências na revisão
 
 O campo **Tipo** oferece Receita, Despesa e Transferência. A inferência inicial continua limitada ao sinal ou às colunas Entrada/Saída; textos como PIX ou TED não classificam uma linha automaticamente.
@@ -237,7 +245,7 @@ Lotes descartados não aceitam novas edições, aprovações nem novas varredura
 
 Todas as operações filtram por `organizationId` e `financialProfileId`. Recursos inexistentes ou pertencentes a outro perfil retornam `TENANT_RESOURCE_NOT_FOUND`, sem revelar o tipo nem a existência do recurso protegido.
 
-A auditoria registra consentimento redigido, preview bem-sucedido, falhas controladas de preview ou criação, criação do lote e das sugestões, correções, decisões, criação ou conciliação de lançamento, descarte e expiração de candidaturas, sempre com mudanças redigidas. Conteúdo bruto CSV/OFX, campos bancários completos e segredos não são registrados. Quando a própria persistência de auditoria estiver indisponível, o erro funcional original é preservado para não substituir uma falha controlada por mensagem interna sem relação com a tentativa.
+A auditoria registra consentimento redigido, preview bem-sucedido, falhas controladas de preview ou criação, criação do lote e das sugestões, correções, decisões, criação ou conciliação de lançamento, descarte e expiração de candidaturas, sempre com mudanças redigidas. Conteúdo bruto CSV/OFX, campos bancários completos e segredos não são registrados. O evento de aprendizado registra apenas contexto, identificador e ação, sem descrição financeira. Quando a própria persistência de auditoria estiver indisponível, o erro funcional original é preservado para não substituir uma falha controlada por mensagem interna sem relação com a tentativa.
 
 ## Erros controlados principais
 
