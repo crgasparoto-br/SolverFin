@@ -19,6 +19,8 @@ export interface CategoryCorrectionInput {
   target: CategorySuggestionTarget;
   categoryId: string;
   correlationId?: string;
+  sourceSuggestionId?: string;
+  sourceFingerprint?: string;
 }
 
 interface CategoryLearningRow {
@@ -32,6 +34,8 @@ interface CategoryLearningRow {
   confidence: string | number;
   correctionCount: number;
   lastCorrectedAt: Date;
+  lastSourceSuggestionId: string | null;
+  lastSourceFingerprint: string | null;
   ignoredAt: Date | null;
   revertedAt: Date | null;
   createdByUserId: string | null;
@@ -54,8 +58,8 @@ interface SuggestionRow {
 }
 
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "merchantKey", "transactionKind",
-  "categoryId", "status", "confidence", "correctionCount", "lastCorrectedAt", "ignoredAt", "revertedAt",
-  "createdByUserId", "updatedByUserId", "createdAt", "updatedAt"`;
+  "categoryId", "status", "confidence", "correctionCount", "lastCorrectedAt", "lastSourceSuggestionId",
+  "lastSourceFingerprint", "ignoredAt", "revertedAt", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt"`;
 
 export class CategoryLearningRepositoryError extends Error {
   readonly code: string;
@@ -118,6 +122,8 @@ export async function recordCategoryCorrectionFromSuggestionForContext(
       amountMinor: payload.amountMinor,
     },
     categoryId,
+    sourceSuggestionId: suggestionId,
+    sourceFingerprint: payload.fingerprint,
     ...(correlationId === undefined ? {} : { correlationId }),
   });
 }
@@ -134,6 +140,16 @@ export async function recordCategoryCorrectionForContext(
       "CATEGORY_LEARNING_SCOPE_INVALID",
       "A correcao precisa pertencer ao perfil financeiro ativo.",
       403,
+    );
+  }
+
+  if (
+    (input.sourceSuggestionId === undefined) !==
+    (input.sourceFingerprint === undefined)
+  ) {
+    throw new CategoryLearningRepositoryError(
+      "CATEGORY_LEARNING_PROVENANCE_INVALID",
+      "A proveniencia da correcao precisa estar completa.",
     );
   }
 
@@ -184,6 +200,8 @@ export async function recordCategoryCorrectionForContext(
       executeQuery,
       entry,
       existing !== undefined,
+      input.sourceSuggestionId,
+      input.sourceFingerprint,
     );
     await insertLearningAuditEvent(
       executeQuery,
@@ -191,6 +209,8 @@ export async function recordCategoryCorrectionForContext(
       entry.id,
       "recorded",
       input.correlationId,
+      input.sourceSuggestionId,
+      input.sourceFingerprint,
     );
     return entry;
   });
@@ -312,14 +332,16 @@ async function persistCategoryLearningEntry(
   executeQuery: QueryExecutor,
   entry: CategoryLearningEntry,
   exists: boolean,
+  sourceSuggestionId?: string,
+  sourceFingerprint?: string,
 ): Promise<void> {
   if (!exists) {
     await executeQuery(
       `insert into "CategoryLearningEntry"
         ("id", "organizationId", "financialProfileId", "merchantKey", "transactionKind", "categoryId",
-         "status", "confidence", "correctionCount", "lastCorrectedAt", "ignoredAt", "revertedAt",
-         "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, null, null, $11, $12, $13, $14)`,
+         "status", "confidence", "correctionCount", "lastCorrectedAt", "lastSourceSuggestionId",
+         "lastSourceFingerprint", "ignoredAt", "revertedAt", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, null, null, $13, $14, $15, $16)`,
       [
         entry.id,
         entry.organizationId,
@@ -331,6 +353,8 @@ async function persistCategoryLearningEntry(
         entry.confidence,
         entry.correctionCount,
         entry.lastCorrectedAt,
+        sourceSuggestionId ?? null,
+        sourceFingerprint ?? null,
         entry.createdByUserId ?? null,
         entry.updatedByUserId ?? null,
         entry.createdAt,
@@ -343,7 +367,9 @@ async function persistCategoryLearningEntry(
   await executeQuery(
     `update "CategoryLearningEntry"
      set "status" = $4, "confidence" = $5, "correctionCount" = $6, "lastCorrectedAt" = $7,
-         "ignoredAt" = null, "revertedAt" = null, "updatedByUserId" = $8, "updatedAt" = $9
+         "lastSourceSuggestionId" = coalesce($8, "lastSourceSuggestionId"),
+         "lastSourceFingerprint" = coalesce($9, "lastSourceFingerprint"),
+         "ignoredAt" = null, "revertedAt" = null, "updatedByUserId" = $10, "updatedAt" = $11
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
     [
       entry.id,
@@ -353,6 +379,8 @@ async function persistCategoryLearningEntry(
       entry.confidence,
       entry.correctionCount,
       entry.lastCorrectedAt,
+      sourceSuggestionId ?? null,
+      sourceFingerprint ?? null,
       entry.updatedByUserId ?? null,
       entry.updatedAt,
     ],
@@ -365,6 +393,8 @@ async function insertLearningAuditEvent(
   entryId: string,
   action: "recorded" | "ignored" | "reverted",
   correlationId?: string,
+  sourceSuggestionId?: string,
+  sourceFingerprint?: string,
 ): Promise<void> {
   await executeQuery(
     `insert into "SecurityAuditEvent"
@@ -380,6 +410,8 @@ async function insertLearningAuditEvent(
         financialProfileId: context.financialProfileId,
         entryId,
         action,
+        ...(sourceSuggestionId === undefined ? {} : { sourceSuggestionId }),
+        ...(sourceFingerprint === undefined ? {} : { sourceFingerprint }),
       }),
     ],
   );
