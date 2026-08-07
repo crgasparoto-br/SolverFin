@@ -104,9 +104,7 @@ export async function recordCategoryCorrectionFromSuggestionForContext(
        and "kind" = 'TRANSACTION_EXTRACTION'`,
     [suggestionId, context.organizationId, context.financialProfileId],
   );
-  const payload = rows[0]
-    ? readCurrentTransactionExtractionPayload(rows[0].payload)
-    : undefined;
+  const payload = rows[0] ? readCurrentTransactionExtractionPayload(rows[0].payload) : undefined;
 
   if (payload === undefined) {
     throw new CategoryLearningRepositoryError(
@@ -146,10 +144,7 @@ export async function recordCategoryCorrectionForContext(
     );
   }
 
-  if (
-    (input.sourceSuggestionId === undefined) !==
-    (input.sourceFingerprint === undefined)
-  ) {
+  if ((input.sourceSuggestionId === undefined) !== (input.sourceFingerprint === undefined)) {
     throw new CategoryLearningRepositoryError(
       "CATEGORY_LEARNING_PROVENANCE_INVALID",
       "A proveniencia da correcao precisa estar completa.",
@@ -165,13 +160,10 @@ export async function recordCategoryCorrectionForContext(
     );
     const merchantKey = normalizeLearningKey(input.target);
 
-    await executeQuery(
-      `select pg_advisory_xact_lock(hashtext($1), hashtext($2))`,
-      [
-        `${context.organizationId}:${context.financialProfileId}`,
-        `${merchantKey}:${input.target.transactionKind}:${input.categoryId}`,
-      ],
-    );
+    await executeQuery(`select pg_advisory_xact_lock(hashtext($1), hashtext($2))`, [
+      `${context.organizationId}:${context.financialProfileId}`,
+      `${merchantKey}:${input.target.transactionKind}:${input.categoryId}`,
+    ]);
 
     const existingRows = await executeQuery<CategoryLearningRow>(
       `select ${SELECT_COLUMNS} from "CategoryLearningEntry"
@@ -186,9 +178,7 @@ export async function recordCategoryCorrectionForContext(
         input.categoryId,
       ],
     );
-    const existing = existingRows[0]
-      ? mapCategoryLearningRow(existingRows[0])
-      : undefined;
+    const existing = existingRows[0] ? mapCategoryLearningRow(existingRows[0]) : undefined;
     const now = new Date().toISOString();
     const entry = recordCategoryCorrection({
       id: existing?.id ?? randomUUID(),
@@ -280,13 +270,7 @@ async function mutateLearningEntry(
         updated.updatedAt,
       ],
     );
-    await insertLearningAuditEvent(
-      executeQuery,
-      context,
-      updated.id,
-      action,
-      correlationId,
-    );
+    await insertLearningAuditEvent(executeQuery, context, updated.id, action, correlationId);
     return updated;
   });
 }
@@ -430,9 +414,7 @@ function normalizeLearningKey(target: CategorySuggestionTarget): string {
     .replace(/\s+/g, " ");
 }
 
-function mapCategoryLearningRow(
-  row: CategoryLearningRow,
-): CategoryLearningEntry {
+function mapCategoryLearningRow(row: CategoryLearningRow): CategoryLearningEntry {
   const status = row.status.toLowerCase() as CategoryLearningStatus;
   return {
     id: row.id,
@@ -447,18 +429,10 @@ function mapCategoryLearningRow(
     lastCorrectedAt: row.lastCorrectedAt.toISOString(),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    ...(row.ignoredAt === null
-      ? {}
-      : { ignoredAt: row.ignoredAt.toISOString() }),
-    ...(row.revertedAt === null
-      ? {}
-      : { revertedAt: row.revertedAt.toISOString() }),
-    ...(row.createdByUserId === null
-      ? {}
-      : { createdByUserId: row.createdByUserId }),
-    ...(row.updatedByUserId === null
-      ? {}
-      : { updatedByUserId: row.updatedByUserId }),
+    ...(row.ignoredAt === null ? {} : { ignoredAt: row.ignoredAt.toISOString() }),
+    ...(row.revertedAt === null ? {} : { revertedAt: row.revertedAt.toISOString() }),
+    ...(row.createdByUserId === null ? {} : { createdByUserId: row.createdByUserId }),
+    ...(row.updatedByUserId === null ? {} : { updatedByUserId: row.updatedByUserId }),
   };
 }
 
@@ -467,7 +441,5 @@ function readCurrentTransactionExtractionPayload(
 ): TransactionExtractionSuggestionPayload | undefined {
   const result = readAiSuggestionPayload(value, "transaction_extraction");
   if (result.state !== "current") return undefined;
-  return result.payload.suggestionKind === "transaction_extraction"
-    ? result.payload
-    : undefined;
+  return result.payload.suggestionKind === "transaction_extraction" ? result.payload : undefined;
 }
