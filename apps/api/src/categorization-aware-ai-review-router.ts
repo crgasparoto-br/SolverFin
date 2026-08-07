@@ -13,7 +13,8 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
 ): Promise<ApiResponse | undefined> {
   if (!request.pathname.startsWith("/api/ai-review-queue")) return undefined;
 
-  const match = request.method === "POST" ? APPROVE_PATH.exec(request.pathname) : null;
+  const match =
+    request.method === "POST" ? APPROVE_PATH.exec(request.pathname) : null;
   const categoryId = readOverrideCategoryId(request.body);
   if (match === null || categoryId === undefined) {
     return handleAiReviewQueueApiRequest(request);
@@ -26,14 +27,20 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
   try {
     return await withSharedTransaction(async () => {
       const response = await handleAiReviewQueueApiRequest(request);
-      if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
+      if (
+        response === undefined ||
+        response.statusCode < 200 ||
+        response.statusCode >= 300
+      ) {
         return response;
       }
       if (!isLearningEligibleApproval(response)) {
         return response;
       }
 
-      const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+      const user = await requireAuthenticatedRequest(
+        buildAuthHeaders(request.headers.authorization),
+      );
       const context = await resolveRequestTenantContext(
         user,
         request.query.get("profileId") ?? undefined,
@@ -57,11 +64,19 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
 }
 
 function isLearningEligibleApproval(response: ApiResponse): boolean {
-  if (typeof response.body !== "object" || response.body === null || Array.isArray(response.body)) {
+  if (
+    typeof response.body !== "object" ||
+    response.body === null ||
+    Array.isArray(response.body)
+  ) {
     return false;
   }
   const suggestion = (response.body as Record<string, unknown>).suggestion;
-  if (typeof suggestion !== "object" || suggestion === null || Array.isArray(suggestion)) {
+  if (
+    typeof suggestion !== "object" ||
+    suggestion === null ||
+    Array.isArray(suggestion)
+  ) {
     return false;
   }
   const item = suggestion as Record<string, unknown>;
@@ -71,9 +86,15 @@ function isLearningEligibleApproval(response: ApiResponse): boolean {
 }
 
 function readOverrideCategoryId(body: unknown): string | undefined {
-  if (typeof body !== "object" || body === null || Array.isArray(body)) return undefined;
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return undefined;
+  }
   const payloadOverride = (body as Record<string, unknown>).payloadOverride;
-  if (typeof payloadOverride !== "object" || payloadOverride === null || Array.isArray(payloadOverride)) {
+  if (
+    typeof payloadOverride !== "object" ||
+    payloadOverride === null ||
+    Array.isArray(payloadOverride)
+  ) {
     return undefined;
   }
   const categoryId = (payloadOverride as Record<string, unknown>).categoryId;
@@ -82,6 +103,8 @@ function readOverrideCategoryId(body: unknown): string | undefined {
     : undefined;
 }
 
-function buildAuthHeaders(authorization: string | undefined): Record<string, string> {
+function buildAuthHeaders(
+  authorization: string | undefined,
+): Record<string, string> {
   return authorization === undefined ? {} : { authorization };
 }
