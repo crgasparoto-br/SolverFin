@@ -51,22 +51,30 @@ create index if not exists "CategoryLearningEntry_pattern_idx"
 create index if not exists "CategoryLearningEntry_source_idx"
   on "CategoryLearningEntry" ("organizationId", "financialProfileId", "lastSourceSuggestionId");
 
--- The legacy deterministic review key predates versioned categorization. Keep it
--- for the other review kinds, while categorization uses the execution key below
--- so a dependency change may create a new version even when the proposal itself
--- remains canonically identical.
-drop index if exists "AiSuggestion_deterministic_import_review_key";
+-- Keep the legacy deterministic review uniqueness untouched. Version only the
+-- relational fingerprint used by intelligent categorization so dependency
+-- changes can create a new auditable row even when the canonical proposal in
+-- payload.fingerprint remains identical.
+create or replace function "versionIntelligentCategorizationPayloadFingerprint"()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new."kind"::text = 'CATEGORIZATION'
+    and coalesce(new."model", '') like 'intelligent-categorization-v1-%'
+    and new."payloadFingerprint" is not null
+  then
+    new."payloadFingerprint" :=
+      left(new."payloadFingerprint", 92) || '-v-' || md5(new."model");
+  end if;
+  return new;
+end;
+$$;
 
-create unique index "AiSuggestion_deterministic_import_review_key"
-  on "AiSuggestion" (
-    "organizationId",
-    "financialProfileId",
-    "kind",
-    "sourceSuggestionId",
-    "payloadFingerprint",
-    "targetEntityId"
-  )
-  where "kind" <> 'CATEGORIZATION';
+create trigger "ZhAiSuggestionIntelligentCategorizationFingerprint"
+before insert on "AiSuggestion"
+for each row
+execute function "versionIntelligentCategorizationPayloadFingerprint"();
 
 create unique index if not exists "AiSuggestion_intelligent_categorization_execution_unique"
   on "AiSuggestion" ("organizationId", "financialProfileId", "sourceSuggestionId", "kind", "model")

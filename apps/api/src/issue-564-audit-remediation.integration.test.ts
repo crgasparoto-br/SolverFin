@@ -267,8 +267,8 @@ async function testSelectiveCategoryInvalidation(
     );
     assert.equal(
       new Set(afterDependent.map((row) => row.payloadFingerprint)).size,
-      1,
-      "Decision versions may share the same canonical proposal fingerprint",
+      2,
+      "Decision versions must use distinct relational fingerprints",
     );
   } finally {
     await cleanupSources(sourceIds);
