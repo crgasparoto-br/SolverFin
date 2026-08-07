@@ -1,4 +1,7 @@
-import type { CategoryLearningStatus, TenantContext } from "@solverfin/domain";
+import type {
+  CategoryLearningStatus,
+  TenantContext,
+} from "@solverfin/domain";
 
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
@@ -14,7 +17,8 @@ import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
 const BASE_PATH = "/api/category-learning";
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function handleCategoryLearningApiRequest(
   request: ApiRequest,
@@ -24,7 +28,9 @@ export async function handleCategoryLearningApiRequest(
   const correlationId = resolveCorrelationId(request.headers);
 
   try {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(
+      buildAuthHeaders(request.headers.authorization),
+    );
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -32,18 +38,29 @@ export async function handleCategoryLearningApiRequest(
 
     if (request.method === "GET" && request.pathname === BASE_PATH) {
       return json(200, {
-        entries: await listCategoryLearningForContext(context, readStatus(request.query.get("status"))),
+        entries: await listCategoryLearningForContext(
+          context,
+          readStatus(request.query.get("status")),
+        ),
       });
     }
 
-    if (request.method === "POST" && request.pathname === `${BASE_PATH}/apply`) {
+    if (
+      request.method === "POST" &&
+      request.pathname === `${BASE_PATH}/apply`
+    ) {
       return json(
         200,
-        await applyIntelligentCategorizationForContext(context, { correlationId }),
+        await applyIntelligentCategorizationForContext(context, {
+          correlationId,
+        }),
       );
     }
 
-    if (request.method === "POST" && request.pathname === `${BASE_PATH}/corrections`) {
+    if (
+      request.method === "POST" &&
+      request.pathname === `${BASE_PATH}/corrections`
+    ) {
       const body = requireObjectBody(request.body);
       return json(
         201,
@@ -56,15 +73,26 @@ export async function handleCategoryLearningApiRequest(
       );
     }
 
-    const actionMatch = /^\/api\/category-learning\/([^/]+)\/(ignore|revert)$/.exec(request.pathname);
+    const actionMatch =
+      /^\/api\/category-learning\/([^/]+)\/(ignore|revert)$/.exec(
+        request.pathname,
+      );
     if (request.method === "POST" && actionMatch) {
       const entryId = requireUuidValue(actionMatch[1] ?? "", "entryId");
       const action = actionMatch[2];
       return json(
         200,
         action === "ignore"
-          ? await ignoreCategoryLearningForContext(context, entryId, correlationId)
-          : await revertCategoryLearningForContext(context, entryId, correlationId),
+          ? await ignoreCategoryLearningForContext(
+              context,
+              entryId,
+              correlationId,
+            )
+          : await revertCategoryLearningForContext(
+              context,
+              entryId,
+              correlationId,
+            ),
       );
     }
 
@@ -81,7 +109,9 @@ export async function handleCategoryLearningApiRequest(
 
 function readStatus(value: string | null): CategoryLearningStatus | "all" {
   if (value === null || value === "" || value === "all") return "all";
-  if (value === "active" || value === "ignored" || value === "reverted") return value;
+  if (value === "active" || value === "ignored" || value === "reverted") {
+    return value;
+  }
   throw new CategoryLearningRepositoryError(
     "CATEGORY_LEARNING_STATUS_INVALID",
     "Status de aprendizado invalido.",
@@ -112,7 +142,9 @@ function requireUuidValue(value: string, field: string): string {
   return value;
 }
 
-function buildAuthHeaders(authorization: string | undefined): Record<string, string> {
+function buildAuthHeaders(
+  authorization: string | undefined,
+): Record<string, string> {
   return authorization === undefined ? {} : { authorization };
 }
 
