@@ -280,11 +280,7 @@ function buildLocalDecision(suggestion: CategorySuggestionResult): Categorizatio
       ? { proposedStatus: "pending_review" as const }
       : { proposedCategoryId: suggestion.categoryId }),
     resultOrigin:
-      suggestion.status === "needs_review"
-        ? "review"
-        : isLearning
-          ? "learning"
-          : "history",
+      suggestion.status === "needs_review" ? "review" : isLearning ? "learning" : "history",
   };
 }
 
@@ -361,10 +357,7 @@ async function requestAiDecision(
   }
 
   const structured = aiResult.result.structured;
-  if (
-    !validateAiClassificationResult(structured) ||
-    structured.proposedCategoryId === undefined
-  ) {
+  if (!validateAiClassificationResult(structured) || structured.proposedCategoryId === undefined) {
     return reviewDecision(
       "A IA nao retornou uma categoria valida. Escolha a categoria manualmente.",
     );
@@ -423,10 +416,7 @@ function buildProviderCategoryCandidates(
   let prompt = header;
   const tokenToCategoryId = new Map<string, string>();
   const eligible = categories
-    .filter(
-      (category) =>
-        category.status === "active" && category.kind === transactionKind,
-    )
+    .filter((category) => category.status === "active" && category.kind === transactionKind)
     .sort((left, right) => left.id.localeCompare(right.id))
     .slice(0, 100);
 
@@ -552,12 +542,7 @@ async function hasCategorizationExecution(
        where "organizationId" = $1 and "financialProfileId" = $2
          and "sourceSuggestionId" = $3 and "kind" = 'CATEGORIZATION' and "model" = $4
      ) as exists`,
-    [
-      context.organizationId,
-      context.financialProfileId,
-      sourceSuggestionId,
-      executionKey,
-    ],
+    [context.organizationId, context.financialProfileId, sourceSuggestionId, executionKey],
   );
   return rows[0]?.exists === true;
 }
@@ -663,19 +648,10 @@ function buildDecisionVersionFingerprint(
       ]),
     categories: [...categories]
       .sort((left, right) => left.id.localeCompare(right.id))
-      .map((category) => [
-        category.id,
-        category.kind,
-        category.status,
-        category.updatedAt,
-      ]),
+      .map((category) => [category.id, category.kind, category.status, category.updatedAt]),
     history: [...history]
       .sort((left, right) => left.id.localeCompare(right.id))
-      .map((transaction) => [
-        transaction.id,
-        transaction.categoryId,
-        transaction.updatedAt,
-      ]),
+      .map((transaction) => [transaction.id, transaction.categoryId, transaction.updatedAt]),
   });
 }
 
