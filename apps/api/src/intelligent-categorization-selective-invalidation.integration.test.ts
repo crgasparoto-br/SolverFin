@@ -5,7 +5,9 @@ import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloa
 
 import { closePool, query } from "./db.js";
 import { applyIntelligentCategorizationForContext } from "./intelligent-categorization-service.js";
-import { recordCategoryCorrectionFromSuggestionForContext } from "./repositories/category-learning.js";
+import {
+  recordCategoryCorrectionFromSuggestionForContext,
+} from "./repositories/category-learning.js";
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const USER_ID = "11111111-1111-4111-8111-111111111111";
@@ -129,7 +131,11 @@ async function main(): Promise<void> {
       `delete from "CategoryLearningEntry"
        where "organizationId" = $1 and "financialProfileId" = $2
          and "merchantKey" = any($3::text[])`,
-      [organizationId, PERSONAL_PROFILE_ID, [alphaDescription.toLowerCase(), betaDescription.toLowerCase()]],
+      [
+        organizationId,
+        PERSONAL_PROFILE_ID,
+        [alphaDescription.toLowerCase(), betaDescription.toLowerCase()],
+      ],
     );
     await query(
       `delete from "AiSuggestion"
