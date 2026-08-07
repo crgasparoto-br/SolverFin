@@ -51,6 +51,23 @@ create index if not exists "CategoryLearningEntry_pattern_idx"
 create index if not exists "CategoryLearningEntry_source_idx"
   on "CategoryLearningEntry" ("organizationId", "financialProfileId", "lastSourceSuggestionId");
 
+-- The legacy deterministic review key predates versioned categorization. Keep it
+-- for the other review kinds, while categorization uses the execution key below
+-- so a dependency change may create a new version even when the proposal itself
+-- remains canonically identical.
+drop index if exists "AiSuggestion_deterministic_import_review_key";
+
+create unique index "AiSuggestion_deterministic_import_review_key"
+  on "AiSuggestion" (
+    "organizationId",
+    "financialProfileId",
+    "kind",
+    "sourceSuggestionId",
+    "payloadFingerprint",
+    "targetEntityId"
+  )
+  where "kind" <> 'CATEGORIZATION';
+
 create unique index if not exists "AiSuggestion_intelligent_categorization_execution_unique"
   on "AiSuggestion" ("organizationId", "financialProfileId", "sourceSuggestionId", "kind", "model")
   where "sourceSuggestionId" is not null

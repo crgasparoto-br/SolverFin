@@ -3,11 +3,15 @@ import { randomUUID } from "node:crypto";
 
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
-import { handleCategorizationAwareImportBatchesApiRequest } from "./categorization-aware-import-router.js";
+import {
+  handleCategorizationAwareImportBatchesApiRequest as handleImportRequest,
+} from "./categorization-aware-import-router.js";
 import { closePool, query } from "./db.js";
 import { applyIntelligentCategorizationForContext } from "./intelligent-categorization-service.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import { recordCategoryCorrectionFromSuggestionForContext } from "./repositories/category-learning.js";
+import {
+  recordCategoryCorrectionFromSuggestionForContext as recordCorrection,
+} from "./repositories/category-learning.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
@@ -28,10 +32,13 @@ async function main(): Promise<void> {
   );
   const organizationId = profileRows[0]?.organizationId;
   assert.ok(organizationId, "Personal financial profile seed is required.");
+
   const accountRows = await query<{ id: string }>(
     `select "id" from "Account"
-     where "organizationId" = $1 and "financialProfileId" = $2 and "status" = 'ACTIVE'
-     order by "createdAt" asc limit 1`,
+     where "organizationId" = $1 and "financialProfileId" = $2
+       and "status" = 'ACTIVE'
+     order by "createdAt" asc
+     limit 1`,
     [organizationId, PERSONAL_PROFILE_ID],
   );
   const accountId = accountRows[0]?.id;
@@ -50,8 +57,8 @@ async function main(): Promise<void> {
   };
 
   try {
-    await insertCategory(organizationId, categoryA, `Categoria A issue 564 ${marker}`);
-    await insertCategory(organizationId, categoryB, `Categoria B issue 564 ${marker}`);
+    await insertCategory(organizationId, categoryA, `Categoria A ${marker}`);
+    await insertCategory(organizationId, categoryB, `Categoria B ${marker}`);
 
     await testImportCategoryNoop(token, accountId, categoryA, categoryB, marker);
     await testMerchantKeyBoundaries(context, categoryA, marker);
@@ -87,6 +94,7 @@ async function testImportCategoryNoop(
     consentAccepted: true,
   });
   assert.equal(created.statusCode, 201);
+
   const detail = readBody<{
     importBatch: { id: string };
     suggestions: Array<{ id: string; payload: { amountMinor: number } }>;
@@ -113,7 +121,10 @@ async function testImportCategoryNoop(
       token,
       "PATCH",
       `/api/import-batches/${batchId}/suggestions/${source.id}`,
-      { amountMinor: source.payload.amountMinor + 100, categoryId: categoryA },
+      {
+        amountMinor: source.payload.amountMinor + 100,
+        categoryId: categoryA,
+      },
     );
     assert.equal(sameCategoryEdit.statusCode, 200);
 
@@ -132,6 +143,7 @@ async function testImportCategoryNoop(
       { categoryId: categoryB },
     );
     assert.equal(changedCategory.statusCode, 200);
+
     const secondLearning = await readLearning(categoryB, source.id);
     assert.equal(secondLearning.correctionCount, 1);
     assert.notEqual(secondLearning.id, firstLearning.id);
@@ -142,12 +154,7 @@ async function testImportCategoryNoop(
 }
 
 async function testMerchantKeyBoundaries(
-  context: {
-    organizationId: string;
-    financialProfileId: string;
-    financialProfileKind: "personal";
-    userId: string;
-  },
+  context: TestContext,
   categoryId: string,
   marker: string,
 ): Promise<void> {
@@ -159,8 +166,9 @@ async function testMerchantKeyBoundaries(
       const sourceId = randomUUID();
       sourceIds.push(sourceId);
       const description = boundaryDescription(length, marker);
-      await insertExtractionSuggestion(context, sourceId, description, `boundary-${length}-${marker}`);
-      const entry = await recordCategoryCorrectionFromSuggestionForContext(
+      const sourceFingerprint = `boundary-${length}-${marker}`;
+      await insertExtractionSuggestion(context, sourceId, description, sourceFingerprint);
+      const entry = await recordCorrection(
         context,
         sourceId,
         categoryId,
@@ -171,7 +179,8 @@ async function testMerchantKeyBoundaries(
       const rows = await query<{ keyLength: number }>(
         `select char_length("merchantKey")::int as "keyLength"
          from "CategoryLearningEntry"
-         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+         where "id" = $1 and "organizationId" = $2
+           and "financialProfileId" = $3`,
         [entry.id, context.organizationId, context.financialProfileId],
       );
       assert.equal(rows[0]?.keyLength, length, `merchantKey length ${length} must persist`);
@@ -185,12 +194,7 @@ async function testMerchantKeyBoundaries(
 }
 
 async function testSelectiveCategoryInvalidation(
-  context: {
-    organizationId: string;
-    financialProfileId: string;
-    financialProfileKind: "personal";
-    userId: string;
-  },
+  context: TestContext,
   learnedCategoryId: string,
   unrelatedCategoryId: string,
   marker: string,
@@ -208,7 +212,7 @@ async function testSelectiveCategoryInvalidation(
       `selective-correction-${marker}`,
       learnedCategoryId,
     );
-    await recordCategoryCorrectionFromSuggestionForContext(
+    await recordCorrection(
       context,
       correctionSourceId,
       learnedCategoryId,
@@ -232,35 +236,39 @@ async function testSelectiveCategoryInvalidation(
     await insertCategory(
       context.organizationId,
       unrelatedCategoryId,
-      `Categoria nao relacionada issue 564 ${marker}`,
+      `Categoria nao relacionada ${marker}`,
     );
     await applyIntelligentCategorizationForContext(context, disabledRuntime());
 
-    const afterUnrelatedCategory = await readCategorizationRows(context, candidateSourceId);
+    const afterUnrelated = await readCategorizationRows(context, candidateSourceId);
     assert.equal(
-      afterUnrelatedCategory.length,
+      afterUnrelated.length,
       1,
-      "Unrelated category must not invalidate a learning-resolved decision",
+      "Unrelated category must not invalidate a learning decision",
     );
-    assert.equal(afterUnrelatedCategory[0]?.model, initialModel);
+    assert.equal(afterUnrelated[0]?.model, initialModel);
 
     await query(
-      `update "Category" set "status" = 'ARCHIVED', "updatedAt" = clock_timestamp()
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      `update "Category"
+       set "status" = 'ARCHIVED', "updatedAt" = clock_timestamp()
+       where "id" = $1 and "organizationId" = $2
+         and "financialProfileId" = $3`,
       [learnedCategoryId, context.organizationId, context.financialProfileId],
     );
     await applyIntelligentCategorizationForContext(context, disabledRuntime());
 
-    const afterDependentCategory = await readCategorizationRows(context, candidateSourceId);
-    assert.equal(afterDependentCategory.length, 2);
-    assert.equal(
-      afterDependentCategory.filter((row) => row.status === "PENDING_REVIEW").length,
-      1,
-    );
-    assert.equal(afterDependentCategory.filter((row) => row.status === "EXPIRED").length, 1);
+    const afterDependent = await readCategorizationRows(context, candidateSourceId);
+    assert.equal(afterDependent.length, 2);
+    assert.equal(countStatus(afterDependent, "PENDING_REVIEW"), 1);
+    assert.equal(countStatus(afterDependent, "EXPIRED"), 1);
     assert.notEqual(
-      afterDependentCategory.find((row) => row.status === "PENDING_REVIEW")?.model,
+      afterDependent.find((row) => row.status === "PENDING_REVIEW")?.model,
       initialModel,
+    );
+    assert.equal(
+      new Set(afterDependent.map((row) => row.payloadFingerprint)).size,
+      1,
+      "Decision versions may share the same canonical proposal fingerprint",
     );
   } finally {
     await cleanupSources(sourceIds);
@@ -276,13 +284,14 @@ async function insertCategory(
     `insert into "Category"
       ("id", "organizationId", "financialProfileId", "name", "kind", "status",
        "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
-     values ($1, $2, $3, $4, 'EXPENSE', 'ACTIVE', $5, $5, clock_timestamp(), clock_timestamp())`,
+     values ($1, $2, $3, $4, 'EXPENSE', 'ACTIVE', $5, $5,
+             clock_timestamp(), clock_timestamp())`,
     [categoryId, organizationId, PERSONAL_PROFILE_ID, name, USER_ID],
   );
 }
 
 async function insertExtractionSuggestion(
-  context: { organizationId: string; financialProfileId: string },
+  context: Pick<TestContext, "organizationId" | "financialProfileId">,
   id: string,
   description: string,
   sourceFingerprint: string,
@@ -313,12 +322,13 @@ async function insertExtractionSuggestion(
 
   await query(
     `insert into "AiSuggestion"
-      ("id", "organizationId", "financialProfileId", "kind", "status", "sourceEntityId", "targetEntityId",
-       "confidence", "explanation", "payload", "payloadFingerprint", "provider", "model",
-       "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt")
-     values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', null, null, 0.91,
-             'Fixture ficticia da issue 564.', $4::jsonb, $5, 'solverfin-test', 'issue-564-remediation-v1',
-             null, null, $6, $6)`,
+      ("id", "organizationId", "financialProfileId", "kind", "status",
+       "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload",
+       "payloadFingerprint", "provider", "model", "reviewedByUserId", "reviewedAt",
+       "createdAt", "updatedAt")
+     values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', null, null,
+             0.91, 'Fixture ficticia da issue 564.', $4::jsonb, $5,
+             'solverfin-test', 'issue-564-remediation-v1', null, null, $6, $6)`,
     [
       id,
       context.organizationId,
@@ -330,25 +340,16 @@ async function insertExtractionSuggestion(
   );
 }
 
-async function readLearning(
-  categoryId: string,
-  sourceSuggestionId: string,
-): Promise<{
-  id: string;
-  correctionCount: number;
-  lastSourceFingerprint: string | null;
-}> {
-  const rows = await query<{
-    id: string;
-    correctionCount: number;
-    lastSourceFingerprint: string | null;
-  }>(
+async function readLearning(categoryId: string, sourceSuggestionId: string): Promise<LearningRow> {
+  const rows = await query<LearningRow>(
     `select "id", "correctionCount", "lastSourceFingerprint"
      from "CategoryLearningEntry"
      where "organizationId" = (
        select "organizationId" from "FinancialProfile" where "id" = $1
-     ) and "financialProfileId" = $1 and "categoryId" = $2 and "lastSourceSuggestionId" = $3
-     order by "updatedAt" desc limit 1`,
+     ) and "financialProfileId" = $1 and "categoryId" = $2
+       and "lastSourceSuggestionId" = $3
+     order by "updatedAt" desc
+     limit 1`,
     [PERSONAL_PROFILE_ID, categoryId, sourceSuggestionId],
   );
   const row = rows[0];
@@ -357,11 +358,11 @@ async function readLearning(
 }
 
 async function readCategorizationRows(
-  context: { organizationId: string; financialProfileId: string },
+  context: Pick<TestContext, "organizationId" | "financialProfileId">,
   sourceSuggestionId: string,
-): Promise<Array<{ status: string; model: string | null; provider: string | null }>> {
-  return query<{ status: string; model: string | null; provider: string | null }>(
-    `select "status"::text as status, "model", "provider"
+): Promise<CategorizationRow[]> {
+  return query<CategorizationRow>(
+    `select "status"::text as "status", "model", "provider", "payloadFingerprint"
      from "AiSuggestion"
      where "organizationId" = $1 and "financialProfileId" = $2
        and "sourceSuggestionId" = $3 and "kind" = 'CATEGORIZATION'
@@ -379,7 +380,8 @@ async function cleanupSources(sourceIds: readonly string[]): Promise<void> {
   );
   await query(
     `delete from "AiSuggestion"
-     where "id" = any($1::uuid[]) or "sourceSuggestionId" = any($1::uuid[])`,
+     where "id" = any($1::uuid[])
+        or "sourceSuggestionId" = any($1::uuid[])`,
     [sourceIds],
   );
   await query(
@@ -403,11 +405,18 @@ function disabledRuntime() {
   };
 }
 
+function countStatus(rows: readonly CategorizationRow[], status: string): number {
+  return rows.filter((row) => row.status === status).length;
+}
+
 async function loginAndReadToken(): Promise<string> {
   const response = await handleMvpApiRequest({
     method: "POST",
     path: "/api/session",
-    body: { email: "demo@solverfin.example.invalid", password: "SolverFinDemo!2026" },
+    body: {
+      email: "demo@solverfin.example.invalid",
+      password: "SolverFinDemo!2026",
+    },
   });
   assert.equal(response.statusCode, 201);
   return readBody<{ session: { token: string } }>(response).session.token;
@@ -427,9 +436,7 @@ async function apiRequest(
     headers: { authorization: `Bearer ${token}` },
     body,
   };
-  const response =
-    (await handleCategorizationAwareImportBatchesApiRequest(request)) ??
-    (await handleApiRequest(request));
+  const response = (await handleImportRequest(request)) ?? (await handleApiRequest(request));
   assert.ok(response, `${method} ${path} should be handled`);
   return response;
 }
@@ -438,4 +445,24 @@ function readBody<T>(response: Pick<ApiResponse, "body">): T {
   assert.equal(typeof response.body, "object");
   assert.notEqual(response.body, null);
   return response.body as T;
+}
+
+interface TestContext {
+  organizationId: string;
+  financialProfileId: string;
+  financialProfileKind: "personal";
+  userId: string;
+}
+
+interface LearningRow {
+  id: string;
+  correctionCount: number;
+  lastSourceFingerprint: string | null;
+}
+
+interface CategorizationRow {
+  status: string;
+  model: string | null;
+  provider: string | null;
+  payloadFingerprint: string | null;
 }
