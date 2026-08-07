@@ -13,8 +13,7 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
 ): Promise<ApiResponse | undefined> {
   if (!request.pathname.startsWith("/api/ai-review-queue")) return undefined;
 
-  const match =
-    request.method === "POST" ? APPROVE_PATH.exec(request.pathname) : null;
+  const match = request.method === "POST" ? APPROVE_PATH.exec(request.pathname) : null;
   const categoryId = readOverrideCategoryId(request.body);
   if (match === null || categoryId === undefined) {
     return handleAiReviewQueueApiRequest(request);
@@ -27,11 +26,7 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
   try {
     return await withSharedTransaction(async () => {
       const response = await handleAiReviewQueueApiRequest(request);
-      if (
-        response === undefined ||
-        response.statusCode < 200 ||
-        response.statusCode >= 300
-      ) {
+      if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
         return response;
       }
       if (!isLearningEligibleApproval(response)) {
@@ -64,19 +59,11 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
 }
 
 function isLearningEligibleApproval(response: ApiResponse): boolean {
-  if (
-    typeof response.body !== "object" ||
-    response.body === null ||
-    Array.isArray(response.body)
-  ) {
+  if (typeof response.body !== "object" || response.body === null || Array.isArray(response.body)) {
     return false;
   }
   const suggestion = (response.body as Record<string, unknown>).suggestion;
-  if (
-    typeof suggestion !== "object" ||
-    suggestion === null ||
-    Array.isArray(suggestion)
-  ) {
+  if (typeof suggestion !== "object" || suggestion === null || Array.isArray(suggestion)) {
     return false;
   }
   const item = suggestion as Record<string, unknown>;
@@ -103,8 +90,6 @@ function readOverrideCategoryId(body: unknown): string | undefined {
     : undefined;
 }
 
-function buildAuthHeaders(
-  authorization: string | undefined,
-): Record<string, string> {
+function buildAuthHeaders(authorization: string | undefined): Record<string, string> {
   return authorization === undefined ? {} : { authorization };
 }
