@@ -295,9 +295,7 @@ function mergeRuleEnrichment(
   const enriched: CategorizationDecision = {
     ...decision,
     reasons: [
-      ...ruleResult.appliedRules.map(
-        (rule) => `Regra explicita: ${safeReason(rule.reason)}`,
-      ),
+      ...ruleResult.appliedRules.map((rule) => `Regra explicita: ${safeReason(rule.reason)}`),
       ...decision.reasons,
     ],
   };
