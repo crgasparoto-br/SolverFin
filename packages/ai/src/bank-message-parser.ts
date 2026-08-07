@@ -306,7 +306,9 @@ export function minimizeBankMessageForProvider(text: string): string {
   for (const token of tokens) {
     const normalized = normalizeKeyword(token);
     const safeToken =
-      isFinancialValueToken(token) || token.startsWith("[") || PROVIDER_SAFE_WORDS.has(normalized)
+      isFinancialValueToken(token) ||
+      token.startsWith("[") ||
+      PROVIDER_SAFE_WORDS.has(normalized)
         ? token
         : "[texto]";
 
