@@ -5,7 +5,9 @@ import type { TenantContext } from "@solverfin/domain";
 
 import { query, withTransaction, type QueryExecutor } from "../db.js";
 
-export type BankMessageAiConsentPurpose = "bank_message_processing" | "ai_processing";
+export type BankMessageAiConsentPurpose =
+  | "bank_message_processing"
+  | "ai_processing";
 
 export interface BankMessageAiConsentMutationOptions {
   correlationId?: string;
@@ -31,7 +33,13 @@ export async function grantBankMessageAiConsentForContext(
     const current = await readLatestConsentStates(context, executeQuery);
     for (const purpose of REQUIRED_PURPOSES) {
       if (current.get(purpose) === "granted") continue;
-      await insertConsentEvent(executeQuery, context, purpose, "granted", options.correlationId);
+      await insertConsentEvent(
+        executeQuery,
+        context,
+        purpose,
+        "granted",
+        options.correlationId,
+      );
     }
   });
 }
@@ -45,7 +53,13 @@ export async function revokeBankMessageAiConsentForContext(
     const current = await readLatestConsentStates(context, executeQuery);
     for (const purpose of REQUIRED_PURPOSES) {
       if (current.get(purpose) === "revoked") continue;
-      await insertConsentEvent(executeQuery, context, purpose, "revoked", options.correlationId);
+      await insertConsentEvent(
+        executeQuery,
+        context,
+        purpose,
+        "revoked",
+        options.correlationId,
+      );
     }
   });
 }
@@ -54,7 +68,9 @@ export async function resolveBankMessageAiConsentForContext(
   context: TenantContext,
 ): Promise<AiConsentState> {
   const current = await readLatestConsentStates(context, query);
-  if (REQUIRED_PURPOSES.some((purpose) => current.get(purpose) === "revoked")) {
+  if (
+    REQUIRED_PURPOSES.some((purpose) => current.get(purpose) === "revoked")
+  ) {
     return "revoked";
   }
   return REQUIRED_PURPOSES.every((purpose) => current.get(purpose) === "granted")
@@ -62,7 +78,10 @@ export async function resolveBankMessageAiConsentForContext(
     : "missing";
 }
 
-async function lockConsentScope(executeQuery: QueryExecutor, context: TenantContext): Promise<void> {
+async function lockConsentScope(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+): Promise<void> {
   await executeQuery(
     `select pg_advisory_xact_lock(hashtext($1), hashtext($2))`,
     [
@@ -134,6 +153,8 @@ async function insertConsentEvent(
   );
 }
 
-function isConsentPurpose(value: string): value is BankMessageAiConsentPurpose {
+function isConsentPurpose(
+  value: string,
+): value is BankMessageAiConsentPurpose {
   return value === "bank_message_processing" || value === "ai_processing";
 }
