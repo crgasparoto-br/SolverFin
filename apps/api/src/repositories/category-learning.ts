@@ -291,11 +291,7 @@ async function requireActiveCategory(
   const row = rows[0];
   const kind = row?.kind.toLowerCase();
 
-  if (
-    row === undefined ||
-    row.status.toLowerCase() !== "active" ||
-    kind !== transactionKind
-  ) {
+  if (row === undefined || row.status.toLowerCase() !== "active" || kind !== transactionKind) {
     throw new CategoryLearningRepositoryError(
       "CATEGORY_LEARNING_CATEGORY_UNAVAILABLE",
       "A categoria escolhida nao esta disponivel para este tipo de lancamento.",
