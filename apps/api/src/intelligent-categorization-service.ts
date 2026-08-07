@@ -11,6 +11,7 @@ import {
 } from "@solverfin/ai";
 import {
   applyAutomationRules,
+  parseTransactionExtractionPayload,
   suggestCategory,
   type AutomationRule,
   type AutomationRuleTarget,
@@ -22,7 +23,6 @@ import {
 } from "@solverfin/domain";
 import {
   buildAiSuggestionPayload,
-  readAiSuggestionPayload,
   type AiSuggestionPayloadOrigin,
   type CategorizationSuggestionPayloadV1,
   type TransactionExtractionSuggestionPayload,
@@ -35,7 +35,9 @@ import { listCategoryLearningForContext } from "./repositories/category-learning
 
 export interface IntelligentCategorizationRuntime {
   selectProvider: () => AiProviderSelection;
-  resolveConsent: (context: TenantContext) => AiConsentState | Promise<AiConsentState>;
+  resolveConsent: (
+    context: TenantContext,
+  ) => AiConsentState | Promise<AiConsentState>;
   policy?: AiUsagePolicy;
   now?: () => string;
   correlationId?: string;
@@ -113,14 +115,20 @@ export async function applyIntelligentCategorizationForContext(
   context: TenantContext,
   runtime: Partial<IntelligentCategorizationRuntime> = {},
 ): Promise<IntelligentCategorizationResult> {
-  const [sources, rules, learningEntries, categories, history] = await Promise.all([
-    listPendingExtractionSuggestions(context),
-    listAutomationRulesForContext(context, "active"),
-    listCategoryLearningForContext(context, "active"),
-    listCategories(context),
-    listHistory(context),
-  ]);
-  const versionFingerprint = buildDecisionVersionFingerprint(rules, learningEntries, categories, history);
+  const [sources, rules, learningEntries, categories, history] =
+    await Promise.all([
+      listPendingExtractionSuggestions(context),
+      listAutomationRulesForContext(context, "active"),
+      listCategoryLearningForContext(context, "active"),
+      listCategories(context),
+      listHistory(context),
+    ]);
+  const versionFingerprint = buildDecisionVersionFingerprint(
+    rules,
+    learningEntries,
+    categories,
+    history,
+  );
   const result: IntelligentCategorizationResult = {
     scanned: sources.length,
     created: 0,
@@ -142,8 +150,15 @@ export async function applyIntelligentCategorizationForContext(
       continue;
     }
 
-    const executionKey = buildExecutionKey(payload.fingerprint, versionFingerprint);
-    const alreadyExists = await hasCategorizationExecution(context, source.id, executionKey);
+    const executionKey = buildExecutionKey(
+      payload.fingerprint,
+      versionFingerprint,
+    );
+    const alreadyExists = await hasCategorizationExecution(
+      context,
+      source.id,
+      executionKey,
+    );
     if (alreadyExists) {
       result.skippedIdempotent += 1;
       continue;
@@ -160,7 +175,14 @@ export async function applyIntelligentCategorizationForContext(
       runtime,
     });
     const now = runtime.now?.() ?? new Date().toISOString();
-    const created = await persistDecision(context, source, payload, decision, executionKey, now);
+    const created = await persistDecision(
+      context,
+      source,
+      payload,
+      decision,
+      executionKey,
+      now,
+    );
 
     if (created) {
       result.created += 1;
@@ -190,8 +212,12 @@ async function resolveDecision(input: {
     description: input.payload.description,
     amountMinor: input.payload.amountMinor,
     kind: input.payload.kind,
-    ...(input.payload.accountId === undefined ? {} : { accountId: input.payload.accountId }),
-    ...(input.payload.categoryId === undefined ? {} : { categoryId: input.payload.categoryId }),
+    ...(input.payload.accountId === undefined
+      ? {}
+      : { accountId: input.payload.accountId }),
+    ...(input.payload.categoryId === undefined
+      ? {}
+      : { categoryId: input.payload.categoryId }),
   };
   const ruleResult = applyAutomationRules({
     context: input.context,
@@ -220,7 +246,9 @@ async function resolveDecision(input: {
       ...(ruleResult.target.accountId === undefined
         ? {}
         : { proposedAccountId: ruleResult.target.accountId }),
-      ...(ruleResult.target.cardId === undefined ? {} : { proposedCardId: ruleResult.target.cardId }),
+      ...(ruleResult.target.cardId === undefined
+        ? {}
+        : { proposedCardId: ruleResult.target.cardId }),
       ...(proposedStatus === undefined ? {} : { proposedStatus }),
       resultOrigin: "rule",
     };
@@ -241,14 +269,24 @@ async function resolveDecision(input: {
     history: input.history,
   });
 
-  if (localSuggestion.source === "learning" || localSuggestion.source === "history") {
+  if (
+    localSuggestion.source === "learning" ||
+    localSuggestion.source === "history"
+  ) {
     return buildLocalDecision(localSuggestion);
   }
 
-  return requestAiDecision(input.context, input.payload, input.categories, input.runtime);
+  return requestAiDecision(
+    input.context,
+    input.payload,
+    input.categories,
+    input.runtime,
+  );
 }
 
-function buildLocalDecision(suggestion: CategorySuggestionResult): CategorizationDecision {
+function buildLocalDecision(
+  suggestion: CategorySuggestionResult,
+): CategorizationDecision {
   const isLearning = suggestion.source === "learning";
   const reasonPrefix = isLearning ? "Correcao anterior" : "Historico do perfil";
   return {
@@ -262,7 +300,12 @@ function buildLocalDecision(suggestion: CategorySuggestionResult): Categorizatio
     ...(suggestion.categoryId === undefined
       ? { proposedStatus: "pending_review" as const }
       : { proposedCategoryId: suggestion.categoryId }),
-    resultOrigin: suggestion.status === "needs_review" ? "review" : isLearning ? "learning" : "history",
+    resultOrigin:
+      suggestion.status === "needs_review"
+        ? "review"
+        : isLearning
+          ? "learning"
+          : "history",
   };
 }
 
@@ -272,28 +315,39 @@ async function requestAiDecision(
   categories: readonly Category[],
   runtime: Partial<IntelligentCategorizationRuntime>,
 ): Promise<CategorizationDecision> {
-  const resolveConsent = runtime.resolveConsent ?? resolveAiProcessingConsentForContext;
+  const resolveConsent =
+    runtime.resolveConsent ?? resolveAiProcessingConsentForContext;
   const consent = await resolveConsent(context);
   let selection: AiProviderSelection;
 
   try {
-    selection = runtime.selectProvider?.() ?? createAiProviderFromEnvironment(process.env);
+    selection =
+      runtime.selectProvider?.() ?? createAiProviderFromEnvironment(process.env);
   } catch {
-    return reviewDecision("A IA nao esta disponivel por configuracao. Escolha a categoria manualmente.");
+    return reviewDecision(
+      "A IA nao esta disponivel por configuracao. Escolha a categoria manualmente.",
+    );
   }
 
   if (selection.status === "disabled" || selection.provider === undefined) {
-    return reviewDecision("A IA esta desativada. Escolha a categoria manualmente.");
+    return reviewDecision(
+      "A IA esta desativada. Escolha a categoria manualmente.",
+    );
   }
 
   const categoryCandidates = categories
-    .filter((category) => category.status === "active" && category.kind === payload.kind)
+    .filter(
+      (category) =>
+        category.status === "active" && category.kind === payload.kind,
+    )
     .slice(0, 100)
     .map((category) => `${category.id}|${category.name}`)
     .join("\n")
     .slice(0, 4_000);
   if (categoryCandidates.length === 0) {
-    return reviewDecision("Nao ha categoria ativa compativel com este tipo de lancamento.");
+    return reviewDecision(
+      "Nao ha categoria ativa compativel com este tipo de lancamento.",
+    );
   }
 
   const policy: AiUsagePolicy = runtime.policy ?? {
@@ -320,7 +374,9 @@ async function requestAiDecision(
       organizationId: context.organizationId,
       financialProfileId: context.financialProfileId,
       userId: context.userId,
-      ...(runtime.correlationId === undefined ? {} : { correlationId: runtime.correlationId }),
+      ...(runtime.correlationId === undefined
+        ? {}
+        : { correlationId: runtime.correlationId }),
     },
     policy,
     payload: {
@@ -351,8 +407,13 @@ async function requestAiDecision(
   }
 
   const structured = aiResult.result.structured;
-  if (!validateAiClassificationResult(structured) || structured.proposedCategoryId === undefined) {
-    return reviewDecision("A IA nao retornou uma categoria valida. Escolha a categoria manualmente.");
+  if (
+    !validateAiClassificationResult(structured) ||
+    structured.proposedCategoryId === undefined
+  ) {
+    return reviewDecision(
+      "A IA nao retornou uma categoria valida. Escolha a categoria manualmente.",
+    );
   }
 
   const confidence = aiResult.result.confidence ?? 0.5;
@@ -369,7 +430,8 @@ async function requestAiDecision(
     aiSuggestion: {
       categoryId: structured.proposedCategoryId,
       confidence,
-      reason: "IA sugeriu uma categoria a partir de dados minimizados do lancamento.",
+      reason:
+        "IA sugeriu uma categoria a partir de dados minimizados do lancamento.",
       provider: aiResult.providerId,
       model: aiResult.model,
     },
@@ -377,13 +439,18 @@ async function requestAiDecision(
 
   return {
     provider: aiResult.providerId,
-    origin: { kind: "provider", provider: aiResult.providerId, model: aiResult.model },
+    origin: {
+      kind: "provider",
+      provider: aiResult.providerId,
+      model: aiResult.model,
+    },
     confidence: categorySuggestion.confidence,
     reasons: [`IA: ${safeReason(categorySuggestion.reason)}`],
     ...(categorySuggestion.categoryId === undefined
       ? { proposedStatus: "pending_review" as const }
       : { proposedCategoryId: categorySuggestion.categoryId }),
-    resultOrigin: categorySuggestion.status === "needs_review" ? "review" : "ai",
+    resultOrigin:
+      categorySuggestion.status === "needs_review" ? "review" : "ai",
   };
 }
 
@@ -407,12 +474,20 @@ async function persistDecision(
   now: string,
 ): Promise<boolean> {
   return withTransaction(async (executeQuery) => {
-    await executeQuery(`select pg_advisory_xact_lock(hashtext($1), hashtext($2))`, [
-      `${context.organizationId}:${context.financialProfileId}`,
-      `${source.id}:${executionKey}`,
-    ]);
+    await executeQuery(
+      `select pg_advisory_xact_lock(hashtext($1), hashtext($2))`,
+      [
+        `${context.organizationId}:${context.financialProfileId}`,
+        `${source.id}:${executionKey}`,
+      ],
+    );
 
-    const existing = await hasCategorizationExecution(context, source.id, executionKey, executeQuery);
+    const existing = await hasCategorizationExecution(
+      context,
+      source.id,
+      executionKey,
+      executeQuery,
+    );
     if (existing) return false;
 
     await executeQuery(
@@ -423,7 +498,12 @@ async function persistDecision(
       [context.organizationId, context.financialProfileId, source.id, now],
     );
 
-    const payload = buildCategorizationPayload(source.id, sourcePayload, decision, now);
+    const payload = buildCategorizationPayload(
+      source.id,
+      sourcePayload,
+      decision,
+      now,
+    );
     await executeQuery(
       `insert into "AiSuggestion"
         ("id", "organizationId", "financialProfileId", "kind", "status", "sourceEntityId", "targetEntityId",
@@ -472,9 +552,15 @@ function buildCategorizationPayload(
       ...(decision.proposedCategoryId === undefined
         ? {}
         : { proposedCategoryId: decision.proposedCategoryId }),
-      ...(decision.proposedAccountId === undefined ? {} : { proposedAccountId: decision.proposedAccountId }),
-      ...(decision.proposedCardId === undefined ? {} : { proposedCardId: decision.proposedCardId }),
-      ...(decision.proposedStatus === undefined ? {} : { proposedStatus: decision.proposedStatus }),
+      ...(decision.proposedAccountId === undefined
+        ? {}
+        : { proposedAccountId: decision.proposedAccountId }),
+      ...(decision.proposedCardId === undefined
+        ? {}
+        : { proposedCardId: decision.proposedCardId }),
+      ...(decision.proposedStatus === undefined
+        ? {}
+        : { proposedStatus: decision.proposedStatus }),
     },
   }) as CategorizationSuggestionPayloadV1;
 }
@@ -491,7 +577,12 @@ async function hasCategorizationExecution(
        where "organizationId" = $1 and "financialProfileId" = $2
          and "sourceSuggestionId" = $3 and "kind" = 'CATEGORIZATION' and "model" = $4
      ) as exists`,
-    [context.organizationId, context.financialProfileId, sourceSuggestionId, executionKey],
+    [
+      context.organizationId,
+      context.financialProfileId,
+      sourceSuggestionId,
+      executionKey,
+    ],
   );
   return rows[0]?.exists === true;
 }
@@ -561,8 +652,7 @@ async function listHistory(context: TenantContext): Promise<Transaction[]> {
 function readTransactionExtractionPayload(
   value: unknown,
 ): TransactionExtractionSuggestionPayload | undefined {
-  const payload = readAiSuggestionPayload(value);
-  return payload?.suggestionKind === "transaction_extraction" ? payload : undefined;
+  return parseTransactionExtractionPayload(value);
 }
 
 function buildDecisionVersionFingerprint(
@@ -575,7 +665,14 @@ function buildDecisionVersionFingerprint(
     engine: ENGINE_VERSION,
     rules: [...rules]
       .sort((left, right) => left.id.localeCompare(right.id))
-      .map((rule) => [rule.id, rule.status, rule.priority, rule.conditions, rule.actions, rule.updatedAt]),
+      .map((rule) => [
+        rule.id,
+        rule.status,
+        rule.priority,
+        rule.conditions,
+        rule.actions,
+        rule.updatedAt,
+      ]),
     learning: [...learningEntries]
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((entry) => [
@@ -589,15 +686,30 @@ function buildDecisionVersionFingerprint(
       ]),
     categories: [...categories]
       .sort((left, right) => left.id.localeCompare(right.id))
-      .map((category) => [category.id, category.kind, category.status, category.updatedAt]),
+      .map((category) => [
+        category.id,
+        category.kind,
+        category.status,
+        category.updatedAt,
+      ]),
     history: [...history]
       .sort((left, right) => left.id.localeCompare(right.id))
-      .map((transaction) => [transaction.id, transaction.categoryId, transaction.updatedAt]),
+      .map((transaction) => [
+        transaction.id,
+        transaction.categoryId,
+        transaction.updatedAt,
+      ]),
   });
 }
 
-function buildExecutionKey(sourceFingerprint: string, versionFingerprint: string): string {
-  return `${ENGINE_VERSION}-${stableHash([sourceFingerprint, versionFingerprint]).slice(0, 24)}`;
+function buildExecutionKey(
+  sourceFingerprint: string,
+  versionFingerprint: string,
+): string {
+  return `${ENGINE_VERSION}-${stableHash([
+    sourceFingerprint,
+    versionFingerprint,
+  ]).slice(0, 24)}`;
 }
 
 function stableHash(value: unknown): string {
@@ -605,7 +717,11 @@ function stableHash(value: unknown): string {
 }
 
 function safeReason(value: string): string {
-  return value.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 400);
+  return value
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 400);
 }
 
 function normalizeProposedStatus(
