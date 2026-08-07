@@ -59,8 +59,7 @@ interface RuleMatch {
 }
 
 const DEFAULT_MIN_CONFIDENCE = 0.7;
-const SAFE_AI_EXTRACTION_REASON =
-  "Sugestao estruturada produzida pelo provider para revisao.";
+const SAFE_AI_EXTRACTION_REASON = "Sugestao estruturada produzida pelo provider para revisao.";
 const PROVIDER_EXTRACTION_PROMPT = [
   "Extraia uma sugestao de lancamento financeiro seguindo estritamente o schema configurado.",
   "Responda com JSON estruturado e sem texto adicional.",
