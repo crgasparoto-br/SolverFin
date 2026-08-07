@@ -85,8 +85,8 @@ interface TransactionRow {
   source: string;
   amountMinor: number;
   currency: string;
-  occurredOn: Date;
-  plannedOn: Date;
+  occurredOn: Date | string;
+  plannedOn: Date | string;
   description: string;
   categoryId: string | null;
   accountId: string | null;
@@ -205,9 +205,13 @@ async function resolveDecision(input: {
     const reasons = ruleResult.appliedRules.map(
       (rule) => `Regra explicita: ${safeReason(rule.reason)}`,
     );
+    const proposedStatus = normalizeProposedStatus(ruleResult.target.status);
     return {
       provider: "solverfin-automation",
-      origin: { kind: "automation", ruleId: firstRule?.ruleId },
+      origin:
+        firstRule === undefined
+          ? { kind: "automation" }
+          : { kind: "automation", ruleId: firstRule.ruleId },
       confidence: 0.95,
       reasons,
       ...(ruleResult.target.categoryId === undefined
@@ -217,7 +221,7 @@ async function resolveDecision(input: {
         ? {}
         : { proposedAccountId: ruleResult.target.accountId }),
       ...(ruleResult.target.cardId === undefined ? {} : { proposedCardId: ruleResult.target.cardId }),
-      ...(ruleResult.target.status === undefined ? {} : { proposedStatus: ruleResult.target.status }),
+      ...(proposedStatus === undefined ? {} : { proposedStatus }),
       resultOrigin: "rule",
     };
   }
@@ -282,11 +286,21 @@ async function requestAiDecision(
     return reviewDecision("A IA esta desativada. Escolha a categoria manualmente.");
   }
 
+  const categoryCandidates = categories
+    .filter((category) => category.status === "active" && category.kind === payload.kind)
+    .slice(0, 100)
+    .map((category) => `${category.id}|${category.name}`)
+    .join("\n")
+    .slice(0, 4_000);
+  if (categoryCandidates.length === 0) {
+    return reviewDecision("Nao ha categoria ativa compativel com este tipo de lancamento.");
+  }
+
   const policy: AiUsagePolicy = runtime.policy ?? {
     ...defaultAiUsagePolicy,
     consent,
     purpose: CLASSIFICATION_PURPOSE,
-    maxPromptChars: 2_000,
+    maxPromptChars: 6_000,
     maxRetries: 1,
     timeoutMs: 8_000,
     allowRawFinancialText: false,
@@ -296,6 +310,7 @@ async function requestAiDecision(
       "occurredOn",
       "description",
       "transactionType",
+      "categoryCandidates",
     ],
   };
   const aiResult = await runAiTask({
@@ -309,13 +324,15 @@ async function requestAiDecision(
     },
     policy,
     payload: {
-      prompt: "Sugira somente uma categoria existente para este lancamento.",
+      prompt:
+        "Escolha exatamente um proposedCategoryId presente em categoryCandidates. Retorne apenas o contrato estruturado de categorizacao.",
       fields: {
         amountMinor: payload.amountMinor,
         currency: payload.currency,
         occurredOn: payload.occurredOn,
         description: payload.description,
         transactionType: payload.kind,
+        categoryCandidates,
       },
     },
     resolveConsent: () => resolveConsent(context),
@@ -534,8 +551,8 @@ async function listHistory(context: TenantContext): Promise<Transaction[]> {
     occurredOn: toDateOnly(row.occurredOn),
     plannedOn: toDateOnly(row.plannedOn),
     description: row.description,
-    categoryId: row.categoryId ?? undefined,
-    accountId: row.accountId ?? undefined,
+    ...(row.categoryId === null ? {} : { categoryId: row.categoryId }),
+    ...(row.accountId === null ? {} : { accountId: row.accountId }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   }));
@@ -591,6 +608,23 @@ function safeReason(value: string): string {
   return value.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 400);
 }
 
-function toDateOnly(value: Date): string {
+function normalizeProposedStatus(
+  value: AutomationRuleTarget["status"],
+): CategorizationSuggestionPayloadV1["proposedStatus"] | undefined {
+  if (
+    value === "pending_review" ||
+    value === "planned" ||
+    value === "posted" ||
+    value === "reconciled" ||
+    value === "suggested" ||
+    value === "voided"
+  ) {
+    return value;
+  }
+  return undefined;
+}
+
+function toDateOnly(value: Date | string): string {
+  if (typeof value === "string") return value.slice(0, 10);
   return value.toISOString().slice(0, 10);
 }
