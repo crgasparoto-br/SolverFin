@@ -11,6 +11,8 @@ import {
 } from "@solverfin/ai";
 import {
   applyAutomationRules,
+  buildCategoryLearningKey,
+  matchesAutomationRule,
   suggestCategory,
   type AutomationRule,
   type AutomationRuleTarget,
@@ -130,12 +132,6 @@ export async function applyIntelligentCategorizationForContext(
     listCategories(context),
     listHistory(context),
   ]);
-  const versionFingerprint = buildDecisionVersionFingerprint(
-    rules,
-    learningEntries,
-    categories,
-    history,
-  );
   const result: IntelligentCategorizationResult = {
     scanned: sources.length,
     created: 0,
@@ -157,6 +153,15 @@ export async function applyIntelligentCategorizationForContext(
       continue;
     }
 
+    const versionFingerprint = buildDecisionVersionFingerprint(
+      context,
+      source.id,
+      payload,
+      rules,
+      learningEntries,
+      categories,
+      history,
+    );
     const executionKey = buildExecutionKey(payload.fingerprint, versionFingerprint);
     const alreadyExists = await hasCategorizationExecution(context, source.id, executionKey);
     if (alreadyExists) {
@@ -198,16 +203,7 @@ async function resolveDecision(input: {
   history: readonly Transaction[];
   runtime: Partial<IntelligentCategorizationRuntime>;
 }): Promise<CategorizationDecision> {
-  const ruleTarget: AutomationRuleTarget = {
-    id: input.sourceId,
-    organizationId: input.context.organizationId,
-    financialProfileId: input.context.financialProfileId,
-    description: input.payload.description,
-    amountMinor: input.payload.amountMinor,
-    kind: input.payload.kind,
-    ...(input.payload.accountId === undefined ? {} : { accountId: input.payload.accountId }),
-    ...(input.payload.categoryId === undefined ? {} : { categoryId: input.payload.categoryId }),
-  };
+  const ruleTarget = buildAutomationRuleTarget(input.context, input.sourceId, input.payload);
   const ruleResult = applyAutomationRules({
     context: input.context,
     target: ruleTarget,
@@ -617,15 +613,43 @@ function readTransactionExtractionPayload(
   return result.payload.suggestionKind === "transaction_extraction" ? result.payload : undefined;
 }
 
+function buildAutomationRuleTarget(
+  context: TenantContext,
+  sourceId: string,
+  payload: TransactionExtractionSuggestionPayload,
+): AutomationRuleTarget {
+  return {
+    id: sourceId,
+    organizationId: context.organizationId,
+    financialProfileId: context.financialProfileId,
+    description: payload.description,
+    amountMinor: payload.amountMinor,
+    kind: payload.kind,
+    ...(payload.accountId === undefined ? {} : { accountId: payload.accountId }),
+    ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
+  };
+}
+
 function buildDecisionVersionFingerprint(
+  context: TenantContext,
+  sourceId: string,
+  payload: TransactionExtractionSuggestionPayload,
   rules: readonly AutomationRule[],
   learningEntries: readonly CategoryLearningEntry[],
   categories: readonly Category[],
   history: readonly Transaction[],
 ): string {
+  const ruleTarget = buildAutomationRuleTarget(context, sourceId, payload);
+  const merchantKey = buildCategoryLearningKey({ description: payload.description });
+  const relevantCategories = categories.filter((category) => category.kind === payload.kind);
+  const relevantCategoryIds = new Set(relevantCategories.map((category) => category.id));
+
   return stableHash({
     engine: ENGINE_VERSION,
-    rules: [...rules]
+    rules: rules
+      .filter(
+        (rule) => rule.status === "active" && matchesAutomationRule(rule, ruleTarget),
+      )
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((rule) => [
         rule.id,
@@ -635,7 +659,13 @@ function buildDecisionVersionFingerprint(
         rule.actions,
         rule.updatedAt,
       ]),
-    learning: [...learningEntries]
+    learning: learningEntries
+      .filter(
+        (entry) =>
+          entry.status === "active" &&
+          entry.transactionKind === payload.kind &&
+          entry.merchantKey === merchantKey,
+      )
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((entry) => [
         entry.id,
@@ -646,10 +676,17 @@ function buildDecisionVersionFingerprint(
         entry.correctionCount,
         entry.updatedAt,
       ]),
-    categories: [...categories]
+    categories: relevantCategories
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((category) => [category.id, category.kind, category.status, category.updatedAt]),
-    history: [...history]
+    history: history
+      .filter(
+        (transaction) =>
+          transaction.kind === payload.kind &&
+          transaction.categoryId !== undefined &&
+          relevantCategoryIds.has(transaction.categoryId) &&
+          buildCategoryLearningKey({ description: transaction.description }).includes(merchantKey),
+      )
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((transaction) => [transaction.id, transaction.categoryId, transaction.updatedAt]),
   });
