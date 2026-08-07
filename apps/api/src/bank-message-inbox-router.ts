@@ -199,10 +199,7 @@ export function buildAuthoritativeConsentResolver(
 
   return async () => {
     const user = await authenticate(buildAuthHeaders(request.headers));
-    const currentContext = await resolveContext(
-      user,
-      request.query.get("profileId") ?? undefined,
-    );
+    const currentContext = await resolveContext(user, request.query.get("profileId") ?? undefined);
 
     if (
       currentContext.userId !== expectedContext.userId ||
