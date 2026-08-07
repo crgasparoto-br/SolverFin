@@ -177,17 +177,6 @@ export function suggestCategory(input: SuggestCategoryInput): CategorySuggestion
     (category) => category.status === "active" && category.kind === target.transactionKind,
   );
   const minConfidence = input.minConfidenceForAutoSuggestion ?? DEFAULT_MIN_CONFIDENCE;
-  const learningSuggestion = suggestFromLearning(
-    input.context,
-    target,
-    input.learningEntries ?? [],
-    activeCategories,
-  );
-
-  if (learningSuggestion !== undefined) {
-    return learningSuggestion;
-  }
-
   const ruleSuggestion = suggestFromMerchantRules(
     input.context,
     target,
@@ -197,6 +186,17 @@ export function suggestCategory(input: SuggestCategoryInput): CategorySuggestion
 
   if (ruleSuggestion !== undefined) {
     return ruleSuggestion;
+  }
+
+  const learningSuggestion = suggestFromLearning(
+    input.context,
+    target,
+    input.learningEntries ?? [],
+    activeCategories,
+  );
+
+  if (learningSuggestion !== undefined) {
+    return learningSuggestion;
   }
 
   const historySuggestion = suggestFromHistory(
@@ -253,15 +253,24 @@ function suggestFromLearning(
 
   const hasConflict = matches.some((entry) => entry.categoryId !== bestMatch.categoryId);
 
+  if (hasConflict) {
+    return {
+      status: "needs_review",
+      source: "learning",
+      confidence: Math.min(bestMatch.confidence, 0.49),
+      learningEntryId: bestMatch.id,
+      reason:
+        "Correcoes anteriores conflitantes foram encontradas para este padrao. Escolha a categoria antes de confirmar.",
+    };
+  }
+
   return {
     status: "suggested",
     source: "learning",
     categoryId: bestMatch.categoryId,
-    confidence: hasConflict ? Math.min(bestMatch.confidence, 0.78) : bestMatch.confidence,
+    confidence: bestMatch.confidence,
     learningEntryId: bestMatch.id,
-    reason: hasConflict
-      ? "Aprendizado recorrente encontrado, mas ha correcoes conflitantes para merchant semelhante."
-      : "Aprendizado criado a partir de correcao anterior do usuario para merchant semelhante.",
+    reason: "Correcao anterior confirmada para um lancamento com o mesmo padrao.",
   };
 }
 
@@ -349,7 +358,10 @@ function suggestFromAi(
         : "suggested",
     source: "ai",
     confidence: suggestion.confidence,
-    reason: suggestion.reason,
+    reason:
+      category === undefined
+        ? "A categoria sugerida pela IA nao esta disponivel neste perfil. Escolha outra categoria."
+        : suggestion.reason,
   };
 
   if (result.status === "suggested") {
