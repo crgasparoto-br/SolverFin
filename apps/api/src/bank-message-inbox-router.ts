@@ -287,11 +287,7 @@ function mapDomainError(error: unknown): unknown {
   }
 
   if (error instanceof TenantAuthorizationError) {
-    return {
-      code: error.code,
-      statusCode: error.statusCode,
-      message: error.message,
-    };
+    return { code: error.code, statusCode: error.statusCode, message: error.message };
   }
 
   return error;
