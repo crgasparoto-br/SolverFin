@@ -2,9 +2,7 @@ import type { CategoryLearningStatus } from "@solverfin/domain";
 
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import {
-  applyIntelligentCategorizationForContext,
-} from "./intelligent-categorization-service.js";
+import { applyIntelligentCategorizationForContext } from "./intelligent-categorization-service.js";
 import {
   CategoryLearningRepositoryError,
   ignoreCategoryLearningForContext,
