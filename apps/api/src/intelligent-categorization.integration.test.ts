@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
+import { FakeAiProvider } from "@solverfin/ai";
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { closePool, query } from "./db.js";
@@ -234,6 +235,133 @@ async function main(): Promise<void> {
       [`issue-564-${marker}`],
     );
   }
+
+  await testFakeProviderOutcomes(organizationId);
+}
+
+async function testFakeProviderOutcomes(organizationId: string): Promise<void> {
+  const profileId = randomUUID();
+  const categoryId = randomUUID();
+  const validSourceId = randomUUID();
+  const invalidSourceId = randomUUID();
+  const lowConfidenceSourceId = randomUUID();
+  const sourceIds = [validSourceId, invalidSourceId, lowConfidenceSourceId];
+  const marker = randomUUID();
+  const context = {
+    organizationId,
+    financialProfileId: profileId,
+    financialProfileKind: "personal" as const,
+    userId: USER_ID,
+  };
+
+  try {
+    await query(
+      `insert into "FinancialProfile"
+        ("id", "organizationId", "ownerUserId", "name", "kind", "status", "createdAt", "updatedAt")
+       values ($1, $2, $3, $4, 'PERSONAL', 'ACTIVE', clock_timestamp(), clock_timestamp())`,
+      [profileId, organizationId, USER_ID, `Perfil IA ficticio ${marker}`],
+    );
+    await query(
+      `insert into "Category"
+        ("id", "organizationId", "financialProfileId", "name", "kind", "status", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+       values ($1, $2, $3, 'Categoria IA ficticia', 'EXPENSE', 'ACTIVE', $4, $4, clock_timestamp(), clock_timestamp())`,
+      [categoryId, organizationId, profileId, USER_ID],
+    );
+
+    await insertExtractionSuggestion(
+      context,
+      validSourceId,
+      `Servico IA valido ${marker}`,
+      `provider-valid-${marker}`,
+    );
+    await applyIntelligentCategorizationForContext(context, {
+      selectProvider: () => readySelection([providerResult("c1", 0.91)]),
+      resolveConsent: () => "granted",
+    });
+    await assertCategorization(
+      context,
+      validSourceId,
+      "fake",
+      categoryId,
+      undefined,
+    );
+
+    await insertExtractionSuggestion(
+      context,
+      invalidSourceId,
+      `Servico IA invalido ${marker}`,
+      `provider-invalid-${marker}`,
+    );
+    await applyIntelligentCategorizationForContext(context, {
+      selectProvider: () =>
+        readySelection([
+          providerResult("categoria-fora-da-lista", 0.91),
+          providerResult("categoria-fora-da-lista", 0.91),
+        ]),
+      resolveConsent: () => "granted",
+    });
+    await assertCategorization(
+      context,
+      invalidSourceId,
+      "solverfin-categorization",
+      undefined,
+      "pending_review",
+    );
+
+    await insertExtractionSuggestion(
+      context,
+      lowConfidenceSourceId,
+      `Servico IA baixa confianca ${marker}`,
+      `provider-low-${marker}`,
+    );
+    await applyIntelligentCategorizationForContext(context, {
+      selectProvider: () => readySelection([providerResult("c1", 0.42)]),
+      resolveConsent: () => "granted",
+    });
+    await assertCategorization(
+      context,
+      lowConfidenceSourceId,
+      "fake",
+      undefined,
+      "pending_review",
+    );
+  } finally {
+    await query(
+      `delete from "AiSuggestion"
+       where "organizationId" = $1 and "financialProfileId" = $2
+         and ("id" = any($3::uuid[]) or "sourceSuggestionId" = any($3::uuid[]))`,
+      [organizationId, profileId, sourceIds],
+    );
+    await query(
+      `delete from "Category" where "organizationId" = $1 and "financialProfileId" = $2`,
+      [organizationId, profileId],
+    );
+    await query(
+      `delete from "FinancialProfile" where "id" = $1 and "organizationId" = $2`,
+      [profileId, organizationId],
+    );
+  }
+}
+
+async function assertCategorization(
+  context: { organizationId: string; financialProfileId: string },
+  sourceSuggestionId: string,
+  expectedProvider: string,
+  expectedCategoryId: string | undefined,
+  expectedStatus: string | undefined,
+): Promise<void> {
+  const rows = await query<{ provider: string; payload: unknown }>(
+    `select "provider", "payload" from "AiSuggestion"
+     where "organizationId" = $1 and "financialProfileId" = $2
+       and "sourceSuggestionId" = $3 and "kind" = 'CATEGORIZATION'
+     order by "createdAt" desc`,
+    [context.organizationId, context.financialProfileId, sourceSuggestionId],
+  );
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0]?.provider, expectedProvider);
+  const payload = rows[0]?.payload as Record<string, unknown> | undefined;
+  assert.equal(payload?.proposedCategoryId, expectedCategoryId);
+  assert.equal(payload?.proposedStatus, expectedStatus);
 }
 
 async function insertExtractionSuggestion(
@@ -284,6 +412,18 @@ async function insertExtractionSuggestion(
       now,
     ],
   );
+}
+
+function providerResult(proposedCategoryId: string, confidence: number) {
+  return {
+    text: "fixture ficticia",
+    structured: { proposedCategoryId },
+    confidence,
+  };
+}
+
+function readySelection(responses: Parameters<typeof FakeAiProvider>[0]) {
+  return { status: "ready", provider: new FakeAiProvider(responses) } as const;
 }
 
 function disabledSelection() {
