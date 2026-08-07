@@ -29,6 +29,9 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
       if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
         return response;
       }
+      if (!isLearningEligibleApproval(response)) {
+        return response;
+      }
 
       const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
       const context = await resolveRequestTenantContext(
@@ -51,6 +54,20 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
       body: response.body,
     };
   }
+}
+
+function isLearningEligibleApproval(response: ApiResponse): boolean {
+  if (typeof response.body !== "object" || response.body === null || Array.isArray(response.body)) {
+    return false;
+  }
+  const suggestion = (response.body as Record<string, unknown>).suggestion;
+  if (typeof suggestion !== "object" || suggestion === null || Array.isArray(suggestion)) {
+    return false;
+  }
+  const item = suggestion as Record<string, unknown>;
+  if (item.kind !== "transaction_extraction") return false;
+  const provider = typeof item.provider === "string" ? item.provider : "";
+  return !provider.startsWith("solverfin-import");
 }
 
 function readOverrideCategoryId(body: unknown): string | undefined {
