@@ -2,16 +2,8 @@ import { categoryLearningControllerScript } from "./category-learning-controller
 
 const script = categoryLearningControllerScript();
 
-assertIncludes(
-  script,
-  "/api/category-learning/apply",
-  "categorization apply action",
-);
-assertIncludes(
-  script,
-  "/api/category-learning?status=all",
-  "learning list action",
-);
+assertIncludes(script, "/api/category-learning/apply", "categorization apply action");
+assertIncludes(script, "/api/category-learning?status=all", "learning list action");
 assertIncludes(script, "/ignore", "learning ignore action");
 assertIncludes(script, "/revert", "learning revert action");
 assertIncludes(script, "correção anterior", "learning origin label");
@@ -25,11 +17,7 @@ assertIncludes(
 assertIncludes(script, "aria-live", "accessible async feedback");
 assertIncludes(script, "showModal", "focused correction dialog");
 
-function assertIncludes(
-  value: string,
-  expected: string,
-  message: string,
-): void {
+function assertIncludes(value: string, expected: string, message: string): void {
   if (!value.includes(expected)) {
     throw new Error(`${message}. Missing ${expected}.`);
   }
