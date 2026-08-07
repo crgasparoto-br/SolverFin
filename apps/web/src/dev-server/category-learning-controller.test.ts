@@ -1,4 +1,6 @@
-import { categoryLearningControllerScript } from "./category-learning-controller.js";
+import {
+  categoryLearningControllerScript,
+} from "./category-learning-controller.js";
 
 const script = categoryLearningControllerScript();
 
