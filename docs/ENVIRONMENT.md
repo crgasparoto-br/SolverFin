@@ -61,6 +61,8 @@ Ao habilitar `AI_PROVIDER=openai`, todas as variaveis precisam ser validas. Falh
 
 `inspectAiProviderConfiguration` e um health check local de configuracao. Ele nao chama o fornecedor, nao valida a credencial pela rede e nao envia dados financeiros. A chamada real continua sujeita a consentimento, proposito, lista positiva de campos, limites, timeout e retry de `AiUsagePolicy`.
 
+A Inbox de mensagens bancarias e o primeiro fluxo de produto habilitado para consumir o provider automaticamente quando o parser deterministico nao for suficiente e o consentimento autoritativo estiver ativo. Os demais fluxos continuam sem ativacao automatica.
+
 Antes de ativar um ambiente protegido:
 
 1. revisar o modelo e o preco vigentes;
@@ -139,6 +141,6 @@ A API executa ainda uma validação específica do Cognito na inicialização pr
 - Gerenciador externo de secrets.
 - Rotacao automatica de chaves.
 - Secrets de producao.
-- Ativacao automatica de um fluxo de produto com IA real.
+- Ativacao automatica de novos fluxos de produto com IA real alem da Inbox de mensagens bancarias.
 - Telemetria agregada de tokens, custos, budgets e qualidade.
 - Smoke remoto com credencial real em pull requests.
