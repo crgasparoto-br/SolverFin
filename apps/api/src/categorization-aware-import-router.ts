@@ -6,16 +6,14 @@ import { recordCategoryCorrectionFromSuggestionForContext } from "./repositories
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
-const CORRECTION_PATH =
-  /^\/api\/import-batches\/[^/]+\/suggestions\/([0-9a-f-]+)$/i;
+const CORRECTION_PATH = /^\/api\/import-batches\/[^/]+\/suggestions\/([0-9a-f-]+)$/i;
 
 export async function handleCategorizationAwareImportBatchesApiRequest(
   request: ApiRequest,
 ): Promise<ApiResponse | undefined> {
   if (!request.pathname.startsWith("/api/import-batches")) return undefined;
 
-  const match =
-    request.method === "PATCH" ? CORRECTION_PATH.exec(request.pathname) : null;
+  const match = request.method === "PATCH" ? CORRECTION_PATH.exec(request.pathname) : null;
   const categoryId = readCorrectedCategoryId(request.body);
   if (match === null || categoryId === undefined) {
     return handleImportBatchesApiRequest(request);
@@ -28,11 +26,7 @@ export async function handleCategorizationAwareImportBatchesApiRequest(
   try {
     return await withSharedTransaction(async () => {
       const response = await handleImportBatchesApiRequest(request);
-      if (
-        response === undefined ||
-        response.statusCode < 200 ||
-        response.statusCode >= 300
-      ) {
+      if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
         return response;
       }
 
@@ -71,8 +65,6 @@ function readCorrectedCategoryId(body: unknown): string | undefined {
     : undefined;
 }
 
-function buildAuthHeaders(
-  authorization: string | undefined,
-): Record<string, string> {
+function buildAuthHeaders(authorization: string | undefined): Record<string, string> {
   return authorization === undefined ? {} : { authorization };
 }
