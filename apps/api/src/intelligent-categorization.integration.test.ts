@@ -21,7 +21,10 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   const profiles = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -53,8 +56,18 @@ async function main(): Promise<void> {
   const sourceIds = [firstSourceId, secondSourceId, unavailableSourceId];
 
   try {
-    await insertExtractionSuggestion(context, firstSourceId, description, `source-a-${marker}`);
-    await insertExtractionSuggestion(context, secondSourceId, description, `source-b-${marker}`);
+    await insertExtractionSuggestion(
+      context,
+      firstSourceId,
+      description,
+      `source-a-${marker}`,
+    );
+    await insertExtractionSuggestion(
+      context,
+      secondSourceId,
+      description,
+      `source-b-${marker}`,
+    );
 
     const firstLearning = await recordCategoryCorrectionFromSuggestionForContext(
       context,
@@ -62,26 +75,76 @@ async function main(): Promise<void> {
       categoryId,
       `issue-564-${marker}`,
     );
-    const repeatedLearning = await recordCategoryCorrectionFromSuggestionForContext(
-      context,
-      firstSourceId,
-      categoryId,
-      `issue-564-${marker}`,
-    );
+    const [concurrentLearningA, concurrentLearningB] = await Promise.all([
+      recordCategoryCorrectionFromSuggestionForContext(
+        context,
+        firstSourceId,
+        categoryId,
+        `issue-564-${marker}`,
+      ),
+      recordCategoryCorrectionFromSuggestionForContext(
+        context,
+        firstSourceId,
+        categoryId,
+        `issue-564-${marker}`,
+      ),
+    ]);
 
-    assert.equal(repeatedLearning.id, firstLearning.id);
-    assert.equal(repeatedLearning.correctionCount, firstLearning.correctionCount + 1);
+    assert.equal(concurrentLearningA.id, firstLearning.id);
+    assert.equal(concurrentLearningB.id, firstLearning.id);
+
+    const provenanceRows = await query<{
+      correctionCount: number;
+      lastSourceSuggestionId: string | null;
+      lastSourceFingerprint: string | null;
+      sourcePayloadFingerprint: string | null;
+    }>(
+      `select l."correctionCount", l."lastSourceSuggestionId", l."lastSourceFingerprint",
+              s."payloadFingerprint" as "sourcePayloadFingerprint"
+       from "CategoryLearningEntry" l
+       left join "AiSuggestion" s
+         on s."id" = l."lastSourceSuggestionId"
+        and s."organizationId" = l."organizationId"
+        and s."financialProfileId" = l."financialProfileId"
+       where l."id" = $1 and l."organizationId" = $2 and l."financialProfileId" = $3`,
+      [firstLearning.id, organizationId, PERSONAL_PROFILE_ID],
+    );
+    assert.equal(
+      provenanceRows[0]?.correctionCount,
+      3,
+      "concurrent corrections must converge on the same durable learning row",
+    );
+    assert.equal(provenanceRows[0]?.lastSourceSuggestionId, firstSourceId);
+    assert.equal(
+      provenanceRows[0]?.lastSourceFingerprint,
+      provenanceRows[0]?.sourcePayloadFingerprint,
+      "learning provenance must retain the source suggestion fingerprint",
+    );
 
     const listed = await listCategoryLearningForContext(context, "active");
     const matching = listed.filter((entry) => entry.id === firstLearning.id);
-    assert.equal(matching.length, 1, "learning must be durable and tenant-scoped");
+    assert.equal(
+      matching.length,
+      1,
+      "learning must be durable and tenant-scoped",
+    );
 
-    const firstRun = await applyIntelligentCategorizationForContext(context, {
-      selectProvider: () => disabledSelection(),
-      resolveConsent: () => "granted",
-      correlationId: `issue-564-${marker}`,
-    });
-    assert.ok(firstRun.created >= 2, "learning should create reviewable categorizations");
+    const [concurrentRunA, concurrentRunB] = await Promise.all([
+      applyIntelligentCategorizationForContext(context, {
+        selectProvider: () => disabledSelection(),
+        resolveConsent: () => "granted",
+        correlationId: `issue-564-${marker}`,
+      }),
+      applyIntelligentCategorizationForContext(context, {
+        selectProvider: () => disabledSelection(),
+        resolveConsent: () => "granted",
+        correlationId: `issue-564-${marker}`,
+      }),
+    ]);
+    assert.ok(
+      concurrentRunA.created + concurrentRunB.created >= 2,
+      "concurrent categorization should create the pending learning-backed candidates once",
+    );
 
     const learnedRows = await query<{ provider: string; payload: unknown }>(
       `select "provider", "payload" from "AiSuggestion"
@@ -90,9 +153,15 @@ async function main(): Promise<void> {
        order by "createdAt" desc`,
       [organizationId, PERSONAL_PROFILE_ID, secondSourceId],
     );
-    assert.equal(learnedRows.length, 1, "one categorization is expected for the source/version");
+    assert.equal(
+      learnedRows.length,
+      1,
+      "one categorization is expected for the source/version even under concurrency",
+    );
     assert.equal(learnedRows[0]?.provider, "solverfin-learning");
-    const learnedPayload = learnedRows[0]?.payload as Record<string, unknown> | undefined;
+    const learnedPayload = learnedRows[0]?.payload as
+      | Record<string, unknown>
+      | undefined;
     assert.equal(learnedPayload?.suggestionKind, "categorization");
     assert.equal(learnedPayload?.proposedCategoryId, categoryId);
     assert.equal(typeof learnedPayload?.fingerprint, "string");
@@ -102,7 +171,10 @@ async function main(): Promise<void> {
       resolveConsent: () => "granted",
       correlationId: `issue-564-${marker}`,
     });
-    assert.ok(secondRun.skippedIdempotent >= 2, "same source and version must be idempotent");
+    assert.ok(
+      secondRun.skippedIdempotent >= 2,
+      "same source and version must be idempotent",
+    );
 
     const repeatedRows = await query<{ count: string }>(
       `select count(*)::text as count from "AiSuggestion"
@@ -118,14 +190,20 @@ async function main(): Promise<void> {
       `Servico sem historico ${marker}`,
       `source-unavailable-${marker}`,
     );
-    const unavailableRun = await applyIntelligentCategorizationForContext(context, {
-      selectProvider: () => disabledSelection(),
-      resolveConsent: () => "granted",
-      correlationId: `issue-564-${marker}`,
-    });
+    const unavailableRun = await applyIntelligentCategorizationForContext(
+      context,
+      {
+        selectProvider: () => disabledSelection(),
+        resolveConsent: () => "granted",
+        correlationId: `issue-564-${marker}`,
+      },
+    );
     assert.ok(unavailableRun.created >= 1);
 
-    const unavailableRows = await query<{ provider: string; payload: unknown }>(
+    const unavailableRows = await query<{
+      provider: string;
+      payload: unknown;
+    }>(
       `select "provider", "payload" from "AiSuggestion"
        where "organizationId" = $1 and "financialProfileId" = $2
          and "sourceSuggestionId" = $3 and "kind" = 'CATEGORIZATION'
@@ -134,10 +212,17 @@ async function main(): Promise<void> {
     );
     assert.equal(unavailableRows.length, 1);
     assert.equal(unavailableRows[0]?.provider, "solverfin-categorization");
-    const unavailablePayload = unavailableRows[0]?.payload as Record<string, unknown> | undefined;
+    const unavailablePayload = unavailableRows[0]?.payload as
+      | Record<string, unknown>
+      | undefined;
     assert.equal(unavailablePayload?.proposedCategoryId, undefined);
     assert.equal(unavailablePayload?.proposedStatus, "pending_review");
   } finally {
+    await query(
+      `delete from "CategoryLearningEntry"
+       where "organizationId" = $1 and "financialProfileId" = $2 and "merchantKey" = $3`,
+      [organizationId, PERSONAL_PROFILE_ID, description.toLowerCase()],
+    );
     await query(
       `delete from "AiSuggestion"
        where "organizationId" = $1 and "financialProfileId" = $2
@@ -145,13 +230,9 @@ async function main(): Promise<void> {
       [organizationId, PERSONAL_PROFILE_ID, sourceIds],
     );
     await query(
-      `delete from "CategoryLearningEntry"
-       where "organizationId" = $1 and "financialProfileId" = $2 and "merchantKey" = $3`,
-      [organizationId, PERSONAL_PROFILE_ID, description.toLowerCase()],
+      `delete from "SecurityAuditEvent" where "correlationId" = $1`,
+      [`issue-564-${marker}`],
     );
-    await query(`delete from "SecurityAuditEvent" where "correlationId" = $1`, [
-      `issue-564-${marker}`,
-    ]);
   }
 }
 
@@ -206,13 +287,5 @@ async function insertExtractionSuggestion(
 }
 
 function disabledSelection() {
-  return {
-    status: "disabled",
-    health: {
-      status: "disabled",
-      providerId: "disabled",
-      model: "disabled",
-      issues: ["Provider disabled for deterministic integration test."],
-    },
-  } as never;
+  return { status: "disabled", provider: undefined } as const;
 }
