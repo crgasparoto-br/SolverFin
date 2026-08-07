@@ -28,13 +28,13 @@ Cada execução cria uma sugestão `categorization` V1 revisável com:
 - origem estruturada, confiança e motivos;
 - fingerprint canônico do payload.
 
-A versão da decisão considera regras aplicáveis, aprendizados, categorias e histórico relevante, porque regras sem categoria ainda podem enriquecer conta, cartão ou status da mesma candidatura. A combinação de perfil, sugestão de origem e versão da decisão é idempotente no banco. Quando a base relevante muda, uma nova decisão pode substituir a candidatura pendente anterior sem alterar lançamentos históricos.
+A versão da decisão considera somente dependências capazes de alterar o resultado na precedência vigente. Regras aplicáveis permanecem sempre no fingerprint porque também podem enriquecer conta, cartão ou status. Quando uma regra de categoria resolve o caso, aprendizado e histórico de menor precedência não invalidam a candidatura; quando o aprendizado resolve, histórico de menor precedência também não invalida. Categorias entram no fingerprint apenas quando são referenciadas pela fonte local capaz de decidir o caso; a taxonomia ativa completa do tipo do lançamento é considerada somente quando a execução ainda pode depender de IA/revisão. A combinação de perfil, sugestão de origem e versão da decisão é idempotente no banco. Quando uma dependência relevante muda, uma nova decisão pode substituir a candidatura pendente anterior sem alterar lançamentos históricos.
 
 ## Aprendizado por correção
 
 Uma correção confirmada cria ou reforça `CategoryLearningEntry`, sempre limitada a `organizationId` e `financialProfileId`. O sinal guarda merchant/descrição normalizada, tipo do lançamento, categoria, confiança, quantidade de correções, timestamps e a proveniência mais recente (`lastSourceSuggestionId` + `lastSourceFingerprint`). A referência de origem também é protegida pelo mesmo contexto de organização e perfil.
 
-Correções feitas em CSV/OFX e no fluxo **Corrigir e aprovar** da Inbox são persistidas na mesma transação da alteração/decisão que as originou. A categoria é revalidada como ativa, compatível com o tipo e pertencente ao perfil dentro da transação.
+Correções feitas em CSV/OFX e no fluxo **Corrigir e aprovar** da Inbox são persistidas na mesma transação da alteração/decisão que as originou. Em CSV/OFX, salvar uma mudança efetiva de `categoryId` confirma a correção; reenviar o mesmo `categoryId` ao editar data, valor, descrição, conta ou outro campo é um no-op para o aprendizado e não incrementa `correctionCount`, confiança nem proveniência. A categoria é revalidada como ativa, compatível com o tipo e pertencente ao perfil dentro da transação.
 
 Correções concorrentes para o mesmo padrão e categoria convergem por lock transacional para um único aprendizado, atualizando a contagem e a proveniência em vez de criar linhas duplicadas.
 

@@ -4,7 +4,8 @@ create table if not exists "CategoryLearningEntry" (
   "id" uuid primary key,
   "organizationId" uuid not null,
   "financialProfileId" uuid not null,
-  "merchantKey" varchar(240) not null,
+  "merchantKey" text not null,
+  "merchantKeyHash" char(64) not null,
   "transactionKind" varchar(16) not null,
   "categoryId" uuid not null,
   "status" varchar(16) not null default 'active',
@@ -27,6 +28,8 @@ create table if not exists "CategoryLearningEntry" (
     check ("confidence" >= 0 and "confidence" <= 1),
   constraint "CategoryLearningEntry_count_check"
     check ("correctionCount" > 0),
+  constraint "CategoryLearningEntry_key_hash_check"
+    check ("merchantKeyHash" ~ '^[0-9a-f]{64}$'),
   constraint "CategoryLearningEntry_category_fk"
     foreign key ("categoryId", "organizationId", "financialProfileId")
     references "Category" ("id", "organizationId", "financialProfileId")
@@ -36,14 +39,14 @@ create table if not exists "CategoryLearningEntry" (
     references "AiSuggestion" ("id", "organizationId", "financialProfileId")
     on delete restrict,
   constraint "CategoryLearningEntry_pattern_category_unique"
-    unique ("organizationId", "financialProfileId", "merchantKey", "transactionKind", "categoryId")
+    unique ("organizationId", "financialProfileId", "merchantKeyHash", "transactionKind", "categoryId")
 );
 
 create index if not exists "CategoryLearningEntry_scope_status_idx"
   on "CategoryLearningEntry" ("organizationId", "financialProfileId", "status", "updatedAt" desc);
 
 create index if not exists "CategoryLearningEntry_pattern_idx"
-  on "CategoryLearningEntry" ("organizationId", "financialProfileId", "merchantKey", "transactionKind");
+  on "CategoryLearningEntry" ("organizationId", "financialProfileId", "merchantKeyHash", "transactionKind");
 
 create index if not exists "CategoryLearningEntry_source_idx"
   on "CategoryLearningEntry" ("organizationId", "financialProfileId", "lastSourceSuggestionId");

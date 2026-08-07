@@ -120,6 +120,7 @@ interface ProviderCategoryCandidates {
 const ENGINE_VERSION = "intelligent-categorization-v1";
 const CLASSIFICATION_PURPOSE = "transaction_categorization";
 const PROVIDER_PROMPT_LIMIT = 5_500;
+const FINGERPRINT_RULE_EVALUATED_AT = "1970-01-01T00:00:00.000Z";
 
 export async function applyIntelligentCategorizationForContext(
   context: TenantContext,
@@ -694,8 +695,79 @@ function buildDecisionVersionFingerprint(
 ): string {
   const ruleTarget = buildAutomationRuleTarget(context, sourceId, payload);
   const merchantKey = buildCategoryLearningKey({ description: payload.description });
-  const relevantCategories = categories.filter((category) => category.kind === payload.kind);
-  const relevantCategoryIds = new Set(relevantCategories.map((category) => category.id));
+  const sameKindCategories = categories.filter((category) => category.kind === payload.kind);
+  const sameKindCategoryIds = new Set(sameKindCategories.map((category) => category.id));
+  const matchingLearningEntries = learningEntries.filter(
+    (entry) =>
+      entry.status === "active" &&
+      entry.transactionKind === payload.kind &&
+      entry.merchantKey === merchantKey,
+  );
+  const matchingHistory = history.filter(
+    (transaction) =>
+      transaction.kind === payload.kind &&
+      transaction.categoryId !== undefined &&
+      sameKindCategoryIds.has(transaction.categoryId) &&
+      buildCategoryLearningKey({ description: transaction.description }).includes(merchantKey),
+  );
+  const ruleResult = applyAutomationRules({
+    context,
+    target: ruleTarget,
+    rules,
+    now: FINGERPRINT_RULE_EVALUATED_AT,
+  });
+  const categoryRule = ruleResult.appliedRules.find((rule) =>
+    rule.appliedFields.includes("categoryId"),
+  );
+
+  let fingerprintLearning = matchingLearningEntries;
+  let fingerprintHistory = matchingHistory;
+  const categoryDependencyIds = new Set<string>();
+  let includeProviderCategoryNames = false;
+
+  if (categoryRule !== undefined && ruleResult.target.categoryId !== undefined) {
+    fingerprintLearning = [];
+    fingerprintHistory = [];
+    categoryDependencyIds.add(ruleResult.target.categoryId);
+  } else {
+    const localSuggestion = suggestCategory({
+      context,
+      target: {
+        organizationId: context.organizationId,
+        financialProfileId: context.financialProfileId,
+        transactionKind: payload.kind,
+        description: payload.description,
+        amountMinor: payload.amountMinor,
+      },
+      categories,
+      learningEntries,
+      history,
+    });
+
+    if (localSuggestion.source === "learning") {
+      fingerprintHistory = [];
+      for (const entry of matchingLearningEntries) categoryDependencyIds.add(entry.categoryId);
+    } else if (localSuggestion.source === "history") {
+      for (const entry of matchingLearningEntries) categoryDependencyIds.add(entry.categoryId);
+      for (const transaction of matchingHistory) {
+        if (transaction.categoryId !== undefined) categoryDependencyIds.add(transaction.categoryId);
+      }
+    } else {
+      includeProviderCategoryNames = true;
+      for (const category of sameKindCategories) {
+        if (category.status === "active") categoryDependencyIds.add(category.id);
+      }
+    }
+  }
+
+  const fingerprintCategories = sameKindCategories
+    .filter((category) => categoryDependencyIds.has(category.id))
+    .sort((left, right) => left.id.localeCompare(right.id))
+    .map((category) =>
+      includeProviderCategoryNames
+        ? [category.id, category.kind, category.status, category.name]
+        : [category.id, category.kind, category.status],
+    );
 
   return stableHash({
     engine: ENGINE_VERSION,
@@ -710,13 +782,7 @@ function buildDecisionVersionFingerprint(
         rule.actions,
         rule.updatedAt,
       ]),
-    learning: learningEntries
-      .filter(
-        (entry) =>
-          entry.status === "active" &&
-          entry.transactionKind === payload.kind &&
-          entry.merchantKey === merchantKey,
-      )
+    learning: fingerprintLearning
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((entry) => [
         entry.id,
@@ -727,17 +793,8 @@ function buildDecisionVersionFingerprint(
         entry.correctionCount,
         entry.updatedAt,
       ]),
-    categories: relevantCategories
-      .sort((left, right) => left.id.localeCompare(right.id))
-      .map((category) => [category.id, category.kind, category.status, category.updatedAt]),
-    history: history
-      .filter(
-        (transaction) =>
-          transaction.kind === payload.kind &&
-          transaction.categoryId !== undefined &&
-          relevantCategoryIds.has(transaction.categoryId) &&
-          buildCategoryLearningKey({ description: transaction.description }).includes(merchantKey),
-      )
+    categories: fingerprintCategories,
+    history: fingerprintHistory
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((transaction) => [transaction.id, transaction.categoryId, transaction.updatedAt]),
   });

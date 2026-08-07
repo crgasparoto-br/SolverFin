@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
 import {
   ignoreCategoryLearning,
@@ -159,20 +159,23 @@ export async function recordCategoryCorrectionForContext(
       input.target.transactionKind,
     );
     const merchantKey = normalizeLearningKey(input.target);
+    const merchantKeyHash = hashLearningKey(merchantKey);
 
     await executeQuery(`select pg_advisory_xact_lock(hashtext($1), hashtext($2))`, [
       `${context.organizationId}:${context.financialProfileId}`,
-      `${merchantKey}:${input.target.transactionKind}:${input.categoryId}`,
+      `${merchantKeyHash}:${input.target.transactionKind}:${input.categoryId}`,
     ]);
 
     const existingRows = await executeQuery<CategoryLearningRow>(
       `select ${SELECT_COLUMNS} from "CategoryLearningEntry"
        where "organizationId" = $1 and "financialProfileId" = $2
-         and "merchantKey" = $3 and "transactionKind" = $4 and "categoryId" = $5
+         and "merchantKeyHash" = $3 and "merchantKey" = $4
+         and "transactionKind" = $5 and "categoryId" = $6
        for update`,
       [
         context.organizationId,
         context.financialProfileId,
+        merchantKeyHash,
         merchantKey,
         input.target.transactionKind,
         input.categoryId,
@@ -319,17 +322,19 @@ async function persistCategoryLearningEntry(
   sourceFingerprint?: string,
 ): Promise<void> {
   if (!exists) {
+    const merchantKeyHash = hashLearningKey(entry.merchantKey);
     await executeQuery(
       `insert into "CategoryLearningEntry"
-        ("id", "organizationId", "financialProfileId", "merchantKey", "transactionKind", "categoryId",
+        ("id", "organizationId", "financialProfileId", "merchantKey", "merchantKeyHash", "transactionKind", "categoryId",
          "status", "confidence", "correctionCount", "lastCorrectedAt", "lastSourceSuggestionId",
          "lastSourceFingerprint", "ignoredAt", "revertedAt", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, null, null, $13, $14, $15, $16)`,
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, null, null, $14, $15, $16, $17)`,
       [
         entry.id,
         entry.organizationId,
         entry.financialProfileId,
         entry.merchantKey,
+        merchantKeyHash,
         entry.transactionKind,
         entry.categoryId,
         entry.status,
@@ -408,6 +413,10 @@ function normalizeLearningKey(target: CategorySuggestionTarget): string {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
+}
+
+function hashLearningKey(value: string): string {
+  return createHash("sha256").update(value, "utf8").digest("hex");
 }
 
 function mapCategoryLearningRow(row: CategoryLearningRow): CategoryLearningEntry {

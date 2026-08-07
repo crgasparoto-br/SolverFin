@@ -1,5 +1,7 @@
+import { readAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
+
 import { requireAuthenticatedRequest } from "./auth-service.js";
-import { withSharedTransaction } from "./db.js";
+import { query, withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { recordCategoryCorrectionFromSuggestionForContext } from "./repositories/category-learning.js";
@@ -25,11 +27,6 @@ export async function handleCategorizationAwareImportBatchesApiRequest(
 
   try {
     return await withSharedTransaction(async () => {
-      const response = await handleImportBatchesApiRequest(request);
-      if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
-        return response;
-      }
-
       const user = await requireAuthenticatedRequest(
         buildAuthHeaders(request.headers.authorization),
       );
@@ -37,12 +34,25 @@ export async function handleCategorizationAwareImportBatchesApiRequest(
         user,
         request.query.get("profileId") ?? undefined,
       );
-      await recordCategoryCorrectionFromSuggestionForContext(
-        context,
+      const previousCategoryId = await readCurrentCategoryIdForUpdate(
+        context.organizationId,
+        context.financialProfileId,
         suggestionId,
-        categoryId,
-        correlationId,
       );
+
+      const response = await handleImportBatchesApiRequest(request);
+      if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
+        return response;
+      }
+
+      if (previousCategoryId !== categoryId) {
+        await recordCategoryCorrectionFromSuggestionForContext(
+          context,
+          suggestionId,
+          categoryId,
+          correlationId,
+        );
+      }
       return response;
     });
   } catch (error) {
@@ -53,6 +63,28 @@ export async function handleCategorizationAwareImportBatchesApiRequest(
       body: response.body,
     };
   }
+}
+
+async function readCurrentCategoryIdForUpdate(
+  organizationId: string,
+  financialProfileId: string,
+  suggestionId: string,
+): Promise<string | undefined> {
+  const rows = await query<{ payload: unknown }>(
+    `select "payload" from "AiSuggestion"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+       and "kind" = 'TRANSACTION_EXTRACTION'
+     for update`,
+    [suggestionId, organizationId, financialProfileId],
+  );
+  const rawPayload = rows[0]?.payload;
+  if (rawPayload === undefined) return undefined;
+
+  const result = readAiSuggestionPayload(rawPayload, "transaction_extraction");
+  if (result.state !== "current" || result.payload.suggestionKind !== "transaction_extraction") {
+    return undefined;
+  }
+  return result.payload.categoryId;
 }
 
 function readCorrectedCategoryId(body: unknown): string | undefined {
