@@ -11,7 +11,6 @@ import {
 } from "@solverfin/ai";
 import {
   applyAutomationRules,
-  parseTransactionExtractionPayload,
   suggestCategory,
   type AutomationRule,
   type AutomationRuleTarget,
@@ -23,15 +22,20 @@ import {
 } from "@solverfin/domain";
 import {
   buildAiSuggestionPayload,
+  readAiSuggestionPayload,
   type AiSuggestionPayloadOrigin,
   type CategorizationSuggestionPayloadV1,
   type TransactionExtractionSuggestionPayload,
 } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { query, withTransaction, type QueryExecutor } from "./db.js";
-import { resolveAiProcessingConsentForContext } from "./repositories/ai-consent.js";
+import {
+  resolveAiProcessingConsentForContext,
+} from "./repositories/ai-consent.js";
 import { listAutomationRulesForContext } from "./repositories/automation-rules.js";
-import { listCategoryLearningForContext } from "./repositories/category-learning.js";
+import {
+  listCategoryLearningForContext,
+} from "./repositories/category-learning.js";
 
 export type CategorizationProviderSelection =
   | { status: "disabled"; provider: undefined }
@@ -689,7 +693,11 @@ async function listHistory(context: TenantContext): Promise<Transaction[]> {
 function readTransactionExtractionPayload(
   value: unknown,
 ): TransactionExtractionSuggestionPayload | undefined {
-  return parseTransactionExtractionPayload(value);
+  const result = readAiSuggestionPayload(value, "transaction_extraction");
+  if (result.state !== "current") return undefined;
+  return result.payload.suggestionKind === "transaction_extraction"
+    ? result.payload
+    : undefined;
 }
 
 function buildDecisionVersionFingerprint(
