@@ -67,7 +67,7 @@ export function categoryLearningControllerScript(): string {
           panel.innerHTML =
             '<div class="page-heading secondary-heading">' +
               '<div><h2>Aprendizado por correções</h2><p class="muted">Correções confirmadas podem ajudar em lançamentos semelhantes do mesmo perfil.</p></div>' +
-              '<button type="button" data-apply-categorization title="Aplicar categorização às sugestões pendentes">' + applyIcon + ' Aplicar categorização</button>' +
+              '<button type="button" data-apply-categorization aria-label="Aplicar categorização às sugestões pendentes" title="Aplicar categorização às sugestões pendentes">' + applyIcon + ' Aplicar</button>' +
             '</div>' +
             '<p class="form-status" data-learning-status aria-live="polite"></p>' +
             '<div class="rows maintenance-rows" data-learning-list></div>';
