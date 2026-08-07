@@ -6,7 +6,7 @@ import {
   runAiTask,
   validateAiClassificationResult,
   type AiConsentState,
-  type AiProviderSelection,
+  type AiProvider,
   type AiUsagePolicy,
 } from "@solverfin/ai";
 import {
@@ -33,8 +33,12 @@ import { resolveAiProcessingConsentForContext } from "./repositories/ai-consent.
 import { listAutomationRulesForContext } from "./repositories/automation-rules.js";
 import { listCategoryLearningForContext } from "./repositories/category-learning.js";
 
+export type CategorizationProviderSelection =
+  | { status: "disabled"; provider: undefined }
+  | { status: "ready"; provider: AiProvider };
+
 export interface IntelligentCategorizationRuntime {
-  selectProvider: () => AiProviderSelection;
+  selectProvider: () => CategorizationProviderSelection;
   resolveConsent: (
     context: TenantContext,
   ) => AiConsentState | Promise<AiConsentState>;
@@ -108,8 +112,14 @@ interface CategorizationDecision {
   resultOrigin: keyof IntelligentCategorizationResult["byOrigin"];
 }
 
+interface ProviderCategoryCandidates {
+  prompt: string;
+  tokenToCategoryId: ReadonlyMap<string, string>;
+}
+
 const ENGINE_VERSION = "intelligent-categorization-v1";
 const CLASSIFICATION_PURPOSE = "transaction_categorization";
+const PROVIDER_PROMPT_LIMIT = 5_500;
 
 export async function applyIntelligentCategorizationForContext(
   context: TenantContext,
@@ -318,7 +328,7 @@ async function requestAiDecision(
   const resolveConsent =
     runtime.resolveConsent ?? resolveAiProcessingConsentForContext;
   const consent = await resolveConsent(context);
-  let selection: AiProviderSelection;
+  let selection: CategorizationProviderSelection;
 
   try {
     selection =
@@ -335,16 +345,11 @@ async function requestAiDecision(
     );
   }
 
-  const categoryCandidates = categories
-    .filter(
-      (category) =>
-        category.status === "active" && category.kind === payload.kind,
-    )
-    .slice(0, 100)
-    .map((category) => `${category.id}|${category.name}`)
-    .join("\n")
-    .slice(0, 4_000);
-  if (categoryCandidates.length === 0) {
+  const providerCandidates = buildProviderCategoryCandidates(
+    categories,
+    payload.kind,
+  );
+  if (providerCandidates.tokenToCategoryId.size === 0) {
     return reviewDecision(
       "Nao ha categoria ativa compativel com este tipo de lancamento.",
     );
@@ -364,7 +369,6 @@ async function requestAiDecision(
       "occurredOn",
       "description",
       "transactionType",
-      "categoryCandidates",
     ],
   };
   const aiResult = await runAiTask({
@@ -380,22 +384,20 @@ async function requestAiDecision(
     },
     policy,
     payload: {
-      prompt:
-        "Escolha exatamente um proposedCategoryId presente em categoryCandidates. Retorne apenas o contrato estruturado de categorizacao.",
+      prompt: providerCandidates.prompt,
       fields: {
         amountMinor: payload.amountMinor,
         currency: payload.currency,
         occurredOn: payload.occurredOn,
         description: payload.description,
         transactionType: payload.kind,
-        categoryCandidates,
       },
     },
     resolveConsent: () => resolveConsent(context),
     validateStructuredResult: (value) =>
       validateAiClassificationResult(value) &&
       typeof value.proposedCategoryId === "string" &&
-      value.proposedCategoryId.length > 0,
+      providerCandidates.tokenToCategoryId.has(value.proposedCategoryId),
   });
 
   if (aiResult.status !== "completed") {
@@ -415,6 +417,14 @@ async function requestAiDecision(
       "A IA nao retornou uma categoria valida. Escolha a categoria manualmente.",
     );
   }
+  const proposedCategoryId = providerCandidates.tokenToCategoryId.get(
+    structured.proposedCategoryId,
+  );
+  if (proposedCategoryId === undefined) {
+    return reviewDecision(
+      "A IA nao retornou uma categoria disponivel. Escolha a categoria manualmente.",
+    );
+  }
 
   const confidence = aiResult.result.confidence ?? 0.5;
   const categorySuggestion = suggestCategory({
@@ -428,7 +438,7 @@ async function requestAiDecision(
     },
     categories,
     aiSuggestion: {
-      categoryId: structured.proposedCategoryId,
+      categoryId: proposedCategoryId,
       confidence,
       reason:
         "IA sugeriu uma categoria a partir de dados minimizados do lancamento.",
@@ -452,6 +462,33 @@ async function requestAiDecision(
     resultOrigin:
       categorySuggestion.status === "needs_review" ? "review" : "ai",
   };
+}
+
+function buildProviderCategoryCandidates(
+  categories: readonly Category[],
+  transactionKind: TransactionExtractionSuggestionPayload["kind"],
+): ProviderCategoryCandidates {
+  const header =
+    "Escolha exatamente um token de categoria da lista abaixo e devolva o token em proposedCategoryId. Nao invente categorias.\nCategorias:\n";
+  let prompt = header;
+  const tokenToCategoryId = new Map<string, string>();
+  const eligible = categories
+    .filter(
+      (category) =>
+        category.status === "active" && category.kind === transactionKind,
+    )
+    .sort((left, right) => left.id.localeCompare(right.id))
+    .slice(0, 100);
+
+  for (const [index, category] of eligible.entries()) {
+    const token = `c${index + 1}`;
+    const line = `${token}|${safeReason(category.name)}\n`;
+    if (prompt.length + line.length > PROVIDER_PROMPT_LIMIT) break;
+    prompt += line;
+    tokenToCategoryId.set(token, category.id);
+  }
+
+  return { prompt: prompt.trimEnd(), tokenToCategoryId };
 }
 
 function reviewDecision(reason: string): CategorizationDecision {
