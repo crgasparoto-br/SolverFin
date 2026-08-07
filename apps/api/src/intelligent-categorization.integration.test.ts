@@ -33,6 +33,13 @@ async function main(): Promise<void> {
   const organizationId = profiles[0]?.organizationId;
   assert.ok(organizationId, "Personal financial profile seed is required.");
 
+  await testLearningPersistenceAndConcurrency(organizationId);
+  await testFakeProviderOutcomes(organizationId);
+}
+
+async function testLearningPersistenceAndConcurrency(
+  organizationId: string,
+): Promise<void> {
   const categories = await query<{ id: string }>(
     `select "id" from "Category"
      where "organizationId" = $1 and "financialProfileId" = $2
@@ -55,6 +62,7 @@ async function main(): Promise<void> {
   const secondSourceId = randomUUID();
   const unavailableSourceId = randomUUID();
   const sourceIds = [firstSourceId, secondSourceId, unavailableSourceId];
+  const correlationId = `issue-564-${marker}`;
 
   try {
     await insertExtractionSuggestion(
@@ -74,20 +82,20 @@ async function main(): Promise<void> {
       context,
       firstSourceId,
       categoryId,
-      `issue-564-${marker}`,
+      correlationId,
     );
     const [concurrentLearningA, concurrentLearningB] = await Promise.all([
       recordCategoryCorrectionFromSuggestionForContext(
         context,
         firstSourceId,
         categoryId,
-        `issue-564-${marker}`,
+        correlationId,
       ),
       recordCategoryCorrectionFromSuggestionForContext(
         context,
         firstSourceId,
         categoryId,
-        `issue-564-${marker}`,
+        correlationId,
       ),
     ]);
 
@@ -110,73 +118,40 @@ async function main(): Promise<void> {
        where l."id" = $1 and l."organizationId" = $2 and l."financialProfileId" = $3`,
       [firstLearning.id, organizationId, PERSONAL_PROFILE_ID],
     );
-    assert.equal(
-      provenanceRows[0]?.correctionCount,
-      3,
-      "concurrent corrections must converge on the same durable learning row",
-    );
+    assert.equal(provenanceRows[0]?.correctionCount, 3);
     assert.equal(provenanceRows[0]?.lastSourceSuggestionId, firstSourceId);
     assert.equal(
       provenanceRows[0]?.lastSourceFingerprint,
       provenanceRows[0]?.sourcePayloadFingerprint,
-      "learning provenance must retain the source suggestion fingerprint",
     );
 
     const listed = await listCategoryLearningForContext(context, "active");
-    const matching = listed.filter((entry) => entry.id === firstLearning.id);
     assert.equal(
-      matching.length,
+      listed.filter((entry) => entry.id === firstLearning.id).length,
       1,
-      "learning must be durable and tenant-scoped",
     );
 
     const [concurrentRunA, concurrentRunB] = await Promise.all([
       applyIntelligentCategorizationForContext(context, {
         selectProvider: () => disabledSelection(),
         resolveConsent: () => "granted",
-        correlationId: `issue-564-${marker}`,
+        correlationId,
       }),
       applyIntelligentCategorizationForContext(context, {
         selectProvider: () => disabledSelection(),
         resolveConsent: () => "granted",
-        correlationId: `issue-564-${marker}`,
+        correlationId,
       }),
     ]);
-    assert.ok(
-      concurrentRunA.created + concurrentRunB.created >= 2,
-      "concurrent categorization should create the pending learning-backed candidates once",
-    );
+    assert.ok(concurrentRunA.created + concurrentRunB.created >= 2);
 
-    const learnedRows = await query<{ provider: string; payload: unknown }>(
-      `select "provider", "payload" from "AiSuggestion"
-       where "organizationId" = $1 and "financialProfileId" = $2
-         and "sourceSuggestionId" = $3 and "kind" = 'CATEGORIZATION'
-       order by "createdAt" desc`,
-      [organizationId, PERSONAL_PROFILE_ID, secondSourceId],
+    await assertCategorization(
+      context,
+      secondSourceId,
+      "solverfin-learning",
+      categoryId,
+      undefined,
     );
-    assert.equal(
-      learnedRows.length,
-      1,
-      "one categorization is expected for the source/version even under concurrency",
-    );
-    assert.equal(learnedRows[0]?.provider, "solverfin-learning");
-    const learnedPayload = learnedRows[0]?.payload as
-      | Record<string, unknown>
-      | undefined;
-    assert.equal(learnedPayload?.suggestionKind, "categorization");
-    assert.equal(learnedPayload?.proposedCategoryId, categoryId);
-    assert.equal(typeof learnedPayload?.fingerprint, "string");
-
-    const secondRun = await applyIntelligentCategorizationForContext(context, {
-      selectProvider: () => disabledSelection(),
-      resolveConsent: () => "granted",
-      correlationId: `issue-564-${marker}`,
-    });
-    assert.ok(
-      secondRun.skippedIdempotent >= 2,
-      "same source and version must be idempotent",
-    );
-
     const repeatedRows = await query<{ count: string }>(
       `select count(*)::text as count from "AiSuggestion"
        where "organizationId" = $1 and "financialProfileId" = $2
@@ -185,39 +160,31 @@ async function main(): Promise<void> {
     );
     assert.equal(repeatedRows[0]?.count, "1");
 
+    const secondRun = await applyIntelligentCategorizationForContext(context, {
+      selectProvider: () => disabledSelection(),
+      resolveConsent: () => "granted",
+      correlationId,
+    });
+    assert.ok(secondRun.skippedIdempotent >= 2);
+
     await insertExtractionSuggestion(
       context,
       unavailableSourceId,
       `Servico sem historico ${marker}`,
       `source-unavailable-${marker}`,
     );
-    const unavailableRun = await applyIntelligentCategorizationForContext(
+    await applyIntelligentCategorizationForContext(context, {
+      selectProvider: () => disabledSelection(),
+      resolveConsent: () => "granted",
+      correlationId,
+    });
+    await assertCategorization(
       context,
-      {
-        selectProvider: () => disabledSelection(),
-        resolveConsent: () => "granted",
-        correlationId: `issue-564-${marker}`,
-      },
+      unavailableSourceId,
+      "solverfin-categorization",
+      undefined,
+      "pending_review",
     );
-    assert.ok(unavailableRun.created >= 1);
-
-    const unavailableRows = await query<{
-      provider: string;
-      payload: unknown;
-    }>(
-      `select "provider", "payload" from "AiSuggestion"
-       where "organizationId" = $1 and "financialProfileId" = $2
-         and "sourceSuggestionId" = $3 and "kind" = 'CATEGORIZATION'
-       order by "createdAt" desc`,
-      [organizationId, PERSONAL_PROFILE_ID, unavailableSourceId],
-    );
-    assert.equal(unavailableRows.length, 1);
-    assert.equal(unavailableRows[0]?.provider, "solverfin-categorization");
-    const unavailablePayload = unavailableRows[0]?.payload as
-      | Record<string, unknown>
-      | undefined;
-    assert.equal(unavailablePayload?.proposedCategoryId, undefined);
-    assert.equal(unavailablePayload?.proposedStatus, "pending_review");
   } finally {
     await query(
       `delete from "CategoryLearningEntry"
@@ -232,11 +199,9 @@ async function main(): Promise<void> {
     );
     await query(
       `delete from "SecurityAuditEvent" where "correlationId" = $1`,
-      [`issue-564-${marker}`],
+      [correlationId],
     );
   }
-
-  await testFakeProviderOutcomes(organizationId);
 }
 
 async function testFakeProviderOutcomes(organizationId: string): Promise<void> {
@@ -362,13 +327,11 @@ async function assertCategorization(
   const payload = rows[0]?.payload as Record<string, unknown> | undefined;
   assert.equal(payload?.proposedCategoryId, expectedCategoryId);
   assert.equal(payload?.proposedStatus, expectedStatus);
+  assert.equal(typeof payload?.fingerprint, "string");
 }
 
 async function insertExtractionSuggestion(
-  context: {
-    organizationId: string;
-    financialProfileId: string;
-  },
+  context: { organizationId: string; financialProfileId: string },
   id: string,
   description: string,
   sourceFingerprint: string,
@@ -422,7 +385,9 @@ function providerResult(proposedCategoryId: string, confidence: number) {
   };
 }
 
-function readySelection(responses: Parameters<typeof FakeAiProvider>[0]) {
+function readySelection(
+  responses: ConstructorParameters<typeof FakeAiProvider>[0],
+) {
   return { status: "ready", provider: new FakeAiProvider(responses) } as const;
 }
 
