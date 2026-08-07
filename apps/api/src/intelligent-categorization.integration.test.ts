@@ -268,10 +268,10 @@ async function testFakeProviderOutcomes(organizationId: string): Promise<void> {
       `delete from "Category" where "organizationId" = $1 and "financialProfileId" = $2`,
       [organizationId, profileId],
     );
-    await query(
-      `delete from "FinancialProfile" where "id" = $1 and "organizationId" = $2`,
-      [profileId, organizationId],
-    );
+    await query(`delete from "FinancialProfile" where "id" = $1 and "organizationId" = $2`, [
+      profileId,
+      organizationId,
+    ]);
   }
 }
 
