@@ -14,6 +14,8 @@ A decisão segue uma ordem única e explícita:
 
 Uma regra explícita nunca é sobrescrita por aprendizado, histórico ou IA. A IA recebe somente campos allowlisted e minimizados e precisa devolver uma categoria já existente; categoria ausente, arquivada, incompatível ou de baixa confiança degrada para revisão.
 
+Quando a IA é necessária, a lista de categorias elegíveis é enviada com tokens opacos locais (`c1`, `c2`, ...), acompanhados somente pelos nomes necessários para classificação. UUIDs internos de categoria não são enviados ao provider. O token retornado é validado e convertido novamente para o `categoryId` real dentro do backend.
+
 ## Payload `categorization`
 
 Cada execução cria uma sugestão `categorization` V1 revisável com:
@@ -28,9 +30,11 @@ A versão da decisão considera regras, aprendizados, categorias e histórico re
 
 ## Aprendizado por correção
 
-Uma correção confirmada cria ou reforça `CategoryLearningEntry`, sempre limitada a `organizationId` e `financialProfileId`. O sinal guarda merchant/descrição normalizada, tipo do lançamento, categoria, confiança, quantidade de correções e timestamps.
+Uma correção confirmada cria ou reforça `CategoryLearningEntry`, sempre limitada a `organizationId` e `financialProfileId`. O sinal guarda merchant/descrição normalizada, tipo do lançamento, categoria, confiança, quantidade de correções, timestamps e a proveniência mais recente (`lastSourceSuggestionId` + `lastSourceFingerprint`). A referência de origem também é protegida pelo mesmo contexto de organização e perfil.
 
 Correções feitas em CSV/OFX e no fluxo **Corrigir e aprovar** da Inbox são persistidas na mesma transação da alteração/decisão que as originou. A categoria é revalidada como ativa, compatível com o tipo e pertencente ao perfil dentro da transação.
+
+Correções concorrentes para o mesmo padrão e categoria convergem por lock transacional para um único aprendizado, atualizando a contagem e a proveniência em vez de criar linhas duplicadas.
 
 O aprendizado não reescreve lançamentos antigos. Ele afeta apenas sugestões futuras.
 
@@ -56,6 +60,6 @@ POST /api/category-learning/:entryId/revert
 
 ## Privacidade, auditoria e falhas
 
-O aprendizado nunca cruza organização ou perfil. Eventos de auditoria registram contexto, identificador do aprendizado e ação, sem armazenar descrição financeira no evento.
+O aprendizado nunca cruza organização ou perfil. Eventos de auditoria registram contexto, identificador do aprendizado, ação, identificador da sugestão de origem e fingerprint quando disponíveis, sem armazenar descrição financeira no evento.
 
 Provider desativado, consentimento ausente/revogado, resposta inválida ou categoria não elegível não interrompem a fila: é criada uma candidatura de revisão manual sem categoria inventada. Uma tentativa do executor continua correspondendo a no máximo uma chamada outbound.
