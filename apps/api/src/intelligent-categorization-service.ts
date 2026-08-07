@@ -291,9 +291,7 @@ function mergeRuleEnrichment(
 ): CategorizationDecision {
   if (ruleResult.appliedRules.length === 0) return decision;
 
-  const appliedFields = new Set(
-    ruleResult.appliedRules.flatMap((rule) => rule.appliedFields),
-  );
+  const appliedFields = new Set(ruleResult.appliedRules.flatMap((rule) => rule.appliedFields));
   const enriched: CategorizationDecision = {
     ...decision,
     reasons: [

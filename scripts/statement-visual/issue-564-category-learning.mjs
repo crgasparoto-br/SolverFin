@@ -119,11 +119,7 @@ try {
 
   const learningCountBefore = await readLearningCount(browser.cdp);
   await setViewport(browser.cdp, 390, 844);
-  await openCorrectionDialog(
-    browser.cdp,
-    fixtures.correctionSuggestionId,
-    fixtures.categoryId,
-  );
+  await openCorrectionDialog(browser.cdp, fixtures.correctionSuggestionId, fixtures.categoryId);
   await installOneShotApprovalFailure(browser.cdp, fixtures.correctionSuggestionId);
   await submitCorrectionDialog(browser.cdp);
   await waitFor(
