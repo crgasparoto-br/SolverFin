@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 
 import {
   ignoreCategoryLearning,
-  parseTransactionExtractionPayload,
   recordCategoryCorrection,
   revertCategoryLearning,
   type Category,
@@ -12,6 +11,10 @@ import {
   type TenantContext,
   type TransactionKind,
 } from "@solverfin/domain";
+import {
+  readAiSuggestionPayload,
+  type TransactionExtractionSuggestionPayload,
+} from "@solverfin/domain/ai-suggestion-payloads";
 
 import { query, withTransaction, type QueryExecutor } from "../db.js";
 
@@ -102,7 +105,7 @@ export async function recordCategoryCorrectionFromSuggestionForContext(
     [suggestionId, context.organizationId, context.financialProfileId],
   );
   const payload = rows[0]
-    ? parseTransactionExtractionPayload(rows[0].payload)
+    ? readCurrentTransactionExtractionPayload(rows[0].payload)
     : undefined;
 
   if (payload === undefined) {
@@ -457,4 +460,14 @@ function mapCategoryLearningRow(
       ? {}
       : { updatedByUserId: row.updatedByUserId }),
   };
+}
+
+function readCurrentTransactionExtractionPayload(
+  value: unknown,
+): TransactionExtractionSuggestionPayload | undefined {
+  const result = readAiSuggestionPayload(value, "transaction_extraction");
+  if (result.state !== "current") return undefined;
+  return result.payload.suggestionKind === "transaction_extraction"
+    ? result.payload
+    : undefined;
 }
