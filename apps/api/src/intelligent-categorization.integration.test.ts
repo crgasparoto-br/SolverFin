@@ -22,10 +22,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const profiles = await query<{ organizationId: string }>(
     `select "organizationId" from "FinancialProfile" where "id" = $1`,
     [PERSONAL_PROFILE_ID],
@@ -37,9 +34,7 @@ async function main(): Promise<void> {
   await testFakeProviderOutcomes(organizationId);
 }
 
-async function testLearningPersistenceAndConcurrency(
-  organizationId: string,
-): Promise<void> {
+async function testLearningPersistenceAndConcurrency(organizationId: string): Promise<void> {
   const categories = await query<{ id: string }>(
     `select "id" from "Category"
      where "organizationId" = $1 and "financialProfileId" = $2
@@ -65,18 +60,8 @@ async function testLearningPersistenceAndConcurrency(
   const correlationId = `issue-564-${marker}`;
 
   try {
-    await insertExtractionSuggestion(
-      context,
-      firstSourceId,
-      description,
-      `source-a-${marker}`,
-    );
-    await insertExtractionSuggestion(
-      context,
-      secondSourceId,
-      description,
-      `source-b-${marker}`,
-    );
+    await insertExtractionSuggestion(context, firstSourceId, description, `source-a-${marker}`);
+    await insertExtractionSuggestion(context, secondSourceId, description, `source-b-${marker}`);
 
     const firstLearning = await recordCategoryCorrectionFromSuggestionForContext(
       context,
@@ -126,10 +111,7 @@ async function testLearningPersistenceAndConcurrency(
     );
 
     const listed = await listCategoryLearningForContext(context, "active");
-    assert.equal(
-      listed.filter((entry) => entry.id === firstLearning.id).length,
-      1,
-    );
+    assert.equal(listed.filter((entry) => entry.id === firstLearning.id).length, 1);
 
     const [concurrentRunA, concurrentRunB] = await Promise.all([
       applyIntelligentCategorizationForContext(context, {
@@ -197,10 +179,7 @@ async function testLearningPersistenceAndConcurrency(
          and ("id" = any($3::uuid[]) or "sourceSuggestionId" = any($3::uuid[]))`,
       [organizationId, PERSONAL_PROFILE_ID, sourceIds],
     );
-    await query(
-      `delete from "SecurityAuditEvent" where "correlationId" = $1`,
-      [correlationId],
-    );
+    await query(`delete from "SecurityAuditEvent" where "correlationId" = $1`, [correlationId]);
   }
 }
 
@@ -243,13 +222,7 @@ async function testFakeProviderOutcomes(organizationId: string): Promise<void> {
       selectProvider: () => readySelection([providerResult("c1", 0.91)]),
       resolveConsent: () => "granted",
     });
-    await assertCategorization(
-      context,
-      validSourceId,
-      "fake",
-      categoryId,
-      undefined,
-    );
+    await assertCategorization(context, validSourceId, "fake", categoryId, undefined);
 
     await insertExtractionSuggestion(
       context,
@@ -283,13 +256,7 @@ async function testFakeProviderOutcomes(organizationId: string): Promise<void> {
       selectProvider: () => readySelection([providerResult("c1", 0.42)]),
       resolveConsent: () => "granted",
     });
-    await assertCategorization(
-      context,
-      lowConfidenceSourceId,
-      "fake",
-      undefined,
-      "pending_review",
-    );
+    await assertCategorization(context, lowConfidenceSourceId, "fake", undefined, "pending_review");
   } finally {
     await query(
       `delete from "AiSuggestion"
@@ -391,9 +358,7 @@ function providerResult(proposedCategoryId: string, confidence: number) {
   };
 }
 
-function readySelection(
-  responses: ConstructorParameters<typeof FakeAiProvider>[0],
-) {
+function readySelection(responses: ConstructorParameters<typeof FakeAiProvider>[0]) {
   return { status: "ready", provider: new FakeAiProvider(responses) } as const;
 }
 
