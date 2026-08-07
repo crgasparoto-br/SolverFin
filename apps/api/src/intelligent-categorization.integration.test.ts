@@ -380,7 +380,13 @@ async function insertExtractionSuggestion(
 function providerResult(proposedCategoryId: string, confidence: number) {
   return {
     text: "fixture ficticia",
-    structured: { proposedCategoryId },
+    structured: {
+      contractVersion: 1,
+      suggestionKind: "categorization",
+      payloadVersion: 1,
+      proposedCategoryId,
+      reasons: ["Fixture ficticia de classificacao."],
+    },
     confidence,
   };
 }
