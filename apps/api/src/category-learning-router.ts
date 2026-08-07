@@ -1,7 +1,4 @@
-import type {
-  CategoryLearningStatus,
-  TenantContext,
-} from "@solverfin/domain";
+import type { CategoryLearningStatus } from "@solverfin/domain";
 
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
