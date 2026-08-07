@@ -97,7 +97,9 @@ export async function recordCategoryCorrectionFromSuggestionForContext(
        and "kind" = 'TRANSACTION_EXTRACTION'`,
     [suggestionId, context.organizationId, context.financialProfileId],
   );
-  const payload = rows[0] ? parseTransactionExtractionPayload(rows[0].payload) : undefined;
+  const payload = rows[0]
+    ? parseTransactionExtractionPayload(rows[0].payload)
+    : undefined;
 
   if (payload === undefined) {
     throw new CategoryLearningRepositoryError(
@@ -144,10 +146,13 @@ export async function recordCategoryCorrectionForContext(
     );
     const merchantKey = normalizeLearningKey(input.target);
 
-    await executeQuery(`select pg_advisory_xact_lock(hashtext($1), hashtext($2))`, [
-      `${context.organizationId}:${context.financialProfileId}`,
-      `${merchantKey}:${input.target.transactionKind}:${input.categoryId}`,
-    ]);
+    await executeQuery(
+      `select pg_advisory_xact_lock(hashtext($1), hashtext($2))`,
+      [
+        `${context.organizationId}:${context.financialProfileId}`,
+        `${merchantKey}:${input.target.transactionKind}:${input.categoryId}`,
+      ],
+    );
 
     const existingRows = await executeQuery<CategoryLearningRow>(
       `select ${SELECT_COLUMNS} from "CategoryLearningEntry"
@@ -162,7 +167,9 @@ export async function recordCategoryCorrectionForContext(
         input.categoryId,
       ],
     );
-    const existing = existingRows[0] ? mapCategoryLearningRow(existingRows[0]) : undefined;
+    const existing = existingRows[0]
+      ? mapCategoryLearningRow(existingRows[0])
+      : undefined;
     const now = new Date().toISOString();
     const entry = recordCategoryCorrection({
       id: existing?.id ?? randomUUID(),
@@ -173,8 +180,18 @@ export async function recordCategoryCorrectionForContext(
       ...(existing === undefined ? {} : { existingLearning: existing }),
     });
 
-    await persistCategoryLearningEntry(executeQuery, entry, existing !== undefined);
-    await insertLearningAuditEvent(executeQuery, context, entry.id, "recorded", input.correlationId);
+    await persistCategoryLearningEntry(
+      executeQuery,
+      entry,
+      existing !== undefined,
+    );
+    await insertLearningAuditEvent(
+      executeQuery,
+      context,
+      entry.id,
+      "recorded",
+      input.correlationId,
+    );
     return entry;
   });
 }
@@ -240,7 +257,13 @@ async function mutateLearningEntry(
         updated.updatedAt,
       ],
     );
-    await insertLearningAuditEvent(executeQuery, context, updated.id, action, correlationId);
+    await insertLearningAuditEvent(
+      executeQuery,
+      context,
+      updated.id,
+      action,
+      correlationId,
+    );
     return updated;
   });
 }
@@ -261,7 +284,11 @@ async function requireActiveCategory(
   const row = rows[0];
   const kind = row?.kind.toLowerCase();
 
-  if (row === undefined || row.status.toLowerCase() !== "active" || kind !== transactionKind) {
+  if (
+    row === undefined ||
+    row.status.toLowerCase() !== "active" ||
+    kind !== transactionKind
+  ) {
     throw new CategoryLearningRepositoryError(
       "CATEGORY_LEARNING_CATEGORY_UNAVAILABLE",
       "A categoria escolhida nao esta disponivel para este tipo de lancamento.",
@@ -368,7 +395,9 @@ function normalizeLearningKey(target: CategorySuggestionTarget): string {
     .replace(/\s+/g, " ");
 }
 
-function mapCategoryLearningRow(row: CategoryLearningRow): CategoryLearningEntry {
+function mapCategoryLearningRow(
+  row: CategoryLearningRow,
+): CategoryLearningEntry {
   const status = row.status.toLowerCase() as CategoryLearningStatus;
   return {
     id: row.id,
@@ -383,9 +412,17 @@ function mapCategoryLearningRow(row: CategoryLearningRow): CategoryLearningEntry
     lastCorrectedAt: row.lastCorrectedAt.toISOString(),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    ...(row.ignoredAt === null ? {} : { ignoredAt: row.ignoredAt.toISOString() }),
-    ...(row.revertedAt === null ? {} : { revertedAt: row.revertedAt.toISOString() }),
-    ...(row.createdByUserId === null ? {} : { createdByUserId: row.createdByUserId }),
-    ...(row.updatedByUserId === null ? {} : { updatedByUserId: row.updatedByUserId }),
+    ...(row.ignoredAt === null
+      ? {}
+      : { ignoredAt: row.ignoredAt.toISOString() }),
+    ...(row.revertedAt === null
+      ? {}
+      : { revertedAt: row.revertedAt.toISOString() }),
+    ...(row.createdByUserId === null
+      ? {}
+      : { createdByUserId: row.createdByUserId }),
+    ...(row.updatedByUserId === null
+      ? {}
+      : { updatedByUserId: row.updatedByUserId }),
   };
 }
