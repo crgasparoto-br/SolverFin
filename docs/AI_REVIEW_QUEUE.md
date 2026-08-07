@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-A fila mantém sugestões de importação, regras, automações ou IA sob revisão humana. Nenhuma sugestão incerta produz efeito financeiro sem decisão explícita.
+A fila mantém sugestões de importação, regras, automações, aprendizado, histórico ou IA sob revisão humana. Nenhuma sugestão incerta produz efeito financeiro sem decisão explícita.
 
 ## Payload estruturado
 
@@ -11,6 +11,22 @@ A fila mantém sugestões de importação, regras, automações ou IA sob revis�
 A explicação é somente texto para o usuário. A fila não extrai data, valor, descrição, conta ou categoria de `explanation`. Sugestão de lançamento sem payload estruturado compatível retorna `AI_REVIEW_SUGGESTION_PAYLOAD_UNSUPPORTED` antes de criar efeito financeiro.
 
 Extrações novas usam `TransactionExtractionSuggestionPayloadV2`; V1 permanece legível. Quando uma sugestão V1 pendente recebe edição de tipo, ela migra para V2 preservando a direção derivada do payload anterior. Deduplicação e conciliação mantêm vínculo explícito com a sugestão e fingerprint de origem.
+
+## Categorização inteligente
+
+Sugestões `transaction_extraction` pendentes podem receber uma candidatura `categorization` V1 pela ordem:
+
+1. regra explícita/configurada;
+2. correção confirmada do mesmo perfil;
+3. histórico categorizado do mesmo perfil;
+4. provider de IA autorizado;
+5. revisão manual quando a evidência é insuficiente ou inválida.
+
+A candidatura mantém `sourceSuggestionId`, `audit.sourceFingerprint`, origem, confiança, motivos e fingerprint canônico. Uma categoria arquivada/incompatível, correções conflitantes, baixa confiança, provider desativado ou consentimento indisponível não inventam categoria: a sugestão permanece para revisão.
+
+A Inbox apresenta a origem como **regra**, **correção anterior**, **histórico**, **IA** ou **revisão manual** conforme o produtor. Para extrações de mensagens bancárias, **Corrigir e aprovar** permite escolher uma categoria válida e grava o aprendizado na mesma transação da aprovação.
+
+O comportamento completo está em `docs/ai/category-learning.md`.
 
 ## Mensagens bancárias
 
@@ -45,7 +61,7 @@ Para sugestões de importação, `proposedTransaction` expõe `direction` e `oth
 - `pending_review` → `edited` no fluxo geral sem efeito automático;
 - `pending_review` → `approved` após decisão válida;
 - `pending_review` → `rejected` após rejeição ou duplicidade;
-- candidaturas determinísticas irmãs → `expired` quando outra decisão resolve a origem.
+- candidaturas determinísticas ou de categorização anteriores → `expired` quando outra decisão vigente substitui a origem.
 
 A decisão e a persistência são protegidas por transação e pelo contrato do banco. Uma segunda decisão concorrente recebe conflito determinístico. Payload de sugestão resolvida é imutável.
 
@@ -61,4 +77,4 @@ A suíte de diagnóstico de consistência pode fabricar estados históricos impo
 
 ## Segurança
 
-Todas as consultas e mutações exigem o mesmo `organizationId` e `financialProfileId`. Auditoria registra revisor, data, ação, entidade e mudanças redigidas. CSV bruto, mensagens bancárias brutas, prompts, credenciais e respostas integrais de provider não são armazenados no payload.
+Todas as consultas e mutações exigem o mesmo `organizationId` e `financialProfileId`. Auditoria registra revisor, data, ação, entidade e mudanças redigidas. Aprendizado registra apenas contexto, identificador e ação; não grava descrição financeira no evento. CSV bruto, mensagens bancárias brutas, prompts, credenciais e respostas integrais de provider não são armazenados no payload.
