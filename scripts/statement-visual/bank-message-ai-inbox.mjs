@@ -43,13 +43,30 @@ try {
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
   const fixtures = await createFixtures(browser.cdp);
-  fixtureIds = [fixtures.deterministicId, fixtures.temporaryId];
+  fixtureIds = [
+    fixtures.deterministicId,
+    fixtures.aiReadyId,
+    fixtures.lowConfidenceId,
+    fixtures.temporaryId,
+  ];
+  await persistAiVisualOutcome(database, fixtures.aiReadyId, {
+    state: "ready_for_review",
+    confidence: 0.91,
+    message: "Extração assistida por IA pronta para revisão.",
+    reviewReasons: [],
+  });
+  await persistAiVisualOutcome(database, fixtures.lowConfidenceId, {
+    state: "low_confidence",
+    confidence: 0.55,
+    message: "Baixa confiança: revise todos os campos antes de aprovar.",
+    reviewReasons: ["Confiança fictícia abaixo do limiar para validação visual."],
+  });
   await persistTemporaryFailure(database, fixtures.temporaryId);
 
   await navigate(browser.cdp, `${baseUrl}/inbox`);
   await waitFor(
     browser.cdp,
-    `document.querySelectorAll("[data-extraction-status]").length >= 2 && Boolean(document.querySelector("[data-retry-bank-message]"))`,
+    `document.querySelectorAll("[data-extraction-status]").length >= 4 && Boolean(document.querySelector("[data-retry-bank-message]"))`,
   );
 
   const desktop = await inspectInboxState(browser.cdp, 1366, 900);
@@ -118,6 +135,16 @@ async function createFixtures(cdp) {
         text: suffix + " Compra no cartao final 1234 em Mercado Chrome R$ 42,50 em 05/08/2026",
         consentAccepted: true
       });
+      const aiReady = await request("/api/bank-message-inbox", {
+        origin: "pasted",
+        text: suffix + " Compra no cartao final 5678 em Loja IA Chrome R$ 77,10 em 05/08/2026",
+        consentAccepted: true
+      });
+      const lowConfidence = await request("/api/bank-message-inbox", {
+        origin: "pasted",
+        text: suffix + " Compra no cartao final 9012 em Cafe IA Chrome R$ 19,90 em 05/08/2026",
+        consentAccepted: true
+      });
       const temporary = await request("/api/bank-message-inbox", {
         origin: "shared",
         text: suffix + " aviso bancario fora dos formatos conhecidos em 05/08/2026",
@@ -126,14 +153,52 @@ async function createFixtures(cdp) {
 
       return {
         deterministicId: deterministic.message.id,
+        aiReadyId: aiReady.message.id,
+        lowConfidenceId: lowConfidence.message.id,
         temporaryId: temporary.message.id
       };
     })()`,
   );
 
   assert.equal(typeof result.deterministicId, "string");
+  assert.equal(typeof result.aiReadyId, "string");
+  assert.equal(typeof result.lowConfidenceId, "string");
   assert.equal(typeof result.temporaryId, "string");
   return result;
+}
+
+async function persistAiVisualOutcome(databaseClient, importBatchId, options) {
+  const suggestion = await databaseClient.query(
+    `update "AiSuggestion"
+     set "provider" = 'openai', "model" = 'fixture-visual-v1',
+         "confidence" = $2, "explanation" = $3, "updatedAt" = now()
+     where "sourceEntityId" = $1
+     returning "id"`,
+    [importBatchId, options.confidence, options.message],
+  );
+  assert.equal(suggestion.rowCount, 1, "AI visual fixture must update one suggestion.");
+
+  const diagnostic = [
+    {
+      code:
+        options.state === "low_confidence"
+          ? "BANK_MESSAGE_EXTRACTION_LOW_CONFIDENCE"
+          : "BANK_MESSAGE_EXTRACTION_READY",
+      message: options.message,
+      source: "ai",
+      state: options.state,
+      retryable: false,
+      reviewReasons: options.reviewReasons,
+    },
+  ];
+  const batch = await databaseClient.query(
+    `update "ImportBatch"
+     set "status" = 'REVIEWING', "problems" = $2::jsonb,
+         "completedAt" = null, "updatedAt" = now()
+     where "id" = $1`,
+    [importBatchId, JSON.stringify(diagnostic)],
+  );
+  assert.equal(batch.rowCount, 1, "AI visual fixture must update one Inbox batch.");
 }
 
 async function persistTemporaryFailure(databaseClient, importBatchId) {
@@ -171,7 +236,16 @@ async function inspectInboxState(cdp, width, height) {
       );
       const rows = section ? [...section.querySelectorAll("article.maintenance-item")] : [];
       const deterministic = rows.find((row) =>
-        (row.textContent || "").includes("Regra determinística")
+        (row.textContent || "").includes("Regra determinística") &&
+        (row.textContent || "").includes("Pronta para revisão")
+      );
+      const aiReady = rows.find((row) =>
+        (row.textContent || "").includes("Assistida por IA") &&
+        (row.textContent || "").includes("Pronta para revisão")
+      );
+      const lowConfidence = rows.find((row) =>
+        (row.textContent || "").includes("Assistida por IA") &&
+        (row.textContent || "").includes("Baixa confiança")
       );
       const temporary = rows.find((row) =>
         (row.textContent || "").includes("IA temporariamente indisponível")
@@ -184,9 +258,13 @@ async function inspectInboxState(cdp, width, height) {
         viewport: window.innerWidth + "x" + window.innerHeight,
         bodyFitsViewport:
           document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-        deterministicVisible: Boolean(
-          deterministic &&
-            (deterministic.textContent || "").includes("Pronta para revisão")
+        deterministicVisible: Boolean(deterministic),
+        aiReadyVisible: Boolean(aiReady),
+        lowConfidenceVisible: Boolean(lowConfidence),
+        lowConfidenceReasonsVisible: Boolean(
+          lowConfidence?.querySelector("[data-extraction-reasons] summary")?.textContent?.includes(
+            "Motivos para revisão"
+          )
         ),
         temporaryVisible: Boolean(
           temporary &&
@@ -219,6 +297,21 @@ function assertInboxState(state, viewport) {
     state.deterministicVisible,
     true,
     `Deterministic extraction state must be visible on ${viewport}.`,
+  );
+  assert.equal(
+    state.aiReadyVisible,
+    true,
+    `Successful AI extraction state must be visible on ${viewport}.`,
+  );
+  assert.equal(
+    state.lowConfidenceVisible,
+    true,
+    `Low-confidence AI extraction state must be visible on ${viewport}.`,
+  );
+  assert.equal(
+    state.lowConfidenceReasonsVisible,
+    true,
+    `Low-confidence review reasons must be available on ${viewport}.`,
   );
   assert.equal(state.temporaryVisible, true, `Temporary AI state must be visible on ${viewport}.`);
   assert.equal(state.reasonsVisible, true, `Review reasons must be available on ${viewport}.`);
