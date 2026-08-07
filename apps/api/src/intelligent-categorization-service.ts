@@ -647,9 +647,7 @@ function buildDecisionVersionFingerprint(
   return stableHash({
     engine: ENGINE_VERSION,
     rules: rules
-      .filter(
-        (rule) => rule.status === "active" && matchesAutomationRule(rule, ruleTarget),
-      )
+      .filter((rule) => rule.status === "active" && matchesAutomationRule(rule, ruleTarget))
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((rule) => [
         rule.id,
