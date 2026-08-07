@@ -385,7 +385,11 @@ function buildDiagnostic(result: BankMessageParserResult): BankMessageExtraction
       ? "A IA está temporariamente indisponível. Envie novamente a mesma mensagem para tentar de novo."
       : "Não foi possível completar a extração. Revise os dados manualmente.",
     source:
-      result.sourceKind === "ai" ? "ai" : result.sourceKind === "rule" ? "deterministic" : "none",
+      result.sourceKind === "ai"
+        ? "ai"
+        : result.sourceKind === "rule"
+          ? "deterministic"
+          : "none",
     state: temporary ? "temporarily_unavailable" : "incomplete",
     retryable: temporary,
     reviewReasons: result.reviewReasons,
@@ -404,7 +408,11 @@ function buildPersistableSuggestion(input: {
 
   const direction =
     parsed.direction ??
-    (parsed.type === "income" ? "inflow" : parsed.type === "expense" ? "outflow" : undefined);
+    (parsed.type === "income"
+      ? "inflow"
+      : parsed.type === "expense"
+        ? "outflow"
+        : undefined);
   if (direction === undefined) return undefined;
 
   const safeHints = [
