@@ -6,13 +6,15 @@ A categorização inteligente usa o mesmo contrato estruturado de sugestões par
 
 A decisão segue uma ordem única e explícita:
 
-1. regras determinísticas/configuradas pelo usuário;
+1. regras determinísticas/configuradas pelo usuário que proponham categoria elegível;
 2. correções confirmadas do mesmo perfil financeiro;
 3. histórico categorizado do mesmo perfil;
 4. provider de IA autorizado e configurado;
 5. revisão manual quando não existe evidência segura.
 
-Uma regra explícita nunca é sobrescrita por aprendizado, histórico ou IA. A IA recebe somente campos allowlisted e minimizados e precisa devolver uma categoria já existente; categoria ausente, arquivada, incompatível ou de baixa confiança degrada para revisão.
+Uma categoria válida produzida por regra explícita nunca é sobrescrita por aprendizado, histórico ou IA. Regras que só preenchem conta, cartão, etiquetas ou status continuam enriquecendo a candidatura, mas não encerram a resolução de categoria. Se uma regra de categoria apontar para categoria arquivada, incompatível ou de outro perfil, a categorização não cai silenciosamente para outra fonte: retorna revisão manual para nova escolha, preservando apenas enriquecimentos não relacionados à categoria.
+
+A IA recebe somente campos allowlisted e minimizados e precisa devolver uma categoria já existente; categoria ausente, arquivada, incompatível ou de baixa confiança degrada para revisão.
 
 Quando a IA é necessária, a lista de categorias elegíveis é enviada com tokens opacos locais (`c1`, `c2`, ...), acompanhados somente pelos nomes necessários para classificação. UUIDs internos de categoria não são enviados ao provider. O token retornado é validado e convertido novamente para o `categoryId` real dentro do backend.
 
@@ -26,7 +28,7 @@ Cada execução cria uma sugestão `categorization` V1 revisável com:
 - origem estruturada, confiança e motivos;
 - fingerprint canônico do payload.
 
-A versão da decisão considera regras, aprendizados, categorias e histórico relevante. A combinação de perfil, sugestão de origem e versão da decisão é idempotente no banco. Quando a base muda, uma nova decisão pode substituir a candidatura pendente anterior sem alterar lançamentos históricos.
+A versão da decisão considera regras aplicáveis, aprendizados, categorias e histórico relevante, porque regras sem categoria ainda podem enriquecer conta, cartão ou status da mesma candidatura. A combinação de perfil, sugestão de origem e versão da decisão é idempotente no banco. Quando a base relevante muda, uma nova decisão pode substituir a candidatura pendente anterior sem alterar lançamentos históricos.
 
 ## Aprendizado por correção
 
@@ -42,7 +44,7 @@ O aprendizado não reescreve lançamentos antigos. Ele afeta apenas sugestões f
 
 Correções conflitantes para o mesmo padrão são preservadas. O sistema não escolhe silenciosamente um vencedor: retorna `needs_review`, sem `categoryId`, reduz a confiança e pede nova decisão humana.
 
-Categorias arquivadas ou incompatíveis deixam de ser elegíveis mesmo que exista aprendizado ou resposta antiga do provider apontando para elas.
+Categorias arquivadas ou incompatíveis deixam de ser elegíveis mesmo que exista regra, aprendizado ou resposta antiga do provider apontando para elas. Uma regra de categoria inelegível mantém a decisão sob revisão em vez de permitir que uma fonte de menor precedência substitua silenciosamente a intenção explícita do usuário.
 
 ## Ignorar e reverter
 

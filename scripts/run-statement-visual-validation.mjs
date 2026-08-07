@@ -36,6 +36,7 @@ try {
   await import("./statement-visual/reports-installments-regression.mjs");
   await import("./statement-visual/settings-interface.mjs");
   await import("./statement-visual/settings-interface-reservations.mjs");
+  await import("./statement-visual/issue-564-category-learning.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);

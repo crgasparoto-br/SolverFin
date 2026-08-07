@@ -12,7 +12,9 @@ Ações suportadas: categoria, conta, cartão, etiquetas e status compatível. M
 
 ## Precedência com categorização inteligente
 
-A aplicação de uma regra explícita tem prioridade máxima. Somente quando nenhuma regra produz ação aplicável a categorização consulta, nessa ordem, correções confirmadas do perfil, histórico categorizado e provider de IA. Nenhuma dessas fontes posteriores pode sobrescrever uma decisão produzida por regra.
+Uma regra explícita que produz uma categoria elegível tem prioridade máxima. Regras que alteram somente conta, cartão, etiquetas ou status continuam pertencendo ao motor geral de automação, mas não encerram a resolução de categoria: esses enriquecimentos permanecem na candidatura enquanto a categoria ainda pode vir, nessa ordem, de correções confirmadas do perfil, histórico categorizado ou provider de IA. Nenhuma dessas fontes posteriores pode sobrescrever uma categoria válida produzida por regra.
+
+A categoria proposta por regra é revalidada no momento da categorização contra `organizationId`, `financialProfileId`, tipo do lançamento e estado ativo. Categoria arquivada, incompatível ou pertencente a outro perfil não é aplicada nem substituída silenciosamente por aprendizado/IA; a candidatura cai em revisão manual para nova escolha.
 
 A implementação completa da precedência, aprendizado reversível, idempotência e fallback de revisão está documentada em `docs/ai/category-learning.md`.
 
@@ -67,4 +69,4 @@ Falha ao listar regras mostra estado de erro. Contas e categorias são dependên
 
 ## Testes
 
-A cobertura deve provar match, não-match, prioridade, regra inativa, isolamento por tenant, produção de payload categorizado, precedência sobre aprendizado/histórico/IA e ausência de parsing da explicação. Testes de contrato validam fingerprint, campos permitidos e privacidade da projeção pública.
+A cobertura deve provar match, não-match, prioridade, regra inativa, isolamento por tenant, produção de payload categorizado, precedência sobre aprendizado/histórico/IA, categoria de regra arquivada/fora do perfil e continuidade da categorização quando a regra não produz categoria. Testes de contrato validam fingerprint, campos permitidos e privacidade da projeção pública.

@@ -6,6 +6,7 @@ import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloa
 
 import { closePool, query } from "./db.js";
 import { applyIntelligentCategorizationForContext } from "./intelligent-categorization-service.js";
+import { createAutomationRuleForContext } from "./repositories/automation-rules.js";
 import {
   listCategoryLearningForContext,
   recordCategoryCorrectionFromSuggestionForContext,
@@ -31,6 +32,7 @@ async function main(): Promise<void> {
   assert.ok(organizationId, "Personal financial profile seed is required.");
 
   await testLearningPersistenceAndConcurrency(organizationId);
+  await testRuleCategoryEligibilityAndCategoryOnlyPrecedence(organizationId);
   await testFakeProviderOutcomes(organizationId);
 }
 
@@ -178,6 +180,187 @@ async function testLearningPersistenceAndConcurrency(organizationId: string): Pr
        where "organizationId" = $1 and "financialProfileId" = $2
          and ("id" = any($3::uuid[]) or "sourceSuggestionId" = any($3::uuid[]))`,
       [organizationId, PERSONAL_PROFILE_ID, sourceIds],
+    );
+    await query(`delete from "SecurityAuditEvent" where "correlationId" = $1`, [correlationId]);
+  }
+}
+
+async function testRuleCategoryEligibilityAndCategoryOnlyPrecedence(
+  organizationId: string,
+): Promise<void> {
+  const profileId = randomUUID();
+  const foreignProfileId = randomUUID();
+  const validCategoryId = randomUUID();
+  const archivedCategoryId = randomUUID();
+  const foreignCategoryId = randomUUID();
+  const archivedRuleSourceId = randomUUID();
+  const foreignRuleSourceId = randomUUID();
+  const learningSourceId = randomUUID();
+  const nonCategoryRuleSourceId = randomUUID();
+  const sourceIds = [
+    archivedRuleSourceId,
+    foreignRuleSourceId,
+    learningSourceId,
+    nonCategoryRuleSourceId,
+  ];
+  const marker = randomUUID();
+  const correlationId = `issue-564-rule-eligibility-${marker}`;
+  const context = {
+    organizationId,
+    financialProfileId: profileId,
+    financialProfileKind: "personal" as const,
+    userId: USER_ID,
+  };
+
+  try {
+    await query(
+      `insert into "FinancialProfile"
+        ("id", "organizationId", "ownerUserId", "name", "kind", "status", "createdAt", "updatedAt")
+       values
+        ($1, $3, $4, $5, 'PERSONAL', 'ACTIVE', clock_timestamp(), clock_timestamp()),
+        ($2, $3, $4, $6, 'PERSONAL', 'ACTIVE', clock_timestamp(), clock_timestamp())`,
+      [
+        profileId,
+        foreignProfileId,
+        organizationId,
+        USER_ID,
+        `Perfil regra issue 564 ${marker}`,
+        `Perfil estrangeiro issue 564 ${marker}`,
+      ],
+    );
+    await query(
+      `insert into "Category"
+        ("id", "organizationId", "financialProfileId", "name", "kind", "status", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
+       values
+        ($1, $4, $5, 'Categoria valida issue 564', 'EXPENSE', 'ACTIVE', $6, $6, clock_timestamp(), clock_timestamp()),
+        ($2, $4, $5, 'Categoria arquivada issue 564', 'EXPENSE', 'ACTIVE', $6, $6, clock_timestamp(), clock_timestamp()),
+        ($3, $4, $7, 'Categoria outro perfil issue 564', 'EXPENSE', 'ACTIVE', $6, $6, clock_timestamp(), clock_timestamp())`,
+      [
+        validCategoryId,
+        archivedCategoryId,
+        foreignCategoryId,
+        organizationId,
+        profileId,
+        USER_ID,
+        foreignProfileId,
+      ],
+    );
+
+    const archivedDescription = `Regra categoria arquivada ${marker}`;
+    await createAutomationRuleForContext(context, {
+      name: `Regra arquivada ${marker}`,
+      priority: 900,
+      conditions: { descriptionIncludes: archivedDescription, kind: "expense" },
+      actions: { categoryId: archivedCategoryId },
+      explanation: "Regra ficticia para validar categoria arquivada.",
+    });
+    await query(
+      `update "Category" set "status" = 'ARCHIVED', "updatedAt" = clock_timestamp()
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [archivedCategoryId, organizationId, profileId],
+    );
+    await insertExtractionSuggestion(
+      context,
+      archivedRuleSourceId,
+      archivedDescription,
+      `rule-archived-${marker}`,
+    );
+
+    const foreignDescription = `Regra categoria outro perfil ${marker}`;
+    await createAutomationRuleForContext(context, {
+      name: `Regra outro perfil ${marker}`,
+      priority: 850,
+      conditions: { descriptionIncludes: foreignDescription, kind: "expense" },
+      actions: { categoryId: foreignCategoryId },
+      explanation: "Regra ficticia para validar isolamento da categoria proposta.",
+    });
+    await insertExtractionSuggestion(
+      context,
+      foreignRuleSourceId,
+      foreignDescription,
+      `rule-foreign-${marker}`,
+    );
+
+    const learningDescription = `Regra sem categoria com aprendizado ${marker}`;
+    await insertExtractionSuggestion(
+      context,
+      learningSourceId,
+      learningDescription,
+      `learning-source-${marker}`,
+    );
+    await recordCategoryCorrectionFromSuggestionForContext(
+      context,
+      learningSourceId,
+      validCategoryId,
+      correlationId,
+    );
+    await createAutomationRuleForContext(context, {
+      name: `Regra sem categoria ${marker}`,
+      priority: 800,
+      conditions: { descriptionIncludes: learningDescription, kind: "expense" },
+      actions: { status: "reconciled" },
+      explanation: "Regra ficticia sem acao de categoria.",
+    });
+    await insertExtractionSuggestion(
+      context,
+      nonCategoryRuleSourceId,
+      learningDescription,
+      `rule-no-category-${marker}`,
+    );
+
+    await applyIntelligentCategorizationForContext(context, {
+      selectProvider: () => disabledSelection(),
+      resolveConsent: () => "granted",
+      correlationId,
+    });
+
+    await assertCategorization(
+      context,
+      archivedRuleSourceId,
+      "solverfin-categorization",
+      undefined,
+      "pending_review",
+    );
+    await assertCategorization(
+      context,
+      foreignRuleSourceId,
+      "solverfin-categorization",
+      undefined,
+      "pending_review",
+    );
+    await assertCategorization(
+      context,
+      nonCategoryRuleSourceId,
+      "solverfin-learning",
+      validCategoryId,
+      "reconciled",
+    );
+  } finally {
+    await query(
+      `delete from "CategoryLearningEntry"
+       where "organizationId" = $1 and "financialProfileId" = $2`,
+      [organizationId, profileId],
+    );
+    await query(
+      `delete from "AiSuggestion"
+       where "organizationId" = $1 and "financialProfileId" = $2
+         and ("id" = any($3::uuid[]) or "sourceSuggestionId" = any($3::uuid[]))`,
+      [organizationId, profileId, sourceIds],
+    );
+    await query(
+      `delete from "AutomationRule"
+       where "organizationId" = $1 and "financialProfileId" = $2`,
+      [organizationId, profileId],
+    );
+    await query(
+      `delete from "Category"
+       where "organizationId" = $1 and "financialProfileId" = any($2::uuid[])`,
+      [organizationId, [profileId, foreignProfileId]],
+    );
+    await query(
+      `delete from "FinancialProfile"
+       where "organizationId" = $1 and "id" = any($2::uuid[])`,
+      [organizationId, [profileId, foreignProfileId]],
     );
     await query(`delete from "SecurityAuditEvent" where "correlationId" = $1`, [correlationId]);
   }

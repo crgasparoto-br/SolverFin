@@ -210,24 +210,39 @@ async function resolveDecision(input: {
     rules: input.rules,
     now: new Date().toISOString(),
   });
+  const categoryRule = ruleResult.appliedRules.find((rule) =>
+    rule.appliedFields.includes("categoryId"),
+  );
 
-  if (ruleResult.appliedRules.length > 0) {
-    const firstRule = ruleResult.appliedRules[0];
+  if (categoryRule !== undefined) {
+    const category = input.categories.find(
+      (candidate) =>
+        candidate.id === ruleResult.target.categoryId &&
+        candidate.organizationId === input.context.organizationId &&
+        candidate.financialProfileId === input.context.financialProfileId &&
+        candidate.status === "active" &&
+        candidate.kind === input.payload.kind,
+    );
+
+    if (category === undefined) {
+      return mergeRuleEnrichment(
+        reviewDecision(
+          "Uma regra explicita aponta para uma categoria indisponivel neste perfil. Escolha outra categoria.",
+        ),
+        ruleResult,
+      );
+    }
+
     const reasons = ruleResult.appliedRules.map(
       (rule) => `Regra explicita: ${safeReason(rule.reason)}`,
     );
     const proposedStatus = normalizeProposedStatus(ruleResult.target.status);
     return {
       provider: "solverfin-automation",
-      origin:
-        firstRule === undefined
-          ? { kind: "automation" }
-          : { kind: "automation", ruleId: firstRule.ruleId },
+      origin: { kind: "automation", ruleId: categoryRule.ruleId },
       confidence: 0.95,
       reasons,
-      ...(ruleResult.target.categoryId === undefined
-        ? {}
-        : { proposedCategoryId: ruleResult.target.categoryId }),
+      proposedCategoryId: category.id,
       ...(ruleResult.target.accountId === undefined
         ? {}
         : { proposedAccountId: ruleResult.target.accountId }),
@@ -255,10 +270,52 @@ async function resolveDecision(input: {
   });
 
   if (localSuggestion.source === "learning" || localSuggestion.source === "history") {
-    return buildLocalDecision(localSuggestion);
+    return mergeRuleEnrichment(buildLocalDecision(localSuggestion), ruleResult);
   }
 
-  return requestAiDecision(input.context, input.payload, input.categories, input.runtime);
+  const aiDecision = await requestAiDecision(
+    input.context,
+    input.payload,
+    input.categories,
+    input.runtime,
+  );
+  return mergeRuleEnrichment(aiDecision, ruleResult);
+}
+
+function mergeRuleEnrichment(
+  decision: CategorizationDecision,
+  ruleResult: {
+    target: AutomationRuleTarget;
+    appliedRules: readonly { reason: string; appliedFields: readonly string[] }[];
+  },
+): CategorizationDecision {
+  if (ruleResult.appliedRules.length === 0) return decision;
+
+  const appliedFields = new Set(
+    ruleResult.appliedRules.flatMap((rule) => rule.appliedFields),
+  );
+  const enriched: CategorizationDecision = {
+    ...decision,
+    reasons: [
+      ...ruleResult.appliedRules.map(
+        (rule) => `Regra explicita: ${safeReason(rule.reason)}`,
+      ),
+      ...decision.reasons,
+    ],
+  };
+
+  if (appliedFields.has("accountId") && ruleResult.target.accountId !== undefined) {
+    enriched.proposedAccountId = ruleResult.target.accountId;
+  }
+  if (appliedFields.has("cardId") && ruleResult.target.cardId !== undefined) {
+    enriched.proposedCardId = ruleResult.target.cardId;
+  }
+  if (appliedFields.has("status")) {
+    const status = normalizeProposedStatus(ruleResult.target.status);
+    if (status !== undefined) enriched.proposedStatus = status;
+  }
+
+  return enriched;
 }
 
 function buildLocalDecision(suggestion: CategorySuggestionResult): CategorizationDecision {
