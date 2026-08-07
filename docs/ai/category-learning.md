@@ -1,41 +1,61 @@
-# Categorizacao inteligente e aprendizado por correcao
+# Categorização inteligente e aprendizado por correção
 
-A categorizacao inteligente combina aprendizado por correcao, regras de merchant, historico do contexto financeiro e sugestoes de IA ja validadas pelo fluxo de uso seguro.
+A categorização inteligente usa o mesmo contrato estruturado de sugestões para CSV, OFX, mensagens bancárias coladas/compartilhadas e qualquer outra origem que já produza `transaction_extraction`. Nenhuma origem é interpretada por texto de `explanation`.
 
-O dominio nao chama provider diretamente. A IA pode produzir uma sugestao externa, mas o dominio valida se a categoria esta ativa, pertence ao tenant/contexto e e compativel com o tipo de lancamento.
+## Precedência
 
-## Ordem de sugestao
+A decisão segue uma ordem única e explícita:
 
-1. Aprendizado ativo criado por correcao anterior do usuario.
-2. Regra explicita de merchant.
-3. Historico de lancamentos semelhantes no mesmo contexto financeiro.
-4. Sugestao de IA, quando informada e com confianca suficiente.
-5. Revisao manual quando nenhuma origem e confiavel.
+1. regras determinísticas/configuradas pelo usuário;
+2. correções confirmadas do mesmo perfil financeiro;
+3. histórico categorizado do mesmo perfil;
+4. provider de IA autorizado e configurado;
+5. revisão manual quando não existe evidência segura.
 
-## Aprendizado por correcao
+Uma regra explícita nunca é sobrescrita por aprendizado, histórico ou IA. A IA recebe somente campos allowlisted e minimizados e precisa devolver uma categoria já existente; categoria ausente, arquivada, incompatível ou de baixa confiança degrada para revisão.
 
-Quando o usuario corrige uma categoria, `recordCategoryCorrection` cria ou atualiza uma entrada por:
+## Payload `categorization`
 
-- organizacao;
-- perfil financeiro;
-- merchant normalizado;
-- tipo do lancamento;
-- categoria corrigida.
+Cada execução cria uma sugestão `categorization` V1 revisável com:
 
-As proximas sugestoes com merchant semelhante priorizam esse aprendizado. A entrada guarda `confidence`, `correctionCount`, `lastCorrectedAt` e motivo de origem para auditoria.
+- `sourceSuggestionId` apontando para a `transaction_extraction` de origem;
+- `audit.sourceFingerprint` preservando o fingerprint observado da origem;
+- `proposedCategoryId`, conta, cartão ou status somente quando houver decisão válida;
+- origem estruturada, confiança e motivos;
+- fingerprint canônico do payload.
 
-## Conflitos
+A versão da decisão considera regras, aprendizados, categorias e histórico relevante. A combinação de perfil, sugestão de origem e versão da decisão é idempotente no banco. Quando a base muda, uma nova decisão pode substituir a candidatura pendente anterior sem alterar lançamentos históricos.
 
-Se existirem correcoes ativas conflitantes para o mesmo merchant e tipo, a sugestao usa a entrada com maior `correctionCount`; em empate, usa a mais recente. A confianca e reduzida para sinalizar revisao mais cuidadosa.
+## Aprendizado por correção
 
-## Reversao e ignorar aprendizado
+Uma correção confirmada cria ou reforça `CategoryLearningEntry`, sempre limitada a `organizationId` e `financialProfileId`. O sinal guarda merchant/descrição normalizada, tipo do lançamento, categoria, confiança, quantidade de correções e timestamps.
 
-`ignoreCategoryLearning` desativa uma entrada sem apaga-la. `revertCategoryLearning` marca a entrada como revertida. Entradas ignoradas ou revertidas nao entram em novas sugestoes.
+Correções feitas em CSV/OFX e no fluxo **Corrigir e aprovar** da Inbox são persistidas na mesma transação da alteração/decisão que as originou. A categoria é revalidada como ativa, compatível com o tipo e pertencente ao perfil dentro da transação.
 
-## Privacidade e tenant
+O aprendizado não reescreve lançamentos antigos. Ele afeta apenas sugestões futuras.
 
-O aprendizado nunca cruza organizacao ou perfil financeiro. Testes cobrem isolamento entre contextos pessoal e MEI usando merchants e lancamentos ficticios.
+## Conflitos e categorias indisponíveis
 
-## Categorias arquivadas
+Correções conflitantes para o mesmo padrão são preservadas. O sistema não escolhe silenciosamente um vencedor: retorna `needs_review`, sem `categoryId`, reduz a confiança e pede nova decisão humana.
 
-Categorias arquivadas nao sao sugeridas, mesmo que uma entrada antiga de aprendizado ainda referencie a categoria.
+Categorias arquivadas ou incompatíveis deixam de ser elegíveis mesmo que exista aprendizado ou resposta antiga do provider apontando para elas.
+
+## Ignorar e reverter
+
+O usuário pode listar os aprendizados em **Configurações > Regras** e usar **Ignorar** ou **Reverter**. Ambos mantêm o histórico auditável, mas removem o sinal das próximas sugestões. A ação **Aplicar categorização** processa sugestões pendentes e as envia para revisão; não cria efeito financeiro automático.
+
+Endpoints:
+
+```http
+GET  /api/category-learning?status=all
+POST /api/category-learning/apply
+POST /api/category-learning/corrections
+POST /api/category-learning/:entryId/ignore
+POST /api/category-learning/:entryId/revert
+```
+
+## Privacidade, auditoria e falhas
+
+O aprendizado nunca cruza organização ou perfil. Eventos de auditoria registram contexto, identificador do aprendizado e ação, sem armazenar descrição financeira no evento.
+
+Provider desativado, consentimento ausente/revogado, resposta inválida ou categoria não elegível não interrompem a fila: é criada uma candidatura de revisão manual sem categoria inventada. Uma tentativa do executor continua correspondendo a no máximo uma chamada outbound.
