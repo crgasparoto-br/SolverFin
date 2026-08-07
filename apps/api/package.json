@@ -16,6 +16,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@solverfin/ai": "*",
     "@solverfin/config": "*",
     "@solverfin/domain": "*",
     "@solverfin/shared": "*",

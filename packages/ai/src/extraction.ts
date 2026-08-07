@@ -1,4 +1,5 @@
 export type TransactionExtractionType = "income" | "expense" | "transfer" | "unknown";
+export type TransactionExtractionDirection = "inflow" | "outflow";
 export type TransactionExtractionSource = "bank_message" | "shared_text" | "import" | "manual_note";
 export type TransactionExtractionStatus = "valid" | "needs_review" | "invalid";
 
@@ -7,6 +8,7 @@ export interface TransactionExtractionSuggestion {
   currency: string;
   occurredOn: string;
   type: TransactionExtractionType;
+  direction?: TransactionExtractionDirection;
   merchant?: string;
   accountHint?: string;
   cardHint?: string;
@@ -28,6 +30,9 @@ export interface TransactionExtractionValidationProblem {
     | "EXTRACTION_DATE_INVALID"
     | "EXTRACTION_TYPE_REQUIRED"
     | "EXTRACTION_TYPE_INVALID"
+    | "EXTRACTION_DIRECTION_REQUIRED"
+    | "EXTRACTION_DIRECTION_INVALID"
+    | "EXTRACTION_DIRECTION_CONFLICT"
     | "EXTRACTION_CONFIDENCE_REQUIRED"
     | "EXTRACTION_CONFIDENCE_INVALID"
     | "EXTRACTION_SOURCE_REQUIRED"
@@ -60,6 +65,7 @@ const ALLOWED_FIELDS = new Set([
   "occurredOn",
   "date",
   "type",
+  "direction",
   "merchant",
   "accountHint",
   "cardHint",
@@ -75,7 +81,7 @@ const EXTRACTION_TYPES = new Set<TransactionExtractionType>([
   "transfer",
   "unknown",
 ]);
-
+const EXTRACTION_DIRECTIONS = new Set<TransactionExtractionDirection>(["inflow", "outflow"]);
 const EXTRACTION_SOURCES = new Set<TransactionExtractionSource>([
   "bank_message",
   "shared_text",
@@ -116,6 +122,7 @@ export function validateTransactionExtraction(
   const currency = readCurrency(value.currency, problems);
   const occurredOn = readDate(value.occurredOn ?? value.date, problems);
   const type = readType(value.type, problems);
+  const direction = readDirection(value.direction, type, problems);
   const confidence = readConfidence(value.confidence, problems);
   const source = readSource(value.source, problems);
   const reasons = readReasons(value.reasons, problems);
@@ -129,7 +136,9 @@ export function validateTransactionExtraction(
   }
 
   const hasBlockingProblem = problems.some(
-    (problem) => problem.code !== "EXTRACTION_LOW_CONFIDENCE",
+    (problem) =>
+      problem.code !== "EXTRACTION_LOW_CONFIDENCE" &&
+      problem.code !== "EXTRACTION_DIRECTION_REQUIRED",
   );
 
   if (
@@ -154,6 +163,7 @@ export function validateTransactionExtraction(
     source,
     reasons,
   };
+  if (direction !== undefined) suggestion.direction = direction;
 
   assignOptionalString(suggestion, "merchant", value.merchant);
   assignOptionalString(suggestion, "accountHint", value.accountHint);
@@ -320,6 +330,65 @@ function readType(
       code: "EXTRACTION_TYPE_INVALID",
       field: "type",
       message: "Extraction type is not supported.",
+    });
+    return undefined;
+  }
+
+  return normalized;
+}
+
+function readDirection(
+  value: unknown,
+  type: TransactionExtractionType | undefined,
+  problems: TransactionExtractionValidationProblem[],
+): TransactionExtractionDirection | undefined {
+  const expected = type === "income" ? "inflow" : type === "expense" ? "outflow" : undefined;
+
+  if (value === undefined) {
+    if (type === "transfer") {
+      problems.push({
+        code: "EXTRACTION_DIRECTION_REQUIRED",
+        field: "direction",
+        message: "Transfer extraction requires a safe inflow or outflow direction.",
+      });
+      return undefined;
+    }
+    return expected;
+  }
+
+  if (typeof value !== "string") {
+    problems.push({
+      code: "EXTRACTION_DIRECTION_INVALID",
+      field: "direction",
+      message: "Extraction direction must be inflow or outflow.",
+    });
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase() as TransactionExtractionDirection;
+  if (!EXTRACTION_DIRECTIONS.has(normalized)) {
+    problems.push({
+      code: "EXTRACTION_DIRECTION_INVALID",
+      field: "direction",
+      message: "Extraction direction must be inflow or outflow.",
+    });
+    return undefined;
+  }
+
+  if (expected !== undefined && normalized !== expected) {
+    problems.push({
+      code: "EXTRACTION_DIRECTION_CONFLICT",
+      field: "direction",
+      message: "Extraction direction conflicts with the transaction type.",
+    });
+    return undefined;
+  }
+
+  if (type === "unknown") {
+    problems.push({
+      code: "EXTRACTION_DIRECTION_CONFLICT",
+      field: "direction",
+      message: "Unknown transaction type cannot declare a financial direction.",
     });
     return undefined;
   }

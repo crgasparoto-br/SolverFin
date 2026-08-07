@@ -5,13 +5,21 @@ import {
   type TenantContext,
 } from "@solverfin/domain";
 
+import type { AiConsentState } from "@solverfin/ai";
+
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
+import {
+  createBankMessageInboxWithAiForContext,
+  listBankMessageInboxWithAiForContext,
+} from "./bank-message-ai-inbox.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
-  createBankMessageInboxForContext,
+  grantBankMessageAiConsentForContext,
+  resolveBankMessageAiConsentForContext,
+} from "./repositories/ai-consent.js";
+import {
   discardBankMessageInboxForContext,
-  listBankMessageInboxForContext,
   mapBankMessageInboxError,
 } from "./repositories/bank-message-inbox.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
@@ -52,7 +60,7 @@ export async function handleBankMessageInboxApiRequest(
   }
 
   try {
-    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers));
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -134,7 +142,7 @@ async function listBankMessageInboxHandler(
   const status = request.query.get("status");
 
   return json(200, {
-    messages: await listBankMessageInboxForContext(context, {
+    messages: await listBankMessageInboxWithAiForContext(context, {
       ...(status ? { status } : {}),
     }),
   });
@@ -150,16 +158,59 @@ async function createBankMessageInboxHandler(
     body.consentAccepted === true ||
     body.consentAccepted === "true" ||
     body.consentAccepted === "on";
+  const correlationId = resolveCorrelationId(request.headers);
+
+  if (consentAccepted) {
+    await grantBankMessageAiConsentForContext(context, { correlationId });
+  }
 
   return json(201, {
-    message: await createBankMessageInboxForContext(context, {
-      origin,
-      text: typeof body.text === "string" ? body.text : "",
-      consentAccepted,
-      ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
-      ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-    }),
+    message: await createBankMessageInboxWithAiForContext(
+      context,
+      {
+        origin,
+        text: typeof body.text === "string" ? body.text : "",
+        consentAccepted,
+        ...(hasNonEmptyValue(body.accountId) ? { accountId: String(body.accountId) } : {}),
+        ...(hasNonEmptyValue(body.categoryId) ? { categoryId: String(body.categoryId) } : {}),
+      },
+      {
+        correlationId,
+        resolveConsent: buildAuthoritativeConsentResolver(request, context),
+      },
+    ),
   });
+}
+
+export interface BankMessageConsentResolverDependencies {
+  authenticate: typeof requireAuthenticatedRequest;
+  resolveContext: typeof resolveRequestTenantContext;
+  resolveConsent: typeof resolveBankMessageAiConsentForContext;
+}
+
+export function buildAuthoritativeConsentResolver(
+  request: ApiRequest,
+  expectedContext: TenantContext,
+  dependencies: Partial<BankMessageConsentResolverDependencies> = {},
+): () => Promise<AiConsentState> {
+  const authenticate = dependencies.authenticate ?? requireAuthenticatedRequest;
+  const resolveContext = dependencies.resolveContext ?? resolveRequestTenantContext;
+  const resolveConsent = dependencies.resolveConsent ?? resolveBankMessageAiConsentForContext;
+
+  return async () => {
+    const user = await authenticate(buildAuthHeaders(request.headers));
+    const currentContext = await resolveContext(user, request.query.get("profileId") ?? undefined);
+
+    if (
+      currentContext.userId !== expectedContext.userId ||
+      currentContext.organizationId !== expectedContext.organizationId ||
+      currentContext.financialProfileId !== expectedContext.financialProfileId
+    ) {
+      return "revoked";
+    }
+
+    return resolveConsent(expectedContext);
+  };
 }
 
 async function discardBankMessageInboxHandler(
@@ -198,8 +249,18 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   return value;
 }
 
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
-  return authorization === undefined ? {} : { authorization };
+function hasNonEmptyValue(value: unknown): boolean {
+  return value !== undefined && value !== null && String(value).trim().length > 0;
+}
+
+export function buildAuthHeaders(headers: Readonly<Record<string, string | undefined>>): {
+  authorization?: string;
+  cookie?: string;
+} {
+  return {
+    ...(headers.authorization === undefined ? {} : { authorization: headers.authorization }),
+    ...(headers.cookie === undefined ? {} : { cookie: headers.cookie }),
+  };
 }
 
 function json(statusCode: number, body: unknown): ApiResponse {

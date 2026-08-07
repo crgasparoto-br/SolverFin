@@ -286,7 +286,7 @@ async function navigateWithRetry(cdp, url, label) {
         // The renderer may still be restarting; retry below.
       }
 
-      if (pageState.href.startsWith(url) && pageState.readyState !== "loading") {
+      if (pageState.href.startsWith(url)) {
         console.warn(`Navigation to ${label} reached the page despite a missing load event.`);
         return;
       }

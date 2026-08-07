@@ -12,21 +12,37 @@ Finalidades iniciais:
 
 Cada consentimento registra usuario, organizacao, perfil financeiro, finalidade, status, origem, data/hora e versao de termos quando disponivel. Revogacao bloqueia novos fluxos sensiveis daquela finalidade.
 
-## Mascaramento
+### Estado autoritativo da Inbox bancaria
 
-O utilitario compartilhado cobre:
+O aceite no formulario da Inbox registra transicoes imutaveis para `bank_message_processing` e `ai_processing` em `SecurityAuditEvent`. O estado atual e derivado do evento mais recente de cada finalidade, filtrado por usuario, organizacao e perfil financeiro.
+
+A gravacao usa lock transacional por contexto. Um aceite semanticamente identico nao cria nova transicao nem reatribui proveniencia. Revogacao gera nova transicao e passa a ser observada imediatamente pelos consumidores.
+
+Antes de cada tentativa externa, o fluxo revalida cumulativamente:
+
+1. sessao e identidade atuais;
+2. organizacao e perfil financeiro esperados;
+3. estado persistido mais recente das duas finalidades.
+
+Se qualquer finalidade estiver ausente ou revogada, a tentativa e bloqueada sem chamar o provider. Uma revogacao ocorrida depois da primeira tentativa e antes de um retry impede a nova chamada.
+
+## Mascaramento e minimizacao
+
+O utilitario compartilhado de mascaramento cobre:
 
 - numero de cartao;
 - CPF/CNPJ ficticio ou documento em padrao comum;
-- identificadores longos de conta/agencia;
-- tokens e secrets em textos;
-- mensagens bancarias com termos de risco.
+- identificadores numericos longos de conta/agencia;
+- tokens e secrets reconhecidos pelos contratos compartilhados.
+
+A Inbox bancaria aplica uma camada adicional antes da fronteira do provider. Essa camada preserva somente sinais financeiros necessarios, como tipo de operacao, direcao, valor e data, e substitui palavras livres, nomes, contrapartes, finalidades, e-mails e links por marcadores redigidos. O prompt enviado ao provider e constante e nao repete a mensagem.
 
 Regras:
 
 - Logs e erros nao devem incluir payload financeiro bruto.
 - UI deve exibir identificadores completos apenas quando houver necessidade explicita e autorizada.
 - Fixtures e exemplos devem usar dados ficticios e, preferencialmente, ja mascarados.
+- Chamadas externas da Inbox devem usar somente a representacao minimizada produzida para a finalidade `extraction`.
 
 ## Exclusao logica
 
@@ -38,6 +54,6 @@ Hard delete fica bloqueado por padrao no codigo de aplicacao e deve ser reservad
 
 ## Limitacoes atuais
 
-- Persistencia final dos campos de soft delete e consentimento deve acompanhar migrations futuras.
-- Tela completa de preferencias de privacidade ainda depende do bootstrap visual da aplicacao.
+- A tela completa de preferencias de privacidade ainda depende do bootstrap visual da aplicacao.
 - Textos juridicos finais e prazos de retencao dependem de validacao especializada.
+- As demais finalidades continuam usando os contratos de dominio existentes ate que seus consumidores exijam persistencia operacional equivalente.

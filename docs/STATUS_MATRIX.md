@@ -35,7 +35,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - `docs/API_REPORTS.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561 e a entrega da issue #562.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562 e a PR #572 para a issue #563.
 
 ## Decisao atual sobre pagar/receber
 
@@ -126,11 +126,11 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 ### Inbox de mensagens bancarias
 
-- Dominio/API/persistencia: Parcial/Feito para fluxo inicial.
-- UI: Parcial/Feito para tela inicial e fila de revisao integrada.
-- Testes: Parcial.
-- Documentacao: Feito em `docs/BANK_MESSAGE_INBOX.md`.
-- Nota: `/inbox` permite colar mensagem, confirmar consentimento, selecionar conta/categoria opcionais, gerar sugestao revisavel e revisar sugestoes pendentes. O texto bruto e descartado apos normalizacao, hash e mascaramento.
+- Dominio/API/persistencia: Feito para regras deterministicas e extracao assistida por provider configurado.
+- UI: Feito para entrada autorizada, fila de revisao, origem da extracao, baixa confianca, diagnosticos e recuperacao de falha temporaria.
+- Testes: unitarios do parser e do consumidor, contrato web e integracao PostgreSQL para consentimento, privacidade, isolamento, concorrencia, idempotencia e retry.
+- Documentacao: Feito em `docs/BANK_MESSAGE_INBOX.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/ai/extraction-schema.md` e `docs/ai/providers.md`.
+- Nota: `/inbox` tenta regras deterministicas antes do provider. A chamada externa exige consentimento, sessao e tenant revalidados, usa payload minimizado e cria somente sugestao estruturada em `PENDING_REVIEW`. O texto bruto, prompt e resposta bruta nao sao persistidos. Em falha temporaria, a UI orienta o usuario a colar novamente a mesma mensagem; o hash contextual reutiliza o lote `FAILED`.
 
 ### Deduplicacao
 
@@ -165,10 +165,10 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Provider real e executor seguro: Feito para infraestrutura substituivel em `@solverfin/ai`, com `OpenAiProvider`, configuracao ambiental, provider desativado por padrao, consentimento revalidado, timeout, retry tipado, health check local e logs redigidos.
 - Repository/API: Feito para leitura tipada, projecao publica redigida, erros controlados e isolamento por organizacao/perfil; efeitos financeiros de todos os `kind` permanecem em subissues proprias.
 - UI: Parcial/Feito para revisao operacional na Inbox e contrato publico tipado no frontend.
-- Fluxos de produto com provider real: Pendente; a issue #562 entrega a infraestrutura e nao altera automaticamente produtores, assistente conversacional ou efeitos financeiros.
-- Testes: unitarios dos schemas e normalizadores; integracao PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento e rejeicao de dados aninhados desconhecidos; testes hermeticos do provider para configuracao, consentimento, timeout, rate limit, indisponibilidade, resposta invalida e uma chamada outbound por tentativa.
-- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
-- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. `GET /api/ai-review-queue/:suggestionId/payload` expoe somente a projecao publica autorizada. `explanation` nao e fonte de valor, conta, categoria, tipo ou vinculo. O adapter real existe, mas permanece desligado enquanto `AI_PROVIDER=disabled`; nenhum fluxo financeiro passa a depender de rede externa por esta entrega.
+- Fluxos de produto com provider real: Feito para a Inbox de mensagens bancarias; os demais produtores e o assistente conversacional permanecem pendentes.
+- Testes: unitarios dos schemas, normalizadores e consumidor da Inbox; integracao PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia e retry; testes hermeticos do provider para configuracao, consentimento, timeout, rate limit, indisponibilidade, resposta invalida e uma chamada outbound por tentativa.
+- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/BANK_MESSAGE_INBOX.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
+- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. `GET /api/ai-review-queue/:suggestionId/payload` expoe somente a projecao publica autorizada. `explanation` nao e fonte de valor, conta, categoria, tipo ou vinculo. O adapter real permanece desligado enquanto `AI_PROVIDER=disabled`; quando ativado, somente a Inbox de mensagens bancarias o consome automaticamente e sempre preserva revisao humana antes de qualquer efeito financeiro.
 
 ### Perfis financeiros / tenant operacional
 
