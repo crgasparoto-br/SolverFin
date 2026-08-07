@@ -2,9 +2,7 @@ import { requireAuthenticatedRequest } from "./auth-service.js";
 import { withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
-import {
-  recordCategoryCorrectionFromSuggestionForContext,
-} from "./repositories/category-learning.js";
+import { recordCategoryCorrectionFromSuggestionForContext } from "./repositories/category-learning.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
