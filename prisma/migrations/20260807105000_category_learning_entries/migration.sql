@@ -38,3 +38,9 @@ create index if not exists "CategoryLearningEntry_scope_status_idx"
 
 create index if not exists "CategoryLearningEntry_pattern_idx"
   on "CategoryLearningEntry" ("organizationId", "financialProfileId", "merchantKey", "transactionKind");
+
+create unique index if not exists "AiSuggestion_intelligent_categorization_execution_unique"
+  on "AiSuggestion" ("organizationId", "financialProfileId", "sourceSuggestionId", "kind", "model")
+  where "sourceSuggestionId" is not null
+    and "kind" = 'CATEGORIZATION'
+    and "model" like 'intelligent-categorization-v1-%';
