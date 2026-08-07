@@ -63,8 +63,7 @@ async function main(): Promise<void> {
 
   try {
     const concurrentToken = randomUUID();
-    const concurrentText =
-      `${concurrentToken} aviso bancario fora dos formatos conhecidos em 05/08/2026`;
+    const concurrentText = `${concurrentToken} aviso bancario fora dos formatos conhecidos em 05/08/2026`;
     const concurrentSourceHash = buildBankMessageSourceHash(context, concurrentText);
     createdSourceHashes.push(concurrentSourceHash);
 
@@ -191,10 +190,7 @@ async function main(): Promise<void> {
     );
     assert.ok(
       auditRows.some(
-        (row) =>
-          row.actorKind === "USER" &&
-          row.actorId === USER_ID &&
-          row.action === "CREATE",
+        (row) => row.actorKind === "USER" && row.actorId === USER_ID && row.action === "CREATE",
       ),
       "authorized message receipt must preserve the user actor",
     );

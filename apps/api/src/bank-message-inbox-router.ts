@@ -253,9 +253,10 @@ function hasNonEmptyValue(value: unknown): boolean {
   return value !== undefined && value !== null && String(value).trim().length > 0;
 }
 
-export function buildAuthHeaders(
-  headers: Readonly<Record<string, string | undefined>>,
-): { authorization?: string; cookie?: string } {
+export function buildAuthHeaders(headers: Readonly<Record<string, string | undefined>>): {
+  authorization?: string;
+  cookie?: string;
+} {
   return {
     ...(headers.authorization === undefined ? {} : { authorization: headers.authorization }),
     ...(headers.cookie === undefined ? {} : { cookie: headers.cookie }),

@@ -280,14 +280,11 @@ export async function extractBankMessageForProduct(
       parserResult: deterministic,
       diagnostic: {
         code: "BANK_MESSAGE_CONSENT_CHECK_REQUIRED",
-        message:
-          "Não foi possível confirmar o consentimento ativo. Revise a mensagem manualmente.",
+        message: "Não foi possível confirmar o consentimento ativo. Revise a mensagem manualmente.",
         source: deterministic.sourceKind === "rule" ? "deterministic" : "none",
         state: "incomplete",
         retryable: false,
-        reviewReasons: [
-          "Consentimento ativo não pôde ser revalidado antes da chamada externa.",
-        ],
+        reviewReasons: ["Consentimento ativo não pôde ser revalidado antes da chamada externa."],
       },
     };
   }
@@ -404,11 +401,7 @@ function buildPersistableSuggestion(input: {
 
   const direction =
     parsed.direction ??
-    (parsed.type === "income"
-      ? "inflow"
-      : parsed.type === "expense"
-        ? "outflow"
-        : undefined);
+    (parsed.type === "income" ? "inflow" : parsed.type === "expense" ? "outflow" : undefined);
   if (direction === undefined) return undefined;
 
   const safeHints = [
@@ -553,9 +546,7 @@ async function recordUserSubmissionAudit(
     entityId: input.importBatchId,
     reason: input.reason,
     redactedChanges:
-      input.action === "create"
-        ? { sourceHash: "added", status: "added" }
-        : { status: "changed" },
+      input.action === "create" ? { sourceHash: "added", status: "added" } : { status: "changed" },
   });
 }
 
@@ -718,12 +709,11 @@ function inferDiagnosticFromSuggestion(
   item: BankMessageInboxItem,
 ): BankMessageExtractionDiagnostic {
   const provider = item.suggestion?.provider ?? "";
-  const source: BankMessageExtractionSource =
-    provider.startsWith("solverfin-rule-")
-      ? "deterministic"
-      : item.suggestion
-        ? "ai"
-        : "none";
+  const source: BankMessageExtractionSource = provider.startsWith("solverfin-rule-")
+    ? "deterministic"
+    : item.suggestion
+      ? "ai"
+      : "none";
 
   if (item.suggestion === undefined) {
     if (item.importBatch.status === "reviewing") {
@@ -771,8 +761,10 @@ function safeReason(value: string): string {
 
 function safeDescription(value?: string): string {
   return (
-    maskSensitiveText(value ?? "").replace(/\s+/g, " ").trim().slice(0, 120) ||
-    "Mensagem bancária mascarada"
+    maskSensitiveText(value ?? "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 120) || "Mensagem bancária mascarada"
   );
 }
 

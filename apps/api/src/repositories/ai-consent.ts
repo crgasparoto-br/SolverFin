@@ -66,13 +66,10 @@ async function lockConsentScope(
   executeQuery: QueryExecutor,
   context: TenantContext,
 ): Promise<void> {
-  await executeQuery(
-    `select pg_advisory_xact_lock(hashtext($1), hashtext($2))`,
-    [
-      `${context.organizationId}:${context.financialProfileId}`,
-      `${context.userId}:bank-message-ai-consent`,
-    ],
-  );
+  await executeQuery(`select pg_advisory_xact_lock(hashtext($1), hashtext($2))`, [
+    `${context.organizationId}:${context.financialProfileId}`,
+    `${context.userId}:bank-message-ai-consent`,
+  ]);
 }
 
 async function readLatestConsentStates(
