@@ -12,6 +12,8 @@ import { handleAccountRemunerationApiRequest } from "./account-remuneration-rout
 import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
 import { assertLocalAuthAllowed, auditSecurityEvent, isDemoAuthAllowed } from "./auth-service.js";
 import { assertTrustedCognitoEnvironment } from "./cognito-config.js";
+import { handleCategorizationAwareImportBatchesApiRequest } from "./categorization-aware-import-router.js";
+import { handleCategoryLearningApiRequest } from "./category-learning-router.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { startOidcLoginAttemptScheduler } from "./oidc-attempt-scheduler.js";
 import { assertTrustedMutationOrigin } from "./request-origin.js";
@@ -24,7 +26,6 @@ import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-dispatcher.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
-import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
@@ -144,7 +145,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       return;
     }
 
-    const importBatchesResult = await handleImportBatchesApiRequest(apiRequest);
+    const importBatchesResult = await handleCategorizationAwareImportBatchesApiRequest(apiRequest);
 
     if (importBatchesResult) {
       writeResponse(response, importBatchesResult);
@@ -176,6 +177,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (automationRulesResult) {
       writeResponse(response, automationRulesResult);
+      return;
+    }
+
+    const categoryLearningResult = await handleCategoryLearningApiRequest(apiRequest);
+
+    if (categoryLearningResult) {
+      writeResponse(response, categoryLearningResult);
       return;
     }
 
