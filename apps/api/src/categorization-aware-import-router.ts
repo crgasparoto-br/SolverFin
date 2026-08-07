@@ -14,7 +14,8 @@ export async function handleCategorizationAwareImportBatchesApiRequest(
 ): Promise<ApiResponse | undefined> {
   if (!request.pathname.startsWith("/api/import-batches")) return undefined;
 
-  const match = request.method === "PATCH" ? CORRECTION_PATH.exec(request.pathname) : null;
+  const match =
+    request.method === "PATCH" ? CORRECTION_PATH.exec(request.pathname) : null;
   const categoryId = readCorrectedCategoryId(request.body);
   if (match === null || categoryId === undefined) {
     return handleImportBatchesApiRequest(request);
@@ -27,11 +28,17 @@ export async function handleCategorizationAwareImportBatchesApiRequest(
   try {
     return await withSharedTransaction(async () => {
       const response = await handleImportBatchesApiRequest(request);
-      if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
+      if (
+        response === undefined ||
+        response.statusCode < 200 ||
+        response.statusCode >= 300
+      ) {
         return response;
       }
 
-      const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+      const user = await requireAuthenticatedRequest(
+        buildAuthHeaders(request.headers.authorization),
+      );
       const context = await resolveRequestTenantContext(
         user,
         request.query.get("profileId") ?? undefined,
@@ -55,13 +62,17 @@ export async function handleCategorizationAwareImportBatchesApiRequest(
 }
 
 function readCorrectedCategoryId(body: unknown): string | undefined {
-  if (typeof body !== "object" || body === null || Array.isArray(body)) return undefined;
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return undefined;
+  }
   const categoryId = (body as Record<string, unknown>).categoryId;
   return typeof categoryId === "string" && categoryId.trim().length > 0
     ? categoryId.trim()
     : undefined;
 }
 
-function buildAuthHeaders(authorization: string | undefined): Record<string, string> {
+function buildAuthHeaders(
+  authorization: string | undefined,
+): Record<string, string> {
   return authorization === undefined ? {} : { authorization };
 }
