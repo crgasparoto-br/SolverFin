@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { closePool, query } from "./db.js";
-import {
-  handleDeduplicationReconciliationApiRequest as handleDeterministicRequest,
-} from "./deduplication-reconciliation-router.js";
+import { handleDeduplicationReconciliationApiRequest as handleDeterministicRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
@@ -89,16 +87,12 @@ async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
     amountMinor: input.amountMinor,
     occurredOn: input.occurredOn,
   });
-  const imported = await createImportSuggestion(
-    input.token,
-    input.fixtures.accountId,
-    {
-      description,
-      amountMinor: input.amountMinor,
-      occurredOn: input.occurredOn,
-      fileName: `issue-565-${input.kind}-${input.suffix}.csv`,
-    },
-  );
+  const imported = await createImportSuggestion(input.token, input.fixtures.accountId, {
+    description,
+    amountMinor: input.amountMinor,
+    occurredOn: input.occurredOn,
+    fileName: `issue-565-${input.kind}-${input.suffix}.csv`,
+  });
   const source = requireSuggestion(imported, 0);
   const scan = await apiRequest(
     input.token,
@@ -122,17 +116,8 @@ async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
   });
   assert.ok(candidate, `Expected ${input.kind} candidate for the matching transaction.`);
 
-  await assertCandidateIsListed(
-    input.token,
-    candidate.id,
-    input.kind,
-    correlationId,
-  );
-  const detail = await readCandidateDetail(
-    input.token,
-    candidate.id,
-    correlationId,
-  );
+  await assertCandidateIsListed(input.token, candidate.id, input.kind, correlationId);
+  const detail = await readCandidateDetail(input.token, candidate.id, correlationId);
   assert.equal(detail.suggestionKind, input.kind);
 
   const unsupportedEdit = await apiRequest(
@@ -162,19 +147,13 @@ async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
   assert.equal(approvedBody.sourceSuggestion?.status, input.expectedSourceStatus);
   assert.equal(approvedBody.idempotent, false);
 
-  const linkedTransactions = await countTransactionsForSuggestion(
-    input.organizationId,
-    source.id,
-  );
+  const linkedTransactions = await countTransactionsForSuggestion(input.organizationId, source.id);
   assert.equal(linkedTransactions, 0);
 
   if (input.kind === "reconciliation") {
     assert.equal(approvedBody.transaction?.id, existing.id);
     assert.equal(approvedBody.transaction?.status, "reconciled");
-    const status = await readTransactionStatus(
-      input.organizationId,
-      existing.id,
-    );
+    const status = await readTransactionStatus(input.organizationId, existing.id);
     assert.equal(status, "RECONCILED");
   } else {
     assert.equal(approvedBody.transaction, undefined);
