@@ -906,11 +906,22 @@ async function lockSuggestionForContext(
   return suggestion;
 }
 
+function isImportReviewSuggestion(suggestion: DecisionSuggestionRow): boolean {
+  if (suggestion.kind !== "transaction_extraction") return false;
+  if (suggestion.provider?.startsWith("solverfin-import") === true) return true;
+
+  const read = readAiSuggestionPayload(suggestion.payload, "transaction_extraction");
+  return (
+    read.state === "current" &&
+    read.payload.suggestionKind === "transaction_extraction" &&
+    read.payload.origin.kind === "import"
+  );
+}
+
 function assertPending(suggestion: DecisionSuggestionRow): void {
   if (suggestion.status !== "pending_review") {
     throw new AiReviewQueueError(
-      suggestion.kind === "transaction_extraction" &&
-        suggestion.provider?.startsWith("solverfin-import") === true
+      isImportReviewSuggestion(suggestion)
         ? "IMPORT_REVIEW_INVALID_TRANSITION"
         : "AI_REVIEW_INVALID_TRANSITION",
       "A sugestao ja foi resolvida ou nao esta mais disponivel para revisao.",
@@ -991,9 +1002,7 @@ function mapPersistedSuggestion(row: DecisionSuggestionRow): PersistedAiSuggesti
     ...(row.targetEntityId === null ? {} : { targetEntityId: row.targetEntityId }),
     ...(row.provider === null ? {} : { provider: row.provider }),
     ...(row.model === null ? {} : { model: row.model }),
-    ...(row.reviewedByUserId === null
-      ? {}
-      : { reviewedByUserId: row.reviewedByUserId }),
+    ...(row.reviewedByUserId === null ? {} : { reviewedByUserId: row.reviewedByUserId }),
     ...(row.reviewedAt === null ? {} : { reviewedAt: row.reviewedAt.toISOString() }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
