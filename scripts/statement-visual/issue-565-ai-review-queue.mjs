@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
@@ -46,9 +53,17 @@ try {
 
     check(evidence.cardVisible, `Review card is not visible at ${width}px`, evidence);
     check(evidence.filtersVisible, `Review filters are not visible at ${width}px`, evidence);
-    check(evidence.bodyFitsViewport, `Review queue overflows horizontally at ${width}px`, evidence);
+    check(
+      evidence.bodyFitsViewport,
+      `Review queue overflows horizontally at ${width}px`,
+      evidence,
+    );
     check(evidence.actionsFitViewport, `Review action escapes viewport at ${width}px`, evidence);
-    check(evidence.actionsMeetMinimum, `Review action is smaller than 34px at ${width}px`, evidence);
+    check(
+      evidence.actionsMeetMinimum,
+      `Review action is smaller than 34px at ${width}px`,
+      evidence,
+    );
     check(evidence.technicalIdHidden, `Technical suggestion id is visible at ${width}px`, evidence);
   }
 
