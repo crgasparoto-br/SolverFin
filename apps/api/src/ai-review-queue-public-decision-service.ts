@@ -41,12 +41,16 @@ export async function approveAiReviewDecisionForContext(
   suggestionId: EntityId,
   input: AiReviewDecisionInput,
 ): Promise<AiReviewDecisionResult> {
-  await assertPublicExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
+  await assertSuppliedExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
 
   try {
     return await approveAiReviewDecision(context, suggestionId, input);
   } catch (error) {
-    if (!(error instanceof AiReviewQueueError) || error.code !== "AI_REVIEW_INVALID_TRANSITION") {
+    if (
+      input.expectedFingerprint === undefined ||
+      !(error instanceof AiReviewQueueError) ||
+      error.code !== "AI_REVIEW_INVALID_TRANSITION"
+    ) {
       throw error;
     }
 
@@ -61,7 +65,7 @@ export async function editAiReviewDecisionForContext(
   suggestionId: EntityId,
   input: AiReviewDecisionInput,
 ): Promise<AiReviewDecisionResult> {
-  await assertPublicExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
+  await assertSuppliedExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
   return editAiReviewDecision(context, suggestionId, input);
 }
 
@@ -70,24 +74,18 @@ export async function rejectAiReviewDecisionForContext(
   suggestionId: EntityId,
   input: AiReviewDecisionInput,
 ): Promise<AiReviewDecisionResult> {
-  await assertPublicExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
+  await assertSuppliedExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
   return rejectAiReviewDecision(context, suggestionId, input);
 }
 
 export type { AiReviewDecisionInput };
 
-async function assertPublicExpectedFingerprint(
+async function assertSuppliedExpectedFingerprint(
   context: TenantContext,
   suggestionId: EntityId,
   expectedFingerprint: string | undefined,
 ): Promise<void> {
-  if (expectedFingerprint === undefined) {
-    throw new AiReviewQueueError(
-      "AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED",
-      "Informe a versao observada da sugestao antes de concluir a decisao.",
-      428,
-    );
-  }
+  if (expectedFingerprint === undefined) return;
 
   const detail = await getAiSuggestionPayloadForContext(context, suggestionId);
   if (detail.payload.fingerprint !== expectedFingerprint) {
