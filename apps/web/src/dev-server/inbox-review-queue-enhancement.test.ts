@@ -8,7 +8,7 @@ const BASE_HTML = `<!doctype html><html><head><style>.x{display:block}</style></
 </body></html>`;
 
 describe("Inbox unified AI review queue enhancement", () => {
-  it("injects typed filters, dialog states and version-aware decisions without exposing ids as labels", () => {
+  it("injects typed filters, discriminant states and version-aware decisions without exposing ids as labels", () => {
     const html = enhanceInboxReviewQueue(BASE_HTML);
 
     assert.match(html, /data-ai-review-queue-enhanced="true"/);
@@ -22,6 +22,11 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.match(html, /Carregando detalhes/);
     assert.match(html, /Nenhuma sugestão neste filtro/);
     assert.match(html, /Tentar novamente/);
+    assert.match(html, /isTemporaryUnavailable/);
+    assert.match(html, /statusCode = response\.status/);
+    assert.match(html, /Fila temporariamente indisponível/);
+    assert.match(html, /review-queue-status\.unavailable/);
+    assert.match(html, /status\.setAttribute\("role", urgent \? "alert" : "status"\)/);
     assert.match(html, /dialog\.addEventListener\("close"/);
     assert.match(html, /state\.trigger\?\.focus/);
     assert.match(html, /@media \(max-width: 640px\)/);

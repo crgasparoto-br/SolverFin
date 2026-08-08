@@ -25,7 +25,7 @@ A área **Outras sugestões** carrega a fila completa e oferece filtros por:
 
 `kind`, `status` e `confidence` são preservados na URL; `profileId` continua sendo o recorte tenant já usado pelas demais telas. A listagem da API aceita `kind`, `status`, `includeLowConfidence` e `profileId`; o filtro visual de confiança é aplicado sobre essa projeção completa.
 
-A interface possui estados explícitos de carregamento, vazio, erro com nova tentativa, baixa confiança e conflito de versão. O detalhe e a edição usam `<dialog>`, movem foco para o conteúdo editável e devolvem o foco ao acionador quando o diálogo fecha. O layout é fluido em desktop e mobile e não depende de texto técnico longo para orientar a decisão.
+A interface possui estados explícitos de carregamento, vazio, erro com nova tentativa, indisponibilidade temporária com nova tentativa, baixa confiança e conflito de versão. Falhas transitórias reconhecidas por HTTP `408`, `425`, `429`, `502`, `503` ou `504`, ou por códigos equivalentes de timeout/rate limit/unavailable, usam mensagem e estilo próprios para não se confundirem com erro permanente. O detalhe e a edição usam `<dialog>`, movem foco para o conteúdo editável e devolvem o foco ao acionador quando o diálogo fecha. O layout é fluido em desktop e mobile e não depende de texto técnico longo para orientar a decisão.
 
 ## Campos editáveis
 

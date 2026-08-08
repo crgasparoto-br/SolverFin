@@ -103,12 +103,25 @@ export function enhanceInboxReviewQueue(html: string): string {
           if (!id) return "Conta não definida";
           return state.accounts.find((account) => account.id === id)?.name || "Conta indisponível";
         }
+        function isTemporaryUnavailable(error) {
+          const statusCode = Number(error?.statusCode || 0);
+          const code = String(error?.code || "").toUpperCase();
+          return [408, 425, 429, 502, 503, 504].includes(statusCode) ||
+            /(?:TEMPORAR|TIMEOUT|RATE_LIMIT|UNAVAILABLE|OVERLOADED)/.test(code);
+        }
+        function unavailableMessage() {
+          return "Fila temporariamente indisponível. Tente novamente em instantes.";
+        }
+        function errorMessage(error) {
+          return isTemporaryUnavailable(error) ? unavailableMessage() : error.message;
+        }
         async function api(path, options) {
           const response = await fetch(appendProfile(path), options);
           const body = await response.json().catch(() => ({}));
           if (!response.ok) {
             const error = new Error(body?.error?.message || "Não foi possível concluir a ação.");
             error.code = body?.error?.code;
+            error.statusCode = response.status;
             throw error;
           }
           return body;
@@ -138,10 +151,11 @@ export function enhanceInboxReviewQueue(html: string): string {
           if (!status) {
             status = document.createElement("div");
             status.setAttribute("data-review-queue-status", "");
-            status.setAttribute("role", "status");
             status.setAttribute("aria-live", "polite");
             filterBar.insertAdjacentElement("afterend", status);
           }
+          const urgent = kind === "error" || kind === "unavailable";
+          status.setAttribute("role", urgent ? "alert" : "status");
           status.className = "review-queue-status " + (kind || "muted");
           status.innerHTML = '<span>' + escapeHtml(message) + '</span>' + (retry ? ' <button type="button" class="secondary-button" data-review-retry>Tentar novamente</button>' : "");
           status.querySelector("[data-review-retry]")?.addEventListener("click", loadQueue);
@@ -188,7 +202,8 @@ export function enhanceInboxReviewQueue(html: string): string {
             render();
             queueStatus("Fila atualizada.", "muted", false);
           } catch (error) {
-            queueStatus(error.message, "error", true);
+            const unavailable = isTemporaryUnavailable(error);
+            queueStatus(errorMessage(error), unavailable ? "unavailable" : "error", true);
           }
         }
         async function detailFor(id, force) {
@@ -231,7 +246,8 @@ export function enhanceInboxReviewQueue(html: string): string {
             const detail = await detailFor(id, true);
             dialogBody.innerHTML = detailHtml(detail);
           } catch (error) {
-            dialogBody.innerHTML = '<p class="error" role="alert">' + escapeHtml(error.message) + '</p>';
+            const unavailable = isTemporaryUnavailable(error);
+            dialogBody.innerHTML = '<p class="' + (unavailable ? "review-unavailable" : "error") + '" role="alert">' + escapeHtml(errorMessage(error)) + '</p>';
           }
         }
         function activeCategories(kind) {
@@ -292,7 +308,8 @@ export function enhanceInboxReviewQueue(html: string): string {
             bindEditForm(detail);
             dialogBody.querySelector("input, select, button")?.focus();
           } catch (error) {
-            dialogBody.innerHTML = '<p class="error" role="alert">' + escapeHtml(error.message) + '</p>';
+            const unavailable = isTemporaryUnavailable(error);
+            dialogBody.innerHTML = '<p class="' + (unavailable ? "review-unavailable" : "error") + '" role="alert">' + escapeHtml(errorMessage(error)) + '</p>';
           }
         }
         function parseAmountMinor(value) {
@@ -338,8 +355,9 @@ export function enhanceInboxReviewQueue(html: string): string {
               await loadQueue();
               queueStatus("Edição salva. Revise a versão atual antes de decidir.", "success", false);
             } catch (error) {
-              status.className = "form-status error";
-              status.textContent = error.message;
+              const unavailable = isTemporaryUnavailable(error);
+              status.className = "form-status " + (unavailable ? "unavailable" : "error");
+              status.textContent = errorMessage(error);
               button.disabled = false;
             }
           });
@@ -363,9 +381,10 @@ export function enhanceInboxReviewQueue(html: string): string {
             queueStatus(action === "approve" ? "Sugestão aprovada." : "Sugestão rejeitada.", "success", false);
           } catch (error) {
             const conflict = ["AI_SUGGESTION_PAYLOAD_CONFLICT", "AI_SUGGESTION_PAYLOAD_OBSOLETE", "AI_REVIEW_INVALID_TRANSITION", "AI_REVIEW_SOURCE_DISCARDED"].includes(error.code);
+            const unavailable = isTemporaryUnavailable(error);
             if (status) {
-              status.className = "form-status error";
-              status.textContent = conflict ? "Esta sugestão mudou. Atualize a fila antes de tentar novamente." : error.message;
+              status.className = "form-status " + (unavailable ? "unavailable" : "error");
+              status.textContent = conflict ? "Esta sugestão mudou. Atualize a fila antes de tentar novamente." : errorMessage(error);
             }
             button.disabled = false;
           }
@@ -392,7 +411,9 @@ export function enhanceInboxReviewQueue(html: string): string {
       .review-filter-bar label { display: grid; font-size: 0.75rem; gap: 4px; min-width: 150px; }
       .review-queue-status { align-items: center; display: flex; flex-wrap: wrap; font-size: 0.8125rem; gap: 8px; margin: 0 0 10px; }
       .review-queue-status.error { color: var(--danger, #9f1239); }
+      .review-queue-status.unavailable { background: #fff9e8; border: 1px solid #ead69b; border-radius: var(--radius); color: #7a4a00; padding: 8px 10px; }
       .review-queue-status.success { color: var(--success, #166534); }
+      .form-status.unavailable, .review-unavailable { color: #7a4a00; }
       .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
       .review-risk { background: #fff4d6; border: 1px solid #e7c66f; border-radius: 999px; font-size: 0.6875rem; font-weight: 700; padding: 3px 7px; }
       .ai-review-dialog { width: min(720px, calc(100vw - 24px)); }
