@@ -19,6 +19,9 @@ assert.match(enhanced, /Lançamento alvo/);
 assert.match(enhanced, /transaction\.description/);
 assert.match(enhanced, /transaction\.amountMinor/);
 assert.match(enhanced, /transaction\.occurredOn/);
+assert.match(enhanced, /expectedFingerprint/);
+assert.match(enhanced, /data-correct-and-approve/);
+assert.match(enhanced, /data-api-action/);
 assert.equal(enhanceInboxReviewQueueTargets(enhanced), enhanced);
 
 const unrelated = "<html><body><main></main></body></html>";
