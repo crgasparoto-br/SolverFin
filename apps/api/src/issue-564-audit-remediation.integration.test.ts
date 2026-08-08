@@ -121,10 +121,7 @@ async function testImportCategoryNoop(
       token,
       "PATCH",
       `/api/import-batches/${batchId}/suggestions/${source.id}`,
-      {
-        amountMinor: source.payload.amountMinor + 100,
-        categoryId: categoryA,
-      },
+      { amountMinor: source.payload.amountMinor + 100, categoryId: categoryA },
     );
     assert.equal(sameCategoryEdit.statusCode, 200);
 
