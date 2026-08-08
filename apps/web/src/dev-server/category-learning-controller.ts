@@ -206,8 +206,8 @@ export function categoryLearningControllerScript(): string {
           const detail = row.querySelector(".maintenance-summary span");
           if (!detail || !detail.textContent) return;
           detail.textContent = detail.textContent.replace(
-            / - origem .* - confiança /,
-            " - origem " + label + " - confiança ",
+            /origem .*?([·-]) confiança /,
+            "origem " + label + " $1 confiança ",
           );
         }
 
