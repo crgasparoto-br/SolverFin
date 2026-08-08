@@ -2,14 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
@@ -53,11 +46,7 @@ try {
 
     check(evidence.cardVisible, `Review card is not visible at ${width}px`, evidence);
     check(evidence.filtersVisible, `Review filters are not visible at ${width}px`, evidence);
-    check(
-      evidence.bodyFitsViewport,
-      `Review queue overflows horizontally at ${width}px`,
-      evidence,
-    );
+    check(evidence.bodyFitsViewport, `Review queue overflows horizontally at ${width}px`, evidence);
     check(evidence.actionsFitViewport, `Review action escapes viewport at ${width}px`, evidence);
     check(
       evidence.actionsMeetMinimum,
@@ -78,13 +67,14 @@ try {
 
   urlState = await validateFilterUrl(browser.cdp);
   check(urlState.confidencePersisted, "Confidence filter was not persisted in URL", urlState);
-  check(urlState.profilePreserved, "profileId preservation contract changed unexpectedly", urlState);
+  check(
+    urlState.profilePreserved,
+    "profileId preservation contract changed unexpectedly",
+    urlState,
+  );
 
   textResize = await validateTextResize(browser.cdp, fixture.suggestionId);
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-565-ai-review-queue-text-200-percent.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-565-ai-review-queue-text-200-percent.png"));
   check(textResize.rootFontSize >= 31.5, "Root text size did not reach 200%", textResize);
   check(textResize.cardVisible, "Review card disappeared at 200% text size", textResize);
   check(textResize.actionsVisible, "Review actions disappeared at 200% text size", textResize);
