@@ -106,9 +106,7 @@ async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
     input.kind === "deduplication"
       ? scanBody.deduplicationSuggestions
       : scanBody.reconciliationSuggestions;
-  const candidate = candidates.find(
-    (item) => item.payload.targetTransactionId === existing.id,
-  );
+  const candidate = candidates.find((item) => item.payload.targetTransactionId === existing.id);
   assert.ok(candidate, `Expected ${input.kind} candidate for the matching transaction.`);
 
   await assertCandidateIsListed(input.token, candidate.id, input.kind, correlationId);
