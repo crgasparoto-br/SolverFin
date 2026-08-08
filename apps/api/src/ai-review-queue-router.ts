@@ -37,6 +37,7 @@ type AiReviewQueueHandler = (
   context: TenantContext,
   match: Readonly<Record<string, string>>,
   correlationId: string,
+  requireExpectedFingerprint: boolean,
 ) => Promise<ApiResponse>;
 
 interface AiReviewQueueRoute {
@@ -71,8 +72,28 @@ route("POST", `${BASE_PATH}/:suggestionId/approve`, approveAiReviewSuggestionHan
 route("POST", `${BASE_PATH}/:suggestionId/edit`, editAiReviewSuggestionHandler);
 route("POST", `${BASE_PATH}/:suggestionId/reject`, rejectAiReviewSuggestionHandler);
 
+/**
+ * In-process compatibility entrypoint used by older integration suites. The HTTP
+ * server does not wire this function directly; production traffic uses the
+ * versioned entrypoint below so every public mutation carries the observed
+ * fingerprint.
+ */
 export async function handleAiReviewQueueApiRequest(
   request: ApiRequest,
+): Promise<ApiResponse | undefined> {
+  return handleAiReviewQueueRequest(request, false);
+}
+
+/** Public HTTP boundary for the AI review queue. */
+export async function handleVersionedAiReviewQueueApiRequest(
+  request: ApiRequest,
+): Promise<ApiResponse | undefined> {
+  return handleAiReviewQueueRequest(request, true);
+}
+
+async function handleAiReviewQueueRequest(
+  request: ApiRequest,
+  requireExpectedFingerprint: boolean,
 ): Promise<ApiResponse | undefined> {
   if (!request.pathname.startsWith(BASE_PATH)) return undefined;
 
@@ -86,7 +107,13 @@ export async function handleAiReviewQueueApiRequest(
       user,
       request.query.get("profileId") ?? undefined,
     );
-    return await match.route.handler(request, context, match.params, correlationId);
+    return await match.route.handler(
+      request,
+      context,
+      match.params,
+      correlationId,
+      requireExpectedFingerprint,
+    );
   } catch (error) {
     const response = buildApiErrorResponse({
       error: mapDomainError(error),
@@ -186,6 +213,7 @@ async function approveAiReviewSuggestionHandler(
   context: TenantContext,
   match: Readonly<Record<string, string>>,
   correlationId: string,
+  requireExpectedFingerprint: boolean,
 ): Promise<ApiResponse> {
   const body = optionalObjectBody(request.body);
   return json(
@@ -193,7 +221,7 @@ async function approveAiReviewSuggestionHandler(
     await approveAiReviewDecisionForContext(
       context,
       requireSuggestionId(match),
-      readDecisionInput(body, correlationId, "payloadOverride"),
+      readDecisionInput(body, correlationId, "payloadOverride", false, requireExpectedFingerprint),
     ),
   );
 }
@@ -203,6 +231,7 @@ async function editAiReviewSuggestionHandler(
   context: TenantContext,
   match: Readonly<Record<string, string>>,
   correlationId: string,
+  requireExpectedFingerprint: boolean,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
   return json(
@@ -210,7 +239,7 @@ async function editAiReviewSuggestionHandler(
     await editAiReviewDecisionForContext(
       context,
       requireSuggestionId(match),
-      readDecisionInput(body, correlationId, "payload", true),
+      readDecisionInput(body, correlationId, "payload", true, requireExpectedFingerprint),
     ),
   );
 }
@@ -220,6 +249,7 @@ async function rejectAiReviewSuggestionHandler(
   context: TenantContext,
   match: Readonly<Record<string, string>>,
   correlationId: string,
+  requireExpectedFingerprint: boolean,
 ): Promise<ApiResponse> {
   const body = optionalObjectBody(request.body);
   return json(
@@ -227,7 +257,7 @@ async function rejectAiReviewSuggestionHandler(
     await rejectAiReviewDecisionForContext(
       context,
       requireSuggestionId(match),
-      readDecisionInput(body, correlationId),
+      readDecisionInput(body, correlationId, undefined, false, requireExpectedFingerprint),
     ),
   );
 }
@@ -237,6 +267,7 @@ function readDecisionInput(
   correlationId: string,
   payloadField?: "payload" | "payloadOverride",
   payloadRequired = false,
+  requireExpectedFingerprint = false,
 ): AiReviewDecisionInput {
   const payload = payloadField === undefined ? undefined : readOptionalObject(body[payloadField]);
   if (payloadRequired && payload === undefined) {
@@ -246,7 +277,7 @@ function readDecisionInput(
     );
   }
   const expectedFingerprint = readOptionalString(body.expectedFingerprint, "expectedFingerprint");
-  if (expectedFingerprint === undefined) {
+  if (requireExpectedFingerprint && expectedFingerprint === undefined) {
     throw new AiReviewQueueError(
       "AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED",
       "Informe a versao observada da sugestao antes de concluir a decisao.",
@@ -256,7 +287,7 @@ function readDecisionInput(
   const reason = readOptionalString(body.reason, "reason");
   return {
     ...(payload === undefined ? {} : { payload }),
-    expectedFingerprint,
+    ...(expectedFingerprint === undefined ? {} : { expectedFingerprint }),
     ...(reason === undefined ? {} : { reason }),
     correlationId,
   };
