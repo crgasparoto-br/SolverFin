@@ -1,7 +1,7 @@
+import { handleVersionedAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
 import { recordCategoryCorrectionFromSuggestionForContext } from "./repositories/category-learning.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
@@ -17,11 +17,11 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
   const match = request.method === "POST" ? REVIEW_ACTION_PATH.exec(request.pathname) : null;
   const categoryId = readCorrectionCategoryId(request.body, match?.[2]);
   if (match === null || categoryId === undefined) {
-    return handleAiReviewQueueApiRequest(request);
+    return handleVersionedAiReviewQueueApiRequest(request);
   }
 
   const suggestionId = match[1];
-  if (suggestionId === undefined) return handleAiReviewQueueApiRequest(request);
+  if (suggestionId === undefined) return handleVersionedAiReviewQueueApiRequest(request);
   const correlationId = resolveCorrelationId(request.headers);
 
   try {
@@ -34,7 +34,7 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
     return await withSharedTransaction(async () => {
       const before = await getAiSuggestionPayloadForContext(context, suggestionId);
       const learningSourceId = resolveLearningSourceId(before.payload, suggestionId, categoryId);
-      const response = await handleAiReviewQueueApiRequest(request);
+      const response = await handleVersionedAiReviewQueueApiRequest(request);
       if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
         return response;
       }
