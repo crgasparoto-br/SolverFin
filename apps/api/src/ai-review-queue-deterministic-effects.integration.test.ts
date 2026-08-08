@@ -66,16 +66,19 @@ async function createFixtures(token: string, suffix: string): Promise<Fixtures> 
     openingBalanceMinor: 0,
   });
   assert.equal(accountResponse.statusCode, 201);
-  const accountId = readBody<{ account: { id: string } }>(accountResponse).account.id;
+  const accountBody = readBody<AccountResponse>(accountResponse);
 
   const categoryResponse = await apiRequest(token, "POST", "/api/categories", {
     name: `Categoria review deterministic ${suffix}`,
     kind: "expense",
   });
   assert.equal(categoryResponse.statusCode, 201);
-  const categoryId = readBody<{ category: { id: string } }>(categoryResponse).category.id;
+  const categoryBody = readBody<CategoryResponse>(categoryResponse);
 
-  return { accountId, categoryId };
+  return {
+    accountId: accountBody.account.id,
+    categoryId: categoryBody.category.id,
+  };
 }
 
 async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
@@ -86,12 +89,16 @@ async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
     amountMinor: input.amountMinor,
     occurredOn: input.occurredOn,
   });
-  const imported = await createImportSuggestion(input.token, input.fixtures.accountId, {
-    description,
-    amountMinor: input.amountMinor,
-    occurredOn: input.occurredOn,
-    fileName: `issue-565-${input.kind}-${input.suffix}.csv`,
-  });
+  const imported = await createImportSuggestion(
+    input.token,
+    input.fixtures.accountId,
+    {
+      description,
+      amountMinor: input.amountMinor,
+      occurredOn: input.occurredOn,
+      fileName: `issue-565-${input.kind}-${input.suffix}.csv`,
+    },
+  );
   const source = requireSuggestion(imported, 0);
   const scan = await apiRequest(
     input.token,
@@ -101,23 +108,41 @@ async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
     correlationId,
   );
   assert.equal(scan.statusCode, 200);
+
   const scanBody = readBody<ScanBody>(scan);
-  const candidates =
-    input.kind === "deduplication"
-      ? scanBody.deduplicationSuggestions
-      : scanBody.reconciliationSuggestions;
-  const candidate = candidates.find((item) => item.payload.targetTransactionId === existing.id);
+  let candidates: DeterministicSuggestion[];
+  if (input.kind === "deduplication") {
+    candidates = scanBody.deduplicationSuggestions;
+  } else {
+    candidates = scanBody.reconciliationSuggestions;
+  }
+
+  const candidate = candidates.find((item) => {
+    return item.payload.targetTransactionId === existing.id;
+  });
   assert.ok(candidate, `Expected ${input.kind} candidate for the matching transaction.`);
 
-  await assertCandidateIsListed(input.token, candidate.id, input.kind, correlationId);
-  const detail = await readCandidateDetail(input.token, candidate.id, correlationId);
+  await assertCandidateIsListed(
+    input.token,
+    candidate.id,
+    input.kind,
+    correlationId,
+  );
+  const detail = await readCandidateDetail(
+    input.token,
+    candidate.id,
+    correlationId,
+  );
   assert.equal(detail.suggestionKind, input.kind);
 
   const unsupportedEdit = await apiRequest(
     input.token,
     "POST",
     `/api/ai-review-queue/${candidate.id}/edit`,
-    { expectedFingerprint: detail.fingerprint, payload: { conflicts: [] } },
+    {
+      expectedFingerprint: detail.fingerprint,
+      payload: { conflicts: [] },
+    },
     correlationId,
   );
   assert.equal(unsupportedEdit.statusCode, 422);
@@ -131,16 +156,25 @@ async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
     correlationId,
   );
   assert.equal(approved.statusCode, 200);
+
   const approvedBody = readBody<DecisionBody>(approved);
   assert.equal(approvedBody.suggestion.status, "approved");
   assert.equal(approvedBody.sourceSuggestion?.status, input.expectedSourceStatus);
   assert.equal(approvedBody.idempotent, false);
-  assert.equal(await countTransactionsForSuggestion(input.organizationId, source.id), 0);
+
+  const linkedTransactions = await countTransactionsForSuggestion(
+    input.organizationId,
+    source.id,
+  );
+  assert.equal(linkedTransactions, 0);
 
   if (input.kind === "reconciliation") {
     assert.equal(approvedBody.transaction?.id, existing.id);
     assert.equal(approvedBody.transaction?.status, "reconciled");
-    const status = await readTransactionStatus(input.organizationId, existing.id);
+    const status = await readTransactionStatus(
+      input.organizationId,
+      existing.id,
+    );
     assert.equal(status, "RECONCILED");
   } else {
     assert.equal(approvedBody.transaction, undefined);
@@ -154,7 +188,8 @@ async function assertUnifiedDecision(input: ScenarioInput): Promise<void> {
     correlationId,
   );
   assert.equal(repeated.statusCode, 200);
-  assert.equal(readBody<{ idempotent?: boolean }>(repeated).idempotent, true);
+  const repeatedBody = readBody<IdempotentBody>(repeated);
+  assert.equal(repeatedBody.idempotent, true);
 
   await assertDecisionAudit(input.organizationId, candidate.id, correlationId);
 }
@@ -173,7 +208,7 @@ async function createTransaction(
     description: input.description,
   });
   assert.equal(response.statusCode, 201);
-  return readBody<{ transaction: { id: string } }>(response).transaction;
+  return readBody<TransactionResponse>(response).transaction;
 }
 
 async function createImportSuggestion(
@@ -181,12 +216,11 @@ async function createImportSuggestion(
   accountId: string,
   input: ImportFixture,
 ): Promise<ImportDetail> {
+  const amount = (input.amountMinor / 100).toFixed(2);
+  const row = `${input.occurredOn},${input.description},-${amount},expense`;
   const response = await apiRequest(token, "POST", "/api/import-batches/csv", {
     originalFileName: input.fileName,
-    content: [
-      "date,description,amount,kind",
-      `${input.occurredOn},${input.description},-${(input.amountMinor / 100).toFixed(2)},expense`,
-    ].join("\n"),
+    content: ["date,description,amount,kind", row].join("\n"),
     accountId,
     consentAccepted: true,
   });
@@ -208,8 +242,11 @@ async function assertCandidateIsListed(
     correlationId,
   );
   assert.equal(response.statusCode, 200);
-  const body = readBody<{ suggestions: Array<{ id: string; kind: string }> }>(response);
-  const item = body.suggestions.find((suggestion) => suggestion.id === candidateId);
+
+  const body = readBody<QueueListBody>(response);
+  const item = body.suggestions.find((suggestion) => {
+    return suggestion.id === candidateId;
+  });
   assert.equal(item?.kind, kind);
 }
 
@@ -226,7 +263,7 @@ async function readCandidateDetail(
     correlationId,
   );
   assert.equal(response.statusCode, 200);
-  return readBody<{ payload: PayloadDetail }>(response).payload;
+  return readBody<PayloadResponse>(response).payload;
 }
 
 async function countTransactionsForSuggestion(
@@ -279,10 +316,13 @@ async function loginAndReadToken(): Promise<string> {
   const response = await handleMvpApiRequest({
     method: "POST",
     path: "/api/session",
-    body: { email: "demo@solverfin.example.invalid", password: "SolverFinDemo!2026" },
+    body: {
+      email: "demo@solverfin.example.invalid",
+      password: "SolverFinDemo!2026",
+    },
   });
   assert.equal(response.statusCode, 201);
-  return readBody<{ session: { token: string } }>(response).session.token;
+  return readBody<SessionResponse>(response).session.token;
 }
 
 async function apiRequest(
@@ -293,14 +333,18 @@ async function apiRequest(
   correlationId?: string,
 ): Promise<ApiResponse> {
   const url = new URL(path, "http://solverfin.integration.test");
+  const headers: Record<string, string> = {
+    authorization: `Bearer ${token}`,
+  };
+  if (correlationId !== undefined) {
+    headers["x-correlation-id"] = correlationId;
+  }
+
   const request: ApiRequest = {
     method,
     pathname: url.pathname,
     query: url.searchParams,
-    headers: {
-      authorization: `Bearer ${token}`,
-      ...(correlationId === undefined ? {} : { "x-correlation-id": correlationId }),
-    },
+    headers,
     body,
   };
   const response =
@@ -319,7 +363,7 @@ function readBody<T>(response: Pick<ApiResponse, "body">): T {
 }
 
 function readErrorCode(response: ApiResponse): string | undefined {
-  return readBody<{ error?: { code?: string } }>(response).error?.code;
+  return readBody<ErrorBody>(response).error?.code;
 }
 
 function requireSuggestion(detail: ImportDetail, index: number): ImportSuggestion {
@@ -363,13 +407,10 @@ interface ImportDetail {
 
 interface ImportSuggestion {
   id: string;
-  status: string;
 }
 
 interface DeterministicSuggestion {
   id: string;
-  kind: string;
-  status: string;
   payload: { targetTransactionId?: string };
 }
 
@@ -395,4 +436,36 @@ interface AuditRow {
   occurredAt: Date;
   correlationId: string | null;
   redactedChanges: Record<string, string> | null;
+}
+
+interface AccountResponse {
+  account: { id: string };
+}
+
+interface CategoryResponse {
+  category: { id: string };
+}
+
+interface TransactionResponse {
+  transaction: { id: string };
+}
+
+interface QueueListBody {
+  suggestions: Array<{ id: string; kind: string }>;
+}
+
+interface PayloadResponse {
+  payload: PayloadDetail;
+}
+
+interface SessionResponse {
+  session: { token: string };
+}
+
+interface IdempotentBody {
+  idempotent?: boolean;
+}
+
+interface ErrorBody {
+  error?: { code?: string };
 }
