@@ -36,6 +36,14 @@ O contrato V1 registra um único `ruleId` de origem. As demais regras que contri
 
 A explicação permanece apenas apresentacional.
 
+## Revisão na fila unificada
+
+Sugestões `categorization` produzidas por regras aparecem na mesma fila da Inbox que extrações, duplicidades, conciliações e insights. A origem continua apresentada como **regra**, sem expor o identificador técnico da automação.
+
+Na fila, somente `proposedCategoryId` é editável para `categorization`. Aprovar revalida categoria, organização, perfil, tipo e estado imediatamente antes do efeito e aplica a categoria à extração ainda pendente ou ao lançamento elegível. Editar recalcula o fingerprint da candidatura e mantém o item pendente para nova decisão. Categoria arquivada, incompatível ou versão de origem obsoleta resulta em conflito controlado e nenhum efeito parcial.
+
+As decisões da fila usam o contrato de `docs/AI_REVIEW_QUEUE.md`; o motor de regras continua apenas como produtor determinístico e não duplica lógica de aprovação.
+
 ## Persistência e API
 
 A tabela `AutomationRule` isola regras por `organizationId` e `financialProfileId`.
@@ -69,4 +77,4 @@ Falha ao listar regras mostra estado de erro. Contas e categorias são dependên
 
 ## Testes
 
-A cobertura deve provar match, não-match, prioridade, regra inativa, isolamento por tenant, produção de payload categorizado, precedência sobre aprendizado/histórico/IA, categoria de regra arquivada/fora do perfil e continuidade da categorização quando a regra não produz categoria. Testes de contrato validam fingerprint, campos permitidos e privacidade da projeção pública.
+A cobertura deve provar match, não-match, prioridade, regra inativa, isolamento por tenant, produção de payload categorizado, precedência sobre aprendizado/histórico/IA, categoria de regra arquivada/fora do perfil e continuidade da categorização quando a regra não produz categoria. Testes de contrato validam fingerprint, campos permitidos e privacidade da projeção pública. A fila unificada acrescenta cobertura de edição permitida, conflito por fingerprint, aprovação tipada e auditoria correlacionada.
