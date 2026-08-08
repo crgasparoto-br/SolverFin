@@ -23,6 +23,7 @@ async function main(): Promise<void> {
   const accountId = await readActiveAccountId(organizationId);
   const token = await loginAndReadToken();
   const suggestionId = randomUUID();
+  const secondSuggestionId = randomUUID();
   const marker = randomUUID();
   const correlationId = `issue-565-audit-remediation-${marker}`;
   const now = new Date().toISOString();
@@ -47,6 +48,27 @@ async function main(): Promise<void> {
       accountId,
     },
   });
+  const secondPayload = buildAiSuggestionPayload({
+    payload: {
+      contractVersion: 1,
+      suggestionKind: "transaction_extraction",
+      payloadVersion: 2,
+      origin: { kind: "system", component: "issue-565-audit-remediation-test" },
+      target: { entityKind: "transaction" },
+      confidence: 0.91,
+      reasons: ["Segunda fixture para validar replay apos mutacao de valor."],
+      audit: { createdAt: now },
+      sourceRowNumber: 2,
+      sourceHash: `issue-565-audit-second-${marker}`,
+      occurredOn: "2026-08-08",
+      kind: "expense",
+      direction: "outflow",
+      amountMinor: 5432,
+      currency: "BRL",
+      description: `Segunda compra audit remediation ${marker}`,
+      accountId,
+    },
+  });
 
   try {
     await query(
@@ -63,6 +85,23 @@ async function main(): Promise<void> {
         PERSONAL_PROFILE_ID,
         JSON.stringify(payload),
         payload.fingerprint,
+        now,
+      ],
+    );
+    await query(
+      `insert into "AiSuggestion"
+        ("id", "organizationId", "financialProfileId", "kind", "status", "sourceEntityId",
+         "targetEntityId", "confidence", "explanation", "payload", "payloadFingerprint",
+         "provider", "model", "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt")
+       values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', null, null,
+               0.91, 'Segunda fixture de remediacao da issue 565.', $4::jsonb, $5,
+               'solverfin-test', 'issue-565-audit-remediation', null, null, $6, $6)`,
+      [
+        secondSuggestionId,
+        organizationId,
+        PERSONAL_PROFILE_ID,
+        JSON.stringify(secondPayload),
+        secondPayload.fingerprint,
         now,
       ],
     );
@@ -90,11 +129,16 @@ async function main(): Promise<void> {
     assert.equal(pendingRows[0]?.status, "PENDING_REVIEW");
     assert.equal(await countSuggestionTransactions(organizationId, suggestionId), 0);
 
+    const approvedDescription = `Compra audit remediation aprovada ${marker}`;
+    const approvalRequest = {
+      expectedFingerprint: payload.fingerprint,
+      payloadOverride: { description: approvedDescription },
+    };
     const approved = await apiRequest(
       token,
       "POST",
       `/api/ai-review-queue/${suggestionId}/approve`,
-      { expectedFingerprint: payload.fingerprint },
+      approvalRequest,
       correlationId,
     );
     assert.equal(approved.statusCode, 200);
@@ -102,6 +146,15 @@ async function main(): Promise<void> {
     assert.equal(approvedBody.suggestion.status, "approved");
     assert.equal(approvedBody.idempotent, false);
     assert.ok(approvedBody.transaction?.id);
+
+    const approvedRows = await query<{ fingerprint: string; description: string }>(
+      `select "payload"->>'fingerprint' as "fingerprint",
+              "payload"->>'description' as "description"
+         from "AiSuggestion" where "id" = $1`,
+      [suggestionId],
+    );
+    assert.notEqual(approvedRows[0]?.fingerprint, payload.fingerprint);
+    assert.equal(approvedRows[0]?.description, approvedDescription);
 
     const staleReplay = await apiRequest(
       token,
@@ -118,8 +171,8 @@ async function main(): Promise<void> {
       token,
       "POST",
       `/api/ai-review-queue/${suggestionId}/approve`,
-      { expectedFingerprint: payload.fingerprint },
-      correlationId,
+      approvalRequest,
+      `${correlationId}-retry`,
     );
     assert.equal(repeated.statusCode, 200);
     const repeatedBody = readBody<DecisionBody>(repeated);
@@ -127,15 +180,79 @@ async function main(): Promise<void> {
     assert.equal(repeatedBody.idempotent, true);
     assert.equal(repeatedBody.transaction?.id, approvedBody.transaction?.id);
     assert.equal(await countSuggestionTransactions(organizationId, suggestionId), 1);
-  } finally {
-    const transactionRows = await query<{ id: string }>(
-      `select "id" from "Transaction" where "aiSuggestionId" = $1`,
-      [suggestionId],
+
+    const differentDecisionReplay = await apiRequest(
+      token,
+      "POST",
+      `/api/ai-review-queue/${suggestionId}/approve`,
+      {
+        expectedFingerprint: payload.fingerprint,
+        payloadOverride: { description: `Decisao diferente ${marker}` },
+      },
+      `${correlationId}-different`,
     );
-    const entityIds = [suggestionId, ...transactionRows.map((row) => row.id)];
+    assert.equal(differentDecisionReplay.statusCode, 409);
+    assert.equal(readErrorCode(differentDecisionReplay), "AI_SUGGESTION_PAYLOAD_CONFLICT");
+    assert.equal(await countSuggestionTransactions(organizationId, suggestionId), 1);
+
+    const approvalAudits = await query<{ replayKey: string | null; count: string }>(
+      `select max("redactedChanges"->>'approvalReplayKey') as "replayKey",
+              count(*)::text as "count"
+         from "AuditLogEntry"
+        where "organizationId" = $1 and "financialProfileId" = $2
+          and "entityKind" = 'AI_SUGGESTION' and "entityId" = $3 and "action" = 'APPROVE'`,
+      [organizationId, PERSONAL_PROFILE_ID, suggestionId],
+    );
+    assert.equal(approvalAudits[0]?.count, "1");
+    assert.match(approvalAudits[0]?.replayKey ?? "", /^sha256-[a-f0-9]{64}$/);
+
+    const secondApprovalRequest = {
+      expectedFingerprint: secondPayload.fingerprint,
+      payloadOverride: { amountMinor: 6543 },
+    };
+    const secondApproved = await apiRequest(
+      token,
+      "POST",
+      `/api/ai-review-queue/${secondSuggestionId}/approve`,
+      secondApprovalRequest,
+      `${correlationId}-second`,
+    );
+    assert.equal(secondApproved.statusCode, 200);
+    const secondApprovedBody = readBody<DecisionBody>(secondApproved);
+    assert.equal(secondApprovedBody.idempotent, false);
+    assert.ok(secondApprovedBody.transaction?.id);
+
+    const secondApprovedRows = await query<{ fingerprint: string; amountMinor: string }>(
+      `select "payload"->>'fingerprint' as "fingerprint",
+              "payload"->>'amountMinor' as "amountMinor"
+         from "AiSuggestion" where "id" = $1`,
+      [secondSuggestionId],
+    );
+    assert.notEqual(secondApprovedRows[0]?.fingerprint, secondPayload.fingerprint);
+    assert.equal(secondApprovedRows[0]?.amountMinor, "6543");
+
+    const secondRepeated = await apiRequest(
+      token,
+      "POST",
+      `/api/ai-review-queue/${secondSuggestionId}/approve`,
+      secondApprovalRequest,
+      `${correlationId}-second-retry`,
+    );
+    assert.equal(secondRepeated.statusCode, 200);
+    const secondRepeatedBody = readBody<DecisionBody>(secondRepeated);
+    assert.equal(secondRepeatedBody.idempotent, true);
+    assert.equal(secondRepeatedBody.transaction?.id, secondApprovedBody.transaction?.id);
+    assert.equal(await countSuggestionTransactions(organizationId, secondSuggestionId), 1);
+  } finally {
+    const suggestionIds = [suggestionId, secondSuggestionId];
+    const transactionRows = await query<{ id: string }>(
+      `select "id" from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
+      [suggestionIds],
+    );
+    const entityIds = [...suggestionIds, ...transactionRows.map((row) => row.id)];
     await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
-    await query(`delete from "Transaction" where "aiSuggestionId" = $1`, [suggestionId]);
-    await query(`delete from "AiSuggestion" where "id" = $1`, [suggestionId]);
+    await query(`delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`, [suggestionIds]);
+    await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [suggestionIds]);
   }
 }
 
