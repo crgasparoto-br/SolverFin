@@ -1,17 +1,16 @@
 import type { AiSuggestion, EntityId, TenantContext } from "@solverfin/domain";
+import { AiSuggestionPayloadError } from "@solverfin/domain/ai-suggestion-payloads";
 
 import {
   approveAiReviewDecisionForContext as approveAiReviewDecision,
-  editAiReviewDecisionForContext,
-  rejectAiReviewDecisionForContext,
+  editAiReviewDecisionForContext as editAiReviewDecision,
+  rejectAiReviewDecisionForContext as rejectAiReviewDecision,
   type AiReviewDecisionInput,
   type AiReviewDecisionResult,
 } from "./ai-review-queue-decision-service.js";
 import { query } from "./db.js";
-import {
-  AiReviewQueueError,
-  type PersistedAiSuggestion,
-} from "./repositories/ai-review-queue.js";
+import { AiReviewQueueError, type PersistedAiSuggestion } from "./repositories/ai-review-queue.js";
+import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
 import { getTransactionForContext } from "./repositories/transactions.js";
 
 interface ApprovedExtractionRow {
@@ -42,6 +41,8 @@ export async function approveAiReviewDecisionForContext(
   suggestionId: EntityId,
   input: AiReviewDecisionInput,
 ): Promise<AiReviewDecisionResult> {
+  await assertPublicExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
+
   try {
     return await approveAiReviewDecision(context, suggestionId, input);
   } catch (error) {
@@ -55,8 +56,44 @@ export async function approveAiReviewDecisionForContext(
   }
 }
 
-export { editAiReviewDecisionForContext, rejectAiReviewDecisionForContext };
+export async function editAiReviewDecisionForContext(
+  context: TenantContext,
+  suggestionId: EntityId,
+  input: AiReviewDecisionInput,
+): Promise<AiReviewDecisionResult> {
+  await assertPublicExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
+  return editAiReviewDecision(context, suggestionId, input);
+}
+
+export async function rejectAiReviewDecisionForContext(
+  context: TenantContext,
+  suggestionId: EntityId,
+  input: AiReviewDecisionInput,
+): Promise<AiReviewDecisionResult> {
+  await assertPublicExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
+  return rejectAiReviewDecision(context, suggestionId, input);
+}
+
 export type { AiReviewDecisionInput };
+
+async function assertPublicExpectedFingerprint(
+  context: TenantContext,
+  suggestionId: EntityId,
+  expectedFingerprint: string | undefined,
+): Promise<void> {
+  if (expectedFingerprint === undefined) {
+    throw new AiReviewQueueError(
+      "AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED",
+      "Informe a versao observada da sugestao antes de concluir a decisao.",
+      428,
+    );
+  }
+
+  const detail = await getAiSuggestionPayloadForContext(context, suggestionId);
+  if (detail.payload.fingerprint !== expectedFingerprint) {
+    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_CONFLICT");
+  }
+}
 
 async function readApprovedExtractionReplay(
   context: TenantContext,
