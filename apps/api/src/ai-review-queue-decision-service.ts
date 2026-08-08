@@ -79,7 +79,8 @@ interface TransactionRow {
 const DECISION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
   "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload", "payloadFingerprint", "provider", "model",
   "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt"`;
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const TRANSACTION_EDIT_FIELDS = new Set([
   "kind",
   "amountMinor",
@@ -124,7 +125,10 @@ export async function approveAiReviewDecisionForContext(
       case "deduplication":
       case "reconciliation": {
         assertNoPayloadMutation(input.payload, suggestion.kind);
-        const result = await approveDeterministicReviewSuggestionForContext(context, suggestionId);
+        const result = await approveDeterministicReviewSuggestionForContext(
+          context,
+          suggestionId,
+        );
         await correlateLatestAudit(
           executeQuery,
           context,
@@ -153,7 +157,11 @@ export async function approveAiReviewDecisionForContext(
       suggestion.kind === "transaction_extraction"
         ? readTransactionPayload(input.payload, false)
         : undefined;
-    const result = await approveAiReviewSuggestionForContext(context, suggestionId, payloadOverride);
+    const result = await approveAiReviewSuggestionForContext(
+      context,
+      suggestionId,
+      payloadOverride,
+    );
     await correlateLatestAudit(
       executeQuery,
       context,
@@ -224,7 +232,13 @@ export async function editAiReviewDecisionForContext(
       `update "AiSuggestion"
        set "payload" = $4::jsonb, "updatedAt" = $5
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [suggestion.id, context.organizationId, context.financialProfileId, JSON.stringify(next), now],
+      [
+        suggestion.id,
+        context.organizationId,
+        context.financialProfileId,
+        JSON.stringify(next),
+        now,
+      ],
     );
     await expireDependentSuggestions(executeQuery, context, suggestion.id, suggestion.id, now);
     await insertAuditLogEntry(
@@ -240,7 +254,11 @@ export async function editAiReviewDecisionForContext(
       ),
     );
     return {
-      suggestion: mapPersistedSuggestion({ ...suggestion, payload: next, updatedAt: new Date(now) }),
+      suggestion: mapPersistedSuggestion({
+        ...suggestion,
+        payload: next,
+        updatedAt: new Date(now),
+      }),
       idempotent: false,
     };
   });
@@ -311,7 +329,12 @@ async function approveCategorizationSuggestion(
   }
 
   const target = await resolveCategorizationTarget(executeQuery, context, current);
-  const category = await requireEligibleCategory(executeQuery, context, categoryId, target.transactionKind);
+  const category = await requireEligibleCategory(
+    executeQuery,
+    context,
+    categoryId,
+    target.transactionKind,
+  );
   const reviewedPayload =
     requestedCategoryId === undefined || requestedCategoryId === current.proposedCategoryId
       ? current
@@ -329,7 +352,14 @@ async function approveCategorizationSuggestion(
      set "status" = 'APPROVED', "payload" = $4::jsonb, "reviewedByUserId" = $5,
          "reviewedAt" = $6, "updatedAt" = $6
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [suggestion.id, context.organizationId, context.financialProfileId, JSON.stringify(reviewedPayload), context.userId, now],
+    [
+      suggestion.id,
+      context.organizationId,
+      context.financialProfileId,
+      JSON.stringify(reviewedPayload),
+      context.userId,
+      now,
+    ],
   );
 
   if (target.kind === "transaction_extraction") {
@@ -346,7 +376,13 @@ async function approveCategorizationSuggestion(
       `update "AiSuggestion"
        set "payload" = $4::jsonb, "updatedAt" = $5
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [source.id, context.organizationId, context.financialProfileId, JSON.stringify(nextSourcePayload), now],
+      [
+        source.id,
+        context.organizationId,
+        context.financialProfileId,
+        JSON.stringify(nextSourcePayload),
+        now,
+      ],
     );
     await expireDependentSuggestions(executeQuery, context, source.id, suggestion.id, now);
     await insertAuditLogEntry(
@@ -362,7 +398,9 @@ async function approveCategorizationSuggestion(
       ),
     );
   } else {
-    await updateTransactionForContext(context, target.transaction.id, { categoryId: category.id });
+    await updateTransactionForContext(context, target.transaction.id, {
+      categoryId: category.id,
+    });
     await correlateLatestAudit(
       executeQuery,
       context,
@@ -417,7 +455,12 @@ async function editCategorizationSuggestion(
   }
 
   const target = await resolveCategorizationTarget(executeQuery, context, current);
-  const category = await requireEligibleCategory(executeQuery, context, categoryId, target.transactionKind);
+  const category = await requireEligibleCategory(
+    executeQuery,
+    context,
+    categoryId,
+    target.transactionKind,
+  );
   const next = mutateAiSuggestionPayload({
     payload: current,
     status: "pending_review",
@@ -430,7 +473,13 @@ async function editCategorizationSuggestion(
     `update "AiSuggestion"
      set "payload" = $4::jsonb, "updatedAt" = $5
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [suggestion.id, context.organizationId, context.financialProfileId, JSON.stringify(next), now],
+    [
+      suggestion.id,
+      context.organizationId,
+      context.financialProfileId,
+      JSON.stringify(next),
+      now,
+    ],
   );
   await insertAuditLogEntry(
     executeQuery,
@@ -445,7 +494,11 @@ async function editCategorizationSuggestion(
     ),
   );
   return {
-    suggestion: mapPersistedSuggestion({ ...suggestion, payload: next, updatedAt: new Date(now) }),
+    suggestion: mapPersistedSuggestion({
+      ...suggestion,
+      payload: next,
+      updatedAt: new Date(now),
+    }),
     idempotent: false,
   };
 }
@@ -605,7 +658,14 @@ async function expireDependentSuggestions(
      where "organizationId" = $1 and "financialProfileId" = $2 and "sourceSuggestionId" = $3
        and "id" <> $6 and "status" = 'PENDING_REVIEW'
        and "kind" in ('CATEGORIZATION', 'DEDUPLICATION', 'RECONCILIATION')`,
-    [context.organizationId, context.financialProfileId, sourceSuggestionId, context.userId, now, exceptSuggestionId],
+    [
+      context.organizationId,
+      context.financialProfileId,
+      sourceSuggestionId,
+      context.userId,
+      now,
+      exceptSuggestionId,
+    ],
   );
 }
 
@@ -949,7 +1009,9 @@ function mapPersistedSuggestion(row: DecisionSuggestionRow): PersistedAiSuggesti
     ...(row.targetEntityId === null ? {} : { targetEntityId: row.targetEntityId }),
     ...(row.provider === null ? {} : { provider: row.provider }),
     ...(row.model === null ? {} : { model: row.model }),
-    ...(row.reviewedByUserId === null ? {} : { reviewedByUserId: row.reviewedByUserId }),
+    ...(row.reviewedByUserId === null
+      ? {}
+      : { reviewedByUserId: row.reviewedByUserId }),
     ...(row.reviewedAt === null ? {} : { reviewedAt: row.reviewedAt.toISOString() }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
