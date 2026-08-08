@@ -79,8 +79,7 @@ interface TransactionRow {
 const DECISION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
   "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload", "payloadFingerprint", "provider", "model",
   "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt"`;
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const TRANSACTION_EDIT_FIELDS = new Set([
   "kind",
   "amountMinor",
@@ -125,10 +124,7 @@ export async function approveAiReviewDecisionForContext(
       case "deduplication":
       case "reconciliation": {
         assertNoPayloadMutation(input.payload, suggestion.kind);
-        const result = await approveDeterministicReviewSuggestionForContext(
-          context,
-          suggestionId,
-        );
+        const result = await approveDeterministicReviewSuggestionForContext(context, suggestionId);
         await correlateLatestAudit(
           executeQuery,
           context,
@@ -157,11 +153,7 @@ export async function approveAiReviewDecisionForContext(
       suggestion.kind === "transaction_extraction"
         ? readTransactionPayload(input.payload, false)
         : undefined;
-    const result = await approveAiReviewSuggestionForContext(
-      context,
-      suggestionId,
-      payloadOverride,
-    );
+    const result = await approveAiReviewSuggestionForContext(context, suggestionId, payloadOverride);
     await correlateLatestAudit(
       executeQuery,
       context,
@@ -352,14 +344,7 @@ async function approveCategorizationSuggestion(
      set "status" = 'APPROVED', "payload" = $4::jsonb, "reviewedByUserId" = $5,
          "reviewedAt" = $6, "updatedAt" = $6
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [
-      suggestion.id,
-      context.organizationId,
-      context.financialProfileId,
-      JSON.stringify(reviewedPayload),
-      context.userId,
-      now,
-    ],
+    [suggestion.id, context.organizationId, context.financialProfileId, JSON.stringify(reviewedPayload), context.userId, now],
   );
 
   if (target.kind === "transaction_extraction") {
@@ -473,13 +458,7 @@ async function editCategorizationSuggestion(
     `update "AiSuggestion"
      set "payload" = $4::jsonb, "updatedAt" = $5
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [
-      suggestion.id,
-      context.organizationId,
-      context.financialProfileId,
-      JSON.stringify(next),
-      now,
-    ],
+    [suggestion.id, context.organizationId, context.financialProfileId, JSON.stringify(next), now],
   );
   await insertAuditLogEntry(
     executeQuery,
@@ -930,7 +909,10 @@ async function lockSuggestionForContext(
 function assertPending(suggestion: DecisionSuggestionRow): void {
   if (suggestion.status !== "pending_review") {
     throw new AiReviewQueueError(
-      "AI_REVIEW_INVALID_TRANSITION",
+      suggestion.kind === "transaction_extraction" &&
+        suggestion.provider?.startsWith("solverfin-import") === true
+        ? "IMPORT_REVIEW_INVALID_TRANSITION"
+        : "AI_REVIEW_INVALID_TRANSITION",
       "A sugestao ja foi resolvida ou nao esta mais disponivel para revisao.",
       409,
     );
