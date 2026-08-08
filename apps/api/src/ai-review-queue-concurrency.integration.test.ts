@@ -186,10 +186,7 @@ async function main(): Promise<void> {
       [organizationId, PERSONAL_PROFILE_ID, categorizationId],
     );
     assert.equal(decisionAudits.length, 1);
-    assert.equal(
-      decisionAudits[0]?.action,
-      finalStatus === "APPROVED" ? "APPROVE" : "REJECT",
-    );
+    assert.equal(decisionAudits[0]?.action, finalStatus === "APPROVED" ? "APPROVE" : "REJECT");
     assert.equal(
       decisionAudits[0]?.correlationId,
       finalStatus === "APPROVED" ? `${correlationId}-approve` : `${correlationId}-reject`,
@@ -210,16 +207,11 @@ async function main(): Promise<void> {
     await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [
       [categorizationId, sourceId],
     ]);
-    await query(`delete from "Category" where "id" = any($1::uuid[])`, [
-      [categoryA, categoryB],
-    ]);
+    await query(`delete from "Category" where "id" = any($1::uuid[])`, [[categoryA, categoryB]]);
   }
 }
 
-async function assertRollbackState(
-  categorizationId: string,
-  sourceId: string,
-): Promise<void> {
+async function assertRollbackState(categorizationId: string, sourceId: string): Promise<void> {
   const suggestionRows = await query<{ status: string }>(
     `select "status" from "AiSuggestion" where "id" = $1`,
     [categorizationId],
@@ -240,11 +232,7 @@ async function assertRollbackState(
   assert.equal(Number(audits[0]?.count ?? 0), 0);
 }
 
-async function insertCategory(
-  organizationId: string,
-  id: string,
-  name: string,
-): Promise<void> {
+async function insertCategory(organizationId: string, id: string, name: string): Promise<void> {
   await query(
     `insert into "Category"
       ("id", "organizationId", "financialProfileId", "name", "kind", "status",
@@ -367,10 +355,7 @@ async function apiRequest(
     body,
   };
   const response = await handleCategorizationAwareAiReviewQueueApiRequest(request);
-  assert.ok(
-    response,
-    `${method} ${path} should be handled by the AI review queue router`,
-  );
+  assert.ok(response, `${method} ${path} should be handled by the AI review queue router`);
   return response;
 }
 
