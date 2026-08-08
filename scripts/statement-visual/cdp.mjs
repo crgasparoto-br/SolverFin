@@ -38,10 +38,11 @@ export class CdpClient {
   send(method, params = {}) {
     const id = this.id++;
     return new Promise((resolve, reject) => {
+      const timeout = method === "Runtime.evaluate" ? 45_000 : 20_000;
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(new Error(`CDP command timeout: ${method}`));
-      }, method === "Runtime.evaluate" ? 45_000 : 20_000);
+      }, timeout);
       this.pending.set(id, { resolve, reject, timer });
       this.socket.send(JSON.stringify({ id, method, params }));
     });
