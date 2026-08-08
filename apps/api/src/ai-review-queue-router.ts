@@ -18,7 +18,7 @@ import {
   editAiReviewDecisionForContext,
   rejectAiReviewDecisionForContext,
   type AiReviewDecisionInput,
-} from "./ai-review-queue-decision-service.js";
+} from "./ai-review-queue-public-decision-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   AiReviewQueueError,
@@ -246,10 +246,17 @@ function readDecisionInput(
     );
   }
   const expectedFingerprint = readOptionalString(body.expectedFingerprint, "expectedFingerprint");
+  if (expectedFingerprint === undefined) {
+    throw new AiReviewQueueError(
+      "AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED",
+      "Informe a versao observada da sugestao antes de concluir a decisao.",
+      428,
+    );
+  }
   const reason = readOptionalString(body.reason, "reason");
   return {
     ...(payload === undefined ? {} : { payload }),
-    ...(expectedFingerprint === undefined ? {} : { expectedFingerprint }),
+    expectedFingerprint,
     ...(reason === undefined ? {} : { reason }),
     correlationId,
   };
