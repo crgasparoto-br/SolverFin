@@ -103,6 +103,17 @@ async function main(): Promise<void> {
     assert.equal(approvedBody.idempotent, false);
     assert.ok(approvedBody.transaction?.id);
 
+    const staleReplay = await apiRequest(
+      token,
+      "POST",
+      `/api/ai-review-queue/${suggestionId}/approve`,
+      { expectedFingerprint: `sha256-${"0".repeat(64)}` },
+      correlationId,
+    );
+    assert.equal(staleReplay.statusCode, 409);
+    assert.equal(readErrorCode(staleReplay), "AI_SUGGESTION_PAYLOAD_CONFLICT");
+    assert.equal(await countSuggestionTransactions(organizationId, suggestionId), 1);
+
     const repeated = await apiRequest(
       token,
       "POST",
