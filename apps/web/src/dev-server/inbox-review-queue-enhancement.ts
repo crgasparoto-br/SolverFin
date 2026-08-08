@@ -296,8 +296,8 @@ export function enhanceInboxReviewQueue(html: string): string {
           }
         }
         function parseAmountMinor(value) {
-          const raw = String(value || "").trim().replace(/\s/g, "");
-          const normalized = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
+          const raw = String(value || "").trim().replace(/\\s/g, "");
+          const normalized = raw.includes(",") ? raw.replace(/\\./g, "").replace(",", ".") : raw;
           const amount = Number(normalized);
           if (!Number.isFinite(amount) || amount <= 0) return undefined;
           return Math.round(amount * 100);
