@@ -55,6 +55,8 @@ interface PublicAiReviewQueueItem {
   risk: AiReviewQueueItem["risk"];
   explanation: string;
   maskedSummary: string;
+  proposedTransaction?: AiReviewQueueItem["proposedTransaction"];
+  provider?: string;
   createdAt: string;
   reviewedAt?: string;
 }
@@ -162,6 +164,10 @@ function toPublicQueueItem(item: AiReviewQueueItem): PublicAiReviewQueueItem {
     risk: item.risk,
     explanation: item.explanation,
     maskedSummary: item.maskedSummary,
+    ...(item.proposedTransaction === undefined
+      ? {}
+      : { proposedTransaction: item.proposedTransaction }),
+    ...(item.provider === undefined ? {} : { provider: item.provider }),
     createdAt: item.createdAt,
     ...(item.reviewedAt === undefined ? {} : { reviewedAt: item.reviewedAt }),
   };
