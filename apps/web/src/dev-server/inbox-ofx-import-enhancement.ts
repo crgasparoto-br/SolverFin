@@ -1,8 +1,11 @@
+import { enhanceInboxReviewQueue } from "./inbox-review-queue-enhancement.js";
+
 const ENHANCEMENT_MARKER = "data-inbox-ofx-import-enhanced";
 
 export function enhanceInboxOfxImport(html: string): string {
-  if (!html.includes('id="csv-import-dialog"')) return html;
-  if (html.includes(ENHANCEMENT_MARKER)) return html;
+  const finalize = (value: string): string => enhanceInboxReviewQueue(value);
+  if (!html.includes('id="csv-import-dialog"')) return finalize(html);
+  if (html.includes(ENHANCEMENT_MARKER)) return finalize(html);
 
   const replacements: ReadonlyArray<readonly [string, string]> = [
     [
@@ -133,10 +136,10 @@ export function enhanceInboxOfxImport(html: string): string {
 
   let enhanced = html;
   for (const [source, target] of replacements) {
-    if (!enhanced.includes(source)) return html;
+    if (!enhanced.includes(source)) return finalize(html);
     enhanced = enhanced.replace(source, target);
   }
 
   enhanced = enhanced.replace("<main>", `<main ${ENHANCEMENT_MARKER}>`);
-  return enhanced;
+  return finalize(enhanced);
 }
