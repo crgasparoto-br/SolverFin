@@ -80,6 +80,16 @@ A Inbox mostra a origem da candidatura como **regra**, **correção anterior**, 
 
 Aprendizados conflitantes, categoria arquivada, provider indisponível ou evidência insuficiente nunca escolhem silenciosamente uma categoria. O usuário continua com uma revisão explícita. Detalhes estão em `docs/ai/category-learning.md`.
 
+## Revisão na fila unificada
+
+Extrações de mensagens e suas categorizações participam da fila unificada documentada em `docs/AI_REVIEW_QUEUE.md`, junto com importações, duplicidades, conciliações e insights.
+
+A Inbox oferece filtros por tipo, estado e confiança e preserva esses filtros na URL junto de `profileId`. O resumo da fila não devolve referências internas desnecessárias; o detalhe autenticado recebe somente os identificadores tenant-scoped necessários para preencher controles e os apresenta como nomes/rótulos.
+
+Antes de aprovar, rejeitar ou editar, a interface lê o payload atual e envia `expectedFingerprint`. O backend bloqueia a sugestão e revalida tenant, perfil, versão, origem e elegibilidade do alvo. Uma edição de categoria confirmada pela fila registra o aprendizado da #564 na mesma transação da mudança; falha posterior reverte ambos.
+
+Aprovação, rejeição e edição usam a fachada transacional comum da fila. Repetições convergem para o estado persistido quando idempotentes, decisões concorrentes opostas terminam em uma decisão e um conflito controlado, e origem descartada ou versão obsoleta não deixa efeito parcial.
+
 ## Estados exibidos
 
 A resposta e a listagem da Inbox incluem:
@@ -144,7 +154,8 @@ O aprendizado de categoria persiste apenas o padrão normalizado necessário, ca
 
 - `GET /api/bank-message-inbox?status=all`: lista mensagens do perfil ativo com estado da extração;
 - `POST /api/bank-message-inbox`: registra consentimento atual e processa uma mensagem autorizada;
-- `POST /api/bank-message-inbox/:messageId/discard`: descarta o lote e expira sugestão pendente quando aplicável.
+- `POST /api/bank-message-inbox/:messageId/discard`: descarta o lote e expira sugestão pendente quando aplicável;
+- revisão compartilhada em `/api/ai-review-queue`.
 
 ## Configuração e rollout
 
@@ -177,3 +188,5 @@ O controle de revogação tardia concede as duas finalidades, revoga durante a p
 Os controles de transferência cobrem duas famílias discriminantes: transferência sem direção não persiste `AiSuggestion`; transferência com `direction=outflow` persiste payload V2 com `kind=transfer` e permanece sob revisão.
 
 O controle de privacidade `bank-message-ai-privacy.integration.test.ts` cobre uma resposta válida sem `merchant` e verifica que mensagem, nome, finalidade e marcador sensível não aparecem no payload, na explicação, nos problemas do lote nem na auditoria.
+
+A issue #565 acrescenta testes de contrato da fila, efeitos tipados, rollback, isolamento, concorrência de decisões opostas e validação visual específica de teclado, foco, 200% de texto e viewports suportadas.

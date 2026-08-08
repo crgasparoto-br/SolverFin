@@ -36,7 +36,7 @@ Esta matriz registra o estado observado no candidato atual para reduzir ambiguid
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - `docs/API_REPORTS.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562, a PR #572 para a issue #563 e a entrega da issue #564.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562, a PR #572 para a issue #563, a entrega da issue #564 e a entrega da issue #565.
 
 ## Decisao atual sobre pagar/receber
 
@@ -119,57 +119,57 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 - Dominio: Feito.
 - Schema/migration: Feito; o schema de importacao permanece e a issue #564 adiciona persistencia tenant-scoped para aprendizado de categoria.
-- Repository/API: Feito para CSV e OFX persistidos, revisaveis e conectados a categorizacao inteligente.
-- UI: Feito para preview, criacao, historico misto e revisao compartilhada na Inbox.
-- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao, privacidade, aprendizado de categoria e ausência de sentinelas em logs; validacao Chrome mobile para upload, preview, criacao, histórico misto, restauração por URL e recuperação após falha ambígua.
-- Documentacao: Feito em `docs/IMPORTS.md` e `docs/ai/category-learning.md`.
-- Nota: CSV e OFX possuem preview sem persistencia, historico, correcao por linha, aprovacao individual/em conjunto, rejeicao, descarte logico e criacao atomica de lancamentos. Linhas `transaction_extraction` sem categoria podem receber `categorization` V1 por regra, correcao anterior, historico ou IA; corrigir categoria registra o aprendizado na mesma transacao. O arquivo bruto nunca e persistido, logado ou auditado.
+- Repository/API: Feito para CSV e OFX persistidos, revisaveis, conectados a categorizacao inteligente e integrados à fila unificada sem contornar o fluxo canônico de importação.
+- UI: Feito para preview, criacao, historico misto, revisao por lote e participação de extrações/candidaturas na fila unificada da Inbox.
+- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao, privacidade, aprendizado de categoria e ausência de sentinelas em logs; a issue #565 acrescenta contrato da fila e efeitos tipados sobre o mesmo backend.
+- Documentacao: Feito em `docs/IMPORTS.md`, `docs/AI_REVIEW_QUEUE.md` e `docs/ai/category-learning.md`.
+- Nota: CSV e OFX possuem preview sem persistencia, historico, correcao por linha, aprovacao individual/em conjunto, rejeicao, descarte logico e criacao atomica de lancamentos. A fila unificada usa `expectedFingerprint`, delega edição/aprovação de extrações aos serviços de importação e mantém candidatos determinísticos e categorização alinhados à versão vigente. O arquivo bruto nunca e persistido, logado ou auditado.
 
 ### Inbox de mensagens bancarias
 
 - Dominio/API/persistencia: Feito para regras deterministicas, extracao assistida por provider configurado e categorizacao inteligente posterior.
-- UI: Feito para entrada autorizada, fila de revisao, origem da extracao/categorizacao, baixa confianca, diagnosticos, correcao com aprendizado e recuperacao de falha temporaria.
-- Testes: unitarios do parser e do consumidor, contrato web e integracao PostgreSQL para consentimento, privacidade, isolamento, concorrencia, idempotencia, aprendizado e retry.
+- UI: Feito para entrada autorizada, fila unificada de revisao, filtros por tipo/estado/confiança, origem da extracao/categorizacao, baixa confianca, diagnosticos, edição tipada e recuperação de falha temporaria.
+- Testes: unitarios do parser e do consumidor, contrato web e integracao PostgreSQL para consentimento, privacidade, isolamento, concorrencia, idempotencia, aprendizado e retry; a issue #565 acrescenta versão otimista e efeitos por tipo.
 - Documentacao: Feito em `docs/BANK_MESSAGE_INBOX.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/ai/category-learning.md`, `docs/ai/extraction-schema.md` e `docs/ai/providers.md`.
-- Nota: `/inbox` tenta regras deterministicas antes do provider para extracao. A categorizacao posterior prioriza regra explicita, aprendizado e historico antes da IA. O texto bruto, prompt e resposta bruta nao sao persistidos. **Corrigir e aprovar** registra a correcao e o aprendizado de forma atomica.
+- Nota: `/inbox` tenta regras deterministicas antes do provider para extracao. A fila compartilhada permite revisar `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`, preservando `kind`, `status`, `confidence` e `profileId` na navegação e sem exibir IDs técnicos como rótulos.
 
 ### Deduplicacao
 
 - Dominio: Feito.
 - Schema/repository/API: Feito para fluxo deterministico em lotes CSV e OFX e payload `deduplication` V1 no envelope canonico.
-- UI: Parcial/Feito para revisao operacional via Inbox.
+- UI: Feito para revisão pela fila unificada da Inbox, sem edição arbitrária de payload.
 - Testes: unitarios e integracao PostgreSQL para fingerprint, legado, obsolescencia e decisao atomica.
-- Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
-- Nota: a varredura cria candidaturas idempotentes com vinculo estruturado. A Inbox permite aprovar/rejeitar; duplicidade rejeita a linha de origem e conciliação atualiza o lancamento alvo e resolve a origem atomicamente.
+- Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md` e `docs/AI_REVIEW_QUEUE.md`.
+- Nota: a varredura cria candidaturas idempotentes com vinculo estruturado. A fila unificada delega a aprovação ao motor determinístico, rejeita a origem como duplicada e não cria lançamento; repetição converge para o estado persistido.
 
 ### Conciliacao
 
 - Dominio: Feito.
 - Schema/repository/API: Feito para conciliacao deterministica inicial e payload `reconciliation` V1 no envelope canonico.
-- UI: Parcial/Feito para revisao operacional via Inbox; indicadores existem no extrato.
+- UI: Feito para revisão pela fila unificada da Inbox; indicadores continuam no Extrato.
 - Testes: unitarios e integracao PostgreSQL para fingerprint, legado, obsolescencia e concorrencia.
-- Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`.
-- Nota: aprovacao de sugestao `reconciliation` pela Inbox usa o endpoint deterministico, marca o lancamento alvo como `reconciled`, preenche `reconciledAt`/`aiSuggestionId` e registra auditoria minima.
+- Documentacao: Feito em `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md` e `docs/AI_REVIEW_QUEUE.md`.
+- Nota: a fila unificada delega a aprovação ao serviço determinístico existente, que marca o alvo como `reconciled`, resolve a origem e registra auditoria na mesma transação compartilhada.
 
 ### Regras automaticas
 
 - Dominio: Feito.
 - Schema/repository/API/UI: Feito para fluxo operacional revisavel, com sugestao `categorization` V1 tipada e precedencia sobre aprendizado, historico e IA.
-- Testes: unitarios e integracao do produtor estruturado; a issue #564 acrescenta cobertura de precedencia e conflitos de aprendizado.
-- Documentacao: Feito em `docs/AUTOMATION_RULES.md` e `docs/ai/category-learning.md`.
-- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configuracoes` permite criar, listar, inativar e executar regras. A categorizacao inteligente reutiliza o mesmo dominio de regras antes de qualquer fonte probabilistica.
+- Testes: unitarios e integracao do produtor estruturado; a issue #564 acrescenta cobertura de precedencia e conflitos de aprendizado e a #565 cobre edição/decisão da candidatura pela fila geral.
+- Documentacao: Feito em `docs/AUTOMATION_RULES.md`, `docs/AI_REVIEW_QUEUE.md` e `docs/ai/category-learning.md`.
+- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configuracoes` administra regras e a Inbox revisa a candidatura gerada, sem duplicar o motor de automação.
 
 ### IA / sugestoes revisaveis
 
 - Dominio: Feito para a uniao discriminada e versionada de `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`.
 - Schema/migration: Feito com payload JSON canonico, validacao estrita no dominio e PostgreSQL, fingerprint, migracao conservadora de variantes legadas compativeis e persistencia de aprendizado de categoria.
 - Provider real e executor seguro: Feito para infraestrutura substituivel em `@solverfin/ai`, com `OpenAiProvider`, configuracao ambiental, provider desativado por padrao, consentimento revalidado, timeout, retry tipado, health check local e logs redigidos.
-- Repository/API: Feito para leitura tipada, projecao publica redigida, erros controlados, isolamento por organizacao/perfil, aplicacao de categorizacao e controle reversivel do aprendizado.
-- UI: Feito para a revisao da categorizacao na Inbox e para os controles de aprendizado em `Configuracoes > Regras`; demais superficies de IA continuam evolutivas.
-- Fluxos de produto com provider real: Feito para extracao da Inbox de mensagens bancarias e para categorizacao de qualquer origem que produza `transaction_extraction` estruturada (CSV, OFX, mensagem bancaria e manual quando houver contrato). O assistente conversacional permanece fora deste recorte.
-- Testes: unitarios dos schemas, normalizadores, precedencia e consumidor da Inbox; integracao PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia, aprendizado e retry; testes hermeticos do provider para configuracao, consentimento, timeout, rate limit, indisponibilidade, resposta invalida e uma chamada outbound por tentativa.
+- Repository/API: Feito para leitura tipada, projeção escopada/redigida, decisão transacional comum, `expectedFingerprint`, edição permitida por tipo, efeitos tipados, idempotência, isolamento por organização/perfil e auditoria correlacionada.
+- UI: Feito para fila unificada na Inbox com filtros `kind/status/confidence/profileId`, detalhe tipado, edição de `transaction_extraction`/`categorization`, aprovação/rejeição, baixa confiança, conflito de versão, carregamento, vazio, erro e retry.
+- Fluxos de produto com provider real: Feito para extracao da Inbox de mensagens bancarias e para categorizacao de qualquer origem que produza `transaction_extraction` estruturada (CSV, OFX, mensagem bancaria e manual quando houver contrato). O assistente conversacional permanece fora deste recorte. `insight` já possui contrato de revisão/acknowledgement; geração proativa continua responsabilidade da issue #567.
+- Testes: unitarios dos schemas, normalizadores, precedencia e consumidor da Inbox; integração PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia, aprendizado e retry; a issue #565 acrescenta integração de categorização/versionamento/insight e contrato web da fila unificada.
 - Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/BANK_MESSAGE_INBOX.md`, `docs/IMPORTS.md`, `docs/ai/category-learning.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
-- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. `GET /api/ai-review-queue/:suggestionId/payload` expoe somente a projecao publica autorizada. `explanation` nao e fonte de valor, conta, categoria, tipo ou vinculo. Enquanto `AI_PROVIDER=disabled`, regras, aprendizado, historico e revisao manual continuam funcionais; quando ativado, o executor envia apenas campos allowlisted e taxonomia elegivel para a categorizacao.
+- Nota: `/api/ai-review-queue` lista sugestoes, retorna detalhe tipado e permite aprovar, editar ou rejeitar. A mesma decisão repetida converge para o recurso resolvido quando idempotente; versão obsoleta, categoria inelegível, origem descartada ou alvo inválido falha antes de qualquer efeito parcial. `explanation` continua apenas apresentacional.
 
 ### Perfis financeiros / tenant operacional
 

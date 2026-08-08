@@ -195,6 +195,8 @@ export function categoryLearningControllerScript(): string {
         }
 
         function findSuggestionRow(id) {
+          const reviewRow = document.querySelector('[data-review-id="' + CSS.escape(id) + '"]');
+          if (reviewRow) return reviewRow;
           const action = document.querySelector('[data-api-path*="/api/ai-review-queue/' + CSS.escape(id) + '/"]');
           return action?.closest("article.maintenance-item");
         }
@@ -204,8 +206,8 @@ export function categoryLearningControllerScript(): string {
           const detail = row.querySelector(".maintenance-summary span");
           if (!detail || !detail.textContent) return;
           detail.textContent = detail.textContent.replace(
-            / - origem .* - confiança /,
-            " - origem " + label + " - confiança ",
+            /origem .*?([·-]) confiança /,
+            "origem " + label + " $1 confiança ",
           );
         }
 
@@ -246,6 +248,22 @@ export function categoryLearningControllerScript(): string {
           } catch {
             // A Inbox continua operável mesmo se o enriquecimento de aprendizado falhar.
           }
+        }
+
+        function observeInboxReviewQueue() {
+          if (window.location.pathname !== "/inbox") return;
+          const observer = new MutationObserver((mutations) => {
+            const insertedReviewCard = mutations.some((mutation) =>
+              Array.from(mutation.addedNodes).some(
+                (node) =>
+                  node instanceof Element &&
+                  (node.matches("[data-review-id]") ||
+                    Boolean(node.querySelector("[data-review-id]"))),
+              ),
+            );
+            if (insertedReviewCard) void initInboxLearning();
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
         }
 
         function openCorrectionDialog(item, categories) {
@@ -318,6 +336,7 @@ export function categoryLearningControllerScript(): string {
 
         void initSettingsLearning();
         void initInboxLearning();
+        observeInboxReviewQueue();
       })();
     </script>
   `;

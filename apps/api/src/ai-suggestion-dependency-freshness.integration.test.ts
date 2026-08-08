@@ -55,8 +55,14 @@ async function main(): Promise<void> {
 
   const createdIds: string[] = [];
   try {
-    await assertFreshAndObsoleteDependencies(token, organizationId, accountId, createdIds);
-    await assertMissingSourceIsObsolete(token, organizationId, createdIds);
+    await assertFreshAndObsoleteDependencies(
+      token,
+      organizationId,
+      accountId,
+      categoryId,
+      createdIds,
+    );
+    await assertMissingSourceIsObsolete(token, organizationId, categoryId, createdIds);
     await assertArchivedAccountBlocksApproval(token, organizationId, accountId, createdIds);
     await assertArchivedCategoryBlocksApproval(
       token,
@@ -81,6 +87,7 @@ async function assertFreshAndObsoleteDependencies(
   token: string,
   organizationId: string,
   accountId: string,
+  categoryId: string,
   createdIds: string[],
 ): Promise<void> {
   const sourceId = randomUUID();
@@ -112,6 +119,7 @@ async function assertFreshAndObsoleteDependencies(
       now,
       sourceId,
       sourceFingerprint: sourcePayload.fingerprint,
+      categoryId,
     }),
     provider: "solverfin-automation",
     now,
@@ -131,6 +139,7 @@ async function assertFreshAndObsoleteDependencies(
       now,
       sourceId,
       sourceFingerprint: sourcePayload.fingerprint,
+      categoryId,
     }),
     provider: "solverfin-automation",
     now,
@@ -162,6 +171,7 @@ async function assertFreshAndObsoleteDependencies(
 async function assertMissingSourceIsObsolete(
   token: string,
   organizationId: string,
+  categoryId: string,
   createdIds: string[],
 ): Promise<void> {
   const suggestionId = randomUUID();
@@ -177,6 +187,7 @@ async function assertMissingSourceIsObsolete(
       now,
       sourceId: missingSourceId,
       sourceFingerprint: `sha256-${"f".repeat(64)}`,
+      categoryId,
     }),
     provider: "solverfin-automation",
     now,
@@ -305,6 +316,7 @@ function buildCategorizationPayload(input: {
   now: string;
   sourceId: string;
   sourceFingerprint: string;
+  categoryId: string;
 }): Extract<AiSuggestionPayload, { suggestionKind: "categorization" }> {
   return buildAiSuggestionPayload({
     payload: {
@@ -324,6 +336,7 @@ function buildCategorizationPayload(input: {
       },
       targetEntityId: input.sourceId,
       sourceSuggestionId: input.sourceId,
+      proposedCategoryId: input.categoryId,
       proposedStatus: "posted",
     },
   });

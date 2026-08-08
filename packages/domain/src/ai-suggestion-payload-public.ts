@@ -61,7 +61,6 @@ interface PublicAiSuggestionPayloadBase<
   reasons: readonly string[];
   target: {
     entityKind: AiSuggestionPayloadTarget["entityKind"];
-    entityId?: string;
   };
   proposal: TProposal;
 }
@@ -90,9 +89,6 @@ export function toPublicAiSuggestionPayload(
     reasons: payload.reasons,
     target: {
       entityKind: payload.target.entityKind,
-      ...(includeIds && payload.target.entityId !== undefined
-        ? { entityId: payload.target.entityId }
-        : {}),
     },
   };
 

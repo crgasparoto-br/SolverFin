@@ -44,7 +44,7 @@ O contrato comum está em `@solverfin/domain/ai-suggestion-payloads` e usa um en
 
 O domínio produz fingerprints `sha256-<64 hex>` sobre JSON canônico, excluindo `fingerprint` e metadados mutáveis de auditoria; `audit.sourceFingerprint` permanece na identidade para detectar origem obsoleta. A migração pode gerar `db-fp-v1-<64 hex>` para encapsular uma gravação legada compatível sem reinterpretar texto livre.
 
-Uma alteração de proposta precisa gerar novo fingerprint. Uma mutação com fingerprint esperado divergente retorna `AI_SUGGESTION_PAYLOAD_CONFLICT`. Sugestões resolvidas são imutáveis; duas decisões concorrentes não podem produzir dois estados terminais válidos.
+Uma alteração de proposta precisa gerar novo fingerprint. Toda mutação pública da fila (`approve`, `edit` e `reject`) exige `expectedFingerprint`; a ausência retorna `AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED` com HTTP `428`. Fingerprint divergente retorna `AI_SUGGESTION_PAYLOAD_CONFLICT`. Sugestões resolvidas são imutáveis; duas decisões concorrentes não podem produzir dois estados terminais válidos.
 
 ### Dependências entre sugestões
 
@@ -84,9 +84,9 @@ A leitura tipada está disponível em:
 GET /api/ai-review-queue/:suggestionId/payload
 ```
 
-A rota valida UUID antes do acesso ao banco, aplica `organizationId` e `financialProfileId` na consulta e não enumera sugestões de outro perfil. A resposta pública remove provider, model, correlation ID, metadados internos e identificadores de entidades; a proposta financeira permanece tipada sem permitir enumeração cruzada.
+A rota valida UUID antes do acesso ao banco, aplica `organizationId` e `financialProfileId` na consulta e não enumera sugestões de outro perfil. A projeção pública padrão omite provider, model, correlation ID, metadados internos e referências técnicas. O detalhe autenticado da fila pode habilitar `includeScopedEntityIds` somente depois do recorte tenant/profile e expor as referências estritamente necessárias aos controles de revisão, como conta, categoria ou `targetTransactionId`. Essas referências não devem ser usadas como identificação textual visível do item.
 
-O frontend deve consumir o parser estrito em `apps/web/src/dev-server/ai-suggestion-payload-contract.ts`. Respostas com campos internos, versão desconhecida ou shape divergente são rejeitadas em vez de cair para `any` ou reconstrução textual.
+A interface deve consumir somente a projeção pública tipada retornada por esse endpoint, sem reconstruir dados a partir de `explanation`. Quando uma referência escopada precisar ser apresentada ao usuário, ela deve ser resolvida por uma rota tenant-scoped para dados de domínio legíveis; por exemplo, deduplicação e conciliação resolvem `targetTransactionId` para descrição, data e valor do lançamento alvo, sem mostrar o UUID.
 
 ## Erros públicos
 
@@ -97,6 +97,7 @@ O frontend deve consumir o parser estrito em `apps/web/src/dev-server/ai-suggest
 - `AI_SUGGESTION_PAYLOAD_OBSOLETE`
 - `AI_SUGGESTION_PAYLOAD_IMMUTABLE`
 - `AI_SUGGESTION_PAYLOAD_CONFLICT`
+- `AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED`
 
 Erros inesperados de persistência retornam erro público genérico com `correlationId`; mensagens SQL, fingerprints, chaves e valores financeiros brutos não são expostos.
 
