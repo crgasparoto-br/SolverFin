@@ -45,13 +45,13 @@ Uma edição aceita mantém a sugestão pendente, recalcula o fingerprint quando
 
 A aprovação sempre revalida organização, perfil financeiro, estado, versão e elegibilidade imediatamente antes do efeito.
 
-| Tipo | Efeito da aprovação |
-| --- | --- |
+| Tipo                     | Efeito da aprovação                                                                                                                                                           |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `transaction_extraction` | cria ou vincula o lançamento usando o contrato canônico já existente; importações continuam passando pela detecção determinística e pelas regras de transferência/conciliação |
-| `categorization` | aplica a categoria a uma `transaction_extraction` ainda pendente ou a um `Transaction` elegível; categoria arquivada, de outro perfil ou incompatível com o tipo é rejeitada |
-| `deduplication` | usa o serviço determinístico existente para resolver a origem como duplicidade sem criar novo lançamento |
-| `reconciliation` | usa o serviço determinístico existente para reconciliar o alvo e resolver a origem na mesma transação |
-| `insight` | registra reconhecimento/aprovação da sugestão, sem criar nem alterar lançamento financeiro |
+| `categorization`         | aplica a categoria a uma `transaction_extraction` ainda pendente ou a um `Transaction` elegível; categoria arquivada, de outro perfil ou incompatível com o tipo é rejeitada  |
+| `deduplication`          | usa o serviço determinístico existente para resolver a origem como duplicidade sem criar novo lançamento                                                                      |
+| `reconciliation`         | usa o serviço determinístico existente para reconciliar o alvo e resolver a origem na mesma transação                                                                         |
+| `insight`                | registra reconhecimento/aprovação da sugestão, sem criar nem alterar lançamento financeiro                                                                                    |
 
 Rejeitar encerra a sugestão sem aplicar o efeito proposto. Rejeições e aprovações determinísticas continuam reutilizando os serviços especializados existentes, em vez de duplicar lógica de deduplicação ou conciliação.
 
