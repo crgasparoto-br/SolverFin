@@ -154,7 +154,10 @@ async function main(): Promise<void> {
     assert.equal(repeated.statusCode, 200);
     assert.equal(readBody<{ idempotent?: boolean }>(repeated).idempotent, true);
 
-    const audits = await query<{ action: string; correlationId: string | null }>(
+    const audits = await query<{
+      action: string;
+      correlationId: string | null;
+    }>(
       `select "action", "correlationId" from "AuditLogEntry"
        where "organizationId" = $1 and "financialProfileId" = $2
          and "entityKind" = 'AI_SUGGESTION' and "entityId" = $3
@@ -163,10 +166,14 @@ async function main(): Promise<void> {
       [organizationId, PERSONAL_PROFILE_ID, categorizationId],
     );
     assert.ok(
-      audits.some((entry) => entry.action === "UPDATE" && entry.correlationId === correlationId),
+      audits.some(
+        (entry) => entry.action === "UPDATE" && entry.correlationId === correlationId,
+      ),
     );
     assert.ok(
-      audits.some((entry) => entry.action === "APPROVE" && entry.correlationId === correlationId),
+      audits.some(
+        (entry) => entry.action === "APPROVE" && entry.correlationId === correlationId,
+      ),
     );
 
     const transactionCountBeforeInsight = await readTransactionCount(organizationId);
@@ -189,8 +196,10 @@ async function main(): Promise<void> {
     );
     assert.equal(insightApproval.statusCode, 200);
     assert.equal(
-      readBody<{ suggestion: { status: string }; transaction?: unknown }>(insightApproval).suggestion
-        .status,
+      readBody<{
+        suggestion: { status: string };
+        transaction?: unknown;
+      }>(insightApproval).suggestion.status,
       "approved",
     );
     assert.equal(
@@ -216,11 +225,17 @@ async function main(): Promise<void> {
     await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [
       [categorizationId, insightId, sourceId],
     ]);
-    await query(`delete from "Category" where "id" = any($1::uuid[])`, [[categoryA, categoryB]]);
+    await query(`delete from "Category" where "id" = any($1::uuid[])`, [
+      [categoryA, categoryB],
+    ]);
   }
 }
 
-async function insertCategory(organizationId: string, id: string, name: string): Promise<void> {
+async function insertCategory(
+  organizationId: string,
+  id: string,
+  name: string,
+): Promise<void> {
   await query(
     `insert into "Category"
       ("id", "organizationId", "financialProfileId", "name", "kind", "status",
@@ -381,7 +396,10 @@ async function apiRequest(
     body,
   };
   const response = await handleAiReviewQueueApiRequest(request);
-  assert.ok(response, `${method} ${path} should be handled by the AI review queue router`);
+  assert.ok(
+    response,
+    `${method} ${path} should be handled by the AI review queue router`,
+  );
   return response;
 }
 
