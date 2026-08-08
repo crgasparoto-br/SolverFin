@@ -23,6 +23,7 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   AiReviewQueueError,
   listAiReviewQueueForContext,
+  type AiReviewQueueItem,
 } from "./repositories/ai-review-queue.js";
 import {
   AiSuggestionPayloadRepositoryError,
@@ -43,6 +44,19 @@ interface AiReviewQueueRoute {
   pattern: RegExp;
   paramNames: readonly string[];
   handler: AiReviewQueueHandler;
+}
+
+interface PublicAiReviewQueueItem {
+  id: string;
+  kind: AiReviewQueueItem["kind"];
+  status: AiReviewQueueItem["status"];
+  origin: AiReviewQueueItem["origin"];
+  confidence: number;
+  risk: AiReviewQueueItem["risk"];
+  explanation: string;
+  maskedSummary: string;
+  createdAt: string;
+  reviewedAt?: string;
 }
 
 const BASE_PATH = "/api/ai-review-queue";
@@ -129,14 +143,28 @@ async function listAiReviewQueueHandler(
   const kind = request.query.get("kind") as AiSuggestion["kind"] | null;
   const status = request.query.get("status") as AiSuggestion["status"] | "all" | null;
   const includeLowConfidence = request.query.get("includeLowConfidence") === "true";
-
-  return json(200, {
-    suggestions: await listAiReviewQueueForContext(context, {
-      ...(kind ? { kind } : {}),
-      ...(status ? { status } : {}),
-      includeLowConfidence,
-    }),
+  const suggestions = await listAiReviewQueueForContext(context, {
+    ...(kind ? { kind } : {}),
+    ...(status ? { status } : {}),
+    includeLowConfidence,
   });
+
+  return json(200, { suggestions: suggestions.map(toPublicQueueItem) });
+}
+
+function toPublicQueueItem(item: AiReviewQueueItem): PublicAiReviewQueueItem {
+  return {
+    id: item.id,
+    kind: item.kind,
+    status: item.status,
+    origin: item.origin,
+    confidence: item.confidence,
+    risk: item.risk,
+    explanation: item.explanation,
+    maskedSummary: item.maskedSummary,
+    createdAt: item.createdAt,
+    ...(item.reviewedAt === undefined ? {} : { reviewedAt: item.reviewedAt }),
+  };
 }
 
 async function getAiSuggestionPayloadHandler(
