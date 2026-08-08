@@ -354,20 +354,19 @@ async function waitForDialog(cdp, requireForm = false, timeout = 8_000) {
 }
 
 async function pressKey(cdp, key, code, keyCode) {
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+  const params = {
     key,
     code,
     windowsVirtualKeyCode: keyCode,
     nativeVirtualKeyCode: keyCode,
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key,
-    code,
-    windowsVirtualKeyCode: keyCode,
-    nativeVirtualKeyCode: keyCode,
-  });
+  };
+  const keyDown =
+    key === "Enter"
+      ? { type: "keyDown", text: "\r", unmodifiedText: "\r", ...params }
+      : { type: "rawKeyDown", ...params };
+  await cdp.send("Input.dispatchKeyEvent", keyDown);
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...params });
+  await sleep(80);
 }
 
 function escapeJs(value) {
