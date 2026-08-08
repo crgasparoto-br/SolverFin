@@ -10,7 +10,9 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
         const dialog = document.getElementById("ai-review-dialog");
         const dialogBody = document.getElementById("ai-review-dialog-body");
         if (!dialog || !dialogBody) return;
+        const reviewKinds = new Map();
         let correctionSuggestionId;
+        let typedEditTrigger;
 
         function appendProfile(path) {
           const profileId = new URL(window.location.href).searchParams.get("profileId");
@@ -39,6 +41,11 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
         }
         function formatMoney(minor, currency) {
           return new Intl.NumberFormat("pt-BR", { style: "currency", currency: currency || "BRL" }).format(Number(minor || 0) / 100);
+        }
+        async function refreshReviewKinds() {
+          const queue = await api("/api/ai-review-queue?status=all&includeLowConfidence=true");
+          reviewKinds.clear();
+          (queue.suggestions || []).forEach((item) => reviewKinds.set(item.id, item.kind));
         }
         function renderTargetSummary(transaction) {
           const description = String(transaction.description || "Lançamento sem descrição").trim();
@@ -102,6 +109,116 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
             submit.disabled = false;
           }
         }
+        async function resolveCategorizationTargetKind(payload) {
+          const proposal = payload?.proposal || {};
+          if (proposal.targetTransactionId) {
+            const target = await api("/api/transactions/" + encodeURIComponent(proposal.targetTransactionId));
+            return target.transaction?.kind;
+          }
+          if (proposal.targetEntityId) {
+            const source = await api("/api/ai-review-queue/" + encodeURIComponent(proposal.targetEntityId) + "/payload");
+            if (source.payload?.suggestionKind === "transaction_extraction") {
+              return source.payload.proposal?.kind;
+            }
+          }
+          return undefined;
+        }
+        async function openTypedCategorizationEdit(suggestionId, trigger) {
+          typedEditTrigger = trigger;
+          dialogBody.innerHTML = '<p class="muted" role="status">Carregando campos editáveis...</p>';
+          dialog.showModal();
+          try {
+            const [detail, categoriesBody] = await Promise.all([
+              api("/api/ai-review-queue/" + encodeURIComponent(suggestionId) + "/payload"),
+              api("/api/categories?status=all")
+            ]);
+            const targetKind = await resolveCategorizationTargetKind(detail.payload);
+            const proposal = detail.payload?.proposal || {};
+            const candidates = (categoriesBody.categories || []).filter((category) =>
+              category.status === "active" && (!targetKind || category.kind === targetKind)
+            );
+            dialogBody.innerHTML = '<form data-review-edit-form data-review-kind="categorization" data-review-id="' + escapeHtml(suggestionId) + '">' +
+              '<label>Categoria<select name="proposedCategoryId" required><option value="">Selecione</option>' +
+              candidates.map((category) => '<option value="' + escapeHtml(category.id) + '" ' + (proposal.proposedCategoryId === category.id ? "selected" : "") + '>' + escapeHtml(category.name) + '</option>').join("") +
+              '</select></label>' +
+              '<p class="form-status muted" data-edit-status aria-live="polite">A alteração será salva para nova revisão antes da decisão.</p>' +
+              '<button type="submit">Salvar edição</button></form>';
+            const form = dialogBody.querySelector("[data-review-edit-form]");
+            const status = form.querySelector("[data-edit-status]");
+            const submit = form.querySelector('button[type="submit"]');
+            form.addEventListener("submit", async (event) => {
+              event.preventDefault();
+              submit.disabled = true;
+              status.className = "form-status muted";
+              status.textContent = "Salvando edição...";
+              try {
+                await api("/api/ai-review-queue/" + encodeURIComponent(suggestionId) + "/edit", {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({
+                    expectedFingerprint: detail.payload.fingerprint,
+                    payload: { proposedCategoryId: form.elements.proposedCategoryId.value }
+                  })
+                });
+                dialog.close();
+                window.location.reload();
+              } catch (error) {
+                status.className = "form-status error";
+                status.textContent = error.message;
+                submit.disabled = false;
+              }
+            });
+            form.elements.proposedCategoryId.focus();
+          } catch (error) {
+            dialogBody.innerHTML = '<p class="error" role="alert">' + escapeHtml(error.message) + '</p>';
+          }
+        }
+        async function waitForEditForm(suggestionId, timeoutMs = 2000) {
+          const started = Date.now();
+          while (Date.now() - started < timeoutMs) {
+            const form = dialogBody.querySelector('[data-review-edit-form][data-review-id="' + CSS.escape(suggestionId) + '"]');
+            if (form) return form;
+            await new Promise((resolve) => window.setTimeout(resolve, 40));
+          }
+          return undefined;
+        }
+        async function bindTransferAccountGuard(suggestionId) {
+          try {
+            const [detail, accountsBody] = await Promise.all([
+              api("/api/ai-review-queue/" + encodeURIComponent(suggestionId) + "/payload"),
+              api("/api/accounts")
+            ]);
+            if (detail.payload?.suggestionKind !== "transaction_extraction") return;
+            const form = await waitForEditForm(suggestionId);
+            if (!form || form.dataset.transferAccountGuard === "true") return;
+            form.dataset.transferAccountGuard = "true";
+            const currency = detail.payload.proposal?.currency;
+            const accounts = accountsBody.accounts || [];
+            const refreshOtherAccount = () => {
+              const otherSelect = form.elements.otherAccountId;
+              if (!otherSelect) return;
+              const selectedAccountId = form.elements.accountId.value;
+              const selectedOtherId = otherSelect.value;
+              const eligible = accounts.filter((account) =>
+                account.status === "active" && account.id !== selectedAccountId && (!currency || account.currency === currency)
+              );
+              otherSelect.replaceChildren(new Option("Selecione", ""));
+              eligible.forEach((account) => otherSelect.add(new Option(account.name, account.id)));
+              otherSelect.value = eligible.some((account) => account.id === selectedOtherId) ? selectedOtherId : "";
+            };
+            form.elements.accountId.addEventListener("change", refreshOtherAccount);
+            form.elements.kind.addEventListener("change", refreshOtherAccount);
+            refreshOtherAccount();
+          } catch {
+            // O backend continua sendo a validação autoritativa se dados auxiliares falharem.
+          }
+        }
+        function inferredReviewKind(button, suggestionId) {
+          const known = reviewKinds.get(suggestionId);
+          if (known) return known;
+          const label = button.closest("[data-review-id]")?.querySelector(".maintenance-summary strong")?.textContent?.trim();
+          return label === "Categorização" ? "categorization" : "transaction_extraction";
+        }
         document.addEventListener("click", (event) => {
           const correctionButton = event.target?.closest?.("[data-correct-and-approve]");
           if (correctionButton?.dataset?.correctAndApprove) {
@@ -115,6 +232,19 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
             event.stopImmediatePropagation();
             void handleLegacyReviewAction(legacyButton, match[1], match[2]);
             return;
+          }
+
+          const editButton = event.target?.closest?.("[data-review-edit]");
+          const editSuggestionId = editButton?.dataset?.reviewEdit;
+          if (editButton && editSuggestionId) {
+            const kind = inferredReviewKind(editButton, editSuggestionId);
+            if (kind === "categorization") {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              void openTypedCategorizationEdit(editSuggestionId, editButton);
+              return;
+            }
+            void bindTransferAccountGuard(editSuggestionId);
           }
 
           const detailsButton = event.target?.closest?.("[data-review-details]");
@@ -134,7 +264,10 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
         }, true);
         dialog.addEventListener("close", () => {
           delete dialog.dataset.reviewTargetRequest;
+          if (typedEditTrigger?.isConnected) typedEditTrigger.focus();
+          typedEditTrigger = undefined;
         });
+        void refreshReviewKinds().catch(() => undefined);
       })();
     </script>`;
 
