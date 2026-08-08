@@ -3,15 +3,11 @@ import { randomUUID } from "node:crypto";
 
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
-import {
-  handleCategorizationAwareImportBatchesApiRequest as handleImportRequest,
-} from "./categorization-aware-import-router.js";
+import { handleCategorizationAwareImportBatchesApiRequest as handleImportRequest } from "./categorization-aware-import-router.js";
 import { closePool, query } from "./db.js";
 import { applyIntelligentCategorizationForContext } from "./intelligent-categorization-service.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import {
-  recordCategoryCorrectionFromSuggestionForContext as recordCorrection,
-} from "./repositories/category-learning.js";
+import { recordCategoryCorrectionFromSuggestionForContext as recordCorrection } from "./repositories/category-learning.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
