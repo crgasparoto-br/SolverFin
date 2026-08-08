@@ -197,6 +197,14 @@ O lançamento aprovado recebe:
 - `aiSuggestionId`;
 - `status: posted`.
 
+### Fila unificada da Inbox
+
+As linhas `transaction_extraction` de CSV/OFX e suas candidaturas `categorization`, `deduplication` e `reconciliation` também aparecem em `/api/ai-review-queue` e na área unificada de revisão da Inbox. Esse caminho não substitui os serviços de importação: edição e aprovação de extrações continuam delegando ao mesmo contrato canônico descrito acima, preservando lote, detecção determinística, transferência, idempotência e auditoria.
+
+A fila mantém `kind`, `status` e `confidence` na URL junto de `profileId`. Antes de aprovar, rejeitar ou editar, a interface lê o payload atual e envia `expectedFingerprint`. Versão obsoleta, lote descartado, item já resolvido ou alvo inelegível retorna conflito controlado e não deixa estado, efeito e auditoria divergentes.
+
+Editar uma extração pela fila mantém a linha em `pending_review` e invalida candidatos baseados na versão anterior. Aprovar `categorization` pode incorporar a categoria diretamente na extração pendente; essa mudança gera novo fingerprint e expira candidaturas irmãs que observavam a versão anterior. Aprovar `deduplication` ou `reconciliation` delega aos serviços determinísticos existentes. IDs internos usados como valores de controles são sempre recortados pelo tenant e apresentados na UI como nomes/rótulos.
+
 ### Categorização e aprendizado por correção
 
 As linhas CSV e OFX pendentes usam o mesmo pipeline de categorização das demais `transaction_extraction`: regra explícita, correção confirmada, histórico do perfil, IA autorizada e revisão manual. O resultado é uma sugestão `categorization` V1 vinculada à linha e ao fingerprint observado.
