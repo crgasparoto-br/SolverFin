@@ -11,10 +11,7 @@ import {
   type AiReviewDecisionResult,
 } from "./ai-review-queue-decision-service.js";
 import { withSharedTransaction, type QueryExecutor } from "./db.js";
-import {
-  AiReviewQueueError,
-  type PersistedAiSuggestion,
-} from "./repositories/ai-review-queue.js";
+import { AiReviewQueueError, type PersistedAiSuggestion } from "./repositories/ai-review-queue.js";
 import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
 import { getTransactionForContext } from "./repositories/transactions.js";
 
@@ -61,7 +58,11 @@ export async function approveAiReviewDecisionForContext(
     await assertSuppliedExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
 
     try {
-      const result = await approveAiReviewDecision(context, suggestionId, input);
+      const result = await approveAiReviewDecision(
+        context,
+        suggestionId,
+        input,
+      );
       if (isIdempotentResult(result)) {
         const concurrentReplay = await readApprovedReplay(
           executeQuery,
@@ -75,7 +76,12 @@ export async function approveAiReviewDecisionForContext(
       }
 
       if (replayKey !== undefined) {
-        await persistApprovalReplayKey(executeQuery, context, suggestionId, replayKey);
+        await persistApprovalReplayKey(
+          executeQuery,
+          context,
+          suggestionId,
+          replayKey,
+        );
       }
       return result;
     } catch (error) {
@@ -272,7 +278,8 @@ function payloadMatchesPersistedApproval(
   }
   if (!isRecord(persistedPayload)) return false;
   return Object.entries(requestedPayload).every(([key, value]) => {
-    const persistedKey = key === "destinationAccountId" ? "otherAccountId" : key;
+    const persistedKey =
+      key === "destinationAccountId" ? "otherAccountId" : key;
     return stableJson(persistedPayload[persistedKey]) === stableJson(value);
   });
 }
