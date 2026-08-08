@@ -22,6 +22,11 @@ assert.match(enhanced, /transaction\.occurredOn/);
 assert.match(enhanced, /expectedFingerprint/);
 assert.match(enhanced, /data-correct-and-approve/);
 assert.match(enhanced, /data-api-action/);
+assert.match(enhanced, /resolveCategorizationTargetKind/);
+assert.match(enhanced, /proposal\.targetTransactionId/);
+assert.match(enhanced, /proposal\.targetEntityId/);
+assert.match(enhanced, /form\.elements\.accountId\.addEventListener\("change", refreshOtherAccount\)/);
+assert.match(enhanced, /account\.id !== selectedAccountId/);
 assert.equal(enhanceInboxReviewQueueTargets(enhanced), enhanced);
 
 const unrelated = "<html><body><main></main></body></html>";
