@@ -260,7 +260,10 @@ async function main(): Promise<void> {
     const transactionIds = transactionRows.map((row) => row.id);
     const entityIds = [...suggestionIds, ...transactionIds];
     await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
-    await query(`delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`, [suggestionIds]);
+    await query(
+      `delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
+      [suggestionIds],
+    );
     await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [suggestionIds]);
   }
 }
