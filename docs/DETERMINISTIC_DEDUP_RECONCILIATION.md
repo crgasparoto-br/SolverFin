@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-A varredura determinística compara linhas CSV pendentes com lançamentos existentes do mesmo perfil e produz candidaturas explicáveis. Ela nunca decide sozinha.
+A varredura determinística compara linhas CSV/OFX pendentes com lançamentos existentes do mesmo perfil e produz candidaturas explicáveis. Ela nunca decide sozinha.
 
 ```http
 POST /api/import-batches/:importBatchId/detect-duplicates
@@ -25,7 +25,7 @@ Os campos específicos permanecem no nível raiz do envelope:
 
 Payloads legados `DeterministicReviewPayloadV1` continuam legíveis. Eles não sofrem backfill amplo; uma mutação compatível de sugestão pendente os encapsula no contrato atual. Sugestões já resolvidas permanecem legíveis e imutáveis.
 
-A projeção pública omite auditoria interna, provedor/modelo e identificadores escopados quando a rota não autoriza explicitamente sua inclusão.
+A projeção pública omite auditoria interna, provedor/modelo e identificadores escopados quando a rota não autoriza explicitamente sua inclusão. A fila autenticada pode receber referências tenant-scoped necessárias ao controle de revisão, mas a UI resolve essas referências para rótulos e não exibe IDs técnicos como identidade do item.
 
 ## Regras
 
@@ -35,11 +35,24 @@ Editar a linha de origem altera seu fingerprint e expira candidaturas antigas. R
 
 ## Revisão
 
+Os endpoints especializados permanecem compatíveis:
+
 ```http
 GET /api/review-suggestions
 POST /api/review-suggestions/:suggestionId/approve
 POST /api/review-suggestions/:suggestionId/reject
 ```
+
+A Inbox também expõe as mesmas candidaturas pela fila unificada:
+
+```http
+GET /api/ai-review-queue
+GET /api/ai-review-queue/:suggestionId/payload
+POST /api/ai-review-queue/:suggestionId/approve
+POST /api/ai-review-queue/:suggestionId/reject
+```
+
+A fachada da fila unificada não reimplementa deduplicação nem conciliação. Ela bloqueia a sugestão, valida `expectedFingerprint` quando informado e delega o efeito aos serviços determinísticos existentes dentro da mesma transação compartilhada. A auditoria da decisão recebe o `correlationId` da requisição sem duplicar o evento funcional.
 
 Aprovar duplicidade:
 
@@ -56,14 +69,17 @@ Aprovar conciliação:
 
 Rejeitar candidatura mantém a linha importada pendente para correção, aprovação como novo lançamento ou outra decisão.
 
+`deduplication` e `reconciliation` não possuem campos editáveis na fila. Qualquer tentativa de alterar seu payload pelo endpoint geral retorna erro controlado. A mesma decisão repetida converge para o resultado já persistido; uma decisão oposta ou versão obsoleta não produz efeito parcial.
+
 ## Garantias
 
 - isolamento por organização e perfil financeiro;
 - vínculo explícito, sem inferência por texto;
 - transação compartilhada para decisão, origem, lançamento, expirações e auditoria;
 - repetição segura da mesma varredura ou decisão;
+- `expectedFingerprint` permite detectar decisão baseada em uma versão visual desatualizada;
 - lote descartado não pode ser analisado novamente;
-- nenhum CSV bruto é necessário ou persistido;
+- nenhum CSV/OFX bruto é necessário ou persistido;
 - payloads aninhados rejeitam chaves desconhecidas na camada de domínio e no PostgreSQL.
 
 ## Transferências importadas
