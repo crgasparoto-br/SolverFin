@@ -124,7 +124,10 @@ export async function approveAiReviewDecisionForContext(
       case "deduplication":
       case "reconciliation": {
         assertNoPayloadMutation(input.payload, suggestion.kind);
-        const result = await approveDeterministicReviewSuggestionForContext(context, suggestionId);
+        const result = await approveDeterministicReviewSuggestionForContext(
+          context,
+          suggestionId,
+        );
         await correlateLatestAudit(
           executeQuery,
           context,
@@ -344,7 +347,14 @@ async function approveCategorizationSuggestion(
      set "status" = 'APPROVED', "payload" = $4::jsonb, "reviewedByUserId" = $5,
          "reviewedAt" = $6, "updatedAt" = $6
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [suggestion.id, context.organizationId, context.financialProfileId, JSON.stringify(reviewedPayload), context.userId, now],
+    [
+      suggestion.id,
+      context.organizationId,
+      context.financialProfileId,
+      JSON.stringify(reviewedPayload),
+      context.userId,
+      now,
+    ],
   );
 
   if (target.kind === "transaction_extraction") {
@@ -458,7 +468,13 @@ async function editCategorizationSuggestion(
     `update "AiSuggestion"
      set "payload" = $4::jsonb, "updatedAt" = $5
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [suggestion.id, context.organizationId, context.financialProfileId, JSON.stringify(next), now],
+    [
+      suggestion.id,
+      context.organizationId,
+      context.financialProfileId,
+      JSON.stringify(next),
+      now,
+    ],
   );
   await insertAuditLogEntry(
     executeQuery,
@@ -608,7 +624,11 @@ async function assertSourceBatchReviewable(
   context: TenantContext,
   source: DecisionSuggestionRow,
 ): Promise<void> {
-  if (!source.provider?.startsWith("solverfin-import") || source.sourceEntityId === null) return;
+  if (
+    !source.provider?.startsWith("solverfin-import") ||
+    source.sourceEntityId === null
+  )
+    return;
 
   const rows = await executeQuery<{ status: string }>(
     `select "status" from "ImportBatch"
@@ -697,7 +717,11 @@ function buildEditedTransactionPayload(
     ...(current.externalId === undefined ? {} : { externalId: current.externalId }),
   };
 
-  if (current.payloadVersion === 1 && kind !== "transfer" && otherAccountId === undefined) {
+  if (
+    current.payloadVersion === 1 &&
+    kind !== "transfer" &&
+    otherAccountId === undefined
+  ) {
     return buildAiSuggestionPayload({ payload: { ...common, payloadVersion: 1, kind } });
   }
 
@@ -798,7 +822,9 @@ function readCategorizationCategoryId(
 
   assertAllowedFields(value, CATEGORIZATION_EDIT_FIELDS);
   const categoryId =
-    value.proposedCategoryId === undefined ? undefined : String(value.proposedCategoryId).trim();
+    value.proposedCategoryId === undefined
+      ? undefined
+      : String(value.proposedCategoryId).trim();
   if (required && !categoryId) {
     throw new AiReviewQueueError(
       "AI_REVIEW_CATEGORY_REQUIRED",
@@ -1002,7 +1028,9 @@ function mapPersistedSuggestion(row: DecisionSuggestionRow): PersistedAiSuggesti
     ...(row.targetEntityId === null ? {} : { targetEntityId: row.targetEntityId }),
     ...(row.provider === null ? {} : { provider: row.provider }),
     ...(row.model === null ? {} : { model: row.model }),
-    ...(row.reviewedByUserId === null ? {} : { reviewedByUserId: row.reviewedByUserId }),
+    ...(row.reviewedByUserId === null
+      ? {}
+      : { reviewedByUserId: row.reviewedByUserId }),
     ...(row.reviewedAt === null ? {} : { reviewedAt: row.reviewedAt.toISOString() }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
