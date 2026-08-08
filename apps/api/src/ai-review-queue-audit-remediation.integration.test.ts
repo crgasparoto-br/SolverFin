@@ -147,7 +147,10 @@ async function main(): Promise<void> {
     assert.equal(approvedBody.idempotent, false);
     assert.ok(approvedBody.transaction?.id);
 
-    const approvedRows = await query<{ fingerprint: string; description: string }>(
+    const approvedRows = await query<{
+      fingerprint: string;
+      description: string;
+    }>(
       `select "payload"->>'fingerprint' as "fingerprint",
               "payload"->>'description' as "description"
          from "AiSuggestion" where "id" = $1`,
@@ -195,7 +198,10 @@ async function main(): Promise<void> {
     assert.equal(readErrorCode(differentDecisionReplay), "AI_SUGGESTION_PAYLOAD_CONFLICT");
     assert.equal(await countSuggestionTransactions(organizationId, suggestionId), 1);
 
-    const approvalAudits = await query<{ replayKey: string | null; count: string }>(
+    const approvalAudits = await query<{
+      replayKey: string | null;
+      count: string;
+    }>(
       `select max("redactedChanges"->>'approvalReplayKey') as "replayKey",
               count(*)::text as "count"
          from "AuditLogEntry"
@@ -222,7 +228,10 @@ async function main(): Promise<void> {
     assert.equal(secondApprovedBody.idempotent, false);
     assert.ok(secondApprovedBody.transaction?.id);
 
-    const secondApprovedRows = await query<{ fingerprint: string; amountMinor: string }>(
+    const secondApprovedRows = await query<{
+      fingerprint: string;
+      amountMinor: string;
+    }>(
       `select "payload"->>'fingerprint' as "fingerprint",
               "payload"->>'amountMinor' as "amountMinor"
          from "AiSuggestion" where "id" = $1`,
@@ -249,10 +258,22 @@ async function main(): Promise<void> {
       `select "id" from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
       [suggestionIds],
     );
-    const entityIds = [...suggestionIds, ...transactionRows.map((row) => row.id)];
-    await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
-    await query(`delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`, [suggestionIds]);
-    await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [suggestionIds]);
+    const entityIds = [
+      ...suggestionIds,
+      ...transactionRows.map((row) => row.id),
+    ];
+    await query(
+      `delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`,
+      [entityIds],
+    );
+    await query(
+      `delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
+      [suggestionIds],
+    );
+    await query(
+      `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
+      [suggestionIds],
+    );
   }
 }
 
