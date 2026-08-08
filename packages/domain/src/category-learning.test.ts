@@ -4,6 +4,7 @@ import {
   buildCategoryLearningKey,
   ignoreCategoryLearning,
   recordCategoryCorrection,
+  revertCategoryLearning,
   suggestCategory,
   type MerchantCategoryRule,
 } from "./category-learning.js";
@@ -38,9 +39,10 @@ const meiFoodCategory = buildCategory(
 
 testCorrectionImprovesFutureSuggestion();
 testLearningDoesNotCrossTenantContext();
+testExplicitRulePrecedesLearningAndHistory();
 testMerchantRuleAndHistorySuggestions();
-testConflictUsesMostFrequentCorrection();
-testIgnoredLearningAndArchivedCategoryAreSkipped();
+testConflictRequiresReview();
+testIgnoredRevertedLearningAndArchivedCategoryAreSkipped();
 testAiLowConfidenceNeedsReview();
 
 function testCorrectionImprovesFutureSuggestion(): void {
@@ -92,6 +94,43 @@ function testLearningDoesNotCrossTenantContext(): void {
   assertEqual(suggestion.source, "none", "tenant isolated source");
 }
 
+function testExplicitRulePrecedesLearningAndHistory(): void {
+  const target = buildTarget("Mercado Demo", "Compra Mercado Demo");
+  const learning = recordCategoryCorrection({
+    id: "learn-precedence",
+    context: tenantA,
+    now,
+    target,
+    correctedCategory: foodCategory,
+  });
+  const rule: MerchantCategoryRule = {
+    id: "rule-precedence",
+    organizationId: tenantA.organizationId,
+    financialProfileId: tenantA.financialProfileId,
+    merchantKey: buildCategoryLearningKey(target),
+    transactionKind: "expense",
+    categoryId: healthCategory.id,
+    confidence: 0.95,
+    reason: "Regra explicita configurada pelo usuario.",
+  };
+  const suggestion = suggestCategory({
+    context: tenantA,
+    target,
+    categories: [foodCategory, healthCategory],
+    learningEntries: [learning],
+    merchantRules: [rule],
+    history: [buildTransaction("tx-precedence", "Compra Mercado Demo", foodCategory.id)],
+    aiSuggestion: {
+      categoryId: foodCategory.id,
+      confidence: 0.99,
+      reason: "Sugestao externa ficticia.",
+    },
+  });
+
+  assertEqual(suggestion.source, "merchant_rule", "explicit rule wins precedence");
+  assertEqual(suggestion.categoryId, healthCategory.id, "explicit rule category wins");
+}
+
 function testMerchantRuleAndHistorySuggestions(): void {
   const target = buildTarget("Farmacia Demo", "Compra Farmacia Demo");
   const rule: MerchantCategoryRule = {
@@ -126,7 +165,7 @@ function testMerchantRuleAndHistorySuggestions(): void {
   assertEqual(historySuggestion.categoryId, foodCategory.id, "history category");
 }
 
-function testConflictUsesMostFrequentCorrection(): void {
+function testConflictRequiresReview(): void {
   const target = buildTarget("Loja Demo", "Compra Loja Demo");
   const firstLearning = recordCategoryCorrection({
     id: "learn-conflict-1",
@@ -135,33 +174,27 @@ function testConflictUsesMostFrequentCorrection(): void {
     target,
     correctedCategory: foodCategory,
   });
-  const strongerLearning = recordCategoryCorrection({
+  const conflictingLearning = recordCategoryCorrection({
     id: "learn-conflict-2",
     context: tenantA,
     now: later,
     target,
     correctedCategory: healthCategory,
-    existingLearning: {
-      ...firstLearning,
-      id: "learn-conflict-2",
-      categoryId: healthCategory.id,
-      correctionCount: 2,
-      updatedAt: later,
-    },
   });
   const suggestion = suggestCategory({
     context: tenantA,
     target,
     categories: [foodCategory, healthCategory],
-    learningEntries: [firstLearning, strongerLearning],
+    learningEntries: [firstLearning, conflictingLearning],
   });
 
   assertEqual(suggestion.source, "learning", "conflict source");
-  assertEqual(suggestion.categoryId, healthCategory.id, "conflict winner");
-  assertEqual(suggestion.confidence <= 0.78, true, "conflict lowers confidence");
+  assertEqual(suggestion.status, "needs_review", "conflict requires review");
+  assertEqual(suggestion.categoryId, undefined, "conflict has no silent winner");
+  assertEqual(suggestion.confidence < 0.5, true, "conflict lowers confidence");
 }
 
-function testIgnoredLearningAndArchivedCategoryAreSkipped(): void {
+function testIgnoredRevertedLearningAndArchivedCategoryAreSkipped(): void {
   const target = buildTarget("Mercado Arquivado", "Compra Mercado Arquivado");
   const learning = recordCategoryCorrection({
     id: "learn-ignored",
@@ -171,11 +204,18 @@ function testIgnoredLearningAndArchivedCategoryAreSkipped(): void {
     correctedCategory: foodCategory,
   });
   const ignored = ignoreCategoryLearning(tenantA, learning, later);
+  const reverted = revertCategoryLearning(tenantA, learning, later);
   const ignoredSuggestion = suggestCategory({
     context: tenantA,
     target,
     categories: [foodCategory],
     learningEntries: [ignored],
+  });
+  const revertedSuggestion = suggestCategory({
+    context: tenantA,
+    target,
+    categories: [foodCategory],
+    learningEntries: [reverted],
   });
   const archivedSuggestion = suggestCategory({
     context: tenantA,
@@ -185,7 +225,9 @@ function testIgnoredLearningAndArchivedCategoryAreSkipped(): void {
   });
 
   assertEqual(ignored.status, "ignored", "ignored learning status");
+  assertEqual(reverted.status, "reverted", "reverted learning status");
   assertEqual(ignoredSuggestion.source, "none", "ignored learning skipped");
+  assertEqual(revertedSuggestion.source, "none", "reverted learning skipped");
   assertEqual(archivedSuggestion.source, "none", "archived category skipped");
 }
 

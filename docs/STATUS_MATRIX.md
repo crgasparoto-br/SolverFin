@@ -1,6 +1,6 @@
 # Matriz de status do MVP
 
-Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes de novas implementacoes. Ela diferencia capacidade existente no dominio/API de operacao realmente acessivel na web navegavel.
+Esta matriz registra o estado observado no candidato atual para reduzir ambiguidade antes de novas implementacoes. Ela diferencia capacidade existente no dominio/API de operacao realmente acessivel na web navegavel.
 
 ## Legenda
 
@@ -24,6 +24,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`
 - `docs/AI_REVIEW_QUEUE.md`
 - `docs/AI_SUGGESTION_PAYLOADS.md`
+- `docs/ai/category-learning.md`
 - `docs/ai/extraction-schema.md`
 - `docs/ai/providers.md`
 - `docs/adr/0010-openai-provider-inicial.md`
@@ -35,7 +36,7 @@ Esta matriz registra o estado observado em `main` para reduzir ambiguidade antes
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - `docs/API_REPORTS.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562 e a PR #572 para a issue #563.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562, a PR #572 para a issue #563 e a entrega da issue #564.
 
 ## Decisao atual sobre pagar/receber
 
@@ -117,20 +118,20 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Importacao CSV/OFX
 
 - Dominio: Feito.
-- Schema/migration: Feito sem nova migration; o schema existente ja suporta origem, hashes, conta padrao e vinculos revisaveis.
-- Repository/API: Feito para CSV e OFX persistidos e revisaveis.
+- Schema/migration: Feito; o schema de importacao permanece e a issue #564 adiciona persistencia tenant-scoped para aprendizado de categoria.
+- Repository/API: Feito para CSV e OFX persistidos, revisaveis e conectados a categorizacao inteligente.
 - UI: Feito para preview, criacao, historico misto e revisao compartilhada na Inbox.
-- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao, privacidade e ausência de sentinelas em logs; validacao Chrome mobile para upload, preview, criacao, histórico misto, restauração por URL e recuperação após falha ambígua.
-- Documentacao: Feito em `docs/IMPORTS.md`.
-- Nota: CSV e OFX possuem preview sem persistencia, historico, correcao por linha, aprovacao individual/em conjunto, rejeicao, descarte logico e criacao atomica de lancamentos. Controles de separador e mapeamento aparecem apenas para CSV. OFX normaliza `STMTTRN`, usa o sinal de `TRNAMT` como fonte canonica, valida `CURDEF` contra a conta selecionada e persiste sugestoes com provider/model dedicados. O arquivo bruto nunca e persistido, logado ou auditado.
+- Testes: unitarios de parser e contrato web; integracao PostgreSQL para persistencia, concorrencia, isolamento, idempotencia, ciclo de revisao, privacidade, aprendizado de categoria e ausência de sentinelas em logs; validacao Chrome mobile para upload, preview, criacao, histórico misto, restauração por URL e recuperação após falha ambígua.
+- Documentacao: Feito em `docs/IMPORTS.md` e `docs/ai/category-learning.md`.
+- Nota: CSV e OFX possuem preview sem persistencia, historico, correcao por linha, aprovacao individual/em conjunto, rejeicao, descarte logico e criacao atomica de lancamentos. Linhas `transaction_extraction` sem categoria podem receber `categorization` V1 por regra, correcao anterior, historico ou IA; corrigir categoria registra o aprendizado na mesma transacao. O arquivo bruto nunca e persistido, logado ou auditado.
 
 ### Inbox de mensagens bancarias
 
-- Dominio/API/persistencia: Feito para regras deterministicas e extracao assistida por provider configurado.
-- UI: Feito para entrada autorizada, fila de revisao, origem da extracao, baixa confianca, diagnosticos e recuperacao de falha temporaria.
-- Testes: unitarios do parser e do consumidor, contrato web e integracao PostgreSQL para consentimento, privacidade, isolamento, concorrencia, idempotencia e retry.
-- Documentacao: Feito em `docs/BANK_MESSAGE_INBOX.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/ai/extraction-schema.md` e `docs/ai/providers.md`.
-- Nota: `/inbox` tenta regras deterministicas antes do provider. A chamada externa exige consentimento, sessao e tenant revalidados, usa payload minimizado e cria somente sugestao estruturada em `PENDING_REVIEW`. O texto bruto, prompt e resposta bruta nao sao persistidos. Em falha temporaria, a UI orienta o usuario a colar novamente a mesma mensagem; o hash contextual reutiliza o lote `FAILED`.
+- Dominio/API/persistencia: Feito para regras deterministicas, extracao assistida por provider configurado e categorizacao inteligente posterior.
+- UI: Feito para entrada autorizada, fila de revisao, origem da extracao/categorizacao, baixa confianca, diagnosticos, correcao com aprendizado e recuperacao de falha temporaria.
+- Testes: unitarios do parser e do consumidor, contrato web e integracao PostgreSQL para consentimento, privacidade, isolamento, concorrencia, idempotencia, aprendizado e retry.
+- Documentacao: Feito em `docs/BANK_MESSAGE_INBOX.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/ai/category-learning.md`, `docs/ai/extraction-schema.md` e `docs/ai/providers.md`.
+- Nota: `/inbox` tenta regras deterministicas antes do provider para extracao. A categorizacao posterior prioriza regra explicita, aprendizado e historico antes da IA. O texto bruto, prompt e resposta bruta nao sao persistidos. **Corrigir e aprovar** registra a correcao e o aprendizado de forma atomica.
 
 ### Deduplicacao
 
@@ -153,22 +154,22 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 ### Regras automaticas
 
 - Dominio: Feito.
-- Schema/repository/API/UI: Feito para o primeiro fluxo operacional revisavel, com sugestao `categorization` V1 tipada.
-- Testes: unitarios e integracao do produtor estruturado; efeito financeiro especifico continua fora deste recorte.
-- Documentacao: Feito em `docs/AUTOMATION_RULES.md`.
-- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configuracoes` permite criar, listar, inativar e executar regras. A aplicacao gera sugestoes `categorization` revisaveis com `provider: solverfin-automation`, sem efeito financeiro irreversivel automatico.
+- Schema/repository/API/UI: Feito para fluxo operacional revisavel, com sugestao `categorization` V1 tipada e precedencia sobre aprendizado, historico e IA.
+- Testes: unitarios e integracao do produtor estruturado; a issue #564 acrescenta cobertura de precedencia e conflitos de aprendizado.
+- Documentacao: Feito em `docs/AUTOMATION_RULES.md` e `docs/ai/category-learning.md`.
+- Nota: `AutomationRule` persiste regras por perfil financeiro; `/api/automation-rules` lista/cria/atualiza/inativa/aplica regras. `Configuracoes` permite criar, listar, inativar e executar regras. A categorizacao inteligente reutiliza o mesmo dominio de regras antes de qualquer fonte probabilistica.
 
 ### IA / sugestoes revisaveis
 
 - Dominio: Feito para a uniao discriminada e versionada de `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`.
-- Schema/migration: Feito com payload JSON canonico, validacao estrita no dominio e PostgreSQL, fingerprint e migracao conservadora de variantes legadas compativeis.
+- Schema/migration: Feito com payload JSON canonico, validacao estrita no dominio e PostgreSQL, fingerprint, migracao conservadora de variantes legadas compativeis e persistencia de aprendizado de categoria.
 - Provider real e executor seguro: Feito para infraestrutura substituivel em `@solverfin/ai`, com `OpenAiProvider`, configuracao ambiental, provider desativado por padrao, consentimento revalidado, timeout, retry tipado, health check local e logs redigidos.
-- Repository/API: Feito para leitura tipada, projecao publica redigida, erros controlados e isolamento por organizacao/perfil; efeitos financeiros de todos os `kind` permanecem em subissues proprias.
-- UI: Parcial/Feito para revisao operacional na Inbox e contrato publico tipado no frontend.
-- Fluxos de produto com provider real: Feito para a Inbox de mensagens bancarias; os demais produtores e o assistente conversacional permanecem pendentes.
-- Testes: unitarios dos schemas, normalizadores e consumidor da Inbox; integracao PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia e retry; testes hermeticos do provider para configuracao, consentimento, timeout, rate limit, indisponibilidade, resposta invalida e uma chamada outbound por tentativa.
-- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/BANK_MESSAGE_INBOX.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
-- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. `GET /api/ai-review-queue/:suggestionId/payload` expoe somente a projecao publica autorizada. `explanation` nao e fonte de valor, conta, categoria, tipo ou vinculo. O adapter real permanece desligado enquanto `AI_PROVIDER=disabled`; quando ativado, somente a Inbox de mensagens bancarias o consome automaticamente e sempre preserva revisao humana antes de qualquer efeito financeiro.
+- Repository/API: Feito para leitura tipada, projecao publica redigida, erros controlados, isolamento por organizacao/perfil, aplicacao de categorizacao e controle reversivel do aprendizado.
+- UI: Feito para a revisao da categorizacao na Inbox e para os controles de aprendizado em `Configuracoes > Regras`; demais superficies de IA continuam evolutivas.
+- Fluxos de produto com provider real: Feito para extracao da Inbox de mensagens bancarias e para categorizacao de qualquer origem que produza `transaction_extraction` estruturada (CSV, OFX, mensagem bancaria e manual quando houver contrato). O assistente conversacional permanece fora deste recorte.
+- Testes: unitarios dos schemas, normalizadores, precedencia e consumidor da Inbox; integracao PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia, aprendizado e retry; testes hermeticos do provider para configuracao, consentimento, timeout, rate limit, indisponibilidade, resposta invalida e uma chamada outbound por tentativa.
+- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/BANK_MESSAGE_INBOX.md`, `docs/IMPORTS.md`, `docs/ai/category-learning.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
+- Nota: `/api/ai-review-queue` lista sugestoes e permite aprovar, editar ou rejeitar. `GET /api/ai-review-queue/:suggestionId/payload` expoe somente a projecao publica autorizada. `explanation` nao e fonte de valor, conta, categoria, tipo ou vinculo. Enquanto `AI_PROVIDER=disabled`, regras, aprendizado, historico e revisao manual continuam funcionais; quando ativado, o executor envia apenas campos allowlisted e taxonomia elegivel para a categorizacao.
 
 ### Perfis financeiros / tenant operacional
 
@@ -192,8 +193,8 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 ### Configuracoes
 
-- UI: Parcial/Feito para estado inicial, perfis financeiros e regras automaticas.
-- Nota: `/configuracoes` cobre gestao inicial de perfis financeiros e regras automaticas. Pode evoluir para preferencias, privacidade, consentimentos, automacoes avancadas e parametros de IA.
+- UI: Parcial/Feito para estado inicial, perfis financeiros, regras automaticas e aprendizado de categoria.
+- Nota: `/configuracoes?section=rules` cobre regras e aprendizados do perfil, incluindo aplicar categorizacao, ignorar e reverter sinais. Pode evoluir para preferencias, privacidade, consentimentos, automacoes avancadas e parametros de IA.
 
 ## Operacoes visiveis na UI
 

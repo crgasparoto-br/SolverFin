@@ -11,6 +11,9 @@ import { assertExplicitRuntimeEnvironment } from "@solverfin/shared";
 import { handleAccountRemunerationApiRequest } from "./account-remuneration-router.js";
 import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
 import { assertLocalAuthAllowed, auditSecurityEvent, isDemoAuthAllowed } from "./auth-service.js";
+import { handleCategorizationAwareAiReviewQueueApiRequest } from "./categorization-aware-ai-review-router.js";
+import { handleCategorizationAwareImportBatchesApiRequest } from "./categorization-aware-import-router.js";
+import { handleCategoryLearningApiRequest } from "./category-learning-router.js";
 import { assertTrustedCognitoEnvironment } from "./cognito-config.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { startOidcLoginAttemptScheduler } from "./oidc-attempt-scheduler.js";
@@ -18,13 +21,11 @@ import { assertTrustedMutationOrigin } from "./request-origin.js";
 import { prepareRequestAuthenticationHeaders } from "./request-authentication.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
 import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
-import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
 import { handleAutomationRulesApiRequest } from "./automation-rules-router.js";
 import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js";
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-dispatcher.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleFinancialProfilesApiRequest } from "./financial-profiles-router.js";
-import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
 import { handleMvpApiRequest, type MvpApiRequest } from "./mvp.js";
 import { handlePayablesReceivablesApiRequest } from "./payables-receivables-router.js";
@@ -144,7 +145,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       return;
     }
 
-    const importBatchesResult = await handleImportBatchesApiRequest(apiRequest);
+    const importBatchesResult = await handleCategorizationAwareImportBatchesApiRequest(apiRequest);
 
     if (importBatchesResult) {
       writeResponse(response, importBatchesResult);
@@ -165,7 +166,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       return;
     }
 
-    const aiReviewQueueResult = await handleAiReviewQueueApiRequest(apiRequest);
+    const aiReviewQueueResult = await handleCategorizationAwareAiReviewQueueApiRequest(apiRequest);
 
     if (aiReviewQueueResult) {
       writeResponse(response, aiReviewQueueResult);
@@ -176,6 +177,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (automationRulesResult) {
       writeResponse(response, automationRulesResult);
+      return;
+    }
+
+    const categoryLearningResult = await handleCategoryLearningApiRequest(apiRequest);
+
+    if (categoryLearningResult) {
+      writeResponse(response, categoryLearningResult);
       return;
     }
 

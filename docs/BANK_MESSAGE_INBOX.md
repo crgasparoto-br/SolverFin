@@ -72,6 +72,14 @@ A resposta mantém campos distintos:
 - `maskedText`: referência mascarada estável do lote, sem conteúdo bruto da mensagem e nunca substituída pelo diagnóstico;
 - `diagnosticMessage`: texto seguro que explica o estado da extração.
 
+## Categorização após a extração
+
+Uma `transaction_extraction` sem categoria pode ser processada pela categorização inteligente comum a todas as origens. A ordem é regra explícita, correção confirmada, histórico do perfil, IA e, por último, revisão manual. O resultado é outra sugestão `categorization` V1 vinculada à extração por `sourceSuggestionId` e fingerprint.
+
+A Inbox mostra a origem da candidatura como **regra**, **correção anterior**, **histórico**, **IA** ou **revisão manual**. Em extrações de mensagem, a ação **Corrigir e aprovar** permite selecionar outra categoria ativa e compatível. A aprovação e o registro do aprendizado acontecem na mesma transação; se a aprovação falhar, o aprendizado não fica órfão.
+
+Aprendizados conflitantes, categoria arquivada, provider indisponível ou evidência insuficiente nunca escolhem silenciosamente uma categoria. O usuário continua com uma revisão explícita. Detalhes estão em `docs/ai/category-learning.md`.
+
 ## Estados exibidos
 
 A resposta e a listagem da Inbox incluem:
@@ -99,6 +107,7 @@ Quando `retryable=true`, a ação **Tentar novamente** reabre o formulário de m
 - **Tipo `unknown` ou transferência sem direção:** diagnóstico controlado, sem payload financeiro persistido.
 - **Transferência com direção segura:** sugestão V2 em revisão, sem lançamento automático.
 - **Estrutura válida sem `merchant`:** sugestão revisável com descrição genérica fixa, sem reutilizar qualquer trecho da mensagem.
+- **Categorização sem evidência/provider:** candidatura de revisão manual, sem categoria inventada e sem efeito financeiro.
 
 ## Idempotência e concorrência
 
@@ -109,6 +118,8 @@ A criação usa `INSERT ... ON CONFLICT DO NOTHING`. Somente a requisição que 
 Requisições concorrentes não criam sugestões duplicadas e não multiplicam chamadas ao provider.
 
 O registro de consentimento usa lock transacional separado por usuário e contexto. Aceites concorrentes convergem para o mesmo estado efetivo sem regravar proveniência quando as duas finalidades já estão concedidas.
+
+A categorização usa fingerprint da origem e versão da decisão. A mesma sugestão, com a mesma base de regras/aprendizado/histórico, não cria uma segunda candidatura; mudanças relevantes podem gerar nova candidatura e expirar apenas a anterior ainda pendente.
 
 ## Retenção, logs e auditoria
 
@@ -127,6 +138,8 @@ Também não são persistidos:
 
 Persistimos apenas hash contextual, referência mascarada não reversível, diagnóstico seguro, payload estruturado validado, transições de consentimento sem dados financeiros e auditoria redigida. A recepção ou o reenvio autorizado é atribuído ao usuário; o resultado da extração e a criação da sugestão são atribuídos ao sistema.
 
+O aprendizado de categoria persiste apenas o padrão normalizado necessário, categoria, confiança, contagem e timestamps no perfil. O evento de auditoria do aprendizado não contém a descrição financeira.
+
 ## Endpoints
 
 - `GET /api/bank-message-inbox?status=all`: lista mensagens do perfil ativo com estado da extração;
@@ -137,7 +150,7 @@ Persistimos apenas hash contextual, referência mascarada não reversível, diag
 
 O provider permanece desativado por padrão. Para ativar IA, configure as variáveis protegidas descritas em `docs/ai/providers.md`. A ativação deve ocorrer por ambiente, com modelo, timeout, limite de saída e orçamento revisados.
 
-Sem provider configurado, o fluxo determinístico e a revisão manual continuam operacionais.
+Sem provider configurado, o fluxo determinístico, o aprendizado local, o histórico e a revisão manual continuam operacionais.
 
 ## Validação
 

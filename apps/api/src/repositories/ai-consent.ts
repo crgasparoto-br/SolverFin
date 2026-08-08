@@ -62,6 +62,13 @@ export async function resolveBankMessageAiConsentForContext(
     : "missing";
 }
 
+export async function resolveAiProcessingConsentForContext(
+  context: TenantContext,
+): Promise<AiConsentState> {
+  const current = await readLatestConsentStates(context, query);
+  return current.get("ai_processing") ?? "missing";
+}
+
 async function lockConsentScope(
   executeQuery: QueryExecutor,
   context: TenantContext,
