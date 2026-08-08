@@ -25,7 +25,10 @@ assert.match(enhanced, /data-api-action/);
 assert.match(enhanced, /resolveCategorizationTargetKind/);
 assert.match(enhanced, /proposal\.targetTransactionId/);
 assert.match(enhanced, /proposal\.targetEntityId/);
-assert.match(enhanced, /form\.elements\.accountId\.addEventListener\("change", refreshOtherAccount\)/);
+assert.match(
+  enhanced,
+  /form\.elements\.accountId\.addEventListener\("change", refreshOtherAccount\)/,
+);
 assert.match(enhanced, /account\.id !== selectedAccountId/);
 assert.equal(enhanceInboxReviewQueueTargets(enhanced), enhanced);
 

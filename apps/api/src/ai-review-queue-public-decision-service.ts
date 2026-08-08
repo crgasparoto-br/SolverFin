@@ -9,10 +9,7 @@ import {
   type AiReviewDecisionResult,
 } from "./ai-review-queue-decision-service.js";
 import { query } from "./db.js";
-import {
-  AiReviewQueueError,
-  type PersistedAiSuggestion,
-} from "./repositories/ai-review-queue.js";
+import { AiReviewQueueError, type PersistedAiSuggestion } from "./repositories/ai-review-queue.js";
 import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
 import { getTransactionForContext } from "./repositories/transactions.js";
 
