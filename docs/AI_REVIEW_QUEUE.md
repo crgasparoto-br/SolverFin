@@ -27,6 +27,8 @@ A área **Outras sugestões** carrega a fila completa e oferece filtros por:
 
 A interface possui estados explícitos de carregamento, vazio, erro com nova tentativa, indisponibilidade temporária com nova tentativa, baixa confiança e conflito de versão. Falhas transitórias reconhecidas por HTTP `408`, `425`, `429`, `502`, `503` ou `504`, ou por códigos equivalentes de timeout/rate limit/unavailable, usam mensagem e estilo próprios para não se confundirem com erro permanente. O detalhe e a edição usam `<dialog>`, movem foco para o conteúdo editável e devolvem o foco ao acionador quando o diálogo fecha. O layout é fluido em desktop e mobile e não depende de texto técnico longo para orientar a decisão.
 
+Para `deduplication` e `reconciliation`, o detalhe resolve o `targetTransactionId` escopado por tenant/perfil através da API de lançamentos e apresenta descrição, data e valor do lançamento alvo. O UUID permanece apenas como referência de integração e não é usado como rótulo visível.
+
 ## Campos editáveis
 
 A edição nunca muda arbitrariamente o payload inteiro.
@@ -65,9 +67,9 @@ POST /api/ai-review-queue/:suggestionId/edit
 POST /api/ai-review-queue/:suggestionId/reject
 ```
 
-Decisões e edições podem enviar `expectedFingerprint`. A interface sempre lê a versão atual imediatamente antes da ação e envia esse fingerprint. Se outra aba ou sessão alterar a sugestão antes da gravação, a API retorna `AI_SUGGESTION_PAYLOAD_CONFLICT` ou `AI_SUGGESTION_PAYLOAD_OBSOLETE` e nenhuma parte do efeito é confirmada.
+Decisões e edições exigem `expectedFingerprint`. A interface sempre lê a versão atual imediatamente antes da ação e envia esse fingerprint. A ausência da precondição retorna `AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED` com HTTP `428`. Se outra aba ou sessão alterar a sugestão antes da gravação, a API retorna `AI_SUGGESTION_PAYLOAD_CONFLICT` ou `AI_SUGGESTION_PAYLOAD_OBSOLETE` e nenhuma parte do efeito é confirmada.
 
-A mesma decisão repetida sobre um item já resolvido retorna o resultado persistido quando a operação é idempotente. Uma decisão oposta ou uma transição incompatível retorna conflito controlado.
+A mesma decisão repetida sobre um item já resolvido retorna o resultado persistido quando a operação é idempotente. Isso inclui `transaction_extraction` geral: um replay de aprovação retorna a sugestão e o lançamento já vinculados, sem criar novo movimento. Uma decisão oposta ou uma transição incompatível retorna conflito controlado.
 
 A rota de payload retorna a projeção tipada e redigida. Referências internas necessárias aos controles de edição são expostas somente depois do recorte por `organizationId` e `financialProfileId`; provider bruto, prompt, resposta integral, conteúdo de arquivo/mensagem e dados fora do contrato não são retornados.
 
