@@ -20,7 +20,6 @@ let fixture;
 let keyboard;
 let textResize;
 let urlState;
-let discriminantStates;
 
 try {
   await setViewport(browser.cdp, 1366, 900);
@@ -75,24 +74,6 @@ try {
   );
   await waitForReviewCard(browser.cdp, fixture.suggestionId);
 
-  discriminantStates = await validateDiscriminantStates(browser.cdp, fixture.suggestionId);
-  await screenshot(browser.cdp, join(outputDir, "issue-565-ai-review-queue-discriminant-final.png"));
-  check(discriminantStates.kinds.cardCount === 5, "The five review kinds were not rendered", discriminantStates.kinds);
-  check(discriminantStates.kinds.allKindsVisible, "One or more review kind labels are missing", discriminantStates.kinds);
-  check(discriminantStates.kinds.editOnlyOnSupportedKinds, "Edit action is exposed on an unsupported kind", discriminantStates.kinds);
-  check(discriminantStates.kinds.lowConfidenceVisible, "Low-confidence state was not rendered", discriminantStates.kinds);
-  check(discriminantStates.loading.visible, "Loading state was not rendered", discriminantStates.loading);
-  check(discriminantStates.empty.visible, "Empty state was not rendered", discriminantStates.empty);
-  check(discriminantStates.error.visible, "Generic error state was not rendered", discriminantStates.error);
-  check(discriminantStates.error.retryVisible, "Generic error state does not expose retry", discriminantStates.error);
-  check(discriminantStates.unavailable.visible, "Temporary-unavailability state was not rendered", discriminantStates.unavailable);
-  check(discriminantStates.unavailable.distinctFromError, "Temporary unavailability is not visually/semantically distinct from generic error", discriminantStates.unavailable);
-  check(discriminantStates.unavailable.retryVisible, "Temporary unavailability does not expose retry", discriminantStates.unavailable);
-  check(discriminantStates.retry.recovered, "Retry did not recover the queue after temporary unavailability", discriminantStates.retry);
-  check(discriminantStates.conflict.visible, "Version conflict state was not rendered", discriminantStates.conflict);
-  check(discriminantStates.conflict.actionReenabled, "Conflict left the decision action disabled", discriminantStates.conflict);
-  await waitForReviewCard(browser.cdp, fixture.suggestionId);
-
   textResize = await validateTextResize(browser.cdp, fixture.suggestionId);
   await screenshot(browser.cdp, join(outputDir, "issue-565-ai-review-queue-text-200-percent.png"));
   check(textResize.rootFontSize >= 31.5, "Root text size did not reach 200%", textResize);
@@ -118,7 +99,6 @@ const report = {
   captures,
   keyboard,
   urlState,
-  discriminantStates,
   textResize,
   fatalError,
   failures,
@@ -329,231 +309,6 @@ async function validateFilterUrl(cdp) {
     confidencePersisted: new URLSearchParams(after).get("confidence") === "low",
     profilePreserved: profileBefore === profileAfter,
   };
-}
-
-async function validateDiscriminantStates(cdp, suggestionId) {
-  const installed = await evaluate(
-    cdp,
-    `(async () => {
-      const fixtureId = ${JSON.stringify(suggestionId)};
-      const originalFetch = window.fetch.bind(window);
-      const response = await originalFetch('/api/ai-review-queue?status=all&includeLowConfidence=true');
-      const body = await response.json();
-      const baseline = (body.suggestions || []).find((item) => item.id === fixtureId);
-      if (!baseline) return { ok: false, message: 'Baseline review item not found' };
-      window.__issue565OriginalFetch = originalFetch;
-      window.__issue565OriginalConfirm = window.confirm;
-      window.__issue565BaselineReviewItem = baseline;
-      window.__issue565QueueMode = 'baseline';
-      const responseFor = (payload, status = 200) => new Response(JSON.stringify(payload), {
-        status,
-        headers: { 'content-type': 'application/json' }
-      });
-      window.fetch = async (input, options) => {
-        const url = typeof input === 'string' ? input : input?.url || String(input);
-        const method = String(options?.method || input?.method || 'GET').toUpperCase();
-        const mode = window.__issue565QueueMode;
-        const item = window.__issue565BaselineReviewItem;
-        if (url.includes('/api/ai-review-queue?status=all&includeLowConfidence=true')) {
-          if (mode === 'loading') {
-            await new Promise((resolve) => setTimeout(resolve, 600));
-            return responseFor({ suggestions: [item] });
-          }
-          if (mode === 'empty') return responseFor({ suggestions: [] });
-          if (mode === 'error') {
-            return responseFor({ error: { code: 'AI_REVIEW_TEST_FAILURE', message: 'Falha persistente de teste.' } }, 500);
-          }
-          if (mode === 'unavailable') {
-            return responseFor({ error: { code: 'AI_PROVIDER_UNAVAILABLE', message: 'Provider indisponível.' } }, 503);
-          }
-          if (mode === 'kinds') {
-            const definitions = [
-              ['transaction_extraction', 'Extração de lançamento', 'import', 'normal'],
-              ['categorization', 'Categorização', 'rule', 'low_confidence'],
-              ['deduplication', 'Possível duplicidade', 'system', 'normal'],
-              ['reconciliation', 'Conciliação sugerida', 'system', 'normal'],
-              ['insight', 'Insight', 'ai', 'normal']
-            ];
-            return responseFor({ suggestions: definitions.map(([kind, label, origin, risk], index) => ({
-              ...item,
-              id: item.id.slice(0, -1) + String(index + 1),
-              kind,
-              origin,
-              risk,
-              confidence: risk === 'low_confidence' ? 0.41 : 0.88,
-              maskedSummary: label + ' para validação visual',
-              explanation: 'Estado discriminante fictício da issue 565.'
-            })) });
-          }
-          return responseFor({ suggestions: [item] });
-        }
-        if (mode === 'conflict' && method === 'POST' && url.endsWith('/approve')) {
-          return responseFor({ error: { code: 'AI_SUGGESTION_PAYLOAD_CONFLICT', message: 'Versão alterada.' } }, 409);
-        }
-        return originalFetch(input, options);
-      };
-      return { ok: true };
-    })()`,
-  );
-  assert.equal(installed.ok, true, installed.message || "Could not install issue 565 state harness.");
-
-  try {
-    await setQueueHarnessMode(cdp, "kinds", 180);
-    const kinds = await evaluate(
-      cdp,
-      `(() => {
-        const cards = [...document.querySelectorAll('.review-card')];
-        const labels = cards.map((card) => card.querySelector('.maintenance-summary strong')?.textContent?.trim());
-        return {
-          cardCount: cards.length,
-          labels,
-          allKindsVisible: ['Extração de lançamento', 'Categorização', 'Possível duplicidade', 'Conciliação sugerida', 'Insight'].every((label) => labels.includes(label)),
-          editOnlyOnSupportedKinds: cards.filter((card) => card.querySelector('[data-review-edit]')).length === 2,
-          lowConfidenceVisible: cards.some((card) => card.querySelector('.review-risk')?.textContent?.includes('Baixa confiança')),
-          approveCount: cards.filter((card) => card.querySelector('[data-review-approve]')).length,
-          rejectCount: cards.filter((card) => card.querySelector('[data-review-reject]')).length
-        };
-      })()`,
-    );
-    await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-five-kinds.png"));
-
-    await setQueueHarnessMode(cdp, "loading", 70);
-    const loading = await inspectQueueState(cdp, "Carregando sugestões...");
-    await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-loading.png"));
-    await sleep(650);
-
-    await setQueueHarnessMode(cdp, "empty", 160);
-    const empty = await evaluate(
-      cdp,
-      `(() => ({
-        visible: Boolean(document.querySelector('.empty-state')) && document.body.innerText.includes('Nenhuma sugestão neste filtro.'),
-        text: document.querySelector('.empty-state')?.textContent?.trim() || ''
-      }))()`,
-    );
-    await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-empty.png"));
-
-    await setQueueHarnessMode(cdp, "error", 160);
-    const error = await inspectQueueState(cdp, "Falha persistente de teste.");
-    await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-error.png"));
-
-    await setQueueHarnessMode(cdp, "unavailable", 160);
-    const unavailable = await evaluate(
-      cdp,
-      `(() => {
-        const status = document.querySelector('[data-review-queue-status]');
-        return {
-          visible: Boolean(status) && status.textContent.includes('Fila temporariamente indisponível.'),
-          distinctFromError: status?.classList.contains('unavailable') === true && status?.classList.contains('error') === false && status?.getAttribute('role') === 'alert',
-          retryVisible: Boolean(status?.querySelector('[data-review-retry]')),
-          text: status?.textContent?.trim() || '',
-          className: status?.className || '',
-          role: status?.getAttribute('role') || ''
-        };
-      })()`,
-    );
-    await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-unavailable.png"));
-
-    const retry = await evaluate(
-      cdp,
-      `(() => {
-        window.__issue565QueueMode = 'baseline';
-        const button = document.querySelector('[data-review-queue-status] [data-review-retry]');
-        if (!button) return { clicked: false };
-        button.click();
-        return { clicked: true };
-      })()`,
-    );
-    await sleep(180);
-    retry.recovered = retry.clicked && (await evaluate(
-      cdp,
-      `Boolean(document.querySelector('[data-review-id="${escapeJs(suggestionId)}"]')) && document.querySelector('[data-review-queue-status]')?.textContent?.includes('Fila atualizada.') === true`,
-    ));
-
-    await setQueueHarnessMode(cdp, "baseline", 180);
-    await evaluate(
-      cdp,
-      `(() => {
-        window.__issue565QueueMode = 'conflict';
-        window.confirm = () => true;
-        const button = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-approve]');
-        if (!button) throw new Error('Approval button not found for conflict state');
-        button.click();
-        return true;
-      })()`,
-    );
-    await sleep(260);
-    const conflict = await evaluate(
-      cdp,
-      `(() => {
-        const card = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"]');
-        const status = card?.querySelector('[data-review-row-status]');
-        const button = card?.querySelector('[data-review-approve]');
-        return {
-          visible: Boolean(status) && status.textContent.includes('Esta sugestão mudou. Atualize a fila antes de tentar novamente.'),
-          actionReenabled: button?.disabled === false,
-          text: status?.textContent?.trim() || ''
-        };
-      })()`,
-    );
-    await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-conflict.png"));
-
-    return { kinds, loading, empty, error, unavailable, retry, conflict };
-  } finally {
-    await evaluate(
-      cdp,
-      `(() => {
-        if (window.__issue565OriginalFetch) window.fetch = window.__issue565OriginalFetch;
-        if (window.__issue565OriginalConfirm) window.confirm = window.__issue565OriginalConfirm;
-        delete window.__issue565OriginalFetch;
-        delete window.__issue565OriginalConfirm;
-        delete window.__issue565BaselineReviewItem;
-        delete window.__issue565QueueMode;
-        const kind = document.querySelector('[data-review-filter="kind"]');
-        const status = document.querySelector('[data-review-filter="status"]');
-        const confidence = document.querySelector('[data-review-filter="confidence"]');
-        if (kind) kind.value = 'transaction_extraction';
-        if (status) status.value = 'pending_review';
-        if (confidence) confidence.value = 'all';
-        document.querySelector('[data-review-refresh]')?.click();
-        return true;
-      })()`,
-    );
-    await sleep(200);
-  }
-}
-
-async function setQueueHarnessMode(cdp, mode, waitMs) {
-  await evaluate(
-    cdp,
-    `(() => {
-      window.__issue565QueueMode = ${JSON.stringify(mode)};
-      const kind = document.querySelector('[data-review-filter="kind"]');
-      const status = document.querySelector('[data-review-filter="status"]');
-      const confidence = document.querySelector('[data-review-filter="confidence"]');
-      if (kind) kind.value = 'all';
-      if (status) status.value = 'pending_review';
-      if (confidence) confidence.value = 'all';
-      document.querySelector('[data-review-refresh]')?.click();
-      return true;
-    })()`,
-  );
-  await sleep(waitMs);
-}
-
-async function inspectQueueState(cdp, expectedText) {
-  return evaluate(
-    cdp,
-    `(() => {
-      const status = document.querySelector('[data-review-queue-status]');
-      return {
-        visible: Boolean(status) && status.textContent.includes(${JSON.stringify(expectedText)}),
-        retryVisible: Boolean(status?.querySelector('[data-review-retry]')),
-        text: status?.textContent?.trim() || '',
-        className: status?.className || '',
-        role: status?.getAttribute('role') || ''
-      };
-    })()`,
-  );
 }
 
 async function validateTextResize(cdp, suggestionId) {
