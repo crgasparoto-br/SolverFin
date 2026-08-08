@@ -87,18 +87,26 @@ function resolveLearningSourceId(
     : undefined;
 }
 
-function readCorrectionCategoryId(body: unknown, action: string | undefined): string | undefined {
+function readCorrectionCategoryId(
+  body: unknown,
+  action: string | undefined,
+): string | undefined {
   if (!isRecord(body)) return undefined;
 
   if (action === "approve") {
     const payloadOverride = isRecord(body.payloadOverride) ? body.payloadOverride : undefined;
-    return readNonEmptyString(payloadOverride?.categoryId) ??
-      readNonEmptyString(payloadOverride?.proposedCategoryId);
+    return (
+      readNonEmptyString(payloadOverride?.categoryId) ??
+      readNonEmptyString(payloadOverride?.proposedCategoryId)
+    );
   }
 
   if (action === "edit") {
     const payload = isRecord(body.payload) ? body.payload : undefined;
-    return readNonEmptyString(payload?.categoryId) ?? readNonEmptyString(payload?.proposedCategoryId);
+    return (
+      readNonEmptyString(payload?.categoryId) ??
+      readNonEmptyString(payload?.proposedCategoryId)
+    );
   }
 
   return undefined;
