@@ -30,6 +30,7 @@ import {
   rejectDeterministicReviewSuggestionForContext,
   type ReviewSuggestionResult,
 } from "./repositories/review-suggestions.js";
+import { updateTransactionForContext } from "./repositories/transactions.js";
 
 export interface AiReviewDecisionInput {
   expectedFingerprint?: string;
@@ -99,6 +100,7 @@ export async function approveAiReviewDecisionForContext(
 ): Promise<AiReviewDecisionResult> {
   return withSharedTransaction(async (executeQuery) => {
     const suggestion = await lockSuggestionForContext(executeQuery, context, suggestionId);
+
     if (suggestion.status === "approved") {
       if (suggestion.kind === "deduplication" || suggestion.kind === "reconciliation") {
         return approveDeterministicReviewSuggestionForContext(context, suggestionId);
@@ -112,29 +114,39 @@ export async function approveAiReviewDecisionForContext(
       }
       return { suggestion: mapPersistedSuggestion(suggestion), idempotent: true };
     }
+
     assertPending(suggestion);
     assertExpectedFingerprint(suggestion, input.expectedFingerprint);
 
-    if (suggestion.kind === "categorization") {
-      return approveCategorizationSuggestion(executeQuery, context, suggestion, input);
-    }
-
-    if (suggestion.kind === "deduplication" || suggestion.kind === "reconciliation") {
-      assertNoPayloadMutation(input.payload, suggestion.kind);
-      const result = await approveDeterministicReviewSuggestionForContext(context, suggestionId);
-      await correlateLatestAudit(
-        executeQuery,
-        context,
-        suggestionId,
-        "approve",
-        input.correlationId,
-        false,
-      );
-      return result;
-    }
-
-    if (suggestion.kind === "insight") {
-      assertNoPayloadMutation(input.payload, suggestion.kind);
+    switch (suggestion.kind) {
+      case "categorization":
+        return approveCategorizationSuggestion(executeQuery, context, suggestion, input);
+      case "deduplication":
+      case "reconciliation": {
+        assertNoPayloadMutation(input.payload, suggestion.kind);
+        const result = await approveDeterministicReviewSuggestionForContext(context, suggestionId);
+        await correlateLatestAudit(
+          executeQuery,
+          context,
+          "AI_SUGGESTION",
+          suggestionId,
+          "APPROVE",
+          input.correlationId,
+          { previousState: "changed", nextState: "changed" },
+        );
+        return result;
+      }
+      case "insight":
+        assertNoPayloadMutation(input.payload, suggestion.kind);
+        break;
+      case "transaction_extraction":
+        break;
+      default:
+        throw new AiReviewQueueError(
+          "AI_REVIEW_KIND_UNSUPPORTED",
+          "Este tipo de sugestao nao pode ser aprovado pela fila de revisao.",
+          422,
+        );
     }
 
     const payloadOverride =
@@ -145,10 +157,13 @@ export async function approveAiReviewDecisionForContext(
     await correlateLatestAudit(
       executeQuery,
       context,
+      "AI_SUGGESTION",
       suggestionId,
-      "approve",
+      "APPROVE",
       input.correlationId,
-      payloadOverride !== undefined && Object.keys(payloadOverride).length > 0,
+      payloadOverride && Object.keys(payloadOverride).length > 0
+        ? { previousProposal: "changed", nextProposal: "changed" }
+        : { previousState: "changed", nextState: "changed" },
     );
     return { ...result, idempotent: false };
   });
@@ -176,6 +191,13 @@ export async function editAiReviewDecisionForContext(
     }
 
     const payload = readTransactionPayload(input.payload, true);
+    if (payload === undefined) {
+      throw new AiReviewQueueError(
+        "AI_REVIEW_EDIT_PAYLOAD_REQUIRED",
+        "Edicao de sugestao precisa informar os campos revisados.",
+      );
+    }
+
     if (suggestion.provider?.startsWith("solverfin-import") === true) {
       const result = await editAiReviewSuggestionForContext(
         context,
@@ -186,10 +208,11 @@ export async function editAiReviewDecisionForContext(
       await correlateLatestAudit(
         executeQuery,
         context,
+        "AI_SUGGESTION",
         suggestionId,
-        "update",
+        "UPDATE",
         input.correlationId,
-        true,
+        { previousProposal: "changed", nextProposal: "changed" },
       );
       return { ...result, idempotent: false };
     }
@@ -206,7 +229,15 @@ export async function editAiReviewDecisionForContext(
     await expireDependentSuggestions(executeQuery, context, suggestion.id, suggestion.id, now);
     await insertAuditLogEntry(
       executeQuery,
-      buildAuditEntry(context, suggestion.id, "update", now, input.correlationId, input.reason, true),
+      buildSuggestionAuditEntry(
+        context,
+        suggestion.id,
+        "update",
+        now,
+        input.correlationId,
+        input.reason,
+        true,
+      ),
     );
     return {
       suggestion: mapPersistedSuggestion({ ...suggestion, payload: next, updatedAt: new Date(now) }),
@@ -225,6 +256,7 @@ export async function rejectAiReviewDecisionForContext(
     if (suggestion.status === "rejected") {
       return { suggestion: mapPersistedSuggestion(suggestion), idempotent: true };
     }
+
     assertPending(suggestion);
     assertExpectedFingerprint(suggestion, input.expectedFingerprint);
     assertNoPayloadMutation(input.payload, suggestion.kind);
@@ -238,10 +270,11 @@ export async function rejectAiReviewDecisionForContext(
       await correlateLatestAudit(
         executeQuery,
         context,
+        "AI_SUGGESTION",
         suggestionId,
-        "reject",
+        "REJECT",
         input.correlationId,
-        false,
+        { previousState: "changed", nextState: "changed" },
       );
       return result;
     }
@@ -250,10 +283,11 @@ export async function rejectAiReviewDecisionForContext(
     await correlateLatestAudit(
       executeQuery,
       context,
+      "AI_SUGGESTION",
       suggestionId,
-      "reject",
+      "REJECT",
       input.correlationId,
-      false,
+      { previousState: "changed", nextState: "changed" },
     );
     return { ...result, idempotent: false };
   });
@@ -268,7 +302,7 @@ async function approveCategorizationSuggestion(
   const current = requireCurrentCategorizationPayload(suggestion);
   const requestedCategoryId = readCategorizationCategoryId(input.payload, false);
   const categoryId = requestedCategoryId ?? current.proposedCategoryId;
-  if (categoryId === undefined) {
+  if (!categoryId) {
     throw new AiReviewQueueError(
       "AI_REVIEW_CATEGORY_REQUIRED",
       "Escolha uma categoria valida antes de aprovar esta sugestao.",
@@ -289,14 +323,6 @@ async function approveCategorizationSuggestion(
           audit: current.audit,
         });
   const now = new Date().toISOString();
-  const approved = mapPersistedSuggestion({
-    ...suggestion,
-    status: "approved",
-    payload: reviewedPayload,
-    reviewedByUserId: context.userId,
-    reviewedAt: new Date(now),
-    updatedAt: new Date(now),
-  });
 
   await executeQuery(
     `update "AiSuggestion"
@@ -325,7 +351,7 @@ async function approveCategorizationSuggestion(
     await expireDependentSuggestions(executeQuery, context, source.id, suggestion.id, now);
     await insertAuditLogEntry(
       executeQuery,
-      buildAuditEntry(
+      buildSuggestionAuditEntry(
         context,
         source.id,
         "update",
@@ -336,30 +362,21 @@ async function approveCategorizationSuggestion(
       ),
     );
   } else {
-    await executeQuery(
-      `update "Transaction"
-       set "categoryId" = $4, "updatedAt" = $5, "updatedByUserId" = $6
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [target.transaction.id, context.organizationId, context.financialProfileId, category.id, now, context.userId],
+    await updateTransactionForContext(context, target.transaction.id, { categoryId: category.id });
+    await correlateLatestAudit(
+      executeQuery,
+      context,
+      "TRANSACTION",
+      target.transaction.id,
+      "UPDATE",
+      input.correlationId,
+      { categoryId: "changed" },
     );
-    await insertAuditLogEntry(executeQuery, {
-      organizationId: context.organizationId,
-      financialProfileId: context.financialProfileId,
-      occurredAt: now,
-      actorKind: "user",
-      actorId: context.userId,
-      action: "update",
-      entityKind: "transaction",
-      entityId: target.transaction.id,
-      ...(input.correlationId === undefined ? {} : { correlationId: input.correlationId }),
-      reason: "Categoria confirmada pela fila de revisao.",
-      redactedChanges: { categoryId: "changed" },
-    });
   }
 
   await insertAuditLogEntry(
     executeQuery,
-    buildAuditEntry(
+    buildSuggestionAuditEntry(
       context,
       suggestion.id,
       "approve",
@@ -370,7 +387,17 @@ async function approveCategorizationSuggestion(
     ),
   );
 
-  return { suggestion: approved, idempotent: false };
+  return {
+    suggestion: mapPersistedSuggestion({
+      ...suggestion,
+      status: "approved",
+      payload: reviewedPayload,
+      reviewedByUserId: context.userId,
+      reviewedAt: new Date(now),
+      updatedAt: new Date(now),
+    }),
+    idempotent: false,
+  };
 }
 
 async function editCategorizationSuggestion(
@@ -381,6 +408,14 @@ async function editCategorizationSuggestion(
 ): Promise<AiReviewDecisionResult> {
   const current = requireCurrentCategorizationPayload(suggestion);
   const categoryId = readCategorizationCategoryId(input.payload, true);
+  if (!categoryId) {
+    throw new AiReviewQueueError(
+      "AI_REVIEW_CATEGORY_REQUIRED",
+      "Escolha uma categoria valida antes de salvar a correcao.",
+      422,
+    );
+  }
+
   const target = await resolveCategorizationTarget(executeQuery, context, current);
   const category = await requireEligibleCategory(executeQuery, context, categoryId, target.transactionKind);
   const next = mutateAiSuggestionPayload({
@@ -399,7 +434,15 @@ async function editCategorizationSuggestion(
   );
   await insertAuditLogEntry(
     executeQuery,
-    buildAuditEntry(context, suggestion.id, "update", now, input.correlationId, input.reason, true),
+    buildSuggestionAuditEntry(
+      context,
+      suggestion.id,
+      "update",
+      now,
+      input.correlationId,
+      input.reason,
+      true,
+    ),
   );
   return {
     suggestion: mapPersistedSuggestion({ ...suggestion, payload: next, updatedAt: new Date(now) }),
@@ -425,8 +468,10 @@ async function resolveCategorizationTarget(
   context: TenantContext,
   payload: CategorizationSuggestionPayloadV1,
 ): Promise<CategorizationTarget> {
-  const sourceSuggestionId = payload.sourceSuggestionId ??
+  const sourceSuggestionId =
+    payload.sourceSuggestionId ??
     (payload.target.entityKind === "import_suggestion" ? payload.targetEntityId : undefined);
+
   if (sourceSuggestionId !== undefined) {
     const source = await lockSuggestionForContext(executeQuery, context, sourceSuggestionId);
     if (source.kind !== "transaction_extraction" || source.status !== "pending_review") {
@@ -462,6 +507,7 @@ async function resolveCategorizationTarget(
       422,
     );
   }
+
   const rows = await executeQuery<TransactionRow>(
     `select "id", "kind", "status", "categoryId" from "Transaction"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3 for update`,
@@ -481,6 +527,7 @@ async function resolveCategorizationTarget(
   ) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_OBSOLETE");
   }
+
   return {
     kind: "transaction",
     transactionKind: transaction.kind.toLowerCase() as TransactionKind,
@@ -530,6 +577,7 @@ async function assertSourceBatchReviewable(
   source: DecisionSuggestionRow,
 ): Promise<void> {
   if (!source.provider?.startsWith("solverfin-import") || source.sourceEntityId === null) return;
+
   const rows = await executeQuery<{ status: string }>(
     `select "status" from "ImportBatch"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3 for share`,
@@ -611,10 +659,9 @@ function buildEditedTransactionPayload(
   };
 
   if (current.payloadVersion === 1 && kind !== "transfer" && otherAccountId === undefined) {
-    return buildAiSuggestionPayload({
-      payload: { ...common, payloadVersion: 1, kind },
-    });
+    return buildAiSuggestionPayload({ payload: { ...common, payloadVersion: 1, kind } });
   }
+
   const direction =
     kind === "income"
       ? "inflow"
@@ -630,6 +677,7 @@ function buildEditedTransactionPayload(
       422,
     );
   }
+
   return buildAiSuggestionPayload({
     payload: {
       ...common,
@@ -654,12 +702,16 @@ function readTransactionPayload(
     }
     return undefined;
   }
+
   assertAllowedFields(value, TRANSACTION_EDIT_FIELDS);
   const payload: Partial<AiSuggestedTransactionDraft> = {};
   if (value.kind !== undefined) {
     const kind = String(value.kind);
     if (kind !== "income" && kind !== "expense" && kind !== "transfer") {
-      throw new AiReviewQueueError("AI_REVIEW_KIND_INVALID", "Tipo de lancamento informado na revisao nao e valido.");
+      throw new AiReviewQueueError(
+        "AI_REVIEW_KIND_INVALID",
+        "Tipo de lancamento informado na revisao nao e valido.",
+      );
     }
     payload.kind = kind;
   }
@@ -704,6 +756,7 @@ function readCategorizationCategoryId(
     }
     return undefined;
   }
+
   assertAllowedFields(value, CATEGORIZATION_EDIT_FIELDS);
   const categoryId =
     value.proposedCategoryId === undefined ? undefined : String(value.proposedCategoryId).trim();
@@ -779,7 +832,12 @@ function assertExpectedFingerprint(
   if (expectedFingerprint === undefined) return;
   const read = readAiSuggestionPayload(
     suggestion.payload,
-    suggestion.kind as "transaction_extraction" | "categorization" | "deduplication" | "reconciliation" | "insight",
+    suggestion.kind as
+      | "transaction_extraction"
+      | "categorization"
+      | "deduplication"
+      | "reconciliation"
+      | "insight",
   );
   if (read.state !== "current" || read.payload.fingerprint !== expectedFingerprint) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_CONFLICT");
@@ -822,37 +880,36 @@ function assertPending(suggestion: DecisionSuggestionRow): void {
 async function correlateLatestAudit(
   executeQuery: QueryExecutor,
   context: TenantContext,
-  suggestionId: string,
-  action: "approve" | "reject" | "update",
+  entityKind: "AI_SUGGESTION" | "TRANSACTION",
+  entityId: string,
+  action: "APPROVE" | "REJECT" | "UPDATE",
   correlationId: string | undefined,
-  payloadChanged: boolean,
+  changes: Readonly<Record<string, string>>,
 ): Promise<void> {
   if (correlationId === undefined) return;
-  const changes = payloadChanged
-    ? { previousProposal: "changed", nextProposal: "changed" }
-    : { previousState: "changed", nextState: "changed" };
   await executeQuery(
     `update "AuditLogEntry"
-     set "correlationId" = $5,
-         "redactedChanges" = coalesce("redactedChanges", '{}'::jsonb) || $6::jsonb
+     set "correlationId" = $6,
+         "redactedChanges" = coalesce("redactedChanges", '{}'::jsonb) || $7::jsonb
      where "id" = (
        select "id" from "AuditLogEntry"
        where "organizationId" = $1 and "financialProfileId" = $2
-         and "entityKind" = 'AI_SUGGESTION' and "entityId" = $3 and "action" = $4
+         and "entityKind" = $3 and "entityId" = $4 and "action" = $5
        order by "occurredAt" desc, "id" desc limit 1
      )`,
     [
       context.organizationId,
       context.financialProfileId,
-      suggestionId,
-      action.toUpperCase(),
+      entityKind,
+      entityId,
+      action,
       correlationId,
       JSON.stringify(changes),
     ],
   );
 }
 
-function buildAuditEntry(
+function buildSuggestionAuditEntry(
   context: TenantContext,
   suggestionId: string,
   action: Extract<AuditLogEntryDraft["action"], "approve" | "reject" | "update">,
@@ -873,11 +930,7 @@ function buildAuditEntry(
     ...(correlationId === undefined ? {} : { correlationId }),
     ...(reason === undefined ? {} : { reason }),
     redactedChanges: payloadChanged
-      ? {
-          previousProposal: "changed",
-          nextProposal: "changed",
-          status: "changed",
-        }
+      ? { previousProposal: "changed", nextProposal: "changed", status: "changed" }
       : { status: "changed" },
   };
 }
