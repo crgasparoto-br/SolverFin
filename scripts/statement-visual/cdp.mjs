@@ -41,7 +41,7 @@ export class CdpClient {
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(new Error(`CDP command timeout: ${method}`));
-      }, 20_000);
+      }, method === "Runtime.evaluate" ? 45_000 : 20_000);
       this.pending.set(id, { resolve, reject, timer });
       this.socket.send(JSON.stringify({ id, method, params }));
     });
