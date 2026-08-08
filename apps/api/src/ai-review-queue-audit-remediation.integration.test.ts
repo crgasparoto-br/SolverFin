@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
-import { handleAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
+import { handleCategorizationAwareAiReviewQueueApiRequest } from "./categorization-aware-ai-review-router.js";
 import { closePool, query } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
@@ -204,8 +204,8 @@ async function apiRequest(
     },
     body,
   };
-  const response = await handleAiReviewQueueApiRequest(request);
-  assert.ok(response, `${method} ${path} should be handled by the AI review queue router`);
+  const response = await handleCategorizationAwareAiReviewQueueApiRequest(request);
+  assert.ok(response, `${method} ${path} should be handled by the public AI review queue router`);
   return response;
 }
 
