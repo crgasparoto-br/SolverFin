@@ -112,6 +112,13 @@ export async function approveAiReviewDecisionForContext(
         const persisted = await approveAiReviewSuggestionForContext(context, suggestionId);
         return { ...persisted, idempotent: true };
       }
+      if (suggestion.kind === "transaction_extraction") {
+        throw new AiReviewQueueError(
+          "AI_REVIEW_INVALID_TRANSITION",
+          "A sugestao ja foi resolvida ou nao esta mais disponivel para revisao.",
+          409,
+        );
+      }
       return { suggestion: mapPersistedSuggestion(suggestion), idempotent: true };
     }
 
@@ -518,16 +525,9 @@ async function resolveCategorizationTarget(
   if (sourceSuggestionId !== undefined) {
     let source: DecisionSuggestionRow;
     try {
-      source = await lockSuggestionForContext(
-        executeQuery,
-        context,
-        sourceSuggestionId,
-      );
+      source = await lockSuggestionForContext(executeQuery, context, sourceSuggestionId);
     } catch (error) {
-      if (
-        error instanceof AiReviewQueueError &&
-        error.code === "AI_REVIEW_SUGGESTION_NOT_FOUND"
-      ) {
+      if (error instanceof AiReviewQueueError && error.code === "AI_REVIEW_SUGGESTION_NOT_FOUND") {
         throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_OBSOLETE");
       }
       throw error;
