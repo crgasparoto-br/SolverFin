@@ -83,7 +83,7 @@ function resolveLearningSourceId(
 
   const target = isRecord(payload.target) ? payload.target : undefined;
   return target?.entityKind === "import_suggestion"
-    ? readNonEmptyString(target.entityId)
+    ? readNonEmptyString(proposal.targetEntityId)
     : undefined;
 }
 

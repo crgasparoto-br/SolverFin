@@ -518,7 +518,11 @@ async function resolveCategorizationTarget(
   if (sourceSuggestionId !== undefined) {
     let source: DecisionSuggestionRow;
     try {
-      source = await lockSuggestionForContext(executeQuery, context, sourceSuggestionId);
+      source = await lockSuggestionForContext(
+        executeQuery,
+        context,
+        sourceSuggestionId,
+      );
     } catch (error) {
       if (
         error instanceof AiReviewQueueError &&

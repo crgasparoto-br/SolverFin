@@ -72,6 +72,7 @@ try {
     "profileId preservation contract changed unexpectedly",
     urlState,
   );
+  await waitForReviewCard(browser.cdp, fixture.suggestionId);
 
   textResize = await validateTextResize(browser.cdp, fixture.suggestionId);
   await screenshot(browser.cdp, join(outputDir, "issue-565-ai-review-queue-text-200-percent.png"));
@@ -275,6 +276,10 @@ async function validateKeyboardAndFocus(cdp, suggestionId) {
 
 async function validateFilterUrl(cdp) {
   const before = await evaluate(cdp, `window.location.search`);
+  const originalConfidence = await evaluate(
+    cdp,
+    `document.querySelector('[data-review-filter="confidence"]')?.value || 'all'`,
+  );
   await evaluate(
     cdp,
     `(() => {
@@ -288,6 +293,16 @@ async function validateFilterUrl(cdp) {
   const after = await evaluate(cdp, `window.location.search`);
   const profileBefore = new URLSearchParams(before).get("profileId");
   const profileAfter = new URLSearchParams(after).get("profileId");
+  await evaluate(
+    cdp,
+    `(() => {
+      const filter = document.querySelector('[data-review-filter="confidence"]');
+      filter.value = ${JSON.stringify(originalConfidence)};
+      filter.dispatchEvent(new Event('change', { bubbles: true }));
+      return window.location.search;
+    })()`,
+  );
+  await sleep(80);
   return {
     before,
     after,
