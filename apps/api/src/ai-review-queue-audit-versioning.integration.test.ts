@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
-import {
-  handleCategorizationAwareAiReviewQueueApiRequest,
-} from "./categorization-aware-ai-review-router.js";
+import { handleCategorizationAwareAiReviewQueueApiRequest } from "./categorization-aware-ai-review-router.js";
 import { closePool, query } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
@@ -70,22 +68,12 @@ async function main(): Promise<void> {
     assert.ok(approvedVersion?.fingerprint);
     assert.notEqual(approvedVersion?.fingerprint, approvalPayload.fingerprint);
 
-    const approvalAudit = await readAuditVersion(
-      organizationId,
-      approvalSuggestionId,
-      "APPROVE",
-    );
+    const approvalAudit = await readAuditVersion(organizationId, approvalSuggestionId, "APPROVE");
     assert.equal(approvalAudit?.actorId, USER_ID);
     assert.equal(approvalAudit?.correlationId, approveCorrelationId);
     assert.ok(approvalAudit?.occurredAt instanceof Date);
-    assert.equal(
-      approvalAudit?.previousVersionRef,
-      `pending_review@${approvalPayload.fingerprint}`,
-    );
-    assert.equal(
-      approvalAudit?.nextVersionRef,
-      `approved@${approvedVersion?.fingerprint}`,
-    );
+    assert.equal(approvalAudit?.previousVersionRef, `pending_review@${approvalPayload.fingerprint}`);
+    assert.equal(approvalAudit?.nextVersionRef, `approved@${approvedVersion?.fingerprint}`);
     assertRedacted(approvalAudit?.changes, [approvedDescription, "6543", "4321"]);
 
     const editedDescription = `Descricao editada confidencial ${marker}`;
