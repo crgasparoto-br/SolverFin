@@ -147,7 +147,7 @@ async function main(): Promise<void> {
     assert.equal(approvedBody.idempotent, false);
     assert.ok(approvedBody.transaction?.id);
 
-    const approvedRows = await query<ApprovedPayloadRow>(
+    const approvedRows = await query<{ fingerprint: string; description: string }>(
       `select "payload"->>'fingerprint' as "fingerprint",
               "payload"->>'description' as "description"
          from "AiSuggestion" where "id" = $1`,
@@ -192,11 +192,10 @@ async function main(): Promise<void> {
       `${correlationId}-different`,
     );
     assert.equal(differentDecisionReplay.statusCode, 409);
-    const differentReplayCode = readErrorCode(differentDecisionReplay);
-    assert.equal(differentReplayCode, "AI_SUGGESTION_PAYLOAD_CONFLICT");
+    assert.equal(readErrorCode(differentDecisionReplay), "AI_SUGGESTION_PAYLOAD_CONFLICT");
     assert.equal(await countSuggestionTransactions(organizationId, suggestionId), 1);
 
-    const approvalAudits = await query<ApprovalAuditRow>(
+    const approvalAudits = await query<{ replayKey: string | null; count: string }>(
       `select max("redactedChanges"->>'approvalReplayKey') as "replayKey",
               count(*)::text as "count"
          from "AuditLogEntry"
@@ -223,14 +222,13 @@ async function main(): Promise<void> {
     assert.equal(secondApprovedBody.idempotent, false);
     assert.ok(secondApprovedBody.transaction?.id);
 
-    const secondApprovedRows = await query<SecondApprovedPayloadRow>(
+    const secondApprovedRows = await query<{ fingerprint: string; amountMinor: string }>(
       `select "payload"->>'fingerprint' as "fingerprint",
               "payload"->>'amountMinor' as "amountMinor"
          from "AiSuggestion" where "id" = $1`,
       [secondSuggestionId],
     );
-    const secondFingerprint = secondApprovedRows[0]?.fingerprint;
-    assert.notEqual(secondFingerprint, secondPayload.fingerprint);
+    assert.notEqual(secondApprovedRows[0]?.fingerprint, secondPayload.fingerprint);
     assert.equal(secondApprovedRows[0]?.amountMinor, "6543");
 
     const secondRepeated = await apiRequest(
@@ -243,22 +241,15 @@ async function main(): Promise<void> {
     assert.equal(secondRepeated.statusCode, 200);
     const secondRepeatedBody = readBody<DecisionBody>(secondRepeated);
     assert.equal(secondRepeatedBody.idempotent, true);
-    const secondRepeatedTransactionId = secondRepeatedBody.transaction?.id;
-    const secondApprovedTransactionId = secondApprovedBody.transaction?.id;
-    assert.equal(secondRepeatedTransactionId, secondApprovedTransactionId);
-    const secondTransactionCount = await countSuggestionTransactions(
-      organizationId,
-      secondSuggestionId,
-    );
-    assert.equal(secondTransactionCount, 1);
+    assert.equal(secondRepeatedBody.transaction?.id, secondApprovedBody.transaction?.id);
+    assert.equal(await countSuggestionTransactions(organizationId, secondSuggestionId), 1);
   } finally {
     const suggestionIds = [suggestionId, secondSuggestionId];
     const transactionRows = await query<{ id: string }>(
       `select "id" from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
       [suggestionIds],
     );
-    const transactionIds = transactionRows.map((row) => row.id);
-    const entityIds = [...suggestionIds, ...transactionIds];
+    const entityIds = [...suggestionIds, ...transactionRows.map((row) => row.id)];
     await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
     await query(
       `delete from "Transaction" where "aiSuggestionId" = any($1::uuid[])`,
@@ -352,19 +343,4 @@ interface DecisionBody {
   suggestion: { status: string };
   transaction?: { id: string };
   idempotent?: boolean;
-}
-
-interface ApprovedPayloadRow {
-  fingerprint: string;
-  description: string;
-}
-
-interface ApprovalAuditRow {
-  replayKey: string | null;
-  count: string;
-}
-
-interface SecondApprovedPayloadRow {
-  fingerprint: string;
-  amountMinor: string;
 }

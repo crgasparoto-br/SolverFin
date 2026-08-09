@@ -189,10 +189,9 @@ async function returnPersistedApproval(
   input: AiReviewDecisionInput,
 ): Promise<AiReviewDecisionResult> {
   const kind = row.kind.toLowerCase();
-  const isGeneralExtraction =
-    kind === "transaction_extraction" &&
-    row.provider?.startsWith("solverfin-import") !== true;
-  if (!isGeneralExtraction) {
+  const isTransactionExtraction = kind === "transaction_extraction";
+  const isImportSuggestion = row.provider?.startsWith("solverfin-import") === true;
+  if (!isTransactionExtraction || isImportSuggestion) {
     return approveAiReviewDecision(context, row.id, input);
   }
 
@@ -246,11 +245,8 @@ function stableJson(value: unknown): string {
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize);
   if (!isRecord(value)) return value;
-  return Object.fromEntries(
-    Object.keys(value)
-      .sort()
-      .map((key) => [key, canonicalize(value[key])]),
-  );
+  const keys = Object.keys(value).sort();
+  return Object.fromEntries(keys.map((key) => [key, canonicalize(value[key])]));
 }
 
 function payloadMatchesPersistedApproval(
