@@ -11,7 +11,10 @@ import {
   type AiReviewDecisionResult,
 } from "./ai-review-queue-decision-service.js";
 import { withSharedTransaction, type QueryExecutor } from "./db.js";
-import { AiReviewQueueError, type PersistedAiSuggestion } from "./repositories/ai-review-queue.js";
+import {
+  AiReviewQueueError,
+  type PersistedAiSuggestion,
+} from "./repositories/ai-review-queue.js";
 import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
 import { getTransactionForContext } from "./repositories/transactions.js";
 
@@ -156,7 +159,7 @@ async function readApprovedReplay(
     detail.payload.fingerprint !== input.expectedFingerprint ||
     !payloadMatchesPersistedApproval(row.payload, input.payload)
   ) {
-    throw new AiSuggestionPayloadError("AI_SUGGGESTION_PAYLOAD_CONFLICT");
+    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_CONFLICT");
   }
   return returnPersistedApproval(context, row, input);
 }
@@ -213,7 +216,7 @@ async function persistApprovalReplayKey(
 ): Promise<void> {
   const rows = await executeQuery<{ id: string }>(
     `update "AuditLogEntry"
-        set "redactedChanges" = coalesce("redactedChanges", '{}::jsonb)
+        set "redactedChanges" = coalesce("redactedChanges", '{}'::jsonb)
           || jsonb_build_object('approvalReplayKey', $4::text)
       where "id" = (
         select "id" from "AuditLogEntry"
@@ -225,11 +228,15 @@ async function persistApprovalReplayKey(
     [context.organizationId, context.financialProfileId, suggestionId, replayKey],
   );
   if (rows.length !== 1) {
-    throw new Error("AI review approval replay key could not be persisted atomically.");
+    throw new Error(
+      "AI review approval replay key could not be persisted atomically.",
+    );
   }
 }
 
-function buildApprovalReplayKey(input: AiReviewDecisionInput): string | undefined {
+function buildApprovalReplayKey(
+  input: AiReviewDecisionInput,
+): string | undefined {
   if (input.expectedFingerprint === undefined) return undefined;
   const request = stableJson({
     expectedFingerprint: input.expectedFingerprint,
@@ -257,12 +264,16 @@ function payloadMatchesPersistedApproval(
   persistedPayload: unknown,
   requestedPayload: Readonly<Record<string, unknown>> | undefined,
 ): boolean {
-  if (requestedPayload === undefined || Object.keys(requestedPayload).length === 0) {
+  if (
+    requestedPayload === undefined ||
+    Object.keys(requestedPayload).length === 0
+  ) {
     return true;
   }
   if (!isRecord(persistedPayload)) return false;
   return Object.entries(requestedPayload).every(([key, value]) => {
-    const persistedKey = key === "destinationAccountId" ? "otherAccountId" : key;
+    const persistedKey =
+      key === "destinationAccountId" ? "otherAccountId" : key;
     return stableJson(persistedPayload[persistedKey]) === stableJson(value);
   });
 }
