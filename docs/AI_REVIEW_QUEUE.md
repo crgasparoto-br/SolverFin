@@ -95,6 +95,8 @@ A aprovação de extrações importadas continua usando o fluxo de `docs/IMPORTS
 
 ## Auditoria e segurança
 
-Todas as consultas e mutações exigem o mesmo `organizationId` e `financialProfileId`. Aprovação, rejeição e edição registram ator, data, ação, entidade, mudanças redigidas e, quando a requisição possui correlação, o mesmo `correlationId` do request. Mudanças redigidas indicam transição/proposta alterada sem registrar dados financeiros sensíveis.
+Todas as consultas e mutações exigem o mesmo `organizationId` e `financialProfileId`. Aprovação, rejeição e edição registram ator, data, ação, entidade, mudanças redigidas, referências redigidas da versão anterior e nova e, quando a requisição possui correlação, o mesmo `correlationId` do request.
 
-O endpoint valida UUID antes do primeiro acesso protegido e erros públicos não revelam existência de recurso fora do contexto ativo. Payload resolvido permanece imutável pelo contrato do banco.
+As referências `previousVersionRef` e `nextVersionRef` usam somente `status@fingerprint`. Elas permitem distinguir inequivocamente o estado observado antes da decisão do estado persistido depois dela sem registrar valor, descrição, conta, categoria ou qualquer outro dado financeiro em claro. A gravação dessas referências ocorre na mesma transação da decisão; se a trilha de auditoria não puder ser atualizada, a mutação inteira faz rollback.
+
+Mudanças redigidas continuam indicando transição/proposta alterada sem registrar dados financeiros sensíveis. O endpoint valida UUID antes do primeiro acesso protegido e erros públicos não revelam existência de recurso fora do contexto ativo. Payload resolvido permanece imutável pelo contrato do banco.

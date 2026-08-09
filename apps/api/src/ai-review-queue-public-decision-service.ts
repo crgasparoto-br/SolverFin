@@ -35,6 +35,11 @@ interface ApprovedSuggestionRow {
   approvalReplayKey: string | null;
 }
 
+interface CurrentSuggestionAuditVersionRow {
+  status: string;
+  fingerprint: string | null;
+}
+
 const APPROVED_SUGGESTION_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
   "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload", "provider", "model",
   "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt"`;
@@ -74,6 +79,13 @@ export async function approveAiReviewDecisionForContext(
       if (replayKey !== undefined) {
         await persistApprovalReplayKey(executeQuery, context, suggestionId, replayKey);
       }
+      await persistDecisionAuditVersionRefs(
+        executeQuery,
+        context,
+        suggestionId,
+        "APPROVE",
+        input.expectedFingerprint,
+      );
       return result;
     } catch (error) {
       if (
@@ -102,8 +114,18 @@ export async function editAiReviewDecisionForContext(
   suggestionId: EntityId,
   input: AiReviewDecisionInput,
 ): Promise<AiReviewDecisionResult> {
-  await assertSuppliedExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
-  return editAiReviewDecision(context, suggestionId, input);
+  return withSharedTransaction(async (executeQuery) => {
+    await assertSuppliedExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
+    const result = await editAiReviewDecision(context, suggestionId, input);
+    await persistDecisionAuditVersionRefs(
+      executeQuery,
+      context,
+      suggestionId,
+      "UPDATE",
+      input.expectedFingerprint,
+    );
+    return result;
+  });
 }
 
 export async function rejectAiReviewDecisionForContext(
@@ -111,8 +133,18 @@ export async function rejectAiReviewDecisionForContext(
   suggestionId: EntityId,
   input: AiReviewDecisionInput,
 ): Promise<AiReviewDecisionResult> {
-  await assertSuppliedExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
-  return rejectAiReviewDecision(context, suggestionId, input);
+  return withSharedTransaction(async (executeQuery) => {
+    await assertSuppliedExpectedFingerprint(context, suggestionId, input.expectedFingerprint);
+    const result = await rejectAiReviewDecision(context, suggestionId, input);
+    await persistDecisionAuditVersionRefs(
+      executeQuery,
+      context,
+      suggestionId,
+      "REJECT",
+      input.expectedFingerprint,
+    );
+    return result;
+  });
 }
 
 export type { AiReviewDecisionInput };
@@ -225,6 +257,57 @@ async function persistApprovalReplayKey(
   );
   if (rows.length !== 1) {
     throw new Error("AI review approval replay key could not be persisted atomically.");
+  }
+}
+
+async function persistDecisionAuditVersionRefs(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  suggestionId: EntityId,
+  action: "APPROVE" | "UPDATE" | "REJECT",
+  expectedFingerprint: string | undefined,
+): Promise<void> {
+  if (expectedFingerprint === undefined) return;
+
+  const currentRows = await executeQuery<CurrentSuggestionAuditVersionRow>(
+    `select lower("status"::text) as "status",
+            coalesce("payload"->>'fingerprint', "payloadFingerprint") as "fingerprint"
+       from "AiSuggestion"
+      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [suggestionId, context.organizationId, context.financialProfileId],
+  );
+  const current = currentRows[0];
+  if (current === undefined) {
+    throw new Error("AI review suggestion disappeared before audit versioning.");
+  }
+
+  const previousVersionRef = `pending_review@${expectedFingerprint}`;
+  const nextVersionRef = `${current.status}@${current.fingerprint ?? expectedFingerprint}`;
+  const rows = await executeQuery<{ id: string }>(
+    `update "AuditLogEntry"
+        set "redactedChanges" = coalesce("redactedChanges", '{}'::jsonb)
+          || jsonb_build_object(
+            'previousVersionRef', $5::text,
+            'nextVersionRef', $6::text
+          )
+      where "id" = (
+        select "id" from "AuditLogEntry"
+         where "organizationId" = $1 and "financialProfileId" = $2
+           and "entityKind" = 'AI_SUGGESTION' and "entityId" = $3 and "action" = $4
+         order by "occurredAt" desc, "id" desc limit 1
+      )
+      returning "id"`,
+    [
+      context.organizationId,
+      context.financialProfileId,
+      suggestionId,
+      action,
+      previousVersionRef,
+      nextVersionRef,
+    ],
+  );
+  if (rows.length !== 1) {
+    throw new Error("AI review audit version references could not be persisted atomically.");
   }
 }
 
