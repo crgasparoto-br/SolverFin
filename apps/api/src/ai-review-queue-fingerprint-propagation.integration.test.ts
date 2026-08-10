@@ -3,13 +3,9 @@ import { randomUUID } from "node:crypto";
 
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
-import {
-  handleCategorizationAwareAiReviewQueueApiRequest,
-} from "./categorization-aware-ai-review-router.js";
+import { handleCategorizationAwareAiReviewQueueApiRequest } from "./categorization-aware-ai-review-router.js";
 import { closePool, query } from "./db.js";
-import {
-  handleDeduplicationReconciliationApiRequest as handleDeterministicRequest,
-} from "./deduplication-reconciliation-router.js";
+import { handleDeduplicationReconciliationApiRequest as handleDeterministicRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
