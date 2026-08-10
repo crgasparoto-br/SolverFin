@@ -2,27 +2,15 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
-import {
-  buildAiSuggestionPayload,
-} from "@solverfin/domain/ai-suggestion-payloads";
+import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 import type { PoolClient } from "pg";
 
-import {
-  handleCategorizationAwareAiReviewQueueApiRequest,
-} from "./categorization-aware-ai-review-router.js";
+import { handleCategorizationAwareAiReviewQueueApiRequest } from "./categorization-aware-ai-review-router.js";
 import { closePool, getPool, query } from "./db.js";
-import {
-  tryHandleGeneralizedDeterministicDecisionForContext,
-} from "./generalized-deterministic-review-decision.js";
-import {
-  scanPendingDeterministicReviewSuggestionsForContext,
-} from "./generalized-deterministic-review-scan.js";
+import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
+import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import {
-  handleApiRequest,
-  type ApiRequest,
-  type ApiResponse,
-} from "./router.js";
+import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
@@ -50,10 +38,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const marker = randomUUID();
   const token = await loginAndReadToken();
   const ledger: Ledger = {
@@ -94,11 +79,7 @@ async function assertProducerLinksAndApiContracts(
   const sources = new Map<string, { sourceId: string; batchId: string }>();
 
   for (const [name, provider, sourceKind] of producerSpecs) {
-    const batchId = await insertImportBatch(
-      sourceKind,
-      `${name}-${marker}`,
-      ledger,
-    );
+    const batchId = await insertImportBatch(sourceKind, `${name}-${marker}`, ledger);
     const source = await insertExtraction(
       {
         provider,
@@ -137,11 +118,7 @@ async function assertProducerLinksAndApiContracts(
   assert.equal(await countCandidates(aiSource.id, "PENDING_REVIEW"), 2);
 
   const csv = requireSource(sources, "csv");
-  const importedCandidate = await readPendingCandidate(
-    csv.sourceId,
-    "DEDUPLICATION",
-    targetId,
-  );
+  const importedCandidate = await readPendingCandidate(csv.sourceId, "DEDUPLICATION", targetId);
   const importedDetail = await readCandidateDetail(token, importedCandidate.id);
   const importedDecision = await apiRequest(
     token,
@@ -156,11 +133,7 @@ async function assertProducerLinksAndApiContracts(
   assert.equal(importedBody.importBatch?.id, csv.batchId);
   assert.equal(importedBody.transaction, undefined);
 
-  const aiCandidate = await readPendingCandidate(
-    aiSource.id,
-    "DEDUPLICATION",
-    targetId,
-  );
+  const aiCandidate = await readPendingCandidate(aiSource.id, "DEDUPLICATION", targetId);
   const aiDetail = await readCandidateDetail(token, aiCandidate.id);
   const aiDecision = await apiRequest(
     token,
@@ -190,11 +163,7 @@ async function assertDiscardedBatchLifecycle(
     },
     ledger,
   );
-  const batchId = await insertImportBatch(
-    "BANK_MESSAGE",
-    `discard-${marker}`,
-    ledger,
-  );
+  const batchId = await insertImportBatch("BANK_MESSAGE", `discard-${marker}`, ledger);
   const source = await insertExtraction(
     {
       provider: "solverfin-rule-bank-message-inbox",
@@ -209,11 +178,7 @@ async function assertDiscardedBatchLifecycle(
 
   await scanPendingDeterministicReviewSuggestionsForContext(context);
   assert.equal(await countCandidates(source.id, "PENDING_REVIEW"), 2);
-  const candidate = await readPendingCandidate(
-    source.id,
-    "DEDUPLICATION",
-    targetId,
-  );
+  const candidate = await readPendingCandidate(source.id, "DEDUPLICATION", targetId);
   const detail = await readCandidateDetail(token, candidate.id);
 
   await query(
@@ -230,18 +195,14 @@ async function assertDiscardedBatchLifecycle(
   assert.equal(rejectedDecision.statusCode, 409);
   assert.equal(readErrorCode(rejectedDecision), "AI_REVIEW_SOURCE_DISCARDED");
 
-  const scan =
-    await scanPendingDeterministicReviewSuggestionsForContext(context);
+  const scan = await scanPendingDeterministicReviewSuggestionsForContext(context);
   assert.ok(scan.expiredCandidates >= 2);
   assert.equal(await countCandidates(source.id, "PENDING_REVIEW"), 0);
   assert.equal(await countCandidates(source.id, "EXPIRED"), 2);
   assert.equal(await readSuggestionStatus(source.id), "PENDING_REVIEW");
 }
 
-async function assertScannerDecisionSerialization(
-  marker: string,
-  ledger: Ledger,
-): Promise<void> {
+async function assertScannerDecisionSerialization(marker: string, ledger: Ledger): Promise<void> {
   const description = `Corrida scanner decisão ${marker}`;
   const firstTargetId = await insertTransaction(
     {
@@ -262,11 +223,7 @@ async function assertScannerDecisionSerialization(
     ledger,
   );
   await scanPendingDeterministicReviewSuggestionsForContext(context);
-  const decisionCandidate = await readPendingCandidate(
-    source.id,
-    "DEDUPLICATION",
-    firstTargetId,
-  );
+  const decisionCandidate = await readPendingCandidate(source.id, "DEDUPLICATION", firstTargetId);
 
   const secondTargetId = await insertTransaction(
     {
@@ -284,8 +241,7 @@ async function assertScannerDecisionSerialization(
     blockerOpen = true;
     await insertBlockingCandidate(blocker, source, secondTargetId);
 
-    const scanPromise =
-      scanPendingDeterministicReviewSuggestionsForContext(context);
+    const scanPromise = scanPendingDeterministicReviewSuggestionsForContext(context);
     await waitUntilSourceLocked(source.id);
 
     const decisionPromise = tryHandleGeneralizedDeterministicDecisionForContext(
@@ -482,9 +438,7 @@ async function waitUntilSourceLocked(sourceId: string): Promise<void> {
   } finally {
     client.release();
   }
-  assert.fail(
-    "Scanner should hold the source row lock while creating deterministic candidates.",
-  );
+  assert.fail("Scanner should hold the source row lock while creating deterministic candidates.");
 }
 
 async function readPendingCandidate(
@@ -503,10 +457,7 @@ async function readPendingCandidate(
   return rows[0];
 }
 
-async function countCandidates(
-  sourceId: string,
-  status: string,
-): Promise<number> {
+async function countCandidates(sourceId: string, status: string): Promise<number> {
   const rows = await query<{ count: string }>(
     `select count(*)::text as "count" from "AiSuggestion"
      where "sourceSuggestionId" = $1 and "kind" in ('DEDUPLICATION', 'RECONCILIATION') and "status" = $2`,
@@ -523,15 +474,8 @@ async function readSuggestionStatus(id: string): Promise<string | undefined> {
   return rows[0]?.status;
 }
 
-async function readCandidateDetail(
-  token: string,
-  candidateId: string,
-): Promise<PayloadDetail> {
-  const response = await apiRequest(
-    token,
-    "GET",
-    `/api/ai-review-queue/${candidateId}/payload`,
-  );
+async function readCandidateDetail(token: string, candidateId: string): Promise<PayloadDetail> {
+  const response = await apiRequest(token, "GET", `/api/ai-review-queue/${candidateId}/payload`);
   assert.equal(response.statusCode, 200);
   return readBody<PayloadResponse>(response).payload;
 }
@@ -609,35 +553,19 @@ async function cleanup(ledger: Ledger): Promise<void> {
           [ledger.suggestionIds],
         );
   const allSuggestionIds = allSuggestionRows.map((row) => row.id);
-  const entityIds = [
-    ...allSuggestionIds,
-    ...ledger.transactionIds,
-    ...ledger.importBatchIds,
-  ];
+  const entityIds = [...allSuggestionIds, ...ledger.transactionIds, ...ledger.importBatchIds];
 
   if (entityIds.length > 0) {
-    await query(
-      `delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`,
-      [entityIds],
-    );
+    await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
   }
   if (allSuggestionIds.length > 0) {
-    await query(
-      `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
-      [allSuggestionIds],
-    );
+    await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [allSuggestionIds]);
   }
   if (ledger.transactionIds.length > 0) {
-    await query(
-      `delete from "Transaction" where "id" = any($1::uuid[])`,
-      [ledger.transactionIds],
-    );
+    await query(`delete from "Transaction" where "id" = any($1::uuid[])`, ledger.transactionIds);
   }
   if (ledger.importBatchIds.length > 0) {
-    await query(
-      `delete from "ImportBatch" where "id" = any($1::uuid[])`,
-      [ledger.importBatchIds],
-    );
+    await query(`delete from "ImportBatch" where "id" = any($1::uuid[])`, ledger.importBatchIds);
   }
 }
 
