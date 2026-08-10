@@ -434,13 +434,7 @@ async function expireSiblingCandidates(
        and "sourceSuggestionId" = $3 and "id" <> $4
        and "kind" in ('DEDUPLICATION', 'RECONCILIATION') and "status" = 'PENDING_REVIEW'
      returning "id"`,
-    [
-      context.organizationId,
-      context.financialProfileId,
-      sourceSuggestionId,
-      keepSuggestionId,
-      now,
-    ],
+    [context.organizationId, context.financialProfileId, sourceSuggestionId, keepSuggestionId, now],
   );
   for (const row of rows) {
     await insertAuditLogEntry(executeQuery, {
