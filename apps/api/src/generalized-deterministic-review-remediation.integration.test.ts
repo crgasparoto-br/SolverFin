@@ -16,7 +16,11 @@ import {
   scanPendingDeterministicReviewSuggestionsForContext,
 } from "./generalized-deterministic-review-scan.js";
 import { handleMvpApiRequest } from "./mvp.js";
-import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
+import {
+  handleApiRequest,
+  type ApiRequest,
+  type ApiResponse,
+} from "./router.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
@@ -88,7 +92,11 @@ async function assertProducerLinksAndApiContracts(
   const sources = new Map<string, { sourceId: string; batchId: string }>();
 
   for (const [name, provider, sourceKind] of producerSpecs) {
-    const batchId = await insertImportBatch(sourceKind, `${name}-${marker}`, ledger);
+    const batchId = await insertImportBatch(
+      sourceKind,
+      `${name}-${marker}`,
+      ledger,
+    );
     const source = await insertExtraction(
       {
         provider,
@@ -199,7 +207,11 @@ async function assertDiscardedBatchLifecycle(
 
   await scanPendingDeterministicReviewSuggestionsForContext(context);
   assert.equal(await countCandidates(source.id, "PENDING_REVIEW"), 2);
-  const candidate = await readPendingCandidate(source.id, "DEDUPLICATION", targetId);
+  const candidate = await readPendingCandidate(
+    source.id,
+    "DEDUPLICATION",
+    targetId,
+  );
   const detail = await readCandidateDetail(token, candidate.id);
 
   await query(
@@ -216,7 +228,8 @@ async function assertDiscardedBatchLifecycle(
   assert.equal(rejectedDecision.statusCode, 409);
   assert.equal(readErrorCode(rejectedDecision), "AI_REVIEW_SOURCE_DISCARDED");
 
-  const scan = await scanPendingDeterministicReviewSuggestionsForContext(context);
+  const scan =
+    await scanPendingDeterministicReviewSuggestionsForContext(context);
   assert.ok(scan.expiredCandidates >= 2);
   assert.equal(await countCandidates(source.id, "PENDING_REVIEW"), 0);
   assert.equal(await countCandidates(source.id, "EXPIRED"), 2);
