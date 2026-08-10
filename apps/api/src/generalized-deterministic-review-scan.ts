@@ -64,9 +64,25 @@ export async function scanPendingDeterministicReviewSuggestionsForContext(
       filter.sourceEntityId,
     );
 
-    for (const row of sourceRows) {
+    for (const listedRow of sourceRows) {
+      const row = await lockPendingSource(context, listedRow.id, executeQuery);
+      if (row === undefined) continue;
       const source = buildGeneralizedSourceState(row);
       if (source === undefined) continue;
+
+      if (!(await isReviewableSourceBatch(context, row, executeQuery))) {
+        const staleChildren = await listPendingChildren(context, row.id, executeQuery);
+        for (const candidateRow of staleChildren) {
+          expiredCandidates += await expireCandidate(
+            context,
+            candidateRow.id,
+            "Candidatura expirada porque o lote ou mensagem de origem não está mais em revisão.",
+            executeQuery,
+          );
+        }
+        continue;
+      }
+
       const desired = buildDesiredCandidates(context, source, transactions, existingCandidates);
       const existing = await listPendingChildren(context, row.id, executeQuery);
       const covered = new Set<string>();
@@ -159,6 +175,35 @@ function buildDesiredCandidates(
     });
   }
   return desired;
+}
+
+async function lockPendingSource(
+  context: TenantContext,
+  sourceSuggestionId: string,
+  executeQuery: QueryExecutor,
+): Promise<GeneralizedAiSuggestionRow | undefined> {
+  const rows = await executeQuery<GeneralizedAiSuggestionRow>(
+    `select ${GENERALIZED_AI_SUGGESTION_COLUMNS} from "AiSuggestion"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+       and "kind" = 'TRANSACTION_EXTRACTION' and "status" = 'PENDING_REVIEW'
+     for update`,
+    [sourceSuggestionId, context.organizationId, context.financialProfileId],
+  );
+  return rows[0];
+}
+
+async function isReviewableSourceBatch(
+  context: TenantContext,
+  source: GeneralizedAiSuggestionRow,
+  executeQuery: QueryExecutor,
+): Promise<boolean> {
+  if (source.sourceEntityId === null) return true;
+  const rows = await executeQuery<{ status: string }>(
+    `select "status" from "ImportBatch"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [source.sourceEntityId, context.organizationId, context.financialProfileId],
+  );
+  return rows[0]?.status === "REVIEWING";
 }
 
 async function listPendingChildren(
