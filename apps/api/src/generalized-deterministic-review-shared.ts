@@ -127,7 +127,8 @@ export function buildGeneralizedSourceState(
     id: row.id,
     organizationId: row.organizationId,
     financialProfileId: row.financialProfileId,
-    candidateKind: row.provider?.includes("bank-message") === true ? "bank_message" : "import_suggestion",
+    candidateKind:
+      row.provider?.includes("bank-message") === true ? "bank_message" : "import_suggestion",
     sourceKind:
       row.provider?.includes("bank-message") === true
         ? "bank_message"
@@ -173,7 +174,9 @@ export function buildGeneralizedReconciliationSource(source: GeneralizedSourceSt
     ...(source.candidate.destinationAccountId === undefined
       ? {}
       : { destinationAccountId: source.candidate.destinationAccountId }),
-    ...(source.extraction.categoryId === undefined ? {} : { categoryId: source.extraction.categoryId }),
+    ...(source.extraction.categoryId === undefined
+      ? {}
+      : { categoryId: source.extraction.categoryId }),
   };
 }
 
@@ -204,6 +207,8 @@ export function mapGeneralizedTransaction(row: GeneralizedTransactionRow): Trans
 }
 
 export function mapGeneralizedSuggestion(row: GeneralizedAiSuggestionRow): AiSuggestion {
+  const payload =
+    parseTransactionExtractionPayload(row.payload) ?? parseDeterministicReviewPayload(row.payload);
   return {
     id: row.id,
     organizationId: row.organizationId,
@@ -216,7 +221,7 @@ export function mapGeneralizedSuggestion(row: GeneralizedAiSuggestionRow): AiSug
     updatedAt: row.updatedAt.toISOString(),
     ...(row.sourceEntityId === null ? {} : { sourceEntityId: row.sourceEntityId }),
     ...(row.targetEntityId === null ? {} : { targetEntityId: row.targetEntityId }),
-    ...(row.payload === null ? {} : { payload: row.payload }),
+    ...(payload === undefined ? {} : { payload }),
     ...(row.provider === null ? {} : { provider: row.provider }),
     ...(row.model === null ? {} : { model: row.model }),
     ...(row.reviewedByUserId === null ? {} : { reviewedByUserId: row.reviewedByUserId }),
