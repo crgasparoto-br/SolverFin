@@ -70,11 +70,7 @@ async function main(): Promise<void> {
     assert.ok(approvedVersion?.fingerprint);
     assert.notEqual(approvedVersion?.fingerprint, approvalPayload.fingerprint);
 
-    const approvalAudit = await readAuditVersion(
-      organizationId,
-      approvalSuggestionId,
-      "APPROVE",
-    );
+    const approvalAudit = await readAuditVersion(organizationId, approvalSuggestionId, "APPROVE");
     assert.equal(approvalAudit?.actorId, USER_ID);
     assert.equal(approvalAudit?.correlationId, approveCorrelationId);
     assert.ok(approvalAudit?.occurredAt instanceof Date);
@@ -82,10 +78,7 @@ async function main(): Promise<void> {
       approvalAudit?.previousVersionRef,
       `pending_review@${approvalPayload.fingerprint}`,
     );
-    assert.equal(
-      approvalAudit?.nextVersionRef,
-      `approved@${approvedVersion?.fingerprint}`,
-    );
+    assert.equal(approvalAudit?.nextVersionRef, `approved@${approvedVersion?.fingerprint}`);
     assertRedacted(approvalAudit?.changes, [approvedDescription, "6543", "4321"]);
 
     const editedDescription = `Descricao editada confidencial ${marker}`;
