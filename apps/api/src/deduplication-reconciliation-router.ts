@@ -4,20 +4,14 @@ import {
   type AiSuggestion,
   type TenantContext,
 } from "@solverfin/domain";
-import {
-  readAiSuggestionPayload,
-} from "@solverfin/domain/ai-suggestion-payloads";
+import { readAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { query, withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import {
-  tryHandleGeneralizedDeterministicDecisionForContext,
-} from "./generalized-deterministic-review-decision.js";
-import {
-  scanPendingDeterministicReviewSuggestionsForContext,
-} from "./generalized-deterministic-review-scan.js";
+import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
+import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
 import { refreshImportBatchStatusForContext } from "./repositories/imports.js";
 import {
   DeterministicReviewSuggestionError,
@@ -59,16 +53,8 @@ route(
   "/api/import-batches/:importBatchId/detect-duplicates",
   detectImportBatchDuplicatesHandler,
 );
-route(
-  "POST",
-  "/api/review-suggestions/:suggestionId/approve",
-  approveReviewSuggestionHandler,
-);
-route(
-  "POST",
-  "/api/review-suggestions/:suggestionId/reject",
-  rejectReviewSuggestionHandler,
-);
+route("POST", "/api/review-suggestions/:suggestionId/approve", approveReviewSuggestionHandler);
+route("POST", "/api/review-suggestions/:suggestionId/reject", rejectReviewSuggestionHandler);
 
 export async function handleDeduplicationReconciliationApiRequest(
   request: ApiRequest,
@@ -84,9 +70,7 @@ export async function handleDeduplicationReconciliationApiRequest(
   if (!match) return undefined;
 
   try {
-    const user = await requireAuthenticatedRequest(
-      buildAuthHeaders(request.headers.authorization),
-    );
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
     const context = await resolveRequestTenantContext(
       user,
       request.query.get("profileId") ?? undefined,
@@ -105,11 +89,7 @@ export async function handleDeduplicationReconciliationApiRequest(
   }
 }
 
-function route(
-  method: string,
-  path: string,
-  handler: DeduplicationHandler,
-): void {
+function route(method: string, path: string, handler: DeduplicationHandler): void {
   const paramNames: string[] = [];
   const patternSource = path
     .split("/")
@@ -151,17 +131,10 @@ async function listReviewSuggestionsHandler(
   request: ApiRequest,
   context: TenantContext,
 ): Promise<ApiResponse> {
-  const kind = request.query.get("kind") as
-    | "deduplication"
-    | "reconciliation"
-    | null;
-  const status = request.query.get("status") as
-    | AiSuggestion["status"]
-    | "all"
-    | null;
+  const kind = request.query.get("kind") as "deduplication" | "reconciliation" | null;
+  const status = request.query.get("status") as AiSuggestion["status"] | "all" | null;
   const sourceEntityId = request.query.get("sourceEntityId") ?? undefined;
-  const sourceSuggestionId =
-    request.query.get("sourceSuggestionId") ?? undefined;
+  const sourceSuggestionId = request.query.get("sourceSuggestionId") ?? undefined;
   return json(200, {
     suggestions: await listDeterministicReviewSuggestionsForContext(context, {
       ...(kind ? { kind } : {}),
@@ -185,20 +158,13 @@ async function detectImportBatchDuplicatesHandler(
   await withSharedTransaction(async (executeQuery) =>
     refreshImportBatchStatusForContext(context, importBatchId, executeQuery),
   );
-  const suggestions = await listDeterministicReviewSuggestionsForContext(
-    context,
-    {
-      sourceEntityId: importBatchId,
-      status: "pending_review",
-    },
-  );
+  const suggestions = await listDeterministicReviewSuggestionsForContext(context, {
+    sourceEntityId: importBatchId,
+    status: "pending_review",
+  });
   return json(200, {
-    deduplicationSuggestions: suggestions.filter(
-      (item) => item.kind === "deduplication",
-    ),
-    reconciliationSuggestions: suggestions.filter(
-      (item) => item.kind === "reconciliation",
-    ),
+    deduplicationSuggestions: suggestions.filter((item) => item.kind === "deduplication"),
+    reconciliationSuggestions: suggestions.filter((item) => item.kind === "reconciliation"),
     duplicateScan: true,
   });
 }
@@ -209,10 +175,7 @@ async function approveReviewSuggestionHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const suggestionId = requireParam(match, "suggestionId");
-  const expectedFingerprint = await readCurrentDeterministicFingerprint(
-    context,
-    suggestionId,
-  );
+  const expectedFingerprint = await readCurrentDeterministicFingerprint(context, suggestionId);
   if (expectedFingerprint !== undefined) {
     const result = await tryHandleGeneralizedDeterministicDecisionForContext(
       context,
@@ -225,10 +188,7 @@ async function approveReviewSuggestionHandler(
     );
     if (result !== undefined) return json(200, result);
   }
-  return json(
-    200,
-    await approveDeterministicReviewSuggestionForContext(context, suggestionId),
-  );
+  return json(200, await approveDeterministicReviewSuggestionForContext(context, suggestionId));
 }
 
 async function rejectReviewSuggestionHandler(
@@ -237,16 +197,10 @@ async function rejectReviewSuggestionHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const suggestionId = requireParam(match, "suggestionId");
-  const body =
-    typeof request.body === "object" && request.body !== null
-      ? request.body
-      : {};
+  const body = typeof request.body === "object" && request.body !== null ? request.body : {};
   const reasonValue = (body as { reason?: unknown }).reason;
   const reason = reasonValue === undefined ? undefined : String(reasonValue);
-  const expectedFingerprint = await readCurrentDeterministicFingerprint(
-    context,
-    suggestionId,
-  );
+  const expectedFingerprint = await readCurrentDeterministicFingerprint(context, suggestionId);
   if (expectedFingerprint !== undefined) {
     const result = await tryHandleGeneralizedDeterministicDecisionForContext(
       context,
@@ -262,11 +216,7 @@ async function rejectReviewSuggestionHandler(
   }
   return json(
     200,
-    await rejectDeterministicReviewSuggestionForContext(
-      context,
-      suggestionId,
-      reason,
-    ),
+    await rejectDeterministicReviewSuggestionForContext(context, suggestionId, reason),
   );
 }
 
@@ -313,23 +263,13 @@ async function assertImportBatchReviewable(
   }
 }
 
-function requireParam(
-  match: Readonly<Record<string, string>>,
-  name: string,
-): string {
+function requireParam(match: Readonly<Record<string, string>>, name: string): string {
   const value = match[name];
-  if (!value)
-    throw new AuthError(
-      "AUTH_SESSION_REQUIRED",
-      "Missing required path parameter.",
-      400,
-    );
+  if (!value) throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
   return value;
 }
 
-function buildAuthHeaders(
-  authorization: string | undefined,
-): { authorization?: string } {
+function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
   return authorization === undefined ? {} : { authorization };
 }
 
