@@ -6,6 +6,8 @@ A Inbox recebe textos de mensagens bancárias fictícias ou autorizadas e cria u
 
 Nenhuma mensagem recebida cria lançamento final. Toda sugestão permanece em `PENDING_REVIEW` até aprovação explícita na fila de revisão.
 
+Depois que uma `transaction_extraction` estruturada é criada, sua origem deixa de importar para o detector de duplicidade/conciliação: regra local e provider usam exatamente o mesmo motor determinístico generalizado da Inbox.
+
 ## Contrato de entrada
 
 `POST /api/bank-message-inbox`
@@ -80,13 +82,25 @@ A Inbox mostra a origem da candidatura como **regra**, **correção anterior**, 
 
 Aprendizados conflitantes, categoria arquivada, provider indisponível ou evidência insuficiente nunca escolhem silenciosamente uma categoria. O usuário continua com uma revisão explícita. Detalhes estão em `docs/ai/category-learning.md`.
 
+## Deduplicação e conciliação depois da extração
+
+Toda extração estruturada pendente da mensagem participa da mesma varredura executada pela fila unificada. O detector usa somente o payload canônico e a versão observada da sugestão.
+
+A comparação considera valor, moeda, data, conta, identificador externo quando houver e descrição como evidência complementar. Para transferências, o par de contas é obrigatório; a mesma descrição com outra conta de destino não gera candidato.
+
+As candidaturas `deduplication` e `reconciliation` registram vínculo explícito com `sourceSuggestionId`, `sourcePayloadFingerprint` e `targetTransactionId`. Varreduras repetidas ou concorrentes não multiplicam candidatos equivalentes.
+
+Se a extração for editada, o lote/mensagem deixar de estar em revisão ou o lançamento comparado mudar, a candidatura antiga fica obsoleta e não pode ser aprovada. A varredura seguinte expira o item antigo e pode criar uma candidatura correspondente à nova versão se a evidência continuar válida.
+
+Aprovar duplicidade rejeita a extração como duplicada sem criar nem alterar lançamento. Aprovar conciliação revalida e concilia o alvo, aprova/vincula a extração, expira candidaturas irmãs e atualiza o lote na mesma transação.
+
 ## Revisão na fila unificada
 
-Extrações de mensagens e suas categorizações participam da fila unificada documentada em `docs/AI_REVIEW_QUEUE.md`, junto com importações, duplicidades, conciliações e insights.
+Extrações de mensagens, suas categorizações e candidaturas determinísticas participam da fila unificada documentada em `docs/AI_REVIEW_QUEUE.md`, junto com importações e insights.
 
 A Inbox oferece filtros por tipo, estado e confiança e preserva esses filtros na URL junto de `profileId`. O resumo da fila não devolve referências internas desnecessárias; o detalhe autenticado recebe somente os identificadores tenant-scoped necessários para preencher controles e os apresenta como nomes/rótulos.
 
-Antes de aprovar, rejeitar ou editar, a interface lê o payload atual e envia `expectedFingerprint`. O backend bloqueia a sugestão e revalida tenant, perfil, versão, origem e elegibilidade do alvo. Uma edição de categoria confirmada pela fila registra o aprendizado da #564 na mesma transação da mudança; falha posterior reverte ambos.
+Antes de aprovar, rejeitar ou editar, a interface lê o payload atual e envia `expectedFingerprint`. O backend bloqueia a sugestão e revalida tenant, perfil, versão, origem e elegibilidade do alvo.
 
 Aprovação, rejeição e edição usam a fachada transacional comum da fila. Repetições convergem para o estado persistido quando idempotentes, decisões concorrentes opostas terminam em uma decisão e um conflito controlado, e origem descartada ou versão obsoleta não deixa efeito parcial.
 
@@ -118,14 +132,15 @@ Quando `retryable=true`, a ação **Tentar novamente** reabre o formulário de m
 - **Transferência com direção segura:** sugestão V2 em revisão, sem lançamento automático.
 - **Estrutura válida sem `merchant`:** sugestão revisável com descrição genérica fixa, sem reutilizar qualquer trecho da mensagem.
 - **Categorização sem evidência/provider:** candidatura de revisão manual, sem categoria inventada e sem efeito financeiro.
+- **Detector determinístico sem evidência suficiente:** nenhuma candidatura é inventada; a extração permanece na revisão normal.
 
 ## Idempotência e concorrência
 
 `sourceHash` inclui organização, perfil financeiro e texto normalizado. A constraint única de `ImportBatch` garante no máximo um lote por hash contextual.
 
-A criação usa `INSERT ... ON CONFLICT DO NOTHING`. Somente a requisição que cria ou reivindica um lote `FAILED` consulta o provider. Uma requisição concorrente que encontra o lote ainda em `REVIEWING` retorna o mesmo identificador com `extractionState=processing`; depois da conclusão, novas leituras devolvem o diagnóstico e a sugestão persistidos. Nenhuma resposta usa `ready_for_review` sem sugestão estruturada.
+A criação usa `INSERT ... ON CONFLICT DO NOTHING`. Somente a requisição que cria ou reivindica um lote `FAILED` consulta o provider. Uma requisição concorrente que encontra o lote ainda em `REVIEWING` retorna o mesmo identificador com `extractionState=processing`; depois da conclusão, novas leituras devolvem o diagnóstico e a sugestão persistidos.
 
-Requisições concorrentes não criam sugestões duplicadas e não multiplicam chamadas ao provider.
+Requisições concorrentes não criam sugestões de extração duplicadas e não multiplicam chamadas ao provider. A varredura determinística posterior possui sua própria identidade tenant-scoped e também converge sob chamadas simultâneas da fila.
 
 O registro de consentimento usa lock transacional separado por usuário e contexto. Aceites concorrentes convergem para o mesmo estado efetivo sem regravar proveniência quando as duas finalidades já estão concedidas.
 
@@ -146,22 +161,20 @@ Também não são persistidos:
 - credencial ou configuração secreta;
 - identificadores de tenant nos eventos seguros do provider.
 
-Persistimos apenas hash contextual, referência mascarada não reversível, diagnóstico seguro, payload estruturado validado, transições de consentimento sem dados financeiros e auditoria redigida. A recepção ou o reenvio autorizado é atribuído ao usuário; o resultado da extração e a criação da sugestão são atribuídos ao sistema.
-
-O aprendizado de categoria persiste apenas o padrão normalizado necessário, categoria, confiança, contagem e timestamps no perfil. O evento de auditoria do aprendizado não contém a descrição financeira.
+Persistimos apenas hash contextual, referência mascarada não reversível, diagnóstico seguro, payload estruturado validado, transições de consentimento sem dados financeiros e auditoria redigida. A deduplicação/conciliação usa somente essa estrutura já autorizada e não reabre o conteúdo bruto.
 
 ## Endpoints
 
 - `GET /api/bank-message-inbox?status=all`: lista mensagens do perfil ativo com estado da extração;
 - `POST /api/bank-message-inbox`: registra consentimento atual e processa uma mensagem autorizada;
-- `POST /api/bank-message-inbox/:messageId/discard`: descarta o lote e expira sugestão pendente quando aplicável;
+- `POST /api/bank-message-inbox/:messageId/discard`: descarta o lote e torna candidaturas dependentes obsoletas;
 - revisão compartilhada em `/api/ai-review-queue`.
 
 ## Configuração e rollout
 
 O provider permanece desativado por padrão. Para ativar IA, configure as variáveis protegidas descritas em `docs/ai/providers.md`. A ativação deve ocorrer por ambiente, com modelo, timeout, limite de saída e orçamento revisados.
 
-Sem provider configurado, o fluxo determinístico, o aprendizado local, o histórico e a revisão manual continuam operacionais.
+Sem provider configurado, o fluxo determinístico, o aprendizado local, o histórico, a deduplicação/conciliação estruturada e a revisão manual continuam operacionais.
 
 ## Validação
 
@@ -179,14 +192,6 @@ npm run lint --workspace @solverfin/web
 npm run validate
 ```
 
-As suítes usam providers fake e fixtures fictícias; não acessam IA real nem dependem de segredo. O controle `bank-message-provider-minimization.test.ts` usa o adaptador real com um cliente HTTP fake no último limite externo. Ele comprova que uma tentativa produz uma única chamada HTTP, que o corpo não contém nome, finalidade, e-mail ou mensagem integral e que valor/data aparecem uma única vez, somente no campo `message` minimizado.
+As suítes usam providers fake e fixtures fictícias; não acessam IA real nem dependem de segredo. Os controles existentes continuam cobrindo minimização outbound, concorrência do provider, revogação tardia, transferência dirigida e privacidade.
 
-O controle concorrente pausa deliberadamente o provider para comprovar que a segunda resposta usa `processing`, preserva `maskedText`, não cria outra sugestão e não executa uma segunda chamada outbound.
-
-O controle de revogação tardia concede as duas finalidades, revoga durante a primeira chamada falha e comprova que o executor bloqueia o retry com uma única chamada outbound.
-
-Os controles de transferência cobrem duas famílias discriminantes: transferência sem direção não persiste `AiSuggestion`; transferência com `direction=outflow` persiste payload V2 com `kind=transfer` e permanece sob revisão.
-
-O controle de privacidade `bank-message-ai-privacy.integration.test.ts` cobre uma resposta válida sem `merchant` e verifica que mensagem, nome, finalidade e marcador sensível não aparecem no payload, na explicação, nos problemas do lote nem na auditoria.
-
-A issue #565 acrescenta testes de contrato da fila, efeitos tipados, rollback, isolamento, concorrência de decisões opostas e validação visual específica de teclado, foco, 200% de texto e viewports suportadas.
+A issue #566 acrescenta cobertura do mesmo scanner determinístico para mensagem bancária por regra/provider, CSV, OFX e IA, além de idempotência concorrente, isolamento, obsolescência, regra de transferência e rollback.
