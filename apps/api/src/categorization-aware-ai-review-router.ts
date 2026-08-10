@@ -27,7 +27,8 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
       return handleVersionedAiReviewQueueApiRequest(request);
     }
 
-    const deterministicMatch = request.method === "POST" ? DETERMINISTIC_ACTION_PATH.exec(request.pathname) : null;
+    const deterministicMatch =
+      request.method === "POST" ? DETERMINISTIC_ACTION_PATH.exec(request.pathname) : null;
     if (deterministicMatch !== null) {
       const suggestionId = deterministicMatch[1];
       const action = deterministicMatch[2]?.toLowerCase();
