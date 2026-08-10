@@ -423,10 +423,9 @@ async function waitUntilSourceLocked(sourceId: string): Promise<void> {
     for (let attempt = 0; attempt < 100; attempt += 1) {
       await client.query("BEGIN");
       try {
-        await client.query(
-          `select "id" from "AiSuggestion" where "id" = $1 for update nowait`,
-          [sourceId],
-        );
+        await client.query(`select "id" from "AiSuggestion" where "id" = $1 for update nowait`, [
+          sourceId,
+        ]);
         await client.query("ROLLBACK");
       } catch (error) {
         await client.query("ROLLBACK");
