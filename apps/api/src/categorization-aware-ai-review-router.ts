@@ -1,17 +1,29 @@
-import { handleVersionedAiReviewQueueApiRequest } from "./ai-review-queue-router.js";
+import {
+  handleVersionedAiReviewQueueApiRequest,
+} from "./ai-review-queue-router.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
-import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
-import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
-import { recordCategoryCorrectionFromSuggestionForContext } from "./repositories/category-learning.js";
+import {
+  tryHandleGeneralizedDeterministicDecisionForContext,
+} from "./generalized-deterministic-review-decision.js";
+import {
+  scanPendingDeterministicReviewSuggestionsForContext,
+} from "./generalized-deterministic-review-scan.js";
+import {
+  getAiSuggestionPayloadForContext,
+} from "./repositories/ai-suggestion-payloads.js";
+import {
+  recordCategoryCorrectionFromSuggestionForContext,
+} from "./repositories/category-learning.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
 const REVIEW_QUEUE_PATH = "/api/ai-review-queue";
-const REVIEW_ACTION_PATH = /^\/api\/ai-review-queue\/([0-9a-f-]+)\/(approve|edit)$/i;
-const DETERMINISTIC_ACTION_PATH = /^\/api\/ai-review-queue\/([0-9a-f-]+)\/(approve|reject)$/i;
+const REVIEW_ACTION_PATH =
+  /^\/api\/ai-review-queue\/([0-9a-f-]+)\/(approve|edit)$/i;
+const DETERMINISTIC_ACTION_PATH =
+  /^\/api\/ai-review-queue\/([0-9a-f-]+)\/(approve|reject)$/i;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -29,7 +41,9 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
     }
 
     const deterministicMatch =
-      request.method === "POST" ? DETERMINISTIC_ACTION_PATH.exec(request.pathname) : null;
+      request.method === "POST"
+        ? DETERMINISTIC_ACTION_PATH.exec(request.pathname)
+        : null;
     if (deterministicMatch !== null) {
       const suggestionId = deterministicMatch[1];
       const action = deterministicMatch[2]?.toLowerCase();
@@ -40,37 +54,58 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
       ) {
         const context = await resolveContext(request);
         const body = isRecord(request.body) ? request.body : {};
-        const expectedFingerprint = readNonEmptyString(body.expectedFingerprint);
-        const reason = readNonEmptyString(body.reason);
-        const deterministic = await tryHandleGeneralizedDeterministicDecisionForContext(
-          context,
-          suggestionId,
-          action,
-          {
-            ...(expectedFingerprint === undefined ? {} : { expectedFingerprint }),
-            ...(reason === undefined ? {} : { reason }),
-            correlationId,
-          },
+        const expectedFingerprint = readNonEmptyString(
+          body.expectedFingerprint,
         );
+        const reason = readNonEmptyString(body.reason);
+        const deterministic =
+          await tryHandleGeneralizedDeterministicDecisionForContext(
+            context,
+            suggestionId,
+            action,
+            {
+              ...(expectedFingerprint === undefined
+                ? {}
+                : { expectedFingerprint }),
+              ...(reason === undefined ? {} : { reason }),
+              correlationId,
+            },
+          );
         if (deterministic !== undefined) return json(200, deterministic);
       }
     }
 
-    const match = request.method === "POST" ? REVIEW_ACTION_PATH.exec(request.pathname) : null;
+    const match =
+      request.method === "POST"
+        ? REVIEW_ACTION_PATH.exec(request.pathname)
+        : null;
     const categoryId = readCorrectionCategoryId(request.body, match?.[2]);
     if (match === null || categoryId === undefined) {
       return handleVersionedAiReviewQueueApiRequest(request);
     }
 
     const suggestionId = match[1];
-    if (suggestionId === undefined) return handleVersionedAiReviewQueueApiRequest(request);
+    if (suggestionId === undefined) {
+      return handleVersionedAiReviewQueueApiRequest(request);
+    }
     const context = await resolveContext(request);
 
     return await withSharedTransaction(async () => {
-      const before = await getAiSuggestionPayloadForContext(context, suggestionId);
-      const learningSourceId = resolveLearningSourceId(before.payload, suggestionId, categoryId);
+      const before = await getAiSuggestionPayloadForContext(
+        context,
+        suggestionId,
+      );
+      const learningSourceId = resolveLearningSourceId(
+        before.payload,
+        suggestionId,
+        categoryId,
+      );
       const response = await handleVersionedAiReviewQueueApiRequest(request);
-      if (response === undefined || response.statusCode < 200 || response.statusCode >= 300) {
+      if (
+        response === undefined ||
+        response.statusCode < 200 ||
+        response.statusCode >= 300
+      ) {
         return response;
       }
       if (learningSourceId === undefined) return response;
@@ -93,8 +128,13 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
 }
 
 async function resolveContext(request: ApiRequest) {
-  const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
-  return resolveRequestTenantContext(user, request.query.get("profileId") ?? undefined);
+  const user = await requireAuthenticatedRequest(
+    buildAuthHeaders(request.headers.authorization),
+  );
+  return resolveRequestTenantContext(
+    user,
+    request.query.get("profileId") ?? undefined,
+  );
 }
 
 function resolveLearningSourceId(
@@ -111,7 +151,9 @@ function resolveLearningSourceId(
     return currentCategoryId === categoryId ? undefined : suggestionId;
   }
 
-  if (suggestionKind !== "categorization" || proposal === undefined) return undefined;
+  if (suggestionKind !== "categorization" || proposal === undefined) {
+    return undefined;
+  }
   const currentCategoryId = readNonEmptyString(proposal.proposedCategoryId);
   if (currentCategoryId === categoryId) return undefined;
 
@@ -124,10 +166,15 @@ function resolveLearningSourceId(
     : undefined;
 }
 
-function readCorrectionCategoryId(body: unknown, action: string | undefined): string | undefined {
+function readCorrectionCategoryId(
+  body: unknown,
+  action: string | undefined,
+): string | undefined {
   if (!isRecord(body)) return undefined;
   if (action === "approve") {
-    const payloadOverride = isRecord(body.payloadOverride) ? body.payloadOverride : undefined;
+    const payloadOverride = isRecord(body.payloadOverride)
+      ? body.payloadOverride
+      : undefined;
     return (
       readNonEmptyString(payloadOverride?.categoryId) ??
       readNonEmptyString(payloadOverride?.proposedCategoryId)
@@ -135,7 +182,10 @@ function readCorrectionCategoryId(body: unknown, action: string | undefined): st
   }
   if (action === "edit") {
     const payload = isRecord(body.payload) ? body.payload : undefined;
-    return readNonEmptyString(payload?.categoryId) ?? readNonEmptyString(payload?.proposedCategoryId);
+    return (
+      readNonEmptyString(payload?.categoryId) ??
+      readNonEmptyString(payload?.proposedCategoryId)
+    );
   }
   return undefined;
 }
@@ -145,10 +195,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function readNonEmptyString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : undefined;
 }
 
-function buildAuthHeaders(authorization: string | undefined): Record<string, string> {
+function buildAuthHeaders(
+  authorization: string | undefined,
+): Record<string, string> {
   return authorization === undefined ? {} : { authorization };
 }
 

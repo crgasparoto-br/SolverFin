@@ -96,7 +96,11 @@ export async function listPendingExtractionRows(
        and "kind" = 'TRANSACTION_EXTRACTION' and "status" = 'PENDING_REVIEW'
        and ($3::uuid is null or "sourceEntityId" = $3)
      order by "createdAt" asc, "id" asc`,
-    [context.organizationId, context.financialProfileId, sourceEntityId ?? null],
+    [
+      context.organizationId,
+      context.financialProfileId,
+      sourceEntityId ?? null,
+    ],
   );
 }
 
@@ -132,7 +136,9 @@ export function buildGeneralizedSourceState(
     organizationId: row.organizationId,
     financialProfileId: row.financialProfileId,
     candidateKind:
-      row.provider?.includes("bank-message") === true ? "bank_message" : "import_suggestion",
+      row.provider?.includes("bank-message") === true
+        ? "bank_message"
+        : "import_suggestion",
     sourceKind:
       row.provider?.includes("bank-message") === true
         ? "bank_message"
@@ -154,17 +160,25 @@ export function buildGeneralizedSourceState(
     extraction.otherAccountId !== undefined
   ) {
     candidate.accountId =
-      direction === "outflow" ? extraction.accountId : extraction.otherAccountId;
+      direction === "outflow"
+        ? extraction.accountId
+        : extraction.otherAccountId;
     candidate.destinationAccountId =
-      direction === "outflow" ? extraction.otherAccountId : extraction.accountId;
+      direction === "outflow"
+        ? extraction.otherAccountId
+        : extraction.accountId;
   } else if (extraction.accountId !== undefined) {
     candidate.accountId = extraction.accountId;
   }
-  if (extraction.externalId !== undefined) candidate.externalId = extraction.externalId;
+  if (extraction.externalId !== undefined) {
+    candidate.externalId = extraction.externalId;
+  }
   return { row, extraction, candidate, fingerprints, preferredFingerprint };
 }
 
-export function buildGeneralizedReconciliationSource(source: GeneralizedSourceState) {
+export function buildGeneralizedReconciliationSource(
+  source: GeneralizedSourceState,
+) {
   return {
     organizationId: source.row.organizationId,
     financialProfileId: source.row.financialProfileId,
@@ -174,7 +188,9 @@ export function buildGeneralizedReconciliationSource(source: GeneralizedSourceSt
     currency: source.extraction.currency,
     occurredOn: source.extraction.occurredOn,
     kind: source.extraction.kind,
-    ...(source.candidate.accountId === undefined ? {} : { accountId: source.candidate.accountId }),
+    ...(source.candidate.accountId === undefined
+      ? {}
+      : { accountId: source.candidate.accountId }),
     ...(source.candidate.destinationAccountId === undefined
       ? {}
       : { destinationAccountId: source.candidate.destinationAccountId }),
@@ -184,7 +200,9 @@ export function buildGeneralizedReconciliationSource(source: GeneralizedSourceSt
   };
 }
 
-export function mapGeneralizedTransaction(row: GeneralizedTransactionRow): Transaction {
+export function mapGeneralizedTransaction(
+  row: GeneralizedTransactionRow,
+): Transaction {
   return {
     id: row.id,
     organizationId: row.organizationId,
@@ -200,19 +218,32 @@ export function mapGeneralizedTransaction(row: GeneralizedTransactionRow): Trans
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     ...(row.accountId === null ? {} : { accountId: row.accountId }),
-    ...(row.destinationAccountId === null ? {} : { destinationAccountId: row.destinationAccountId }),
+    ...(row.destinationAccountId === null
+      ? {}
+      : { destinationAccountId: row.destinationAccountId }),
     ...(row.categoryId === null ? {} : { categoryId: row.categoryId }),
     ...(row.cardId === null ? {} : { cardId: row.cardId }),
-    ...(row.reconciledAt === null ? {} : { reconciledAt: row.reconciledAt.toISOString() }),
-    ...(row.voidedAt === null ? {} : { voidedAt: row.voidedAt.toISOString() }),
-    ...(row.createdByUserId === null ? {} : { createdByUserId: row.createdByUserId }),
-    ...(row.updatedByUserId === null ? {} : { updatedByUserId: row.updatedByUserId }),
+    ...(row.reconciledAt === null
+      ? {}
+      : { reconciledAt: row.reconciledAt.toISOString() }),
+    ...(row.voidedAt === null
+      ? {}
+      : { voidedAt: row.voidedAt.toISOString() }),
+    ...(row.createdByUserId === null
+      ? {}
+      : { createdByUserId: row.createdByUserId }),
+    ...(row.updatedByUserId === null
+      ? {}
+      : { updatedByUserId: row.updatedByUserId }),
   } as Transaction;
 }
 
-export function mapGeneralizedSuggestion(row: GeneralizedAiSuggestionRow): AiSuggestion {
+export function mapGeneralizedSuggestion(
+  row: GeneralizedAiSuggestionRow,
+): AiSuggestion {
   const payload =
-    parseTransactionExtractionPayload(row.payload) ?? parseDeterministicReviewPayload(row.payload);
+    parseTransactionExtractionPayload(row.payload) ??
+    parseDeterministicReviewPayload(row.payload);
   return {
     id: row.id,
     organizationId: row.organizationId,
@@ -223,13 +254,21 @@ export function mapGeneralizedSuggestion(row: GeneralizedAiSuggestionRow): AiSug
     explanation: row.explanation,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    ...(row.sourceEntityId === null ? {} : { sourceEntityId: row.sourceEntityId }),
-    ...(row.targetEntityId === null ? {} : { targetEntityId: row.targetEntityId }),
+    ...(row.sourceEntityId === null
+      ? {}
+      : { sourceEntityId: row.sourceEntityId }),
+    ...(row.targetEntityId === null
+      ? {}
+      : { targetEntityId: row.targetEntityId }),
     ...(payload === undefined ? {} : { payload }),
     ...(row.provider === null ? {} : { provider: row.provider }),
     ...(row.model === null ? {} : { model: row.model }),
-    ...(row.reviewedByUserId === null ? {} : { reviewedByUserId: row.reviewedByUserId }),
-    ...(row.reviewedAt === null ? {} : { reviewedAt: row.reviewedAt.toISOString() }),
+    ...(row.reviewedByUserId === null
+      ? {}
+      : { reviewedByUserId: row.reviewedByUserId }),
+    ...(row.reviewedAt === null
+      ? {}
+      : { reviewedAt: row.reviewedAt.toISOString() }),
   };
 }
 
@@ -246,10 +285,15 @@ export function parseGeneralizedDeterministicKind(
   value: string,
 ): "deduplication" | "reconciliation" | undefined {
   const kind = value.toLowerCase();
-  return kind === "deduplication" || kind === "reconciliation" ? kind : undefined;
+  return kind === "deduplication" || kind === "reconciliation"
+    ? kind
+    : undefined;
 }
 
-export function deterministicCandidateKey(kind: string, targetTransactionId: string): string {
+export function deterministicCandidateKey(
+  kind: string,
+  targetTransactionId: string,
+): string {
   return `${kind.toLowerCase()}:${targetTransactionId}`;
 }
 
@@ -257,13 +301,22 @@ export function sameDeterministicEvidence(
   left: readonly string[],
   right: readonly string[],
 ): boolean {
-  return left.length === right.length && left.every((value, index) => value === right[index]);
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  );
 }
 
-export function parseStoredDeterministicPayload(row: GeneralizedAiSuggestionRow) {
+export function parseStoredDeterministicPayload(
+  row: GeneralizedAiSuggestionRow,
+) {
   return parseDeterministicReviewPayload(row.payload);
 }
 
-export function buildExistingTransactionCandidates(rows: readonly GeneralizedTransactionRow[]) {
-  return rows.map(mapGeneralizedTransaction).map(buildTransactionDeduplicationCandidate);
+export function buildExistingTransactionCandidates(
+  rows: readonly GeneralizedTransactionRow[],
+) {
+  return rows
+    .map(mapGeneralizedTransaction)
+    .map(buildTransactionDeduplicationCandidate);
 }
