@@ -304,3 +304,13 @@ OFX:
 - `IMPORT_OFX_INVALID`;
 - `IMPORT_OFX_NO_VALID_ROWS`;
 - `IMPORT_OFX_TRNTYPE_CONFLICT`.
+
+## Deduplicação e conciliação generalizadas na fila
+
+A issue #566 mantém o endpoint especializado do lote e acrescenta uma varredura comum na fila unificada. Qualquer linha CSV/OFX pendente já convertida em `transaction_extraction` é comparada pelo mesmo motor usado para mensagens bancárias e extrações de IA.
+
+A candidatura usa o fingerprint estruturado da sugestão de origem, tipo e lançamento alvo para convergir de forma idempotente. A versão observada do alvo também participa da identidade persistente para que uma candidatura antiga possa expirar e uma nova seja criada quando o lançamento comparado muda mas continua elegível.
+
+Uma edição da linha invalida candidaturas baseadas no fingerprint anterior. Alteração ou indisponibilidade do alvo também torna a decisão obsoleta. Aprovar duplicidade rejeita a linha sem alterar `Transaction`; aprovar conciliação revalida o alvo, concilia o lançamento, aprova/vincula a origem, expira irmãs e recalcula o lote na mesma transação.
+
+Para transferências, a varredura exige o par de contas compatível, moeda, valor e tolerância temporal; descrição semelhante não compensa divergência de conta de destino.
