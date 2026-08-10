@@ -12,7 +12,8 @@ import { resolveRequestTenantContext } from "./tenant-context.js";
 const REVIEW_QUEUE_PATH = "/api/ai-review-queue";
 const REVIEW_ACTION_PATH = /^\/api\/ai-review-queue\/([0-9a-f-]+)\/(approve|edit)$/i;
 const DETERMINISTIC_ACTION_PATH = /^\/api\/ai-review-queue\/([0-9a-f-]+)\/(approve|reject)$/i;
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function handleCategorizationAwareAiReviewQueueApiRequest(
   request: ApiRequest,
@@ -39,13 +40,15 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
       ) {
         const context = await resolveContext(request);
         const body = isRecord(request.body) ? request.body : {};
+        const expectedFingerprint = readNonEmptyString(body.expectedFingerprint);
+        const reason = readNonEmptyString(body.reason);
         const deterministic = await tryHandleGeneralizedDeterministicDecisionForContext(
           context,
           suggestionId,
           action,
           {
-            expectedFingerprint: readNonEmptyString(body.expectedFingerprint),
-            reason: readNonEmptyString(body.reason),
+            ...(expectedFingerprint === undefined ? {} : { expectedFingerprint }),
+            ...(reason === undefined ? {} : { reason }),
             correlationId,
           },
         );
