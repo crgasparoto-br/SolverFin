@@ -33,7 +33,7 @@ Os campos específicos permanecem no nível raiz do envelope:
 
 `origin`, `target`, `reasons` e `audit` registram proveniência e contexto mínimo sem depender de `explanation`. O fingerprint canônico muda quando alvo, proposta ou fonte revisada muda. Antes de produzir efeito, a aprovação compara `sourcePayloadFingerprint` com a fonte atual e revalida o lançamento alvo.
 
-A identidade persistente da candidatura inclui também a versão observada do alvo. Assim, quando um lançamento comparado muda, a candidatura antiga pode expirar e uma nova candidatura pode ser gerada se a combinação continuar elegível.
+A identidade ativa da candidatura reutiliza o fingerprint efetivamente persistido na origem junto do tipo e do alvo, preservando compatibilidade com os fluxos legados. Quando origem, evidências ou versão do alvo tornam uma candidatura obsoleta, a expiração rotaciona apenas a chave de persistência histórica dessa candidatura, liberando a identidade ativa para uma nova candidatura sem apagar o histórico. Candidaturas rejeitadas não têm a chave rotacionada, de modo que a rejeição continue impedindo recriação silenciosa para a mesma versão de origem e alvo.
 
 Payloads legados `DeterministicReviewPayloadV1` continuam legíveis. Eles não sofrem backfill amplo; uma mutação compatível de sugestão pendente os encapsula no contrato atual. Sugestões já resolvidas permanecem legíveis e imutáveis.
 
