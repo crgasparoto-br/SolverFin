@@ -244,11 +244,19 @@ async function expireCandidate(
   executeQuery: QueryExecutor,
 ): Promise<number> {
   const now = new Date().toISOString();
+  const expiredFingerprint = buildExpiredPersistenceFingerprint(suggestionId, now);
   const rows = await executeQuery<{ id: string }>(
-    `update "AiSuggestion" set "status" = 'EXPIRED', "reviewedAt" = $4, "updatedAt" = $4
+    `update "AiSuggestion" set "status" = 'EXPIRED', "payloadFingerprint" = $5,
+       "reviewedAt" = $4, "updatedAt" = $4
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
        and "status" = 'PENDING_REVIEW' returning "id"`,
-    [suggestionId, context.organizationId, context.financialProfileId, now],
+    [
+      suggestionId,
+      context.organizationId,
+      context.financialProfileId,
+      now,
+      expiredFingerprint,
+    ],
   );
   if (rows[0] === undefined) return 0;
   await auditExpiration(context, suggestionId, now, reason, executeQuery);
@@ -283,7 +291,7 @@ async function insertDesiredCandidate(
 ): Promise<number> {
   const now = new Date().toISOString();
   const payload = buildCandidatePayload(source, desired, now);
-  const persistenceFingerprint = buildPersistenceFingerprint(source, desired);
+  const persistenceFingerprint = buildPersistenceFingerprint(source);
   const rows = await executeQuery<{ id: string }>(
     `insert into "AiSuggestion"
       ("id", "organizationId", "financialProfileId", "kind", "status", "sourceEntityId", "targetEntityId",
@@ -357,15 +365,14 @@ function buildCandidatePayload(
       });
 }
 
-function buildPersistenceFingerprint(
-  source: GeneralizedSourceState,
-  desired: DesiredCandidate,
+function buildPersistenceFingerprint(source: GeneralizedSourceState): string {
+  return source.preferredFingerprint;
+}
+
+function buildExpiredPersistenceFingerprint(
+  suggestionId: string,
+  now: string,
 ): string {
-  const identity = [
-    source.preferredFingerprint,
-    desired.kind,
-    desired.target.id,
-    desired.target.updatedAt,
-  ].join(":");
+  const identity = ["expired", suggestionId, now].join(":");
   return `sha256-${createHash("sha256").update(identity).digest("hex")}`;
 }
