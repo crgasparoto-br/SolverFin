@@ -49,7 +49,11 @@ export async function scanPendingDeterministicReviewSuggestionsForContext(
   filter: GeneralizedDeterministicScanFilter = {},
 ): Promise<GeneralizedDeterministicScanResult> {
   return withSharedTransaction(async (executeQuery) => {
-    const sourceRows = await listPendingExtractionRows(context, executeQuery, filter.sourceEntityId);
+    const sourceRows = await listPendingExtractionRows(
+      context,
+      executeQuery,
+      filter.sourceEntityId,
+    );
     const transactionRows = await listReviewableTransactionRows(context, executeQuery);
     const transactions = transactionRows.map(mapGeneralizedTransaction);
     const existingCandidates = buildExistingTransactionCandidates(transactionRows);
