@@ -86,7 +86,12 @@ export async function scanPendingDeterministicReviewSuggestionsForContext(
 
       for (const [key, candidate] of desired) {
         if (covered.has(key)) continue;
-        createdCandidates += await insertDesiredCandidate(context, source, candidate, executeQuery);
+        createdCandidates += await insertDesiredCandidate(
+          context,
+          source,
+          candidate,
+          executeQuery,
+        );
       }
     }
 
@@ -130,7 +135,9 @@ function buildDesiredCandidates(
       kind: "reconciliation",
       target,
       confidence:
-        preview.status === "ready" ? Math.max(0.8, match.score / 100) : Math.min(0.69, match.score / 100),
+        preview.status === "ready"
+          ? Math.max(0.8, match.score / 100)
+          : Math.min(0.69, match.score / 100),
       reasons,
       conflicts,
       explanation:
@@ -178,7 +185,13 @@ async function expireCandidatesWithResolvedSources(
     [context.organizationId, context.financialProfileId, now],
   );
   for (const row of rows) {
-    await auditExpiration(context, row.id, now, "Candidatura expirada porque a origem foi resolvida ou removida.", executeQuery);
+    await auditExpiration(
+      context,
+      row.id,
+      now,
+      "Candidatura expirada porque a origem foi resolvida ou removida.",
+      executeQuery,
+    );
   }
   return rows.length;
 }
@@ -228,22 +241,7 @@ async function insertDesiredCandidate(
   executeQuery: QueryExecutor,
 ): Promise<number> {
   const now = new Date().toISOString();
-  const payload = buildAiSuggestionPayload({
-    payload: {
-      contractVersion: 1,
-      suggestionKind: desired.kind,
-      payloadVersion: 1,
-      origin: { kind: "rule", ruleId: "deterministic-review-v3" },
-      target: { entityKind: "transaction", entityId: desired.target.id },
-      confidence: Number(desired.confidence.toFixed(4)),
-      reasons: desired.reasons,
-      audit: { createdAt: now, sourceFingerprint: source.preferredFingerprint },
-      sourceSuggestionId: source.row.id,
-      sourcePayloadFingerprint: source.preferredFingerprint,
-      targetTransactionId: desired.target.id,
-      conflicts: desired.conflicts,
-    },
-  });
+  const payload = buildCandidatePayload(source, desired, now);
   const persistenceFingerprint = buildPersistenceFingerprint(source, desired);
   const rows = await executeQuery<{ id: string }>(
     `insert into "AiSuggestion"
@@ -284,6 +282,33 @@ async function insertDesiredCandidate(
     redactedChanges: { status: "added", payload: "added" },
   });
   return 1;
+}
+
+function buildCandidatePayload(
+  source: GeneralizedSourceState,
+  desired: DesiredCandidate,
+  now: string,
+) {
+  const common = {
+    contractVersion: 1 as const,
+    payloadVersion: 1 as const,
+    origin: { kind: "rule" as const, ruleId: "deterministic-review-v3" },
+    target: { entityKind: "transaction" as const, entityId: desired.target.id },
+    confidence: Number(desired.confidence.toFixed(4)),
+    reasons: desired.reasons,
+    audit: { createdAt: now, sourceFingerprint: source.preferredFingerprint },
+    sourceSuggestionId: source.row.id,
+    sourcePayloadFingerprint: source.preferredFingerprint,
+    targetTransactionId: desired.target.id,
+    conflicts: desired.conflicts,
+  };
+  return desired.kind === "deduplication"
+    ? buildAiSuggestionPayload({
+        payload: { ...common, suggestionKind: "deduplication" },
+      })
+    : buildAiSuggestionPayload({
+        payload: { ...common, suggestionKind: "reconciliation" },
+      });
 }
 
 function buildPersistenceFingerprint(
