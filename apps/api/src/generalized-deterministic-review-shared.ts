@@ -120,8 +120,10 @@ export function buildGeneralizedSourceState(
   const legacyFingerprint = buildImportPayloadFingerprint(extraction);
   const fingerprints = new Set<string>([legacyFingerprint]);
   if (read.state === "current") fingerprints.add(read.payload.fingerprint);
+  if (row.payloadFingerprint !== null) fingerprints.add(row.payloadFingerprint);
   const preferredFingerprint =
-    read.state === "current" ? read.payload.fingerprint : legacyFingerprint;
+    row.payloadFingerprint ??
+    (read.state === "current" ? read.payload.fingerprint : legacyFingerprint);
   const direction = deriveImportLineDirection(extraction);
   const candidate: DeduplicationCandidate = {
     id: row.id,
