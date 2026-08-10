@@ -31,6 +31,10 @@ export interface GeneralizedDeterministicScanResult {
   expiredCandidates: number;
 }
 
+export interface GeneralizedDeterministicScanFilter {
+  sourceEntityId?: string;
+}
+
 interface DesiredCandidate {
   kind: "deduplication" | "reconciliation";
   target: Transaction;
@@ -42,14 +46,23 @@ interface DesiredCandidate {
 
 export async function scanPendingDeterministicReviewSuggestionsForContext(
   context: TenantContext,
+  filter: GeneralizedDeterministicScanFilter = {},
 ): Promise<GeneralizedDeterministicScanResult> {
   return withSharedTransaction(async (executeQuery) => {
-    const sourceRows = await listPendingExtractionRows(context, executeQuery);
+    const sourceRows = await listPendingExtractionRows(
+      context,
+      executeQuery,
+      filter.sourceEntityId,
+    );
     const transactionRows = await listReviewableTransactionRows(context, executeQuery);
     const transactions = transactionRows.map(mapGeneralizedTransaction);
     const existingCandidates = buildExistingTransactionCandidates(transactionRows);
     let createdCandidates = 0;
-    let expiredCandidates = await expireCandidatesWithResolvedSources(context, executeQuery);
+    let expiredCandidates = await expireCandidatesWithResolvedSources(
+      context,
+      executeQuery,
+      filter.sourceEntityId,
+    );
 
     for (const row of sourceRows) {
       const source = buildGeneralizedSourceState(row);
@@ -167,6 +180,7 @@ async function listPendingChildren(
 async function expireCandidatesWithResolvedSources(
   context: TenantContext,
   executeQuery: QueryExecutor,
+  sourceEntityId?: string,
 ): Promise<number> {
   const now = new Date().toISOString();
   const rows = await executeQuery<{ id: string }>(
@@ -174,6 +188,7 @@ async function expireCandidatesWithResolvedSources(
      where candidate."organizationId" = $1 and candidate."financialProfileId" = $2
        and candidate."kind" in ('DEDUPLICATION', 'RECONCILIATION')
        and candidate."status" = 'PENDING_REVIEW'
+       and ($4::uuid is null or candidate."sourceEntityId" = $4)
        and not exists (
          select 1 from "AiSuggestion" source
           where source."id" = candidate."sourceSuggestionId"
@@ -182,7 +197,7 @@ async function expireCandidatesWithResolvedSources(
             and source."kind" = 'TRANSACTION_EXTRACTION'
             and source."status" = 'PENDING_REVIEW'
        ) returning candidate."id"`,
-    [context.organizationId, context.financialProfileId, now],
+    [context.organizationId, context.financialProfileId, now, sourceEntityId ?? null],
   );
   for (const row of rows) {
     await auditExpiration(
