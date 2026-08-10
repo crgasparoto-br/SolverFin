@@ -44,10 +44,17 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   const marker = randomUUID();
   const token = await loginAndReadToken();
-  const ledger: Ledger = { suggestionIds: [], transactionIds: [], importBatchIds: [] };
+  const ledger: Ledger = {
+    suggestionIds: [],
+    transactionIds: [],
+    importBatchIds: [],
+  };
 
   try {
     await assertProducerLinksAndApiContracts(token, marker, ledger);
@@ -120,7 +127,11 @@ async function assertProducerLinksAndApiContracts(
   assert.equal(await countCandidates(aiSource.id, "PENDING_REVIEW"), 2);
 
   const csv = requireSource(sources, "csv");
-  const importedCandidate = await readPendingCandidate(csv.sourceId, "DEDUPLICATION", targetId);
+  const importedCandidate = await readPendingCandidate(
+    csv.sourceId,
+    "DEDUPLICATION",
+    targetId,
+  );
   const importedDetail = await readCandidateDetail(token, importedCandidate.id);
   const importedDecision = await apiRequest(
     token,
@@ -135,7 +146,11 @@ async function assertProducerLinksAndApiContracts(
   assert.equal(importedBody.importBatch?.id, csv.batchId);
   assert.equal(importedBody.transaction, undefined);
 
-  const aiCandidate = await readPendingCandidate(aiSource.id, "DEDUPLICATION", targetId);
+  const aiCandidate = await readPendingCandidate(
+    aiSource.id,
+    "DEDUPLICATION",
+    targetId,
+  );
   const aiDetail = await readCandidateDetail(token, aiCandidate.id);
   const aiDecision = await apiRequest(
     token,
@@ -165,7 +180,11 @@ async function assertDiscardedBatchLifecycle(
     },
     ledger,
   );
-  const batchId = await insertImportBatch("BANK_MESSAGE", `discard-${marker}`, ledger);
+  const batchId = await insertImportBatch(
+    "BANK_MESSAGE",
+    `discard-${marker}`,
+    ledger,
+  );
   const source = await insertExtraction(
     {
       provider: "solverfin-rule-bank-message-inbox",
@@ -204,7 +223,10 @@ async function assertDiscardedBatchLifecycle(
   assert.equal(await readSuggestionStatus(source.id), "PENDING_REVIEW");
 }
 
-async function assertScannerDecisionSerialization(marker: string, ledger: Ledger): Promise<void> {
+async function assertScannerDecisionSerialization(
+  marker: string,
+  ledger: Ledger,
+): Promise<void> {
   const description = `Corrida scanner decisão ${marker}`;
   const firstTargetId = await insertTransaction(
     {
@@ -247,7 +269,8 @@ async function assertScannerDecisionSerialization(marker: string, ledger: Ledger
     blockerOpen = true;
     await insertBlockingCandidate(blocker, source, secondTargetId);
 
-    const scanPromise = scanPendingDeterministicReviewSuggestionsForContext(context);
+    const scanPromise =
+      scanPendingDeterministicReviewSuggestionsForContext(context);
     await waitUntilSourceLocked(source.id);
 
     const decisionPromise = tryHandleGeneralizedDeterministicDecisionForContext(
@@ -307,8 +330,8 @@ async function insertImportBatch(
   await query(
     `insert into "ImportBatch"
       ("id", "organizationId", "financialProfileId", "sourceKind", "status", "originalFileName",
-       "sourceHash", "problems", "receivedAt", "completedAt", "createdAt", "updatedAt")
-     values ($1, $2, $3, $4, 'REVIEWING', $5, $6, '[]'::jsonb, $7, null, $7, $7)`,
+       "sourceHash", "totalRows", "validRows", "problems", "receivedAt", "completedAt", "createdAt", "updatedAt")
+     values ($1, $2, $3, $4, 'REVIEWING', $5, $6, 1, 1, '[]'::jsonb, $7, null, $7, $7)`,
     [
       id,
       ORGANIZATION_ID,
@@ -429,9 +452,10 @@ async function waitUntilSourceLocked(sourceId: string): Promise<void> {
     for (let attempt = 0; attempt < 100; attempt += 1) {
       await client.query("BEGIN");
       try {
-        await client.query(`select "id" from "AiSuggestion" where "id" = $1 for update nowait`, [
-          sourceId,
-        ]);
+        await client.query(
+          `select "id" from "AiSuggestion" where "id" = $1 for update nowait`,
+          [sourceId],
+        );
         await client.query("ROLLBACK");
       } catch (error) {
         await client.query("ROLLBACK");
@@ -443,7 +467,9 @@ async function waitUntilSourceLocked(sourceId: string): Promise<void> {
   } finally {
     client.release();
   }
-  assert.fail("Scanner should hold the source row lock while creating deterministic candidates.");
+  assert.fail(
+    "Scanner should hold the source row lock while creating deterministic candidates.",
+  );
 }
 
 async function readPendingCandidate(
@@ -462,7 +488,10 @@ async function readPendingCandidate(
   return rows[0];
 }
 
-async function countCandidates(sourceId: string, status: string): Promise<number> {
+async function countCandidates(
+  sourceId: string,
+  status: string,
+): Promise<number> {
   const rows = await query<{ count: string }>(
     `select count(*)::text as "count" from "AiSuggestion"
      where "sourceSuggestionId" = $1 and "kind" in ('DEDUPLICATION', 'RECONCILIATION') and "status" = $2`,
@@ -479,8 +508,15 @@ async function readSuggestionStatus(id: string): Promise<string | undefined> {
   return rows[0]?.status;
 }
 
-async function readCandidateDetail(token: string, candidateId: string): Promise<PayloadDetail> {
-  const response = await apiRequest(token, "GET", `/api/ai-review-queue/${candidateId}/payload`);
+async function readCandidateDetail(
+  token: string,
+  candidateId: string,
+): Promise<PayloadDetail> {
+  const response = await apiRequest(
+    token,
+    "GET",
+    `/api/ai-review-queue/${candidateId}/payload`,
+  );
   assert.equal(response.statusCode, 200);
   return readBody<PayloadResponse>(response).payload;
 }
@@ -558,19 +594,35 @@ async function cleanup(ledger: Ledger): Promise<void> {
           [ledger.suggestionIds],
         );
   const allSuggestionIds = allSuggestionRows.map((row) => row.id);
-  const entityIds = [...allSuggestionIds, ...ledger.transactionIds, ...ledger.importBatchIds];
+  const entityIds = [
+    ...allSuggestionIds,
+    ...ledger.transactionIds,
+    ...ledger.importBatchIds,
+  ];
 
   if (entityIds.length > 0) {
-    await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
+    await query(
+      `delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`,
+      [entityIds],
+    );
   }
   if (allSuggestionIds.length > 0) {
-    await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [allSuggestionIds]);
+    await query(
+      `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
+      [allSuggestionIds],
+    );
   }
   if (ledger.transactionIds.length > 0) {
-    await query(`delete from "Transaction" where "id" = any($1::uuid[])`, [ledger.transactionIds]);
+    await query(
+      `delete from "Transaction" where "id" = any($1::uuid[])`,
+      [ledger.transactionIds],
+    );
   }
   if (ledger.importBatchIds.length > 0) {
-    await query(`delete from "ImportBatch" where "id" = any($1::uuid[])`, [ledger.importBatchIds]);
+    await query(
+      `delete from "ImportBatch" where "id" = any($1::uuid[])`,
+      [ledger.importBatchIds],
+    );
   }
 }
 
