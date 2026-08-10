@@ -153,7 +153,8 @@ export function buildGeneralizedSourceState(
     extraction.accountId !== undefined &&
     extraction.otherAccountId !== undefined
   ) {
-    candidate.accountId = direction === "outflow" ? extraction.accountId : extraction.otherAccountId;
+    candidate.accountId =
+      direction === "outflow" ? extraction.accountId : extraction.otherAccountId;
     candidate.destinationAccountId =
       direction === "outflow" ? extraction.otherAccountId : extraction.accountId;
   } else if (extraction.accountId !== undefined) {
@@ -179,7 +180,9 @@ export function buildGeneralizedReconciliationSource(source: GeneralizedSourceSt
     ...(source.candidate.destinationAccountId === undefined
       ? {}
       : { destinationAccountId: source.candidate.destinationAccountId }),
-    ...(source.extraction.categoryId === undefined ? {} : { categoryId: source.extraction.categoryId }),
+    ...(source.extraction.categoryId === undefined
+      ? {}
+      : { categoryId: source.extraction.categoryId }),
   };
 }
 
@@ -199,7 +202,9 @@ export function mapGeneralizedTransaction(row: GeneralizedTransactionRow): Trans
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     ...(row.accountId === null ? {} : { accountId: row.accountId }),
-    ...(row.destinationAccountId === null ? {} : { destinationAccountId: row.destinationAccountId }),
+    ...(row.destinationAccountId === null
+      ? {}
+      : { destinationAccountId: row.destinationAccountId }),
     ...(row.categoryId === null ? {} : { categoryId: row.categoryId }),
     ...(row.cardId === null ? {} : { cardId: row.cardId }),
     ...(row.reconciledAt === null ? {} : { reconciledAt: row.reconciledAt.toISOString() }),
@@ -252,7 +257,10 @@ export function deterministicCandidateKey(kind: string, targetTransactionId: str
   return `${kind.toLowerCase()}:${targetTransactionId}`;
 }
 
-export function sameDeterministicEvidence(left: readonly string[], right: readonly string[]): boolean {
+export function sameDeterministicEvidence(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
