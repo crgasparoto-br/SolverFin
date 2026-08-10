@@ -4,7 +4,7 @@
 
 A Inbox concentra a revisão humana de sugestões produzidas por importação, regras, automações, aprendizado, histórico, sistema ou IA. Nenhuma sugestão incerta produz efeito financeiro sem decisão explícita.
 
-A fila unificada cobre `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`. Cada item apresenta tipo, estado, origem, confiança, explicação e alvo em linguagem de produto. Identificadores técnicos podem existir como referências escopadas no payload autenticado para preencher controles da revisão, mas a interface resolve essas referências para nomes e rótulos e não as usa como identificação visível do item.
+A fila unificada cobre `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`. Cada item apresenta tipo, estado, origem, confiança, explicação e alvo em linguagem de produto. Identificadores técnicos podem existir como referências escopadas no payload autenticado para preencher controles da revisão, mas a interface resolve essas referências para nomes e rótulos e não os usa como identificação visível do item.
 
 ## Payload estruturado
 
@@ -25,9 +25,13 @@ A área **Outras sugestões** carrega a fila completa e oferece filtros por:
 
 `kind`, `status` e `confidence` são preservados na URL; `profileId` continua sendo o recorte tenant já usado pelas demais telas. A listagem da API aceita `kind`, `status`, `includeLowConfidence` e `profileId`; o filtro visual de confiança é aplicado sobre essa projeção completa.
 
-A interface possui estados explícitos de carregamento, vazio, erro com nova tentativa, indisponibilidade temporária com nova tentativa, baixa confiança e conflito de versão. Falhas transitórias reconhecidas por HTTP `408`, `425`, `429`, `502`, `503` ou `504`, ou por códigos equivalentes de timeout/rate limit/unavailable, usam mensagem e estilo próprios para não se confundirem com erro permanente. O detalhe e a edição usam `<dialog>`, movem foco para o conteúdo editável e devolvem o foco ao acionador quando o diálogo fecha. O layout é fluido em desktop e mobile e não depende de texto técnico longo para orientar a decisão.
+Antes de responder `GET /api/ai-review-queue`, o backend executa a varredura determinística generalizada para todas as `transaction_extraction` pendentes do perfil ativo. CSV, OFX, mensagens bancárias e extrações assistidas por IA passam pelo mesmo motor de comparação; a origem não seleciona um algoritmo diferente.
 
-Para `deduplication` e `reconciliation`, o detalhe resolve o `targetTransactionId` escopado por tenant/perfil através da API de lançamentos e apresenta descrição, data e valor do lançamento alvo. O UUID permanece apenas como referência de integração e não é usado como rótulo visível.
+A interface possui estados explícitos de carregamento, vazio, erro com nova tentativa, indisponibilidade temporária com nova tentativa, baixa confiança e conflito de versão. Falhas transitórias reconhecidas por HTTP `408`, `425`, `429`, `502`, `503` ou `504`, ou por códigos equivalentes de timeout/rate limit/unavailable, usam mensagem e estilo próprios para não se confundirem com erro permanente.
+
+O detalhe e a edição usam `<dialog>`, movem foco para o conteúdo editável e devolvem o foco ao acionador quando o diálogo fecha. O layout é fluido em desktop e mobile e não depende de texto técnico longo para orientar a decisão.
+
+Para `deduplication` e `reconciliation`, o detalhe resolve o `targetTransactionId` escopado por tenant/perfil através da API de lançamentos e apresenta descrição, data e valor do lançamento alvo. O UUID permanece apenas como referência de integração e não é usado como rótulo visível. Motivos e conflitos estruturados são exibidos como evidência de revisão, sem texto bruto de arquivo, mensagem ou provider.
 
 ## Campos editáveis
 
@@ -41,21 +45,21 @@ A edição nunca muda arbitrariamente o payload inteiro.
 
 Campo fora da lista autorizada retorna `AI_REVIEW_EDIT_FIELD_UNSUPPORTED`. Tipos sem campos editáveis retornam `AI_REVIEW_EDIT_NOT_SUPPORTED`.
 
-Uma edição aceita mantém a sugestão pendente, recalcula o fingerprint quando o payload muda e invalida candidaturas dependentes que observavam a versão anterior. Sugestões de importação continuam delegando a mutação ao fluxo canônico de importações, que também revalida lote, contas, categorias, transferências e candidatos determinísticos.
+Uma edição aceita mantém a sugestão pendente, recalcula o fingerprint quando o payload muda e invalida candidaturas dependentes que observavam a versão anterior. Sugestões de importação continuam delegando a mutação ao fluxo canônico de importações, que também revalida lote, contas, categorias e transferências.
 
 ## Efeitos por tipo
 
 A aprovação sempre revalida organização, perfil financeiro, estado, versão e elegibilidade imediatamente antes do efeito.
 
-| Tipo                     | Efeito da aprovação                                                                                                                                                           |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `transaction_extraction` | cria ou vincula o lançamento usando o contrato canônico já existente; importações continuam passando pela detecção determinística e pelas regras de transferência/conciliação |
-| `categorization`         | aplica a categoria a uma `transaction_extraction` ainda pendente ou a um `Transaction` elegível; categoria arquivada, de outro perfil ou incompatível com o tipo é rejeitada  |
-| `deduplication`          | usa o serviço determinístico existente para resolver a origem como duplicidade sem criar novo lançamento                                                                      |
-| `reconciliation`         | usa o serviço determinístico existente para reconciliar o alvo e resolver a origem na mesma transação                                                                         |
-| `insight`                | registra reconhecimento/aprovação da sugestão, sem criar nem alterar lançamento financeiro                                                                                    |
+| Tipo | Efeito da aprovação |
+| --- | --- |
+| `transaction_extraction` | cria ou vincula o lançamento usando o contrato canônico já existente; importações continuam passando pelas regras de lote, transferência e revisão |
+| `categorization` | aplica a categoria a uma `transaction_extraction` ainda pendente ou a um `Transaction` elegível; categoria arquivada, de outro perfil ou incompatível com o tipo é rejeitada |
+| `deduplication` | resolve a origem como duplicidade e expira candidaturas irmãs, sem criar nem alterar o lançamento comparado |
+| `reconciliation` | revalida o alvo, marca o lançamento como reconciliado, aprova/vincula a origem e expira irmãs na mesma transação |
+| `insight` | registra reconhecimento/aprovação da sugestão, sem criar nem alterar lançamento financeiro |
 
-Rejeitar encerra a sugestão sem aplicar o efeito proposto. Rejeições e aprovações determinísticas continuam reutilizando os serviços especializados existentes, em vez de duplicar lógica de deduplicação ou conciliação.
+Rejeitar encerra a sugestão sem aplicar o efeito proposto. Rejeitar uma candidatura determinística não resolve automaticamente a origem; outras opções de revisão continuam disponíveis.
 
 ## API
 
@@ -67,19 +71,34 @@ POST /api/ai-review-queue/:suggestionId/edit
 POST /api/ai-review-queue/:suggestionId/reject
 ```
 
-Decisões e edições exigem `expectedFingerprint`. A interface sempre lê a versão atual imediatamente antes da ação e envia esse fingerprint. A ausência da precondição retorna `AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED` com HTTP `428`. Se outra aba ou sessão alterar a sugestão antes da gravação, a API retorna `AI_SUGGESTION_PAYLOAD_CONFLICT` ou `AI_SUGGESTION_PAYLOAD_OBSOLETE` e nenhuma parte do efeito é confirmada.
+Decisões e edições exigem `expectedFingerprint`. A interface sempre lê a versão atual imediatamente antes da ação e envia esse fingerprint. A ausência da precondição retorna `AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED` com HTTP `428`. Se outra aba, sessão, origem ou lançamento alvo mudar antes da gravação, a API retorna conflito/obsolescência controlada e nenhuma parte do efeito é confirmada.
 
-A mesma decisão repetida sobre um item já resolvido retorna o resultado persistido quando a operação é idempotente. Isso inclui `transaction_extraction` geral: um replay de aprovação retorna a sugestão e o lançamento já vinculados, sem criar novo movimento. Uma decisão oposta ou uma transição incompatível retorna conflito controlado.
+A mesma decisão repetida sobre um item já resolvido retorna o resultado persistido quando a operação é idempotente. Uma decisão oposta ou transição incompatível retorna conflito controlado.
 
 A rota de payload retorna a projeção tipada e redigida. Referências internas necessárias aos controles de edição são expostas somente depois do recorte por `organizationId` e `financialProfileId`; provider bruto, prompt, resposta integral, conteúdo de arquivo/mensagem e dados fora do contrato não são retornados.
 
+## Deduplicação e conciliação generalizadas
+
+A issue #566 estende a detecção determinística para qualquer `transaction_extraction` estruturada pendente. A comparação usa o mesmo domínio para:
+
+- CSV;
+- OFX;
+- mensagem bancária colada ou compartilhada, extraída por regra ou provider;
+- extração produzida por IA que siga o contrato canônico.
+
+A candidatura persiste `sourceSuggestionId`, `sourcePayloadFingerprint`, `targetTransactionId`, motivos e conflitos. A identidade tenant-scoped impede duplicação sob varreduras concorrentes. Uma mudança na origem ou no alvo expira a candidatura antiga; se a combinação continuar válida, uma candidatura atual pode ser criada para a nova versão.
+
+Transferências exigem par de contas compatível, moeda, valor e tolerância de data. Descrição semelhante é apenas evidência complementar e nunca autoriza uma transferência com contas divergentes.
+
 ## Atomicidade, concorrência e obsolescência
 
-As decisões passam por uma fachada transacional comum baseada em `withSharedTransaction`. Serviços de importação, deduplicação e conciliação chamados de dentro dessa fachada reutilizam a mesma conexão/transação. Assim, mudança de estado, efeito financeiro e auditoria confirmam ou fazem rollback juntos.
+As decisões passam pela fachada transacional comum baseada em `withSharedTransaction`. Sugestão, origem, lançamento alvo, expirações, status de lote quando houver e auditoria confirmam ou fazem rollback juntos.
 
-A sugestão é bloqueada para atualização antes da decisão. Dependências de outra sugestão continuam protegidas pelo fingerprint de origem e pelo trigger de vigência do banco. Origem ausente, lote descartado, sugestão resolvida, alvo inelegível ou fingerprint divergente preserva a consistência e retorna erro controlado.
+A candidatura, a origem e o alvo relevante são bloqueados antes do efeito. Dependências continuam protegidas pelo fingerprint da origem e pela revalidação da versão do lançamento comparado. Origem ausente, lote descartado, sugestão resolvida, alvo inelegível, alvo alterado ou fingerprint divergente preserva a consistência e retorna erro controlado.
 
-Quando uma categorização atualiza uma extração pendente, o novo fingerprint da extração expira outras candidaturas de categorização, deduplicação ou conciliação baseadas na versão anterior, exceto a própria decisão que está sendo concluída.
+Quando uma categorização atualiza uma extração pendente, o novo fingerprint da extração expira candidaturas de categorização, deduplicação ou conciliação baseadas na versão anterior. Quando uma deduplicação ou conciliação é aprovada, candidaturas determinísticas irmãs ainda pendentes expiram na mesma transação.
+
+Varreduras simultâneas usam a unicidade de `AiSuggestion` para convergir sem multiplicar candidatos. Falha de auditoria ou de qualquer etapa posterior faz rollback do efeito financeiro e do estado da fila.
 
 ## Categorização inteligente
 
@@ -91,12 +110,16 @@ A fila não inventa categoria quando a evidência é inválida. Categoria arquiv
 
 Mensagens bancárias e importações CSV/OFX produzem extrações estruturadas que entram na mesma fila. O texto bruto da mensagem, o conteúdo bruto do arquivo, prompts e respostas brutas de provider não são persistidos na fila.
 
-A aprovação de extrações importadas continua usando o fluxo de `docs/IMPORTS.md`; a fila unificada não contorna candidatos determinísticos, validação de lote, idempotência ou regras de transferência.
+A aprovação de extrações importadas continua usando o fluxo de `docs/IMPORTS.md`; a fila unificada não contorna validação de lote, idempotência ou regras de transferência. Deduplicação e conciliação, porém, usam o mesmo detector estruturado independentemente da origem da extração.
 
 ## Auditoria e segurança
 
-Todas as consultas e mutações exigem o mesmo `organizationId` e `financialProfileId`. Aprovação, rejeição e edição registram ator, data, ação, entidade, mudanças redigidas, referências redigidas da versão anterior e nova e, quando a requisição possui correlação, o mesmo `correlationId` do request.
+Todas as consultas e mutações exigem o mesmo `organizationId` e `financialProfileId`. Aprovação, rejeição e edição registram ator, data, ação, entidade, mudanças redigidas e, quando a requisição possui correlação, o mesmo `correlationId` do request.
 
-As referências `previousVersionRef` e `nextVersionRef` usam somente `status@fingerprint`. Elas permitem distinguir inequivocamente o estado observado antes da decisão do estado persistido depois dela sem registrar valor, descrição, conta, categoria ou qualquer outro dado financeiro em claro. A gravação dessas referências ocorre na mesma transação da decisão; se a trilha de auditoria não puder ser atualizada, a mutação inteira faz rollback.
+As referências `previousVersionRef` e `nextVersionRef` usam somente `status@fingerprint`. Elas distinguem o estado observado antes da decisão do estado persistido depois dela sem registrar valor, descrição, conta, categoria ou qualquer outro dado financeiro em claro.
 
 Mudanças redigidas continuam indicando transição/proposta alterada sem registrar dados financeiros sensíveis. O endpoint valida UUID antes do primeiro acesso protegido e erros públicos não revelam existência de recurso fora do contexto ativo. Payload resolvido permanece imutável pelo contrato do banco.
+
+## Validação
+
+A cobertura da fila inclui contratos de payload, edição por tipo, versão otimista, replay idempotente, concorrência de decisões, rollback e isolamento. A issue #566 adiciona cenário discriminante com as quatro origens estruturadas no mesmo scanner, varredura concorrente sem duplicação, origem editada, alvo alterado, decisão de duplicidade/conciliação, transferência com par de contas rígido e rollback da decisão generalizada.
