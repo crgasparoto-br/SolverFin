@@ -144,7 +144,9 @@ async function detectImportBatchDuplicatesHandler(
 ): Promise<ApiResponse> {
   const importBatchId = requireParam(match, "importBatchId");
   await assertImportBatchReviewable(context, importBatchId);
-  await scanPendingDeterministicReviewSuggestionsForContext(context);
+  await scanPendingDeterministicReviewSuggestionsForContext(context, {
+    sourceEntityId: importBatchId,
+  });
   await withSharedTransaction(async (executeQuery) =>
     refreshImportBatchStatusForContext(context, importBatchId, executeQuery),
   );
