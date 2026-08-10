@@ -210,12 +210,9 @@ async function main(): Promise<void> {
     );
     await assert.rejects(
       () =>
-        tryHandleGeneralizedDeterministicDecisionForContext(
-          context,
-          staleCandidate.id,
-          "approve",
-          { expectedFingerprint: staleCandidate.fingerprint },
-        ),
+        tryHandleGeneralizedDeterministicDecisionForContext(context, staleCandidate.id, "approve", {
+          expectedFingerprint: staleCandidate.fingerprint,
+        }),
       (error: unknown) => readErrorCode(error) === "AI_SUGGESTION_PAYLOAD_OBSOLETE",
     );
     assert.equal(await readSuggestionStatus(staleSourceId), "PENDING_REVIEW");
@@ -438,10 +435,7 @@ async function readTransactionState(
     status: string;
     description: string;
     updatedAt: Date;
-  }>(
-    `select "status", "description", "updatedAt" from "Transaction" where "id" = $1`,
-    [id],
-  );
+  }>(`select "status", "description", "updatedAt" from "Transaction" where "id" = $1`, [id]);
   assert.ok(rows[0]);
   return {
     status: rows[0].status,
