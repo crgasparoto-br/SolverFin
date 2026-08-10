@@ -562,10 +562,10 @@ async function cleanup(ledger: Ledger): Promise<void> {
     await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [allSuggestionIds]);
   }
   if (ledger.transactionIds.length > 0) {
-    await query(`delete from "Transaction" where "id" = any($1::uuid[])`, ledger.transactionIds);
+    await query(`delete from "Transaction" where "id" = any($1::uuid[])`, [ledger.transactionIds]);
   }
   if (ledger.importBatchIds.length > 0) {
-    await query(`delete from "ImportBatch" where "id" = any($1::uuid[])`, ledger.importBatchIds);
+    await query(`delete from "ImportBatch" where "id" = any($1::uuid[])`, [ledger.importBatchIds]);
   }
 }
 
