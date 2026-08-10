@@ -66,12 +66,7 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
   input: GeneralizedDeterministicDecisionInput,
 ): Promise<GeneralizedDeterministicDecisionResult | undefined> {
   return withSharedTransaction(async (executeQuery) => {
-    const candidate = await findSuggestion(
-      context,
-      suggestionId,
-      executeQuery,
-      true,
-    );
+    const candidate = await findSuggestion(context, suggestionId, executeQuery, true);
     if (candidate === undefined) {
       throw reviewError(
         "AI_REVIEW_SUGGESTION_NOT_FOUND",
@@ -81,10 +76,7 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
     }
     const kind = parseGeneralizedDeterministicKind(candidate.kind);
     if (kind === undefined) return undefined;
-    const candidatePayload = requireGeneralizedDeterministicPayload(
-      candidate,
-      kind,
-    );
+    const candidatePayload = requireGeneralizedDeterministicPayload(candidate, kind);
     if (candidatePayload === undefined) {
       throw reviewError(
         "AI_SUGGESTION_PAYLOAD_INVALID",
@@ -92,10 +84,7 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
         422,
       );
     }
-    assertExpectedFingerprint(
-      candidatePayload.fingerprint,
-      input.expectedFingerprint,
-    );
+    assertExpectedFingerprint(candidatePayload.fingerprint, input.expectedFingerprint);
     if (isIdempotent(candidate.status, action)) {
       return {
         suggestion: mapGeneralizedSuggestion(candidate),
@@ -112,11 +101,7 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
         422,
       );
     }
-    const source = await findSource(
-      context,
-      stored.sourceSuggestionId,
-      executeQuery,
-    );
+    const source = await findSource(context, stored.sourceSuggestionId, executeQuery);
     if (source === undefined) {
       throw reviewError(
         "AI_REVIEW_SOURCE_NOT_FOUND",
@@ -146,27 +131,16 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
         409,
       );
     }
-    const importBatchId = await requireReviewableSourceBatch(
-      context,
-      source,
-      executeQuery,
-    );
+    const importBatchId = await requireReviewableSourceBatch(context, source, executeQuery);
 
     if (action === "reject") {
       const now = new Date().toISOString();
-      const rejected = await setSuggestionStatus(
-        context,
-        candidate,
-        "REJECTED",
-        now,
-        executeQuery,
-      );
+      const rejected = await setSuggestionStatus(context, candidate, "REJECTED", now, executeQuery);
       await auditSuggestionDecision(
         context,
         rejected,
         "reject",
-        input.reason?.trim() ||
-          "Sugestão determinística rejeitada pelo usuário.",
+        input.reason?.trim() || "Sugestão determinística rejeitada pelo usuário.",
         now,
         candidatePayload.fingerprint,
         input.correlationId,
@@ -179,11 +153,7 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
       };
     }
 
-    const target = await findTarget(
-      context,
-      stored.targetTransactionId,
-      executeQuery,
-    );
+    const target = await findTarget(context, stored.targetTransactionId, executeQuery);
     if (target === undefined || target.status === "VOIDED") {
       throw reviewError(
         "AI_REVIEW_TARGET_UNAVAILABLE",
@@ -206,25 +176,13 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
       );
     }
     const targetTransaction = mapGeneralizedTransaction(target);
-    assertCandidateStillMatches(
-      context,
-      sourceState,
-      targetTransaction,
-      kind,
-      stored,
-    );
+    assertCandidateStillMatches(context, sourceState, targetTransaction, kind, stored);
 
     const now = new Date().toISOString();
     let transaction: Transaction | undefined;
     let resolvedSource: AiSuggestion;
     if (kind === "deduplication") {
-      resolvedSource = await setSuggestionStatus(
-        context,
-        source,
-        "REJECTED",
-        now,
-        executeQuery,
-      );
+      resolvedSource = await setSuggestionStatus(context, source, "REJECTED", now, executeQuery);
       await auditSourceDecision(
         context,
         resolvedSource,
@@ -264,9 +222,7 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
         action: "update",
         entityKind: "transaction",
         entityId: target.id,
-        ...(input.correlationId === undefined
-          ? {}
-          : { correlationId: input.correlationId }),
+        ...(input.correlationId === undefined ? {} : { correlationId: input.correlationId }),
         reason: "Lançamento conciliado a partir de sugestão estruturada revisada.",
         redactedChanges: { status: "changed", reconciledAt: "added" },
       });
@@ -280,13 +236,7 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
       input.correlationId,
       executeQuery,
     );
-    const approved = await setSuggestionStatus(
-      context,
-      candidate,
-      "APPROVED",
-      now,
-      executeQuery,
-    );
+    const approved = await setSuggestionStatus(context, candidate, "APPROVED", now, executeQuery);
     await auditSuggestionDecision(
       context,
       approved,
@@ -425,13 +375,7 @@ async function reconcileTarget(
     `update "Transaction" set "status" = 'RECONCILED', "reconciledAt" = $4,
        "updatedAt" = $4, "updatedByUserId" = $5
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [
-      row.id,
-      context.organizationId,
-      context.financialProfileId,
-      now,
-      context.userId,
-    ],
+    [row.id, context.organizationId, context.financialProfileId, now, context.userId],
   );
   return {
     ...mapGeneralizedTransaction(row),
@@ -540,13 +484,7 @@ async function auditSuggestionDecision(
       reviewedAt: "changed",
     },
   });
-  await persistDecisionAuditVersionRefs(
-    context,
-    suggestion,
-    action,
-    fingerprint,
-    executeQuery,
-  );
+  await persistDecisionAuditVersionRefs(context, suggestion, action, fingerprint, executeQuery);
 }
 
 async function persistDecisionAuditVersionRefs(
@@ -618,18 +556,11 @@ async function refreshBatchResult(
 ): Promise<{ importBatch?: ImportBatch }> {
   if (importBatchId === undefined) return {};
   return {
-    importBatch: await refreshImportBatchStatusForContext(
-      context,
-      importBatchId,
-      executeQuery,
-    ),
+    importBatch: await refreshImportBatchStatusForContext(context, importBatchId, executeQuery),
   };
 }
 
-function assertExpectedFingerprint(
-  actual: string,
-  expected: string | undefined,
-): void {
+function assertExpectedFingerprint(actual: string, expected: string | undefined): void {
   if (expected === undefined || expected.trim().length === 0) {
     throw reviewError(
       "AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED",
@@ -656,10 +587,7 @@ function assertPending(status: string): void {
   }
 }
 
-function isIdempotent(
-  status: string,
-  action: GeneralizedDeterministicDecisionAction,
-): boolean {
+function isIdempotent(status: string, action: GeneralizedDeterministicDecisionAction): boolean {
   return (
     (action === "approve" && status === "APPROVED") ||
     (action === "reject" && status === "REJECTED")
