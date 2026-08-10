@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
-import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
+import {
+  buildAiSuggestionPayload,
+} from "@solverfin/domain/ai-suggestion-payloads";
 import type { PoolClient } from "pg";
 
 import {
