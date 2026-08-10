@@ -2,17 +2,11 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
-import {
-  buildAiSuggestionPayload,
-} from "@solverfin/domain/ai-suggestion-payloads";
+import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { closePool, query } from "./db.js";
-import {
-  tryHandleGeneralizedDeterministicDecisionForContext,
-} from "./generalized-deterministic-review-decision.js";
-import {
-  scanPendingDeterministicReviewSuggestionsForContext,
-} from "./generalized-deterministic-review-scan.js";
+import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
+import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
@@ -37,10 +31,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const marker = randomUUID();
   const createdSuggestionIds: string[] = [];
   const createdTransactionIds: string[] = [];
@@ -117,46 +108,40 @@ async function main(): Promise<void> {
     const aiSourceId = requireSource(sourceIds, "ai");
     const aiDedup = await readPendingCandidate(aiSourceId, "DEDUPLICATION");
     const targetBeforeDedup = await readTransactionState(targetId);
-    const dedupResult =
-      await tryHandleGeneralizedDeterministicDecisionForContext(
-        context,
-        aiDedup.id,
-        "approve",
-        {
-          expectedFingerprint: aiDedup.fingerprint,
-          correlationId: `issue-566-dedup-${marker}`,
-        },
-      );
+    const dedupResult = await tryHandleGeneralizedDeterministicDecisionForContext(
+      context,
+      aiDedup.id,
+      "approve",
+      {
+        expectedFingerprint: aiDedup.fingerprint,
+        correlationId: `issue-566-dedup-${marker}`,
+      },
+    );
     assert.equal(dedupResult?.suggestion.status, "approved");
     assert.equal(await readSuggestionStatus(aiSourceId), "REJECTED");
     assert.deepEqual(await readTransactionState(targetId), targetBeforeDedup);
-    const dedupReplay =
-      await tryHandleGeneralizedDeterministicDecisionForContext(
-        context,
-        aiDedup.id,
-        "approve",
-        {
-          expectedFingerprint: aiDedup.fingerprint,
-          correlationId: `issue-566-dedup-replay-${marker}`,
-        },
-      );
+    const dedupReplay = await tryHandleGeneralizedDeterministicDecisionForContext(
+      context,
+      aiDedup.id,
+      "approve",
+      {
+        expectedFingerprint: aiDedup.fingerprint,
+        correlationId: `issue-566-dedup-replay-${marker}`,
+      },
+    );
     assert.equal(dedupReplay?.idempotent, true);
 
     const ofxSourceId = requireSource(sourceIds, "ofx");
-    const reconciliation = await readPendingCandidate(
-      ofxSourceId,
-      "RECONCILIATION",
+    const reconciliation = await readPendingCandidate(ofxSourceId, "RECONCILIATION");
+    const reconciliationResult = await tryHandleGeneralizedDeterministicDecisionForContext(
+      context,
+      reconciliation.id,
+      "approve",
+      {
+        expectedFingerprint: reconciliation.fingerprint,
+        correlationId: `issue-566-recon-${marker}`,
+      },
     );
-    const reconciliationResult =
-      await tryHandleGeneralizedDeterministicDecisionForContext(
-        context,
-        reconciliation.id,
-        "approve",
-        {
-          expectedFingerprint: reconciliation.fingerprint,
-          correlationId: `issue-566-recon-${marker}`,
-        },
-      );
     assert.equal(reconciliationResult?.suggestion.status, "approved");
     assert.equal(await readSuggestionStatus(ofxSourceId), "APPROVED");
     assert.equal((await readTransactionState(targetId)).status, "RECONCILED");
@@ -218,10 +203,7 @@ async function main(): Promise<void> {
     createdSuggestionIds.push(staleSourceId);
     createdTransactionIds.push(staleTargetId);
     await scanPendingDeterministicReviewSuggestionsForContext(context);
-    const staleCandidate = await readPendingCandidate(
-      staleSourceId,
-      "RECONCILIATION",
-    );
+    const staleCandidate = await readPendingCandidate(staleSourceId, "RECONCILIATION");
     await query(
       `update "Transaction" set "description" = $2, "updatedAt" = now() where "id" = $1`,
       [staleTargetId, `Alvo mudou ${marker}`],
@@ -234,8 +216,7 @@ async function main(): Promise<void> {
           "approve",
           { expectedFingerprint: staleCandidate.fingerprint },
         ),
-      (error: unknown) =>
-        readErrorCode(error) === "AI_SUGGESTION_PAYLOAD_OBSOLETE",
+      (error: unknown) => readErrorCode(error) === "AI_SUGGESTION_PAYLOAD_OBSOLETE",
     );
     assert.equal(await readSuggestionStatus(staleSourceId), "PENDING_REVIEW");
     assert.equal((await readTransactionState(staleTargetId)).status, "POSTED");
@@ -259,10 +240,7 @@ async function main(): Promise<void> {
     createdSuggestionIds.push(rollbackSourceId);
     createdTransactionIds.push(rollbackTargetId);
     await scanPendingDeterministicReviewSuggestionsForContext(context);
-    const rollbackCandidate = await readPendingCandidate(
-      rollbackSourceId,
-      "RECONCILIATION",
-    );
+    const rollbackCandidate = await readPendingCandidate(rollbackSourceId, "RECONCILIATION");
     await assert.rejects(() =>
       tryHandleGeneralizedDeterministicDecisionForContext(
         context,
@@ -274,18 +252,9 @@ async function main(): Promise<void> {
         },
       ),
     );
-    assert.equal(
-      await readSuggestionStatus(rollbackSourceId),
-      "PENDING_REVIEW",
-    );
-    assert.equal(
-      await readSuggestionStatus(rollbackCandidate.id),
-      "PENDING_REVIEW",
-    );
-    assert.equal(
-      (await readTransactionState(rollbackTargetId)).status,
-      "POSTED",
-    );
+    assert.equal(await readSuggestionStatus(rollbackSourceId), "PENDING_REVIEW");
+    assert.equal(await readSuggestionStatus(rollbackCandidate.id), "PENDING_REVIEW");
+    assert.equal((await readTransactionState(rollbackTargetId)).status, "POSTED");
   } finally {
     await cleanup(createdSuggestionIds, createdTransactionIds);
   }
@@ -325,9 +294,7 @@ async function insertExtraction(input: {
       currency: "BRL",
       description: input.description,
       accountId: input.accountId,
-      ...(input.otherAccountId === undefined
-        ? {}
-        : { otherAccountId: input.otherAccountId }),
+      ...(input.otherAccountId === undefined ? {} : { otherAccountId: input.otherAccountId }),
     },
   });
   await query(
@@ -374,9 +341,7 @@ async function replaceExtractionPayload(
       currency: "BRL",
       description: input.description,
       accountId: input.accountId,
-      ...(input.otherAccountId === undefined
-        ? {}
-        : { otherAccountId: input.otherAccountId }),
+      ...(input.otherAccountId === undefined ? {} : { otherAccountId: input.otherAccountId }),
     },
   });
   await query(
@@ -435,17 +400,11 @@ async function countPendingCandidates(sourceId: string): Promise<number> {
   return countCandidates(sourceId, "PENDING_REVIEW");
 }
 
-async function countCandidatesByStatus(
-  sourceId: string,
-  status: string,
-): Promise<number> {
+async function countCandidatesByStatus(sourceId: string, status: string): Promise<number> {
   return countCandidates(sourceId, status);
 }
 
-async function countCandidates(
-  sourceId: string,
-  status: string,
-): Promise<number> {
+async function countCandidates(sourceId: string, status: string): Promise<number> {
   const rows = await query<{ count: string }>(
     `select count(*)::text as "count" from "AiSuggestion"
      where "sourceSuggestionId" = $1 and "kind" in ('DEDUPLICATION', 'RECONCILIATION') and "status" = $2`,
@@ -454,9 +413,7 @@ async function countCandidates(
   return Number(rows[0]?.count ?? 0);
 }
 
-async function countAllCandidates(
-  sourceIds: Map<string, string>,
-): Promise<number> {
+async function countAllCandidates(sourceIds: Map<string, string>): Promise<number> {
   const ids = [...sourceIds.values()];
   const rows = await query<{ count: string }>(
     `select count(*)::text as "count" from "AiSuggestion"
@@ -466,9 +423,7 @@ async function countAllCandidates(
   return Number(rows[0]?.count ?? 0);
 }
 
-async function readSuggestionStatus(
-  id: string,
-): Promise<string | undefined> {
+async function readSuggestionStatus(id: string): Promise<string | undefined> {
   const rows = await query<{ status: string }>(
     `select "status" from "AiSuggestion" where "id" = $1`,
     [id],
@@ -507,10 +462,7 @@ function readErrorCode(error: unknown): string | undefined {
     : undefined;
 }
 
-async function cleanup(
-  suggestionIds: string[],
-  transactionIds: string[],
-): Promise<void> {
+async function cleanup(suggestionIds: string[], transactionIds: string[]): Promise<void> {
   const allSuggestionRows = await query<{ id: string }>(
     `select "id" from "AiSuggestion" where "id" = any($1::uuid[]) or "sourceSuggestionId" = any($1::uuid[])`,
     [suggestionIds],
@@ -518,21 +470,12 @@ async function cleanup(
   const allSuggestionIds = allSuggestionRows.map((row) => row.id);
   const entityIds = [...allSuggestionIds, ...transactionIds];
   if (entityIds.length > 0) {
-    await query(
-      `delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`,
-      [entityIds],
-    );
+    await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
   }
   if (allSuggestionIds.length > 0) {
-    await query(
-      `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
-      [allSuggestionIds],
-    );
+    await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [allSuggestionIds]);
   }
   if (transactionIds.length > 0) {
-    await query(
-      `delete from "Transaction" where "id" = any($1::uuid[])`,
-      [transactionIds],
-    );
+    await query(`delete from "Transaction" where "id" = any($1::uuid[])`, [transactionIds]);
   }
 }
