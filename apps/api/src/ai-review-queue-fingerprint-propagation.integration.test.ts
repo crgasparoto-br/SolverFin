@@ -5,9 +5,7 @@ import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloa
 
 import { handleCategorizationAwareAiReviewQueueApiRequest } from "./categorization-aware-ai-review-router.js";
 import { closePool, query } from "./db.js";
-import {
-  handleDeduplicationReconciliationApiRequest as handleDeterministicRequest,
-} from "./deduplication-reconciliation-router.js";
+import { handleDeduplicationReconciliationApiRequest as handleDeterministicRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest, type ApiRequest, type ApiResponse } from "./router.js";
@@ -55,12 +53,7 @@ async function main(): Promise<void> {
     expectedSourceStatus: "approved",
   });
   await assertPendingBackfillRepair(token, organizationId, fixtures.accountId, suffix);
-  await assertGeneralExtractionMutationSync(
-    token,
-    organizationId,
-    fixtures.accountId,
-    suffix,
-  );
+  await assertGeneralExtractionMutationSync(token, organizationId, fixtures.accountId, suffix);
 }
 
 async function readOrganizationId(): Promise<string> {
