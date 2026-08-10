@@ -1,23 +1,21 @@
 import {
-  ImportFileError,
   TenantAuthorizationError,
   TenantError,
-  deriveImportLineDirection,
-  parseTransactionExtractionPayload,
   type AiSuggestion,
-  type ImportTransactionSuggestion,
   type TenantContext,
 } from "@solverfin/domain";
+import { readAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { query, withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
+import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
 import { refreshImportBatchStatusForContext } from "./repositories/imports.js";
 import {
   DeterministicReviewSuggestionError,
   approveDeterministicReviewSuggestionForContext,
-  createDeterministicImportReviewSuggestionsForContext,
   listDeterministicReviewSuggestionsForContext,
   rejectDeterministicReviewSuggestionForContext,
 } from "./repositories/review-suggestions.js";
@@ -37,11 +35,8 @@ interface DeduplicationRoute {
   handler: DeduplicationHandler;
 }
 
-interface AiSuggestionRow {
-  id: string;
-  organizationId: string;
-  financialProfileId: string;
-  status: string;
+interface DeterministicSuggestionPayloadRow {
+  kind: string;
   payload: unknown;
 }
 
@@ -149,33 +144,41 @@ async function detectImportBatchDuplicatesHandler(
 ): Promise<ApiResponse> {
   const importBatchId = requireParam(match, "importBatchId");
   await assertImportBatchReviewable(context, importBatchId);
-  const importSuggestions = await listImportTransactionSuggestionsForBatch(context, importBatchId);
-  const result = await withSharedTransaction(async (executeQuery) => {
-    const created = await createDeterministicImportReviewSuggestionsForContext(
-      context,
-      importBatchId,
-      importSuggestions,
-      new Date().toISOString(),
-      executeQuery,
-    );
-    await refreshImportBatchStatusForContext(context, importBatchId, executeQuery);
-    return created;
+  await scanPendingDeterministicReviewSuggestionsForContext(context);
+  await withSharedTransaction(async (executeQuery) =>
+    refreshImportBatchStatusForContext(context, importBatchId, executeQuery),
+  );
+  const suggestions = await listDeterministicReviewSuggestionsForContext(context, {
+    sourceEntityId: importBatchId,
+    status: "pending_review",
   });
-  return json(200, { ...result, duplicateScan: true });
+  return json(200, {
+    deduplicationSuggestions: suggestions.filter((item) => item.kind === "deduplication"),
+    reconciliationSuggestions: suggestions.filter((item) => item.kind === "reconciliation"),
+    duplicateScan: true,
+  });
 }
 
 async function approveReviewSuggestionHandler(
-  _request: ApiRequest,
+  request: ApiRequest,
   context: TenantContext,
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
-  return json(
-    200,
-    await approveDeterministicReviewSuggestionForContext(
+  const suggestionId = requireParam(match, "suggestionId");
+  const expectedFingerprint = await readCurrentDeterministicFingerprint(context, suggestionId);
+  if (expectedFingerprint !== undefined) {
+    const result = await tryHandleGeneralizedDeterministicDecisionForContext(
       context,
-      requireParam(match, "suggestionId"),
-    ),
-  );
+      suggestionId,
+      "approve",
+      {
+        expectedFingerprint,
+        correlationId: resolveCorrelationId(request.headers),
+      },
+    );
+    if (result !== undefined) return json(200, result);
+  }
+  return json(200, await approveDeterministicReviewSuggestionForContext(context, suggestionId));
 }
 
 async function rejectReviewSuggestionHandler(
@@ -183,16 +186,46 @@ async function rejectReviewSuggestionHandler(
   context: TenantContext,
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
+  const suggestionId = requireParam(match, "suggestionId");
   const body = typeof request.body === "object" && request.body !== null ? request.body : {};
-  const reason = (body as { reason?: unknown }).reason;
+  const reasonValue = (body as { reason?: unknown }).reason;
+  const reason = reasonValue === undefined ? undefined : String(reasonValue);
+  const expectedFingerprint = await readCurrentDeterministicFingerprint(context, suggestionId);
+  if (expectedFingerprint !== undefined) {
+    const result = await tryHandleGeneralizedDeterministicDecisionForContext(
+      context,
+      suggestionId,
+      "reject",
+      {
+        expectedFingerprint,
+        reason,
+        correlationId: resolveCorrelationId(request.headers),
+      },
+    );
+    if (result !== undefined) return json(200, result);
+  }
   return json(
     200,
-    await rejectDeterministicReviewSuggestionForContext(
-      context,
-      requireParam(match, "suggestionId"),
-      reason === undefined ? undefined : String(reason),
-    ),
+    await rejectDeterministicReviewSuggestionForContext(context, suggestionId, reason),
   );
+}
+
+async function readCurrentDeterministicFingerprint(
+  context: TenantContext,
+  suggestionId: string,
+): Promise<string | undefined> {
+  const rows = await query<DeterministicSuggestionPayloadRow>(
+    `select "kind", "payload" from "AiSuggestion"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+       and "kind" in ('DEDUPLICATION', 'RECONCILIATION')`,
+    [suggestionId, context.organizationId, context.financialProfileId],
+  );
+  const row = rows[0];
+  if (row === undefined) return undefined;
+  const kind = row.kind.toLowerCase();
+  if (kind !== "deduplication" && kind !== "reconciliation") return undefined;
+  const read = readAiSuggestionPayload(row.payload, kind);
+  return read.state === "current" ? read.payload.fingerprint : undefined;
 }
 
 async function assertImportBatchReviewable(
@@ -220,71 +253,10 @@ async function assertImportBatchReviewable(
   }
 }
 
-async function listImportTransactionSuggestionsForBatch(
-  context: TenantContext,
-  importBatchId: string,
-): Promise<ImportTransactionSuggestion[]> {
-  const rows = await query<AiSuggestionRow>(
-    `select "id", "organizationId", "financialProfileId", "status", "payload" from "AiSuggestion"
-     where "organizationId" = $1 and "financialProfileId" = $2 and "sourceEntityId" = $3
-       and "kind" = 'TRANSACTION_EXTRACTION' and "status" = 'PENDING_REVIEW'
-     order by "createdAt" asc`,
-    [context.organizationId, context.financialProfileId, importBatchId],
-  );
-  return rows.map((row) => {
-    const payload = parseTransactionExtractionPayload(row.payload);
-    if (payload === undefined) {
-      throw new ImportFileError(
-        "IMPORT_CSV_STRUCTURE_INVALID",
-        "Linha de importacao nao contem payload estruturado para deduplicacao.",
-      );
-    }
-    const direction = deriveImportLineDirection(payload);
-    if (direction === undefined) {
-      throw new ImportFileError(
-        "IMPORT_CSV_STRUCTURE_INVALID",
-        "Linha de importacao nao possui direcao estruturada para deduplicacao.",
-      );
-    }
-    const transferAccounts =
-      payload.kind === "transfer" &&
-      payload.payloadVersion === 2 &&
-      payload.accountId !== undefined &&
-      payload.otherAccountId !== undefined
-        ? { accountId: payload.accountId, otherAccountId: payload.otherAccountId }
-        : undefined;
-    if (payload.kind === "transfer" && transferAccounts === undefined) {
-      throw new ImportFileError(
-        "IMPORT_CSV_STRUCTURE_INVALID",
-        "Transferencia importada nao possui as duas contas estruturadas.",
-      );
-    }
-    return {
-      id: row.id,
-      payloadVersion: payload.payloadVersion,
-      organizationId: row.organizationId,
-      financialProfileId: row.financialProfileId,
-      status: "pending_review",
-      sourceKind: "csv",
-      sourceHash: payload.sourceHash,
-      sourceRowNumber: payload.sourceRowNumber,
-      occurredOn: payload.occurredOn,
-      description: payload.description,
-      kind: payload.kind,
-      direction,
-      amountMinor: payload.amountMinor,
-      currency: payload.currency,
-      ...(transferAccounts ??
-        (payload.accountId === undefined ? {} : { accountId: payload.accountId })),
-      ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
-      ...(payload.externalId === undefined ? {} : { externalId: payload.externalId }),
-    };
-  });
-}
-
 function requireParam(match: Readonly<Record<string, string>>, name: string): string {
   const value = match[name];
-  if (!value) throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
+  if (!value)
+    throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
   return value;
 }
 
@@ -301,7 +273,7 @@ function json(statusCode: number, body: unknown): ApiResponse {
 }
 
 function mapDomainError(error: unknown): unknown {
-  if (error instanceof ImportFileError || error instanceof DeterministicReviewSuggestionError) {
+  if (error instanceof DeterministicReviewSuggestionError) {
     return { code: error.code, statusCode: error.statusCode, message: error.message };
   }
   if (error instanceof TenantError) {
