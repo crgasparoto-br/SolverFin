@@ -6,9 +6,7 @@ import {
   type TenantContext,
   type Transaction,
 } from "@solverfin/domain";
-import {
-  buildAiSuggestionPayload,
-} from "@solverfin/domain/ai-suggestion-payloads";
+import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { withSharedTransaction, type QueryExecutor } from "./db.js";
 import {
@@ -51,18 +49,10 @@ export async function scanPendingDeterministicReviewSuggestionsForContext(
   filter: GeneralizedDeterministicScanFilter = {},
 ): Promise<GeneralizedDeterministicScanResult> {
   return withSharedTransaction(async (executeQuery) => {
-    const sourceRows = await listPendingExtractionRows(
-      context,
-      executeQuery,
-      filter.sourceEntityId,
-    );
-    const transactionRows = await listReviewableTransactionRows(
-      context,
-      executeQuery,
-    );
+    const sourceRows = await listPendingExtractionRows(context, executeQuery, filter.sourceEntityId);
+    const transactionRows = await listReviewableTransactionRows(context, executeQuery);
     const transactions = transactionRows.map(mapGeneralizedTransaction);
-    const existingCandidates =
-      buildExistingTransactionCandidates(transactionRows);
+    const existingCandidates = buildExistingTransactionCandidates(transactionRows);
     let createdCandidates = 0;
     let expiredCandidates = await expireCandidatesWithResolvedSources(
       context,
@@ -73,12 +63,7 @@ export async function scanPendingDeterministicReviewSuggestionsForContext(
     for (const row of sourceRows) {
       const source = buildGeneralizedSourceState(row);
       if (source === undefined) continue;
-      const desired = buildDesiredCandidates(
-        context,
-        source,
-        transactions,
-        existingCandidates,
-      );
+      const desired = buildDesiredCandidates(context, source, transactions, existingCandidates);
       const existing = await listPendingChildren(context, row.id, executeQuery);
       const covered = new Set<string>();
 
@@ -87,17 +72,13 @@ export async function scanPendingDeterministicReviewSuggestionsForContext(
         const key =
           stored === undefined
             ? undefined
-            : deterministicCandidateKey(
-                candidateRow.kind,
-                stored.targetTransactionId,
-              );
+            : deterministicCandidateKey(candidateRow.kind, stored.targetTransactionId);
         const currentDesired = key === undefined ? undefined : desired.get(key);
         const current =
           stored !== undefined &&
           currentDesired !== undefined &&
           source.fingerprints.has(stored.sourcePayloadFingerprint) &&
-          currentDesired.target.updatedAt <=
-            candidateRow.createdAt.toISOString() &&
+          currentDesired.target.updatedAt <= candidateRow.createdAt.toISOString() &&
           sameDeterministicEvidence(stored.reasons, currentDesired.reasons) &&
           sameDeterministicEvidence(stored.conflicts, currentDesired.conflicts);
         if (current && key !== undefined) {
@@ -114,12 +95,7 @@ export async function scanPendingDeterministicReviewSuggestionsForContext(
 
       for (const [key, candidate] of desired) {
         if (covered.has(key)) continue;
-        createdCandidates += await insertDesiredCandidate(
-          context,
-          source,
-          candidate,
-          executeQuery,
-        );
+        createdCandidates += await insertDesiredCandidate(context, source, candidate, executeQuery);
       }
     }
 
@@ -145,9 +121,7 @@ function buildDesiredCandidates(
   });
   const desired = new Map<string, DesiredCandidate>();
   for (const match of matches) {
-    const target = transactions.find(
-      (item) => item.id === match.possibleDuplicateId,
-    );
+    const target = transactions.find((item) => item.id === match.possibleDuplicateId);
     if (target === undefined) continue;
     const reasons = match.reasons.map((reason) => reason.message);
     desired.set(deterministicCandidateKey("deduplication", target.id), {
@@ -218,12 +192,7 @@ async function expireCandidatesWithResolvedSources(
             and source."kind" = 'TRANSACTION_EXTRACTION'
             and source."status" = 'PENDING_REVIEW'
        ) returning candidate."id"`,
-    [
-      context.organizationId,
-      context.financialProfileId,
-      now,
-      sourceEntityId ?? null,
-    ],
+    [context.organizationId, context.financialProfileId, now, sourceEntityId ?? null],
   );
   for (const row of rows) {
     await auditExpiration(
@@ -250,13 +219,7 @@ async function expireCandidate(
        "reviewedAt" = $4, "updatedAt" = $4
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
        and "status" = 'PENDING_REVIEW' returning "id"`,
-    [
-      suggestionId,
-      context.organizationId,
-      context.financialProfileId,
-      now,
-      expiredFingerprint,
-    ],
+    [suggestionId, context.organizationId, context.financialProfileId, now, expiredFingerprint],
   );
   if (rows[0] === undefined) return 0;
   await auditExpiration(context, suggestionId, now, reason, executeQuery);
@@ -313,9 +276,7 @@ async function insertDesiredCandidate(
       JSON.stringify(payload),
       source.row.id,
       persistenceFingerprint,
-      desired.kind === "deduplication"
-        ? "deduplication-v3"
-        : "reconciliation-v3",
+      desired.kind === "deduplication" ? "deduplication-v3" : "reconciliation-v3",
       now,
     ],
   );
@@ -369,10 +330,7 @@ function buildPersistenceFingerprint(source: GeneralizedSourceState): string {
   return source.preferredFingerprint;
 }
 
-function buildExpiredPersistenceFingerprint(
-  suggestionId: string,
-  now: string,
-): string {
+function buildExpiredPersistenceFingerprint(suggestionId: string, now: string): string {
   const identity = ["expired", suggestionId, now].join(":");
   return `sha256-${createHash("sha256").update(identity).digest("hex")}`;
 }
