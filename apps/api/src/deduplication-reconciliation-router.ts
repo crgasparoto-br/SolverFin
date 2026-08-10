@@ -198,7 +198,7 @@ async function rejectReviewSuggestionHandler(
       "reject",
       {
         expectedFingerprint,
-        reason,
+        ...(reason === undefined ? {} : { reason }),
         correlationId: resolveCorrelationId(request.headers),
       },
     );
