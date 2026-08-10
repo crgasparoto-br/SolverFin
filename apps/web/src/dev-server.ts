@@ -1,3 +1,4 @@
+import "./load-env.js";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 import { assertExplicitRuntimeEnvironment } from "@solverfin/shared";
