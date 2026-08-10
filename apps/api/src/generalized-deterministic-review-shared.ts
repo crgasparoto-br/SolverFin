@@ -88,13 +88,15 @@ export const GENERALIZED_TRANSACTION_COLUMNS = `"id", "organizationId", "financi
 export async function listPendingExtractionRows(
   context: TenantContext,
   executeQuery: QueryExecutor,
+  sourceEntityId?: string,
 ): Promise<GeneralizedAiSuggestionRow[]> {
   return executeQuery<GeneralizedAiSuggestionRow>(
     `select ${GENERALIZED_AI_SUGGESTION_COLUMNS} from "AiSuggestion"
      where "organizationId" = $1 and "financialProfileId" = $2
        and "kind" = 'TRANSACTION_EXTRACTION' and "status" = 'PENDING_REVIEW'
+       and ($3::uuid is null or "sourceEntityId" = $3)
      order by "createdAt" asc, "id" asc`,
-    [context.organizationId, context.financialProfileId],
+    [context.organizationId, context.financialProfileId, sourceEntityId ?? null],
   );
 }
 
