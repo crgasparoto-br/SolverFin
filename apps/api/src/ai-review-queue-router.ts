@@ -5,6 +5,7 @@ import {
   type AiSuggestion,
   type TenantContext,
 } from "@solverfin/domain";
+import { AiSuggestionPayloadError } from "@solverfin/domain/ai-suggestion-payloads";
 
 import {
   AiSuggestionPayloadApiError,
@@ -12,14 +13,17 @@ import {
 } from "./ai-suggestion-payload-contract.js";
 import { AuthError } from "./auth.js";
 import { requireAuthenticatedRequest } from "./auth-service.js";
+import {
+  approveAiReviewDecisionForContext,
+  editAiReviewDecisionForContext,
+  rejectAiReviewDecisionForContext,
+  type AiReviewDecisionInput,
+} from "./ai-review-queue-public-decision-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   AiReviewQueueError,
-  approveAiReviewSuggestionForContext,
-  editAiReviewSuggestionForContext,
   listAiReviewQueueForContext,
-  rejectAiReviewSuggestionForContext,
-  type AiSuggestedTransactionDraft,
+  type AiReviewQueueItem,
 } from "./repositories/ai-review-queue.js";
 import {
   AiSuggestionPayloadRepositoryError,
@@ -32,6 +36,8 @@ type AiReviewQueueHandler = (
   request: ApiRequest,
   context: TenantContext,
   match: Readonly<Record<string, string>>,
+  correlationId: string,
+  requireExpectedFingerprint: boolean,
 ) => Promise<ApiResponse>;
 
 interface AiReviewQueueRoute {
@@ -41,8 +47,22 @@ interface AiReviewQueueRoute {
   handler: AiReviewQueueHandler;
 }
 
+interface PublicAiReviewQueueItem {
+  id: string;
+  kind: AiReviewQueueItem["kind"];
+  status: AiReviewQueueItem["status"];
+  origin: AiReviewQueueItem["origin"];
+  confidence: number;
+  risk: AiReviewQueueItem["risk"];
+  explanation: string;
+  maskedSummary: string;
+  proposedTransaction?: AiReviewQueueItem["proposedTransaction"];
+  provider?: string;
+  createdAt: string;
+  reviewedAt?: string;
+}
+
 const BASE_PATH = "/api/ai-review-queue";
-const ALLOWED_TRANSACTION_KINDS = new Set(["income", "expense", "transfer"]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const routes: AiReviewQueueRoute[] = [];
 
@@ -52,8 +72,28 @@ route("POST", `${BASE_PATH}/:suggestionId/approve`, approveAiReviewSuggestionHan
 route("POST", `${BASE_PATH}/:suggestionId/edit`, editAiReviewSuggestionHandler);
 route("POST", `${BASE_PATH}/:suggestionId/reject`, rejectAiReviewSuggestionHandler);
 
+/**
+ * In-process compatibility entrypoint used by older integration suites. The HTTP
+ * server does not wire this function directly; production traffic uses the
+ * versioned entrypoint below so every public mutation carries the observed
+ * fingerprint.
+ */
 export async function handleAiReviewQueueApiRequest(
   request: ApiRequest,
+): Promise<ApiResponse | undefined> {
+  return handleAiReviewQueueRequest(request, false);
+}
+
+/** Public HTTP boundary for the AI review queue. */
+export async function handleVersionedAiReviewQueueApiRequest(
+  request: ApiRequest,
+): Promise<ApiResponse | undefined> {
+  return handleAiReviewQueueRequest(request, true);
+}
+
+async function handleAiReviewQueueRequest(
+  request: ApiRequest,
+  requireExpectedFingerprint: boolean,
 ): Promise<ApiResponse | undefined> {
   if (!request.pathname.startsWith(BASE_PATH)) return undefined;
 
@@ -67,7 +107,13 @@ export async function handleAiReviewQueueApiRequest(
       user,
       request.query.get("profileId") ?? undefined,
     );
-    return await match.route.handler(request, context, match.params);
+    return await match.route.handler(
+      request,
+      context,
+      match.params,
+      correlationId,
+      requireExpectedFingerprint,
+    );
   } catch (error) {
     const response = buildApiErrorResponse({
       error: mapDomainError(error),
@@ -126,14 +172,32 @@ async function listAiReviewQueueHandler(
   const kind = request.query.get("kind") as AiSuggestion["kind"] | null;
   const status = request.query.get("status") as AiSuggestion["status"] | "all" | null;
   const includeLowConfidence = request.query.get("includeLowConfidence") === "true";
-
-  return json(200, {
-    suggestions: await listAiReviewQueueForContext(context, {
-      ...(kind ? { kind } : {}),
-      ...(status ? { status } : {}),
-      includeLowConfidence,
-    }),
+  const suggestions = await listAiReviewQueueForContext(context, {
+    ...(kind ? { kind } : {}),
+    ...(status ? { status } : {}),
+    includeLowConfidence,
   });
+
+  return json(200, { suggestions: suggestions.map(toPublicQueueItem) });
+}
+
+function toPublicQueueItem(item: AiReviewQueueItem): PublicAiReviewQueueItem {
+  return {
+    id: item.id,
+    kind: item.kind,
+    status: item.status,
+    origin: item.origin,
+    confidence: item.confidence,
+    risk: item.risk,
+    explanation: item.explanation,
+    maskedSummary: item.maskedSummary,
+    ...(item.proposedTransaction === undefined
+      ? {}
+      : { proposedTransaction: item.proposedTransaction }),
+    ...(item.provider === undefined ? {} : { provider: item.provider }),
+    createdAt: item.createdAt,
+    ...(item.reviewedAt === undefined ? {} : { reviewedAt: item.reviewedAt }),
+  };
 }
 
 async function getAiSuggestionPayloadHandler(
@@ -148,12 +212,17 @@ async function approveAiReviewSuggestionHandler(
   request: ApiRequest,
   context: TenantContext,
   match: Readonly<Record<string, string>>,
+  correlationId: string,
+  requireExpectedFingerprint: boolean,
 ): Promise<ApiResponse> {
   const body = optionalObjectBody(request.body);
-  const payloadOverride = readPayload(body.payloadOverride);
   return json(
     200,
-    await approveAiReviewSuggestionForContext(context, requireSuggestionId(match), payloadOverride),
+    await approveAiReviewDecisionForContext(
+      context,
+      requireSuggestionId(match),
+      readDecisionInput(body, correlationId, "payloadOverride", false, requireExpectedFingerprint),
+    ),
   );
 }
 
@@ -161,22 +230,16 @@ async function editAiReviewSuggestionHandler(
   request: ApiRequest,
   context: TenantContext,
   match: Readonly<Record<string, string>>,
+  correlationId: string,
+  requireExpectedFingerprint: boolean,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const payload = readPayload(body.payload);
-  if (payload === undefined) {
-    throw new AiReviewQueueError(
-      "AI_REVIEW_EDIT_PAYLOAD_REQUIRED",
-      "Edicao de sugestao precisa informar os campos revisados.",
-    );
-  }
   return json(
     200,
-    await editAiReviewSuggestionForContext(
+    await editAiReviewDecisionForContext(
       context,
       requireSuggestionId(match),
-      payload,
-      body.reason === undefined ? undefined : String(body.reason),
+      readDecisionInput(body, correlationId, "payload", true, requireExpectedFingerprint),
     ),
   );
 }
@@ -185,16 +248,49 @@ async function rejectAiReviewSuggestionHandler(
   request: ApiRequest,
   context: TenantContext,
   match: Readonly<Record<string, string>>,
+  correlationId: string,
+  requireExpectedFingerprint: boolean,
 ): Promise<ApiResponse> {
   const body = optionalObjectBody(request.body);
   return json(
     200,
-    await rejectAiReviewSuggestionForContext(
+    await rejectAiReviewDecisionForContext(
       context,
       requireSuggestionId(match),
-      body.reason === undefined ? undefined : String(body.reason),
+      readDecisionInput(body, correlationId, undefined, false, requireExpectedFingerprint),
     ),
   );
+}
+
+function readDecisionInput(
+  body: Record<string, unknown>,
+  correlationId: string,
+  payloadField?: "payload" | "payloadOverride",
+  payloadRequired = false,
+  requireExpectedFingerprint = false,
+): AiReviewDecisionInput {
+  const payload = payloadField === undefined ? undefined : readOptionalObject(body[payloadField]);
+  if (payloadRequired && payload === undefined) {
+    throw new AiReviewQueueError(
+      "AI_REVIEW_EDIT_PAYLOAD_REQUIRED",
+      "Edicao de sugestao precisa informar os campos revisados.",
+    );
+  }
+  const expectedFingerprint = readOptionalString(body.expectedFingerprint, "expectedFingerprint");
+  if (requireExpectedFingerprint && expectedFingerprint === undefined) {
+    throw new AiReviewQueueError(
+      "AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED",
+      "Informe a versao observada da sugestao antes de concluir a decisao.",
+      428,
+    );
+  }
+  const reason = readOptionalString(body.reason, "reason");
+  return {
+    ...(payload === undefined ? {} : { payload }),
+    ...(expectedFingerprint === undefined ? {} : { expectedFingerprint }),
+    ...(reason === undefined ? {} : { reason }),
+    correlationId,
+  };
 }
 
 function optionalObjectBody(body: unknown): Record<string, unknown> {
@@ -202,60 +298,33 @@ function optionalObjectBody(body: unknown): Record<string, unknown> {
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {
-  if (typeof body !== "object" || body === null) {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
     throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
   }
   return body as Record<string, unknown>;
 }
 
-function readPayload(value: unknown): Partial<AiSuggestedTransactionDraft> | undefined {
+function readOptionalObject(value: unknown): Record<string, unknown> | undefined {
   if (value === undefined) return undefined;
-  if (typeof value !== "object" || value === null) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new AiReviewQueueError(
       "AI_REVIEW_PAYLOAD_INVALID",
       "Payload de revisao precisa ser um objeto.",
     );
   }
-  const input = value as Record<string, unknown>;
-  const payload: Partial<AiSuggestedTransactionDraft> = {};
-  if (input.kind !== undefined) payload.kind = readTransactionKind(input.kind);
-  if (input.amountMinor !== undefined) {
-    payload.amountMinor = readAmountMinor(input.amountMinor);
-  }
-  if (input.occurredOn !== undefined) payload.occurredOn = String(input.occurredOn);
-  if (input.accountId !== undefined) payload.accountId = String(input.accountId);
-  if (input.description !== undefined) payload.description = String(input.description);
-  if (input.currency !== undefined) payload.currency = String(input.currency);
-  if (input.categoryId !== undefined) payload.categoryId = String(input.categoryId);
-  if (input.otherAccountId !== undefined) {
-    payload.otherAccountId = String(input.otherAccountId);
-  }
-  if (input.destinationAccountId !== undefined) {
-    payload.destinationAccountId = String(input.destinationAccountId);
-  }
-  return payload;
+  return value as Record<string, unknown>;
 }
 
-function readTransactionKind(value: unknown): AiSuggestedTransactionDraft["kind"] {
-  const kind = String(value);
-  if (!ALLOWED_TRANSACTION_KINDS.has(kind)) {
+function readOptionalString(value: unknown, field: string): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || value.trim().length === 0 || value.length > 2048) {
     throw new AiReviewQueueError(
-      "AI_REVIEW_KIND_INVALID",
-      "Tipo de lancamento informado na revisao nao e valido.",
+      "AI_REVIEW_REQUEST_INVALID",
+      `O campo ${field} informado na revisao nao e valido.`,
+      400,
     );
   }
-  return kind as AiSuggestedTransactionDraft["kind"];
-}
-
-function readAmountMinor(value: unknown): number {
-  const amountMinor = Number(value);
-  if (!Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
-    throw new AiReviewQueueError(
-      "AI_REVIEW_AMOUNT_INVALID",
-      "Valor informado na revisao precisa ser um inteiro positivo em centavos.",
-    );
-  }
-  return amountMinor;
+  return value.trim();
 }
 
 function requireSuggestionId(match: Readonly<Record<string, string>>): string {
@@ -283,7 +352,7 @@ function json(statusCode: number, body: unknown): ApiResponse {
 }
 
 function mapDomainError(error: unknown): unknown {
-  if (isDatabasePayloadContractError(error)) {
+  if (isDatabasePayloadContractError(error) || error instanceof AiSuggestionPayloadError) {
     const mapped = mapAiSuggestionPayloadPersistenceError(error);
     return {
       code: mapped.code,

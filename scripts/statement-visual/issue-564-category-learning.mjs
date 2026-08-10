@@ -321,17 +321,9 @@ async function inspectInboxOrigin(cdp, fixtures) {
         (response) => response.json()
       );
       const suggestions = Array.isArray(queue.suggestions) ? queue.suggestions : [];
-      const learningItem = suggestions.find(
-        (item) =>
-          item.provider === "solverfin-learning" &&
-          item.sourceEntityId === ${JSON.stringify(fixtures.ignoreSuggestionId)}
-      );
+      const learningItem = suggestions.find((item) => item.provider === "solverfin-learning");
       const learningRow = learningItem
-        ? [...document.querySelectorAll('article.maintenance-item')].find((row) =>
-            row.querySelector(
-              '[data-api-path*="/api/ai-review-queue/' + learningItem.id + '/"]'
-            )
-          )
+        ? document.querySelector('[data-review-id="' + CSS.escape(learningItem.id) + '"]')
         : undefined;
       return {
         learningCategorizationId: learningItem?.id,

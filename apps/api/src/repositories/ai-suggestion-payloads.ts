@@ -82,7 +82,10 @@ export async function getAiSuggestionPayloadForContext(
         ...(row.payloadFingerprint === null ? {} : { sourceFingerprint: row.payloadFingerprint }),
       },
     },
-    { projectLegacyForRead: true },
+    {
+      projectLegacyForRead: true,
+      includeScopedEntityIds: true,
+    },
   );
 
   return {

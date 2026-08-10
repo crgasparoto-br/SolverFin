@@ -89,7 +89,7 @@ function migratesLegacyOnlyOnExplicitCompatibleMutation(): void {
   });
   assert.equal(migrated.migratedFromLegacy, true);
   assert.equal(migrated.payload.contractVersion, 1);
-  assert.equal(migrated.publicPayload.target.entityId, "suggestion-1");
+  assert.equal("entityId" in migrated.publicPayload.target, false);
 }
 
 function returnsControlledErrorsForMissingMismatchedAndUnexpectedPayloads(): void {
