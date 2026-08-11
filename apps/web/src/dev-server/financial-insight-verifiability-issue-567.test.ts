@@ -41,7 +41,7 @@ function rendersCategoryCriterionAndSafeFilters(): void {
   const filters = extractSection(enhanced, "data-insight-filters");
   assert.match(filters, /Filtros aplicados/);
   assert.match(filters, /Moeda: BRL/);
-  assert.match(filters, /Categoria: a categoria indicada no título e na navegação deste insight/);
+  assert.match(filters, /Categoria: conforme o título deste insight/);
   assert.doesNotMatch(filters, new RegExp(categoryId));
 }
 
@@ -57,7 +57,7 @@ function rendersSubscriptionCriterionAndMerchantFilter(): void {
     currency: "BRL",
     filters: { currency: "BRL", merchantKey: "streaming sao" },
     evidence: [
-      { label: "streaming sao", value: 3990, unit: "minor_currency", currency: "BRL" },
+      { label: "valor_atual", value: 3990, unit: "minor_currency", currency: "BRL" },
       { label: "variacao_percentual", value: 8, unit: "percentage" },
       { label: "amostra", value: 3, unit: "count" },
     ],
@@ -70,7 +70,13 @@ function rendersSubscriptionCriterionAndMerchantFilter(): void {
   assert.match(criterion, /3 meses consecutivos/);
   assert.match(criterion, /20%/);
   const filters = extractSection(enhanced, "data-insight-filters");
-  assert.match(filters, /Estabelecimento normalizado: streaming sao/);
+  assert.match(filters, /Estabelecimento analisado: streaming sao/);
+  assert.doesNotMatch(filters, /normalizado/);
+  const evidence = extractSection(enhanced, "data-insight-evidence");
+  assert.match(evidence, /Valor médio mensal: R\$\s?39,90/);
+  assert.match(evidence, /Maior desvio em relação à média: 8%/);
+  assert.match(evidence, /Meses consecutivos considerados: 3/);
+  assert.doesNotMatch(evidence, /valor_atual|variacao_percentual|amostra/);
 }
 
 function rendersSummaryCriterionAndCurrencyScope(): void {
@@ -100,6 +106,11 @@ function rendersSummaryCriterionAndCurrencyScope(): void {
   assert.match(filters, /Moeda: BRL/);
   assert.match(filters, /Escopo: lançamentos realizados elegíveis do perfil no período/);
   assert.doesNotMatch(filters, /sha256-|financial-insights-v2/);
+  assert.equal(
+    (enhanced.match(/Resumo determinístico do período atual\./g) ?? []).length,
+    1,
+    "the insight summary must not be duplicated in the visible card",
+  );
 }
 
 function renderInsight(suggestionId: string, proposal: Record<string, unknown>): string {
@@ -131,7 +142,7 @@ function extractSection(html: string, attribute: string): string {
 function reviewRow(suggestionId: string): string {
   return `
     <article class="maintenance-item">
-      <div class="message-preview"><p>Resumo anterior</p></div>
+      <div class="message-preview"><p>Resumo determinístico do período atual.</p></div>
       <div class="maintenance-actions" aria-label="Ações da sugestão ${suggestionId}"></div>
     </article>
   `;

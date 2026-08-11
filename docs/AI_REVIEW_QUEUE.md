@@ -12,7 +12,7 @@ A fila unificada cobre `transaction_extraction`, `categorization`, `deduplicatio
 
 `explanation` é somente texto apresentacional. Data, valor, descrição, conta, categoria, evidências e vínculos financeiros vêm exclusivamente do payload estruturado. Payload ausente, legado incompatível ou versão não suportada permanece sem efeito automático e retorna erro controlado.
 
-Extrações novas usam `TransactionExtractionSuggestionPayloadV2`; V1 continua legível. Deduplicação, conciliação e categorização dependentes mantêm vínculo explícito com a sugestão de origem e o fingerprint observado. Insights verificáveis usam `InsightSuggestionPayloadV2`; V1 continua legível para histórico.
+Extrações novas usam `TransactionExtractionSuggestionPayloadV2`; V1 continua legível. Deduplicação, conciliação e categorização dependentes mantêm vínculo explícito com a sugestão de origem e o fingerprint observado. Insights verificáveis usam `InsightSuggestionPayloadV2`; V1 continua legível e revisável enquanto pendente.
 
 ## Fila unificada na Inbox
 
@@ -30,6 +30,10 @@ Antes de responder `GET /api/ai-review-queue`, o backend executa duas atualizaç
 1. a varredura generalizada de deduplicação/conciliação para `transaction_extraction` pendentes;
 2. a geração idempotente de insights financeiros verificáveis descrita em `docs/FINANCIAL_INSIGHTS.md`.
 
+O scanner de insights administra exclusivamente os candidatos produzidos por `provider = solverfin-rule`. Insights V1 ou itens `INSIGHT` de outros produtores não entram no seu ciclo de expiração e não são encerrados apenas porque a fila foi carregada.
+
+Quando o cálculo não possui base realizada suficiente, a lista continua sem criar `AiSuggestion` artificial e a resposta inclui o estado informativo `financialInsights.insufficientData[]`. A Inbox mostra esse estado de forma compacta como “Insights financeiros aguardando dados”.
+
 CSV, OFX, mensagens bancárias e extrações assistidas por IA passam pelo mesmo motor de comparação para deduplicação/conciliação; a origem não seleciona um algoritmo diferente. A geração de insight, por sua vez, lê o estado financeiro já persistido do perfil e não depende da origem das extrações.
 
 A interface possui estados explícitos de carregamento, vazio, erro com nova tentativa, indisponibilidade temporária com nova tentativa, baixa confiança e conflito de versão. Falhas transitórias reconhecidas por HTTP `408`, `425`, `429`, `502`, `503` ou `504`, ou por códigos equivalentes de timeout/rate limit/unavailable, usam mensagem e estilo próprios para não se confundirem com erro permanente.
@@ -38,7 +42,7 @@ O detalhe e a edição usam `<dialog>`, movem foco para o conteúdo editável e 
 
 Para `deduplication` e `reconciliation`, o detalhe resolve o `targetTransactionId` escopado por tenant/perfil através da API de lançamentos e apresenta descrição, data e valor do lançamento alvo. O UUID permanece apenas como referência de integração e não é usado como rótulo visível. Motivos e conflitos estruturados são exibidos como evidência de revisão, sem texto bruto de arquivo, mensagem ou provider.
 
-Para `insight` V2, o bloco estruturado apresenta título, resumo, período, confiança, evidências numéricas e limitações. Quando o payload autoriza navegação, a Inbox oferece link para a área financeira relacionada (`/lancamentos`, `/orcamentos` ou `/relatorios`). `insightKey`, `dataFingerprint`, provider/model e IDs técnicos não aparecem como texto visível.
+Para `insight` V2, o bloco estruturado apresenta título, resumo, período, confiança, evidências numéricas e limitações. Chaves técnicas de evidência são convertidas para rótulos de produto antes da renderização. Quando o payload autoriza navegação, a Inbox oferece link para a área financeira relacionada (`/lancamentos`, `/orcamentos` ou `/relatorios`). `insightKey`, `dataFingerprint`, provider/model e IDs técnicos não aparecem como texto visível.
 
 ## Campos editáveis
 
@@ -78,6 +82,27 @@ POST /api/ai-review-queue/:suggestionId/edit
 POST /api/ai-review-queue/:suggestionId/reject
 ```
 
+A listagem pode retornar, além de `suggestions[]`, o bloco informativo:
+
+```json
+{
+  "financialInsights": {
+    "insufficientData": [
+      {
+        "currency": "BRL",
+        "title": "Dados insuficientes",
+        "explanation": "...",
+        "periodStartOn": "2026-08-01",
+        "periodEndOn": "2026-08-11",
+        "limitations": []
+      }
+    ]
+  }
+}
+```
+
+Esse bloco não representa sugestão revisável e não possui efeito de aprovação/rejeição.
+
 Decisões e edições exigem `expectedFingerprint`. A interface sempre lê a versão atual imediatamente antes da ação e envia esse fingerprint. A ausência da precondição retorna `AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED` com HTTP `428`. Se outra aba, sessão, origem ou lançamento alvo mudar antes da gravação, a API retorna conflito/obsolescência controlada e nenhuma parte do efeito é confirmada.
 
 A mesma decisão repetida sobre um item já resolvido retorna o resultado persistido quando a operação é idempotente. Uma decisão oposta ou transição incompatível retorna conflito controlado.
@@ -101,14 +126,17 @@ Regras principais:
 - cálculo e limiares são executados antes de qualquer narrativa opcional;
 - apenas `POSTED`/`RECONCILED` entram no realizado; dados pendentes de revisão são excluídos e declarados como limitação;
 - moedas nunca são somadas entre si;
-- amostra insuficiente não cria item artificial na fila;
+- amostra insuficiente não cria item artificial na fila e é devolvida como estado informativo;
 - `financial-insights-v2` e `dataFingerprint` formam parte da identidade interna de geração;
 - varreduras concorrentes convergem com advisory lock por organização/perfil;
-- pendência equivalente é reutilizada; mudança do snapshot expira a pendência antiga e permite nova versão;
+- pendência equivalente do próprio scanner é reutilizada; mudança do snapshot expira apenas pendências administradas pelo scanner e permite nova versão;
+- `INSIGHT` V1 e itens de outros produtores permanecem fora dessa expiração automática;
 - fingerprint já resolvido não é recriado com os mesmos dados;
 - provider opcional só pode explicar o resultado e não altera evidências.
 
 Aprovar/rejeitar insight permanece audit-only. Abrir a área financeira relacionada é navegação, não aplicação automática de sugestão.
+
+Quando a navegação de um insight para `/lancamentos` contém `categoryId` e/ou `merchantKey`, a camada web aplica o contexto à lista de lançamentos do período. Lançamentos de categoria ou merchant irmãos ficam fora da lista, os parâmetros são preservados nos controles de conta/mês e o resumo geral da conta permanece sem esse recorte.
 
 ## Atomicidade, concorrência e obsolescência
 
@@ -142,4 +170,4 @@ Mudanças redigidas continuam indicando transição/proposta alterada sem regist
 
 ## Validação
 
-A cobertura da fila inclui contratos de payload, edição por tipo, versão otimista, replay idempotente, concorrência de decisões, rollback e isolamento. A issue #566 adiciona cenários discriminantes do scanner determinístico generalizado. A issue #567 adiciona payload `insight` V2, isolamento por moeda, exclusão de dados não revisados, persistência/reexecução/substituição idempotente e renderização de evidências/limitações/navegação na Inbox.
+A cobertura da fila inclui contratos de payload, edição por tipo, versão otimista, replay idempotente, concorrência de decisões, rollback e isolamento. A issue #566 adiciona cenários discriminantes do scanner determinístico generalizado. A issue #567 adiciona payload `insight` V2, isolamento por moeda, exclusão de dados não revisados, persistência/reexecução/substituição idempotente, preservação de V1 de outro produtor, estado observável de dados insuficientes e renderização/navegação contextual com linguagem de produto.

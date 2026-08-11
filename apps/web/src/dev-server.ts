@@ -46,6 +46,7 @@ import {
   getSessionCredentialFromRequest,
 } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
+import { enhanceStatementInsightContext } from "./dev-server/statement-insight-context-enhancement.js";
 import { tryServeStaticAsset } from "./dev-server/static-assets.js";
 import { renderTransactionsPage } from "./dev-server/transactions-page.js";
 
@@ -220,7 +221,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     const html = await renderTransactionsPage(token, url);
     const sortedHtml = enhanceStatementListSorting(html, url);
-    sendHtml(response, 200, enhanceAccountRemunerationDisclosure(sortedHtml));
+    const disclosedHtml = enhanceAccountRemunerationDisclosure(sortedHtml);
+    sendHtml(response, 200, enhanceStatementInsightContext(disclosedHtml, url));
     return;
   }
 

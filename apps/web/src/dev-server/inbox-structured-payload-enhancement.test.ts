@@ -40,7 +40,8 @@ function rendersTypedPayloadWithoutInternalIdentifiers(): void {
   const enhanced = enhanceInboxHtmlWithStructuredPayloads(html, [payload]);
 
   assert.match(enhanced, /data-ai-structured-payload="true"/);
-  assert.match(enhanced, /Dados estruturados v1\.2/);
+  assert.match(enhanced, /Dados da sugestão/);
+  assert.doesNotMatch(enhanced, /Dados estruturados v1\.2/);
   assert.match(enhanced, /Despesa de R\$\s?45,90/);
   assert.match(enhanced, /2026-08-04 · Compra fictícia/);
   assert.doesNotMatch(enhanced, new RegExp(fingerprint));
@@ -100,10 +101,10 @@ function rendersVerifiableInsightEvidenceLimitationsAndNavigation(): void {
   });
 
   const enhanced = enhanceInboxHtmlWithStructuredPayloads(reviewRow(suggestionId), [payload]);
-  assert.match(enhanced, /Dados estruturados v1\.2/);
+  assert.match(enhanced, /Insight verificável/);
   assert.match(enhanced, /Evidências verificáveis/);
-  assert.match(enhanced, /valor_atual: R\$\s?160,00/);
-  assert.match(enhanced, /variacao_percentual: 60%/);
+  assert.match(enhanced, /Gasto no período atual: R\$\s?160,00/);
+  assert.match(enhanced, /Variação percentual: 60%/);
   assert.match(enhanced, /Limitações/);
   assert.match(enhanced, /pendentes de revisão foram excluídos/);
   assert.match(enhanced, /Confiança:<\/strong> 95%/);
@@ -114,7 +115,7 @@ function rendersVerifiableInsightEvidenceLimitationsAndNavigation(): void {
     ),
   );
   assert.doesNotMatch(enhanced, new RegExp(`>${categoryId}<`));
-  assert.doesNotMatch(enhanced, /financial-insights-v2|sha256-/);
+  assert.doesNotMatch(enhanced, /financial-insights-v2|sha256-|valor_atual|variacao_percentual/);
 }
 
 function leavesUnrelatedRowsUntouched(): void {

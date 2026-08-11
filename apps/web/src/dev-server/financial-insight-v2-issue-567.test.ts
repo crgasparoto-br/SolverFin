@@ -46,12 +46,15 @@ function rendersMonthlySummaryEvidenceWithoutInternalCategoryIds(): void {
     navigation: { view: "transactions" },
   });
 
+  assert.match(enhanced, /Insight verificável/);
+  assert.doesNotMatch(enhanced, /Dados estruturados V1\.2/);
   assert.match(enhanced, /Evidências verificáveis/);
-  assert.match(enhanced, /receitas: R\$\s?300,00/);
-  assert.match(enhanced, /despesas: R\$\s?180,00/);
-  assert.match(enhanced, /saldo: R\$\s?120,00/);
-  assert.match(enhanced, /variacao_categoria:Mercado: R\$\s?30,00/);
-  assert.match(enhanced, /variacao_despesas_percentual: 50%/);
+  assert.match(enhanced, /Receitas: R\$\s?300,00/);
+  assert.match(enhanced, /Despesas: R\$\s?180,00/);
+  assert.match(enhanced, /Saldo realizado: R\$\s?120,00/);
+  assert.match(enhanced, /Variação em Mercado: R\$\s?30,00/);
+  assert.match(enhanced, /Variação das despesas: 50%/);
+  assert.doesNotMatch(enhanced, /despesas_periodo_anterior|variacao_despesas_percentual|variacao_categoria:/);
   assert.match(
     enhanced,
     /href="\/lancamentos\?month=2026-08" data-insight-navigation="true">Abrir lançamentos/,
@@ -87,6 +90,9 @@ function rendersCategoryNavigationWithPeriodAndCategoryContext(): void {
     navigation: { view: "transactions", categoryId },
   });
 
+  assert.match(enhanced, /Gasto no período atual: R\$\s?160,00/);
+  assert.match(enhanced, /Gasto no período anterior: R\$\s?100,00/);
+  assert.match(enhanced, /Variação percentual: 60%/);
   assert.match(
     enhanced,
     new RegExp(
@@ -113,6 +119,8 @@ function rendersMerchantNavigationWithPeriodAndMerchantContext(): void {
     navigation: { view: "transactions", merchantKey },
   });
 
+  assert.match(enhanced, /Estabelecimento analisado: streaming sao/);
+  assert.doesNotMatch(enhanced, /Estabelecimento normalizado/);
   assert.match(
     enhanced,
     /href="\/lancamentos\?month=2026-08&amp;merchantKey=streaming\+sao" data-insight-navigation="true"/,
@@ -145,6 +153,8 @@ function rendersBudgetNavigationWithCategoryContext(): void {
     navigation: { view: "budgets", categoryId },
   });
 
+  assert.match(enhanced, /Despesas realizadas: R\$\s?180,00/);
+  assert.match(enhanced, /Orçamento planejado: R\$\s?120,00/);
   assert.match(
     enhanced,
     new RegExp(

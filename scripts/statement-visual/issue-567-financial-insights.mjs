@@ -70,6 +70,11 @@ try {
       `Internal fingerprint is visible at ${width}px`,
       evidence,
     );
+    check(
+      evidence.technicalLabelsHidden,
+      `Technical evidence labels are visible at ${width}px`,
+      evidence,
+    );
   }
 
   await setViewport(browser.cdp, 1366, 900);
@@ -252,12 +257,13 @@ async function inspectInsight(cdp, suggestionId, width, height) {
           : undefined,
         bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         hasEvidenceSection: text.includes('Evidências verificáveis'),
-        hasIncome: text.includes('receitas:'),
-        hasExpense: text.includes('despesas:'),
-        hasBalance: text.includes('saldo:'),
+        hasIncome: text.includes('Receitas:'),
+        hasExpense: text.includes('Despesas:'),
+        hasBalance: text.includes('Saldo realizado:'),
         hasLimitations: text.includes('Limitações'),
         navigationRendered: layoutVisible(navigation) && (navigation.getAttribute('href') || '').startsWith('/lancamentos?month='),
         internalFingerprintHidden: !text.includes('financial-insights-v2') && !text.includes('sha256-'),
+        technicalLabelsHidden: !text.includes('Dados estruturados V1.2') && !text.includes('despesas_periodo_anterior') && !text.includes('variacao_despesas_percentual') && !text.includes('variacao_categoria:'),
         excerpt: text.slice(0, 800)
       };
     })()`,

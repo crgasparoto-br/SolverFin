@@ -12,7 +12,7 @@ A implementação canônica está em `@solverfin/ai` e é materializada como `Ai
 2. Os dados são separados por moeda antes de qualquer agregação.
 3. O cálculo determinístico produz tipo, período, filtros, evidências, comparação, confiança, limitações e navegação relacionada.
 4. O resultado recebe `calculationVersion` e `dataFingerprint` internos para idempotência e rastreabilidade.
-5. Apenas insights acionáveis são persistidos como payload `insight` V2; `insufficient_data` é fallback calculado e não vira item da fila.
+5. Apenas insights acionáveis são persistidos como payload `insight` V2. `insufficient_data` não vira sugestão: a varredura o devolve como estado informativo por moeda e a Inbox o apresenta como ausência de base suficiente, sem criar candidato artificial.
 6. Narrativa por provider é opcional e não faz parte do caminho necessário para persistir o insight. Se usada, não pode introduzir números nem linguagem quantitativa/comparativa que redefina o cálculo canônico; texto inválido ou provider indisponível preserva a explicação local.
 7. A Inbox apresenta o payload público tipado com período, critério determinístico, filtros efetivos redigidos, evidências e limitações, sem reconstruir números a partir de `explanation` nem usar IDs internos como rótulos visíveis.
 
@@ -25,7 +25,7 @@ A implementação canônica está em `@solverfin/ai` e é materializada como `Ai
 - `budget_exceeded`: realizado da categoria acima do orçamento ativo na mesma moeda e dentro do período exato do orçamento;
 - `monthly_summary`: resumo do período atual com receitas, despesas, saldo realizado, comparação de despesas e principais variações por categoria.
 
-`insufficient_data` existe somente como retorno do cálculo para impedir conclusões sem base suficiente.
+`insufficient_data` existe somente como retorno do cálculo para impedir conclusões sem base suficiente. No endpoint da fila ele aparece em `financialInsights.insufficientData[]`, separado de `suggestions[]`.
 
 ## Regras determinísticas e limiares
 
@@ -79,7 +79,7 @@ Essa separação impede que dados ainda não confirmados alterem anomalias, orç
 
 Não existe soma entre moedas. Cada execução gera conjuntos independentes por código ISO 4217 de três letras. Transações, contas, orçamento, projeção, evidência e comparação devem compartilhar a mesma moeda do insight.
 
-## Persistência e idempotência
+## Persistência, compatibilidade e idempotência
 
 A versão de cálculo atual é `financial-insights-v2`.
 
@@ -94,7 +94,9 @@ A identidade lógica usa:
 
 Como as evidências estruturadas do resumo fazem parte do fingerprint, mudança de receita, despesa, saldo ou principal variação invalida o snapshot anterior mesmo quando os demais filtros permanecem iguais.
 
-A varredura usa advisory lock transacional por organização/perfil. Uma pendência com a mesma chave, versão e fingerprint é reutilizada. Quando os dados mudam, a pendência antiga é expirada e uma nova versão pode ser criada. Um fingerprint já resolvido (`APPROVED`, `REJECTED`, `EDITED` ou `EXPIRED`) não é recriado com os mesmos dados.
+A varredura usa advisory lock transacional por organização/perfil. Ela administra somente sugestões `INSIGHT` produzidas pelo próprio scanner (`provider = solverfin-rule`). Uma pendência V2 desse produtor com a mesma chave, versão e fingerprint é reutilizada. Quando os dados mudam, a pendência antiga desse mesmo produtor é expirada e uma nova versão pode ser criada. Um fingerprint já resolvido (`APPROVED`, `REJECTED`, `EDITED` ou `EXPIRED`) não é recriado com os mesmos dados.
+
+Insights V1 ou insights emitidos por outro produtor permanecem fora do ciclo de expiração do scanner e continuam legíveis/revisáveis conforme o contrato de payloads. Abrir `GET /api/ai-review-queue` não encerra esses itens.
 
 O refresh da Inbox pode executar a varredura repetidamente sem multiplicar candidatos equivalentes.
 
@@ -116,22 +118,29 @@ O payload persistido mantém, além do envelope comum:
 
 Para `monthly_summary`, `evidence[]` inclui rótulos explícitos para `receitas`, `despesas`, `saldo`, `despesas_periodo_anterior`, variação percentual quando aplicável e as principais variações de categoria.
 
+Esses rótulos são chaves técnicas do contrato e não são exibidos diretamente. A Inbox os traduz para linguagem de produto, como **Receitas**, **Despesas**, **Saldo realizado**, **Despesas no período anterior**, **Variação das despesas** e **Variação em <categoria>**.
+
 A projeção pública da Inbox omite `insightKey`, `dataFingerprint`, provider/model e metadados internos. IDs escopados só são retornados no detalhe autenticado quando necessários para navegação ou controles e não são usados como rótulos visíveis.
 
 ## Inbox e decisão
 
-Antes de listar `GET /api/ai-review-queue`, o backend atualiza os insights do perfil ativo. A Inbox mostra:
+Antes de listar `GET /api/ai-review-queue`, o backend atualiza os insights do perfil ativo. A resposta inclui `financialInsights.insufficientData[]` para moedas sem base realizada suficiente; esse estado é informativo e nunca aparece como `AiSuggestion`.
+
+A Inbox mostra:
 
 - título e resumo;
 - período;
 - confiança;
 - critério determinístico aplicado ao tipo de insight, incluindo os limiares canônicos quando houver;
 - filtros efetivos, com moeda e escopo de categoria/estabelecimento quando aplicável, sem exibir UUID de categoria como rótulo;
-- evidências verificáveis;
+- evidências verificáveis em linguagem de produto;
 - limitações;
-- link para a área relacionada (`/lancamentos`, `/orcamentos` ou `/relatorios`) quando aplicável.
+- link para a área relacionada (`/lancamentos`, `/orcamentos` ou `/relatorios`) quando aplicável;
+- um estado compacto de “insights aguardando dados” quando o cálculo retornar `insufficient_data`.
 
 O critério visível é derivado de `insightKind`, que é estruturado e versionado; os filtros visíveis vêm de `proposal.filters`. Quando a categoria é identificada por ID para navegação, a Inbox descreve o escopo semanticamente e mantém o identificador técnico fora do texto apresentado.
+
+Ao abrir `/lancamentos` a partir de um insight com `categoryId` e/ou `merchantKey`, o Extrato aplica esse contexto à lista renderizada, preserva os parâmetros ao trocar conta ou mês e informa que o resumo da conta continua completo. A normalização de merchant no destino segue a mesma regra determinística usada pelo scanner.
 
 Aprovar ou rejeitar um insight apenas registra a decisão auditável. Não cria, altera, concilia, categoriza nem cancela lançamentos.
 
@@ -157,4 +166,7 @@ A cobertura deve preservar:
 - provider narrativo válido, contraditório com algarismos, contraditório apenas em palavras e indisponível sem alterar evidência;
 - payload V2 estrito e projeção pública redigida;
 - persistência, reexecução idempotente e substituição de pendência após mudança dos dados;
-- renderização web de critério, filtros, evidências do resumo, limitações, confiança e navegação sem expor IDs internos como texto visível.
+- preservação de `INSIGHT` V1 pendente de outro produtor ao carregar a fila pelo entrypoint real;
+- retorno observável de `insufficient_data` sem criação de sugestão artificial;
+- renderização web de critério, filtros, evidências traduzidas, limitações e navegação sem expor IDs internos como texto visível;
+- aplicação do contexto de categoria/merchant no destino `/lancamentos` com controles negativos para lançamentos irmãos.

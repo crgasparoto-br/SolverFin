@@ -75,12 +75,22 @@ interface DesiredInsight {
   payload: InsightSuggestionPayloadV2;
 }
 
+export interface FinancialInsightFallback {
+  currency: string;
+  title: string;
+  explanation: string;
+  periodStartOn: string;
+  periodEndOn: string;
+  limitations: readonly string[];
+}
+
 export interface FinancialInsightScanResult {
   currencies: number;
   calculatedInsights: number;
   createdSuggestions: number;
   reusedSuggestions: number;
   expiredSuggestions: number;
+  insufficientData: readonly FinancialInsightFallback[];
 }
 
 export async function ensureFinancialInsightsForContext(
@@ -90,7 +100,8 @@ export async function ensureFinancialInsightsForContext(
   return withSharedTransaction(async (executeQuery) => {
     await lockInsightScan(context, executeQuery);
     const snapshot = await loadSnapshot(context, executeQuery);
-    const desired = buildDesiredInsights(context, snapshot, now);
+    const insufficientData: FinancialInsightFallback[] = [];
+    const desired = buildDesiredInsights(context, snapshot, now, insufficientData);
     const existing = await listExistingInsights(context, executeQuery);
     const desiredByKey = new Map(desired.map((item) => [item.insightKey, item]));
     const seenFingerprints = new Set<string>();
@@ -130,10 +141,11 @@ export async function ensureFinancialInsightsForContext(
 
     return {
       currencies: snapshot.currencies.length,
-      calculatedInsights: desired.length,
+      calculatedInsights: desired.length + insufficientData.length,
       createdSuggestions,
       reusedSuggestions,
       expiredSuggestions,
+      insufficientData,
     };
   });
 }
@@ -195,6 +207,7 @@ function buildDesiredInsights(
   context: TenantContext,
   snapshot: InsightSnapshot,
   now: Date,
+  insufficientData: FinancialInsightFallback[],
 ): DesiredInsight[] {
   const periods = resolvePeriods(now);
   const desired: DesiredInsight[] = [];
@@ -231,7 +244,17 @@ function buildDesiredInsights(
     });
 
     for (const generated of insights) {
-      if (!isActionableInsight(generated)) continue;
+      if (!isActionableInsight(generated)) {
+        insufficientData.push({
+          currency: generated.currency,
+          title: generated.title,
+          explanation: generated.explanation,
+          periodStartOn: generated.evidence.periodStartOn,
+          periodEndOn: generated.evidence.periodEndOn,
+          limitations: generated.limitations,
+        });
+        continue;
+      }
       const insight = decorateCategoryLabels(generated, snapshot.categories);
       desired.push(buildDesiredInsight(context, insight));
     }
@@ -502,8 +525,9 @@ async function listExistingInsights(
     `select "id", "status", "payload", "payloadFingerprint"
        from "AiSuggestion"
       where "organizationId" = $1 and "financialProfileId" = $2 and "kind" = 'INSIGHT'
+        and "provider" = $3 and "payload"->>'payloadVersion' = '2'
       order by "createdAt" asc, "id" asc`,
-    [context.organizationId, context.financialProfileId],
+    [context.organizationId, context.financialProfileId, INSIGHT_PROVIDER],
   );
 }
 

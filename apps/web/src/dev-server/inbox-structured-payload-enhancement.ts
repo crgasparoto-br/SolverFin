@@ -15,30 +15,56 @@ import { apiGet } from "./api.js";
 
 const AI_REVIEW_APPROVAL_PATH = /data-api-path="\/api\/ai-review-queue\/([0-9a-f-]+)\/approve"/gi;
 
+interface FinancialInsightFallbackView {
+  currency: string;
+  title: string;
+  explanation: string;
+  periodStartOn: string;
+  periodEndOn: string;
+  limitations: readonly string[];
+}
+
+interface ReviewQueueInsightState {
+  financialInsights?: {
+    insufficientData?: readonly FinancialInsightFallbackView[];
+  };
+}
+
 export async function enhanceInboxWithStructuredPayloads(
   html: string,
   credential: string,
 ): Promise<string> {
   const suggestionIds = collectAiReviewSuggestionIds(html);
-  if (suggestionIds.length === 0) return html;
+  const [payloads, insightState] = await Promise.all([
+    Promise.all(
+      suggestionIds.map(async (suggestionId) => {
+        const response = await apiGet<unknown>(
+          credential,
+          `/api/ai-review-queue/${encodeURIComponent(suggestionId)}/payload`,
+        );
+        if (!response.ok) return undefined;
 
-  const payloads = await Promise.all(
-    suggestionIds.map(async (suggestionId) => {
-      const response = await apiGet<unknown>(
-        credential,
-        `/api/ai-review-queue/${encodeURIComponent(suggestionId)}/payload`,
-      );
-      if (!response.ok) return undefined;
+        try {
+          return parseAiSuggestionPayloadResponse(response.data);
+        } catch {
+          return undefined;
+        }
+      }),
+    ),
+    apiGet<ReviewQueueInsightState>(
+      credential,
+      "/api/ai-review-queue?status=pending_review&includeLowConfidence=true",
+    ),
+  ]);
 
-      try {
-        return parseAiSuggestionPayloadResponse(response.data);
-      } catch {
-        return undefined;
-      }
-    }),
+  const fallbacks = insightState.ok
+    ? (insightState.data.financialInsights?.insufficientData ?? [])
+    : [];
+  const withFallback = injectFinancialInsightFallback(html, fallbacks);
+  return enhanceInboxHtmlWithStructuredPayloads(
+    withFallback,
+    payloads.filter(isStructuredPayload),
   );
-
-  return enhanceInboxHtmlWithStructuredPayloads(html, payloads.filter(isStructuredPayload));
 }
 
 export function enhanceInboxHtmlWithStructuredPayloads(
@@ -52,6 +78,29 @@ export function enhanceInboxHtmlWithStructuredPayloads(
   return injectStructuredPayloadRuntime(enhanced, payloads);
 }
 
+function injectFinancialInsightFallback(
+  html: string,
+  fallbacks: readonly FinancialInsightFallbackView[],
+): string {
+  if (fallbacks.length === 0 || html.includes('data-financial-insight-fallback="true"')) {
+    return html;
+  }
+  const headingIndex = html.indexOf("<h2>Outras sugestões</h2>");
+  if (headingIndex < 0) return html;
+  const rowsMarker = '<div class="rows maintenance-rows">';
+  const rowsIndex = html.indexOf(rowsMarker, headingIndex);
+  if (rowsIndex < 0) return html;
+
+  const currencies = [...new Set(fallbacks.map((item) => item.currency))].sort().join(", ");
+  const fallback = `
+      <div class="message-preview financial-insight-fallback" data-financial-insight-fallback="true" role="status">
+        <p><strong>Insights financeiros aguardando dados</strong></p>
+        <p>Ainda não há lançamentos realizados suficientes em ${escapeHtml(currencies)} para gerar conclusões verificáveis. Nenhum insight artificial foi criado.</p>
+      </div>
+      `;
+  return `${html.slice(0, rowsIndex)}${fallback}${html.slice(rowsIndex)}`;
+}
+
 function injectStructuredPayloadRuntime(
   html: string,
   payloads: readonly AiSuggestionPayloadViewModel[],
@@ -60,19 +109,28 @@ function injectStructuredPayloadRuntime(
   const summaries = Object.fromEntries(
     payloads.map((payload) => [payload.suggestionId, renderStructuredPayloadSummary(payload)]),
   );
+  const insightIds = payloads
+    .filter((payload) => payload.kind === "insight")
+    .map((payload) => payload.suggestionId);
   const serializedSummaries = JSON.stringify(summaries).replaceAll("<", "\\u003c");
+  const serializedInsightIds = JSON.stringify(insightIds).replaceAll("<", "\\u003c");
   const script = `
     <script data-ai-structured-payload-runtime="true">
       (() => {
         const summaries = ${serializedSummaries};
+        const insightIds = new Set(${serializedInsightIds});
         let scheduled = false;
 
         function hydrateStructuredPayloads() {
           document.querySelectorAll("[data-review-id]").forEach((card) => {
-            if (card.querySelector('[data-ai-structured-payload="true"]')) return;
-            const summary = summaries[card.dataset.reviewId || ""];
+            const suggestionId = card.dataset.reviewId || "";
+            const summary = summaries[suggestionId];
             const actions = card.querySelector(".maintenance-actions");
             if (!summary || !actions) return;
+            if (insightIds.has(suggestionId)) {
+              card.querySelector(".message-preview:not(.structured-payload-preview)")?.remove();
+            }
+            if (card.querySelector('[data-ai-structured-payload="true"]')) return;
             actions.insertAdjacentHTML("beforebegin", summary);
           });
         }
@@ -118,7 +176,17 @@ function injectStructuredPayload(html: string, payload: AiSuggestionPayloadViewM
   if (existingEnhancementIndex > articleIndex) return html;
 
   const summary = renderStructuredPayloadSummary(payload);
-  return `${html.slice(0, actionsIndex)}${summary}${html.slice(actionsIndex)}`;
+  let prefix = html.slice(0, actionsIndex);
+  if (payload.kind === "insight") {
+    const previewIndex = prefix.lastIndexOf('<div class="message-preview">');
+    if (previewIndex > articleIndex) {
+      const previewEnd = prefix.indexOf("</div>", previewIndex);
+      if (previewEnd >= 0) {
+        prefix = `${prefix.slice(0, previewIndex)}${prefix.slice(previewEnd + "</div>".length)}`;
+      }
+    }
+  }
+  return `${prefix}${summary}${html.slice(actionsIndex)}`;
 }
 
 function renderStructuredPayloadSummary(payload: AiSuggestionPayloadViewModel): string {
@@ -127,11 +195,12 @@ function renderStructuredPayloadSummary(payload: AiSuggestionPayloadViewModel): 
     payload.confidence === undefined
       ? ""
       : `<p><strong>Confiança:</strong> ${Math.round(payload.confidence * 100)}%</p>`;
+  const eyebrow = payload.kind === "insight" ? "Insight verificável" : "Dados da sugestão";
   return `
       <div class="message-preview structured-payload-preview" data-ai-structured-payload="true">
-        <p><span class="eyebrow">Dados estruturados ${escapeHtml(payload.versionLabel)}</span></p>
+        <p><span class="eyebrow">${eyebrow}</span></p>
         <p><strong>${escapeHtml(details.title)}</strong></p>
-        <p>${escapeHtml(details.description)}</p>
+        ${details.description.length === 0 ? "" : `<p>${escapeHtml(details.description)}</p>`}
         ${confidence}
         ${details.additionalHtml}
       </div>
@@ -248,7 +317,7 @@ function insightDetails(proposal: PublicInsightProposal): {
   const evidence = proposal.evidence
     .map(
       (item) =>
-        `<li>${escapeHtml(item.label)}: ${escapeHtml(formatEvidence(item, proposal.currency))}</li>`,
+        `<li>${escapeHtml(formatEvidenceLabel(proposal, item.label))}: ${escapeHtml(formatEvidence(item, proposal.currency))}</li>`,
     )
     .join("");
   const limitations = proposal.limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
@@ -258,8 +327,10 @@ function insightDetails(proposal: PublicInsightProposal): {
       : renderInsightNavigation(proposal.navigation, proposal.periodStartOn);
   return {
     title: proposal.title,
-    description: `${proposal.summary} Período: ${proposal.periodStartOn} a ${proposal.periodEndOn}.`,
+    description: "",
     additionalHtml: `
+        <p class="muted"><strong>Período:</strong> ${escapeHtml(proposal.periodStartOn)} a ${escapeHtml(proposal.periodEndOn)}</p>
+        <p>${escapeHtml(proposal.summary)}</p>
         <div data-insight-criterion="true">
           <p><strong>Critério</strong></p>
           <p>${escapeHtml(criterion)}</p>
@@ -293,6 +364,50 @@ function formatEvidence(
   return String(evidence.value);
 }
 
+function formatEvidenceLabel(proposal: PublicInsightProposalV2, label: string): string {
+  const exact: Record<string, string> = {
+    receitas: "Receitas",
+    despesas: "Despesas",
+    saldo: "Saldo realizado",
+    despesas_periodo_anterior: "Despesas no período anterior",
+    variacao_despesas_percentual: "Variação das despesas",
+    diferenca: "Diferença",
+  };
+  const exactLabel = exact[label];
+  if (exactLabel !== undefined) return exactLabel;
+
+  if (label === "valor_atual") {
+    if (proposal.insightKind === "probable_subscription") return "Valor médio mensal";
+    if (proposal.insightKind === "negative_balance_risk") return "Saldo projetado";
+    if (proposal.insightKind === "budget_exceeded") return "Despesas realizadas";
+    return "Gasto no período atual";
+  }
+  if (label === "valor_anterior_ou_planejado") {
+    return proposal.insightKind === "budget_exceeded"
+      ? "Orçamento planejado"
+      : "Gasto no período anterior";
+  }
+  if (label === "variacao_percentual") {
+    return proposal.insightKind === "probable_subscription"
+      ? "Maior desvio em relação à média"
+      : "Variação percentual";
+  }
+  if (label === "amostra") {
+    return proposal.insightKind === "probable_subscription"
+      ? "Meses consecutivos considerados"
+      : "Lançamentos considerados";
+  }
+  const categoryPrefix = "variacao_categoria:";
+  if (label.startsWith(categoryPrefix)) {
+    return `Variação em ${label.slice(categoryPrefix.length)}`;
+  }
+
+  const humanized = label.replaceAll("_", " ").trim();
+  return humanized.length === 0
+    ? "Evidência"
+    : `${humanized.charAt(0).toUpperCase()}${humanized.slice(1)}`;
+}
+
 function resolveInsightCriterion(proposal: PublicInsightProposalV2): string {
   switch (proposal.insightKind) {
     case "category_spending_increase":
@@ -312,10 +427,10 @@ function resolveInsightCriterion(proposal: PublicInsightProposalV2): string {
 function renderInsightFilters(proposal: PublicInsightProposalV2): string {
   const items = [`<li>Moeda: ${escapeHtml(proposal.filters.currency)}</li>`];
   if (proposal.filters.categoryId !== undefined) {
-    items.push("<li>Categoria: a categoria indicada no título e na navegação deste insight.</li>");
+    items.push("<li>Categoria: conforme o título deste insight.</li>");
   }
   if (proposal.filters.merchantKey !== undefined) {
-    items.push(`<li>Estabelecimento normalizado: ${escapeHtml(proposal.filters.merchantKey)}</li>`);
+    items.push(`<li>Estabelecimento analisado: ${escapeHtml(proposal.filters.merchantKey)}</li>`);
   }
   if (proposal.filters.categoryId === undefined && proposal.filters.merchantKey === undefined) {
     items.push(
