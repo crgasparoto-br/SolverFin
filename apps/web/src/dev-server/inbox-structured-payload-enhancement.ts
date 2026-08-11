@@ -312,9 +312,7 @@ function resolveInsightCriterion(proposal: PublicInsightProposalV2): string {
 function renderInsightFilters(proposal: PublicInsightProposalV2): string {
   const items = [`<li>Moeda: ${escapeHtml(proposal.filters.currency)}</li>`];
   if (proposal.filters.categoryId !== undefined) {
-    items.push(
-      "<li>Categoria: a categoria indicada no título e na navegação deste insight.</li>",
-    );
+    items.push("<li>Categoria: a categoria indicada no título e na navegação deste insight.</li>");
   }
   if (proposal.filters.merchantKey !== undefined) {
     items.push(`<li>Estabelecimento normalizado: ${escapeHtml(proposal.filters.merchantKey)}</li>`);
