@@ -390,6 +390,22 @@ function buildNumericEvidence(insight: ActionableFinancialInsight): InsightNumer
     if (value === undefined) return;
     result.push({ label, value, unit: "minor_currency", currency: insight.currency });
   };
+
+  if (insight.evidence.items !== undefined && insight.evidence.items.length > 0) {
+    for (const item of insight.evidence.items) {
+      result.push({
+        label: item.label,
+        value: item.value,
+        unit: item.unit,
+        ...(item.unit === "minor_currency" ? { currency: insight.currency } : {}),
+      });
+    }
+    if (insight.evidence.count !== undefined) {
+      result.push({ label: "amostra", value: insight.evidence.count, unit: "count" });
+    }
+    return result;
+  }
+
   addMoney("valor_atual", insight.evidence.currentAmountMinor);
   addMoney("valor_anterior_ou_planejado", insight.evidence.previousAmountMinor);
   addMoney("diferenca", insight.evidence.deltaAmountMinor);
@@ -446,10 +462,25 @@ function decorateCategoryLabels(
   insight: ActionableFinancialInsight,
   categories: ReadonlyMap<string, string>,
 ): ActionableFinancialInsight {
+  const items = insight.evidence.items?.map((item) => {
+    const prefix = "variacao_categoria:";
+    if (!item.label.startsWith(prefix)) return item;
+    const categoryId = item.label.slice(prefix.length);
+    const categoryName =
+      categoryId === "sem_categoria"
+        ? "Sem categoria"
+        : (categories.get(categoryId) ?? "Categoria");
+    return { ...item, label: `${prefix}${categoryName}` };
+  });
+  const evidence = items === undefined ? insight.evidence : { ...insight.evidence, items };
   const categoryId = insight.filters.categoryId;
-  if (categoryId === undefined) return insight;
+  if (categoryId === undefined) {
+    return evidence === insight.evidence ? insight : { ...insight, evidence };
+  }
   const categoryName = categories.get(categoryId);
-  if (categoryName === undefined) return insight;
+  if (categoryName === undefined) {
+    return evidence === insight.evidence ? insight : { ...insight, evidence };
+  }
   const title =
     insight.kind === "category_spending_increase"
       ? `Gasto maior na categoria ${categoryName}`
@@ -459,7 +490,7 @@ function decorateCategoryLabels(
   return {
     ...insight,
     title,
-    evidence: { ...insight.evidence, label: categoryName },
+    evidence: { ...evidence, label: categoryName },
   };
 }
 

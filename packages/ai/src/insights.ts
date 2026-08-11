@@ -50,6 +50,12 @@ export interface InsightBudget {
   periodEndOn: string;
 }
 
+export interface FinancialInsightEvidenceItem {
+  label: string;
+  value: number;
+  unit: "minor_currency" | "percentage" | "count";
+}
+
 export interface FinancialInsightEvidence {
   label: string;
   currentAmountMinor?: number;
@@ -59,6 +65,7 @@ export interface FinancialInsightEvidence {
   count?: number;
   periodStartOn: string;
   periodEndOn: string;
+  items?: readonly FinancialInsightEvidenceItem[];
 }
 
 export interface FinancialInsightComparison {
@@ -138,6 +145,38 @@ const UNREVIEWED_STATUSES = new Set<InsightTransaction["status"]>([
   "duplicate",
   "suggested",
 ]);
+const PROVIDER_QUANTITATIVE_CLAIM = new RegExp(
+  [
+    "\\d",
+    "\\b(?:um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez)\\b",
+    "\\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\\b",
+    "percent(?:ual|age)?",
+    "por\\s+cento",
+    "dobr\\w*",
+    "triplic\\w*",
+    "metade",
+    "half",
+    "double",
+    "triple",
+    "aument\\w*",
+    "cres(?:c|ç)\\w*",
+    "subi\\w*",
+    "reduz\\w*",
+    "diminui\\w*",
+    "cai\\w*",
+    "maior(?:es)?",
+    "menor(?:es)?",
+    "mais",
+    "menos",
+    "higher",
+    "lower",
+    "increase\\w*",
+    "decrease\\w*",
+    "grew",
+    "fell",
+  ].join("|"),
+  "iu",
+);
 
 export function generateFinancialInsights(
   input: GenerateFinancialInsightsInput,
@@ -194,8 +233,9 @@ export async function explainFinancialInsightWithProvider(
       })
     ).trim();
 
-    // Provider text is narrative-only. Numeric evidence remains exclusively deterministic.
-    if (text.length === 0 || text.length > 600 || /\d/.test(text)) {
+    // Provider text is narrative-only. Reject any wording that makes a quantitative claim,
+    // including numbers written as words or comparative/magnitude language.
+    if (text.length === 0 || text.length > 600 || PROVIDER_QUANTITATIVE_CLAIM.test(text)) {
       return insight.explanation;
     }
     return text;
@@ -435,7 +475,10 @@ function buildBudgetInsights(
   for (const budget of budgets) {
     const matching = current.filter(
       (transaction) =>
-        transaction.kind === "expense" && transaction.categoryId === budget.categoryId,
+        transaction.kind === "expense" &&
+        transaction.categoryId === budget.categoryId &&
+        transaction.occurredOn >= budget.periodStartOn &&
+        transaction.occurredOn <= budget.periodEndOn,
     );
     const spent = matching.reduce((sum, transaction) => sum + transaction.amountMinor, 0);
     if (spent <= budget.plannedAmountMinor) continue;
@@ -481,6 +524,7 @@ function buildMonthlySummary(
 ): FinancialInsight {
   const currentIncome = sumByKind(current, "income");
   const currentExpense = sumByKind(current, "expense");
+  const currentBalance = currentIncome - currentExpense;
   const previousExpense = sumByKind(previous, "expense");
   const percentChange = calculateOptionalPercentChange(currentExpense, previousExpense);
   const limitations = [...commonLimitations];
@@ -491,12 +535,27 @@ function buildMonthlySummary(
     limitations.push("Nenhum orcamento na moeda analisada foi informado para este periodo.");
   }
 
+  const summaryItems: FinancialInsightEvidenceItem[] = [
+    { label: "receitas", value: currentIncome, unit: "minor_currency" },
+    { label: "despesas", value: currentExpense, unit: "minor_currency" },
+    { label: "saldo", value: currentBalance, unit: "minor_currency" },
+    { label: "despesas_periodo_anterior", value: previousExpense, unit: "minor_currency" },
+  ];
+  if (percentChange !== undefined) {
+    summaryItems.push({
+      label: "variacao_despesas_percentual",
+      value: percentChange,
+      unit: "percentage",
+    });
+  }
+  summaryItems.push(...buildTopCategoryVariations(current, previous));
+
   return {
     kind: "monthly_summary",
     severity: "info",
     confidence: current.length > 0 ? "high" : "low",
     title: "Resumo financeiro do periodo",
-    explanation: `O periodo teve receitas de ${formatMoney(currentIncome, currency)} e despesas de ${formatMoney(currentExpense, currency)}.`,
+    explanation: `O periodo teve receitas de ${formatMoney(currentIncome, currency)}, despesas de ${formatMoney(currentExpense, currency)} e saldo realizado de ${formatMoney(currentBalance, currency)}.`,
     currency,
     evidence: {
       label: "despesas_do_periodo",
@@ -507,6 +566,7 @@ function buildMonthlySummary(
       count: current.length,
       periodStartOn: input.currentPeriod.startOn,
       periodEndOn: input.currentPeriod.endOn,
+      items: summaryItems,
     },
     filters: { currency },
     ...(previous.length === 0
@@ -522,6 +582,42 @@ function buildMonthlySummary(
     navigation: { view: "transactions" },
     sources: [...current, ...previous].map((transaction) => transaction.id),
   };
+}
+
+function buildTopCategoryVariations(
+  current: readonly InsightTransaction[],
+  previous: readonly InsightTransaction[],
+): FinancialInsightEvidenceItem[] {
+  if (previous.length === 0) return [];
+  const currentTotals = sumExpenseByCategory(current);
+  const previousTotals = sumExpenseByCategory(previous);
+  const categories = new Set([...currentTotals.keys(), ...previousTotals.keys()]);
+  return [...categories]
+    .map((categoryId) => ({
+      categoryId,
+      delta: (currentTotals.get(categoryId) ?? 0) - (previousTotals.get(categoryId) ?? 0),
+    }))
+    .filter((item) => item.delta !== 0)
+    .sort(
+      (left, right) =>
+        Math.abs(right.delta) - Math.abs(left.delta) || left.categoryId.localeCompare(right.categoryId),
+    )
+    .slice(0, 3)
+    .map((item) => ({
+      label: `variacao_categoria:${item.categoryId}`,
+      value: item.delta,
+      unit: "minor_currency" as const,
+    }));
+}
+
+function sumExpenseByCategory(transactions: readonly InsightTransaction[]): Map<string, number> {
+  const totals = new Map<string, number>();
+  for (const transaction of transactions) {
+    if (transaction.kind !== "expense") continue;
+    const categoryId = transaction.categoryId ?? "sem_categoria";
+    totals.set(categoryId, (totals.get(categoryId) ?? 0) + transaction.amountMinor);
+  }
+  return totals;
 }
 
 function buildInsufficientDataInsight(
