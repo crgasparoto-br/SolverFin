@@ -28,10 +28,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const categoryId = randomUUID();
   const marker = randomUUID();
   const transactionIds = [
@@ -110,15 +107,10 @@ async function main(): Promise<void> {
     assert.equal(firstPayload.currency, "BRL");
     assert.equal(firstPayload.filters.categoryId, categoryId);
     assert.equal(readEvidence(firstPayload, "valor_atual"), 16000);
-    assert.equal(
-      readEvidence(firstPayload, "valor_anterior_ou_planejado"),
-      10000,
-    );
+    assert.equal(readEvidence(firstPayload, "valor_anterior_ou_planejado"), 10000);
     assert.equal(readEvidence(firstPayload, "variacao_percentual"), 60);
     assert.ok(
-      firstPayload.limitations.some(
-        (item) => item.includes("revisão") || item.includes("revisao"),
-      ),
+      firstPayload.limitations.some((item) => item.includes("revisão") || item.includes("revisao")),
     );
 
     const pendingAfterFirst = await countPendingInsights();
@@ -140,10 +132,7 @@ async function main(): Promise<void> {
     assert.ok(replacement);
     assert.notEqual(replacement.id, firstSuggestion.id);
     const replacementPayload = requireInsightV2(replacement.payload);
-    assert.equal(
-      readEvidence(replacementPayload, "valor_anterior_ou_planejado"),
-      10000,
-    );
+    assert.equal(readEvidence(replacementPayload, "valor_anterior_ou_planejado"), 10000);
     assert.equal(readEvidence(replacementPayload, "valor_atual"), 17000);
   } finally {
     await cleanup(transactionIds, categoryId, existingInsightIds);
@@ -261,18 +250,12 @@ async function cleanup(
     `select "id" from "AiSuggestion" where "organizationId" = $1 and "financialProfileId" = $2 and "kind" = 'INSIGHT'`,
     [ORGANIZATION_ID, PERSONAL_PROFILE_ID],
   );
-  const createdInsightIds = rows
-    .map((row) => row.id)
-    .filter((id) => !existingInsightIds.has(id));
+  const createdInsightIds = rows.map((row) => row.id).filter((id) => !existingInsightIds.has(id));
   if (createdInsightIds.length > 0) {
-    await query(
-      `delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`,
-      [createdInsightIds],
-    );
-    await query(
-      `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
-      [createdInsightIds],
-    );
+    await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [
+      createdInsightIds,
+    ]);
+    await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [createdInsightIds]);
   }
   await query(`delete from "Transaction" where "id" = any($1::uuid[])`, [transactionIds]);
   await query(`delete from "Category" where "id" = $1`, [categoryId]);
