@@ -103,9 +103,13 @@ function resolvePayloadDetails(payload: AiSuggestionPayloadViewModel): {
 } {
   switch (payload.kind) {
     case "transaction_extraction":
-      return withNoAdditional(transactionDetails(payload.proposal as PublicTransactionExtractionProposal));
+      return withNoAdditional(
+        transactionDetails(payload.proposal as PublicTransactionExtractionProposal),
+      );
     case "categorization":
-      return withNoAdditional(categorizationDetails(payload.proposal as PublicCategorizationProposal));
+      return withNoAdditional(
+        categorizationDetails(payload.proposal as PublicCategorizationProposal),
+      );
     case "deduplication":
       return withNoAdditional(
         deterministicDetails(
@@ -198,12 +202,14 @@ function insightDetails(proposal: PublicInsightProposal): {
   }
 
   const evidence = proposal.evidence
-    .map((item) => `<li>${escapeHtml(item.label)}: ${escapeHtml(formatEvidence(item, proposal.currency))}</li>`)
+    .map(
+      (item) =>
+        `<li>${escapeHtml(item.label)}: ${escapeHtml(formatEvidence(item, proposal.currency))}</li>`,
+    )
     .join("");
-  const limitations = proposal.limitations
-    .map((item) => `<li>${escapeHtml(item)}</li>`)
-    .join("");
-  const navigation = proposal.navigation === undefined ? "" : renderInsightNavigation(proposal.navigation.view);
+  const limitations = proposal.limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+  const navigation =
+    proposal.navigation === undefined ? "" : renderInsightNavigation(proposal.navigation.view);
   return {
     title: proposal.title,
     description: `${proposal.summary} Período: ${proposal.periodStartOn} a ${proposal.periodEndOn}.`,
@@ -245,7 +251,9 @@ function renderInsightNavigation(view: InsightNavigationV2["view"]): string {
 
 function formatMinorCurrency(amountMinor: number, currency: string): string {
   try {
-    return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(amountMinor / 100);
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(
+      amountMinor / 100,
+    );
   } catch {
     return `${currency} ${(amountMinor / 100).toFixed(2)}`;
   }
