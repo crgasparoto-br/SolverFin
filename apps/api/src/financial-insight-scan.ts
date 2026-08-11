@@ -341,7 +341,7 @@ function buildDesiredInsight(
   const insightKey = buildInsightKey(insight);
   const evidence = buildNumericEvidence(insight);
   const comparison = buildComparison(insight);
-  const relatedEntityIds = insight.sources.filter(isUuid);
+  const relatedEntityIds = insight.sources.filter(isUuid).slice(0, 100);
   const confidence = confidenceNumber(insight.confidence);
   const payload = buildAiSuggestionPayload({
     payload: {
