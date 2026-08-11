@@ -5,12 +5,8 @@ import type { TenantContext } from "@solverfin/domain";
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { closePool, getPool, query } from "./db.js";
-import {
-  tryHandleGeneralizedDeterministicDecisionForContext,
-} from "./generalized-deterministic-review-decision.js";
-import {
-  scanPendingDeterministicReviewSuggestionsForContext,
-} from "./generalized-deterministic-review-scan.js";
+import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
+import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
@@ -18,9 +14,7 @@ const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const CHECKING_ACCOUNT_ID = "44444444-4444-4444-8444-444444444441";
 const LOCK_SOURCE_SQL = `select "id" from "AiSuggestion" where "id" = $1 for update`;
 
-type DecisionPromise = ReturnType<
-  typeof tryHandleGeneralizedDeterministicDecisionForContext
->;
+type DecisionPromise = ReturnType<typeof tryHandleGeneralizedDeterministicDecisionForContext>;
 
 const context: TenantContext = {
   userId: USER_ID,
