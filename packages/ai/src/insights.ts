@@ -152,7 +152,11 @@ export function generateFinancialInsights(
   );
   const realized = scoped.filter((transaction) => REALIZED_STATUSES.has(transaction.status));
   const current = filterByPeriod(realized, input.currentPeriod.startOn, input.currentPeriod.endOn);
-  const previous = filterByPeriod(realized, input.previousPeriod.startOn, input.previousPeriod.endOn);
+  const previous = filterByPeriod(
+    realized,
+    input.previousPeriod.startOn,
+    input.previousPeriod.endOn,
+  );
   const commonLimitations = buildCommonLimitations(input, scoped, current, previous, currency);
 
   const actionable = [
@@ -164,7 +168,10 @@ export function generateFinancialInsights(
   if (current.length === 0) {
     return [...actionable, buildInsufficientDataInsight(input, currency, commonLimitations)];
   }
-  return [...actionable, buildMonthlySummary(input, current, previous, currency, commonLimitations)];
+  return [
+    ...actionable,
+    buildMonthlySummary(input, current, previous, currency, commonLimitations),
+  ];
 }
 
 export async function explainFinancialInsightWithProvider(
@@ -207,8 +214,16 @@ function buildSpendingIncreaseInsights(
   const threshold = input.increaseThresholdPercent ?? DEFAULT_INCREASE_THRESHOLD_PERCENT;
   const minimumCount =
     input.minimumComparableTransactionCount ?? DEFAULT_MINIMUM_COMPARABLE_TRANSACTION_COUNT;
-  const byCategory = compareExpenseGroups(current, previous, (transaction) => transaction.categoryId);
-  const byMerchant = compareExpenseGroups(current, previous, (transaction) => transaction.merchantKey);
+  const byCategory = compareExpenseGroups(
+    current,
+    previous,
+    (transaction) => transaction.categoryId,
+  );
+  const byMerchant = compareExpenseGroups(
+    current,
+    previous,
+    (transaction) => transaction.merchantKey,
+  );
 
   return [
     ...buildIncreaseInsightsForGroup(
@@ -311,7 +326,8 @@ function buildSubscriptionInsights(
   commonLimitations: readonly string[],
 ): FinancialInsight[] {
   const minOccurrences = input.minRecurringOccurrences ?? DEFAULT_MIN_RECURRING_OCCURRENCES;
-  const tolerance = input.recurringAmountTolerancePercent ?? DEFAULT_RECURRING_AMOUNT_TOLERANCE_PERCENT;
+  const tolerance =
+    input.recurringAmountTolerancePercent ?? DEFAULT_RECURRING_AMOUNT_TOLERANCE_PERCENT;
   const groups = new Map<string, InsightTransaction[]>();
 
   for (const transaction of transactions) {
@@ -334,7 +350,9 @@ function buildSubscriptionInsights(
     const amounts = monthly.map((item) => item.amountMinor);
     const average = Math.round(amounts.reduce((sum, value) => sum + value, 0) / amounts.length);
     const maxDeviationPercent = Math.max(
-      ...amounts.map((value) => Math.round((Math.abs(value - average) / Math.max(1, average)) * 100)),
+      ...amounts.map((value) =>
+        Math.round((Math.abs(value - average) / Math.max(1, average)) * 100),
+      ),
     );
     if (maxDeviationPercent > tolerance) continue;
 
@@ -416,7 +434,8 @@ function buildBudgetInsights(
 
   for (const budget of budgets) {
     const matching = current.filter(
-      (transaction) => transaction.kind === "expense" && transaction.categoryId === budget.categoryId,
+      (transaction) =>
+        transaction.kind === "expense" && transaction.categoryId === budget.categoryId,
     );
     const spent = matching.reduce((sum, transaction) => sum + transaction.amountMinor, 0);
     if (spent <= budget.plannedAmountMinor) continue;
@@ -433,7 +452,9 @@ function buildBudgetInsights(
         currentAmountMinor: spent,
         previousAmountMinor: budget.plannedAmountMinor,
         deltaAmountMinor: spent - budget.plannedAmountMinor,
-        percentChange: Math.round(((spent - budget.plannedAmountMinor) / Math.max(1, budget.plannedAmountMinor)) * 100),
+        percentChange: Math.round(
+          ((spent - budget.plannedAmountMinor) / Math.max(1, budget.plannedAmountMinor)) * 100,
+        ),
         count: matching.length,
         periodStartOn: budget.periodStartOn,
         periodEndOn: budget.periodEndOn,
@@ -602,8 +623,10 @@ function buildMonthlyMerchantSeries(
       sourceIds: [],
     };
     current.amountMinor += transaction.amountMinor;
-    current.firstOn = current.firstOn < transaction.occurredOn ? current.firstOn : transaction.occurredOn;
-    current.lastOn = current.lastOn > transaction.occurredOn ? current.lastOn : transaction.occurredOn;
+    current.firstOn =
+      current.firstOn < transaction.occurredOn ? current.firstOn : transaction.occurredOn;
+    current.lastOn =
+      current.lastOn > transaction.occurredOn ? current.lastOn : transaction.occurredOn;
     current.sourceIds.push(transaction.id);
     monthly.set(month, current);
   }
@@ -648,7 +671,7 @@ function buildCommonLimitations(
   ).length;
   if (pendingCount > 0) {
     limitations.push(
-      `${pendingCount} lancamento(s) pendente(s), duplicado(s) ou sugerido(s) foram excluidos do calculo.`,
+      `${pendingCount} lancamento(s) pendente(s) de revisao, duplicado(s) ou sugerido(s) foram excluidos do calculo.`,
     );
   }
   const plannedCount = scoped.filter(
@@ -663,7 +686,9 @@ function buildCommonLimitations(
   if (current.length === 0 || previous.length === 0) {
     limitations.push("A amostra comparavel entre os periodos e limitada.");
   }
-  limitations.push(`Valores calculados isoladamente em ${currency}; moedas diferentes nao sao somadas.`);
+  limitations.push(
+    `Valores calculados isoladamente em ${currency}; moedas diferentes nao sao somadas.`,
+  );
   return limitations;
 }
 
