@@ -226,7 +226,12 @@ function parseInsightProposalV1(value: unknown): PublicInsightProposal {
     "relatedEntityIds",
   ]);
   return {
-    insightType: expectOneOf(record.insightType, ["anomaly", "trend", "summary", "opportunity"] as const),
+    insightType: expectOneOf(record.insightType, [
+      "anomaly",
+      "trend",
+      "summary",
+      "opportunity",
+    ] as const),
     title: expectString(record.title),
     summary: expectString(record.summary),
     periodStartOn: expectIsoDate(record.periodStartOn),
@@ -260,7 +265,12 @@ function parseInsightProposalV2(value: unknown): PublicInsightProposalV2 {
   const filters = parseInsightFilters(record.filters, currency);
   const evidence = parseInsightEvidence(record.evidence, currency);
   return {
-    insightType: expectOneOf(record.insightType, ["anomaly", "trend", "summary", "opportunity"] as const),
+    insightType: expectOneOf(record.insightType, [
+      "anomaly",
+      "trend",
+      "summary",
+      "opportunity",
+    ] as const),
     insightKind: expectOneOf(record.insightKind, [
       "category_spending_increase",
       "merchant_spending_increase",
@@ -276,13 +286,17 @@ function parseInsightProposalV2(value: unknown): PublicInsightProposalV2 {
     currency,
     filters,
     evidence,
-    ...(record.comparison === undefined ? {} : { comparison: parseInsightComparison(record.comparison) }),
+    ...(record.comparison === undefined
+      ? {}
+      : { comparison: parseInsightComparison(record.comparison) }),
     limitations: expectStringArray(record.limitations),
     calculationVersion: expectString(record.calculationVersion),
     ...(record.relatedEntityIds === undefined
       ? {}
       : { relatedEntityIds: expectStringArray(record.relatedEntityIds) }),
-    ...(record.navigation === undefined ? {} : { navigation: parseInsightNavigation(record.navigation) }),
+    ...(record.navigation === undefined
+      ? {}
+      : { navigation: parseInsightNavigation(record.navigation) }),
   };
 }
 
@@ -297,13 +311,17 @@ function parseInsightFilters(value: unknown, currency: string): PublicInsightPro
   };
 }
 
-function parseInsightEvidence(value: unknown, currency: string): PublicInsightProposalV2["evidence"] {
+function parseInsightEvidence(
+  value: unknown,
+  currency: string,
+): PublicInsightProposalV2["evidence"] {
   if (!Array.isArray(value) || value.length === 0 || value.length > 20) fail();
   return value.map((item) => {
     const record = expectRecord(item);
     assertAllowedKeys(record, ["label", "value", "unit", "currency"]);
     const unit = expectOneOf(record.unit, ["minor_currency", "count", "percentage"] as const);
-    const itemCurrency = record.currency === undefined ? undefined : expectCurrency(record.currency);
+    const itemCurrency =
+      record.currency === undefined ? undefined : expectCurrency(record.currency);
     if (unit === "minor_currency" && itemCurrency !== currency) fail();
     if (unit !== "minor_currency" && itemCurrency !== undefined) fail();
     return {
@@ -315,7 +333,9 @@ function parseInsightEvidence(value: unknown, currency: string): PublicInsightPr
   });
 }
 
-function parseInsightComparison(value: unknown): NonNullable<PublicInsightProposalV2["comparison"]> {
+function parseInsightComparison(
+  value: unknown,
+): NonNullable<PublicInsightProposalV2["comparison"]> {
   const record = expectRecord(value);
   assertAllowedKeys(record, [
     "kind",
@@ -327,23 +347,31 @@ function parseInsightComparison(value: unknown): NonNullable<PublicInsightPropos
     "previousPeriodEndOn",
   ]);
   const previousPeriodStartOn =
-    record.previousPeriodStartOn === undefined ? undefined : expectIsoDate(record.previousPeriodStartOn);
+    record.previousPeriodStartOn === undefined
+      ? undefined
+      : expectIsoDate(record.previousPeriodStartOn);
   const previousPeriodEndOn =
-    record.previousPeriodEndOn === undefined ? undefined : expectIsoDate(record.previousPeriodEndOn);
+    record.previousPeriodEndOn === undefined
+      ? undefined
+      : expectIsoDate(record.previousPeriodEndOn);
   if ((previousPeriodStartOn === undefined) !== (previousPeriodEndOn === undefined)) fail();
   return {
     kind: expectOneOf(record.kind, ["previous_period", "planned_budget"] as const),
     currentValue: expectFiniteNumber(record.currentValue),
     previousValue: expectFiniteNumber(record.previousValue),
     unit: expectOneOf(record.unit, ["minor_currency", "count", "percentage"] as const),
-    ...(record.percentChange === undefined ? {} : { percentChange: expectFiniteNumber(record.percentChange) }),
+    ...(record.percentChange === undefined
+      ? {}
+      : { percentChange: expectFiniteNumber(record.percentChange) }),
     ...(previousPeriodStartOn === undefined
       ? {}
       : { previousPeriodStartOn, previousPeriodEndOn: previousPeriodEndOn as string }),
   };
 }
 
-function parseInsightNavigation(value: unknown): NonNullable<PublicInsightProposalV2["navigation"]> {
+function parseInsightNavigation(
+  value: unknown,
+): NonNullable<PublicInsightProposalV2["navigation"]> {
   const record = expectRecord(value);
   assertAllowedKeys(record, ["view", "categoryId", "merchantKey"]);
   return {
