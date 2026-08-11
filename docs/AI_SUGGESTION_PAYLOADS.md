@@ -10,13 +10,13 @@ O contrato comum está em `@solverfin/domain/ai-suggestion-payloads` e usa envel
 
 ## Tipos suportados
 
-| `suggestionKind`         | Versão atual | Conteúdo canônico |
-| ------------------------ | ------------ | ----------------- |
-| `transaction_extraction` | V1/V2 | linha e hash de origem, data, tipo, direção na V2, valor, moeda, descrição, contas, categoria e identificador externo opcionais |
-| `categorization`         | V1 | alvo explícito e campos propostos de categoria, conta, cartão ou status |
-| `deduplication`          | V1 | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos |
-| `reconciliation`         | V1 | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos |
-| `insight`                | V1/V2 | V1 mantém tipo/título/resumo/período/métrica; V2 adiciona tipo verificável, moeda, filtros, evidências, comparação, limitações, versão de cálculo, fingerprint dos dados e navegação |
+| `suggestionKind`         | Versão atual | Conteúdo canônico                                                                                                                                                                    |
+| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `transaction_extraction` | V1/V2        | linha e hash de origem, data, tipo, direção na V2, valor, moeda, descrição, contas, categoria e identificador externo opcionais                                                      |
+| `categorization`         | V1           | alvo explícito e campos propostos de categoria, conta, cartão ou status                                                                                                              |
+| `deduplication`          | V1           | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos                                                                                                               |
+| `reconciliation`         | V1           | sugestão de origem, fingerprint da origem, lançamento alvo e conflitos                                                                                                               |
+| `insight`                | V1/V2        | V1 mantém tipo/título/resumo/período/métrica; V2 adiciona tipo verificável, moeda, filtros, evidências, comparação, limitações, versão de cálculo, fingerprint dos dados e navegação |
 
 `origin`, `target`, `confidence`, `reasons`, `audit` e `fingerprint` pertencem ao envelope comum. IDs permanecem sujeitos ao isolamento por organização e perfil financeiro.
 
