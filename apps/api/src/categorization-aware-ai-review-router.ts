@@ -2,6 +2,7 @@ import { handleVersionedAiReviewQueueApiRequest } from "./ai-review-queue-router
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { ensureFinancialInsightsForContext } from "./financial-insight-scan.js";
 import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
 import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
 import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
@@ -24,6 +25,7 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
     if (request.method === "GET" && request.pathname === REVIEW_QUEUE_PATH) {
       const context = await resolveContext(request);
       await scanPendingDeterministicReviewSuggestionsForContext(context);
+      await ensureFinancialInsightsForContext(context);
       return handleVersionedAiReviewQueueApiRequest(request);
     }
 
