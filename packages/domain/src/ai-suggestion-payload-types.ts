@@ -70,8 +70,7 @@ export interface AiSuggestionPayloadBase<TKind extends AiSuggestionPayloadKind> 
 export type ImportLineDirection = "inflow" | "outflow";
 export type TransactionKind = "income" | "expense" | "transfer";
 
-export interface TransactionExtractionSuggestionPayloadV1
-  extends AiSuggestionPayloadBase<"transaction_extraction"> {
+export interface TransactionExtractionSuggestionPayloadV1 extends AiSuggestionPayloadBase<"transaction_extraction"> {
   payloadVersion: 1;
   sourceRowNumber: number;
   sourceHash: string;
@@ -85,8 +84,7 @@ export interface TransactionExtractionSuggestionPayloadV1
   externalId?: string;
 }
 
-export interface TransactionExtractionSuggestionPayloadV2
-  extends AiSuggestionPayloadBase<"transaction_extraction"> {
+export interface TransactionExtractionSuggestionPayloadV2 extends AiSuggestionPayloadBase<"transaction_extraction"> {
   payloadVersion: 2;
   sourceRowNumber: number;
   sourceHash: string;
@@ -106,8 +104,7 @@ export type TransactionExtractionSuggestionPayload =
   | TransactionExtractionSuggestionPayloadV1
   | TransactionExtractionSuggestionPayloadV2;
 
-export interface CategorizationSuggestionPayloadV1
-  extends AiSuggestionPayloadBase<"categorization"> {
+export interface CategorizationSuggestionPayloadV1 extends AiSuggestionPayloadBase<"categorization"> {
   payloadVersion: 1;
   targetEntityId: string;
   targetTransactionId?: string;
