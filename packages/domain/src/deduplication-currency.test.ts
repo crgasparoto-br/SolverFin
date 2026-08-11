@@ -1,10 +1,8 @@
 import assert from "node:assert/strict";
 
+import { detectDuplicateTransactions } from "./deduplication.js";
+import type { DeduplicationCandidate } from "./deduplication.js";
 import type { TenantContext } from "./tenant.js";
-import {
-  detectDuplicateTransactions,
-  type DeduplicationCandidate,
-} from "./deduplication.js";
 
 const context: TenantContext = {
   userId: "user-dedup-currency",
@@ -35,13 +33,15 @@ const differentCurrency: DeduplicationCandidate = {
   currency: "USD",
 };
 
+const differentCurrencyReviews = detectDuplicateTransactions({
+  context,
+  now,
+  candidate,
+  existingCandidates: [differentCurrency],
+});
+
 assert.equal(
-  detectDuplicateTransactions({
-    context,
-    now,
-    candidate,
-    existingCandidates: [differentCurrency],
-  }).length,
+  differentCurrencyReviews.length,
   0,
   "movimentacoes em moedas diferentes nao podem ser candidatas a duplicidade",
 );
@@ -53,13 +53,15 @@ const sameCurrencyDifferentCase: DeduplicationCandidate = {
   currency: "brl",
 };
 
+const sameCurrencyReviews = detectDuplicateTransactions({
+  context,
+  now,
+  candidate,
+  existingCandidates: [sameCurrencyDifferentCase],
+});
+
 assert.equal(
-  detectDuplicateTransactions({
-    context,
-    now,
-    candidate,
-    existingCandidates: [sameCurrencyDifferentCase],
-  }).length,
+  sameCurrencyReviews.length,
   1,
   "a comparacao de moeda deve ser case-insensitive sem enfraquecer o matching",
 );

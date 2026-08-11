@@ -29,7 +29,10 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for integration tests.",
+  );
   const marker = randomUUID();
   const sourceId = randomUUID();
   const targetId = randomUUID();
@@ -61,7 +64,14 @@ async function insertTarget(id: string, description: string): Promise<void> {
        "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdByUserId", "createdAt", "updatedAt")
      values ($1, $2, $3, $4, 'EXPENSE', 'POSTED', 'MANUAL', 10000, 'USD', '2026-08-11'::date,
              '2026-08-11'::date, $5, $6, now(), now())`,
-    [id, ORGANIZATION_ID, PERSONAL_PROFILE_ID, CHECKING_ACCOUNT_ID, description, USER_ID],
+    [
+      id,
+      ORGANIZATION_ID,
+      PERSONAL_PROFILE_ID,
+      CHECKING_ACCOUNT_ID,
+      description,
+      USER_ID,
+    ],
   );
 }
 
@@ -101,7 +111,14 @@ async function insertSource(
      values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', null, null, 0.96,
              'Controle negativo de moeda da issue 566.', $4::jsonb, $5, 'fake-provider',
              'issue-566-currency', null, null, $6, $6)`,
-    [id, ORGANIZATION_ID, PERSONAL_PROFILE_ID, JSON.stringify(payload), payload.fingerprint, now],
+    [
+      id,
+      ORGANIZATION_ID,
+      PERSONAL_PROFILE_ID,
+      JSON.stringify(payload),
+      payload.fingerprint,
+      now,
+    ],
   );
 }
 
@@ -138,7 +155,13 @@ async function cleanup(sourceId: string, targetId: string): Promise<void> {
   const suggestionIds = [sourceId, ...candidateRows.map((row) => row.id)];
   const entityIds = [...suggestionIds, targetId];
 
-  await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
-  await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [suggestionIds]);
+  await query(
+    `delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`,
+    [entityIds],
+  );
+  await query(
+    `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
+    [suggestionIds],
+  );
   await query(`delete from "Transaction" where "id" = $1`, [targetId]);
 }
