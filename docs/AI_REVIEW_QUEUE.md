@@ -58,13 +58,13 @@ Uma edição aceita mantém a sugestão pendente, recalcula o fingerprint quando
 
 A aprovação sempre revalida organização, perfil financeiro, estado, versão e elegibilidade imediatamente antes do efeito.
 
-| Tipo                     | Efeito da aprovação |
-| ------------------------ | ------------------- |
-| `transaction_extraction` | cria ou vincula o lançamento usando o contrato canônico já existente; importações continuam passando pelas regras de lote, transferência e revisão |
+| Tipo                     | Efeito da aprovação                                                                                                                                                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `transaction_extraction` | cria ou vincula o lançamento usando o contrato canônico já existente; importações continuam passando pelas regras de lote, transferência e revisão                           |
 | `categorization`         | aplica a categoria a uma `transaction_extraction` ainda pendente ou a um `Transaction` elegível; categoria arquivada, de outro perfil ou incompatível com o tipo é rejeitada |
-| `deduplication`          | resolve a origem como duplicidade e expira candidaturas irmãs, sem criar nem alterar o lançamento comparado |
-| `reconciliation`         | revalida o alvo, marca o lançamento como reconciliado, aprova/vincula a origem e expira irmãs na mesma transação |
-| `insight`                | registra reconhecimento/aprovação da sugestão, sem criar nem alterar lançamento financeiro |
+| `deduplication`          | resolve a origem como duplicidade e expira candidaturas irmãs, sem criar nem alterar o lançamento comparado                                                                  |
+| `reconciliation`         | revalida o alvo, marca o lançamento como reconciliado, aprova/vincula a origem e expira irmãs na mesma transação                                                             |
+| `insight`                | registra reconhecimento/aprovação da sugestão, sem criar nem alterar lançamento financeiro                                                                                   |
 
 Rejeitar encerra a sugestão sem aplicar o efeito proposto. Rejeitar uma candidatura determinística não resolve automaticamente a origem; outras opções de revisão continuam disponíveis.
 
