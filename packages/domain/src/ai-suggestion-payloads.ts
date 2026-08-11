@@ -346,7 +346,10 @@ function parseInsightFilters(value: unknown): InsightFiltersV2 {
   };
 }
 
-function parseInsightEvidence(value: unknown, currency: string): readonly InsightNumericEvidenceV2[] {
+function parseInsightEvidence(
+  value: unknown,
+  currency: string,
+): readonly InsightNumericEvidenceV2[] {
   if (!Array.isArray(value) || value.length === 0 || value.length > 20) invalid();
   return value.map((item) => {
     const record = expectRecord(item);
@@ -377,9 +380,13 @@ function parseInsightComparison(value: unknown): InsightComparisonV2 {
     "previousPeriodEndOn",
   ]);
   const previousPeriodStartOn =
-    record.previousPeriodStartOn === undefined ? undefined : expectIsoDate(record.previousPeriodStartOn);
+    record.previousPeriodStartOn === undefined
+      ? undefined
+      : expectIsoDate(record.previousPeriodStartOn);
   const previousPeriodEndOn =
-    record.previousPeriodEndOn === undefined ? undefined : expectIsoDate(record.previousPeriodEndOn);
+    record.previousPeriodEndOn === undefined
+      ? undefined
+      : expectIsoDate(record.previousPeriodEndOn);
   if ((previousPeriodStartOn === undefined) !== (previousPeriodEndOn === undefined)) invalid();
   return {
     kind: expectOneOf(record.kind, ["previous_period", "planned_budget"]),
