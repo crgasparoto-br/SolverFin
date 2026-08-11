@@ -150,35 +150,33 @@ async function loadSnapshot(
   context: TenantContext,
   executeQuery: QueryExecutor,
 ): Promise<InsightSnapshot> {
-  const [transactions, budgets, accounts, categoryRows] = await Promise.all([
-    executeQuery<InsightTransactionRow>(
-      `select "id", "kind", "status", "amountMinor", "currency", "occurredOn", "plannedOn",
-              "description", "categoryId", "updatedAt"
-         from "Transaction"
-        where "organizationId" = $1 and "financialProfileId" = $2 and "status" <> 'VOIDED'
-        order by "occurredOn" asc, "id" asc`,
-      [context.organizationId, context.financialProfileId],
-    ),
-    executeQuery<InsightBudgetRow>(
-      `select "id", "categoryId", "plannedAmountMinor", "currency", "periodStartOn", "periodEndOn", "updatedAt"
-         from "Budget"
-        where "organizationId" = $1 and "financialProfileId" = $2 and "status" = 'ACTIVE'
-        order by "periodStartOn" asc, "id" asc`,
-      [context.organizationId, context.financialProfileId],
-    ),
-    executeQuery<InsightAccountRow>(
-      `select "id", "currency", "openingBalanceMinor", "updatedAt"
-         from "Account"
-        where "organizationId" = $1 and "financialProfileId" = $2
-        order by "id" asc`,
-      [context.organizationId, context.financialProfileId],
-    ),
-    executeQuery<CategoryRow>(
-      `select "id", "name" from "Category"
-        where "organizationId" = $1 and "financialProfileId" = $2`,
-      [context.organizationId, context.financialProfileId],
-    ),
-  ]);
+  const transactions = await executeQuery<InsightTransactionRow>(
+    `select "id", "kind", "status", "amountMinor", "currency", "occurredOn", "plannedOn",
+            "description", "categoryId", "updatedAt"
+       from "Transaction"
+      where "organizationId" = $1 and "financialProfileId" = $2 and "status" <> 'VOIDED'
+      order by "occurredOn" asc, "id" asc`,
+    [context.organizationId, context.financialProfileId],
+  );
+  const budgets = await executeQuery<InsightBudgetRow>(
+    `select "id", "categoryId", "plannedAmountMinor", "currency", "periodStartOn", "periodEndOn", "updatedAt"
+       from "Budget"
+      where "organizationId" = $1 and "financialProfileId" = $2 and "status" = 'ACTIVE'
+      order by "periodStartOn" asc, "id" asc`,
+    [context.organizationId, context.financialProfileId],
+  );
+  const accounts = await executeQuery<InsightAccountRow>(
+    `select "id", "currency", "openingBalanceMinor", "updatedAt"
+       from "Account"
+      where "organizationId" = $1 and "financialProfileId" = $2
+      order by "id" asc`,
+    [context.organizationId, context.financialProfileId],
+  );
+  const categoryRows = await executeQuery<CategoryRow>(
+    `select "id", "name" from "Category"
+      where "organizationId" = $1 and "financialProfileId" = $2`,
+    [context.organizationId, context.financialProfileId],
+  );
   const currencySet = new Set<string>();
   for (const row of transactions) currencySet.add(normalizeCurrency(row.currency));
   for (const row of budgets) currencySet.add(normalizeCurrency(row.currency));
@@ -202,7 +200,12 @@ function buildDesiredInsights(
   const desired: DesiredInsight[] = [];
 
   for (const currency of snapshot.currencies) {
-    const transactions = mapInsightTransactions(context, snapshot.transactions, currency, periods.historyStartOn);
+    const transactions = mapInsightTransactions(
+      context,
+      snapshot.transactions,
+      currency,
+      periods.historyStartOn,
+    );
     const budgets = mapInsightBudgets(context, snapshot.budgets, currency);
     const projectedBalance = calculateProjectedBalance(
       snapshot.accounts,
@@ -245,7 +248,9 @@ function mapInsightTransactions(
 ): InsightTransaction[] {
   return rows
     .filter(
-      (row) => normalizeCurrency(row.currency) === currency && toDateOnly(row.occurredOn) >= historyStartOn,
+      (row) =>
+        normalizeCurrency(row.currency) === currency &&
+        toDateOnly(row.occurredOn) >= historyStartOn,
     )
     .map((row) => ({
       id: row.id,
@@ -389,7 +394,11 @@ function buildNumericEvidence(insight: ActionableFinancialInsight): InsightNumer
   addMoney("valor_anterior_ou_planejado", insight.evidence.previousAmountMinor);
   addMoney("diferenca", insight.evidence.deltaAmountMinor);
   if (insight.evidence.percentChange !== undefined) {
-    result.push({ label: "variacao_percentual", value: insight.evidence.percentChange, unit: "percentage" });
+    result.push({
+      label: "variacao_percentual",
+      value: insight.evidence.percentChange,
+      unit: "percentage",
+    });
   }
   if (insight.evidence.count !== undefined) {
     result.push({ label: "amostra", value: insight.evidence.count, unit: "count" });
