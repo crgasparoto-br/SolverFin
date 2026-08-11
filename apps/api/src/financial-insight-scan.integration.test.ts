@@ -2,9 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
-import {
-  readAiSuggestionPayload,
-} from "@solverfin/domain/ai-suggestion-payloads";
+import { readAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { closePool, query } from "./db.js";
 import { ensureFinancialInsightsForContext } from "./financial-insight-scan.js";
