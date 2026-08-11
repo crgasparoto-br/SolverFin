@@ -74,7 +74,12 @@ function rendersCategoryNavigationWithPeriodAndCategoryContext(): void {
     filters: { currency: "BRL", categoryId },
     evidence: [
       { label: "valor_atual", value: 16000, unit: "minor_currency", currency: "BRL" },
-      { label: "valor_anterior_ou_planejado", value: 10000, unit: "minor_currency", currency: "BRL" },
+      {
+        label: "valor_anterior_ou_planejado",
+        value: 10000,
+        unit: "minor_currency",
+        currency: "BRL",
+      },
       { label: "variacao_percentual", value: 60, unit: "percentage" },
     ],
     limitations: ["Amostra mínima satisfeita."],
@@ -128,7 +133,12 @@ function rendersBudgetNavigationWithCategoryContext(): void {
     filters: { currency: "BRL", categoryId },
     evidence: [
       { label: "valor_atual", value: 18000, unit: "minor_currency", currency: "BRL" },
-      { label: "valor_anterior_ou_planejado", value: 12000, unit: "minor_currency", currency: "BRL" },
+      {
+        label: "valor_anterior_ou_planejado",
+        value: 12000,
+        unit: "minor_currency",
+        currency: "BRL",
+      },
     ],
     limitations: [],
     calculationVersion: "financial-insights-v2",

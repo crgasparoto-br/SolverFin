@@ -43,7 +43,11 @@ try {
     await screenshot(browser.cdp, join(outputDir, screenshotName));
     captures.push({ ...evidence, screenshot: screenshotName });
 
-    check(evidence.cardVisible, `Insight card is not visible in the viewport at ${width}px`, evidence);
+    check(
+      evidence.cardVisible,
+      `Insight card is not visible in the viewport at ${width}px`,
+      evidence,
+    );
     check(
       evidence.structuredPayloadVisible,
       `Structured insight content is not visible in the viewport at ${width}px`,
