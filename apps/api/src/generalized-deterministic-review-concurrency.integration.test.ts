@@ -5,8 +5,12 @@ import type { TenantContext } from "@solverfin/domain";
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { closePool, getPool, query } from "./db.js";
-import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
-import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
+import {
+  tryHandleGeneralizedDeterministicDecisionForContext,
+} from "./generalized-deterministic-review-decision.js";
+import {
+  scanPendingDeterministicReviewSuggestionsForContext,
+} from "./generalized-deterministic-review-scan.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
@@ -68,9 +72,7 @@ async function main(): Promise<void> {
     try {
       await blocker.query("BEGIN");
       blockerOpen = true;
-      await blocker.query(`select "id" from "AiSuggestion" where "id" = $1 for update`, [
-        sourceId,
-      ]);
+      await blocker.query(`select "id" from "AiSuggestion" where "id" = $1 for update`, [sourceId]);
 
       decisionPromises = [
         tryHandleGeneralizedDeterministicDecisionForContext(
