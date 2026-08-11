@@ -25,31 +25,8 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
     if (request.method === "GET" && request.pathname === REVIEW_QUEUE_PATH) {
       const context = await resolveContext(request);
       await scanPendingDeterministicReviewSuggestionsForContext(context);
-      try {
-        await ensureFinancialInsightsForContext(context);
-      } catch (error) {
-        process.stderr.write(
-          `[financial-insight-queue-diagnostic] scanner_failed ${error instanceof Error ? error.message : String(error)}\n`,
-        );
-        throw error;
-      }
-      const response = await handleVersionedAiReviewQueueApiRequest(request);
-      if (response !== undefined && isRecord(response.body)) {
-        const suggestions = Array.isArray(response.body.suggestions) ? response.body.suggestions : [];
-        process.stderr.write(
-          `[financial-insight-queue-diagnostic] ${JSON.stringify({
-            statusCode: response.statusCode,
-            count: suggestions.length,
-            hasLearning: suggestions.some(
-              (item) => isRecord(item) && item.provider === "solverfin-learning",
-            ),
-            hasExtraction: suggestions.some(
-              (item) => isRecord(item) && item.kind === "transaction_extraction",
-            ),
-          })}\n`,
-        );
-      }
-      return response;
+      await ensureFinancialInsightsForContext(context);
+      return handleVersionedAiReviewQueueApiRequest(request);
     }
 
     const deterministicMatch =
