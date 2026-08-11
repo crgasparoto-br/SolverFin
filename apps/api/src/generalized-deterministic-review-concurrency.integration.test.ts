@@ -72,7 +72,9 @@ async function main(): Promise<void> {
     try {
       await blocker.query("BEGIN");
       blockerOpen = true;
-      await blocker.query(`select "id" from "AiSuggestion" where "id" = $1 for update`, [sourceId]);
+      await blocker.query(`select "id" from "AiSuggestion" where "id" = $1 for update`, [
+        sourceId,
+      ]);
 
       decisionPromises = [
         tryHandleGeneralizedDeterministicDecisionForContext(
