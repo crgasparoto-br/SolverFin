@@ -58,8 +58,14 @@ function oneOffExpenseDoesNotCreateIncreaseAnomaly(): void {
       tx("jun-market", "2026-06-10", 50000, "market"),
     ],
   });
-  assert.equal(insights.some((item) => item.kind === "category_spending_increase"), false);
-  assert.equal(insights.some((item) => item.kind === "merchant_spending_increase"), false);
+  assert.equal(
+    insights.some((item) => item.kind === "category_spending_increase"),
+    false,
+  );
+  assert.equal(
+    insights.some((item) => item.kind === "merchant_spending_increase"),
+    false,
+  );
 }
 
 function probableSubscriptionRequiresConsecutiveStableMonths(): void {
@@ -94,7 +100,10 @@ function interruptedRecurrenceDoesNotTrigger(): void {
       tx("sub-jun", "2026-06-05", 3990, "software", "streaming-demo"),
     ],
   });
-  assert.equal(insights.some((item) => item.kind === "probable_subscription"), false);
+  assert.equal(
+    insights.some((item) => item.kind === "probable_subscription"),
+    false,
+  );
 }
 
 function unreviewedAndForeignCurrencyRowsAreExcluded(): void {
@@ -109,7 +118,16 @@ function unreviewedAndForeignCurrencyRowsAreExcluded(): void {
       tx("may-b", "2026-05-20", 5000, "market"),
       tx("jun-a", "2026-06-05", 6000, "market"),
       tx("jun-b", "2026-06-20", 6000, "market"),
-      tx("pending", "2026-06-21", 50000, "market", "merchant-demo", organizationId, "BRL", "suggested"),
+      tx(
+        "pending",
+        "2026-06-21",
+        50000,
+        "market",
+        "merchant-demo",
+        organizationId,
+        "BRL",
+        "suggested",
+      ),
       tx("usd", "2026-06-22", 90000, "market", "merchant-demo", organizationId, "USD"),
       tx("foreign", "2026-06-23", 90000, "market", "merchant-demo", "org-other", "BRL"),
     ],
@@ -153,7 +171,17 @@ function budgetNegativeBalanceAndMonthlySummaryAreDeterministic(): void {
       },
     ],
     transactions: [
-      tx("income", "2026-06-02", 30000, "salary", "employer", organizationId, "BRL", "posted", "income"),
+      tx(
+        "income",
+        "2026-06-02",
+        30000,
+        "salary",
+        "employer",
+        organizationId,
+        "BRL",
+        "posted",
+        "income",
+      ),
       tx("expense-a", "2026-06-10", 9000, "market"),
       tx("expense-b", "2026-06-20", 9000, "market"),
       tx("previous-a", "2026-05-10", 6000, "market"),
