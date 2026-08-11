@@ -76,10 +76,7 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
     }
     const observedKind = parseGeneralizedDeterministicKind(observedCandidate.kind);
     if (observedKind === undefined) return undefined;
-    const observedPayload = requireGeneralizedDeterministicPayload(
-      observedCandidate,
-      observedKind,
-    );
+    const observedPayload = requireGeneralizedDeterministicPayload(observedCandidate, observedKind);
     if (observedPayload === undefined) {
       throw reviewError(
         "AI_SUGGESTION_PAYLOAD_INVALID",
