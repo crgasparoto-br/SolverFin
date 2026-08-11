@@ -4,6 +4,7 @@ import { parseAiSuggestionPayloadResponse } from "./ai-suggestion-payload-contra
 import { enhanceInboxHtmlWithStructuredPayloads } from "./inbox-structured-payload-enhancement.js";
 
 rendersTypedPayloadWithoutInternalIdentifiers();
+rendersVerifiableInsightEvidenceLimitationsAndNavigation();
 leavesUnrelatedRowsUntouched();
 
 function rendersTypedPayloadWithoutInternalIdentifiers(): void {
@@ -35,13 +36,7 @@ function rendersTypedPayloadWithoutInternalIdentifiers(): void {
       },
     },
   });
-  const html = `
-    <article class="maintenance-item">
-      <div class="message-preview"><p>Resumo anterior</p></div>
-      <div class="maintenance-actions" aria-label="Ações da sugestão ${suggestionId}"></div>
-    </article>
-  `;
-
+  const html = reviewRow(suggestionId);
   const enhanced = enhanceInboxHtmlWithStructuredPayloads(html, [payload]);
 
   assert.match(enhanced, /data-ai-structured-payload="true"/);
@@ -54,10 +49,68 @@ function rendersTypedPayloadWithoutInternalIdentifiers(): void {
   assert.doesNotMatch(enhanced, /provider|model/i);
 }
 
+function rendersVerifiableInsightEvidenceLimitationsAndNavigation(): void {
+  const suggestionId = "44444444-4444-4444-8444-444444444444";
+  const categoryId = "55555555-5555-4555-8555-555555555555";
+  const payload = parseAiSuggestionPayloadResponse({
+    suggestionId,
+    legacyProjection: false,
+    payload: {
+      contractVersion: 1,
+      suggestionKind: "insight",
+      payloadVersion: 2,
+      origin: { kind: "rule" },
+      fingerprint: `sha256-${"c".repeat(64)}`,
+      confidence: 0.95,
+      reasons: ["Cálculo determinístico."],
+      target: { entityKind: "financial_profile" },
+      proposal: {
+        insightType: "trend",
+        insightKind: "category_spending_increase",
+        title: "Gasto maior na categoria Mercado",
+        summary: "O gasto subiu em relação ao período anterior comparável.",
+        periodStartOn: "2026-08-01",
+        periodEndOn: "2026-08-11",
+        currency: "BRL",
+        filters: { currency: "BRL", categoryId },
+        evidence: [
+          { label: "valor_atual", value: 16000, unit: "minor_currency", currency: "BRL" },
+          { label: "valor_anterior_ou_planejado", value: 10000, unit: "minor_currency", currency: "BRL" },
+          { label: "variacao_percentual", value: 60, unit: "percentage" },
+        ],
+        comparison: {
+          kind: "previous_period",
+          currentValue: 16000,
+          previousValue: 10000,
+          unit: "minor_currency",
+          percentChange: 60,
+          previousPeriodStartOn: "2026-07-01",
+          previousPeriodEndOn: "2026-07-11",
+        },
+        limitations: ["Lançamentos pendentes de revisão foram excluídos."],
+        calculationVersion: "financial-insights-v2",
+        navigation: { view: "transactions", categoryId },
+      },
+    },
+  });
+
+  const enhanced = enhanceInboxHtmlWithStructuredPayloads(reviewRow(suggestionId), [payload]);
+  assert.match(enhanced, /Dados estruturados v1\.2/);
+  assert.match(enhanced, /Evidências verificáveis/);
+  assert.match(enhanced, /valor_atual: R\$\s?160,00/);
+  assert.match(enhanced, /variacao_percentual: 60%/);
+  assert.match(enhanced, /Limitações/);
+  assert.match(enhanced, /pendentes de revisão foram excluídos/);
+  assert.match(enhanced, /Confiança:<\/strong> 95%/);
+  assert.match(enhanced, /href="\/lancamentos" data-insight-navigation="true">Abrir lançamentos/);
+  assert.doesNotMatch(enhanced, new RegExp(categoryId));
+  assert.doesNotMatch(enhanced, /financial-insights-v2|sha256-/);
+}
+
 function leavesUnrelatedRowsUntouched(): void {
   const html = '<article class="maintenance-item"><p>Sem ação compatível</p></article>';
   const payload = parseAiSuggestionPayloadResponse({
-    suggestionId: "44444444-4444-4444-8444-444444444444",
+    suggestionId: "66666666-6666-4666-8666-666666666666",
     legacyProjection: false,
     payload: {
       contractVersion: 1,
@@ -78,4 +131,13 @@ function leavesUnrelatedRowsUntouched(): void {
   });
 
   assert.equal(enhanceInboxHtmlWithStructuredPayloads(html, [payload]), html);
+}
+
+function reviewRow(suggestionId: string): string {
+  return `
+    <article class="maintenance-item">
+      <div class="message-preview"><p>Resumo anterior</p></div>
+      <div class="maintenance-actions" aria-label="Ações da sugestão ${suggestionId}"></div>
+    </article>
+  `;
 }
