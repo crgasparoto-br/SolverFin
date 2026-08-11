@@ -50,15 +50,27 @@ try {
     check(evidence.hasBalance, `Balance evidence is missing at ${width}px`, evidence);
     check(evidence.hasLimitations, `Limitations are missing at ${width}px`, evidence);
     check(evidence.navigationVisible, `Financial navigation is missing at ${width}px`, evidence);
-    check(evidence.internalFingerprintHidden, `Internal fingerprint is visible at ${width}px`, evidence);
+    check(
+      evidence.internalFingerprintHidden,
+      `Internal fingerprint is visible at ${width}px`,
+      evidence,
+    );
   }
 
   await setViewport(browser.cdp, 1366, 900);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await waitForStructuredInsight(browser.cdp, fixture.suggestionId);
   navigation = await exerciseNavigation(browser.cdp, fixture.suggestionId);
-  check(navigation.linkHref === "/lancamentos", "Insight navigation does not target /lancamentos", navigation);
-  check(navigation.pathname === "/lancamentos", "Insight navigation did not open /lancamentos", navigation);
+  check(
+    navigation.linkHref === "/lancamentos",
+    "Insight navigation does not target /lancamentos",
+    navigation,
+  );
+  check(
+    navigation.pathname === "/lancamentos",
+    "Insight navigation did not open /lancamentos",
+    navigation,
+  );
 } catch (error) {
   fatalError = {
     name: error instanceof Error ? error.name : "UnknownError",

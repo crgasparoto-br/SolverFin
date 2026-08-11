@@ -600,7 +600,8 @@ function buildTopCategoryVariations(
     .filter((item) => item.delta !== 0)
     .sort(
       (left, right) =>
-        Math.abs(right.delta) - Math.abs(left.delta) || left.categoryId.localeCompare(right.categoryId),
+        Math.abs(right.delta) - Math.abs(left.delta) ||
+        left.categoryId.localeCompare(right.categoryId),
     )
     .slice(0, 3)
     .map((item) => ({

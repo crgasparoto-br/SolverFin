@@ -45,10 +45,52 @@ export function enhanceInboxHtmlWithStructuredPayloads(
   html: string,
   payloads: readonly AiSuggestionPayloadViewModel[],
 ): string {
-  return payloads.reduce(
+  const enhanced = payloads.reduce(
     (currentHtml, payload) => injectStructuredPayload(currentHtml, payload),
     html,
   );
+  return injectStructuredPayloadRuntime(enhanced, payloads);
+}
+
+function injectStructuredPayloadRuntime(
+  html: string,
+  payloads: readonly AiSuggestionPayloadViewModel[],
+): string {
+  if (payloads.length === 0 || !html.includes("</body>")) return html;
+  const summaries = Object.fromEntries(
+    payloads.map((payload) => [payload.suggestionId, renderStructuredPayloadSummary(payload)]),
+  );
+  const serializedSummaries = JSON.stringify(summaries).replaceAll("<", "\\u003c");
+  const script = `
+    <script data-ai-structured-payload-runtime="true">
+      (() => {
+        const summaries = ${serializedSummaries};
+        let scheduled = false;
+
+        function hydrateStructuredPayloads() {
+          document.querySelectorAll("[data-review-id]").forEach((card) => {
+            if (card.querySelector('[data-ai-structured-payload="true"]')) return;
+            const summary = summaries[card.dataset.reviewId || ""];
+            const actions = card.querySelector(".maintenance-actions");
+            if (!summary || !actions) return;
+            actions.insertAdjacentHTML("beforebegin", summary);
+          });
+        }
+
+        const observer = new MutationObserver(() => {
+          if (scheduled) return;
+          scheduled = true;
+          queueMicrotask(() => {
+            scheduled = false;
+            hydrateStructuredPayloads();
+          });
+        });
+
+        hydrateStructuredPayloads();
+        observer.observe(document.body, { childList: true, subtree: true });
+      })();
+    </script>`;
+  return html.replace("</body>", `${script}\n</body>`);
 }
 
 function collectAiReviewSuggestionIds(html: string): string[] {
