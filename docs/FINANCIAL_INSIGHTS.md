@@ -14,7 +14,7 @@ A implementação canônica está em `@solverfin/ai` e é materializada como `Ai
 4. O resultado recebe `calculationVersion` e `dataFingerprint` internos para idempotência e rastreabilidade.
 5. Apenas insights acionáveis são persistidos como payload `insight` V2; `insufficient_data` é fallback calculado e não vira item da fila.
 6. Narrativa por provider é opcional e não faz parte do caminho necessário para persistir o insight. Se usada, não pode introduzir números nem linguagem quantitativa/comparativa que redefina o cálculo canônico; texto inválido ou provider indisponível preserva a explicação local.
-7. A Inbox apresenta o payload público tipado, incluindo evidências e limitações, sem reconstruir números a partir de `explanation`.
+7. A Inbox apresenta o payload público tipado com período, critério determinístico, filtros efetivos redigidos, evidências e limitações, sem reconstruir números a partir de `explanation` nem usar IDs internos como rótulos visíveis.
 
 ## Tipos iniciais
 
@@ -125,9 +125,13 @@ Antes de listar `GET /api/ai-review-queue`, o backend atualiza os insights do pe
 - título e resumo;
 - período;
 - confiança;
+- critério determinístico aplicado ao tipo de insight, incluindo os limiares canônicos quando houver;
+- filtros efetivos, com moeda e escopo de categoria/estabelecimento quando aplicável, sem exibir UUID de categoria como rótulo;
 - evidências verificáveis;
 - limitações;
 - link para a área relacionada (`/lancamentos`, `/orcamentos` ou `/relatorios`) quando aplicável.
+
+O critério visível é derivado de `insightKind`, que é estruturado e versionado; os filtros visíveis vêm de `proposal.filters`. Quando a categoria é identificada por ID para navegação, a Inbox descreve o escopo semanticamente e mantém o identificador técnico fora do texto apresentado.
 
 Aprovar ou rejeitar um insight apenas registra a decisão auditável. Não cria, altera, concilia, categoriza nem cancela lançamentos.
 
@@ -142,6 +146,8 @@ O caminho de geração/persistência da issue #567 não depende de provider e, p
 A cobertura deve preservar:
 
 - valores e percentuais exatos;
+- fronteiras dos limiares: 25% versus abaixo de 25% no aumento de gasto e 20% versus acima de 20% na tolerância de recorrência;
+- controle positivo específico do detector de aumento por merchant, independente da amostra por categoria;
 - um gasto alto isolado sem falso positivo;
 - recorrência consecutiva e interrupção da recorrência;
 - exclusão explícita de dados não revisados;
@@ -151,4 +157,4 @@ A cobertura deve preservar:
 - provider narrativo válido, contraditório com algarismos, contraditório apenas em palavras e indisponível sem alterar evidência;
 - payload V2 estrito e projeção pública redigida;
 - persistência, reexecução idempotente e substituição de pendência após mudança dos dados;
-- renderização web de evidências do resumo, limitações, confiança e navegação sem expor IDs internos.
+- renderização web de critério, filtros, evidências do resumo, limitações, confiança e navegação sem expor IDs internos como texto visível.

@@ -243,6 +243,8 @@ function insightDetails(proposal: PublicInsightProposal): {
     };
   }
 
+  const criterion = resolveInsightCriterion(proposal);
+  const filters = renderInsightFilters(proposal);
   const evidence = proposal.evidence
     .map(
       (item) =>
@@ -258,6 +260,14 @@ function insightDetails(proposal: PublicInsightProposal): {
     title: proposal.title,
     description: `${proposal.summary} Período: ${proposal.periodStartOn} a ${proposal.periodEndOn}.`,
     additionalHtml: `
+        <div data-insight-criterion="true">
+          <p><strong>Critério</strong></p>
+          <p>${escapeHtml(criterion)}</p>
+        </div>
+        <div data-insight-filters="true">
+          <p><strong>Filtros aplicados</strong></p>
+          <ul>${filters}</ul>
+        </div>
         <div data-insight-evidence="true">
           <p><strong>Evidências verificáveis</strong></p>
           <ul>${evidence}</ul>
@@ -281,6 +291,44 @@ function formatEvidence(
   }
   if (evidence.unit === "percentage") return `${evidence.value}%`;
   return String(evidence.value);
+}
+
+function resolveInsightCriterion(proposal: PublicInsightProposalV2): string {
+  switch (proposal.insightKind) {
+    case "category_spending_increase":
+    case "merchant_spending_increase":
+      return "Aumento de pelo menos 25% com no mínimo 2 lançamentos realizados em cada período comparável.";
+    case "probable_subscription":
+      return "Pelo menos 3 meses consecutivos com variação de valor de até 20% em relação à média dos meses observados.";
+    case "negative_balance_risk":
+      return "Saldo agregado projetado abaixo de zero até o fim do horizonte mensal.";
+    case "budget_exceeded":
+      return "Despesas realizadas confirmadas da categoria acima do orçamento ativo, na mesma moeda e dentro da janela do orçamento.";
+    case "monthly_summary":
+      return "Existe ao menos um lançamento realizado no período; o resumo usa apenas lançamentos confirmados ou conciliados.";
+  }
+}
+
+function renderInsightFilters(proposal: PublicInsightProposalV2): string {
+  const items = [`<li>Moeda: ${escapeHtml(proposal.filters.currency)}</li>`];
+  if (proposal.filters.categoryId !== undefined) {
+    items.push(
+      "<li>Categoria: a categoria indicada no título e na navegação deste insight.</li>",
+    );
+  }
+  if (proposal.filters.merchantKey !== undefined) {
+    items.push(
+      `<li>Estabelecimento normalizado: ${escapeHtml(proposal.filters.merchantKey)}</li>`,
+    );
+  }
+  if (proposal.filters.categoryId === undefined && proposal.filters.merchantKey === undefined) {
+    items.push(
+      proposal.insightKind === "negative_balance_risk"
+        ? "<li>Escopo: contas e lançamentos elegíveis do perfil na moeda informada.</li>"
+        : "<li>Escopo: lançamentos realizados elegíveis do perfil no período.</li>",
+    );
+  }
+  return items.join("");
 }
 
 function renderInsightNavigation(navigation: InsightNavigationV2, periodStartOn: string): string {
