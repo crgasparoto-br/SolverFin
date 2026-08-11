@@ -16,6 +16,9 @@ const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
 const PERSONAL_PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 const CHECKING_ACCOUNT_ID = "44444444-4444-4444-8444-444444444441";
+const LOCK_SOURCE_SQL = `select "id" from "AiSuggestion" where "id" = $1 for update`;
+
+type DecisionPromise = ReturnType<typeof tryHandleGeneralizedDeterministicDecisionForContext>;
 
 const context: TenantContext = {
   userId: USER_ID,
@@ -66,15 +69,11 @@ async function main(): Promise<void> {
 
     const blocker = await getPool().connect();
     let blockerOpen = false;
-    let decisionPromises: Array<
-      ReturnType<typeof tryHandleGeneralizedDeterministicDecisionForContext>
-    > = [];
+    let decisionPromises: DecisionPromise[] = [];
     try {
       await blocker.query("BEGIN");
       blockerOpen = true;
-      await blocker.query(`select "id" from "AiSuggestion" where "id" = $1 for update`, [
-        sourceId,
-      ]);
+      await blocker.query(LOCK_SOURCE_SQL, [sourceId]);
 
       decisionPromises = [
         tryHandleGeneralizedDeterministicDecisionForContext(
@@ -207,6 +206,14 @@ async function insertExtraction(input: {
       accountId: CHECKING_ACCOUNT_ID,
     },
   });
+  const parameters = [
+    id,
+    ORGANIZATION_ID,
+    PERSONAL_PROFILE_ID,
+    JSON.stringify(payload),
+    payload.fingerprint,
+    now,
+  ];
   await query(
     `insert into "AiSuggestion"
       ("id", "organizationId", "financialProfileId", "kind", "status", "sourceEntityId", "targetEntityId",
@@ -215,7 +222,7 @@ async function insertExtraction(input: {
      values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', null, null, 0.96,
              'Fixture concorrente da issue 566.', $4::jsonb, $5, 'fake-provider',
              'issue-566-concurrency', null, null, $6, $6)`,
-    [id, ORGANIZATION_ID, PERSONAL_PROFILE_ID, JSON.stringify(payload), payload.fingerprint, now],
+    parameters,
   );
   return id;
 }
