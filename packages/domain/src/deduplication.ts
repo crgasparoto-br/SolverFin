@@ -256,6 +256,7 @@ function buildDeduplicationReasons(
   possibleDuplicate: DeduplicationCandidate,
 ): DeduplicationReason[] {
   if (candidate.kind !== possibleDuplicate.kind) return [];
+  if (candidate.currency.toUpperCase() !== possibleDuplicate.currency.toUpperCase()) return [];
   if (candidate.kind === "transfer" && !hasSameTransferAccounts(candidate, possibleDuplicate)) {
     return [];
   }
@@ -267,11 +268,7 @@ function buildDeduplicationReasons(
     return [];
   }
 
-  if (
-    candidate.kind === "transfer" &&
-    (candidate.amountMinor !== possibleDuplicate.amountMinor ||
-      candidate.currency.toUpperCase() !== possibleDuplicate.currency.toUpperCase())
-  ) {
+  if (candidate.kind === "transfer" && candidate.amountMinor !== possibleDuplicate.amountMinor) {
     return [];
   }
 
