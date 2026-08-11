@@ -6,8 +6,13 @@ import type {
   AiSuggestionPayloadTarget,
   CategorizationSuggestionPayloadV1,
   ImportLineDirection,
+  InsightComparisonV2,
+  InsightNavigationV2,
+  InsightNumericEvidenceV2,
   InsightSuggestionPayloadV1,
+  InsightSuggestionPayloadV2,
   TransactionKind,
+  VerifiableFinancialInsightKind,
 } from "./ai-suggestion-payload-types.js";
 
 export interface PublicTransactionExtractionProposal {
@@ -37,7 +42,7 @@ export interface PublicDeterministicReviewProposal {
   conflicts: readonly string[];
 }
 
-export interface PublicInsightProposal {
+export interface PublicInsightProposalV1 {
   insightType: InsightSuggestionPayloadV1["insightType"];
   title: string;
   summary: string;
@@ -46,6 +51,29 @@ export interface PublicInsightProposal {
   metric?: NonNullable<InsightSuggestionPayloadV1["metric"]>;
   relatedEntityIds?: readonly string[];
 }
+
+export interface PublicInsightProposalV2 {
+  insightType: InsightSuggestionPayloadV2["insightType"];
+  insightKind: VerifiableFinancialInsightKind;
+  title: string;
+  summary: string;
+  periodStartOn: string;
+  periodEndOn: string;
+  currency: string;
+  filters: {
+    currency: string;
+    categoryId?: string;
+    merchantKey?: string;
+  };
+  evidence: readonly InsightNumericEvidenceV2[];
+  comparison?: InsightComparisonV2;
+  limitations: readonly string[];
+  calculationVersion: string;
+  relatedEntityIds?: readonly string[];
+  navigation?: InsightNavigationV2;
+}
+
+export type PublicInsightProposal = PublicInsightProposalV1 | PublicInsightProposalV2;
 
 interface PublicAiSuggestionPayloadBase<
   TKind extends AiSuggestionPayloadKind,
@@ -74,7 +102,8 @@ export type PublicAiSuggestionPayload =
   | PublicAiSuggestionPayloadBase<"categorization", 1, PublicCategorizationProposal>
   | PublicAiSuggestionPayloadBase<"deduplication", 1, PublicDeterministicReviewProposal>
   | PublicAiSuggestionPayloadBase<"reconciliation", 1, PublicDeterministicReviewProposal>
-  | PublicAiSuggestionPayloadBase<"insight", 1, PublicInsightProposal>;
+  | PublicAiSuggestionPayloadBase<"insight", 1, PublicInsightProposalV1>
+  | PublicAiSuggestionPayloadBase<"insight", 2, PublicInsightProposalV2>;
 
 export function toPublicAiSuggestionPayload(
   payload: AiSuggestionPayload,
@@ -155,20 +184,65 @@ export function toPublicAiSuggestionPayload(
         },
       };
     case "insight":
+      if (payload.payloadVersion === 1) {
+        return {
+          ...common,
+          suggestionKind: payload.suggestionKind,
+          payloadVersion: payload.payloadVersion,
+          proposal: {
+            insightType: payload.insightType,
+            title: payload.title,
+            summary: payload.summary,
+            periodStartOn: payload.periodStartOn,
+            periodEndOn: payload.periodEndOn,
+            ...(payload.metric === undefined ? {} : { metric: payload.metric }),
+            ...(includeIds && payload.relatedEntityIds !== undefined
+              ? { relatedEntityIds: payload.relatedEntityIds }
+              : {}),
+          },
+        };
+      }
       return {
         ...common,
         suggestionKind: payload.suggestionKind,
         payloadVersion: payload.payloadVersion,
         proposal: {
           insightType: payload.insightType,
+          insightKind: payload.insightKind,
           title: payload.title,
           summary: payload.summary,
           periodStartOn: payload.periodStartOn,
           periodEndOn: payload.periodEndOn,
-          ...(payload.metric === undefined ? {} : { metric: payload.metric }),
+          currency: payload.currency,
+          filters: {
+            currency: payload.filters.currency,
+            ...(includeIds && payload.filters.categoryId !== undefined
+              ? { categoryId: payload.filters.categoryId }
+              : {}),
+            ...(payload.filters.merchantKey === undefined
+              ? {}
+              : { merchantKey: payload.filters.merchantKey }),
+          },
+          evidence: payload.evidence,
+          ...(payload.comparison === undefined ? {} : { comparison: payload.comparison }),
+          limitations: payload.limitations,
+          calculationVersion: payload.calculationVersion,
           ...(includeIds && payload.relatedEntityIds !== undefined
             ? { relatedEntityIds: payload.relatedEntityIds }
             : {}),
+          ...(payload.navigation === undefined
+            ? {}
+            : {
+                navigation: {
+                  view: payload.navigation.view,
+                  ...(includeIds && payload.navigation.categoryId !== undefined
+                    ? { categoryId: payload.navigation.categoryId }
+                    : {}),
+                  ...(payload.navigation.merchantKey === undefined
+                    ? {}
+                    : { merchantKey: payload.navigation.merchantKey }),
+                },
+              }),
         },
       };
   }
