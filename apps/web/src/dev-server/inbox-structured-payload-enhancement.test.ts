@@ -107,8 +107,13 @@ function rendersVerifiableInsightEvidenceLimitationsAndNavigation(): void {
   assert.match(enhanced, /Limitações/);
   assert.match(enhanced, /pendentes de revisão foram excluídos/);
   assert.match(enhanced, /Confiança:<\/strong> 95%/);
-  assert.match(enhanced, /href="\/lancamentos" data-insight-navigation="true">Abrir lançamentos/);
-  assert.doesNotMatch(enhanced, new RegExp(categoryId));
+  assert.match(
+    enhanced,
+    new RegExp(
+      `href="/lancamentos\\?month=2026-08&amp;categoryId=${categoryId}" data-insight-navigation="true">Abrir lançamentos`,
+    ),
+  );
+  assert.doesNotMatch(enhanced, new RegExp(`>${categoryId}<`));
   assert.doesNotMatch(enhanced, /financial-insights-v2|sha256-/);
 }
 
