@@ -4,6 +4,7 @@ import type {
   PublicCategorizationProposal,
   PublicDeterministicReviewProposal,
   PublicInsightProposal,
+  PublicInsightProposalV2,
   PublicTransactionExtractionProposal,
 } from "@solverfin/domain/ai-suggestion-payloads";
 
@@ -113,11 +114,19 @@ function parsePublicPayload(value: unknown): PublicAiSuggestionPayload {
         proposal: parseDeterministicProposal(record.proposal),
       };
     case "insight":
+      if (payloadVersion === 1) {
+        return {
+          ...common,
+          suggestionKind,
+          payloadVersion,
+          proposal: parseInsightProposalV1(record.proposal),
+        };
+      }
       return {
         ...common,
         suggestionKind,
-        payloadVersion: 1,
-        proposal: parseInsightProposal(record.proposal),
+        payloadVersion,
+        proposal: parseInsightProposalV2(record.proposal),
       };
   }
 }
@@ -205,7 +214,7 @@ function parseDeterministicProposal(value: unknown): PublicDeterministicReviewPr
   };
 }
 
-function parseInsightProposal(value: unknown): PublicInsightProposal {
+function parseInsightProposalV1(value: unknown): PublicInsightProposal {
   const record = expectRecord(value);
   assertAllowedKeys(record, [
     "insightType",
@@ -217,12 +226,7 @@ function parseInsightProposal(value: unknown): PublicInsightProposal {
     "relatedEntityIds",
   ]);
   return {
-    insightType: expectOneOf(record.insightType, [
-      "anomaly",
-      "trend",
-      "summary",
-      "opportunity",
-    ] as const),
+    insightType: expectOneOf(record.insightType, ["anomaly", "trend", "summary", "opportunity"] as const),
     title: expectString(record.title),
     summary: expectString(record.summary),
     periodStartOn: expectIsoDate(record.periodStartOn),
@@ -234,15 +238,132 @@ function parseInsightProposal(value: unknown): PublicInsightProposal {
   };
 }
 
-function parseMetric(value: unknown): NonNullable<PublicInsightProposal["metric"]> {
+function parseInsightProposalV2(value: unknown): PublicInsightProposalV2 {
+  const record = expectRecord(value);
+  assertAllowedKeys(record, [
+    "insightType",
+    "insightKind",
+    "title",
+    "summary",
+    "periodStartOn",
+    "periodEndOn",
+    "currency",
+    "filters",
+    "evidence",
+    "comparison",
+    "limitations",
+    "calculationVersion",
+    "relatedEntityIds",
+    "navigation",
+  ]);
+  const currency = expectCurrency(record.currency);
+  const filters = parseInsightFilters(record.filters, currency);
+  const evidence = parseInsightEvidence(record.evidence, currency);
+  return {
+    insightType: expectOneOf(record.insightType, ["anomaly", "trend", "summary", "opportunity"] as const),
+    insightKind: expectOneOf(record.insightKind, [
+      "category_spending_increase",
+      "merchant_spending_increase",
+      "probable_subscription",
+      "negative_balance_risk",
+      "budget_exceeded",
+      "monthly_summary",
+    ] as const),
+    title: expectString(record.title),
+    summary: expectString(record.summary),
+    periodStartOn: expectIsoDate(record.periodStartOn),
+    periodEndOn: expectIsoDate(record.periodEndOn),
+    currency,
+    filters,
+    evidence,
+    ...(record.comparison === undefined ? {} : { comparison: parseInsightComparison(record.comparison) }),
+    limitations: expectStringArray(record.limitations),
+    calculationVersion: expectString(record.calculationVersion),
+    ...(record.relatedEntityIds === undefined
+      ? {}
+      : { relatedEntityIds: expectStringArray(record.relatedEntityIds) }),
+    ...(record.navigation === undefined ? {} : { navigation: parseInsightNavigation(record.navigation) }),
+  };
+}
+
+function parseInsightFilters(value: unknown, currency: string): PublicInsightProposalV2["filters"] {
+  const record = expectRecord(value);
+  assertAllowedKeys(record, ["currency", "categoryId", "merchantKey"]);
+  if (expectCurrency(record.currency) !== currency) fail();
+  return {
+    currency,
+    ...optionalString(record, "categoryId"),
+    ...optionalString(record, "merchantKey"),
+  };
+}
+
+function parseInsightEvidence(value: unknown, currency: string): PublicInsightProposalV2["evidence"] {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 20) fail();
+  return value.map((item) => {
+    const record = expectRecord(item);
+    assertAllowedKeys(record, ["label", "value", "unit", "currency"]);
+    const unit = expectOneOf(record.unit, ["minor_currency", "count", "percentage"] as const);
+    const itemCurrency = record.currency === undefined ? undefined : expectCurrency(record.currency);
+    if (unit === "minor_currency" && itemCurrency !== currency) fail();
+    if (unit !== "minor_currency" && itemCurrency !== undefined) fail();
+    return {
+      label: expectString(record.label),
+      value: expectFiniteNumber(record.value),
+      unit,
+      ...(itemCurrency === undefined ? {} : { currency: itemCurrency }),
+    };
+  });
+}
+
+function parseInsightComparison(value: unknown): NonNullable<PublicInsightProposalV2["comparison"]> {
+  const record = expectRecord(value);
+  assertAllowedKeys(record, [
+    "kind",
+    "currentValue",
+    "previousValue",
+    "unit",
+    "percentChange",
+    "previousPeriodStartOn",
+    "previousPeriodEndOn",
+  ]);
+  const previousPeriodStartOn =
+    record.previousPeriodStartOn === undefined ? undefined : expectIsoDate(record.previousPeriodStartOn);
+  const previousPeriodEndOn =
+    record.previousPeriodEndOn === undefined ? undefined : expectIsoDate(record.previousPeriodEndOn);
+  if ((previousPeriodStartOn === undefined) !== (previousPeriodEndOn === undefined)) fail();
+  return {
+    kind: expectOneOf(record.kind, ["previous_period", "planned_budget"] as const),
+    currentValue: expectFiniteNumber(record.currentValue),
+    previousValue: expectFiniteNumber(record.previousValue),
+    unit: expectOneOf(record.unit, ["minor_currency", "count", "percentage"] as const),
+    ...(record.percentChange === undefined ? {} : { percentChange: expectFiniteNumber(record.percentChange) }),
+    ...(previousPeriodStartOn === undefined
+      ? {}
+      : { previousPeriodStartOn, previousPeriodEndOn: previousPeriodEndOn as string }),
+  };
+}
+
+function parseInsightNavigation(value: unknown): NonNullable<PublicInsightProposalV2["navigation"]> {
+  const record = expectRecord(value);
+  assertAllowedKeys(record, ["view", "categoryId", "merchantKey"]);
+  return {
+    view: expectOneOf(record.view, ["transactions", "budgets", "cash_flow"] as const),
+    ...optionalString(record, "categoryId"),
+    ...optionalString(record, "merchantKey"),
+  };
+}
+
+function parseMetric(value: unknown): {
+  name: string;
+  value: number;
+  unit: "minor_currency" | "count" | "percentage";
+  currency?: string;
+} {
   const record = expectRecord(value);
   assertAllowedKeys(record, ["name", "value", "unit", "currency"]);
-  if (typeof record.value !== "number" || !Number.isFinite(record.value)) {
-    fail();
-  }
   return {
     name: expectString(record.name),
-    value: record.value,
+    value: expectFiniteNumber(record.value),
     unit: expectOneOf(record.unit, ["minor_currency", "count", "percentage"] as const),
     ...(record.currency === undefined ? {} : { currency: expectCurrency(record.currency) }),
   };
@@ -275,7 +396,7 @@ function parseTarget(value: unknown): PublicAiSuggestionPayload["target"] {
 
 function expectPayloadVersion(value: unknown, kind: AiSuggestionPayloadKind): 1 | 2 {
   if (!Number.isInteger(value)) fail();
-  if (kind === "transaction_extraction") {
+  if (kind === "transaction_extraction" || kind === "insight") {
     if (value !== 1 && value !== 2) fail();
     return value;
   }
@@ -304,15 +425,18 @@ function expectString(value: unknown): string {
 }
 
 function expectStringArray(value: unknown): readonly string[] {
-  if (!Array.isArray(value) || value.length > 100 || value.some((item) => !isString(item))) {
-    fail();
-  }
+  if (!Array.isArray(value) || value.length > 100 || value.some((item) => !isString(item))) fail();
   return value as string[];
 }
 
 function expectPositiveInteger(value: unknown): number {
   if (!Number.isSafeInteger(value) || (value as number) <= 0) fail();
   return value as number;
+}
+
+function expectFiniteNumber(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) fail();
+  return value;
 }
 
 function expectCurrency(value: unknown): string {
@@ -325,9 +449,7 @@ function expectIsoDate(value: unknown): string {
   const date = expectString(value);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) fail();
   const parsed = new Date(`${date}T00:00:00.000Z`);
-  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
-    fail();
-  }
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) fail();
   return date;
 }
 
