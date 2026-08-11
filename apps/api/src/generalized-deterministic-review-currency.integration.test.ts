@@ -5,9 +5,7 @@ import type { TenantContext } from "@solverfin/domain";
 import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { closePool, query } from "./db.js";
-import {
-  scanPendingDeterministicReviewSuggestionsForContext,
-} from "./generalized-deterministic-review-scan.js";
+import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
@@ -29,10 +27,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for integration tests.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const marker = randomUUID();
   const sourceId = randomUUID();
   const targetId = randomUUID();
@@ -155,13 +150,7 @@ async function cleanup(sourceId: string, targetId: string): Promise<void> {
   const suggestionIds = [sourceId, ...candidateRows.map((row) => row.id)];
   const entityIds = [...suggestionIds, targetId];
 
-  await query(
-    `delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`,
-    [entityIds],
-  );
-  await query(
-    `delete from "AiSuggestion" where "id" = any($1::uuid[])`,
-    [suggestionIds],
-  );
+  await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
+  await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [suggestionIds]);
   await query(`delete from "Transaction" where "id" = $1`, [targetId]);
 }
