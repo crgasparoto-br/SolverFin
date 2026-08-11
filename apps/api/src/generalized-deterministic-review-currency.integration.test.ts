@@ -40,11 +40,8 @@ async function main(): Promise<void> {
 
     await scanPendingDeterministicReviewSuggestionsForContext(context);
 
-    assert.equal(
-      await countDeterministicCandidates(sourceId),
-      0,
-      "o scanner nao deve criar candidaturas quando a moeda da origem diverge da moeda do alvo",
-    );
+    const candidateCount = await countDeterministicCandidates(sourceId);
+    assert.equal(candidateCount, 0);
     assert.equal(await readSuggestionStatus(sourceId), "PENDING_REVIEW");
     assert.equal(await readTransactionStatus(targetId), "POSTED");
   } finally {
@@ -53,20 +50,21 @@ async function main(): Promise<void> {
 }
 
 async function insertTarget(id: string, description: string): Promise<void> {
+  const parameters = [
+    id,
+    ORGANIZATION_ID,
+    PERSONAL_PROFILE_ID,
+    CHECKING_ACCOUNT_ID,
+    description,
+    USER_ID,
+  ];
   await query(
     `insert into "Transaction"
       ("id", "organizationId", "financialProfileId", "accountId", "kind", "status", "source",
        "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdByUserId", "createdAt", "updatedAt")
      values ($1, $2, $3, $4, 'EXPENSE', 'POSTED', 'MANUAL', 10000, 'USD', '2026-08-11'::date,
              '2026-08-11'::date, $5, $6, now(), now())`,
-    [
-      id,
-      ORGANIZATION_ID,
-      PERSONAL_PROFILE_ID,
-      CHECKING_ACCOUNT_ID,
-      description,
-      USER_ID,
-    ],
+    parameters,
   );
 }
 
@@ -97,7 +95,14 @@ async function insertSource(
       accountId: CHECKING_ACCOUNT_ID,
     },
   });
-
+  const parameters = [
+    id,
+    ORGANIZATION_ID,
+    PERSONAL_PROFILE_ID,
+    JSON.stringify(payload),
+    payload.fingerprint,
+    now,
+  ];
   await query(
     `insert into "AiSuggestion"
       ("id", "organizationId", "financialProfileId", "kind", "status", "sourceEntityId", "targetEntityId",
@@ -106,14 +111,7 @@ async function insertSource(
      values ($1, $2, $3, 'TRANSACTION_EXTRACTION', 'PENDING_REVIEW', null, null, 0.96,
              'Controle negativo de moeda da issue 566.', $4::jsonb, $5, 'fake-provider',
              'issue-566-currency', null, null, $6, $6)`,
-    [
-      id,
-      ORGANIZATION_ID,
-      PERSONAL_PROFILE_ID,
-      JSON.stringify(payload),
-      payload.fingerprint,
-      now,
-    ],
+    parameters,
   );
 }
 
