@@ -251,7 +251,9 @@ function insightDetails(proposal: PublicInsightProposal): {
     .join("");
   const limitations = proposal.limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   const navigation =
-    proposal.navigation === undefined ? "" : renderInsightNavigation(proposal.navigation.view);
+    proposal.navigation === undefined
+      ? ""
+      : renderInsightNavigation(proposal.navigation, proposal.periodStartOn);
   return {
     title: proposal.title,
     description: `${proposal.summary} Período: ${proposal.periodStartOn} a ${proposal.periodEndOn}.`,
@@ -281,14 +283,27 @@ function formatEvidence(
   return String(evidence.value);
 }
 
-function renderInsightNavigation(view: InsightNavigationV2["view"]): string {
+function renderInsightNavigation(navigation: InsightNavigationV2, periodStartOn: string): string {
   const destination =
-    view === "budgets"
+    navigation.view === "budgets"
       ? { href: "/orcamentos", label: "Abrir orçamentos" }
-      : view === "cash_flow"
+      : navigation.view === "cash_flow"
         ? { href: "/relatorios", label: "Abrir relatórios" }
         : { href: "/lancamentos", label: "Abrir lançamentos" };
-  return `<p><a href="${destination.href}" data-insight-navigation="true">${destination.label}</a></p>`;
+  const params = new URLSearchParams();
+
+  if (navigation.view === "transactions") {
+    const month = periodStartOn.slice(0, 7);
+    if (/^\d{4}-\d{2}$/.test(month)) params.set("month", month);
+    if (navigation.categoryId !== undefined) params.set("categoryId", navigation.categoryId);
+    if (navigation.merchantKey !== undefined) params.set("merchantKey", navigation.merchantKey);
+  } else if (navigation.view === "budgets" && navigation.categoryId !== undefined) {
+    params.set("categoryId", navigation.categoryId);
+  }
+
+  const query = params.toString();
+  const href = query.length === 0 ? destination.href : `${destination.href}?${query}`;
+  return `<p><a href="${escapeHtml(href)}" data-insight-navigation="true">${destination.label}</a></p>`;
 }
 
 function formatMinorCurrency(amountMinor: number, currency: string): string {

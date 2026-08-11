@@ -36,20 +36,31 @@ try {
     [1366, 900],
   ]) {
     await setViewport(browser.cdp, width, height);
+    await scrollInsightIntoView(browser.cdp, fixture.suggestionId);
     await sleep(220);
     const evidence = await inspectInsight(browser.cdp, fixture.suggestionId, width, height);
     const screenshotName = `issue-567-financial-insights-${width}x${height}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
     captures.push({ ...evidence, screenshot: screenshotName });
 
-    check(evidence.cardVisible, `Insight card is not visible at ${width}px`, evidence);
+    check(evidence.cardVisible, `Insight card is not visible in the viewport at ${width}px`, evidence);
+    check(
+      evidence.structuredPayloadVisible,
+      `Structured insight content is not visible in the viewport at ${width}px`,
+      evidence,
+    );
+    check(
+      evidence.cardFitsHorizontally,
+      `Insight card exceeds the horizontal viewport at ${width}px`,
+      evidence,
+    );
     check(evidence.bodyFitsViewport, `Insight card overflows horizontally at ${width}px`, evidence);
     check(evidence.hasEvidenceSection, `Evidence section is missing at ${width}px`, evidence);
     check(evidence.hasIncome, `Income evidence is missing at ${width}px`, evidence);
     check(evidence.hasExpense, `Expense evidence is missing at ${width}px`, evidence);
     check(evidence.hasBalance, `Balance evidence is missing at ${width}px`, evidence);
     check(evidence.hasLimitations, `Limitations are missing at ${width}px`, evidence);
-    check(evidence.navigationVisible, `Financial navigation is missing at ${width}px`, evidence);
+    check(evidence.navigationRendered, `Financial navigation is missing at ${width}px`, evidence);
     check(
       evidence.internalFingerprintHidden,
       `Internal fingerprint is visible at ${width}px`,
@@ -60,15 +71,22 @@ try {
   await setViewport(browser.cdp, 1366, 900);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await waitForStructuredInsight(browser.cdp, fixture.suggestionId);
+  await scrollInsightIntoView(browser.cdp, fixture.suggestionId);
   navigation = await exerciseNavigation(browser.cdp, fixture.suggestionId);
+  const expectedMonth = fixture.periodStartOn.slice(0, 7);
   check(
-    navigation.linkHref === "/lancamentos",
-    "Insight navigation does not target /lancamentos",
+    navigation.linkHref === `/lancamentos?month=${expectedMonth}`,
+    "Insight navigation does not preserve the insight period in /lancamentos",
     navigation,
   );
   check(
     navigation.pathname === "/lancamentos",
     "Insight navigation did not open /lancamentos",
+    navigation,
+  );
+  check(
+    navigation.month === expectedMonth,
+    "Insight navigation did not preserve the expected month query",
     navigation,
   );
 } catch (error) {
@@ -151,6 +169,7 @@ async function createFixture(cdp) {
             body: {
               suggestionId: suggestion.id,
               currency: proposal.currency,
+              periodStartOn: proposal.periodStartOn,
               evidenceLabels: (proposal.evidence || []).map((item) => item.label),
               limitations: proposal.limitations || [],
               navigation: proposal.navigation
@@ -186,29 +205,54 @@ async function waitForStructuredInsight(cdp, suggestionId, timeout = 12_000) {
   throw new Error(`Timed out waiting for issue 567 insight ${suggestionId}`);
 }
 
+async function scrollInsightIntoView(cdp, suggestionId) {
+  const scrolled = await evaluate(
+    cdp,
+    `(() => {
+      const card = document.querySelector('[data-review-id="${suggestionId}"]');
+      if (!card) return false;
+      card.scrollIntoView({ block: 'center', inline: 'nearest' });
+      return true;
+    })()`,
+  );
+  assert.equal(scrolled, true, `Insight card ${suggestionId} was not found for visual capture.`);
+}
+
 async function inspectInsight(cdp, suggestionId, width, height) {
   return evaluate(
     cdp,
     `(() => {
       const card = document.querySelector('[data-review-id="${suggestionId}"]');
+      const structured = card?.querySelector('[data-ai-structured-payload="true"]');
       const text = (card?.innerText || '');
       const navigation = card?.querySelector('[data-insight-navigation="true"]');
-      const visible = (element) => {
+      const layoutVisible = (element) => {
         if (!element) return false;
         const rect = element.getBoundingClientRect();
         const style = getComputedStyle(element);
         return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
       };
+      const inViewport = (element) => {
+        if (!layoutVisible(element)) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
+      };
+      const cardRect = card?.getBoundingClientRect();
       return {
         viewport: ${JSON.stringify(`${width}x${height}`)},
-        cardVisible: visible(card),
+        cardVisible: inViewport(card),
+        structuredPayloadVisible: inViewport(structured),
+        cardFitsHorizontally: Boolean(cardRect && cardRect.left >= 0 && cardRect.right <= window.innerWidth),
+        cardBounds: cardRect
+          ? { top: cardRect.top, right: cardRect.right, bottom: cardRect.bottom, left: cardRect.left, width: cardRect.width, height: cardRect.height }
+          : undefined,
         bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         hasEvidenceSection: text.includes('Evidências verificáveis'),
         hasIncome: text.includes('receitas:'),
         hasExpense: text.includes('despesas:'),
         hasBalance: text.includes('saldo:'),
         hasLimitations: text.includes('Limitações'),
-        navigationVisible: visible(navigation) && navigation.getAttribute('href') === '/lancamentos',
+        navigationRendered: layoutVisible(navigation) && (navigation.getAttribute('href') || '').startsWith('/lancamentos?month='),
         internalFingerprintHidden: !text.includes('financial-insights-v2') && !text.includes('sha256-'),
         excerpt: text.slice(0, 800)
       };
@@ -229,8 +273,15 @@ async function exerciseNavigation(cdp, suggestionId) {
     })()`,
   );
   await sleep(300);
-  const pathname = await evaluate(cdp, `window.location.pathname`);
-  return { linkHref, pathname };
+  const location = await evaluate(
+    cdp,
+    `({
+      pathname: window.location.pathname,
+      search: window.location.search,
+      month: new URLSearchParams(window.location.search).get('month')
+    })`,
+  );
+  return { linkHref, ...location };
 }
 
 function check(condition, message, details) {
