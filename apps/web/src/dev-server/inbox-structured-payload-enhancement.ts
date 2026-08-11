@@ -317,9 +317,7 @@ function renderInsightFilters(proposal: PublicInsightProposalV2): string {
     );
   }
   if (proposal.filters.merchantKey !== undefined) {
-    items.push(
-      `<li>Estabelecimento normalizado: ${escapeHtml(proposal.filters.merchantKey)}</li>`,
-    );
+    items.push(`<li>Estabelecimento normalizado: ${escapeHtml(proposal.filters.merchantKey)}</li>`);
   }
   if (proposal.filters.categoryId === undefined && proposal.filters.merchantKey === undefined) {
     items.push(
