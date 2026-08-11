@@ -41,7 +41,12 @@ function buildValidPayload() {
       filters: { currency: "BRL", categoryId: "category-1" },
       evidence: [
         { label: "valor_atual", value: 16000, unit: "minor_currency", currency: "BRL" },
-        { label: "valor_anterior_ou_planejado", value: 10000, unit: "minor_currency", currency: "BRL" },
+        {
+          label: "valor_anterior_ou_planejado",
+          value: 10000,
+          unit: "minor_currency",
+          currency: "BRL",
+        },
         { label: "variacao_percentual", value: 60, unit: "percentage" },
       ],
       comparison: {
