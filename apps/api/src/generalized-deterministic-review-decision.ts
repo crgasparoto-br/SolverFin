@@ -66,6 +66,57 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
   input: GeneralizedDeterministicDecisionInput,
 ): Promise<GeneralizedDeterministicDecisionResult | undefined> {
   return withSharedTransaction(async (executeQuery) => {
+    const observedCandidate = await findSuggestion(context, suggestionId, executeQuery, false);
+    if (observedCandidate === undefined) {
+      throw reviewError(
+        "AI_REVIEW_SUGGESTION_NOT_FOUND",
+        "Sugestão não encontrada no perfil financeiro ativo.",
+        404,
+      );
+    }
+    const observedKind = parseGeneralizedDeterministicKind(observedCandidate.kind);
+    if (observedKind === undefined) return undefined;
+    const observedPayload = requireGeneralizedDeterministicPayload(
+      observedCandidate,
+      observedKind,
+    );
+    if (observedPayload === undefined) {
+      throw reviewError(
+        "AI_SUGGESTION_PAYLOAD_INVALID",
+        "A sugestão não possui vínculo estruturado válido para esta decisão.",
+        422,
+      );
+    }
+    assertExpectedFingerprint(observedPayload.fingerprint, input.expectedFingerprint);
+    if (isIdempotent(observedCandidate.status, action)) {
+      return {
+        suggestion: mapGeneralizedSuggestion(observedCandidate),
+        idempotent: true,
+      };
+    }
+    assertPending(observedCandidate.status);
+
+    const observedStored = parseStoredDeterministicPayload(observedCandidate);
+    if (observedStored === undefined) {
+      throw reviewError(
+        "AI_SUGGESTION_PAYLOAD_INVALID",
+        "A sugestão não possui vínculo estruturado válido para esta decisão.",
+        422,
+      );
+    }
+
+    // Keep the lock order aligned with the scanner: source first, candidate second.
+    // This serializes sibling decisions on the same extraction before either one
+    // can hold a sibling candidate row and removes the candidate->source cycle.
+    const source = await findSource(context, observedStored.sourceSuggestionId, executeQuery);
+    if (source === undefined) {
+      throw reviewError(
+        "AI_REVIEW_SOURCE_NOT_FOUND",
+        "A origem desta sugestão não está mais disponível.",
+        404,
+      );
+    }
+
     const candidate = await findSuggestion(context, suggestionId, executeQuery, true);
     if (candidate === undefined) {
       throw reviewError(
@@ -75,7 +126,13 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
       );
     }
     const kind = parseGeneralizedDeterministicKind(candidate.kind);
-    if (kind === undefined) return undefined;
+    if (kind === undefined) {
+      throw reviewError(
+        "AI_REVIEW_INVALID_TRANSITION",
+        "A sugestão mudou enquanto a decisão estava em andamento. Atualize a fila e tente novamente.",
+        409,
+      );
+    }
     const candidatePayload = requireGeneralizedDeterministicPayload(candidate, kind);
     if (candidatePayload === undefined) {
       throw reviewError(
@@ -101,14 +158,14 @@ export async function tryHandleGeneralizedDeterministicDecisionForContext(
         422,
       );
     }
-    const source = await findSource(context, stored.sourceSuggestionId, executeQuery);
-    if (source === undefined) {
+    if (stored.sourceSuggestionId !== source.id) {
       throw reviewError(
-        "AI_REVIEW_SOURCE_NOT_FOUND",
-        "A origem desta sugestão não está mais disponível.",
-        404,
+        "AI_SUGGESTION_PAYLOAD_OBSOLETE",
+        "O vínculo de origem da sugestão mudou. Atualize a fila antes de decidir.",
+        409,
       );
     }
+
     const sourceState = buildGeneralizedSourceState(source);
     if (sourceState === undefined) {
       throw reviewError(
