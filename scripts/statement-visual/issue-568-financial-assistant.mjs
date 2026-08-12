@@ -290,10 +290,21 @@ async function submitQuestion(cdp, question, options = {}) {
     cdp,
     `(() => {
       const input = document.querySelector('[data-assistant-input]');
-      const threadText = document.querySelector('[data-assistant-thread]')?.innerText || '';
+      const thread = document.querySelector('[data-assistant-thread]');
+      const threadText = thread?.innerText || '';
+      const response = thread?.querySelector('.assistant-message-system');
+      const responseRect = response?.getBoundingClientRect();
+      const responseStyle = response ? getComputedStyle(response) : null;
       return {
         questionVisible: threadText.includes(${JSON.stringify(question)}),
-        responseVisible: threadText.includes('SolverFin'),
+        responseVisible: Boolean(
+          responseRect &&
+            responseStyle &&
+            responseRect.width > 0 &&
+            responseRect.height > 0 &&
+            responseStyle.display !== 'none' &&
+            responseStyle.visibility !== 'hidden'
+        ),
         inputFocused: document.activeElement === input,
         status: document.querySelector('[data-assistant-status]')?.textContent || '',
         excerpt: threadText.slice(0, 600)
@@ -412,6 +423,12 @@ async function inspectAssistant(cdp, scenario) {
           style.visibility !== 'hidden'
         );
       };
+      const fitsViewport = (element) => {
+        if (!element) return false;
+        const rect = element.getBoundingClientRect();
+        const viewportWidth = document.documentElement.clientWidth;
+        return rect.left >= -1 && rect.right <= viewportWidth + 1;
+      };
       return {
         scenario: ${JSON.stringify(scenario)},
         routeReady: visible(root) && visible(layout),
@@ -420,8 +437,7 @@ async function inspectAssistant(cdp, scenario) {
         composerVisible: visible(composer),
         actionsVisible: visible(actions),
         statusVisible: visible(status),
-        bodyFitsViewport:
-          document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        bodyFitsViewport: fitsViewport(root) && fitsViewport(layout) && fitsViewport(composer),
         singleColumn: layout
           ? getComputedStyle(layout).gridTemplateColumns.trim().split(/\s+/).length === 1
           : false,
@@ -429,6 +445,7 @@ async function inspectAssistant(cdp, scenario) {
         viewport: {
           width: window.innerWidth,
           height: window.innerHeight,
+          clientWidth: document.documentElement.clientWidth,
           documentWidth: document.documentElement.scrollWidth
         }
       };
