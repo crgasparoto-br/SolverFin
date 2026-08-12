@@ -523,7 +523,7 @@ async function aggregateTransactions(
       where "organizationId" = $1 and "financialProfileId" = $2
         and upper("currency") = $3
         and "occurredOn" between $4::date and $5::date
-        and "status" = any($6::text[])
+        and "status" = any($6::"TransactionStatus"[])
         and "kind" in ('INCOME', 'EXPENSE')${categoryFilter}
       group by "kind"`,
     params,
