@@ -116,6 +116,8 @@ export async function sendFinancialAssistantMessage(input: {
         now,
       });
       const response = clarificationAnswer(resolution.intent, resolution.message);
+      const finalNow = input.runtime.now?.() ?? new Date();
+      await getFinancialAssistantConversationForContext(input.context, finalNow);
       return finalizeFinancialAssistantTurn({
         context: input.context,
         conversationId: input.conversationId,
@@ -126,7 +128,7 @@ export async function sendFinancialAssistantMessage(input: {
         pendingIntent: resolution.intent,
         pendingQuestion: effectiveQuestion,
         pendingFilters: resolution.filters,
-        now,
+        now: finalNow,
       });
     }
 
@@ -141,6 +143,8 @@ export async function sendFinancialAssistantMessage(input: {
         filters: {},
         now,
       });
+      const finalNow = input.runtime.now?.() ?? new Date();
+      await getFinancialAssistantConversationForContext(input.context, finalNow);
       return finalizeFinancialAssistantTurn({
         context: input.context,
         conversationId: input.conversationId,
@@ -148,7 +152,7 @@ export async function sendFinancialAssistantMessage(input: {
         conversationVersion: claim.turn.conversationVersion,
         status: "ANSWERED",
         safeResponse: response,
-        now,
+        now: finalNow,
       });
     }
 
@@ -165,9 +169,14 @@ export async function sendFinancialAssistantMessage(input: {
     });
 
     const resolveAuthoritativeConsent = async (): Promise<AiConsentState> => {
-      const latest = await getConversationById(input.context, input.conversationId, true);
+      const lifecycleNow = input.runtime.now?.() ?? new Date();
+      const latest = await getFinancialAssistantConversationForContext(
+        input.context,
+        lifecycleNow,
+      );
       if (
         !latest ||
+        latest.conversation.id !== input.conversationId ||
         latest.conversation.status !== "PROCESSING" ||
         latest.conversation.version !== claim.turn.conversationVersion
       ) {
@@ -209,6 +218,8 @@ export async function sendFinancialAssistantMessage(input: {
       ...(resolution.availability ? { availability: resolution.availability } : {}),
     });
 
+    const finalNow = input.runtime.now?.() ?? new Date();
+    await getFinancialAssistantConversationForContext(input.context, finalNow);
     return finalizeFinancialAssistantTurn({
       context: input.context,
       conversationId: input.conversationId,
@@ -217,11 +228,13 @@ export async function sendFinancialAssistantMessage(input: {
       status: "ANSWERED",
       ...(resolution.evidence ? { evidence: resolution.evidence } : {}),
       safeResponse: answer,
-      now: input.runtime.now?.() ?? new Date(),
+      now: finalNow,
     });
   } catch (error) {
     const safe = failureAnswer(tentativeIntent);
     try {
+      const finalNow = input.runtime.now?.() ?? new Date();
+      await getFinancialAssistantConversationForContext(input.context, finalNow);
       await finalizeFinancialAssistantTurn({
         context: input.context,
         conversationId: input.conversationId,
@@ -230,7 +243,7 @@ export async function sendFinancialAssistantMessage(input: {
         status: "FAILED",
         safeResponse: safe,
         failureCode: publicFailureCode(error),
-        now: input.runtime.now?.() ?? new Date(),
+        now: finalNow,
       });
     } catch {
       // Cancellation/profile/expiry may have won the race. Never overwrite the newer terminal state.
@@ -291,14 +304,14 @@ function resolveClarificationPrecedence(
 
 function isClarificationFragment(question: string): boolean {
   const normalized = normalizeForMatching(question);
-  const recognizedIntent = classifyFinancialAssistantIntent(question);
-  if (recognizedIntent !== "out_of_scope") return false;
-  return (
-    /\b20\d{2}-(?:0[1-9]|1[0-2])\b/.test(normalized) ||
-    /\b(?:hoje|este mes|mes atual|mes passado|ultimo mes|ultimos 30 dias)\b/.test(normalized) ||
-    /\b(?:brl|usd|eur|gbp)\b/.test(normalized) ||
-    normalized.length <= 40
-  );
+  if (
+    /^(?:20\d{2}-(?:0[1-9]|1[0-2])|hoje|este mes|mes atual|mes passado|ultimo mes|ultimos 30 dias|(?:em\s+)?(?:brl|usd|eur|gbp))$/.test(
+      normalized,
+    )
+  ) {
+    return true;
+  }
+  return classifyFinancialAssistantIntent(question) === "out_of_scope" && normalized.length <= 40;
 }
 
 function questionRequestsCategoryFilter(question: string): boolean {
