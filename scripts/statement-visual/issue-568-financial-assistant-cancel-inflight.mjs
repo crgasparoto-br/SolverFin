@@ -9,7 +9,9 @@ const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-if (!chromePath) throw new Error("CHROME_BIN is required for issue 568 in-flight cancellation validation.");
+if (!chromePath) {
+  throw new Error("CHROME_BIN is required for issue 568 in-flight cancellation validation.");
+}
 
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
