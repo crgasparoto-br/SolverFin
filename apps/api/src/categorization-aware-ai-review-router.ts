@@ -2,6 +2,10 @@ import { handleVersionedAiReviewQueueApiRequest } from "./ai-review-queue-router
 import { requireAuthenticatedRequest } from "./auth-service.js";
 import { withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import {
+  ensureFinancialInsightsForContext,
+  type FinancialInsightScanResult,
+} from "./financial-insight-scan.js";
 import { tryHandleGeneralizedDeterministicDecisionForContext } from "./generalized-deterministic-review-decision.js";
 import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
 import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
@@ -24,7 +28,9 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
     if (request.method === "GET" && request.pathname === REVIEW_QUEUE_PATH) {
       const context = await resolveContext(request);
       await scanPendingDeterministicReviewSuggestionsForContext(context);
-      return handleVersionedAiReviewQueueApiRequest(request);
+      const financialInsights = await ensureFinancialInsightsForContext(context);
+      const response = await handleVersionedAiReviewQueueApiRequest(request);
+      return attachFinancialInsightState(response, financialInsights);
     }
 
     const deterministicMatch =
@@ -91,6 +97,30 @@ export async function handleCategorizationAwareAiReviewQueueApiRequest(
       body: response.body,
     };
   }
+}
+
+function attachFinancialInsightState(
+  response: ApiResponse | undefined,
+  scan: FinancialInsightScanResult,
+): ApiResponse | undefined {
+  if (
+    response === undefined ||
+    response.statusCode < 200 ||
+    response.statusCode >= 300 ||
+    !isRecord(response.body)
+  ) {
+    return response;
+  }
+
+  return {
+    ...response,
+    body: {
+      ...response.body,
+      financialInsights: {
+        insufficientData: scan.insufficientData,
+      },
+    },
+  };
 }
 
 async function resolveContext(request: ApiRequest) {

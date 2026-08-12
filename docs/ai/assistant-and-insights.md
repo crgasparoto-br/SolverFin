@@ -1,14 +1,8 @@
 # Assistente financeiro e insights
 
-Este documento registra o primeiro contrato de dominio para o assistente financeiro e para os insights do SolverFin.
+Este documento registra os contratos do assistente financeiro e aponta para a implementação canônica dos insights verificáveis do SolverFin.
 
-A entrega original das issues #56 e #57 criou contratos puros e testaveis sem provider real, API HTTP ou UI final. A issue #562 adicionou posteriormente a infraestrutura substituivel de provider em `@solverfin/ai`, mas nao ativou automaticamente o assistente em API ou interface. Os contratos deste documento continuam sendo a fonte funcional dos fluxos futuros.
-
-## Escopo rastreado
-
-- #56: assistente financeiro de perguntas e respostas, incluindo disponibilidade de hoje.
-- #57: insights, anomalias e resumo mensal com evidencia numerica.
-- #562: infraestrutura segura e desativada por padrao para provider real substituivel.
+A entrega original das issues #56 e #57 criou contratos puros e testáveis. A issue #562 adicionou a infraestrutura substituível de provider em `@solverfin/ai`. A issue #567 tornou a geração de insights proativa, persistida e revisável na Inbox, sem transferir cálculos financeiros para o provider.
 
 ## Assistente financeiro
 
@@ -16,54 +10,34 @@ O assistente usa `answerFinancialQuestion` para classificar a pergunta e respond
 
 ### Disponibilidade de hoje
 
-Perguntas como "quanto posso gastar hoje?" sao tratadas como `daily_availability`.
+Perguntas como "quanto posso gastar hoje?" são tratadas como `daily_availability`.
 
-Nesse caso, o assistente exige um `AvailabilityCalculationResult` produzido por um servico estruturado de disponibilidade financeira. Se esse resultado nao for informado, o assistente retorna fallback controlado e nao estima valor livremente.
+O assistente exige um `AvailabilityCalculationResult` produzido por um serviço estruturado de disponibilidade financeira. Se esse resultado não for informado, retorna fallback controlado e não estima valor livremente.
 
-A resposta inclui:
-
-- valor disponivel calculado;
-- horizonte do calculo;
-- componentes considerados, como saldo, receitas, faturas, despesas conhecidas, recorrencias inferidas e reserva;
-- premissas usadas;
-- limitacoes e nivel de confianca.
+A resposta inclui valor disponível, horizonte, componentes considerados, premissas, limitações e confiança.
 
 ## Outras perguntas financeiras
 
-Para perguntas sobre categorias, saldo projetado, assinaturas ou resumo mensal, o assistente pode usar um provider via `runAiTask`, sempre com payload minimizado e mascarado.
+Para perguntas sobre categorias, saldo projetado, assinaturas ou resumo mensal, o assistente pode usar provider via `runAiTask`, sempre com payload minimizado e mascarado.
 
-`OpenAiProvider` e o primeiro adapter real disponivel, mas permanece inativo enquanto `AI_PROVIDER=disabled`. Um fluxo de produto so deve seleciona-lo depois de definir consentimento, proposito, lista positiva de campos, limites e fallback. Todo caminho que alcance o provider tambem deve fornecer um resolvedor autoritativo de consentimento; sem esse resolvedor, o consumidor bloqueia a operacao antes de qualquer chamada externa. Quando provider, consentimento atual ou dados suficientes nao existem, o retorno e um fallback claro com `safeLogCode` e limitacoes.
+`OpenAiProvider` permanece inativo enquanto `AI_PROVIDER=disabled`. Todo fluxo que alcance provider deve definir consentimento, propósito, campos permitidos, limites e fallback e revalidar consentimento imediatamente antes de cada tentativa. O contrato operacional está em `docs/ai/providers.md`; a decisão arquitetural está na ADR 0010.
 
-O contrato operacional do provider fica em `docs/ai/providers.md`; a decisao arquitetural fica na ADR 0010.
+## Insights financeiros verificáveis
 
-## Insights financeiros
+A fonte canônica é `docs/FINANCIAL_INSIGHTS.md`.
 
-`generateFinancialInsights` produz insights deterministico a partir de lancamentos autorizados do tenant e perfil financeiro.
+`generateFinancialInsights` calcula anomalias, recorrências, risco de saldo negativo, orçamento excedido e resumo do período de forma determinística. O serviço da API persiste resultados acionáveis como `AiSuggestion.kind = INSIGHT` com payload V2 versionado e idempotente, e a Inbox mostra evidências, limitações e navegação relacionada.
 
-Tipos iniciais:
+Cálculos usam somente dados do tenant/perfil ativo e nunca misturam moedas. Lançamentos não revisados ficam fora dos totais realizados. Ausência de amostra suficiente retorna `insufficient_data` no cálculo e não cria item artificial na fila.
 
-- aumento de gasto por categoria;
-- aumento de gasto por merchant;
-- possivel assinatura ou recorrencia por merchant repetido em meses diferentes;
-- risco de saldo negativo a partir de saldo projetado informado;
-- orcamento excedido;
-- resumo mensal;
-- dados insuficientes.
-
-Cada insight inclui evidencia numerica, periodo, fontes e confianca. Quando nao ha base suficiente, a funcao retorna `insufficient_data` em vez de inventar conclusao.
+Provider é opcional e serve apenas para narrativa. Falha, indisponibilidade ou texto que tente introduzir números preserva a explicação determinística e não altera evidências.
 
 ## Privacidade e limites
 
-- As funcoes filtram dados por `organizationId` e `financialProfileId`.
-- Fixtures e testes usam dados ficticios.
-- O assistente nao deve receber texto financeiro bruto quando a politica exigir minimizacao.
-- Todo consumidor capaz de chamar provider exige um resolvedor autoritativo e `runAiTask` revalida o consentimento imediatamente antes de cada tentativa.
-- A ausencia do resolvedor ou a revogacao posterior ao preparo bloqueia a chamada e produz zero invocacoes ao provider.
-- Logs de provider nao incluem prompt, campos, resposta bruta, credencial ou identificadores de tenant.
-- Respostas nao substituem aconselhamento financeiro, juridico ou fiscal.
-
-## Dependencias futuras
-
-A pergunta de disponibilidade depende do epic #72 e suas subissues para fornecer o calculo estruturado usado por dashboard, assistente e experiencia de revisao.
-
-A UI final do assistente e dos insights deve reutilizar estes contratos para evitar respostas divergentes entre telas e provider de IA. A ativacao de um fluxo real deve permanecer em issue propria, com criterios de consentimento, revisao, custo, observabilidade e fallback.
+- Os cálculos filtram por `organizationId`, `financialProfileId` e moeda.
+- Fixtures e testes usam dados fictícios.
+- Texto financeiro bruto não é necessário para gerar insight.
+- Logs de provider não incluem prompt, campos, resposta bruta, credencial ou identificadores de tenant.
+- A projeção pública omite fingerprints internos e metadados do provider.
+- Aprovar/rejeitar insight apenas audita a decisão e não aplica efeito financeiro.
+- Respostas não substituem aconselhamento financeiro, jurídico ou fiscal.

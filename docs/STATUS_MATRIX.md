@@ -24,6 +24,7 @@ Esta matriz registra o estado observado no candidato atual para reduzir ambiguid
 - `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`
 - `docs/AI_REVIEW_QUEUE.md`
 - `docs/AI_SUGGESTION_PAYLOADS.md`
+- `docs/FINANCIAL_INSIGHTS.md`
 - `docs/ai/category-learning.md`
 - `docs/ai/extraction-schema.md`
 - `docs/ai/providers.md`
@@ -36,7 +37,7 @@ Esta matriz registra o estado observado no candidato atual para reduzir ambiguid
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - `docs/API_REPORTS.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562, a PR #572 para a issue #563, a entrega da issue #564, a entrega da issue #565 e a entrega da issue #566.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562, a PR #572 para a issue #563, a entrega da issue #564, a entrega da issue #565, a entrega da issue #566 e o candidato da issue #567.
 
 ## Decisao atual sobre pagar/receber
 
@@ -161,15 +162,15 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 ### IA / sugestoes revisaveis
 
-- Dominio: Feito para a uniao discriminada e versionada de `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`.
-- Schema/migration: Feito com payload JSON canonico, validacao estrita no dominio e PostgreSQL, fingerprint, migracao conservadora de variantes legadas compativeis e persistencia de aprendizado de categoria.
-- Provider real e executor seguro: Feito para infraestrutura substituivel em `@solverfin/ai`, com `OpenAiProvider`, configuracao ambiental, provider desativado por padrao, consentimento revalidado, timeout, retry tipado, health check local e logs redigidos.
-- Repository/API: Feito para leitura tipada, projeção escopada/redigida, decisão transacional comum, `expectedFingerprint`, edição permitida por tipo, efeitos tipados, idempotência, isolamento por organização/perfil, auditoria correlacionada e detector determinístico generalizado para qualquer extração estruturada.
-- UI: Feito para fila unificada na Inbox com filtros `kind/status/confidence/profileId`, detalhe tipado, edição de `transaction_extraction`/`categorization`, aprovação/rejeição, baixa confiança, conflito de versão, carregamento, vazio, erro e retry.
-- Fluxos de produto com provider real: Feito para extracao da Inbox de mensagens bancarias e para categorizacao de qualquer origem que produza `transaction_extraction` estruturada. Deduplicação/conciliação também são independentes da origem após a estruturação. O assistente conversacional permanece fora deste recorte. `insight` já possui contrato de revisão/acknowledgement; geração proativa continua responsabilidade da issue #567.
-- Testes: unitarios dos schemas, normalizadores, precedencia e consumidor da Inbox; integração PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia, aprendizado e retry; a issue #565 acrescenta integração de categorização/versionamento/insight e a #566 acrescenta origens CSV/OFX/mensagem/IA, alvo obsoleto, transferência rígida e rollback.
-- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/BANK_MESSAGE_INBOX.md`, `docs/IMPORTS.md`, `docs/ai/category-learning.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
-- Nota: `/api/ai-review-queue` lista sugestoes, gera candidaturas determinísticas vigentes para o perfil ativo, retorna detalhe tipado e permite aprovar, editar ou rejeitar. A mesma decisão repetida converge para o recurso resolvido quando idempotente; versão obsoleta, origem descartada ou alvo inválido falha antes de qualquer efeito parcial. `explanation` continua apenas apresentacional.
+- Dominio: Feito para a uniao discriminada e versionada de `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`, incluindo `insight` V2 com evidências numéricas, limitações e navegação.
+- Schema/migration: Feito com payload JSON canonico, validacao estrita no dominio e PostgreSQL, fingerprint, migracao conservadora de variantes legadas compativeis, persistencia de aprendizado de categoria e validação específica do payload `insight` V2.
+- Provider real e executor seguro: Feito para infraestrutura substituivel em `@solverfin/ai`, com `OpenAiProvider`, configuracao ambiental, provider desativado por padrao, consentimento revalidado, timeout, retry tipado, health check local e logs redigidos. Para insights, provider é opcional e restrito à narrativa; os números são calculados antes da chamada externa.
+- Repository/API: Feito para leitura tipada, projeção escopada/redigida, decisão transacional comum, `expectedFingerprint`, edição permitida por tipo, efeitos tipados, idempotência, isolamento por organização/perfil/moeda, auditoria correlacionada, detector determinístico generalizado para extrações e geração determinística/idempotente de insights com `financial-insights-v2` e fingerprint do snapshot.
+- UI: Feito para fila unificada na Inbox com filtros `kind/status/confidence/profileId`, detalhe tipado, edição de `transaction_extraction`/`categorization`, aprovação/rejeição, baixa confiança, conflito de versão, carregamento, vazio, erro e retry; insights V2 exibem evidências verificáveis, limitações e navegação para a área financeira relacionada.
+- Fluxos de produto com provider real: Feito para extracao da Inbox de mensagens bancarias e para categorizacao de qualquer origem que produza `transaction_extraction` estruturada. Deduplicação/conciliação também são independentes da origem após a estruturação. O assistente conversacional permanece fora deste recorte. `insight` possui geração proativa determinística, persistida e revisável; provider opcional permanece apenas narrativo.
+- Testes: unitarios dos schemas, normalizadores, precedencia e consumidor da Inbox; integração PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia, aprendizado e retry; a issue #565 acrescenta integração de categorização/versionamento/insight, a #566 acrescenta origens CSV/OFX/mensagem/IA, alvo obsoleto, transferência rígida e rollback e a #567 cobre limiares numéricos, falsos positivos, multimoeda, pendências, payload V2, persistência idempotente, provider indisponível e renderização web.
+- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/FINANCIAL_INSIGHTS.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/BANK_MESSAGE_INBOX.md`, `docs/IMPORTS.md`, `docs/ai/assistant-and-insights.md`, `docs/ai/category-learning.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
+- Nota: `/api/ai-review-queue` lista sugestoes, atualiza candidaturas determinísticas e insights financeiros vigentes para o perfil ativo, retorna detalhe tipado e permite aprovar, editar ou rejeitar conforme o tipo. A mesma decisão repetida converge para o recurso resolvido quando idempotente; versão obsoleta, origem descartada ou alvo inválido falha antes de qualquer efeito parcial. `explanation` continua apenas apresentacional.
 
 ### Perfis financeiros / tenant operacional
 

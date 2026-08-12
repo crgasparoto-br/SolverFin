@@ -155,12 +155,71 @@ export interface InsightSuggestionPayloadV1 extends AiSuggestionPayloadBase<"ins
   relatedEntityIds?: readonly string[];
 }
 
+export type VerifiableFinancialInsightKind =
+  | "category_spending_increase"
+  | "merchant_spending_increase"
+  | "probable_subscription"
+  | "negative_balance_risk"
+  | "budget_exceeded"
+  | "monthly_summary";
+
+export interface InsightNumericEvidenceV2 {
+  label: string;
+  value: number;
+  unit: "minor_currency" | "count" | "percentage";
+  currency?: string;
+}
+
+export interface InsightComparisonV2 {
+  kind: "previous_period" | "planned_budget";
+  currentValue: number;
+  previousValue: number;
+  unit: "minor_currency" | "count" | "percentage";
+  percentChange?: number;
+  previousPeriodStartOn?: string;
+  previousPeriodEndOn?: string;
+}
+
+export interface InsightFiltersV2 {
+  currency: string;
+  categoryId?: string;
+  merchantKey?: string;
+}
+
+export interface InsightNavigationV2 {
+  view: "transactions" | "budgets" | "cash_flow";
+  categoryId?: string;
+  merchantKey?: string;
+}
+
+export interface InsightSuggestionPayloadV2 extends AiSuggestionPayloadBase<"insight"> {
+  payloadVersion: 2;
+  insightType: "anomaly" | "trend" | "summary" | "opportunity";
+  insightKind: VerifiableFinancialInsightKind;
+  insightKey: string;
+  title: string;
+  summary: string;
+  periodStartOn: string;
+  periodEndOn: string;
+  currency: string;
+  filters: InsightFiltersV2;
+  evidence: readonly InsightNumericEvidenceV2[];
+  comparison?: InsightComparisonV2;
+  limitations: readonly string[];
+  calculationVersion: string;
+  dataFingerprint: string;
+  relatedEntityIds?: readonly string[];
+  navigation?: InsightNavigationV2;
+}
+
+export type InsightSuggestionPayload = InsightSuggestionPayloadV1 | InsightSuggestionPayloadV2;
+
 export type AiSuggestionPayload =
   | TransactionExtractionSuggestionPayload
   | CategorizationSuggestionPayloadV1
   | DeduplicationSuggestionPayloadV1
   | ReconciliationSuggestionPayloadV1
-  | InsightSuggestionPayloadV1;
+  | InsightSuggestionPayload;
 
 export interface LegacyTransactionExtractionPayloadV1 {
   payloadVersion: 1;
