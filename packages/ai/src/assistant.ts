@@ -104,7 +104,7 @@ export interface FinancialAssistantInput {
 const PROVIDER_QUANTITATIVE_CLAIM = new RegExp(
   [
     "\\d",
-    "\\b(?:um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez)\\b",
+    "\\b(?:dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez)\\b",
     "\\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\\b",
     "percent(?:ual|age)?",
     "por\\s+cento",

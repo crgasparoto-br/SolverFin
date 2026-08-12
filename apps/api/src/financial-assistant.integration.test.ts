@@ -227,7 +227,6 @@ async function expiryAndTenantIsolationAreEnforced(): Promise<void> {
   assert.equal(terminal?.conversation.status, "EXPIRED");
 }
 
-
 async function currencyChangeExpiresIncompatibleContext(): Promise<void> {
   await cleanup();
   const view = await startFinancialAssistantConversation(context, new Date("2026-08-11T14:00:00Z"));

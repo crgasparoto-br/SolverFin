@@ -94,20 +94,22 @@ async function sendMessageHandler(
   const idempotencyKey =
     typeof body.idempotencyKey === "string"
       ? body.idempotencyKey
-      : request.headers["idempotency-key"] ?? "";
+      : (request.headers["idempotency-key"] ?? "");
   const correlationId = resolveCorrelationId(request.headers);
   return json(200, {
-    conversation: presentConversation(await sendFinancialAssistantMessage({
-      context,
-      conversationId: requireParam(match, "conversationId"),
-      question,
-      idempotencyKey,
-      runtime: {
-        selectProvider: () => createAiProviderFromEnvironment(process.env),
-        resolveConsent: buildAuthoritativeFinancialAssistantConsentResolver(request, context),
-        correlationId,
-      },
-    })),
+    conversation: presentConversation(
+      await sendFinancialAssistantMessage({
+        context,
+        conversationId: requireParam(match, "conversationId"),
+        question,
+        idempotencyKey,
+        runtime: {
+          selectProvider: () => createAiProviderFromEnvironment(process.env),
+          resolveConsent: buildAuthoritativeFinancialAssistantConsentResolver(request, context),
+          correlationId,
+        },
+      }),
+    ),
   });
 }
 
@@ -218,9 +220,7 @@ function buildAuthHeaders(headers: Readonly<Record<string, string | undefined>>)
   };
 }
 
-export function presentFinancialAssistantConversation(
-  view: FinancialAssistantConversationView,
-) {
+export function presentFinancialAssistantConversation(view: FinancialAssistantConversationView) {
   return presentConversation(view);
 }
 
@@ -261,7 +261,10 @@ function json(statusCode: number, body: unknown): ApiResponse {
 }
 
 function mapDomainError(error: unknown): unknown {
-  if (error instanceof FinancialAssistantRepositoryError || error instanceof FinancialAssistantServiceError) {
+  if (
+    error instanceof FinancialAssistantRepositoryError ||
+    error instanceof FinancialAssistantServiceError
+  ) {
     return { code: error.code, statusCode: error.statusCode, message: error.message };
   }
   if (error instanceof TenantError) {

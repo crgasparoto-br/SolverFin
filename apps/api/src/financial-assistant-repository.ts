@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 
-import type { FinancialAssistantAnswer, FinancialAssistantEvidence, FinancialAssistantIntent } from "@solverfin/ai";
+import type {
+  FinancialAssistantAnswer,
+  FinancialAssistantEvidence,
+  FinancialAssistantIntent,
+} from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import { query, withTransaction, type QueryExecutor } from "./db.js";
@@ -75,7 +79,13 @@ export class FinancialAssistantRepositoryError extends Error {
   }
 }
 
-const OPEN_STATUSES = ["ACTIVE", "PROCESSING", "AWAITING_CLARIFICATION", "ANSWERED", "FAILED"] as const;
+const OPEN_STATUSES = [
+  "ACTIVE",
+  "PROCESSING",
+  "AWAITING_CLARIFICATION",
+  "ANSWERED",
+  "FAILED",
+] as const;
 const PROCESSING_LEASE_MS = 2 * 60 * 1000;
 
 export function resolveFinancialAssistantTtlMinutes(env: NodeJS.ProcessEnv = process.env): number {
@@ -161,8 +171,16 @@ export async function claimFinancialAssistantTurn(input: {
   currency?: string;
   now?: Date;
 }): Promise<
-  | { kind: "claimed"; conversation: FinancialAssistantConversationRecord; turn: FinancialAssistantTurnRecord }
-  | { kind: "existing"; conversation: FinancialAssistantConversationRecord; turn: FinancialAssistantTurnRecord }
+  | {
+      kind: "claimed";
+      conversation: FinancialAssistantConversationRecord;
+      turn: FinancialAssistantTurnRecord;
+    }
+  | {
+      kind: "existing";
+      conversation: FinancialAssistantConversationRecord;
+      turn: FinancialAssistantTurnRecord;
+    }
 > {
   const now = input.now ?? new Date();
   return withTransaction(async (executeQuery) => {
@@ -194,7 +212,11 @@ export async function claimFinancialAssistantTurn(input: {
           409,
         );
       }
-      return { kind: "existing", conversation: mapConversation(conversation), turn: mapTurn(existing) };
+      return {
+        kind: "existing",
+        conversation: mapConversation(conversation),
+        turn: mapTurn(existing),
+      };
     }
     if (conversation.status === "PROCESSING") {
       throw new FinancialAssistantRepositoryError(
@@ -222,7 +244,12 @@ export async function claimFinancialAssistantTurn(input: {
       `select coalesce(max("sequence"), 0)::int + 1 as "nextSequence"
          from "FinancialAssistantTurn"
         where "conversationId" = $1 and "organizationId" = $2 and "financialProfileId" = $3 and "userId" = $4`,
-      [conversation.id, input.context.organizationId, input.context.financialProfileId, input.context.userId],
+      [
+        conversation.id,
+        input.context.organizationId,
+        input.context.financialProfileId,
+        input.context.userId,
+      ],
     );
     const nextVersion = conversation.version + 1;
     const nextSequence = Number(sequenceRow?.nextSequence ?? 1);
@@ -287,10 +314,18 @@ export async function bindFinancialAssistantTurnResolution(input: {
   now?: Date;
 }): Promise<void> {
   const now = input.now ?? new Date();
-  await withTransaction(async (executeQuery) => {
-    const conversation = await requireConversation(executeQuery, input.context, input.conversationId, true);
+  const contextCurrencyChanged = await withTransaction(async (executeQuery) => {
+    const conversation = await requireConversation(
+      executeQuery,
+      input.context,
+      input.conversationId,
+      true,
+    );
     await requireTurn(executeQuery, input.context, input.conversationId, input.turnId, true);
-    if (conversation.version !== input.conversationVersion || conversation.status !== "PROCESSING") {
+    if (
+      conversation.version !== input.conversationVersion ||
+      conversation.status !== "PROCESSING"
+    ) {
       throw new FinancialAssistantRepositoryError(
         "ASSISTANT_CONTEXT_CHANGED",
         "O contexto mudou enquanto a pergunta era preparada. Recarregue a conversa antes de continuar.",
@@ -299,11 +334,7 @@ export async function bindFinancialAssistantTurnResolution(input: {
     }
     if (conversation.currency && input.currency && conversation.currency !== input.currency) {
       await markConversationExpired(executeQuery, input.context, conversation.id, now);
-      throw new FinancialAssistantRepositoryError(
-        "ASSISTANT_CONTEXT_CURRENCY_CHANGED",
-        "A moeda mudou. O contexto anterior foi encerrado para evitar misturar valores.",
-        409,
-      );
+      return true;
     }
     await executeQuery(
       `update "FinancialAssistantTurn"
@@ -336,9 +367,16 @@ export async function bindFinancialAssistantTurnResolution(input: {
         now,
       ],
     );
+    return false;
   });
+  if (contextCurrencyChanged) {
+    throw new FinancialAssistantRepositoryError(
+      "ASSISTANT_CONTEXT_CURRENCY_CHANGED",
+      "A moeda mudou. O contexto anterior foi encerrado para evitar misturar valores.",
+      409,
+    );
+  }
 }
-
 export async function finalizeFinancialAssistantTurn(input: {
   context: TenantContext;
   conversationId: string;
@@ -361,7 +399,13 @@ export async function finalizeFinancialAssistantTurn(input: {
       input.conversationId,
       true,
     );
-    const turn = await requireTurn(executeQuery, input.context, input.conversationId, input.turnId, true);
+    const turn = await requireTurn(
+      executeQuery,
+      input.context,
+      input.conversationId,
+      input.turnId,
+      true,
+    );
     const stale =
       conversation.version !== input.conversationVersion ||
       conversation.status === "CANCELLED" ||
@@ -372,7 +416,15 @@ export async function finalizeFinancialAssistantTurn(input: {
         `update "FinancialAssistantTurn"
             set "status" = $6, "failureCode" = 'ASSISTANT_CONTEXT_CHANGED', "answeredAt" = $7
           where "id" = $1 and "conversationId" = $2 and "organizationId" = $3 and "financialProfileId" = $4 and "userId" = $5`,
-        [turn.id, conversation.id, input.context.organizationId, input.context.financialProfileId, input.context.userId, terminal, now],
+        [
+          turn.id,
+          conversation.id,
+          input.context.organizationId,
+          input.context.financialProfileId,
+          input.context.userId,
+          terminal,
+          now,
+        ],
       );
       return;
     }
@@ -468,7 +520,12 @@ export async function getConversationById(
   includeTerminal = false,
 ): Promise<FinancialAssistantConversationView | undefined> {
   const statusClause = includeTerminal ? "" : ` and "status" = any($5::text[])`;
-  const params: unknown[] = [context.organizationId, context.financialProfileId, context.userId, conversationId];
+  const params: unknown[] = [
+    context.organizationId,
+    context.financialProfileId,
+    context.userId,
+    conversationId,
+  ];
   if (!includeTerminal) params.push([...OPEN_STATUSES]);
   const rows = await query<FinancialAssistantConversationRecord>(
     `select * from "FinancialAssistantConversation"
@@ -478,7 +535,10 @@ export async function getConversationById(
   );
   const conversation = rows[0];
   if (!conversation) return undefined;
-  return { conversation: mapConversation(conversation), turns: await listTurns(context, conversationId) };
+  return {
+    conversation: mapConversation(conversation),
+    turns: await listTurns(context, conversationId),
+  };
 }
 
 async function listTurns(
@@ -525,8 +585,14 @@ async function recoverInterruptedConversation(context: TenantContext, now: Date)
   });
 }
 
-async function expireConversation(context: TenantContext, conversationId: string, now: Date): Promise<void> {
-  await withTransaction((executeQuery) => markConversationExpired(executeQuery, context, conversationId, now));
+async function expireConversation(
+  context: TenantContext,
+  conversationId: string,
+  now: Date,
+): Promise<void> {
+  await withTransaction((executeQuery) =>
+    markConversationExpired(executeQuery, context, conversationId, now),
+  );
 }
 
 async function markConversationExpired(
@@ -578,7 +644,10 @@ async function expireOtherProfileContexts(
   );
 }
 
-async function lockAssistantScope(executeQuery: QueryExecutor, context: TenantContext): Promise<void> {
+async function lockAssistantScope(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+): Promise<void> {
   await executeQuery(`select pg_advisory_xact_lock(hashtext($1), hashtext($2))`, [
     `${context.organizationId}:${context.userId}`,
     "financial-assistant-context",
@@ -653,7 +722,13 @@ async function findTurnByIdempotency(
       where "conversationId" = $1 and "organizationId" = $2 and "financialProfileId" = $3 and "userId" = $4
         and "idempotencyKey" = $5
       limit 1`,
-    [conversationId, context.organizationId, context.financialProfileId, context.userId, idempotencyKey],
+    [
+      conversationId,
+      context.organizationId,
+      context.financialProfileId,
+      context.userId,
+      idempotencyKey,
+    ],
   );
   return rows[0] ? mapTurn(rows[0]) : undefined;
 }
@@ -675,7 +750,9 @@ function mapTurnStatusToConversationStatus(
   }
 }
 
-function mapConversation(row: FinancialAssistantConversationRecord): FinancialAssistantConversationRecord {
+function mapConversation(
+  row: FinancialAssistantConversationRecord,
+): FinancialAssistantConversationRecord {
   return {
     ...row,
     version: Number(row.version),

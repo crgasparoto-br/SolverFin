@@ -156,7 +156,7 @@ function renderAssistantResponse(turn: AssistantTurn): string {
   const answer = turn.response;
   const metadata = [
     answer.period ? `Período: ${answer.period.startOn} a ${answer.period.endOn}` : undefined,
-    ...((answer.filters ?? []).map((filter) => filter)),
+    ...(answer.filters ?? []).map((filter) => filter),
     `Confiança: ${confidenceLabel(answer.confidence)}`,
   ].filter((item): item is string => item !== undefined);
 

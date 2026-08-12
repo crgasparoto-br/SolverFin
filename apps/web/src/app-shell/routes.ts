@@ -111,7 +111,8 @@ export const solverFinShellRoutes = [
     id: "assistant",
     path: "/assistente",
     label: "Assistente financeiro",
-    description: "Faça consultas somente leitura com cálculos verificáveis do perfil financeiro ativo.",
+    description:
+      "Faça consultas somente leitura com cálculos verificáveis do perfil financeiro ativo.",
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,

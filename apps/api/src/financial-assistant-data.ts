@@ -76,8 +76,8 @@ export type FinancialAssistantDataResolution =
       kind: "evidence";
       intent: Exclude<FinancialAssistantIntent, "out_of_scope">;
       filters: FinancialAssistantResolvedFilters;
-      evidence?: FinancialAssistantEvidence;
-      availability?: AvailabilityCalculationResult;
+      evidence?: FinancialAssistantEvidence | undefined;
+      availability?: AvailabilityCalculationResult | undefined;
     };
 
 const REALIZED_STATUSES = ["POSTED", "RECONCILED"] as const;
@@ -246,8 +246,7 @@ async function buildEvidence(
       assumptions,
       limitations,
       sources,
-      confidence:
-        realized.income.count + realized.expense.count > 0 ? "high" : ("low" as const),
+      confidence: realized.income.count + realized.expense.count > 0 ? "high" : ("low" as const),
     };
   }
 
@@ -633,7 +632,10 @@ async function aggregateBalance(
   realizedBalanceDeltaMinor: number;
   plannedBalanceDeltaMinor: number;
 }> {
-  const [account] = await query<{ amountMinor: number | string | null; count: number | string | null }>(
+  const [account] = await query<{
+    amountMinor: number | string | null;
+    count: number | string | null;
+  }>(
     `select coalesce(sum("openingBalanceMinor"), 0)::bigint as "amountMinor", count(*)::int as "count"
        from "Account"
       where "organizationId" = $1 and "financialProfileId" = $2
