@@ -28,7 +28,8 @@ Valores financeiros sao calculados no backend antes de qualquer chamada externa.
 
 - realizados: `Transaction` com estado `POSTED` ou `RECONCILED`;
 - saldo/projecao de caixa: contas ativas e somente transacoes vinculadas a conta (`accountId is not null`), evitando contabilizar compra de cartao como saida de caixa antes do pagamento;
-- compromissos futuros: lancamentos planejados, parcelas planejadas e faturas em aberto no horizonte;
+- o saldo realizado usa `min(periodEndOn, hoje)` como cutoff: um periodo historico nunca incorpora lancamentos realizados depois do fim apresentado; para periodo atual ou futuro, realizados param em hoje;
+- compromissos futuros: lancamentos planejados, parcelas planejadas e faturas em aberto no horizonte; lancamentos `PLANNED` seguem `plannedOn`, sem usar `occurredOn` como fonte temporal substituta;
 - faturas com `paymentTransactionId` nao sao descontadas de novo na disponibilidade;
 - assinaturas provaveis: detector deterministico `financial-insights-v2`, com recorrencias registradas exibidas separadamente;
 - moedas nunca sao convertidas automaticamente.
@@ -77,9 +78,9 @@ Cada mensagem exige uma chave de idempotencia. A combinacao conversa/chave e uni
 - repetir a mesma pergunta com a mesma chave reutiliza o turno existente e nao chama o provider de novo;
 - reutilizar a chave para outra pergunta retorna conflito;
 - uma mensagem concorrente diferente enquanto a conversa esta `PROCESSING` retorna conflito;
-- locks transacionais e versao impedem resposta tardia de sobrescrever cancelamento, expiracao ou troca de contexto.
+- locks transacionais e versao impedem resposta tardia de sobrescrever cancelamento, expiracao, recuperacao de processo interrompido ou troca de contexto.
 
-O estado `PROCESSING` possui lease de dois minutos. Depois de restart/processo interrompido, a leitura seguinte recupera o turno como `FAILED`, preservando historico e permitindo nova tentativa com nova chave.
+O estado `PROCESSING` possui lease de dois minutos. Depois de restart/processo interrompido, o proprio retry da mensagem recupera atomicamente um turno stale como `FAILED` com `ASSISTANT_PROCESS_INTERRUPTED`; a mesma chave retorna esse mesmo turno terminal sem nova chamada ao provider e sem depender de `GET`, health-check ou listagem auxiliar. Uma nova chave pode iniciar outra tentativa depois da recuperacao. A versao do turno recuperado e avancada para impedir que uma finalizacao tardia do processo antigo sobrescreva o estado recuperado.
 
 ## Cancelamento, limpeza e troca de contexto
 
@@ -126,7 +127,7 @@ A pagina `/assistente` usa o shell autenticado e o contrato SSR oficial. Ela pos
 ## Testes esperados
 
 - `@solverfin/ai`: resposta deterministica, falta de evidencia, ausencia de dados, consentimento, revogacao tardia, provider qualitativo, rejeicao quantitativa e fallback de falha;
-- API/PostgreSQL: idempotencia, conflito de chave, concorrencia, cancelamento versus resposta tardia, recovery de `PROCESSING`, TTL, isolamento e troca de perfil;
+- API/PostgreSQL: idempotencia, conflito de chave, concorrencia, cancelamento versus resposta tardia, recovery de `PROCESSING` pelo retry direto, fencing da finalizacao tardia, TTL, isolamento, troca de perfil e consistencia temporal de periodos historico/atual/futuro;
 - API unitario: categoria solicitada nao resolvida nao pode virar agregado geral e pergunta acima do limite nao pode ser truncada silenciosamente;
 - Web: estados normal/erro/vazio, fronteira publica, elementos acessiveis e regras responsivas;
 - validacao visual dedicada: `scripts/statement-visual/issue-568-financial-assistant.mjs` cobre teclado, foco, mobile, erro e acoes; `scripts/statement-visual/issue-568-financial-assistant-zoom-200-reflow.mjs` cobre o reflow equivalente a zoom de 200% e reprova clipping horizontal contra o viewport de layout;

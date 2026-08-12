@@ -170,14 +170,17 @@ async function buildEvidence(
   const plannedInstallments = await aggregatePlannedInstallments(context, filters);
   const invoices = await aggregateInvoices(context, filters);
   const unmodeledInvoices = await aggregateInvoicesWithoutPaymentTransaction(context, filters);
+  const currentOn = dateOnly(now);
+  const realizedCutoffOn = minDateOnly(filters.periodEndOn, currentOn);
   const balance = await aggregateBalance(
     context,
     filters.currency,
     filters.periodEndOn,
-    dateOnly(now),
+    realizedCutoffOn,
   );
   const assumptions = [
     "Totais realizados consideram somente lancamentos POSTED ou RECONCILED.",
+    `O saldo realizado usa como corte ${realizedCutoffOn}, respeitando o fim do periodo solicitado e nunca incluindo eventos posteriores ao horizonte apresentado.`,
     "Faturas abertas sem transacao de pagamento vinculada entram na projecao sem duplicar pagamentos ja materializados.",
     "Moedas sao analisadas separadamente e nao existe conversao automatica.",
   ];
@@ -193,7 +196,10 @@ async function buildEvidence(
       metrics: [
         {
           key: "current_balance",
-          label: "Saldo calculado ate hoje",
+          label:
+            filters.periodEndOn < currentOn
+              ? "Saldo calculado no fim do periodo"
+              : "Saldo calculado ate hoje",
           amountMinor: balance.openingBalanceMinor + balance.realizedBalanceDeltaMinor,
         },
         {
@@ -625,7 +631,7 @@ async function aggregateBalance(
   context: TenantContext,
   currency: string,
   projectionEndOn: string,
-  currentOn: string,
+  realizedCutoffOn: string,
 ): Promise<{
   accountCount: number;
   openingBalanceMinor: number;
@@ -656,7 +662,7 @@ async function aggregateBalance(
        from "Transaction"
       where "organizationId" = $1 and "financialProfileId" = $2 and upper("currency") = $3
         and "status" <> 'VOIDED' and "accountId" is not null`,
-    [context.organizationId, context.financialProfileId, currency, projectionEndOn, currentOn],
+    [context.organizationId, context.financialProfileId, currency, projectionEndOn, realizedCutoffOn],
   );
   return {
     accountCount: toNumber(account?.count),
@@ -783,6 +789,10 @@ function addMonths(date: Date, amount: number): Date {
 function shiftMonths(dateOnlyValue: string, amount: number): string {
   const [year, month] = dateOnlyValue.split("-").map(Number);
   return dateOnly(new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1 + amount, 1)));
+}
+
+function minDateOnly(left: string, right: string): string {
+  return left <= right ? left : right;
 }
 
 function dateOnly(value: Date): string {

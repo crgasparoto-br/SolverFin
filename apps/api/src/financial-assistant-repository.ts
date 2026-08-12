@@ -184,7 +184,7 @@ export async function claimFinancialAssistantTurn(input: {
 > {
   const now = input.now ?? new Date();
   return withTransaction(async (executeQuery) => {
-    const conversation = await requireConversation(
+    let conversation = await requireConversation(
       executeQuery,
       input.context,
       input.conversationId,
@@ -198,20 +198,44 @@ export async function claimFinancialAssistantTurn(input: {
         409,
       );
     }
-    const existing = await findTurnByIdempotency(
+    let existing = await findTurnByIdempotency(
       executeQuery,
       input.context,
       conversation.id,
       input.idempotencyKey,
     );
-    if (existing) {
-      if (existing.normalizedQuestion !== input.normalizedQuestion) {
-        throw new FinancialAssistantRepositoryError(
-          "ASSISTANT_IDEMPOTENCY_CONFLICT",
-          "A mesma chave de idempotencia nao pode ser reutilizada para outra pergunta.",
-          409,
+    if (existing && existing.normalizedQuestion !== input.normalizedQuestion) {
+      throw new FinancialAssistantRepositoryError(
+        "ASSISTANT_IDEMPOTENCY_CONFLICT",
+        "A mesma chave de idempotencia nao pode ser reutilizada para outra pergunta.",
+        409,
+      );
+    }
+
+    if (isInterruptedProcessing(conversation, now)) {
+      conversation = await failInterruptedProcessing(
+        executeQuery,
+        input.context,
+        conversation,
+        now,
+      );
+      if (existing) {
+        existing = await findTurnByIdempotency(
+          executeQuery,
+          input.context,
+          conversation.id,
+          input.idempotencyKey,
         );
+        if (!existing) throw new Error("Recovered idempotent turn was not found.");
+        return {
+          kind: "existing",
+          conversation,
+          turn: existing,
+        };
       }
+    }
+
+    if (existing) {
       return {
         kind: "existing",
         conversation: mapConversation(conversation),
@@ -406,6 +430,9 @@ export async function finalizeFinancialAssistantTurn(input: {
       input.turnId,
       true,
     );
+    if (turn.conversationVersion !== input.conversationVersion) {
+      return;
+    }
     const stale =
       conversation.version !== input.conversationVersion ||
       conversation.status === "CANCELLED" ||
@@ -562,27 +589,61 @@ async function recoverInterruptedConversation(context: TenantContext, now: Date)
       await markConversationExpired(executeQuery, context, conversation.id, now);
       return;
     }
-    if (
-      conversation.status !== "PROCESSING" ||
-      now.getTime() - conversation.updatedAt.getTime() < PROCESSING_LEASE_MS
-    ) {
-      return;
-    }
-    await executeQuery(
-      `update "FinancialAssistantTurn"
-          set "status" = 'FAILED', "failureCode" = 'ASSISTANT_PROCESS_INTERRUPTED', "answeredAt" = $5
-        where "conversationId" = $1 and "organizationId" = $2 and "financialProfileId" = $3 and "userId" = $4
-          and "status" = 'PROCESSING'`,
-      [conversation.id, context.organizationId, context.financialProfileId, context.userId, now],
-    );
-    await executeQuery(
-      `update "FinancialAssistantConversation"
-          set "status" = 'FAILED', "pendingIntent" = null, "pendingQuestion" = null,
-              "pendingFilters" = '{}'::jsonb, "updatedAt" = $5
-        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3 and "userId" = $4`,
-      [conversation.id, context.organizationId, context.financialProfileId, context.userId, now],
-    );
+    if (!isInterruptedProcessing(conversation, now)) return;
+    await failInterruptedProcessing(executeQuery, context, conversation, now);
   });
+}
+
+function isInterruptedProcessing(
+  conversation: FinancialAssistantConversationRecord,
+  now: Date,
+): boolean {
+  return (
+    conversation.status === "PROCESSING" &&
+    now.getTime() - conversation.updatedAt.getTime() >= PROCESSING_LEASE_MS
+  );
+}
+
+async function failInterruptedProcessing(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  conversation: FinancialAssistantConversationRecord,
+  now: Date,
+): Promise<FinancialAssistantConversationRecord> {
+  const nextVersion = conversation.version + 1;
+  await executeQuery(
+    `update "FinancialAssistantTurn"
+        set "status" = 'FAILED', "conversationVersion" = $5,
+            "failureCode" = 'ASSISTANT_PROCESS_INTERRUPTED', "answeredAt" = $6
+      where "conversationId" = $1 and "organizationId" = $2 and "financialProfileId" = $3 and "userId" = $4
+        and "status" = 'PROCESSING'`,
+    [
+      conversation.id,
+      context.organizationId,
+      context.financialProfileId,
+      context.userId,
+      nextVersion,
+      now,
+    ],
+  );
+  const rows = await executeQuery<FinancialAssistantConversationRecord>(
+    `update "FinancialAssistantConversation"
+        set "status" = 'FAILED', "version" = $5, "pendingIntent" = null, "pendingQuestion" = null,
+            "pendingFilters" = '{}'::jsonb, "updatedAt" = $6
+      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3 and "userId" = $4
+      returning *`,
+    [
+      conversation.id,
+      context.organizationId,
+      context.financialProfileId,
+      context.userId,
+      nextVersion,
+      now,
+    ],
+  );
+  const recovered = rows[0];
+  if (!recovered) throw new Error("Interrupted financial assistant recovery returned no row.");
+  return mapConversation(recovered);
 }
 
 async function expireConversation(
