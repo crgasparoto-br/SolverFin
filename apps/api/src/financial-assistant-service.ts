@@ -10,7 +10,10 @@ import {
 } from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
-import { resolveFinancialAssistantData } from "./financial-assistant-data.js";
+import {
+  resolveFinancialAssistantData,
+  type FinancialAssistantDataResolution,
+} from "./financial-assistant-data.js";
 import {
   bindFinancialAssistantTurnResolution,
   claimFinancialAssistantTurn,
@@ -61,8 +64,10 @@ export async function sendFinancialAssistantMessage(input: {
   runtime: FinancialAssistantRuntime;
 }): Promise<FinancialAssistantConversationView> {
   const now = input.runtime.now?.() ?? new Date();
-  const question = normalizeStoredQuestion(input.question);
-  validateMessage(question, input.idempotencyKey);
+  const question = normalizeAndValidateFinancialAssistantMessage(
+    input.question,
+    input.idempotencyKey,
+  );
 
   const before = await getConversationById(input.context, input.conversationId);
   if (!before) {
@@ -90,10 +95,13 @@ export async function sendFinancialAssistantMessage(input: {
   }
 
   try {
-    const resolution = await resolveFinancialAssistantData(
-      input.context,
+    const resolution = guardFinancialAssistantCategoryResolution(
+      await resolveFinancialAssistantData(
+        input.context,
+        effectiveQuestion,
+        input.runtime.now?.() ?? new Date(),
+      ),
       effectiveQuestion,
-      input.runtime.now?.() ?? new Date(),
     );
 
     if (resolution.kind === "clarification") {
@@ -167,8 +175,15 @@ export async function sendFinancialAssistantMessage(input: {
       }
       return input.runtime.resolveConsent();
     };
-    const consent = await resolveAuthoritativeConsent();
     const selection = safeSelectProvider(input.runtime.selectProvider);
+    let consent: AiConsentState = "missing";
+    if (selection.status === "ready" && selection.provider) {
+      try {
+        consent = await resolveAuthoritativeConsent();
+      } catch {
+        consent = "missing";
+      }
+    }
     const answer = await answerFinancialQuestion({
       question: effectiveQuestion,
       context: {
@@ -224,6 +239,41 @@ export async function sendFinancialAssistantMessage(input: {
   }
 }
 
+export function guardFinancialAssistantCategoryResolution(
+  resolution: FinancialAssistantDataResolution,
+  question: string,
+): FinancialAssistantDataResolution {
+  if (
+    resolution.kind !== "evidence" ||
+    resolution.intent !== "category_spending" ||
+    resolution.filters.categoryId ||
+    !questionRequestsCategoryFilter(question)
+  ) {
+    return resolution;
+  }
+
+  return {
+    kind: "clarification",
+    intent: "category_spending",
+    message:
+      "Nao encontrei a categoria solicitada neste perfil. Informe uma categoria existente para eu aplicar o filtro sem misturar outros gastos.",
+    filters: {
+      currency: resolution.filters.currency,
+      periodStartOn: resolution.filters.periodStartOn,
+      periodEndOn: resolution.filters.periodEndOn,
+    },
+  };
+}
+
+export function normalizeAndValidateFinancialAssistantMessage(
+  question: string,
+  idempotencyKey: string,
+): string {
+  const normalized = normalizeStoredQuestion(question);
+  validateMessage(normalized, idempotencyKey);
+  return normalized;
+}
+
 function resolveClarificationPrecedence(
   view: FinancialAssistantConversationView,
   incomingQuestion: string,
@@ -248,6 +298,17 @@ function isClarificationFragment(question: string): boolean {
     /\b(?:hoje|este mes|mes atual|mes passado|ultimo mes|ultimos 30 dias)\b/.test(normalized) ||
     /\b(?:brl|usd|eur|gbp)\b/.test(normalized) ||
     normalized.length <= 40
+  );
+}
+
+function questionRequestsCategoryFilter(question: string): boolean {
+  const normalized = normalizeForMatching(question);
+  return (
+    /\bpor\s+categoria\b/.test(normalized) ||
+    /\bcategoria\s+(?:de\s+)?[a-z0-9]/.test(normalized) ||
+    /\b(?:gastei|gasto|gastos|despesa|despesas|receita|receitas)\s+(?:em|com)\s+(?:(?:a|o|as|os|de|da|do|das|dos)\s+)?[a-z0-9]/.test(
+      normalized,
+    )
   );
 }
 
@@ -328,7 +389,7 @@ function validateMessage(question: string, idempotencyKey: string): void {
 }
 
 function normalizeStoredQuestion(question: string): string {
-  return question.trim().replace(/\s+/g, " ").slice(0, QUESTION_MAX_CHARS);
+  return question.trim().replace(/\s+/g, " ");
 }
 
 function normalizeForMatching(question: string): string {

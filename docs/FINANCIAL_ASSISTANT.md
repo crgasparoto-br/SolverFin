@@ -13,14 +13,14 @@ A rota web canonica e `/assistente`. A API usa o prefixo `/api/financial-assista
 
 O classificador atual cobre:
 
-- receitas e despesas por periodo, com filtro de categoria quando reconhecido;
+- receitas e despesas por periodo; quando a pergunta solicita uma categoria especifica, ela precisa ser reconhecida no perfil ou o assistente pede clarificacao em vez de retirar o filtro silenciosamente;
 - saldo calculado e saldo projetado;
 - faturas, parcelas e compromissos planejados no periodo;
 - recorrencias registradas e assinaturas provaveis;
 - resumo mensal;
 - disponibilidade estimada para hoje, apenas quando existe base deterministica suficiente.
 
-Perguntas fora desse escopo recebem fallback explicito. Periodo ausente, moeda ambigua ou outro contexto insuficiente produz estado `AWAITING_CLARIFICATION`, sem inventar dados.
+Perguntas fora desse escopo recebem fallback explicito. Periodo ausente, moeda ambigua, categoria solicitada nao resolvida ou outro contexto insuficiente produz estado `AWAITING_CLARIFICATION`, sem inventar dados nem substituir o filtro pedido por um agregado mais amplo.
 
 ## Regra de calculo
 
@@ -47,7 +47,7 @@ Antes de cada tentativa externa:
 4. envia apenas pergunta mascarada, intent, periodo/moeda/filtros minimizados e metricas agregadas;
 5. nunca envia IDs de tenant/perfil nem base financeira bruta.
 
-Narrativa que introduz numero, quantidade ou comparacao quantitativa e descartada. Timeout, indisponibilidade, rate limit, revogacao tardia ou erro do provider preservam a resposta deterministica e adicionam uma limitacao segura.
+Ausencia, revogacao ou falha ao revalidar o consentimento impede somente a chamada externa. Quando existe evidencia deterministica suficiente, a resposta local continua disponivel e informa que a narrativa por IA nao foi usada. Narrativa que introduz numero, quantidade ou comparacao quantitativa e descartada. Timeout, indisponibilidade, rate limit ou erro do provider tambem preservam a resposta deterministica e adicionam uma limitacao segura.
 
 ## Persistencia conversacional
 
@@ -121,13 +121,15 @@ A pagina `/assistente` usa o shell autenticado e o contrato SSR oficial. Ela pos
 - foco devolvido ao campo de pergunta depois das acoes;
 - resposta com periodo, filtros e confianca, mais disclosure de premissas, fontes e limitacoes;
 - layout responsivo em uma coluna no mobile e sem dependencia de hover;
-- controles nativos que permanecem utilizaveis com zoom de 200%.
+- controles nativos que permanecem utilizaveis sob pressao de reflow equivalente a zoom de 200%, sem usar pinch/page scale como substituto do teste de layout.
 
 ## Testes esperados
 
 - `@solverfin/ai`: resposta deterministica, falta de evidencia, ausencia de dados, consentimento, revogacao tardia, provider qualitativo, rejeicao quantitativa e fallback de falha;
 - API/PostgreSQL: idempotencia, conflito de chave, concorrencia, cancelamento versus resposta tardia, recovery de `PROCESSING`, TTL, isolamento e troca de perfil;
+- API unitario: categoria solicitada nao resolvida nao pode virar agregado geral e pergunta acima do limite nao pode ser truncada silenciosamente;
 - Web: estados normal/erro/vazio, fronteira publica, elementos acessiveis e regras responsivas;
+- validacao visual dedicada: `scripts/statement-visual/issue-568-financial-assistant.mjs` cobre teclado, foco, mobile, erro e acoes; `scripts/statement-visual/issue-568-financial-assistant-zoom-200-reflow.mjs` cobre o reflow equivalente a zoom de 200% e reprova clipping horizontal contra o viewport de layout;
 - build SSR: rota `/assistente` registrada em `solverFinShellRoutes` e `solverFinSsrStyleContracts`.
 
 ## Limites

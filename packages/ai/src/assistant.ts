@@ -140,17 +140,6 @@ export async function answerFinancialQuestion(
   const question = normalizeQuestion(input.question);
   const intent = classifyFinancialAssistantIntent(question);
 
-  if (input.policy.consent !== "granted") {
-    return buildFallbackAnswer({
-      status: "blocked",
-      intent,
-      safeLogCode: "ASSISTANT_CONSENT_REQUIRED",
-      answer:
-        "Nao posso responder sem consentimento ativo para usar dados financeiros neste assistente.",
-      limitations: ["Consentimento de IA ausente ou revogado."],
-    });
-  }
-
   if (question.length === 0) {
     return buildFallbackAnswer({
       intent: "out_of_scope",
@@ -202,17 +191,6 @@ export async function answerFinancialQuestion(
     return baseAnswer;
   }
 
-  if (!input.resolveConsent) {
-    return buildFallbackAnswer({
-      status: "blocked",
-      intent,
-      safeLogCode: "ASSISTANT_CONSENT_REVALIDATION_REQUIRED",
-      answer:
-        "Nao posso chamar o provedor sem revalidar o consentimento atual imediatamente antes da tentativa.",
-      limitations: ["Resolvedor autoritativo de consentimento nao informado."],
-    });
-  }
-
   const aiResult = await runAiTask({
     provider: input.provider,
     task: "assistant",
@@ -225,7 +203,7 @@ export async function answerFinancialQuestion(
       prompt: buildAssistantPrompt(intent, input.evidence),
       fields: { intent },
     },
-    resolveConsent: input.resolveConsent,
+    ...(input.resolveConsent ? { resolveConsent: input.resolveConsent } : {}),
     ...(input.logger ? { logger: input.logger } : {}),
   });
 

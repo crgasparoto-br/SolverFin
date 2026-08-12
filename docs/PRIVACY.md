@@ -112,7 +112,7 @@ Consentimento minimo exigido:
 - indicacao de que a IA sugere e explica, mas nao decide efeito financeiro irreversivel sozinha;
 - capacidade de revisar, aprovar, editar ou rejeitar a sugestao quando o fluxo produzir uma sugestao revisavel.
 
-No assistente financeiro conversacional, o consentimento e revalidado imediatamente antes de cada tentativa externa. A ausencia ou revogacao do consentimento bloqueia a chamada ao provider sem autorizar o uso de um snapshot antigo.
+No assistente financeiro conversacional, o consentimento e revalidado imediatamente antes de cada tentativa externa. A ausencia, revogacao ou falha da revalidacao bloqueia a chamada ao provider sem autorizar o uso de um snapshot antigo, mas nao impede uma resposta deterministica local quando os dados autorizados e o calculo canonico ja forem suficientes.
 
 ## Retencao inicial
 
@@ -144,7 +144,7 @@ O assistente financeiro da issue #568 persiste somente o estado necessario para 
 
 O assistente nao persiste o prompt montado para o provider nem a resposta bruta do provider. A projecao publica da conversa omite IDs internos de tenant/perfil/usuario, IDs de turno, chave de idempotencia, evidencia interna e codigos internos de falha que nao sejam necessarios para a experiencia autorizada.
 
-A conversa possui TTL configuravel e pode ser cancelada, limpa ou expirada. Troca de perfil ou moeda incompatível encerra o contexto anterior em vez de reaproveitar evidencia entre contextos. Limpar remove o historico conversacional persistido do contexto selecionado; cancelamento e expiracao permanecem como estados terminais suficientes para impedir que respostas tardias sobrescrevam o estado mais novo.
+A conversa possui TTL configuravel e pode ser cancelada, limpa ou expirada. Troca de perfil ou moeda incompatível encerra o contexto anterior em vez de reaproveitar evidencia entre contextos. `Limpar` e uma transicao logica: cancela o contexto selecionado e remove esse historico da sessao visivel, sem prometer exclusao fisica imediata dos registros conversacionais. Cancelamento e expiracao permanecem como estados terminais suficientes para impedir reutilizacao do contexto e para evitar que respostas tardias sobrescrevam o estado mais novo.
 
 ## Contrato aplicado ao fluxo CSV revisavel
 

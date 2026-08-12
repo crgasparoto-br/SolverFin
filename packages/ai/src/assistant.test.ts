@@ -44,9 +44,9 @@ const monthlyEvidence: FinancialAssistantEvidence = {
 
 await dailyAvailabilityUsesStructuredCalculation();
 await dailyAvailabilityDoesNotInventWithoutService();
-await assistantBlocksWithoutConsent();
+await assistantKeepsDeterministicAnswerWithoutConsent();
 await assistantRequiresStructuredEvidence();
-await assistantBlocksWithoutConsentResolver();
+await assistantFallsBackWithoutConsentResolver();
 await assistantRechecksConsentBeforeProviderCallAndFallsBack();
 await deterministicEvidenceAnswersWithoutProvider();
 await noDataIsExplicit();
@@ -111,7 +111,7 @@ async function dailyAvailabilityDoesNotInventWithoutService(): Promise<void> {
   assert.match(answer.answer, /nao vou estimar/i);
 }
 
-async function assistantBlocksWithoutConsent(): Promise<void> {
+async function assistantKeepsDeterministicAnswerWithoutConsent(): Promise<void> {
   const answer = await answerFinancialQuestion({
     question: "Resuma meus gastos deste mes",
     context,
@@ -119,8 +119,9 @@ async function assistantBlocksWithoutConsent(): Promise<void> {
     evidence: monthlyEvidence,
   });
 
-  assert.equal(answer.status, "blocked");
-  assert.equal(answer.safeLogCode, "ASSISTANT_CONSENT_REQUIRED");
+  assert.equal(answer.status, "answered");
+  assert.equal(answer.safeLogCode, "ASSISTANT_DETERMINISTIC_ANSWERED");
+  assert.match(answer.answer, /Receitas realizadas/);
 }
 
 async function assistantRequiresStructuredEvidence(): Promise<void> {
@@ -134,7 +135,7 @@ async function assistantRequiresStructuredEvidence(): Promise<void> {
   assert.equal(answer.safeLogCode, "ASSISTANT_EVIDENCE_REQUIRED");
 }
 
-async function assistantBlocksWithoutConsentResolver(): Promise<void> {
+async function assistantFallsBackWithoutConsentResolver(): Promise<void> {
   let calls = 0;
   const provider: AiProvider = {
     id: "counting",
@@ -152,9 +153,10 @@ async function assistantBlocksWithoutConsentResolver(): Promise<void> {
     provider,
   });
 
-  assert.equal(answer.status, "blocked");
-  assert.equal(answer.safeLogCode, "ASSISTANT_CONSENT_REVALIDATION_REQUIRED");
+  assert.equal(answer.status, "answered");
+  assert.equal(answer.safeLogCode, "ASSISTANT_PROVIDER_FALLBACK_AI_CONSENT_REQUIRED");
   assert.equal(calls, 0);
+  assert.match(answer.answer, /Receitas realizadas/);
 }
 
 async function assistantRechecksConsentBeforeProviderCallAndFallsBack(): Promise<void> {
