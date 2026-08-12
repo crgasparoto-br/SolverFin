@@ -84,10 +84,10 @@ async function expiryWinsBeforeLateAnswerIsPersisted(): Promise<void> {
   const startedAt = new Date("2026-08-11T13:00:00Z");
   const view = await startFinancialAssistantConversation(context, startedAt);
   const expiresAt = new Date("2026-08-11T13:05:00Z");
-  await query(
-    `update "FinancialAssistantConversation" set "expiresAt" = $2 where "id" = $1`,
-    [view.conversation.id, expiresAt],
-  );
+  await query(`update "FinancialAssistantConversation" set "expiresAt" = $2 where "id" = $1`, [
+    view.conversation.id,
+    expiresAt,
+  ]);
 
   const times = [
     new Date("2026-08-11T13:04:50Z"),
@@ -102,11 +102,9 @@ async function expiryWinsBeforeLateAnswerIsPersisted(): Promise<void> {
     question: "Qual meu saldo projetado este mes?",
     idempotencyKey: `test-${randomUUID()}`,
     runtime: {
-      selectProvider: () =>
-        createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" }),
+      selectProvider: () => createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" }),
       resolveConsent: () => "missing",
-      now: () =>
-        times[Math.min(timeIndex++, times.length - 1)] ?? times[times.length - 1]!,
+      now: () => times[Math.min(timeIndex++, times.length - 1)] ?? times[times.length - 1]!,
     },
   });
 
