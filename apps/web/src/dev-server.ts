@@ -20,6 +20,7 @@ import { renderCardsPageWithMonthNavigation } from "./dev-server/cards-page-mont
 import { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
+import { renderFinancialAssistantPage } from "./dev-server/financial-assistant-page.js";
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { enhanceInboxListLayout } from "./dev-server/inbox-list-layout-enhancement.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
@@ -62,6 +63,7 @@ export { renderAccountsPage, renderBudgetsPage } from "./dev-server/pages.js";
 export { renderCardsPage } from "./dev-server/cards-page.js";
 export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderDashboardPage } from "./dev-server/dashboard-page.js";
+export { renderFinancialAssistantPage } from "./dev-server/financial-assistant-page.js";
 export { enhanceInboxListLayout } from "./dev-server/inbox-list-layout-enhancement.js";
 export { renderInboxPage } from "./dev-server/inbox-page.js";
 export { renderLoginPage } from "./dev-server/login-page.js";
@@ -161,6 +163,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/dashboard" && token) {
     sendHtml(response, 200, await renderDashboardPage(token));
+    return;
+  }
+
+  if (url.pathname === "/assistente" && token) {
+    sendHtml(response, 200, await renderFinancialAssistantPage(token, url));
     return;
   }
 

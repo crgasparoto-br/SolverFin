@@ -115,6 +115,7 @@ const routeIconMap: Record<
   accountsCards: "wallet",
   categories: "tag",
   budgets: "pie-chart",
+  assistant: "zap",
   inbox: "inbox",
   reports: "bar-chart-2",
   settings: "settings",

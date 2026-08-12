@@ -17,6 +17,7 @@ const requiredKeys = [
   "AI_OPENAI_MAX_OUTPUT_TOKENS",
   "AI_OPENAI_MAX_REQUEST_BYTES",
   "AI_OPENAI_REQUEST_TIMEOUT_MS",
+  "FINANCIAL_ASSISTANT_TTL_MINUTES",
   "OIDC_ISSUER_URL",
   "OIDC_CLIENT_ID",
   "OIDC_AUDIENCE",
@@ -103,6 +104,13 @@ function validateEnvExample(entries) {
 
   if (!databaseUrl.startsWith("postgresql://")) {
     throw new Error("DATABASE_URL in .env.example must use the postgresql:// scheme.");
+  }
+
+  const assistantTtlMinutes = Number(entries.get("FINANCIAL_ASSISTANT_TTL_MINUTES"));
+  if (!Number.isInteger(assistantTtlMinutes) || assistantTtlMinutes < 5 || assistantTtlMinutes > 1440) {
+    throw new Error(
+      "FINANCIAL_ASSISTANT_TTL_MINUTES in .env.example must be an integer from 5 to 1440.",
+    );
   }
 
   validateAiPlaceholders(entries);

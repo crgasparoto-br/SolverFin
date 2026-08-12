@@ -1,0 +1,347 @@
+import {
+  answerFinancialQuestion,
+  classifyFinancialAssistantIntent,
+  createAiProviderFromEnvironment,
+  defaultAiUsagePolicy,
+  type AiConsentState,
+  type AiProviderSelection,
+  type FinancialAssistantAnswer,
+  type FinancialAssistantIntent,
+} from "@solverfin/ai";
+import type { TenantContext } from "@solverfin/domain";
+
+import { resolveFinancialAssistantData } from "./financial-assistant-data.js";
+import {
+  bindFinancialAssistantTurnResolution,
+  claimFinancialAssistantTurn,
+  finalizeFinancialAssistantTurn,
+  getConversationById,
+  getFinancialAssistantConversationForContext,
+  startFinancialAssistantConversation,
+  type FinancialAssistantConversationView,
+} from "./financial-assistant-repository.js";
+
+export interface FinancialAssistantRuntime {
+  selectProvider: () => AiProviderSelection;
+  resolveConsent: () => AiConsentState | Promise<AiConsentState>;
+  now?: () => Date;
+  correlationId?: string;
+}
+
+export class FinancialAssistantServiceError extends Error {
+  readonly code: string;
+  readonly statusCode: number;
+
+  constructor(code: string, message: string, statusCode = 500) {
+    super(message);
+    this.name = "FinancialAssistantServiceError";
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
+
+const ASSISTANT_PURPOSE = "financial_assistant_read_only";
+const QUESTION_MAX_CHARS = 1000;
+const IDEMPOTENCY_KEY_MAX_CHARS = 160;
+
+export async function getOrStartFinancialAssistantConversation(
+  context: TenantContext,
+): Promise<FinancialAssistantConversationView> {
+  return (
+    (await getFinancialAssistantConversationForContext(context)) ??
+    startFinancialAssistantConversation(context)
+  );
+}
+
+export async function sendFinancialAssistantMessage(input: {
+  context: TenantContext;
+  conversationId: string;
+  question: string;
+  idempotencyKey: string;
+  runtime: FinancialAssistantRuntime;
+}): Promise<FinancialAssistantConversationView> {
+  const now = input.runtime.now?.() ?? new Date();
+  const question = normalizeStoredQuestion(input.question);
+  validateMessage(question, input.idempotencyKey);
+
+  const before = await getConversationById(input.context, input.conversationId);
+  if (!before) {
+    throw new FinancialAssistantServiceError(
+      "ASSISTANT_CONVERSATION_NOT_FOUND",
+      "Conversa nao encontrada no perfil financeiro ativo.",
+      404,
+    );
+  }
+  const effectiveQuestion = resolveClarificationPrecedence(before, question);
+  const tentativeIntent = classifyFinancialAssistantIntent(effectiveQuestion);
+  const claim = await claimFinancialAssistantTurn({
+    context: input.context,
+    conversationId: input.conversationId,
+    normalizedQuestion: question,
+    idempotencyKey: input.idempotencyKey,
+    intent: tentativeIntent,
+    filters: {},
+    now,
+  });
+  if (claim.kind === "existing") {
+    const existing = await getConversationById(input.context, input.conversationId, true);
+    if (!existing) throw new Error("Idempotent financial assistant turn lost its conversation.");
+    return existing;
+  }
+
+  try {
+    const resolution = await resolveFinancialAssistantData(
+      input.context,
+      effectiveQuestion,
+      input.runtime.now?.() ?? new Date(),
+    );
+
+    if (resolution.kind === "clarification") {
+      await bindFinancialAssistantTurnResolution({
+        context: input.context,
+        conversationId: input.conversationId,
+        turnId: claim.turn.id,
+        conversationVersion: claim.turn.conversationVersion,
+        intent: resolution.intent,
+        filters: { ...resolution.filters },
+        ...(resolution.filters.currency ? { currency: resolution.filters.currency } : {}),
+        now,
+      });
+      const response = clarificationAnswer(resolution.intent, resolution.message);
+      return finalizeFinancialAssistantTurn({
+        context: input.context,
+        conversationId: input.conversationId,
+        turnId: claim.turn.id,
+        conversationVersion: claim.turn.conversationVersion,
+        status: "AWAITING_CLARIFICATION",
+        safeResponse: response,
+        pendingIntent: resolution.intent,
+        pendingQuestion: effectiveQuestion,
+        pendingFilters: resolution.filters,
+        now,
+      });
+    }
+
+    if (resolution.kind === "out_of_scope") {
+      const response = outOfScopeAnswer(resolution.message);
+      await bindFinancialAssistantTurnResolution({
+        context: input.context,
+        conversationId: input.conversationId,
+        turnId: claim.turn.id,
+        conversationVersion: claim.turn.conversationVersion,
+        intent: "out_of_scope",
+        filters: {},
+        now,
+      });
+      return finalizeFinancialAssistantTurn({
+        context: input.context,
+        conversationId: input.conversationId,
+        turnId: claim.turn.id,
+        conversationVersion: claim.turn.conversationVersion,
+        status: "ANSWERED",
+        safeResponse: response,
+        now,
+      });
+    }
+
+    await bindFinancialAssistantTurnResolution({
+      context: input.context,
+      conversationId: input.conversationId,
+      turnId: claim.turn.id,
+      conversationVersion: claim.turn.conversationVersion,
+      intent: resolution.intent,
+      filters: { ...resolution.filters },
+      currency: resolution.filters.currency,
+      ...(resolution.evidence ? { evidence: resolution.evidence } : {}),
+      now,
+    });
+
+    const resolveAuthoritativeConsent = async (): Promise<AiConsentState> => {
+      const latest = await getConversationById(input.context, input.conversationId, true);
+      if (
+        !latest ||
+        latest.conversation.status !== "PROCESSING" ||
+        latest.conversation.version !== claim.turn.conversationVersion
+      ) {
+        return "revoked";
+      }
+      return input.runtime.resolveConsent();
+    };
+    const consent = await resolveAuthoritativeConsent();
+    const selection = safeSelectProvider(input.runtime.selectProvider);
+    const answer = await answerFinancialQuestion({
+      question: effectiveQuestion,
+      context: {
+        organizationId: input.context.organizationId,
+        financialProfileId: input.context.financialProfileId,
+        userId: input.context.userId,
+        ...(input.runtime.correlationId ? { correlationId: input.runtime.correlationId } : {}),
+      },
+      policy: {
+        ...defaultAiUsagePolicy,
+        consent,
+        purpose: ASSISTANT_PURPOSE,
+        maxPromptChars: 6000,
+        maxRetries: 1,
+        timeoutMs: 8000,
+        allowRawFinancialText: false,
+        allowedFieldNames: ["intent"],
+      },
+      ...(selection.status === "ready" && selection.provider
+        ? { provider: selection.provider, resolveConsent: resolveAuthoritativeConsent }
+        : {}),
+      ...(resolution.evidence ? { evidence: resolution.evidence } : {}),
+      ...(resolution.availability ? { availability: resolution.availability } : {}),
+    });
+
+    return finalizeFinancialAssistantTurn({
+      context: input.context,
+      conversationId: input.conversationId,
+      turnId: claim.turn.id,
+      conversationVersion: claim.turn.conversationVersion,
+      status: "ANSWERED",
+      ...(resolution.evidence ? { evidence: resolution.evidence } : {}),
+      safeResponse: answer,
+      now: input.runtime.now?.() ?? new Date(),
+    });
+  } catch (error) {
+    const safe = failureAnswer(tentativeIntent);
+    try {
+      await finalizeFinancialAssistantTurn({
+        context: input.context,
+        conversationId: input.conversationId,
+        turnId: claim.turn.id,
+        conversationVersion: claim.turn.conversationVersion,
+        status: "FAILED",
+        safeResponse: safe,
+        failureCode: publicFailureCode(error),
+        now: input.runtime.now?.() ?? new Date(),
+      });
+    } catch {
+      // Cancellation/profile/expiry may have won the race. Never overwrite the newer terminal state.
+    }
+    throw error;
+  }
+}
+
+function resolveClarificationPrecedence(
+  view: FinancialAssistantConversationView,
+  incomingQuestion: string,
+): string {
+  const pending = view.conversation.pendingQuestion?.trim();
+  if (
+    view.conversation.status !== "AWAITING_CLARIFICATION" ||
+    !pending ||
+    !isClarificationFragment(incomingQuestion)
+  ) {
+    return incomingQuestion;
+  }
+  return normalizeStoredQuestion(`${pending} ${incomingQuestion}`);
+}
+
+function isClarificationFragment(question: string): boolean {
+  const normalized = normalizeForMatching(question);
+  const recognizedIntent = classifyFinancialAssistantIntent(question);
+  if (recognizedIntent !== "out_of_scope") return false;
+  return (
+    /\b20\d{2}-(?:0[1-9]|1[0-2])\b/.test(normalized) ||
+    /\b(?:hoje|este mes|mes atual|mes passado|ultimo mes|ultimos 30 dias)\b/.test(normalized) ||
+    /\b(?:brl|usd|eur|gbp)\b/.test(normalized) ||
+    normalized.length <= 40
+  );
+}
+
+function clarificationAnswer(
+  intent: FinancialAssistantIntent,
+  message: string,
+): FinancialAssistantAnswer {
+  return {
+    status: "needs_review",
+    intent,
+    confidence: "low",
+    answer: message,
+    assumptions: [],
+    sources: [],
+    limitations: ["Falta contexto necessario para calcular a resposta com seguranca."],
+    safeLogCode: "ASSISTANT_CLARIFICATION_REQUIRED",
+  };
+}
+
+function outOfScopeAnswer(message: string): FinancialAssistantAnswer {
+  return {
+    status: "needs_review",
+    intent: "out_of_scope",
+    confidence: "low",
+    answer: message,
+    assumptions: [],
+    sources: [],
+    limitations: ["O assistente e somente leitura e nao substitui orientacao profissional."],
+    safeLogCode: "ASSISTANT_OUT_OF_SCOPE",
+  };
+}
+
+function failureAnswer(intent: FinancialAssistantIntent): FinancialAssistantAnswer {
+  return {
+    status: "needs_review",
+    intent,
+    confidence: "low",
+    answer:
+      "Nao consegui concluir esta consulta. A conversa foi preservada e nenhum dado financeiro foi alterado.",
+    assumptions: [],
+    sources: [],
+    limitations: ["Falha controlada durante a consulta somente leitura."],
+    safeLogCode: "ASSISTANT_QUERY_FAILED",
+  };
+}
+
+function safeSelectProvider(selectProvider: () => AiProviderSelection): AiProviderSelection {
+  try {
+    return selectProvider();
+  } catch {
+    return createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" });
+  }
+}
+
+function validateMessage(question: string, idempotencyKey: string): void {
+  if (question.length === 0) {
+    throw new FinancialAssistantServiceError(
+      "ASSISTANT_QUESTION_REQUIRED",
+      "Escreva uma pergunta financeira para continuar.",
+      400,
+    );
+  }
+  if (question.length > QUESTION_MAX_CHARS) {
+    throw new FinancialAssistantServiceError(
+      "ASSISTANT_QUESTION_TOO_LONG",
+      `A pergunta deve ter no maximo ${QUESTION_MAX_CHARS} caracteres.`,
+      400,
+    );
+  }
+  const key = idempotencyKey.trim();
+  if (key.length < 8 || key.length > IDEMPOTENCY_KEY_MAX_CHARS) {
+    throw new FinancialAssistantServiceError(
+      "ASSISTANT_IDEMPOTENCY_KEY_INVALID",
+      "Identificador da mensagem invalido.",
+      400,
+    );
+  }
+}
+
+function normalizeStoredQuestion(question: string): string {
+  return question.trim().replace(/\s+/g, " ").slice(0, QUESTION_MAX_CHARS);
+}
+
+function normalizeForMatching(question: string): string {
+  return question
+    .toLocaleLowerCase("pt-BR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function publicFailureCode(error: unknown): string {
+  if (error && typeof error === "object" && "code" in error && typeof error.code === "string") {
+    return error.code.slice(0, 120);
+  }
+  return "ASSISTANT_QUERY_FAILED";
+}

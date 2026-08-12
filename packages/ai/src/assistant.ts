@@ -52,6 +52,28 @@ export interface AvailabilityCalculationResult {
   calculatedAt: string;
 }
 
+export interface FinancialAssistantEvidenceMetric {
+  key: string;
+  label: string;
+  amountMinor?: number;
+  count?: number;
+  text?: string;
+}
+
+export interface FinancialAssistantEvidence {
+  currency: string;
+  period: {
+    startOn: string;
+    endOn: string;
+  };
+  filters: readonly string[];
+  metrics: readonly FinancialAssistantEvidenceMetric[];
+  assumptions: readonly string[];
+  limitations: readonly string[];
+  sources: readonly string[];
+  confidence: FinancialAssistantConfidence;
+}
+
 export interface FinancialAssistantAnswer {
   status: FinancialAssistantStatus;
   intent: FinancialAssistantIntent;
@@ -61,6 +83,7 @@ export interface FinancialAssistantAnswer {
     startOn: string;
     endOn: string;
   };
+  filters?: readonly string[];
   assumptions: readonly string[];
   sources: readonly string[];
   limitations: readonly string[];
@@ -75,7 +98,41 @@ export interface FinancialAssistantInput {
   resolveConsent?: () => AiConsentState | Promise<AiConsentState>;
   logger?: SafeAiLogger;
   availability?: AvailabilityCalculationResult;
+  evidence?: FinancialAssistantEvidence;
 }
+
+const PROVIDER_QUANTITATIVE_CLAIM = new RegExp(
+  [
+    "\\d",
+    "\\b(?:um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez)\\b",
+    "\\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\\b",
+    "percent(?:ual|age)?",
+    "por\\s+cento",
+    "dobr\\w*",
+    "triplic\\w*",
+    "metade",
+    "half",
+    "double",
+    "triple",
+    "aument\\w*",
+    "cres(?:c|ç)\\w*",
+    "subi\\w*",
+    "reduz\\w*",
+    "diminui\\w*",
+    "cai\\w*",
+    "maior(?:es)?",
+    "menor(?:es)?",
+    "mais",
+    "menos",
+    "higher",
+    "lower",
+    "increase\\w*",
+    "decrease\\w*",
+    "grew",
+    "fell",
+  ].join("|"),
+  "iu",
+);
 
 export async function answerFinancialQuestion(
   input: FinancialAssistantInput,
@@ -112,19 +169,37 @@ export async function answerFinancialQuestion(
       intent,
       safeLogCode: "ASSISTANT_OUT_OF_SCOPE",
       answer:
-        "Posso ajudar apenas com perguntas financeiras do SolverFin, usando dados autorizados e premissas visiveis.",
-      limitations: ["Pergunta fora do escopo financeiro do app."],
+        "Posso ajudar com saldo, gastos, faturas, recorrencias e resumos do SolverFin. Nao executo operacoes financeiras nem ofereco recomendacao profissional.",
+      limitations: ["Pergunta fora do escopo financeiro somente leitura do app."],
     });
   }
 
-  if (!input.provider) {
+  if (!input.evidence || input.evidence.metrics.length === 0) {
     return buildFallbackAnswer({
       intent,
-      safeLogCode: "ASSISTANT_PROVIDER_NOT_CONFIGURED",
+      safeLogCode: "ASSISTANT_EVIDENCE_REQUIRED",
       answer:
-        "Ainda nao ha um provedor de IA configurado para responder esta pergunta com seguranca.",
-      limitations: ["Provider de IA indisponivel."],
+        "Nao encontrei evidencia estruturada suficiente para responder sem inventar informacoes.",
+      limitations: ["Dados autorizados insuficientes para esta pergunta."],
     });
+  }
+
+  const deterministicAnswer = buildEvidenceAnswer(intent, input.evidence);
+  const baseAnswer: FinancialAssistantAnswer = {
+    status: input.evidence.confidence === "low" ? "needs_review" : "answered",
+    intent,
+    confidence: input.evidence.confidence,
+    answer: deterministicAnswer,
+    period: input.evidence.period,
+    filters: input.evidence.filters,
+    assumptions: input.evidence.assumptions,
+    sources: uniqueStrings(input.evidence.sources),
+    limitations: input.evidence.limitations,
+    safeLogCode: "ASSISTANT_DETERMINISTIC_ANSWERED",
+  };
+
+  if (!input.provider) {
+    return baseAnswer;
   }
 
   if (!input.resolveConsent) {
@@ -147,37 +222,40 @@ export async function answerFinancialQuestion(
       allowRawFinancialText: false,
     },
     payload: {
-      prompt: buildAssistantPrompt(question, intent),
-      fields: {
-        question: maskSensitiveText(question),
-        intent,
-      },
+      prompt: buildAssistantPrompt(intent, input.evidence),
+      fields: { intent },
     },
     resolveConsent: input.resolveConsent,
     ...(input.logger ? { logger: input.logger } : {}),
   });
 
   if (aiResult.status !== "completed") {
-    return buildFallbackAnswer({
-      intent,
-      safeLogCode: `ASSISTANT_${aiResult.code}`,
-      answer:
-        "Nao consegui gerar uma resposta confiavel agora. Revise os dados do periodo ou tente novamente mais tarde.",
-      limitations: ["Provider indisponivel, bloqueado ou retornou resposta invalida."],
-    });
+    return {
+      ...baseAnswer,
+      limitations: [
+        ...baseAnswer.limitations,
+        "A narrativa por IA ficou indisponivel; a resposta usa apenas o calculo deterministico.",
+      ],
+      safeLogCode: `ASSISTANT_PROVIDER_FALLBACK_${aiResult.code}`,
+    };
+  }
+
+  const narrative = sanitizeProviderNarrative(aiResult.result.text);
+  if (narrative === undefined) {
+    return {
+      ...baseAnswer,
+      limitations: [
+        ...baseAnswer.limitations,
+        "A narrativa por IA foi descartada por introduzir afirmacao quantitativa nao permitida.",
+      ],
+      safeLogCode: "ASSISTANT_PROVIDER_NARRATIVE_REJECTED",
+    };
   }
 
   return {
-    status: "answered",
-    intent,
-    confidence: "medium",
-    answer: aiResult.result.text.trim(),
-    assumptions: ["Resposta gerada por IA com payload minimizado."],
-    sources: ["provider", aiResult.providerId, aiResult.model],
-    limitations: [
-      "A resposta deve ser revisada quando os dados financeiros estiverem incompletos.",
-    ],
-    safeLogCode: "ASSISTANT_PROVIDER_ANSWERED",
+    ...baseAnswer,
+    answer: `${narrative} ${deterministicAnswer}`.trim(),
+    safeLogCode: "ASSISTANT_PROVIDER_NARRATIVE_ANSWERED",
   };
 }
 
@@ -191,7 +269,11 @@ export function classifyFinancialAssistantIntent(question: string): FinancialAss
     return "daily_availability";
   }
 
-  if (/categoria|gastei|despesa|gasto/.test(normalized)) {
+  if (/resumo|mensal/.test(normalized)) {
+    return "monthly_summary";
+  }
+
+  if (/categoria|gastei|despesa|gasto|receita/.test(normalized)) {
     return "category_spending";
   }
 
@@ -203,7 +285,7 @@ export function classifyFinancialAssistantIntent(question: string): FinancialAss
     return "subscriptions";
   }
 
-  if (/resumo|mes|mensal/.test(normalized)) {
+  if (/mes|fatura|parcela|compromisso/.test(normalized)) {
     return "monthly_summary";
   }
 
@@ -218,8 +300,8 @@ function answerDailyAvailability(
       intent: "daily_availability",
       safeLogCode: "ASSISTANT_AVAILABILITY_SERVICE_MISSING",
       answer:
-        "Ainda nao tenho um calculo estruturado de disponibilidade para hoje. Sem esse servico, nao vou estimar um valor livremente.",
-      limitations: ["Servico de disponibilidade financeira indisponivel."],
+        "Ainda nao tenho base estruturada suficiente para calcular quanto pode ser gasto hoje. Sem essa base, nao vou estimar um valor livremente.",
+      limitations: ["Calculo de disponibilidade financeira insuficiente ou indisponivel."],
     });
   }
 
@@ -246,7 +328,7 @@ function answerDailyAvailability(
     intent: "daily_availability",
     confidence: availability.confidence,
     answer: [
-      `Voce pode gastar hoje ${availableText} com base no calculo estruturado de disponibilidade.`,
+      `Disponibilidade estimada para hoje: ${availableText}.`,
       componentsText,
       assumptionsText,
       limitationsText,
@@ -255,11 +337,50 @@ function answerDailyAvailability(
       startOn: availability.horizonStartOn,
       endOn: availability.horizonEndOn,
     },
+    filters: [`Moeda: ${availability.currency}`],
     assumptions: availability.assumptions,
-    sources: availability.components.map((component) => component.source),
+    sources: uniqueStrings(availability.components.map((component) => component.source)),
     limitations,
     safeLogCode: "ASSISTANT_AVAILABILITY_ANSWERED",
   };
+}
+
+function buildEvidenceAnswer(
+  intent: Exclude<FinancialAssistantIntent, "daily_availability" | "out_of_scope">,
+  evidence: FinancialAssistantEvidence,
+): string {
+  const values = evidence.metrics.map((metric) => formatEvidenceMetric(metric, evidence.currency));
+  const period = `${evidence.period.startOn} a ${evidence.period.endOn}`;
+  if (!hasEvidenceSignal(evidence)) {
+    return `Nao ha dados suficientes no periodo de ${period} para responder com seguranca.`;
+  }
+  const prefix =
+    intent === "balance_projection"
+      ? `Projecao para ${period}`
+      : intent === "subscriptions"
+        ? `Recorrencias e assinaturas provaveis em ${period}`
+        : intent === "monthly_summary"
+          ? `Resumo financeiro de ${period}`
+          : `Movimentacao financeira de ${period}`;
+  return `${prefix}: ${values.join("; ")}.`;
+}
+
+function hasEvidenceSignal(evidence: FinancialAssistantEvidence): boolean {
+  if (evidence.confidence !== "low") return true;
+  return evidence.metrics.some(
+    (metric) =>
+      (metric.amountMinor !== undefined && metric.amountMinor !== 0) ||
+      (metric.count !== undefined && metric.count > 0) ||
+      (metric.text !== undefined && metric.text.trim().length > 0),
+  );
+}
+
+function formatEvidenceMetric(metric: FinancialAssistantEvidenceMetric, currency: string): string {
+  const parts: string[] = [];
+  if (metric.amountMinor !== undefined) parts.push(formatMoney(metric.amountMinor, currency));
+  if (metric.count !== undefined) parts.push(`${metric.count} item(ns)`);
+  if (metric.text !== undefined && metric.text.trim().length > 0) parts.push(metric.text.trim());
+  return `${metric.label}: ${parts.join(" / ") || "sem valor"}`;
 }
 
 function buildComponentTexts(
@@ -304,14 +425,36 @@ function buildFallbackAnswer(input: {
   };
 }
 
-function buildAssistantPrompt(question: string, intent: FinancialAssistantIntent): string {
+function buildAssistantPrompt(
+  intent: FinancialAssistantIntent,
+  evidence: FinancialAssistantEvidence,
+): string {
+  const metrics = evidence.metrics
+    .map((metric) => `- ${formatEvidenceMetric(metric, evidence.currency)}`)
+    .join("\n");
   return [
-    "Responda somente com base nos dados financeiros autorizados recebidos.",
-    "Se faltar dado, explique a limitacao em vez de inventar valores.",
-    "Nao ofereca conselho financeiro, juridico ou fiscal profissional.",
+    "Escreva no maximo duas frases qualitativas e sem qualquer numero, quantidade ou comparacao de magnitude.",
+    "Nao acrescente fatos. Os valores canonicamente calculados serao anexados pelo SolverFin depois da sua narrativa.",
+    "Nao ofereca conselho financeiro, juridico, fiscal, contabil, de investimento ou credito.",
     `Intencao classificada: ${intent}.`,
-    `Pergunta: ${question}`,
+    `Periodo autorizado: ${evidence.period.startOn} a ${evidence.period.endOn}.`,
+    `Moeda: ${evidence.currency}.`,
+    `Filtros: ${evidence.filters.map((item) => maskSensitiveText(item)).join("; ") || "nenhum adicional"}.`,
+    "Evidencias agregadas e minimizadas:",
+    metrics,
   ].join("\n");
+}
+
+function sanitizeProviderNarrative(value: string): string | undefined {
+  const text = value.trim();
+  if (text.length === 0 || text.length > 420 || PROVIDER_QUANTITATIVE_CLAIM.test(text)) {
+    return undefined;
+  }
+  return text;
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
 }
 
 function normalizeQuestion(question: string): string {
