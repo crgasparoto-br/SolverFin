@@ -226,22 +226,43 @@ function buildDesiredInsights(
       currency,
       periods.projectionEndOn,
     );
-    const insights = generateFinancialInsights({
-      organizationId: context.organizationId,
-      financialProfileId: context.financialProfileId,
-      currentPeriod: periods.current,
-      previousPeriod: periods.previous,
-      transactions,
+    const generate = (scopedTransactions: readonly InsightTransaction[]) =>
+      generateFinancialInsights({
+        organizationId: context.organizationId,
+        financialProfileId: context.financialProfileId,
+        currentPeriod: periods.current,
+        previousPeriod: periods.previous,
+        transactions: scopedTransactions,
+        budgets,
+        ...(projectedBalance === undefined
+          ? {}
+          : {
+              projectedBalanceMinor: projectedBalance.amountMinor,
+              projectedBalanceSourceFingerprint: projectedBalance.sourceFingerprint,
+              projectionPeriodEndOn: periods.projectionEndOn,
+            }),
+        currency,
+      });
+    const baselineInsights = generate(transactions);
+    const budgetHistoryStartOn = resolveBudgetHistoryStartOn(
       budgets,
-      ...(projectedBalance === undefined
-        ? {}
-        : {
-            projectedBalanceMinor: projectedBalance.amountMinor,
-            projectedBalanceSourceFingerprint: projectedBalance.sourceFingerprint,
-            projectionPeriodEndOn: periods.projectionEndOn,
-          }),
-      currency,
-    });
+      periods.current,
+      periods.historyStartOn,
+    );
+    const insights =
+      budgetHistoryStartOn === undefined
+        ? baselineInsights
+        : [
+            ...baselineInsights.filter((insight) => insight.kind !== "budget_exceeded"),
+            ...generate(
+              mapInsightTransactions(
+                context,
+                snapshot.transactions,
+                currency,
+                budgetHistoryStartOn,
+              ),
+            ).filter((insight) => insight.kind === "budget_exceeded"),
+          ];
 
     for (const generated of insights) {
       if (!isActionableInsight(generated)) {
@@ -307,6 +328,26 @@ function mapInsightBudgets(
       periodStartOn: toDateOnly(row.periodStartOn),
       periodEndOn: toDateOnly(row.periodEndOn),
     }));
+}
+
+function resolveBudgetHistoryStartOn(
+  budgets: readonly InsightBudget[],
+  currentPeriod: { startOn: string; endOn: string },
+  historyStartOn: string,
+): string | undefined {
+  let earliestStartOn: string | undefined;
+
+  for (const budget of budgets) {
+    if (budget.periodStartOn > currentPeriod.endOn || budget.periodEndOn < currentPeriod.startOn) {
+      continue;
+    }
+    if (budget.periodStartOn >= historyStartOn) continue;
+    if (earliestStartOn === undefined || budget.periodStartOn < earliestStartOn) {
+      earliestStartOn = budget.periodStartOn;
+    }
+  }
+
+  return earliestStartOn;
 }
 
 function calculateProjectedBalance(
