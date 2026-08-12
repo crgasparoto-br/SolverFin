@@ -3,6 +3,7 @@ import {
   classifyFinancialAssistantIntent,
   createAiProviderFromEnvironment,
   defaultAiUsagePolicy,
+  financialAssistantQuestionRequestsCategoryFilter,
   type AiConsentState,
   type AiProviderSelection,
   type FinancialAssistantAnswer,
@@ -95,11 +96,14 @@ export async function sendFinancialAssistantMessage(input: {
   }
 
   try {
-    const resolution = guardFinancialAssistantCategoryResolution(
-      await resolveFinancialAssistantData(
-        input.context,
+    const resolution = guardFinancialAssistantPeriodResolution(
+      guardFinancialAssistantCategoryResolution(
+        await resolveFinancialAssistantData(
+          input.context,
+          effectiveQuestion,
+          input.runtime.now?.() ?? new Date(),
+        ),
         effectiveQuestion,
-        input.runtime.now?.() ?? new Date(),
       ),
       effectiveQuestion,
     );
@@ -257,7 +261,7 @@ export function guardFinancialAssistantCategoryResolution(
     resolution.kind !== "evidence" ||
     resolution.intent !== "category_spending" ||
     resolution.filters.categoryId ||
-    !questionRequestsCategoryFilter(question)
+    !financialAssistantQuestionRequestsCategoryFilter(question)
   ) {
     return resolution;
   }
@@ -272,6 +276,27 @@ export function guardFinancialAssistantCategoryResolution(
       periodStartOn: resolution.filters.periodStartOn,
       periodEndOn: resolution.filters.periodEndOn,
     },
+  };
+}
+
+export function guardFinancialAssistantPeriodResolution(
+  resolution: FinancialAssistantDataResolution,
+  question: string,
+): FinancialAssistantDataResolution {
+  if (
+    resolution.kind !== "evidence" ||
+    resolution.intent !== "subscriptions" ||
+    questionProvidesPeriod(question)
+  ) {
+    return resolution;
+  }
+
+  return {
+    kind: "clarification",
+    intent: "subscriptions",
+    message:
+      "Informe o periodo que deseja analisar, por exemplo: hoje, este mes, mes passado ou 2026-08.",
+    filters: { currency: resolution.filters.currency },
   };
 }
 
@@ -319,14 +344,14 @@ function isClarificationFragment(question: string): boolean {
   return classifyFinancialAssistantIntent(question) === "out_of_scope" && normalized.length <= 40;
 }
 
-function questionRequestsCategoryFilter(question: string): boolean {
+function questionProvidesPeriod(question: string): boolean {
   const normalized = normalizeForMatching(question);
   return (
-    /\bpor\s+categoria\b/.test(normalized) ||
-    /\bcategoria\s+(?:de\s+)?[a-z0-9]/.test(normalized) ||
-    /\b(?:gastei|gasto|gastos|despesa|despesas|receita|receitas)\s+(?:em|com)\s+(?:(?:a|o|as|os|de|da|do|das|dos)\s+)?[a-z0-9]/.test(
-      normalized,
-    )
+    /\b20\d{2}-(?:0[1-9]|1[0-2])\b/.test(normalized) ||
+    /\bhoje\b/.test(normalized) ||
+    /mes\s+passado|ultimo\s+mes/.test(normalized) ||
+    /este\s+mes|mes\s+atual|do\s+mes/.test(normalized) ||
+    /ultimos\s+30\s+dias/.test(normalized)
   );
 }
 

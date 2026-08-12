@@ -247,11 +247,15 @@ export function classifyFinancialAssistantIntent(question: string): FinancialAss
     return "daily_availability";
   }
 
+  if (financialAssistantQuestionRequestsCategoryFilter(normalized)) {
+    return "category_spending";
+  }
+
   if (/resumo|mensal/.test(normalized)) {
     return "monthly_summary";
   }
 
-  if (/categoria|gastei|despesa|gasto|receita/.test(normalized)) {
+  if (/gastei|despesa|gasto|receita/.test(normalized)) {
     return "category_spending";
   }
 
@@ -268,6 +272,17 @@ export function classifyFinancialAssistantIntent(question: string): FinancialAss
   }
 
   return "out_of_scope";
+}
+
+export function financialAssistantQuestionRequestsCategoryFilter(question: string): boolean {
+  const normalized = normalizeQuestion(question);
+  return (
+    /\bpor\s+categoria\b/.test(normalized) ||
+    /\bcategoria\s+(?:de\s+)?[a-z0-9]/.test(normalized) ||
+    /\b(?:gastei|gasto|gastos|despesa|despesas|receita|receitas)(?:\s+mens(?:al|ais))?\s+(?:em|com)\s+(?:(?:a|o|as|os|de|da|do|das|dos)\s+)?(?!(?:brl|usd|eur|gbp|hoje|este|mes|20\d{2})\b)[a-z]/.test(
+      normalized,
+    )
+  );
 }
 
 function answerDailyAvailability(

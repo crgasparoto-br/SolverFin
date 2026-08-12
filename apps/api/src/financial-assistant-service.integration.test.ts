@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
-import { createAiProviderFromEnvironment } from "@solverfin/ai";
+import {
+  classifyFinancialAssistantIntent,
+  createAiProviderFromEnvironment,
+  financialAssistantQuestionRequestsCategoryFilter,
+} from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
@@ -33,22 +37,51 @@ async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   await cleanup();
   try {
+    mixedSummaryCategoryPhrasesKeepCategoryIntent();
     await clarificationPeriodContinuesPendingQuestion();
+    await subscriptionsWithoutPeriodRequiresClarification();
     await expiryWinsBeforeLateAnswerIsPersisted();
   } finally {
     await cleanup();
   }
 }
 
+function mixedSummaryCategoryPhrasesKeepCategoryIntent(): void {
+  for (const question of [
+    "Quanto gastei com Alimentação no resumo mensal de 2026-08?",
+    "Despesas mensais com Transporte em 2026-08",
+    "Resumo mensal dos gastos com Moradia em 2026-08",
+  ]) {
+    assert.equal(classifyFinancialAssistantIntent(question), "category_spending", question);
+  }
+  assert.equal(
+    classifyFinancialAssistantIntent("Resumo mensal de receitas e despesas em 2026-08"),
+    "monthly_summary",
+  );
+  assert.equal(
+    classifyFinancialAssistantIntent("Resumo mensal do que gastei em BRL"),
+    "monthly_summary",
+  );
+  assert.equal(
+    financialAssistantQuestionRequestsCategoryFilter("Despesas mensais com Categoria Inexistente"),
+    true,
+  );
+  assert.equal(
+    financialAssistantQuestionRequestsCategoryFilter("Resumo mensal do que gastei em BRL"),
+    false,
+  );
+}
+
 async function clarificationPeriodContinuesPendingQuestion(): Promise<void> {
   const startedAt = new Date("2026-08-11T12:00:00Z");
   const view = await startFinancialAssistantConversation(context, startedAt);
   const disabledProvider = () => createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" });
+  const question = "Quanto gastei com Alimentação no resumo mensal em BRL?";
 
   const first = await sendFinancialAssistantMessage({
     context,
     conversationId: view.conversation.id,
-    question: "Quanto gastei com Alimentação em BRL?",
+    question,
     idempotencyKey: `test-${randomUUID()}`,
     runtime: {
       selectProvider: disabledProvider,
@@ -57,7 +90,8 @@ async function clarificationPeriodContinuesPendingQuestion(): Promise<void> {
     },
   });
   assert.equal(first.conversation.status, "AWAITING_CLARIFICATION");
-  assert.equal(first.conversation.pendingQuestion, "Quanto gastei com Alimentação em BRL?");
+  assert.equal(first.conversation.pendingQuestion, question);
+  assert.equal(first.turns.at(-1)?.intent, "category_spending");
 
   const answered = await sendFinancialAssistantMessage({
     context,
@@ -74,9 +108,54 @@ async function clarificationPeriodContinuesPendingQuestion(): Promise<void> {
   assert.equal(answered.conversation.status, "ANSWERED");
   assert.equal(lastTurn?.normalizedQuestion, "este mes");
   assert.equal(lastTurn?.intent, "category_spending");
+  assert.equal(lastTurn?.filters.categoryName, "Alimentação");
   assert.equal(lastTurn?.safeResponse?.intent, "category_spending");
   assert.equal(lastTurn?.safeResponse?.period?.startOn, "2026-08-01");
   assert.equal(lastTurn?.safeResponse?.period?.endOn, "2026-08-31");
+}
+
+async function subscriptionsWithoutPeriodRequiresClarification(): Promise<void> {
+  await cleanup();
+  const startedAt = new Date("2026-08-11T12:30:00Z");
+  const view = await startFinancialAssistantConversation(context, startedAt);
+  const disabledProvider = () => createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" });
+  const question = "Tenho assinaturas recorrentes em BRL?";
+
+  const first = await sendFinancialAssistantMessage({
+    context,
+    conversationId: view.conversation.id,
+    question,
+    idempotencyKey: `test-${randomUUID()}`,
+    runtime: {
+      selectProvider: disabledProvider,
+      resolveConsent: () => "missing",
+      now: () => new Date("2026-08-11T12:30:01Z"),
+    },
+  });
+  const clarificationTurn = first.turns.at(-1);
+  assert.equal(first.conversation.status, "AWAITING_CLARIFICATION");
+  assert.equal(first.conversation.pendingQuestion, question);
+  assert.equal(clarificationTurn?.intent, "subscriptions");
+  assert.equal(clarificationTurn?.safeResponse?.intent, "subscriptions");
+  assert.equal(clarificationTurn?.safeResponse?.safeLogCode, "ASSISTANT_CLARIFICATION_REQUIRED");
+  assert.equal(clarificationTurn?.safeResponse?.period, undefined);
+
+  const answered = await sendFinancialAssistantMessage({
+    context,
+    conversationId: view.conversation.id,
+    question: "este mes",
+    idempotencyKey: `test-${randomUUID()}`,
+    runtime: {
+      selectProvider: disabledProvider,
+      resolveConsent: () => "missing",
+      now: () => new Date("2026-08-11T12:30:02Z"),
+    },
+  });
+  const lastTurn = answered.turns.at(-1);
+  assert.equal(answered.conversation.status, "ANSWERED");
+  assert.equal(lastTurn?.normalizedQuestion, "este mes");
+  assert.equal(lastTurn?.intent, "subscriptions");
+  assert.equal(lastTurn?.safeResponse?.intent, "subscriptions");
 }
 
 async function expiryWinsBeforeLateAnswerIsPersisted(): Promise<void> {
