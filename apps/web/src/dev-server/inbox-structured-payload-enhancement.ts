@@ -58,13 +58,10 @@ export async function enhanceInboxWithStructuredPayloads(
   ]);
 
   const fallbacks = insightState.ok
-    ? (insightState.data.financialInsights?.insufficientData ?? [])
+    ? insightState.data.financialInsights?.insufficientData ?? []
     : [];
   const withFallback = injectFinancialInsightFallback(html, fallbacks);
-  return enhanceInboxHtmlWithStructuredPayloads(
-    withFallback,
-    payloads.filter(isStructuredPayload),
-  );
+  return enhanceInboxHtmlWithStructuredPayloads(withFallback, payloads.filter(isStructuredPayload));
 }
 
 export function enhanceInboxHtmlWithStructuredPayloads(

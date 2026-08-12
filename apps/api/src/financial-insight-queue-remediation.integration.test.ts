@@ -67,7 +67,10 @@ async function main(): Promise<void> {
     }>(response);
 
     const legacy = body.suggestions.find((item) => item.id === legacyInsightId);
-    assert.ok(legacy, "A pending insight V1 must remain in the review queue even with scanner provider metadata.");
+    assert.ok(
+      legacy,
+      "A pending insight V1 must remain in the review queue even with scanner provider metadata.",
+    );
     assert.equal(legacy.status, "pending_review");
     assert.equal(legacy.kind, "insight");
     assert.equal(await readSuggestionStatus(legacyInsightId), "PENDING_REVIEW");
@@ -76,7 +79,10 @@ async function main(): Promise<void> {
     assert.equal(insufficientData.length, 1);
     assert.equal(insufficientData[0]?.currency, "BRL");
     assert.match(insufficientData[0]?.title ?? "", /Dados insuficientes/i);
-    assert.match(insufficientData[0]?.explanation ?? "", /lançamentos realizados|lancamentos realizados/i);
+    assert.match(
+      insufficientData[0]?.explanation ?? "",
+      /lançamentos realizados|lancamentos realizados/i,
+    );
     assert.equal(await countScannerOwnedV2Insights(profileId), 0);
   } finally {
     await query(
@@ -133,6 +139,7 @@ async function apiRequest(token: string, path: string): Promise<ApiResponse> {
     pathname: url.pathname,
     query: url.searchParams,
     headers: { authorization: `Bearer ${token}` },
+    body: undefined,
   };
   const response = await handleCategorizationAwareAiReviewQueueApiRequest(request);
   assert.ok(response, `${path} should be handled by the categorization-aware review router`);

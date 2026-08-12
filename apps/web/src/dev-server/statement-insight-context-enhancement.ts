@@ -3,8 +3,10 @@ interface StatementInsightTransaction {
   description?: string;
 }
 
-const TRANSACTION_ROW_PATTERN = /<article class="statement-row statement-body[^\"]*" role="row">[\s\S]*?<script type="application\/json" data-transaction="[^\"]+">([\s\S]*?)<\/script>\s*<\/article>/g;
-const GROUP_ROW_PATTERN = /<article class="statement-row statement-body grouped-row"[\s\S]*?<\/article>/g;
+const TRANSACTION_ROW_PATTERN =
+  /<article class="statement-row statement-body[^\"]*" role="row">[\s\S]*?<script type="application\/json" data-transaction="[^\"]+">([\s\S]*?)<\/script>\s*<\/article>/g;
+const GROUP_ROW_PATTERN =
+  /<article class="statement-row statement-body grouped-row"[\s\S]*?<\/article>/g;
 
 export function enhanceStatementInsightContext(html: string, url: URL): string {
   const categoryId = readNonEmpty(url.searchParams.get("categoryId"));
@@ -42,7 +44,10 @@ export function enhanceStatementInsightContext(html: string, url: URL): string {
       <strong>Filtro do insight ativo:</strong> mostrando lançamentos compatíveis com ${escapeHtml(filters.join(" e "))}.
       O resumo da conta permanece completo.
     </p>`;
-  enhanced = enhanced.replace('<section class="statement-layout">', `${notice}\n<section class="statement-layout">`);
+  enhanced = enhanced.replace(
+    '<section class="statement-layout">',
+    `${notice}\n<section class="statement-layout">`,
+  );
 
   return injectContextStyles(enhanced);
 }

@@ -54,7 +54,10 @@ function rendersMonthlySummaryEvidenceWithoutInternalCategoryIds(): void {
   assert.match(enhanced, /Saldo realizado: R\$\s?120,00/);
   assert.match(enhanced, /Variação em Mercado: R\$\s?30,00/);
   assert.match(enhanced, /Variação das despesas: 50%/);
-  assert.doesNotMatch(enhanced, /despesas_periodo_anterior|variacao_despesas_percentual|variacao_categoria:/);
+  assert.doesNotMatch(
+    enhanced,
+    /despesas_periodo_anterior|variacao_despesas_percentual|variacao_categoria:/,
+  );
   assert.match(
     enhanced,
     /href="\/lancamentos\?month=2026-08" data-insight-navigation="true">Abrir lançamentos/,
