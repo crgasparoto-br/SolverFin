@@ -202,7 +202,7 @@ export function generateFinancialInsights(
     ...buildSpendingIncreaseInsights(input, current, previous, currency, commonLimitations),
     ...buildSubscriptionInsights(input, realized, currency, commonLimitations),
     ...buildNegativeBalanceInsight(input, currency, commonLimitations),
-    ...buildBudgetInsights(input, current, currency, commonLimitations),
+    ...buildBudgetInsights(input, realized, currency, commonLimitations),
   ];
   if (current.length === 0) {
     return [...actionable, buildInsufficientDataInsight(input, currency, commonLimitations)];
@@ -308,17 +308,17 @@ function buildIncreaseInsightsForGroup(
       continue;
     }
 
-    const percentChange = calculatePercentChange(
-      group.currentAmountMinor,
-      group.previousAmountMinor,
-    );
-    if (percentChange < threshold) continue;
+    const deltaAmountMinor = group.currentAmountMinor - group.previousAmountMinor;
+    const ratio = deltaAmountMinor / group.previousAmountMinor;
+    const exactPercentChange = ratio * 100;
+    if (exactPercentChange < threshold) continue;
+    const percentChange = Math.round(exactPercentChange);
 
     const categoryId = kind === "category_spending_increase" ? label : undefined;
     const merchantKey = kind === "merchant_spending_increase" ? label : undefined;
     insights.push({
       kind,
-      severity: buildIncreaseSeverity(percentChange, threshold),
+      severity: buildIncreaseSeverity(exactPercentChange, threshold),
       confidence:
         group.currentCount >= minimumCount + 1 && group.previousCount >= minimumCount + 1
           ? "high"
@@ -330,7 +330,7 @@ function buildIncreaseInsightsForGroup(
         label,
         currentAmountMinor: group.currentAmountMinor,
         previousAmountMinor: group.previousAmountMinor,
-        deltaAmountMinor: group.currentAmountMinor - group.previousAmountMinor,
+        deltaAmountMinor,
         percentChange,
         count: group.currentCount,
         periodStartOn: input.currentPeriod.startOn,
@@ -388,13 +388,16 @@ function buildSubscriptionInsights(
     }
 
     const amounts = monthly.map((item) => item.amountMinor);
-    const average = Math.round(amounts.reduce((sum, value) => sum + value, 0) / amounts.length);
-    const maxDeviationPercent = Math.max(
-      ...amounts.map((value) =>
-        Math.round((Math.abs(value - average) / Math.max(1, average)) * 100),
-      ),
+    const exactAverage = amounts.reduce((sum, value) => sum + value, 0) / amounts.length;
+    const average = Math.round(exactAverage);
+    const exactMaxDeviationPercent = Math.max(
+      ...amounts.map((value) => {
+        const deviation = Math.abs(value - exactAverage);
+        return (deviation / Math.max(1, exactAverage)) * 100;
+      }),
     );
-    if (maxDeviationPercent > tolerance) continue;
+    if (exactMaxDeviationPercent > tolerance) continue;
+    const maxDeviationPercent = Math.round(exactMaxDeviationPercent);
 
     insights.push({
       kind: "probable_subscription",
@@ -458,7 +461,7 @@ function buildNegativeBalanceInsight(
 
 function buildBudgetInsights(
   input: GenerateFinancialInsightsInput,
-  current: readonly InsightTransaction[],
+  realized: readonly InsightTransaction[],
   currency: string,
   commonLimitations: readonly string[],
 ): FinancialInsight[] {
@@ -473,7 +476,7 @@ function buildBudgetInsights(
   const insights: FinancialInsight[] = [];
 
   for (const budget of budgets) {
-    const matching = current.filter(
+    const matching = realized.filter(
       (transaction) =>
         transaction.kind === "expense" &&
         transaction.categoryId === budget.categoryId &&

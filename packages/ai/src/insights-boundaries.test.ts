@@ -13,6 +13,7 @@ const previousPeriod = { startOn: "2026-05-01", endOn: "2026-05-31" };
 
 increaseThresholdBoundaryIsExact();
 subscriptionToleranceBoundaryIsExact();
+budgetUsesFullOverlappingPeriod();
 merchantIncreaseDetectorHasPositiveControl();
 
 function increaseThresholdBoundaryIsExact(): void {
@@ -40,6 +41,20 @@ function increaseThresholdBoundaryIsExact(): void {
     false,
     "24% must remain below the configured 25% increase threshold",
   );
+
+  const roundsUpButIsStillBelow = generateFinancialInsights(
+    input([
+      tx("previous-rounded-a", "2026-05-05", 10000, "market", "market-a"),
+      tx("previous-rounded-b", "2026-05-20", 10000, "market", "market-b"),
+      tx("current-rounded-a", "2026-06-05", 12499, "market", "market-a"),
+      tx("current-rounded-b", "2026-06-20", 12500, "market", "market-b"),
+    ]),
+  );
+  assert.equal(
+    roundsUpButIsStillBelow.some((item) => item.kind === "category_spending_increase"),
+    false,
+    "24.995% must not be rounded up before the 25% threshold decision",
+  );
 }
 
 function subscriptionToleranceBoundaryIsExact(): void {
@@ -65,6 +80,53 @@ function subscriptionToleranceBoundaryIsExact(): void {
     false,
     "21% maximum deviation must remain above the configured 20% recurrence tolerance",
   );
+
+  const roundsDownButIsStillAbove = generateFinancialInsights(
+    input([
+      tx("subscription-rounded-apr", "2026-04-05", 7990, "software", "streaming-rounded"),
+      tx("subscription-rounded-may", "2026-05-05", 10000, "software", "streaming-rounded"),
+      tx("subscription-rounded-jun", "2026-06-05", 12010, "software", "streaming-rounded"),
+    ]),
+  );
+  assert.equal(
+    roundsDownButIsStillAbove.some((item) => item.kind === "probable_subscription"),
+    false,
+    "20.1% maximum deviation must not be rounded down before the 20% tolerance decision",
+  );
+}
+
+function budgetUsesFullOverlappingPeriod(): void {
+  const insights = generateFinancialInsights({
+    organizationId,
+    financialProfileId,
+    currentPeriod: { startOn: "2026-08-01", endOn: "2026-08-12" },
+    previousPeriod: { startOn: "2026-07-01", endOn: "2026-07-12" },
+    currency: "BRL",
+    budgets: [
+      {
+        id: "budget-cross-month",
+        organizationId,
+        financialProfileId,
+        categoryId: "market",
+        plannedAmountMinor: 100000,
+        currency: "BRL",
+        periodStartOn: "2026-07-15",
+        periodEndOn: "2026-08-15",
+      },
+    ],
+    transactions: [
+      tx("budget-july", "2026-07-20", 80000, "market", "market-july"),
+      tx("budget-august", "2026-08-10", 40000, "market", "market-august"),
+    ],
+  });
+
+  const budget = findInsight(insights, "budget_exceeded");
+  assert.equal(budget.evidence.currentAmountMinor, 120000);
+  assert.equal(budget.evidence.previousAmountMinor, 100000);
+  assert.equal(budget.evidence.deltaAmountMinor, 20000);
+  assert.equal(budget.evidence.count, 2);
+  assert.equal(budget.evidence.periodStartOn, "2026-07-15");
+  assert.equal(budget.evidence.periodEndOn, "2026-08-15");
 }
 
 function merchantIncreaseDetectorHasPositiveControl(): void {
