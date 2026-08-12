@@ -28,18 +28,13 @@ try {
   await import("./statement-visual/issue-553-ambiguous-recovery.mjs");
   // The close action must remain focusable and usable while the form is locked for recovery.
   await import("./statement-visual/issue-553-ambiguous-close.mjs");
-  // Non-idempotent producers must not present a blind retry after a committed-but-masked response.
-  await import("./statement-visual/issue-553-non-idempotent-ambiguity.mjs");
-  await import("./statement-visual/reports-category-evolution.mjs");
-  await import("./statement-visual/issue-546-reports-category-controls.mjs");
-  await import("./statement-visual/issue-546-selected-view-navigation.mjs");
-  await import("./statement-visual/reports-installments-regression.mjs");
-  await import("./statement-visual/settings-interface.mjs");
-  await import("./statement-visual/settings-interface-reservations.mjs");
+  await import("./statement-visual/issue-553-responsive.mjs");
+  await import("./statement-visual/issue-553-history-recovery.mjs");
   await import("./statement-visual/issue-564-category-learning.mjs");
   await import("./statement-visual/issue-565-ai-review-queue.mjs");
   await import("./statement-visual/issue-565-ai-review-queue-states.mjs");
   await import("./statement-visual/issue-567-financial-insights.mjs");
+  await import("./statement-visual/issue-568-financial-assistant.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);

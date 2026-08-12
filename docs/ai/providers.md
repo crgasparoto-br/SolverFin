@@ -1,6 +1,6 @@
 # Política de provedores de IA
 
-**Issues:** #51, #562, #563  
+**Issues:** #51, #562, #563, #568  
 **Status:** provider real inicial disponível, substituível e desativado por padrão.
 
 ## Objetivo
@@ -9,7 +9,7 @@ O pacote `@solverfin/ai` centraliza chamadas a provedores de IA para manter o do
 
 Nenhum fluxo pode chamar IA sem consentimento ativo, finalidade declarada, payload minimizado, limites explícitos e logs seguros. Respostas do provider não produzem efeito financeiro antes de validação estruturada e composição com dados confiáveis do produto.
 
-A decisão arquitetural do primeiro provider real está na [ADR 0010](../adr/0010-openai-provider-inicial.md).
+A decisão arquitetural do primeiro provider real está na [ADR 0010](../adr/0010-openai-provider-inicial.md). O assistente financeiro somente leitura segue a [ADR 0011](../adr/0011-read-only-financial-assistant.md).
 
 ## Superfície pública
 
@@ -46,6 +46,23 @@ Quando a IA é necessária, a política do fluxo usa:
 O serviço de produto adiciona organização, perfil, conta, categoria, fingerprint, auditoria e proveniência somente depois da resposta validada. Esses dados confiáveis não são enviados ao provider.
 
 Provider desativado, consentimento revogado, resposta inválida ou falha permanente mantêm o item sob revisão sem criar efeito financeiro. Timeout, rate limit e indisponibilidade retornam estado temporário e permitem nova tentativa idempotente do mesmo lote.
+
+## Assistente financeiro conversacional
+
+A issue #568 torna `assistant` um consumidor operacional do provider, mas o provider continua **opcional**. A resposta financeira canônica é preparada antes da chamada externa: a API resolve tenant/perfil, intent, período, moeda, filtros e evidência estruturada e executa todos os cálculos financeiros no backend.
+
+Quando o provider está habilitado, o fluxo usa:
+
+- finalidade `financial_assistant_read_only`;
+- `allowRawFinancialText=false`;
+- allowlist do fluxo restrita ao `intent`, com a pergunta e a evidência já minimizadas no prompt seguro preparado pelo SolverFin;
+- consentimento revalidado imediatamente antes de cada tentativa e novamente entre retries pelo executor comum;
+- timeout de 8 segundos e no máximo um retry adicional no contrato atual;
+- narrativa limitada a conteúdo qualitativo, sem números, quantidades ou comparações de magnitude.
+
+A narrativa do provider nunca substitui a resposta determinística. Se a saída externa introduzir afirmação quantitativa, ela é descartada. Provider desabilitado, revogação de consentimento, timeout, rate limit, indisponibilidade ou resposta inválida preservam a resposta determinística quando existe evidência suficiente.
+
+O provider não recebe `organizationId`, `financialProfileId`, `userId`, chaves de idempotência, SQL, entidades financeiras brutas ou o histórico persistido da conversa. Prompt montado e resposta bruta do provider não são persistidos. O assistente não expõe nenhuma operação financeira de escrita.
 
 ## Configuração
 
@@ -140,6 +157,8 @@ Assim, um callback permissivo como `() => true` não admite payload legado, esp�
 
 Aceitam texto simples ou envelope com `text` e `confidence`. Qualquer `structured` é recusado.
 
+No assistente, o texto aceito ainda passa pelo filtro do próprio fluxo: qualquer narrativa com número, quantidade ou comparação quantitativa é descartada antes da composição com a resposta determinística.
+
 ## Tentativas, timeout e erros controlados
 
 `runAiTask` é o único executor de retry. Uma tentativa produz no máximo uma chamada HTTP, sem probe, diagnóstico ou recuperação oculta.
@@ -173,7 +192,7 @@ O logger é best-effort. Exceção síncrona ou rejeição assíncrona do logger
 
 Preços e capacidades variam por modelo e contrato do ambiente. Antes da ativação, revise a tabela vigente e configure modelo, teto de saída, limite de corpo, timeout e retries por finalidade.
 
-Métricas agregadas de tokens, custo, orçamento e qualidade permanecem fora da issue #562 e da issue #563.
+Métricas agregadas de tokens, custo, orçamento e qualidade permanecem fora da issue #562, da issue #563 e da issue #568.
 
 ## Testes e desenvolvimento local
 
@@ -192,7 +211,8 @@ A suíte usa providers e clientes HTTP fakes, não acessa rede externa e não de
 - Inbox assistida por IA com fixture estruturada;
 - IDs de outro perfil bloqueados antes do provider;
 - retry idempotente após falha temporária;
-- ausência de mensagem bruta na persistência.
+- ausência de mensagem bruta na persistência;
+- assistente com provider fake, narrativa válida, narrativa quantitativa descartada e fallback determinístico quando o provider falha.
 
 Validações esperadas:
 
@@ -220,7 +240,7 @@ Use apenas fixtures fictícias e minimizadas.
 
 ## Limitações conhecidas
 
-- A Inbox de mensagens bancárias é o primeiro consumidor de produto; os demais produtores e o assistente conversacional ainda não usam o provider automaticamente.
 - O provider permanece desligado por padrão e a ativação produtiva depende de configuração protegida e revisão de modelo, custo e limites.
+- Inbox de mensagens bancárias e assistente financeiro são consumidores de produto distintos; no assistente, o provider é opcional e nunca é a fonte dos valores financeiros.
 - Telemetria agregada de custo e orçamento ainda não foi implementada.
 - Fallbacks determinísticos permanecem independentes do provider real.

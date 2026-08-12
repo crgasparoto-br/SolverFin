@@ -110,7 +110,9 @@ Consentimento minimo exigido:
 - finalidade do uso de IA;
 - tipo de dado enviado, sempre minimizado;
 - indicacao de que a IA sugere e explica, mas nao decide efeito financeiro irreversivel sozinha;
-- capacidade de revisar, aprovar, editar ou rejeitar a sugestao.
+- capacidade de revisar, aprovar, editar ou rejeitar a sugestao quando o fluxo produzir uma sugestao revisavel.
+
+No assistente financeiro conversacional, o consentimento e revalidado imediatamente antes de cada tentativa externa. A ausencia ou revogacao do consentimento bloqueia a chamada ao provider sem autorizar o uso de um snapshot antigo.
 
 ## Retencao inicial
 
@@ -123,11 +125,26 @@ Dado bruto deve ser descartado assim que a normalizacao segura for concluida, sa
 - Conteudo bruto de CSV/OFX: nao persistir por padrao. Persistir apenas hash de lote, nome de arquivo minimizado e dados normalizados.
 - Texto bruto de mensagem bancaria: descartar apos normalizacao no mesmo fluxo. Se for indispensavel manter para revisao operacional, prazo maximo inicial de 24 horas.
 - Anexos financeiros brutos: manter apenas quando houver funcionalidade explicita de anexo; marcar status, origem e prazo de revisao. Sem contrato especifico, nao persistir.
-- Resposta bruta de IA: nao persistir por padrao. Persistir apenas saida estruturada, explicacao e metadados seguros da sugestao.
+- Resposta bruta de IA: nao persistir por padrao. Persistir apenas saida estruturada, explicacao e metadados seguros da sugestao ou a resposta segura composta pelo SolverFin.
 - Tokens, assertions e secrets: nunca persistir em formato bruto. Quando sessoes produtivas existirem, persistir apenas hash ou referencia opaca conforme ADR de autenticacao.
 - Auditoria redigida: pode ser mantida enquanto o historico financeiro precisar de rastreabilidade, sem conter dado bruto sensivel.
 
 Qualquer excecao a esses prazos deve ser documentada em issue, ADR ou politica complementar antes da implementacao.
+
+### Assistente financeiro conversacional
+
+O assistente financeiro da issue #568 persiste somente o estado necessario para continuidade segura entre mensagens e reinicios:
+
+- identificadores internos de conversa e turno, sempre escopados por usuario, organizacao e perfil financeiro;
+- estado, versao, sequencia, chave de idempotencia e expiracao configuravel;
+- pergunta normalizada;
+- intent e filtros resolvidos;
+- evidencia financeira estruturada calculada pelo backend;
+- resposta segura composta pelo SolverFin e codigo de falha controlado quando aplicavel.
+
+O assistente nao persiste o prompt montado para o provider nem a resposta bruta do provider. A projecao publica da conversa omite IDs internos de tenant/perfil/usuario, IDs de turno, chave de idempotencia, evidencia interna e codigos internos de falha que nao sejam necessarios para a experiencia autorizada.
+
+A conversa possui TTL configuravel e pode ser cancelada, limpa ou expirada. Troca de perfil ou moeda incompatível encerra o contexto anterior em vez de reaproveitar evidencia entre contextos. Limpar remove o historico conversacional persistido do contexto selecionado; cancelamento e expiracao permanecem como estados terminais suficientes para impedir que respostas tardias sobrescrevam o estado mais novo.
 
 ## Contrato aplicado ao fluxo CSV revisavel
 
@@ -162,6 +179,7 @@ O sistema pode manter:
 - campos financeiros normalizados;
 - status de revisao;
 - explicacao da regra ou IA;
+- estado conversacional minimizado do assistente conforme a secao especifica;
 - auditoria redigida.
 
 ## Mascaramento
@@ -225,6 +243,8 @@ Fluxos de importacao, conciliacao, automacao e IA devem registrar:
 
 Quando houver incerteza, o efeito financeiro final deve aguardar revisao humana.
 
+O assistente conversacional e uma superficie de consulta, nao uma sugestao com efeito financeiro. Sua rastreabilidade usa conversa/turno, filtros, evidencia estruturada e resposta segura, sem transformar a consulta em operacao de escrita financeira.
+
 ## Regras para IA
 
 IA deve receber apenas dados minimizados e relevantes para a finalidade declarada.
@@ -237,7 +257,7 @@ Nao enviar para IA sem necessidade clara:
 - dados de outro perfil financeiro;
 - historico amplo quando um recorte menor resolve o caso.
 
-A saida de IA deve ser estruturada, validada e tratada como sugestao revisavel. A explicacao deve permitir ao usuario entender por que a sugestao foi criada.
+A saida de IA deve ser estruturada e validada quando o fluxo exigir sugestao revisavel. No assistente financeiro, o provider e opcional e limitado a narrativa qualitativa; os valores e fatos quantitativos permanecem derivados da evidencia determinista calculada antes da chamada externa.
 
 ## Regras para importacao e conciliacao
 
