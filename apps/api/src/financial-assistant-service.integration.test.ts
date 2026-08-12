@@ -48,7 +48,7 @@ async function clarificationPeriodContinuesPendingQuestion(): Promise<void> {
   const first = await sendFinancialAssistantMessage({
     context,
     conversationId: view.conversation.id,
-    question: "Qual meu saldo projetado?",
+    question: "Quanto gastei com Alimentação em BRL?",
     idempotencyKey: `test-${randomUUID()}`,
     runtime: {
       selectProvider: disabledProvider,
@@ -57,7 +57,7 @@ async function clarificationPeriodContinuesPendingQuestion(): Promise<void> {
     },
   });
   assert.equal(first.conversation.status, "AWAITING_CLARIFICATION");
-  assert.equal(first.conversation.pendingQuestion, "Qual meu saldo projetado?");
+  assert.equal(first.conversation.pendingQuestion, "Quanto gastei com Alimentação em BRL?");
 
   const answered = await sendFinancialAssistantMessage({
     context,
@@ -73,8 +73,8 @@ async function clarificationPeriodContinuesPendingQuestion(): Promise<void> {
   const lastTurn = answered.turns.at(-1);
   assert.equal(answered.conversation.status, "ANSWERED");
   assert.equal(lastTurn?.normalizedQuestion, "este mes");
-  assert.equal(lastTurn?.intent, "balance_projection");
-  assert.equal(lastTurn?.safeResponse?.intent, "balance_projection");
+  assert.equal(lastTurn?.intent, "category_spending");
+  assert.equal(lastTurn?.safeResponse?.intent, "category_spending");
   assert.equal(lastTurn?.safeResponse?.period?.startOn, "2026-08-01");
   assert.equal(lastTurn?.safeResponse?.period?.endOn, "2026-08-31");
 }
@@ -102,9 +102,11 @@ async function expiryWinsBeforeLateAnswerIsPersisted(): Promise<void> {
     question: "Qual meu saldo projetado este mes?",
     idempotencyKey: `test-${randomUUID()}`,
     runtime: {
-      selectProvider: () => createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" }),
+      selectProvider: () =>
+        createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" }),
       resolveConsent: () => "missing",
-      now: () => times[Math.min(timeIndex++, times.length - 1)] ?? times[times.length - 1]!,
+      now: () =>
+        times[Math.min(timeIndex++, times.length - 1)] ?? times[times.length - 1]!,
     },
   });
 
