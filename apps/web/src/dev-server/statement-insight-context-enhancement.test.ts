@@ -9,11 +9,7 @@ function filtersCategoryAndMerchantWithoutExposingCategoryId(): void {
   const categoryId = "88888888-8888-4888-8888-888888888888";
   const html = documentHtml([
     transactionRow("matching", "Mercado São 123", categoryId),
-    transactionRow(
-      "other-category",
-      "Mercado São 456",
-      "99999999-9999-4999-8999-999999999999",
-    ),
+    transactionRow("other-category", "Mercado São 456", "99999999-9999-4999-8999-999999999999"),
     transactionRow("other-merchant", "Farmácia Central", categoryId),
     groupRow(),
   ]);
