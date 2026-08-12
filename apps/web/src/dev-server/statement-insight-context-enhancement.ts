@@ -4,7 +4,7 @@ interface StatementInsightTransaction {
 }
 
 const TRANSACTION_ROW_PATTERN =
-  /<article class="statement-row statement-body[^\"]*" role="row">[\s\S]*?<script type="application\/json" data-transaction="[^\"]+">([\s\S]*?)<\/script>\s*<\/article>/g;
+  /<article class="statement-row statement-body[^"]*" role="row">[\s\S]*?<script type="application\/json" data-transaction="[^"]+">([\s\S]*?)<\/script>\s*<\/article>/g;
 const GROUP_ROW_PATTERN =
   /<article class="statement-row statement-body grouped-row"[\s\S]*?<\/article>/g;
 
