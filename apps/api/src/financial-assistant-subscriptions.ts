@@ -175,7 +175,9 @@ async function buildSubscriptionsEvidence(
       "Assinatura provavel usa padrao deterministico de recorrencia historica; nao confirma contrato ativo.",
       "A deteccao de assinaturas provaveis pode usar ate seis meses de historico encerrados no periodo solicitado, sem alterar o periodo informado na resposta.",
     ],
-    limitations: ["Mudancas de merchant, pausas e pagamentos irregulares podem reduzir a confianca."],
+    limitations: [
+      "Mudancas de merchant, pausas e pagamentos irregulares podem reduzir a confianca.",
+    ],
     sources: ["recorrencias", "lancamentos"],
     confidence,
   };
