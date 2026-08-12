@@ -2,22 +2,20 @@ import assert from "node:assert/strict";
 
 import { enhanceStatementInsightContext } from "./statement-insight-context-enhancement.js";
 
+const CATEGORY_ID = "88888888-8888-4888-8888-888888888888";
+const OTHER_CATEGORY_ID = "99999999-9999-4999-8999-999999999999";
+
 filtersCategoryAndMerchantWithoutExposingCategoryId();
 preservesContextWhenStatementFiltersSubmit();
 
 function filtersCategoryAndMerchantWithoutExposingCategoryId(): void {
-  const categoryId = "88888888-8888-4888-8888-888888888888";
-  const html = documentHtml([
-    transactionRow("matching", "Mercado São 123", categoryId),
-    transactionRow("other-category", "Mercado São 456", "99999999-9999-4999-8999-999999999999"),
-    transactionRow("other-merchant", "Farmácia Central", categoryId),
+  const rows = [
+    transactionRow("matching", "Mercado São 123", CATEGORY_ID),
+    transactionRow("other-category", "Mercado São 456", OTHER_CATEGORY_ID),
+    transactionRow("other-merchant", "Farmácia Central", CATEGORY_ID),
     groupRow(),
-  ]);
-  const url = new URL(
-    `http://solverfin.test/lancamentos?month=2026-08&categoryId=${categoryId}&merchantKey=mercado+sao`,
-  );
-
-  const enhanced = enhanceStatementInsightContext(html, url);
+  ];
+  const enhanced = enhanceStatementInsightContext(documentHtml(rows), statementUrl("mercado sao"));
 
   assert.match(enhanced, /data-transaction="matching"/);
   assert.doesNotMatch(enhanced, /data-transaction="other-category"/);
@@ -26,28 +24,28 @@ function filtersCategoryAndMerchantWithoutExposingCategoryId(): void {
   assert.match(enhanced, /Filtro do insight ativo/);
   assert.match(enhanced, /o estabelecimento mercado sao/);
   assert.match(enhanced, /O resumo da conta permanece completo/);
-  const notice = enhanced.match(/<p class="insight-context-notice"[\s\S]*?<\/p>/)?.[0] ?? "";
-  assert.doesNotMatch(notice, new RegExp(categoryId));
+
+  const noticePattern = /<p class="insight-context-notice"[\s\S]*?<\/p>/;
+  const notice = enhanced.match(noticePattern)?.[0] ?? "";
+  assert.doesNotMatch(notice, new RegExp(CATEGORY_ID));
 }
 
 function preservesContextWhenStatementFiltersSubmit(): void {
-  const categoryId = "88888888-8888-4888-8888-888888888888";
-  const html = documentHtml([transactionRow("matching", "Mercado São", categoryId)]);
-  const enhanced = enhanceStatementInsightContext(
-    html,
-    new URL(
-      `http://solverfin.test/lancamentos?accountId=account-1&month=2026-08&categoryId=${categoryId}&merchantKey=Mercado%20S%C3%A3o%20123`,
-    ),
-  );
+  const rows = [transactionRow("matching", "Mercado São", CATEGORY_ID)];
+  const enhanced = enhanceStatementInsightContext(documentHtml(rows), statementUrl("Mercado São 123"));
+  const categoryInput = `name="categoryId" value="${CATEGORY_ID}" data-insight-context-param`;
 
-  assert.match(
-    enhanced,
-    new RegExp(`name="categoryId" value="${categoryId}" data-insight-context-param`),
-  );
-  assert.match(
-    enhanced,
-    /name="merchantKey" value="mercado sao" data-insight-context-param/,
-  );
+  assert.ok(enhanced.includes(categoryInput));
+  assert.match(enhanced, /name="merchantKey" value="mercado sao" data-insight-context-param/);
+}
+
+function statementUrl(merchantKey: string): URL {
+  const url = new URL("/lancamentos", "http://solverfin.test");
+  url.searchParams.set("accountId", "account-1");
+  url.searchParams.set("month", "2026-08");
+  url.searchParams.set("categoryId", CATEGORY_ID);
+  url.searchParams.set("merchantKey", merchantKey);
+  return url;
 }
 
 function documentHtml(rows: readonly string[]): string {
@@ -63,13 +61,10 @@ function documentHtml(rows: readonly string[]): string {
 }
 
 function transactionRow(id: string, description: string, categoryId: string): string {
+  const payload = JSON.stringify({ id, description, categoryId });
   return `<article class="statement-row statement-body" role="row">
     <span>${description}</span>
-    <script type="application/json" data-transaction="${id}">${JSON.stringify({
-      id,
-      description,
-      categoryId,
-    })}</script>
+    <script type="application/json" data-transaction="${id}">${payload}</script>
   </article>`;
 }
 
