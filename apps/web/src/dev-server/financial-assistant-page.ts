@@ -294,7 +294,9 @@ function financialAssistantControllerScript(): string {
     if (!(form instanceof HTMLFormElement) || !(input instanceof HTMLTextAreaElement) || !thread || !status) return;
 
     let conversationId = root.getAttribute('data-conversation-id') || '';
+    let currentConversationStatus = conversationId ? 'ACTIVE' : '';
     let busy = false;
+    let contextActionBusy = false;
     let pendingKey = '';
     let pendingQuestion = '';
 
@@ -304,10 +306,28 @@ function financialAssistantControllerScript(): string {
       if (profileId) next.searchParams.set('profileId', profileId);
       return next.pathname + next.search;
     };
+    const syncBusyState = () => {
+      const anyBusy = busy || contextActionBusy;
+      root.setAttribute('aria-busy', anyBusy ? 'true' : 'false');
+      if (submit instanceof HTMLButtonElement) submit.disabled = anyBusy;
+    };
+    const syncActionDisabledState = () => {
+      const active = Boolean(
+        conversationId && !['CANCELLED', 'EXPIRED'].includes(currentConversationStatus),
+      );
+      if (cancel instanceof HTMLButtonElement) cancel.disabled = contextActionBusy || !active;
+      if (clear instanceof HTMLButtonElement) clear.disabled = contextActionBusy || !conversationId;
+      if (startNew instanceof HTMLButtonElement) startNew.disabled = contextActionBusy;
+    };
     const setBusy = (value, message) => {
       busy = value;
-      root.setAttribute('aria-busy', value ? 'true' : 'false');
-      if (submit instanceof HTMLButtonElement) submit.disabled = value;
+      syncBusyState();
+      if (message) status.textContent = message;
+    };
+    const setContextActionBusy = (value, message) => {
+      contextActionBusy = value;
+      syncBusyState();
+      syncActionDisabledState();
       if (message) status.textContent = message;
     };
     const errorMessage = async (response) => {
@@ -336,9 +356,8 @@ function financialAssistantControllerScript(): string {
       return conversationId;
     };
     const syncActions = (conversation) => {
-      const active = Boolean(conversation && !['CANCELLED', 'EXPIRED'].includes(conversation.status));
-      if (cancel instanceof HTMLButtonElement) cancel.disabled = !active;
-      if (clear instanceof HTMLButtonElement) clear.disabled = !conversation;
+      currentConversationStatus = conversation?.status || '';
+      syncActionDisabledState();
     };
     const node = (tag, className, text) => {
       const element = document.createElement(tag);
@@ -422,24 +441,29 @@ function financialAssistantControllerScript(): string {
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const question = input.value.trim();
-      if (!question || busy) return;
+      if (!question || busy || contextActionBusy) return;
       if (!pendingKey || pendingQuestion !== question) {
         pendingKey = window.crypto?.randomUUID?.() || ('msg-' + Date.now() + '-' + Math.random().toString(16).slice(2));
         pendingQuestion = question;
       }
+      let requestConversationId = '';
       setBusy(true, 'Consultando os dados autorizados…');
       try {
-        const id = await ensureConversation();
-        const data = await post('/api/financial-assistant/conversations/' + encodeURIComponent(id) + '/messages', { question, idempotencyKey: pendingKey });
-        renderConversation(data.conversation);
-        input.value = '';
-        pendingKey = '';
-        pendingQuestion = '';
+        requestConversationId = await ensureConversation();
+        const data = await post('/api/financial-assistant/conversations/' + encodeURIComponent(requestConversationId) + '/messages', { question, idempotencyKey: pendingKey });
+        if (conversationId === requestConversationId) {
+          renderConversation(data.conversation);
+          input.value = '';
+          pendingKey = '';
+          pendingQuestion = '';
+        }
       } catch (error) {
-        status.textContent = error instanceof Error ? error.message : 'Não foi possível concluir a consulta.';
+        if (!requestConversationId || conversationId === requestConversationId) {
+          status.textContent = error instanceof Error ? error.message : 'Não foi possível concluir a consulta.';
+        }
       } finally {
         setBusy(false);
-        input.focus();
+        if (!contextActionBusy) input.focus();
       }
     });
 
@@ -451,45 +475,66 @@ function financialAssistantControllerScript(): string {
     });
 
     cancel?.addEventListener('click', async () => {
-      if (!conversationId || busy) return;
-      setBusy(true, 'Cancelando o contexto…');
+      if (!conversationId || contextActionBusy) return;
+      const targetConversationId = conversationId;
+      setContextActionBusy(true, 'Cancelando o contexto…');
       try {
-        const data = await post('/api/financial-assistant/conversations/' + encodeURIComponent(conversationId) + '/cancel');
-        renderConversation(data.conversation);
+        const data = await post('/api/financial-assistant/conversations/' + encodeURIComponent(targetConversationId) + '/cancel');
+        if (conversationId === targetConversationId) renderConversation(data.conversation);
       } catch (error) {
-        status.textContent = error instanceof Error ? error.message : 'Não foi possível cancelar o contexto.';
+        if (conversationId === targetConversationId) {
+          status.textContent = error instanceof Error ? error.message : 'Não foi possível cancelar o contexto.';
+        }
       } finally {
-        setBusy(false);
+        setContextActionBusy(false);
+        input.focus();
       }
     });
 
     clear?.addEventListener('click', async () => {
-      if (!conversationId || busy) return;
-      setBusy(true, 'Limpando o contexto…');
+      if (!conversationId || contextActionBusy) return;
+      const targetConversationId = conversationId;
+      setContextActionBusy(true, 'Limpando o contexto…');
       try {
-        await post('/api/financial-assistant/conversations/' + encodeURIComponent(conversationId) + '/clear');
-        conversationId = '';
-        root.setAttribute('data-conversation-id', '');
-        renderConversation(null);
+        await post('/api/financial-assistant/conversations/' + encodeURIComponent(targetConversationId) + '/clear');
+        if (conversationId === targetConversationId) {
+          conversationId = '';
+          currentConversationStatus = '';
+          pendingKey = '';
+          pendingQuestion = '';
+          root.setAttribute('data-conversation-id', '');
+          renderConversation(null);
+        }
       } catch (error) {
-        status.textContent = error instanceof Error ? error.message : 'Não foi possível limpar o contexto.';
+        if (conversationId === targetConversationId) {
+          status.textContent = error instanceof Error ? error.message : 'Não foi possível limpar o contexto.';
+        }
       } finally {
-        setBusy(false);
+        setContextActionBusy(false);
         input.focus();
       }
     });
 
     startNew?.addEventListener('click', async () => {
-      if (busy) return;
-      setBusy(true, 'Iniciando um novo contexto…');
+      if (contextActionBusy) return;
+      const previousConversationId = conversationId;
+      setContextActionBusy(true, 'Iniciando um novo contexto…');
       try {
-        if (conversationId) await post('/api/financial-assistant/conversations/' + encodeURIComponent(conversationId) + '/clear');
-        conversationId = '';
+        if (previousConversationId) {
+          await post('/api/financial-assistant/conversations/' + encodeURIComponent(previousConversationId) + '/clear');
+        }
+        if (conversationId === previousConversationId) {
+          conversationId = '';
+          currentConversationStatus = '';
+          pendingKey = '';
+          pendingQuestion = '';
+          root.setAttribute('data-conversation-id', '');
+        }
         const id = await ensureConversation();
         const response = await fetch(apiPath('/api/financial-assistant'));
+        if (conversationId !== id) return;
         if (response.ok) {
           const data = await response.json();
-          conversationId = id;
           renderConversation(data.conversation);
         } else {
           renderConversation({ id, status: 'ACTIVE', turns: [] });
@@ -497,7 +542,7 @@ function financialAssistantControllerScript(): string {
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : 'Não foi possível iniciar um novo contexto.';
       } finally {
-        setBusy(false);
+        setContextActionBusy(false);
         input.focus();
       }
     });
