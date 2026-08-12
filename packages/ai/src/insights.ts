@@ -308,8 +308,9 @@ function buildIncreaseInsightsForGroup(
       continue;
     }
 
-    const exactPercentChange =
-      ((group.currentAmountMinor - group.previousAmountMinor) / group.previousAmountMinor) * 100;
+    const deltaAmountMinor = group.currentAmountMinor - group.previousAmountMinor;
+    const ratio = deltaAmountMinor / group.previousAmountMinor;
+    const exactPercentChange = ratio * 100;
     if (exactPercentChange < threshold) continue;
     const percentChange = Math.round(exactPercentChange);
 
@@ -329,7 +330,7 @@ function buildIncreaseInsightsForGroup(
         label,
         currentAmountMinor: group.currentAmountMinor,
         previousAmountMinor: group.previousAmountMinor,
-        deltaAmountMinor: group.currentAmountMinor - group.previousAmountMinor,
+        deltaAmountMinor,
         percentChange,
         count: group.currentCount,
         periodStartOn: input.currentPeriod.startOn,
@@ -390,9 +391,10 @@ function buildSubscriptionInsights(
     const exactAverage = amounts.reduce((sum, value) => sum + value, 0) / amounts.length;
     const average = Math.round(exactAverage);
     const exactMaxDeviationPercent = Math.max(
-      ...amounts.map(
-        (value) => (Math.abs(value - exactAverage) / Math.max(1, exactAverage)) * 100,
-      ),
+      ...amounts.map((value) => {
+        const deviation = Math.abs(value - exactAverage);
+        return (deviation / Math.max(1, exactAverage)) * 100;
+      }),
     );
     if (exactMaxDeviationPercent > tolerance) continue;
     const maxDeviationPercent = Math.round(exactMaxDeviationPercent);
