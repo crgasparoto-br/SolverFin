@@ -308,7 +308,8 @@ function buildIncreaseInsightsForGroup(
       continue;
     }
 
-    const deltaAmountMinor = group.currentAmountMinor - group.previousAmountMinor;
+    const deltaAmountMinor =
+      group.currentAmountMinor - group.previousAmountMinor;
     const ratio = deltaAmountMinor / group.previousAmountMinor;
     const exactPercentChange = ratio * 100;
     if (exactPercentChange < threshold) continue;
@@ -388,7 +389,8 @@ function buildSubscriptionInsights(
     }
 
     const amounts = monthly.map((item) => item.amountMinor);
-    const exactAverage = amounts.reduce((sum, value) => sum + value, 0) / amounts.length;
+    const exactAverage =
+      amounts.reduce((sum, value) => sum + value, 0) / amounts.length;
     const average = Math.round(exactAverage);
     const exactMaxDeviationPercent = Math.max(
       ...amounts.map((value) => {
