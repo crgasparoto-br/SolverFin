@@ -170,10 +170,7 @@ export async function sendFinancialAssistantMessage(input: {
 
     const resolveAuthoritativeConsent = async (): Promise<AiConsentState> => {
       const lifecycleNow = input.runtime.now?.() ?? new Date();
-      const latest = await getFinancialAssistantConversationForContext(
-        input.context,
-        lifecycleNow,
-      );
+      const latest = await getFinancialAssistantConversationForContext(input.context, lifecycleNow);
       if (
         !latest ||
         latest.conversation.id !== input.conversationId ||
