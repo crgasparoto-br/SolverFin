@@ -304,10 +304,18 @@ function resolveClarificationPrecedence(
 
 function isClarificationFragment(question: string): boolean {
   const normalized = normalizeForMatching(question);
+  const periodFragments = [
+    "hoje",
+    "este mes",
+    "mes atual",
+    "mes passado",
+    "ultimo mes",
+    "ultimos 30 dias",
+  ];
   if (
-    /^(?:20\d{2}-(?:0[1-9]|1[0-2])|hoje|este mes|mes atual|mes passado|ultimo mes|ultimos 30 dias|(?:em\s+)?(?:brl|usd|eur|gbp))$/.test(
-      normalized,
-    )
+    /^20\d{2}-(?:0[1-9]|1[0-2])$/.test(normalized) ||
+    /^(?:em\s+)?(?:brl|usd|eur|gbp)$/.test(normalized) ||
+    periodFragments.includes(normalized)
   ) {
     return true;
   }
