@@ -662,7 +662,13 @@ async function aggregateBalance(
        from "Transaction"
       where "organizationId" = $1 and "financialProfileId" = $2 and upper("currency") = $3
         and "status" <> 'VOIDED' and "accountId" is not null`,
-    [context.organizationId, context.financialProfileId, currency, projectionEndOn, realizedCutoffOn],
+    [
+      context.organizationId,
+      context.financialProfileId,
+      currency,
+      projectionEndOn,
+      realizedCutoffOn,
+    ],
   );
   return {
     accountCount: toNumber(account?.count),

@@ -50,26 +50,74 @@ async function temporalBalanceCutoffsRespectRequestedHorizon(): Promise<void> {
   try {
     await query(
       `insert into "Account"
-        ("id", "organizationId", "financialProfileId", "name", "kind", "currency", "openingBalanceMinor")
-       values ($1, $2, $3, 'Audit escape temporal account', 'CHECKING', $4, 100000)`,
+        ("id", "organizationId", "financialProfileId", "name", "kind", "currency", "openingBalanceMinor", "updatedAt")
+       values ($1, $2, $3, 'Audit escape temporal account', 'CHECKING', $4, 100000, now())`,
       [accountId, ORGANIZATION_ID, PROFILE_ID, TEST_CURRENCY],
     );
 
     const transactions = [
-      [transactionIds[0], "INCOME", "POSTED", 10000, "2026-01-10", "2026-01-10", "January realized income"],
-      [transactionIds[1], "EXPENSE", "POSTED", 3000, "2026-02-10", "2026-02-10", "February realized expense"],
-      [transactionIds[2], "INCOME", "RECONCILED", 2000, "2026-08-10", "2026-08-10", "Current realized income"],
-      [transactionIds[3], "INCOME", "POSTED", 5000, "2026-08-12", "2026-08-12", "After as-of realized income"],
-      [transactionIds[4], "EXPENSE", "PLANNED", 4000, "2026-01-05", "2026-09-15", "Future planned expense"],
+      [
+        transactionIds[0],
+        "INCOME",
+        "POSTED",
+        10000,
+        "2026-01-10",
+        "2026-01-10",
+        "January realized income",
+      ],
+      [
+        transactionIds[1],
+        "EXPENSE",
+        "POSTED",
+        3000,
+        "2026-02-10",
+        "2026-02-10",
+        "February realized expense",
+      ],
+      [
+        transactionIds[2],
+        "INCOME",
+        "RECONCILED",
+        2000,
+        "2026-08-10",
+        "2026-08-10",
+        "Current realized income",
+      ],
+      [
+        transactionIds[3],
+        "INCOME",
+        "POSTED",
+        5000,
+        "2026-08-12",
+        "2026-08-12",
+        "After as-of realized income",
+      ],
+      [
+        transactionIds[4],
+        "EXPENSE",
+        "PLANNED",
+        4000,
+        "2026-01-05",
+        "2026-09-15",
+        "Future planned expense",
+      ],
     ] as const;
 
-    for (const [id, kind, status, amountMinor, occurredOn, plannedOn, description] of transactions) {
+    for (const [
+      id,
+      kind,
+      status,
+      amountMinor,
+      occurredOn,
+      plannedOn,
+      description,
+    ] of transactions) {
       await query(
         `insert into "Transaction"
           ("id", "organizationId", "financialProfileId", "accountId", "kind", "status", "source",
-           "amountMinor", "currency", "occurredOn", "plannedOn", "description")
+           "amountMinor", "currency", "occurredOn", "plannedOn", "description", "updatedAt")
          values ($1, $2, $3, $4, $5::"TransactionKind", $6::"TransactionStatus", 'MANUAL',
-                 $7, $8, $9::date, $10::date, $11)`,
+                 $7, $8, $9::date, $10::date, $11, now())`,
         [
           id,
           ORGANIZATION_ID,
@@ -95,7 +143,9 @@ async function temporalBalanceCutoffsRespectRequestedHorizon(): Promise<void> {
       now,
     );
     assert.equal(historical.kind, "evidence");
-    if (historical.kind !== "evidence" || !historical.evidence) assert.fail("expected historical evidence");
+    if (historical.kind !== "evidence" || !historical.evidence) {
+      assert.fail("expected historical evidence");
+    }
     assert.equal(historical.evidence.period.startOn, "2026-01-01");
     assert.equal(historical.evidence.period.endOn, "2026-01-31");
     assert.equal(metricAmount(historical.evidence.metrics, "projected_balance"), 110000);
@@ -111,7 +161,9 @@ async function temporalBalanceCutoffsRespectRequestedHorizon(): Promise<void> {
       now,
     );
     assert.equal(current.kind, "evidence");
-    if (current.kind !== "evidence" || !current.evidence) assert.fail("expected current evidence");
+    if (current.kind !== "evidence" || !current.evidence) {
+      assert.fail("expected current evidence");
+    }
     assert.equal(metricAmount(current.evidence.metrics, "projected_balance"), 109000);
 
     // TEMP-FUTURE-001 + TEMP-SOURCE-001: realized stays capped at today while PLANNED follows plannedOn.
@@ -121,7 +173,9 @@ async function temporalBalanceCutoffsRespectRequestedHorizon(): Promise<void> {
       now,
     );
     assert.equal(future.kind, "evidence");
-    if (future.kind !== "evidence" || !future.evidence) assert.fail("expected future evidence");
+    if (future.kind !== "evidence" || !future.evidence) {
+      assert.fail("expected future evidence");
+    }
     assert.equal(metricAmount(future.evidence.metrics, "planned_delta"), -4000);
     assert.equal(metricAmount(future.evidence.metrics, "projected_balance"), 105000);
   } finally {
@@ -170,7 +224,11 @@ async function retryAfterRestartRecoversInsideRepeatedEntrypoint(): Promise<void
   assert.equal(repeated.conversation.status, "FAILED");
   assert.equal(recoveredTurn?.status, "FAILED");
   assert.equal(recoveredTurn?.failureCode, "ASSISTANT_PROCESS_INTERRUPTED");
-  assert.equal(providerSelections, 0, "same-key recovery must not reach provider selection/outbound");
+  assert.equal(
+    providerSelections,
+    0,
+    "same-key recovery must not reach provider selection/outbound",
+  );
 
   // RESTART-IDEM-001 sibling: repeat the same public service entrypoint/key again, still no auxiliary GET.
   const repeatedAgain = await sendFinancialAssistantMessage({
