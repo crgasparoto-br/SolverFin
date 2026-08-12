@@ -32,7 +32,10 @@ function filtersCategoryAndMerchantWithoutExposingCategoryId(): void {
 
 function preservesContextWhenStatementFiltersSubmit(): void {
   const rows = [transactionRow("matching", "Mercado São", CATEGORY_ID)];
-  const enhanced = enhanceStatementInsightContext(documentHtml(rows), statementUrl("Mercado São 123"));
+  const enhanced = enhanceStatementInsightContext(
+    documentHtml(rows),
+    statementUrl("Mercado São 123"),
+  );
   const categoryInput = `name="categoryId" value="${CATEGORY_ID}" data-insight-context-param`;
 
   assert.ok(enhanced.includes(categoryInput));
