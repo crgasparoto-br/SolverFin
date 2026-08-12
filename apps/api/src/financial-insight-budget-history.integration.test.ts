@@ -38,7 +38,15 @@ async function main(): Promise<void> {
   try {
     await insertCategory(categoryId, marker);
     await insertBudget(budgetId, categoryId);
-    await insertExpense(transactionIds[0]!, categoryId, "2026-01-10", 60000, "BRL", "POSTED", marker);
+    await insertExpense(
+      transactionIds[0]!,
+      categoryId,
+      "2026-01-10",
+      60000,
+      "BRL",
+      "POSTED",
+      marker,
+    );
     await insertExpense(
       transactionIds[1]!,
       categoryId,
