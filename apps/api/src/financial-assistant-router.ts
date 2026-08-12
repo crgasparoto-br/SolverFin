@@ -236,10 +236,27 @@ function presentConversation(view: FinancialAssistantConversationView) {
       question: turn.normalizedQuestion,
       intent: turn.intent,
       filters: presentFilters(turn.filters),
-      response: turn.safeResponse,
+      response: presentSafeResponse(turn.safeResponse),
       createdAt: turn.createdAt.toISOString(),
       answeredAt: turn.answeredAt?.toISOString() ?? null,
     })),
+  };
+}
+
+function presentSafeResponse(
+  response: FinancialAssistantConversationView["turns"][number]["safeResponse"],
+) {
+  if (!response) return null;
+  return {
+    status: response.status,
+    intent: response.intent,
+    confidence: response.confidence,
+    answer: response.answer,
+    ...(response.period ? { period: response.period } : {}),
+    ...(response.filters ? { filters: response.filters } : {}),
+    assumptions: response.assumptions,
+    sources: response.sources,
+    limitations: response.limitations,
   };
 }
 

@@ -40,6 +40,7 @@ async function main(): Promise<void> {
     mixedSummaryCategoryPhrasesKeepCategoryIntent();
     await clarificationPeriodContinuesPendingQuestion();
     await subscriptionsWithoutPeriodRequiresClarification();
+    await subscriptionsRespectExplicitHistoricalPeriod();
     await expiryWinsBeforeLateAnswerIsPersisted();
   } finally {
     await cleanup();
@@ -155,7 +156,63 @@ async function subscriptionsWithoutPeriodRequiresClarification(): Promise<void> 
   assert.equal(answered.conversation.status, "ANSWERED");
   assert.equal(lastTurn?.normalizedQuestion, "este mes");
   assert.equal(lastTurn?.intent, "subscriptions");
+  assert.equal(lastTurn?.filters.periodStartOn, "2026-08-01");
+  assert.equal(lastTurn?.filters.periodEndOn, "2026-08-31");
+  assert.equal(lastTurn?.evidence?.period.startOn, "2026-08-01");
+  assert.equal(lastTurn?.evidence?.period.endOn, "2026-08-31");
   assert.equal(lastTurn?.safeResponse?.intent, "subscriptions");
+  assert.equal(lastTurn?.safeResponse?.period?.startOn, "2026-08-01");
+  assert.equal(lastTurn?.safeResponse?.period?.endOn, "2026-08-31");
+}
+
+async function subscriptionsRespectExplicitHistoricalPeriod(): Promise<void> {
+  await cleanup();
+  const startedAt = new Date("2026-08-11T12:40:00Z");
+  const view = await startFinancialAssistantConversation(context, startedAt);
+  const disabledProvider = () => createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" });
+
+  const answered = await sendFinancialAssistantMessage({
+    context,
+    conversationId: view.conversation.id,
+    question: "Tenho assinaturas recorrentes em BRL em 2026-01?",
+    idempotencyKey: `test-${randomUUID()}`,
+    runtime: {
+      selectProvider: disabledProvider,
+      resolveConsent: () => "missing",
+      now: () => new Date("2026-08-11T12:40:01Z"),
+    },
+  });
+  const lastTurn = answered.turns.at(-1);
+  assert.equal(answered.conversation.status, "ANSWERED");
+  assert.equal(lastTurn?.intent, "subscriptions");
+  assert.equal(lastTurn?.filters.periodStartOn, "2026-01-01");
+  assert.equal(lastTurn?.filters.periodEndOn, "2026-01-31");
+  assert.equal(lastTurn?.evidence?.period.startOn, "2026-01-01");
+  assert.equal(lastTurn?.evidence?.period.endOn, "2026-01-31");
+  assert.equal(lastTurn?.safeResponse?.period?.startOn, "2026-01-01");
+  assert.equal(lastTurn?.safeResponse?.period?.endOn, "2026-01-31");
+  assert.ok(
+    lastTurn?.evidence?.assumptions.some((item) =>
+      item.includes("historico encerrados no periodo solicitado"),
+    ),
+  );
+
+  const previousMonth = await sendFinancialAssistantMessage({
+    context,
+    conversationId: view.conversation.id,
+    question: "Tenho assinaturas recorrentes em BRL no mes passado?",
+    idempotencyKey: `test-${randomUUID()}`,
+    runtime: {
+      selectProvider: disabledProvider,
+      resolveConsent: () => "missing",
+      now: () => new Date("2026-08-11T12:40:02Z"),
+    },
+  });
+  const previousTurn = previousMonth.turns.at(-1);
+  assert.equal(previousTurn?.filters.periodStartOn, "2026-07-01");
+  assert.equal(previousTurn?.filters.periodEndOn, "2026-07-31");
+  assert.equal(previousTurn?.evidence?.period.startOn, "2026-07-01");
+  assert.equal(previousTurn?.evidence?.period.endOn, "2026-07-31");
 }
 
 async function expiryWinsBeforeLateAnswerIsPersisted(): Promise<void> {

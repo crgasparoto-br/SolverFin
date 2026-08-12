@@ -75,7 +75,9 @@ assert.equal(firstTurn?.filters.categoryName, "Alimentacao");
 assert.equal("categoryId" in (firstTurn?.filters ?? {}), false);
 assert.equal("evidence" in (firstTurn ?? {}), false);
 assert.equal("idempotencyKey" in (firstTurn ?? {}), false);
+assert.equal("safeLogCode" in (firstTurn?.response ?? {}), false);
 assert.equal("version" in presented, false);
+assert.doesNotMatch(serialized, /ASSISTANT_DETERMINISTIC_ANSWERED/);
 for (const secret of [
   "org-secret",
   "profile-secret",

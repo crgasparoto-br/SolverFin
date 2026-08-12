@@ -24,6 +24,7 @@ import {
   startFinancialAssistantConversation,
   type FinancialAssistantConversationView,
 } from "./financial-assistant-repository.js";
+import { resolveFinancialAssistantSubscriptions } from "./financial-assistant-subscriptions.js";
 
 export interface FinancialAssistantRuntime {
   selectProvider: () => AiProviderSelection;
@@ -96,15 +97,17 @@ export async function sendFinancialAssistantMessage(input: {
   }
 
   try {
+    const resolutionNow = input.runtime.now?.() ?? new Date();
+    const resolvedData =
+      tentativeIntent === "subscriptions"
+        ? await resolveFinancialAssistantSubscriptions(
+            input.context,
+            effectiveQuestion,
+            resolutionNow,
+          )
+        : await resolveFinancialAssistantData(input.context, effectiveQuestion, resolutionNow);
     const resolution = guardFinancialAssistantPeriodResolution(
-      guardFinancialAssistantCategoryResolution(
-        await resolveFinancialAssistantData(
-          input.context,
-          effectiveQuestion,
-          input.runtime.now?.() ?? new Date(),
-        ),
-        effectiveQuestion,
-      ),
+      guardFinancialAssistantCategoryResolution(resolvedData, effectiveQuestion),
       effectiveQuestion,
     );
 
