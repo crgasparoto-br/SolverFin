@@ -31,10 +31,7 @@ try {
 
   await waitFor(
     () =>
-      evaluate(
-        browser.cdp,
-        `(() => window.__issue568CancelInflight?.messagePending === true)()`,
-      ),
+      evaluate(browser.cdp, `(() => window.__issue568CancelInflight?.messagePending === true)()`),
     5_000,
     "held financial assistant message request",
   );
@@ -62,10 +59,7 @@ try {
 
   await waitFor(
     () =>
-      evaluate(
-        browser.cdp,
-        `(() => window.__issue568CancelInflight?.cancelObserved === true)()`,
-      ),
+      evaluate(browser.cdp, `(() => window.__issue568CancelInflight?.cancelObserved === true)()`),
     5_000,
     "cancel request while message request is pending",
   );
