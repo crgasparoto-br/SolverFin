@@ -38,6 +38,11 @@ try {
   observation.screenshot = screenshotName;
 
   check(
+    Math.abs(observation.viewport.innerWidth - zoomLayoutWidth) <= 1,
+    "Chrome did not apply the requested 200% zoom-equivalent layout viewport.",
+    observation,
+  );
+  check(
     observation.effectiveZoomPercent >= 199 && observation.effectiveZoomPercent <= 201,
     "The layout viewport does not represent approximately 200% browser zoom pressure.",
     observation,
@@ -120,7 +125,10 @@ async function inspectZoomReflow(cdp, desktopReferenceWidth) {
   return evaluate(
     cdp,
     `(() => {
-      const viewportWidth = document.documentElement.clientWidth;
+      const layoutViewportWidth = window.innerWidth;
+      // clientWidth is narrower when Chrome reserves space for a vertical scrollbar. Keep
+      // that narrower width for clipping checks, but do not mistake it for browser zoom.
+      const contentViewportWidth = document.documentElement.clientWidth;
       const visible = (element) => {
         if (!element) return false;
         const rect = element.getBoundingClientRect();
@@ -130,7 +138,7 @@ async function inspectZoomReflow(cdp, desktopReferenceWidth) {
       const fitsHorizontally = (element) => {
         if (!element) return false;
         const rect = element.getBoundingClientRect();
-        return rect.left >= -1 && rect.right <= viewportWidth + 1;
+        return rect.left >= -1 && rect.right <= contentViewportWidth + 1;
       };
       const root = document.querySelector('[data-financial-assistant]');
       const layout = document.querySelector('.assistant-layout');
@@ -143,14 +151,14 @@ async function inspectZoomReflow(cdp, desktopReferenceWidth) {
       const keyElements = [root, layout, heading, title, readonly, composer, status, actions];
       return {
         viewport: {
-          innerWidth: window.innerWidth,
-          clientWidth: viewportWidth,
+          innerWidth: layoutViewportWidth,
+          clientWidth: contentViewportWidth,
           documentWidth: document.documentElement.scrollWidth,
-          visualViewportWidth: window.visualViewport?.width ?? window.innerWidth,
+          visualViewportWidth: window.visualViewport?.width ?? layoutViewportWidth,
         },
-        effectiveZoomPercent: (${desktopReferenceWidth} / viewportWidth) * 100,
+        effectiveZoomPercent: (${desktopReferenceWidth} / layoutViewportWidth) * 100,
         visualScale: window.visualViewport?.scale ?? 1,
-        documentFitsViewport: document.documentElement.scrollWidth <= viewportWidth + 1,
+        documentFitsViewport: document.documentElement.scrollWidth <= contentViewportWidth + 1,
         keyContentFitsViewport: keyElements.every(fitsHorizontally),
         singleColumn: layout
           ? getComputedStyle(layout).gridTemplateColumns.trim().split(/\s+/).length === 1
