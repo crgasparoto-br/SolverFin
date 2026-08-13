@@ -52,8 +52,8 @@ await deterministicEvidenceAnswersWithoutProvider();
 await noDataIsExplicit();
 await providerFailureKeepsDeterministicAnswer();
 await providerReceivesOnlyAggregatesAndIntent();
-await providerAddsOnlyQualitativeNarrative();
-await quantitativeProviderNarrativeIsRejected();
+await providerUsesClosedPresentationDirective();
+await freeFormProviderOutputsAreRejected();
 intentClassifierRecognizesSupportedQuestions();
 
 async function dailyAvailabilityUsesStructuredCalculation(): Promise<void> {
@@ -142,7 +142,7 @@ async function assistantFallsBackWithoutConsentResolver(): Promise<void> {
     model: "counting-model",
     async complete() {
       calls += 1;
-      return { text: "Nao deveria ser chamado." };
+      return { text: "DIRECT" };
     },
   };
   const answer = await answerFinancialQuestion({
@@ -166,7 +166,7 @@ async function assistantRechecksConsentBeforeProviderCallAndFallsBack(): Promise
     model: "counting-model",
     async complete() {
       calls += 1;
-      return { text: "Nao deveria ser chamado." };
+      return { text: "DIRECT" };
     },
   };
   const states = ["granted", "revoked"] as const;
@@ -250,7 +250,7 @@ async function providerReceivesOnlyAggregatesAndIntent(): Promise<void> {
     model: "fixture",
     async complete(request) {
       outbound = JSON.stringify(request);
-      return { text: "O recorte autorizado pode ser acompanhado com atencao." };
+      return { text: "DIRECT" };
     },
   };
   await answerFinancialQuestion({
@@ -266,15 +266,11 @@ async function providerReceivesOnlyAggregatesAndIntent(): Promise<void> {
   assert.doesNotMatch(outbound, /org-assistant-a|profile-assistant-a|user-assistant-a/);
   assert.match(outbound, /monthly_summary/);
   assert.match(outbound, /Receitas realizadas/);
+  assert.match(outbound, /DIRECT ou CONTEXTUAL/);
 }
 
-async function providerAddsOnlyQualitativeNarrative(): Promise<void> {
-  const provider = new FakeAiProvider([
-    {
-      text: "Os dados autorizados mostram um padrao que merece acompanhamento.",
-      confidence: 0.82,
-    },
-  ]);
+async function providerUsesClosedPresentationDirective(): Promise<void> {
+  const provider = new FakeAiProvider([{ text: "CONTEXTUAL", confidence: 0.82 }]);
   const answer = await answerFinancialQuestion({
     question: "Resumo mensal deste mes",
     context,
@@ -285,25 +281,43 @@ async function providerAddsOnlyQualitativeNarrative(): Promise<void> {
   });
 
   assert.equal(answer.status, "answered");
-  assert.equal(answer.safeLogCode, "ASSISTANT_PROVIDER_NARRATIVE_ANSWERED");
-  assert.match(answer.answer, /padrao que merece acompanhamento/i);
+  assert.equal(answer.safeLogCode, "ASSISTANT_PROVIDER_PRESENTATION_APPLIED");
+  assert.match(answer.answer, /^Com base exclusivamente nos dados autorizados:/i);
   assert.match(answer.answer, /Despesas realizadas/);
+  assert.doesNotMatch(answer.answer, /CONTEXTUAL/);
 }
 
-async function quantitativeProviderNarrativeIsRejected(): Promise<void> {
-  const provider = new FakeAiProvider([{ text: "As despesas cresceram 25%." }]);
-  const answer = await answerFinancialQuestion({
+async function freeFormProviderOutputsAreRejected(): Promise<void> {
+  const deterministic = await answerFinancialQuestion({
     question: "Resumo mensal deste mes",
     context,
     policy: grantedPolicy,
     evidence: monthlyEvidence,
-    provider,
-    resolveConsent: () => "granted",
   });
+  const rejectedOutputs = [
+    "As despesas cresceram 25%.",
+    "Ha indicios de fraude no seu perfil.",
+    "Recomendo investir em renda fixa.",
+    "Considere solicitar um emprestimo.",
+    "Procure um advogado para resolver esta situacao.",
+    "Reveja sua estrategia tributaria com urgencia.",
+  ];
 
-  assert.equal(answer.safeLogCode, "ASSISTANT_PROVIDER_NARRATIVE_REJECTED");
-  assert.doesNotMatch(answer.answer, /25/);
-  assert.match(answer.answer, /Despesas realizadas/);
+  for (const output of rejectedOutputs) {
+    const provider = new FakeAiProvider([{ text: output }]);
+    const answer = await answerFinancialQuestion({
+      question: "Resumo mensal deste mes",
+      context,
+      policy: grantedPolicy,
+      evidence: monthlyEvidence,
+      provider,
+      resolveConsent: () => "granted",
+    });
+
+    assert.equal(answer.safeLogCode, "ASSISTANT_PROVIDER_OUTPUT_REJECTED", output);
+    assert.equal(answer.answer, deterministic.answer, output);
+    assert.equal(answer.sources.includes("fake"), false, output);
+  }
 }
 
 function intentClassifierRecognizesSupportedQuestions(): void {
