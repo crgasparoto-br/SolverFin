@@ -5,7 +5,9 @@ import { createAiProviderFromEnvironment } from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
-import { startFinancialAssistantConversation } from "./financial-assistant-repository.js";
+import {
+  startFinancialAssistantConversation,
+} from "./financial-assistant-repository.js";
 import { sendFinancialAssistantMessage } from "./financial-assistant-service.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
@@ -70,16 +72,8 @@ async function mutationCommandsAreRefusedBeforeProviderSelection(): Promise<void
     const turn = result.turns.at(-1);
     assert.equal(turn?.intent, "out_of_scope", question);
     assert.equal(turn?.safeResponse?.intent, "out_of_scope", question);
-    assert.equal(
-      turn?.safeResponse?.safeLogCode,
-      "ASSISTANT_OUT_OF_SCOPE",
-      question,
-    );
-    assert.match(
-      turn?.safeResponse?.answer ?? "",
-      /Nao executo operacoes/i,
-      question,
-    );
+    assert.equal(turn?.safeResponse?.safeLogCode, "ASSISTANT_OUT_OF_SCOPE", question);
+    assert.match(turn?.safeResponse?.answer ?? "", /Nao executo operacoes/i, question);
   }
 
   assert.equal(
