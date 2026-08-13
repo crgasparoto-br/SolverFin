@@ -38,17 +38,19 @@ A disponibilidade de hoje e limitada a zero e inclui premissas/limitacoes. Se na
 
 ## Provider de IA
 
-O provider e opcional e so pode acrescentar narrativa qualitativa. Os numeros e fatos continuam sendo a evidencia deterministica do SolverFin.
+O provider e opcional e nao possui autoridade para escrever texto financeiro livre na resposta publica. Numeros, fatos, premissas, fontes e limitacoes continuam vindo exclusivamente da evidencia deterministica do SolverFin.
 
 Antes de cada tentativa externa:
 
 1. o backend reautentica a requisicao;
 2. revalida o tenant/perfil ativo;
 3. consulta o consentimento persistido para processamento por IA;
-4. envia apenas pergunta mascarada, intent, periodo/moeda/filtros minimizados e metricas agregadas;
+4. envia apenas intent, periodo/moeda/filtros minimizados e metricas agregadas; a pergunta bruta nao e enviada;
 5. nunca envia IDs de tenant/perfil nem base financeira bruta.
 
-Ausencia, revogacao ou falha ao revalidar o consentimento impede somente a chamada externa. Quando existe evidencia deterministica suficiente, a resposta local continua disponivel e informa que a narrativa por IA nao foi usada. Narrativa que introduz numero, quantidade ou comparacao quantitativa e descartada. Timeout, indisponibilidade, rate limit ou erro do provider tambem preservam a resposta deterministica e adicionam uma limitacao segura.
+Quando o provider e usado, sua saida e tratada como entrada nao confiavel e deve ser exatamente uma diretiva fechada de apresentacao: `DIRECT` ou `CONTEXTUAL`. O backend valida essa diretiva e monta a resposta com copy controlada pelo SolverFin; nenhum texto livre retornado externamente e concatenado ao conteudo exibido. `DIRECT` preserva a resposta deterministica sem prefixo e `CONTEXTUAL` permite apenas o prefixo fixo `Com base exclusivamente nos dados autorizados:` antes da mesma resposta deterministica.
+
+Ausencia, revogacao ou falha ao revalidar o consentimento impede somente a chamada externa. Quando existe evidencia deterministica suficiente, a resposta local continua disponivel. Qualquer saida fora do schema fechado — incluindo numero, comparacao, fato qualitativo nao sustentado, diagnostico ou recomendacao profissional — e descartada integralmente, e o fallback mantem a resposta deterministica. Timeout, indisponibilidade, rate limit ou erro do provider seguem a mesma degradacao segura.
 
 ## Persistencia conversacional
 
@@ -126,7 +128,7 @@ A pagina `/assistente` usa o shell autenticado e o contrato SSR oficial. Ela pos
 
 ## Testes esperados
 
-- `@solverfin/ai`: resposta deterministica, falta de evidencia, ausencia de dados, consentimento, revogacao tardia, provider qualitativo, rejeicao quantitativa e fallback de falha;
+- `@solverfin/ai`: resposta deterministica, falta de evidencia, ausencia de dados, consentimento, revogacao tardia, provider com diretiva fechada, rejeicao de texto livre quantitativo ou qualitativo, recomendacao profissional proibida e fallback de falha;
 - API/PostgreSQL: idempotencia, conflito de chave, concorrencia, cancelamento versus resposta tardia, recovery de `PROCESSING` pelo retry direto, fencing da finalizacao tardia, TTL, isolamento, troca de perfil e consistencia temporal de periodos historico/atual/futuro;
 - API unitario: categoria solicitada nao resolvida nao pode virar agregado geral e pergunta acima do limite nao pode ser truncada silenciosamente;
 - Web: estados normal/erro/vazio, fronteira publica, elementos acessiveis e regras responsivas;
