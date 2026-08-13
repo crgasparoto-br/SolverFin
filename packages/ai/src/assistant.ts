@@ -407,7 +407,9 @@ function buildAssistantPrompt(
   ].join("\n");
 }
 
-function parseProviderPresentationDirective(value: string): ProviderPresentationDirective | undefined {
+function parseProviderPresentationDirective(
+  value: string,
+): ProviderPresentationDirective | undefined {
   const token = value.trim().toUpperCase();
   if (token === "DIRECT") return "direct";
   if (token === "CONTEXTUAL") return "contextual";
