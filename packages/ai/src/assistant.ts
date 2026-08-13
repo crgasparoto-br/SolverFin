@@ -32,6 +32,41 @@ export type AvailabilityComponentKind =
 
 type ProviderPresentationDirective = "direct" | "contextual";
 
+const FINANCIAL_ASSISTANT_MUTATION_VERBS = new Set([
+  "criar",
+  "crie",
+  "adicionar",
+  "adicione",
+  "incluir",
+  "inclua",
+  "cadastrar",
+  "cadastre",
+  "registrar",
+  "registre",
+  "lancar",
+  "lance",
+  "editar",
+  "edite",
+  "alterar",
+  "altere",
+  "excluir",
+  "exclua",
+  "apagar",
+  "apague",
+  "remover",
+  "remova",
+  "conciliar",
+  "concilie",
+  "pagar",
+  "pague",
+  "quitar",
+  "quite",
+  "aprovar",
+  "aprove",
+  "rejeitar",
+  "rejeite",
+]);
+
 export interface AvailabilityComponent {
   label: string;
   kind: AvailabilityComponentKind;
@@ -208,6 +243,11 @@ export async function answerFinancialQuestion(
 
 export function classifyFinancialAssistantIntent(question: string): FinancialAssistantIntent {
   const normalized = normalizeQuestion(question);
+
+  if (financialAssistantQuestionRequestsMutation(normalized)) {
+    return "out_of_scope";
+  }
+
   const asksAvailability =
     /quanto\s+(eu\s+)?posso\s+gastar\s+hoje/.test(normalized) ||
     /disponivel\s+hoje|disponibilidade/.test(normalized);
@@ -241,6 +281,12 @@ export function classifyFinancialAssistantIntent(question: string): FinancialAss
   }
 
   return "out_of_scope";
+}
+
+export function financialAssistantQuestionRequestsMutation(question: string): boolean {
+  return normalizeQuestion(question)
+    .split(/[^a-z0-9]+/)
+    .some((token) => FINANCIAL_ASSISTANT_MUTATION_VERBS.has(token));
 }
 
 export function financialAssistantQuestionRequestsCategoryFilter(question: string): boolean {
