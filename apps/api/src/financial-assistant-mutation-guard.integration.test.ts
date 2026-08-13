@@ -5,9 +5,7 @@ import { createAiProviderFromEnvironment } from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
-import {
-  startFinancialAssistantConversation,
-} from "./financial-assistant-repository.js";
+import * as assistantRepository from "./financial-assistant-repository.js";
 import { sendFinancialAssistantMessage } from "./financial-assistant-service.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
@@ -32,17 +30,15 @@ async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   await cleanup();
   try {
-    await mutationCommandsAreRefusedBeforeProviderSelection();
+    await rejectsMutationCommands();
   } finally {
     await cleanup();
   }
 }
 
-async function mutationCommandsAreRefusedBeforeProviderSelection(): Promise<void> {
-  const view = await startFinancialAssistantConversation(
-    context,
-    new Date("2026-08-13T12:00:00Z"),
-  );
+async function rejectsMutationCommands(): Promise<void> {
+  const startConversation = assistantRepository.startFinancialAssistantConversation;
+  const view = await startConversation(context, new Date("2026-08-13T12:00:00Z"));
   let providerSelections = 0;
   const commands = [
     "Pague minha fatura este mes",
@@ -54,6 +50,7 @@ async function mutationCommandsAreRefusedBeforeProviderSelection(): Promise<void
   ];
 
   for (const [index, question] of commands.entries()) {
+    const second = String(index + 1).padStart(2, "0");
     const result = await sendFinancialAssistantMessage({
       context,
       conversationId: view.conversation.id,
@@ -65,22 +62,17 @@ async function mutationCommandsAreRefusedBeforeProviderSelection(): Promise<void
           return createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" });
         },
         resolveConsent: () => "granted",
-        now: () =>
-          new Date(`2026-08-13T12:00:${String(index + 1).padStart(2, "0")}Z`),
+        now: () => new Date(`2026-08-13T12:00:${second}Z`),
       },
     });
-    const turn = result.turns.at(-1);
-    assert.equal(turn?.intent, "out_of_scope", question);
-    assert.equal(turn?.safeResponse?.intent, "out_of_scope", question);
-    assert.equal(turn?.safeResponse?.safeLogCode, "ASSISTANT_OUT_OF_SCOPE", question);
-    assert.match(turn?.safeResponse?.answer ?? "", /Nao executo operacoes/i, question);
+    const response = result.turns.at(-1)?.safeResponse;
+    assert.equal(result.turns.at(-1)?.intent, "out_of_scope", question);
+    assert.equal(response?.intent, "out_of_scope", question);
+    assert.equal(response?.safeLogCode, "ASSISTANT_OUT_OF_SCOPE", question);
+    assert.match(response?.answer ?? "", /Nao executo operacoes/i, question);
   }
 
-  assert.equal(
-    providerSelections,
-    0,
-    "mutation commands must not reach provider selection",
-  );
+  assert.equal(providerSelections, 0);
 }
 
 async function cleanup(): Promise<void> {
