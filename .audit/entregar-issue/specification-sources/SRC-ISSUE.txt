@@ -67,7 +67,7 @@ As áreas da Fase 2 possuem hoje níveis diferentes de cobertura. Esta subissue 
 - Auditoria independente posterior quando exigida pelo processo do repositório.
 
 ## Impacto na documentação
-Revisar e atualizar `docs/README.dd`, `docs/PRODUCT.md`, `docs/STATUS_MATRIX.md`, todos os contratos da Fase 2 afetados e ADRs. Não alterar documentos da Fase 3 além de referências necessárias para manter a separação de escopo.
+Revisar e atualizar `docs/README.md`, `docs/PRODUCT.md`, `docs/STATUS_MATRIX.md`, todos os contratos da Fase 2 afetados e ADRs. Não alterar documentos da Fase 3 além de referências necessárias para manter a separação de escopo.
 
 ## Dependências
 Depende da conclusão de #561, #562, #563, #564, #565, #566, #567 e #568.

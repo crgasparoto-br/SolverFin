@@ -2,38 +2,40 @@
   "schema_version": 1,
   "classification": "systemic-escape",
   "source_event": {
-    "category": "delivery-not-ready",
-    "observed_at": "2026-08-13T21:13:45Z"
+    "category": "handoff-and-risk-readiness-escape",
+    "observed_at": "2026-08-13T22:15:03Z"
   },
   "generalized_learning": {
-    "escape_class": "readiness-packet-omission",
-    "generalized_failure_pattern": "A delivery can pass product checks while required readiness artifacts are absent.",
-    "plausible_wrong_implementation": "Skip readiness artifact generation after successful product checks.",
+    "escape_class": "published-readiness-contract-drift",
+    "generalized_failure_pattern": "A delivery packet can be internally self-consistent yet conflict with static gates on the published head or under-classify a canonical risk family implied by later reference consumption.",
+    "plausible_wrong_implementation": "Treat result artifacts as outside repository checks and accept risk applicability labels without cross-checking the attack matrix or stale-reference signals.",
     "trigger_signals": [
-      "connector-only execution",
-      "handoff requested",
-      "readiness packet absent"
+      "result-only publication",
+      "repository-wide static checks",
+      "persisted reference consumed later",
+      "stale or obsolete state"
     ],
     "risk_families": [
       "structural-contract",
-      "documentation"
+      "documentation",
+      "reference-liveness"
     ],
     "reusable_control": {
-      "id": "HANDOFF-READY-001",
-      "rule": "Validate required readiness artifacts before audit handoff."
+      "id": "PUBLISHED-READINESS-001",
+      "rule": "Before audit handoff, verify result-child compatibility with repository-wide static gates and cross-check active attack families against declared saturation."
     },
-    "prevention_rule": "Generate and validate required readiness artifacts before audit handoff.",
-    "detection_rule": "Check certificate identity, artifact hashes, inherited controls and learning closure before broad audit.",
+    "prevention_rule": "Generate or exclude machine-produced handoff artifacts using the repository canonical static-check contract, and activate liveness when stale/obsolete references are consumed at a later definitive step.",
+    "detection_rule": "Reject readiness when the published-head static gate fails or when risk-saturation applicability disagrees with attack-matrix families.",
     "transfer_cases": [
       {
-        "surface": "remote_repository_delivery",
+        "surface": "generated_evidence_publication",
         "status": "passed",
-        "evidence": "connector-only handoff contract test"
+        "evidence": "Synthetic contract test asserts result-only handoff documentation requires repository-wide static-gate compatibility."
       },
       {
-        "surface": "result_child_validation",
+        "surface": "risk_matrix_consistency",
         "status": "passed",
-        "evidence": "handoff certificate contract test"
+        "evidence": "Synthetic auditor test rejects a family marked not-applicable when the attack matrix activates reference-liveness."
       }
     ],
     "promotion_status": "promoted"
@@ -42,14 +44,14 @@
     {
       "role": "prevention",
       "status": "passed",
-      "artifact": "connector-only handoff contract",
-      "evidence": "skill-validation.txt"
+      "artifact": "delivery handoff and liveness derivation contracts",
+      "evidence": "Focused skill tests passed; hashes delivery=5a24d6fd8856ac6df09a1aa6a62753478599e5b2db42233611a546f08ce67857, derivation=dc0945aa996c80dba814111a77c5f971f38de6871f561eecc85915743ff9532b."
     },
     {
       "role": "detection",
       "status": "passed",
-      "artifact": "handoff readiness preflight",
-      "evidence": "validation-results.json"
+      "artifact": "audit saturation consistency preflight",
+      "evidence": "Focused audit skill test passed; hash=71593dc59ca591e907a25e64f8ec3b85b8f83e1d340612a0fe178f7177e5252e."
     }
   ]
 }

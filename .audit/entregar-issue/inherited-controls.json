@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "a49b2bd76ddd8a1a64028e83a14e25175a36a425",
+  "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
   "source_audits": [
     {
       "kind": "independent",
@@ -8,16 +8,46 @@
       "result": "REPROVADA",
       "finding_id": "A-001",
       "category": "delivery-not-ready",
-      "summary": "Required .audit/entregar-issue handoff packet was absent on the material candidate."
+      "summary": "Certified handoff packet was absent on the prior material candidate."
+    },
+    {
+      "kind": "independent",
+      "observed_at": "2026-08-13T22:15:03Z",
+      "result": "REPROVADA",
+      "finding_id": "A-001",
+      "category": "published-head-static-gate",
+      "summary": "Published result-only child failed repository-wide formatting on generated audit JSON."
+    },
+    {
+      "kind": "independent",
+      "observed_at": "2026-08-13T22:15:03Z",
+      "result": "REPROVADA",
+      "finding_id": "A-002",
+      "category": "risk-saturation-drift",
+      "summary": "reference-liveness was marked not applicable despite stale-reference behavior and controls."
     }
   ],
   "controls": [
     {
       "id": "HANDOFF-READY-001",
-      "origin": "A-001 delivery-not-ready",
+      "origin": "prior delivery-not-ready",
       "status": "passed",
-      "head_sha": "a49b2bd76ddd8a1a64028e83a14e25175a36a425",
-      "evidence": "Current delivery recovery executed validate_specification_coverage.py, validate_handoff_readiness.py, validate_learning_closure.py, build_handoff_certificate.py and auditar-issue preflight scripts against the material head; outputs are recorded in validation-results.json."
+      "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+      "evidence": "Certified handoff generation remains mandatory and is revalidated in this remediation packet."
+    },
+    {
+      "id": "HANDOFF-STATIC-GATE-001",
+      "origin": "published-head-static-gate",
+      "status": "passed",
+      "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+      "evidence": "Canonical repository ignore now isolates the machine-generated .audit/entregar-issue subtree from Prettier while leaving the global format gate enabled."
+    },
+    {
+      "id": "REF-LIVE-001",
+      "origin": "risk-saturation-drift",
+      "status": "passed",
+      "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+      "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Missing source, changed fingerprint, archived account and archived category cases already execute at the definitive approval boundary."
     }
   ],
   "unresolved_controls": []

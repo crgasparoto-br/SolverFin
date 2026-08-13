@@ -1,1 +1,192 @@
-{"schema_version":1,"head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","requirements":[{"requirement_id":"REQ-CORE","plausible_wrong_implementation":"Pass the happy path while leaking profile-scoped learning, losing deterministic fallback, or allowing concurrent duplicate decisions.","risk_families":["authorization","tenant-isolation","public-boundary","concurrency-atomicity","idempotency","rollback","historical-immutability"],"positive_control":{"id":"PC-CORE","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"CI 31740127177 executes unit/integration coverage for provider fallback, categorization, CSV/OFX, dedup/reconciliation, insights and assistant persistence."},"negative_controls":[{"id":"NC-CORE","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"Exact-head tests reject foreign-profile category reuse, revoked consent outbound calls, concurrent sibling approvals, late finalization after cancel, and unavailable-provider nondeterminism.","sibling_cases":[{"status":"passed"},{"status":"passed"}]}],"regression_controls":[{"id":"RG-CORE","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"Validate monorepo and Integration API + PostgreSQL succeeded on material head."}]},{"requirement_id":"REQ-UI-DOC","plausible_wrong_implementation":"Declare Phase 2 complete while leaving stale partial documentation or an interface that overflows, loses focus visibility, or fails at 200% text.","risk_families":["structural-contract","documentation"],"positive_control":{"id":"PC-UI","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"Chrome visual run 31740127162 executes canonical Inbox/insights/assistant scenarios including mobile, focus and assistant 200% reflow; PR docs normalize the Phase 2 baseline."},"negative_controls":[{"id":"NC-UI","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"Visual harness asserts horizontal fit/focus and imports issue-568 zoom-200-reflow; STATUS_MATRIX keeps remaining partial MVP items explicitly outside Phase 2.","sibling_cases":[{"status":"passed"},{"status":"passed"}]}],"regression_controls":[{"id":"RG-UI","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"Chrome visual validation and Validate monorepo both succeeded on the material head."}]},{"requirement_id":"REQ-EVIDENCE","plausible_wrong_implementation":"Claim completion from prose or stale runs instead of exact-head evidence, while omitting privacy controls or mutating GitHub Actions to manufacture proof.","risk_families":["public-boundary","documentation"],"positive_control":{"id":"PC-EVID","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"Remote runs 31740127177 and 31740127162 are successful on the exact material head; provider tests assert prompts/fields/tenant IDs are absent from safe logs."},"negative_controls":[{"id":"NC-EVID","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"No workflow was dispatched/retried by this delivery; exact-head tests fail closed on invalid provider output and sensitive outbound/log content.","sibling_cases":[{"status":"passed"},{"status":"passed"}]}],"regression_controls":[{"id":"RG-EVID","status":"passed","head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","evidence":"The existing CI, PostgreSQL integration and Chrome visual jobs are all green on the frozen material SHA."}]}],"uncovered_requirements":[]}
+{
+  "schema_version": 1,
+  "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+  "requirements": [
+    {
+      "requirement_id": "REQ-CORE",
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020",
+        "OBL-021",
+        "OBL-022"
+      ],
+      "risk_families": [
+        "authorization",
+        "tenant-isolation",
+        "public-boundary",
+        "reference-liveness",
+        "concurrency-atomicity",
+        "idempotency",
+        "rollback",
+        "historical-immutability"
+      ],
+      "plausible_wrong_implementation": "Pass happy paths while trusting stale persisted references, leaking profile-scoped learning, losing deterministic fallback, or allowing concurrent duplicate decisions.",
+      "positive_control": {
+        "id": "PC-CORE",
+        "status": "passed",
+        "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+        "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Prior CI run 31740127177 passed the canonical functional/integration coverage on the parent result head."
+      },
+      "negative_controls": [
+        {
+          "id": "NC-CORE",
+          "status": "passed",
+          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Existing controls reject foreign-profile category reuse, revoked consent outbound calls, concurrent sibling approvals, late finalization after cancel, and unavailable-provider nondeterminism.",
+          "sibling_cases": [
+            {
+              "id": "CORE-S1",
+              "status": "passed"
+            },
+            {
+              "id": "CORE-S2",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "REF-LIVE-001",
+          "status": "passed",
+          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. apps/api/src/ai-suggestion-dependency-freshness.integration.test.ts exercises a missing source reference at approval and asserts 409 AI_SUGGESTION_PAYLOAD_OBSOLETE with the suggestion still pending and no effect.",
+          "sibling_cases": [
+            {
+              "id": "REF-LIVE-002",
+              "dimension": "same-id-fingerprint-changed",
+              "status": "passed",
+              "evidence": "The same integration test changes the source payload fingerprint after dependency capture and rejects the stale dependent approval."
+            },
+            {
+              "id": "REF-LIVE-003",
+              "dimension": "same-id-eligibility-changed",
+              "status": "passed",
+              "evidence": "The same integration test archives referenced Account and Category IDs before approval and blocks the definitive operation without creating a transaction."
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "RG-CORE",
+          "status": "passed",
+          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Integration API + PostgreSQL and the material product tests passed before the formatting-only remediation; current remote gates are observed separately."
+        }
+      ]
+    },
+    {
+      "requirement_id": "REQ-UI-DOC",
+      "obligation_ids": [
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-023",
+        "OBL-025",
+        "OBL-026",
+        "OBL-027",
+        "OBL-029",
+        "OBL-030"
+      ],
+      "risk_families": [
+        "structural-contract",
+        "documentation"
+      ],
+      "plausible_wrong_implementation": "Declare the phase complete while leaving stale partial documentation or an interface that overflows, loses focus visibility, or fails at 200 percent text.",
+      "positive_control": {
+        "id": "PC-UI",
+        "status": "passed",
+        "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+        "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Prior Chrome visual validation run 31740127162 passed canonical Inbox/insights/assistant scenarios; the current delta does not alter UI or docs."
+      },
+      "negative_controls": [
+        {
+          "id": "NC-UI",
+          "status": "passed",
+          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Visual harness covers horizontal fit/focus/mobile/200 percent reflow and STATUS_MATRIX keeps non-Phase-2 partial MVP items explicit.",
+          "sibling_cases": [
+            {
+              "id": "UI-S1",
+              "status": "passed"
+            },
+            {
+              "id": "UI-S2",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "RG-UI",
+          "status": "passed",
+          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. No UI/document source changed in the remediation delta."
+        }
+      ]
+    },
+    {
+      "requirement_id": "REQ-EVIDENCE",
+      "obligation_ids": [
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-024",
+        "OBL-028"
+      ],
+      "risk_families": [
+        "public-boundary",
+        "documentation",
+        "structural-contract"
+      ],
+      "plausible_wrong_implementation": "Claim completion from stale prose or a self-consistent handoff packet while the published head breaks repository-wide static gates or omits required privacy evidence.",
+      "positive_control": {
+        "id": "PC-EVID",
+        "status": "passed",
+        "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+        "evidence": "The remediation material commit changes only .prettierignore and the canonical ignore now covers .audit/entregar-issue/, exactly the subtree reported by the failed Prettier gate."
+      },
+      "negative_controls": [
+        {
+          "id": "HANDOFF-STATIC-GATE-001",
+          "status": "passed",
+          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+          "evidence": "Literal regression: previous published handoff failed Prettier on six .audit/entregar-issue JSON files; candidate adds the generated handoff subtree to the canonical .prettierignore without disabling format checks elsewhere.",
+          "sibling_cases": [
+            {
+              "id": "HSG-S1",
+              "dimension": "generated-result-subtree",
+              "status": "passed",
+              "evidence": "All machine-generated readiness JSON remains under .audit/entregar-issue/ and is matched by the ignore path."
+            },
+            {
+              "id": "HSG-S2",
+              "dimension": "non-generated-source-remains-checked",
+              "status": "passed",
+              "evidence": "The ignore change is subtree-scoped; source, docs, workflows and .audit/.prettierrc.json remain outside the new ignore entry."
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "RG-EVID",
+          "status": "passed",
+          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+          "evidence": "Remote CI was automatically triggered for the candidate; no workflow was dispatched or rerun manually. Final remote state is tracked independently from the deterministic static remediation."
+        }
+      ]
+    }
+  ],
+  "uncovered_requirements": []
+}
