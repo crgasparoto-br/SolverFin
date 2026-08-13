@@ -15,6 +15,10 @@ const mutationCommands = [
   "Edite o valor desta parcela",
   "Concilie esta transacao",
   "Aprove este lancamento",
+  "Faca o pagamento da minha fatura",
+  "Marque minha fatura como paga",
+  "Atualize o valor desta despesa",
+  "Modifique esta parcela",
 ] as const;
 
 for (const command of mutationCommands) {
@@ -26,6 +30,7 @@ for (const consultation of [
   "Quanto paguei de fatura este mes?",
   "Quanto gastei este mes?",
   "Qual o valor da minha fatura este mes?",
+  "Faca um resumo deste mes",
 ]) {
   assert.equal(financialAssistantQuestionRequestsMutation(consultation), false, consultation);
   assert.notEqual(classifyFinancialAssistantIntent(consultation), "out_of_scope", consultation);
