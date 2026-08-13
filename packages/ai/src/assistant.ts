@@ -30,6 +30,8 @@ export type AvailabilityComponentKind =
   | "safety_margin"
   | "ignored";
 
+type ProviderPresentationDirective = "direct" | "contextual";
+
 export interface AvailabilityComponent {
   label: string;
   kind: AvailabilityComponentKind;
@@ -100,39 +102,6 @@ export interface FinancialAssistantInput {
   availability?: AvailabilityCalculationResult;
   evidence?: FinancialAssistantEvidence;
 }
-
-const PROVIDER_QUANTITATIVE_CLAIM = new RegExp(
-  [
-    "\\d",
-    "\\b(?:dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez)\\b",
-    "\\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\\b",
-    "percent(?:ual|age)?",
-    "por\\s+cento",
-    "dobr\\w*",
-    "triplic\\w*",
-    "metade",
-    "half",
-    "double",
-    "triple",
-    "aument\\w*",
-    "cres(?:c|ç)\\w*",
-    "subi\\w*",
-    "reduz\\w*",
-    "diminui\\w*",
-    "cai\\w*",
-    "maior(?:es)?",
-    "menor(?:es)?",
-    "mais",
-    "menos",
-    "higher",
-    "lower",
-    "increase\\w*",
-    "decrease\\w*",
-    "grew",
-    "fell",
-  ].join("|"),
-  "iu",
-);
 
 export async function answerFinancialQuestion(
   input: FinancialAssistantInput,
@@ -212,28 +181,28 @@ export async function answerFinancialQuestion(
       ...baseAnswer,
       limitations: [
         ...baseAnswer.limitations,
-        "A narrativa por IA ficou indisponivel; a resposta usa apenas o calculo deterministico.",
+        "A apresentacao por IA ficou indisponivel; a resposta usa apenas o calculo deterministico.",
       ],
       safeLogCode: `ASSISTANT_PROVIDER_FALLBACK_${aiResult.code}`,
     };
   }
 
-  const narrative = sanitizeProviderNarrative(aiResult.result.text);
-  if (narrative === undefined) {
+  const presentationDirective = parseProviderPresentationDirective(aiResult.result.text);
+  if (presentationDirective === undefined) {
     return {
       ...baseAnswer,
       limitations: [
         ...baseAnswer.limitations,
-        "A narrativa por IA foi descartada por introduzir afirmacao quantitativa nao permitida.",
+        "A saida do provider foi descartada por nao corresponder ao contrato fechado de apresentacao.",
       ],
-      safeLogCode: "ASSISTANT_PROVIDER_NARRATIVE_REJECTED",
+      safeLogCode: "ASSISTANT_PROVIDER_OUTPUT_REJECTED",
     };
   }
 
   return {
     ...baseAnswer,
-    answer: `${narrative} ${deterministicAnswer}`.trim(),
-    safeLogCode: "ASSISTANT_PROVIDER_NARRATIVE_ANSWERED",
+    answer: renderProviderPresentation(presentationDirective, deterministicAnswer),
+    safeLogCode: "ASSISTANT_PROVIDER_PRESENTATION_APPLIED",
   };
 }
 
@@ -426,9 +395,9 @@ function buildAssistantPrompt(
     .map((metric) => `- ${formatEvidenceMetric(metric, evidence.currency)}`)
     .join("\n");
   return [
-    "Escreva no maximo duas frases qualitativas e sem qualquer numero, quantidade ou comparacao de magnitude.",
-    "Nao acrescente fatos. Os valores canonicamente calculados serao anexados pelo SolverFin depois da sua narrativa.",
-    "Nao ofereca conselho financeiro, juridico, fiscal, contabil, de investimento ou credito.",
+    "Retorne exatamente um token de apresentacao: DIRECT ou CONTEXTUAL.",
+    "DIRECT mantem a resposta deterministica sem prefixo; CONTEXTUAL permite somente um prefixo fixo controlado pelo SolverFin.",
+    "Nao escreva frases, fatos, recomendacoes, diagnosticos, numeros ou qualquer outro texto livre.",
     `Intencao classificada: ${intent}.`,
     `Periodo autorizado: ${evidence.period.startOn} a ${evidence.period.endOn}.`,
     `Moeda: ${evidence.currency}.`,
@@ -438,12 +407,21 @@ function buildAssistantPrompt(
   ].join("\n");
 }
 
-function sanitizeProviderNarrative(value: string): string | undefined {
-  const text = value.trim();
-  if (text.length === 0 || text.length > 420 || PROVIDER_QUANTITATIVE_CLAIM.test(text)) {
-    return undefined;
+function parseProviderPresentationDirective(value: string): ProviderPresentationDirective | undefined {
+  const token = value.trim().toUpperCase();
+  if (token === "DIRECT") return "direct";
+  if (token === "CONTEXTUAL") return "contextual";
+  return undefined;
+}
+
+function renderProviderPresentation(
+  directive: ProviderPresentationDirective,
+  deterministicAnswer: string,
+): string {
+  if (directive === "contextual") {
+    return `Com base exclusivamente nos dados autorizados: ${deterministicAnswer}`;
   }
-  return text;
+  return deterministicAnswer;
 }
 
 function uniqueStrings(values: readonly string[]): string[] {
