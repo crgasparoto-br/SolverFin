@@ -4,22 +4,22 @@ Este inventario registra o recorte navegavel revisado no fechamento da Fase 2. E
 
 ## Rotas disponiveis
 
-| Rota | Interface | Acesso | Papel no baseline |
-| --- | --- | --- | --- |
-| `/login` | Entrar | Publico | Entrada e autenticacao |
-| `/dashboard` | Dashboard | Perfil financeiro | Resumo e acompanhamento da rotina financeira |
-| `/lancamentos` | Extrato da conta | Perfil financeiro | Lancamentos, recorrencias, parcelas e compromissos de conta |
-| `/cartoes` | Cartoes de Credito | Perfil financeiro | Compras, faturas, recorrencias e compromissos de cartao |
-| `/contas-cartoes` | Contas e Cartoes | Perfil financeiro | Cadastro mestre de instrumentos financeiros |
-| `/remuneracao-contas` | Remuneracao pelo CDI | Perfil financeiro; oculta da navegacao | Compatibilidade/fluxo especializado preservado pelo contrato de rotas |
-| `/categorias` | Categorias | Perfil financeiro | Organizacao de receitas, despesas e transferencias |
-| `/orcamentos` | Orcamentos | Perfil financeiro | Planejamento por categoria |
-| `/assistente` | Assistente financeiro | Perfil financeiro | Consultas somente leitura com evidencia deterministica |
-| `/inbox` | Inbox | Perfil financeiro | Revisao de mensagens, importacoes e sugestoes |
-| `/relatorios` | Relatorios | Perfil financeiro | Analises e acompanhamento somente leitura |
-| `/configuracoes` | Configuracoes | Autenticado | Perfis, preferencias e controles relacionados |
-| `/admin/instituicoes` | Admin - Instituicoes | Master | Catalogo global de instituicoes |
-| `/admin/indices-financeiros` | Admin - Indices financeiros | Master | Operacao de indices e remuneracao |
+| Rota                         | Interface                   | Acesso                                 | Papel no baseline                                                     |
+| ---------------------------- | --------------------------- | -------------------------------------- | --------------------------------------------------------------------- |
+| `/login`                     | Entrar                      | Publico                                | Entrada e autenticacao                                                |
+| `/dashboard`                 | Dashboard                   | Perfil financeiro                      | Resumo e acompanhamento da rotina financeira                          |
+| `/lancamentos`               | Extrato da conta            | Perfil financeiro                      | Lancamentos, recorrencias, parcelas e compromissos de conta           |
+| `/cartoes`                   | Cartoes de Credito          | Perfil financeiro                      | Compras, faturas, recorrencias e compromissos de cartao               |
+| `/contas-cartoes`            | Contas e Cartoes            | Perfil financeiro                      | Cadastro mestre de instrumentos financeiros                           |
+| `/remuneracao-contas`        | Remuneracao pelo CDI        | Perfil financeiro; oculta da navegacao | Compatibilidade/fluxo especializado preservado pelo contrato de rotas |
+| `/categorias`                | Categorias                  | Perfil financeiro                      | Organizacao de receitas, despesas e transferencias                    |
+| `/orcamentos`                | Orcamentos                  | Perfil financeiro                      | Planejamento por categoria                                            |
+| `/assistente`                | Assistente financeiro       | Perfil financeiro                      | Consultas somente leitura com evidencia deterministica                |
+| `/inbox`                     | Inbox                       | Perfil financeiro                      | Revisao de mensagens, importacoes e sugestoes                         |
+| `/relatorios`                | Relatorios                  | Perfil financeiro                      | Analises e acompanhamento somente leitura                             |
+| `/configuracoes`             | Configuracoes               | Autenticado                            | Perfis, preferencias e controles relacionados                         |
+| `/admin/instituicoes`        | Admin - Instituicoes        | Master                                 | Catalogo global de instituicoes                                       |
+| `/admin/indices-financeiros` | Admin - Indices financeiros | Master                                 | Operacao de indices e remuneracao                                     |
 
 Todas as rotas acima estavam marcadas como `available` no catalogo canonico no inicio da #569.
 

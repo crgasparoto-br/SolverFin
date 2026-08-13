@@ -8,13 +8,13 @@ O candidato so pode ser aprovado quando:
 
 - as issues #561 a #568 estiverem concluidas e integradas;
 - o fluxo CSV/OFX/mensagem -> extracao -> categorizacao -> deduplicacao/conciliacao -> Inbox -> insight -> assistente estiver coberto pela composicao final de testes;
-- provider desabilitado, indisponivel ou em timeout preservar os caminhos deterministas previstos;
+- a integracao externa desabilitada, indisponivel ou em timeout preservar os caminhos deterministas previstos;
 - concorrencia, idempotencia, retry, rollback e recuperacao apos reinicio permanecerem cobertos nos fluxos criticos;
 - isolamento por organizacao/perfil e consentimento permanecerem cobertos nas superficies sensiveis;
 - os jobs `Validate monorepo` e `Integration API + PostgreSQL` estiverem verdes no SHA candidato;
 - o job `Chrome visual validation` estiver verde no mesmo SHA e publicar `statement-visual-evidence-<sha>`;
 - teclado, foco, texto a 200%, mobile e ausencia de overflow horizontal permanecerem cobertos para as interfaces novas;
-- logs, fixtures, seeds, screenshots e artefatos nao exponham dados reais, prompts, respostas brutas ou segredos;
+- logs, fixtures, seeds, screenshots e artefatos respeitarem os contratos de privacidade e minimizacao;
 - todo bug encontrado durante a regressao estiver vinculado a #569 e resolvido antes do fechamento.
 
 ## Reproducao local
@@ -52,17 +52,17 @@ Mudancas nos documentos que fecham o baseline da Fase 2 invalidam evidencia liga
 
 ## Matriz de regressao da Fase 2
 
-| Composicao | Evidencia minima reutilizada |
-| --- | --- |
-| CSV e OFX | parsers/preview, persistencia/revisao, idempotencia, isolamento e integracao PostgreSQL |
-| Mensagem bancaria | consentimento, extracao deterministica/integracao controlada, sanitizacao, retry e privacidade |
-| Extracao estruturada | schemas versionados, payload/fingerprint, legado e projecao publica |
-| Categorizacao | precedencia regra -> aprendizado -> IA, baixa confianca, edicao, aprovacao e isolamento por perfil |
-| Deduplicacao e conciliacao | scanner generalizado, concorrencia, alvo obsoleto, rollback e decisao atomica |
-| Inbox | fila unificada, filtros/estados, conflito de versao, erro controlado e retry |
-| Insights | geracao deterministica/idempotente, dados insuficientes, multimoeda, integracao indisponivel e renderizacao |
-| Assistente | somente leitura, integracao controlada, fallback deterministico, reinicio, cancelamento, concorrencia, perfil/moeda e privacidade |
-| Core preservado | regressao de transacoes, cartoes, recorrencias, parcelas e relatorios nos gates gerais e visuais existentes |
+| Composicao                 | Evidencia minima reutilizada                                                                                                      |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| CSV e OFX                  | parsers/preview, persistencia/revisao, idempotencia, isolamento e integracao PostgreSQL                                           |
+| Mensagem bancaria          | consentimento, extracao deterministica/integracao controlada, sanitizacao, retry e privacidade                                    |
+| Extracao estruturada       | schemas versionados, payload/fingerprint, legado e projecao publica                                                               |
+| Categorizacao              | precedencia regra -> aprendizado -> IA, baixa confianca, edicao, aprovacao e isolamento por perfil                                |
+| Deduplicacao e conciliacao | scanner generalizado, concorrencia, alvo obsoleto, rollback e decisao atomica                                                     |
+| Inbox                      | fila unificada, filtros/estados, conflito de versao, erro controlado e retry                                                      |
+| Insights                   | geracao deterministica/idempotente, dados insuficientes, multimoeda, integracao indisponivel e renderizacao                       |
+| Assistente                 | somente leitura, integracao controlada, fallback deterministico, reinicio, cancelamento, concorrencia, perfil/moeda e privacidade |
+| Core preservado            | regressao de transacoes, cartoes, recorrencias, parcelas e relatorios nos gates gerais e visuais existentes                       |
 
 A matriz e uma lista de verificacao de composicao. Os documentos donos de cada dominio continuam sendo a fonte de verdade detalhada.
 
@@ -82,7 +82,7 @@ A composicao final deve manter evidencia automatizada para, no minimo:
 
 ## Robustez, privacidade e observabilidade
 
-A regressao deve confirmar que tenant/perfil, consentimento, idempotencia, concorrencia, retry, rollback e estados obsoletos continuam controlados onde aplicavel. Logs e erros devem manter contexto diagnostico sem incluir conteudo bruto ou credenciais. Fixtures, seeds, screenshots e artefatos devem permanecer ficticios e minimizados.
+A regressao deve confirmar que tenant/perfil, consentimento, idempotencia, concorrencia, retry, rollback e estados obsoletos continuam controlados onde aplicavel. Logs e erros devem manter contexto diagnostico respeitando os contratos de privacidade. Fixtures, seeds, screenshots e artefatos devem permanecer ficticios e minimizados.
 
 ## Findings
 
