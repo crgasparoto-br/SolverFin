@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "classification": "systemic-escape",
+  "source_event": {
+    "category": "delivery-not-ready",
+    "observed_at": "2026-08-13T21:13:45Z"
+  },
+  "generalized_learning": {
+    "escape_class": "readiness-packet-omission",
+    "generalized_failure_pattern": "A delivery can pass product checks while required readiness artifacts are absent.",
+    "plausible_wrong_implementation": "Skip readiness artifact generation after successful product checks.",
+    "trigger_signals": [
+      "connector-only execution",
+      "handoff requested",
+      "readiness packet absent"
+    ],
+    "risk_families": [
+      "structural-contract",
+      "documentation"
+    ],
+    "reusable_control": {
+      "id": "HANDOFF-READY-001",
+      "rule": "Validate required readiness artifacts before audit handoff."
+    },
+    "prevention_rule": "Generate and validate required readiness artifacts before audit handoff.",
+    "detection_rule": "Check certificate identity, artifact hashes, inherited controls and learning closure before broad audit.",
+    "transfer_cases": [
+      {
+        "surface": "remote_repository_delivery",
+        "status": "passed",
+        "evidence": "connector-only handoff contract test"
+      },
+      {
+        "surface": "result_child_validation",
+        "status": "passed",
+        "evidence": "handoff certificate contract test"
+      }
+    ],
+    "promotion_status": "promoted"
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "status": "passed",
+      "artifact": "connector-only handoff contract",
+      "evidence": "skill-validation.txt"
+    },
+    {
+      "role": "detection",
+      "status": "passed",
+      "artifact": "handoff readiness preflight",
+      "evidence": "validation-results.json"
+    }
+  ]
+}

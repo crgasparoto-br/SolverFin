@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-001",
+      "escape_class": "certified-handoff-readiness-omission",
+      "source_audit": {
+        "head_sha": "a49b2bd76ddd8a1a64028e83a14e25175a36a425",
+        "finding_id": "A-001",
+        "category": "delivery-not-ready"
+      },
+      "plausible_wrong_implementation": "Publish a materially green candidate and invoke independent audit without first producing a certified, consumable result-only handoff packet.",
+      "literal_case": {
+        "procedure": "Recover the missing certified handoff for the unchanged material head without reopening product implementation.",
+        "status": "passed",
+        "evidence": "validation-results.json: delivery readiness and certificate build/validation pass for material head."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-001-S1",
+          "dimension": "stale-certificate-parent",
+          "status": "passed",
+          "evidence": "Skill contract test test_handoff_certificate_contract.py and result-only child parent validation."
+        },
+        {
+          "id": "A-001-S2",
+          "dimension": "connector-only-missing-artifacts",
+          "status": "passed",
+          "evidence": "Skill contract test test_connector_only_handoff_contract.py and mandatory connector-only recovery flow."
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue connector-only handoff + invariant 28/fast path recovery",
+        "evidence": "Current installed skill explicitly forbids omitting the package in connector-only mode; contract tests pass in skill-validation.txt."
+      },
+      "detection_change": {
+        "skill_or_gate": "validate_handoff_readiness.py + build_handoff_certificate.py + auditar check_delivery_preflight.py",
+        "control_id": "HANDOFF-READY-001",
+        "evidence": "validation-results.json records all preflight validators passing before publication."
+      },
+      "trigger_terms": [
+        "connector-only",
+        "handoff-not-produced",
+        "handoff-stale",
+        "result-only-child",
+        "certified readiness"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "documentation"
+      ],
+      "status": "passed"
+    }
+  ]
+}
