@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+  "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
   "requirements": [
     {
       "requirement_id": "REQ-PHASE2",
@@ -50,14 +50,14 @@
       "positive_control": {
         "id": "PC-PHASE2",
         "status": "passed",
-        "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+        "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
         "evidence": "Published head CI run 31750560891 completed successfully and Statement visual validation run 31750560956 completed successfully; the independent audit also inspected the produced visual artifact and found no failures."
       },
       "negative_controls": [
         {
           "id": "NC-PHASE2",
           "status": "passed",
-          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
           "evidence": "Inherited adversarial controls cover foreign-profile reuse, revoked consent, concurrent approvals, cancel/restart behavior, unavailable-provider fallback, privacy artifacts, and visual keyboard/mobile/reflow failures.",
           "sibling_cases": [
             {
@@ -77,7 +77,7 @@
         {
           "id": "REF-LIVE-001",
           "status": "passed",
-          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
           "evidence": "Inherited exact behavior rejects missing, fingerprint-changed, or archived referenced resources at the definitive approval boundary.",
           "sibling_cases": [
             {
@@ -99,7 +99,7 @@
         {
           "id": "RG-PHASE2",
           "status": "passed",
-          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
           "evidence": "The remediation changes only external tracker metadata and Skill contracts; repository material bytes are unchanged from the exact head whose CI and visual workflows passed."
         }
       ]
@@ -125,14 +125,14 @@
       "positive_control": {
         "id": "PC-TRACKER",
         "status": "passed",
-        "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+        "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
         "evidence": "Linked tracker observation at updated_at 2026-08-13T22:55:38Z shows eight evidence-backed acceptance items marked complete and the final self-referential gate explicitly open."
       },
       "negative_controls": [
         {
           "id": "TRACKER-SYNC-001",
           "status": "passed",
-          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
           "evidence": "Re-fetched canonical tracker after remediation; no evidence-backed acceptance item remains stale or implicitly pending.",
           "sibling_cases": [
             {
@@ -154,7 +154,7 @@
         {
           "id": "RG-TRACKER",
           "status": "passed",
-          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
           "evidence": "A post-write remote read returned the synchronized canonical checklist and explicit remaining condition."
         }
       ]

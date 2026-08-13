@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+  "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
   "source_audits": [
     {
       "kind": "independent",
@@ -40,28 +40,28 @@
       "id": "HANDOFF-READY-001",
       "origin": "prior delivery-not-ready",
       "status": "passed",
-      "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+      "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
       "evidence": "A new certified handoff is generated and terminally validated for this remediation cycle."
     },
     {
-      "id": "HANDOFF-STATIC-GATE-001",
+      "id": "HANDOF-STATIC-GATE-001",
       "origin": "published-head-static-gate",
       "status": "passed",
-      "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+      "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
       "evidence": "The published material head already completed repository CI successfully with generated handoff artifacts excluded by the canonical formatter contract."
     },
     {
       "id": "REF-LIVE-001",
       "origin": "risk-saturation-drift",
       "status": "passed",
-      "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+      "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
       "evidence": "Missing, changed-fingerprint, and archived-reference controls remain applicable and passed."
     },
     {
       "id": "TRACKER-SYNC-001",
       "origin": "canonical-tracker-state-drift",
       "status": "passed",
-      "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+      "head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
       "evidence": "The linked canonical tracker was re-fetched after update; evidence-backed items are checked and the only remaining self-referential gate is explicit."
     }
   ],

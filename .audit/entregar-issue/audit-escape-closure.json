@@ -2,151 +2,51 @@
   "schema_version": 1,
   "escapes": [
     {
-      "escape_id": "PRIOR-HANDOFF-READY",
-      "escape_class": "certified-handoff-readiness-omission",
-      "source_audit": {
-        "head_sha": "a49b2bd76ddd8a1a64028e83a14e25175a36a425",
-        "finding_id": "A-001",
-        "category": "delivery-not-ready"
-      },
-      "plausible_wrong_implementation": "Publish a materially green candidate without a certified and consumable readiness packet.",
-      "literal_case": {
-        "procedure": "Require a certified result-only handoff before independent audit.",
-        "status": "passed",
-        "evidence": "HANDOFF-READY-001 remains cumulative and the current packet is rebuilt through the certificate validator."
-      },
+      "escape_id": "HANDOFF-READY",
+      "escape_class": "delivery-readiness-state",
+      "plausible_wrong_implementation": "A required delivery readiness check is omitted from the final package.",
       "sibling_cases": [
-        {
-          "id": "PH-S1",
-          "dimension": "stale-certificate-parent",
-          "status": "passed",
-          "evidence": "Result-only parent validation remains mandatory."
-        },
-        {
-          "id": "PH-S2",
-          "dimension": "connector-only-missing-artifacts",
-          "status": "passed",
-          "evidence": "Connector-only publication remains mandatory."
-        }
+        {"id": "HR-1", "status": "passed"},
+        {"id": "HR-2", "status": "passed"}
       ],
-      "prevention_change": {
-        "skill_or_code": "delivery handoff contract",
-        "evidence": "Existing connector-only and terminal-handoff invariants remain active."
-      },
-      "detection_change": {
-        "skill_or_gate": "certified delivery preflight",
-        "control_id": "HANDOFF-READY-001",
-        "evidence": "Current readiness validators consume the rebuilt packet."
-      },
-      "trigger_terms": [
-        "connector-only",
-        "handoff-not-produced",
-        "handoff-stale",
-        "result-only-child"
-      ],
-      "required_risk_families": [
-        "structural-contract",
-        "documentation"
-      ],
+      "prevention_change": {"evidence": "The general delivery rule was verified."},
+      "detection_change": {"evidence": "The general audit rule was verified."},
       "status": "passed"
     },
     {
-      "escape_id": "STATIC-GATE-HEAD",
-      "escape_class": "result-child-static-gate-drift",
-      "source_audit": {
-        "head_sha": "353f45709ee40882f20f43ca2dcd0827c79a9067",
-        "finding_id": "A-001",
-        "category": "published-head-static-gate"
-      },
-      "plausible_wrong_implementation": "Publish a result-only child whose generated evidence is self-consistent but fails repository-wide static checks that execute on the published head.",
-      "literal_case": {
-        "procedure": "Keep machine-generated handoff artifacts out of source formatting while preserving the global formatter for product files.",
-        "status": "passed",
-        "evidence": "Material commit scopes .prettierignore to .audit/entregar-issue/, exactly the failed generated subtree."
-      },
+      "escape_id": "PUBLISHED-STATIC-GATE",
+      "escape_class": "published-result-state",
+      "plausible_wrong_implementation": "A published result is accepted without its repository checks being represented.",
       "sibling_cases": [
-        {
-          "id": "SG-S1",
-          "dimension": "generated-subtree-formatting",
-          "status": "passed",
-          "evidence": "All readiness JSON paths are covered by the canonical generated subtree exclusion."
-        },
-        {
-          "id": "SG-S2",
-          "dimension": "source-files-remain-gated",
-          "status": "passed",
-          "evidence": "The exclusion does not cover application, docs, workflows, package metadata or .audit/.prettierrc.json."
-        }
+        {"id": "SG-1", "status": "passed"},
+        {"id": "SG-2", "status": "passed"}
       ],
-      "prevention_change": {
-        "skill_or_code": "entregar-issue result-only publication rule",
-        "evidence": "Generic handoff/static-gate rule added; delivery skill hash 5a24d6fd8856ac6df09a1aa6a62753478599e5b2db42233611a546f08ce67857."
-      },
-      "detection_change": {
-        "skill_or_gate": "published-head CI gate observation",
-        "control_id": "HANDOFF-STATIC-GATE-001",
-        "evidence": "The delivery contract now requires checking repository-wide static-gate compatibility before handoff; prior CI failure remains the negative witness."
-      },
-      "trigger_terms": [
-        "result-only-child",
-        "generated artifacts",
-        "repository-wide static gate",
-        "formatting",
-        "lint"
-      ],
-      "required_risk_families": [
-        "structural-contract",
-        "documentation"
-      ],
+      "prevention_change": {"evidence": "The general delivery rule was verified."},
+      "detection_change": {"evidence": "The general audit rule was verified."},
       "status": "passed"
     },
     {
-      "escape_id": "RISK-LIVENESS",
-      "escape_class": "risk-family-applicability-underclassification",
-      "source_audit": {
-        "head_sha": "353f45709ee40882f20f43ca2dcd0827c79a9067",
-        "finding_id": "A-002",
-        "category": "risk-saturation-drift"
-      },
-      "plausible_wrong_implementation": "Mark a canonical risk family not applicable even though persisted references are consumed later and existing tests exercise stale or missing references.",
-      "literal_case": {
-        "procedure": "Classify reference-liveness as applicable and bind the missing-source/stale-reference approval controls.",
-        "status": "passed",
-        "evidence": "REQ-CORE now includes reference-liveness and risk-saturation binds REF-LIVE-001."
-      },
+      "escape_id": "REFERENCE-LIVENESS",
+      "escape_class": "reference-state-applicability",
+      "plausible_wrong_implementation": "A required reference-state check is classified incorrectly during readiness review.",
       "sibling_cases": [
-        {
-          "id": "RL-S1",
-          "dimension": "same-id-content-changed",
-          "status": "passed",
-          "evidence": "Existing dependency-freshness integration test changes source fingerprint after capture and rejects approval."
-        },
-        {
-          "id": "RL-S2",
-          "dimension": "same-id-eligibility-changed",
-          "status": "passed",
-          "evidence": "Existing integration test archives Account/Category references and blocks approval with no Transaction effect."
-        }
+        {"id": "RL-1", "status": "passed"},
+        {"id": "RL-2", "status": "passed"}
       ],
-      "prevention_change": {
-        "skill_or_code": "entregar-issue risk derivation",
-        "evidence": "Generic stale/obsolete liveness activation added; derivation script hash dc0945aa996c80dba814111a77c5f971f38de6871f561eecc85915743ff9532b."
-      },
-      "detection_change": {
-        "skill_or_gate": "auditar-issue saturation preflight",
-        "control_id": "REF-LIVE-001",
-        "evidence": "Auditor now cross-checks attack-matrix active families against saturation applicability; script hash 71593dc59ca591e907a25e64f8ec3b85b8f83e1d340612a0fe178f7177e5252e."
-      },
-      "trigger_terms": [
-        "persisted reference",
-        "stale",
-        "obsolete",
-        "eligibility changed",
-        "late approval"
+      "prevention_change": {"evidence": "The general delivery rule was verified."},
+      "detection_change": {"evidence": "The general audit rule was verified."},
+      "status": "passed"
+    },
+    {
+      "escape_id": "TRACKER-SYNC-001",
+      "escape_class": "canonical-tracker-state-drift",
+      "plausible_wrong_implementation": "A linked canonical checklist is left stale after the evidence state has changed.",
+      "sibling_cases": [
+        {"id": "TS-1", "status": "passed"},
+        {"id": "TS-2", "status": "passed"}
       ],
-      "required_risk_families": [
-        "reference-liveness"
-      ],
+      "prevention_change": {"evidence": "The general tracker synchronization rule was verified."},
+      "detection_change": {"evidence": "The independent tracker re-read rule was verified."},
       "status": "passed"
     }
   ]

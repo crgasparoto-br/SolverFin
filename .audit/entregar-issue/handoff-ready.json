@@ -1,17 +1,18 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-13T23:10:38.093349+00:00",
+  "created_at": "2026-08-13T23:17:33.345781+00:00",
   "identity": {
-    "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
-    "material_head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+    "head_sha": "a6c8fa5430983e6a55139376b9ff5d9dded6768",
+    "material_head_sha": "a6c8fa5430983ce6a55139376b9ff5d9dded6768",
     "base_sha": "0d46c22c141b81f6a27a43ff5c06fa491f08a1e4",
-    "merge_preview_sha": "159f47607f88e5f686f58e7b19d653aa0114994f",
-    "material_merge_preview_sha": "159f47607f88e5f686f58e7b19d653aa0114994f"
+    "merge_preview_sha": "5af188188b74d7e60035d265823f10f71e9a55fe",
+    "material_merge_preview_sha": "5af188188b74d7e60035d265823f10f71e9a55fe"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
+      ".audit/entregar-issue/audit-escape-closure.json",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
       ".audit/entregar-issue/learning-closure.json",
@@ -47,15 +48,19 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "67add85ace4dfde26952b52dc4367d0fd4e0680fb756d19b75738037d6f12ee8"
+      "sha256": "22ee9d2b47836283e7b235e01968cf7b0d5be9c237b9ebede001767d48fd72e5"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "6c3eaaa3c7f615a1eadce426be2a11b1eb453db6317d6d7fcadf5e71dd437a7b"
+      "sha256": "bb9498531acfd2b4ebeb67158f5db2a84a423ffbf520d1fc53a4b773b6d213fd"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "1fa6b5cb01fac00d6aadcf9fb8c5be5297ea53320e3648016dd3666b87518d4d"
+      "sha256": "92d7431d5de24aa499b59d9794966bd0c758bf9bd42fd9ec2d17ec9da74f6ba9"
+    },
+    "audit_escape_closure": {
+      "name": "audit-escape-closure.json",
+      "sha256": "514f66c22b00803d13e8b316b39e9bcd4e9c61f3b63f3b881dd8e312fa62ca3a"
     },
     "learning_closure": {
       "name": "learning-closure.json",
