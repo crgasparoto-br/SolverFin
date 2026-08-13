@@ -1,1 +1,113 @@
-{"schema_version":1,"head_sha":"a49b2bd76ddd8a1a64028e83a14e25175a36a425","families":[{"family":"authorization","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-CORE"]},{"family":"tenant-isolation","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-CORE"]},{"family":"public-boundary","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-EVID"]},{"family":"reference-liveness","applicable":false,"status":"not-applicable","reason":"No material obligation in this final composition gate selects this risk family."},{"family":"temporal-consistency","applicable":false,"status":"not-applicable","reason":"No material obligation in this final composition gate selects this risk family."},{"family":"temporal-destination","applicable":false,"status":"not-applicable","reason":"No material obligation in this final composition gate selects this risk family."},{"family":"concurrency-atomicity","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-CORE"]},{"family":"idempotency","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-CORE"]},{"family":"rollback","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-CORE"]},{"family":"historical-immutability","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-CORE"]},{"family":"structural-contract","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-UI"]},{"family":"documentation","applicable":true,"status":"passed","reason":"Material Phase 2 gate exercises this risk family.","control_ids":["NC-UI"]}],"material_families_missing_controls":[]}
+{
+  "schema_version": 1,
+  "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-CORE"
+      ]
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-CORE"
+      ]
+    },
+    {
+      "family": "public-boundary",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-CORE"
+      ]
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "REF-LIVE-001"
+      ]
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": false,
+      "status": "not-applicable",
+      "reason": "No material obligation in the final Phase 2 composition/remediation selects this family.",
+      "control_ids": []
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "status": "not-applicable",
+      "reason": "No material obligation in the final Phase 2 composition/remediation selects this family.",
+      "control_ids": []
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-CORE"
+      ]
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-CORE"
+      ]
+    },
+    {
+      "family": "rollback",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-CORE"
+      ]
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-CORE"
+      ]
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-UI",
+        "HANDOFF-STATIC-GATE-001"
+      ]
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Material issue/remediation obligations exercise this family.",
+      "control_ids": [
+        "NC-UI",
+        "HANDOFF-STATIC-GATE-001"
+      ]
+    }
+  ],
+  "material_families_missing_controls": []
+}
