@@ -14,9 +14,9 @@ Adotar um assistente com tres camadas independentes:
 
 1. **estado conversacional duravel no PostgreSQL**, escopado por organizacao, perfil e usuario, com versao, idempotencia, estados terminais e TTL;
 2. **evidencia financeira deterministica**, calculada no backend a partir de consultas tenant-scoped e separada por moeda;
-3. **provider opcional de narrativa**, executado somente depois do calculo, com consentimento revalidado e payload minimizado.
+3. **provider opcional de apresentacao controlada**, executado somente depois do calculo, com consentimento revalidado, payload minimizado e saida restrita às diretivas fechadas `DIRECT` ou `CONTEXTUAL`.
 
-O provider nao pode introduzir fatos quantitativos. Resposta externa que contenha afirmacao numerica e descartada em favor do resultado deterministico.
+O provider nao pode introduzir fatos, numeros, diagnosticos, recomendacoes nem texto financeiro livre. Qualquer saida diferente de `DIRECT` ou `CONTEXTUAL` e descartada integralmente; a resposta publica continua sendo composta pelo backend a partir da evidencia deterministica.
 
 O assistente e estritamente somente leitura. Cancelar, limpar e expirar sao transicoes do proprio estado conversacional; nenhuma dessas acoes altera registros financeiros.
 
@@ -51,7 +51,7 @@ A API publica redige evidencia persistida, IDs internos, chave de idempotencia e
 ### Custos
 
 - duas novas tabelas e politica de expiracao precisam ser mantidas;
-- novas intencoes exigem calculador deterministico antes de narrativa;
+- novas intencoes exigem calculador deterministico antes de qualquer diretiva de apresentacao externa;
 - perguntas em multiplas moedas exigem esclarecimento ou suporte explicito, nunca conversao implicita.
 
 ## Alternativas rejeitadas

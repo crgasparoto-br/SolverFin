@@ -257,7 +257,7 @@ Nao enviar para IA sem necessidade clara:
 - dados de outro perfil financeiro;
 - historico amplo quando um recorte menor resolve o caso.
 
-A saida de IA deve ser estruturada e validada quando o fluxo exigir sugestao revisavel. No assistente financeiro, o provider e opcional e limitado a narrativa qualitativa; os valores e fatos quantitativos permanecem derivados da evidencia determinista calculada antes da chamada externa.
+A saida de IA deve ser estruturada e validada quando o fluxo exigir sugestao revisavel. No assistente financeiro, o provider e opcional e nao possui autoridade para gerar texto financeiro livre: quando habilitado e consentido, sua saida deve ser exatamente `DIRECT` ou `CONTEXTUAL`; qualquer outro conteudo e descartado sem alterar fatos, valores ou resposta deterministica.
 
 ## Regras para importacao e conciliacao
 

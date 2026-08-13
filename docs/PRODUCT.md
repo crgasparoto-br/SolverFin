@@ -66,7 +66,7 @@ O usuario acompanha saldo, proximos vencimentos, faturas, lancamentos previstos,
 
 O usuario recebe sugestoes de extracao, classificacao, conciliacao e insights, sempre com explicacao, origem e estado de revisao.
 
-O usuario tambem pode usar o **Assistente financeiro** (`/assistente`) para fazer consultas somente leitura sobre o perfil financeiro ativo. O assistente resolve periodo, moeda e filtros antes de responder, usa calculos deterministas do backend como fonte dos valores e apresenta periodo, filtros, premissas, fontes internas, limitacoes e confianca. Quando o provider de IA esta habilitado e existe consentimento ativo, ele pode acrescentar somente narrativa qualitativa minimizada; nao cria, edita, exclui, concilia, paga ou aprova registros financeiros e nao oferece recomendacao profissional de investimento, credito, juridica, fiscal ou contabil.
+O usuario tambem pode usar o **Assistente financeiro** (`/assistente`) para fazer consultas somente leitura sobre o perfil financeiro ativo. O assistente resolve periodo, moeda e filtros antes de responder, usa calculos deterministas do backend como fonte dos valores e apresenta periodo, filtros, premissas, fontes internas, limitacoes e confianca. Quando o provider de IA esta habilitado e existe consentimento ativo, ele pode retornar somente a diretiva fechada `DIRECT` ou `CONTEXTUAL`; o backend aplica apenas copy controlada pelo SolverFin, sem incorporar texto livre do provider. O assistente nao cria, edita, exclui, concilia, paga ou aprova registros financeiros e nao oferece recomendacao profissional de investimento, credito, juridica, fiscal ou contabil.
 
 ## Principios de produto
 
@@ -142,7 +142,7 @@ Sugestoes de IA devem conter, quando aplicavel:
 - historico de aceite, edicao ou rejeicao;
 - capacidade de desfazer ou auditar a decisao.
 
-Respostas conversacionais do assistente devem ser somente leitura, indicar o recorte financeiro usado e manter os valores sob responsabilidade dos calculos deterministas do SolverFin. A narrativa opcional do provider nao pode introduzir novos numeros, comparacoes quantitativas ou fatos financeiros.
+Respostas conversacionais do assistente devem ser somente leitura, indicar o recorte financeiro usado e manter valores e fatos sob responsabilidade dos calculos deterministas do SolverFin. A participacao opcional do provider limita-se a selecionar `DIRECT` ou `CONTEXTUAL`; qualquer outro texto externo e descartado e nao altera a resposta deterministica.
 
 A IA nao deve:
 

@@ -8,7 +8,7 @@ A entrega original das issues #56 e #57 criou contratos puros e testáveis. A is
 
 A fonte canônica do fluxo operacional é `docs/FINANCIAL_ASSISTANT.md` e a decisão arquitetural está na ADR 0011.
 
-O assistente usa `answerFinancialQuestion` depois que a API resolve intent, perfil, período, moeda, filtros e evidência financeira. O provider nunca é a fonte dos números: ele é opcional e só acrescenta narrativa qualitativa.
+O assistente usa `answerFinancialQuestion` depois que a API resolve intent, perfil, período, moeda, filtros e evidência financeira. O provider nunca é a fonte dos números ou de texto financeiro livre: quando habilitado e consentido, ele só pode retornar a diretiva fechada `DIRECT` ou `CONTEXTUAL`, e o backend compõe a resposta com texto controlado pelo SolverFin.
 
 A conversa é persistida antes da resposta pendente e usa estado/versionamento/idempotência para sobreviver a retry, concorrência, cancelamento e restart. Troca de perfil ou moeda incompatível expira o contexto anterior em vez de misturar dados.
 
@@ -24,9 +24,9 @@ A resposta inclui valor disponível, horizonte, componentes considerados, premis
 
 Perguntas sobre receitas/despesas, categorias, saldo projetado, faturas/parcelas, assinaturas/recorrências e resumo mensal usam evidência estruturada calculada no backend.
 
-Quando o provider está habilitado, `runAiTask` recebe apenas pergunta mascarada, intent, período/moeda/filtros minimizados e métricas agregadas. Todo fluxo que alcance provider define consentimento, propósito, campos permitidos, limites e fallback e revalida consentimento imediatamente antes de cada tentativa. O contrato operacional está em `docs/ai/providers.md`.
+Quando o provider está habilitado, `runAiTask` recebe apenas intent, período/moeda/filtros minimizados e métricas agregadas. A pergunta bruta não é enviada. Todo fluxo que alcance provider define consentimento, propósito, campos permitidos, limites e fallback e revalida consentimento imediatamente antes de cada tentativa. O contrato operacional está em `docs/ai/providers.md`.
 
-Narrativa que tente introduzir número ou comparação quantitativa é descartada. Falha, timeout, rate limit, indisponibilidade ou revogação tardia preservam a resposta determinística.
+Qualquer saída diferente de `DIRECT` ou `CONTEXTUAL` é descartada integralmente. Falha, timeout, rate limit, indisponibilidade ou revogação tardia preservam a resposta determinística.
 
 ## Insights financeiros verificáveis
 

@@ -174,7 +174,7 @@ Usuario
         -> estado persistido de conversa/turno no PostgreSQL
         -> resolucao deterministica de intent, periodo, moeda, filtros e evidencia
         -> resposta canonica calculada no backend
-        -> provider opcional apenas para narrativa qualitativa
+        -> provider opcional retorna somente DIRECT ou CONTEXTUAL
       -> IA explicavel
         -> runAiTask: consentimento, minimizacao, timeout e retry
           -> AiProvider substituivel
@@ -215,11 +215,11 @@ Responsavel por receber CSV, OFX, mensagens autorizadas e outras origens, normal
 
 ### IA financeira
 
-Responsavel por extracao, classificacao, explicacao, sugestoes, insights e narrativa opcional do assistente. Saidas devem ser estruturadas, revisaveis e auditaveis quando o fluxo produz sugestao; regras deterministicas sao preferidas quando suficientes.
+Responsavel por extracao, classificacao, explicacao, sugestoes, insights e pela apresentacao controlada do assistente. Saidas devem ser estruturadas, revisaveis e auditaveis quando o fluxo produz sugestao; no assistente, a participacao externa e limitada à diretiva fechada `DIRECT` ou `CONTEXTUAL` e o backend controla todo texto exibido.
 
 O boundary interno e `AiProvider`. `runAiTask` governa consentimento, minimizacao, retry e logs; adapters concretos apenas traduzem `SafeAiProviderRequest`, executam uma chamada externa por tentativa e validam a resposta. OpenAI e o primeiro adapter real, mas modelo, endpoint e credencial permanecem configuraveis por ambiente e nao fazem parte do dominio financeiro.
 
-No assistente, o provider nao e um boundary de calculo. Os fatos quantitativos sao resolvidos antes da chamada externa; a conversa persiste somente pergunta normalizada, filtros, evidencia estruturada e resposta segura, sem prompt montado ou resposta bruta do provider.
+No assistente, o provider nao e um boundary de calculo nem de autoria de texto financeiro livre. Os fatos quantitativos sao resolvidos antes da chamada externa; a saida valida do provider se limita a `DIRECT` ou `CONTEXTUAL`; a conversa persiste somente pergunta normalizada, filtros, evidencia estruturada e resposta segura, sem prompt montado ou resposta bruta do provider.
 
 ### Interface web/PWA
 
@@ -236,6 +236,7 @@ Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes,
 - Revalidar consentimento imediatamente antes de cada tentativa de IA quando houver resolvedor dinamico.
 - Nao registrar prompt, campos, credencial, resposta bruta ou identificadores de tenant em logs de provider.
 - Nao delegar ao provider calculos ou fatos quantitativos do assistente financeiro.
+- Aceitar do provider do assistente somente as diretivas `DIRECT` ou `CONTEXTUAL`; qualquer outro texto deve ser descartado antes da fronteira publica.
 - Serializar ou rejeitar concorrencia por conversa e preservar idempotencia antes de qualquer tentativa externa.
 - Registrar auditoria para mudancas financeiras relevantes.
 - Nao armazenar senhas, tokens brutos ou respostas sensiveis em logs.
