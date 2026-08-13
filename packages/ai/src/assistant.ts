@@ -49,12 +49,20 @@ const FINANCIAL_ASSISTANT_MUTATION_VERBS = new Set([
   "edite",
   "alterar",
   "altere",
+  "atualizar",
+  "atualize",
+  "modificar",
+  "modifique",
+  "corrigir",
+  "corrija",
   "excluir",
   "exclua",
   "apagar",
   "apague",
   "remover",
   "remova",
+  "deletar",
+  "delete",
   "conciliar",
   "concilie",
   "pagar",
@@ -66,6 +74,10 @@ const FINANCIAL_ASSISTANT_MUTATION_VERBS = new Set([
   "rejeitar",
   "rejeite",
 ]);
+
+const FINANCIAL_ASSISTANT_MUTATION_NOUN_COMMAND =
+  /\b(?:faca|efetue|realize)\s+(?:(?:o|a|um|uma)\s+)?(?:pagamento|conciliacao|aprovacao|rejeicao|exclusao|edicao|alteracao|cadastro|lancamento)\b/;
+const FINANCIAL_ASSISTANT_MARK_PAID_COMMAND = /\bmarque\b.{0,80}\bcomo\s+pag[oa]\b/;
 
 export interface AvailabilityComponent {
   label: string;
@@ -284,9 +296,16 @@ export function classifyFinancialAssistantIntent(question: string): FinancialAss
 }
 
 export function financialAssistantQuestionRequestsMutation(question: string): boolean {
-  return normalizeQuestion(question)
+  const normalized = normalizeQuestion(question);
+  const hasMutationVerb = normalized
     .split(/[^a-z0-9]+/)
     .some((token) => FINANCIAL_ASSISTANT_MUTATION_VERBS.has(token));
+
+  return (
+    hasMutationVerb ||
+    FINANCIAL_ASSISTANT_MUTATION_NOUN_COMMAND.test(normalized) ||
+    FINANCIAL_ASSISTANT_MARK_PAID_COMMAND.test(normalized)
+  );
 }
 
 export function financialAssistantQuestionRequestsCategoryFilter(question: string): boolean {
