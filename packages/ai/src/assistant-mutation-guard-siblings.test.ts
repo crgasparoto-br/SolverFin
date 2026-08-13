@@ -5,20 +5,27 @@ import {
   financialAssistantQuestionRequestsMutation,
 } from "./index.js";
 
-for (const command of [
+const classify = classifyFinancialAssistantIntent;
+const requestsMutation = financialAssistantQuestionRequestsMutation;
+
+const mutationCommands = [
   "Faca o pagamento da minha fatura",
   "Marque minha fatura como paga",
   "Atualize o valor desta despesa",
   "Modifique esta parcela",
-]) {
-  assert.equal(financialAssistantQuestionRequestsMutation(command), true, command);
-  assert.equal(classifyFinancialAssistantIntent(command), "out_of_scope", command);
+];
+
+for (const command of mutationCommands) {
+  assert.equal(requestsMutation(command), true, command);
+  assert.equal(classify(command), "out_of_scope", command);
 }
 
-for (const consultation of [
+const consultations = [
   "Quanto paguei de fatura este mes?",
   "Faca um resumo deste mes",
-]) {
-  assert.equal(financialAssistantQuestionRequestsMutation(consultation), false, consultation);
-  assert.notEqual(classifyFinancialAssistantIntent(consultation), "out_of_scope", consultation);
+];
+
+for (const consultation of consultations) {
+  assert.equal(requestsMutation(consultation), false, consultation);
+  assert.notEqual(classify(consultation), "out_of_scope", consultation);
 }
