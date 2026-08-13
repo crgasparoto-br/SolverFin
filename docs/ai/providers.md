@@ -55,12 +55,13 @@ Quando o provider está habilitado, o fluxo usa:
 
 - finalidade `financial_assistant_read_only`;
 - `allowRawFinancialText=false`;
-- allowlist do fluxo restrita ao `intent`, com a pergunta e a evidência já minimizadas no prompt seguro preparado pelo SolverFin;
+- allowlist do fluxo restrita ao `intent`; a pergunta bruta não é enviada ao provider;
+- período, moeda, filtros minimizados e métricas agregadas no prompt seguro preparado pelo SolverFin;
 - consentimento revalidado imediatamente antes de cada tentativa e novamente entre retries pelo executor comum;
 - timeout de 8 segundos e no máximo um retry adicional no contrato atual;
-- narrativa limitada a conteúdo qualitativo, sem números, quantidades ou comparações de magnitude.
+- saída fechada de apresentação: somente os tokens `DIRECT` ou `CONTEXTUAL` são válidos.
 
-A narrativa do provider nunca substitui a resposta determinística. Se a saída externa introduzir afirmação quantitativa, ela é descartada. Provider desabilitado, revogação de consentimento, timeout, rate limit, indisponibilidade ou resposta inválida preservam a resposta determinística quando existe evidência suficiente.
+A saída do provider é tratada como entrada não confiável e nunca é concatenada diretamente à resposta pública. `DIRECT` mantém o texto determinístico; `CONTEXTUAL` seleciona apenas o prefixo fixo `Com base exclusivamente nos dados autorizados:` controlado pelo backend. Qualquer outro texto, inclusive afirmação quantitativa, fato qualitativo não sustentado, diagnóstico ou recomendação profissional, é descartado integralmente. Provider desabilitado, revogação de consentimento, timeout, rate limit, indisponibilidade ou saída fora do contrato preservam a resposta determinística quando existe evidência suficiente.
 
 O provider não recebe `organizationId`, `financialProfileId`, `userId`, chaves de idempotência, SQL, entidades financeiras brutas ou o histórico persistido da conversa. Prompt montado e resposta bruta do provider não são persistidos. O assistente não expõe nenhuma operação financeira de escrita.
 
@@ -122,7 +123,7 @@ O adapter não recebe `organizationId`, `financialProfileId` nem entidades de do
 
 ## Contratos de resposta por tarefa
 
-Toda resposta aceita contém `text` não vazio e `confidence` opcional entre `0` e `1`.
+Toda resposta aceita pelo executor comum contém `text` não vazio e `confidence` opcional entre `0` e `1`. Cada consumidor ainda deve validar o contrato semântico específico da tarefa antes de usar a saída.
 
 ### Extraction
 
@@ -155,9 +156,9 @@ Assim, um callback permissivo como `() => true` não admite payload legado, esp�
 
 ### Summary e assistant
 
-Aceitam texto simples ou envelope com `text` e `confidence`. Qualquer `structured` é recusado.
+O executor comum aceita texto simples ou envelope com `text` e `confidence`; qualquer `structured` é recusado.
 
-No assistente, o texto aceito ainda passa pelo filtro do próprio fluxo: qualquer narrativa com número, quantidade ou comparação quantitativa é descartada antes da composição com a resposta determinística.
+No assistente, essa validação de transporte não autoriza texto livre na fronteira pública. O consumidor aceita semanticamente apenas `DIRECT` ou `CONTEXTUAL` e renderiza copy controlada pelo backend. Qualquer outra saída é tratada como inválida para apresentação e não altera a resposta determinística.
 
 ## Tentativas, timeout e erros controlados
 
@@ -212,7 +213,7 @@ A suíte usa providers e clientes HTTP fakes, não acessa rede externa e não de
 - IDs de outro perfil bloqueados antes do provider;
 - retry idempotente após falha temporária;
 - ausência de mensagem bruta na persistência;
-- assistente com provider fake, narrativa válida, narrativa quantitativa descartada e fallback determinístico quando o provider falha.
+- assistente com provider fake, diretiva fechada válida, texto livre quantitativo ou qualitativo descartado, recomendações profissionais descartadas e fallback determinístico quando o provider falha.
 
 Validações esperadas:
 
@@ -241,6 +242,6 @@ Use apenas fixtures fictícias e minimizadas.
 ## Limitações conhecidas
 
 - O provider permanece desligado por padrão e a ativação produtiva depende de configuração protegida e revisão de modelo, custo e limites.
-- Inbox de mensagens bancárias e assistente financeiro são consumidores de produto distintos; no assistente, o provider é opcional e nunca é a fonte dos valores financeiros.
+- Inbox de mensagens bancárias e assistente financeiro são consumidores de produto distintos; no assistente, o provider é opcional e nunca é a fonte dos valores financeiros nem de texto financeiro livre exibido ao usuário.
 - Telemetria agregada de custo e orçamento ainda não foi implementada.
 - Fallbacks determinísticos permanecem independentes do provider real.
