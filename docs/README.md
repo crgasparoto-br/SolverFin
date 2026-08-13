@@ -21,6 +21,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, componentes, provedores de CSS SSR e orientacoes de interface.
 - [`APP_SHELL.md`](./APP_SHELL.md): rotas canonicas, shell autenticado e contrato executavel de composicao de estilos SSR.
 - [`REPORTS.md`](./REPORTS.md): visoes, filtros, calculos e estados da area de Relatorios.
+- [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md): contrato funcional, persistencia, privacidade, concorrencia e UX do assistente somente leitura.
 - [`WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md): cobertura esperada de manutencao web.
 
 ## Arquitetura, seguranca e operacao
@@ -56,6 +57,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`AUTOMATION_RULES.md`](./AUTOMATION_RULES.md): regras automaticas configuraveis.
 - [`AI_REVIEW_QUEUE.md`](./AI_REVIEW_QUEUE.md): fila de sugestoes revisaveis.
 - [`AI_SUGGESTION_PAYLOADS.md`](./AI_SUGGESTION_PAYLOADS.md): envelopes versionados e projecoes publicas das sugestoes.
+- [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md): contrato canonico do assistente financeiro conversacional.
 - [`ai/extraction-schema.md`](./ai/extraction-schema.md): schema de extracao de lancamentos por IA.
 - [`ai/providers.md`](./ai/providers.md): providers substituiveis, configuracao segura, consentimento, timeout, retry e logs.
 - [`ai/assistant-and-insights.md`](./ai/assistant-and-insights.md): contratos funcionais do assistente e dos insights.
@@ -69,6 +71,7 @@ ADRs registram decisoes duradouras. Crie ou atualize ADRs quando a mudanca alter
 - [`adr/0004-autenticacao-produtiva.md`](./adr/0004-autenticacao-produtiva.md)
 - [`adr/0005-financial-indexes-shared-domain.md`](./adr/0005-financial-indexes-shared-domain.md)
 - [`adr/0010-openai-provider-inicial.md`](./adr/0010-openai-provider-inicial.md)
+- [`adr/0011-read-only-financial-assistant.md`](./adr/0011-read-only-financial-assistant.md)
 
 ## Regras de manutencao documental
 

@@ -23,23 +23,26 @@ Manter uma moldura comum para as telas financeiras, com navegacao, estados prote
 
 A lista abaixo e derivada conceitualmente de `solverFinShellRoutes`; o arquivo TypeScript permanece a unica fonte de verdade executavel.
 
-| Rota                         | Area                 | Acesso                                           |
-| ---------------------------- | -------------------- | ------------------------------------------------ |
-| `/dashboard`                 | Dashboard            | autenticado                                      |
-| `/lancamentos`               | Extrato da conta     | autenticado                                      |
-| `/cartoes`                   | Cartoes de Credito   | autenticado                                      |
-| `/contas-cartoes`            | Contas e Cartoes     | autenticado                                      |
-| `/remuneracao-contas`        | Remuneracao pelo CDI | renderer legado coberto; rota redireciona no uso |
-| `/categorias`                | Categorias           | autenticado                                      |
-| `/orcamentos`                | Orcamentos           | autenticado                                      |
-| `/inbox`                     | Inbox                | autenticado                                      |
-| `/relatorios`                | Relatorios           | autenticado                                      |
-| `/configuracoes`             | Configuracoes        | autenticado                                      |
-| `/admin/instituicoes`        | Instituicoes         | master                                           |
-| `/admin/indices-financeiros` | Indices financeiros  | master                                           |
-| `/login`                     | Login                | publico                                          |
+| Rota                         | Area                  | Acesso                                           |
+| ---------------------------- | --------------------- | ------------------------------------------------ |
+| `/dashboard`                 | Dashboard             | autenticado                                      |
+| `/lancamentos`               | Extrato da conta      | autenticado                                      |
+| `/cartoes`                   | Cartoes de Credito    | autenticado                                      |
+| `/contas-cartoes`            | Contas e Cartoes      | autenticado                                      |
+| `/remuneracao-contas`        | Remuneracao pelo CDI  | renderer legado coberto; rota redireciona no uso |
+| `/categorias`                | Categorias            | autenticado                                      |
+| `/orcamentos`                | Orcamentos            | autenticado                                      |
+| `/assistente`                | Assistente financeiro | autenticado                                      |
+| `/inbox`                     | Inbox                 | autenticado                                      |
+| `/relatorios`                | Relatorios            | autenticado                                      |
+| `/configuracoes`             | Configuracoes         | autenticado                                      |
+| `/admin/instituicoes`        | Instituicoes          | master                                           |
+| `/admin/indices-financeiros` | Indices financeiros   | master                                           |
+| `/login`                     | Login                 | publico                                          |
 
 Rotas legadas em `/app` podem redirecionar para os caminhos canonicos. A composicao de estilos cobre todas as entradas com `status: "available"`, independentemente de aparecerem no menu ou exigirem acesso master.
+
+`/assistente` e uma rota operacional autenticada e dependente de perfil financeiro. Seu renderer `financial-assistant-page.js` possui contrato SSR proprio e deve continuar classificado como `available` enquanto a jornada somente leitura estiver servida.
 
 `/remuneracao-contas` permanece no catalogo para manter o renderer legado sob cobertura, mas nao voltou a ser uma jornada operacional. Em execucao normal, `/remuneracao-contas` e `/app/remuneracao-contas` respondem `302` para `/contas-cartoes` quando o usuario esta autenticado e seguem o fluxo de login sem sessao. Somente o processo interno do portao, iniciado por `scripts/build-web.mjs`, define `SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION=1` para exercitar o renderer pelo servidor representativo sem alterar o comportamento publico.
 

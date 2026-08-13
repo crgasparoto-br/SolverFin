@@ -25,11 +25,15 @@ Esta matriz registra o estado observado no candidato atual para reduzir ambiguid
 - `docs/AI_REVIEW_QUEUE.md`
 - `docs/AI_SUGGESTION_PAYLOADS.md`
 - `docs/FINANCIAL_INSIGHTS.md`
+- `docs/FINANCIAL_ASSISTANT.md`
+- `docs/ai/assistant-and-insights.md`
 - `docs/ai/category-learning.md`
 - `docs/ai/extraction-schema.md`
 - `docs/ai/providers.md`
 - `docs/adr/0010-openai-provider-inicial.md`
+- `docs/adr/0011-read-only-financial-assistant.md`
 - `docs/ENVIRONMENT.md`
+- `docs/PRIVACY.md`
 - `docs/BANK_MESSAGE_INBOX.md`
 - `docs/AUTOMATION_RULES.md`
 - `docs/PAYABLES_RECEIVABLES.md`
@@ -37,7 +41,7 @@ Esta matriz registra o estado observado no candidato atual para reduzir ambiguid
 - `docs/WEB_MAINTENANCE_COVERAGE.md`
 - `docs/API_CARD_PURCHASE_INVOICE_PERIOD_MOVE.md`
 - `docs/API_REPORTS.md`
-- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562, a PR #572 para a issue #563, a entrega da issue #564, a entrega da issue #565, a entrega da issue #566 e o candidato da issue #567.
+- PRs relacionadas ao estado atual: #190, #191, #192, #194, #197, #198, #302, #304, #338, #411, #412, #414, #531, a entrega da issue #548, a PR #570 para a issue #561, a entrega da issue #562, a PR #572 para a issue #563, a entrega da issue #564, a entrega da issue #565, a entrega da issue #566, o candidato da issue #567 e a PR #580 para a issue #568.
 
 ## Decisao atual sobre pagar/receber
 
@@ -164,13 +168,24 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 
 - Dominio: Feito para a uniao discriminada e versionada de `transaction_extraction`, `categorization`, `deduplication`, `reconciliation` e `insight`, incluindo `insight` V2 com evidências numéricas, limitações e navegação.
 - Schema/migration: Feito com payload JSON canonico, validacao estrita no dominio e PostgreSQL, fingerprint, migracao conservadora de variantes legadas compativeis, persistencia de aprendizado de categoria e validação específica do payload `insight` V2.
-- Provider real e executor seguro: Feito para infraestrutura substituivel em `@solverfin/ai`, com `OpenAiProvider`, configuracao ambiental, provider desativado por padrao, consentimento revalidado, timeout, retry tipado, health check local e logs redigidos. Para insights, provider é opcional e restrito à narrativa; os números são calculados antes da chamada externa.
+- Provider real e executor seguro: Feito para infraestrutura substituivel em `@solverfin/ai`, com `OpenAiProvider`, configuracao ambiental, provider desativado por padrao, consentimento revalidado, timeout, retry tipado, health check local e logs redigidos. Para insights, provider é opcional e restrito à narrativa; para o assistente, provider é opcional mas só pode retornar as diretivas fechadas `DIRECT` ou `CONTEXTUAL`; os números e fatos do assistente são calculados antes da chamada externa.
 - Repository/API: Feito para leitura tipada, projeção escopada/redigida, decisão transacional comum, `expectedFingerprint`, edição permitida por tipo, efeitos tipados, idempotência, isolamento por organização/perfil/moeda, auditoria correlacionada, detector determinístico generalizado para extrações e geração determinística/idempotente de insights com `financial-insights-v2` e fingerprint do snapshot.
 - UI: Feito para fila unificada na Inbox com filtros `kind/status/confidence/profileId`, detalhe tipado, edição de `transaction_extraction`/`categorization`, aprovação/rejeição, baixa confiança, conflito de versão, carregamento, vazio, erro e retry; insights V2 exibem evidências verificáveis, limitações e navegação para a área financeira relacionada.
-- Fluxos de produto com provider real: Feito para extracao da Inbox de mensagens bancarias e para categorizacao de qualquer origem que produza `transaction_extraction` estruturada. Deduplicação/conciliação também são independentes da origem após a estruturação. O assistente conversacional permanece fora deste recorte. `insight` possui geração proativa determinística, persistida e revisável; provider opcional permanece apenas narrativo.
-- Testes: unitarios dos schemas, normalizadores, precedencia e consumidor da Inbox; integração PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia, aprendizado e retry; a issue #565 acrescenta integração de categorização/versionamento/insight, a #566 acrescenta origens CSV/OFX/mensagem/IA, alvo obsoleto, transferência rígida e rollback e a #567 cobre limiares numéricos, falsos positivos, multimoeda, pendências, payload V2, persistência idempotente, provider indisponível e renderização web.
-- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/FINANCIAL_INSIGHTS.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/BANK_MESSAGE_INBOX.md`, `docs/IMPORTS.md`, `docs/ai/assistant-and-insights.md`, `docs/ai/category-learning.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md` e ADR 0010.
+- Fluxos de produto com provider real: Feito para extracao da Inbox de mensagens bancarias e categorizacao de qualquer origem que produza `transaction_extraction` estruturada. Deduplicação/conciliação são independentes da origem após a estruturação. `insight` possui geração proativa determinística, persistida e revisável. O assistente financeiro da issue #568 usa provider somente quando habilitado e consentido para selecionar `DIRECT` ou `CONTEXTUAL`; nenhum texto livre externo entra na resposta pública, que permanece composta a partir da evidência determinística.
+- Testes: unitarios dos schemas, normalizadores, precedencia e consumidor da Inbox; integração PostgreSQL para migration, legado, imutabilidade, concorrencia, isolamento, privacidade, idempotencia, aprendizado e retry; a issue #565 acrescenta integração de categorização/versionamento/insight, a #566 acrescenta origens CSV/OFX/mensagem/IA, alvo obsoleto, transferência rígida e rollback, a #567 cobre limiares numéricos, falsos positivos, multimoeda, pendências, payload V2, persistência idempotente, provider indisponível e renderização web, e a #568 cobre provider fake, diretiva fechada, rejeição de texto livre e fallback determinístico.
+- Documentacao: Feito em `docs/AI_SUGGESTION_PAYLOADS.md`, `docs/AI_REVIEW_QUEUE.md`, `docs/FINANCIAL_INSIGHTS.md`, `docs/FINANCIAL_ASSISTANT.md`, `docs/AUTOMATION_RULES.md`, `docs/DETERMINISTIC_DEDUP_RECONCILIATION.md`, `docs/BANK_MESSAGE_INBOX.md`, `docs/IMPORTS.md`, `docs/ai/assistant-and-insights.md`, `docs/ai/category-learning.md`, `docs/ai/extraction-schema.md`, `docs/ai/providers.md`, `docs/ENVIRONMENT.md`, ADR 0010 e ADR 0011.
 - Nota: `/api/ai-review-queue` lista sugestoes, atualiza candidaturas determinísticas e insights financeiros vigentes para o perfil ativo, retorna detalhe tipado e permite aprovar, editar ou rejeitar conforme o tipo. A mesma decisão repetida converge para o recurso resolvido quando idempotente; versão obsoleta, origem descartada ou alvo inválido falha antes de qualquer efeito parcial. `explanation` continua apenas apresentacional.
+
+### Assistente financeiro conversacional
+
+- Dominio/servico/API: Feito para consultas somente leitura sobre receitas/despesas, categorias, saldo/projecao, faturas, parcelas, recorrencias, assinaturas provaveis, resumo mensal e disponibilidade diaria quando existe base deterministica suficiente.
+- Persistencia: Feito em PostgreSQL com conversa/turnos tenant-scoped, estados `ACTIVE`, `PROCESSING`, `AWAITING_CLARIFICATION`, `ANSWERED`, `FAILED`, `CANCELLED` e `EXPIRED`, versao, sequencia, TTL e idempotencia.
+- Concorrencia/continuidade: Feito; mensagem concorrente e rejeitada com conflito controlado, retry com a mesma chave converge, processamento interrompido e recuperado, resposta tardia nao vence cancelamento/expiracao e troca de perfil/moeda incompatível encerra o contexto anterior.
+- Privacidade/provider: Feito; calculos ocorrem antes do provider, consentimento e tenant/perfil sao revalidados, prompt e resposta bruta externa nao sao persistidos, a saida externa aceita somente `DIRECT` ou `CONTEXTUAL` e a projecao publica omite IDs internos, evidência privada e chave de idempotencia.
+- UI: Feito em `/assistente` dentro do shell autenticado, com historico, clarificacao, confianca, periodo, filtros, premissas, fontes, limitacoes, cancelar, limpar e novo contexto.
+- Testes: unitarios do `@solverfin/ai`, fronteira publica, renderizacao web, integracao PostgreSQL para idempotencia/concorrencia/restart/cancelamento/expiracao/perfil/moeda e validacao Chrome dedicada para teclado, foco, mobile, escala 200%, erro controlado e transicoes de contexto.
+- Documentacao: Feito em `docs/FINANCIAL_ASSISTANT.md`, `docs/ai/assistant-and-insights.md`, `docs/ai/providers.md`, `docs/PRIVACY.md`, `docs/PRODUCT.md`, `docs/ARCHITECTURE.md` e ADR 0011.
+- Limite: o assistente nao executa operacoes financeiras, nao converte moedas automaticamente e nao oferece aconselhamento profissional de investimento, credito, juridico, fiscal ou contabil.
 
 ### Perfis financeiros / tenant operacional
 
@@ -268,6 +283,16 @@ A rotina operacional de pagar e receber nao possui mais tela propria ativa. O us
 - Arquivar/inativar: Sim.
 - Excluir: Nao.
 - Lacuna restante: tela dedicada de detalhe/uso.
+
+### Assistente financeiro (`/assistente`)
+
+- Consultar dados do perfil ativo: Sim, somente leitura.
+- Continuar conversa entre mensagens e reinicio: Sim, dentro do TTL configurado.
+- Responder clarificacao e fallbacks: Sim.
+- Cancelar contexto: Sim.
+- Limpar conversa: Sim.
+- Iniciar novo contexto: Sim.
+- Executar criacao, edicao, exclusao, conciliacao, pagamento ou aprovacao financeira: Nao.
 
 ### Relatorios (`/relatorios`)
 

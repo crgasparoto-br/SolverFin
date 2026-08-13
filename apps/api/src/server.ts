@@ -16,6 +16,7 @@ import { handleCategorizationAwareImportBatchesApiRequest } from "./categorizati
 import { handleCategoryLearningApiRequest } from "./category-learning-router.js";
 import { assertTrustedCognitoEnvironment } from "./cognito-config.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import { handleFinancialAssistantApiRequest } from "./financial-assistant-router.js";
 import { startOidcLoginAttemptScheduler } from "./oidc-attempt-scheduler.js";
 import { assertTrustedMutationOrigin } from "./request-origin.js";
 import { prepareRequestAuthenticationHeaders } from "./request-authentication.js";
@@ -135,6 +136,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (financialProfilesResult) {
       writeResponse(response, financialProfilesResult);
+      return;
+    }
+
+    const financialAssistantResult = await handleFinancialAssistantApiRequest(apiRequest);
+
+    if (financialAssistantResult) {
+      writeResponse(response, financialAssistantResult);
       return;
     }
 

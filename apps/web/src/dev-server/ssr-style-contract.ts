@@ -236,6 +236,10 @@ export const solverFinSsrStyleContracts = [
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
     pageCssFragments: [".budgets-heading {"],
   }),
+  authenticated("assistant", "/assistente", "financial-assistant-page.js", {
+    representativeHtmlFragments: ['class="assistant-layout"'],
+    pageCssFragments: [".assistant-layout {"],
+  }),
   authenticated("inbox", "/inbox", "inbox-page.js", {
     representativeHtmlFragments: ['class="import-layout"'],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],

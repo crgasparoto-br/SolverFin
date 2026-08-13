@@ -18,9 +18,11 @@ O nucleo financeiro do MVP esta ligado de ponta a ponta com persistencia real:
 - a rotina ativa de compromissos usa `Transaction`, `Invoice`, recorrencias e parcelas materializadas; `PayableReceivable` permanece como compatibilidade tecnica documentada;
 - importacao, deduplicacao, conciliacao, automacao e IA possuem contratos de dominio e evoluem por issues dedicadas;
 - `packages/ai` possui um adapter HTTP real e substituivel para OpenAI, configurado exclusivamente por ambiente, desativado por padrao e governado pelo executor comum de consentimento, sanitizacao, timeout e retry;
+- o assistente financeiro conversacional da issue #568 esta operacional em `/assistente`, persiste conversa e turnos no PostgreSQL e permanece estritamente somente leitura;
+- os modulos `financial-assistant-data`, `financial-assistant-repository`, `financial-assistant-service` e `financial-assistant-router` resolvem evidencia, estado, concorrencia, autorizacao e projecao publica sem delegar calculos financeiros ao provider;
 - autenticacao produtiva segue a decisao aceita em `docs/adr/0004-autenticacao-produtiva.md`.
 
-A decisao inicial de stack esta em `docs/adr/0001-stack-inicial.md`. Node `http` puro continua deliberadamente em API e Web para nao antecipar framework sem ADR. O provider real inicial de IA segue a decisao aceita em `docs/adr/0010-openai-provider-inicial.md`.
+A decisao inicial de stack esta em `docs/adr/0001-stack-inicial.md`. Node `http` puro continua deliberadamente em API e Web para nao antecipar framework sem ADR. O provider real inicial de IA segue a decisao aceita em `docs/adr/0010-openai-provider-inicial.md`. O estado conversacional somente leitura e seus limites seguem a decisao aceita em `docs/adr/0011-read-only-financial-assistant.md`.
 
 ## Stack inicial
 
@@ -60,6 +62,7 @@ Fontes principais:
 Toda rota com `status: "available"` deve ter exatamente um contrato, inclusive:
 
 - `/login`;
+- `/assistente`;
 - renderers ocultos na navegacao, como `/remuneracao-contas`;
 - rotas master `/admin/instituicoes` e `/admin/indices-financeiros`.
 
@@ -113,6 +116,8 @@ npm run validate:ssr-styles --workspace @solverfin/web
 
 Os testes de provider de IA usam `FakeAiProvider` e cliente HTTP fake. O CI nao recebe credencial real, nao chama rede externa e nao exige aprovacao manual para validar o adapter.
 
+O workflow visual existente executa os cenarios em `scripts/statement-visual/`. Para a issue #568, a evidencia dedicada cobre `/assistente` em desktop, mobile, escala de pagina a 200%, teclado/foco, clarificacao, erro controlado e as transicoes de cancelar, limpar e iniciar novo contexto.
+
 ### Integration API + PostgreSQL
 
 O job de integracao sobe PostgreSQL 16 efemero e executa migrations, seed ficticio e testes da API com uma base dedicada.
@@ -165,6 +170,11 @@ Usuario
       -> Tenant SolverFin
       -> Dominio financeiro
       -> Importacao e conciliacao
+      -> Assistente financeiro somente leitura
+        -> estado persistido de conversa/turno no PostgreSQL
+        -> resolucao deterministica de intent, periodo, moeda, filtros e evidencia
+        -> resposta canonica calculada no backend
+        -> provider opcional retorna somente DIRECT ou CONTEXTUAL
       -> IA explicavel
         -> runAiTask: consentimento, minimizacao, timeout e retry
           -> AiProvider substituivel
@@ -205,13 +215,15 @@ Responsavel por receber CSV, OFX, mensagens autorizadas e outras origens, normal
 
 ### IA financeira
 
-Responsavel por extracao, classificacao, explicacao, sugestoes e insights. Saidas devem ser estruturadas, revisaveis e auditaveis; regras deterministicas sao preferidas quando suficientes.
+Responsavel por extracao, classificacao, explicacao, sugestoes, insights e pela apresentacao controlada do assistente. Saidas devem ser estruturadas, revisaveis e auditaveis quando o fluxo produz sugestao; no assistente, a participacao externa e limitada à diretiva fechada `DIRECT` ou `CONTEXTUAL` e o backend controla todo texto exibido.
 
 O boundary interno e `AiProvider`. `runAiTask` governa consentimento, minimizacao, retry e logs; adapters concretos apenas traduzem `SafeAiProviderRequest`, executam uma chamada externa por tentativa e validam a resposta. OpenAI e o primeiro adapter real, mas modelo, endpoint e credencial permanecem configuraveis por ambiente e nao fazem parte do dominio financeiro.
 
+No assistente, o provider nao e um boundary de calculo nem de autoria de texto financeiro livre. Os fatos quantitativos sao resolvidos antes da chamada externa; a saida valida do provider se limita a `DIRECT` ou `CONTEXTUAL`; a conversa persiste somente pergunta normalizada, filtros, evidencia estruturada e resposta segura, sem prompt montado ou resposta bruta do provider.
+
 ### Interface web/PWA
 
-Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes e shell SSR. A interface deve ser mobile-first, acessivel e coerente com `docs/BRAND.md` e `docs/DESIGN_SYSTEM.md`.
+Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes, assistente financeiro e shell SSR. A interface deve ser mobile-first, acessivel e coerente com `docs/BRAND.md` e `docs/DESIGN_SYSTEM.md`.
 
 ## Regras arquiteturais
 
@@ -223,6 +235,9 @@ Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes 
 - Manter provider real desativado por padrao e testes hermeticos sem secrets ou rede externa.
 - Revalidar consentimento imediatamente antes de cada tentativa de IA quando houver resolvedor dinamico.
 - Nao registrar prompt, campos, credencial, resposta bruta ou identificadores de tenant em logs de provider.
+- Nao delegar ao provider calculos ou fatos quantitativos do assistente financeiro.
+- Aceitar do provider do assistente somente as diretivas `DIRECT` ou `CONTEXTUAL`; qualquer outro texto deve ser descartado antes da fronteira publica.
+- Serializar ou rejeitar concorrencia por conversa e preservar idempotencia antes de qualquer tentativa externa.
 - Registrar auditoria para mudancas financeiras relevantes.
 - Nao armazenar senhas, tokens brutos ou respostas sensiveis em logs.
 - Preferir exclusao logica para dados financeiros.
@@ -246,6 +261,7 @@ Diretrizes:
 - auditar alteracoes financeiras com mudancas redigidas;
 - registrar consentimento para importacoes, mensagens e IA;
 - manter origem e revisao de sugestoes;
+- limitar conversa do assistente a estado tenant-scoped com TTL, evidencia estruturada e resposta segura;
 - usar somente dados ficticios em seeds, fixtures e documentacao.
 
 ## Validacao esperada por tipo de mudanca
@@ -255,6 +271,7 @@ Diretrizes:
 - banco: schema, migrations e dados seguros;
 - frontend: renderizacao, acessibilidade, estados e contrato SSR quando estilos/rotas forem afetados;
 - IA/importacao: schemas, fallback, consentimento, contagem de chamadas outbound e revisao humana;
+- assistente conversacional: idempotencia, concorrencia, restart, cancelamento, expiracao, troca de perfil/moeda, fronteira publica e navegador real para teclado, foco, mobile, 200% e erros;
 - documentacao: consistencia, links e ADR quando houver decisao duradoura.
 
 ## Estrutura principal
@@ -277,7 +294,7 @@ prisma/
 ## Perguntas abertas
 
 - Qual framework web/backend sera escolhido quando houver beneficio suficiente para uma ADR?
-- Quais fluxos de produto habilitarao o provider real e quais exigirao revisao humana obrigatoria?
+- Quais fluxos futuros de produto habilitarao o provider real e quais exigirao revisao humana obrigatoria?
 - Quais excecoes de retencao de dados brutos exigirao consentimento ou ADR?
 - Quais metricas, budgets e alertas governarao custo e qualidade de IA por ambiente?
 

@@ -30,6 +30,55 @@ export type AvailabilityComponentKind =
   | "safety_margin"
   | "ignored";
 
+type ProviderPresentationDirective = "direct" | "contextual";
+
+const FINANCIAL_ASSISTANT_MUTATION_VERBS = new Set([
+  "criar",
+  "crie",
+  "adicionar",
+  "adicione",
+  "incluir",
+  "inclua",
+  "cadastrar",
+  "cadastre",
+  "registrar",
+  "registre",
+  "lancar",
+  "lance",
+  "editar",
+  "edite",
+  "alterar",
+  "altere",
+  "atualizar",
+  "atualize",
+  "modificar",
+  "modifique",
+  "corrigir",
+  "corrija",
+  "excluir",
+  "exclua",
+  "apagar",
+  "apague",
+  "remover",
+  "remova",
+  "deletar",
+  "delete",
+  "conciliar",
+  "concilie",
+  "pagar",
+  "pague",
+  "quitar",
+  "quite",
+  "aprovar",
+  "aprove",
+  "rejeitar",
+  "rejeite",
+]);
+
+const FINANCIAL_ASSISTANT_MUTATION_NOUN_COMMAND =
+  /\b(?:faca|efetue|realize)\s+(?:(?:o|a|um|uma)\s+)?(?:pagamento|conciliacao|aprovacao|rejeicao|exclusao|edicao|alteracao|cadastro|lancamento)\b/;
+const FINANCIAL_ASSISTANT_MARK_PAID_COMMAND = /\bmarque\b.{0,80}\bcomo\s+pag[oa]\b/;
+
 export interface AvailabilityComponent {
   label: string;
   kind: AvailabilityComponentKind;
@@ -52,6 +101,28 @@ export interface AvailabilityCalculationResult {
   calculatedAt: string;
 }
 
+export interface FinancialAssistantEvidenceMetric {
+  key: string;
+  label: string;
+  amountMinor?: number;
+  count?: number;
+  text?: string;
+}
+
+export interface FinancialAssistantEvidence {
+  currency: string;
+  period: {
+    startOn: string;
+    endOn: string;
+  };
+  filters: readonly string[];
+  metrics: readonly FinancialAssistantEvidenceMetric[];
+  assumptions: readonly string[];
+  limitations: readonly string[];
+  sources: readonly string[];
+  confidence: FinancialAssistantConfidence;
+}
+
 export interface FinancialAssistantAnswer {
   status: FinancialAssistantStatus;
   intent: FinancialAssistantIntent;
@@ -61,6 +132,7 @@ export interface FinancialAssistantAnswer {
     startOn: string;
     endOn: string;
   };
+  filters?: readonly string[];
   assumptions: readonly string[];
   sources: readonly string[];
   limitations: readonly string[];
@@ -75,6 +147,7 @@ export interface FinancialAssistantInput {
   resolveConsent?: () => AiConsentState | Promise<AiConsentState>;
   logger?: SafeAiLogger;
   availability?: AvailabilityCalculationResult;
+  evidence?: FinancialAssistantEvidence;
 }
 
 export async function answerFinancialQuestion(
@@ -82,17 +155,6 @@ export async function answerFinancialQuestion(
 ): Promise<FinancialAssistantAnswer> {
   const question = normalizeQuestion(input.question);
   const intent = classifyFinancialAssistantIntent(question);
-
-  if (input.policy.consent !== "granted") {
-    return buildFallbackAnswer({
-      status: "blocked",
-      intent,
-      safeLogCode: "ASSISTANT_CONSENT_REQUIRED",
-      answer:
-        "Nao posso responder sem consentimento ativo para usar dados financeiros neste assistente.",
-      limitations: ["Consentimento de IA ausente ou revogado."],
-    });
-  }
 
   if (question.length === 0) {
     return buildFallbackAnswer({
@@ -112,30 +174,37 @@ export async function answerFinancialQuestion(
       intent,
       safeLogCode: "ASSISTANT_OUT_OF_SCOPE",
       answer:
-        "Posso ajudar apenas com perguntas financeiras do SolverFin, usando dados autorizados e premissas visiveis.",
-      limitations: ["Pergunta fora do escopo financeiro do app."],
+        "Posso ajudar com saldo, gastos, faturas, recorrencias e resumos do SolverFin. Nao executo operacoes financeiras nem ofereco recomendacao profissional.",
+      limitations: ["Pergunta fora do escopo financeiro somente leitura do app."],
     });
   }
+
+  if (!input.evidence || input.evidence.metrics.length === 0) {
+    return buildFallbackAnswer({
+      intent,
+      safeLogCode: "ASSISTANT_EVIDENCE_REQUIRED",
+      answer:
+        "Nao encontrei evidencia estruturada suficiente para responder sem inventar informacoes.",
+      limitations: ["Dados autorizados insuficientes para esta pergunta."],
+    });
+  }
+
+  const deterministicAnswer = buildEvidenceAnswer(intent, input.evidence);
+  const baseAnswer: FinancialAssistantAnswer = {
+    status: input.evidence.confidence === "low" ? "needs_review" : "answered",
+    intent,
+    confidence: input.evidence.confidence,
+    answer: deterministicAnswer,
+    period: input.evidence.period,
+    filters: input.evidence.filters,
+    assumptions: input.evidence.assumptions,
+    sources: uniqueStrings(input.evidence.sources),
+    limitations: input.evidence.limitations,
+    safeLogCode: "ASSISTANT_DETERMINISTIC_ANSWERED",
+  };
 
   if (!input.provider) {
-    return buildFallbackAnswer({
-      intent,
-      safeLogCode: "ASSISTANT_PROVIDER_NOT_CONFIGURED",
-      answer:
-        "Ainda nao ha um provedor de IA configurado para responder esta pergunta com seguranca.",
-      limitations: ["Provider de IA indisponivel."],
-    });
-  }
-
-  if (!input.resolveConsent) {
-    return buildFallbackAnswer({
-      status: "blocked",
-      intent,
-      safeLogCode: "ASSISTANT_CONSENT_REVALIDATION_REQUIRED",
-      answer:
-        "Nao posso chamar o provedor sem revalidar o consentimento atual imediatamente antes da tentativa.",
-      limitations: ["Resolvedor autoritativo de consentimento nao informado."],
-    });
+    return baseAnswer;
   }
 
   const aiResult = await runAiTask({
@@ -147,42 +216,50 @@ export async function answerFinancialQuestion(
       allowRawFinancialText: false,
     },
     payload: {
-      prompt: buildAssistantPrompt(question, intent),
-      fields: {
-        question: maskSensitiveText(question),
-        intent,
-      },
+      prompt: buildAssistantPrompt(intent, input.evidence),
+      fields: { intent },
     },
-    resolveConsent: input.resolveConsent,
+    ...(input.resolveConsent ? { resolveConsent: input.resolveConsent } : {}),
     ...(input.logger ? { logger: input.logger } : {}),
   });
 
   if (aiResult.status !== "completed") {
-    return buildFallbackAnswer({
-      intent,
-      safeLogCode: `ASSISTANT_${aiResult.code}`,
-      answer:
-        "Nao consegui gerar uma resposta confiavel agora. Revise os dados do periodo ou tente novamente mais tarde.",
-      limitations: ["Provider indisponivel, bloqueado ou retornou resposta invalida."],
-    });
+    return {
+      ...baseAnswer,
+      limitations: [
+        ...baseAnswer.limitations,
+        "A apresentacao por IA ficou indisponivel; a resposta usa apenas o calculo deterministico.",
+      ],
+      safeLogCode: `ASSISTANT_PROVIDER_FALLBACK_${aiResult.code}`,
+    };
+  }
+
+  const presentationDirective = parseProviderPresentationDirective(aiResult.result.text);
+  if (presentationDirective === undefined) {
+    return {
+      ...baseAnswer,
+      limitations: [
+        ...baseAnswer.limitations,
+        "A saida do provider foi descartada por nao corresponder ao contrato fechado de apresentacao.",
+      ],
+      safeLogCode: "ASSISTANT_PROVIDER_OUTPUT_REJECTED",
+    };
   }
 
   return {
-    status: "answered",
-    intent,
-    confidence: "medium",
-    answer: aiResult.result.text.trim(),
-    assumptions: ["Resposta gerada por IA com payload minimizado."],
-    sources: ["provider", aiResult.providerId, aiResult.model],
-    limitations: [
-      "A resposta deve ser revisada quando os dados financeiros estiverem incompletos.",
-    ],
-    safeLogCode: "ASSISTANT_PROVIDER_ANSWERED",
+    ...baseAnswer,
+    answer: renderProviderPresentation(presentationDirective, deterministicAnswer),
+    safeLogCode: "ASSISTANT_PROVIDER_PRESENTATION_APPLIED",
   };
 }
 
 export function classifyFinancialAssistantIntent(question: string): FinancialAssistantIntent {
   const normalized = normalizeQuestion(question);
+
+  if (financialAssistantQuestionRequestsMutation(normalized)) {
+    return "out_of_scope";
+  }
+
   const asksAvailability =
     /quanto\s+(eu\s+)?posso\s+gastar\s+hoje/.test(normalized) ||
     /disponivel\s+hoje|disponibilidade/.test(normalized);
@@ -191,7 +268,15 @@ export function classifyFinancialAssistantIntent(question: string): FinancialAss
     return "daily_availability";
   }
 
-  if (/categoria|gastei|despesa|gasto/.test(normalized)) {
+  if (financialAssistantQuestionRequestsCategoryFilter(normalized)) {
+    return "category_spending";
+  }
+
+  if (/resumo|mensal/.test(normalized)) {
+    return "monthly_summary";
+  }
+
+  if (/gastei|despesa|gasto|receita/.test(normalized)) {
     return "category_spending";
   }
 
@@ -203,11 +288,35 @@ export function classifyFinancialAssistantIntent(question: string): FinancialAss
     return "subscriptions";
   }
 
-  if (/resumo|mes|mensal/.test(normalized)) {
+  if (/mes|fatura|parcela|compromisso/.test(normalized)) {
     return "monthly_summary";
   }
 
   return "out_of_scope";
+}
+
+export function financialAssistantQuestionRequestsMutation(question: string): boolean {
+  const normalized = normalizeQuestion(question);
+  const hasMutationVerb = normalized
+    .split(/[^a-z0-9]+/)
+    .some((token) => FINANCIAL_ASSISTANT_MUTATION_VERBS.has(token));
+
+  return (
+    hasMutationVerb ||
+    FINANCIAL_ASSISTANT_MUTATION_NOUN_COMMAND.test(normalized) ||
+    FINANCIAL_ASSISTANT_MARK_PAID_COMMAND.test(normalized)
+  );
+}
+
+export function financialAssistantQuestionRequestsCategoryFilter(question: string): boolean {
+  const normalized = normalizeQuestion(question);
+  return (
+    /\bpor\s+categoria\b/.test(normalized) ||
+    /\bcategoria\s+(?:de\s+)?[a-z0-9]/.test(normalized) ||
+    /\b(?:gastei|gasto|gastos|despesa|despesas|receita|receitas)(?:\s+mens(?:al|ais))?\s+(?:em|com)\s+(?:(?:a|o|as|os|de|da|do|das|dos)\s+)?(?!(?:brl|usd|eur|gbp|hoje|este|mes|20\d{2})\b)[a-z]/.test(
+      normalized,
+    )
+  );
 }
 
 function answerDailyAvailability(
@@ -218,8 +327,8 @@ function answerDailyAvailability(
       intent: "daily_availability",
       safeLogCode: "ASSISTANT_AVAILABILITY_SERVICE_MISSING",
       answer:
-        "Ainda nao tenho um calculo estruturado de disponibilidade para hoje. Sem esse servico, nao vou estimar um valor livremente.",
-      limitations: ["Servico de disponibilidade financeira indisponivel."],
+        "Ainda nao tenho base estruturada suficiente para calcular quanto pode ser gasto hoje. Sem essa base, nao vou estimar um valor livremente.",
+      limitations: ["Calculo de disponibilidade financeira insuficiente ou indisponivel."],
     });
   }
 
@@ -246,7 +355,7 @@ function answerDailyAvailability(
     intent: "daily_availability",
     confidence: availability.confidence,
     answer: [
-      `Voce pode gastar hoje ${availableText} com base no calculo estruturado de disponibilidade.`,
+      `Disponibilidade estimada para hoje: ${availableText}.`,
       componentsText,
       assumptionsText,
       limitationsText,
@@ -255,11 +364,50 @@ function answerDailyAvailability(
       startOn: availability.horizonStartOn,
       endOn: availability.horizonEndOn,
     },
+    filters: [`Moeda: ${availability.currency}`],
     assumptions: availability.assumptions,
-    sources: availability.components.map((component) => component.source),
+    sources: uniqueStrings(availability.components.map((component) => component.source)),
     limitations,
     safeLogCode: "ASSISTANT_AVAILABILITY_ANSWERED",
   };
+}
+
+function buildEvidenceAnswer(
+  intent: Exclude<FinancialAssistantIntent, "daily_availability" | "out_of_scope">,
+  evidence: FinancialAssistantEvidence,
+): string {
+  const values = evidence.metrics.map((metric) => formatEvidenceMetric(metric, evidence.currency));
+  const period = `${evidence.period.startOn} a ${evidence.period.endOn}`;
+  if (!hasEvidenceSignal(evidence)) {
+    return `Nao ha dados suficientes no periodo de ${period} para responder com seguranca.`;
+  }
+  const prefix =
+    intent === "balance_projection"
+      ? `Projecao para ${period}`
+      : intent === "subscriptions"
+        ? `Recorrencias e assinaturas provaveis em ${period}`
+        : intent === "monthly_summary"
+          ? `Resumo financeiro de ${period}`
+          : `Movimentacao financeira de ${period}`;
+  return `${prefix}: ${values.join("; ")}.`;
+}
+
+function hasEvidenceSignal(evidence: FinancialAssistantEvidence): boolean {
+  if (evidence.confidence !== "low") return true;
+  return evidence.metrics.some(
+    (metric) =>
+      (metric.amountMinor !== undefined && metric.amountMinor !== 0) ||
+      (metric.count !== undefined && metric.count > 0) ||
+      (metric.text !== undefined && metric.text.trim().length > 0),
+  );
+}
+
+function formatEvidenceMetric(metric: FinancialAssistantEvidenceMetric, currency: string): string {
+  const parts: string[] = [];
+  if (metric.amountMinor !== undefined) parts.push(formatMoney(metric.amountMinor, currency));
+  if (metric.count !== undefined) parts.push(`${metric.count} item(ns)`);
+  if (metric.text !== undefined && metric.text.trim().length > 0) parts.push(metric.text.trim());
+  return `${metric.label}: ${parts.join(" / ") || "sem valor"}`;
 }
 
 function buildComponentTexts(
@@ -304,14 +452,47 @@ function buildFallbackAnswer(input: {
   };
 }
 
-function buildAssistantPrompt(question: string, intent: FinancialAssistantIntent): string {
+function buildAssistantPrompt(
+  intent: FinancialAssistantIntent,
+  evidence: FinancialAssistantEvidence,
+): string {
+  const metrics = evidence.metrics
+    .map((metric) => `- ${formatEvidenceMetric(metric, evidence.currency)}`)
+    .join("\n");
   return [
-    "Responda somente com base nos dados financeiros autorizados recebidos.",
-    "Se faltar dado, explique a limitacao em vez de inventar valores.",
-    "Nao ofereca conselho financeiro, juridico ou fiscal profissional.",
+    "Retorne exatamente um token de apresentacao: DIRECT ou CONTEXTUAL.",
+    "DIRECT mantem a resposta deterministica sem prefixo; CONTEXTUAL permite somente um prefixo fixo controlado pelo SolverFin.",
+    "Nao escreva frases, fatos, recomendacoes, diagnosticos, numeros ou qualquer outro texto livre.",
     `Intencao classificada: ${intent}.`,
-    `Pergunta: ${question}`,
+    `Periodo autorizado: ${evidence.period.startOn} a ${evidence.period.endOn}.`,
+    `Moeda: ${evidence.currency}.`,
+    `Filtros: ${evidence.filters.map((item) => maskSensitiveText(item)).join("; ") || "nenhum adicional"}.`,
+    "Evidencias agregadas e minimizadas:",
+    metrics,
   ].join("\n");
+}
+
+function parseProviderPresentationDirective(
+  value: string,
+): ProviderPresentationDirective | undefined {
+  const token = value.trim().toUpperCase();
+  if (token === "DIRECT") return "direct";
+  if (token === "CONTEXTUAL") return "contextual";
+  return undefined;
+}
+
+function renderProviderPresentation(
+  directive: ProviderPresentationDirective,
+  deterministicAnswer: string,
+): string {
+  if (directive === "contextual") {
+    return `Com base exclusivamente nos dados autorizados: ${deterministicAnswer}`;
+  }
+  return deterministicAnswer;
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
 }
 
 function normalizeQuestion(question: string): string {

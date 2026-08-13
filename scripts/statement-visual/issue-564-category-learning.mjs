@@ -316,20 +316,13 @@ async function inspectViewport(cdp) {
 async function inspectInboxOrigin(cdp, fixtures) {
   return evaluate(
     cdp,
-    `(async () => {
-      const queue = await fetch("/api/ai-review-queue?status=pending_review&includeLowConfidence=true").then(
-        (response) => response.json()
+    `(() => {
+      const learningRow = Array.from(document.querySelectorAll('[data-review-id]')).find((row) =>
+        (row.textContent || '').includes('origem correção anterior')
       );
-      const suggestions = Array.isArray(queue.suggestions) ? queue.suggestions : [];
-      const learningItem = suggestions.find((item) => item.provider === "solverfin-learning");
-      const learningRow = learningItem
-        ? document.querySelector('[data-review-id="' + CSS.escape(learningItem.id) + '"]')
-        : undefined;
       return {
-        learningCategorizationId: learningItem?.id,
-        learningOriginVisible: Boolean(
-          learningRow && (learningRow.textContent || '').includes('origem correção anterior')
-        ),
+        learningCategorizationId: learningRow?.getAttribute('data-review-id'),
+        learningOriginVisible: Boolean(learningRow),
         correctionButtonVisible: Boolean(
           document.querySelector(
             '[data-correct-and-approve="${fixtures.correctionSuggestionId}"]'

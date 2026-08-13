@@ -40,6 +40,9 @@ try {
   await import("./statement-visual/issue-565-ai-review-queue.mjs");
   await import("./statement-visual/issue-565-ai-review-queue-states.mjs");
   await import("./statement-visual/issue-567-financial-insights.mjs");
+  await import("./statement-visual/issue-568-financial-assistant.mjs");
+  await import("./statement-visual/issue-568-financial-assistant-cancel-inflight.mjs");
+  await import("./statement-visual/issue-568-financial-assistant-zoom-200-reflow.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);

@@ -1,6 +1,6 @@
 # Política de provedores de IA
 
-**Issues:** #51, #562, #563  
+**Issues:** #51, #562, #563, #568  
 **Status:** provider real inicial disponível, substituível e desativado por padrão.
 
 ## Objetivo
@@ -9,7 +9,7 @@ O pacote `@solverfin/ai` centraliza chamadas a provedores de IA para manter o do
 
 Nenhum fluxo pode chamar IA sem consentimento ativo, finalidade declarada, payload minimizado, limites explícitos e logs seguros. Respostas do provider não produzem efeito financeiro antes de validação estruturada e composição com dados confiáveis do produto.
 
-A decisão arquitetural do primeiro provider real está na [ADR 0010](../adr/0010-openai-provider-inicial.md).
+A decisão arquitetural do primeiro provider real está na [ADR 0010](../adr/0010-openai-provider-inicial.md). O assistente financeiro somente leitura segue a [ADR 0011](../adr/0011-read-only-financial-assistant.md).
 
 ## Superfície pública
 
@@ -46,6 +46,24 @@ Quando a IA é necessária, a política do fluxo usa:
 O serviço de produto adiciona organização, perfil, conta, categoria, fingerprint, auditoria e proveniência somente depois da resposta validada. Esses dados confiáveis não são enviados ao provider.
 
 Provider desativado, consentimento revogado, resposta inválida ou falha permanente mantêm o item sob revisão sem criar efeito financeiro. Timeout, rate limit e indisponibilidade retornam estado temporário e permitem nova tentativa idempotente do mesmo lote.
+
+## Assistente financeiro conversacional
+
+A issue #568 torna `assistant` um consumidor operacional do provider, mas o provider continua **opcional**. A resposta financeira canônica é preparada antes da chamada externa: a API resolve tenant/perfil, intent, período, moeda, filtros e evidência estruturada e executa todos os cálculos financeiros no backend.
+
+Quando o provider está habilitado, o fluxo usa:
+
+- finalidade `financial_assistant_read_only`;
+- `allowRawFinancialText=false`;
+- allowlist do fluxo restrita ao `intent`; a pergunta bruta não é enviada ao provider;
+- período, moeda, filtros minimizados e métricas agregadas no prompt seguro preparado pelo SolverFin;
+- consentimento revalidado imediatamente antes de cada tentativa e novamente entre retries pelo executor comum;
+- timeout de 8 segundos e no máximo um retry adicional no contrato atual;
+- saída fechada de apresentação: somente os tokens `DIRECT` ou `CONTEXTUAL` são válidos.
+
+A saída do provider é tratada como entrada não confiável e nunca é concatenada diretamente à resposta pública. `DIRECT` mantém o texto determinístico; `CONTEXTUAL` seleciona apenas o prefixo fixo `Com base exclusivamente nos dados autorizados:` controlado pelo backend. Qualquer outro texto, inclusive afirmação quantitativa, fato qualitativo não sustentado, diagnóstico ou recomendação profissional, é descartado integralmente. Provider desabilitado, revogação de consentimento, timeout, rate limit, indisponibilidade ou saída fora do contrato preservam a resposta determinística quando existe evidência suficiente.
+
+O provider não recebe `organizationId`, `financialProfileId`, `userId`, chaves de idempotência, SQL, entidades financeiras brutas ou o histórico persistido da conversa. Prompt montado e resposta bruta do provider não são persistidos. O assistente não expõe nenhuma operação financeira de escrita.
 
 ## Configuração
 
@@ -105,7 +123,7 @@ O adapter não recebe `organizationId`, `financialProfileId` nem entidades de do
 
 ## Contratos de resposta por tarefa
 
-Toda resposta aceita contém `text` não vazio e `confidence` opcional entre `0` e `1`.
+Toda resposta aceita pelo executor comum contém `text` não vazio e `confidence` opcional entre `0` e `1`. Cada consumidor ainda deve validar o contrato semântico específico da tarefa antes de usar a saída.
 
 ### Extraction
 
@@ -138,7 +156,9 @@ Assim, um callback permissivo como `() => true` não admite payload legado, esp�
 
 ### Summary e assistant
 
-Aceitam texto simples ou envelope com `text` e `confidence`. Qualquer `structured` é recusado.
+O executor comum aceita texto simples ou envelope com `text` e `confidence`; qualquer `structured` é recusado.
+
+No assistente, essa validação de transporte não autoriza texto livre na fronteira pública. O consumidor aceita semanticamente apenas `DIRECT` ou `CONTEXTUAL` e renderiza copy controlada pelo backend. Qualquer outra saída é tratada como inválida para apresentação e não altera a resposta determinística.
 
 ## Tentativas, timeout e erros controlados
 
@@ -173,7 +193,7 @@ O logger é best-effort. Exceção síncrona ou rejeição assíncrona do logger
 
 Preços e capacidades variam por modelo e contrato do ambiente. Antes da ativação, revise a tabela vigente e configure modelo, teto de saída, limite de corpo, timeout e retries por finalidade.
 
-Métricas agregadas de tokens, custo, orçamento e qualidade permanecem fora da issue #562 e da issue #563.
+Métricas agregadas de tokens, custo, orçamento e qualidade permanecem fora da issue #562, da issue #563 e da issue #568.
 
 ## Testes e desenvolvimento local
 
@@ -192,7 +212,8 @@ A suíte usa providers e clientes HTTP fakes, não acessa rede externa e não de
 - Inbox assistida por IA com fixture estruturada;
 - IDs de outro perfil bloqueados antes do provider;
 - retry idempotente após falha temporária;
-- ausência de mensagem bruta na persistência.
+- ausência de mensagem bruta na persistência;
+- assistente com provider fake, diretiva fechada válida, texto livre quantitativo ou qualitativo descartado, recomendações profissionais descartadas e fallback determinístico quando o provider falha.
 
 Validações esperadas:
 
@@ -220,7 +241,7 @@ Use apenas fixtures fictícias e minimizadas.
 
 ## Limitações conhecidas
 
-- A Inbox de mensagens bancárias é o primeiro consumidor de produto; os demais produtores e o assistente conversacional ainda não usam o provider automaticamente.
 - O provider permanece desligado por padrão e a ativação produtiva depende de configuração protegida e revisão de modelo, custo e limites.
+- Inbox de mensagens bancárias e assistente financeiro são consumidores de produto distintos; no assistente, o provider é opcional e nunca é a fonte dos valores financeiros nem de texto financeiro livre exibido ao usuário.
 - Telemetria agregada de custo e orçamento ainda não foi implementada.
 - Fallbacks determinísticos permanecem independentes do provider real.

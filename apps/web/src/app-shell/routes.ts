@@ -6,6 +6,7 @@ export type ShellRouteId =
   | "categories"
   | "cards"
   | "budgets"
+  | "assistant"
   | "inbox"
   | "reports"
   | "settings"
@@ -101,6 +102,17 @@ export const solverFinShellRoutes = [
     path: "/orcamentos",
     label: "Orçamentos",
     description: "Acompanhe limites planejados por categoria de despesa.",
+    navigationGroup: "main",
+    requiresAuthentication: true,
+    requiresFinancialProfile: true,
+    status: "available",
+  },
+  {
+    id: "assistant",
+    path: "/assistente",
+    label: "Assistente financeiro",
+    description:
+      "Faça consultas somente leitura com cálculos verificáveis do perfil financeiro ativo.",
     navigationGroup: "main",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
