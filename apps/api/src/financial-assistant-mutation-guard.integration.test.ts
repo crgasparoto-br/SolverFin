@@ -63,17 +63,30 @@ async function mutationCommandsAreRefusedBeforeProviderSelection(): Promise<void
           return createAiProviderFromEnvironment({ AI_PROVIDER: "disabled" });
         },
         resolveConsent: () => "granted",
-        now: () => new Date(`2026-08-13T12:00:${String(index + 1).padStart(2, "0")}Z`),
+        now: () =>
+          new Date(`2026-08-13T12:00:${String(index + 1).padStart(2, "0")}Z`),
       },
     });
     const turn = result.turns.at(-1);
     assert.equal(turn?.intent, "out_of_scope", question);
     assert.equal(turn?.safeResponse?.intent, "out_of_scope", question);
-    assert.equal(turn?.safeResponse?.safeLogCode, "ASSISTANT_OUT_OF_SCOPE", question);
-    assert.match(turn?.safeResponse?.answer ?? "", /Nao executo operacoes/i, question);
+    assert.equal(
+      turn?.safeResponse?.safeLogCode,
+      "ASSISTANT_OUT_OF_SCOPE",
+      question,
+    );
+    assert.match(
+      turn?.safeResponse?.answer ?? "",
+      /Nao executo operacoes/i,
+      question,
+    );
   }
 
-  assert.equal(providerSelections, 0, "mutation commands must not reach provider selection");
+  assert.equal(
+    providerSelections,
+    0,
+    "mutation commands must not reach provider selection",
+  );
 }
 
 async function cleanup(): Promise<void> {
