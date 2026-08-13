@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+  "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
   "source_audits": [
     {
       "kind": "independent",
@@ -8,7 +8,7 @@
       "result": "REPROVADA",
       "finding_id": "A-001",
       "category": "delivery-not-ready",
-      "summary": "Certified handoff packet was absent on the prior material candidate."
+      "summary": "Certified handoff packet was absent on a prior candidate."
     },
     {
       "kind": "independent",
@@ -16,7 +16,7 @@
       "result": "REPROVADA",
       "finding_id": "A-001",
       "category": "published-head-static-gate",
-      "summary": "Published result-only child failed repository-wide formatting on generated audit JSON."
+      "summary": "Published result-only child failed a repository-wide static gate."
     },
     {
       "kind": "independent",
@@ -24,7 +24,15 @@
       "result": "REPROVADA",
       "finding_id": "A-002",
       "category": "risk-saturation-drift",
-      "summary": "reference-liveness was marked not applicable despite stale-reference behavior and controls."
+      "summary": "A canonical liveness family was under-classified."
+    },
+    {
+      "kind": "independent",
+      "observed_at": "2026-08-13T22:53:00Z",
+      "result": "REPROVADA",
+      "finding_id": "B-001",
+      "category": "canonical-tracker-state-drift",
+      "summary": "The linked canonical acceptance checklist remained stale despite completed evidence."
     }
   ],
   "controls": [
@@ -32,22 +40,29 @@
       "id": "HANDOFF-READY-001",
       "origin": "prior delivery-not-ready",
       "status": "passed",
-      "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-      "evidence": "Certified handoff generation remains mandatory and is revalidated in this remediation packet."
+      "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+      "evidence": "A new certified handoff is generated and terminally validated for this remediation cycle."
     },
     {
       "id": "HANDOFF-STATIC-GATE-001",
       "origin": "published-head-static-gate",
       "status": "passed",
-      "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-      "evidence": "Canonical repository ignore now isolates the machine-generated .audit/entregar-issue subtree from Prettier while leaving the global format gate enabled."
+      "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+      "evidence": "The published material head already completed repository CI successfully with generated handoff artifacts excluded by the canonical formatter contract."
     },
     {
       "id": "REF-LIVE-001",
       "origin": "risk-saturation-drift",
       "status": "passed",
-      "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-      "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Missing source, changed fingerprint, archived account and archived category cases already execute at the definitive approval boundary."
+      "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+      "evidence": "Missing, changed-fingerprint, and archived-reference controls remain applicable and passed."
+    },
+    {
+      "id": "TRACKER-SYNC-001",
+      "origin": "canonical-tracker-state-drift",
+      "status": "passed",
+      "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+      "evidence": "The linked canonical tracker was re-fetched after update; evidence-backed items are checked and the only remaining self-referential gate is explicit."
     }
   ],
   "unresolved_controls": []

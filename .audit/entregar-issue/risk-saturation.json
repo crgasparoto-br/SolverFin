@@ -1,40 +1,44 @@
 {
   "schema_version": 1,
-  "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+  "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
   "families": [
     {
       "family": "authorization",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-CORE"
+        "NC-PHASE2",
+        "REF-LIVE-001"
       ]
     },
     {
       "family": "tenant-isolation",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-CORE"
+        "NC-PHASE2",
+        "REF-LIVE-001"
       ]
     },
     {
       "family": "public-boundary",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-CORE"
+        "NC-PHASE2",
+        "REF-LIVE-001"
       ]
     },
     {
       "family": "reference-liveness",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
+        "NC-PHASE2",
         "REF-LIVE-001"
       ]
     },
@@ -42,70 +46,76 @@
       "family": "temporal-consistency",
       "applicable": false,
       "status": "not-applicable",
-      "reason": "No material obligation in the final Phase 2 composition/remediation selects this family.",
+      "reason": "No material obligation in this remediation selects this family.",
       "control_ids": []
     },
     {
       "family": "temporal-destination",
       "applicable": false,
       "status": "not-applicable",
-      "reason": "No material obligation in the final Phase 2 composition/remediation selects this family.",
+      "reason": "No material obligation in this remediation selects this family.",
       "control_ids": []
     },
     {
       "family": "concurrency-atomicity",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-CORE"
+        "NC-PHASE2",
+        "REF-LIVE-001"
       ]
     },
     {
       "family": "idempotency",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-CORE"
+        "NC-PHASE2",
+        "REF-LIVE-001"
       ]
     },
     {
       "family": "rollback",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-CORE"
+        "NC-PHASE2",
+        "REF-LIVE-001"
       ]
     },
     {
       "family": "historical-immutability",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-CORE"
+        "NC-PHASE2",
+        "REF-LIVE-001"
       ]
     },
     {
       "family": "structural-contract",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-UI",
-        "HANDOFF-STATIC-GATE-001"
+        "NC-PHASE2",
+        "REF-LIVE-001",
+        "TRACKER-SYNC-001"
       ]
     },
     {
       "family": "documentation",
       "applicable": true,
       "status": "passed",
-      "reason": "Material issue/remediation obligations exercise this family.",
+      "reason": "The final composition and tracker synchronization exercise this family.",
       "control_ids": [
-        "NC-UI",
-        "HANDOFF-STATIC-GATE-001"
+        "NC-PHASE2",
+        "REF-LIVE-001",
+        "TRACKER-SYNC-001"
       ]
     }
   ],

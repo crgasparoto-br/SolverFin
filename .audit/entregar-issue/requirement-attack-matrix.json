@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
+  "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
   "requirements": [
     {
-      "requirement_id": "REQ-CORE",
+      "requirement_id": "REQ-PHASE2",
       "obligation_ids": [
         "OBL-001",
         "OBL-002",
@@ -11,12 +11,28 @@
         "OBL-004",
         "OBL-005",
         "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
         "OBL-017",
         "OBL-018",
         "OBL-019",
         "OBL-020",
         "OBL-021",
-        "OBL-022"
+        "OBL-022",
+        "OBL-023",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
+        "OBL-027",
+        "OBL-028",
+        "OBL-029",
+        "OBL-030"
       ],
       "risk_families": [
         "authorization",
@@ -26,164 +42,120 @@
         "concurrency-atomicity",
         "idempotency",
         "rollback",
-        "historical-immutability"
+        "historical-immutability",
+        "structural-contract",
+        "documentation"
       ],
-      "plausible_wrong_implementation": "Pass happy paths while trusting stale persisted references, leaking profile-scoped learning, losing deterministic fallback, or allowing concurrent duplicate decisions.",
+      "plausible_wrong_implementation": "Declare the final composition ready from happy paths while stale references, tenant leakage, deterministic fallback, concurrency, privacy, visual accessibility, or living documentation still fail.",
       "positive_control": {
-        "id": "PC-CORE",
+        "id": "PC-PHASE2",
         "status": "passed",
-        "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-        "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Prior CI run 31740127177 passed the canonical functional/integration coverage on the parent result head."
+        "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+        "evidence": "Published head CI run 31750560891 completed successfully and Statement visual validation run 31750560956 completed successfully; the independent audit also inspected the produced visual artifact and found no failures."
       },
       "negative_controls": [
         {
-          "id": "NC-CORE",
+          "id": "NC-PHASE2",
           "status": "passed",
-          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Existing controls reject foreign-profile category reuse, revoked consent outbound calls, concurrent sibling approvals, late finalization after cancel, and unavailable-provider nondeterminism.",
+          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "evidence": "Inherited adversarial controls cover foreign-profile reuse, revoked consent, concurrent approvals, cancel/restart behavior, unavailable-provider fallback, privacy artifacts, and visual keyboard/mobile/reflow failures.",
           "sibling_cases": [
             {
-              "id": "CORE-S1",
-              "status": "passed"
+              "id": "PH-S1",
+              "dimension": "provider-disabled-and-timeout",
+              "status": "passed",
+              "evidence": "Deterministic fallback controls remained green."
             },
             {
-              "id": "CORE-S2",
-              "status": "passed"
+              "id": "PH-S2",
+              "dimension": "cross-profile-and-concurrent-review",
+              "status": "passed",
+              "evidence": "Isolation and concurrent decision controls remained green."
             }
           ]
         },
         {
           "id": "REF-LIVE-001",
           "status": "passed",
-          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. apps/api/src/ai-suggestion-dependency-freshness.integration.test.ts exercises a missing source reference at approval and asserts 409 AI_SUGGESTION_PAYLOAD_OBSOLETE with the suggestion still pending and no effect.",
+          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "evidence": "Inherited exact behavior rejects missing, fingerprint-changed, or archived referenced resources at the definitive approval boundary.",
           "sibling_cases": [
             {
-              "id": "REF-LIVE-002",
-              "dimension": "same-id-fingerprint-changed",
+              "id": "RL-S1",
+              "dimension": "same-id-content-changed",
               "status": "passed",
-              "evidence": "The same integration test changes the source payload fingerprint after dependency capture and rejects the stale dependent approval."
+              "evidence": "Fingerprint change is rejected."
             },
             {
-              "id": "REF-LIVE-003",
+              "id": "RL-S2",
               "dimension": "same-id-eligibility-changed",
               "status": "passed",
-              "evidence": "The same integration test archives referenced Account and Category IDs before approval and blocks the definitive operation without creating a transaction."
+              "evidence": "Archived referenced resources are rejected."
             }
           ]
         }
       ],
       "regression_controls": [
         {
-          "id": "RG-CORE",
+          "id": "RG-PHASE2",
           "status": "passed",
-          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Integration API + PostgreSQL and the material product tests passed before the formatting-only remediation; current remote gates are observed separately."
+          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "evidence": "The remediation changes only external tracker metadata and Skill contracts; repository material bytes are unchanged from the exact head whose CI and visual workflows passed."
         }
       ]
     },
     {
-      "requirement_id": "REQ-UI-DOC",
+      "requirement_id": "REQ-TRACKER",
       "obligation_ids": [
-        "OBL-007",
-        "OBL-008",
-        "OBL-009",
-        "OBL-023",
-        "OBL-025",
-        "OBL-026",
-        "OBL-027",
-        "OBL-029",
-        "OBL-030"
+        "OBL-031",
+        "OBL-032",
+        "OBL-033",
+        "OBL-034",
+        "OBL-035",
+        "OBL-036",
+        "OBL-037",
+        "OBL-038",
+        "OBL-039"
       ],
       "risk_families": [
         "structural-contract",
         "documentation"
       ],
-      "plausible_wrong_implementation": "Declare the phase complete while leaving stale partial documentation or an interface that overflows, loses focus visibility, or fails at 200 percent text.",
+      "plausible_wrong_implementation": "Leave a canonical parent, release, or roadmap checklist stale after evidence is complete, allowing an implicit blocker to survive even though product gates are green.",
       "positive_control": {
-        "id": "PC-UI",
+        "id": "PC-TRACKER",
         "status": "passed",
-        "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-        "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Prior Chrome visual validation run 31740127162 passed canonical Inbox/insights/assistant scenarios; the current delta does not alter UI or docs."
+        "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+        "evidence": "Linked tracker observation at updated_at 2026-08-13T22:55:38Z shows eight evidence-backed acceptance items marked complete and the final self-referential gate explicitly open."
       },
       "negative_controls": [
         {
-          "id": "NC-UI",
+          "id": "TRACKER-SYNC-001",
           "status": "passed",
-          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. Visual harness covers horizontal fit/focus/mobile/200 percent reflow and STATUS_MATRIX keeps non-Phase-2 partial MVP items explicit.",
+          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "evidence": "Re-fetched canonical tracker after remediation; no evidence-backed acceptance item remains stale or implicitly pending.",
           "sibling_cases": [
             {
-              "id": "UI-S1",
-              "status": "passed"
+              "id": "TS-S1",
+              "dimension": "self-referential-final-gate",
+              "status": "passed",
+              "evidence": "The current final gate remains open with an explicit merge/closure reason instead of being falsely completed."
             },
             {
-              "id": "UI-S2",
-              "status": "passed"
+              "id": "TS-S2",
+              "dimension": "evidence-backed-checklist-items",
+              "status": "passed",
+              "evidence": "All other acceptance items supported by the final validation evidence are checked."
             }
           ]
         }
       ],
       "regression_controls": [
         {
-          "id": "RG-UI",
+          "id": "RG-TRACKER",
           "status": "passed",
-          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-          "evidence": "Reused exact-parent behavioral evidence from 353f45709ee40882f20f43ca2dcd0827c79a9067; compare parent..candidate changes only .prettierignore, so runtime test inputs/code are unchanged. No UI/document source changed in the remediation delta."
-        }
-      ]
-    },
-    {
-      "requirement_id": "REQ-EVIDENCE",
-      "obligation_ids": [
-        "OBL-012",
-        "OBL-013",
-        "OBL-014",
-        "OBL-015",
-        "OBL-016",
-        "OBL-024",
-        "OBL-028"
-      ],
-      "risk_families": [
-        "public-boundary",
-        "documentation",
-        "structural-contract"
-      ],
-      "plausible_wrong_implementation": "Claim completion from stale prose or a self-consistent handoff packet while the published head breaks repository-wide static gates or omits required privacy evidence.",
-      "positive_control": {
-        "id": "PC-EVID",
-        "status": "passed",
-        "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-        "evidence": "The remediation material commit changes only .prettierignore and the canonical ignore now covers .audit/entregar-issue/, exactly the subtree reported by the failed Prettier gate."
-      },
-      "negative_controls": [
-        {
-          "id": "HANDOFF-STATIC-GATE-001",
-          "status": "passed",
-          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-          "evidence": "Literal regression: previous published handoff failed Prettier on six .audit/entregar-issue JSON files; candidate adds the generated handoff subtree to the canonical .prettierignore without disabling format checks elsewhere.",
-          "sibling_cases": [
-            {
-              "id": "HSG-S1",
-              "dimension": "generated-result-subtree",
-              "status": "passed",
-              "evidence": "All machine-generated readiness JSON remains under .audit/entregar-issue/ and is matched by the ignore path."
-            },
-            {
-              "id": "HSG-S2",
-              "dimension": "non-generated-source-remains-checked",
-              "status": "passed",
-              "evidence": "The ignore change is subtree-scoped; source, docs, workflows and .audit/.prettierrc.json remain outside the new ignore entry."
-            }
-          ]
-        }
-      ],
-      "regression_controls": [
-        {
-          "id": "RG-EVID",
-          "status": "passed",
-          "head_sha": "5b5a92609b53bdb98847141ea5b232519ab10109",
-          "evidence": "Remote CI was automatically triggered for the candidate; no workflow was dispatched or rerun manually. Final remote state is tracked independently from the deterministic static remediation."
+          "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+          "evidence": "A post-write remote read returned the synchronized canonical checklist and explicit remaining condition."
         }
       ]
     }
