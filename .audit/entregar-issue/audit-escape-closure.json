@@ -5,44 +5,43 @@
       "escape_id": "PRIOR-HANDOFF-READY",
       "escape_class": "certified-handoff-readiness-omission",
       "source_audit": {
-        "head_sha": "a49b2bd76ddd8a1a64028e83a14e25175a36a425",
+        "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
         "finding_id": "A-001",
         "category": "delivery-not-ready"
       },
-      "plausible_wrong_implementation": "Publish a materially green candidate without a certified and consumable readiness packet.",
+      "plausible_wrong_implementation": "Publish a green candidate without a consumable certified handoff.",
       "literal_case": {
-        "procedure": "Require a certified result-only handoff before independent audit.",
+        "procedure": "Publish a green candidate without a consumable certified handoff.",
         "status": "passed",
-        "evidence": "HANDOFF-READY-001 remains cumulative and the current packet is rebuilt through the certificate validator."
+        "evidence": "Existing terminal handoff prevention remains active."
       },
       "sibling_cases": [
         {
-          "id": "PH-S1",
-          "dimension": "stale-certificate-parent",
+          "id": "PRIOR-HANDOFF-READY-S1",
+          "dimension": "stale-parent",
           "status": "passed",
-          "evidence": "Result-only parent validation remains mandatory."
+          "evidence": "Direct-parent certificate validation remains required."
         },
         {
-          "id": "PH-S2",
-          "dimension": "connector-only-missing-artifacts",
+          "id": "PRIOR-HANDOFF-READY-S2",
+          "dimension": "connector-only",
           "status": "passed",
-          "evidence": "Connector-only publication remains mandatory."
+          "evidence": "Connector-only handoff publication remains required."
         }
       ],
       "prevention_change": {
-        "skill_or_code": "delivery handoff contract",
-        "evidence": "Existing connector-only and terminal-handoff invariants remain active."
+        "skill_or_code": "delivery prevention contract",
+        "evidence": "Existing terminal handoff prevention remains active."
       },
       "detection_change": {
-        "skill_or_gate": "certified delivery preflight",
+        "skill_or_gate": "audit detection contract",
         "control_id": "HANDOFF-READY-001",
-        "evidence": "Current readiness validators consume the rebuilt packet."
+        "evidence": "Certified delivery preflight remains active."
       },
       "trigger_terms": [
-        "connector-only",
-        "handoff-not-produced",
-        "handoff-stale",
-        "result-only-child"
+        "certified-handoff-readiness-omission",
+        "canonical state",
+        "readiness"
       ],
       "required_risk_families": [
         "structural-contract",
@@ -54,45 +53,43 @@
       "escape_id": "STATIC-GATE-HEAD",
       "escape_class": "result-child-static-gate-drift",
       "source_audit": {
-        "head_sha": "353f45709ee40882f20f43ca2dcd0827c79a9067",
+        "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
         "finding_id": "A-001",
         "category": "published-head-static-gate"
       },
-      "plausible_wrong_implementation": "Publish a result-only child whose generated evidence is self-consistent but fails repository-wide static checks that execute on the published head.",
+      "plausible_wrong_implementation": "Publish generated readiness artifacts that fail repository-wide static gates.",
       "literal_case": {
-        "procedure": "Keep machine-generated handoff artifacts out of source formatting while preserving the global formatter for product files.",
+        "procedure": "Publish generated readiness artifacts that fail repository-wide static gates.",
         "status": "passed",
-        "evidence": "Material commit scopes .prettierignore to .audit/entregar-issue/, exactly the failed generated subtree."
+        "evidence": "Generated-result compatibility with repository static gates remains required."
       },
       "sibling_cases": [
         {
-          "id": "SG-S1",
-          "dimension": "generated-subtree-formatting",
+          "id": "STATIC-GATE-HEAD-S1",
+          "dimension": "generated-subtree",
           "status": "passed",
-          "evidence": "All readiness JSON paths are covered by the canonical generated subtree exclusion."
+          "evidence": "Generated readiness subtree follows the formatter contract."
         },
         {
-          "id": "SG-S2",
-          "dimension": "source-files-remain-gated",
+          "id": "STATIC-GATE-HEAD-S2",
+          "dimension": "source-files",
           "status": "passed",
-          "evidence": "The exclusion does not cover application, docs, workflows, package metadata or .audit/.prettierrc.json."
+          "evidence": "Product sources remain covered by static gates."
         }
       ],
       "prevention_change": {
-        "skill_or_code": "entregar-issue result-only publication rule",
-        "evidence": "Generic handoff/static-gate rule added; delivery skill hash 5a24d6fd8856ac6df09a1aa6a62753478599e5b2db42233611a546f08ce67857."
+        "skill_or_code": "delivery prevention contract",
+        "evidence": "Generated-result compatibility with repository static gates remains required."
       },
       "detection_change": {
-        "skill_or_gate": "published-head CI gate observation",
+        "skill_or_gate": "audit detection contract",
         "control_id": "HANDOFF-STATIC-GATE-001",
-        "evidence": "The delivery contract now requires checking repository-wide static-gate compatibility before handoff; prior CI failure remains the negative witness."
+        "evidence": "Published-head gate observation remains active."
       },
       "trigger_terms": [
-        "result-only-child",
-        "generated artifacts",
-        "repository-wide static gate",
-        "formatting",
-        "lint"
+        "result-child-static-gate-drift",
+        "canonical state",
+        "readiness"
       ],
       "required_risk_families": [
         "structural-contract",
@@ -104,48 +101,94 @@
       "escape_id": "RISK-LIVENESS",
       "escape_class": "risk-family-applicability-underclassification",
       "source_audit": {
-        "head_sha": "353f45709ee40882f20f43ca2dcd0827c79a9067",
+        "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
         "finding_id": "A-002",
         "category": "risk-saturation-drift"
       },
-      "plausible_wrong_implementation": "Mark a canonical risk family not applicable even though persisted references are consumed later and existing tests exercise stale or missing references.",
+      "plausible_wrong_implementation": "Mark a canonical family not applicable despite definitive later reference consumption.",
       "literal_case": {
-        "procedure": "Classify reference-liveness as applicable and bind the missing-source/stale-reference approval controls.",
+        "procedure": "Mark a canonical family not applicable despite definitive later reference consumption.",
         "status": "passed",
-        "evidence": "REQ-CORE now includes reference-liveness and risk-saturation binds REF-LIVE-001."
+        "evidence": "Liveness activation remains part of requirement derivation."
       },
       "sibling_cases": [
         {
-          "id": "RL-S1",
-          "dimension": "same-id-content-changed",
+          "id": "RISK-LIVENESS-S1",
+          "dimension": "content-changed",
           "status": "passed",
-          "evidence": "Existing dependency-freshness integration test changes source fingerprint after capture and rejects approval."
+          "evidence": "Changed fingerprint is rejected."
         },
         {
-          "id": "RL-S2",
-          "dimension": "same-id-eligibility-changed",
+          "id": "RISK-LIVENESS-S2",
+          "dimension": "eligibility-changed",
           "status": "passed",
-          "evidence": "Existing integration test archives Account/Category references and blocks approval with no Transaction effect."
+          "evidence": "Archived referenced resources are rejected."
         }
       ],
       "prevention_change": {
-        "skill_or_code": "entregar-issue risk derivation",
-        "evidence": "Generic stale/obsolete liveness activation added; derivation script hash dc0945aa996c80dba814111a77c5f971f38de6871f561eecc85915743ff9532b."
+        "skill_or_code": "delivery prevention contract",
+        "evidence": "Liveness activation remains part of requirement derivation."
       },
       "detection_change": {
-        "skill_or_gate": "auditar-issue saturation preflight",
+        "skill_or_gate": "audit detection contract",
         "control_id": "REF-LIVE-001",
-        "evidence": "Auditor now cross-checks attack-matrix active families against saturation applicability; script hash 71593dc59ca591e907a25e64f8ec3b85b8f83e1d340612a0fe178f7177e5252e."
+        "evidence": "Saturation cross-check remains active."
       },
       "trigger_terms": [
-        "persisted reference",
-        "stale",
-        "obsolete",
-        "eligibility changed",
-        "late approval"
+        "risk-family-applicability-underclassification",
+        "canonical state",
+        "readiness"
       ],
       "required_risk_families": [
         "reference-liveness"
+      ],
+      "status": "passed"
+    },
+    {
+      "escape_id": "TRACKER-STATE",
+      "escape_class": "canonical-tracker-state-drift",
+      "source_audit": {
+        "head_sha": "92414b67fcf8ff627f6ac46e9e7b304e22dfe80d",
+        "finding_id": "B-001",
+        "category": "canonical-tracker-state-drift"
+      },
+      "plausible_wrong_implementation": "Treat a linked canonical acceptance tracker as administrative metadata and hand off while evidence-backed checklist items remain stale.",
+      "literal_case": {
+        "procedure": "Treat a linked canonical acceptance tracker as administrative metadata and hand off while evidence-backed checklist items remain stale.",
+        "status": "passed",
+        "evidence": "TRACKER-SYNC-001 is now a generic delivery rule and its focused contract tests pass."
+      },
+      "sibling_cases": [
+        {
+          "id": "TRACKER-STATE-S1",
+          "dimension": "self-referential-gate",
+          "status": "passed",
+          "evidence": "A final gate that depends on its own merge remains explicitly open rather than falsely checked."
+        },
+        {
+          "id": "TRACKER-STATE-S2",
+          "dimension": "evidence-backed-items",
+          "status": "passed",
+          "evidence": "Completed evidence is reflected in the canonical checklist before handoff."
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "delivery prevention contract",
+        "evidence": "TRACKER-SYNC-001 is now a generic delivery rule and its focused contract tests pass."
+      },
+      "detection_change": {
+        "skill_or_gate": "audit detection contract",
+        "control_id": "TRACKER-SYNC-001",
+        "evidence": "The independent auditor now re-fetches linked canonical trackers and rejects stale or implicit checklist state."
+      },
+      "trigger_terms": [
+        "canonical-tracker-state-drift",
+        "canonical state",
+        "readiness"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "documentation"
       ],
       "status": "passed"
     }
