@@ -82,6 +82,7 @@ As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas
 - recorrencias e parcelas permanecem incorporadas as jornadas existentes, sem rota propria;
 - a Inbox continua sendo a fronteira unificada para sugestoes revisaveis;
 - o assistente continua estritamente somente leitura;
+- o provider do assistente aceita somente `DIRECT` ou `CONTEXTUAL`; numeros e fatos seguem deterministas;
 - o inventario completo de rotas fica em `docs/product/INTERFACE_INVENTORY.md`, com `apps/web/src/app-shell/routes.ts` como fonte executavel.
 
 ## Gate final da Fase 2 (#569)
