@@ -11,30 +11,14 @@ for (const command of [
   "Atualize o valor desta despesa",
   "Modifique esta parcela",
 ]) {
-  assert.equal(
-    financialAssistantQuestionRequestsMutation(command),
-    true,
-    command,
-  );
-  assert.equal(
-    classifyFinancialAssistantIntent(command),
-    "out_of_scope",
-    command,
-  );
+  assert.equal(financialAssistantQuestionRequestsMutation(command), true, command);
+  assert.equal(classifyFinancialAssistantIntent(command), "out_of_scope", command);
 }
 
 for (const consultation of [
   "Quanto paguei de fatura este mes?",
   "Faca um resumo deste mes",
 ]) {
-  assert.equal(
-    financialAssistantQuestionRequestsMutation(consultation),
-    false,
-    consultation,
-  );
-  assert.notEqual(
-    classifyFinancialAssistantIntent(consultation),
-    "out_of_scope",
-    consultation,
-  );
+  assert.equal(financialAssistantQuestionRequestsMutation(consultation), false, consultation);
+  assert.notEqual(classifyFinancialAssistantIntent(consultation), "out_of_scope", consultation);
 }
