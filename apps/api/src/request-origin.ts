@@ -4,7 +4,13 @@ import { AuthError } from "./auth.js";
 import { isLocalEnvironment, readSessionCookie } from "./session-cookie.js";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
-const LOCAL_LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
+const LOCAL_CONFIGURED_ORIGIN_HOSTNAMES = new Set([
+  "localhost",
+  "127.0.0.1",
+  "[::1]",
+  "0.0.0.0",
+  "[::]",
+]);
 
 export function assertTrustedMutationOrigin(input: {
   method: string;
@@ -41,12 +47,15 @@ function originsMatch(
   const expectedUrl = new URL(expected);
   const receivedUrl = new URL(received);
 
-  return (
-    expectedUrl.protocol === receivedUrl.protocol &&
-    expectedUrl.port === receivedUrl.port &&
-    LOCAL_LOOPBACK_HOSTNAMES.has(expectedUrl.hostname.toLowerCase()) &&
-    LOCAL_LOOPBACK_HOSTNAMES.has(receivedUrl.hostname.toLowerCase())
-  );
+  if (!LOCAL_CONFIGURED_ORIGIN_HOSTNAMES.has(expectedUrl.hostname.toLowerCase())) {
+    return false;
+  }
+
+  // Local development is frequently exposed through LAN addresses, container hosts,
+  // port forwarding or HTTPS tunnels while APP_ORIGIN intentionally remains localhost.
+  // Require a valid browser web origin, but never apply this compatibility path outside
+  // development/local/test or when APP_ORIGIN itself is non-local.
+  return receivedUrl.protocol === "http:" || receivedUrl.protocol === "https:";
 }
 
 function normalizeOrigin(

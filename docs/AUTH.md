@@ -73,11 +73,13 @@ Logout revoga somente uma sessão ainda ativa e sempre remove, na resposta ao na
 
 ## CSRF e origem
 
-Toda operação mutável autenticada por cookie exige `Origin` exatamente igual a `APP_ORIGIN`. Origem ausente ou diferente é rejeitada com `AUTH_REQUEST_ORIGIN_INVALID`. A exceção `AUTH_ALLOW_MISSING_ORIGIN=true` existe apenas para adaptadores locais/testes deliberados.
+Em produção, staging com dados reais e preview público, toda operação mutável autenticada por cookie exige `Origin` exatamente igual a `APP_ORIGIN`. Origem ausente ou diferente é rejeitada com `AUTH_REQUEST_ORIGIN_INVALID`.
+
+Em `development`, `local` e `test`, quando o próprio `APP_ORIGIN` está configurado com um host local (`localhost`, loopback ou endereço de bind local), a API continua exigindo um `Origin` HTTP/HTTPS válido, mas aceita o navegador ser exposto por outro hostname de desenvolvimento, como IP de LAN, container, port-forward ou túnel HTTPS. Esse caminho de compatibilidade nunca é usado em `production` nem quando `APP_ORIGIN` já aponta para um hostname não local. Origem ausente continua rejeitada; `AUTH_ALLOW_MISSING_ORIGIN=true` permanece uma exceção explícita apenas para adaptadores locais/testes deliberados.
 
 A materialização automática de recorrências em `/cartoes` e `/lancamentos` é iniciada por um `POST` same-origin do navegador. O adaptador web encaminha o cookie e o `Origin` recebido; não transforma o cookie produtivo em Bearer externo nem executa a mutação durante o `GET` da página.
 
-`SameSite=Lax` é defesa complementar e não substitui a validação de origem nem o vínculo da tentativa OIDC ao navegador.
+`SameSite=Lax` é defesa complementar e não substitui a validação produtiva exata de origem nem o vínculo da tentativa OIDC ao navegador.
 
 ## Contratos locais e legados
 
@@ -151,4 +153,4 @@ Antes do rollout, confirme que o app client não possui client secret, que Autho
 
 ## Testes e validação
 
-A cobertura inclui cookie produtivo/local, cookie transitório por tentativa, ausência de `Domain`, origem exata, transporte de recorrência por cookie, `returnTo` interno, estado de cookie bloqueado, PKCE, hashes de state/nonce/vínculo do navegador, rejeição de callback entre navegadores sem consumir a tentativa válida, nonce do ID token, `token_use=id`, email verificado, envelope cifrado corrompido, rotação incorreta da chave, bloqueio dos contratos legados, ambiente de runtime explícito, bloqueio de Bearer externo, rotação atômica, logout com API ausente ou resposta de erro, revogação idempotente, revogação ao desabilitar usuário, estados/replay da tentativa, callback indisponível com redirect genérico, concorrência de vínculo externo, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.
+A cobertura inclui cookie produtivo/local, cookie transitório por tentativa, ausência de `Domain`, origem exata em produção, compatibilidade de `Origin` para acesso local por LAN/container/port-forward/túnel sem aceitar origem ausente por padrão, transporte de recorrência por cookie, `returnTo` interno, estado de cookie bloqueado, PKCE, hashes de state/nonce/vínculo do navegador, rejeição de callback entre navegadores sem consumir a tentativa válida, nonce do ID token, `token_use=id`, email verificado, envelope cifrado corrompido, rotação incorreta da chave, bloqueio dos contratos legados, ambiente de runtime explícito, bloqueio de Bearer externo, rotação atômica, logout com API ausente ou resposta de erro, revogação idempotente, revogação ao desabilitar usuário, estados/replay da tentativa, callback indisponível com redirect genérico, concorrência de vínculo externo, UI produtiva sem senha local e integração PostgreSQL. O gate agregado é `npm run validate`, seguido de `npm run test:integration`.
