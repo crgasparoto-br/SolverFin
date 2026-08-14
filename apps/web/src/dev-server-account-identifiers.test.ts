@@ -34,6 +34,18 @@ async function accountsPageSeparatesAgencyAndAccount(): Promise<void> {
             institutionKey: "c6",
             maskedIdentifier: "Ag **** · Conta **** 7788",
           },
+          {
+            id: "account-hybrid",
+            name: "Conta híbrida",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 0,
+            currency: "BRL",
+            institutionKey: "c6",
+            agencyIdentifier: "4321",
+            accountIdentifier: "99999-0",
+            maskedIdentifier: "LEGADO **** 1111",
+          },
         ],
       });
     }
@@ -52,6 +64,8 @@ async function accountsPageSeparatesAgencyAndAccount(): Promise<void> {
     const separatedEdit = sliceDialog(html, "edit-account-dialog-account-separated");
     const legacySummary = sliceAccountSummary(html, "account-legacy");
     const legacyEdit = sliceDialog(html, "edit-account-dialog-account-legacy");
+    const hybridSummary = sliceAccountSummary(html, "account-hybrid");
+    const hybridEdit = sliceDialog(html, "edit-account-dialog-account-hybrid");
 
     assert.match(newDialog, /<label>Agência<input name="agencyIdentifier"/);
     assert.match(newDialog, /<label>Conta<input name="accountIdentifier"/);
@@ -63,11 +77,16 @@ async function accountsPageSeparatesAgencyAndAccount(): Promise<void> {
     assert.match(separatedEdit, /name="agencyIdentifier" value="0001"/);
     assert.match(separatedEdit, /name="accountIdentifier" value="12345-6"/);
 
-    assert.match(legacySummary, /Dados bancários cadastrados/);
-    assert.doesNotMatch(legacySummary, /Ag \*\*\*\* · Conta \*\*\*\* 7788/);
+    assert.match(legacySummary, /Ag \*\*\*\* · Conta \*\*\*\* 7788/);
     assert.match(legacyEdit, /Identificador legado: Ag \*\*\*\* · Conta \*\*\*\* 7788/);
     assert.match(legacyEdit, /name="agencyIdentifier" value=""/);
     assert.match(legacyEdit, /name="accountIdentifier" value=""/);
+
+    assert.match(hybridSummary, /Agência final 21 · Conta final 99-0/);
+    assert.doesNotMatch(hybridSummary, /LEGADO \*\*\*\* 1111/);
+    assert.match(hybridEdit, /name="agencyIdentifier" value="4321"/);
+    assert.match(hybridEdit, /name="accountIdentifier" value="99999-0"/);
+    assert.doesNotMatch(hybridEdit, /Identificador legado:/);
   } finally {
     globalThis.fetch = originalFetch;
   }

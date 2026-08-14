@@ -875,7 +875,7 @@ function formatAccountIdentifier(account: AccountRecord): string | undefined {
     return parts.join(" · ");
   }
 
-  return account.maskedIdentifier?.trim() ? "Dados bancários cadastrados" : undefined;
+  return account.maskedIdentifier?.trim() || undefined;
 }
 
 function formatAccountIdentifierPart(

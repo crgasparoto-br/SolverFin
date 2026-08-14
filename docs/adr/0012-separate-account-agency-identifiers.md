@@ -29,7 +29,8 @@ Na interface:
 - novos formulários não concatenam os valores em `maskedIdentifier`;
 - a listagem apresenta apenas sufixos minimizados quando os campos estruturados existem;
 - identificadores curtos demais para permitir exibição parcial não aparecem na listagem nem em dados de busca;
-- registros exclusivamente legados são indicados na listagem sem revelar o texto bruto;
+- quando ao menos um campo estruturado existir, ele tem precedência e o `maskedIdentifier` legado não participa da apresentação nem da busca;
+- quando ambos os campos estruturados estiverem ausentes, um `maskedIdentifier` legado já minimizado permanece como fallback reconhecível na listagem, sem parsing ou derivação;
 - o identificador legado completo pode ser mostrado no modal de edição para permitir que o usuário corrija o cadastro e preencha os novos campos.
 
 ## Consequências

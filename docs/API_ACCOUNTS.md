@@ -149,6 +149,8 @@ Exclui apenas contas sem uso ou vínculos financeiros. Contas já utilizadas dev
 
 Agência e conta são dados financeiros sensíveis. A listagem deve exibir apenas uma forma minimizada suficiente para reconhecimento, por exemplo os últimos caracteres. Quando um identificador for curto demais para permitir exibição parcial, ele não deve aparecer na listagem nem em `data-search`. O valor completo pode aparecer no formulário de edição, onde é necessário para corrigir o cadastro.
 
+Na apresentação, `agencyIdentifier` e `accountIdentifier` têm precedência sempre que pelo menos um deles existir. Nesse caso, `maskedIdentifier` não deve ser exibido nem usado no índice textual da listagem. Quando ambos os campos estruturados estiverem ausentes, um `maskedIdentifier` legado já minimizado permanece como fallback reconhecível na listagem e na busca, sem parsing, concatenação ou tentativa de derivar os novos campos.
+
 Logs, fixtures, testes e documentação não devem conter identificadores financeiros reais.
 
 ## Erros de validação
@@ -179,6 +181,7 @@ O pacote `@solverfin/domain` e a integração da API cobrem:
 - criação de conta;
 - separação, normalização e remoção independente de agência e conta;
 - compatibilidade de leitura com `maskedIdentifier` legado sem parsing heurístico;
+- precedência dos campos estruturados em registros híbridos e fallback legado somente quando ambos estiverem ausentes;
 - bloqueio de escrita de `maskedIdentifier` nos payloads de criação e atualização;
 - preservação do identificador legado em atualizações não relacionadas;
 - minimização de identificadores em listagem e busca, inclusive para valores curtos;
