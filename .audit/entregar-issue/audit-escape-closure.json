@@ -1,1 +1,52 @@
-{"schema_version":1,"escapes":[{"escape_id":"HANDOFF-STALE-587","escape_class":"delivery-readiness-state","source_audit":{"finding_id":"HANDOFF-STALE-587","category":"handoff-stale"},"plausible_wrong_implementation":"Publish a syntactically valid audit package copied from another delivery so its issue source, material head, base, or allowed result paths do not describe the candidate being handed off.","literal_case":{"procedure":"Revalidate the issue source and bind every readiness artifact to the current material head before certificate publication.","status":"passed","evidence":"The specification snapshot identifies issue 587 and attack/risk/inherited artifacts are rebound to material head 42781025f4c7fab73f975ba115ded77a5adf7d30."},"sibling_cases":[{"id":"HANDOFF-STALE-587-S1","dimension":"wrong-issue-snapshot","status":"passed","evidence":"The canonical source remains SRC-ISSUE for issue 587; no unrelated issue snapshot is used."},{"id":"HANDOFF-STALE-587-S2","dimension":"wrong-material-head","status":"passed","evidence":"All refreshed readiness matrices carry 42781025f4c7fab73f975ba115ded77a5adf7d30 rather than the previous frozen material head."}],"prevention_change":{"skill_or_code":"post-ci-refreeze handoff package re-export","evidence":"The handoff is regenerated only after exact-head CI is green and binds the certificate to the new final material head."},"detection_change":{"skill_or_gate":"handoff certificate identity validation","control_id":"HANDOFF-ISSUE-IDENTITY-001","evidence":"Certificate and terminal handoff validators require exact material parent and an audit-only changed-path allowlist."},"status":"passed"}]}
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "HANDOFF-STALE-587",
+      "escape_class": "delivery-readiness-state",
+      "source_audit": {"finding_id": "HANDOFF-STALE-587", "category": "handoff-stale"},
+      "plausible_wrong_implementation": "Publish a syntactically valid audit package copied from another delivery so its issue source, material head, base, or allowed result paths do not describe the candidate being handed off.",
+      "literal_case": {
+        "procedure": "Bind every readiness artifact to the current canonical issue source and material head before certificate publication.",
+        "status": "passed",
+        "evidence": "Current snapshot identifies the correct repository/issue and all regenerated readiness matrices bind to material head 6459eafa14c3b0006b12082cdfe762b0e516ecdc."
+      },
+      "sibling_cases": [
+        {"id": "HANDOFF-STALE-S1", "dimension": "wrong-issue-snapshot", "status": "passed", "evidence": "Canonical source is the exact issue body hash for the current delivery."},
+        {"id": "HANDOFF-STALE-S2", "dimension": "wrong-material-head", "status": "passed", "evidence": "Readiness matrices and inherited controls use the current material head."}
+      ],
+      "prevention_change": {"skill_or_code": "result-only handoff refreeze discipline", "evidence": "Material remediation is frozen first; certificate is generated only for its direct result-only child."},
+      "detection_change": {"skill_or_gate": "handoff certificate identity validation", "control_id": "HANDOFF-ISSUE-IDENTITY-001", "evidence": "Terminal validators require exact material parent and allow-listed result paths."},
+      "trigger_terms": ["handoff", "material head", "issue source", "result-only child"],
+      "required_risk_families": ["structural-contract", "documentation"],
+      "status": "passed"
+    },
+    {
+      "escape_id": "F-587-01",
+      "escape_class": "precedence-claim-without-discriminant-control",
+      "source_audit": {"finding_id": "F-587-01", "category": "legacy-fallback-precedence"},
+      "plausible_wrong_implementation": "A preferred/fallback contract is declared covered by generic compatibility tests even though the visible selector returns a generic or lower-priority value in one branch.",
+      "literal_case": {
+        "procedure": "Exercise a record with only the fallback source and assert the recognizable fallback reaches the listing/search presentation without deriving preferred structured fields.",
+        "status": "passed",
+        "evidence": "Updated repository regression requires the legacy-only masked fallback in the summary while agency/account edit inputs remain empty; published renderer now returns that fallback."
+      },
+      "sibling_cases": [
+        {"id": "PRECEDENCE-ESCAPE-S1", "dimension": "conflicting-hybrid", "status": "passed", "evidence": "Updated repository regression gives structured and legacy values different sentinels and requires structured suffixes while rejecting legacy text."},
+        {"id": "PRECEDENCE-ESCAPE-S2", "dimension": "fallback-edit-boundary", "status": "passed", "evidence": "Legacy-only edit keeps both structured inputs empty and retains explicit legacy guidance, proving no derivation from fallback data."}
+      ],
+      "prevention_change": {
+        "skill_or_code": "repository discriminant regression plus generic structural precedence contract",
+        "evidence": "The repository test now covers literal legacy fallback and contradictory hybrid precedence; the Skill reference requires family-specific precedence control mapping."
+      },
+      "detection_change": {
+        "skill_or_gate": "validate_handoff_readiness.py precedence control mapping",
+        "control_id": "HYBRID-PRECEDENCE-001",
+        "evidence": "The generic handoff gate now blocks precedence obligations unless controls_by_family.precedence points to passed negative controls on the frozen head."
+      },
+      "trigger_terms": ["precedence", "fallback", "preferred source", "legacy source", "hybrid source"],
+      "required_risk_families": ["historical-immutability", "structural-contract", "public-boundary", "documentation"],
+      "status": "passed"
+    }
+  ]
+}

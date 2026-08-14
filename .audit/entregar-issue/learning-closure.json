@@ -1,1 +1,47 @@
-{"schema_version":1,"classification":"implementation-only","source_event":{"category":"handoff-stale","local_finding_id":"HANDOFF-STALE-587"},"generalized_learning":{"promotion_status":"not-required","reason":"The delivery and audit contracts already require exact issue/source identity, material-head binding, and result-only child validation. The failure was stale package composition for this delivery, so rebuilding and validating the package closes it without a new global rule."}}
+{
+  "schema_version": 1,
+  "classification": "systemic-escape",
+  "source_event": {
+    "category": "legacy-fallback-precedence",
+    "local_finding_id": "F-587-01"
+  },
+  "generalized_learning": {
+    "escape_class": "precedence-claim-without-discriminant-control",
+    "generalized_failure_pattern": "A delivery can claim a preferred-versus-fallback invariant is covered while its negative evidence exercises only compatibility, rendering, or structural happy paths and never forces the competing sources to disagree.",
+    "plausible_wrong_implementation": "A lower-priority source or generic marker is selected in one branch, while unrelated compatibility tests make the overall feature appear correct.",
+    "trigger_signals": ["preferred source", "fallback", "precedence", "hybrid record", "canonical source", "specialized handler"],
+    "risk_families": ["structural-contract", "public-boundary", "historical-immutability", "documentation"],
+    "reusable_control": "For every covered precedence obligation, map at least one family-specific negative control and verify that the mapped control exists, passed on the frozen head, and carries evidence.",
+    "prevention_rule": "Structural closure entries that cover precedence obligations must declare controls_by_family.precedence rather than relying on a generic structural evidence list.",
+    "detection_rule": "The terminal handoff validator cross-checks every mapped precedence control against the requirement attack matrix and blocks missing, failed, stale-head, or evidence-free controls.",
+    "transfer_cases": [
+      {
+        "surface": "fallback_selector",
+        "case": "Preferred structured data and fallback data compete in a selector; a generic structural control without a precedence mapping is rejected.",
+        "status": "passed",
+        "evidence": "Generic Skill test verifies the handoff gate blocks a precedence obligation that lacks controls_by_family.precedence."
+      },
+      {
+        "surface": "handler_dispatch",
+        "case": "Two handlers can both return valid output but only one has priority; an explicit mapped precedence control is accepted when it exists and passed in the attack matrix.",
+        "status": "passed",
+        "evidence": "Generic Skill test verifies a distinct dispatch surface passes with a mapped precedence discriminant control."
+      }
+    ],
+    "promotion_status": "promoted"
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "path": "references/structural-invariant-gate.md",
+      "status": "passed",
+      "evidence": "Permanent contract now requires family-specific precedence control mapping and explains why generic structural evidence is insufficient."
+    },
+    {
+      "role": "detection",
+      "path": "scripts/validate_handoff_readiness.py",
+      "status": "passed",
+      "evidence": "Validator cross-checks controls_by_family.precedence against passed attack-matrix negative controls; focused Skill suite passed 12 tests and genericity validation passed."
+    }
+  ]
+}

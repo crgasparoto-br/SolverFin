@@ -1,1 +1,199 @@
-{"schema_version":1,"head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","requirements":[{"requirement_id":"REQ-DOMAIN-API-PERSISTENCE","risk_families":["historical-immutability","structural-contract"],"plausible_wrong_implementation":"PATCH can overwrite an omitted sibling or collapse the structured fields into legacy storage.","positive_control":{"id":"PC-DOMAIN","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"CI 31836404334 passed exact-head unit/integration/migration/build gates."},"negative_controls":[{"id":"ACCOUNT-PATCH-INDEPENDENCE-001","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"PostgreSQL integration proves independent update, omission preservation and blank clear.","sibling_cases":[{"id":"ACCOUNT-PATCH-INDEPENDENCE-001-S1","dimension":"blank-clear","status":"passed","evidence":"Blank clears only the target."},{"id":"ACCOUNT-PATCH-INDEPENDENCE-001-S2","dimension":"omit-preserve","status":"passed","evidence":"Omitted sibling remains persisted."}]}],"regression_controls":[{"id":"RG-DOMAIN","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"CI 31836404334 passed on the material head."}]},{"requirement_id":"REQ-LEGACY-COMPATIBILITY","risk_families":["historical-immutability","structural-contract"],"plausible_wrong_implementation":"Legacy text can be parsed or can override structured identifiers in hybrid records.","positive_control":{"id":"PC-LEGACY","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Legacy tests passed in CI 31836404334."},"negative_controls":[{"id":"LEGACY-NO-DERIVATION-001","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Tests forbid deriving structured identifiers from maskedIdentifier.","sibling_cases":[{"id":"LEGACY-NO-DERIVATION-001-S1","dimension":"ambiguous-unparsed","status":"passed","evidence":"Ambiguous legacy text remains unparsed."},{"id":"LEGACY-NO-DERIVATION-001-S2","dimension":"edit-empty","status":"passed","evidence":"Legacy-only edit keeps structured inputs empty."}]}],"regression_controls":[{"id":"RG-LEGACY","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"CI 31836404334 and visual 31836404332 passed."}]},{"requirement_id":"REQ-WEB-FORM-ROUNDTRIP","risk_families":["structural-contract"],"plausible_wrong_implementation":"Separate inputs can still submit combined legacy data or clear the wrong sibling.","positive_control":{"id":"PC-WEB","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Web tests and visual run 31836404332 passed."},"negative_controls":[{"id":"FORM-NO-MASKEDIDENTIFIER-001","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Forms submit structured identifiers and never maskedIdentifier.","sibling_cases":[{"id":"FORM-NO-MASKEDIDENTIFIER-001-S1","dimension":"structured-only","status":"passed","evidence":"Create/edit remain structured-only."}]}],"regression_controls":[{"id":"RG-WEB","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"CI 31836404334 and visual 31836404332 passed."}]},{"requirement_id":"REQ-LISTING-PRIVACY","risk_families":["public-boundary","structural-contract"],"plausible_wrong_implementation":"Visible masking can still leak complete identifiers through HTML search metadata.","positive_control":{"id":"PC-PRIVACY","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Privacy/SSR tests passed in CI 31836404334."},"negative_controls":[{"id":"ACCOUNT-IDENTIFIER-PRIVACY-001","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Rendered listing hides full and unsafe-short identifiers.","sibling_cases":[{"id":"ACCOUNT-IDENTIFIER-PRIVACY-001-S1","dimension":"short-hidden","status":"passed","evidence":"Unsafe short values are hidden."},{"id":"ACCOUNT-IDENTIFIER-PRIVACY-001-S2","dimension":"full-absent","status":"passed","evidence":"Complete sentinels are absent."}]},{"id":"SEARCH-METADATA-PRIVACY-001","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Search metadata contains only minimized recognition text.","sibling_cases":[{"id":"SEARCH-METADATA-PRIVACY-001-S1","dimension":"no-full-search","status":"passed","evidence":"Full values are absent from data-search."},{"id":"SEARCH-METADATA-PRIVACY-001-S2","dimension":"suffix-only","status":"passed","evidence":"Only recognition suffixes remain."}]}],"regression_controls":[{"id":"RG-PRIVACY","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"CI 31836404334 and visual 31836404332 passed."}]},{"requirement_id":"REQ-DOCUMENTATION","risk_families":["documentation","structural-contract"],"plausible_wrong_implementation":"Docs can present maskedIdentifier as writable or conflate omitted and blank PATCH fields.","positive_control":{"id":"PC-DOC","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Canonical account API docs remain aligned; CI 31836404334 passed."},"negative_controls":[{"id":"DOC-LEGACY-CONTRACT-001","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"Docs keep legacy read-only and distinguish omitted from blank PATCH.","sibling_cases":[{"id":"DOC-LEGACY-CONTRACT-001-S1","dimension":"contract","status":"passed","evidence":"Writable legacy is absent and PATCH semantics are explicit."}]}],"regression_controls":[{"id":"RG-DOC","status":"passed","head_sha":"42781025f4c7fab73f975ba115ded77a5adf7d30","evidence":"CI 31836404334 passed with unchanged documentation."}]}],"uncovered_requirements":[]}
+{
+  "schema_version": 1,
+  "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+  "requirements": [
+    {
+      "requirement_id": "REQ-DOMAIN-API-PERSISTENCE",
+      "risk_families": ["structural-contract"],
+      "plausible_wrong_implementation": "PATCH can overwrite an omitted sibling or collapse the structured fields into legacy storage while the response still appears correct.",
+      "positive_control": {
+        "id": "PC-DOMAIN",
+        "status": "passed",
+        "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+        "evidence": "Reused prior exact-head domain/API/PostgreSQL CI evidence because connector compare for the remediation proves no domain, API, repository, Prisma, or migration path changed."
+      },
+      "negative_controls": [
+        {
+          "id": "ACCOUNT-PATCH-INDEPENDENCE-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "The remediation delta does not touch the previously validated PostgreSQL independent update, omission preservation, or blank-clear implementation/tests.",
+          "sibling_cases": [
+            {"id": "ACCOUNT-PATCH-INDEPENDENCE-001-S1", "dimension": "blank-clear", "status": "passed", "evidence": "Previously validated behavior remains byte-identical in the remediation delta."}
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "RG-DOMAIN",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Selective-impact reuse: previous monorepo/integration gates covered these unchanged paths; remediation changed only one web renderer, its web regression test, API documentation, and ADR."
+        }
+      ]
+    },
+    {
+      "requirement_id": "REQ-LEGACY-COMPATIBILITY",
+      "risk_families": ["historical-immutability", "structural-contract"],
+      "plausible_wrong_implementation": "A legacy-only record can lose its recognizable fallback, or a hybrid record can let legacy text override the structured identifiers while other compatibility checks still pass.",
+      "positive_control": {
+        "id": "PC-LEGACY",
+        "status": "passed",
+        "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+        "evidence": "Published renderer returns structured suffixes whenever present and otherwise returns the trimmed legacy maskedIdentifier; focused connector-only semantic harness exercised five source combinations successfully."
+      },
+      "negative_controls": [
+        {
+          "id": "LEGACY-NO-DERIVATION-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "No parsing/derivation code was added; legacy-only edit inputs remain empty and domain/API legacy behavior is unchanged.",
+          "sibling_cases": [
+            {"id": "LEGACY-NO-DERIVATION-001-S1", "dimension": "ambiguous-unparsed", "status": "passed", "evidence": "Legacy masked text remains a presentation fallback, not a source for structured fields."},
+            {"id": "LEGACY-NO-DERIVATION-001-S2", "dimension": "edit-empty", "status": "passed", "evidence": "Updated web regression requires empty agency/account inputs for the legacy-only record."}
+          ]
+        },
+        {
+          "id": "LEGACY-FALLBACK-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Updated web regression requires the already-minimized legacy maskedIdentifier in the legacy-only summary; the published renderer now returns that value instead of a generic marker.",
+          "sibling_cases": [
+            {"id": "LEGACY-FALLBACK-001-S1", "dimension": "legacy-listing", "status": "passed", "evidence": "Legacy-only summary contains the minimized legacy fallback."},
+            {"id": "LEGACY-FALLBACK-001-S2", "dimension": "legacy-edit", "status": "passed", "evidence": "Legacy-only edit keeps structured inputs empty while retaining the legacy guidance text."}
+          ]
+        },
+        {
+          "id": "HYBRID-PRECEDENCE-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Updated web regression uses deliberately conflicting structured and legacy values and requires structured suffixes while rejecting legacy text and the legacy-only edit notice.",
+          "sibling_cases": [
+            {"id": "HYBRID-PRECEDENCE-001-S1", "dimension": "structured-wins", "status": "passed", "evidence": "Hybrid summary uses agency/account structured suffixes and excludes contradictory legacy text."},
+            {"id": "HYBRID-PRECEDENCE-001-S2", "dimension": "fallback-only-when-both-absent", "status": "passed", "evidence": "Focused five-case semantic harness confirms agency-only/account-only structured values also suppress the legacy fallback."}
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "RG-LEGACY",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Focused legacy/precedence semantic harness passed 5 cases; exact-head remote CI was observed once and had not started yet."
+        }
+      ]
+    },
+    {
+      "requirement_id": "REQ-WEB-FORM-ROUNDTRIP",
+      "risk_families": ["structural-contract"],
+      "plausible_wrong_implementation": "Separate inputs can still submit combined legacy data or clear the wrong sibling even when the listing appears correct.",
+      "positive_control": {
+        "id": "PC-WEB",
+        "status": "passed",
+        "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+        "evidence": "Remediation leaves form markup and payload construction unchanged; connector compare isolates the material web change to the listing fallback expression and expanded regression fixture."
+      },
+      "negative_controls": [
+        {
+          "id": "FORM-NO-MASKEDIDENTIFIER-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Existing forms remain structured-only and the updated regression still rejects maskedIdentifier in the new account dialog.",
+          "sibling_cases": [
+            {"id": "FORM-NO-MASKEDIDENTIFIER-001-S1", "dimension": "structured-only", "status": "passed", "evidence": "Create/edit structured field contract is unchanged by remediation."}
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "RG-WEB",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Selective-impact review confirms no payload/form implementation change; updated fixture adds legacy and hybrid assertions without altering form behavior."
+        }
+      ]
+    },
+    {
+      "requirement_id": "REQ-LISTING-PRIVACY",
+      "risk_families": ["public-boundary", "structural-contract"],
+      "plausible_wrong_implementation": "Visible structured values can be minimized while complete identifiers leak through metadata, or precedence can incorrectly expose stale legacy text in hybrid records.",
+      "positive_control": {
+        "id": "PC-PRIVACY",
+        "status": "passed",
+        "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+        "evidence": "Structured identifier masking/privacy transformer is unchanged; remediation only restores the already-minimized legacy fallback for legacy-only records and adds hybrid precedence coverage."
+      },
+      "negative_controls": [
+        {
+          "id": "ACCOUNT-IDENTIFIER-PRIVACY-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Existing SSR privacy controls remain unchanged and still hide full/unsafe-short structured identifiers.",
+          "sibling_cases": [
+            {"id": "ACCOUNT-IDENTIFIER-PRIVACY-001-S1", "dimension": "short-hidden", "status": "passed", "evidence": "Privacy transformer code/test paths are untouched."},
+            {"id": "ACCOUNT-IDENTIFIER-PRIVACY-001-S2", "dimension": "full-absent", "status": "passed", "evidence": "Full structured sentinels remain excluded by unchanged privacy logic."}
+          ]
+        },
+        {
+          "id": "SEARCH-METADATA-PRIVACY-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Search metadata continues to derive from the same minimized presentation value; structured complete identifiers are not reintroduced.",
+          "sibling_cases": [
+            {"id": "SEARCH-METADATA-PRIVACY-001-S1", "dimension": "no-full-search", "status": "passed", "evidence": "Unchanged privacy transformer removes unsafe complete structured values."},
+            {"id": "SEARCH-METADATA-PRIVACY-001-S2", "dimension": "legacy-fallback-search", "status": "passed", "evidence": "Legacy-only search uses the pre-existing masked legacy value only when structured fields are absent."}
+          ]
+        },
+        {
+          "id": "HYBRID-PRECEDENCE-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Hybrid regression rejects contradictory legacy text whenever structured values exist.",
+          "sibling_cases": [
+            {"id": "HYBRID-PRECEDENCE-001-P1", "dimension": "visible-summary", "status": "passed", "evidence": "Structured suffixes win in rendered summary."},
+            {"id": "HYBRID-PRECEDENCE-001-P2", "dimension": "edit-notice", "status": "passed", "evidence": "Legacy-only notice is absent for hybrid records."}
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "RG-PRIVACY",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Selective-impact reuse of prior structured privacy coverage plus new focused legacy/hybrid precedence harness; remote exact-head workflow remains pending/no-run."
+        }
+      ]
+    },
+    {
+      "requirement_id": "REQ-DOCUMENTATION",
+      "risk_families": ["documentation", "structural-contract"],
+      "plausible_wrong_implementation": "Documentation can keep the API fields correct while contradicting the required legacy fallback or structured-over-legacy precedence semantics.",
+      "positive_control": {
+        "id": "PC-DOC",
+        "status": "passed",
+        "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+        "evidence": "Both canonical API documentation and ADR now state structured precedence and legacy fallback only when both structured identifiers are absent."
+      },
+      "negative_controls": [
+        {
+          "id": "DOC-LEGACY-PRECEDENCE-001",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "The prior contradictory ADR sentence was removed and API docs now explicitly describe identical fallback/precedence behavior.",
+          "sibling_cases": [
+            {"id": "DOC-LEGACY-PRECEDENCE-001-S1", "dimension": "api-contract", "status": "passed", "evidence": "API_ACCOUNTS.md states structured precedence and legacy-only fallback."}
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "RG-DOC",
+          "status": "passed",
+          "head_sha": "6459eafa14c3b0006b12082cdfe762b0e516ecdc",
+          "evidence": "Connector compare confirms documentation delta is limited to the contract clarification required by the audit findings."
+        }
+      ]
+    }
+  ],
+  "uncovered_requirements": []
+}
