@@ -27,9 +27,21 @@ function testCreateWithSeparateIdentifiers(): void {
     },
   });
 
-  assertEqual(account.agencyIdentifier, "0001", "agency identifier should be trimmed");
-  assertEqual(account.accountIdentifier, "12345-6", "account identifier should be trimmed");
-  assertEqual(account.maskedIdentifier, undefined, "new accounts should not synthesize legacy identifier");
+  assertEqual(
+    account.agencyIdentifier,
+    "0001",
+    "agency identifier should be trimmed",
+  );
+  assertEqual(
+    account.accountIdentifier,
+    "12345-6",
+    "account identifier should be trimmed",
+  );
+  assertEqual(
+    account.maskedIdentifier,
+    undefined,
+    "new accounts should not synthesize legacy identifier",
+  );
 }
 
 function testUpdateAndClearSeparateIdentifiers(): void {
@@ -55,8 +67,16 @@ function testUpdateAndClearSeparateIdentifiers(): void {
     },
   });
 
-  assertEqual(updated.agencyIdentifier, "0002", "agency identifier should update independently");
-  assertEqual(updated.accountIdentifier, undefined, "empty account identifier should clear the value");
+  assertEqual(
+    updated.agencyIdentifier,
+    "0002",
+    "agency identifier should update independently",
+  );
+  assertEqual(
+    updated.accountIdentifier,
+    undefined,
+    "empty account identifier should clear the value",
+  );
 }
 
 function testLegacyIdentifierRemainsCompatible(): void {
@@ -81,9 +101,21 @@ function testLegacyIdentifierRemainsCompatible(): void {
     },
   });
 
-  assertEqual(updated.maskedIdentifier, "Ag **** · Conta **** 7788", "legacy identifier should be preserved");
-  assertEqual(updated.agencyIdentifier, "0003", "legacy account can receive agency identifier");
-  assertEqual(updated.accountIdentifier, "99887-1", "legacy account can receive account identifier");
+  assertEqual(
+    updated.maskedIdentifier,
+    "Ag **** · Conta **** 7788",
+    "legacy identifier should be preserved",
+  );
+  assertEqual(
+    updated.agencyIdentifier,
+    "0003",
+    "legacy account can receive agency identifier",
+  );
+  assertEqual(
+    updated.accountIdentifier,
+    "99887-1",
+    "legacy account can receive account identifier",
+  );
 }
 
 function testIdentifierLengthValidation(): void {
@@ -118,7 +150,10 @@ function testIdentifierLengthValidation(): void {
   );
 }
 
-function assertAccountError(callback: () => unknown, expectedCode: AccountError["code"]): void {
+function assertAccountError(
+  callback: () => unknown,
+  expectedCode: AccountError["code"],
+): void {
   try {
     callback();
   } catch (error) {
@@ -134,6 +169,8 @@ function assertAccountError(callback: () => unknown, expectedCode: AccountError[
 
 function assertEqual<T>(actual: T, expected: T, message: string): void {
   if (actual !== expected) {
-    throw new Error(`${message}: expected ${String(expected)}, received ${String(actual)}`);
+    throw new Error(
+      `${message}: expected ${String(expected)}, received ${String(actual)}`,
+    );
   }
 }

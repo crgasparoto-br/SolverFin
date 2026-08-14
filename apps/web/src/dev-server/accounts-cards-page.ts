@@ -112,7 +112,13 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
 function renderAccountItem(account: AccountRecord): string {
   const institution = findInstitution(account.institutionKey);
   const bankIdentifier = formatAccountIdentifier(account);
-  const search = [account.name, institution.label, bankIdentifier ?? "", account.kind, account.status]
+  const search = [
+    account.name,
+    institution.label,
+    bankIdentifier ?? "",
+    account.kind,
+    account.status,
+  ]
     .join(" ")
     .toLowerCase();
   const editDialogId = `edit-account-dialog-${account.id}`;
@@ -869,7 +875,9 @@ function formatAccountIdentifier(account: AccountRecord): string | undefined {
     return parts.join(" · ");
   }
 
-  return account.maskedIdentifier?.trim() ? "Dados bancários cadastrados" : undefined;
+  return account.maskedIdentifier?.trim()
+    ? "Dados bancários cadastrados"
+    : undefined;
 }
 
 function formatAccountIdentifierPart(
@@ -888,7 +896,11 @@ function formatAccountIdentifierPart(
 }
 
 function renderLegacyAccountIdentifier(account: AccountRecord): string {
-  if (account.agencyIdentifier || account.accountIdentifier || !account.maskedIdentifier?.trim()) {
+  if (
+    account.agencyIdentifier ||
+    account.accountIdentifier ||
+    !account.maskedIdentifier?.trim()
+  ) {
     return "";
   }
 
