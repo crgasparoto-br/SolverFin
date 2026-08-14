@@ -20,6 +20,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`BRAND.md`](./BRAND.md): identidade, tom, experiencia e direcao visual.
 - [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, componentes, provedores de CSS SSR e orientacoes de interface.
 - [`APP_SHELL.md`](./APP_SHELL.md): rotas canonicas, shell autenticado e contrato executavel de composicao de estilos SSR.
+- [`product/INTERFACE_INVENTORY.md`](./product/INTERFACE_INVENTORY.md): inventario navegavel usado como baseline de interface no fechamento da Fase 2.
 - [`REPORTS.md`](./REPORTS.md): visoes, filtros, calculos e estados da area de Relatorios.
 - [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md): contrato funcional, persistencia, privacidade, concorrencia e UX do assistente somente leitura.
 - [`WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md): cobertura esperada de manutencao web.
@@ -27,6 +28,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 ## Arquitetura, seguranca e operacao
 
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md): arquitetura geral, regras tecnicas e integracao do portao SSR ao build/CI.
+- [`RUNBOOK.md`](./RUNBOOK.md): reproducao e criterios do gate final de regressao/baseline da Fase 2.
 - [`CONVENTIONS.md`](./CONVENTIONS.md): convencoes de TypeScript, organizacao, lint e formatacao.
 - [`ENVIRONMENT.md`](./ENVIRONMENT.md): variaveis de ambiente, secrets e validacao segura.
 - [`PRIVACY.md`](./PRIVACY.md): politica operacional de privacidade, retencao, minimizacao e mascaramento.

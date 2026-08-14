@@ -101,7 +101,9 @@ try {
   await navigate(browser.cdp, `${baseUrl}/inbox`);
   await waitFor(
     browser.cdp,
-    `document.body.innerText.includes('origem correção anterior') &&
+    `Array.from(document.querySelectorAll('[data-review-id]')).some((row) =>
+       (row.textContent || '').includes('origem correção anterior')
+     ) &&
      Boolean(document.querySelector('[data-correct-and-approve="${fixtures.correctionSuggestionId}"]'))`,
   );
   const inboxOrigin = await inspectInboxOrigin(browser.cdp, fixtures);

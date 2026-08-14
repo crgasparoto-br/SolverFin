@@ -8,7 +8,7 @@ export function loginExpression() {
         password: "SolverFinDemo!2026"
       })
     });
-    return { ok: response.ok, status: response.status, body: await response.text() };
+    return { ok: response.ok, status: response.status, body: "[redacted]" };
   })()`;
 }
 
