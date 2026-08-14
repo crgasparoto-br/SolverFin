@@ -875,9 +875,7 @@ function formatAccountIdentifier(account: AccountRecord): string | undefined {
     return parts.join(" · ");
   }
 
-  return account.maskedIdentifier?.trim()
-    ? "Dados bancários cadastrados"
-    : undefined;
+  return account.maskedIdentifier?.trim() ? "Dados bancários cadastrados" : undefined;
 }
 
 function formatAccountIdentifierPart(
@@ -896,11 +894,7 @@ function formatAccountIdentifierPart(
 }
 
 function renderLegacyAccountIdentifier(account: AccountRecord): string {
-  if (
-    account.agencyIdentifier ||
-    account.accountIdentifier ||
-    !account.maskedIdentifier?.trim()
-  ) {
+  if (account.agencyIdentifier || account.accountIdentifier || !account.maskedIdentifier?.trim()) {
     return "";
   }
 
