@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { buildCreateAccountPayload, buildUpdateAccountPayload } from "./accounts-router.js";
+import { buildCreateAccountPayload, buildUpdateAccountPayload } from "./account-payloads.js";
 
 testCreatePayloadIgnoresLegacyIdentifier();
 testUpdatePayloadIgnoresLegacyIdentifier();
