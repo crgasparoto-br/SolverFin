@@ -4,6 +4,7 @@ import { buildCreateAccountPayload, buildUpdateAccountPayload } from "./account-
 
 testCreatePayloadIgnoresLegacyIdentifier();
 testUpdatePayloadIgnoresLegacyIdentifier();
+testUpdatePayloadPreservesIdentifierOmissionAndWhitespace();
 
 function testCreatePayloadIgnoresLegacyIdentifier(): void {
   const payload = buildCreateAccountPayload({
@@ -29,4 +30,14 @@ function testUpdatePayloadIgnoresLegacyIdentifier(): void {
   assert.equal(payload.agencyIdentifier, "0002");
   assert.equal(payload.accountIdentifier, "99887-1");
   assert.equal("maskedIdentifier" in payload, false);
+}
+
+function testUpdatePayloadPreservesIdentifierOmissionAndWhitespace(): void {
+  const agencyOnly = buildUpdateAccountPayload({ agencyIdentifier: "   " });
+  const accountOnly = buildUpdateAccountPayload({ accountIdentifier: " 99887-1 " });
+
+  assert.equal(agencyOnly.agencyIdentifier, "   ");
+  assert.equal("accountIdentifier" in agencyOnly, false);
+  assert.equal(accountOnly.accountIdentifier, " 99887-1 ");
+  assert.equal("agencyIdentifier" in accountOnly, false);
 }

@@ -18,6 +18,7 @@ const now = "2026-08-14T12:00:00.000Z";
 
 testCreateWithSeparateIdentifiers();
 testUpdateAndClearSeparateIdentifiers();
+testOmittedIdentifierPreservesSibling();
 testLegacyIdentifierRemainsCompatible();
 testLegacyIdentifierIsReadOnlyAtPayloadBoundary();
 testIdentifierLengthValidation();
@@ -72,6 +73,52 @@ function testUpdateAndClearSeparateIdentifiers(): void {
     updated.accountIdentifier,
     undefined,
     "empty account identifier should clear the value",
+  );
+}
+
+function testOmittedIdentifierPreservesSibling(): void {
+  const account = createAccount({
+    id: "account-identifiers-omission",
+    context: tenant,
+    now,
+    payload: {
+      name: "Conta de teste",
+      kind: "checking",
+      agencyIdentifier: "0001",
+      accountIdentifier: "12345-6",
+    },
+  });
+
+  const accountUpdated = updateAccount({
+    context: tenant,
+    account,
+    now: "2026-08-14T12:11:00.000Z",
+    payload: {
+      accountIdentifier: "54321-0",
+    },
+  });
+
+  assertEqual(
+    accountUpdated.agencyIdentifier,
+    "0001",
+    "omitting agency identifier should preserve the current value",
+  );
+  assertEqual(accountUpdated.accountIdentifier, "54321-0", "account identifier should update");
+
+  const agencyUpdated = updateAccount({
+    context: tenant,
+    account: accountUpdated,
+    now: "2026-08-14T12:12:00.000Z",
+    payload: {
+      agencyIdentifier: "0002",
+    },
+  });
+
+  assertEqual(agencyUpdated.agencyIdentifier, "0002", "agency identifier should update");
+  assertEqual(
+    agencyUpdated.accountIdentifier,
+    "54321-0",
+    "omitting account identifier should preserve the current value",
   );
 }
 
