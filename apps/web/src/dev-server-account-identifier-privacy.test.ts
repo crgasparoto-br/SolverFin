@@ -96,7 +96,9 @@ function accountSearch(html: string): string {
 }
 
 function accountEditDialog(html: string): string {
-  const value = html.match(/<dialog id="edit-account-dialog-account-test">([\s\S]*?)<\/dialog>/)?.[1];
+  const value = html.match(
+    /<dialog id="edit-account-dialog-account-test">([\s\S]*?)<\/dialog>/,
+  )?.[1];
   assert.ok(value !== undefined);
 
   return value;

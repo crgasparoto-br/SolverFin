@@ -30,19 +30,16 @@ function protectAccountArticle(article: string): string {
     safeEscaped ? ` · ${safeEscaped}</p>` : "</p>",
   );
 
-  protectedArticle = protectedArticle.replace(
-    /data-search="([^"]*)"/,
-    (_match, search: string) => {
-      const currentSearchValue = escapeHtml(currentIdentifier.toLowerCase());
-      const safeSearchValue = safeIdentifier ? escapeHtml(safeIdentifier.toLowerCase()) : "";
-      const protectedSearch = search
-        .replace(currentSearchValue, safeSearchValue)
-        .replace(/\s{2,}/g, " ")
-        .trim();
+  protectedArticle = protectedArticle.replace(/data-search="([^"]*)"/, (_match, search: string) => {
+    const currentSearchValue = escapeHtml(currentIdentifier.toLowerCase());
+    const safeSearchValue = safeIdentifier ? escapeHtml(safeIdentifier.toLowerCase()) : "";
+    const protectedSearch = search
+      .replace(currentSearchValue, safeSearchValue)
+      .replace(/\s{2,}/g, " ")
+      .trim();
 
-      return `data-search="${protectedSearch}"`;
-    },
-  );
+    return `data-search="${protectedSearch}"`;
+  });
 
   return protectedArticle;
 }
