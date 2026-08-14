@@ -4,10 +4,7 @@ import type { TenantContext } from "@solverfin/domain";
 
 import { buildUpdateAccountPayload } from "./account-payloads.js";
 import { closePool, query } from "./db.js";
-import {
-  createAccountForContext,
-  updateAccountForContext,
-} from "./repositories/accounts.js";
+import { createAccountForContext, updateAccountForContext } from "./repositories/accounts.js";
 
 const context: TenantContext = {
   organizationId: "22222222-2222-4222-8222-222222222222",
@@ -36,11 +33,7 @@ async function main(): Promise<void> {
   const agencyOnlyPayload = buildUpdateAccountPayload({ agencyIdentifier: " 0002 " });
   assert.equal("accountIdentifier" in agencyOnlyPayload, false);
 
-  const afterAgencyUpdate = await updateAccountForContext(
-    context,
-    account.id,
-    agencyOnlyPayload,
-  );
+  const afterAgencyUpdate = await updateAccountForContext(context, account.id, agencyOnlyPayload);
   assert.equal(afterAgencyUpdate.agencyIdentifier, "0002");
   assert.equal(afterAgencyUpdate.accountIdentifier, "12345-6");
   assert.deepEqual(await readStoredIdentifiers(account.id), {
@@ -51,11 +44,7 @@ async function main(): Promise<void> {
   const accountOnlyPayload = buildUpdateAccountPayload({ accountIdentifier: " 99887-1 " });
   assert.equal("agencyIdentifier" in accountOnlyPayload, false);
 
-  const afterAccountUpdate = await updateAccountForContext(
-    context,
-    account.id,
-    accountOnlyPayload,
-  );
+  const afterAccountUpdate = await updateAccountForContext(context, account.id, accountOnlyPayload);
   assert.equal(afterAccountUpdate.agencyIdentifier, "0002");
   assert.equal(afterAccountUpdate.accountIdentifier, "99887-1");
   assert.deepEqual(await readStoredIdentifiers(account.id), {
@@ -66,11 +55,7 @@ async function main(): Promise<void> {
   const clearAgencyPayload = buildUpdateAccountPayload({ agencyIdentifier: "   " });
   assert.equal("accountIdentifier" in clearAgencyPayload, false);
 
-  const afterAgencyClear = await updateAccountForContext(
-    context,
-    account.id,
-    clearAgencyPayload,
-  );
+  const afterAgencyClear = await updateAccountForContext(context, account.id, clearAgencyPayload);
   assert.equal(afterAgencyClear.agencyIdentifier, undefined);
   assert.equal(afterAgencyClear.accountIdentifier, "99887-1");
   assert.deepEqual(await readStoredIdentifiers(account.id), {
