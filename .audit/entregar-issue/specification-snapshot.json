@@ -1,1 +1,20 @@
-{"schema_version":1,"repository":"crgasparoto-br/SolverFin","issue":569,"created_at":"2026-08-14T13:18:11.941345+00:00","primary_source_id":"SRC-ISSUE","sources":[{"id":"SRC-ISSUE","kind":"issue-body","path":"specification-sources/SRC-ISSUE.txt","locator":"/mnt/data/solverfin569/input/issue-569.txt","sha256":"7faef189ebaa2fa856aa8ffa10fb13d3d21bc96a93a9f09bb1d276f9ae1524f0","textual":true,"extract_source_id":null,"required":true,"line_count":73},{"id":"SRC-TRACKER","kind":"other-text","path":"specification-sources/SRC-TRACKER.txt","locator":"/mnt/data/solverfin569/input/tracker-560.txt","sha256":"b51c0658f30d008ed543fe64a65917bfd238a4748e330ac3fb39c4a877536292","textual":true,"extract_source_id":null,"required":true,"line_count":16}]}
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 587,
+  "created_at": "2026-08-14T18:20:03.207674+00:00",
+  "primary_source_id": "SRC-ISSUE",
+  "sources": [
+    {
+      "id": "SRC-ISSUE",
+      "kind": "issue-body",
+      "path": "specification-sources/SRC-ISSUE.txt",
+      "locator": "/mnt/data/solverfin587-handoff/issue-587.txt",
+      "sha256": "2572bef80a4dee8907e9c11c1d3baed7e5b768da7c37345a565d0c5517e996de",
+      "textual": true,
+      "extract_source_id": null,
+      "required": true,
+      "line_count": 185
+    }
+  ]
+}
