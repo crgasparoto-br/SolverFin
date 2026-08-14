@@ -151,6 +151,8 @@ export interface Account extends Traceable, TenantScoped {
   status: AccountStatus;
   currency: string;
   openingBalanceMinor: number;
+  agencyIdentifier?: string | undefined;
+  accountIdentifier?: string | undefined;
   maskedIdentifier?: string;
   institutionKey?: FinancialInstitutionKey | undefined;
 }

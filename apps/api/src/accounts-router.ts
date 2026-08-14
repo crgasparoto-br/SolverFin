@@ -162,6 +162,12 @@ async function createAccountHandler(
       ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
       : {}),
     ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+    ...(body.agencyIdentifier !== undefined
+      ? { agencyIdentifier: String(body.agencyIdentifier) }
+      : {}),
+    ...(body.accountIdentifier !== undefined
+      ? { accountIdentifier: String(body.accountIdentifier) }
+      : {}),
     ...(body.maskedIdentifier !== undefined
       ? { maskedIdentifier: String(body.maskedIdentifier) }
       : {}),
@@ -195,6 +201,12 @@ async function updateAccountHandler(
       ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
       : {}),
     ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+    ...(body.agencyIdentifier !== undefined
+      ? { agencyIdentifier: String(body.agencyIdentifier) }
+      : {}),
+    ...(body.accountIdentifier !== undefined
+      ? { accountIdentifier: String(body.accountIdentifier) }
+      : {}),
     ...(body.maskedIdentifier !== undefined
       ? { maskedIdentifier: String(body.maskedIdentifier) }
       : {}),

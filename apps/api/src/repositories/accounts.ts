@@ -27,6 +27,8 @@ interface AccountRow {
   status: string;
   currency: string;
   openingBalanceMinor: number;
+  agencyIdentifier: string | null;
+  accountIdentifier: string | null;
   maskedIdentifier: string | null;
   institutionKey: string | null;
   createdAt: Date;
@@ -36,7 +38,7 @@ interface AccountRow {
 }
 
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "name", "kind", "status",
-  "currency", "openingBalanceMinor", "maskedIdentifier", "institutionKey", "createdAt", "updatedAt",
+  "currency", "openingBalanceMinor", "agencyIdentifier", "accountIdentifier", "maskedIdentifier", "institutionKey", "createdAt", "updatedAt",
   "createdByUserId", "updatedByUserId"`;
 
 export async function listAccountsForContext(
@@ -76,8 +78,8 @@ export async function createAccountForContext(
   await query(
     `insert into "Account"
       ("id", "organizationId", "financialProfileId", "name", "kind", "status", "currency",
-       "openingBalanceMinor", "maskedIdentifier", "institutionKey", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+       "openingBalanceMinor", "agencyIdentifier", "accountIdentifier", "maskedIdentifier", "institutionKey", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
     [
       account.id,
       account.organizationId,
@@ -87,6 +89,8 @@ export async function createAccountForContext(
       account.status.toUpperCase(),
       account.currency,
       account.openingBalanceMinor,
+      account.agencyIdentifier ?? null,
+      account.accountIdentifier ?? null,
       account.maskedIdentifier ?? null,
       account.institutionKey ?? null,
       account.createdAt,
@@ -183,7 +187,8 @@ async function persistAccountUpdate(account: Account): Promise<void> {
   await query(
     `update "Account" set
       "name" = $2, "kind" = $3, "status" = $4, "currency" = $5, "openingBalanceMinor" = $6,
-      "maskedIdentifier" = $7, "institutionKey" = $8, "updatedAt" = $9, "updatedByUserId" = $10
+      "agencyIdentifier" = $7, "accountIdentifier" = $8, "maskedIdentifier" = $9, "institutionKey" = $10,
+      "updatedAt" = $11, "updatedByUserId" = $12
      where "id" = $1`,
     [
       account.id,
@@ -192,6 +197,8 @@ async function persistAccountUpdate(account: Account): Promise<void> {
       account.status.toUpperCase(),
       account.currency,
       account.openingBalanceMinor,
+      account.agencyIdentifier ?? null,
+      account.accountIdentifier ?? null,
       account.maskedIdentifier ?? null,
       account.institutionKey ?? null,
       account.updatedAt,
@@ -282,6 +289,14 @@ function mapAccountRow(row: AccountRow): Account {
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
+
+  if (row.agencyIdentifier !== null) {
+    account.agencyIdentifier = row.agencyIdentifier;
+  }
+
+  if (row.accountIdentifier !== null) {
+    account.accountIdentifier = row.accountIdentifier;
+  }
 
   if (row.maskedIdentifier !== null) {
     account.maskedIdentifier = row.maskedIdentifier;

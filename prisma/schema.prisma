@@ -354,6 +354,8 @@ model Account {
   status              RecordStatus @default(ACTIVE)
   currency            String       @default("BRL") @db.Char(3)
   openingBalanceMinor Int          @default(0)
+  agencyIdentifier    String?      @db.VarChar(80)
+  accountIdentifier   String?      @db.VarChar(80)
   maskedIdentifier    String?      @db.VarChar(80)
   institutionKey      String?      @db.VarChar(80)
   createdByUserId     String?      @db.Uuid
@@ -443,11 +445,11 @@ model Category {
   parentCategoryId   String?      @db.Uuid
   name               String       @db.VarChar(160)
   kind               CategoryKind
-  status             RecordStatus @default(ACTIVE)
-  createdByUserId    String?      @db.Uuid
-  updatedByUserId    String?      @db.Uuid
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  status              RecordStatus @default(ACTIVE)
+  createdByUserId     String?      @db.Uuid
+  updatedByUserId     String?      @db.Uuid
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
   financialProfile    FinancialProfile    @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   parentCategory      Category?           @relation("CategoryTree", fields: [parentCategoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)

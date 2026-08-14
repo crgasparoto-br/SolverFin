@@ -22,6 +22,8 @@ export type AccountErrorCode =
   | "ACCOUNT_CURRENCY_INVALID"
   | "ACCOUNT_OPENING_BALANCE_INVALID"
   | "ACCOUNT_OPENING_BALANCE_LOCKED"
+  | "ACCOUNT_AGENCY_IDENTIFIER_INVALID"
+  | "ACCOUNT_IDENTIFIER_INVALID"
   | "ACCOUNT_INSTITUTION_KEY_INVALID";
 
 export class AccountError extends Error {
@@ -47,6 +49,8 @@ export interface CreateAccountPayload {
   kind: AccountKind;
   openingBalanceMinor?: number;
   currency?: string;
+  agencyIdentifier?: string;
+  accountIdentifier?: string;
   maskedIdentifier?: string;
   institutionKey?: string;
 }
@@ -65,6 +69,8 @@ export interface UpdateAccountPayload {
   status?: AccountStatus;
   openingBalanceMinor?: number;
   currency?: string;
+  agencyIdentifier?: string;
+  accountIdentifier?: string;
   maskedIdentifier?: string;
   institutionKey?: string;
   organizationId?: EntityId;
@@ -75,7 +81,11 @@ export interface ListAccountsFilters {
   status?: AccountStatus | "all";
 }
 
-type AccountUpdate = Partial<Omit<Account, "institutionKey">> & {
+type AccountUpdate = Partial<
+  Omit<Account, "institutionKey" | "agencyIdentifier" | "accountIdentifier">
+> & {
+  agencyIdentifier?: string | undefined;
+  accountIdentifier?: string | undefined;
   institutionKey?: FinancialInstitutionKey | undefined;
 };
 
@@ -86,6 +96,7 @@ const ALLOWED_ACCOUNT_KINDS: readonly AccountKind[] = [
   "investment",
   "other",
 ];
+const MAX_ACCOUNT_IDENTIFIER_LENGTH = 80;
 
 export function createAccount(input: CreateAccountInput): Account {
   const payload = applyTenantScope(input.context, input.payload);
@@ -104,7 +115,25 @@ export function createAccount(input: CreateAccountInput): Account {
     updatedByUserId: input.context.userId,
     ...(payload.maskedIdentifier ? { maskedIdentifier: payload.maskedIdentifier.trim() } : {}),
   };
+  const agencyIdentifier = normalizeOptionalAccountIdentifier(
+    payload.agencyIdentifier,
+    "ACCOUNT_AGENCY_IDENTIFIER_INVALID",
+    "Agency identifier",
+  );
+  const accountIdentifier = normalizeOptionalAccountIdentifier(
+    payload.accountIdentifier,
+    "ACCOUNT_IDENTIFIER_INVALID",
+    "Account identifier",
+  );
   const institutionKey = validateOptionalInstitutionKey(payload.institutionKey);
+
+  if (agencyIdentifier !== undefined) {
+    account.agencyIdentifier = agencyIdentifier;
+  }
+
+  if (accountIdentifier !== undefined) {
+    account.accountIdentifier = accountIdentifier;
+  }
 
   if (institutionKey !== undefined) {
     account.institutionKey = institutionKey;
@@ -180,6 +209,22 @@ function buildOptionalAccountUpdate(payload: UpdateAccountPayload): AccountUpdat
 
   if (payload.currency !== undefined) {
     update.currency = normalizeCurrency(payload.currency);
+  }
+
+  if (payload.agencyIdentifier !== undefined) {
+    update.agencyIdentifier = normalizeOptionalAccountIdentifier(
+      payload.agencyIdentifier,
+      "ACCOUNT_AGENCY_IDENTIFIER_INVALID",
+      "Agency identifier",
+    );
+  }
+
+  if (payload.accountIdentifier !== undefined) {
+    update.accountIdentifier = normalizeOptionalAccountIdentifier(
+      payload.accountIdentifier,
+      "ACCOUNT_IDENTIFIER_INVALID",
+      "Account identifier",
+    );
   }
 
   if (payload.maskedIdentifier !== undefined) {
@@ -258,6 +303,27 @@ function validateOpeningBalance(openingBalanceMinor: number): number {
   }
 
   return openingBalanceMinor;
+}
+
+function normalizeOptionalAccountIdentifier(
+  value: string | undefined,
+  errorCode: "ACCOUNT_AGENCY_IDENTIFIER_INVALID" | "ACCOUNT_IDENTIFIER_INVALID",
+  fieldName: string,
+): string | undefined {
+  const normalizedValue = value?.trim();
+
+  if (!normalizedValue) {
+    return undefined;
+  }
+
+  if (normalizedValue.length > MAX_ACCOUNT_IDENTIFIER_LENGTH) {
+    throw new AccountError(
+      errorCode,
+      `${fieldName} must have at most ${MAX_ACCOUNT_IDENTIFIER_LENGTH} characters.`,
+    );
+  }
+
+  return normalizedValue;
 }
 
 function validateOptionalInstitutionKey(
