@@ -156,8 +156,15 @@ jobs:
           cp /tmp/solverfin-dev.log artifacts/statement-visual/server.log || true
           cp /tmp/solverfin-productive-auth-web.log artifacts/statement-visual/productive-auth-web.log || true
 
-      - name: Upload visual evidence
+      - name: Assert visual evidence is secret-free
+        id: artifact_safety
         if: always()
+        run: |
+          node --test scripts/statement-visual/assert-artifact-safety.test.mjs
+          node scripts/statement-visual/assert-artifact-safety.mjs artifacts/statement-visual
+
+      - name: Upload visual evidence
+        if: ${{ always() && steps.artifact_safety.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: statement-visual-evidence-${{ github.sha }}
@@ -166,7 +173,7 @@ jobs:
           retention-days: 30
 
       - name: Upload issue 473 diagnostic
-        if: always()
+        if: ${{ always() && steps.artifact_safety.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: issue-473-diagnostic-${{ github.sha }}
