@@ -12,6 +12,8 @@ const failures = [];
 const captures = [];
 const interactions = {};
 
+assertDocumentOverflowDetector();
+
 if (!chromePath) throw new Error("CHROME_BIN is required for issue 568 visual validation.");
 
 await mkdir(outputDir, { recursive: true });
@@ -402,7 +404,7 @@ async function clickActionAndWait(cdp, selector, condition) {
 }
 
 async function inspectAssistant(cdp, scenario) {
-  return evaluate(
+  const inspection = await evaluate(
     cdp,
     `(() => {
       const root = document.querySelector('[data-financial-assistant]');
@@ -423,12 +425,29 @@ async function inspectAssistant(cdp, scenario) {
           style.visibility !== 'hidden'
         );
       };
+      const viewportWidth = document.documentElement.clientWidth;
       const fitsViewport = (element) => {
         if (!element) return false;
         const rect = element.getBoundingClientRect();
-        const viewportWidth = document.documentElement.clientWidth;
         return rect.left >= -1 && rect.right <= viewportWidth + 1;
       };
+      const overflowingElements = Array.from(document.body.querySelectorAll('*'))
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          const boundaryOverflow = rect.left < -1 || rect.right > viewportWidth + 1;
+          const contentOverflow = element.scrollWidth > element.clientWidth + 1;
+          if (!boundaryOverflow && !contentOverflow) return null;
+          return {
+            tag: element.tagName.toLowerCase(),
+            className: typeof element.className === 'string' ? element.className.slice(0, 120) : '',
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            clientWidth: element.clientWidth,
+            scrollWidth: element.scrollWidth
+          };
+        })
+        .filter(Boolean)
+        .slice(0, 10);
       return {
         scenario: ${JSON.stringify(scenario)},
         routeReady: visible(root) && visible(layout),
@@ -437,7 +456,8 @@ async function inspectAssistant(cdp, scenario) {
         composerVisible: visible(composer),
         actionsVisible: visible(actions),
         statusVisible: visible(status),
-        bodyFitsViewport: fitsViewport(root) && fitsViewport(layout) && fitsViewport(composer),
+        selectedElementsFitViewport: fitsViewport(root) && fitsViewport(layout) && fitsViewport(composer),
+        overflowingElements,
         singleColumn: layout
           ? getComputedStyle(layout).gridTemplateColumns.trim().split(/\s+/).length === 1
           : false,
@@ -445,12 +465,51 @@ async function inspectAssistant(cdp, scenario) {
         viewport: {
           width: window.innerWidth,
           height: window.innerHeight,
-          clientWidth: document.documentElement.clientWidth,
+          clientWidth: viewportWidth,
           documentWidth: document.documentElement.scrollWidth
         }
       };
     })()`,
   );
+  const overflow = assessDocumentHorizontalOverflow(inspection.viewport);
+  return {
+    ...inspection,
+    ...overflow,
+    bodyFitsViewport: inspection.selectedElementsFitViewport && overflow.documentFitsViewport,
+  };
+}
+
+function assessDocumentHorizontalOverflow(viewport) {
+  const clientWidth = Number(viewport?.clientWidth);
+  const documentWidth = Number(viewport?.documentWidth);
+  if (
+    !Number.isFinite(clientWidth) ||
+    !Number.isFinite(documentWidth) ||
+    clientWidth < 0 ||
+    documentWidth < 0
+  ) {
+    return { documentFitsViewport: false, horizontalOverflowPx: null };
+  }
+  const horizontalOverflowPx = Math.max(0, documentWidth - clientWidth);
+  return {
+    documentFitsViewport: horizontalOverflowPx === 0,
+    horizontalOverflowPx,
+  };
+}
+
+function assertDocumentOverflowDetector() {
+  assert.deepEqual(assessDocumentHorizontalOverflow({ clientWidth: 1366, documentWidth: 1372 }), {
+    documentFitsViewport: false,
+    horizontalOverflowPx: 6,
+  });
+  assert.deepEqual(assessDocumentHorizontalOverflow({ clientWidth: 375, documentWidth: 375 }), {
+    documentFitsViewport: true,
+    horizontalOverflowPx: 0,
+  });
+  assert.deepEqual(assessDocumentHorizontalOverflow({ clientWidth: 668, documentWidth: 669 }), {
+    documentFitsViewport: false,
+    horizontalOverflowPx: 1,
+  });
 }
 
 async function dispatchEnter(cdp) {

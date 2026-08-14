@@ -265,7 +265,7 @@ function financialAssistantPageStyles(): string {
     .assistant-empty[data-state="error"] { color:#991b1b; }
     .assistant-help { padding:16px; position:sticky; top:16px; }
     .assistant-prompts { display:grid; gap:8px; margin-top:12px; }
-    .assistant-prompt { text-align:left; width:100%; }
+    .assistant-prompt { text-align:left; width:100%; white-space:normal; overflow-wrap:anywhere; }
     .assistant-safety-note { margin:14px 0 0; color:#64748b; font-size:.82rem; line-height:1.45; }
     .assistant-composer { grid-column:1 / -1; padding:16px; }
     .assistant-composer label { display:block; font-weight:700; margin-bottom:7px; }
