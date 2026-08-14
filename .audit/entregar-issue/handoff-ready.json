@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-14T18:24:14.887386+00:00",
+  "created_at": "2026-08-14T19:17:41.463469+00:00",
   "identity": {
-    "head_sha": "5332bad6a1d5c8fd93b4c095c247a7cc3efe83d6",
-    "material_head_sha": "5332bad6a1d5c8fd93b4c095c247a7cc3efe83d6",
+    "head_sha": "c62ee6300982f6edfdd53c7282286ce88b94ea9b",
+    "material_head_sha": "c62ee6300982f6edfdd53c7282286ce88b94ea9b",
     "base_sha": "12b2c663e1df7c538fd6bc50b6eb4b8866b189c4",
-    "merge_preview_sha": "dd23b26c4edd8639054ab1d0fd91f9bf5b17cfc8",
-    "material_merge_preview_sha": "dd23b26c4edd8639054ab1d0fd91f9bf5b17cfc8"
+    "merge_preview_sha": "0d4f2aaca0d59ce2aa8659fc046af05c902d2265",
+    "material_merge_preview_sha": "0d4f2aaca0d59ce2aa8659fc046af05c902d2265"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -20,8 +20,7 @@
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/risk-saturation.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
-      ".audit/entregar-issue/specification-sources/SRC-TRACKER.txt"
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt"
     ]
   },
   "contract_version": "2026-08-06.2",
@@ -48,19 +47,19 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "2e4f94d8af9c2bf9a9de1cfd5acf29c014637e7be4564707fdc72ce903a1c0da"
+      "sha256": "5e7f80c53d0f0ceb21d4fae4601359f3c2e66f62f9555cd0a0544fe0d1783732"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "bd1fac5e067ac8464959b81a7dfdbabd714c49a94f7e4fe3730bfa2b9346ed80"
+      "sha256": "45c42d594abf910f0ed825e4d1cb244f89df7f1cb90faa4687d90130ec429b23"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "adb8fea3ec1174000f653e4c0169efd69a48526720892961dded3041c690eec3"
+      "sha256": "f63b343d78c632d0b898a7371d06324ce2d30bc9b7014965f8e043710865c7eb"
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure.json",
-      "sha256": "ad9492b2fabbc68aa41de824959d58a00f853f82181f5252b87fac9140fbbf4c"
+      "sha256": "d33ec78340ee78c5a855854ea895511e5408c47abea6d13864408d953550de3a"
     },
     "learning_closure": {
       "name": "learning-closure.json",
