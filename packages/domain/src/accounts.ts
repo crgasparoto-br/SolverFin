@@ -51,7 +51,6 @@ export interface CreateAccountPayload {
   currency?: string;
   agencyIdentifier?: string;
   accountIdentifier?: string;
-  maskedIdentifier?: string;
   institutionKey?: string;
 }
 
@@ -71,7 +70,6 @@ export interface UpdateAccountPayload {
   currency?: string;
   agencyIdentifier?: string;
   accountIdentifier?: string;
-  maskedIdentifier?: string;
   institutionKey?: string;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
@@ -82,7 +80,7 @@ export interface ListAccountsFilters {
 }
 
 type AccountUpdate = Partial<
-  Omit<Account, "institutionKey" | "agencyIdentifier" | "accountIdentifier">
+  Omit<Account, "institutionKey" | "agencyIdentifier" | "accountIdentifier" | "maskedIdentifier">
 > & {
   agencyIdentifier?: string | undefined;
   accountIdentifier?: string | undefined;
@@ -113,7 +111,6 @@ export function createAccount(input: CreateAccountInput): Account {
     updatedAt: input.now,
     createdByUserId: input.context.userId,
     updatedByUserId: input.context.userId,
-    ...(payload.maskedIdentifier ? { maskedIdentifier: payload.maskedIdentifier.trim() } : {}),
   };
   const agencyIdentifier = normalizeOptionalAccountIdentifier(
     payload.agencyIdentifier,
@@ -225,10 +222,6 @@ function buildOptionalAccountUpdate(payload: UpdateAccountPayload): AccountUpdat
       "ACCOUNT_IDENTIFIER_INVALID",
       "Account identifier",
     );
-  }
-
-  if (payload.maskedIdentifier !== undefined) {
-    update.maskedIdentifier = payload.maskedIdentifier.trim();
   }
 
   if (payload.institutionKey !== undefined) {

@@ -3,7 +3,9 @@ import {
   TenantError,
   type AccountKind,
   type AccountStatus,
+  type CreateAccountPayload,
   type TenantContext,
+  type UpdateAccountPayload,
 } from "@solverfin/domain";
 
 import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
@@ -155,24 +157,7 @@ async function createAccountHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const account = await createAccountForContext(context, {
-    name: String(body.name ?? ""),
-    kind: body.kind as AccountKind,
-    ...(body.openingBalanceMinor !== undefined
-      ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
-      : {}),
-    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    ...(body.agencyIdentifier !== undefined
-      ? { agencyIdentifier: String(body.agencyIdentifier) }
-      : {}),
-    ...(body.accountIdentifier !== undefined
-      ? { accountIdentifier: String(body.accountIdentifier) }
-      : {}),
-    ...(body.maskedIdentifier !== undefined
-      ? { maskedIdentifier: String(body.maskedIdentifier) }
-      : {}),
-    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
-  });
+  const account = await createAccountForContext(context, buildCreateAccountPayload(body));
 
   return json(201, { account });
 }
@@ -193,25 +178,11 @@ async function updateAccountHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const account = await updateAccountForContext(context, requireParam(match, "accountId"), {
-    ...(body.name !== undefined ? { name: String(body.name) } : {}),
-    ...(body.kind !== undefined ? { kind: body.kind as AccountKind } : {}),
-    ...(body.status !== undefined ? { status: body.status as AccountStatus } : {}),
-    ...(body.openingBalanceMinor !== undefined
-      ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
-      : {}),
-    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    ...(body.agencyIdentifier !== undefined
-      ? { agencyIdentifier: String(body.agencyIdentifier) }
-      : {}),
-    ...(body.accountIdentifier !== undefined
-      ? { accountIdentifier: String(body.accountIdentifier) }
-      : {}),
-    ...(body.maskedIdentifier !== undefined
-      ? { maskedIdentifier: String(body.maskedIdentifier) }
-      : {}),
-    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
-  });
+  const account = await updateAccountForContext(
+    context,
+    requireParam(match, "accountId"),
+    buildUpdateAccountPayload(body),
+  );
 
   return json(200, { account });
 }
@@ -236,6 +207,43 @@ async function deleteAccountHandler(
   await deleteAccountForContext(context, accountId);
 
   return json(200, { accountId });
+}
+
+export function buildCreateAccountPayload(body: Record<string, unknown>): CreateAccountPayload {
+  return {
+    name: String(body.name ?? ""),
+    kind: body.kind as AccountKind,
+    ...(body.openingBalanceMinor !== undefined
+      ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
+      : {}),
+    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+    ...(body.agencyIdentifier !== undefined
+      ? { agencyIdentifier: String(body.agencyIdentifier) }
+      : {}),
+    ...(body.accountIdentifier !== undefined
+      ? { accountIdentifier: String(body.accountIdentifier) }
+      : {}),
+    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
+  };
+}
+
+export function buildUpdateAccountPayload(body: Record<string, unknown>): UpdateAccountPayload {
+  return {
+    ...(body.name !== undefined ? { name: String(body.name) } : {}),
+    ...(body.kind !== undefined ? { kind: body.kind as AccountKind } : {}),
+    ...(body.status !== undefined ? { status: body.status as AccountStatus } : {}),
+    ...(body.openingBalanceMinor !== undefined
+      ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
+      : {}),
+    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+    ...(body.agencyIdentifier !== undefined
+      ? { agencyIdentifier: String(body.agencyIdentifier) }
+      : {}),
+    ...(body.accountIdentifier !== undefined
+      ? { accountIdentifier: String(body.accountIdentifier) }
+      : {}),
+    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
+  };
 }
 
 function requireObjectBody(body: unknown): Record<string, unknown> {

@@ -20,14 +20,14 @@ Campos principais:
 - `openingBalanceMinor`;
 - `agencyIdentifier` opcional, para a agência;
 - `accountIdentifier` opcional, para o número/identificador da conta;
-- `maskedIdentifier` opcional e mantido apenas para compatibilidade com cadastros legados;
+- `maskedIdentifier` opcional e mantido apenas para leitura de cadastros legados;
 - `institutionKey` opcional;
 - `createdAt` e `updatedAt`;
 - `createdByUserId` e `updatedByUserId`.
 
 `agencyIdentifier` e `accountIdentifier` são tratados de forma independente. Quando informados, ambos são normalizados com `trim`; string vazia representa ausência do valor. O servidor não concatena esses campos em `maskedIdentifier`.
 
-Cadastros históricos que possuam somente `maskedIdentifier` continuam legíveis. O sistema não tenta separar automaticamente agência e conta a partir do texto legado, porque o formato histórico pode ser ambíguo.
+Cadastros históricos que possuam somente `maskedIdentifier` continuam legíveis. O sistema não tenta separar automaticamente agência e conta a partir do texto legado, porque o formato histórico pode ser ambíguo. `maskedIdentifier` não faz parte dos payloads graváveis de criação ou atualização de contas.
 
 Tipos iniciais aceitos:
 
@@ -106,8 +106,9 @@ Campos opcionais:
 - `currency`;
 - `agencyIdentifier`;
 - `accountIdentifier`;
-- `institutionKey`;
-- `maskedIdentifier`, somente para compatibilidade com clientes legados.
+- `institutionKey`.
+
+`maskedIdentifier` não é aceito como campo gravável. Quando enviado por um cliente antigo, ele não é mapeado para o payload de domínio nem altera o valor legado persistido.
 
 Padrões:
 
@@ -117,7 +118,7 @@ Padrões:
 
 ### PATCH /api/accounts/:accountId
 
-Permite atualizar nome, tipo, status, moeda, agência, conta, instituição e saldo inicial. `agencyIdentifier` e `accountIdentifier` podem ser alterados ou removidos independentemente. O campo `maskedIdentifier` continua aceito apenas para compatibilidade legada.
+Permite atualizar nome, tipo, status, moeda, agência, conta, instituição e saldo inicial. `agencyIdentifier` e `accountIdentifier` podem ser alterados ou removidos independentemente. `maskedIdentifier` permanece somente leitura; atualizações de outros campos preservam o valor legado existente.
 
 Quando a conta já possui movimentações, o campo `openingBalanceMinor` é idempotente:
 
@@ -146,7 +147,7 @@ Exclui apenas contas sem uso ou vínculos financeiros. Contas já utilizadas dev
 
 ## Privacidade dos identificadores
 
-Agência e conta são dados financeiros sensíveis. A listagem deve exibir apenas uma forma minimizada suficiente para reconhecimento, por exemplo os últimos caracteres. O valor completo pode aparecer no formulário de edição, onde é necessário para corrigir o cadastro.
+Agência e conta são dados financeiros sensíveis. A listagem deve exibir apenas uma forma minimizada suficiente para reconhecimento, por exemplo os últimos caracteres. Quando um identificador for curto demais para permitir exibição parcial, ele não deve aparecer na listagem nem em `data-search`. O valor completo pode aparecer no formulário de edição, onde é necessário para corrigir o cadastro.
 
 Logs, fixtures, testes e documentação não devem conter identificadores financeiros reais.
 
@@ -177,7 +178,10 @@ O pacote `@solverfin/domain` e a integração da API cobrem:
 
 - criação de conta;
 - separação, normalização e remoção independente de agência e conta;
-- compatibilidade com `maskedIdentifier` legado sem parsing heurístico;
+- compatibilidade de leitura com `maskedIdentifier` legado sem parsing heurístico;
+- bloqueio de escrita de `maskedIdentifier` nos payloads de criação e atualização;
+- preservação do identificador legado em atualizações não relacionadas;
+- minimização de identificadores em listagem e busca, inclusive para valores curtos;
 - validação de nome, moeda e identificadores;
 - listagem filtrada por tenant e status;
 - edição e arquivamento de conta;

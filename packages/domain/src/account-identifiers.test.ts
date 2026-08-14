@@ -1,5 +1,12 @@
+import type { Account } from "./index.js";
 import type { TenantContext } from "./tenant.js";
-import { AccountError, createAccount, updateAccount } from "./accounts.js";
+import {
+  AccountError,
+  createAccount,
+  updateAccount,
+  type CreateAccountPayload,
+  type UpdateAccountPayload,
+} from "./accounts.js";
 
 const tenant: TenantContext = {
   userId: "user-demo",
@@ -12,6 +19,7 @@ const now = "2026-08-14T12:00:00.000Z";
 testCreateWithSeparateIdentifiers();
 testUpdateAndClearSeparateIdentifiers();
 testLegacyIdentifierRemainsCompatible();
+testLegacyIdentifierIsReadOnlyAtPayloadBoundary();
 testIdentifierLengthValidation();
 
 function testCreateWithSeparateIdentifiers(): void {
@@ -68,16 +76,19 @@ function testUpdateAndClearSeparateIdentifiers(): void {
 }
 
 function testLegacyIdentifierRemainsCompatible(): void {
-  const account = createAccount({
+  const baseAccount = createAccount({
     id: "account-identifiers-legacy",
     context: tenant,
     now,
     payload: {
       name: "Conta legada",
       kind: "checking",
-      maskedIdentifier: "Ag **** · Conta **** 7788",
     },
   });
+  const account: Account = {
+    ...baseAccount,
+    maskedIdentifier: "Ag **** · Conta **** 7788",
+  };
 
   const updated = updateAccount({
     context: tenant,
@@ -92,7 +103,7 @@ function testLegacyIdentifierRemainsCompatible(): void {
   assertEqual(
     updated.maskedIdentifier,
     "Ag **** · Conta **** 7788",
-    "legacy identifier should be preserved",
+    "unrelated updates should preserve the legacy identifier",
   );
   assertEqual(updated.agencyIdentifier, "0003", "legacy account can receive agency identifier");
   assertEqual(
@@ -100,6 +111,22 @@ function testLegacyIdentifierRemainsCompatible(): void {
     "99887-1",
     "legacy account can receive account identifier",
   );
+}
+
+function testLegacyIdentifierIsReadOnlyAtPayloadBoundary(): void {
+  const createPayload: CreateAccountPayload = {
+    name: "Conta de teste",
+    kind: "checking",
+    // @ts-expect-error maskedIdentifier is legacy read-only data.
+    maskedIdentifier: "legacy-value",
+  };
+  const updatePayload: UpdateAccountPayload = {
+    // @ts-expect-error maskedIdentifier is legacy read-only data.
+    maskedIdentifier: "legacy-value",
+  };
+
+  void createPayload;
+  void updatePayload;
 }
 
 function testIdentifierLengthValidation(): void {
