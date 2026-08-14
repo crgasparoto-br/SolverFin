@@ -5,10 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { loginExpression } from "./fixtures.mjs";
-import {
-  assertArtifactDirectorySafe,
-  findSensitiveEvidence,
-} from "./assert-artifact-safety.mjs";
+import { assertArtifactDirectorySafe, findSensitiveEvidence } from "./assert-artifact-safety.mjs";
 
 test("login helper never exposes the raw authentication response", () => {
   const expression = loginExpression();

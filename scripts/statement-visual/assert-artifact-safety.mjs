@@ -132,7 +132,8 @@ export async function assertArtifactDirectorySafe(root) {
 }
 
 async function main() {
-  const root = process.argv[2] ?? process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+  const root =
+    process.argv[2] ?? process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
   await assertArtifactDirectorySafe(root);
   console.log(`Artifact safety validation passed for ${root}.`);
 }
