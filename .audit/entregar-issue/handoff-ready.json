@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-14T22:06:37.677022+00:00",
+  "created_at": "2026-08-14T22:24:54.510744+00:00",
   "identity": {
-    "head_sha": "ae8d1fe8150c1cb7bb77c91a027fc18a266c373b",
-    "material_head_sha": "ae8d1fe8150c1cb7bb77c91a027fc18a266c373b",
+    "head_sha": "e7553a71235110b78283886773a23807763d2174",
+    "material_head_sha": "e7553a71235110b78283886773a23807763d2174",
     "base_sha": "12b2c663e1df7c538fd6bc50b6eb4b8866b189c4",
-    "merge_preview_sha": "acbc08bc78b28da0ba17420635b7ed8cf5a60568",
-    "material_merge_preview_sha": "acbc08bc78b28da0ba17420635b7ed8cf5a60568"
+    "merge_preview_sha": "c962f651f1ad64c0e847738bd9be8a56cfb89c4e",
+    "material_merge_preview_sha": "c962f651f1ad64c0e847738bd9be8a56cfb89c4e"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -46,23 +46,23 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "e4e0f14b7b812eeac218115e851f8aa6f223daee706f11b9b68cfb58bd91978e"
+      "sha256": "50aa05f693b4eeff8609d5f94b0886c703e6adeb0a7e25bd540330dfe00f1a6a"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "eb0ebd052585bb1d3d2b4c15ad546f53ebf119c541991273a1375f0ddb05c42a"
+      "sha256": "7594605b672f0846e422eb405b9937d399d9e5a7792363fe6b1670bf46c0d25e"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "be25f3f3d59bbcbe47e382632f8a1c4e3155f79a028c834c56f8b40feb0a28d9"
+      "sha256": "5010be93690bf2b188ae7d80c64ac383e7204ae1edc8d65c6da6ed6ed1f56a07"
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure.json",
-      "sha256": "ed8a329133bc16331f71a8596581b679cc0b5821b33e5bdc92acf9133bfa7d34"
+      "sha256": "34fc97783e513e3d4912ba97fd946b14dc9fcbee27b3ae3a3f538bb1c68e46eb"
     },
     "learning_closure": {
       "name": "learning-closure.json",
-      "sha256": "66df67cf8ebcf1d727cd85f7a136ddd7786e76484d365e490fbe32b8e191ac77"
+      "sha256": "78e1374f2483e245d702f55f128414a9dcbc9520fc29effc638d22e8931210de"
     }
   },
   "previous_independent_rejection": true
