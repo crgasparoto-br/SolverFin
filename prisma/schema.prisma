@@ -445,11 +445,11 @@ model Category {
   parentCategoryId   String?      @db.Uuid
   name               String       @db.VarChar(160)
   kind               CategoryKind
-  status              RecordStatus @default(ACTIVE)
-  createdByUserId     String?      @db.Uuid
-  updatedByUserId     String?      @db.Uuid
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  status             RecordStatus @default(ACTIVE)
+  createdByUserId    String?      @db.Uuid
+  updatedByUserId    String?      @db.Uuid
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   financialProfile    FinancialProfile    @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   parentCategory      Category?           @relation("CategoryTree", fields: [parentCategoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
