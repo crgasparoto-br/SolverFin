@@ -9,7 +9,7 @@ testEscapedShortIdentifierIsNotExposed();
 function testShortIdentifiersAreRemovedFromSummaryAndSearch(): void {
   const protectedHtml = protectAccountIdentifierPrivacy(
     accountDocument({
-      search: "conta teste c6 brl agência final 1 conta final 1234",
+      search: "conta teste c6 brl agência final 1 · conta final 1234",
       summary: "Conta corrente · C6 Bank · BRL · Agência final 1 · Conta final 1234",
       agencyIdentifier: "1",
       accountIdentifier: "1234",
@@ -28,7 +28,7 @@ function testShortIdentifiersAreRemovedFromSummaryAndSearch(): void {
 function testMixedIdentifiersKeepOnlySafeSuffix(): void {
   const protectedHtml = protectAccountIdentifierPrivacy(
     accountDocument({
-      search: "conta teste c6 brl agência final 1 conta final 45-6",
+      search: "conta teste c6 brl agência final 1 · conta final 45-6",
       summary: "Conta corrente · C6 Bank · BRL · Agência final 1 · Conta final 45-6",
       agencyIdentifier: "1",
       accountIdentifier: "12345-6",
