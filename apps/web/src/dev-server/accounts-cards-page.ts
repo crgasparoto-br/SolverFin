@@ -111,10 +111,11 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
 
 function renderAccountItem(account: AccountRecord): string {
   const institution = findInstitution(account.institutionKey);
+  const bankIdentifier = formatAccountIdentifier(account);
   const search = [
     account.name,
     institution.label,
-    account.maskedIdentifier ?? "",
+    bankIdentifier ?? "",
     account.kind,
     account.status,
   ]
@@ -131,7 +132,7 @@ function renderAccountItem(account: AccountRecord): string {
           <strong>${escapeHtml(account.name)}</strong>
           <span class="status-pill">${escapeHtml(formatGenericStatus(account.status))}</span>
         </div>
-        <p>${escapeHtml(formatAccountKind(account.kind))} · ${escapeHtml(institution.label)} · ${escapeHtml(account.currency ?? "BRL")}${account.maskedIdentifier ? ` · ${escapeHtml(account.maskedIdentifier)}` : ""}</p>
+        <p>${escapeHtml(formatAccountKind(account.kind))} · ${escapeHtml(institution.label)} · ${escapeHtml(account.currency ?? "BRL")}${bankIdentifier ? ` · ${escapeHtml(bankIdentifier)}` : ""}</p>
       </div>
       <div class="amount-stack"><span>Saldo inicial</span><strong>${formatMoney(account.openingBalanceMinor ?? 0)}</strong></div>
       <div class="item-actions" aria-label="Ações de ${escapeHtml(account.name)}">
@@ -294,7 +295,9 @@ function renderAccountEditDialog(account: AccountRecord, dialogId: string): stri
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions(account.institutionKey)}</select></label>
         <label>Moeda<select name="currency">${renderCurrencyOptions(account.currency)}</select></label>
         <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money value="${formatMoneyInput(account.openingBalanceMinor ?? 0)}" inputmode="decimal" /></label>
-        <label>Nº Conta<input name="maskedIdentifier" value="${escapeHtml(account.maskedIdentifier ?? "")}" /></label>
+        <label>Agência<input name="agencyIdentifier" value="${escapeHtml(account.agencyIdentifier ?? "")}" autocomplete="off" /></label>
+        <label>Conta<input name="accountIdentifier" value="${escapeHtml(account.accountIdentifier ?? "")}" autocomplete="off" /></label>
+        ${renderLegacyAccountIdentifier(account)}
         <button type="submit" title="Salvar alterações da conta">${icon("save", 14)} Salvar conta</button>
       </form>
     </dialog>
@@ -446,7 +449,8 @@ function renderAccountDialog(): string {
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions()}</select></label>
         <label>Moeda<select name="currency">${renderCurrencyOptions()}</select></label>
         <label>Saldo inicial (R$)<input name="openingBalanceMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
-        <label>Nº Conta<input name="maskedIdentifier" placeholder="Ag 0001 · Conta 12345" /></label>
+        <label>Agência<input name="agencyIdentifier" placeholder="Ex.: 0001" autocomplete="off" /></label>
+        <label>Conta<input name="accountIdentifier" placeholder="Ex.: 12345-6" autocomplete="off" /></label>
         <button type="submit" title="Salvar nova conta">${icon("save", 14)} Criar conta</button>
       </form>
     </dialog>
@@ -523,7 +527,8 @@ function apiFormScript(): string {
       function buildPayload(form) {
         const payload = {};
         new FormData(form).forEach((value, key) => {
-          if (value === "") return;
+          const sendEmptyValue = key === "agencyIdentifier" || key === "accountIdentifier";
+          if (value === "" && !sendEmptyValue) return;
           const field = form.querySelector('[name="' + key + '"]');
           if (field && field.dataset.money !== undefined) {
             payload[key] = Math.round(parseFloat(String(value).replace(/\\./g, "").replace(",", ".")) * 100);
@@ -860,6 +865,42 @@ function formatMoneyInput(amountMinor: number): string {
   return `${sign}${withThousands},${centsPart}`;
 }
 
+function formatAccountIdentifier(account: AccountRecord): string | undefined {
+  const parts = [
+    formatAccountIdentifierPart("Agência", account.agencyIdentifier, 2),
+    formatAccountIdentifierPart("Conta", account.accountIdentifier, 4),
+  ].filter((value): value is string => value !== undefined);
+
+  if (parts.length > 0) {
+    return parts.join(" · ");
+  }
+
+  return account.maskedIdentifier?.trim() || undefined;
+}
+
+function formatAccountIdentifierPart(
+  label: string,
+  value: string | undefined,
+  visibleCharacters: number,
+): string | undefined {
+  const normalized = value?.trim();
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  const suffix = normalized.slice(-Math.min(visibleCharacters, normalized.length));
+  return `${label} final ${suffix}`;
+}
+
+function renderLegacyAccountIdentifier(account: AccountRecord): string {
+  if (account.agencyIdentifier || account.accountIdentifier || !account.maskedIdentifier?.trim()) {
+    return "";
+  }
+
+  return `<p class="muted legacy-account-identifier">Identificador legado: ${escapeHtml(account.maskedIdentifier)}. Preencha Agência e Conta separadamente para atualizar este cadastro.</p>`;
+}
+
 function formatAccountKind(kind: string): string {
   if (kind === "checking") return "Conta corrente";
   if (kind === "savings") return "Poupança";
@@ -904,6 +945,8 @@ interface AccountRecord {
   status: string;
   openingBalanceMinor?: number;
   currency?: string;
+  agencyIdentifier?: string;
+  accountIdentifier?: string;
   maskedIdentifier?: string;
   institutionKey?: string;
 }
@@ -953,7 +996,7 @@ function baseCss(): string {
     .instrument-side { display: grid; gap: 6px; justify-items: end; } .instrument-tags { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; } .instrument-pill { background: #e0f2fe; border-radius: 999px; color: #075985; font-size: 0.6875rem; font-weight: 700; padding: 2px 7px; white-space: nowrap; } .instrument-pill.is-archived { background: #f1f5f9; color: #475569; }
     .instrument-actions { display: flex; gap: 4px; justify-content: flex-end; }
     .item-actions { display: flex; gap: 6px; justify-content: flex-end; } .inline-action-form { display: block; gap: 0; } .icon-button { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--primary); min-height: 28px; padding: 0; width: 28px; transition: background 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out; } .icon-button:hover { background: var(--primary-soft); border-color: #c8dde5; } .danger-icon-button { color: var(--muted); } .danger-icon-button:hover { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .action-icon { display: block; height: 14px; width: 14px; }
-    .edit-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 10px; } .edit-grid button, .edit-grid .form-status { grid-column: 1 / -1; }
+    .edit-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 10px; } .edit-grid button, .edit-grid .form-status, .edit-grid .legacy-account-identifier { grid-column: 1 / -1; } .legacy-account-identifier { margin: 0; }
     .dialog-subsection { border-top: 1px solid var(--line); display: grid; gap: 10px; margin-top: 14px; padding-top: 14px; } .dialog-subsection-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; } .dialog-subsection-heading > div { display: grid; gap: 3px; } .dialog-subsection h3 { font-size: 0.875rem; margin: 0; } .dialog-instrument-forms { display: grid; gap: 10px; } .instrument-edit-form { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); margin-top: 0; padding: 10px; } .instrument-edit-heading { align-items: center; display: flex; gap: 8px; grid-column: 1 / -1; justify-content: space-between; }
     .filter-empty-state { margin-top: 4px; }
     .master-dialog { border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 24px 80px rgba(15,23,42,.18); max-width: 720px; padding: 18px; width: calc(100% - 32px); } .master-dialog::backdrop { background: rgba(15,23,42,.42); } .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 10px; } .dialog-heading { display: grid; gap: 3px; }

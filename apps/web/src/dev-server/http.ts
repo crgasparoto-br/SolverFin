@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
+import { protectAccountIdentifierPrivacy } from "./account-identifier-privacy.js";
 import { enhanceInboxDateFilterAction } from "./inbox-date-filter-action-enhancement.js";
 import { enhanceInboxInterfaceAccessibility } from "./inbox-interface-accessibility-enhancement.js";
 import { enhanceInboxInterface } from "./inbox-interface-enhancement.js";
@@ -43,8 +44,9 @@ export function sendHtml(response: ServerResponse, statusCode: number, html: str
   response.writeHead(statusCode, { "content-type": "text/html; charset=utf-8" });
   const brandedHtml = enhanceSolverFinBranding(html);
   const standardizedHtml = enhanceRoundSelectionControls(brandedHtml);
+  const privacySafeHtml = protectAccountIdentifierPrivacy(standardizedHtml);
   response.end(
-    isInboxDocument(standardizedHtml) ? enhanceInboxDocument(standardizedHtml) : standardizedHtml,
+    isInboxDocument(privacySafeHtml) ? enhanceInboxDocument(privacySafeHtml) : privacySafeHtml,
   );
 }
 

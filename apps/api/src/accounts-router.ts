@@ -1,12 +1,12 @@
 import {
   TenantAuthorizationError,
   TenantError,
-  type AccountKind,
   type AccountStatus,
   type TenantContext,
 } from "@solverfin/domain";
 
 import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
+import { buildCreateAccountPayload, buildUpdateAccountPayload } from "./account-payloads.js";
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
@@ -155,18 +155,7 @@ async function createAccountHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const account = await createAccountForContext(context, {
-    name: String(body.name ?? ""),
-    kind: body.kind as AccountKind,
-    ...(body.openingBalanceMinor !== undefined
-      ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
-      : {}),
-    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    ...(body.maskedIdentifier !== undefined
-      ? { maskedIdentifier: String(body.maskedIdentifier) }
-      : {}),
-    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
-  });
+  const account = await createAccountForContext(context, buildCreateAccountPayload(body));
 
   return json(201, { account });
 }
@@ -187,19 +176,11 @@ async function updateAccountHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const account = await updateAccountForContext(context, requireParam(match, "accountId"), {
-    ...(body.name !== undefined ? { name: String(body.name) } : {}),
-    ...(body.kind !== undefined ? { kind: body.kind as AccountKind } : {}),
-    ...(body.status !== undefined ? { status: body.status as AccountStatus } : {}),
-    ...(body.openingBalanceMinor !== undefined
-      ? { openingBalanceMinor: Number(body.openingBalanceMinor) }
-      : {}),
-    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    ...(body.maskedIdentifier !== undefined
-      ? { maskedIdentifier: String(body.maskedIdentifier) }
-      : {}),
-    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
-  });
+  const account = await updateAccountForContext(
+    context,
+    requireParam(match, "accountId"),
+    buildUpdateAccountPayload(body),
+  );
 
   return json(200, { account });
 }

@@ -269,6 +269,13 @@ async function createFixtures(cdp) {
 }
 
 async function clickLearningAction(cdp, entryId, action) {
+  await waitFor(
+    cdp,
+    `(() => {
+      const button = document.querySelector('[data-learning-entry-id="${entryId}"][data-learning-action="${action}"]');
+      return button instanceof HTMLButtonElement && !button.disabled;
+    })()`,
+  );
   await evaluate(
     cdp,
     `(() => {
