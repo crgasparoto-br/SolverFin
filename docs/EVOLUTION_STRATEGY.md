@@ -25,7 +25,7 @@ No dominio financeiro, entidades ja possuem moeda em diferentes contratos, e rel
 ## Invariantes multi-moedas
 
 - Todo valor monetario deve possuir moeda conhecida no boundary em que e persistido, calculado ou exibido.
-- A moeda deve usar identificador canonico compatível com ISO 4217 quando aplicavel.
+- A moeda deve usar identificador canonico compativel com ISO 4217 quando aplicavel.
 - Operacoes aritmeticas entre moedas diferentes sao invalidas sem uma etapa explicita de conversao.
 - Agregacoes padrao devem ser particionadas por moeda.
 - Uma moeda de referencia do perfil pode ser introduzida por issue propria, mas nao autoriza conversao implicita.
@@ -130,42 +130,69 @@ A hierarquia deve ficar explicita: **cartao -> fatura -> compras**. O topo deve 
 
 A hierarquia deve ser **resumo/conclusao -> grafico/visualizacao -> destaques -> matriz/tabela detalhada**. Relatorios multi-moedas devem separar moedas por padrao; consolidacao convertida exige contrato de cambio explicito.
 
-## Sequencia de entrega
+## Fase 3 - Integridade financeira e fundacao de interface
 
 ### Trilha A - Integridade financeira e multi-moedas
 
 Prioridade mais alta. Corrigir semantica financeira que afeta saldos e gastos, estabelecer contrato de agregacao multi-moedas, formalizar datas e proteger invariantes com testes ponta a ponta.
 
+Epica operacional: #589.
+
 ### Trilha B - Fundacao de interface
 
 Criar design system operacional, componentes estruturais executaveis, primitiva `Money`, view-models e estrategia de retirada gradual dos pos-processadores de HTML.
+
+Epica operacional: #590.
 
 ### Trilha C - Migracao das telas centrais
 
 Migrar primeiro Dashboard, Extrato e Cartoes; usar o aprendizado dessas rotas para consolidar padroes antes de migrar Relatorios e demais superficies.
 
-### Trilha D - Decisao financeira e previsibilidade
+Epica operacional: #591.
 
-Com o core correto e as telas-base estabilizadas, consolidar compromissos futuros, projecao 30/60/90 dias, livre para gastar, orcamentos operacionais, recorrencias e insights priorizados.
+## Fase 4 - Decisao financeira e previsibilidade
 
-## Dependencias entre trilhas
+### Trilha A - Previsibilidade financeira e planejamento
+
+Depois que o core financeiro e as telas-base estiverem estabilizados, consolidar compromissos futuros, projecao 30/60/90 dias, livre para gastar, orcamentos operacionais, recorrencias e insights priorizados.
+
+Epica operacional: #592.
+
+A Fase 4 reutiliza a semantica financeira da #589, as primitives/view-models da #590 e as superficies migradas da #591. Ela nao deve antecipar conversao cambial implicita nem criar recomendacao financeira regulada.
+
+## Dependencias entre fases e trilhas
 
 ```text
-Integridade financeira + multi-moedas
+Fase 3A - Integridade financeira + multi-moedas (#589)
              |
-             +--------------------+
-             |                    |
-             v                    v
-Fundacao de interface      Contratos de projecao
-             |                    |
-             v                    |
-Migracao de telas centrais <------+
+             +--------------------------+
+             |                          |
+             v                          v
+Fase 3B - Fundacao de interface   Contratos financeiros corretos
+             |                          |
+             v                          |
+Fase 3C - Migracao de telas <-----------+
              |
              v
-Decisao financeira e previsibilidade
+Fase 4A - Previsibilidade e planejamento (#592)
 ```
 
 A fundacao visual pode avancar em paralelo a correcoes de dominio, mas uma tela nao deve cristalizar um numero agregado cuja semantica financeira ou moeda ainda esteja indefinida.
+
+## Backlog operacional
+
+O backlog aberto no GitHub e a fonte de verdade do trabalho em execucao. O recorte criado para esta estrategia e:
+
+- **#589 - Fase 3A: Integridade financeira e multi-moedas**
+  - #593 a #599;
+- **#590 - Fase 3B: Fundacao de interface e arquitetura UI**
+  - #600 a #607;
+- **#591 - Fase 3C: Migracao e redesign das telas centrais**
+  - #608 a #615;
+- **#592 - Fase 4A: Previsibilidade financeira e planejamento**
+  - #616 a #621.
+
+As epicas mantem checklists e dependencias detalhadas. Este documento nao replica criterios completos das issues para evitar duas fontes de verdade operacionais.
 
 ## Expansoes posteriores
 
@@ -185,22 +212,32 @@ Toda issue desta estrategia deve, quando aplicavel:
 - atualizar documentacao/ADR quando estabelecer novo precedente;
 - evitar big-bang de frontend e manter o produto navegavel durante a migracao.
 
-## Definicao de concluido da estrategia
+## Definicao de concluido da Fase 3
 
-Este ciclo estrutural pode ser considerado concluido quando:
+A Fase 3 estrutural pode ser considerada concluida quando:
 
 1. nenhum resumo financeiro soma moedas diferentes sem conversao explicita;
 2. compras de cartao e liquidacao de fatura nao geram dupla despesa/saldo incorreto;
 3. existe uma fundacao visual executavel e reutilizada pelas telas centrais;
 4. novos fluxos nao dependem de regex/string sobre HTML final como mecanismo normal de composicao;
 5. Dashboard, Extrato e Cartoes usam os novos padroes e preservam cobertura visual/acessivel;
-6. Relatorios apresentam hierarquia de informacao consistente e moeda explicita;
-7. existe projecao financeira verificavel e separada por moeda;
-8. a documentacao viva e as issues representam o estado real da migracao.
+6. Relatorios e demais superficies prioritarias apresentam hierarquia consistente e moeda explicita;
+7. a documentacao viva e as issues representam o estado real da migracao.
+
+## Definicao de concluido da Fase 4A
+
+A primeira trilha da Fase 4 pode ser considerada concluida quando:
+
+1. existe uma fonte canonica de compromissos futuros sem dupla contagem;
+2. existe projecao 30/60/90 dias verificavel e separada por moeda;
+3. o valor livre para gastar possui formula deterministica e drilldown;
+4. orcamentos distinguem realizado, comprometido, disponivel e projetado;
+5. recorrencias futuras sao acionaveis dentro das jornadas existentes;
+6. insights priorizados possuem ciclo de vida e evidencia navegavel.
 
 ## Governanca
 
-- `docs/PRODUCT.md` continua dono da visao de produto.
+- `docs/PRODUCT.md` continua dono da visao de produto e das fases.
 - `docs/ARCHITECTURE.md` continua dono da arquitetura observada e das regras tecnicas gerais.
 - `docs/DESIGN_SYSTEM.md` continua dono das regras visuais executaveis.
 - `docs/APP_SHELL.md` continua dono do shell e do contrato SSR atual durante a transicao.
