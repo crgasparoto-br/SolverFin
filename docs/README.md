@@ -9,17 +9,19 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`../README.md`](../README.md): visao operacional do repositorio, comandos, CI, estrutura e regras de trabalho.
 - [`../AGENTS.md`](../AGENTS.md): regras globais para agentes de IA.
 - [`../.github/copilot-instructions.md`](../.github/copilot-instructions.md): instrucoes especificas para Copilot e agentes GitHub.
-- [`PRODUCT.md`](./PRODUCT.md): visao de produto, personas, jornadas, escopo MVP, principios e limites.
+- [`PRODUCT.md`](./PRODUCT.md): visao de produto, personas, jornadas, escopo MVP, principios e fases de evolucao.
+- [`EVOLUTION_STRATEGY.md`](./EVOLUTION_STRATEGY.md): estrategia estrutural da Fase 3 para integridade financeira, multi-moedas, fundacao de interface, migracao de telas e previsibilidade.
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md): arquitetura atual, boundaries, stack-alvo, privacidade, CI e regras tecnicas.
 - [`STATUS_MATRIX.md`](./STATUS_MATRIX.md): estado observado do MVP por area e lacunas conhecidas.
 - [`adr/README.md`](./adr/README.md): processo e indice de ADRs.
 
-## Produto, UX e identidade
+## Produto, estrategia, UX e identidade
 
-- [`PRODUCT.md`](./PRODUCT.md): escopo e principios do produto.
+- [`PRODUCT.md`](./PRODUCT.md): escopo, principios e fases do produto.
+- [`EVOLUTION_STRATEGY.md`](./EVOLUTION_STRATEGY.md): ordem de evolucao, dependencias e criterios da Fase 3.
 - [`BRAND.md`](./BRAND.md): identidade, tom, experiencia e direcao visual.
-- [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, componentes, provedores de CSS SSR e orientacoes de interface.
-- [`APP_SHELL.md`](./APP_SHELL.md): rotas canonicas, shell autenticado e contrato executavel de composicao de estilos SSR.
+- [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, componentes, fundacao executavel alvo, provedores de CSS SSR atuais e orientacoes de interface.
+- [`APP_SHELL.md`](./APP_SHELL.md): rotas canonicas, shell autenticado e contrato executavel de composicao de estilos SSR durante a transicao.
 - [`product/INTERFACE_INVENTORY.md`](./product/INTERFACE_INVENTORY.md): inventario navegavel usado como baseline de interface no fechamento da Fase 2.
 - [`REPORTS.md`](./REPORTS.md): visoes, filtros, calculos e estados da area de Relatorios.
 - [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md): contrato funcional, persistencia, privacidade, concorrencia e UX do assistente somente leitura.
@@ -74,10 +76,14 @@ ADRs registram decisoes duradouras. Crie ou atualize ADRs quando a mudanca alter
 - [`adr/0005-financial-indexes-shared-domain.md`](./adr/0005-financial-indexes-shared-domain.md)
 - [`adr/0010-openai-provider-inicial.md`](./adr/0010-openai-provider-inicial.md)
 - [`adr/0011-read-only-financial-assistant.md`](./adr/0011-read-only-financial-assistant.md)
+- [`adr/0012-separate-account-agency-identifiers.md`](./adr/0012-separate-account-agency-identifiers.md)
+- [`adr/0013-multi-currency-financial-aggregation.md`](./adr/0013-multi-currency-financial-aggregation.md): multi-moedas e proibicao de agregacao implicita entre moedas.
+- [`adr/0014-incremental-component-ui-architecture.md`](./adr/0014-incremental-component-ui-architecture.md): migracao incremental da interface para componentes, view-models e arquetipos reutilizaveis.
 
 ## Regras de manutencao documental
 
-- Evite duplicar contratos extensos entre documentos. `APP_SHELL.md` e o documento dono do contrato de estilos SSR; os demais apenas resumem e apontam para ele.
+- Evite duplicar contratos extensos entre documentos. `APP_SHELL.md` e o documento dono do contrato de estilos SSR atual; `EVOLUTION_STRATEGY.md` e ADR 0014 registram sua direcao de evolucao.
+- `PRODUCT.md` e dono da visao/fases; `EVOLUTION_STRATEGY.md` detalha a ordem e os criterios do ciclo estrutural, sem declarar trabalho aberto como implementado.
 - Documentos com sufixo `.draft` nao devem permanecer versionados depois que o conteudo estiver consolidado.
 - Planos antigos de criacao de issues devem ser removidos quando as issues ja estiverem no GitHub.
 - Atualize a matriz de status quando uma issue mudar o estado real de dominio, API, persistencia, UI, testes ou documentacao.
