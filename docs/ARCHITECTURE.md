@@ -6,6 +6,8 @@ Este documento define a arquitetura observada do SolverFin e as regras tecnicas 
 
 Ele nao substitui ADRs. Mudancas duradouras de stack, provider, integracao externa ou modelo persistente devem ser registradas em `docs/adr/`.
 
+`docs/EVOLUTION_STRATEGY.md` registra a direcao estrutural da Fase 3. A arquitetura observada e a arquitetura-alvo devem permanecer distintas enquanto a migracao estiver em andamento.
+
 ## Estado atual
 
 O nucleo financeiro do MVP esta ligado de ponta a ponta com persistencia real:
@@ -24,6 +26,15 @@ O nucleo financeiro do MVP esta ligado de ponta a ponta com persistencia real:
 
 A decisao inicial de stack esta em `docs/adr/0001-stack-inicial.md`. Node `http` puro continua deliberadamente em API e Web para nao antecipar framework sem ADR. O provider real inicial de IA segue a decisao aceita em `docs/adr/0010-openai-provider-inicial.md`. O estado conversacional somente leitura e seus limites seguem a decisao aceita em `docs/adr/0011-read-only-financial-assistant.md`.
 
+## Direcao arquitetural da Fase 3
+
+A Fase 3 nao substitui o runtime atual em um unico corte. Ela introduz dois invariantes duradouros:
+
+1. **Multi-moedas por contrato**: valores devem carregar moeda; agregacoes entre moedas distintas exigem conversao explicita e auditavel. Sem conversao, respostas ficam particionadas por moeda. A decisao esta na ADR 0013.
+2. **Interface por composicao estruturada**: novas features devem preferir tokens, componentes executaveis, layouts e view-models em vez de ampliar pos-processamento textual do HTML final. A migracao e incremental, preservando SSR e gates atuais. A decisao esta na ADR 0014.
+
+Esses invariantes valem para novo trabalho imediatamente. O codigo legado permanece suportado ate a issue de migracao correspondente, mas nao define a direcao preferencial para novas implementacoes.
+
 ## Stack inicial
 
 - TypeScript;
@@ -37,6 +48,8 @@ A decisao inicial de stack esta em `docs/adr/0001-stack-inicial.md`. Node `http`
 - GitHub Actions para instalacao reprodutivel, lint, typecheck, testes e build;
 - camada de dominio desacoplada de UI, banco e provedores externos;
 - provedores de IA acessados por abstracoes proprias, schemas estruturados, logs seguros e adapters HTTP substituiveis; OpenAI e o primeiro adapter real, sem SDK de fornecedor no dominio.
+
+A Fase 3 nao escolhe framework frontend ou backend novo. Uma eventual troca de runtime/framework exige ADR propria e beneficio demonstrado alem da componentizacao incremental.
 
 ## Web SSR e composicao de estilos
 
@@ -57,7 +70,7 @@ Fontes principais:
 - `apps/web/src/dev-server/ssr-style-contract.ts`: manifesto tipado por rota e provedor;
 - `scripts/validate-web-ssr-styles.mjs`: verificacao executavel do HTML final servido.
 
-### Invariantes do contrato
+### Invariantes do contrato atual
 
 Toda rota com `status: "available"` deve ter exatamente um contrato, inclusive:
 
@@ -86,7 +99,32 @@ Marcadores de blocos runtime possuem propriedade explicita por modulo. No Extrat
 
 A validacao inicia `createSolverFinWebServer()` em `127.0.0.1` com porta efemera e requisita os renderers cobertos. Rotas autenticadas recebem cookie ficticio; chamadas internas usam `fetch` ficticio e seguro. Em execucao normal, `/remuneracao-contas` e `/app/remuneracao-contas` continuam redirecionando para `/contas-cartoes`; somente o processo filho iniciado por `scripts/build-web.mjs` define `SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION=1` para exercitar o renderer legado sem alterar esse contrato publico. A fixture de `/lancamentos` inclui conta ativa e lancamento ficticio de remuneracao CDI para ativar tanto os estilos estruturais quanto a affordance de divulgacao. Dessa forma, o portao exercita `resolveRoute`, o despacho de `dev-server.ts`, os pos-processamentos e `sendHtml`, sem acessar API, banco, rede externa ou secrets e sem exigir `apps/web/dist` preexistente. Falhas usam o prefixo `SolverFin SSR style contract`, identificam rota/provedor/modulo e sao agregadas na mesma execucao.
 
-O documento dono das regras operacionais do shell e `docs/APP_SHELL.md`; `docs/DESIGN_SYSTEM.md` descreve a propriedade visual dos provedores.
+O documento dono das regras operacionais do shell e `docs/APP_SHELL.md`; `docs/DESIGN_SYSTEM.md` descreve a propriedade visual dos provedores e a fundacao executavel alvo.
+
+### Regra de migracao do frontend
+
+O contrato acima descreve o mecanismo observado e continua sendo gate enquanto a rota depender dele. Para novas features e rotas migradas:
+
+- preferir composicao estruturada e view-models;
+- nao criar pos-processamento por regex/string sobre HTML final como solucao padrao de layout ou estado;
+- manter pos-processadores antigos somente ate a migracao da responsabilidade correspondente;
+- remover/depreciar provedores runtime que se tornarem desnecessarios no mesmo recorte de migracao;
+- preservar cobertura de SSR/HTML final ou introduzir protecao equivalente antes de remover o gate anterior;
+- preservar acessibilidade, responsividade e evidencia visual.
+
+## Multi-moedas
+
+A moeda e parte do tipo financeiro conceitual. Regras gerais:
+
+- todo valor persistido/calculado/exibido deve ter moeda conhecida;
+- agregacoes entre moedas diferentes sao invalidas sem conversao explicita;
+- consultas que abrangem varias moedas devem retornar blocos por moeda por padrao;
+- hardcode de BRL e permitido apenas em contrato deliberadamente restrito a BRL, nunca como fallback generico;
+- uma futura conversao cambial deve registrar origem/destino, taxa, data/instante de referencia e origem da cotacao;
+- UI e assistente nao podem inventar conversao nem ocultar que um total esta particionado;
+- testes de agregacao/projecao devem incluir casos com moedas distintas.
+
+A ADR 0013 e a fonte da decisao; contratos especificos detalham como cada endpoint ou dominio a materializa.
 
 ## CI
 
@@ -118,12 +156,13 @@ Os testes de provider de IA usam `FakeAiProvider` e cliente HTTP fake. O CI nao 
 
 O workflow visual existente executa os cenarios em `scripts/statement-visual/`. Para a issue #568, a evidencia dedicada cobre `/assistente` em desktop, mobile, escala de pagina a 200%, teclado/foco, clarificacao, erro controlado e as transicoes de cancelar, limpar e iniciar novo contexto.
 
+A migracao visual da Fase 3 deve reaproveitar o gate existente e evolui-lo para cenarios de fluxo/componente, sem aceitar perda de cobertura entre a retirada de um provedor legado e a nova composicao.
+
 ### Integration API + PostgreSQL
 
 O job de integracao sobe PostgreSQL 16 efemero e executa migrations, seed ficticio e testes da API com uma base dedicada.
 
 ```bash
-npm ci --no-audit --no-fund
 npm run prisma:generate
 npm run build:packages
 npm run db:deploy
@@ -163,12 +202,15 @@ docker compose down -v
 ```text
 Usuario
   -> Web SSR/PWA
+    -> composicao de shell + componentes/layouts durante a migracao
     -> API backend inicia OIDC/PKCE
       -> Amazon Cognito User Pools (`sa-east-1`)
-      -> Callback backend e correlação persistente
-      -> Sessão SolverFin em cookie HttpOnly
+      -> Callback backend e correlacao persistente
+      -> Sessao SolverFin em cookie HttpOnly
       -> Tenant SolverFin
       -> Dominio financeiro
+        -> valores preservam moeda
+        -> agregacoes particionam por moeda sem conversao
       -> Importacao e conciliacao
       -> Assistente financeiro somente leitura
         -> estado persistido de conversa/turno no PostgreSQL
@@ -195,11 +237,13 @@ Build Web
 
 ### Produto e documentacao
 
-Responsavel por visao, escopo, personas, tom, criterios, privacidade e contratos vivos. Arquivos centrais: `docs/PRODUCT.md`, `docs/BRAND.md`, `docs/PRIVACY.md`, `docs/APP_SHELL.md` e `README.md`.
+Responsavel por visao, escopo, personas, tom, criterios, privacidade e contratos vivos. Arquivos centrais: `docs/PRODUCT.md`, `docs/EVOLUTION_STRATEGY.md`, `docs/BRAND.md`, `docs/PRIVACY.md`, `docs/APP_SHELL.md` e `README.md`.
 
 ### Dominio financeiro
 
-Responsavel por contas, categorias, lancamentos, recorrencias, parcelas, faturas, cartoes agrupadores, instrumentos, orcamentos, metas, compatibilidade legada e conciliacao. Regras de dominio nao devem depender de UI, banco, fila, IA ou APIs externas.
+Responsavel por contas, categorias, lancamentos, recorrencias, parcelas, faturas, cartoes agrupadores, instrumentos, orcamentos, metas, compatibilidade legada, moeda e conciliacao. Regras de dominio nao devem depender de UI, banco, fila, IA ou APIs externas.
+
+A camada de dominio deve rejeitar ou impedir operacoes aritmeticas incoerentes entre moedas quando a conversao nao fizer parte explicitamente do caso de uso.
 
 ### Identidade e tenant
 
@@ -215,7 +259,7 @@ Responsavel por receber CSV, OFX, mensagens autorizadas e outras origens, normal
 
 ### IA financeira
 
-Responsavel por extracao, classificacao, explicacao, sugestoes, insights e pela apresentacao controlada do assistente. Saidas devem ser estruturadas, revisaveis e auditaveis quando o fluxo produz sugestao; no assistente, a participacao externa e limitada à diretiva fechada `DIRECT` ou `CONTEXTUAL` e o backend controla todo texto exibido.
+Responsavel por extracao, classificacao, explicacao, sugestoes, insights e pela apresentacao controlada do assistente. Saidas devem ser estruturadas, revisaveis e auditaveis quando o fluxo produz sugestao; no assistente, a participacao externa e limitada a diretiva fechada `DIRECT` ou `CONTEXTUAL` e o backend controla todo texto exibido.
 
 O boundary interno e `AiProvider`. `runAiTask` governa consentimento, minimizacao, retry e logs; adapters concretos apenas traduzem `SafeAiProviderRequest`, executam uma chamada externa por tentativa e validam a resposta. OpenAI e o primeiro adapter real, mas modelo, endpoint e credencial permanecem configuraveis por ambiente e nao fazem parte do dominio financeiro.
 
@@ -223,7 +267,9 @@ No assistente, o provider nao e um boundary de calculo nem de autoria de texto f
 
 ### Interface web/PWA
 
-Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes, assistente financeiro e shell SSR. A interface deve ser mobile-first, acessivel e coerente com `docs/BRAND.md` e `docs/DESIGN_SYSTEM.md`.
+Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes, assistente financeiro e shell SSR. A interface deve ser mobile-first, acessivel e coerente com `docs/BRAND.md`, `docs/DESIGN_SYSTEM.md`, ADR 0013 e ADR 0014.
+
+A interface formata e apresenta contratos financeiros; nao redefine regra de saldo, fatura, cambio, orcamento ou projecao.
 
 ## Regras arquiteturais
 
@@ -248,6 +294,11 @@ Responsavel por rotinas diarias, revisao, dashboards, relatorios, configuracoes,
 - Tratar `solverFinShellRoutes` como fonte canonica de cobertura SSR.
 - Validar o HTML final pelo despacho HTTP antes de aceitar o artefato web, usando modo interno isolado quando um renderer legado precisa permanecer coberto sem reativar a rota publica.
 - Nao introduzir uma lista paralela de rotas ou workspaces no CI quando os comandos oficiais ja mantem essa composicao.
+- Preservar moeda explicitamente; nunca agregar moedas diferentes sem conversao auditavel.
+- Nao usar BRL como fallback generico em contratos multi-moedas.
+- Manter calculos financeiros fora da apresentacao.
+- Para nova UI, preferir componentes/layouts/view-models e nao ampliar pos-processamento textual do HTML final como padrao.
+- Migrar a UI de forma incremental, preservando SSR, acessibilidade, responsividade e gates visuais.
 
 ## Dados e privacidade
 
@@ -264,14 +315,18 @@ Diretrizes:
 - limitar conversa do assistente a estado tenant-scoped com TTL, evidencia estruturada e resposta segura;
 - usar somente dados ficticios em seeds, fixtures e documentacao.
 
+Metadados de conversao cambial, quando existirem, sao parte da evidencia financeira e devem ser preservados de forma suficiente para explicar o valor consolidado sem expor informacao sensivel desnecessaria.
+
 ## Validacao esperada por tipo de mudanca
 
-- dominio: testes unitarios e casos de borda;
-- APIs: contrato, autorizacao, tenant e integracao;
+- dominio: testes unitarios e casos de borda, incluindo moeda quando houver valores/agregacoes;
+- APIs: contrato, autorizacao, tenant, moeda e integracao;
 - banco: schema, migrations e dados seguros;
-- frontend: renderizacao, acessibilidade, estados e contrato SSR quando estilos/rotas forem afetados;
+- frontend: renderizacao, acessibilidade, estados, moeda e contrato SSR/cobertura equivalente quando estilos/rotas forem afetados;
 - IA/importacao: schemas, fallback, consentimento, contagem de chamadas outbound e revisao humana;
 - assistente conversacional: idempotencia, concorrencia, restart, cancelamento, expiracao, troca de perfil/moeda, fronteira publica e navegador real para teclado, foco, mobile, 200% e erros;
+- fluxos de cartao/fatura: invariantes que diferenciem consumo e liquidacao e evitem dupla contabilizacao;
+- agregacoes/projecoes: cenarios com pelo menos duas moedas e ausencia de conversao implicita;
 - documentacao: consistencia, links e ADR quando houver decisao duradoura.
 
 ## Estrutura principal
@@ -297,9 +352,11 @@ prisma/
 - Quais fluxos futuros de produto habilitarao o provider real e quais exigirao revisao humana obrigatoria?
 - Quais excecoes de retencao de dados brutos exigirao consentimento ou ADR?
 - Quais metricas, budgets e alertas governarao custo e qualidade de IA por ambiente?
+- Qual provider/politica de cotacao sera adotado quando consolidados cambiais entrarem no produto?
+- Qual preferencia de moeda de referencia sera oferecida por perfil e como ela sera versionada/auditada?
 
 Essas respostas devem ser resolvidas por issues especificas e ADRs.
 
-## Idempotência de conjuntos financeiros
+## Idempotencia de conjuntos financeiros
 
-A criação de conjuntos financeiros com múltiplos efeitos usa identidade durável no PostgreSQL, escopo explícito de organização/perfil, fingerprint do payload de negócio e serialização concorrente antes das mutações. O primeiro contrato é o parcelamento manual descrito na ADR 0007; rollback não persiste efeitos nem consome a tentativa.
+A criacao de conjuntos financeiros com multiplos efeitos usa identidade duravel no PostgreSQL, escopo explicito de organizacao/perfil, fingerprint do payload de negocio e serializacao concorrente antes das mutacoes. O primeiro contrato e o parcelamento manual descrito na ADR 0007; rollback nao persiste efeitos nem consome a tentativa.
