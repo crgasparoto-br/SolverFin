@@ -25,3 +25,5 @@ Use ADR quando uma decisão muda stack, boundary, privacidade, tenant, auditoria
 - [0010 - Provider OpenAI inicial e substituível](./0010-openai-provider-inicial.md)
 - [0011 - Assistente financeiro conversacional somente leitura](./0011-read-only-financial-assistant.md)
 - [0012 - Separar agência e conta no cadastro de conta](./0012-separate-account-agency-identifiers.md)
+- [0013 - Multi-moedas e agregação financeira explícita](./0013-multi-currency-financial-aggregation.md)
+- [0014 - Arquitetura incremental de interface por componentes e view-models](./0014-incremental-component-ui-architecture.md)

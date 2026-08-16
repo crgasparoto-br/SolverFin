@@ -1,1 +1,257 @@
-{"schema_version":3,"specification_snapshot":{"path":"/tmp/solverfin587-origin-handoff/specification-snapshot.json","sha256":"6e05fb510f954c41d6ec2fc883f59ef29821cbdfd1f9218f25d175ac25560128"},"primary_issue_source_id":"SRC-ISSUE","obligations":[{"id":"OBL-001","candidate_key":"4c01d2d14434a0f514dee5e1a09164b9359df4d6edcf100a913ef578faebf239","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-002","candidate_key":"a893aa6eb95ba70566c459ad5ed7c2a9b3aa6191ad2d28ce0ca7c11e26c6891b","flags":["structural"],"disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-003","candidate_key":"97ad1b05c6dc1e0a001a85c8f94e487c05272651e91873a29cc6a5b5b7a557f0","disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-004","candidate_key":"6e01c0b6ae720dad8ddbb074195578aa3d00adf17e116149316fa52fbafcd836","flags":["structural"],"disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-005","candidate_key":"fa420467f9403ebefb8a1d90051e20b85f1aa95e811d8dc380800ec241afd1f5","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-006","candidate_key":"8541c58b775ebdb6267c770e8e3bec6288287d9e1aacb30765af76cd95f01aa3","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-007","candidate_key":"dd890235b524e74aa50887d201dea75a1db025b6af56272fae615f24e36608b7","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-008","candidate_key":"de9b81a71f93cc3e16bbe4d271ece186976c3c0bf8bacd3bdb30fa2415787334","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-009","candidate_key":"922bac6156d55f4a1f72826a39a30fd8da6076625cf1180f5d7391d043528706","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-010","candidate_key":"5cee3968a629da88c066fd4cf2c1c54223fd65e33411ae416aedff577d20d0a7","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-011","candidate_key":"96d7ffb0a6a810ebcc1a0f553580cf1370658d4e7a3be91261c76e25933bb32c","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-012","candidate_key":"e00fc3d1e30d0c142c992282fe168e1befdefa430e2c55683482da09db3824d9","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-013","candidate_key":"3e56c2e0b38573a65995cc76057ec1e8c5d561a462a1a04cfab0566af62b674a","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-014","candidate_key":"7d117b81a5c19f28f1883b2e0cc94e317870e9219b2e7e891e6e05d23dcae4f8","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-015","candidate_key":"720f81551c162f528aeeb635f842f763f2bcf4c341c1d845d9d1f9c45b1963b1","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-016","candidate_key":"c61d10ac113c461c9922cb15ae742c3b13e221af4aa3cc7ce77eca7ffd421a28","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-017","candidate_key":"cac8aeac9f8100a3d78acf0539cee9fff2cb731e85c526628b8d4f1001bbc248","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-018","candidate_key":"ff54a30eb752004e5d4aa137e62c18c306a8469a56c4533306a37766507d81e0","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-019","candidate_key":"35811cebc7f610b0378dd0c468cc94d0def3cff066ca3a07fc274efa6677576c","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-020","candidate_key":"773b48ccfff782bb91badad03506866d83bcab3b42fe81e21c9f3dd4ed074176","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-021","candidate_key":"612b6f86fa106b8bb33fd75c227d76751bf22b9e60c7730122089f307e1fcc59","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-022","candidate_key":"ef3260dae431a858c30b54ce51b4df111dbde0e19580b688cc92ebf4eb103109","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-023","candidate_key":"e43e49ca091f2535983bfe1be7fd7bee4496cda56f40348568fc27b2808d7613","disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-024","candidate_key":"e1e1b9987dcb80d8de7de52c4bccae6fa1e9ca126b015fd323875bb65d6ce45d","disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-025","candidate_key":"c1a76d42e7cbeb4eab6615c26647ae510339c1832282ed214997981303573579","disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-026","candidate_key":"a8cdf7c6020d21e27cb2b1fd72cea74534efdd3380ba046fa1939a4c0f5a28e8","flags":["structural"],"disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-027","candidate_key":"4dac75b99154d261d36b7c9613f248cfb604251c4666abf52225c8f23b640862","disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-028","candidate_key":"9cd8efb96dd16b988043b5b59ebdd83bd93fa2773c1c253fbd03a07dd6bbae86","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-029","candidate_key":"c5663359127d83411260c8ace40a6265c71d6cc25e4ea1d1a57b6d6dade4d015","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-030","candidate_key":"45374bbdf20f60a9bfd97d766d81c97bffb53ff21d66cad550be010a2f8f8674","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-031","candidate_key":"86b46a0fa29f097788bdf17af329ea35c94f175684ffeb7bc2e6cc9a83e9a38c","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-032","candidate_key":"77fc3f8436986a060511a481811af2fc52f49b1be50285cd3a47f8836294dd7a","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-033","candidate_key":"d6543a3fc8da5fbbf2315156c285af6a0297dd246ff947fc1b7fa396e446cc28","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-034","candidate_key":"851a49ff8be272e30db3326742781a5699b670710db70e49f9a1eddd20405f9c","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-035","candidate_key":"c38aeeadd6daab3d539b300d73ed83b5012a2ac389d194b846bd4ec2b684297e","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-036","candidate_key":"748b0eeb8033d1a39d221e967ab4bc91a01b1dc0190f19d67ae76254a124f931","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-037","candidate_key":"7b387fc62d96c119939ab04c0d19e3bdc09e2f4b6659488d5690355c30a28175","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-038","candidate_key":"412389dd4de2f84542bbfc1f243f08eae264a74444e226d5337cfa80594003cb","disposition":"covered","requirement_ids":["REQ-DOCUMENTATION"]},{"id":"OBL-039","candidate_key":"6dbdf433e77a7d033fd88971bcda52477d3a848246b613a056a2df297ebc0e1e","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-040","candidate_key":"41b7d5e4f086e182e0741d83cd38e8c8a927ebc8127c62cfb244cbf20628371a","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-041","candidate_key":"39a445e0284382f58a1b0aa87f111b9a2681d65e9bc342b34b2e844152bc5b38","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-042","candidate_key":"a863e642493687a339013b12eb881f79978dba5950488ba8e9f57180900f7eef","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-043","candidate_key":"85a01554a8122b5bba4af2ce86383a6098968ad471df6b93ec378f5f818dae82","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-044","candidate_key":"4196e665a1b32ce686e5e21bf5430d73cd270f9965b597493ad24bb20afd4cc6","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-045","candidate_key":"8357091a4f46c224f41b989c3933cd27b39b1baee0aa119ec156051d28b05279","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-046","candidate_key":"84c1db6025d8bfe378f074367e5c28938b598e14b4ec684fc6f093e444946bab","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-047","candidate_key":"945fc91c18eb33e00ae95806770dbc245b33cf60ddcf21e0817a3726847a503d","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-048","candidate_key":"4230bb9605fcf03ac03d51f5b029c3b7335a663647c7340704454775d61dcf6a","flags":["precedence"],"disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-049","candidate_key":"359d5cc4024a27b6a5f62c0a1d4d255bd7afd14f01ecb694c720dd2c8cd53c69","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-050","candidate_key":"e8b3ae7f8300a3d6545fdc869f77c64969440c024f400853d6a2bd780ea73e5c","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-051","candidate_key":"6e581c91f0d9417d07ac74215e9326f6d2faa0d057b102627c0af2ed48e12198","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-052","candidate_key":"dfe8ed79019810849f037853ff5596eaeb9ae324b253446783d1549233d36184","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-053","candidate_key":"1c0c793903f73836635d194f511406532669b6b6fff65a1e5870388f371fbb77","disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-054","candidate_key":"d5c680b2108051d5072cfc9295c61487d8a1320174adc2d0c7ccf6ea12450883","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-055","candidate_key":"be43f0ad295903a1a962aad1375fec0e85c3a46d1561b2d0fd71322b9c44a33b","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-056","candidate_key":"3edccae7a1273af4391d318e099d2d2e7491dc835dee55ba75ba76e5e65185e4","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-057","candidate_key":"b0298e4b66e6b965cecea40c3730bbf1e9801c133f07d6df5ed3cdbec6f733ba","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-058","candidate_key":"820264cf306fa4f5a33bf8d2fc8bd4b8ffee048431e3451eb65bdec9e0c8cf39","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-059","candidate_key":"8505cf383edc83615091272ce5832b76682b9c7c5b1983c995a3db48f7e55472","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-060","candidate_key":"faadae1b8ee56aba8f8b28eb10a92aa7be707e4666986f961e93522e5ce00f94","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-061","candidate_key":"e82b41d159973aff387f1caca9625e65452a9548ba15523b923e8b4543cd8232","flags":["precedence"],"disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-062","candidate_key":"3273c0a4d867b62a7befc22a0d839fe401bc48c454d03980ca2ff96c4bef0bd9","disposition":"covered","requirement_ids":["REQ-WEB-FORM-ROUNDTRIP"]},{"id":"OBL-063","candidate_key":"9a9a9917baa73282af3e2e100beecc5cd02d5ed8b82d3007fe169aa796127eca","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-064","candidate_key":"f601dfeca9e79ca566f450c03b49e2664061af0cd439879e437a2664b162aed2","flags":["precedence"],"disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-065","candidate_key":"d05f5d52f559a48b020592ad424c6467ec5a9cd826d7e8f69c9ec129f35ce20d","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-066","candidate_key":"9c66a2fd58523d233f81c6aac2ad892fa37a32c24b29f18e35c9ce112b69eb0e","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-067","candidate_key":"ae2983b4e357c63d6193f7807cf7f6c09ee0b944d2d7cdd2b2f6a6032ce1db43","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-068","candidate_key":"eba5427ae337f8f6e68869d3efb418525e6884eb9d63e947b8bd23003380a107","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-069","candidate_key":"96eeaf15e3a8a18e23472c227588caf0a360de4b33dcac0092185c3752e5b068","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-070","candidate_key":"176ab47ae0f28e722cd79c3618668ba8a552a6c2a7e35afddb0ec5920c70a24d","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-071","candidate_key":"660327cd9395e2bce1717c613b26aa16a74a642f34fadc3ec32d7d34e59cedb5","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-072","candidate_key":"40ee6e39be009e43fdbc834d469a4e3be9cd3fb16ac0425ee1ad7d786704f314","disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-073","candidate_key":"adbbf411c3fd3259471318a2be90fa5a4e9f1c640a5fb02d49d6487f961ccc45","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-074","candidate_key":"60f4a5f50c8dce1ae41660ee6cbcb659fa6353e26d30409d9c5a1b085a213767","flags":["precedence"],"disposition":"covered","requirement_ids":["REQ-LEGACY-COMPATIBILITY"]},{"id":"OBL-075","candidate_key":"37c644b3a165685142bc8b44d2c7b44ef3596faa6142c0300cea1a101074b260","disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-076","candidate_key":"3e2bafd4e0bc0903500e27e95a65ab3a2846ef27a6f127b2f18732779b40c34a","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]},{"id":"OBL-077","candidate_key":"e7b3b5bb7cb1fd81910028aad8ed6330fdb773d85a15438156e30595ce4e8b40","flags":["structural","precedence"],"disposition":"covered","requirement_ids":["REQ-LISTING-PRIVACY"]},{"id":"OBL-078","candidate_key":"3861c04255619b0053f6f971a6194ba67029320a1348da5f26f05d74b2608103","disposition":"covered","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE"]}],"source_coverage":[{"source_id":"SRC-ISSUE","candidate_count":78,"unmapped_candidate_keys":[]}],"structural_invariant_closures":{"status":"passed","applicability_reason":"The specification defines structural, legacy precedence and privacy invariants; the user-reported creation failure also exercises the authenticated form runtime boundary.","entries":[{"id":"SIC-ACCOUNT-IDENTIFIERS","obligation_ids":["OBL-002","OBL-004","OBL-026","OBL-048","OBL-061","OBL-064","OBL-074","OBL-077"],"plausible_wrong_implementation":"Structured identifiers can collapse back into legacy storage, stale legacy text can win precedence, full identifiers can leak, or a valid local same-machine form submission can be rejected before reaching the account route.","negative_control_evidence":["LEGACY-NO-DERIVATION-001","FORM-NO-MASKEDIDENTIFIER-001","ACCOUNT-IDENTIFIER-PRIVACY-001","LEGACY-FALLBACK-001","HYBRID-PRECEDENCE-001","LOCAL-LOOPBACK-ORIGIN-001"],"controls_by_family":{"precedence":["HYBRID-PRECEDENCE-001","LEGACY-FALLBACK-001"],"authorization":["LOCAL-LOOPBACK-ORIGIN-001"]}}],"unresolved_invariants":[]},"pass_c":{"status":"passed","requirement_ids":["REQ-DOMAIN-API-PERSISTENCE","REQ-LEGACY-COMPATIBILITY","REQ-WEB-FORM-ROUNDTRIP","REQ-LISTING-PRIVACY","REQ-DOCUMENTATION"],"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015","OBL-016","OBL-017","OBL-018","OBL-019","OBL-020","OBL-021","OBL-022","OBL-023","OBL-024","OBL-025","OBL-026","OBL-027","OBL-028","OBL-029","OBL-030","OBL-031","OBL-032","OBL-033","OBL-034","OBL-035","OBL-036","OBL-037","OBL-038","OBL-039","OBL-040","OBL-041","OBL-042","OBL-043","OBL-044","OBL-045","OBL-046","OBL-047","OBL-048","OBL-049","OBL-050","OBL-051","OBL-052","OBL-053","OBL-054","OBL-055","OBL-056","OBL-057","OBL-058","OBL-059","OBL-060","OBL-061","OBL-062","OBL-063","OBL-064","OBL-065","OBL-066","OBL-067","OBL-068","OBL-069","OBL-070","OBL-071","OBL-072","OBL-073","OBL-074","OBL-075","OBL-076","OBL-077","OBL-078"],"evidence":["Canonical Issue 587 source was rebuilt from its exact source hash and all 78 candidates remain mapped.","The user-reported authenticated create failure was traced to origin rejection before the account route; the material fix is local-only loopback canonicalization with focused negative controls while production remains exact-match.","Previously remediated legacy fallback, hybrid precedence, privacy, persistence and documentation behavior remains unchanged by the two-file material delta."],"rederived_without_pr_description":true,"reviewed_user_visible_semantics":true,"reviewed_producer_consumer_parity":true,"reviewed_all_specification_sources":true}}
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": ".audit/entregar-issue/specification-snapshot.json",
+    "sha256": "d3b367806b315096dae323f82abb7c6400494243421baf69c8c27b5bf18683ab"
+  },
+  "primary_issue_source_id": "SRC-PR-622",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "7ce3b9d226a929abe34a23889e2ca1d677f0d2055d1ca9fa9d530fb48e1be021",
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "source_line": 11,
+      "source_text": "SSR, acessibilidade, responsividade e gates visuais atuais permanecem protegidos durante a transição;",
+      "flags": [
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R-DOC"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Requirement is evidenced on the frozen material head by repository state and/or successful GitHub Actions checks."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "7eef35623893d5ab5e7316b795871c1675e79194d9baa9c13d511c6e4036c7c4",
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "source_line": 47,
+      "source_text": "As épicas possuem checklists, ordem de dependência, critérios de conclusão e referências documentais.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R-DOC"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Requirement is evidenced on the frozen material head by repository state and/or successful GitHub Actions checks."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "77d151de41de47a7264059ac15f99e61561fac584e8b44fdfc00e0c448e53a68",
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "source_line": 54,
+      "source_text": "A matriz de status marca Fases 3 e 4 como `Planejado`; esta PR não declara implementação de funcionalidades futuras.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R-DOC"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Requirement is evidenced on the frozen material head by repository state and/or successful GitHub Actions checks."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "bd611fd0a8cdb10535f00b30a5c5dccac48c21a6e3f082d47f591e9ac0c41641",
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "source_line": 59,
+      "source_text": "diff contra `main` contém somente documentação/instruções de agentes;",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R-DOC"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Requirement is evidenced on the frozen material head by repository state and/or successful GitHub Actions checks."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "3d530687068f5a813a6c25d4918c2d4dd8fd6ecf5d922972bda691ee18ec17b2",
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "source_line": 62,
+      "source_text": "Fase 4A foi separada da Fase 3 antes da abertura deste PR para manter coerência com `PRODUCT.md`;",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R-DOC"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Requirement is evidenced on the frozen material head by repository state and/or successful GitHub Actions checks."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "4437ad723c434cae1222c53bc2e5f6dc8ac4d263504f8ae563cc4031e780b4d5",
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "source_line": 63,
+      "source_text": "nenhum arquivo foi removido.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R-DOC"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Requirement is evidenced on the frozen material head by repository state and/or successful GitHub Actions checks."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "8dbdfd466618edfee35f22a0ef49e545948a50243e2a7f81d81cedb9b559db03",
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "source_line": 72,
+      "source_text": "`nonaffected`: `docs/APP_SHELL.md` preservado como contrato do mecanismo SSR atual; contratos específicos de domínio serão atualizados nas respectivas issues de implementação.",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R-DOC"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Requirement is evidenced on the frozen material head by repository state and/or successful GitHub Actions checks."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "e280e23be95c5d3048bf8cb04724603d2539d241f213fdbc9877f810381bc71f",
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "source_line": 76,
+      "source_text": "Não executados na abertura original da PR: alteração exclusivamente documental. A validação aplicável é consistência de documentos, rastreabilidade de ADRs/épicas e inspeção do diff da branch. Após remediação de CI, o candidato material também deve permanecer verde nos workflows aplicáveis do GitHub Actions.",
+      "flags": [
+        "negative",
+        "temporal",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R-CI"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Requirement is evidenced on the frozen material head by repository state and/or successful GitHub Actions checks."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-PR-622",
+      "source_sha256": "55dc9dd2cd560c8a9b817e1ab2e88104e00e9bcf6028b8ce57ffdaea587e25b0",
+      "candidate_count": 8,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "No structural implementation-form obligation was extracted from the PR specification.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "Documentation-only PR; no executable read model changed.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "PR documentation sources and linked epics were cross-checked against the current GitHub state.",
+    "entries": [
+      {
+        "id": "CSC-001",
+        "evidence": "PR #622 changed-file inventory and epics #589-#592 inspected on the material head."
+      }
+    ],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Documentation-only delivery was checked for phase/status alignment and linked backlog consistency.",
+    "old_contract_terms": [],
+    "new_contract_terms": [
+      "Fase 3",
+      "Fase 4A",
+      "multi-moedas",
+      "arquitetura incremental de interface"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "GitHub issues #589, #590, #591, #592 inspected; changed-file inventory contains only documentation and agent instructions."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "R-DOC",
+      "R-CI"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008"
+    ],
+    "evidence": [
+      "Material head 3c6199d3 has CI run #4190 success and Statement visual validation #2716 success.",
+      "PR #622 changed-file inventory contains only documentation/agent-instruction paths.",
+      "Epics #589-#592 were inspected and contain subissue checklists, dependency ordering and completion criteria."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

@@ -1,1 +1,6 @@
-{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"user-runtime-regression","category":"local-forwarded-origin-regression","summary":"A loopback-host allowlist fixed one reproduction but did not model the broader development access boundary used by LAN, containers, port forwarding and HTTPS tunnels."},"generalized_learning":{"promotion_status":"not-required","reason":"The defect is localized to this repository runtime Origin compatibility policy. The repository fix removes alias enumeration while keeping production exact-match; no cross-repository Skill behavior needs a repository-specific rule."},"skill_changes":[]}
+{
+  "schema_version": 1,
+  "status": "not-applicable",
+  "scope": "PR #622",
+  "reason": "No independent rejection applies to this delivery. This file replaces stale learning evidence inherited from a prior material head."
+}

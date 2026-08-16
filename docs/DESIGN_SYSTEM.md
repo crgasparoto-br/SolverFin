@@ -1,8 +1,8 @@
-# Design system inicial - SolverFin Web
+# Design system - SolverFin Web
 
-Este documento registra a base visual inicial para as telas web/PWA do SolverFin.
+Este documento registra a base visual atual e a direcao de evolucao das telas web/PWA do SolverFin.
 
-A base conceitual fica em `apps/web/src/design-system/`. A aplicacao SSR executavel materializa tokens, shell e primitivas em `apps/web/src/dev-server/shared-styles.ts`, sem depender de React, Storybook ou outro framework enquanto a stack definitiva nao estiver formalizada por ADR.
+A base conceitual fica em `apps/web/src/design-system/`. A aplicacao SSR executavel materializa tokens, shell e primitivas principalmente em `apps/web/src/dev-server/shared-styles.ts`. O runtime atual nao depende de React, Storybook ou outro framework, e a ADR 0014 determina que a componentizacao deve evoluir sem exigir uma troca de framework.
 
 ## Direcao visual
 
@@ -11,11 +11,26 @@ Tese visual: uma interface financeira calma, clara e densa o suficiente para uso
 Principios:
 
 - clareza antes de decoracao;
+- hierarquia de decisao antes de detalhe;
 - mobile-first;
 - contraste forte e foco visivel;
 - componentes com estados previsiveis;
+- moeda explicita em qualquer componente monetario;
 - exemplos sempre ficticios e sem dados financeiros reais;
-- cards apenas para itens repetidos, modais ou ferramentas enquadradas.
+- cards apenas quando criarem agrupamento semantico real, evitando grade de cards como layout padrao para qualquer informacao;
+- consistencia compartilhada antes de customizacao local por rota.
+
+## Estado atual e estado-alvo
+
+### Estado atual
+
+O SSR usa CSS como strings TypeScript, renderers por rota e provedores/pos-processadores registrados no contrato SSR. Esse mecanismo continua valido como baseline executavel enquanto as rotas ainda dependem dele.
+
+### Estado-alvo
+
+A interface deve convergir para tokens, componentes executaveis, layouts reutilizaveis, view-models e arquetipos de tela. Pos-processamento de HTML por regex/string deixa de ser mecanismo normal para novas features e passa a ser legado de transicao.
+
+A migracao e rota a rota. Nenhuma etapa pode remover cobertura SSR, acessibilidade ou validacao visual antes de existir protecao equivalente para a composicao nova.
 
 ## Tokens
 
@@ -29,11 +44,21 @@ Principios:
 - tempos de movimento curtos;
 - breakpoints iniciais.
 
+A evolucao da fundacao deve tornar tambem explicitos:
+
+- densidade de componentes e tabelas;
+- largura maxima e gutters de pagina;
+- grid responsivo;
+- escala tipografica para hierarquia financeira;
+- tamanhos minimos de alvos interativos;
+- camadas/elevacao com uso semantico;
+- tokens de valor positivo, negativo, neutro, atencao e informacao sem depender apenas de cor.
+
 Na aplicacao SSR, `sharedShellStyles()` publica os tokens efetivamente consumidos pelas paginas, incluindo `--primary`, superficies, estados semanticos, raios, sombras e foco. Alteracoes visuais devem manter coerencia entre a referencia conceitual e o CSS executavel.
 
-## Provedores de estilos SSR
+## Provedores de estilos SSR atuais
 
-A composicao SSR e organizada por responsabilidade:
+A composicao SSR atual e organizada por responsabilidade:
 
 - `shared-shell`: tokens, reset, shell autenticado e primitivas recorrentes, fornecido por `sharedShellStyles()`;
 - `shared-dialog`: estrutura compartilhada de dialogos, fornecida por `sharedDialogStyles()` quando a rota usa modal;
@@ -48,19 +73,13 @@ A composicao SSR e organizada por responsabilidade:
 
 O manifesto tipado em `apps/web/src/dev-server/ssr-style-contract.ts` registra quais provedores cada rota disponivel exige. O contrato aceita uma rota sem CSS especifico apenas quando ela estiver explicitamente classificada como `shared-only`.
 
-Os provedores runtime cobrem os pos-processadores efetivamente ligados ao Extrato, Cartoes, Contas e Cartoes, Categorias e Inbox. Quando o modulo cria um bloco proprio, o contrato registra o atributo `data-*` ou `id` do `<style>` e exige CSS nao vazio. Quando o modulo incorpora regras ao bloco principal, o contrato usa um fragmento CSS discriminante. Marcadores de modulos diferentes nao podem compartilhar o mesmo identificador de provedor no manifesto.
+Os provedores runtime cobrem pos-processadores efetivamente ligados a diferentes rotas. Eles continuam sendo parte do contrato atual, mas a ADR 0014 classifica novos pos-processamentos textuais como nao preferenciais e os existentes como candidatos a retirada durante a migracao de cada rota.
 
-O portao nao usa somente busca em arquivos nem infere CSS especifico pela simples existencia de qualquer regra remanescente. Ele requisita cada rota pelo servidor Node `http` real, exige um fragmento do HTML normal da tela, compara os resultados completos dos provedores compartilhados e condicionais, valida cada provedor de pagina, auxiliar ou runtime e remove um provedor por vez nos controles negativos. Assim:
+O portao nao usa somente busca em arquivos nem infere CSS especifico pela simples existencia de qualquer regra remanescente. Ele requisita cada rota pelo servidor Node `http` real, exige um fragmento do HTML normal da tela, compara os resultados completos dos provedores compartilhados e condicionais, valida cada provedor de pagina, auxiliar ou runtime e remove um provedor por vez nos controles negativos.
 
-- uma pagina generica de erro com a folha CSS da rota nao e aceita como representante;
-- CSS auxiliar ainda presente nao mascara a perda do CSS principal da pagina;
-- um bloco runtime ausente ou vazio falha com rota, provedor e modulo;
-- estilos inseridos depois do renderer isolado continuam protegidos;
-- a perda da affordance de divulgacao da remuneracao nao e mascarada pelos estilos estruturais de remuneracao que permanecem no documento.
+Para provedores condicionais, o HTML servido deve produzir o fragmento registrado como gatilho. A validacao continua obrigatoria enquanto o contrato SSR for a protecao executavel da rota.
 
-Para provedores condicionais, o HTML servido deve produzir o fragmento registrado como gatilho. A fixture de `/lancamentos` entrega uma conta e um lancamento ficticio de remuneracao CDI, suficientes para gerar `.statement-layout`, `account-remuneration-audit` e os dois blocos runtime de remuneracao; somente entao o portao exige `statement-presentation` e cada provedor registrado no HTML final.
-
-## Componentes base
+## Componentes base atuais
 
 `components.ts` define receitas de implementacao para:
 
@@ -75,56 +94,141 @@ Para provedores condicionais, o HTML servido deve produzir o fragmento registrad
 - `Toast`;
 - `FormPattern`.
 
-As receitas descrevem estrutura, estados e notas de acessibilidade. Elas orientam a implementacao concreta e nao substituem os estilos SSR atualmente executados.
+Essas receitas continuam referencia, mas a estrategia atual exige que os componentes mais recorrentes passem de receitas conceituais para primitivas executaveis reutilizadas por mais de uma rota.
+
+## Fundacao executavel alvo
+
+A fundacao inicial deve cobrir, conforme a necessidade das telas-piloto:
+
+### UI
+
+- `Button` e `IconButton`;
+- `Card` e `MetricCard`;
+- `Input`, `Select` e controles de formulario;
+- `DataTable`/lista responsiva;
+- `EmptyState`, `Loading`, `Alert` e erro recuperavel;
+- `Dialog` e `Drawer`;
+- `Tabs`;
+- `Badge`/status;
+- `Toast`;
+- `Money`.
+
+### Layout
+
+- `PageContainer`;
+- `PageHeader`;
+- `FilterBar`;
+- `SummaryGrid`;
+- `DetailLayout`;
+- `FormLayout`.
+
+Os nomes podem mudar na implementacao, mas as responsabilidades nao devem voltar a ser duplicadas em cada renderer.
+
+## Primitiva financeira Money
+
+Todo componente que represente valor monetario deve receber, no minimo:
+
+- valor em unidade segura definida pelo contrato;
+- moeda explicita;
+- contexto de exibicao quando houver diferenca entre valor nativo e convertido.
+
+Regras:
+
+- nao inferir BRL por ausencia de moeda;
+- nao somar valores dentro do componente;
+- respeitar formatacao apropriada sem perder o codigo/simbolo necessario para desambiguacao;
+- quando houver conversao futura, diferenciar visualmente valor nativo e valor convertido e permitir acesso aos metadados de cambio relevantes;
+- estados ausente/indisponivel nao devem virar `0` silenciosamente.
+
+## Arquetipos de tela
+
+A interface deve convergir para seis arquetipos:
+
+1. cockpit/dashboard;
+2. listagem/extrato;
+3. master-detail;
+4. cadastro/configuracao;
+5. analise/relatorio;
+6. revisao/inbox.
+
+Cada arquetipo deve definir hierarquia, acao primaria, estrategia responsiva, estados e comportamento de detalhe antes de novas telas inventarem uma composicao propria.
+
+## Hierarquia das telas-piloto
+
+### Dashboard
+
+Priorizar situacao atual, variacao, horizonte e acoes. Evitar que todos os indicadores tenham o mesmo peso visual. Em multi-moedas, saldos/totais devem ser separados por moeda ate existir conversao explicita.
+
+### Extrato
+
+Manter contexto de conta e moeda evidente, filtros compactos, busca, agrupamento temporal, acoes contextuais e detalhe sem perder a lista.
+
+### Cartoes de Credito
+
+Expressar a hierarquia `cartao -> fatura -> compras`, destacar fatura atual, fechamento, vencimento, limite/uso e acoes. Pagamento de fatura nao deve aparecer visualmente como segunda compra/despesa economica.
+
+### Relatorios
+
+Priorizar resumo/conclusao, visualizacao, destaques e por ultimo matriz/tabela detalhada. Moedas diferentes devem aparecer em blocos separados salvo consolidacao cambial explicita.
 
 ## Estados padronizados
 
-Estados cobertos na base:
+Estados cobertos ou a cobrir na base:
 
 - foco visivel;
 - desabilitado;
 - loading;
 - erro de campo;
-- tabela vazia;
-- feedback por toast;
-- dialog em tela pequena.
+- erro de pagina/acao recuperavel;
+- vazio;
+- sucesso/feedback;
+- indisponibilidade;
+- permissao negada;
+- dialog/drawer em tela pequena;
+- overflow e conteudo longo;
+- valor/moeda indisponivel.
 
 Textos visiveis devem explicar o que a pessoa pode fazer, revisar ou corrigir. Evite mensagens tecnicas ou detalhes de backend.
-
-## Exemplos
-
-`examples.ts` contem exemplos de uso para botao, input com ajuda, estado vazio, tabela responsiva e toast.
-
-Esses exemplos sao intencionalmente pequenos para servirem como referencia interna ate existir uma pagina de documentacao visual ou Storybook.
 
 ## Convencoes de uso
 
 - Use labels visiveis em campos; placeholder nao substitui label.
 - Icon-only buttons precisam de label acessivel.
-- Tabelas devem ter estado vazio com orientacao de proxima acao.
+- Tabelas/listas devem ter estado vazio com orientacao de proxima acao.
 - Dialogs devem prender foco quando abertos e permitir fechamento por Escape quando nao forem bloqueantes.
 - Toasts confirmam resultado; erros de formulario devem aparecer perto do campo quando possivel.
 - Nao duplique tokens ou shell completo em um renderer quando um provedor compartilhado ja existir.
-- Ao criar uma rota `status: "available"`, registre o fragmento de HTML normal, o provedor `page:<routeId>`, auxiliares, provedores de runtime e condicionais no contrato SSR na mesma mudanca.
-- Ao adicionar um pos-processador com CSS, use marcador estavel no bloco `<style>` ou um fragmento CSS discriminante e registre-o no contrato.
-- Quando dois modulos emitirem estilos relacionados, mantenha provedores e marcadores separados e adicione controle negativo individual para cada bloco.
+- Nao crie um novo pos-processador de HTML por regex/string para resolver layout ou composicao de feature nova; prefira componente/layout/view-model.
+- Ao migrar uma rota, remova ou deprecie os provedores runtime que deixaram de ser necessarios e atualize o contrato SSR na mesma mudanca.
+- Ao criar uma rota `status: "available"`, mantenha cobertura SSR/visual equivalente desde a primeira entrega.
+- Componentes monetarios exigem moeda explicita.
 - Nao use dados reais em exemplos, screenshots, fixtures ou documentacao.
 
 ## Validacao
 
-Executar o contrato de estilos diretamente:
+Durante a transicao, executar o contrato de estilos diretamente quando a rota ainda estiver coberta por ele:
 
 ```bash
 npm run validate:ssr-styles --workspace @solverfin/web
 ```
 
-O portao tambem faz parte de `npm run build` e `npm run validate`, incluindo o job `Validate monorepo` do CI.
+O portao tambem faz parte de `npm run build` e `npm run validate`.
 
-## Fora deste corte
+Mudancas de componente ou tela devem incluir verificacao proporcional ao risco de:
 
-- Escolha de framework web definitivo.
-- Storybook ou documentacao visual executavel.
-- Testes de componentes com navegador.
-- Componentes avancados de grafico, calendario e upload.
+- estado normal e estados alternativos relevantes;
+- desktop/mobile quando houver composicao distinta;
+- teclado, foco, reflow e zoom;
+- conteudo longo e overflow;
+- moeda correta e ausencia de total cruzado quando houver valores financeiros.
 
-Esses itens devem entrar em issues futuras. O contrato SSR atual deve continuar valido ate uma mudanca de arquitetura deliberada e documentada.
+Testes de fluxo/navegador devem ganhar peso conforme as telas migram; testes que apenas confirmam transformacao textual intermediaria nao substituem evidencia do comportamento final.
+
+## Fora deste documento
+
+- Escolha de framework web definitivo;
+- provider de cambio;
+- regras financeiras de saldo/fatura/orcamento;
+- layout especifico completo de cada feature.
+
+Esses temas pertencem a ADRs, contratos de dominio e issues proprias. Consulte `docs/EVOLUTION_STRATEGY.md`, ADR 0013 e ADR 0014.

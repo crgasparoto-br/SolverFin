@@ -6,11 +6,15 @@ SolverFin e um controle financeiro inteligente para transformar dados dispersos 
 
 O produto deve atender pessoas, familias, MEIs, profissionais autonomos e pequenos negocios que precisam acompanhar entradas, saidas, contas, cartoes, vencimentos, categorias, metas e fluxo financeiro sem depender de lancamento manual excessivo.
 
+O SolverFin e multi-moedas. Valores, saldos, relatorios e projecoes devem preservar a moeda nativa; consolidacoes entre moedas somente podem existir com conversao explicita, auditavel e compreensivel para o usuario.
+
 ## Proposta de valor
 
 - Reduzir esforco manual por importacoes, regras, deduplicacao, conciliacao e IA explicavel.
 - Dar clareza sobre saldo, gastos, receitas, proximos vencimentos e compromissos financeiros.
 - Apoiar uso pessoal e profissional sem misturar contextos.
+- Apoiar multiplas moedas sem produzir totais silenciosamente incorretos.
+- Transformar o dashboard e as telas operacionais em superficies de decisao, nao apenas cadastros e listas.
 - Manter o usuario no controle de sugestoes e automacoes.
 - Proteger dados financeiros por padrao, com consentimento e rastreabilidade.
 
@@ -62,6 +66,8 @@ O usuario importa CSV/OFX ou cola textos de mensagens bancarias. SolverFin norma
 
 O usuario acompanha saldo, proximos vencimentos, faturas, lancamentos previstos, orcamentos, metas e alertas basicos. Compromissos de conta corrente ficam no **Extrato da conta**; compromissos de cartao ficam em **Cartoes de Credito**.
 
+Quando um perfil operar em mais de uma moeda, a experiencia deve deixar a moeda do saldo, compromisso, fatura, orcamento e total sempre explicita. Na ausencia de conversao cambial contratada, os totais permanecem separados por moeda.
+
 ### Usar IA com controle
 
 O usuario recebe sugestoes de extracao, classificacao, conciliacao e insights, sempre com explicacao, origem e estado de revisao.
@@ -73,10 +79,13 @@ O usuario tambem pode usar o **Assistente financeiro** (`/assistente`) para faze
 - **Clareza antes de automacao:** uma automacao so e boa se o usuario entende e consegue revisar.
 - **Privacidade por padrao:** dados financeiros sao sensiveis e devem ser minimizados, protegidos e auditaveis.
 - **Separacao de contextos:** pessoal, familia, MEI e negocio nao devem se misturar sem acao explicita.
+- **Multi-moedas por contrato:** moeda acompanha o valor em todo o fluxo; agregacoes entre moedas diferentes exigem conversao explicita.
 - **IA como assistente:** IA sugere, explica e acelera; nao deve tomar decisoes irreversiveis sozinha.
 - **Rotina mobile-first:** fluxos diarios devem funcionar bem no celular.
 - **MVP pragmatico:** priorizar controle financeiro essencial antes de integracoes sofisticadas.
 - **Interface enxuta:** telas devem priorizar dados, acoes e revisao, evitando textos longos e cards explicativos desnecessarios.
+- **Hierarquia para decisao:** telas financeiras devem destacar situacao, mudanca, horizonte e acao antes do detalhe bruto.
+- **Consistencia antes de customizacao local:** componentes e padroes reutilizaveis devem prevalecer sobre layouts inventados por rota.
 - **CRUD rapido:** cadastros e edicoes devem usar pop-up/modal sempre que possivel, mantendo o usuario na tela atual.
 
 ## Escopo MVP
@@ -98,9 +107,10 @@ O MVP deve permitir:
 - assistente financeiro conversacional somente leitura, persistente e isolado por perfil financeiro;
 - dashboard e relatorios iniciais;
 - separacao por usuario, tenant ou perfil financeiro;
+- preservacao de moeda em valores e separacao de agregados multi-moedas quando nao houver conversao explicita;
 - consentimento, auditoria e mascaramento de dados sensiveis.
 
-## Fases futuras
+## Fases de evolucao
 
 ### Fase 1 - Core financeiro
 
@@ -110,13 +120,40 @@ Implementar dominio, persistencia, autenticacao, multi-tenant, APIs essenciais e
 
 Evoluir importacao, deduplicacao, conciliacao, inbox, regras automaticas, schemas de IA, fila de revisao e consultas conversacionais somente leitura.
 
-### Fase 3 - Operacao e integracoes
+O baseline desta fase esta consolidado em `docs/STATUS_MATRIX.md`.
 
-Adicionar observabilidade, acessibilidade, performance, troubleshooting para agentes, integracoes SolverIT e exportacoes profissionais/MEI.
+### Fase 3 - Integridade financeira, multi-moedas e fundacao de interface
+
+Priorizar a corretude do modelo financeiro e a qualidade estrutural da experiencia antes de ampliar fortemente o escopo funcional:
+
+1. corrigir semantica de compra de cartao, liquidacao de fatura e saldo disponivel para impedir dupla contabilizacao;
+2. tornar multi-moedas um contrato ponta a ponta, sem agregacao implicita;
+3. formalizar datas financeiras e invariantes de calculo relevantes;
+4. criar design system operacional, componentes estruturais e view-models;
+5. retirar gradualmente pos-processamentos textuais de HTML como mecanismo normal de composicao;
+6. migrar Dashboard, Extrato e Cartoes como telas-piloto;
+7. consolidar Relatorios e demais superficies sobre os novos padroes.
+
+O plano detalhado fica em `docs/EVOLUTION_STRATEGY.md`, com ADRs 0013 e 0014.
+
+### Fase 4 - Decisao financeira e integracoes
+
+Sobre o core corrigido e a fundacao de interface estabilizada:
+
+- consolidar compromissos futuros;
+- oferecer projecao 30/60/90 dias;
+- calcular valor realmente livre para gastar por moeda/contrato valido;
+- tornar orcamentos operacionais e recorrencias mais acionaveis;
+- priorizar insights e alertas;
+- adicionar observabilidade, performance, troubleshooting e exportacoes profissionais/MEI;
+- avaliar Open Finance por ADR e estudo tecnico, sem antecipar semantica de conversao ou conciliacao.
+
+Expansoes como metas avancadas, reserva de emergencia, dividas, carteira de investimentos, patrimonio, especializacoes MEI/negocio e colaboracao familiar devem reutilizar os contratos estabelecidos nas Fases 3 e 4.
 
 ## Fora do MVP inicial
 
 - Integracao bancaria direta via Open Finance sem ADR e estudo tecnico.
+- Conversao cambial implicita ou sem fonte/taxa/data auditaveis.
 - Automacao irreversivel sem revisao humana.
 - App nativo completo antes da validacao da PWA.
 - Funcionalidades de ERP avancado, folha, estoque ou contabilidade completa.
@@ -129,6 +166,7 @@ Adicionar observabilidade, acessibilidade, performance, troubleshooting para age
 - Quais operacoes exigirao revisao humana obrigatoria antes de persistir efeitos financeiros?
 - Por quanto tempo mensagens bancarias brutas poderao ser mantidas apos normalizacao?
 - Quais relatorios MEI serao essenciais antes de integracoes com contador?
+- Qual politica de moeda de referencia e conversao sera adotada quando o produto passar a oferecer consolidados cambiais?
 
 ## Regras para IA no produto
 
@@ -151,6 +189,7 @@ A IA nao deve:
 - criar lancamentos finais sem revisao quando a regra de negocio exigir confirmacao;
 - expor mensagens bancarias brutas ou dados sensiveis sem necessidade clara;
 - executar mutacoes financeiras pelo assistente conversacional;
+- agregar moedas diferentes ou inventar cotacao cambial;
 - oferecer recomendacao profissional de investimento, credito, juridica, fiscal ou contabil.
 
 ## Experiencia esperada
@@ -164,6 +203,8 @@ Recorrencias nao tem tela propria: sao criadas e geridas dentro da tela onde a c
 Contas a pagar e a receber tambem nao tem tela operacional propria no produto ativo. Receitas, despesas e transferencias previstas devem ser criadas e acompanhadas no **Extrato da conta**; compras, faturas e pagamentos de cartao devem ser criados e acompanhados em **Cartoes de Credito**. Qualquer compatibilidade tecnica com registros antigos deve preservar historico sem reintroduzir uma jornada separada para o usuario.
 
 Telas operacionais devem ser clean: listas, filtros, acoes rapidas, estados vazios compactos e icones acessiveis devem ter prioridade sobre cards explicativos, banners permanentes e blocos longos de texto.
+
+Dashboard e telas analiticas devem priorizar hierarquia: primeiro situacao e decisao; depois visualizacao e destaque; por ultimo o detalhe tabular. Em perfis multi-moedas, moeda e parte dessa hierarquia e deve permanecer visivel.
 
 Exemplos de tom adequado:
 
@@ -179,6 +220,8 @@ Evitar promessas absolutas como "controle total", "IA sem erro" ou "riqueza gara
 - Usuarios conseguem registrar e revisar lancamentos com menos esforco manual.
 - Importacoes e sugestoes reduzem retrabalho sem perder confianca.
 - Contextos pessoais e profissionais permanecem separados.
+- Perfis multi-moedas nao exibem totais cruzados sem conversao explicita.
 - Pendencias de revisao ficam claras.
 - Dados sensiveis nao aparecem em logs, exemplos ou telas indevidas.
+- Telas centrais compartilham padroes visuais e de interacao em vez de depender de ajustes isolados por rota.
 - Novas issues conseguem apontar para contexto, escopo, validacao e riscos.
