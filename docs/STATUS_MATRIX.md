@@ -81,22 +81,22 @@ As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas
 
 A Fase 3 esta **planejada**, nao implementada por esta atualizacao documental. O trabalho operacional esta organizado nas epicas #589, #590 e #591 e respectivas subissues.
 
-| Capacidade estrutural                                       | Estado    | Contrato principal                   |
-| ----------------------------------------------------------- | --------- | ------------------------------------ |
-| Compra de cartao x liquidacao sem dupla contabilizacao      | Planejado | #589, `docs/EVOLUTION_STRATEGY.md`   |
-| Saldo/metricas coerentes com a semantica financeira         | Planejado | #589, `docs/EVOLUTION_STRATEGY.md`   |
-| Agregacao multi-moedas explicita                            | Planejado | #589, ADR 0013                       |
-| Contrato para consolidacao cambial auditavel futura         | Planejado | #589, ADR 0013                       |
-| Datas financeiras formalizadas                              | Planejado | #589, `docs/EVOLUTION_STRATEGY.md`   |
-| Invariantes financeiros ponta a ponta                       | Planejado | #589                                 |
-| Design system operacional com primitivas executaveis        | Planejado | #590, `docs/DESIGN_SYSTEM.md`        |
-| View-models/presenters para separar UI de calculos           | Planejado | #590, ADR 0014                       |
-| Retirada gradual de pos-processamento textual de HTML        | Planejado | #590, ADR 0014                       |
-| Dashboard migrado para cockpit de decisao                    | Planejado | #591                                 |
-| Extrato migrado para novo padrao                             | Planejado | #591                                 |
-| Cartoes/Faturas migrados para hierarquia cartao-fatura       | Planejado | #591                                 |
-| Relatorios com resumo/visualizacao antes da matriz detalhada | Planejado | #591                                 |
-| Demais superficies convergentes aos arquetipos compartilhados| Planejado | #591                                 |
+| Capacidade estrutural                                         | Estado    | Contrato principal                 |
+| ------------------------------------------------------------- | --------- | ---------------------------------- |
+| Compra de cartao x liquidacao sem dupla contabilizacao        | Planejado | #589, `docs/EVOLUTION_STRATEGY.md` |
+| Saldo/metricas coerentes com a semantica financeira           | Planejado | #589, `docs/EVOLUTION_STRATEGY.md` |
+| Agregacao multi-moedas explicita                              | Planejado | #589, ADR 0013                     |
+| Contrato para consolidacao cambial auditavel futura           | Planejado | #589, ADR 0013                     |
+| Datas financeiras formalizadas                                | Planejado | #589, `docs/EVOLUTION_STRATEGY.md` |
+| Invariantes financeiros ponta a ponta                         | Planejado | #589                               |
+| Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`      |
+| View-models/presenters para separar UI de calculos            | Planejado | #590, ADR 0014                     |
+| Retirada gradual de pos-processamento textual de HTML         | Planejado | #590, ADR 0014                     |
+| Dashboard migrado para cockpit de decisao                     | Planejado | #591                               |
+| Extrato migrado para novo padrao                              | Planejado | #591                               |
+| Cartoes/Faturas migrados para hierarquia cartao-fatura        | Planejado | #591                               |
+| Relatorios com resumo/visualizacao antes da matriz detalhada  | Planejado | #591                               |
+| Demais superficies convergentes aos arquetipos compartilhados | Planejado | #591                               |
 
 ### Regras de transicao da Fase 3
 
@@ -110,14 +110,14 @@ A Fase 3 esta **planejada**, nao implementada por esta atualizacao documental. O
 
 A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contratos e superficies estruturados na Fase 3.
 
-| Capacidade de previsibilidade                               | Estado    | Contrato principal                  |
-| ----------------------------------------------------------- | --------- | ----------------------------------- |
-| Fonte canonica de compromissos futuros sem dupla contagem   | Planejado | #592 / #616                        |
-| Projecao de fluxo de caixa 30/60/90 dias por moeda          | Planejado | #592 / #617, ADR 0013              |
-| Valor livre para gastar deterministico e explicavel         | Planejado | #592 / #618                        |
-| Orcamentos com realizado/comprometido/disponivel/projetado  | Planejado | #592 / #619                        |
-| Recorrencias futuras acionaveis nas jornadas existentes     | Planejado | #592 / #620                        |
-| Insights priorizados, deduplicados e com drilldown          | Planejado | #592 / #621                        |
+| Capacidade de previsibilidade                              | Estado    | Contrato principal    |
+| ---------------------------------------------------------- | --------- | --------------------- |
+| Fonte canonica de compromissos futuros sem dupla contagem  | Planejado | #592 / #616           |
+| Projecao de fluxo de caixa 30/60/90 dias por moeda         | Planejado | #592 / #617, ADR 0013 |
+| Valor livre para gastar deterministico e explicavel        | Planejado | #592 / #618           |
+| Orcamentos com realizado/comprometido/disponivel/projetado | Planejado | #592 / #619           |
+| Recorrencias futuras acionaveis nas jornadas existentes    | Planejado | #592 / #620           |
+| Insights priorizados, deduplicados e com drilldown         | Planejado | #592 / #621           |
 
 ### Regras da Fase 4
 
