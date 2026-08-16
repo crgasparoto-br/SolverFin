@@ -1,1 +1,125 @@
-{"schema_version":1,"head_sha":"e7553a71235110b78283886773a23807763d2174","families":[{"family":"authorization","applicable":true,"reason":"Authenticated browser mutations cross the Origin/CSRF boundary. Development compatibility is allowed only when APP_ORIGIN itself is local; production and non-local configured origins remain exact-match.","control_ids":["FORM-NO-MASKEDIDENTIFIER-001","LOCAL-DEVELOPMENT-ORIGIN-001"],"status":"passed"},{"family":"tenant-isolation","applicable":false,"reason":"No current specification or material-delta signal requires this family.","control_ids":[],"status":"not-applicable"},{"family":"public-boundary","applicable":true,"reason":"Account listing/search remains a presentation boundary for sensitive identifiers.","control_ids":["ACCOUNT-IDENTIFIER-PRIVACY-001","SEARCH-METADATA-PRIVACY-001"],"status":"passed"},{"family":"reference-liveness","applicable":false,"reason":"No current specification or material-delta signal requires this family.","control_ids":[],"status":"not-applicable"},{"family":"temporal-consistency","applicable":false,"reason":"No current specification or material-delta signal requires this family.","control_ids":[],"status":"not-applicable"},{"family":"temporal-destination","applicable":false,"reason":"No current specification or material-delta signal requires this family.","control_ids":[],"status":"not-applicable"},{"family":"concurrency-atomicity","applicable":false,"reason":"No current specification or material-delta signal requires this family.","control_ids":[],"status":"not-applicable"},{"family":"idempotency","applicable":false,"reason":"No current specification or material-delta signal requires this family.","control_ids":[],"status":"not-applicable"},{"family":"rollback","applicable":false,"reason":"No current specification or material-delta signal requires this family.","control_ids":[],"status":"not-applicable"},{"family":"historical-immutability","applicable":true,"reason":"Legacy maskedIdentifier must remain readable without parsing or rewriting.","control_ids":["HYBRID-PRECEDENCE-001","LEGACY-NO-DERIVATION-001"],"status":"passed"},{"family":"structural-contract","applicable":true,"reason":"Structured account fields, legacy fallback, privacy, form writes and runtime mutation authorization must remain separated across surfaces.","control_ids":["ACCOUNT-IDENTIFIER-PRIVACY-001","ACCOUNT-PATCH-INDEPENDENCE-001","DOC-LEGACY-PRECEDENCE-001","FORM-NO-MASKEDIDENTIFIER-001","HYBRID-PRECEDENCE-001","LEGACY-NO-DERIVATION-001","LOCAL-DEVELOPMENT-ORIGIN-001","SEARCH-METADATA-PRIVACY-001"],"status":"passed"},{"family":"documentation","applicable":true,"reason":"Canonical API documentation and ADR must remain aligned with executable account semantics.","control_ids":["DOC-LEGACY-PRECEDENCE-001"],"status":"passed"}],"material_families_missing_controls":[]}
+{
+  "schema_version": 1,
+  "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "R-CI-NEG-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "exact-head-ci",
+          "reason": "The post-remediation requirement is specifically bound to the frozen material head.",
+          "control_ids": [
+            "R-CI-NEG-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "R-DOC-NEG-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "document-contract",
+          "reason": "The material delivery changes only documentation and agent instructions.",
+          "control_ids": [
+            "R-DOC-NEG-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

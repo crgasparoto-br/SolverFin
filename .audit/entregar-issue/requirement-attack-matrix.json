@@ -1,1 +1,123 @@
-{"schema_version":1,"head_sha":"e7553a71235110b78283886773a23807763d2174","requirements":[{"requirement_id":"REQ-DOCUMENTATION","obligation_ids":["OBL-038"],"risk_families":["documentation","structural-contract"],"plausible_wrong_implementation":"Canonical account documentation could describe fields correctly while contradicting executable legacy precedence, fallback or write-boundary semantics.","positive_control":{"id":"PC-DOC","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"API_ACCOUNTS.md and ADR 0012 remain unchanged from the previously aligned candidate."},"negative_controls":[{"id":"DOC-LEGACY-PRECEDENCE-001","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Canonical account docs still state structured precedence and legacy-only fallback.","sibling_cases":[{"id":"DOC-LEGACY-PRECEDENCE-001-S1","dimension":"api-contract","status":"passed","evidence":"API contract retains the aligned precedence/fallback statement."}]}],"regression_controls":[{"id":"RG-DOC","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"The origin-only material delta does not alter account API/documentation semantics."}]},{"requirement_id":"REQ-DOMAIN-API-PERSISTENCE","obligation_ids":["OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015","OBL-028","OBL-029","OBL-030","OBL-031","OBL-034","OBL-039","OBL-040","OBL-041","OBL-042","OBL-054","OBL-055","OBL-056","OBL-057","OBL-066","OBL-067","OBL-076","OBL-078"],"risk_families":["structural-contract"],"plausible_wrong_implementation":"PATCH could still overwrite an omitted sibling or collapse structured identifiers into legacy storage while account responses look correct.","positive_control":{"id":"PC-DOMAIN","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Domain, router, repository, Prisma and migration paths are unchanged from the previously green exact-head candidate."},"negative_controls":[{"id":"ACCOUNT-PATCH-INDEPENDENCE-001","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Previously validated independent update, omission preservation and blank-clear behavior remains byte-identical.","sibling_cases":[{"id":"ACCOUNT-PATCH-INDEPENDENCE-001-S1","dimension":"blank-clear","status":"passed","evidence":"Whitespace clears only the addressed identifier."}]}],"regression_controls":[{"id":"RG-DOMAIN","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Material delta contains only request-origin.ts plus its focused test; account persistence paths are unchanged."}]},{"requirement_id":"REQ-LEGACY-COMPATIBILITY","obligation_ids":["OBL-005","OBL-007","OBL-016","OBL-018","OBL-019","OBL-020","OBL-021","OBL-022","OBL-037","OBL-044","OBL-045","OBL-046","OBL-047","OBL-048","OBL-049","OBL-050","OBL-058","OBL-059","OBL-060","OBL-061","OBL-068","OBL-069","OBL-070","OBL-072","OBL-074"],"risk_families":["historical-immutability","structural-contract"],"plausible_wrong_implementation":"Legacy-only data could be parsed or overwritten, or hybrid data could let stale legacy text override structured identifiers.","positive_control":{"id":"PC-LEGACY","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Legacy fallback and hybrid precedence implementation/tests are unchanged by the origin-only remediation."},"negative_controls":[{"id":"LEGACY-NO-DERIVATION-001","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"No parsing or derivation path is touched; legacy edit inputs remain structured-empty.","sibling_cases":[{"id":"LEGACY-NO-DERIVATION-001-S1","dimension":"ambiguous-unparsed","status":"passed","evidence":"Ambiguous legacy text remains a presentation fallback."},{"id":"LEGACY-NO-DERIVATION-001-S2","dimension":"edit-empty","status":"passed","evidence":"Legacy-only edit keeps structured inputs empty."}]},{"id":"HYBRID-PRECEDENCE-001","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Contradictory hybrid fixture remains in the repository and structured values win.","sibling_cases":[{"id":"HYBRID-PRECEDENCE-001-S1","dimension":"structured-wins","status":"passed","evidence":"Structured suffixes suppress legacy text."},{"id":"HYBRID-PRECEDENCE-001-S2","dimension":"fallback-only","status":"passed","evidence":"Legacy fallback is used only when both structured identifiers are absent."}]}],"regression_controls":[{"id":"RG-LEGACY","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Origin remediation does not modify account renderer/domain/API legacy logic."}]},{"requirement_id":"REQ-LISTING-PRIVACY","obligation_ids":["OBL-001","OBL-002","OBL-006","OBL-017","OBL-032","OBL-033","OBL-035","OBL-036","OBL-043","OBL-051","OBL-052","OBL-063","OBL-064","OBL-065","OBL-071","OBL-073","OBL-075","OBL-077"],"risk_families":["public-boundary","structural-contract"],"plausible_wrong_implementation":"Visible identifiers could be minimized while complete values leak through search metadata, or stale legacy text could appear for hybrid records.","positive_control":{"id":"PC-PRIVACY","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Structured masking/privacy transformer and listing renderer are unchanged by the origin-only remediation."},"negative_controls":[{"id":"ACCOUNT-IDENTIFIER-PRIVACY-001","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Existing SSR controls hide complete and unsafe-short structured identifiers.","sibling_cases":[{"id":"ACCOUNT-IDENTIFIER-PRIVACY-001-S1","dimension":"short-hidden","status":"passed","evidence":"Short structured identifiers remain omitted from listing/search."},{"id":"ACCOUNT-IDENTIFIER-PRIVACY-001-S2","dimension":"full-absent","status":"passed","evidence":"Full structured sentinels remain absent from rendered listing/search."}]},{"id":"SEARCH-METADATA-PRIVACY-001","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Search metadata remains derived from minimized presentation values.","sibling_cases":[{"id":"SEARCH-METADATA-PRIVACY-001-S1","dimension":"no-full-search","status":"passed","evidence":"Complete structured identifiers are excluded from data-search."},{"id":"SEARCH-METADATA-PRIVACY-001-S2","dimension":"legacy-safe-fallback","status":"passed","evidence":"Only the already-minimized legacy fallback can reach search when structured fields are absent."}]}],"regression_controls":[{"id":"RG-PRIVACY","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"No listing/privacy path changed in the material remediation."}]},{"requirement_id":"REQ-WEB-FORM-ROUNDTRIP","obligation_ids":["OBL-003","OBL-004","OBL-023","OBL-024","OBL-025","OBL-026","OBL-027","OBL-053","OBL-062"],"risk_families":["authorization","structural-contract"],"plausible_wrong_implementation":"The account form can render and serialize correctly yet fail before routing when a legitimate development Origin comes from LAN, container, port-forward or HTTPS tunnel access; a naive fix can also weaken productive CSRF checks.","positive_control":{"id":"PC-WEB","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Create/edit form markup and structured payload are unchanged; the runtime Origin guard now has an explicit development compatibility path only when APP_ORIGIN itself is local."},"negative_controls":[{"id":"FORM-NO-MASKEDIDENTIFIER-001","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Create/edit form payload remains free of maskedIdentifier.","sibling_cases":[{"id":"FORM-NO-MASKEDIDENTIFIER-001-S1","dimension":"structured-only","status":"passed","evidence":"The account form continues to send agencyIdentifier/accountIdentifier independently."},{"id":"FORM-NO-MASKEDIDENTIFIER-001-S2","dimension":"no-concatenation","status":"passed","evidence":"The unchanged form payload builder sends agencyIdentifier and accountIdentifier as independent keys and does not synthesize maskedIdentifier."}]},{"id":"LOCAL-DEVELOPMENT-ORIGIN-001","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"Focused semantic harness and repository regression cover localhost, 0.0.0.0, LAN and HTTPS tunnel-style Origins for a local-configured development APP_ORIGIN while malformed/missing Origin and productive mismatches remain rejected.","sibling_cases":[{"id":"LOCAL-DEVELOPMENT-ORIGIN-001-S1","dimension":"lan-or-forwarded-host","status":"passed","evidence":"A valid LAN Origin and alternate forwarded port are accepted only under a local-configured development APP_ORIGIN."},{"id":"LOCAL-DEVELOPMENT-ORIGIN-001-S2","dimension":"https-tunnel","status":"passed","evidence":"A valid HTTPS tunnel-style Origin is accepted for local development without requiring a hostname allowlist."},{"id":"LOCAL-DEVELOPMENT-ORIGIN-001-S3","dimension":"missing-or-malformed","status":"passed","evidence":"Missing, null, file and malformed Origin values remain rejected by default."},{"id":"LOCAL-DEVELOPMENT-ORIGIN-001-S4","dimension":"production-exactness","status":"passed","evidence":"Production and development with a non-local configured APP_ORIGIN continue to reject mismatched origins."}]}],"regression_controls":[{"id":"RG-WEB","status":"passed","head_sha":"e7553a71235110b78283886773a23807763d2174","evidence":"request-origin.test.ts now codifies forwarded development access and productive exact-match negatives; account form serialization paths are unchanged."}]}],"uncovered_requirements":[]}
+{
+  "schema_version": 1,
+  "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
+  "uncovered_requirements": [],
+  "requirements": [
+    {
+      "requirement_id": "R-DOC",
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007"
+      ],
+      "risk_families": [
+        "documentation"
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "documentation",
+          "surface": "document-contract",
+          "reason": "The material delivery changes only documentation and agent instructions."
+        }
+      ],
+      "plausible_wrong_implementation": "The documentation could look internally coherent while linked epics, phase status, changed-file scope, or preserved SSR contract disagree with it.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
+        "evidence": "PR #622 changed-file inventory contains only documentation/agent-instruction paths; epics #589-#592 expose checklists, dependency ordering and completion criteria; status/phase contracts remain documentary and planned."
+      },
+      "negative_controls": [
+        {
+          "id": "R-DOC-NEG-001",
+          "risk_family": "documentation",
+          "surface": "document-contract",
+          "dimension": "cross-source-divergence",
+          "status": "passed",
+          "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
+          "evidence": "PR #622 changed-file inventory contains only documentation/agent-instruction paths; epics #589-#592 expose checklists, dependency ordering and completion criteria; status/phase contracts remain documentary and planned.",
+          "evidence_sha256": "7788cc0ffcd49f8b8190221e47f04372bff1e312788bc3e35121c66217f12dd4",
+          "control_type": "procedure",
+          "failure_mode": "The published repository state diverges from the declared PR contract.",
+          "plausible_wrong_implementation": "Reviewing only one edited document could miss contradictions in linked epics, phase boundaries, changed-file scope, or the preserved SSR contract.",
+          "procedure": "Cross-check the PR changed-file inventory, linked epics #589-#592, phase/status statements and preserved APP_SHELL contract against the exact material head.",
+          "expected": "The exact material head remains consistent with the PR contract and required evidence.",
+          "observed": "The checked repository state and successful workflows match the declared contract.",
+          "sibling_cases": [
+            {
+              "id": "R-DOC-SIB-1",
+              "surface": "document-contract",
+              "dimension": "independent-cross-check",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
+          "evidence": "Material head 3c6199d3f4bf1c104bd067b360eabf47d8d63e37: GitHub Actions CI run #4190 and Statement visual validation run #2716 both completed successfully."
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-CI",
+      "obligation_ids": [
+        "OBL-008"
+      ],
+      "risk_families": [
+        "temporal-consistency"
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "exact-head-ci",
+          "reason": "The post-remediation requirement is specifically bound to the frozen material head."
+        }
+      ],
+      "plausible_wrong_implementation": "A previous successful workflow could be mistaken for evidence for the remediated head, leaving the actual published material commit unverified.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
+        "evidence": "Material head 3c6199d3f4bf1c104bd067b360eabf47d8d63e37: GitHub Actions CI run #4190 and Statement visual validation run #2716 both completed successfully."
+      },
+      "negative_controls": [
+        {
+          "id": "R-CI-NEG-001",
+          "risk_family": "temporal-consistency",
+          "surface": "exact-head-ci",
+          "dimension": "sha-mismatch",
+          "status": "passed",
+          "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
+          "evidence": "Material head 3c6199d3f4bf1c104bd067b360eabf47d8d63e37: GitHub Actions CI run #4190 and Statement visual validation run #2716 both completed successfully.",
+          "evidence_sha256": "c30e1007b2b8eb1cc10b49cb1e86938f6298910b82b86c354f5b4daf59e5c8d2",
+          "control_type": "procedure",
+          "failure_mode": "The published repository state diverges from the declared PR contract.",
+          "plausible_wrong_implementation": "Accepting a green run from an earlier SHA would falsely certify the remediated candidate without exact-head evidence.",
+          "procedure": "Verify both applicable workflow runs are successful and attached to the exact material SHA 3c6199d3f4bf1c104bd067b360eabf47d8d63e37.",
+          "expected": "The exact material head remains consistent with the PR contract and required evidence.",
+          "observed": "The checked repository state and successful workflows match the declared contract.",
+          "sibling_cases": [
+            {
+              "id": "R-CI-SIB-1",
+              "surface": "exact-head-ci",
+              "dimension": "independent-cross-check",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
+          "evidence": "Material head 3c6199d3f4bf1c104bd067b360eabf47d8d63e37: GitHub Actions CI run #4190 and Statement visual validation run #2716 both completed successfully."
+        }
+      ]
+    }
+  ]
+}
