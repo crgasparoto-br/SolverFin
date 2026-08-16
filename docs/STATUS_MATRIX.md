@@ -1,16 +1,18 @@
 # Matriz de status do MVP
 
-Esta matriz registra o estado consolidado do SolverFin e separa o baseline concluido da Fase 2 de lacunas gerais do MVP. Os contratos detalhados permanecem nos documentos donos de cada dominio.
+Esta matriz registra o estado consolidado do SolverFin e separa o baseline concluido da Fase 2 de lacunas gerais do MVP e da proxima fase estrutural. Os contratos detalhados permanecem nos documentos donos de cada dominio.
 
 ## Legenda
 
 - **Feito:** existe implementacao verificavel no codigo atual.
 - **Parcial:** existe parte relevante, mas a lacuna restante pertence a outro recorte.
 - **Legado:** existe para compatibilidade ou transicao e nao orienta novas jornadas.
+- **Planejado:** decisao/estrategia documentada, mas implementacao depende de issue aberta e nao deve ser tratada como concluida.
 
 ## Fontes de verdade
 
-- `docs/PRODUCT.md`: escopo, principios e roadmap.
+- `docs/PRODUCT.md`: escopo, principios e fases de evolucao.
+- `docs/EVOLUTION_STRATEGY.md`: estrategia estrutural da Fase 3 e ordem de dependencias.
 - `docs/ARCHITECTURE.md`: arquitetura, CI e invariantes tecnicos.
 - `docs/RUNBOOK.md`: gate final e reproducao da regressao da Fase 2.
 - `docs/product/INTERFACE_INVENTORY.md`: recorte navegavel do baseline.
@@ -75,6 +77,34 @@ As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas
 | Autenticacao produtiva | Feito no codigo      | Ativacao depende da configuracao do ambiente     |
 | Configuracoes          | Parcial              | Novas preferencias ficam em evolucao propria     |
 
+## Fase 3 - Integridade financeira, multi-moedas e fundacao de interface
+
+A Fase 3 esta **planejada**, nao implementada por esta atualizacao documental. O trabalho operacional deve existir como epicas/subissues no GitHub.
+
+| Capacidade estrutural                                      | Estado    | Contrato principal                    |
+| ---------------------------------------------------------- | --------- | ------------------------------------- |
+| Compra de cartao x liquidacao sem dupla contabilizacao     | Planejado | `docs/EVOLUTION_STRATEGY.md`          |
+| Saldo/metricas coerentes com a semantica financeira        | Planejado | `docs/EVOLUTION_STRATEGY.md`          |
+| Agregacao multi-moedas explicita                           | Planejado | ADR 0013                              |
+| Conversao cambial auditavel para consolidados futuros      | Planejado | ADR 0013; issue/ADR futura de cambio  |
+| Datas financeiras formalizadas                             | Planejado | `docs/EVOLUTION_STRATEGY.md`          |
+| Invariantes financeiros ponta a ponta                      | Planejado | `docs/EVOLUTION_STRATEGY.md`          |
+| Design system operacional com primitivas executaveis       | Planejado | `docs/DESIGN_SYSTEM.md`, ADR 0014     |
+| View-models/presenters para separar UI de calculos          | Planejado | ADR 0014                              |
+| Retirada gradual de pos-processamento textual de HTML       | Planejado | ADR 0014                              |
+| Dashboard migrado para cockpit de decisao                   | Planejado | `docs/EVOLUTION_STRATEGY.md`          |
+| Extrato migrado para novo padrao                            | Planejado | `docs/EVOLUTION_STRATEGY.md`          |
+| Cartoes/Faturas migrados para hierarquia cartao-fatura      | Planejado | `docs/EVOLUTION_STRATEGY.md`          |
+| Relatorios com resumo/visualizacao antes da matriz detalhada| Planejado | `docs/EVOLUTION_STRATEGY.md`          |
+
+### Regras de transicao da Fase 3
+
+- O baseline da Fase 2 nao e reclassificado como incompleto por causa da nova estrategia.
+- O SSR e o gate visual permanecem obrigatorios enquanto cada rota depender do mecanismo atual.
+- Pos-processadores HTML atuais sao legado de migracao e nao justificam novos pos-processadores como arquitetura preferencial.
+- Multi-moedas e invariante imediato para novas implementacoes; nenhum trabalho novo deve introduzir agregado cruzado entre moedas.
+- Itens planejados so mudam para `Parcial` ou `Feito` quando houver implementacao verificavel e issue correspondente.
+
 ## Decisoes de jornada preservadas
 
 - compromissos de conta corrente permanecem no Extrato da conta;
@@ -83,7 +113,8 @@ As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas
 - a Inbox continua sendo a fronteira unificada para sugestoes revisaveis;
 - o assistente continua estritamente somente leitura;
 - o provider do assistente aceita somente `DIRECT` ou `CONTEXTUAL`; numeros e fatos seguem deterministas;
-- o inventario completo de rotas fica em `docs/product/INTERFACE_INVENTORY.md`, com `apps/web/src/app-shell/routes.ts` como fonte executavel.
+- o inventario completo de rotas fica em `docs/product/INTERFACE_INVENTORY.md`, com `apps/web/src/app-shell/routes.ts` como fonte executavel;
+- telas e contratos multi-moedas devem separar totais por moeda ate existir conversao explicita.
 
 ## Gate final da Fase 2 (#569)
 
@@ -100,4 +131,4 @@ O SHA aprovado e o head do PR com os checks verdes no GitHub e nao e hardcoded n
 
 ## Limites fora da Fase 2
 
-As lacunas gerais marcadas como `Parcial` nesta matriz nao sao reclassificadas como trabalho da Fase 2. A Fase 3 permanece separada e inclui o recorte descrito em `docs/PRODUCT.md`.
+As lacunas gerais marcadas como `Parcial` nesta matriz nao sao reclassificadas como trabalho da Fase 2. A Fase 3 segue `docs/PRODUCT.md` e `docs/EVOLUTION_STRATEGY.md`, e cada capacidade exige issue propria.
