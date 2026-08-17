@@ -1,2 +1,0 @@
-Superseded specification source placeholder for PR #622.
-The current canonical source is specification-sources/SRC-PR-622.txt and is referenced by specification-snapshot.json.

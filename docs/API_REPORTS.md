@@ -57,17 +57,18 @@ A consulta considera uma vez cada `Transaction` que atenda simultaneamente:
 - organizacao e perfil financeiro resolvidos;
 - `kind` igual a `income` ou `expense`;
 - `status` igual a `posted` ou `reconciled`;
-- `occurredOn` dentro de um dos periodos, com limites inclusivos.
+- `occurredOn` dentro de um dos periodos, com limites inclusivos;
+- nao seja a transacao de liquidacao de uma fatura, identificada exclusivamente pela referencia canonica `Invoice.paymentTransactionId`.
 
-Sem `accountId` e sem `cardId`, o contrato anterior e preservado integralmente: entram todas as transacoes elegiveis do perfil, inclusive movimentos sem conta ou cartao vinculados.
+A referencia `Invoice.paymentTransactionId` e o discriminador persistido entre **despesa economica da compra** e **movimento de caixa da liquidacao**. Uma transacao de pagamento de fatura continua existindo e pode afetar calculos de caixa apropriados, mas nao cria uma segunda despesa economica neste relatorio. Descricao, valor, data ou semelhanca textual nunca sao usados para inferir essa classificacao.
 
-Com `accountId`, entra somente a transacao cujo `Transaction.accountId` seja exatamente a conta selecionada. Movimentos de outra conta, sem `accountId` ou que mencionem a conta apenas em `destinationAccountId` nao entram no recorte.
+Sem `accountId` e sem `cardId`, entram todas as transacoes elegiveis do perfil, inclusive movimentos sem conta ou cartao vinculados, exceto as liquidacoes de fatura referenciadas por `Invoice.paymentTransactionId`.
 
-Com `cardId`, entra somente a transacao cujo `Transaction.cardId` seja exatamente o cartao agrupador selecionado. Como todos os instrumentos da compra persistem o mesmo `cardId`, o recorte abrange instrumentos fisicos, virtuais, principais e adicionais, inclusive instrumento posteriormente arquivado quando a transacao historica continua elegivel. `cardInstrumentId` e `invoiceId` nao sao filtros desta API.
+Com `accountId`, entra somente a transacao cujo `Transaction.accountId` seja exatamente a conta selecionada. Movimentos de outra conta, sem `accountId` ou que mencionem a conta apenas em `destinationAccountId` nao entram no recorte. Se a conta for usada para pagar uma fatura, a transacao referenciada por `Invoice.paymentTransactionId` tambem e excluida; uma despesa legitima da mesma conta, ainda que tenha o mesmo valor ou descricao semelhante, permanece elegivel quando nao estiver referenciada.
 
-O pagamento da fatura e identificado pela referencia canonica `Invoice.paymentTransactionId` e permanece excluido do recorte por cartao. Assim, a compra nao e contabilizada novamente pelo pagamento. As exclusoes existentes de `transfer`, `planned`, `suggested` e `voided` permanecem efetivas.
+Com `cardId`, entra somente a transacao cujo `Transaction.cardId` seja exatamente o cartao agrupador selecionado. Como todos os instrumentos da compra persistem o mesmo `cardId`, o recorte abrange instrumentos fisicos, virtuais, principais e adicionais, inclusive instrumento posteriormente arquivado quando a transacao historica continua elegivel. `cardInstrumentId` e `invoiceId` nao sao filtros desta API. A liquidacao referenciada por `Invoice.paymentTransactionId` permanece excluida pelo mesmo contrato canonico.
 
-Vinculos com grupo, parcela, fatura, recorrencia, importacao, sugestao ou origem nao criam movimentos adicionais.
+As exclusoes existentes de `transfer`, `planned`, `suggested` e `voided` permanecem efetivas. Vinculos com grupo, parcela, fatura, recorrencia, importacao, sugestao ou origem nao criam movimentos adicionais.
 
 A implementacao usa uma validacao constante da origem, uma consulta agregada por periodos/categoria/moeda e uma consulta da taxonomia atual. A quantidade de consultas nao cresce com a quantidade de contas, cartoes, instrumentos, periodos ou categorias. Nao ha escrita nem `AuditLogEntry` de mutacao.
 
