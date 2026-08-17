@@ -268,3 +268,23 @@ A cobertura automatizada deve proteger pelo menos:
 A tela de Cartões consulta parcelas pelo `invoiceId` selecionado e associa o metadado à compra por `transaction.id`. O indicador `Parcela X de Y` aparece na própria linha da compra, sem reintroduzir blocos separados de parcelas ou histórico.
 
 A manutenção continua exclusivamente pelo endpoint da compra. O bloqueio `invoice_linked` pertence ao contrato de edição direta de parcelas, prevalece sobre motivos genéricos de situação da transação e não desabilita, por si só, uma compra que a situação da fatura permite editar. O indicador associa essa explicação por `aria-describedby` e oferece tooltip acionável por hover e foco de teclado. Faturas fechadas, pagas ou canceladas mantêm os bloqueios existentes; vencimento isolado não cria novo bloqueio.
+
+## Semantica financeira de compra e liquidacao da fatura
+
+Compra de cartao e pagamento da fatura representam fatos financeiros diferentes:
+
+- a compra e a **despesa economica** e deve ser reconhecida uma unica vez no periodo da compra conforme o contrato do relatorio;
+- o pagamento da fatura e a **liquidacao financeira** dessa obrigacao e continua sendo uma `Transaction` da conta de pagamento para representar o movimento de caixa;
+- a liquidacao nao cria uma segunda despesa economica.
+
+A classificacao da liquidacao e persistida de forma canonica por `Invoice.paymentTransactionId`. Uma `Transaction` e tratada como pagamento de fatura para fins de agregacao economica quando seu `id` esta referenciado por esse campo. Nao se deve inferir pagamento por descricao, valor, data, categoria ou qualquer outra heuristica.
+
+Consequencias do contrato:
+
+- agregacoes de despesa economica devem excluir a transacao referenciada por `Invoice.paymentTransactionId` e manter as compras da fatura;
+- uma despesa legitima com o mesmo valor ou a mesma descricao do pagamento continua sendo despesa quando nao estiver referenciada por `Invoice.paymentTransactionId`;
+- calculos especificamente de caixa podem considerar a liquidacao, desde que nao a confundam com uma segunda despesa economica;
+- o pagamento persiste `Invoice.paymentTransactionId` apontando para a `Transaction` criada e a resposta devolve essa referencia;
+- repetir o pagamento de uma fatura ja paga e rejeitado por `CARD_INVOICE_ALREADY_PAID` antes de criar outra transacao, preservando a idempotencia financeira do fluxo.
+
+Relatorios que exponham despesa economica devem documentar explicitamente essa exclusao. O contrato atual de evolucao por categoria esta em `docs/API_REPORTS.md`.
