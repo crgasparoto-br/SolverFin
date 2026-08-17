@@ -79,7 +79,7 @@ As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas
 
 ## Fase 3 - Integridade financeira, multi-moedas e fundacao de interface
 
-A Fase 3 esta **planejada**, nao implementada por esta atualizacao documental. O trabalho operacional esta organizado nas epicas #589, #590 e #591 e respectivas subissues.
+A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas #589, #590 e #591 e respectivas subissues; cada capacidade abaixo deve refletir apenas o estado verificavel do seu proprio recorte.
 
 | Capacidade estrutural                                         | Estado    | Contrato principal                 |
 | ------------------------------------------------------------- | --------- | ---------------------------------- |
@@ -87,7 +87,7 @@ A Fase 3 esta **planejada**, nao implementada por esta atualizacao documental. O
 | Saldo/metricas coerentes com a semantica financeira           | Planejado | #589, `docs/EVOLUTION_STRATEGY.md` |
 | Agregacao multi-moedas explicita                              | Planejado | #589, ADR 0013                     |
 | Contrato para consolidacao cambial auditavel futura           | Planejado | #589, ADR 0013                     |
-| Datas financeiras formalizadas                                | Planejado | #589, `docs/EVOLUTION_STRATEGY.md` |
+| Datas financeiras formalizadas                                | Feito     | #597, `docs/TRANSACTION_DATES.md`  |
 | Invariantes financeiros ponta a ponta                         | Planejado | #589                               |
 | Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`      |
 | View-models/presenters para separar UI de calculos            | Planejado | #590, ADR 0014                     |
