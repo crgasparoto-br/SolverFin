@@ -15,6 +15,7 @@ import {
   createCreditCardAccountForContext,
   updateCreditCardAccountForContext,
 } from "./repositories/card-instruments.js";
+import { closeInvoiceForContext } from "./repositories/card-invoice-contracts.js";
 import { payInvoiceForContext, registerCardPurchaseForContext } from "./repositories/cards.js";
 import { createCategoryForContext } from "./repositories/categories.js";
 import { createTransactionForContext } from "./repositories/transactions.js";
@@ -248,9 +249,50 @@ async function assertCardFilter(
     cardInstrumentId: otherInstrument.id,
   });
   await archiveCardInstrumentForContext(PERSONAL_CONTEXT, additionalInstrument.id);
-  await payInvoiceForContext(PERSONAL_CONTEXT, firstPurchase.invoice.id, paymentAccount.id, {
-    paidOn: "2032-03-15",
+  await closeInvoiceForContext(PERSONAL_CONTEXT, firstPurchase.invoice.id);
+  const payment = await payInvoiceForContext(
+    PERSONAL_CONTEXT,
+    firstPurchase.invoice.id,
+    paymentAccount.id,
+    {
+      paidOn: "2032-03-15",
+    },
+  );
+  assert.equal(payment.invoice.paymentTransactionId, payment.transaction.id);
+
+  await assert.rejects(
+    () =>
+      payInvoiceForContext(PERSONAL_CONTEXT, firstPurchase.invoice.id, paymentAccount.id, {
+        paidOn: "2032-03-15",
+      }),
+    isInvoiceAlreadyPaid,
+  );
+
+  await createTransactionForContext(PERSONAL_CONTEXT, {
+    accountId: paymentAccount.id,
+    categoryId: expenseCategory.id,
+    kind: "expense",
+    status: "posted",
+    amountMinor: payment.transaction.amountMinor,
+    occurredOn: "2032-03-16",
+    plannedOn: "2032-03-16",
+    description: payment.transaction.description,
   });
+
+  const allSources = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
+    kind: "all",
+  });
+  assert.equal(allSources.currencyBlocks[0]?.expense.totalMinor, 9_000);
+
+  const paymentAccountReport = await buildCategoryEvolutionReportForSourceContext(
+    PERSONAL_CONTEXT,
+    filters,
+    {
+      kind: "account",
+      id: paymentAccount.id,
+    },
+  );
+  assert.equal(paymentAccountReport.currencyBlocks[0]?.expense.totalMinor, 2_000);
 
   const selected = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
     kind: "card",
@@ -317,4 +359,12 @@ function requireInstrument(
 
 function isSourceNotAvailable(error: unknown): boolean {
   return error instanceof CategoryEvolutionSourceNotAvailableError && error.statusCode === 404;
+}
+
+function isInvoiceAlreadyPaid(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    (error as Error & { code?: string }).code === "CARD_INVOICE_ALREADY_PAID"
+  );
 }
