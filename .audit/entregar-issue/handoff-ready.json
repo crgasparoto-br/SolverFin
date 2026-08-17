@@ -1,19 +1,18 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-17T22:33:15.357352+00:00",
+  "created_at": "2026-08-17T22:39:39.863885+00:00",
   "identity": {
-    "head_sha": "2edd0a664e4ac53910a5f1d3fe6b41fe0f5d289f",
-    "material_head_sha": "2edd0a664e4ac53910a5f1d3fe6b41fe0f5d289f",
+    "head_sha": "edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83",
+    "material_head_sha": "edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83",
     "base_sha": "f75dd222690734869b92358c85242555bb80b9b2",
-    "merge_preview_sha": "c33f8b37f4f721047900756345da5124487630a9",
-    "material_merge_preview_sha": "c33f8b37f4f721047900756345da5124487630a9"
+    "merge_preview_sha": "7d15af234e13b0aefca32e2f5afbebd4ec312e4a",
+    "material_merge_preview_sha": "7d15af234e13b0aefca32e2f5afbebd4ec312e4a"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/applicability-ledger.json",
-      ".audit/entregar-issue/audit-escape-closure.json",
       ".audit/entregar-issue/cycle-history.json",
       ".audit/entregar-issue/documentation-impact.json",
       ".audit/entregar-issue/evidence-summary.json",
@@ -21,16 +20,13 @@
       ".audit/entregar-issue/gate-report.json",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
-      ".audit/entregar-issue/learning-closure.json",
       ".audit/entregar-issue/remote-gate.json",
       ".audit/entregar-issue/requirement-attack-matrix.json",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/risk-profile.json",
       ".audit/entregar-issue/risk-saturation.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE-593.txt",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
-      ".audit/entregar-issue/specification-sources/SRC-PR-622.txt"
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE-593.txt"
     ]
   },
   "contract_version": "2026-08-06.2",
@@ -57,15 +53,15 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "bc0052c15f3084602a8326430cb709aa81be85ebfde60b9820e3352ba8e0da17"
+      "sha256": "4e09009d85a711ea81ddbb11bc4a27d8642782abe1d77ed8fc37500dae1ea683"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "1e5721ff683d95f51367f09716b4a2a27304da040bbc442af4d2723abcb2a24d"
+      "sha256": "7e05284fd84d24bcae6df981a6cd3ea40ae7bd801a7acb8f75de9a11c81cb02e"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "6501d83e4941392f75a73645ec45e6d430cb6658db16b22f8d937916945d3765"
+      "sha256": "7e656fcc705c0e297784433d17d0fd94b11e15da7e7314a874527f4944b12ba5"
     }
   },
   "previous_independent_rejection": false
