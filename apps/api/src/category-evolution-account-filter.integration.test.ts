@@ -249,6 +249,14 @@ async function assertCardFilter(
     cardInstrumentId: otherInstrument.id,
   });
   await archiveCardInstrumentForContext(PERSONAL_CONTEXT, additionalInstrument.id);
+
+  const allSourcesBeforePayment = await buildCategoryEvolutionReportForSourceContext(
+    PERSONAL_CONTEXT,
+    filters,
+    { kind: "all" },
+  );
+  const expenseBeforePayment = allSourcesBeforePayment.currencyBlocks[0]?.expense.totalMinor ?? 0;
+
   await closeInvoiceForContext(PERSONAL_CONTEXT, firstPurchase.invoice.id);
   const payment = await payInvoiceForContext(
     PERSONAL_CONTEXT,
@@ -282,7 +290,10 @@ async function assertCardFilter(
   const allSources = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
     kind: "all",
   });
-  assert.equal(allSources.currencyBlocks[0]?.expense.totalMinor, 9_000);
+  assert.equal(
+    allSources.currencyBlocks[0]?.expense.totalMinor,
+    expenseBeforePayment + payment.transaction.amountMinor,
+  );
 
   const paymentAccountReport = await buildCategoryEvolutionReportForSourceContext(
     PERSONAL_CONTEXT,
@@ -292,7 +303,10 @@ async function assertCardFilter(
       id: paymentAccount.id,
     },
   );
-  assert.equal(paymentAccountReport.currencyBlocks[0]?.expense.totalMinor, 2_000);
+  assert.equal(
+    paymentAccountReport.currencyBlocks[0]?.expense.totalMinor,
+    payment.transaction.amountMinor,
+  );
 
   const selected = await buildCategoryEvolutionReportForSourceContext(PERSONAL_CONTEXT, filters, {
     kind: "card",
