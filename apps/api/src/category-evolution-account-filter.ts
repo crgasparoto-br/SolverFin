@@ -2,7 +2,6 @@ import type { TenantContext } from "@solverfin/domain";
 
 import {
   buildCategoryEvolutionReport,
-  buildCategoryEvolutionReportForContext,
   CategoryEvolutionFilterError,
   type CategoryEvolutionFilters,
   type CategoryEvolutionReport,
@@ -70,21 +69,25 @@ export async function buildCategoryEvolutionReportForSourceContext(
   filters: CategoryEvolutionFilters,
   source: CategoryEvolutionSourceFilter,
 ): Promise<CategoryEvolutionReport> {
-  if (source.kind === "all") {
-    return buildCategoryEvolutionReportForContext(context, filters);
+  if (source.kind !== "all") {
+    await assertSourceAvailableForContext(context, source);
   }
 
-  await assertSourceAvailableForContext(context, source);
-
-  const sourcePredicate =
-    source.kind === "account"
-      ? 'movement."accountId" = $5'
-      : `movement."cardId" = $5
-          and not exists (
+  const invoicePaymentExclusionPredicate = `not exists (
             select 1
               from "Invoice" invoice
-             where invoice."paymentTransactionId" = movement."id"
+             where invoice."organizationId" = $1
+               and invoice."financialProfileId" = $2
+               and invoice."paymentTransactionId" = movement."id"
           )`;
+  const sourcePredicate =
+    source.kind === "all"
+      ? invoicePaymentExclusionPredicate
+      : source.kind === "account"
+        ? `movement."accountId" = $5
+          and ${invoicePaymentExclusionPredicate}`
+        : `movement."cardId" = $5
+          and ${invoicePaymentExclusionPredicate}`;
 
   const [categories, movements] = await Promise.all([
     query<CategoryRow>(
@@ -131,7 +134,7 @@ export async function buildCategoryEvolutionReportForSourceContext(
         context.financialProfileId,
         filters.periods.map((period) => period.startsOn),
         filters.periods.map((period) => period.endsOn),
-        source.id,
+        ...(source.kind === "all" ? [] : [source.id]),
       ],
     ),
   ]);
