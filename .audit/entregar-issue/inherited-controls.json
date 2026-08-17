@@ -1,7 +1,1 @@
-{
-  "schema_version": 1,
-  "head_sha": "3c6199d3f4bf1c104bd067b360eabf47d8d63e37",
-  "controls": [],
-  "unresolved_controls": [],
-  "source": "No independent rejection applies to PR #622; stale inherited package from a prior delivery is replaced rather than reused."
-}
+{"schema_version":1,"head_sha":"2edd0a664e4ac53910a5f1d3fe6b41fe0f5d289f","controls":[{"id":"IC-001","status":"passed","head_sha":"2edd0a664e4ac53910a5f1d3fe6b41fe0f5d289f","evidence":"evidence-summary.json#EVID-005: existing tenant/profile isolation is preserved in the new anti-join."},{"id":"IC-002","status":"passed","head_sha":"2edd0a664e4ac53910a5f1d3fe6b41fe0f5d289f","evidence":"evidence-summary.json#EVID-003: no schema, currency-conversion, dashboard, assistant, or unrelated financial behavior was changed."}],"unresolved_controls":[]}

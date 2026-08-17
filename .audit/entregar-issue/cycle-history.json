@@ -1,0 +1,1 @@
+{"schema_version":1,"issue":593,"cycle":1,"events":[{"at":"2026-08-17T22:31:11.497249+00:00","event":"material-freeze","sha":"2edd0a664e4ac53910a5f1d3fe6b41fe0f5d289f"},{"at":"2026-08-17T22:31:11.497249+00:00","event":"pr-opened","pr":623},{"at":"2026-08-17T22:31:11.497249+00:00","event":"remote-ci-snapshot","run_id":32076098074,"status":"in_progress"}]}
