@@ -233,7 +233,7 @@ export function recurringCardScopeControllerScript(): string {
             kind: String(data.get("kind") || ""),
             status: String(data.get("status") || ""),
             amountMinor: moneyToMinor(data.get("amountMinor")),
-            occurredOn: effectiveOn || plannedOn,
+            occurredOn: String(data.get("occurredOn") || ""),
             plannedOn,
             effectiveOn: effectiveOn || null,
             accountId: String(data.get("accountId") || ""),
