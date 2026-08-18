@@ -32,9 +32,7 @@ globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
 try {
   const html = await renderTransactionsPage(
     "session-token",
-    new URL(
-      "http://solverfin.test/lancamentos?accountId=account-temporal-form&month=2035-01",
-    ),
+    new URL("http://solverfin.test/lancamentos?accountId=account-temporal-form&month=2035-01"),
   );
 
   assert.match(
