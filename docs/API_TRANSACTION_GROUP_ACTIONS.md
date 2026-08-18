@@ -24,12 +24,16 @@ Campos aceitos:
 {
   "description": "Descrição revisada",
   "date": "2026-07-20",
+  "plannedOn": "2026-07-25",
+  "effectiveOn": "2026-07-28",
   "amountMinor": 1317623,
   "categoryId": "uuid-ou-null"
 }
 ```
 
-O formulário padrão de lançamentos também pode enviar `plannedOn` e `effectiveOn`; a API usa a data aplicável ao membro. Conta, tipo, moeda e situação não podem ser alterados por esta rota, pois são propriedades de compatibilidade do grupo. O total do agrupamento é recalculado a partir dos membros persistidos. Essa manutenção se aplica somente a lançamentos sem vínculo canônico de parcela.
+`plannedOn` e `effectiveOn` preservam as semânticas independentes definidas em [`TRANSACTION_DATES.md`](./TRANSACTION_DATES.md): alterar apenas `plannedOn` não modifica `occurredOn` nem `effectiveOn`, e alterar apenas `effectiveOn` não modifica `occurredOn` nem `plannedOn`. `occurredOn` não é editável por esta rota, pois a manutenção de agrupamento não pode mover silenciosamente o período econômico de um lançamento realizado.
+
+O campo legado `date` continua aceito para o formulário de agrupamento, mas é **status-aware**, não um alias universal: em membro `planned` ele altera somente `plannedOn`; em membro `posted`/`reconciled` ele altera somente `effectiveOn`. Quando o cliente envia os campos explícitos, eles têm precedência sobre esse fallback. Conta, tipo, moeda e situação não podem ser alterados por esta rota, pois são propriedades de compatibilidade do grupo. O total do agrupamento é recalculado a partir dos membros persistidos. Essa manutenção se aplica somente a lançamentos sem vínculo canônico de parcela.
 
 Após uma edição persistida, o modal, a linha consolidada e os saldos posteriores do Extrato são atualizados imediatamente com o delta do novo valor, sem manter a projeção anterior até um recarregamento da página.
 
@@ -41,7 +45,7 @@ POST /api/transaction-groups/:groupId/members/:memberId/clone
 
 Cria um lançamento independente, sem `transactionGroupId`, recorrência, parcela ou proveniência de importação. O clone recebe fonte `manual`; lançamentos efetivados ou conciliados são clonados como `posted`, e lançamentos previstos permanecem `planned`.
 
-Na interface, a ação por linha reutiliza o formulário padrão de novo lançamento, preenchido com os dados do membro, para permitir revisão antes de salvar. A descrição sugerida, incluindo o prefixo `Cópia de`, é limitada a 240 caracteres.
+Na interface, a ação por linha reutiliza o formulário padrão de novo lançamento, preenchido com os dados do membro, para permitir revisão antes de salvar. A descrição sugerida, incluindo o prefixo `Cópia de`, é limitada a 240 caracteres. Sem uma nova data informada, a clonagem preserva separadamente `occurredOn`, `plannedOn` e `effectiveOn` do membro de origem; quando o formulário legado envia `date`, essa data representa explicitamente os fatos temporais do novo clone e não reescreve o membro original.
 
 ## Excluir um lançamento
 

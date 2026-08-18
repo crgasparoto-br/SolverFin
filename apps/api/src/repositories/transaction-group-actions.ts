@@ -3,6 +3,12 @@ import { randomUUID } from "node:crypto";
 import { TransactionGroupError, type TenantContext } from "@solverfin/domain";
 
 import { withTransaction, type QueryExecutor } from "../db.js";
+import {
+  resolveTransactionGroupCloneTemporalFields,
+  resolveTransactionGroupUpdateTemporalFields,
+  type ResolvedTransactionGroupTemporalFields,
+  type TransactionGroupTemporalFieldsInput,
+} from "../transaction-group-temporal-fields.js";
 import { getTransactionGroupForContext } from "./transaction-groups.js";
 
 interface GroupRow {
@@ -26,18 +32,16 @@ interface GroupMemberRow {
   note: string | null;
 }
 
-export interface UpdateTransactionGroupMemberInput {
+export interface UpdateTransactionGroupMemberInput extends TransactionGroupTemporalFieldsInput {
   amountMinor?: number;
-  date?: string;
   description?: string;
   categoryId?: string | null;
 }
 
 export type CloneTransactionGroupMemberInput = UpdateTransactionGroupMemberInput;
 
-interface ResolvedMemberValues {
+interface ResolvedMemberValues extends ResolvedTransactionGroupTemporalFields {
   amountMinor: number;
-  date: string;
   description: string;
   categoryId: string | null;
 }
@@ -51,18 +55,17 @@ export async function updateTransactionGroupMemberForContext(
   await withTransaction(async (executeQuery) => {
     const { members } = await loadLockedGroup(executeQuery, context, groupId);
     const member = requireMember(members, memberId);
-    const values = await resolveMemberValues(executeQuery, context, member, input);
-    const effectiveOn = member.status === "PLANNED" ? null : values.date;
+    const values = await resolveUpdateMemberValues(executeQuery, context, member, input);
 
     await executeQuery(
       `update "Transaction"
-          set "amountMinor"=$1, "occurredOn"=$2, "plannedOn"=$2, "effectiveOn"=$3,
+          set "amountMinor"=$1, "plannedOn"=$2, "effectiveOn"=$3,
               "description"=$4, "categoryId"=$5, "updatedByUserId"=$6, "updatedAt"=now()
         where "id"=$7 and "organizationId"=$8 and "financialProfileId"=$9 and "transactionGroupId"=$10`,
       [
         values.amountMinor,
-        values.date,
-        effectiveOn,
+        values.plannedOn,
+        values.effectiveOn,
         values.description,
         values.categoryId,
         context.userId,
@@ -76,7 +79,7 @@ export async function updateTransactionGroupMemberForContext(
       executeQuery,
       context,
       member.installmentId,
-      values.date,
+      values.plannedOn,
       values.amountMinor,
       member.currency,
     );
@@ -310,16 +313,38 @@ function requireMember(members: GroupMemberRow[], memberId: string): GroupMember
   return member;
 }
 
+async function resolveUpdateMemberValues(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  member: GroupMemberRow,
+  input: UpdateTransactionGroupMemberInput,
+): Promise<ResolvedMemberValues> {
+  return resolveMemberValues(
+    executeQuery,
+    context,
+    member,
+    input,
+    resolveTransactionGroupUpdateTemporalFields(toTemporalSnapshot(member), input),
+  );
+}
+
 async function resolveCloneValues(
   executeQuery: QueryExecutor,
   context: TenantContext,
   member: GroupMemberRow,
   input: CloneTransactionGroupMemberInput = {},
 ): Promise<ResolvedMemberValues> {
-  return resolveMemberValues(executeQuery, context, member, {
+  const cloneInput = {
     ...input,
     description: input.description ?? `Cópia de ${member.description}`.slice(0, 240),
-  });
+  };
+  return resolveMemberValues(
+    executeQuery,
+    context,
+    member,
+    cloneInput,
+    resolveTransactionGroupCloneTemporalFields(toTemporalSnapshot(member), input),
+  );
 }
 
 async function resolveMemberValues(
@@ -327,10 +352,10 @@ async function resolveMemberValues(
   context: TenantContext,
   member: GroupMemberRow,
   input: UpdateTransactionGroupMemberInput,
+  temporal: ResolvedTransactionGroupTemporalFields,
 ): Promise<ResolvedMemberValues> {
   const amountMinor = input.amountMinor ?? member.amountMinor;
   const description = input.description?.trim() ?? member.description;
-  const date = input.date ?? toDateOnly(member.effectiveOn ?? member.plannedOn);
   const categoryId = input.categoryId === undefined ? member.categoryId : input.categoryId;
 
   if (!Number.isInteger(amountMinor) || amountMinor <= 0) {
@@ -342,12 +367,39 @@ async function resolveMemberValues(
       "Informe uma descrição de até 240 caracteres.",
     );
   }
-  if (!isDateOnly(date)) {
+  if (!isDateOnly(temporal.occurredOn) || !isDateOnly(temporal.plannedOn)) {
     throw groupError("TRANSACTION_DATE_REQUIRED", "Informe uma data válida.");
+  }
+  if (member.status === "PLANNED") {
+    if (temporal.effectiveOn !== null) {
+      throw groupError(
+        "TRANSACTION_EFFECTIVE_DATE_INVALID",
+        "Lançamentos previstos não podem ter data efetiva.",
+      );
+    }
+  } else {
+    if (temporal.effectiveOn === null) {
+      throw groupError(
+        "TRANSACTION_EFFECTIVE_DATE_REQUIRED",
+        "Lançamentos efetivados ou conciliados exigem data efetiva.",
+      );
+    }
+    if (!isDateOnly(temporal.effectiveOn)) {
+      throw groupError("TRANSACTION_DATE_REQUIRED", "Informe uma data válida.");
+    }
   }
 
   await validateCategory(executeQuery, context, categoryId, member.kind);
-  return { amountMinor, date, description, categoryId };
+  return { amountMinor, description, categoryId, ...temporal };
+}
+
+function toTemporalSnapshot(member: GroupMemberRow) {
+  return {
+    status: member.status,
+    occurredOn: toDateOnly(member.occurredOn),
+    plannedOn: toDateOnly(member.plannedOn),
+    effectiveOn: member.effectiveOn === null ? null : toDateOnly(member.effectiveOn),
+  };
 }
 
 async function validateCategory(
@@ -420,7 +472,6 @@ async function insertClone(
 ): Promise<{ id: string; status: string; description: string }> {
   const id = randomUUID();
   const status = member.effectiveOn ? "POSTED" : "PLANNED";
-  const effectiveOn = status === "POSTED" ? values.date : null;
   const rows = await executeQuery<{ id: string; status: string; description: string }>(
     `insert into "Transaction"
       ("id", "organizationId", "financialProfileId", "accountId", "categoryId", "kind", "status",
@@ -438,9 +489,9 @@ async function insertClone(
       status,
       values.amountMinor,
       member.currency,
-      values.date,
-      values.date,
-      effectiveOn,
+      values.occurredOn,
+      values.plannedOn,
+      values.effectiveOn,
       values.description,
       member.note,
       context.userId,

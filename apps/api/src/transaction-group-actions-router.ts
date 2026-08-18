@@ -93,11 +93,7 @@ export async function handleTransactionGroupActionsApiRequest(
     }
 
     if (route.action === "void_member") {
-      const result = await voidTransactionGroupMemberForContext(
-        context,
-        route.groupId,
-        route.memberId,
-      );
+      const result = await voidTransactionGroupMemberForContext(context, route.groupId, route.memberId);
       return json(200, result);
     }
 
@@ -217,23 +213,28 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
   return body as Record<string, unknown>;
 }
 
-function readMemberDate(body: Record<string, unknown>): string | undefined {
-  const value = body.date ?? body.effectiveOn ?? body.plannedOn;
-  return value === undefined || value === null || value === "" ? undefined : String(value);
-}
-
 function readMutableMemberInput(body: Record<string, unknown>) {
-  const memberDate = readMemberDate(body);
+  const date = readOptionalString(body.date);
+  const plannedOn = readOptionalString(body.plannedOn);
+  const effectiveOn = readNullableString(body.effectiveOn);
   return {
     ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
-    ...(memberDate !== undefined ? { date: memberDate } : {}),
+    ...(date !== undefined ? { date } : {}),
+    ...(plannedOn !== undefined ? { plannedOn } : {}),
+    ...(effectiveOn !== undefined ? { effectiveOn } : {}),
     ...(body.description !== undefined ? { description: String(body.description) } : {}),
     ...(body.categoryId !== undefined ? { categoryId: readNullableString(body.categoryId) } : {}),
   };
 }
 
-function readNullableString(value: unknown): string | null {
-  if (value === null || value === undefined || value === "") return null;
+function readOptionalString(value: unknown): string | undefined {
+  if (value === null || value === undefined || value === "") return undefined;
+  return String(value);
+}
+
+function readNullableString(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
   return String(value);
 }
 
