@@ -26,6 +26,7 @@ export type TransactionErrorCode =
   | "TRANSACTION_SOURCE_INVALID"
   | "TRANSACTION_AMOUNT_INVALID"
   | "TRANSACTION_DATE_REQUIRED"
+  | "TRANSACTION_EFFECTIVE_DATE_REQUIRED"
   | "TRANSACTION_ACCOUNT_REQUIRED"
   | "TRANSACTION_ACCOUNT_INVALID"
   | "TRANSACTION_ACCOUNT_ARCHIVED"
@@ -236,22 +237,24 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
   );
   const kind = validateTransactionKind(input.payload.kind ?? currentTransaction.kind);
   const nextStatus = input.payload.status ?? currentTransaction.status;
-  const nextEffectiveOn = shouldClearEffectiveOn(nextStatus)
-    ? null
-    : input.payload.effectiveOn !== undefined
-      ? input.payload.effectiveOn
-      : currentTransaction.effectiveOn;
+  const nextEffectiveOn =
+    nextStatus === "voided"
+      ? (currentTransaction.effectiveOn ?? null)
+      : shouldClearEffectiveOn(nextStatus)
+        ? null
+        : input.payload.effectiveOn !== undefined
+          ? input.payload.effectiveOn
+          : (currentTransaction.effectiveOn ??
+            (shouldAssignEffectiveOnOnTransition(currentTransaction, nextStatus)
+              ? input.now.slice(0, 10)
+              : undefined));
   const payload: CreateTransactionPayload = {
     kind,
     status: nextStatus,
     source: input.payload.source ?? currentTransaction.source,
     amountMinor: input.payload.amountMinor ?? currentTransaction.amountMinor,
     currency: input.payload.currency ?? currentTransaction.currency,
-    occurredOn:
-      input.payload.occurredOn ??
-      input.payload.effectiveOn ??
-      input.payload.plannedOn ??
-      currentTransaction.occurredOn,
+    occurredOn: input.payload.occurredOn ?? currentTransaction.occurredOn,
     plannedOn: input.payload.plannedOn ?? currentTransaction.plannedOn,
     description: input.payload.description ?? currentTransaction.description,
     accountId: input.payload.accountId ?? requireAccountId(currentTransaction.accountId),
@@ -405,12 +408,9 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
   );
 
   const status = validateTransactionStatus(input.payload.status ?? "posted");
-  const plannedOn = validateTransactionDate(input.payload.plannedOn ?? input.payload.occurredOn);
-  const effectiveOn = resolveEffectiveOn(
-    status,
-    input.payload.effectiveOn,
-    input.payload.occurredOn,
-  );
+  const occurredOn = validateTransactionDate(input.payload.occurredOn);
+  const plannedOn = validateTransactionDate(input.payload.plannedOn ?? occurredOn);
+  const effectiveOn = resolveEffectiveOn(status, input.payload.effectiveOn, occurredOn);
   const transaction: Transaction = {
     id: input.id,
     organizationId: input.context.organizationId,
@@ -420,7 +420,7 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
     source: validateTransactionSource(input.payload.source ?? "manual"),
     amountMinor: validateAmount(input.payload.amountMinor),
     currency: normalizeCurrency(input.payload.currency ?? account.currency),
-    occurredOn: effectiveOn ?? plannedOn,
+    occurredOn,
     plannedOn,
     description: normalizeDescription(input.payload.description),
     accountId: account.id,
@@ -614,8 +614,23 @@ function resolveEffectiveOn(
   effectiveOn: ISODate | null | undefined,
   fallbackOccurredOn: ISODate,
 ): ISODate | undefined {
-  if (shouldClearEffectiveOn(status) || effectiveOn === null) {
+  if (status === "voided") {
+    if (effectiveOn === null || effectiveOn === undefined) {
+      return undefined;
+    }
+
+    return validateTransactionDate(effectiveOn);
+  }
+
+  if (shouldClearEffectiveOn(status)) {
     return undefined;
+  }
+
+  if (effectiveOn === null) {
+    throw new TransactionError(
+      "TRANSACTION_EFFECTIVE_DATE_REQUIRED",
+      "Posted or reconciled transactions require an effective date.",
+    );
   }
 
   if (effectiveOn !== undefined) {
@@ -627,6 +642,19 @@ function resolveEffectiveOn(
 
 function shouldClearEffectiveOn(status: TransactionStatus): boolean {
   return status === "planned" || status === "suggested";
+}
+
+function shouldAssignEffectiveOnOnTransition(
+  currentTransaction: Transaction,
+  nextStatus: TransactionStatus,
+): boolean {
+  return (
+    (nextStatus === "posted" || nextStatus === "reconciled") &&
+    currentTransaction.effectiveOn === undefined &&
+    (currentTransaction.status === "planned" ||
+      currentTransaction.status === "suggested" ||
+      currentTransaction.status === "voided")
+  );
 }
 
 function normalizeDescription(description = ""): string {

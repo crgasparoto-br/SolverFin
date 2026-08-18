@@ -666,6 +666,7 @@ export function payInvoice(input: PayInvoiceInput): InvoicePaymentResult {
     currency: invoice.currency,
     occurredOn: paidOn,
     plannedOn: paidOn,
+    effectiveOn: paidOn,
     description,
     accountId: paymentAccount.id,
     cardId: card.id,

@@ -101,6 +101,9 @@ async function main(): Promise<void> {
     edited.members.find((member) => member.id === members[0]!.id)?.description,
     "Membro alterado",
   );
+  const persisted = await getTransactionForContext(context, members[0]!.id);
+  assert.equal(persisted.plannedOn, "2028-02-01");
+  assert.equal(persisted.effectiveOn, "2028-02-10");
 
   const installments = await query<{
     dueOn: Date;
@@ -111,7 +114,7 @@ async function main(): Promise<void> {
       where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3`,
     [installmentId, context.organizationId, context.financialProfileId],
   );
-  assert.equal(installments[0]?.dueOn.toISOString().slice(0, 10), "2028-02-10");
+  assert.equal(installments[0]?.dueOn.toISOString().slice(0, 10), "2028-02-01");
   assert.equal(installments[0]?.amountMinor, 1500);
   assert.equal(installments[0]?.updatedByUserId, context.userId);
 

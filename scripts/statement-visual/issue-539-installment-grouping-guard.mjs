@@ -215,7 +215,7 @@ try {
   );
   check(bulkVoid.installment?.editable === false, "Voided installment remained editable", bulkVoid);
   check(
-    bulkVoid.installment?.editBlockedReason === "transaction_status_locked",
+    bulkVoid.installment?.editBlockedReason === "installment_status_locked",
     "Voided installment returned the wrong block reason",
     bulkVoid,
   );
@@ -404,28 +404,22 @@ function fixtureExpression() {
       name: "Categoria guard " + suffix,
       kind: "expense"
     })).category;
-    const recurrence = (await request("/api/recurrences", "POST", {
-      frequency: "monthly",
-      startOn: "2026-07-15",
-      endOn: "2026-07-15",
-      amountMinor: 12345,
-      description: "QA parcela fora de agrupamento",
-      kind: "expense",
+    const installmentBody = await request("/api/installments", "POST", {
       accountId: account.id,
-      categoryId: category.id
-    })).recurrence;
-    await request("/api/recurrences/" + recurrence.id + "/generate-installments", "POST", {
-      through: "2026-07-15",
-      maxOccurrences: 1
+      categoryId: category.id,
+      kind: "expense",
+      status: "reconciled",
+      description: "QA parcela fora de agrupamento",
+      plannedOn: "2026-07-15",
+      effectiveOn: "2026-07-15",
+      amountMinor: 12345,
+      amountMode: "per_installment",
+      totalInstallments: 2,
+      initialSequenceNumber: 2,
+      idempotencyKey: crypto.randomUUID()
     });
-    const installments = (await request(
-      "/api/installments?recurrenceId=" + recurrence.id + "&status=all"
-    )).installments;
-    const installment = installments.find((item) => item.transaction?.id);
+    const installment = installmentBody.installments?.[0];
     if (!installment?.transaction?.id) throw new Error("Grouping guard fixture did not create an installment");
-    await request("/api/transactions/" + installment.transaction.id, "PATCH", {
-      status: "reconciled"
-    });
 
     const ordinary = (await request("/api/transactions", "POST", {
       kind: "expense",

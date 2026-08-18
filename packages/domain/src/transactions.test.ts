@@ -31,6 +31,7 @@ testCreateIncomeTransaction();
 testCreateExpenseTransaction();
 testCreateTransferTransaction();
 testPlannedTransactionsClearEffectiveDate();
+testDistinctTemporalSemanticsOnPosting();
 testValidations();
 testListAndUpdateTransactions();
 testCategoryRemoval();
@@ -160,7 +161,8 @@ function testPlannedTransactionsClearEffectiveDate(): void {
 
   assertEqual(created.transaction.status, "planned", "created planned status");
   assertEqual(created.transaction.effectiveOn, undefined, "created planned effective date");
-  assertEqual(created.transaction.occurredOn, "2026-08-10", "created planned occurred date");
+  assertEqual(created.transaction.occurredOn, "2026-08-05", "created planned occurred date");
+  assertEqual(created.transaction.plannedOn, "2026-08-10", "created planned date");
   assertEqual(movedBackToPlanned.transaction.status, "planned", "updated planned status");
   assertEqual(
     movedBackToPlanned.transaction.effectiveOn,
@@ -169,8 +171,97 @@ function testPlannedTransactionsClearEffectiveDate(): void {
   );
   assertEqual(
     movedBackToPlanned.transaction.occurredOn,
-    "2026-08-15",
-    "updated planned occurred date",
+    "2026-06-15",
+    "updated planned preserves occurred date",
+  );
+  assertEqual(movedBackToPlanned.transaction.plannedOn, "2026-08-15", "updated planned date");
+}
+
+function testDistinctTemporalSemanticsOnPosting(): void {
+  const account = createAccountFixture(tenantA, "account-temporal", "active");
+  const planned = createTransaction({
+    id: "transaction-temporal-planned",
+    context: tenantA,
+    now,
+    account,
+    payload: {
+      kind: "expense",
+      amountMinor: 3200,
+      occurredOn: "2026-07-05",
+      plannedOn: "2026-08-10",
+      accountId: account.id,
+      status: "planned",
+    },
+  });
+  const posted = updateTransaction({
+    context: tenantA,
+    transaction: planned.transaction,
+    now: "2026-08-12T14:30:00.000Z",
+    account,
+    payload: { status: "posted" },
+  });
+  const reconciled = updateTransaction({
+    context: tenantA,
+    transaction: posted.transaction,
+    now: "2026-08-13T09:00:00.000Z",
+    account,
+    payload: { status: "reconciled", effectiveOn: "2026-08-13" },
+  });
+  const createdPosted = createTransaction({
+    id: "transaction-temporal-posted",
+    context: tenantA,
+    now,
+    account,
+    payload: {
+      kind: "income",
+      amountMinor: 5000,
+      occurredOn: "2026-07-20",
+      plannedOn: "2026-08-01",
+      effectiveOn: "2026-08-04",
+      accountId: account.id,
+      status: "posted",
+    },
+  });
+
+  assertEqual(planned.transaction.occurredOn, "2026-07-05", "planned economic event date");
+  assertEqual(planned.transaction.plannedOn, "2026-08-10", "planned commitment date");
+  assertEqual(planned.transaction.effectiveOn, undefined, "planned has no cash effect date");
+  assertEqual(posted.transaction.occurredOn, "2026-07-05", "posting preserves economic date");
+  assertEqual(posted.transaction.plannedOn, "2026-08-10", "posting preserves planned date");
+  assertEqual(posted.transaction.effectiveOn, "2026-08-12", "posting records cash effect date");
+  assertEqual(
+    reconciled.transaction.occurredOn,
+    "2026-07-05",
+    "reconciliation preserves economic date",
+  );
+  assertEqual(
+    reconciled.transaction.plannedOn,
+    "2026-08-10",
+    "reconciliation preserves planned date",
+  );
+  assertEqual(reconciled.transaction.effectiveOn, "2026-08-13", "reconciliation cash date");
+  assertEqual(createdPosted.transaction.occurredOn, "2026-07-20", "posted economic date");
+  assertEqual(createdPosted.transaction.plannedOn, "2026-08-01", "posted planned date");
+  assertEqual(createdPosted.transaction.effectiveOn, "2026-08-04", "posted effective date");
+
+  assertTransactionError(
+    () =>
+      createTransaction({
+        id: "transaction-posted-without-effective-date",
+        context: tenantA,
+        now,
+        account,
+        payload: {
+          kind: "expense",
+          amountMinor: 1000,
+          occurredOn: "2026-08-01",
+          plannedOn: "2026-08-10",
+          effectiveOn: null,
+          accountId: account.id,
+          status: "posted",
+        },
+      }),
+    "TRANSACTION_EFFECTIVE_DATE_REQUIRED",
   );
 }
 

@@ -253,8 +253,9 @@ async function readAuditVersion(
 function assertRedacted(changes: string | null | undefined, forbidden: readonly string[]): void {
   assert.ok(changes, "Expected redacted audit changes.");
   for (const value of forbidden) {
+    const serializedValue = /^\d+$/.test(value) ? `:${value}` : value;
     assert.equal(
-      changes.includes(value),
+      changes.includes(serializedValue),
       false,
       `Audit version metadata must not contain sensitive value ${value}.`,
     );

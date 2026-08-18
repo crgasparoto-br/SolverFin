@@ -279,13 +279,14 @@ export function statementPresentationScript(): string {
           }
 
           function buildPayload(data) {
+            const occurredOn = String(data.get("occurredOn") || "");
             const plannedOn = String(data.get("plannedOn") || "");
             const effectiveOn = String(data.get("effectiveOn") || "");
             const payload = {
               kind: String(data.get("kind") || ""),
               status: String(data.get("status") || ""),
               amountMinor: moneyToMinor(data.get("amountMinor")),
-              occurredOn: effectiveOn || plannedOn,
+              occurredOn,
               plannedOn,
               effectiveOn: effectiveOn || null,
               accountId: String(data.get("accountId") || ""),

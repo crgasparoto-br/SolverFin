@@ -27,9 +27,10 @@ import {
   type TransactionExtractionPayloadV2,
 } from "@solverfin/domain";
 
-import { query, withSharedTransaction, type QueryExecutor } from "../db.js";
+import { type QueryExecutor, query, withSharedTransaction } from "../db.js";
 import { buildInsertAiSuggestionSql, buildUpdateAiSuggestionSql } from "./ai-suggestion-sql.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { reconcileImportedTransactionForContext } from "../import-reconciliation-temporal.js";
 
 export interface CreateCsvImportBatchPayload {
   originalFileName: string;
@@ -1052,6 +1053,7 @@ export async function resolveImportSuggestionFromDeterministicDecision(
         "Sugestao de conciliacao nao possui vinculo estruturado valido.",
       );
     }
+    const sourcePayload = requireExtractionPayload(sourceSuggestion);
     const rows = await executeQuery<TransactionRow>(
       `select ${TRANSACTION_SELECT_COLUMNS} from "Transaction"
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3 for update`,
@@ -1066,19 +1068,13 @@ export async function resolveImportSuggestionFromDeterministicDecision(
       );
     }
     if (current.status !== "reconciled") {
-      await executeQuery(
-        `update "Transaction" set "status" = 'RECONCILED', "reconciledAt" = $4,
-           "updatedAt" = $4, "updatedByUserId" = $5
-         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-        [current.id, context.organizationId, context.financialProfileId, now, context.userId],
+      transaction = await reconcileImportedTransactionForContext(
+        context,
+        current,
+        sourcePayload.occurredOn,
+        now,
+        executeQuery,
       );
-      transaction = {
-        ...current,
-        status: "reconciled",
-        reconciledAt: now,
-        updatedAt: now,
-        updatedByUserId: context.userId,
-      };
       if (transaction.kind === "transfer") {
         await insertAuditLogEntry(
           executeQuery,
@@ -1322,30 +1318,16 @@ async function reconcileImportTransferInTransaction(
   executeQuery: QueryExecutor,
 ): Promise<ImportReviewDecisionResult> {
   const now = new Date().toISOString();
-  const transaction =
-    existingTransfer.status === "reconciled"
-      ? existingTransfer
-      : {
-          ...existingTransfer,
-          status: "reconciled" as const,
-          reconciledAt: now,
-          updatedAt: now,
-          updatedByUserId: context.userId,
-        };
+  const sourcePayload = requireExtractionPayload(suggestion);
+  const transaction = await reconcileImportedTransactionForContext(
+    context,
+    existingTransfer,
+    sourcePayload.occurredOn,
+    now,
+    executeQuery,
+  );
 
   if (existingTransfer.status !== "reconciled") {
-    await executeQuery(
-      `update "Transaction" set "status" = 'RECONCILED', "reconciledAt" = $4,
-         "updatedAt" = $4, "updatedByUserId" = $5
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [
-        existingTransfer.id,
-        context.organizationId,
-        context.financialProfileId,
-        now,
-        context.userId,
-      ],
-    );
     await insertAuditLogEntry(
       executeQuery,
       buildImportedTransferReconciliationAuditEntry(context, transaction),
@@ -2200,6 +2182,7 @@ function buildImportedTransferReconciliationAuditEntry(
     reason: "Segunda ponta importada conciliada com transferencia existente.",
     redactedChanges: {
       status: "changed",
+      effectiveOn: "changed",
       reconciledAt: "added",
     },
   };

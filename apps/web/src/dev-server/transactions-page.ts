@@ -332,6 +332,7 @@ function renderModal(
           <input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" />
           <label>Tipo<select name="kind" required>${renderKindOptions()}</select></label>
           <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label>
+          <label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label>
           <label>Data prevista<input name="plannedOn" type="date" required /></label>
           <label>Data efetiva<input name="effectiveOn" type="date" /></label>
           <label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
@@ -412,6 +413,9 @@ function clientScript(): string {
         if (fixedOption) fixedOption.disabled = kind === "transfer";
         if (kind === "transfer" && form.repeatMode.value === "fixed") form.repeatMode.value = "single";
         const repeatMode = form.repeatMode.value;
+        const usesGenericTemporalFields = repeatMode === "single" || form.dataset.method === "PATCH";
+        setFieldVisible("occurredOn", usesGenericTemporalFields);
+        form.occurredOn.required = usesGenericTemporalFields;
         setFieldVisible("destinationAccountId", kind === "transfer");
         setFieldVisible("installments", repeatMode === "installment");
         setFieldVisible("installmentStart", repeatMode === "installment");
@@ -526,7 +530,7 @@ function clientScript(): string {
         const result = {
           kind: String(data.get("kind")),
           amountMinor,
-          occurredOn: effectiveOn || plannedOn,
+          occurredOn: String(data.get("occurredOn")),
           plannedOn,
           effectiveOn: effectiveOn || null,
           accountId: String(data.get("accountId")),
@@ -652,6 +656,7 @@ function clientScript(): string {
             form.dataset.method = clone ? "POST" : "PATCH";
             form.kind.value = transaction.kind;
             form.amountMinor.value = minorToMoneyInput(transaction.amountMinor);
+            form.occurredOn.value = transaction.occurredOn;
             form.plannedOn.value = transaction.plannedOn || transaction.occurredOn;
             form.effectiveOn.value = transaction.effectiveOn || "";
             setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned");

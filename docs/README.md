@@ -41,6 +41,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 
 - [`DOMAIN_MODEL.md`](./DOMAIN_MODEL.md): modelo conceitual e tecnico do core financeiro.
 - [`TRANSACTIONS.md`](./TRANSACTIONS.md): lancamentos do Extrato, filtros, agrupamentos e invariantes dos membros.
+- [`TRANSACTION_DATES.md`](./TRANSACTION_DATES.md): contrato canonico de `occurredOn`, `plannedOn`, `effectiveOn`, precedencias por uso e transicoes de estado.
 - [`API_TRANSACTIONS.md`](./API_TRANSACTIONS.md): contrato dos lancamentos usados como fonte financeira canonica.
 - [`API_REPORTS.md`](./API_REPORTS.md): endpoint agregado de evolucao por categoria, periodos, moedas e hierarquia.
 - [`API_TRANSACTION_GROUP_ACTIONS.md`](./API_TRANSACTION_GROUP_ACTIONS.md): edicao, clonagem, exclusao logica e conciliacao de agrupamentos.

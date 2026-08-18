@@ -140,6 +140,7 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
           context.hidden = true;
           [
             "kind",
+            "occurredOn",
             "plannedOn",
             "effectiveOn",
             "repeatMode",
@@ -190,6 +191,7 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
 
           [
             "kind",
+            "occurredOn",
             "effectiveOn",
             "repeatMode",
             "destinationAccountId",

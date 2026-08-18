@@ -66,7 +66,7 @@ async function main(): Promise<void> {
   assert.equal(updated.installmentId, undefined);
   assert.equal(updated.amountMinor, 1_875);
   assert.equal(updated.status, "planned");
-  assert.equal(updated.occurredOn, "2028-05-12");
+  assert.equal(updated.occurredOn, "2028-05-11");
   assert.equal(updated.plannedOn, "2028-05-12");
   assert.equal(updated.description, `Lancamento generico editado ${suffix}`);
 
@@ -78,7 +78,7 @@ async function main(): Promise<void> {
   assert.equal(row.installmentId, null);
   assert.equal(row.amountMinor, 1_875);
   assert.equal(row.status, "PLANNED");
-  assert.equal(row.occurredOn, "2028-05-12");
+  assert.equal(row.occurredOn, "2028-05-11");
   assert.equal(row.plannedOn, "2028-05-12");
   assert.equal(row.description, `Lancamento generico editado ${suffix}`);
 }

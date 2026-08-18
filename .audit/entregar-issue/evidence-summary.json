@@ -1,1 +1,47 @@
-{"schema_version":1,"material_head_sha":"edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83","base_sha":"f75dd222690734869b92358c85242555bb80b9b2","merge_preview_sha":"7d15af234e13b0aefca32e2f5afbebd4ec312e4a","repository":"crgasparoto-br/SolverFin","issue":593,"pr":623,"observations":[{"id":"EVID-001","kind":"patch-inspection","status":"passed","detail":"category-evolution-account-filter.ts applies NOT EXISTS Invoice scoped by organizationId and financialProfileId where Invoice.paymentTransactionId = movement.id for all, account, and card source modes."},{"id":"EVID-002","kind":"integration-test-source","status":"passed","detail":"category-evolution-account-filter.integration.test.ts captures the all-sources expense baseline before settlement, closes and pays the invoice, asserts Invoice.paymentTransactionId equals the returned payment transaction id, retries payment expecting CARD_INVOICE_ALREADY_PAID, creates an unrelated expense with the same amount and same description, and asserts the aggregate grows only by that unrelated expense while the payment-account report contains only that legitimate expense and the selected card remains 2000."},{"id":"EVID-003","kind":"scope-diff","status":"passed","detail":"The product diff remains limited to category evolution filter, its integration test, docs/API_REPORTS.md and docs/CARDS.md. The current material head is a child of the previous result-only handoff because CI remediation was appended without rewriting history; the remediation itself changes only the integration test baseline assertion."},{"id":"EVID-004","kind":"documentation","status":"passed","detail":"docs/CARDS.md and docs/API_REPORTS.md define economic purchase versus cash settlement and prohibit inference by description, value, date, category, or cardId alone."},{"id":"EVID-005","kind":"tenant-isolation","status":"passed","detail":"The exclusion subquery is scoped by both organizationId and financialProfileId, and the existing integration scenario retains cross-organization and cross-profile source rejection checks."},{"id":"EVID-006","kind":"remote-state","status":"passed","detail":"PR 623 is open, mergeable, targets main, and material head edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83 has CI run 32076832295 pending at package construction time."},{"id":"EVID-007","kind":"ci-remediation","status":"passed","detail":"Previous handoff-head CI run 32076640998 reached the affected integration test and failed only because the new all-sources assertion hard-coded 9000 while assertAccountFilter had already left a legitimate 3000 expense in the same tenant and period. The cycle-2 test now captures the pre-payment baseline and proves settlement adds zero while the same-looking unrelated expense adds exactly one payment amount."}],"limitations":["No local SolverFin checkout is available because github.com DNS resolution is unavailable in this runtime; executable repository validation is delegated to the PR CI."]}
+{
+  "schema_version": 1,
+  "material_head_sha": "f98d2e66fd15f1a84d5ad6a02037f3caa3cbb265",
+  "base_sha": "fc41fe26f99584b15e30af358dd3b83dd6d8340f",
+  "merge_preview_sha": "961099d7e67ccbe49c184b29fe54b44588a7743c",
+  "ci": {
+    "run_id": 32163009560,
+    "conclusion": "success",
+    "coverage": [
+      "format",
+      "lint",
+      "typecheck",
+      "unit-tests",
+      "build",
+      "api-postgresql-integration",
+      "migrations",
+      "seed"
+    ],
+    "new_controls": [
+      "packages/domain/src/temporal-saturation.test.ts",
+      "apps/api/src/manual-installments-temporal-saturation.integration.test.ts",
+      "apps/api/src/card-payment-temporal-saturation.integration.test.ts"
+    ]
+  },
+  "visual": {
+    "run_id": 32163009687,
+    "conclusion": "success",
+    "workflow": "Statement visual validation"
+  },
+  "observations": {
+    "invoice_payment_effective_on": "paidOn is persisted as effectiveOn on the settlement transaction",
+    "forecast_retirement": "invoice payment voids the planned forecast transaction",
+    "purchase_history": "settlement preserves the purchase occurredOn period",
+    "installments": "planned/posted/reconciled specialized producer cases passed",
+    "future_projection": "planned transaction promotes in place with independent dates",
+    "date_only": "UTC civil transition dates passed around midnight with past/future source dates"
+  },
+  "delivery_integrity": {
+    "historical_control_lineage": "Previous inherited-control ids are preserved and re-executed on the material candidate.",
+    "historical_escape_lineage": "Previous escape ids are preserved and the cumulative ledger is extended rather than replaced.",
+    "terminal_semantic_revalidation": "The handoff readiness and terminal guards receive prior snapshots and revalidate final result-only artifacts.",
+    "skill_contract_tests": {
+      "prevention": "entregar-issue monotonic lineage and result-child semantic guard focused tests passed.",
+      "detection": "auditar-issue historical re-audit preflight focused tests passed."
+    }
+  }
+}
