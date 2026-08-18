@@ -93,7 +93,11 @@ export async function handleTransactionGroupActionsApiRequest(
     }
 
     if (route.action === "void_member") {
-      const result = await voidTransactionGroupMemberForContext(context, route.groupId, route.memberId);
+      const result = await voidTransactionGroupMemberForContext(
+        context,
+        route.groupId,
+        route.memberId,
+      );
       return json(200, result);
     }
 
@@ -217,13 +221,14 @@ function readMutableMemberInput(body: Record<string, unknown>) {
   const date = readOptionalString(body.date);
   const plannedOn = readOptionalString(body.plannedOn);
   const effectiveOn = readNullableString(body.effectiveOn);
+  const categoryId = readNullableString(body.categoryId);
   return {
     ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
     ...(date !== undefined ? { date } : {}),
     ...(plannedOn !== undefined ? { plannedOn } : {}),
     ...(effectiveOn !== undefined ? { effectiveOn } : {}),
     ...(body.description !== undefined ? { description: String(body.description) } : {}),
-    ...(body.categoryId !== undefined ? { categoryId: readNullableString(body.categoryId) } : {}),
+    ...(categoryId !== undefined ? { categoryId } : {}),
   };
 }
 
