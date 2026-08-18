@@ -341,7 +341,7 @@ export function recurrencesSectionScript(): string {
           function basePayload(plannedOn, effectiveOn, amountMinor, description, applyToFuturePlanned) {
             const data = new FormData(form);
             const note = String(data.get("note") || "");
-            const result = { kind: String(data.get("kind")), amountMinor, occurredOn: effectiveOn || plannedOn, plannedOn, effectiveOn: effectiveOn || null, accountId: String(data.get("accountId")), description, status: String(data.get("status")) };
+            const result = { kind: String(data.get("kind")), amountMinor, occurredOn: String(data.get("occurredOn")), plannedOn, effectiveOn: effectiveOn || null, accountId: String(data.get("accountId")), description, status: String(data.get("status")) };
             if (note.trim() || form.dataset.currentTransactionId) result.note = note;
             if (applyToFuturePlanned) result.applyToFuturePlanned = true;
             const destinationAccountId = String(data.get("destinationAccountId") || "");
