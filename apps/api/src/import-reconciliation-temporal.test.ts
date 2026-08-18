@@ -101,9 +101,7 @@ async function testAlreadyReconciledTransactionIsIdempotent(): Promise<void> {
   assert.equal(calls.length, 0);
 }
 
-function captureQueries(
-  calls: Array<{ text: string; params: readonly unknown[] }>,
-): QueryExecutor {
+function captureQueries(calls: Array<{ text: string; params: readonly unknown[] }>): QueryExecutor {
   return async <TRow>(text: string, params: readonly unknown[] = []): Promise<TRow[]> => {
     calls.push({ text, params });
     return [];
