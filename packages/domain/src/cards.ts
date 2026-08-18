@@ -714,7 +714,7 @@ function setCardStatus(
 
   return {
     card: updatedCard,
-    auditEntry: buildCardAuditEntry("update", input.context.userId, input.now, currentCard, updatedCard),
+    auditEntry: buildCardAuditEntry("update", context.userId, now, currentCard, updatedCard),
   };
 }
 
