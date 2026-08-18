@@ -1,85 +1,72 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-18T20:24:07+00:00",
+  "created_at": "2026-08-18T21:39:10.369123+00:00",
   "identity": {
-    "head_sha": "f98d2e66fd15f1a84d5ad6a02037f3caa3cbb265",
-    "material_head_sha": "f98d2e66fd15f1a84d5ad6a02037f3caa3cbb265",
-    "base_sha": "fc41fe26f99584b15e30af358dd3b83dd6d8340f",
-    "merge_preview_sha": "961099d7e67ccbe49c184b29fe54b44588a7743c",
-    "material_merge_preview_sha": "961099d7e67ccbe49c184b29fe54b44588a7743c"
+    "head_sha": "503ce60ef4297332f9a81d7fc39423f1b30e6375",
+    "material_head_sha": "503ce60ef4297332f9a81d7fc39423f1b30e6375",
+    "base_sha": "90295e266e111d756e39979d126fc30af6710db0",
+    "merge_preview_sha": null,
+    "material_merge_preview_sha": null
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "work_item_kind": "issue",
-    "work_item_number": 597,
-    "pull_request": 624,
+    "work_item_number": 594,
+    "pull_request": 627,
     "base_ref": "main",
-    "head_ref": "feat/597-transaction-temporal-semantics"
+    "head_ref": "fix/594-financial-summary-settlement"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
-      ".audit/entregar-issue/audit-escape-closure.json",
-      ".audit/entregar-issue/audit-escape-pattern-catalog.json",
-      ".audit/entregar-issue/evidence-provenance.json",
       ".audit/entregar-issue/evidence-summary.json",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
-      ".audit/entregar-issue/learning-closure.json",
+      ".audit/entregar-issue/remote-gate.json",
       ".audit/entregar-issue/requirement-attack-matrix.json",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/risk-saturation.json",
-      ".audit/entregar-issue/specification-snapshot.json"
+      ".audit/entregar-issue/specification-snapshot.json",
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE-594.txt"
     ]
   },
   "contract_version": "2026-08-18.1",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "5bb212924f529f17e1a533b8bf2746fb454eec5c39551bd53304bd51c194cf7b"
+    "skill_sha256": "29aa3e41649e168dd394b88fc25cb81f146fd987143576a4b58404e827de588c"
   },
   "validators": {
     "validate_specification_coverage.py": "a9e0510ae5dae3efd1d1bd84d5a8cfd6e6edce801db717e92126fdf4666e9b20",
-    "validate_handoff_readiness.py": "7f1fab2ff8326eb4975b78dfb31da8016639fd8d74dbfe216a329ec4aec266ef",
-    "validate_requirement_attack_matrix.py": "7584b30fa779a3a1863d372d0028cc52b90b113ad0ddc5b299fc9525f2ba50bf",
+    "validate_handoff_readiness.py": "e6bce1339a592eb99668bd6ec140f467e2b802b12ba3ecbb0a3a1ae6904ec46b",
+    "validate_requirement_attack_matrix.py": "02caa0dfe7fc211b7ef16a08b5e2304d391420f74ac88fc9f85ae246b51352f6",
     "validate_evidence_freshness.py": "8a20cb7547d03e49b30e6c5713d61c9350a553e46c81ebeef6111137e165aaf8",
-    "validate_risk_saturation.py": "7db89b89c85a1af6e7a0dee532978a4b72fafc0f1af16967791eb91d145a4e35",
+    "validate_risk_saturation.py": "b281fdc61fc4ddf9683efa93024ddd802cc4de33bb3fbe3feae6ad871b887f04",
     "validate_inherited_controls.py": "265811897ce1ebc0f3a6b0ccb483a133ed9a7e20a12a2cb7798c54a966d36e33",
-    "validate_learning_closure.py": "38e91c2fab18aeba5545aa67a9ab118b3961e742867b670ccca7de7e1ca4ba94"
+    "validate_learning_closure.py": "488e0c5ce2c9d85c1427b1205ba87945acb9d37cca2763ac194fa2f040900872",
+    "validate_independent_rejection_closure.py": "d83e69bbee9981586a33c942bd472cd713659fa44bae7ca805f1f745d74ce73b"
   },
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "0ff50e732bf46216c490883fec44ab1a417b7765fa94d04ca34c251530caaa25"
+      "sha256": "faa70b16208b45f2ed9229fc6a7f2ffa153ab899d049dd4250c47bd37b88c5b3"
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "7d89b13b5f870626d7ebab5ef84d306c67c859dc8cabb6f4b1d3304fb98fd3aa"
+      "sha256": "7e97f4684885c762cd259ff01aab8fcf4789f8f2aaecbaf981c86b78cd3942e4"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "64779e4b9047ad35331e9f1dcc607aebc8156c6125ac3dfb8d10338d1a644d54"
+      "sha256": "ebe521a91a6b5bf19f33bf9e88a04e44e6a4c8cc69637e9c385dd17f05b95ee1"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "066919365c08f0fc1261755e63b3abb7113926205511238a5696faca5df4d8e9"
+      "sha256": "36c92eb0390bb89522844f256dc15ab67cfc253b7d55caeede408bca976ddc9a"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "ba01d3b893cf134cd9e69395bb51afe279ba4591b0afba761378834cefc3542f"
-    },
-    "evidence_provenance": {
-      "name": "evidence-provenance.json",
-      "sha256": "1934cf4c73890cc8d83d75462d40e9eda94532a262592707c462eb0b125a909c"
-    },
-    "audit_escape_closure": {
-      "name": "audit-escape-closure.json",
-      "sha256": "31895d294b47718a0079f3eedb2a834fe9c67fad41cbd882687d490c020ede38"
-    },
-    "learning_closure": {
-      "name": "learning-closure.json",
-      "sha256": "e3269ac0127ed7c1366d7a6f28f70e9b2099650ffd300f49439e88a95b038170"
+      "sha256": "55687a9ec7b1a934e5ca3e2a703d554b41124641f7b8d80bff58e36644f0658e"
     }
   },
-  "previous_independent_rejection": true
+  "previous_independent_rejection": false
 }
