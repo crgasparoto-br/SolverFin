@@ -666,6 +666,7 @@ export function payInvoice(input: PayInvoiceInput): InvoicePaymentResult {
     currency: invoice.currency,
     occurredOn: paidOn,
     plannedOn: paidOn,
+    effectiveOn: paidOn,
     description,
     accountId: paymentAccount.id,
     cardId: card.id,
@@ -713,7 +714,7 @@ function setCardStatus(
 
   return {
     card: updatedCard,
-    auditEntry: buildCardAuditEntry("update", context.userId, now, currentCard, updatedCard),
+    auditEntry: buildCardAuditEntry("update", input.context.userId, input.now, currentCard, updatedCard),
   };
 }
 
