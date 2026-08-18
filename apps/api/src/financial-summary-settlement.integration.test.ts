@@ -217,8 +217,7 @@ async function assertSummaryDelta(
       availableBalanceMinor: summary.availableBalanceMinor - baseline.availableBalanceMinor,
       incomeMinor: summary.incomeMinor - baseline.incomeMinor,
       expensesMinor: summary.expensesMinor - baseline.expensesMinor,
-      plannedCommitmentsMinor:
-        summary.plannedCommitmentsMinor - baseline.plannedCommitmentsMinor,
+      plannedCommitmentsMinor: summary.plannedCommitmentsMinor - baseline.plannedCommitmentsMinor,
     },
     expected,
   );
