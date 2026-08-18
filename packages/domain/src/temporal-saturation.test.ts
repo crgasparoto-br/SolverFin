@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import type { Account, Card, Invoice } from "./index.js";
+import type { Account, Card } from "./index.js";
 import type { TenantContext } from "./tenant.js";
 import { payInvoice, registerCardPurchase } from "./cards.js";
 import { createTransaction, updateTransaction } from "./transactions.js";
