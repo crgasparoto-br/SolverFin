@@ -1,1 +1,70 @@
-{"schema_version":2,"status":"ready","created_at":"2026-08-18T10:09:44.207936+00:00","identity":{"head_sha":"943e9e1d7c8a6f93ab35c7f14992c4321b0e61b0","material_head_sha":"943e9e1d7c8a6f93ab35c7f14992c4321b0e61b0","base_sha":"fc41fe26f99584b15e30af358dd3b83dd6d8340f","merge_preview_sha":"e8fd90b288dddde1c9d97316b029465704d32e42","material_merge_preview_sha":"e8fd90b288dddde1c9d97316b029465704d32e42"},"certificate_commit_policy":{"mode":"result-only-child","allowed_paths":[".audit/entregar-issue/audit-escape-closure.json",".audit/entregar-issue/evidence-summary.json",".audit/entregar-issue/handoff-ready.json",".audit/entregar-issue/inherited-controls.json",".audit/entregar-issue/learning-closure.json",".audit/entregar-issue/requirement-attack-matrix.json",".audit/entregar-issue/requirement-closure.json",".audit/entregar-issue/risk-saturation.json",".audit/entregar-issue/specification-snapshot.json"]},"contract_version":"2026-08-06.2","producer":{"skill":"entregar-issue","skill_sha256":"57a8bd38d56f01e19a4fe5fc4622b614fbde78c0381df4c885097d1059cc047b"},"validators":{"validate_specification_coverage.py":"a9e0510ae5dae3efd1d1bd84d5a8cfd6e6edce801db717e92126fdf4666e9b20","validate_handoff_readiness.py":"dd5db6e1a88a16ed97e8a73535ce2e444e73638e4e7836f87b54949eeb978e83","validate_requirement_attack_matrix.py":"3b7779a140635135e6b9b87615f6a84f177784e486fab4f60308b1e77ec80a5b","validate_risk_saturation.py":"78d27bfb7cc14c9d72652e78ffbcc170747f65a8cb9b029a27e36118acb6dc61","validate_inherited_controls.py":"614572eef445e4dff24dc0dd8753203603896521a499c4c1788f89bb668d8685","validate_learning_closure.py":"38e91c2fab18aeba5545aa67a9ab118b3961e742867b670ccca7de7e1ca4ba94"},"artifacts":{"specification_snapshot":{"name":"specification-snapshot.json","sha256":"1ebb0cdaf23ff5cbb658aeb338d196a59ce868139f55c1d60704fa456e13bb35"},"requirement_closure":{"name":"requirement-closure.json","sha256":"5f3d68998972f6a3a11de50dcc22abeb77a6d0414bea3f72b57d1126378f828f"},"requirement_attack_matrix":{"name":"requirement-attack-matrix.json","sha256":"fc803b9cfc371f5f93c9fba7ee7a039be03de9511865b4c06f7faf4cbd4959a3"},"risk_saturation":{"name":"risk-saturation.json","sha256":"1dae94330c93f1cf329d45bf6ce18a444cb21d9556111d20c60d29f9c7e85c19"},"inherited_controls":{"name":"inherited-controls.json","sha256":"1317152efdd292cdf6e77072903ddf9b0d300816adbb5c0b13c48215d9fff17b"},"audit_escape_closure":{"name":"audit-escape-closure.json","sha256":"292c71b9dcf28da7bdd0727f0ca5ca9b5d64bae303d3c60dd99f1f82b967205f"},"learning_closure":{"name":"learning-closure.json","sha256":"eed93fccac5054e55568ac90be17d7ae73598c160b66283d547a5e227f01ea34"}},"previous_independent_rejection":true}
+{
+  "schema_version": 2,
+  "status": "ready",
+  "created_at": "2026-08-18T11:47:32.907389+00:00",
+  "identity": {
+    "head_sha": "a148139e4013be6ddc75795f6916bade38537e3c",
+    "material_head_sha": "a148139e4013be6ddc75795f6916bade38537e3c",
+    "base_sha": "fc41fe26f99584b15e30af358dd3b83dd6d8340f",
+    "merge_preview_sha": "e8b1fa9d1d898925f49edd8d37492c22778ecef9",
+    "material_merge_preview_sha": "e8b1fa9d1d898925f49edd8d37492c22778ecef9"
+  },
+  "certificate_commit_policy": {
+    "mode": "result-only-child",
+    "allowed_paths": [
+      ".audit/entregar-issue/audit-escape-closure.json",
+      ".audit/entregar-issue/evidence-summary.json",
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/inherited-controls.json",
+      ".audit/entregar-issue/learning-closure.json",
+      ".audit/entregar-issue/requirement-attack-matrix.json",
+      ".audit/entregar-issue/requirement-closure.json",
+      ".audit/entregar-issue/risk-saturation.json",
+      ".audit/entregar-issue/specification-snapshot.json"
+    ]
+  },
+  "contract_version": "2026-08-06.2",
+  "producer": {
+    "skill": "entregar-issue",
+    "skill_sha256": "57a8bd38d56f01e19a4fe5fc4622b614fbde78c0381df4c885097d1059cc047b"
+  },
+  "validators": {
+    "validate_specification_coverage.py": "a9e0510ae5dae3efd1d1bd84d5a8cfd6e6edce801db717e92126fdf4666e9b20",
+    "validate_handoff_readiness.py": "dd5db6e1a88a16ed97e8a73535ce2e444e73638e4e7836f87b54949eeb978e83",
+    "validate_requirement_attack_matrix.py": "3b7779a140635135e6b9b87615f6a84f177784e486fab4f60308b1e77ec80a5b",
+    "validate_risk_saturation.py": "78d27bfb7cc14c9d72652e78ffbcc170747f65a8cb9b029a27e36118acb6dc61",
+    "validate_inherited_controls.py": "614572eef445e4dff24dc0dd8753203603896521a499c4c1788f89bb668d8685",
+    "validate_learning_closure.py": "38e91c2fab18aeba5545aa67a9ab118b3961e742867b670ccca7de7e1ca4ba94"
+  },
+  "artifacts": {
+    "specification_snapshot": {
+      "name": "specification-snapshot.json",
+      "sha256": "ec80103623b1c486cbf863ffbe93ac67a7c2f1fcb301cf5785350b32152511c7"
+    },
+    "requirement_closure": {
+      "name": "requirement-closure.json",
+      "sha256": "262657f1747f1c151f4d10bbf4beb3e0b0efc2af93c77f151bcbc4b3d7cfbcc4"
+    },
+    "requirement_attack_matrix": {
+      "name": "requirement-attack-matrix.json",
+      "sha256": "d27995c9388203d18f50d04d6298a11e2647915bc41ff3b58c9d24852770b650"
+    },
+    "risk_saturation": {
+      "name": "risk-saturation.json",
+      "sha256": "1d8f691fe0baad7361b38d6992dbe363fab71d3ec0d755445fe0035d78d22c52"
+    },
+    "inherited_controls": {
+      "name": "inherited-controls.json",
+      "sha256": "15d52af1da6db832586fdb68a3ad9bb64ca79aba233c229bfc2e601273ae70a8"
+    },
+    "audit_escape_closure": {
+      "name": "audit-escape-closure.json",
+      "sha256": "f9a16418aee7b3a4cc7b63ee10be3e54f2da65934033a5a22fa2fcce56785679"
+    },
+    "learning_closure": {
+      "name": "learning-closure.json",
+      "sha256": "40634c45e03126c78a713bd4079bb80c61a9f00ef95481f91c547d050f9ff1a6"
+    }
+  },
+  "previous_independent_rejection": true
+}
