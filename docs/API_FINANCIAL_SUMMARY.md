@@ -6,7 +6,7 @@
 
 A rota exige sessão válida e usa o `TenantContext` resolvido no servidor. Todas as consultas do resumo são filtradas simultaneamente por `organizationId` e `financialProfileId`.
 
-O contrato atual preserva `currency: "BRL"`. Conversão ou consolidação entre moedas permanece fora deste endpoint enquanto não existir um contrato explícito de câmbio; esta regra não autoriza somar moedas diferentes como se fossem equivalentes.
+O endpoint ainda preserva o contrato legado escalar `currency: "BRL"`. **Neste estágio ele não implementa a separação multi-moedas:** as consultas atuais não particionam contas e transações por `currency`, portanto um perfil que contenha valores em moedas diferentes pode produzir um agregado escalar financeiramente inválido. A migração para totais separados por moeda pertence à [Issue #595](https://github.com/crgasparoto-br/SolverFin/issues/595) e à ADR 0013. Até essa migração, este contrato deve ser tratado como válido somente para recortes mono-moeda compatíveis com BRL; nenhuma conversão, paridade ou consolidação implícita é autorizada.
 
 ## Data de referência e determinismo
 
