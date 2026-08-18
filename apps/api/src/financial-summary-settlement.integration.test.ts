@@ -21,6 +21,7 @@ const CONTEXT: TenantContext = {
 };
 
 const JUNE_REFERENCE = new Date("2035-06-30T12:00:00.000Z");
+const FORECAST_REFERENCE = new Date("2035-07-10T12:00:00.000Z");
 const JULY_REFERENCE = new Date("2035-07-12T12:00:00.000Z");
 
 void main()
@@ -37,6 +38,7 @@ async function main(): Promise<void> {
 
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
   const juneBaseline = await buildFinancialSummary(CONTEXT, JUNE_REFERENCE);
+  const forecastBaseline = await buildFinancialSummary(CONTEXT, FORECAST_REFERENCE);
   const julyBaseline = await buildFinancialSummary(CONTEXT, JULY_REFERENCE);
 
   const paymentAccount = await createAccountForContext(CONTEXT, {
@@ -150,20 +152,14 @@ async function main(): Promise<void> {
   assert.ok(forecast);
   assert.equal(forecast.status, "planned");
   assert.equal(forecast.effectiveOn, undefined);
-  assert.equal(forecast.plannedOn.startsWith("2035-07"), true);
+  assert.equal(forecast.plannedOn, "2035-07-10");
 
-  const forecastReference = new Date(`${forecast.plannedOn}T12:00:00.000Z`);
-  const forecastBaseline = await buildFinancialSummary(CONTEXT, forecastReference);
-  assert.equal(
-    forecastBaseline.plannedCommitmentsMinor - julyBaseline.plannedCommitmentsMinor,
-    8_500,
-    "planned commitments must use plannedOn and include the invoice forecast before settlement",
-  );
-  assert.equal(
-    forecastBaseline.availableBalanceMinor - julyBaseline.availableBalanceMinor,
-    28_000,
-    "only effective account movements may change available cash before invoice settlement",
-  );
+  await assertSummaryDelta(forecastBaseline, FORECAST_REFERENCE, {
+    availableBalanceMinor: 28_000,
+    incomeMinor: 0,
+    expensesMinor: 0,
+    plannedCommitmentsMinor: 8_500,
+  });
 
   await closeInvoiceForContext(CONTEXT, purchase.invoice.id);
   const payment = await payInvoiceForContext(CONTEXT, purchase.invoice.id, paymentAccount.id, {
