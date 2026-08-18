@@ -271,6 +271,7 @@ async function fillForm({ repeatMode, amount, plannedOn, description }) {
       control("repeatMode").value = ${JSON.stringify(repeatMode)};
       control("repeatMode").dispatchEvent(new Event("change", { bubbles: true }));
       control("amountMinor").value = ${JSON.stringify(amount)};
+      control("occurredOn").value = ${JSON.stringify(plannedOn)};
       control("plannedOn").value = ${JSON.stringify(plannedOn)};
       control("effectiveOn").value = "";
       control("description").value = ${JSON.stringify(description)};
