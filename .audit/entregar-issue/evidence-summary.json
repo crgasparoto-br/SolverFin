@@ -1,1 +1,47 @@
-{"schema_version":1,"material_head_sha":"2099351ca526d1922b060dec2ab44f1a5dfcae7f","previous_frozen_sha":"6d5a389b5ee06cd2100a956c964c6f2c94c54f1e","pull_request":624,"issue":597,"reason":"post-ci-refreeze after actionable CI remediation","failed_round":{"head_sha":"68d8459100e3063e5eb81fa7e0a09a3ea87b39f8","ci_run_id":32149533661,"failed_job":"Validate monorepo","failed_control":"apps/web/src/dev-server/transactions-page-temporal-form.test.ts","failure":"Rendered transactions page still contained occurredOn: effectiveOn || plannedOn, violating explicit economic-event sourcing."},"material_fix":{"commit_sha":"2099351ca526d1922b060dec2ab44f1a5dfcae7f","message":"fix(web): preserve occurredOn in recurring edits","path":"apps/web/src/dev-server/recurring-card-scope-controller.ts","before":"occurredOn: effectiveOn || plannedOn","after":"occurredOn: String(data.get(\"occurredOn\") || \"\")","scope":"one-line payload correction for recurring account edits"},"source_observations":["The recurring account edit payload now reads occurredOn directly from FormData instead of deriving it from effectiveOn or plannedOn.","The transactions-page temporal producer regression control rejects the forbidden fallback in the final rendered HTML, including injected helper scripts.","Existing specialized reconciliation, group temporal, void/history, statement/report precedence and documentation controls remain part of the monorepo test/build candidate."],"remote_validation":{"ci":{"run_id":32151017897,"status":"completed","conclusion":"success","jobs":[{"job_id":95756619486,"name":"Validate monorepo","conclusion":"success","critical_steps":["Check formatting","Lint","Typecheck","Test","Build"]},{"job_id":95756619885,"name":"Integration API + PostgreSQL","conclusion":"success","critical_steps":["Build packages","Run API integration tests","Verify import statement consistency"]}]},"statement_visual_validation":{"run_id":32151017903,"status":"completed","conclusion":"success","job_id":95756619354,"critical_steps":["Validate core interfaces in Chrome","Assert visual evidence is secret-free","Upload visual evidence"]}},"closure_note":"The exact material SHA that contains the CI remediation completed both applicable workflows successfully; the failed Test step from the prior SHA completed successfully on this head."}
+{
+  "schema_version": 1,
+  "material_head_sha": "f98d2e66fd15f1a84d5ad6a02037f3caa3cbb265",
+  "base_sha": "fc41fe26f99584b15e30af358dd3b83dd6d8340f",
+  "merge_preview_sha": "961099d7e67ccbe49c184b29fe54b44588a7743c",
+  "ci": {
+    "run_id": 32163009560,
+    "conclusion": "success",
+    "coverage": [
+      "format",
+      "lint",
+      "typecheck",
+      "unit-tests",
+      "build",
+      "api-postgresql-integration",
+      "migrations",
+      "seed"
+    ],
+    "new_controls": [
+      "packages/domain/src/temporal-saturation.test.ts",
+      "apps/api/src/manual-installments-temporal-saturation.integration.test.ts",
+      "apps/api/src/card-payment-temporal-saturation.integration.test.ts"
+    ]
+  },
+  "visual": {
+    "run_id": 32163009687,
+    "conclusion": "success",
+    "workflow": "Statement visual validation"
+  },
+  "observations": {
+    "invoice_payment_effective_on": "paidOn is persisted as effectiveOn on the settlement transaction",
+    "forecast_retirement": "invoice payment voids the planned forecast transaction",
+    "purchase_history": "settlement preserves the purchase occurredOn period",
+    "installments": "planned/posted/reconciled specialized producer cases passed",
+    "future_projection": "planned transaction promotes in place with independent dates",
+    "date_only": "UTC civil transition dates passed around midnight with past/future source dates"
+  },
+  "delivery_integrity": {
+    "historical_control_lineage": "Previous inherited-control ids are preserved and re-executed on the material candidate.",
+    "historical_escape_lineage": "Previous escape ids are preserved and the cumulative ledger is extended rather than replaced.",
+    "terminal_semantic_revalidation": "The handoff readiness and terminal guards receive prior snapshots and revalidate final result-only artifacts.",
+    "skill_contract_tests": {
+      "prevention": "entregar-issue monotonic lineage and result-child semantic guard focused tests passed.",
+      "detection": "auditar-issue historical re-audit preflight focused tests passed."
+    }
+  }
+}

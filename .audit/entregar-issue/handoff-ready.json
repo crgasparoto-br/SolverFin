@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-18T15:08:35.905067+00:00",
+  "created_at": "2026-08-18T20:24:07+00:00",
   "identity": {
-    "head_sha": "2099351ca526d1922b060dec2ab44f1a5dfcae7f",
-    "material_head_sha": "2099351ca526d1922b060dec2ab44f1a5dfcae7f",
+    "head_sha": "f98d2e66fd15f1a84d5ad6a02037f3caa3cbb265",
+    "material_head_sha": "f98d2e66fd15f1a84d5ad6a02037f3caa3cbb265",
     "base_sha": "fc41fe26f99584b15e30af358dd3b83dd6d8340f",
-    "merge_preview_sha": "6a48b4a695aabe008bc7efdcb1721a41308e9f74",
-    "material_merge_preview_sha": "6a48b4a695aabe008bc7efdcb1721a41308e9f74"
+    "merge_preview_sha": "961099d7e67ccbe49c184b29fe54b44588a7743c",
+    "material_merge_preview_sha": "961099d7e67ccbe49c184b29fe54b44588a7743c"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -21,6 +21,7 @@
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/audit-escape-closure.json",
+      ".audit/entregar-issue/audit-escape-pattern-catalog.json",
       ".audit/entregar-issue/evidence-provenance.json",
       ".audit/entregar-issue/evidence-summary.json",
       ".audit/entregar-issue/handoff-ready.json",
@@ -32,52 +33,52 @@
       ".audit/entregar-issue/specification-snapshot.json"
     ]
   },
-  "contract_version": "2026-08-06.2",
+  "contract_version": "2026-08-18.1",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "77dda0a6ff4d3918ce54d99c777f725e09e59f5ae5a1b8b7a395f8ed2080fada"
+    "skill_sha256": "5bb212924f529f17e1a533b8bf2746fb454eec5c39551bd53304bd51c194cf7b"
   },
   "validators": {
     "validate_specification_coverage.py": "a9e0510ae5dae3efd1d1bd84d5a8cfd6e6edce801db717e92126fdf4666e9b20",
-    "validate_handoff_readiness.py": "ca50e36341e2f541aad9c990ca1d98226866469616dc78e96d8d2aad4ab42bf9",
-    "validate_requirement_attack_matrix.py": "213bff4a0fb722aed69ad022d3ac656dcb52d21e49311a77c3e939b22ac1b2cd",
+    "validate_handoff_readiness.py": "7f1fab2ff8326eb4975b78dfb31da8016639fd8d74dbfe216a329ec4aec266ef",
+    "validate_requirement_attack_matrix.py": "7584b30fa779a3a1863d372d0028cc52b90b113ad0ddc5b299fc9525f2ba50bf",
     "validate_evidence_freshness.py": "8a20cb7547d03e49b30e6c5713d61c9350a553e46c81ebeef6111137e165aaf8",
-    "validate_risk_saturation.py": "78d27bfb7cc14c9d72652e78ffbcc170747f65a8cb9b029a27e36118acb6dc61",
-    "validate_inherited_controls.py": "614572eef445e4dff24dc0dd8753203603896521a499c4c1788f89bb668d8685",
+    "validate_risk_saturation.py": "7db89b89c85a1af6e7a0dee532978a4b72fafc0f1af16967791eb91d145a4e35",
+    "validate_inherited_controls.py": "265811897ce1ebc0f3a6b0ccb483a133ed9a7e20a12a2cb7798c54a966d36e33",
     "validate_learning_closure.py": "38e91c2fab18aeba5545aa67a9ab118b3961e742867b670ccca7de7e1ca4ba94"
   },
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "621c807ab4cc1f043cb9dfef11c6a4dc986a01daadcbd5849e8a80b1fb2b7b55"
+      "sha256": "0ff50e732bf46216c490883fec44ab1a417b7765fa94d04ca34c251530caaa25"
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "7df283a658627eed7352e382a4ec341bba077fc873eb4eec4d5b91b783daa528"
+      "sha256": "7d89b13b5f870626d7ebab5ef84d306c67c859dc8cabb6f4b1d3304fb98fd3aa"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "de27b06a2bfc4f329c69b8fd1a4476343c553f43a20329699cddc43663a9cfa6"
+      "sha256": "64779e4b9047ad35331e9f1dcc607aebc8156c6125ac3dfb8d10338d1a644d54"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "012ca46ad7da9571a7673207c45c1db7e4abb835630c78bf7c42a176fc7be09d"
+      "sha256": "066919365c08f0fc1261755e63b3abb7113926205511238a5696faca5df4d8e9"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "2c7dbc1bbd5ba21a4fb68ce398d27c8e598ba7cd1f903b48679e099760b67064"
+      "sha256": "ba01d3b893cf134cd9e69395bb51afe279ba4591b0afba761378834cefc3542f"
     },
     "evidence_provenance": {
       "name": "evidence-provenance.json",
-      "sha256": "d3ac44e1fce12aeb129da3c42f9862908facacfee2d6babbe3cdbaede2fe458c"
+      "sha256": "1934cf4c73890cc8d83d75462d40e9eda94532a262592707c462eb0b125a909c"
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure.json",
-      "sha256": "9715c8ba72fa165d549cf2c3ed19f3b604f00e8850789122077138766db46b91"
+      "sha256": "31895d294b47718a0079f3eedb2a834fe9c67fad41cbd882687d490c020ede38"
     },
     "learning_closure": {
       "name": "learning-closure.json",
-      "sha256": "a47e894b31b59ca5782f4645ed355fd17dc53f0a26da2c4f2c1964c668f135e6"
+      "sha256": "e3269ac0127ed7c1366d7a6f28f70e9b2099650ffd300f49439e88a95b038170"
     }
   },
   "previous_independent_rejection": true
