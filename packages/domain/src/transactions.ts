@@ -237,12 +237,17 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
   );
   const kind = validateTransactionKind(input.payload.kind ?? currentTransaction.kind);
   const nextStatus = input.payload.status ?? currentTransaction.status;
-  const nextEffectiveOn = shouldClearEffectiveOn(nextStatus)
-    ? null
-    : input.payload.effectiveOn !== undefined
-      ? input.payload.effectiveOn
-      : (currentTransaction.effectiveOn ??
-        (shouldClearEffectiveOn(currentTransaction.status) ? input.now.slice(0, 10) : undefined));
+  const nextEffectiveOn =
+    nextStatus === "voided"
+      ? (currentTransaction.effectiveOn ?? null)
+      : shouldClearEffectiveOn(nextStatus)
+        ? null
+        : input.payload.effectiveOn !== undefined
+          ? input.payload.effectiveOn
+          : (currentTransaction.effectiveOn ??
+            (shouldAssignEffectiveOnOnTransition(currentTransaction, nextStatus)
+              ? input.now.slice(0, 10)
+              : undefined));
   const payload: CreateTransactionPayload = {
     kind,
     status: nextStatus,
@@ -609,6 +614,14 @@ function resolveEffectiveOn(
   effectiveOn: ISODate | null | undefined,
   fallbackOccurredOn: ISODate,
 ): ISODate | undefined {
+  if (status === "voided") {
+    if (effectiveOn === null || effectiveOn === undefined) {
+      return undefined;
+    }
+
+    return validateTransactionDate(effectiveOn);
+  }
+
   if (shouldClearEffectiveOn(status)) {
     return undefined;
   }
@@ -629,6 +642,19 @@ function resolveEffectiveOn(
 
 function shouldClearEffectiveOn(status: TransactionStatus): boolean {
   return status === "planned" || status === "suggested";
+}
+
+function shouldAssignEffectiveOnOnTransition(
+  currentTransaction: Transaction,
+  nextStatus: TransactionStatus,
+): boolean {
+  return (
+    (nextStatus === "posted" || nextStatus === "reconciled") &&
+    currentTransaction.effectiveOn === undefined &&
+    (currentTransaction.status === "planned" ||
+      currentTransaction.status === "suggested" ||
+      currentTransaction.status === "voided")
+  );
 }
 
 function normalizeDescription(description = ""): string {

@@ -18,6 +18,7 @@ import type { ApiHeaders } from "./http-headers.js";
 import { auth } from "./auth-service.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
+import { readCreateTransactionOccurredOn } from "./transaction-create-temporal-input.js";
 import {
   closeInvoiceForContext,
   listCardPurchasesForContext,
@@ -403,7 +404,7 @@ async function createTransactionHandler(
   const transaction = await createTransactionForContext(context, {
     kind: body.kind as TransactionKind,
     amountMinor: Number(body.amountMinor),
-    occurredOn: String(body.occurredOn ?? body.effectiveOn ?? body.plannedOn ?? ""),
+    occurredOn: readCreateTransactionOccurredOn(body),
     accountId: String(body.accountId ?? ""),
     ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
     ...(body.effectiveOn !== undefined ? { effectiveOn: readOptionalDate(body.effectiveOn) } : {}),

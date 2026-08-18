@@ -24,6 +24,8 @@ Exemplos:
 
 Para `posted` e `reconciled`, relatórios históricos de receita/despesa continuam usando `occurredOn` como período econômico. Alterar `plannedOn` ou `effectiveOn` não pode mover silenciosamente esse período.
 
+Na fronteira genérica `POST /api/transactions`, `occurredOn` é obrigatório. `plannedOn` e `effectiveOn` nunca são usados como fallback para fabricar a data econômica de um novo registro. Produtores especializados que não recebem três fatos independentes devem documentar explicitamente a coincidência que produzem, como na seção **Produtores especializados** abaixo.
+
 ### `plannedOn`
 
 Data **planejada, prevista ou de vencimento** do compromisso.
@@ -44,9 +46,11 @@ Data em que o lançamento **passa a produzir efeito de caixa na conta**.
 - `posted` e `reconciled`: `effectiveOn` deve existir;
 - criação já realizada sem data efetiva distinta: a API de domínio usa `occurredOn` como data efetiva;
 - transição de um lançamento pendente para `posted`/`reconciled` sem `effectiveOn` explícito: a data civil UTC do instante da transição é registrada como `effectiveOn`;
-- enviar `effectiveOn: null` explicitamente para `posted`/`reconciled` é inválido (`TRANSACTION_EFFECTIVE_DATE_REQUIRED`).
+- enviar `effectiveOn: null` explicitamente para `posted`/`reconciled` é inválido (`TRANSACTION_EFFECTIVE_DATE_REQUIRED`);
+- `voided` não cria efeito de caixa por si só: anular um `planned`/`suggested` mantém `effectiveOn` ausente, enquanto anular um registro que já foi `posted`/`reconciled` preserva o `effectiveOn` histórico existente;
+- um registro criado diretamente como `voided` sem `effectiveOn` explícito permanece sem data efetiva; `occurredOn` não é convertido implicitamente em data de caixa.
 
-Mover um lançamento realizado de volta para um estado ainda não efetivo limpa `effectiveOn`, preservando `occurredOn` e `plannedOn`.
+Mover um lançamento realizado de volta para um estado ainda não efetivo limpa `effectiveOn`, preservando `occurredOn` e `plannedOn`. A anulação é diferente: ela encerra o movimento ativo sem inventar uma efetivação que não ocorreu e sem apagar uma efetivação histórica que já ocorreu.
 
 ## Precedência por uso
 
@@ -66,18 +70,20 @@ Quando um compromisso se torna efetivo, ele deixa de ser tratado simultaneamente
 
 A tabela descreve a intenção dos produtores atuais. Datas podem coincidir quando o caso não possui uma distinção real.
 
-| Origem/fluxo                         | `occurredOn`                                                        | `plannedOn`                                                   | `effectiveOn`                                                                        |
-| ------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| lançamento manual imediato           | evento informado                                                    | mesma data ou planejamento informado                          | data de caixa informada; na ausência, evento                                         |
-| lançamento manual planejado          | evento/origem informado                                             | vencimento/previsão                                           | ausente até efetivação                                                               |
-| recorrência materializada futura     | data de origem da ocorrência materializada                          | data calculada pela recorrência                               | ausente enquanto `planned`                                                           |
-| parcela futura                       | origem da parcela materializada                                     | `Installment.dueOn`                                           | ausente enquanto `planned`                                                           |
-| importação de movimento realizado    | data financeira da origem importada                                 | mesma data, salvo planejamento explícito suportado pelo fluxo | data do movimento importado                                                          |
-| conciliação                          | preserva a data econômica já persistida                             | preserva o planejamento já persistido                         | data efetiva explícita da conciliação ou data da transição quando omitida            |
-| compra no cartão                     | data econômica da compra                                            | data usada pelo contrato da compra/fatura quando aplicável    | não deve ser usada para transformar pagamento de fatura em segunda despesa econômica |
-| liquidação/pagamento de fatura       | data do evento do pagamento                                         | data planejada do pagamento, se houver                        | data em que o caixa da conta de pagamento é afetado                                  |
-| `PayableReceivable` pendente legado  | `dueOn` apenas como fallback de compatibilidade do registro migrado | `dueOn` canônico do compromisso                               | ausente                                                                              |
-| `PayableReceivable` liquidado legado | preserva a transação de liquidação existente                        | preserva referência histórica                                 | preserva a data efetiva da transação vinculada                                       |
+| Origem/fluxo                            | `occurredOn`                                                        | `plannedOn`                                                   | `effectiveOn`                                                                        |
+| --------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| lançamento manual imediato              | evento informado                                                    | mesma data ou planejamento informado                          | data de caixa informada; na ausência, evento                                         |
+| lançamento manual planejado             | evento/origem informado                                             | vencimento/previsão                                           | ausente até efetivação                                                               |
+| recorrência materializada futura        | data de origem da ocorrência materializada                          | data calculada pela recorrência                               | ausente enquanto `planned`                                                           |
+| parcela futura                          | origem da parcela materializada                                     | `Installment.dueOn`                                           | ausente enquanto `planned`                                                           |
+| importação de movimento realizado       | data financeira da origem importada                                 | mesma data, salvo planejamento explícito suportado pelo fluxo | data do movimento importado                                                          |
+| conciliação                             | preserva a data econômica já persistida                             | preserva o planejamento já persistido                         | data efetiva explícita da conciliação ou data da transição quando omitida            |
+| anulação antes de efetivação            | preserva evento/origem                                              | preserva planejamento                                         | permanece ausente                                                                    |
+| anulação depois de efetivação           | preserva evento/origem                                              | preserva planejamento                                         | preserva a data efetiva histórica anterior                                           |
+| compra no cartão                        | data econômica da compra                                            | data usada pelo contrato da compra/fatura quando aplicável    | não deve ser usada para transformar pagamento de fatura em segunda despesa econômica |
+| liquidação/pagamento de fatura          | data do evento do pagamento                                         | data planejada do pagamento, se houver                        | data em que o caixa da conta de pagamento é afetado                                  |
+| `PayableReceivable` pendente legado     | `dueOn` apenas como fallback de compatibilidade do registro migrado | `dueOn` canônico do compromisso                               | ausente                                                                              |
+| `PayableReceivable` liquidado legado    | preserva a transação de liquidação existente                        | preserva referência histórica                                 | preserva a data efetiva da transação vinculada                                       |
 
 ### Produtores especializados
 
@@ -120,6 +126,10 @@ O delta planejado x realizado continua auditável: 10/08 era o compromisso e 12/
 
 A conciliação preserva `occurredOn` e `plannedOn`. Ela pode confirmar/ajustar `effectiveOn` quando a origem fornece a data efetiva correta. Uma mudança de status isolada não autoriza copiar `plannedOn` para `occurredOn` nem `effectiveOn` para `occurredOn`.
 
+### `planned`/`suggested` ou realizado -> `voided`
+
+A anulação nunca cria um fato de caixa novo. Se o lançamento ainda não tinha `effectiveOn`, ele continua ausente. Se o lançamento já tinha sido efetivado, a anulação preserva o `effectiveOn` histórico existente, embora o estado `voided` deixe de produzir movimento ativo. Um `voided` sem histórico efetivo que seja posteriormente reativado para `posted`/`reconciled` recebe a data civil UTC da nova transição como `effectiveOn` quando nenhuma data efetiva explícita for enviada.
+
 ### retorno para estado não efetivo
 
 Ao voltar para `planned` ou `suggested`, `effectiveOn` é removido. As datas econômica e planejada permanecem como histórico do mesmo lançamento.
@@ -156,6 +166,7 @@ aparece no Extrato operacional em março, mas pertence ao relatório econômico 
 - uma atualização que informa apenas `plannedOn` altera planejamento, não evento econômico;
 - uma atualização que informa apenas `effectiveOn` altera efeito de caixa, não evento econômico;
 - o fallback legado existe para conseguir ler/transicionar registros antigos, não para criar uma segunda definição temporal em novos produtores;
+- a fronteira genérica de criação não usa `plannedOn` nem `effectiveOn` como substituto para `occurredOn`; ausência do evento econômico é erro de entrada;
 - migrações e backfills devem ser idempotentes e documentar explicitamente quando datas iguais são cópias de compatibilidade.
 
 ## Regras para novos consumidores
