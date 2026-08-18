@@ -1,0 +1,61 @@
+Parent epic: #589
+
+## Objetivo
+
+Formalizar e aplicar de forma consistente a semântica temporal dos lançamentos para evitar divergência entre competência/evento, planejamento e efetivação de caixa.
+
+## Semântica canônica
+
+- `occurredOn`: data do evento econômico/origem do lançamento. Para histórico realizado (`posted`/`reconciled`), continua sendo a data de atribuição dos relatórios que hoje usam esse contrato, como `docs/API_REPORTS.md`.
+- `plannedOn`: data prevista/de vencimento usada para um compromisso ainda não efetivado. No legado `PayableReceivable`, o mapeamento existente `plannedOn = dueOn` permanece a precedência documentada quando a transição cria uma `Transaction` planejada.
+- `effectiveOn`: data em que o movimento passa a produzir efeito de caixa na conta correspondente. Para compromisso ainda não efetivado, deve permanecer ausente quando não houver efeito de caixa ocorrido.
+
+Esses campos representam fatos diferentes. Uma transição de estado não deve apagar silenciosamente a data prevista nem substituir a data do evento econômico pela data de caixa.
+
+## Precedências por uso
+
+1. **Extrato operacional:** preservar a precedência já documentada em `docs/TRANSACTIONS.md`: `effectiveOn` → `plannedOn` → `occurredOn` para ordenar, filtrar e calcular a visão operacional da conta.
+2. **Relatórios de realizado:** preservar `occurredOn` como data de período para receitas/despesas `posted`/`reconciled` enquanto o documento dono do relatório não definir explicitamente outro contrato.
+3. **Compromissos futuros/projeções:** usar `plannedOn` para o evento ainda não efetivado; depois da efetivação, a ocorrência não pode permanecer simultaneamente como compromisso futuro e movimento realizado.
+4. **Compatibilidade legada:** fallback existe para leitura/transição de dados antigos, mas não deve criar uma segunda fonte de semântica temporal para novos registros.
+
+## Escopo
+
+- aplicar as definições acima em criação manual, recorrências, parcelas, importações, conciliação, compras de cartão e liquidações;
+- mapear, em documentação, quais fontes populam cada campo e quais campos podem permanecer ausentes;
+- alinhar relatórios, resumo, projeção e ordenação com as precedências acima;
+- documentar regras de fallback/transição para dados legados;
+- adicionar validações de domínio/API quando combinações forem inválidas;
+- preservar histórico temporal necessário na transição `planned` → `posted`/`reconciled`.
+
+## Invariantes estruturais
+
+- **must_be_single_source:** cada uso (Extrato operacional, realizado histórico, compromisso futuro) deve ter uma precedência temporal documentada; renderers ou relatórios não podem inventar outra ordem local.
+- **precedence_invariants:** no Extrato, `effectiveOn` prevalece sobre `plannedOn`, que prevalece sobre `occurredOn`; em relatório realizado já contratado, `occurredOn` continua sendo a referência do período.
+- **must_not_behave:** efetivar/concilidar um compromisso não pode sobrescrever a data prevista de forma que o sistema perca a diferença entre previsto e realizado.
+- **forbidden_implementation:** não usar um único `COALESCE` temporal universal em todos os domínios. Essa implementação poderia passar no Extrato e alterar silenciosamente relatórios realizados; o controle deve provar, com o mesmo lançamento contendo datas distintas, que Extrato e Relatório aplicam suas precedências específicas.
+
+## Critérios de aceite
+
+- [ ] cada campo possui definição única e exemplos em documentação;
+- [ ] a matriz por origem/fluxo informa quando `occurredOn`, `plannedOn` e `effectiveOn` são preenchidos ou ausentes;
+- [ ] Extrato preserva `effectiveOn` → `plannedOn` → `occurredOn`;
+- [ ] relatórios realizados que atualmente usam `occurredOn` não mudam de período por efeito colateral desta issue;
+- [ ] transições `planned` → `posted`/`reconciled` preservam o histórico previsto e registram a efetivação sem duplicar o compromisso;
+- [ ] importação/conciliação não substitui silenciosamente uma data com semântica diferente;
+- [ ] testes cobrem datas distintas no mesmo registro, datas passadas/futuras e transição de previsto para efetivo;
+- [ ] timezone/date-only continuam tratados de forma determinística conforme o contrato atual do repositório.
+
+## Fora de escopo
+
+- timezone configurável por perfil, salvo se indispensável para corrigir o contrato;
+- redesign visual.
+
+## Referências
+
+- #589
+- `docs/TRANSACTIONS.md`
+- `docs/API_TRANSACTIONS.md`
+- `docs/API_REPORTS.md`
+- `docs/PAYABLES_RECEIVABLES_TRANSITION.md`
+- `docs/EVOLUTION_STRATEGY.md`

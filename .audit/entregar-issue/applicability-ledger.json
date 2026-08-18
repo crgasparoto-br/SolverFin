@@ -1,1 +1,26 @@
-{"schema_version":1,"material_head_sha":"edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83","items":[{"family":"ui-visual","applicable":false,"reason":"No UI files changed."},{"family":"schema-migration","applicable":false,"reason":"Existing Invoice.paymentTransactionId is reused; no persistence shape change."},{"family":"documentation","applicable":true,"status":"passed"},{"family":"financial-integrity","applicable":true,"status":"passed-source-and-remote-ci-pending"}]}
+{
+  "schema_version": 1,
+  "material_head_sha": "010c4fc3fa10fa21bf790f454da511b9aa1fd0ba",
+  "items": [
+    {
+      "family": "ui-visual",
+      "applicable": false,
+      "reason": "No product UI implementation changed; visual regression remains applicable as repository gate because Statement semantics/fixture changed."
+    },
+    {
+      "family": "schema-migration",
+      "applicable": false,
+      "reason": "Existing occurredOn/plannedOn/effectiveOn columns are reused; no persistence shape change."
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "status": "passed"
+    },
+    {
+      "family": "financial-integrity",
+      "applicable": true,
+      "status": "passed-source-and-remote-ci-partial"
+    }
+  ]
+}

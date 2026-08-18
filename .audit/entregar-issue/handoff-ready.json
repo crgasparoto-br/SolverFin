@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-17T22:39:39.863885+00:00",
+  "created_at": "2026-08-18T01:34:07.555000+00:00",
   "identity": {
-    "head_sha": "edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83",
-    "material_head_sha": "edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83",
-    "base_sha": "f75dd222690734869b92358c85242555bb80b9b2",
-    "merge_preview_sha": "7d15af234e13b0aefca32e2f5afbebd4ec312e4a",
-    "material_merge_preview_sha": "7d15af234e13b0aefca32e2f5afbebd4ec312e4a"
+    "head_sha": "010c4fc3fa10fa21bf790f454da511b9aa1fd0ba",
+    "material_head_sha": "010c4fc3fa10fa21bf790f454da511b9aa1fd0ba",
+    "base_sha": "fc41fe26f99584b15e30af358dd3b83dd6d8340f",
+    "merge_preview_sha": "c9d788a69b4ed81065a60c8b9f986a353337099a",
+    "material_merge_preview_sha": "c9d788a69b4ed81065a60c8b9f986a353337099a"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -26,7 +26,8 @@
       ".audit/entregar-issue/risk-profile.json",
       ".audit/entregar-issue/risk-saturation.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE-593.txt"
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE-593.txt",
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE-597.txt"
     ]
   },
   "contract_version": "2026-08-06.2",
@@ -45,23 +46,23 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "4b7cb373ad402142aa1265923e4bf65374c3022b57508445edda4bed4b7f740a"
+      "sha256": "88aac8d76df22f67b7daef4a4f5591640b386c8410454599bd82056d3508095a"
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "2e7c6e5f5c20a5b7888563a0d48768a445d9b4dbe8cbb7af3e222673f86d4ba8"
+      "sha256": "d9affc4957d4b8722b9bfbedb7c62f8f19dfa8dedee0c737ff4501416c61780f"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "4e09009d85a711ea81ddbb11bc4a27d8642782abe1d77ed8fc37500dae1ea683"
+      "sha256": "aae12d4eb715264adb0fdf218056cd428f02522147833055fd71f6a520fd9069"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "7e05284fd84d24bcae6df981a6cd3ea40ae7bd801a7acb8f75de9a11c81cb02e"
+      "sha256": "a704eec709614c510138f36121abcf38faf3f92e72329a4cd56f77f3c9fd80d7"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "7e656fcc705c0e297784433d17d0fd94b11e15da7e7314a874527f4944b12ba5"
+      "sha256": "ae3dc5a1c720bcb96db6b616aafe146e937571eea12413941206e855844b8feb"
     }
   },
   "previous_independent_rejection": false

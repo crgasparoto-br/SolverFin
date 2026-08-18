@@ -1,1 +1,7 @@
-{"schema_version":1,"head_sha":"edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83","controls":[{"id":"IC-001","status":"passed","head_sha":"edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83","evidence":"evidence-summary.json#EVID-005: existing tenant/profile isolation is preserved in the new anti-join."},{"id":"IC-002","status":"passed","head_sha":"edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83","evidence":"evidence-summary.json#EVID-003: no schema, currency-conversion, dashboard, assistant, or unrelated financial behavior was changed."}],"unresolved_controls":[]}
+{
+  "schema_version": 1,
+  "head_sha": "010c4fc3fa10fa21bf790f454da511b9aa1fd0ba",
+  "source_audits": [],
+  "controls": [],
+  "unresolved_controls": []
+}

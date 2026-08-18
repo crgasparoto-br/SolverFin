@@ -1,1 +1,68 @@
-{"schema_version":1,"material_head_sha":"edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83","base_sha":"f75dd222690734869b92358c85242555bb80b9b2","merge_preview_sha":"7d15af234e13b0aefca32e2f5afbebd4ec312e4a","repository":"crgasparoto-br/SolverFin","issue":593,"pr":623,"observations":[{"id":"EVID-001","kind":"patch-inspection","status":"passed","detail":"category-evolution-account-filter.ts applies NOT EXISTS Invoice scoped by organizationId and financialProfileId where Invoice.paymentTransactionId = movement.id for all, account, and card source modes."},{"id":"EVID-002","kind":"integration-test-source","status":"passed","detail":"category-evolution-account-filter.integration.test.ts captures the all-sources expense baseline before settlement, closes and pays the invoice, asserts Invoice.paymentTransactionId equals the returned payment transaction id, retries payment expecting CARD_INVOICE_ALREADY_PAID, creates an unrelated expense with the same amount and same description, and asserts the aggregate grows only by that unrelated expense while the payment-account report contains only that legitimate expense and the selected card remains 2000."},{"id":"EVID-003","kind":"scope-diff","status":"passed","detail":"The product diff remains limited to category evolution filter, its integration test, docs/API_REPORTS.md and docs/CARDS.md. The current material head is a child of the previous result-only handoff because CI remediation was appended without rewriting history; the remediation itself changes only the integration test baseline assertion."},{"id":"EVID-004","kind":"documentation","status":"passed","detail":"docs/CARDS.md and docs/API_REPORTS.md define economic purchase versus cash settlement and prohibit inference by description, value, date, category, or cardId alone."},{"id":"EVID-005","kind":"tenant-isolation","status":"passed","detail":"The exclusion subquery is scoped by both organizationId and financialProfileId, and the existing integration scenario retains cross-organization and cross-profile source rejection checks."},{"id":"EVID-006","kind":"remote-state","status":"passed","detail":"PR 623 is open, mergeable, targets main, and material head edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83 has CI run 32076832295 pending at package construction time."},{"id":"EVID-007","kind":"ci-remediation","status":"passed","detail":"Previous handoff-head CI run 32076640998 reached the affected integration test and failed only because the new all-sources assertion hard-coded 9000 while assertAccountFilter had already left a legitimate 3000 expense in the same tenant and period. The cycle-2 test now captures the pre-payment baseline and proves settlement adds zero while the same-looking unrelated expense adds exactly one payment amount."}],"limitations":["No local SolverFin checkout is available because github.com DNS resolution is unavailable in this runtime; executable repository validation is delegated to the PR CI."]}
+{
+  "schema_version": 1,
+  "material_head_sha": "010c4fc3fa10fa21bf790f454da511b9aa1fd0ba",
+  "base_sha": "fc41fe26f99584b15e30af358dd3b83dd6d8340f",
+  "merge_preview_sha": "c9d788a69b4ed81065a60c8b9f986a353337099a",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 597,
+  "pr": 624,
+  "observations": [
+    {
+      "id": "EVID-001",
+      "kind": "domain-source",
+      "status": "passed",
+      "detail": "The frozen domain patch validates occurredOn independently, preserves it on update unless explicitly changed, preserves plannedOn independently, clears effectiveOn for planned/suggested, records effectiveOn on pending-to-effective transition, and rejects explicit effectiveOn:null for posted/reconciled."
+    },
+    {
+      "id": "EVID-002",
+      "kind": "domain-test-source",
+      "status": "passed",
+      "detail": "Domain tests use distinct occurred/planned/effective dates and assert planned->posted->reconciled transitions preserve economic and planned history while recording cash-effect dates; they also cover explicit null rejection."
+    },
+    {
+      "id": "EVID-003",
+      "kind": "statement-negative-control",
+      "status": "passed",
+      "detail": "The new statement test uses one transaction with occurredOn in June, plannedOn in July and effectiveOn in August and proves the operational statement selects August; sibling cases prove planned and legacy fallbacks."
+    },
+    {
+      "id": "EVID-004",
+      "kind": "report-negative-control",
+      "status": "passed",
+      "detail": "The new category-evolution integration test persists one posted transaction with occurredOn in January, plannedOn in February and effectiveOn in March and expects the realized report amount only in January."
+    },
+    {
+      "id": "EVID-005",
+      "kind": "legacy-import-inspection",
+      "status": "passed",
+      "detail": "Existing import deterministic reconciliation changes status/reconciledAt metadata without rewriting occurredOn, plannedOn or effectiveOn; legacy payable transition remains documented as compatibility fallback rather than a new universal date source."
+    },
+    {
+      "id": "EVID-006",
+      "kind": "documentation",
+      "status": "passed",
+      "detail": "docs/TRANSACTION_DATES.md defines each field, date-only determinism, origin/flow matrix, transition rules, per-consumer precedence, legacy fallbacks and explicitly forbids a universal temporal COALESCE; docs/README.md indexes it and STATUS_MATRIX marks only this capability as Feito."
+    },
+    {
+      "id": "EVID-007",
+      "kind": "stale-claim-scan",
+      "status": "passed",
+      "detail": "Repository search for the exact status claim found only docs/STATUS_MATRIX.md as the live status source; broader date-term search did not reveal another live documentation claim that the formalization remains pending."
+    },
+    {
+      "id": "EVID-008",
+      "kind": "scope-diff",
+      "status": "passed",
+      "detail": "Material candidate is exactly one commit ahead of base and changes ten files. The visual compatibility fixture now uses the canonical installment creation API to create a reconciled installment with an explicit historical effectiveOn, preserving the grouping-guard scenario without bypassing API ownership."
+    },
+    {
+      "id": "EVID-009",
+      "kind": "remote-state",
+      "status": "passed",
+      "detail": "PR #624 is open and mergeable. Observe-only GitHub Actions for material head 010c4fc3fa10fa21bf790f454da511b9aa1fd0ba completed successfully: CI run 32082203569 passed Validate monorepo and Integration API + PostgreSQL; Statement visual validation run 32082203628 passed Chrome validation, secret-free evidence scan and artifact upload. Visual evidence artifact 9305560298 has digest sha256:da2d3d545cea1de7e1a6e5f2ccb52bf9195f2061fc35d41d133a2f596a91eaad."
+    }
+  ],
+  "limitations": [
+    "No local SolverFin checkout is available because github.com DNS resolution failed in this runtime; executable repository validation is delegated to the PR GitHub Actions and observed read-only."
+  ]
+}

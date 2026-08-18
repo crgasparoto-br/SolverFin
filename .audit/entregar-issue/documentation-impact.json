@@ -1,1 +1,24 @@
-{"schema_version":1,"material_head_sha":"edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83","write_owner":"entregar-issue","sources":[{"path":"docs/CARDS.md","status":"verified","reason":"Canonical purchase versus settlement semantics documented."},{"path":"docs/API_REPORTS.md","status":"verified","reason":"All/account/card economic aggregation semantics documented."}],"unresolved_contradictions":[],"validation":"Patch inspection at frozen material SHA; repository-wide search was performed through GitHub code search for paymentTransactionId and category-evolution surfaces."}
+{
+  "schema_version": 1,
+  "material_head_sha": "010c4fc3fa10fa21bf790f454da511b9aa1fd0ba",
+  "write_owner": "entregar-issue",
+  "sources": [
+    {
+      "path": "docs/TRANSACTION_DATES.md",
+      "status": "verified",
+      "reason": "Canonical contract for occurredOn, plannedOn, effectiveOn and per-consumer precedence."
+    },
+    {
+      "path": "docs/README.md",
+      "status": "verified",
+      "reason": "Canonical temporal contract is indexed."
+    },
+    {
+      "path": "docs/STATUS_MATRIX.md",
+      "status": "verified",
+      "reason": "Date formalization capability is marked Feito for #597."
+    }
+  ],
+  "unresolved_contradictions": [],
+  "validation": "Repository searches found STATUS_MATRIX as the live status claim; divergent Statement/report tests and source inspection anchor the updated contract."
+}

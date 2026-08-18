@@ -1,1 +1,44 @@
-{"schema_version":1,"issue":593,"cycle":2,"events":[{"at":"2026-08-17T22:38:52.746961+00:00","event":"prior-material-freeze","sha":"2edd0a664e4ac53910a5f1d3fe6b41fe0f5d289f"},{"at":"2026-08-17T22:38:52.746961+00:00","event":"prior-handoff-published","sha":"820aad7f2d1a841ba8c5262a0e9440802c2eaffb"},{"at":"2026-08-17T22:38:52.746961+00:00","event":"ci-finding","run_id":32076640998,"job":"Integration API + PostgreSQL","detail":"all-sources test expected 9000 but observed 12000 because an earlier account scenario legitimately contributed 3000"},{"at":"2026-08-17T22:38:52.746961+00:00","event":"material-remediation","sha":"edfdb6a9aa74f96c155d12fd8ded19b83ab3cf83","detail":"negative control changed from hard-coded total to pre-payment baseline delta"},{"at":"2026-08-17T22:38:52.746961+00:00","event":"remote-ci-snapshot","run_id":32076832295,"status":"pending"}]}
+{
+  "schema_version": 1,
+  "issue": 597,
+  "cycle": 8,
+  "events": [
+    {
+      "event": "initial-material-candidate",
+      "sha": "23b4e7a0f315470538f78f3bb88245dae97db217"
+    },
+    {
+      "event": "ci-remediation",
+      "detail": "Aligned generic update expectation and visual reconciliation fixture with independent temporal semantics; fixed formatting."
+    },
+    {
+      "event": "report-test-isolation",
+      "detail": "Scoped temporal report control to its dedicated account to avoid demo-seed contamination."
+    },
+    {
+      "event": "flaky-test-hardening",
+      "detail": "Hardened unrelated AI audit redaction assertion against random fingerprint substring collisions."
+    },
+    {
+      "event": "specialized-producer-documentation-closure",
+      "detail": "Linked the canonical temporal contract to the specialized installment producer and documented intentional date coincidence without conflating field semantics."
+    },
+    {
+      "event": "pre-visual-assertion-candidate",
+      "sha": "bd4b50bec6159ea524a5aab811eedd8e3ee34c3a"
+    },
+    {
+      "event": "visual-assertion-remediation",
+      "detail": "Aligned the grouping-guard expectation with the canonical resolveEditBlockedReason precedence: a non-planned installment is locked by installment_status_locked before transaction status is considered."
+    },
+    {
+      "event": "material-freeze-candidate",
+      "sha": "010c4fc3fa10fa21bf790f454da511b9aa1fd0ba"
+    },
+    {
+      "event": "remote-gates-green",
+      "sha": "010c4fc3fa10fa21bf790f454da511b9aa1fd0ba",
+      "detail": "CI run 32082203569 and Statement visual validation run 32082203628 both completed successfully."
+    }
+  ]
+}
