@@ -1,0 +1,9 @@
+{
+  "material_head_sha": "25aa48a0246867bb9d767c8b9ae658bd1b0afbcc",
+  "observation_mode": "delivery-snapshot",
+  "observed_once": true,
+  "workflow_runs": [
+    {"id": 32204801171, "name": "CI", "status": "in_progress", "conclusion": null},
+    {"id": 32204801166, "name": "Statement visual validation", "status": "in_progress", "conclusion": null}
+  ]
+}

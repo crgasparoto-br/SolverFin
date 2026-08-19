@@ -1,0 +1,8 @@
+material_head_sha=25aa48a0246867bb9d767c8b9ae658bd1b0afbcc
+cumulative_control_revalidation=source-inspection
+- Issue #595 changes financial-summary currency partitioning, budget currency scoping, insight currency resolution, dashboard consumption, tests, and owner documentation.
+- Transaction creation, group editing, installment production, void/reactivation, reconciliation state transitions, and their temporal source fields are not product-code mutation targets in #595.
+- financial-summary-settlement.integration.test.ts was adapted only to read the BRL currency block; its settlement/effectiveOn scenario and expected cash/economic deltas remain represented.
+- New multi-currency current-state documentation is matched by dashboard.ts currencyBlocks production and dashboard-page.ts explicit consumption; scalar compatibility is documented only for exactly one currency.
+- The result-only handoff preserves cumulative control IDs and source-audit identities while rebinding each control to this exact material head.
+controls=AUDIT-CUMULATIVE-CONTROLS-001,AUDIT-CUMULATIVE-ESCAPES-001,AUDIT-RESULT-CHILD-SEMANTICS-001,NEG-BOUNDARY,NEG-COALESCE,NEG-DOC,NEG-IMPORT-HISTORY,TEMP-CARD-PURCHASE-HISTORY-001,TEMP-CARD-SETTLEMENT-001,TEMP-CREATE-SOURCE-001,TEMP-DATE-ONLY-UTC-001,TEMP-FUTURE-PROJECTION-001,TEMP-GROUP-REPORT-PERIOD-001,TEMP-INSTALLMENT-CONTRACT-001,TEMP-INSTALLMENT-PRODUCER-001,TEMP-MUTATION-INDEPENDENCE-001,TEMP-REALIZED-REPORT-PERIOD-001,TEMP-REFERENCE-LIVENESS-001,TEMP-TRANSITION-ATOMICITY-001,TEMP-TRANSITION-PARITY-001,TEMP-TRANSITION-PARITY-TRANSFER,TEMP-VOID-HISTORY-001,TEMP-VOID-NO-EFFECT-001,TEMP-VOID-REACTIVATION-001,TEMP-WEB-PRODUCER-SOURCE-001,TEMP-WEB-RECURRING-EDIT-SOURCE-001,DOC-SEMANTIC-DRIFT-001
