@@ -118,12 +118,8 @@ async function main(): Promise<void> {
   });
 
   const summary = await buildFinancialSummary(CONTEXT, REFERENCE);
-  assert.deepEqual(
-    summary.currencyBlocks.map((block) => block.currency),
-    [...summary.currencyBlocks.map((block) => block.currency)].sort(
-      (left, right) => left.localeCompare(right),
-    ),
-  );
+  const currencies = summary.currencyBlocks.map((block) => block.currency);
+  assert.deepEqual(currencies, [...currencies].sort());
 
   assertBlockDelta(summary, baseline, "BRL", {
     availableBalanceMinor: 10_800,
@@ -183,8 +179,12 @@ function blockFor(
   summary: DashboardSummary,
   currency: string,
 ): DashboardCurrencyBlock {
+  const found = summary.currencyBlocks.find(
+    (block) => block.currency === currency,
+  );
+
   return (
-    summary.currencyBlocks.find((block) => block.currency === currency) ?? {
+    found ?? {
       currency,
       availableBalanceMinor: 0,
       incomeMinor: 0,
