@@ -148,14 +148,18 @@ export async function buildFinancialSummary(
     ]);
 
   const currencies = new Set<string>();
-  for (const row of openingBalanceRows)
+  for (const row of openingBalanceRows) {
     currencies.add(normalizeCurrencyCode(row.currency));
-  for (const row of cashMovementRows)
+  }
+  for (const row of cashMovementRows) {
     currencies.add(normalizeCurrencyCode(row.currency));
-  for (const row of monthTotals)
+  }
+  for (const row of monthTotals) {
     currencies.add(normalizeCurrencyCode(row.currency));
-  for (const row of plannedTotals)
+  }
+  for (const row of plannedTotals) {
     currencies.add(normalizeCurrencyCode(row.currency));
+  }
 
   const currencyBlocks = [...currencies]
     .sort((left, right) => left.localeCompare(right))
@@ -199,23 +203,24 @@ export async function buildFinancialSummary(
     occurredOn: row.occurredOn.toISOString().slice(0, 10),
     status: row.status.toLowerCase(),
   }));
-  const singleCurrency =
-    currencyBlocks.length === 1 ? currencyBlocks[0] : undefined;
-
-  return {
+  const summary: DashboardSummary = {
     currencyBlocks,
     recentItems,
     generatedAt: now.toISOString(),
-    ...(singleCurrency === undefined
-      ? {}
-      : {
-          currency: singleCurrency.currency,
-          availableBalanceMinor: singleCurrency.availableBalanceMinor,
-          incomeMinor: singleCurrency.incomeMinor,
-          expensesMinor: singleCurrency.expensesMinor,
-          plannedCommitmentsMinor: singleCurrency.plannedCommitmentsMinor,
-        }),
   };
+
+  if (currencyBlocks.length === 1) {
+    const [singleCurrency] = currencyBlocks;
+    if (singleCurrency !== undefined) {
+      summary.currency = singleCurrency.currency;
+      summary.availableBalanceMinor = singleCurrency.availableBalanceMinor;
+      summary.incomeMinor = singleCurrency.incomeMinor;
+      summary.expensesMinor = singleCurrency.expensesMinor;
+      summary.plannedCommitmentsMinor = singleCurrency.plannedCommitmentsMinor;
+    }
+  }
+
+  return summary;
 }
 
 function sumCurrencyTotals(
