@@ -1,8 +1,9 @@
-material_head_sha=49d8bba08e2421bd79592c6194651f7d77070296
+material_head_sha=884ffa3a11893e72a5a0dca2a195e4447b0163f3
 revalidation=exact-current-delta-inspection
-previous_material_head_sha=6733418cdaa28125550cd49ec2b7d43a64028d59
-- All cumulative control IDs from the previous handoff are preserved.
-- The post-handoff delta does not alter the unrelated temporal/import/group/card contracts guarded by those controls.
-- Currency-related changes fail closed on account/transaction mismatch and therefore strengthen, rather than bypass, the financial semantic boundary.
-- HANDOFF-DRIFT-001 proves that a ready certificate bound to an older material SHA cannot authorize handoff-only recovery after material remote-head drift.
-- Current remote CI is pending and is not used as evidence for these control outcomes.
+previous_material_head_sha=49d8bba08e2421bd79592c6194651f7d77070296
+- All cumulative control IDs and source-audit lineage from the previous handoff are preserved.
+- The material delta after the previous freeze touches only two API integration-test files; unrelated temporal, import, group, card, provenance, and historical contracts guarded by inherited controls are not modified.
+- The currency-review fixture now uses a valid same-profile USD account for its USD transaction, so the test continues to exercise BRL-vs-USD discrimination without bypassing the account/transaction currency invariant.
+- The account-currency invariant test retains both repository-level currency lock and database-level TRANSACTION_CURRENCY_MISMATCH rejection; the later commit only aligns formatting with printWidth 100.
+- HANDOFF-DRIFT-001 is exercised by this remediation itself: the older ready certificate is treated as stale after material writes and requires this post-write refreeze.
+- CI run 32284542310 and visual run 32284542319 are both green on the exact material head; this is supplemental evidence, not a substitute for the delta inspection above.

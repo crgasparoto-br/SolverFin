@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-19T17:09:59.715571+00:00",
+  "created_at": "2026-08-19T18:20:27.011163+00:00",
   "identity": {
-    "head_sha": "49d8bba08e2421bd79592c6194651f7d77070296",
-    "material_head_sha": "49d8bba08e2421bd79592c6194651f7d77070296",
+    "head_sha": "884ffa3a11893e72a5a0dca2a195e4447b0163f3",
+    "material_head_sha": "884ffa3a11893e72a5a0dca2a195e4447b0163f3",
     "base_sha": "c623341f729099f72c96c3908e52d0098f0a3ebd",
-    "merge_preview_sha": "4f78f42a502f878a396257ea653e3aff15bc2fc9",
-    "material_merge_preview_sha": "4f78f42a502f878a396257ea653e3aff15bc2fc9"
+    "merge_preview_sha": "6ae7c5140a144a0cf10d2a4fc9da298c510e216f",
+    "material_merge_preview_sha": "6ae7c5140a144a0cf10d2a4fc9da298c510e216f"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -39,15 +39,15 @@
   "contract_version": "2026-08-18.1",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "7d9676cd3bdc439f99d838e5f8e91bbbe5d8f27aa05f6eddc35f62c71572e280"
+    "skill_sha256": "2ab49e41f53e9d41bcc21249dfb13f4a7ff134c9b87814e574ced44d1fde68f7"
   },
   "validators": {
-    "validate_specification_coverage.py": "ece443365cc37a7548676a194e9355e5d0a13cfdea11a861375a4493e7e9a943",
-    "validate_handoff_readiness.py": "9d9fca04309647441defbfcba8f081ce35ec7a58e186372303485913fb1468aa",
+    "validate_specification_coverage.py": "4eb93ff6a8f451d824adc4ad8faf9fd92a24f92bb42e93666a804f1e74f39aea",
+    "validate_handoff_readiness.py": "f6c538e5f6df8865e8b946c51f5ef152d1d1734012bc50f5c4ea840446a418aa",
     "validate_requirement_attack_matrix.py": "fe448a9f4c536b09678f940f7d49d0676460c311755d1b873d1276aafe2d26af",
     "validate_evidence_freshness.py": "8a20cb7547d03e49b30e6c5713d61c9350a553e46c81ebeef6111137e165aaf8",
     "validate_risk_saturation.py": "fc6286588f136290beba1e15927803fab82e1e0f092771234048748ad2345300",
-    "validate_inherited_controls.py": "fc9e91372df5d37cb9dbc875611b0cbe0c6281cb1a70ef8b972fbbe030889ee9",
+    "validate_inherited_controls.py": "9b36648552b8e701c1259e04ea1c07229d47853a446e7bfeadb99b6d25bac9db",
     "validate_learning_closure.py": "488e0c5ce2c9d85c1427b1205ba87945acb9d37cca2763ac194fa2f040900872",
     "validate_independent_rejection_closure.py": "d83e69bbee9981586a33c942bd472cd713659fa44bae7ca805f1f745d74ce73b"
   },
@@ -62,19 +62,19 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "cb98d9482ea293f5fe12076e24f3e8f7017ee3ed55350446f8f252b817fb207f"
+      "sha256": "a8436c99644644f7bf77dc953f649fd42d0caf2875ac109fff92669143327c6c"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "621417926737c3c1f9da03b7a5cc5ab5ddf5d4a1b717470ffcd78ed9ee88ee8d"
+      "sha256": "1a9bd1c83dc0b378c1cbae949748b56d090630756c70678ef7ebc34c8661c5b7"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "85fb224bcba3cfc59a2f17c9b9292753f85007df36bea3b4bac0210ff2ba5e80"
+      "sha256": "7f1fc48b85ed51f92749278cee76329e91cd3e1c8775b409a08a313ef8c3239a"
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure.json",
-      "sha256": "569670c8f825028fa114c92c984c32199bd5725c88875ea62df0e0050c51730c"
+      "sha256": "b2b6876fc88e27949c58f1422bdbca8cc4c85bab5ee30ff4696bc8a9787e8c42"
     },
     "learning_closure": {
       "name": "learning-closure.json",

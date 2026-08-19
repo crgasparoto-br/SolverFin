@@ -1,12 +1,12 @@
-material_head_sha=49d8bba08e2421bd79592c6194651f7d77070296
-previous_certified_material_head_sha=6733418cdaa28125550cd49ec2b7d43a64028d59
-validation_mode=post-write-refreeze-delta
-remote_ci_snapshot=CI:in_progress:32278924424;statement_visual_validation:in_progress:32278924403
-no_ci_success_claimed=true
+material_head_sha=884ffa3a11893e72a5a0dca2a195e4447b0163f3
+previous_certified_material_head_sha=49d8bba08e2421bd79592c6194651f7d77070296
+validation_mode=post-ci-refreeze-delta
+remote_ci_snapshot=CI:completed:success:32284542310;statement_visual_validation:completed:success:32284542319
 - Canonical issue source is byte-identical to the prior handoff source (sha256 555b030b1633768c1965ff804a8f9f11d194c36cc5261a5d9578d20fa0d69832).
-- Prior material-head controls established native BRL/USD partitioning; compare from the prior material head shows the original financial-summary/dashboard currencyBlocks implementation was not removed by the post-handoff delta.
-- Post-handoff material changes strengthen account/transaction native-currency consistency at domain, repository and database boundaries and add discriminant mismatch tests/migrations.
-- Parent CI at 4221c422497af412be23ac7379b36790fa435d35 exposed two actionable fixture/gate defects: Prettier in account-currency-invariant.integration.test.ts and a USD transaction inserted into a seeded BRL account in financial-insight-scan.integration.test.ts.
-- Current material commit 49d8bba08e2421bd79592c6194651f7d77070296 fixes formatting and gives the USD test transaction a same-profile USD account; it preserves the mixed-currency test instead of relabeling it to BRL.
-- Current CI has been collected once in delivery-snapshot mode and is still in progress; terminal handoff does not treat that pending state as a pass.
+- The prior certified aggregate implementation and documentation remain unchanged by the CI-remediation material delta; only two API integration-test files changed after the prior material freeze.
+- generalized-deterministic-review-currency.integration.test.ts now creates a same-profile USD account for the USD target transaction, preserving the deliberate BRL-vs-USD negative case without violating the account/transaction native-currency invariant.
+- account-currency-invariant.integration.test.ts changed only to match the repository Prettier contract (printWidth 100); the currency-lock assertions and database mismatch rejection remain intact.
+- No production implementation, migration, API contract, UI, or documentation file was changed by the CI-remediation commits.
+- CI run 32284542310 completed successfully at this material head, including formatting, lint, typecheck, tests, build, Prisma/migration/seed checks, and API integration tests.
+- Statement visual validation run 32284542319 completed successfully at this material head, including Chrome core-interface validation and secret-free evidence checks.
 - Static contract revalidation confirms currency remains an explicit financial-data property; no UI formatter/default is introduced as calculation source by the remediation delta.
