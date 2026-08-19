@@ -27,7 +27,10 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for the integration test.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for the integration test.",
+  );
 
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
   const account = await createAccountForContext(CONTEXT, {
