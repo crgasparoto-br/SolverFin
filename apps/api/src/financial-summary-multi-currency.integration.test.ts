@@ -17,6 +17,12 @@ const CONTEXT: TenantContext = {
   financialProfileKind: "personal",
   userId: "11111111-1111-4111-8111-111111111111",
 };
+const SIBLING_CONTEXT: TenantContext = {
+  organizationId: "22222222-2222-4222-8222-222222222222",
+  financialProfileId: "33333333-3333-4333-8333-333333333332",
+  financialProfileKind: "mei",
+  userId: "11111111-1111-4111-8111-111111111111",
+};
 const REFERENCE = new Date("2037-08-20T12:00:00.000Z");
 
 void main()
@@ -44,6 +50,12 @@ async function main(): Promise<void> {
     kind: "checking",
     currency: "USD",
     openingBalanceMinor: 20_000,
+  });
+  const siblingAccount = await createAccountForContext(SIBLING_CONTEXT, {
+    name: `Summary sibling EUR issue 595 ${suffix}`,
+    kind: "checking",
+    currency: "EUR",
+    openingBalanceMinor: 90_000_000,
   });
 
   await createTransactionForContext(CONTEXT, {
@@ -114,6 +126,24 @@ async function main(): Promise<void> {
     description: `USD planned issue 595 ${suffix}`,
   });
 
+  const siblingDescription = `Sibling profile income issue 595 ${suffix}`;
+  await createTransactionForContext(SIBLING_CONTEXT, {
+    accountId: siblingAccount.id,
+    kind: "income",
+    status: "posted",
+    amountMinor: 80_000_000,
+    currency: "EUR",
+    occurredOn: "2037-08-19",
+    plannedOn: "2037-08-19",
+    effectiveOn: "2037-08-19",
+    description: siblingDescription,
+  });
+  const siblingSummary = await buildFinancialSummary(SIBLING_CONTEXT, REFERENCE);
+  assert.equal(
+    siblingSummary.recentItems.some((item) => item.description === siblingDescription),
+    true,
+  );
+
   const summary = await buildFinancialSummary(CONTEXT, REFERENCE);
   const currencies = summary.currencyBlocks.map((block) => block.currency);
   assert.deepEqual(currencies, [...currencies].sort());
@@ -130,6 +160,11 @@ async function main(): Promise<void> {
     expensesMinor: 400,
     plannedCommitmentsMinor: 700,
   });
+  assert.deepEqual(blockFor(summary, "EUR"), blockFor(baseline, "EUR"));
+  assert.equal(
+    summary.recentItems.some((item) => item.description === siblingDescription),
+    false,
+  );
 
   assert.equal("currency" in summary, false);
   assert.equal("availableBalanceMinor" in summary, false);
