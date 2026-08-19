@@ -131,6 +131,7 @@ export async function summarizeBudgetUsageForContext(
         budget.categoryId,
         budget.periodStartOn,
         budget.periodEndOn,
+        budget.currency,
       )
     : [];
 
@@ -177,6 +178,7 @@ async function listTransactionsForCategoryPeriod(
   categoryId: EntityId,
   periodStartOn: string,
   periodEndOn: string,
+  currency: string,
 ): Promise<Transaction[]> {
   const rows = await query<{
     id: string;
@@ -199,8 +201,15 @@ async function listTransactionsForCategoryPeriod(
             "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt", "updatedAt"
      from "Transaction"
      where "organizationId" = $1 and "financialProfileId" = $2 and "categoryId" = $3
-       and "occurredOn" >= $4 and "occurredOn" <= $5`,
-    [context.organizationId, context.financialProfileId, categoryId, periodStartOn, periodEndOn],
+       and "occurredOn" >= $4 and "occurredOn" <= $5 and upper("currency") = upper($6)`,
+    [
+      context.organizationId,
+      context.financialProfileId,
+      categoryId,
+      periodStartOn,
+      periodEndOn,
+      currency,
+    ],
   );
 
   return rows.map((row) => {
