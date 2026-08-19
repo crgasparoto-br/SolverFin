@@ -534,10 +534,10 @@ function buildMonthlySummary(
   if (previous.length === 0) {
     limitations.push("Nao ha periodo anterior com dados realizados para uma comparacao completa.");
   }
-  if (
-    (input.budgets ?? []).filter((budget) => normalizeCurrency(budget.currency) === currency).length ===
-    0
-  ) {
+  const hasBudgetInCurrency = (input.budgets ?? []).some(
+    (budget) => normalizeCurrency(budget.currency) === currency,
+  );
+  if (!hasBudgetInCurrency) {
     limitations.push("Nenhum orcamento na moeda analisada foi informado para este periodo.");
   }
 
