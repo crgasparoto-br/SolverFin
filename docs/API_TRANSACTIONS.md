@@ -100,6 +100,18 @@ Payload tentando trocar `organizationId` ou `financialProfileId` deve retornar:
 403 TENANT_PAYLOAD_SCOPE_FORBIDDEN
 ```
 
+## Invariante de moeda entre lançamento e contas
+
+`Transaction.currency` representa a moeda nativa do valor persistido e deve ser semanticamente compatível com as contas que recebem seu efeito financeiro.
+
+- criação e edição exigem que `Transaction.currency` seja igual a `Account.currency` da conta de origem;
+- transferências exigem também que a conta de destino tenha a mesma moeda da origem e do lançamento;
+- trocar a conta de um lançamento para outra moeda só é permitido quando `currency` é alterada coerentemente na mesma mutação;
+- alterar apenas `currency` mantendo uma conta de outra moeda é rejeitado;
+- nenhuma dessas validações faz conversão cambial, reaproveita paridade ou reinterpreta `amountMinor` em outra moeda.
+
+Uma relação incompatível retorna `400 TRANSACTION_CURRENCY_MISMATCH` antes da persistência. Assim, consumidores agregados podem confiar que `Account.currency` e `Transaction.currency` não descrevem moedas divergentes para o mesmo efeito de caixa.
+
 ## Transferências originadas por importação
 
 Uma linha CSV revisada como transferência preserva a conta de referência e a direção original. A camada de importação deriva `accountId` e `destinationAccountId`, valida as duas contas no mesmo tenant, perfil e moeda e cria somente uma transação canônica. A segunda ponta pode vincular sua sugestão à transação existente; essa conciliação não altera a proveniência original (`aiSuggestionId` e `importBatchId`) nem cria movimentos adicionais.
@@ -197,7 +209,7 @@ Transferencia:
 ### PATCH /transactions/:transactionId
 
 Permite alterar tipo, status, fonte, valor, moeda, datas, descricao, conta,
-conta destino e categoria quando as validacoes forem atendidas.
+conta destino e categoria quando as validacoes forem atendidas. Alterações de `currency`, `accountId` ou `destinationAccountId` são validadas em conjunto pela invariância de moeda antes de qualquer persistência.
 
 Atualizar para `reconciled` define `reconciledAt` quando ainda nao existir e exige semantica efetiva coerente.
 
@@ -218,6 +230,8 @@ Regras principais:
 - `planned`/`suggested` permanecem sem data efetiva;
 - anulacao antes da efetivacao nao pode criar `effectiveOn`;
 - conta de origem deve existir no tenant ativo e estar ativa;
+- moeda do lançamento deve ser igual à moeda da conta de origem;
+- transferência exige conta de destino na mesma moeda da origem e do lançamento;
 - categoria, quando enviada, deve existir no tenant ativo, estar ativa e ser
   compativel com o tipo do lancamento;
 - transferencia exige conta origem e destino diferentes;
@@ -248,6 +262,7 @@ Erros controlados do contrato de dominio:
 400 TRANSACTION_DESTINATION_ACCOUNT_REQUIRED
 400 TRANSACTION_DESTINATION_ACCOUNT_INVALID
 400 TRANSACTION_TRANSFER_SAME_ACCOUNT
+400 TRANSACTION_CURRENCY_MISMATCH
 400 TRANSACTION_CATEGORY_INVALID
 400 TRANSACTION_CATEGORY_ARCHIVED
 400 CATEGORY_TRANSACTION_KIND_INVALID
@@ -262,6 +277,9 @@ O pacote `@solverfin/domain` cobre:
 - criacao de receita;
 - criacao de despesa;
 - transferencia com movimentos coerentes;
+- rejeição de moeda divergente entre lançamento e conta de origem;
+- rejeição de transferência entre contas de moedas diferentes;
+- rejeição de edição que torne `currency` e conta incompatíveis, com caso positivo de troca coerente de conta e moeda;
 - valor invalido;
 - conta arquivada;
 - transferencia para a mesma conta;
@@ -271,6 +289,8 @@ O pacote `@solverfin/domain` cobre:
 - exclusao logica com auditoria;
 - separacao entre evento, planejamento e efeito de caixa;
 - anulacao antes/depois de efetivacao e reativacao de registro nunca efetivado.
+
+A camada de API também possui controle integrado que tenta persistir relações monetárias incompatíveis por criação, transferência e edição, relê o lançamento e compara o resumo financeiro antes/depois para provar ausência de efeito residual.
 
 A camada de API tambem possui controle de fronteira para provar que `plannedOn`/`effectiveOn` nao preenchem `occurredOn` durante `POST /api/transactions`.
 

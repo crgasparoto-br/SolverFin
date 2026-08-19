@@ -33,6 +33,7 @@ export type TransactionErrorCode =
   | "TRANSACTION_DESTINATION_ACCOUNT_REQUIRED"
   | "TRANSACTION_DESTINATION_ACCOUNT_INVALID"
   | "TRANSACTION_TRANSFER_SAME_ACCOUNT"
+  | "TRANSACTION_CURRENCY_MISMATCH"
   | "TRANSACTION_CATEGORY_INVALID"
   | "TRANSACTION_CATEGORY_ARCHIVED";
 
@@ -407,6 +408,12 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
     input.existingTransaction?.categoryId,
   );
 
+  const currency = resolveTransactionCurrency(
+    input.payload.currency,
+    account,
+    destinationAccount,
+    input.kind,
+  );
   const status = validateTransactionStatus(input.payload.status ?? "posted");
   const occurredOn = validateTransactionDate(input.payload.occurredOn);
   const plannedOn = validateTransactionDate(input.payload.plannedOn ?? occurredOn);
@@ -419,7 +426,7 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
     status,
     source: validateTransactionSource(input.payload.source ?? "manual"),
     amountMinor: validateAmount(input.payload.amountMinor),
-    currency: normalizeCurrency(input.payload.currency ?? account.currency),
+    currency,
     occurredOn,
     plannedOn,
     description: normalizeDescription(input.payload.description),
@@ -524,6 +531,32 @@ function assertDestinationAccount(input: BuildTransactionInput): Account {
   }
 
   return destinationAccount;
+}
+
+function resolveTransactionCurrency(
+  requestedCurrency: string | undefined,
+  account: Account,
+  destinationAccount: Account,
+  kind: TransactionKind,
+): string {
+  const sourceCurrency = normalizeCurrency(account.currency);
+  const currency = normalizeCurrency(requestedCurrency ?? sourceCurrency);
+
+  if (currency !== sourceCurrency) {
+    throw new TransactionError(
+      "TRANSACTION_CURRENCY_MISMATCH",
+      "Transaction currency must match the source account currency.",
+    );
+  }
+
+  if (kind === "transfer" && normalizeCurrency(destinationAccount.currency) !== currency) {
+    throw new TransactionError(
+      "TRANSACTION_CURRENCY_MISMATCH",
+      "Transfer source and destination accounts must use the same currency.",
+    );
+  }
+
+  return currency;
 }
 
 function assertCategory(
