@@ -280,10 +280,7 @@ export function summarizeBudgetDashboard(
     status: "active",
     periodStartOn: period.periodStartOn,
     periodEndOn: period.periodEndOn,
-  }).filter(
-    (budget) =>
-      currencyFilter === undefined || budget.currency === currencyFilter,
-  );
+  }).filter((budget) => currencyFilter === undefined || budget.currency === currencyFilter);
   const summaries = scopedBudgets.map((budget) =>
     buildBudgetUsageSummary(
       budget,
@@ -298,9 +295,7 @@ export function summarizeBudgetDashboard(
     ),
   );
   const budgetedCategoryCurrencies = new Set(
-    scopedBudgets.map((budget) =>
-      budgetCategoryCurrencyKey(budget.categoryId, budget.currency),
-    ),
+    scopedBudgets.map((budget) => budgetCategoryCurrencyKey(budget.categoryId, budget.currency)),
   );
   const unbudgetedAmounts = sumUnbudgetedActualAmounts(
     input.context,
@@ -423,9 +418,7 @@ function sumActualAmount(
   return listTenantScopedResources(context, transactions)
     .filter((transaction) => isBudgetTransaction(transaction, periodStartOn, periodEndOn))
     .filter(
-      (transaction) =>
-        transaction.categoryId === categoryId &&
-        transaction.currency === currency,
+      (transaction) => transaction.categoryId === categoryId && transaction.currency === currency,
     )
     .reduce((total, transaction) => total + transaction.amountMinor, 0);
 }
@@ -451,24 +444,15 @@ function sumUnbudgetedActualAmounts(
       continue;
     }
 
-    if (
-      transaction.categoryId === undefined ||
-      transaction.currency.trim().length === 0
-    ) {
+    if (transaction.categoryId === undefined || transaction.currency.trim().length === 0) {
       continue;
     }
 
-    if (
-      currencyFilter !== undefined &&
-      transaction.currency !== currencyFilter
-    ) {
+    if (currencyFilter !== undefined && transaction.currency !== currencyFilter) {
       continue;
     }
 
-    const key = budgetCategoryCurrencyKey(
-      transaction.categoryId,
-      transaction.currency,
-    );
+    const key = budgetCategoryCurrencyKey(transaction.categoryId, transaction.currency);
     if (budgetedCategoryCurrencies.has(key)) {
       continue;
     }
@@ -477,18 +461,14 @@ function sumUnbudgetedActualAmounts(
     totals.set(key, {
       categoryId: transaction.categoryId,
       currency: transaction.currency,
-      actualAmountMinor:
-        (current?.actualAmountMinor ?? 0) + transaction.amountMinor,
+      actualAmountMinor: (current?.actualAmountMinor ?? 0) + transaction.amountMinor,
     });
   }
 
   return totals;
 }
 
-function budgetCategoryCurrencyKey(
-  categoryId: EntityId,
-  currency: string,
-): string {
+function budgetCategoryCurrencyKey(categoryId: EntityId, currency: string): string {
   return `${currency}\u0000${categoryId}`;
 }
 

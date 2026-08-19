@@ -29,10 +29,7 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for the integration test.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for the integration test.");
 
   const baseline = await buildFinancialSummary(CONTEXT, REFERENCE);
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
@@ -143,8 +140,14 @@ async function main(): Promise<void> {
   const issueItems = summary.recentItems.filter((item) =>
     item.description.includes(`issue 595 ${suffix}`),
   );
-  assert.equal(issueItems.some((item) => item.currency === "BRL"), true);
-  assert.equal(issueItems.some((item) => item.currency === "USD"), true);
+  assert.equal(
+    issueItems.some((item) => item.currency === "BRL"),
+    true,
+  );
+  assert.equal(
+    issueItems.some((item) => item.currency === "USD"),
+    true,
+  );
 }
 
 interface ExpectedBlockDelta {
@@ -164,24 +167,17 @@ function assertBlockDelta(
   const before = blockFor(baseline, currency);
   assert.deepEqual(
     {
-      availableBalanceMinor:
-        current.availableBalanceMinor - before.availableBalanceMinor,
+      availableBalanceMinor: current.availableBalanceMinor - before.availableBalanceMinor,
       incomeMinor: current.incomeMinor - before.incomeMinor,
       expensesMinor: current.expensesMinor - before.expensesMinor,
-      plannedCommitmentsMinor:
-        current.plannedCommitmentsMinor - before.plannedCommitmentsMinor,
+      plannedCommitmentsMinor: current.plannedCommitmentsMinor - before.plannedCommitmentsMinor,
     },
     expected,
   );
 }
 
-function blockFor(
-  summary: DashboardSummary,
-  currency: string,
-): DashboardCurrencyBlock {
-  const found = summary.currencyBlocks.find(
-    (block) => block.currency === currency,
-  );
+function blockFor(summary: DashboardSummary, currency: string): DashboardCurrencyBlock {
+  const found = summary.currencyBlocks.find((block) => block.currency === currency);
   if (found !== undefined) {
     return found;
   }

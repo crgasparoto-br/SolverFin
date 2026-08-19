@@ -166,24 +166,18 @@ export async function buildFinancialSummary(
     .map((currency) => {
       const openingBalance = sumCurrencyTotals(openingBalanceRows, currency);
       const cashMovement = sumCurrencyTotals(cashMovementRows, currency);
-      const monthIncome = sumByKindAndStatus(
-        monthTotals,
-        currency,
-        "INCOME",
-        ["POSTED", "RECONCILED"],
-      );
-      const monthExpense = sumByKindAndStatus(
-        monthTotals,
-        currency,
-        "EXPENSE",
-        ["POSTED", "RECONCILED"],
-      );
-      const monthPlanned = sumByKindAndStatus(
-        plannedTotals,
-        currency,
-        "EXPENSE",
-        ["PLANNED", "SUGGESTED"],
-      );
+      const monthIncome = sumByKindAndStatus(monthTotals, currency, "INCOME", [
+        "POSTED",
+        "RECONCILED",
+      ]);
+      const monthExpense = sumByKindAndStatus(monthTotals, currency, "EXPENSE", [
+        "POSTED",
+        "RECONCILED",
+      ]);
+      const monthPlanned = sumByKindAndStatus(plannedTotals, currency, "EXPENSE", [
+        "PLANNED",
+        "SUGGESTED",
+      ]);
 
       return {
         currency,
@@ -223,10 +217,7 @@ export async function buildFinancialSummary(
   return summary;
 }
 
-function sumCurrencyTotals(
-  rows: readonly CurrencyTotalRow[],
-  currency: string,
-): number {
+function sumCurrencyTotals(rows: readonly CurrencyTotalRow[], currency: string): number {
   return rows
     .filter((row) => normalizeCurrencyCode(row.currency) === currency)
     .reduce((total, row) => total + Number(row.total ?? 0), 0);
