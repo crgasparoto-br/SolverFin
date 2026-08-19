@@ -6,6 +6,7 @@ import { readAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payload
 
 import { closePool, query } from "./db.js";
 import { ensureFinancialInsightsForContext } from "./financial-insight-scan.js";
+import { createAccountForContext } from "./repositories/accounts.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
@@ -34,6 +35,12 @@ async function main(): Promise<void> {
   const marker = randomUUID();
   const transactionIds = [randomUUID(), randomUUID(), randomUUID(), randomUUID(), randomUUID()];
   const existingInsightIds = await listAllInsightIds();
+  const usdAccount = await createAccountForContext(context, {
+    name: `Budget history USD ${marker}`,
+    kind: "checking",
+    currency: "USD",
+    openingBalanceMinor: 0,
+  });
 
   try {
     await insertCategory(categoryId, marker);
@@ -82,6 +89,7 @@ async function main(): Promise<void> {
       "USD",
       "POSTED",
       marker,
+      usdAccount.id,
     );
 
     const result = await ensureFinancialInsightsForContext(context, NOW);
@@ -98,7 +106,7 @@ async function main(): Promise<void> {
     assert.equal(readEvidence(payload, "diferenca"), 10000);
     assert.equal(readEvidence(payload, "amostra"), 2);
   } finally {
-    await cleanup(transactionIds, budgetId, categoryId, existingInsightIds);
+    await cleanup(transactionIds, budgetId, categoryId, existingInsightIds, usdAccount.id);
   }
 }
 
@@ -131,6 +139,7 @@ async function insertExpense(
   currency: string,
   status: string,
   marker: string,
+  accountId = CHECKING_ACCOUNT_ID,
 ): Promise<void> {
   await query(
     `insert into "Transaction"
@@ -141,7 +150,7 @@ async function insertExpense(
       id,
       ORGANIZATION_ID,
       PERSONAL_PROFILE_ID,
-      CHECKING_ACCOUNT_ID,
+      accountId,
       categoryId,
       status,
       amountMinor,
@@ -204,6 +213,7 @@ async function cleanup(
   budgetId: string,
   categoryId: string,
   existingInsightIds: ReadonlySet<string>,
+  usdAccountId: string,
 ): Promise<void> {
   const rows = await query<{ id: string }>(
     `select "id" from "AiSuggestion" where "organizationId" = $1 and "financialProfileId" = $2 and "kind" = 'INSIGHT'`,
@@ -219,4 +229,5 @@ async function cleanup(
   await query(`delete from "Transaction" where "id" = any($1::uuid[])`, [transactionIds]);
   await query(`delete from "Budget" where "id" = $1`, [budgetId]);
   await query(`delete from "Category" where "id" = $1`, [categoryId]);
+  await query(`delete from "Account" where "id" = $1`, [usdAccountId]);
 }

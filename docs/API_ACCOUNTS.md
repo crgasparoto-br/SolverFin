@@ -120,6 +120,21 @@ Padrões:
 
 Permite atualizar nome, tipo, status, moeda, agência, conta, instituição e saldo inicial. `agencyIdentifier` e `accountIdentifier` podem ser alterados ou removidos independentemente. `maskedIdentifier` permanece somente leitura; atualizações de outros campos preservam o valor legado existente.
 
+Quando a conta já possui movimentações, `currency` passa a fazer parte da identidade monetária histórica da conta:
+
+- se `currency` for omitida, a moeda persistida é mantida;
+- se repetir a mesma moeda, inclusive com normalização de caixa, a atualização é idempotente;
+- uma mudança real de moeda é rejeitada, porque reinterpretaria o saldo inicial e os lançamentos já vinculados sem contrato de conversão cambial;
+- a alteração deve ser feita antes de existirem movimentações; o sistema não converte valores nem reescreve lançamentos implicitamente.
+
+Uma mudança real de moeda em conta já utilizada retorna:
+
+```text
+400 ACCOUNT_CURRENCY_LOCKED
+```
+
+A persistência também protege essa relação: uma atualização SQL direta de `Account.currency`, `organizationId` ou `financialProfileId` que torne incompatível qualquer `Transaction` de origem ou destino é rejeitada com `TRANSACTION_CURRENCY_MISMATCH`.
+
 Quando a conta já possui movimentações, o campo `openingBalanceMinor` é idempotente:
 
 - se for omitido, o saldo inicial persistido é mantido;
@@ -162,6 +177,7 @@ Erros controlados do contrato de domínio:
 400 ACCOUNT_KIND_REQUIRED
 400 ACCOUNT_KIND_INVALID
 400 ACCOUNT_CURRENCY_INVALID
+400 ACCOUNT_CURRENCY_LOCKED
 400 ACCOUNT_OPENING_BALANCE_INVALID
 400 ACCOUNT_OPENING_BALANCE_LOCKED
 400 ACCOUNT_AGENCY_IDENTIFIER_INVALID
@@ -189,6 +205,8 @@ O pacote `@solverfin/domain` e a integração da API cobrem:
 - listagem filtrada por tenant e status;
 - edição e arquivamento de conta;
 - bloqueio de acesso a conta de outro tenant;
+- atualização idempotente da moeda quando há movimentações e bloqueio de mudança real;
+- rejeição também na persistência de mudança direta que rompa a relação monetária com lançamentos existentes;
 - atualização idempotente do saldo inicial quando há movimentações;
 - bloqueio de mudança real do saldo inicial quando há movimentações;
 - bloqueio de moeda e arquivamento enquanto a remuneração CDI estiver ativa.

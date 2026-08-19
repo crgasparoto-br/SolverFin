@@ -20,6 +20,7 @@ export type AccountErrorCode =
   | "ACCOUNT_KIND_REQUIRED"
   | "ACCOUNT_KIND_INVALID"
   | "ACCOUNT_CURRENCY_INVALID"
+  | "ACCOUNT_CURRENCY_LOCKED"
   | "ACCOUNT_OPENING_BALANCE_INVALID"
   | "ACCOUNT_OPENING_BALANCE_LOCKED"
   | "ACCOUNT_AGENCY_IDENTIFIER_INVALID"
@@ -164,10 +165,12 @@ export function updateAccount(input: UpdateAccountInput): Account {
     input.payload,
     input.hasTransactions,
   );
+  const nextCurrency = getNextCurrency(currentAccount, input.payload, input.hasTransactions);
 
   return {
     ...currentAccount,
     ...buildOptionalAccountUpdate(input.payload),
+    currency: nextCurrency,
     openingBalanceMinor: nextOpeningBalance,
     updatedAt: input.now,
     updatedByUserId: input.context.userId,
@@ -204,10 +207,6 @@ function buildOptionalAccountUpdate(payload: UpdateAccountPayload): AccountUpdat
     update.status = payload.status;
   }
 
-  if (payload.currency !== undefined) {
-    update.currency = normalizeCurrency(payload.currency);
-  }
-
   if (payload.agencyIdentifier !== undefined) {
     update.agencyIdentifier = normalizeOptionalAccountIdentifier(
       payload.agencyIdentifier,
@@ -229,6 +228,27 @@ function buildOptionalAccountUpdate(payload: UpdateAccountPayload): AccountUpdat
   }
 
   return update;
+}
+
+function getNextCurrency(
+  account: Account,
+  payload: UpdateAccountPayload,
+  hasTransactions = false,
+): string {
+  if (payload.currency === undefined) {
+    return account.currency;
+  }
+
+  const nextCurrency = normalizeCurrency(payload.currency);
+
+  if (hasTransactions && nextCurrency !== account.currency) {
+    throw new AccountError(
+      "ACCOUNT_CURRENCY_LOCKED",
+      "A moeda da conta só pode ser alterada antes de a conta possuir movimentações.",
+    );
+  }
+
+  return nextCurrency;
 }
 
 function getNextOpeningBalance(
