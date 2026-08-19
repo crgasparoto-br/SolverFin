@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 import { TransactionError, type TenantContext } from "@solverfin/domain";
 
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { buildFinancialSummary } from "./repositories/dashboard.js";
 import {
@@ -45,6 +46,32 @@ async function main(): Promise<void> {
     openingBalanceMinor: 0,
   });
   const afterAccounts = await buildFinancialSummary(CONTEXT, REFERENCE);
+
+  await assert.rejects(
+    () =>
+      query(
+        `insert into "Transaction"
+          ("id", "organizationId", "financialProfileId", "accountId", "kind", "status", "source",
+           "amountMinor", "currency", "occurredOn", "plannedOn", "effectiveOn", "description",
+           "createdAt", "updatedAt")
+         values ($1, $2, $3, $4, 'EXPENSE', 'POSTED', 'MANUAL', $5, 'USD',
+                 $6::date, $6::date, $6::date, $7, now(), now())`,
+        [
+          randomUUID(),
+          CONTEXT.organizationId,
+          CONTEXT.financialProfileId,
+          brlAccount.id,
+          88_000,
+          "2037-08-10",
+          `Direct invalid account currency ${suffix}`,
+        ],
+      ),
+    /TRANSACTION_CURRENCY_MISMATCH/,
+  );
+
+  const afterRejectedDirectWrite = await buildFinancialSummary(CONTEXT, REFERENCE);
+  assert.deepEqual(afterRejectedDirectWrite.currencyBlocks, afterAccounts.currencyBlocks);
+  assert.deepEqual(afterRejectedDirectWrite.recentItems, afterAccounts.recentItems);
 
   await assertRejectsCurrencyMismatch(() =>
     createTransactionForContext(CONTEXT, {

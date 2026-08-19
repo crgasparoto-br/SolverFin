@@ -110,7 +110,7 @@ Payload tentando trocar `organizationId` ou `financialProfileId` deve retornar:
 - alterar apenas `currency` mantendo uma conta de outra moeda é rejeitado;
 - nenhuma dessas validações faz conversão cambial, reaproveita paridade ou reinterpreta `amountMinor` em outra moeda.
 
-Uma relação incompatível retorna `400 TRANSACTION_CURRENCY_MISMATCH` antes da persistência. Assim, consumidores agregados podem confiar que `Account.currency` e `Transaction.currency` não descrevem moedas divergentes para o mesmo efeito de caixa.
+Uma relação incompatível na fronteira canônica retorna `400 TRANSACTION_CURRENCY_MISMATCH` antes da persistência. Como defesa em profundidade, o PostgreSQL também rejeita `INSERT`/`UPDATE` de `Transaction` cuja moeda divirja da conta de origem ou destino; a migration de ativação falha se já existir relação incompatível. Assim, produtores especializados que persistem lançamentos diretamente não conseguem introduzir estado monetariamente ambíguo e consumidores agregados podem confiar que `Account.currency` e `Transaction.currency` não descrevem moedas divergentes para o mesmo efeito de caixa.
 
 ## Transferências originadas por importação
 
@@ -290,7 +290,7 @@ O pacote `@solverfin/domain` cobre:
 - separacao entre evento, planejamento e efeito de caixa;
 - anulacao antes/depois de efetivacao e reativacao de registro nunca efetivado.
 
-A camada de API também possui controle integrado que tenta persistir relações monetárias incompatíveis por criação, transferência e edição, relê o lançamento e compara o resumo financeiro antes/depois para provar ausência de efeito residual.
+A camada de API também possui controle integrado que tenta persistir relações monetárias incompatíveis por escrita SQL direta, criação, transferência e edição, relê o lançamento e compara o resumo financeiro antes/depois para provar ausência de efeito residual.
 
 A camada de API tambem possui controle de fronteira para provar que `plannedOn`/`effectiveOn` nao preenchem `occurredOn` durante `POST /api/transactions`.
 
