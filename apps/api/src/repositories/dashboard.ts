@@ -150,7 +150,8 @@ export async function buildFinancialSummary(
   const currencies = new Set<string>();
   for (const row of openingBalanceRows)
     currencies.add(normalizeCurrencyCode(row.currency));
-  for (const row of cashMovementRows) currencies.add(normalizeCurrencyCode(row.currency));
+  for (const row of cashMovementRows)
+    currencies.add(normalizeCurrencyCode(row.currency));
   for (const row of monthTotals) currencies.add(normalizeCurrencyCode(row.currency));
   for (const row of plannedTotals) currencies.add(normalizeCurrencyCode(row.currency));
 
